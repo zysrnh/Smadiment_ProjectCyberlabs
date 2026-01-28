@@ -92,6 +92,30 @@
               </div>
             </div>
           </div>
+
+          <!-- Chart Mode Toggle -->
+          <div style="margin-top: 24px;">
+            <div class="mode-toggle">
+              <button class="mode-btn active" onclick="switchMode('line')">Line Chart</button>
+              <button class="mode-btn" onclick="switchMode('bar')">Bar Chart</button>
+              <button class="mode-btn" onclick="switchMode('donut')">Donut Chart</button>
+            </div>
+
+            <!-- Line Chart -->
+            <div class="chart-container" id="lineContainer" style="height: 400px;">
+              <canvas id="lineChart"></canvas>
+            </div>
+
+            <!-- Bar Chart -->
+            <div class="chart-container" id="barContainer" style="height: 400px; display: none;">
+              <canvas id="barChart"></canvas>
+            </div>
+
+            <!-- Donut Chart -->
+            <div class="chart-container donut" id="donutContainer" style="height: 400px; display: none;">
+              <canvas id="donutChart"></canvas>
+            </div>
+          </div>
         @endif
       </div>
     </div>
@@ -125,4 +149,244 @@
 
 </div>
 
+@endsection
+
+@section('scripts')
+@if(count($tableData) > 0)
+<script>
+  // Prepare data - truncate long URLs for chart labels
+  const rawUrls = @json(array_column($tableData, 'url'));
+  const urlLabels = rawUrls.map(url => {
+    if (url.length > 30) {
+      return url.substring(0, 30) + '...';
+    }
+    return url;
+  });
+  const frequencies = @json(array_column($tableData, 'freq'));
+
+  let lineChart, barChart, donutChart;
+
+  // Line Chart
+  const lineCtx = document.getElementById('lineChart').getContext('2d');
+  lineChart = new Chart(lineCtx, {
+    type: 'line',
+    data: {
+      labels: urlLabels,
+      datasets: [{
+        label: 'Share Frequency',
+        data: frequencies,
+        borderColor: '#6b8bc3',
+        backgroundColor: '#6b8bc340',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#6b8bc3',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 6,
+        pointHoverRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        title: {
+          display: true,
+          text: 'URL Share Frequency - Line Chart',
+          font: {
+            size: 16,
+            weight: 'bold',
+            family: 'Montserrat'
+          },
+          color: colors.darkTeal
+        },
+        tooltip: {
+          callbacks: {
+            title: function(context) {
+              return rawUrls[context[0].dataIndex];
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: colors.beige
+          },
+          ticks: {
+            font: {
+              family: 'Montserrat',
+              weight: '600'
+            }
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            font: {
+              family: 'Montserrat',
+              weight: '600'
+            },
+            maxRotation: 45,
+            minRotation: 45
+          }
+        }
+      }
+    }
+  });
+
+  // Bar Chart (Horizontal)
+  const barCtx = document.getElementById('barChart').getContext('2d');
+  barChart = new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: urlLabels,
+      datasets: [{
+        label: 'Share Frequency',
+        data: frequencies,
+        backgroundColor: colors.palette,
+        borderWidth: 2,
+        borderColor: '#fff',
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y', // Horizontal bars
+      plugins: {
+        legend: {
+          display: false
+        },
+        title: {
+          display: true,
+          text: 'URL Share Frequency - Bar Chart',
+          font: {
+            size: 16,
+            weight: 'bold',
+            family: 'Montserrat'
+          },
+          color: colors.darkTeal
+        },
+        tooltip: {
+          callbacks: {
+            title: function(context) {
+              return rawUrls[context[0].dataIndex];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          grid: {
+            color: colors.beige
+          },
+          ticks: {
+            font: {
+              family: 'Montserrat',
+              weight: '600'
+            }
+          }
+        },
+        y: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            font: {
+              family: 'Montserrat',
+              weight: '600',
+              size: 10
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Donut Chart
+  const donutCtx = document.getElementById('donutChart').getContext('2d');
+  donutChart = new Chart(donutCtx, {
+    type: 'doughnut',
+    data: {
+      labels: urlLabels,
+      datasets: [{
+        data: frequencies,
+        backgroundColor: colors.palette,
+        borderWidth: 3,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: {
+              family: 'Montserrat',
+              weight: '600',
+              size: 10
+            },
+            padding: 15,
+            usePointStyle: true
+          }
+        },
+        title: {
+          display: true,
+          text: 'URL Share Distribution - Donut Chart',
+          font: {
+            size: 16,
+            weight: 'bold',
+            family: 'Montserrat'
+          },
+          color: colors.darkTeal
+        },
+        tooltip: {
+          callbacks: {
+            title: function(context) {
+              return rawUrls[context[0].dataIndex];
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Mode Switching
+  function switchMode(mode) {
+    const lineContainer = document.getElementById('lineContainer');
+    const barContainer = document.getElementById('barContainer');
+    const donutContainer = document.getElementById('donutContainer');
+    const buttons = document.querySelectorAll('.mode-btn');
+
+    // Hide all
+    lineContainer.style.display = 'none';
+    barContainer.style.display = 'none';
+    donutContainer.style.display = 'none';
+    buttons.forEach(btn => btn.classList.remove('active'));
+
+    // Show selected
+    if (mode === 'line') {
+      lineContainer.style.display = 'block';
+      buttons[0].classList.add('active');
+    } else if (mode === 'bar') {
+      barContainer.style.display = 'block';
+      buttons[1].classList.add('active');
+    } else if (mode === 'donut') {
+      donutContainer.style.display = 'block';
+      buttons[2].classList.add('active');
+    }
+  }
+</script>
+@endif
 @endsection
