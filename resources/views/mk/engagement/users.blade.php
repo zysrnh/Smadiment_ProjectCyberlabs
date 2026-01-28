@@ -98,9 +98,28 @@
             </div>
           </div>
 
-          <!-- User Activity Chart -->
-          <div style="margin-top: 24px; height: 400px;">
-            <canvas id="userActivityChart"></canvas>
+          <!-- Chart Mode Toggle -->
+          <div style="margin-top: 24px;">
+            <div class="mode-toggle">
+              <button class="mode-btn active" onclick="switchMode('line')">Line Chart</button>
+              <button class="mode-btn" onclick="switchMode('bar')">Bar Chart</button>
+              <button class="mode-btn" onclick="switchMode('donut')">Donut Chart</button>
+            </div>
+
+            <!-- Line Chart -->
+            <div class="chart-container" id="lineContainer" style="height: 400px;">
+              <canvas id="lineChart"></canvas>
+            </div>
+
+            <!-- Bar Chart -->
+            <div class="chart-container" id="barContainer" style="height: 400px; display: none;">
+              <canvas id="barChart"></canvas>
+            </div>
+
+            <!-- Donut Chart -->
+            <div class="chart-container donut" id="donutContainer" style="height: 400px; display: none;">
+              <canvas id="donutChart"></canvas>
+            </div>
           </div>
         @endif
       </div>
@@ -140,25 +159,90 @@
 @section('scripts')
 @if(count($tableData) > 0)
 <script>
-  // Prepare labels - handle empty/unknown usernames
-  const rawUserLabels = @json(array_map(function($item) {
-    $username = $item['username'] ?? '';
-    if (empty($username) || $username === '!nknown') {
-      return 'Unknown User';
-    }
-    return str_starts_with($username, '@') ? $username : '@' . $username;
-  }, $tableData));
-  
-  const userData = @json(array_column($tableData, 'count'));
+  // Prepare data
+  const usernames = @json(array_column($tableData, 'username'));
+  const counts = @json(array_column($tableData, 'count'));
 
-  const userCtx = document.getElementById('userActivityChart').getContext('2d');
-  const userActivityChart = new Chart(userCtx, {
-    type: 'bar',
+  let lineChart, barChart, donutChart;
+
+  // Line Chart
+  const lineCtx = document.getElementById('lineChart').getContext('2d');
+  lineChart = new Chart(lineCtx, {
+    type: 'line',
     data: {
-      labels: rawUserLabels,
+      labels: usernames,
       datasets: [{
         label: 'Post Count',
-        data: userData,
+        data: counts,
+        borderColor: colors.brown,
+        backgroundColor: colors.sage + '40',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: colors.brown,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 6,
+        pointHoverRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        title: {
+          display: true,
+          text: 'User Activity Distribution - Line Chart',
+          font: {
+            size: 16,
+            weight: 'bold',
+            family: 'Montserrat'
+          },
+          color: colors.darkTeal
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: colors.beige
+          },
+          ticks: {
+            font: {
+              family: 'Montserrat',
+              weight: '600'
+            }
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            font: {
+              family: 'Montserrat',
+              weight: '600'
+            },
+            maxRotation: 45,
+            minRotation: 45
+          }
+        }
+      }
+    }
+  });
+
+  // Bar Chart (Horizontal)
+  const barCtx = document.getElementById('barChart').getContext('2d');
+  barChart = new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: usernames,
+      datasets: [{
+        label: 'Post Count',
+        data: counts,
         backgroundColor: colors.palette,
         borderWidth: 2,
         borderColor: '#fff',
@@ -168,14 +252,14 @@
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      indexAxis: 'y', // Horizontal bar chart
+      indexAxis: 'y', // Horizontal bars
       plugins: {
         legend: {
           display: false
         },
         title: {
           display: true,
-          text: 'User Activity Distribution',
+          text: 'User Activity Distribution - Bar Chart',
           font: {
             size: 16,
             weight: 'bold',
@@ -211,6 +295,75 @@
       }
     }
   });
+
+  // Donut Chart
+  const donutCtx = document.getElementById('donutChart').getContext('2d');
+  donutChart = new Chart(donutCtx, {
+    type: 'doughnut',
+    data: {
+      labels: usernames,
+      datasets: [{
+        data: counts,
+        backgroundColor: colors.palette,
+        borderWidth: 3,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: {
+              family: 'Montserrat',
+              weight: '600',
+              size: 12
+            },
+            padding: 15,
+            usePointStyle: true
+          }
+        },
+        title: {
+          display: true,
+          text: 'User Activity Distribution - Donut Chart',
+          font: {
+            size: 16,
+            weight: 'bold',
+            family: 'Montserrat'
+          },
+          color: colors.darkTeal
+        }
+      }
+    }
+  });
+
+  // Mode Switching
+  function switchMode(mode) {
+    const lineContainer = document.getElementById('lineContainer');
+    const barContainer = document.getElementById('barContainer');
+    const donutContainer = document.getElementById('donutContainer');
+    const buttons = document.querySelectorAll('.mode-btn');
+
+    // Hide all
+    lineContainer.style.display = 'none';
+    barContainer.style.display = 'none';
+    donutContainer.style.display = 'none';
+    buttons.forEach(btn => btn.classList.remove('active'));
+
+    // Show selected
+    if (mode === 'line') {
+      lineContainer.style.display = 'block';
+      buttons[0].classList.add('active');
+    } else if (mode === 'bar') {
+      barContainer.style.display = 'block';
+      buttons[1].classList.add('active');
+    } else if (mode === 'donut') {
+      donutContainer.style.display = 'block';
+      buttons[2].classList.add('active');
+    }
+  }
 </script>
 @endif
 @endsection
