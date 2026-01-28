@@ -362,50 +362,51 @@ class MkController extends Controller
     /**
      * 📈 ENGAGEMENT - ESTIMATED REACH
      */
-    public function reach(Request $request, MediaKernelsClient $mk)
-    {
-        $projects = $this->getProjects($mk);
-        $params = $this->getParams($request);
-        $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+   public function reach(Request $request, MediaKernelsClient $mk)
+{
+    $projects = $this->getProjects($mk);
+    $params = $this->getParams($request);
+    $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
 
-        $rawData = [];
-        $chartData = ['labels' => [], 'values' => []];
+    $rawData = [];
+    $chartData = ['labels' => [], 'values' => []];
 
-        if ($projectId) {
-            $rawData = $mk->estReach(
-                $projectId,
-                $params['media'],
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime'],
-                'all'
-            );
+    if ($projectId) {
+        $rawData = $mk->estReach(
+            $projectId,
+            $params['media'],
+            $params['startDate'],
+            $params['endDate'],
+            $params['startTime'],
+            $params['endTime'],
+            'all'
+        );
 
-            // Normalize reach data
-            $data = $rawData['data'] ?? $rawData;
-            if (!empty($data) && is_array($data)) {
-                $labels = [];
-                $values = [];
-                foreach ($data as $item) {
-                    if (is_array($item)) {
-                        $labels[] = $item['date'] ?? $item['time'] ?? 'Unknown';
-                        $values[] = (int) ($item['reach'] ?? $item['est_reach'] ?? $item['value'] ?? 0);
-                    }
+        // Normalize reach data - PERBAIKAN DI SINI
+        $data = $rawData['data'] ?? $rawData;
+        if (!empty($data) && is_array($data)) {
+            $labels = [];
+            $values = [];
+            
+            foreach ($data as $key => $item) {  // 👈 Key = follower range
+                if (is_array($item)) {
+                    $labels[] = $key;  // 👈 Gunakan key sebagai label (0_3, 1001_10K, dll)
+                    $values[] = (int) ($item['reach'] ?? $item['est_reach'] ?? $item['value'] ?? 0);
                 }
-                $chartData = ['labels' => $labels, 'values' => $values];
             }
+            
+            $chartData = ['labels' => $labels, 'values' => $values];
         }
-
-        return view('mk.engagement.reach', [
-            'projects' => $projects,
-            'projectId' => $projectId,
-            'params' => $params,
-            'rawData' => $rawData,
-            'chartData' => $chartData,
-        ]);
     }
 
+    return view('mk.engagement.reach', [
+        'projects' => $projects,
+        'projectId' => $projectId,
+        'params' => $params,
+        'rawData' => $rawData,
+        'chartData' => $chartData,
+    ]);
+}
     /**
      * 📈 ENGAGEMENT - SHARED URLs
      */
