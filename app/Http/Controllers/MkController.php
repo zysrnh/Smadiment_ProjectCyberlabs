@@ -454,47 +454,56 @@ class MkController extends Controller
     /**
      * 📈 ENGAGEMENT - ACTIVE USERS
      */
-    public function activeUsers(Request $request, MediaKernelsClient $mk)
-    {
-        $projects = $this->getProjects($mk);
-        $params = $this->getParams($request);
-        $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+   public function activeUsers(Request $request, MediaKernelsClient $mk)
+{
+    $projects = $this->getProjects($mk);
+    $params = $this->getParams($request);
+    $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
 
-        $rawData = [];
-        $tableData = [];
+    $rawData = [];
+    $tableData = [];
 
-        if ($projectId) {
-            $rawData = $mk->mostActiveUsers(
-                $projectId,
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime']
-            );
+    if ($projectId) {
+        $rawData = $mk->mostActiveUsers(
+            $projectId,
+            $params['startDate'],
+            $params['endDate'],
+            $params['startTime'],
+            $params['endTime']
+        );
 
-            // Normalize users data
-            $data = $rawData['data'] ?? $rawData;
-            if (!empty($data) && is_array($data)) {
-                $rows = [];
-                foreach ($data as $item) {
-                    if (is_array($item)) {
-                        $rows[] = [
-                            'username' => $item['username'] ?? $item['user'] ?? $item['name'] ?? 'Unknown',
-                            'count' => (int) ($item['post_count'] ?? $item['posts'] ?? $item['count'] ?? 0),
-                        ];
+        // Normalize users data - PERBAIKAN DI SINI
+        $data = $rawData['data']['data'] ?? $rawData['data'] ?? $rawData;  // 👈 Nested data.data
+        if (!empty($data) && is_array($data)) {
+            $rows = [];
+            foreach ($data as $item) {
+                if (is_array($item)) {
+                    // Parse name to get username (format: "Name @username")
+                    $fullName = $item['name'] ?? 'Unknown User';
+                    $username = $fullName;
+                    
+                    // Extract username from "Name @username" format
+                    if (preg_match('/@(\w+)/', $fullName, $matches)) {
+                        $username = $matches[1]; // Get username without @
                     }
+                    
+                    $rows[] = [
+                        'username' => $username,
+                        'count' => (int) ($item['y'] ?? $item['post_count'] ?? $item['posts'] ?? $item['count'] ?? 0),  // 👈 Gunakan 'y'
+                    ];
                 }
-                usort($rows, fn($a, $b) => $b['count'] <=> $a['count']);
-                $tableData = array_slice($rows, 0, 10);
             }
+            usort($rows, fn($a, $b) => $b['count'] <=> $a['count']);
+            $tableData = array_slice($rows, 0, 10);
         }
-
-        return view('mk.engagement.users', [
-            'projects' => $projects,
-            'projectId' => $projectId,
-            'params' => $params,
-            'rawData' => $rawData,
-            'tableData' => $tableData,
-        ]);
     }
+
+    return view('mk.engagement.users', [
+        'projects' => $projects,
+        'projectId' => $projectId,
+        'params' => $params,
+        'rawData' => $rawData,
+        'tableData' => $tableData,
+    ]);
+}
 }

@@ -47,14 +47,17 @@
                 @foreach($tableData as $index => $row)
                   @php
                     $percentage = $total > 0 ? round($row['count'] / $total * 100, 1) : 0;
+                    $displayName = !empty($row['username']) && $row['username'] !== '!nknown' ? $row['username'] : 'Unknown User';
                   @endphp
                   <tr>
                     <td style="text-align: center; font-weight: 800; color: var(--sage);">{{ $index + 1 }}</td>
                     <td style="font-weight: 700; color: var(--dark-teal);">
-                      @if(str_starts_with($row['username'], '@'))
-                        {{ $row['username'] }}
+                      @if($displayName === 'Unknown User')
+                        <span style="color: var(--sage); font-style: italic;">{{ $displayName }}</span>
+                      @elseif(str_starts_with($displayName, '@'))
+                        {{ $displayName }}
                       @else
-                        @{{ $row['username'] }}
+                        @{{ $displayName }}
                       @endif
                     </td>
                     <td class="count-cell">{{ number_format($row['count']) }}</td>
@@ -96,8 +99,8 @@
           </div>
 
           <!-- User Activity Chart -->
-          <div style="margin-top: 24px;">
-            <canvas id="userActivityChart" style="max-height: 300px;"></canvas>
+          <div style="margin-top: 24px; height: 400px;">
+            <canvas id="userActivityChart"></canvas>
           </div>
         @endif
       </div>
@@ -137,14 +140,22 @@
 @section('scripts')
 @if(count($tableData) > 0)
 <script>
-  const userLabels = @json(array_column($tableData, 'username'));
+  // Prepare labels - handle empty/unknown usernames
+  const rawUserLabels = @json(array_map(function($item) {
+    $username = $item['username'] ?? '';
+    if (empty($username) || $username === '!nknown') {
+      return 'Unknown User';
+    }
+    return str_starts_with($username, '@') ? $username : '@' . $username;
+  }, $tableData));
+  
   const userData = @json(array_column($tableData, 'count'));
 
   const userCtx = document.getElementById('userActivityChart').getContext('2d');
   const userActivityChart = new Chart(userCtx, {
     type: 'bar',
     data: {
-      labels: userLabels,
+      labels: rawUserLabels,
       datasets: [{
         label: 'Post Count',
         data: userData,
