@@ -43,22 +43,17 @@
               <tbody>
                 @php
                   $total = array_sum(array_column($tableData, 'count'));
+                  $usernames = array_column($tableData, 'username');
                 @endphp
                 @foreach($tableData as $index => $row)
                   @php
                     $percentage = $total > 0 ? round($row['count'] / $total * 100, 1) : 0;
-                    $displayName = !empty($row['username']) && $row['username'] !== '!nknown' ? $row['username'] : 'Unknown User';
+                    $username = '@' . $usernames[$index];
                   @endphp
                   <tr>
                     <td style="text-align: center; font-weight: 800; color: var(--sage);">{{ $index + 1 }}</td>
                     <td style="font-weight: 700; color: var(--dark-teal);">
-                      @if($displayName === 'Unknown User')
-                        <span style="color: var(--sage); font-style: italic;">{{ $displayName }}</span>
-                      @elseif(str_starts_with($displayName, '@'))
-                        {{ $displayName }}
-                      @else
-                        @{{ $displayName }}
-                      @endif
+                      {{ $username }}
                     </td>
                     <td class="count-cell">{{ number_format($row['count']) }}</td>
                     <td class="count-cell">{{ $percentage }}%</td>
