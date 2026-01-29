@@ -112,6 +112,178 @@ class MkController extends Controller
     }
 
     /**
+     * 👨‍💼 ADMIN DASHBOARD - List Projects Only
+     */
+    public function adminDashboard(Request $request, MediaKernelsClient $mk)
+    {
+        $rawProjects = $mk->listProjects(0, 100);
+        $projects = array_values($rawProjects);
+        
+        // Enrich each project with stats data
+        $dateRange = [
+            'start' => now()->subDays(7)->toDateString(),
+            'end' => now()->toDateString(),
+        ];
+        
+        foreach ($projects as &$project) {
+            try {
+                // Get project stats for each media type
+                $allStats = $mk->projectStats(
+                    $project['id'],
+                    'all',
+                    $dateRange['start'],
+                    $dateRange['end'],
+                    0,
+                    23,
+                    'volumetotal'
+                );
+                
+                $newsStats = $mk->projectStats(
+                    $project['id'],
+                    'onlinenews',
+                    $dateRange['start'],
+                    $dateRange['end'],
+                    0,
+                    23,
+                    'volumetotal'
+                );
+                
+                $twitStats = $mk->projectStats(
+                    $project['id'],
+                    'twit',
+                    $dateRange['start'],
+                    $dateRange['end'],
+                    0,
+                    23,
+                    'volumetotal'
+                );
+                
+                $fbStats = $mk->projectStats(
+                    $project['id'],
+                    'fb',
+                    $dateRange['start'],
+                    $dateRange['end'],
+                    0,
+                    23,
+                    'volumetotal'
+                );
+                
+                $igStats = $mk->projectStats(
+                    $project['id'],
+                    'ig',
+                    $dateRange['start'],
+                    $dateRange['end'],
+                    0,
+                    23,
+                    'volumetotal'
+                );
+                
+                $ytStats = $mk->projectStats(
+                    $project['id'],
+                    'yt',
+                    $dateRange['start'],
+                    $dateRange['end'],
+                    0,
+                    23,
+                    'volumetotal'
+                );
+                
+                $tiktokStats = $mk->projectStats(
+                    $project['id'],
+                    'tiktok',
+                    $dateRange['start'],
+                    $dateRange['end'],
+                    0,
+                    23,
+                    'volumetotal'
+                );
+                
+                // Extract totals
+                $project['stats'] = [
+                    'all' => $this->extractTotal($allStats),
+                    'news' => $this->extractTotal($newsStats),
+                    'twit' => $this->extractTotal($twitStats),
+                    'fb' => $this->extractTotal($fbStats),
+                    'ig' => $this->extractTotal($igStats),
+                    'yt' => $this->extractTotal($ytStats),
+                    'tiktok' => $this->extractTotal($tiktokStats),
+                ];
+                
+                // Extract timeline data for chart
+                $project['timeline'] = $this->extractTimeline($allStats);
+                
+            } catch (\Exception $e) {
+                Log::warning("Failed to fetch stats for project {$project['id']}", [
+                    'error' => $e->getMessage()
+                ]);
+                
+                // Fallback to zeros
+                $project['stats'] = [
+                    'all' => 0,
+                    'news' => 0,
+                    'twit' => 0,
+                    'fb' => 0,
+                    'ig' => 0,
+                    'yt' => 0,
+                    'tiktok' => 0,
+                ];
+                $project['timeline'] = [
+                    'dates' => [],
+                    'values' => []
+                ];
+            }
+        }
+        
+        return view('admin.dashboard', [
+            'projects' => $projects,
+            'dateRange' => $dateRange,
+        ]);
+    }
+    
+    /**
+     * Helper: Extract total from stats response
+     */
+    private function extractTotal(array $stats): int
+    {
+        if (isset($stats['data']['total'])) {
+            return (int) $stats['data']['total'];
+        }
+        
+        if (isset($stats['total'])) {
+            return (int) $stats['total'];
+        }
+        
+        // Sum from timeline if available
+        if (isset($stats['data']) && is_array($stats['data'])) {
+            return array_sum(array_map(fn($v) => (int)$v, $stats['data']));
+        }
+        
+        return 0;
+    }
+    
+    /**
+     * Helper: Extract timeline data for chart
+     */
+    private function extractTimeline(array $stats): array
+    {
+        $timeline = [
+            'dates' => [],
+            'values' => []
+        ];
+        
+        if (isset($stats['data']) && is_array($stats['data'])) {
+            foreach ($stats['data'] as $date => $value) {
+                if (is_numeric($value)) {
+                    $timeline['dates'][] = date('d M', strtotime($date));
+                    $timeline['values'][] = (int) $value;
+                }
+            }
+        }
+        
+        return $timeline;
+    }
+
+    /**
      * 📁 PROJECTS LIST
      */
     public function projects(Request $request, MediaKernelsClient $mk)

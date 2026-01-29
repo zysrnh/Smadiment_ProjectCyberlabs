@@ -3,6 +3,19 @@
 use App\Http\Controllers\MkController;
 use Illuminate\Support\Facades\Route;
 
+
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    
+    // Admin Dashboard
+    Route::get('/dashboard', [MkController::class, 'adminDashboard'])->name('dashboard');
+    
+});
 /*
 |--------------------------------------------------------------------------
 | MK Analytics Routes
