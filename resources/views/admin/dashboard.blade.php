@@ -263,30 +263,44 @@ document.addEventListener('DOMContentLoaded', function() {
     textGray: '#7A8B96'
   };
   
-  // Projects data from backend (already includes timeline from projectStats)
+  // Projects data from backend (includes 7-day timeline with sentiment breakdown)
   const projects = @json($projects);
   
   projects.forEach(project => {
     const ctx = document.getElementById(`chart-${project.id}`);
     if (!ctx) return;
     
-    // Use timeline data that's already fetched by backend
-    const timeline = project.timeline || { dates: [], values: [] };
+    // Use timeline data with sentiment breakdown from backend
+    const timeline = project.timeline || { dates: [], values: [], sentiment: {} };
     let chartDates = timeline.dates || [];
     let chartValues = timeline.values || [];
     
-    // If no real data, use sample data
-    if (chartDates.length === 0) {
-      chartDates = ['22. Jan', '24. Jan', '26. Jan', '28. Jan'];
-      chartValues = [100, 5212, 130, 150];
-    }
+    // If no real data, use sample data (7 days)
+    let posData, neuData, negData, newData;
     
-    // Calculate sentiment breakdown (estimate based on total)
-    // Positive ~45%, Neutral ~35%, Negative ~20% of total
-    const posData = chartValues.map(v => Math.round(v * 0.45));
-    const neuData = chartValues.map(v => Math.round(v * 0.35));
-    const negData = chartValues.map(v => Math.round(v * 0.20));
-    const newData = chartValues; // Total (all mentions)
+    if (chartDates.length === 0) {
+      // Sample data for 7 days
+      chartDates = ['23. Jan', '24. Jan', '25. Jan', '26. Jan', '27. Jan', '28. Jan', '29. Jan'];
+      newData = [100, 150, 5212, 180, 120, 90, 110];
+      posData = [45, 67, 2345, 81, 54, 40, 49];
+      neuData = [35, 53, 1867, 63, 42, 31, 38];
+      negData = [20, 30, 1000, 36, 24, 19, 23];
+    } else {
+      // Real data from API with sentiment breakdown
+      newData = chartValues; // Total (all mentions)
+      
+      // Check if sentiment breakdown exists
+      if (timeline.sentiment && timeline.sentiment.positive) {
+        posData = timeline.sentiment.positive;
+        neuData = timeline.sentiment.neutral;
+        negData = timeline.sentiment.negative;
+      } else {
+        // Fallback: estimate if sentiment breakdown not available
+        posData = chartValues.map(v => Math.round(v * 0.45));
+        neuData = chartValues.map(v => Math.round(v * 0.35));
+        negData = chartValues.map(v => Math.round(v * 0.20));
+      }
+    }
     
     new Chart(ctx, {
       type: 'line',

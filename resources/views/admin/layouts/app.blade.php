@@ -45,6 +45,8 @@
       padding: 32px 24px;
       z-index: 100;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
 
     .logo {
@@ -67,6 +69,7 @@
 
     .nav-section {
       margin-bottom: 32px;
+      flex: 1;
     }
 
     .nav-label {
@@ -127,6 +130,75 @@
 
     .nav-item.active .nav-icon {
       background: rgba(255, 255, 255, 0.2);
+      color: var(--white);
+    }
+
+    /* User Profile Section */
+    .user-profile {
+      padding: 20px;
+      background: var(--light-gray);
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .user-avatar {
+      width: 48px;
+      height: 48px;
+      background: var(--primary-green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--white);
+    }
+
+    .user-details h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--dark-blue);
+      margin-bottom: 2px;
+    }
+
+    .user-details p {
+      font-size: 12px;
+      color: #7A8B96;
+      font-weight: 600;
+    }
+
+    /* Logout Button */
+    .logout-form {
+      width: 100%;
+    }
+
+    .btn-logout {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      color: #FF6B6B;
+      border: 2px solid #FF6B6B;
+      border-radius: 10px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-logout:hover {
+      background: #FF6B6B;
       color: var(--white);
     }
 
@@ -416,12 +488,33 @@
         </span>
         <span>Dashboard</span>
       </a>
-      <a href="#" class="nav-item">
-        <span class="nav-icon">
-          <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-        </span>
-        <span>Add User</span>
-      </a>
+    </div>
+
+    <!-- User Profile & Logout -->
+    <div>
+      <div class="user-profile">
+        <div class="user-info">
+          <div class="user-avatar">
+            {{ strtoupper(substr(Auth::guard('admin')->user()->name, 0, 1)) }}
+          </div>
+          <div class="user-details">
+            <h4>{{ Auth::guard('admin')->user()->name }}</h4>
+            <p>{{ Auth::guard('admin')->user()->email }}</p>
+          </div>
+        </div>
+      </div>
+
+      <form method="POST" action="{{ route('admin.logout') }}" class="logout-form">
+        @csrf
+        <button type="submit" class="btn-logout">
+          <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Logout
+        </button>
+      </form>
     </div>
   </div>
 

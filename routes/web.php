@@ -2,20 +2,31 @@
 
 use App\Http\Controllers\MkController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminAuthController;
 
 
 /*
 |--------------------------------------------------------------------------
-| Admin Routes
+| Admin Authentication Routes
 |--------------------------------------------------------------------------
 */
 
 Route::prefix('admin')->name('admin.')->group(function () {
     
-    // Admin Dashboard
-    Route::get('/dashboard', [MkController::class, 'adminDashboard'])->name('dashboard');
+    // Login routes (accessible without authentication)
+    Route::middleware('guest:admin')->group(function () {
+        Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [AdminAuthController::class, 'login'])->name('login.submit');
+    });
+    
+    // Protected admin routes (require authentication)
+    Route::middleware('auth:admin')->group(function () {
+        Route::get('/dashboard', [MkController::class, 'adminDashboard'])->name('dashboard');
+        Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+    });
     
 });
+
 /*
 |--------------------------------------------------------------------------
 | MK Analytics Routes
