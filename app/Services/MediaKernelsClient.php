@@ -460,4 +460,119 @@ class MediaKernelsClient
             return ['data' => []]; // Return empty array instead of throwing error
         }
     }
+
+    // 🔥 NEW: most_retweets
+    public function mostRetweets(
+        string $projectId,
+        string $startDate,
+        string $endDate,
+        int $startTime = 0,
+        int $endTime = 23
+    ): array {
+        try {
+            $token = $this->getToken();
+
+            $res = Http::timeout(60)->acceptJson()->get(
+                $this->baseUrl() . '/most_retweets/',
+                [
+                    'project_id' => $projectId,
+                    'start_date' => $startDate,
+                    'end_date'   => $endDate,
+                    'start_time' => $startTime,
+                    'end_time'   => $endTime,
+                    'token'      => $token,
+                ]
+            );
+
+            $res->throw();
+            return $this->parseJson($res);
+        } catch (\Exception $e) {
+            Log::warning('mostRetweets API timeout or error', ['error' => $e->getMessage()]);
+            return ['data' => []];
+        }
+    }
+
+    // 🔥 FIXED: publisher_stats dengan logging lebih detail
+    public function publisherStats(
+        string $projectId,
+        string $media,
+        string $startDate,
+        string $endDate,
+        int $startTime = 0,
+        int $endTime = 23,
+        int $rows = 100,
+        bool $includePagerank = true
+    ): array {
+        try {
+            $token = $this->getToken();
+
+            $params = [
+                'project_id' => $projectId,
+                'media'      => $media,
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'start_time' => $startTime,
+                'end_time'   => $endTime,
+                'rows'       => $rows,
+                'token'      => $token,
+            ];
+
+            // Add pagerank parameter if requested (empty string value)
+            if ($includePagerank) {
+                $params['pagerank'] = '';
+            }
+
+            $res = Http::timeout(60)->acceptJson()->get(
+                $this->baseUrl() . '/publisher_stats/',
+                $params
+            );
+
+            $res->throw();
+            
+            $json = $this->parseJson($res);
+            
+            // Log untuk debugging - helpful untuk development
+            Log::info('publisherStats raw response', [
+                'has_data' => isset($json['data']),
+                'has_article' => isset($json['article']),
+                'top_level_keys' => array_keys($json),
+                'sample_data' => array_slice($json, 0, 2, true)
+            ]);
+            
+            return $json;
+            
+        } catch (\Exception $e) {
+            Log::error('publisherStats API error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'params' => $params ?? []
+            ]);
+            return ['data' => [], 'article' => []];
+        }
+    }
+
+    // 🔥 NEW: recent_topics
+    public function recentTopics(
+        string $level = 'internasional',
+        int $size = 5
+    ): array {
+        try {
+            $token = $this->getToken();
+
+            $res = Http::timeout(30)->acceptJson()->get(
+                $this->baseUrl() . '/recenttopics/',
+                [
+                    'level' => $level,
+                    'size'  => $size,
+                    'token' => $token,
+                ]
+            );
+
+            $res->throw();
+            return $this->parseJson($res);
+        } catch (\Exception $e) {
+            Log::warning('recentTopics API timeout or error', ['error' => $e->getMessage()]);
+            return ['data' => []];
+        }
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\MediaKernelsClient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class MkController extends Controller
 {
@@ -320,37 +321,67 @@ class MkController extends Controller
         $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
 
         $rawData = [];
-        $chartData = ['labels' => [], 'values' => []];
 
         if ($projectId) {
             $rawData = $mk->categories(
                 $projectId,
-                'all',
+                $params['media'],
                 $params['startDate'],
                 $params['endDate'],
                 $params['startTime'],
                 $params['endTime']
             );
-            
-            // Normalize categories
+        }
+
+        return view('mk.categories', [
+            'projects' => $projects,
+            'projectId' => $projectId,
+            'params' => $params,
+            'rawData' => $rawData,
+        ]);
+    }
+
+    /**
+     * 📈 ENGAGEMENT - ESTIMATED REACH
+     */
+    public function reach(Request $request, MediaKernelsClient $mk)
+    {
+        $projects = $this->getProjects($mk);
+        $params = $this->getParams($request);
+        $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+
+        $rawData = [];
+        $chartData = ['labels' => [], 'values' => []];
+
+        if ($projectId) {
+            $rawData = $mk->estReach(
+                $projectId,
+                $params['media'],
+                $params['startDate'],
+                $params['endDate'],
+                $params['startTime'],
+                $params['endTime'],
+                'all'
+            );
+
+            // Normalize reach data
             $data = $rawData['data'] ?? $rawData;
             if (!empty($data) && is_array($data)) {
                 $labels = [];
                 $values = [];
+                
                 foreach ($data as $key => $item) {
                     if (is_array($item)) {
-                        $labels[] = $item['name'] ?? $item['category'] ?? $key;
-                        $values[] = (int) ($item['total'] ?? $item['count'] ?? $item['value'] ?? 0);
-                    } else {
                         $labels[] = $key;
-                        $values[] = (int) $item;
+                        $values[] = (int) ($item['reach'] ?? $item['est_reach'] ?? $item['value'] ?? 0);
                     }
                 }
+                
                 $chartData = ['labels' => $labels, 'values' => $values];
             }
         }
 
-        return view('mk.categories', [
+        return view('mk.engagement.reach', [
             'projects' => $projects,
             'projectId' => $projectId,
             'params' => $params,
@@ -359,54 +390,6 @@ class MkController extends Controller
         ]);
     }
 
-    /**
-     * 📈 ENGAGEMENT - ESTIMATED REACH
-     */
-   public function reach(Request $request, MediaKernelsClient $mk)
-{
-    $projects = $this->getProjects($mk);
-    $params = $this->getParams($request);
-    $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
-
-    $rawData = [];
-    $chartData = ['labels' => [], 'values' => []];
-
-    if ($projectId) {
-        $rawData = $mk->estReach(
-            $projectId,
-            $params['media'],
-            $params['startDate'],
-            $params['endDate'],
-            $params['startTime'],
-            $params['endTime'],
-            'all'
-        );
-
-        // Normalize reach data - PERBAIKAN DI SINI
-        $data = $rawData['data'] ?? $rawData;
-        if (!empty($data) && is_array($data)) {
-            $labels = [];
-            $values = [];
-            
-            foreach ($data as $key => $item) {  // 👈 Key = follower range
-                if (is_array($item)) {
-                    $labels[] = $key;  // 👈 Gunakan key sebagai label (0_3, 1001_10K, dll)
-                    $values[] = (int) ($item['reach'] ?? $item['est_reach'] ?? $item['value'] ?? 0);
-                }
-            }
-            
-            $chartData = ['labels' => $labels, 'values' => $values];
-        }
-    }
-
-    return view('mk.engagement.reach', [
-        'projects' => $projects,
-        'projectId' => $projectId,
-        'params' => $params,
-        'rawData' => $rawData,
-        'chartData' => $chartData,
-    ]);
-}
     /**
      * 📈 ENGAGEMENT - SHARED URLs
      */
@@ -455,56 +438,262 @@ class MkController extends Controller
     /**
      * 📈 ENGAGEMENT - ACTIVE USERS
      */
-   public function activeUsers(Request $request, MediaKernelsClient $mk)
-{
-    $projects = $this->getProjects($mk);
-    $params = $this->getParams($request);
-    $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+    public function activeUsers(Request $request, MediaKernelsClient $mk)
+    {
+        $projects = $this->getProjects($mk);
+        $params = $this->getParams($request);
+        $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
 
-    $rawData = [];
-    $tableData = [];
+        $rawData = [];
+        $tableData = [];
 
-    if ($projectId) {
-        $rawData = $mk->mostActiveUsers(
-            $projectId,
-            $params['startDate'],
-            $params['endDate'],
-            $params['startTime'],
-            $params['endTime']
-        );
+        if ($projectId) {
+            $rawData = $mk->mostActiveUsers(
+                $projectId,
+                $params['startDate'],
+                $params['endDate'],
+                $params['startTime'],
+                $params['endTime']
+            );
 
-        // Normalize users data - PERBAIKAN DI SINI
-        $data = $rawData['data']['data'] ?? $rawData['data'] ?? $rawData;  // 👈 Nested data.data
-        if (!empty($data) && is_array($data)) {
-            $rows = [];
-            foreach ($data as $item) {
-                if (is_array($item)) {
-                    // Parse name to get username (format: "Name @username")
-                    $fullName = $item['name'] ?? 'Unknown User';
-                    $username = $fullName;
-                    
-                    // Extract username from "Name @username" format
-                    if (preg_match('/@(\w+)/', $fullName, $matches)) {
-                        $username = $matches[1]; // Get username without @
+            // Normalize users data
+            $data = $rawData['data']['data'] ?? $rawData['data'] ?? $rawData;
+            if (!empty($data) && is_array($data)) {
+                $rows = [];
+                foreach ($data as $item) {
+                    if (is_array($item)) {
+                        // Parse name to get username
+                        $fullName = $item['name'] ?? 'Unknown User';
+                        $username = $fullName;
+                        
+                        // Extract username from "Name @username" format
+                        if (preg_match('/@(\w+)/', $fullName, $matches)) {
+                            $username = $matches[1];
+                        }
+                        
+                        $rows[] = [
+                            'username' => $username,
+                            'count' => (int) ($item['y'] ?? $item['post_count'] ?? $item['posts'] ?? $item['count'] ?? 0),
+                        ];
                     }
-                    
-                    $rows[] = [
-                        'username' => $username,
-                        'count' => (int) ($item['y'] ?? $item['post_count'] ?? $item['posts'] ?? $item['count'] ?? 0),  // 👈 Gunakan 'y'
+                }
+                usort($rows, fn($a, $b) => $b['count'] <=> $a['count']);
+                $tableData = array_slice($rows, 0, 10);
+            }
+        }
+
+        return view('mk.engagement.users', [
+            'projects' => $projects,
+            'projectId' => $projectId,
+            'params' => $params,
+            'rawData' => $rawData,
+            'tableData' => $tableData,
+        ]);
+    }
+
+    /**
+     * 🔄 ENGAGEMENT - MOST RETWEETS
+     */
+    public function mostRetweets(Request $request, MediaKernelsClient $mk)
+    {
+        $projects = $this->getProjects($mk);
+        $params = $this->getParams($request);
+        $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+
+        $rawData = [];
+        $tableData = [];
+
+        if ($projectId) {
+            $rawData = $mk->mostRetweets(
+                $projectId,
+                $params['startDate'],
+                $params['endDate'],
+                $params['startTime'],
+                $params['endTime']
+            );
+
+            // Normalize retweets data
+            $data = $rawData['data']['data'] ?? $rawData['data'] ?? $rawData;
+            if (!empty($data) && is_array($data)) {
+                $rows = [];
+                foreach ($data as $item) {
+                    if (is_array($item)) {
+                        // API uses 'name' field for author (based on actual response)
+                        $author = $item['name'] ?? $item['author_name'] ?? $item['author'] ?? $item['screen_name'] ?? 'Unknown';
+                        
+                        // API uses 'content' field for tweet text
+                        $content = $item['content'] ?? $item['text'] ?? 'No content';
+                        
+                        // API uses 'rt' field for retweet count
+                        $retweetCount = (int) ($item['rt'] ?? $item['retweet_count'] ?? $item['retweets'] ?? 0);
+                        
+                        $rows[] = [
+                            'author' => is_array($author) ? ($author[0] ?? 'Unknown') : (string) $author,
+                            'content' => is_array($content) ? ($content[0] ?? 'No content') : (string) $content,
+                            'retweet_count' => $retweetCount,
+                        ];
+                    }
+                }
+                usort($rows, fn($a, $b) => $b['retweet_count'] <=> $a['retweet_count']);
+                $tableData = array_slice($rows, 0, 10);
+            }
+        }
+
+        return view('mk.engagement.retweets', [
+            'projects' => $projects,
+            'projectId' => $projectId,
+            'params' => $params,
+            'rawData' => $rawData,
+            'tableData' => $tableData,
+        ]);
+    }
+
+    /**
+     * 📰 PUBLISHER STATS - IMPROVED WITH BETTER NORMALIZATION
+     */
+    public function publisherStats(Request $request, MediaKernelsClient $mk)
+    {
+        $projects = $this->getProjects($mk);
+        $params = $this->getParams($request);
+        $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+        $rows = (int) $request->query('rows', 100);
+        $includePagerank = $request->query('pagerank', 'true') === 'true';
+
+        $rawData = [];
+        $tableData = [];
+
+        if ($projectId) {
+            $rawData = $mk->publisherStats(
+                $projectId,
+                $params['media'],
+                $params['startDate'],
+                $params['endDate'],
+                $params['startTime'],
+                $params['endTime'],
+                $rows,
+                $includePagerank
+            );
+
+            // 🔥 IMPROVED NORMALIZATION - Handle multiple response structures
+            $tableData = $this->normalizePublisherData($rawData, $includePagerank);
+        }
+
+        return view('mk.publisher', [
+            'projects' => $projects,
+            'projectId' => $projectId,
+            'params' => $params,
+            'rawData' => $rawData,
+            'tableData' => $tableData,
+        ]);
+    }
+
+    /**
+     * 🔥 NEW HELPER: Normalize publisher data with multiple fallback strategies
+     */
+    private function normalizePublisherData(array $rawData, bool $includePagerank = true): array
+    {
+        $normalized = [];
+
+        // Strategy 1: Check for nested article.publisher structure
+        $publisherData = $rawData['article']['publisher'] ?? null;
+        $pagerankData = $rawData['article']['pagerank'] ?? null;
+        
+        // Get media type for fallback naming
+        $mediaType = $rawData['article']['media_type_label'] ?? 
+                     $rawData['article']['media_type_code'] ?? 
+                     'Social Media';
+
+        if ($publisherData && is_array($publisherData)) {
+            // Handle associative array: {"Publisher Name": count}
+            foreach ($publisherData as $publisherName => $count) {
+                // Skip if count is 0 or negative
+                if ($count <= 0) {
+                    continue;
+                }
+                
+                // Better handling for empty publisher names
+                if (empty($publisherName) || trim($publisherName) === '') {
+                    // Use media type as fallback instead of "Unknown Publisher"
+                    $publisherName = $mediaType . ' Posts';
+                }
+
+                $pagerank = null;
+                if ($includePagerank && $pagerankData && isset($pagerankData[$publisherName])) {
+                    $pagerank = (float) $pagerankData[$publisherName];
+                }
+
+                $normalized[] = [
+                    'publisher' => (string) $publisherName,
+                    'count' => (int) $count,
+                    'pagerank' => $pagerank,
+                ];
+            }
+        }
+
+        // Strategy 2: Check for direct data array
+        if (empty($normalized)) {
+            $dataArray = $rawData['data'] ?? $rawData;
+            
+            if (!empty($dataArray) && is_array($dataArray)) {
+                foreach ($dataArray as $item) {
+                    if (is_array($item)) {
+                        $publisherName = $item['publisher'] ?? $item['name'] ?? $item['source'] ?? 'Unknown';
+                        
+                        $normalized[] = [
+                            'publisher' => (string) $publisherName,
+                            'count' => (int) ($item['count'] ?? $item['total'] ?? $item['articles'] ?? 0),
+                            'pagerank' => isset($item['pagerank']) ? (float) $item['pagerank'] : null,
+                        ];
+                    }
+                }
+            }
+        }
+
+        // Strategy 3: Check for publishers as top-level key-value pairs
+        if (empty($normalized) && !empty($rawData)) {
+            foreach ($rawData as $key => $value) {
+                if ($key !== 'data' && $key !== 'article' && is_numeric($value)) {
+                    $normalized[] = [
+                        'publisher' => (string) $key,
+                        'count' => (int) $value,
+                        'pagerank' => null,
                     ];
                 }
             }
-            usort($rows, fn($a, $b) => $b['count'] <=> $a['count']);
-            $tableData = array_slice($rows, 0, 10);
         }
+
+        // Sort by count descending
+        if (!empty($normalized)) {
+            usort($normalized, fn($a, $b) => $b['count'] <=> $a['count']);
+        }
+
+        // Log the normalization result for debugging
+        Log::info('Publisher data normalized', [
+            'input_keys' => array_keys($rawData),
+            'output_count' => count($normalized),
+            'sample' => array_slice($normalized, 0, 3)
+        ]);
+
+        return $normalized;
     }
 
-    return view('mk.engagement.users', [
-        'projects' => $projects,
-        'projectId' => $projectId,
-        'params' => $params,
-        'rawData' => $rawData,
-        'tableData' => $tableData,
-    ]);
-}
+    /**
+     * 📰 RECENT TOPICS (News)
+     */
+    public function recentTopics(Request $request, MediaKernelsClient $mk)
+    {
+        $level = $request->query('level', 'internasional');
+        $size = (int) $request->query('size', 10);
+
+        $rawData = $mk->recentTopics($level, $size);
+        
+        $topics = $rawData['data'] ?? $rawData;
+
+        return view('mk.topics', [
+            'rawData' => $rawData,
+            'topics' => $topics,
+            'level' => $level,
+            'size' => $size,
+        ]);
+    }
 }

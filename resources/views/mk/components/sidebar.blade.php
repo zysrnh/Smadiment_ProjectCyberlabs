@@ -67,7 +67,24 @@
       <a href="{{ route('mk.engagement.users') }}" class="nav-item {{ request()->routeIs('mk.engagement.users') ? 'active' : '' }}">
         <span>Active Users</span>
       </a>
+      <a href="{{ route('mk.engagement.retweets') }}" class="nav-item {{ request()->routeIs('mk.engagement.retweets') ? 'active' : '' }}">
+        <span>Most Retweets</span>
+      </a>
     </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Content</div>
+    
+    <a href="{{ route('mk.publisher') }}" class="nav-item {{ request()->routeIs('mk.publisher') ? 'active' : '' }}">
+      <span class="nav-icon">📰</span>
+      <span>Publisher Stats</span>
+    </a>
+    
+    <a href="{{ route('mk.topics') }}" class="nav-item {{ request()->routeIs('mk.topics') ? 'active' : '' }}">
+      <span class="nav-icon">🗞️</span>
+      <span>Recent Topics</span>
+    </a>
   </div>
 
   <div class="nav-section">

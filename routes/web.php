@@ -34,5 +34,10 @@ Route::prefix('mk')->name('mk.')->group(function () {
         Route::get('/reach', [MkController::class, 'reach'])->name('reach');
         Route::get('/urls', [MkController::class, 'sharedUrls'])->name('urls');
         Route::get('/users', [MkController::class, 'activeUsers'])->name('users');
+        Route::get('/retweets', [MkController::class, 'mostRetweets'])->name('retweets'); // ← PINDAHIN KE SINI
     });
+    
+    // Content
+    Route::get('/publisher', [MkController::class, 'publisherStats'])->name('publisher'); // ← PINDAHIN KE SINI (hapus /mk/)
+    Route::get('/topics', [MkController::class, 'recentTopics'])->name('topics'); // ← PINDAHIN KE SINI (hapus /mk/)
 });
