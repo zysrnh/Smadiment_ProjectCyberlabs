@@ -30,7 +30,13 @@
 
         @if(!$hasData)
           <div class="empty-state">
-            <div class="empty-icon">🏢</div>
+            <div style="width: 80px; height: 80px; background: var(--light-gray); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+              <svg style="width: 40px; height: 40px; stroke: var(--dark-blue); fill: none; stroke-width: 2; opacity: 0.3;" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="3" y1="9" x2="21" y2="9"/>
+                <line x1="9" y1="21" x2="9" y2="9"/>
+              </svg>
+            </div>
             <div class="empty-text">No author type distribution data available. Please select a project.</div>
           </div>
         @else
@@ -127,7 +133,7 @@
 
   let lineChart, barChart, donutChart;
 
-  // Line Chart
+  // Line Chart - FIXED: fill: false to prevent black area
   const lineCtx = document.getElementById('lineChart').getContext('2d');
   lineChart = new Chart(lineCtx, {
     type: 'line',
@@ -136,13 +142,13 @@
       datasets: [{
         label: 'Post Frequency',
         data: data,
-        borderColor: colors.tan,
-        backgroundColor: colors.darkTeal + '40',
+        borderColor: colors.darkBlue,
+        backgroundColor: colors.darkBlue,
         borderWidth: 3,
-        fill: true,
+        fill: false, // IMPORTANT: Set to false to prevent black fill
         tension: 0.4,
-        pointBackgroundColor: colors.tan,
-        pointBorderColor: '#fff',
+        pointBackgroundColor: colors.darkBlue,
+        pointBorderColor: colors.white,
         pointBorderWidth: 2,
         pointRadius: 6,
         pointHoverRadius: 8
@@ -161,20 +167,20 @@
           font: {
             size: 16,
             weight: 'bold',
-            family: 'Montserrat'
+            family: 'Poppins'
           },
-          color: colors.darkTeal
+          color: colors.darkBlue
         }
       },
       scales: {
         y: {
           beginAtZero: true,
           grid: {
-            color: colors.beige
+            color: colors.lightGray
           },
           ticks: {
             font: {
-              family: 'Montserrat',
+              family: 'Poppins',
               weight: '600'
             }
           }
@@ -185,7 +191,7 @@
           },
           ticks: {
             font: {
-              family: 'Montserrat',
+              family: 'Poppins',
               weight: '600'
             }
           }
@@ -205,7 +211,7 @@
         data: data,
         backgroundColor: colors.palette,
         borderWidth: 2,
-        borderColor: '#fff',
+        borderColor: colors.white,
         borderRadius: 8
       }]
     },
@@ -222,20 +228,20 @@
           font: {
             size: 16,
             weight: 'bold',
-            family: 'Montserrat'
+            family: 'Poppins'
           },
-          color: colors.darkTeal
+          color: colors.darkBlue
         }
       },
       scales: {
         y: {
           beginAtZero: true,
           grid: {
-            color: colors.beige
+            color: colors.lightGray
           },
           ticks: {
             font: {
-              family: 'Montserrat',
+              family: 'Poppins',
               weight: '600'
             }
           }
@@ -246,7 +252,7 @@
           },
           ticks: {
             font: {
-              family: 'Montserrat',
+              family: 'Poppins',
               weight: '600'
             }
           }
@@ -265,7 +271,7 @@
         data: data,
         backgroundColor: colors.palette,
         borderWidth: 3,
-        borderColor: '#fff'
+        borderColor: colors.white
       }]
     },
     options: {
@@ -276,7 +282,7 @@
           position: 'bottom',
           labels: {
             font: {
-              family: 'Montserrat',
+              family: 'Poppins',
               weight: '600',
               size: 12
             },
@@ -290,9 +296,9 @@
           font: {
             size: 16,
             weight: 'bold',
-            family: 'Montserrat'
+            family: 'Poppins'
           },
-          color: colors.darkTeal
+          color: colors.darkBlue
         }
       }
     }

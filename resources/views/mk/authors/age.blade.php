@@ -30,7 +30,12 @@
 
         @if(!$hasData)
           <div class="empty-state">
-            <div class="empty-icon">👥</div>
+            <div style="width: 80px; height: 80px; background: var(--light-gray); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+              <svg style="width: 40px; height: 40px; stroke: var(--dark-blue); fill: none; stroke-width: 2; opacity: 0.3;" viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+              </svg>
+            </div>
             <div class="empty-text">No age distribution data available. Please select a project.</div>
           </div>
         @else
@@ -127,7 +132,7 @@
 
   let lineChart, barChart, donutChart;
 
-  // Line Chart
+  // Line Chart - FIXED: fill: false to prevent black area
   const lineCtx = document.getElementById('lineChart').getContext('2d');
   lineChart = new Chart(lineCtx, {
     type: 'line',
@@ -136,13 +141,13 @@
       datasets: [{
         label: 'Post Frequency',
         data: data,
-        borderColor: colors.brown,
-        backgroundColor: colors.sage + '40',
+        borderColor: colors.primaryGreen,
+        backgroundColor: colors.primaryGreen,
         borderWidth: 3,
-        fill: true,
+        fill: false, // IMPORTANT: Set to false to prevent black fill
         tension: 0.4,
-        pointBackgroundColor: colors.brown,
-        pointBorderColor: '#fff',
+        pointBackgroundColor: colors.primaryGreen,
+        pointBorderColor: colors.white,
         pointBorderWidth: 2,
         pointRadius: 6,
         pointHoverRadius: 8
@@ -161,20 +166,20 @@
           font: {
             size: 16,
             weight: 'bold',
-            family: 'Montserrat'
+            family: 'Poppins'
           },
-          color: colors.darkTeal
+          color: colors.darkBlue
         }
       },
       scales: {
         y: {
           beginAtZero: true,
           grid: {
-            color: colors.beige
+            color: colors.lightGray
           },
           ticks: {
             font: {
-              family: 'Montserrat',
+              family: 'Poppins',
               weight: '600'
             }
           }
@@ -185,7 +190,7 @@
           },
           ticks: {
             font: {
-              family: 'Montserrat',
+              family: 'Poppins',
               weight: '600'
             }
           }
@@ -205,7 +210,7 @@
         data: data,
         backgroundColor: colors.palette,
         borderWidth: 2,
-        borderColor: '#fff',
+        borderColor: colors.white,
         borderRadius: 8
       }]
     },
@@ -222,20 +227,20 @@
           font: {
             size: 16,
             weight: 'bold',
-            family: 'Montserrat'
+            family: 'Poppins'
           },
-          color: colors.darkTeal
+          color: colors.darkBlue
         }
       },
       scales: {
         y: {
           beginAtZero: true,
           grid: {
-            color: colors.beige
+            color: colors.lightGray
           },
           ticks: {
             font: {
-              family: 'Montserrat',
+              family: 'Poppins',
               weight: '600'
             }
           }
@@ -246,7 +251,7 @@
           },
           ticks: {
             font: {
-              family: 'Montserrat',
+              family: 'Poppins',
               weight: '600'
             }
           }
@@ -265,7 +270,7 @@
         data: data,
         backgroundColor: colors.palette,
         borderWidth: 3,
-        borderColor: '#fff'
+        borderColor: colors.white
       }]
     },
     options: {
@@ -276,7 +281,7 @@
           position: 'bottom',
           labels: {
             font: {
-              family: 'Montserrat',
+              family: 'Poppins',
               weight: '600',
               size: 12
             },
@@ -290,9 +295,9 @@
           font: {
             size: 16,
             weight: 'bold',
-            family: 'Montserrat'
+            family: 'Poppins'
           },
-          color: colors.darkTeal
+          color: colors.darkBlue
         }
       }
     }

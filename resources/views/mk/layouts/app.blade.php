@@ -15,8 +15,8 @@
     :root {
       --primary-green: #038047;
       --dark-blue: #273B4A;
-      --light-gray: #F1F5F8;
       --white: #FFFFFF;
+      --light-gray: #F1F5F8;
       --text-dark: #273B4A;
     }
 
@@ -165,13 +165,13 @@
     .page-title h2 {
       font-size: 28px;
       font-weight: 800;
-      color: var(--text-dark);
+      color: var(--white);
       margin-bottom: 4px;
     }
 
     .page-subtitle {
       font-size: 14px;
-      color: var(--dark-blue);
+      color: var(--light-gray);
       font-weight: 600;
     }
 
@@ -199,7 +199,7 @@
 
     .action-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(3, 128, 71, 0.15);
+      box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
     }
 
     .action-btn.primary {
@@ -646,11 +646,11 @@
     const colors = {
       primaryGreen: '#038047',
       darkBlue: '#273B4A',
-      lightGray: '#F1F5F8',
       white: '#FFFFFF',
+      lightGray: '#F1F5F8',
       palette: [
-        '#038047', '#273B4A', '#1a5a3a', '#3d5566', '#05a05a',
-        '#4a6d7f', '#027037', '#1f4e5f', '#09b868', '#35576a'
+        '#038047', '#273B4A', '#FFFFFF', '#F1F5F8', '#1a5a3a',
+        '#3d5566', '#027037', '#1f4e5f', '#09b868', '#35576a'
       ]
     };
   </script>
