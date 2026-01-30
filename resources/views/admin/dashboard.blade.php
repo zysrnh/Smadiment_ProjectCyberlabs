@@ -21,32 +21,24 @@
   <div class="section-body">
     
     @if(count($projects) > 0)
-    <!-- Projects List (tanpa grid, full width) -->
-    <div class="projects-list">
+    <div class="projects-grid">
       @foreach($projects as $project)
-      <div class="project-card-full">
+      <div class="project-card">
         <!-- Project Header -->
         <div class="project-header">
-          <div class="project-info">
-            <h4 class="project-name">{{ $project['name'] ?? $project['title'] ?? 'Unnamed Project' }}</h4>
-            <span class="project-id"># ID: {{ $project['id'] }}</span>
-          </div>
+          <h4 class="project-name">{{ $project['name'] ?? $project['title'] ?? 'Unnamed Project' }}</h4>
           <span class="project-badge">Active</span>
         </div>
         
-        <!-- Project Body -->
+        <!-- Project Body - Two Column Layout -->
         <div class="project-body">
-          
-          <!-- Chart Container - Full Width -->
-          <div class="project-chart-wrapper">
-            <div class="project-chart">
-              <canvas id="chart-{{ $project['id'] }}"></canvas>
+          <!-- Left Column: ID, Stats, Actions -->
+          <div class="project-left-column">
+            <div class="project-id">
+              # ID: {{ $project['id'] }}
             </div>
-          </div>
-          
-          <!-- Bottom Section: Stats + Actions -->
-          <div class="project-footer">
-            <!-- Media Stats - Horizontal Layout -->
+            
+            <!-- Media Stats - Horizontal Slider -->
             <div class="media-stats-container">
               <div class="media-stat-item">
                 <div class="media-stat-label">All</div>
@@ -99,6 +91,12 @@
             </div>
           </div>
           
+          <!-- Right Column: Chart -->
+          <div class="project-chart-wrapper">
+            <div class="project-chart">
+              <canvas id="chart-{{ $project['id'] }}"></canvas>
+            </div>
+          </div>
         </div>
       </div>
       @endforeach
@@ -119,115 +117,61 @@
 
 @section('styles')
 <style>
-/* Projects List - Full Width Layout (bukan grid) */
-.projects-list {
+/* Project Body - Two Column Layout */
+.project-body {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Left Column */
+.project-left-column {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-}
-
-/* Project Card Full - Full Width */
-.project-card-full {
-  background: #FFFFFF;
-  border-radius: 16px;
-  padding: 28px 32px;
-  border: 1px solid #E8EAED;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: all 0.3s ease;
-}
-
-.project-card-full:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
-}
-
-/* Project Header */
-.project-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #F0F2F5;
-}
-
-.project-info {
-  display: flex;
-  align-items: center;
   gap: 16px;
 }
 
-.project-name {
-  font-size: 22px;
-  font-weight: 700;
-  color: #1A2332;
-  margin: 0;
-  font-family: 'Poppins', sans-serif;
-}
-
+/* Project ID */
 .project-id {
-  font-size: 13px;
-  font-weight: 500;
-  color: #7A8B96;
-  background: #F0F2F5;
-  padding: 6px 14px;
-  border-radius: 8px;
-}
-
-.project-badge {
-  background: #E8F5E9;
-  color: #027447;
-  padding: 8px 16px;
-  border-radius: 8px;
   font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Project Body */
-.project-body {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* Chart Wrapper - Full Width dengan tinggi yang lebih besar */
-.project-chart-wrapper {
-  width: 100%;
+  font-weight: 600;
+  color: #7A8B96;
+  padding: 10px 14px;
   background: #FAFBFC;
-  border-radius: 14px;
-  padding: 28px 24px 24px 24px;
+  border-radius: 8px;
   border: 1px solid #E8EAED;
 }
 
-/* Project Chart - Tinggi lebih besar untuk full width */
-.project-chart {
-  height: 420px;
-  position: relative;
-  width: 100%;
-}
-
-/* Project Footer - Stats & Actions */
-.project-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-/* Media Stats Container */
+/* Media Stats Container - Horizontal Slider */
 .media-stats-container {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 18px 24px;
+  gap: 10px;
+  padding: 14px 12px;
   background: #FAFBFC;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid #E8EAED;
-  flex: 1;
-  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Hide scrollbar but keep functionality */
+.media-stats-container::-webkit-scrollbar {
+  height: 4px;
+}
+
+.media-stats-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.media-stats-container::-webkit-scrollbar-thumb {
+  background: #E8EAED;
+  border-radius: 4px;
+}
+
+.media-stats-container::-webkit-scrollbar-thumb:hover {
+  background: #D1D5DB;
 }
 
 .media-stat-item {
@@ -235,44 +179,60 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  flex: 1;
-  min-width: 70px;
+  gap: 4px;
+  min-width: 60px;
+  flex-shrink: 0;
 }
 
 .media-stat-label {
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 600;
   color: #7A8B96;
   text-transform: capitalize;
   letter-spacing: 0.3px;
   line-height: 1;
   text-align: center;
+  white-space: nowrap;
 }
 
 .media-stat-value {
-  font-size: 22px;
-  font-weight: 800;
+  font-size: 16px;
+  font-weight: 700;
   color: #1A2332;
   line-height: 1;
   text-align: center;
 }
 
+/* Chart Wrapper - Smaller, Right Side */
+.project-chart-wrapper {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 16px 14px 14px 14px;
+  border: 1px solid #E8EAED;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+/* Project Chart - Compact Size */
+.project-chart {
+  height: 200px;
+  position: relative;
+}
+
 /* Project Actions */
 .project-actions {
   display: flex;
-  gap: 10px;
-  flex-shrink: 0;
+  gap: 8px;
 }
 
 .btn-primary-custom {
-  padding: 14px 24px;
+  flex: 1;
+  padding: 12px;
   background: var(--primary-green);
   color: var(--white);
   border: none;
   border-radius: 10px;
   font-family: 'Poppins', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -282,19 +242,17 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  white-space: nowrap;
 }
 
 .btn-primary-custom:hover {
   background: #025a34;
   transform: translateY(-2px);
   color: var(--white);
-  box-shadow: 0 4px 12px rgba(2, 116, 71, 0.3);
 }
 
 .btn-icon {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -305,77 +263,55 @@
   cursor: pointer;
   transition: all 0.2s;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .btn-icon:hover {
   background: var(--primary-green);
   color: var(--white);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(2, 116, 71, 0.3);
 }
 
 .btn-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .project-footer {
-    flex-direction: column;
-    align-items: stretch;
+  .project-body {
+    grid-template-columns: 1fr;
   }
   
-  .project-actions {
-    width: 100%;
-  }
-  
-  .btn-primary-custom {
-    flex: 1;
+  .project-chart {
+    height: 220px;
   }
 }
 
 @media (max-width: 768px) {
-  .project-card-full {
-    padding: 20px;
-  }
-  
   .project-chart {
-    height: 320px;
+    height: 200px;
   }
   
   .project-chart-wrapper {
-    padding: 20px 16px 16px 16px;
-  }
-  
-  .media-stats-container {
-    gap: 12px;
-    padding: 14px 16px;
-    overflow-x: auto;
+    padding: 12px 10px 10px 10px;
   }
   
   .media-stat-item {
-    min-width: 60px;
+    min-width: 55px;
   }
   
   .media-stat-value {
-    font-size: 18px;
-  }
-  
-  .project-name {
-    font-size: 18px;
-  }
-  
-  .project-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    font-size: 14px;
   }
 }
 
 @media (min-width: 1400px) {
+  .project-body {
+    grid-template-columns: 1fr 2fr;
+  }
+  
   .project-chart {
-    height: 480px;
+    height: 240px;
   }
 }
 </style>
@@ -385,14 +321,13 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   
-  // Define colors - Warna Lebih Soft & Modern
+  // Define colors
   const colors = {
     darkBlue: '#1A2332',
     primaryGreen: '#027447',
     lightGray: '#E8EAED',
     white: '#FFFFFF',
     textGray: '#7A8B96',
-    // Line chart colors
     areaBlue: '#5AB9EA',
     areaYellow: '#F2C94C',
     areaOrange: '#F2994A'
@@ -405,23 +340,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById(`chart-${project.id}`);
     if (!ctx) return;
     
-    // Use timeline data with sentiment breakdown from backend
     const timeline = project.timeline || { dates: [], values: [], sentiment: {} };
     let chartDates = timeline.dates || [];
     let chartValues = timeline.values || [];
     
-    // If no real data, use sample data
     let posData, neuData, negData, newData;
     
     if (chartDates.length === 0) {
-      // Sample data untuk tampilan line chart
       chartDates = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       newData = [520, 520, 490, 660, 640, 740, 300, 420, 540, 600, 750, 870];
       posData = [220, 270, 350, 450, 470, 520, 580, 650, 670, 690, 760, 780];
       neuData = [180, 210, 240, 280, 300, 320, 340, 360, 380, 400, 420, 440];
       negData = [120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340];
     } else {
-      // Real data from API with sentiment breakdown
       newData = chartValues;
       
       if (timeline.sentiment && timeline.sentiment.positive) {
@@ -445,13 +376,13 @@ document.addEventListener('DOMContentLoaded', function() {
             data: newData,
             borderColor: '#5AB9EA',
             backgroundColor: 'transparent',
-            borderWidth: 3,
+            borderWidth: 2,
             tension: 0.4,
-            pointRadius: 6,
-            pointHoverRadius: 8,
+            pointRadius: 3,
+            pointHoverRadius: 5,
             pointBackgroundColor: '#5AB9EA',
             pointBorderColor: '#FFFFFF',
-            pointBorderWidth: 2,
+            pointBorderWidth: 1.5,
             fill: false
           },
           {
@@ -459,13 +390,13 @@ document.addEventListener('DOMContentLoaded', function() {
             data: posData,
             borderColor: '#F2994A',
             backgroundColor: 'transparent',
-            borderWidth: 3,
+            borderWidth: 2,
             tension: 0.4,
-            pointRadius: 6,
-            pointHoverRadius: 8,
+            pointRadius: 3,
+            pointHoverRadius: 5,
             pointBackgroundColor: '#F2994A',
             pointBorderColor: '#FFFFFF',
-            pointBorderWidth: 2,
+            pointBorderWidth: 1.5,
             fill: false
           },
           {
@@ -473,13 +404,13 @@ document.addEventListener('DOMContentLoaded', function() {
             data: neuData,
             borderColor: '#B0BEC5',
             backgroundColor: 'transparent',
-            borderWidth: 2.5,
+            borderWidth: 1.5,
             tension: 0.4,
-            pointRadius: 5,
-            pointHoverRadius: 7,
+            pointRadius: 2,
+            pointHoverRadius: 4,
             pointBackgroundColor: '#B0BEC5',
             pointBorderColor: '#FFFFFF',
-            pointBorderWidth: 2,
+            pointBorderWidth: 1.5,
             fill: false
           },
           {
@@ -487,13 +418,13 @@ document.addEventListener('DOMContentLoaded', function() {
             data: negData,
             borderColor: '#FF6B6B',
             backgroundColor: 'transparent',
-            borderWidth: 2.5,
+            borderWidth: 1.5,
             tension: 0.4,
-            pointRadius: 5,
-            pointHoverRadius: 7,
+            pointRadius: 2,
+            pointHoverRadius: 4,
             pointBackgroundColor: '#FF6B6B',
             pointBorderColor: '#FFFFFF',
-            pointBorderWidth: 2,
+            pointBorderWidth: 1.5,
             fill: false
           }
         ]
@@ -503,10 +434,10 @@ document.addEventListener('DOMContentLoaded', function() {
         maintainAspectRatio: false,
         layout: {
           padding: {
-            top: 20,
-            right: 20,
-            bottom: 10,
-            left: 10
+            top: 5,
+            right: 5,
+            bottom: 5,
+            left: 5
           }
         },
         plugins: {
@@ -517,15 +448,15 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: {
               usePointStyle: true,
               pointStyle: 'circle',
-              padding: 18,
+              padding: 10,
               font: {
-                size: 13,
+                size: 10,
                 weight: '500',
                 family: 'Poppins'
               },
               color: '#8B96A5',
-              boxWidth: 12,
-              boxHeight: 12
+              boxWidth: 8,
+              boxHeight: 8
             }
           },
           tooltip: {
@@ -537,28 +468,28 @@ document.addEventListener('DOMContentLoaded', function() {
             bodyColor: '#1A2332',
             borderColor: '#E8EAED',
             borderWidth: 1.5,
-            padding: 16,
-            cornerRadius: 10,
+            padding: 10,
+            cornerRadius: 8,
             titleFont: {
-              size: 13,
+              size: 11,
               weight: 'bold',
               family: 'Poppins'
             },
             bodyFont: {
-              size: 12,
+              size: 10,
               family: 'Poppins'
             },
             displayColors: true,
-            boxWidth: 10,
-            boxHeight: 10,
-            boxPadding: 6,
+            boxWidth: 8,
+            boxHeight: 8,
+            boxPadding: 4,
             callbacks: {
               label: function(context) {
                 let label = context.dataset.label || '';
                 if (label) {
                   label += ': ';
                 }
-                label += context.parsed.y.toLocaleString() + ' mentions';
+                label += context.parsed.y.toLocaleString();
                 return label;
               }
             }
@@ -573,15 +504,15 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             ticks: {
               font: {
-                size: 11,
+                size: 9,
                 weight: '500',
                 family: 'Poppins'
               },
               color: '#B4BCC7',
-              padding: 12,
+              padding: 6,
               maxRotation: 0,
               autoSkip: true,
-              maxTicksLimit: 12
+              maxTicksLimit: 7
             }
           },
           y: {
@@ -595,19 +526,19 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             ticks: {
               font: {
-                size: 11,
+                size: 9,
                 weight: '500',
                 family: 'Poppins'
               },
               color: '#B4BCC7',
-              padding: 14,
+              padding: 8,
               callback: function(value) {
                 if (value >= 1000) {
                   return (value / 1000) + 'k';
                 }
                 return value;
               },
-              maxTicksLimit: 6
+              maxTicksLimit: 4
             }
           }
         },

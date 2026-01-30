@@ -97,33 +97,42 @@ class MediaKernelsClient
 
 
     public function getToken(): string
-    {
-        return Cache::remember('mk:token', now()->addMinutes(50), function () {
-            if (!$this->username() || !$this->password()) {
-                throw new \RuntimeException("ENV MEDIAKERNELS_USERNAME/PASSWORD belum di-set.");
-            }
+{
+    return Cache::remember('mk:token', now()->addMinutes(50), function () {
+        if (!$this->username() || !$this->password()) {
+            throw new \RuntimeException("ENV MEDIAKERNELS_USERNAME/PASSWORD belum di-set.");
+        }
 
-            $res = Http::timeout(30)
-                ->acceptJson()
-                ->get($this->baseUrl() . '/token/', [
-                    'username' => $this->username(),
-                    'password' => $this->password(),
-                    'for_api' => 'true',
-                    'for_chatbot' => 'false',
-                ]);
+        $res = Http::timeout(30)
+            ->acceptJson()
+            ->get($this->baseUrl() . '/token/', [
+                'username' => $this->username(),
+                'password' => $this->password(),
+                'for_api' => 'true',
+                'for_chatbot' => 'false',
+            ]);
 
-            $res->throw();
+        $res->throw();
 
-            $json = $this->parseJson($res);
-            $token = $json['token'] ?? null;
+        $json = $this->parseJson($res);
+        
+        // 🔥 ADD THIS: Log the actual response to see what's returned
+        Log::info('MediaKernels /token/ response', ['response' => $json]);
+        
+        $token = $json['token'] ?? null;
 
-            if (!$token) {
-                throw new \RuntimeException("Token tidak ditemukan pada response /token/");
-            }
+        if (!$token) {
+            // 🔥 ADD THIS: Show what keys ARE available
+            Log::error('Token not found in response', [
+                'available_keys' => array_keys($json),
+                'full_response' => $json
+            ]);
+            throw new \RuntimeException("Token tidak ditemukan pada response /token/");
+        }
 
-            return $token;
-        });
-    }
+        return $token;
+    });
+}
 
     public function listProjects(int $start = 0, int $limit = 20): array
     {
