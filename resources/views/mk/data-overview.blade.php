@@ -96,7 +96,7 @@
         </div>
     </div>
 
-  <!-- 2. Top Hashtag X -->
+<!-- 2. Top Hashtag X -->
 <div class="do-card">
     <div class="do-card-head">
         <div class="do-card-head-left">
@@ -110,12 +110,22 @@
             </span>
             <span class="do-card-title">Top Hashtag</span>
         </div>
-        <span class="do-badge" style="background:#f0f0f0; color:#222;">X</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span class="do-badge" style="background:#f0f0f0; color:#222;">X</span>
+            @php
+            $tags = $topHashtags['data'] ?? (array) $topHashtags;
+            @endphp
+            @if(count($tags) > 5)
+            <button class="do-view-all-btn" onclick="openHashtagModal()">
+                <svg viewBox="0 0 24 24" style="width:14px;height:14px;">
+                    <path d="M9 18l6-6-6-6"/>
+                </svg>
+                View All
+            </button>
+            @endif
+        </div>
     </div>
     <div class="do-card-body do-body-scroll">
-        @php
-        $tags = $topHashtags['data'] ?? (array) $topHashtags;
-        @endphp
         @if(count($tags) > 0)
         <table class="do-tbl">
             <thead>
@@ -126,7 +136,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach(array_slice($tags, 0, 10) as $i => $tag)
+                @foreach(array_slice($tags, 0, 5) as $i => $tag)
                 @php
                 $tagName = $tag['hashtag'] ?? $tag['name'] ?? $tag['tag'] ?? 'unknown';
                 $tagCount = (int)($tag['mention'] ?? $tag['size'] ?? $tag['count'] ?? 0);
@@ -146,6 +156,102 @@
     </div>
 </div>
 
+<!-- MODAL: All Hashtags -->
+<div id="hashtagModal" class="do-modal">
+    <div class="do-modal-content">
+        <div class="do-modal-header">
+            <div>
+                <h3 class="do-modal-title">
+                    <svg viewBox="0 0 24 24" style="width:20px;height:20px;display:inline-block;vertical-align:middle;margin-right:8px;stroke:#3b7dd8;">
+                        <line x1="4" y1="9" x2="20" y2="9" />
+                        <line x1="4" y1="15" x2="20" y2="15" />
+                        <line x1="9" y1="4" x2="5" y2="20" />
+                        <line x1="15" y1="4" x2="11" y2="20" />
+                    </svg>
+                    Top Hashtags
+                </h3>
+                <p class="do-modal-subtitle">Showing all trending hashtags from X platform</p>
+            </div>
+            <button class="do-modal-close" onclick="closeHashtagModal()">
+                <svg viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="do-modal-body">
+            @if(count($tags) > 0)
+            <table class="do-tbl">
+                <thead>
+                    <tr>
+                        <th style="width:40px;">#</th>
+                        <th class="do-tbl-left">Hashtag</th>
+                        <th class="do-tbl-right">Mention</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($tags as $i => $tag)
+                    @php
+                    $tagName = $tag['hashtag'] ?? $tag['name'] ?? $tag['tag'] ?? 'unknown';
+                    $tagCount = (int)($tag['mention'] ?? $tag['size'] ?? $tag['count'] ?? 0);
+                    $tagName = str_starts_with($tagName,'#') ? $tagName : '#'.$tagName;
+                    @endphp
+                    <tr>
+                        <td class="do-tbl-rank">{{ $i+1 }}</td>
+                        <td class="do-tbl-name" style="color:#3b7dd8;">{{ $tagName }}</td>
+                        <td class="do-tbl-num">{{ number_format($tagCount) }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            @else
+            <div class="do-empty">Tidak ada data</div>
+            @endif
+        </div>
+    </div>
+</div>
+<!-- MODAL: All Hashtags -->
+<div id="hashtagModal" class="do-modal">
+    <div class="do-modal-content">
+        <div class="do-modal-header">
+            <div>
+                <h3 class="do-modal-title">Top Hashtags</h3>
+                <p class="do-modal-subtitle">Showing all trending hashtags</p>
+            </div>
+            <button class="do-modal-close" onclick="closeHashtagModal()">
+                <svg viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="do-modal-body">
+            <table class="do-tbl">
+                <thead>
+                    <tr>
+                        <th style="width:40px;">#</th>
+                        <th class="do-tbl-left">Hashtag</th>
+                        <th class="do-tbl-right">Mention</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($tags as $i => $tag)
+                    @php
+                    $tagName = $tag['hashtag'] ?? $tag['name'] ?? $tag['tag'] ?? 'unknown';
+                    $tagCount = (int)($tag['mention'] ?? $tag['size'] ?? $tag['count'] ?? 0);
+                    $tagName = str_starts_with($tagName,'#') ? $tagName : '#'.$tagName;
+                    @endphp
+                    <tr>
+                        <td class="do-tbl-rank">{{ $i+1 }}</td>
+                        <td class="do-tbl-name" style="color:#3b7dd8;">{{ $tagName }}</td>
+                        <td class="do-tbl-num">{{ number_format($tagCount) }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
     <!-- 3. Mention by Social Media -->
     <div class="do-card">
         <div class="do-card-head">
@@ -264,6 +370,154 @@
      ============================================================ -->
 @section('styles')
 <style>
+
+    /* View All Button */
+.do-view-all-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: transparent;
+    color: #3b7dd8;
+    border: 1.5px solid #3b7dd8;
+    border-radius: 6px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.do-view-all-btn:hover {
+    background: #3b7dd8;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.do-view-all-btn svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Modal Styles */
+.do-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease;
+}
+
+.do-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.do-modal-content {
+    background: #fff;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+    overflow: hidden;
+}
+
+.do-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 24px 28px;
+    border-bottom: 2px solid #f0f2f5;
+    background: linear-gradient(135deg, #eef3f9 0%, #fff 100%);
+}
+
+.do-modal-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--dark-blue);
+    margin: 0 0 4px 0;
+}
+
+.do-modal-subtitle {
+    font-size: 12px;
+    font-weight: 500;
+    color: #7A8B96;
+    margin: 0;
+}
+
+.do-modal-close {
+    background: #fff;
+    border: 1.5px solid #e8eaed;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.do-modal-close:hover {
+    background: #f5f5f5;
+    border-color: #d0d5dd;
+    transform: rotate(90deg);
+}
+
+.do-modal-close svg {
+    width: 16px;
+    height: 16px;
+    stroke: #475569;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+}
+
+.do-modal-body {
+    padding: 20px 28px 28px;
+    max-height: calc(80vh - 120px);
+    overflow-y: auto;
+}
+
+.do-modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.do-modal-body::-webkit-scrollbar-thumb {
+    background: #d0d5dd;
+    border-radius: 3px;
+}
+
+.do-modal-body::-webkit-scrollbar-thumb:hover {
+    background: #b4bcc7;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { 
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to { 
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
     /* Filter */
     .circle-label {
         pointer-events: none !important;
@@ -1043,6 +1297,63 @@
         });
 
         console.log('✅ Data Overview Charts Initialized');
+   
     })();
+</script>
+<script>
+// ────────────────────────────────────────────
+// 🔥 MODAL FUNCTIONS - HARUS DI GLOBAL SCOPE
+// ────────────────────────────────────────────
+function openHashtagModal() {
+    console.log('🔵 Opening hashtag modal...');
+    const modal = document.getElementById('hashtagModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        console.log('✅ Modal opened');
+    } else {
+        console.error('❌ Modal element not found!');
+    }
+}
+
+function closeHashtagModal() {
+    console.log('🔴 Closing hashtag modal...');
+    const modal = document.getElementById('hashtagModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+        console.log('✅ Modal closed');
+    }
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('hashtagModal');
+    if (event.target === modal) {
+        closeHashtagModal();
+    }
+});
+
+// Close modal with ESC key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('hashtagModal');
+        if (modal && modal.classList.contains('active')) {
+            closeHashtagModal();
+        }
+    }
+});
+
+// ────────────────────────────────────────────
+// CHARTS & OTHER SCRIPTS
+// ────────────────────────────────────────────
+(function() {
+    console.log('🎯 Initializing Data Overview Charts...');
+
+    // ... (rest of your chart code stays the same)
+    // JANGAN UBAH CODE CHART YANG SUDAH ADA
+    
+    console.log('✅ Data Overview Charts Initialized');
+})();
 </script>
 @endsection

@@ -1001,7 +1001,7 @@ class MkController extends Controller
                 Log::warning('dataOverview: recentTopics failed', ['error' => $e->getMessage()]);
             }
 
-          // ── TOP HASHTAGS ──
+    // ── TOP HASHTAGS ──
 try {
     $rawHashtags = $mk->topHashtags(
         $projectId,
@@ -1023,8 +1023,8 @@ try {
     }
     usort($normalized, fn($a, $b) => $b['mention'] <=> $a['mention']);
     
-    // 🔥 Ambil top 10 saja
-    $topHashtags = ['data' => array_slice($normalized, 0, 10)];
+    // 🔥 Ambil semua (atau top 20 jika mau dibatasi)
+    $topHashtags = ['data' => $normalized]; // atau array_slice($normalized, 0, 20)
 } catch (\Exception $e) {
     Log::warning('dataOverview: topHashtags failed', ['error' => $e->getMessage()]);
 }
