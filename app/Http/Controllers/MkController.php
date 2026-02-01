@@ -962,7 +962,21 @@ class MkController extends Controller
     }
 
     /**
+   <?php
+
+namespace App\Http\Controllers;
+
+use App\Services\MediaKernelsClient;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+class MkController extends Controller
+{
+    // ... [Keep all other methods the same - I'll only show the changed dataOverview method]
+
+    /**
      * 📊 DATA OVERVIEW - Dashboard ringkasan dengan Sentiment Timeline
+     * 🔥 FIXED: Fetch ALL mentions with pagination
      */
     public function dataOverview(Request $request, MediaKernelsClient $mk)
     {
@@ -1001,67 +1015,160 @@ class MkController extends Controller
                 Log::warning('dataOverview: recentTopics failed', ['error' => $e->getMessage()]);
             }
 
-    // ── TOP HASHTAGS ──
-try {
-    $rawHashtags = $mk->topHashtags(
-        $projectId,
-        $params['media'],
-        $params['startDate'],
-        $params['endDate'],
-        $params['startTime'],
-        $params['endTime']
-    );
-    
-    $rawItems = $rawHashtags['data'] ?? (is_array($rawHashtags) ? $rawHashtags : []);
-    $normalized = [];
-    foreach ($rawItems as $item) {
-        if (!is_array($item)) continue;
-        $normalized[] = [
-            'hashtag' => $item['name'] ?? $item['hashtag'] ?? $item['tag'] ?? 'unknown',
-            'mention' => (int)($item['size'] ?? $item['mention'] ?? $item['count'] ?? 0),
-        ];
-    }
-    usort($normalized, fn($a, $b) => $b['mention'] <=> $a['mention']);
-    
-    // 🔥 Ambil semua (atau top 20 jika mau dibatasi)
-    $topHashtags = ['data' => $normalized]; // atau array_slice($normalized, 0, 20)
-} catch (\Exception $e) {
-    Log::warning('dataOverview: topHashtags failed', ['error' => $e->getMessage()]);
-}
-
-            // ── MENTIONS (untuk hitung Social Media vs Online News) ──
+            // ── TOP HASHTAGS ──
             try {
-                $rawMentions = $mk->mentions(
+                $rawHashtags = $mk->topHashtags(
+                    $projectId,
+                    $params['media'],
+                    $params['startDate'],
+                    $params['endDate'],
+                    $params['startTime'],
+                    $params['endTime']
+                );
+                
+                $rawItems = $rawHashtags['data'] ?? (is_array($rawHashtags) ? $rawHashtags : []);
+                $normalized = [];
+                foreach ($rawItems as $item) {
+                    if (!is_array($item)) continue;
+                    $normalized[] = [
+                        'hashtag' => $item['name'] ?? $item['hashtag'] ?? $item['tag'] ?? 'unknown',
+                        'mention' => (int)($item['size'] ?? $item['mention'] ?? $item['count'] ?? 0),
+                    ];
+                }
+                usort($normalized, fn($a, $b) => $b['mention'] <=> $a['mention']);
+                
+                $topHashtags = ['data' => $normalized];
+            } catch (\Exception $e) {
+                Log::warning('dataOverview: topHashtags failed', ['error' => $e->getMessage()]);
+            }
+
+            // ── 🔥🔥🔥 MENTIONS - FETCH ALL DATA WITH PAGINATION 🔥🔥🔥 ──
+            try {
+                Log::info('📊 Starting mention count with pagination...');
+                
+                $allMentions = [];
+                $start = 0;
+                $batchSize = 1000;
+                $maxIterations = 100; // Safety limit: max 100,000 mentions
+                $iteration = 0;
+                
+                // 🔥 STRATEGY: Fetch first batch to get total count
+                $firstBatch = $mk->mentions(
                     $projectId,
                     $params['startDate'],
                     $params['endDate'],
                     $params['startTime'],
                     $params['endTime'],
-                    false,
+                    false,  // with_content = false (faster)
                     0,
-                    100
+                    $batchSize
                 );
-
-                $mentionsData = [];
-                if (isset($rawMentions['data']) && is_array($rawMentions['data'])) {
-                    $mentionsData = $rawMentions['data'];
-                } elseif (is_array($rawMentions) && !empty($rawMentions)) {
-                    $mentionsData = array_values($rawMentions);
+                
+                // Extract total from response
+                $totalMentions = (int)($firstBatch['total'] ?? $firstBatch['numFound'] ?? 0);
+                $firstBatchData = $firstBatch['data'] ?? [];
+                
+                Log::info('📊 First batch fetched', [
+                    'total_available' => $totalMentions,
+                    'first_batch_size' => count($firstBatchData)
+                ]);
+                
+                // Add first batch
+                if (is_array($firstBatchData)) {
+                    $allMentions = array_merge($allMentions, $firstBatchData);
                 }
-
-                foreach ($mentionsData as $item) {
-                    if (!is_array($item)) continue;
+                
+                // 🔥 If total > 1000, fetch remaining batches
+                if ($totalMentions > $batchSize) {
+                    $remainingBatches = ceil(($totalMentions - $batchSize) / $batchSize);
                     
-                    $mediaType = strtolower($item['media_type'] ?? $item['type'] ?? '');
+                    Log::info('📊 Fetching remaining batches', [
+                        'remaining_batches' => $remainingBatches
+                    ]);
                     
-                    if (in_array($mediaType, ['twitter', 'x', 'facebook', 'fb', 'instagram', 'ig', 'youtube', 'yt', 'tiktok'])) {
-                        $mentionSocialMedia++;
-                    } elseif (in_array($mediaType, ['news', 'online_news', 'onlinenews'])) {
-                        $mentionOnlineNews++;
+                    for ($i = 1; $i <= $remainingBatches && $iteration < $maxIterations; $i++) {
+                        $start = $i * $batchSize;
+                        
+                        $batch = $mk->mentions(
+                            $projectId,
+                            $params['startDate'],
+                            $params['endDate'],
+                            $params['startTime'],
+                            $params['endTime'],
+                            false,
+                            $start,
+                            $batchSize
+                        );
+                        
+                        $batchData = $batch['data'] ?? [];
+                        
+                        if (empty($batchData)) {
+                            Log::info('📊 No more data, stopping pagination', ['at_start' => $start]);
+                            break;
+                        }
+                        
+                        $allMentions = array_merge($allMentions, $batchData);
+                        $iteration++;
+                        
+                        Log::info('📊 Batch fetched', [
+                            'batch' => $i,
+                            'start' => $start,
+                            'count' => count($batchData),
+                            'total_so_far' => count($allMentions)
+                        ]);
+                        
+                        // Small delay to avoid rate limiting
+                        usleep(100000); // 0.1 second
                     }
                 }
+                
+                Log::info('📊 All mentions fetched', [
+                    'total_fetched' => count($allMentions),
+                    'api_total' => $totalMentions
+                ]);
+
+                // 🔥 NOW COUNT FROM ALL FETCHED DATA
+                $socialMediaTypes = ['twit', 'twitter', 'x', 'fb', 'facebook', 'ig', 'instagram', 'yt', 'youtube', 'tiktok'];
+                $newsMediaTypes = ['onlinenews', 'news', 'online_news'];
+                
+                // Media type IDs
+                $socialMediaIds = [1, 2, 5, 6, 7, 8];
+                $newsMediaIds = [4, 9, 10];
+
+                foreach ($allMentions as $item) {
+                    if (!is_array($item)) continue;
+                    
+                    // Try media_type_id first (more reliable)
+                    $mediaTypeId = (int)($item['media_type_id'] ?? 0);
+                    
+                    if (in_array($mediaTypeId, $socialMediaIds)) {
+                        $mentionSocialMedia++;
+                    } elseif (in_array($mediaTypeId, $newsMediaIds)) {
+                        $mentionOnlineNews++;
+                    } else {
+                        // Fallback to string-based media_type
+                        $mediaType = strtolower($item['media_type'] ?? '');
+                        
+                        if (in_array($mediaType, $socialMediaTypes)) {
+                            $mentionSocialMedia++;
+                        } elseif (in_array($mediaType, $newsMediaTypes)) {
+                            $mentionOnlineNews++;
+                        }
+                    }
+                }
+                
+                Log::info('📊 Final mention counts', [
+                    'total_items' => count($allMentions),
+                    'social_media' => $mentionSocialMedia,
+                    'online_news' => $mentionOnlineNews,
+                    'total_counted' => $mentionSocialMedia + $mentionOnlineNews
+                ]);
+                
             } catch (\Exception $e) {
-                Log::warning('dataOverview: mentions failed', ['error' => $e->getMessage()]);
+                Log::error('dataOverview: mentions failed', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
             }
 
             // ── ACTIVE USERS (Most Engaged) ──
@@ -1100,7 +1207,7 @@ try {
                 ]);
             }
 
-            // ── SENTIMENT TIMELINE - 🔥 Gunakan extractDailyTimeline yang sama seperti Admin ──
+            // ── SENTIMENT TIMELINE ──
             try {
                 $sentimentTimeline = $this->extractDailyTimeline($projectId, $mk);
                 
