@@ -10,6 +10,19 @@
     <h2>Analytics Dashboard</h2>
     <div class="page-subtitle">Welcome to SMADIMENT - Social Media Analytics Platform</div>
   </div>
+  
+  <!-- Logout Button -->
+  <form method="POST" action="{{ route('user.logout') }}" style="display: inline;">
+    @csrf
+    <button type="submit" class="btn-logout">
+      <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Logout
+    </button>
+  </form>
 </div>
 
 <!-- Welcome Section -->
@@ -179,4 +192,29 @@
 
 </div>
 
+@endsection
+
+@section('styles')
+<style>
+.btn-logout {
+  padding: 12px 20px;
+  background: #DC2626;
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-logout:hover {
+  background: #B91C1C;
+  transform: translateY(-2px);
+}
+</style>
 @endsection

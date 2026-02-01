@@ -99,17 +99,32 @@ class MkController extends Controller
         return array_values($rawProjects);
     }
 
-    /**
-     * 📊 DASHBOARD
-     */
-    public function dashboard(Request $request, MediaKernelsClient $mk)
-    {
-        $projects = $this->getProjects($mk);
-        
-        return view('mk.dashboard', [
-            'projects' => $projects,
-        ]);
-    }
+    // 🔥 REPLACE METHOD dashboard() IN MkController.php
+
+/**
+ * 📊 DASHBOARD (User - Filtered by assigned projects)
+ */
+public function dashboard(Request $request, MediaKernelsClient $mk)
+{
+    // Get all projects from API
+    $allProjects = $this->getProjects($mk);
+    
+    // Filter projects based on user's access
+    $user = auth()->user();
+    $assignedProjectIds = $user->assignedProjectIds();
+    
+    // Filter projects: only show projects user has access to
+    $projects = array_filter($allProjects, function($project) use ($assignedProjectIds) {
+        return in_array($project['id'], $assignedProjectIds);
+    });
+    
+    // Re-index array
+    $projects = array_values($projects);
+    
+    return view('mk.dashboard', [
+        'projects' => $projects,
+    ]);
+}
 
     /**
      * 👨‍💼 ADMIN DASHBOARD - List Projects Only

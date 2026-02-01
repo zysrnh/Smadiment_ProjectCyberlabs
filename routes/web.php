@@ -1,9 +1,30 @@
 <?php
 
 use App\Http\Controllers\MkController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\UserAuthController;
+use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| User Authentication Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('user')->name('user.')->group(function () {
+    
+    // Login routes (accessible without authentication)
+    Route::middleware('guest')->group(function () {
+        Route::get('/login', [UserAuthController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [UserAuthController::class, 'login'])->name('login.submit');
+    });
+    
+    // Logout (require authentication)
+    Route::post('/logout', [UserAuthController::class, 'logout'])
+        ->middleware('auth')
+        ->name('logout');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -23,17 +44,20 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('auth:admin')->group(function () {
         Route::get('/dashboard', [MkController::class, 'adminDashboard'])->name('dashboard');
         Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+        
+        // 🔥 NEW: User Management Routes
+        Route::resource('users', AdminUserController::class);
     });
     
 });
 
 /*
 |--------------------------------------------------------------------------
-| MK Analytics Routes
+| MK Analytics Routes (Protected by User Auth)
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('mk')->name('mk.')->group(function () {
+Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     
     // Main Pages
     Route::get('/dashboard', [MkController::class, 'dashboard'])->name('dashboard');
@@ -58,10 +82,10 @@ Route::prefix('mk')->name('mk.')->group(function () {
         Route::get('/reach', [MkController::class, 'reach'])->name('reach');
         Route::get('/urls', [MkController::class, 'sharedUrls'])->name('urls');
         Route::get('/users', [MkController::class, 'activeUsers'])->name('users');
-        Route::get('/retweets', [MkController::class, 'mostRetweets'])->name('retweets'); // ← PINDAHIN KE SINI
+        Route::get('/retweets', [MkController::class, 'mostRetweets'])->name('retweets');
     });
     
     // Content
-    Route::get('/publisher', [MkController::class, 'publisherStats'])->name('publisher'); // ← PINDAHIN KE SINI (hapus /mk/)
-    Route::get('/topics', [MkController::class, 'recentTopics'])->name('topics'); // ← PINDAHIN KE SINI (hapus /mk/)
+    Route::get('/publisher', [MkController::class, 'publisherStats'])->name('publisher');
+    Route::get('/topics', [MkController::class, 'recentTopics'])->name('topics');
 });
