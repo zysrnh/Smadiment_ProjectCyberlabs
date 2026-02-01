@@ -8,165 +8,184 @@
      TOP BAR
      ============================================================ -->
 <div class="top-bar">
-  <div class="page-title">
-    <h2>Data Overview</h2>
-    <div class="page-subtitle">Ringkasan analitik sosial media dan berita</div>
-  </div>
+    <div class="page-title">
+        <h2>Data Overview</h2>
+        <div class="page-subtitle">Ringkasan analitik sosial media dan berita</div>
+    </div>
 
-  <div style="display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap;">
-    <!-- 🔥 TAMBAH PROJECT SELECTOR -->
-    <div class="do-filter-group">
-      <label class="do-filter-label">Project</label>
-      <select class="do-filter-input" id="doProject">
-        @foreach($projects as $p)
-          <option value="{{ $p['id'] }}" {{ $p['id'] == $projectId ? 'selected' : '' }}>
-            {{ $p['name'] ?? $p['title'] ?? 'Project #' . $p['id'] }}
-          </option>
-        @endforeach
-      </select>
+    <div style="display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap;">
+        <!-- 🔥 TAMBAH PROJECT SELECTOR -->
+        <div class="do-filter-group">
+            <label class="do-filter-label">Project</label>
+            <select class="do-filter-input" id="doProject">
+                @foreach($projects as $p)
+                <option value="{{ $p['id'] }}" {{ $p['id'] == $projectId ? 'selected' : '' }}>
+                    {{ $p['name'] ?? $p['title'] ?? 'Project #' . $p['id'] }}
+                </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="do-filter-group">
+            <label class="do-filter-label">Tanggal Awal</label>
+            <input type="date" class="do-filter-input" id="doStartDate" value="{{ $startDate }}">
+        </div>
+        <div class="do-filter-group">
+            <label class="do-filter-label">Tanggal Akhir</label>
+            <input type="date" class="do-filter-input" id="doEndDate" value="{{ $endDate }}">
+        </div>
+        <button class="do-btn-apply" id="doBtnApply">
+            <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            Filter
+        </button>
     </div>
-    
-    <div class="do-filter-group">
-      <label class="do-filter-label">Tanggal Awal</label>
-      <input type="date" class="do-filter-input" id="doStartDate" value="{{ $startDate }}">
-    </div>
-    <div class="do-filter-group">
-      <label class="do-filter-label">Tanggal Akhir</label>
-      <input type="date" class="do-filter-input" id="doEndDate" value="{{ $endDate }}">
-    </div>
-    <button class="do-btn-apply" id="doBtnApply">
-      <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      Filter
-    </button>
-  </div>
 </div>
 <!-- ============================================================
      ROW 1 — 4 Kotak Atas
      ============================================================ -->
 <div class="do-row-top">
 
-  <!-- 1. Trending Topics News -->
-  <div class="do-card">
-    <div class="do-card-head">
-      <div class="do-card-head-left">
-        <span class="do-head-icon" style="background:#eef9f3; color:#22c55e;">
-          <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-        </span>
-        <span class="do-card-title">Trending Topics</span>
-      </div>
-      <span class="do-badge" style="background:#fff3e0; color:#e67e22;">News</span>
+    <!-- 1. Trending Topics News -->
+    <div class="do-card">
+        <div class="do-card-head">
+            <div class="do-card-head-left">
+                <span class="do-head-icon" style="background:#eef9f3; color:#22c55e;">
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                        <polyline points="17 6 23 6 23 12" />
+                    </svg>
+                </span>
+                <span class="do-card-title">Trending Topics</span>
+            </div>
+            <span class="do-badge" style="background:#fff3e0; color:#e67e22;">News</span>
+        </div>
+        <div class="do-card-body do-body-scroll">
+            @php
+            $topics = $trendingTopics['data'] ?? (array) $trendingTopics;
+            @endphp
+            @if(count($topics) > 0)
+            <table class="do-tbl">
+                <thead>
+                    <tr>
+                        <th style="width:28px;">#</th>
+                        <th class="do-tbl-left">Topic</th>
+                        <th class="do-tbl-right">Articles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(array_slice($topics, 0, 8) as $i => $t)
+                    @php
+                    $tName = $t['title'] ?? $t['name'] ?? $t['topic'] ?? 'Unknown';
+                    $tCount = (int)($t['articles'] ?? $t['count'] ?? $t['total'] ?? 0);
+                    @endphp
+                    <tr>
+                        <td class="do-tbl-rank">{{ $i+1 }}</td>
+                        <td class="do-tbl-name">{{ $tName }}</td>
+                        <td class="do-tbl-num">{{ number_format($tCount) }} docs</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            @else
+            <div class="do-empty">Tidak ada data</div>
+            @endif
+        </div>
     </div>
-    <div class="do-card-body do-body-scroll">
-      @php
-        $topics = $trendingTopics['data'] ?? (array) $trendingTopics;
-      @endphp
-      @if(count($topics) > 0)
-        <table class="do-tbl">
-          <thead>
-            <tr>
-              <th style="width:28px;">#</th>
-              <th class="do-tbl-left">Topic</th>
-              <th class="do-tbl-right">Articles</th>
-            </tr>
-          </thead>
-          <tbody>
-            @foreach(array_slice($topics, 0, 8) as $i => $t)
-              @php
-                $tName  = $t['title'] ?? $t['name'] ?? $t['topic'] ?? 'Unknown';
-                $tCount = (int)($t['articles'] ?? $t['count'] ?? $t['total'] ?? 0);
-              @endphp
-              <tr>
-                <td class="do-tbl-rank">{{ $i+1 }}</td>
-                <td class="do-tbl-name">{{ $tName }}</td>
-                <td class="do-tbl-num">{{ number_format($tCount) }} docs</td>
-              </tr>
-            @endforeach
-          </tbody>
-        </table>
-      @else
-        <div class="do-empty">Tidak ada data</div>
-      @endif
-    </div>
-  </div>
 
-  <!-- 2. Top Hashtag X -->
-  <div class="do-card">
-    <div class="do-card-head">
-      <div class="do-card-head-left">
-        <span class="do-head-icon" style="background:#eef3f9; color:#3b7dd8;">
-          <svg viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="9" y1="4" x2="5" y2="20"/><line x1="15" y1="4" x2="11" y2="20"/></svg>
-        </span>
-        <span class="do-card-title">Top Hashtag</span>
-      </div>
-      <span class="do-badge" style="background:#f0f0f0; color:#222;">X</span>
+    <!-- 2. Top Hashtag X -->
+    <div class="do-card">
+        <div class="do-card-head">
+            <div class="do-card-head-left">
+                <span class="do-head-icon" style="background:#eef3f9; color:#3b7dd8;">
+                    <svg viewBox="0 0 24 24">
+                        <line x1="4" y1="9" x2="20" y2="9" />
+                        <line x1="4" y1="15" x2="20" y2="15" />
+                        <line x1="9" y1="4" x2="5" y2="20" />
+                        <line x1="15" y1="4" x2="11" y2="20" />
+                    </svg>
+                </span>
+                <span class="do-card-title">Top Hashtag</span>
+            </div>
+            <span class="do-badge" style="background:#f0f0f0; color:#222;">X</span>
+        </div>
+        <div class="do-card-body do-body-scroll">
+            @php
+            $tags = $topHashtags['data'] ?? (array) $topHashtags;
+            @endphp
+            @if(count($tags) > 0)
+            <table class="do-tbl">
+                <thead>
+                    <tr>
+                        <th style="width:28px;">#</th>
+                        <th class="do-tbl-left">Hashtag</th>
+                        <th class="do-tbl-right">Mention</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(array_slice($tags, 0, 8) as $i => $tag)
+                    @php
+                    $tagName = $tag['hashtag'] ?? $tag['name'] ?? $tag['tag'] ?? 'unknown';
+                    $tagCount = (int)($tag['mention'] ?? $tag['count'] ?? $tag['total'] ?? 0);
+                    $tagName = str_starts_with($tagName,'#') ? $tagName : '#'.$tagName;
+                    @endphp
+                    <tr>
+                        <td class="do-tbl-rank">{{ $i+1 }}</td>
+                        <td class="do-tbl-name" style="color:#3b7dd8;">{{ $tagName }}</td>
+                        <td class="do-tbl-num">{{ number_format($tagCount) }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            @else
+            <div class="do-empty">Tidak ada data</div>
+            @endif
+        </div>
     </div>
-    <div class="do-card-body do-body-scroll">
-      @php
-        $tags = $topHashtags['data'] ?? (array) $topHashtags;
-      @endphp
-      @if(count($tags) > 0)
-        <table class="do-tbl">
-          <thead>
-            <tr>
-              <th style="width:28px;">#</th>
-              <th class="do-tbl-left">Hashtag</th>
-              <th class="do-tbl-right">Mention</th>
-            </tr>
-          </thead>
-          <tbody>
-            @foreach(array_slice($tags, 0, 8) as $i => $tag)
-              @php
-                $tagName  = $tag['hashtag'] ?? $tag['name'] ?? $tag['tag'] ?? 'unknown';
-                $tagCount = (int)($tag['mention'] ?? $tag['count'] ?? $tag['total'] ?? 0);
-                $tagName  = str_starts_with($tagName,'#') ? $tagName : '#'.$tagName;
-              @endphp
-              <tr>
-                <td class="do-tbl-rank">{{ $i+1 }}</td>
-                <td class="do-tbl-name" style="color:#3b7dd8;">{{ $tagName }}</td>
-                <td class="do-tbl-num">{{ number_format($tagCount) }}</td>
-              </tr>
-            @endforeach
-          </tbody>
-        </table>
-      @else
-        <div class="do-empty">Tidak ada data</div>
-      @endif
-    </div>
-  </div>
 
-  <!-- 3. Mention by Social Media -->
-  <div class="do-card">
-    <div class="do-card-head">
-      <div class="do-card-head-left">
-        <span class="do-head-icon" style="background:#f3eef9; color:#7c3aed;">
-          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        </span>
-        <span class="do-card-title">Mention</span>
-      </div>
-      <span class="do-badge" style="background:#ede9fe; color:#7c3aed;">Social Media</span>
+    <!-- 3. Mention by Social Media -->
+    <div class="do-card">
+        <div class="do-card-head">
+            <div class="do-card-head-left">
+                <span class="do-head-icon" style="background:#f3eef9; color:#7c3aed;">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                </span>
+                <span class="do-card-title">Mention</span>
+            </div>
+            <span class="do-badge" style="background:#ede9fe; color:#7c3aed;">Social Media</span>
+        </div>
+        <div class="do-card-body do-body-mention">
+            <div class="do-mention-label">Social Media</div>
+            <div class="do-mention-val" style="color:#7c3aed;">{{ number_format((int)$mentionSocialMedia) }}</div>
+        </div>
     </div>
-    <div class="do-card-body do-body-mention">
-      <div class="do-mention-label">Social Media</div>
-      <div class="do-mention-val" style="color:#7c3aed;">{{ number_format((int)$mentionSocialMedia) }}</div>
-    </div>
-  </div>
 
-  <!-- 4. Mention by Online News -->
-  <div class="do-card">
-    <div class="do-card-head">
-      <div class="do-card-head-left">
-        <span class="do-head-icon" style="background:#fef3ee; color:#e67e22;">
-          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg>
-        </span>
-        <span class="do-card-title">Mention</span>
-      </div>
-      <span class="do-badge" style="background:#fff3e0; color:#e67e22;">Online News</span>
+    <!-- 4. Mention by Online News -->
+    <div class="do-card">
+        <div class="do-card-head">
+            <div class="do-card-head-left">
+                <span class="do-head-icon" style="background:#fef3ee; color:#e67e22;">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                        <line x1="8" y1="6" x2="16" y2="6" />
+                        <line x1="8" y1="10" x2="16" y2="10" />
+                        <line x1="8" y1="14" x2="12" y2="14" />
+                    </svg>
+                </span>
+                <span class="do-card-title">Mention</span>
+            </div>
+            <span class="do-badge" style="background:#fff3e0; color:#e67e22;">Online News</span>
+        </div>
+        <div class="do-card-body do-body-mention">
+            <div class="do-mention-label">Online News</div>
+            <div class="do-mention-val" style="color:#e67e22;">{{ number_format((int)$mentionOnlineNews) }}</div>
+        </div>
     </div>
-    <div class="do-card-body do-body-mention">
-      <div class="do-mention-label">Online News</div>
-      <div class="do-mention-val" style="color:#e67e22;">{{ number_format((int)$mentionOnlineNews) }}</div>
-    </div>
-  </div>
 
 </div>
 
@@ -175,40 +194,47 @@
      ============================================================ -->
 <div class="do-row-mid">
 
-  <!-- Most Engaged User -->
-  <div class="do-card">
-    <div class="do-card-head">
-      <div class="do-card-head-left">
-        <span class="do-head-icon" style="background:#eef9f3; color:#22c55e;">
-          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </span>
-        <span class="do-card-title">Most Engaged User</span>
-      </div>
-      <span class="do-badge" style="background:#f0f0f0; color:#222;">X</span>
+    <!-- Most Engaged User -->
+    <div class="do-card">
+        <div class="do-card-head">
+            <div class="do-card-head-left">
+                <span class="do-head-icon" style="background:#eef9f3; color:#22c55e;">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                </span>
+                <span class="do-card-title">Most Engaged User</span>
+            </div>
+            <span class="do-badge" style="background:#f0f0f0; color:#222;">X</span>
+        </div>
+        <div class="do-card-body do-body-donut">
+            <div class="do-donut-wrap">
+                <canvas id="chartDonut" width="200" height="200"></canvas>
+            </div>
+            <div class="do-donut-legend" id="donutLegend"></div>
+        </div>
     </div>
-    <div class="do-card-body do-body-donut">
-      <div class="do-donut-wrap">
-        <canvas id="chartDonut" width="200" height="200"></canvas>
-      </div>
-      <div class="do-donut-legend" id="donutLegend"></div>
-    </div>
-  </div>
 
-  <!-- Sentiment Score -->
-  <div class="do-card">
-    <div class="do-card-head">
-      <div class="do-card-head-left">
-        <span class="do-head-icon" style="background:#eef3f9; color:#3b7dd8;">
-          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        </span>
-        <span class="do-card-title">Sentiment Score</span>
-      </div>
-      <span class="do-badge" style="background:#e0f2fe; color:#0284c7;">All Media</span>
+    <!-- Sentiment Score -->
+    <div class="do-card">
+        <div class="do-card-head">
+            <div class="do-card-head-left">
+                <span class="do-head-icon" style="background:#eef3f9; color:#3b7dd8;">
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                    </svg>
+                </span>
+                <span class="do-card-title">Sentiment Score</span>
+            </div>
+            <span class="do-badge" style="background:#e0f2fe; color:#0284c7;">All Media</span>
+        </div>
+        <div class="do-card-body do-body-line">
+            <canvas id="chartSentiment"></canvas>
+        </div>
     </div>
-    <div class="do-card-body do-body-line">
-      <canvas id="chartSentiment"></canvas>
-    </div>
-  </div>
 
 </div>
 
@@ -216,18 +242,21 @@
      ROW 3 — Buzzer Map (Leaflet)
      ============================================================ -->
 <div class="do-card" style="margin-top:20px;">
-  <div class="do-card-head">
-    <div class="do-card-head-left">
-      <span class="do-head-icon" style="background:#fef3ee; color:#e67e22;">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z"/></svg>
-      </span>
-      <span class="do-card-title">Buzzer Map</span>
+    <div class="do-card-head">
+        <div class="do-card-head-left">
+            <span class="do-head-icon" style="background:#fef3ee; color:#e67e22;">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="10" r="3" />
+                    <path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z" />
+                </svg>
+            </span>
+            <span class="do-card-title">Buzzer Map</span>
+        </div>
+        <span class="do-badge" style="background:#fef3c7; color:#d97706;">Geographic</span>
     </div>
-    <span class="do-badge" style="background:#fef3c7; color:#d97706;">Geographic</span>
-  </div>
-  <div style="padding:0;">
-    <div id="buzzMap" style="width:100%; height:420px;"></div>
-  </div>
+    <div style="padding:0;">
+        <div id="buzzMap" style="width:100%; height:420px;"></div>
+    </div>
 </div>
 
 @endsection
@@ -237,93 +266,353 @@
      ============================================================ -->
 @section('styles')
 <style>
-/* ── Filter ── */
-.do-filter-group { display:flex; flex-direction:column; gap:4px; }
-.do-filter-label { font-size:10px; font-weight:700; color:var(--dark-blue); opacity:.45; text-transform:uppercase; letter-spacing:.5px; }
-.do-filter-input {
-  padding:8px 12px; border:1.5px solid var(--light-gray); border-radius:8px;
-  font-family:'Poppins',sans-serif; font-size:13px; font-weight:600; color:var(--dark-blue);
-  background:var(--white); outline:none; transition:border-color .2s;
-}
-.do-filter-input:focus { border-color:var(--primary-green); }
-.do-btn-apply {
-  display:flex; align-items:center; gap:6px; padding:8px 18px;
-  background:var(--primary-green); color:#fff; border:none; border-radius:8px;
-  font-family:'Poppins',sans-serif; font-size:13px; font-weight:700;
-  cursor:pointer; transition:background .2s, transform .15s;
-}
-.do-btn-apply:hover { background:#1a9a5c; transform:translateY(-1px); }
+    /* ── Filter ── */
+    /* Circle Label - agar lebih readable */
+    .circle-label {
+        pointer-events: none !important;
+    }
 
-/* ── Grid Layouts ── */
-.do-row-top { display:grid; grid-template-columns:1.15fr 1.15fr .85fr .85fr; gap:18px; margin-top:24px; }
-.do-row-mid { display:grid; grid-template-columns:1fr 1.5fr; gap:18px; margin-top:18px; }
+    .circle-label div {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
 
-/* ── Card ── */
-.do-card {
-  background:var(--white); border:1.5px solid var(--light-gray); border-radius:14px;
-  overflow:hidden; display:flex; flex-direction:column;
-  box-shadow:0 2px 8px rgba(0,0,0,.04); transition:box-shadow .2s;
-}
-.do-card:hover { box-shadow:0 4px 18px rgba(0,0,0,.09); }
+    /* Map Legend hover effect */
+    .map-legend {
+        pointer-events: none;
+    }
 
-/* ── Card Head ── */
-.do-card-head { display:flex; align-items:center; justify-content:space-between; padding:13px 18px 11px; border-bottom:1.5px solid var(--light-gray); }
-.do-card-head-left { display:flex; align-items:center; gap:10px; }
-.do-head-icon {
-  width:34px; height:34px; border-radius:9px;
-  display:flex; align-items:center; justify-content:center;
-}
-.do-head-icon svg { width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-.do-card-title { font-size:14px; font-weight:800; color:var(--dark-blue); }
-.do-badge { font-size:10px; font-weight:800; padding:3px 9px; border-radius:20px; text-transform:uppercase; letter-spacing:.4px; }
+    .map-legend>div {
+        pointer-events: auto;
+    }
 
-/* ── Card Body ── */
-.do-card-body { padding:14px 18px 18px; flex:1; }
-.do-body-scroll { max-height:185px; overflow-y:auto; }
-.do-body-scroll::-webkit-scrollbar { width:4px; }
-.do-body-scroll::-webkit-scrollbar-thumb { background:var(--light-gray); border-radius:2px; }
+    .do-filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
 
-/* ── Mini Table ── */
-.do-tbl { width:100%; border-collapse:collapse; font-family:'Poppins',sans-serif; }
-.do-tbl th {
-  font-size:10px; font-weight:700; color:var(--dark-blue); opacity:.4;
-  text-transform:uppercase; letter-spacing:.5px; padding:0 0 7px;
-  border-bottom:1px solid var(--light-gray); text-align:left;
-}
-.do-tbl-left { text-align:left; }
-.do-tbl-right { text-align:right; }
-.do-tbl td { padding:6.5px 0; font-size:13px; color:var(--dark-blue); border-bottom:1px solid #f0f2f5; }
-.do-tbl tr:last-child td { border-bottom:none; }
-.do-tbl-rank { font-weight:800; color:var(--primary-green); width:22px; font-size:12px; }
-.do-tbl-name { font-weight:600; max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.do-tbl-num { text-align:right; font-weight:700; font-size:12px; color:var(--dark-blue); opacity:.65; }
+    .do-filter-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--dark-blue);
+        opacity: .45;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
 
-/* ── Mention Big Number ── */
-.do-body-mention { display:flex; flex-direction:column; justify-content:center; min-height:150px; }
-.do-mention-label { font-size:13px; font-weight:600; color:var(--dark-blue); opacity:.5; margin-bottom:6px; }
-.do-mention-val { font-size:44px; font-weight:800; line-height:1; letter-spacing:-1px; }
+    .do-filter-input {
+        padding: 8px 12px;
+        border: 1.5px solid var(--light-gray);
+        border-radius: 8px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--dark-blue);
+        background: var(--white);
+        outline: none;
+        transition: border-color .2s;
+    }
 
-/* ── Donut ── */
-.do-body-donut { display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap; padding-top:12px; }
-.do-donut-wrap { flex-shrink:0; }
-.do-donut-legend { display:flex; flex-direction:column; gap:9px; max-width:170px; }
-.do-legend-row { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:var(--dark-blue); }
-.do-legend-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
-.do-legend-cnt { margin-left:auto; font-size:11px; font-weight:800; color:var(--dark-blue); opacity:.55; }
+    .do-filter-input:focus {
+        border-color: var(--primary-green);
+    }
 
-/* ── Line Chart ── */
-.do-body-line { position:relative; height:230px; display:flex; align-items:center; justify-content:center; }
-.do-body-line canvas { max-height:100%; }
+    .do-btn-apply {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        background: var(--primary-green);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .2s, transform .15s;
+    }
 
-/* ── Leaflet map fix ── */
-#buzzMap .leaflet-container { height:100%; font-family:'Poppins',sans-serif; }
+    .do-btn-apply:hover {
+        background: #1a9a5c;
+        transform: translateY(-1px);
+    }
 
-/* ── Empty ── */
-.do-empty { font-size:13px; color:var(--dark-blue); opacity:.35; text-align:center; padding:40px 0; font-weight:600; }
+    /* ── Grid Layouts ── */
+    .do-row-top {
+        display: grid;
+        grid-template-columns: 1.15fr 1.15fr .85fr .85fr;
+        gap: 18px;
+        margin-top: 24px;
+    }
 
-/* ── Responsive ── */
-@media(max-width:1100px) { .do-row-top { grid-template-columns:1fr 1fr; } }
-@media(max-width:700px)  { .do-row-top, .do-row-mid { grid-template-columns:1fr; } }
+    .do-row-mid {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 18px;
+        margin-top: 18px;
+    }
+
+    /* ── Card ── */
+    .do-card {
+        background: var(--white);
+        border: 1.5px solid var(--light-gray);
+        border-radius: 14px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+        transition: box-shadow .2s;
+    }
+
+    .do-card:hover {
+        box-shadow: 0 4px 18px rgba(0, 0, 0, .09);
+    }
+
+    /* ── Card Head ── */
+    .do-card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 13px 18px 11px;
+        border-bottom: 1.5px solid var(--light-gray);
+    }
+
+    .do-card-head-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .do-head-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .do-head-icon svg {
+        width: 17px;
+        height: 17px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .do-card-title {
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--dark-blue);
+    }
+
+    .do-badge {
+        font-size: 10px;
+        font-weight: 800;
+        padding: 3px 9px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+    }
+
+    /* ── Card Body ── */
+    .do-card-body {
+        padding: 14px 18px 18px;
+        flex: 1;
+    }
+
+    .do-body-scroll {
+        max-height: 185px;
+        overflow-y: auto;
+    }
+
+    .do-body-scroll::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .do-body-scroll::-webkit-scrollbar-thumb {
+        background: var(--light-gray);
+        border-radius: 2px;
+    }
+
+    /* ── Mini Table ── */
+    .do-tbl {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .do-tbl th {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--dark-blue);
+        opacity: .4;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        padding: 0 0 7px;
+        border-bottom: 1px solid var(--light-gray);
+        text-align: left;
+    }
+
+    .do-tbl-left {
+        text-align: left;
+    }
+
+    .do-tbl-right {
+        text-align: right;
+    }
+
+    .do-tbl td {
+        padding: 6.5px 0;
+        font-size: 13px;
+        color: var(--dark-blue);
+        border-bottom: 1px solid #f0f2f5;
+    }
+
+    .do-tbl tr:last-child td {
+        border-bottom: none;
+    }
+
+    .do-tbl-rank {
+        font-weight: 800;
+        color: var(--primary-green);
+        width: 22px;
+        font-size: 12px;
+    }
+
+    .do-tbl-name {
+        font-weight: 600;
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .do-tbl-num {
+        text-align: right;
+        font-weight: 700;
+        font-size: 12px;
+        color: var(--dark-blue);
+        opacity: .65;
+    }
+
+    /* ── Mention Big Number ── */
+    .do-body-mention {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 150px;
+    }
+
+    .do-mention-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--dark-blue);
+        opacity: .5;
+        margin-bottom: 6px;
+    }
+
+    .do-mention-val {
+        font-size: 44px;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -1px;
+    }
+
+    /* ── Donut ── */
+    .do-body-donut {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        padding-top: 12px;
+    }
+
+    .do-donut-wrap {
+        flex-shrink: 0;
+    }
+
+    .do-donut-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        max-width: 170px;
+    }
+
+    .do-legend-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--dark-blue);
+    }
+
+    .do-legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        flex-shrink: 0;
+    }
+
+    .do-legend-cnt {
+        margin-left: auto;
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--dark-blue);
+        opacity: .55;
+    }
+
+    /* ── Line Chart ── */
+    .do-body-line {
+        position: relative;
+        height: 230px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .do-body-line canvas {
+        max-height: 100%;
+    }
+
+    /* ── Leaflet map fix ── */
+    #buzzMap .leaflet-container {
+        height: 100%;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* ── Empty ── */
+    .do-empty {
+        font-size: 13px;
+        color: var(--dark-blue);
+        opacity: .35;
+        text-align: center;
+        padding: 40px 0;
+        font-weight: 600;
+    }
+
+    /* ── Responsive ── */
+    @media(max-width:1100px) {
+        .do-row-top {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media(max-width:700px) {
+
+        .do-row-top,
+        .do-row-mid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 @endsection
 
@@ -332,195 +621,357 @@
      ============================================================ -->
 @section('scripts')
 <!-- Chart.js sudah di-load di app.blade.php, tidak perlu di-load lagi -->
-<link  rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-(function(){
+    (function() {
 
-  // ────────────────────────────────────────────
-  // 1. DONUT — Most Engaged User
-  // ────────────────────────────────────────────
-  @php
-    $rawUsers   = $activeUsers['data'] ?? (array)$activeUsers;
-    $topUsers   = array_slice($rawUsers, 0, 6);
-    $uLabels    = [];
-    $uCounts    = [];
-    foreach ($topUsers as $u) {
-      $handle  = $u['screen_name'] ?? $u['name'] ?? $u['username'] ?? 'Unknown';
-      $cnt     = (int)($u['tweet_count'] ?? $u['count'] ?? $u['total'] ?? 0);
-      $uLabels[] = '@' . ltrim($handle, '@');
-      $uCounts[] = $cnt;
-    }
-  @endphp
-
-  var uLabels = @json($uLabels);
-  var uCounts = @json($uCounts);
-  var dColors = ['#22c55e','#3b7dd8','#7c3aed','#e67e22','#ef4444','#06b6d4'];
-
-  // Legend
-  var legendEl = document.getElementById('donutLegend');
-  uLabels.forEach(function(lbl, i){
-    var row = document.createElement('div');
-    row.className = 'do-legend-row';
-    row.innerHTML =
-      '<span class="do-legend-dot" style="background:'+dColors[i%dColors.length]+'"></span>'+
-      '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;">'+lbl+'</span>'+
-      '<span class="do-legend-cnt">'+uCounts[i].toLocaleString()+' tweets</span>';
-    legendEl.appendChild(row);
-  });
-
-  // Chart
-  new Chart(document.getElementById('chartDonut').getContext('2d'), {
-    type:'doughnut',
-    data:{
-      labels: uLabels,
-      datasets:[{
-        data: uCounts,
-        backgroundColor: dColors,
-        borderColor:'#fff',
-        borderWidth:3,
-        hoverOffset:5
-      }]
-    },
-    options:{
-      responsive:false,
-      cutout:'60%',
-      plugins:{ legend:{ display:false } },
-      animation:{ animateRotate:true, duration:900 }
-    }
-  });
-
-  // ────────────────────────────────────────────
-  // 2. LINE — Sentiment Score
-  // ────────────────────────────────────────────
-  @php
-    $sentRaw   = $sentiment['data'] ?? (array)$sentiment;
-    $sDates    = []; $sPos = []; $sNeg = []; $sNeu = [];
-    if(is_array($sentRaw)){
-      foreach($sentRaw as $r){
-        if(!is_array($r)) continue;
-        $d = $r['date'] ?? $r['day'] ?? '';
-        if($d === '') continue;
-        $sDates[] = $d;
-        $sPos[]   = (int)($r['positive'] ?? 0);
-        $sNeg[]   = (int)($r['negative'] ?? 0);
-        $sNeu[]   = (int)($r['neutral']  ?? 0);
-      }
-    }
-  @endphp
-
-  var sDates=@json($sDates), sPos=@json($sPos), sNeg=@json($sNeg), sNeu=@json($sNeu);
-
-  new Chart(document.getElementById('chartSentiment').getContext('2d'), {
-    type:'line',
-    data:{
-      labels: sDates,
-      datasets:[
-        { label:'Positive', data:sPos, borderColor:'#06b6d4', backgroundColor:'rgba(6,182,212,.1)',  borderWidth:2.5, tension:.4, fill:true, pointRadius:0, pointHoverRadius:4 },
-        { label:'Negative', data:sNeg, borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,.07)', borderWidth:2.5, tension:.4, fill:true, pointRadius:0, pointHoverRadius:4 },
-        { label:'Neutral',  data:sNeu, borderColor:'#9ca3af', backgroundColor:'rgba(156,163,175,.05)', borderWidth:2, tension:.4, fill:true, pointRadius:0, pointHoverRadius:4, borderDash:[5,3] }
-      ]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      interaction:{ mode:'index', intersect:false },
-      plugins:{
-        legend:{
-          position:'bottom',
-          labels:{ font:{ family:'Poppins', size:11, weight:'600' }, padding:16, usePointStyle:true, pointStyleWidth:10 }
+        // ────────────────────────────────────────────
+        // 1. DONUT — Most Engaged User
+        // ────────────────────────────────────────────
+        @php
+        $rawUsers = $activeUsers['data'] ?? (array) $activeUsers;
+        $topUsers = array_slice($rawUsers, 0, 6);
+        $uLabels = [];
+        $uCounts = [];
+        foreach($topUsers as $u) {
+            $handle = $u['screen_name'] ?? $u['name'] ?? $u['username'] ?? 'Unknown';
+            $cnt = (int)($u['tweet_count'] ?? $u['count'] ?? $u['total'] ?? 0);
+            $uLabels[] = '@'.ltrim($handle, '@');
+            $uCounts[] = $cnt;
         }
-      },
-      scales:{
-        x:{ ticks:{ font:{ family:'Poppins', size:10 }, maxRotation:0, autoSkip:true, maxTicksLimit:8 }, grid:{ display:false } },
-        y:{ ticks:{ font:{ family:'Poppins', size:10 } }, grid:{ color:'#f0f2f5' }, beginAtZero:true }
-      },
-      animation:{ duration:1000 }
-    }
-  });
+        @endphp
 
- // ────────────────────────────────────────────
-// 3. LEAFLET MAP — Buzzer Map (Heat Circle Style)
-// ────────────────────────────────────────────
-@php
-  $geoRaw = $geoUsers['locality']['rows'] ?? 
-            $geoUsers['administrative_area_level_1']['rows'] ?? 
-            [];
-@endphp
-var geoData = @json($geoRaw);
+        var uLabels = @json($uLabels);
+        var uCounts = @json($uCounts);
+        var dColors = ['#22c55e', '#3b7dd8', '#7c3aed', '#e67e22', '#ef4444', '#06b6d4'];
 
-console.log('🗺️ Geo Data:', geoData);
+        // Legend
+        var legendEl = document.getElementById('donutLegend');
+        uLabels.forEach(function(lbl, i) {
+            var row = document.createElement('div');
+            row.className = 'do-legend-row';
+            row.innerHTML =
+                '<span class="do-legend-dot" style="background:' + dColors[i % dColors.length] + '"></span>' +
+                '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;">' + lbl + '</span>' +
+                '<span class="do-legend-cnt">' + uCounts[i].toLocaleString() + ' tweets</span>';
+            legendEl.appendChild(row);
+        });
 
-var map = L.map('buzzMap',{ center:[-2.5, 118], zoom:5 });
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-  attribution:'&copy; OpenStreetMap contributors', maxZoom:19
-}).addTo(map);
+        // Chart
+        new Chart(document.getElementById('chartDonut').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: uLabels,
+                datasets: [{
+                    data: uCounts,
+                    backgroundColor: dColors,
+                    borderColor: '#fff',
+                    borderWidth: 3,
+                    hoverOffset: 5
+                }]
+            },
+            options: {
+                responsive: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                animation: {
+                    animateRotate: true,
+                    duration: 900
+                }
+            }
+        });
 
-// Find max count untuk scaling
-var maxCount = Math.max(...geoData.map(p => p.count || 0));
-geoData.forEach(function(p){
-  var lat = parseFloat(p.latitude || 0);
-  var lng = parseFloat(p.longitude || 0);
-  
-  if(lat === 0 && lng === 0) return;
-  
-  var name  = p.name || 'Unknown';
-  var count = parseInt(p.count || 0);
-  
-  // 🔥 HEAT CIRCLE dengan scaling logarithmic (lebih smooth)
-  var radius = Math.sqrt(count) * 10000; // Base radius
-  radius = Math.max(radius, 10000); // Min 10km
-  radius = Math.min(radius, 150000); // Max 150km
-  
-  // Opacity berdasarkan count (lebih tinggi = lebih pekat)
-  var opacity = Math.min(0.15 + (count / maxCount) * 0.45, 0.6);
-  
-  // 🔥 HEAT CIRCLE
-  L.circle([lat, lng], {
-    radius: radius,
-    fillColor: '#ef4444',
-    color: '#ef4444',
-    weight: 1,
-    opacity: 0.3,
-    fillOpacity: opacity
-  }).addTo(map);
-  
-  // 🔥 PIN
-  var redPin = L.divIcon({
-    className:'',
-    html:'<div style="width:13px;height:13px;background:#ef4444;border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,.4);"></div>',
-    iconSize:[13,13], 
-    iconAnchor:[6.5,6.5], 
-    popupAnchor:[0,-10]
-  });
-  
-  L.marker([lat, lng], { icon: redPin }).addTo(map)
-    .bindPopup(
-      '<div style="font-family:Poppins; text-align:center; padding:8px;">' +
-      '<div style="font-weight:700; font-size:15px; color:#1e293b; margin-bottom:6px;">' + name + '</div>' +
-      '<div style="font-size:24px; font-weight:800; color:#ef4444; margin-bottom:2px;">' + count.toLocaleString() + '</div>' +
-      '<div style="font-size:10px; color:#64748b; text-transform:uppercase; letter-spacing:0.8px; font-weight:600;">mentions</div>' +
-      '</div>'
-    );
-});
+        // ────────────────────────────────────────────
+        // 2. LINE — Sentiment Score
+        // ────────────────────────────────────────────
+        @php
+        $sentRaw = $sentiment['data'] ?? (array) $sentiment;
+        $sDates = [];
+        $sPos = [];
+        $sNeg = [];
+        $sNeu = [];
+        if (is_array($sentRaw)) {
+            foreach($sentRaw as $r) {
+                if (!is_array($r)) continue;
+                $d = $r['date'] ?? $r['day'] ?? '';
+                if ($d === '') continue;
+                $sDates[] = $d;
+                $sPos[] = (int)($r['positive'] ?? 0);
+                $sNeg[] = (int)($r['negative'] ?? 0);
+                $sNeu[] = (int)($r['neutral'] ?? 0);
+            }
+        }
+        @endphp
 
-  // ────────────────────────────────────────────
-  // 4. FILTER BUTTON
-  // ────────────────────────────────────────────
-// ── FILTER BUTTON (update yang lama) ──
-document.getElementById('doBtnApply').addEventListener('click', function(){
-  var pid = document.getElementById('doProject').value;
-  var sd = document.getElementById('doStartDate').value;
-  var ed = document.getElementById('doEndDate').value;
-  if(!sd || !ed) return;
-  var p = new URLSearchParams(window.location.search);
-  p.set('project_id', pid);
-  p.set('start_date', sd);
-  p.set('end_date', ed);
-  window.location.search = p.toString();
-});
+        var sDates = @json($sDates),
+            sPos = @json($sPos),
+            sNeg = @json($sNeg),
+            sNeu = @json($sNeu);
 
-})();
+        new Chart(document.getElementById('chartSentiment').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: sDates,
+                datasets: [{
+                        label: 'Positive',
+                        data: sPos,
+                        borderColor: '#06b6d4',
+                        backgroundColor: 'rgba(6,182,212,.1)',
+                        borderWidth: 2.5,
+                        tension: .4,
+                        fill: true,
+                        pointRadius: 0,
+                        pointHoverRadius: 4
+                    },
+                    {
+                        label: 'Negative',
+                        data: sNeg,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239,68,68,.07)',
+                        borderWidth: 2.5,
+                        tension: .4,
+                        fill: true,
+                        pointRadius: 0,
+                        pointHoverRadius: 4
+                    },
+                    {
+                        label: 'Neutral',
+                        data: sNeu,
+                        borderColor: '#9ca3af',
+                        backgroundColor: 'rgba(156,163,175,.05)',
+                        borderWidth: 2,
+                        tension: .4,
+                        fill: true,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                        borderDash: [5, 3]
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                family: 'Poppins',
+                                size: 11,
+                                weight: '600'
+                            },
+                            padding: 16,
+                            usePointStyle: true,
+                            pointStyleWidth: 10
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            font: {
+                                family: 'Poppins',
+                                size: 10
+                            },
+                            maxRotation: 0,
+                            autoSkip: true,
+                            maxTicksLimit: 8
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            font: {
+                                family: 'Poppins',
+                                size: 10
+                            }
+                        },
+                        grid: {
+                            color: '#f0f2f5'
+                        },
+                        beginAtZero: true
+                    }
+                },
+                animation: {
+                    duration: 1000
+                }
+            }
+        });
+
+        // ────────────────────────────────────────────
+        // 3. LEAFLET MAP — Buzzer Map (Fixed Radius + Label Position)
+        // ────────────────────────────────────────────
+        @php
+        $geoRaw = $geoUsers['locality']['rows'] ??
+            $geoUsers['administrative_area_level_1']['rows'] ?? [];
+        @endphp
+        var geoData = @json($geoRaw);
+
+        console.log('🗺️ Geo Data:', geoData);
+
+        var map = L.map('buzzMap', {
+            center: [-2.5, 118],
+            zoom: 5
+        });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Find max count untuk scaling
+        var maxCount = Math.max(...geoData.map(p => p.count || 0));
+        var minCount = Math.min(...geoData.map(p => p.count || 0).filter(c => c > 0));
+
+        geoData.forEach(function(p) {
+            var lat = parseFloat(p.latitude || 0);
+            var lng = parseFloat(p.longitude || 0);
+
+            if (lat === 0 && lng === 0) return;
+
+            var name = p.name || 'Unknown';
+            var count = parseInt(p.count || 0);
+
+            // 🔥 CIRCLE - radius lebih kecil (dibagi 3-4x)
+            if (count >= 10) {
+                var radius = Math.sqrt(count) * 2500; // ← CHANGED: dari 10000 ke 2500 (4x lebih kecil)
+                radius = Math.max(radius, 5000); // ← CHANGED: min dari 10km ke 5km
+                radius = Math.min(radius, 50000); // ← CHANGED: max dari 150km ke 50km
+
+                var opacity = Math.min(0.15 + (count / maxCount) * 0.45, 0.6);
+
+                L.circle([lat, lng], {
+                    radius: radius,
+                    fillColor: '#ef4444',
+                    color: '#ef4444',
+                    weight: 1,
+                    opacity: 0.3,
+                    fillOpacity: opacity
+                }).addTo(map);
+            }
+
+            // 🔥 PIN di tengah
+            var redPin = L.divIcon({
+                className: '',
+                html: '<div style="width:13px;height:13px;background:#ef4444;border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,.4);"></div>',
+                iconSize: [13, 13],
+                iconAnchor: [6.5, 6.5],
+                popupAnchor: [0, -10]
+            });
+
+            L.marker([lat, lng], {
+                    icon: redPin
+                }).addTo(map)
+                .bindPopup(
+                    '<div style="font-family:Poppins; text-align:center; padding:8px;">' +
+                    '<div style="font-weight:700; font-size:15px; color:#1e293b; margin-bottom:6px;">' + name + '</div>' +
+                    '<div style="font-size:24px; font-weight:800; color:#ef4444; margin-bottom:2px;">' + count.toLocaleString() + '</div>' +
+                    '<div style="font-size:10px; color:#64748b; text-transform:uppercase; letter-spacing:0.8px; font-weight:600;">mentions</div>' +
+                    '</div>'
+                );
+
+            // 🔥 ANGKA DI ATAS PIN (bukan di tengah)
+            var label = count > 999 ? (count / 1000).toFixed(1) + 'k' : count;
+            var fontSize = count >= 1000 ? '13px' : '11px';
+
+            L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: 'circle-label',
+                    html: '<div style="' +
+                        'font-family:Poppins;' +
+                        'font-size:' + fontSize + ';' +
+                        'font-weight:900;' +
+                        'color:#fff;' +
+                        'background:rgba(239,68,68,0.95);' +
+                        'padding:3px 8px;' +
+                        'border-radius:12px;' +
+                        'border:2px solid #fff;' +
+                        'box-shadow:0 2px 6px rgba(0,0,0,0.4);' +
+                        'white-space:nowrap;' +
+                        'letter-spacing:0.3px;' +
+                        '">' + label + '</div>',
+                    iconSize: [40, 20],
+                    iconAnchor: [20, 25] // ← CHANGED: posisi anchor agar label di ATAS pin
+                }),
+                interactive: false
+            }).addTo(map);
+        });
+
+        // 🔥 LEGEND - Cleaner & threshold changed to ≥50
+var legend = L.control({ position: 'bottomright' });
+
+legend.onAdd = function(map) {
+  var div = L.DomUtil.create('div', 'map-legend');
+  
+  div.innerHTML = 
+    '<div style="background:#fff; padding:14px 16px; border-radius:12px; box-shadow:0 3px 12px rgba(0,0,0,0.15); font-family:Poppins; min-width:180px;">' +
+      
+      // Title
+      '<div style="font-size:12px; font-weight:800; color:#1e293b; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.6px; border-bottom:2px solid #ef4444; padding-bottom:6px;">Buzzer Activity</div>' +
+      
+      // Heat circle info
+      '<div style="background:linear-gradient(135deg, #fef3ee 0%, #fff 100%); padding:8px 10px; border-radius:8px; margin-bottom:12px; border-left:3px solid #ef4444;">' +
+        '<div style="font-size:10px; color:#64748b; font-weight:600; line-height:1.5;">' +
+          'Heat circles appear for<br>' +
+          '<span style="color:#ef4444; font-weight:900; font-size:11px;">≥10 mentions</span>' +
+        '</div>' +
+      '</div>' +
+      
+      // Size indicators
+      '<div style="display:flex; align-items:flex-end; justify-content:space-between; gap:8px; margin-bottom:10px;">' +
+        '<div style="text-align:center; flex:1;">' +
+          '<div style="width:22px; height:22px; background:rgba(239,68,68,0.35); border:1.5px solid rgba(239,68,68,0.6); border-radius:50%; margin:0 auto 5px;"></div>' +
+          '<div style="font-size:9px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">Low</div>' +
+        '</div>' +
+        '<div style="text-align:center; flex:1;">' +
+          '<div style="width:32px; height:32px; background:rgba(239,68,68,0.55); border:1.5px solid rgba(239,68,68,0.7); border-radius:50%; margin:0 auto 5px;"></div>' +
+          '<div style="font-size:9px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">Med</div>' +
+        '</div>' +
+        '<div style="text-align:center; flex:1;">' +
+          '<div style="width:42px; height:42px; background:rgba(239,68,68,0.75); border:1.5px solid rgba(239,68,68,0.85); border-radius:50%; margin:0 auto 5px;"></div>' +
+          '<div style="font-size:9px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">High</div>' +
+        '</div>' +
+      '</div>' +
+      
+      // Count range
+      '<div style="padding-top:10px; border-top:1.5px solid #f0f2f5; font-size:10px; color:#64748b; font-weight:600; text-align:center;">' +
+        'Range: <span style="color:#ef4444; font-weight:900;">' + minCount + ' - ' + maxCount.toLocaleString() + '</span>' +
+      '</div>' +
+      
+    '</div>';
+  
+  return div;
+};
+
+legend.addTo(map);
+
+        // ────────────────────────────────────────────
+        // 4. FILTER BUTTON
+        // ────────────────────────────────────────────
+        // ── FILTER BUTTON (update yang lama) ──
+        document.getElementById('doBtnApply').addEventListener('click', function() {
+            var pid = document.getElementById('doProject').value;
+            var sd = document.getElementById('doStartDate').value;
+            var ed = document.getElementById('doEndDate').value;
+            if (!sd || !ed) return;
+            var p = new URLSearchParams(window.location.search);
+            p.set('project_id', pid);
+            p.set('start_date', sd);
+            p.set('end_date', ed);
+            window.location.search = p.toString();
+        });
+
+    })();
 </script>
 @endsection
