@@ -125,7 +125,7 @@ class MkController extends Controller
     }
 
     /**
-     * 🔥 Helper: Extract Daily Timeline with Sentiment Breakdown (7 days)
+     * 🔥 Helper: Extract Daily Timeline with Sentiment Breakdown (7 days INCLUDING TODAY)
      */
     private function extractDailyTimeline($projectId, MediaKernelsClient $mk): array
     {
@@ -140,11 +140,22 @@ class MkController extends Controller
         ];
         
         try {
-            // Generate last 7 days
+            // 🔥 FIXED: Generate last 6 days + TODAY (total 7 days)
+            // Loop dari 6 hari yang lalu sampai hari ini
             for ($i = 6; $i >= 0; $i--) {
                 $date = now()->subDays($i);
                 $dateStr = $date->format('Y-m-d');
-                $dateLabel = $date->format('d. M'); // "22. Jan"
+                
+                // 🔥 Format tanggal lebih jelas: "02. Feb" 
+                $day = $date->format('d');
+                $month = $date->format('M');
+                $dateLabel = $day . '. ' . $month;
+                
+                Log::info("Fetching sentiment for date", [
+                    'date' => $dateStr,
+                    'label' => $dateLabel,
+                    'is_today' => $date->isToday()
+                ]);
                 
                 // Fetch sentiment data for this specific date
                 $sentimentData = $mk->sentimentTotal(
@@ -169,6 +180,13 @@ class MkController extends Controller
                 $timeline['sentiment']['positive'][] = $pos;
                 $timeline['sentiment']['neutral'][] = $neu;
                 $timeline['sentiment']['negative'][] = $neg;
+                
+                Log::info("Sentiment data for {$dateLabel}", [
+                    'total' => $total,
+                    'pos' => $pos,
+                    'neu' => $neu,
+                    'neg' => $neg
+                ]);
             }
             
         } catch (\Exception $e) {

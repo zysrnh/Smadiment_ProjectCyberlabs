@@ -751,7 +751,7 @@
         }
 
         // ────────────────────────────────────────────
-        // 2. LINE CHART — Sentiment Score (FIXED)
+        // 2. LINE CHART — Sentiment Score (FIXED WITH DEBUG)
         // ────────────────────────────────────────────
         @php
         // 🔥 Gunakan sentimentTimeline yang sudah dikirim dari controller
@@ -764,6 +764,13 @@
                 'negative' => [],
             ]
         ];
+        
+        // 🔥 Debug: Log timeline data
+        \Log::info('Sentiment Timeline Data in View', [
+            'dates_count' => count($timeline['dates']),
+            'dates' => $timeline['dates'],
+            'values' => $timeline['values'],
+        ]);
         @endphp
 
         var sDates = @json($timeline['dates'] ?? []);
@@ -772,7 +779,14 @@
         var sNeg = @json($timeline['sentiment']['negative'] ?? []);
         var sNew = @json($timeline['values'] ?? []);
 
-        console.log('📈 Sentiment Data:', { sDates, sPos, sNeu, sNeg, sNew });
+        console.log('📈 Sentiment Data (FROM CONTROLLER):', { 
+            sDates, 
+            sPos, 
+            sNeu, 
+            sNeg, 
+            sNew,
+            today: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+        });
 
         new Chart(document.getElementById('chartSentiment').getContext('2d'), {
             type: 'line',
@@ -786,7 +800,7 @@
                         backgroundColor: 'rgba(90, 185, 234, 0.1)',
                         borderWidth: 2.5,
                         tension: 0.4,
-                        pointRadius: 4,
+                        pointRadius: sDates.map((d, i) => i === sDates.length - 1 ? 6 : 4), // Bigger point for today
                         pointHoverRadius: 6,
                         pointBackgroundColor: '#5AB9EA',
                         pointBorderColor: '#FFFFFF',
@@ -800,7 +814,7 @@
                         backgroundColor: 'transparent',
                         borderWidth: 2,
                         tension: 0.4,
-                        pointRadius: 3,
+                        pointRadius: sDates.map((d, i) => i === sDates.length - 1 ? 5 : 3),
                         pointHoverRadius: 5,
                         pointBackgroundColor: '#22C55E',
                         pointBorderColor: '#FFFFFF',
@@ -814,7 +828,7 @@
                         backgroundColor: 'transparent',
                         borderWidth: 1.5,
                         tension: 0.4,
-                        pointRadius: 2,
+                        pointRadius: sDates.map((d, i) => i === sDates.length - 1 ? 4 : 2),
                         pointHoverRadius: 4,
                         pointBackgroundColor: '#B0BEC5',
                         pointBorderColor: '#FFFFFF',
@@ -828,7 +842,7 @@
                         backgroundColor: 'transparent',
                         borderWidth: 1.5,
                         tension: 0.4,
-                        pointRadius: 2,
+                        pointRadius: sDates.map((d, i) => i === sDates.length - 1 ? 4 : 2),
                         pointHoverRadius: 4,
                         pointBackgroundColor: '#EF4444',
                         pointBorderColor: '#FFFFFF',
