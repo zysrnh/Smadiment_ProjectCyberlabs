@@ -136,7 +136,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach(array_slice($tags, 0, 5) as $i => $tag)
+                @foreach(array_slice($tags, 0, 50) as $i => $tag)
                 @php
                 $tagName = $tag['hashtag'] ?? $tag['name'] ?? $tag['tag'] ?? 'unknown';
                 $tagCount = (int)($tag['mention'] ?? $tag['size'] ?? $tag['count'] ?? 0);
