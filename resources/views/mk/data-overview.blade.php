@@ -96,55 +96,55 @@
         </div>
     </div>
 
-    <!-- 2. Top Hashtag X -->
-    <div class="do-card">
-        <div class="do-card-head">
-            <div class="do-card-head-left">
-                <span class="do-head-icon" style="background:#eef3f9; color:#3b7dd8;">
-                    <svg viewBox="0 0 24 24">
-                        <line x1="4" y1="9" x2="20" y2="9" />
-                        <line x1="4" y1="15" x2="20" y2="15" />
-                        <line x1="9" y1="4" x2="5" y2="20" />
-                        <line x1="15" y1="4" x2="11" y2="20" />
-                    </svg>
-                </span>
-                <span class="do-card-title">Top Hashtag</span>
-            </div>
-            <span class="do-badge" style="background:#f0f0f0; color:#222;">X</span>
+  <!-- 2. Top Hashtag X -->
+<div class="do-card">
+    <div class="do-card-head">
+        <div class="do-card-head-left">
+            <span class="do-head-icon" style="background:#eef3f9; color:#3b7dd8;">
+                <svg viewBox="0 0 24 24">
+                    <line x1="4" y1="9" x2="20" y2="9" />
+                    <line x1="4" y1="15" x2="20" y2="15" />
+                    <line x1="9" y1="4" x2="5" y2="20" />
+                    <line x1="15" y1="4" x2="11" y2="20" />
+                </svg>
+            </span>
+            <span class="do-card-title">Top Hashtag</span>
         </div>
-        <div class="do-card-body do-body-scroll">
-            @php
-            $tags = $topHashtags['data'] ?? (array) $topHashtags;
-            @endphp
-            @if(count($tags) > 0)
-            <table class="do-tbl">
-                <thead>
-                    <tr>
-                        <th style="width:28px;">#</th>
-                        <th class="do-tbl-left">Hashtag</th>
-                        <th class="do-tbl-right">Mention</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach(array_slice($tags, 0, 8) as $i => $tag)
-                    @php
-                   $tagName = $tag['name'] ?? $tag['hashtag'] ?? $tag['tag'] ?? 'unknown';
-$tagCount = (int)($tag['size'] ?? $tag['mention'] ?? $tag['count'] ?? 0);
-                    $tagName = str_starts_with($tagName,'#') ? $tagName : '#'.$tagName;
-                    @endphp
-                    <tr>
-                        <td class="do-tbl-rank">{{ $i+1 }}</td>
-                        <td class="do-tbl-name" style="color:#3b7dd8;">{{ $tagName }}</td>
-                        <td class="do-tbl-num">{{ number_format($tagCount) }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            @else
-            <div class="do-empty">Tidak ada data</div>
-            @endif
-        </div>
+        <span class="do-badge" style="background:#f0f0f0; color:#222;">X</span>
     </div>
+    <div class="do-card-body do-body-scroll">
+        @php
+        $tags = $topHashtags['data'] ?? (array) $topHashtags;
+        @endphp
+        @if(count($tags) > 0)
+        <table class="do-tbl">
+            <thead>
+                <tr>
+                    <th style="width:28px;">#</th>
+                    <th class="do-tbl-left">Hashtag</th>
+                    <th class="do-tbl-right">Mention</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(array_slice($tags, 0, 10) as $i => $tag)
+                @php
+                $tagName = $tag['hashtag'] ?? $tag['name'] ?? $tag['tag'] ?? 'unknown';
+                $tagCount = (int)($tag['mention'] ?? $tag['size'] ?? $tag['count'] ?? 0);
+                $tagName = str_starts_with($tagName,'#') ? $tagName : '#'.$tagName;
+                @endphp
+                <tr>
+                    <td class="do-tbl-rank">{{ $i+1 }}</td>
+                    <td class="do-tbl-name" style="color:#3b7dd8;">{{ $tagName }}</td>
+                    <td class="do-tbl-num">{{ number_format($tagCount) }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @else
+        <div class="do-empty">Tidak ada data</div>
+        @endif
+    </div>
+</div>
 
     <!-- 3. Mention by Social Media -->
     <div class="do-card">

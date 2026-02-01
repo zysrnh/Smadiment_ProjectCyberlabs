@@ -1001,31 +1001,33 @@ class MkController extends Controller
                 Log::warning('dataOverview: recentTopics failed', ['error' => $e->getMessage()]);
             }
 
-            // ── TOP HASHTAGS ──
-            try {
-                $rawHashtags = $mk->topHashtags(
-                    $projectId,
-                    $params['media'],
-                    $params['startDate'],
-                    $params['endDate'],
-                    $params['startTime'],
-                    $params['endTime']
-                );
-                
-              $rawItems = $rawHashtags['data'] ?? (is_array($rawHashtags) ? $rawHashtags : []);
-$normalized = [];
-foreach ($rawItems as $item) {
-    if (!is_array($item)) continue;
-    $normalized[] = [
-        'hashtag' => $item['name'] ?? $item['hashtag'] ?? $item['tag'] ?? 'unknown',
-        'mention' => (int)($item['size'] ?? $item['mention'] ?? $item['count'] ?? 0),
-    ];
+          // ── TOP HASHTAGS ──
+try {
+    $rawHashtags = $mk->topHashtags(
+        $projectId,
+        $params['media'],
+        $params['startDate'],
+        $params['endDate'],
+        $params['startTime'],
+        $params['endTime']
+    );
+    
+    $rawItems = $rawHashtags['data'] ?? (is_array($rawHashtags) ? $rawHashtags : []);
+    $normalized = [];
+    foreach ($rawItems as $item) {
+        if (!is_array($item)) continue;
+        $normalized[] = [
+            'hashtag' => $item['name'] ?? $item['hashtag'] ?? $item['tag'] ?? 'unknown',
+            'mention' => (int)($item['size'] ?? $item['mention'] ?? $item['count'] ?? 0),
+        ];
+    }
+    usort($normalized, fn($a, $b) => $b['mention'] <=> $a['mention']);
+    
+    // 🔥 Ambil top 10 saja
+    $topHashtags = ['data' => array_slice($normalized, 0, 10)];
+} catch (\Exception $e) {
+    Log::warning('dataOverview: topHashtags failed', ['error' => $e->getMessage()]);
 }
-usort($normalized, fn($a, $b) => $b['mention'] <=> $a['mention']);
-$topHashtags = ['data' => $normalized];
-            } catch (\Exception $e) {
-                Log::warning('dataOverview: topHashtags failed', ['error' => $e->getMessage()]);
-            }
 
             // ── MENTIONS (untuk hitung Social Media vs Online News) ──
             try {
