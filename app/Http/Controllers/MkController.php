@@ -140,33 +140,22 @@ class MkController extends Controller
         ];
         
         try {
-            // 🔥 FIXED: Generate last 6 days + TODAY (total 7 days)
-            // Loop dari 6 hari yang lalu sampai hari ini
             for ($i = 6; $i >= 0; $i--) {
                 $date = now()->subDays($i);
                 $dateStr = $date->format('Y-m-d');
                 
-                // 🔥 Format tanggal lebih jelas: "02. Feb" 
                 $day = $date->format('d');
                 $month = $date->format('M');
                 $dateLabel = $day . '. ' . $month;
                 
-                Log::info("Fetching sentiment for date", [
-                    'date' => $dateStr,
-                    'label' => $dateLabel,
-                    'is_today' => $date->isToday()
-                ]);
-                
-                // Fetch sentiment data for this specific date
                 $sentimentData = $mk->sentimentTotal(
                     $projectId,
                     $dateStr,
-                    $dateStr, // same date for single day
+                    $dateStr,
                     0,
                     23
                 );
                 
-                // Normalize sentiment response
                 $normalized = $this->normalizeSentimentTotal($sentimentData);
                 
                 $pos = $normalized['positive'];
@@ -174,19 +163,11 @@ class MkController extends Controller
                 $neg = $normalized['negative'];
                 $total = $pos + $neu + $neg;
                 
-                // Add to timeline
                 $timeline['dates'][] = $dateLabel;
                 $timeline['values'][] = $total;
                 $timeline['sentiment']['positive'][] = $pos;
                 $timeline['sentiment']['neutral'][] = $neu;
                 $timeline['sentiment']['negative'][] = $neg;
-                
-                Log::info("Sentiment data for {$dateLabel}", [
-                    'total' => $total,
-                    'pos' => $pos,
-                    'neu' => $neu,
-                    'neg' => $neg
-                ]);
             }
             
         } catch (\Exception $e) {
@@ -206,7 +187,6 @@ class MkController extends Controller
         $rawProjects = $mk->listProjects(0, 100);
         $projects = array_values($rawProjects);
         
-        // Enrich each project with stats data
         $dateRange = [
             'start' => now()->subDays(7)->toDateString(),
             'end' => now()->toDateString(),
@@ -214,78 +194,14 @@ class MkController extends Controller
         
         foreach ($projects as &$project) {
             try {
-                // Get project stats for each media type
-                $allStats = $mk->projectStats(
-                    $project['id'],
-                    'all',
-                    $dateRange['start'],
-                    $dateRange['end'],
-                    0,
-                    23,
-                    'volumetotal'
-                );
+                $allStats = $mk->projectStats($project['id'], 'all', $dateRange['start'], $dateRange['end'], 0, 23, 'volumetotal');
+                $newsStats = $mk->projectStats($project['id'], 'onlinenews', $dateRange['start'], $dateRange['end'], 0, 23, 'volumetotal');
+                $twitStats = $mk->projectStats($project['id'], 'twit', $dateRange['start'], $dateRange['end'], 0, 23, 'volumetotal');
+                $fbStats = $mk->projectStats($project['id'], 'fb', $dateRange['start'], $dateRange['end'], 0, 23, 'volumetotal');
+                $igStats = $mk->projectStats($project['id'], 'ig', $dateRange['start'], $dateRange['end'], 0, 23, 'volumetotal');
+                $ytStats = $mk->projectStats($project['id'], 'yt', $dateRange['start'], $dateRange['end'], 0, 23, 'volumetotal');
+                $tiktokStats = $mk->projectStats($project['id'], 'tiktok', $dateRange['start'], $dateRange['end'], 0, 23, 'volumetotal');
                 
-                $newsStats = $mk->projectStats(
-                    $project['id'],
-                    'onlinenews',
-                    $dateRange['start'],
-                    $dateRange['end'],
-                    0,
-                    23,
-                    'volumetotal'
-                );
-                
-                $twitStats = $mk->projectStats(
-                    $project['id'],
-                    'twit',
-                    $dateRange['start'],
-                    $dateRange['end'],
-                    0,
-                    23,
-                    'volumetotal'
-                );
-                
-                $fbStats = $mk->projectStats(
-                    $project['id'],
-                    'fb',
-                    $dateRange['start'],
-                    $dateRange['end'],
-                    0,
-                    23,
-                    'volumetotal'
-                );
-                
-                $igStats = $mk->projectStats(
-                    $project['id'],
-                    'ig',
-                    $dateRange['start'],
-                    $dateRange['end'],
-                    0,
-                    23,
-                    'volumetotal'
-                );
-                
-                $ytStats = $mk->projectStats(
-                    $project['id'],
-                    'yt',
-                    $dateRange['start'],
-                    $dateRange['end'],
-                    0,
-                    23,
-                    'volumetotal'
-                );
-                
-                $tiktokStats = $mk->projectStats(
-                    $project['id'],
-                    'tiktok',
-                    $dateRange['start'],
-                    $dateRange['end'],
-                    0,
-                    23,
-                    'volumetotal'
-                );
-                
-                // Extract totals
                 $project['stats'] = [
                     'all' => $this->extractTotal($allStats),
                     'news' => $this->extractTotal($newsStats),
@@ -296,32 +212,17 @@ class MkController extends Controller
                     'tiktok' => $this->extractTotal($tiktokStats),
                 ];
                 
-                // 🔥 Extract DAILY timeline with sentiment breakdown (7 days)
                 $project['timeline'] = $this->extractDailyTimeline($project['id'], $mk);
                 
             } catch (\Exception $e) {
-                Log::warning("Failed to fetch stats for project {$project['id']}", [
-                    'error' => $e->getMessage()
-                ]);
+                Log::warning("Failed to fetch stats for project {$project['id']}", ['error' => $e->getMessage()]);
                 
-                // Fallback to zeros
                 $project['stats'] = [
-                    'all' => 0,
-                    'news' => 0,
-                    'twit' => 0,
-                    'fb' => 0,
-                    'ig' => 0,
-                    'yt' => 0,
-                    'tiktok' => 0,
+                    'all' => 0, 'news' => 0, 'twit' => 0, 'fb' => 0, 'ig' => 0, 'yt' => 0, 'tiktok' => 0,
                 ];
                 $project['timeline'] = [
-                    'dates' => [],
-                    'values' => [],
-                    'sentiment' => [
-                        'positive' => [],
-                        'neutral' => [],
-                        'negative' => [],
-                    ]
+                    'dates' => [], 'values' => [],
+                    'sentiment' => ['positive' => [], 'neutral' => [], 'negative' => []]
                 ];
             }
         }
@@ -345,34 +246,11 @@ class MkController extends Controller
             return (int) $stats['total'];
         }
         
-        // Sum from timeline if available
         if (isset($stats['data']) && is_array($stats['data'])) {
-            return array_sum(array_map(fn($v) => (int)$v, $stats['data']));
+            return array_sum(array_map(fn($v) => is_numeric($v) ? (int)$v : 0, $stats['data']));
         }
         
         return 0;
-    }
-    
-    /**
-     * Helper: Extract timeline data for chart
-     */
-    private function extractTimeline(array $stats): array
-    {
-        $timeline = [
-            'dates' => [],
-            'values' => []
-        ];
-        
-        if (isset($stats['data']) && is_array($stats['data'])) {
-            foreach ($stats['data'] as $date => $value) {
-                if (is_numeric($value)) {
-                    $timeline['dates'][] = date('d M', strtotime($date));
-                    $timeline['values'][] = (int) $value;
-                }
-            }
-        }
-        
-        return $timeline;
     }
 
     /**
@@ -407,13 +285,7 @@ class MkController extends Controller
         $sentimentData = ['positive' => 0, 'neutral' => 0, 'negative' => 0];
 
         if ($projectId) {
-            $rawData = $mk->sentimentTotal(
-                $projectId,
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime']
-            );
+            $rawData = $mk->sentimentTotal($projectId, $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
             $sentimentData = $this->normalizeSentimentTotal($rawData);
         }
 
@@ -441,27 +313,10 @@ class MkController extends Controller
         $geoUserRows = [];
 
         if ($projectId) {
-            // Geographic by sentiment
-            $geoRawData = $mk->geoTwitterUserSentiment(
-                $projectId,
-                $params['media'],
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime'],
-                $params['sentiment']
-            );
+            $geoRawData = $mk->geoTwitterUserSentiment($projectId, $params['media'], $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime'], $params['sentiment']);
             $geoRows = $this->normalizeGeoRows($geoRawData);
 
-            // Geographic all users
-            $geoUserRawData = $mk->geoTwitterUser(
-                $projectId,
-                $params['media'],
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime']
-            );
+            $geoUserRawData = $mk->geoTwitterUser($projectId, $params['media'], $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
             $geoUserRows = $this->normalizeGeoRows($geoUserRawData);
         }
 
@@ -489,14 +344,7 @@ class MkController extends Controller
         $chartData = ['labels' => [], 'values' => []];
 
         if ($projectId) {
-            $rawData = $mk->authorsAge(
-                $projectId,
-                $params['media'],
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime']
-            );
+            $rawData = $mk->authorsAge($projectId, $params['media'], $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
             $chartData = $this->normalizeChartData($rawData, 'age_group', 'post_freq');
         }
 
@@ -522,14 +370,7 @@ class MkController extends Controller
         $chartData = ['labels' => [], 'values' => []];
 
         if ($projectId) {
-            $rawData = $mk->authorsGender(
-                $projectId,
-                $params['media'],
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime']
-            );
+            $rawData = $mk->authorsGender($projectId, $params['media'], $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
             $chartData = $this->normalizeChartData($rawData, 'gender', 'post_freq');
         }
 
@@ -555,14 +396,7 @@ class MkController extends Controller
         $chartData = ['labels' => [], 'values' => []];
 
         if ($projectId) {
-            $rawData = $mk->authorsType(
-                $projectId,
-                $params['media'],
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime']
-            );
+            $rawData = $mk->authorsType($projectId, $params['media'], $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
             $chartData = $this->normalizeChartData($rawData, 'is_organization', 'post_freq');
         }
 
@@ -587,14 +421,7 @@ class MkController extends Controller
         $rawData = [];
 
         if ($projectId) {
-            $rawData = $mk->categories(
-                $projectId,
-                $params['media'],
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime']
-            );
+            $rawData = $mk->categories($projectId, $params['media'], $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
         }
 
         return view('mk.categories', [
@@ -618,17 +445,8 @@ class MkController extends Controller
         $chartData = ['labels' => [], 'values' => []];
 
         if ($projectId) {
-            $rawData = $mk->estReach(
-                $projectId,
-                $params['media'],
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime'],
-                'all'
-            );
+            $rawData = $mk->estReach($projectId, $params['media'], $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime'], 'all');
 
-            // Normalize reach data
             $data = $rawData['data'] ?? $rawData;
             if (!empty($data) && is_array($data)) {
                 $labels = [];
@@ -667,13 +485,8 @@ class MkController extends Controller
         $tableData = [];
 
         if ($projectId) {
-            $rawData = $mk->sharedUrlFreq(
-                $projectId,
-                $params['startDate'],
-                $params['endDate']
-            );
+            $rawData = $mk->sharedUrlFreq($projectId, $params['startDate'], $params['endDate']);
 
-            // Normalize URL data
             $data = $rawData['data'] ?? $rawData;
             if (!empty($data) && is_array($data)) {
                 $rows = [];
@@ -712,25 +525,16 @@ class MkController extends Controller
         $tableData = [];
 
         if ($projectId) {
-            $rawData = $mk->mostActiveUsers(
-                $projectId,
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime']
-            );
+            $rawData = $mk->mostActiveUsers($projectId, $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
 
-            // Normalize users data
             $data = $rawData['data']['data'] ?? $rawData['data'] ?? $rawData;
             if (!empty($data) && is_array($data)) {
                 $rows = [];
                 foreach ($data as $item) {
                     if (is_array($item)) {
-                        // Parse name to get username
                         $fullName = $item['name'] ?? 'Unknown User';
                         $username = $fullName;
                         
-                        // Extract username from "Name @username" format
                         if (preg_match('/@(\w+)/', $fullName, $matches)) {
                             $username = $matches[1];
                         }
@@ -768,27 +572,15 @@ class MkController extends Controller
         $tableData = [];
 
         if ($projectId) {
-            $rawData = $mk->mostRetweets(
-                $projectId,
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime']
-            );
+            $rawData = $mk->mostRetweets($projectId, $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
 
-            // Normalize retweets data
             $data = $rawData['data']['data'] ?? $rawData['data'] ?? $rawData;
             if (!empty($data) && is_array($data)) {
                 $rows = [];
                 foreach ($data as $item) {
                     if (is_array($item)) {
-                        // API uses 'name' field for author (based on actual response)
                         $author = $item['name'] ?? $item['author_name'] ?? $item['author'] ?? $item['screen_name'] ?? 'Unknown';
-                        
-                        // API uses 'content' field for tweet text
                         $content = $item['content'] ?? $item['text'] ?? 'No content';
-                        
-                        // API uses 'rt' field for retweet count
                         $retweetCount = (int) ($item['rt'] ?? $item['retweet_count'] ?? $item['retweets'] ?? 0);
                         
                         $rows[] = [
@@ -813,7 +605,7 @@ class MkController extends Controller
     }
 
     /**
-     * 📰 PUBLISHER STATS - IMPROVED WITH BETTER NORMALIZATION
+     * 📰 PUBLISHER STATS
      */
     public function publisherStats(Request $request, MediaKernelsClient $mk)
     {
@@ -827,18 +619,7 @@ class MkController extends Controller
         $tableData = [];
 
         if ($projectId) {
-            $rawData = $mk->publisherStats(
-                $projectId,
-                $params['media'],
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime'],
-                $rows,
-                $includePagerank
-            );
-
-            // 🔥 IMPROVED NORMALIZATION - Handle multiple response structures
+            $rawData = $mk->publisherStats($projectId, $params['media'], $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime'], $rows, $includePagerank);
             $tableData = $this->normalizePublisherData($rawData, $includePagerank);
         }
 
@@ -852,32 +633,21 @@ class MkController extends Controller
     }
 
     /**
-     * 🔥 NEW HELPER: Normalize publisher data with multiple fallback strategies
+     * Helper: Normalize publisher data
      */
     private function normalizePublisherData(array $rawData, bool $includePagerank = true): array
     {
         $normalized = [];
 
-        // Strategy 1: Check for nested article.publisher structure
         $publisherData = $rawData['article']['publisher'] ?? null;
         $pagerankData = $rawData['article']['pagerank'] ?? null;
-        
-        // Get media type for fallback naming
-        $mediaType = $rawData['article']['media_type_label'] ?? 
-                     $rawData['article']['media_type_code'] ?? 
-                     'Social Media';
+        $mediaType = $rawData['article']['media_type_label'] ?? $rawData['article']['media_type_code'] ?? 'Social Media';
 
         if ($publisherData && is_array($publisherData)) {
-            // Handle associative array: {"Publisher Name": count}
             foreach ($publisherData as $publisherName => $count) {
-                // Skip if count is 0 or negative
-                if ($count <= 0) {
-                    continue;
-                }
+                if ($count <= 0) continue;
                 
-                // Better handling for empty publisher names
                 if (empty($publisherName) || trim($publisherName) === '') {
-                    // Use media type as fallback instead of "Unknown Publisher"
                     $publisherName = $mediaType . ' Posts';
                 }
 
@@ -894,7 +664,6 @@ class MkController extends Controller
             }
         }
 
-        // Strategy 2: Check for direct data array
         if (empty($normalized)) {
             $dataArray = $rawData['data'] ?? $rawData;
             
@@ -913,7 +682,6 @@ class MkController extends Controller
             }
         }
 
-        // Strategy 3: Check for publishers as top-level key-value pairs
         if (empty($normalized) && !empty($rawData)) {
             foreach ($rawData as $key => $value) {
                 if ($key !== 'data' && $key !== 'article' && is_numeric($value)) {
@@ -926,17 +694,9 @@ class MkController extends Controller
             }
         }
         
-        // Sort by count descending
         if (!empty($normalized)) {
             usort($normalized, fn($a, $b) => $b['count'] <=> $a['count']);
         }
-
-        // Log the normalization result for debugging
-        Log::info('Publisher data normalized', [
-            'input_keys' => array_keys($rawData),
-            'output_count' => count($normalized),
-            'sample' => array_slice($normalized, 0, 3)
-        ]);
 
         return $normalized;
     }
@@ -950,7 +710,6 @@ class MkController extends Controller
         $size = (int) $request->query('size', 10);
 
         $rawData = $mk->recentTopics($level, $size);
-        
         $topics = $rawData['data'] ?? $rawData;
 
         return view('mk.topics', [
@@ -962,301 +721,290 @@ class MkController extends Controller
     }
 
     /**
-   <?php
-
-namespace App\Http\Controllers;
-
-use App\Services\MediaKernelsClient;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-
-class MkController extends Controller
-{
-    // ... [Keep all other methods the same - I'll only show the changed dataOverview method]
-
-    /**
-     * 📊 DATA OVERVIEW - Dashboard ringkasan dengan Sentiment Timeline
-     * 🔥 FIXED: Fetch ALL mentions with pagination
+     * 📊 DATA OVERVIEW - Dashboard ringkasan
+     * 🔥 WITH PAGINATION FOR MENTIONS
      */
-    public function dataOverview(Request $request, MediaKernelsClient $mk)
-    {
-        $projects = $this->getProjects($mk);
-        $params = $this->getParams($request);
-        $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+   /**
+ * 📊 DATA OVERVIEW - OPTIMIZED VERSION
+ */
+public function dataOverview(Request $request, MediaKernelsClient $mk)
+{
+    $projects = $this->getProjects($mk);
+    $params = $this->getParams($request);
+    $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
 
-        // Initialize empty data
-        $trendingTopics = ['data' => []];
-        $topHashtags = ['data' => []];
-        $mentionSocialMedia = 0;
-        $mentionOnlineNews = 0;
-        $activeUsers = ['data' => []];
-        $sentimentTimeline = [
-            'dates' => [],
-            'values' => [],
-            'sentiment' => [
-                'positive' => [],
-                'neutral' => [],
-                'negative' => [],
-            ]
-        ];
-        $geoUsers = ['data' => []];
+    // Default empty data
+    $data = [
+        'trendingTopics' => ['data' => []],
+        'topHashtags' => ['data' => []],
+        'mentionSocialMedia' => 0,
+        'mentionOnlineNews' => 0,
+        'activeUsers' => ['data' => []],
+        'sentimentTimeline' => [
+            'dates' => [], 'values' => [],
+            'sentiment' => ['positive' => [], 'neutral' => [], 'negative' => []]
+        ],
+        'geoUsers' => ['locality' => ['rows' => []]]
+    ];
 
-        if ($projectId) {
-            // ── TRENDING TOPICS (News - public endpoint) ──
-            try {
-                $rawTopics = $mk->recentTopics('internasional', 10);
-                
-                if (isset($rawTopics['data']) && is_array($rawTopics['data'])) {
-                    $trendingTopics = $rawTopics;
-                } elseif (is_array($rawTopics) && !empty($rawTopics)) {
-                    $trendingTopics = ['data' => array_values($rawTopics)];
+    if (!$projectId) {
+        return view('mk.data-overview', array_merge($data, [
+            'projects' => $projects,
+            'projectId' => $projectId,
+            'params' => $params,
+            'startDate' => $params['startDate'],
+            'endDate' => $params['endDate'],
+        ]));
+    }
+
+    // ── TRENDING TOPICS ──
+    try {
+        $rawTopics = $mk->recentTopics('internasional', 10);
+        if (isset($rawTopics['data']) && is_array($rawTopics['data'])) {
+            $data['trendingTopics'] = $rawTopics;
+        } elseif (is_array($rawTopics) && !empty($rawTopics)) {
+            $data['trendingTopics'] = ['data' => array_values($rawTopics)];
+        }
+    } catch (\Exception $e) {
+        Log::warning('dataOverview: recentTopics failed', ['error' => $e->getMessage()]);
+    }
+
+    // ── TOP HASHTAGS ──
+    try {
+        $rawHashtags = $mk->topHashtags($projectId, $params['media'], $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
+        
+        $rawItems = $rawHashtags['data'] ?? (is_array($rawHashtags) ? $rawHashtags : []);
+        $normalized = [];
+        foreach ($rawItems as $item) {
+            if (!is_array($item)) continue;
+            $normalized[] = [
+                'hashtag' => $item['name'] ?? $item['hashtag'] ?? $item['tag'] ?? 'unknown',
+                'mention' => (int)($item['size'] ?? $item['mention'] ?? $item['count'] ?? 0),
+            ];
+        }
+        usort($normalized, fn($a, $b) => $b['mention'] <=> $a['mention']);
+        
+        $data['topHashtags'] = ['data' => $normalized];
+    } catch (\Exception $e) {
+        Log::warning('dataOverview: topHashtags failed', ['error' => $e->getMessage()]);
+    }
+
+    // ── 🔥 OPTIMIZED MENTIONS - USE PROJECT STATS INSTEAD ──
+    try {
+        Log::info('📊 Fetching mention counts using projectStats');
+        
+        // Get social media stats
+        $socialStats = $mk->projectStats(
+            $projectId,
+            'all', // or 'twit,fb,ig,yt,tiktok'
+            $params['startDate'],
+            $params['endDate'],
+            $params['startTime'],
+            $params['endTime'],
+            'volumetotal'
+        );
+        
+        // Get news stats
+        $newsStats = $mk->projectStats(
+            $projectId,
+            'onlinenews',
+            $params['startDate'],
+            $params['endDate'],
+            $params['startTime'],
+            $params['endTime'],
+            'volumetotal'
+        );
+        
+        $socialTotal = $this->extractTotal($socialStats);
+        $newsTotal = $this->extractTotal($newsStats);
+        
+        // Social media = All - News
+        $data['mentionSocialMedia'] = max(0, $socialTotal - $newsTotal);
+        $data['mentionOnlineNews'] = $newsTotal;
+        
+        Log::info('📊 Mention counts (projectStats method)', [
+            'all' => $socialTotal,
+            'news' => $newsTotal,
+            'social' => $data['mentionSocialMedia']
+        ]);
+        
+    } catch (\Exception $e) {
+        Log::error('dataOverview: projectStats failed', ['error' => $e->getMessage()]);
+        
+        // ── FALLBACK: Try limited mentions fetch ──
+        try {
+            Log::info('📊 Fallback: Using limited mentions fetch');
+            
+            $mentionCounts = $this->fetchMentionCountsOptimized($projectId, $params, $mk);
+            $data['mentionSocialMedia'] = $mentionCounts['social'];
+            $data['mentionOnlineNews'] = $mentionCounts['news'];
+            
+        } catch (\Exception $e2) {
+            Log::error('dataOverview: fallback mentions also failed', ['error' => $e2->getMessage()]);
+        }
+    }
+
+    // ── ACTIVE USERS ──
+    try {
+        $rawUsers = $mk->mostActiveUsers($projectId, $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
+
+        $userData = $rawUsers['data']['data'] ?? $rawUsers['data'] ?? $rawUsers;
+        if (!empty($userData) && is_array($userData)) {
+            $rows = [];
+            foreach ($userData as $item) {
+                if (!is_array($item)) continue;
+
+                $fullName = $item['name'] ?? 'Unknown User';
+                $username = $fullName;
+                if (preg_match('/@(\w+)/', $fullName, $matches)) {
+                    $username = $matches[1];
                 }
-            } catch (\Exception $e) {
-                Log::warning('dataOverview: recentTopics failed', ['error' => $e->getMessage()]);
-            }
 
-            // ── TOP HASHTAGS ──
-            try {
-                $rawHashtags = $mk->topHashtags(
-                    $projectId,
-                    $params['media'],
-                    $params['startDate'],
-                    $params['endDate'],
-                    $params['startTime'],
-                    $params['endTime']
-                );
-                
-                $rawItems = $rawHashtags['data'] ?? (is_array($rawHashtags) ? $rawHashtags : []);
-                $normalized = [];
-                foreach ($rawItems as $item) {
-                    if (!is_array($item)) continue;
-                    $normalized[] = [
-                        'hashtag' => $item['name'] ?? $item['hashtag'] ?? $item['tag'] ?? 'unknown',
-                        'mention' => (int)($item['size'] ?? $item['mention'] ?? $item['count'] ?? 0),
-                    ];
-                }
-                usort($normalized, fn($a, $b) => $b['mention'] <=> $a['mention']);
-                
-                $topHashtags = ['data' => $normalized];
-            } catch (\Exception $e) {
-                Log::warning('dataOverview: topHashtags failed', ['error' => $e->getMessage()]);
+                $rows[] = [
+                    'username' => $username,
+                    'count' => (int)($item['y'] ?? $item['post_count'] ?? $item['posts'] ?? $item['count'] ?? 0),
+                ];
             }
+            usort($rows, fn($a, $b) => $b['count'] <=> $a['count']);
+            $data['activeUsers'] = ['data' => array_slice($rows, 0, 6)];
+        }
+    } catch (\Exception $e) {
+        Log::warning('dataOverview: mostActiveUsers failed', ['error' => substr($e->getMessage(), 0, 200)]);
+    }
 
-            // ── 🔥🔥🔥 MENTIONS - FETCH ALL DATA WITH PAGINATION 🔥🔥🔥 ──
-            try {
-                Log::info('📊 Starting mention count with pagination...');
-                
-                $allMentions = [];
-                $start = 0;
-                $batchSize = 1000;
-                $maxIterations = 100; // Safety limit: max 100,000 mentions
-                $iteration = 0;
-                
-                // 🔥 STRATEGY: Fetch first batch to get total count
-                $firstBatch = $mk->mentions(
+    // ── SENTIMENT TIMELINE ──
+    try {
+        $data['sentimentTimeline'] = $this->extractDailyTimeline($projectId, $mk);
+    } catch (\Exception $e) {
+        Log::warning('dataOverview: sentiment timeline failed', ['error' => $e->getMessage()]);
+    }
+
+    // ── GEO USERS ──
+    try {
+        $rawGeo = $mk->geoTwitterUser($projectId, $params['media'], $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
+        $data['geoUsers'] = $rawGeo;
+    } catch (\Exception $e) {
+        Log::warning('dataOverview: geoTwitterUser failed', ['error' => $e->getMessage()]);
+    }
+
+    return view('mk.data-overview', array_merge($data, [
+        'projects' => $projects,
+        'projectId' => $projectId,
+        'params' => $params,
+        'startDate' => $params['startDate'],
+        'endDate' => $params['endDate'],
+    ]));
+}
+
+/**
+ * 🔥 NEW: Optimized mention counting with smart sampling
+ */
+private function fetchMentionCountsOptimized($projectId, $params, MediaKernelsClient $mk): array
+{
+    $socialMediaIds = [1, 2, 5, 6, 7, 8];
+    $newsMediaIds = [4, 9, 10];
+    
+    $counts = ['social' => 0, 'news' => 0];
+    
+    try {
+        // Strategy 1: Fetch only first batch to get total
+        $firstBatch = $mk->mentions(
+            $projectId,
+            $params['startDate'],
+            $params['endDate'],
+            $params['startTime'],
+            $params['endTime'],
+            false,
+            0,
+            1000
+        );
+        
+        $totalMentions = (int)($firstBatch['total'] ?? $firstBatch['numFound'] ?? 0);
+        $batchData = $firstBatch['data'] ?? [];
+        
+        Log::info('📊 First batch for sampling', [
+            'total_available' => $totalMentions,
+            'sample_size' => count($batchData)
+        ]);
+        
+        // If total is small enough (<= 5000), fetch all
+        if ($totalMentions <= 5000) {
+            $allMentions = $batchData;
+            
+            // Fetch remaining batches
+            $batches = ceil($totalMentions / 1000);
+            for ($i = 1; $i < $batches && $i < 5; $i++) {
+                $batch = $mk->mentions(
                     $projectId,
                     $params['startDate'],
                     $params['endDate'],
                     $params['startTime'],
                     $params['endTime'],
-                    false,  // with_content = false (faster)
-                    0,
-                    $batchSize
+                    false,
+                    $i * 1000,
+                    1000
                 );
                 
-                // Extract total from response
-                $totalMentions = (int)($firstBatch['total'] ?? $firstBatch['numFound'] ?? 0);
-                $firstBatchData = $firstBatch['data'] ?? [];
-                
-                Log::info('📊 First batch fetched', [
-                    'total_available' => $totalMentions,
-                    'first_batch_size' => count($firstBatchData)
-                ]);
-                
-                // Add first batch
-                if (is_array($firstBatchData)) {
-                    $allMentions = array_merge($allMentions, $firstBatchData);
-                }
-                
-                // 🔥 If total > 1000, fetch remaining batches
-                if ($totalMentions > $batchSize) {
-                    $remainingBatches = ceil(($totalMentions - $batchSize) / $batchSize);
-                    
-                    Log::info('📊 Fetching remaining batches', [
-                        'remaining_batches' => $remainingBatches
-                    ]);
-                    
-                    for ($i = 1; $i <= $remainingBatches && $iteration < $maxIterations; $i++) {
-                        $start = $i * $batchSize;
-                        
-                        $batch = $mk->mentions(
-                            $projectId,
-                            $params['startDate'],
-                            $params['endDate'],
-                            $params['startTime'],
-                            $params['endTime'],
-                            false,
-                            $start,
-                            $batchSize
-                        );
-                        
-                        $batchData = $batch['data'] ?? [];
-                        
-                        if (empty($batchData)) {
-                            Log::info('📊 No more data, stopping pagination', ['at_start' => $start]);
-                            break;
-                        }
-                        
-                        $allMentions = array_merge($allMentions, $batchData);
-                        $iteration++;
-                        
-                        Log::info('📊 Batch fetched', [
-                            'batch' => $i,
-                            'start' => $start,
-                            'count' => count($batchData),
-                            'total_so_far' => count($allMentions)
-                        ]);
-                        
-                        // Small delay to avoid rate limiting
-                        usleep(100000); // 0.1 second
-                    }
-                }
-                
-                Log::info('📊 All mentions fetched', [
-                    'total_fetched' => count($allMentions),
-                    'api_total' => $totalMentions
-                ]);
-
-                // 🔥 NOW COUNT FROM ALL FETCHED DATA
-                $socialMediaTypes = ['twit', 'twitter', 'x', 'fb', 'facebook', 'ig', 'instagram', 'yt', 'youtube', 'tiktok'];
-                $newsMediaTypes = ['onlinenews', 'news', 'online_news'];
-                
-                // Media type IDs
-                $socialMediaIds = [1, 2, 5, 6, 7, 8];
-                $newsMediaIds = [4, 9, 10];
-
-                foreach ($allMentions as $item) {
-                    if (!is_array($item)) continue;
-                    
-                    // Try media_type_id first (more reliable)
-                    $mediaTypeId = (int)($item['media_type_id'] ?? 0);
-                    
-                    if (in_array($mediaTypeId, $socialMediaIds)) {
-                        $mentionSocialMedia++;
-                    } elseif (in_array($mediaTypeId, $newsMediaIds)) {
-                        $mentionOnlineNews++;
-                    } else {
-                        // Fallback to string-based media_type
-                        $mediaType = strtolower($item['media_type'] ?? '');
-                        
-                        if (in_array($mediaType, $socialMediaTypes)) {
-                            $mentionSocialMedia++;
-                        } elseif (in_array($mediaType, $newsMediaTypes)) {
-                            $mentionOnlineNews++;
-                        }
-                    }
-                }
-                
-                Log::info('📊 Final mention counts', [
-                    'total_items' => count($allMentions),
-                    'social_media' => $mentionSocialMedia,
-                    'online_news' => $mentionOnlineNews,
-                    'total_counted' => $mentionSocialMedia + $mentionOnlineNews
-                ]);
-                
-            } catch (\Exception $e) {
-                Log::error('dataOverview: mentions failed', [
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ]);
+                $allMentions = array_merge($allMentions, $batch['data'] ?? []);
+                usleep(50000); // 0.05s delay
             }
-
-            // ── ACTIVE USERS (Most Engaged) ──
-            try {
-                $rawUsers = $mk->mostActiveUsers(
-                    $projectId,
-                    $params['startDate'],
-                    $params['endDate'],
-                    $params['startTime'],
-                    $params['endTime']
-                );
-
-                $data = $rawUsers['data']['data'] ?? $rawUsers['data'] ?? $rawUsers;
-                if (!empty($data) && is_array($data)) {
-                    $rows = [];
-                    foreach ($data as $item) {
-                        if (!is_array($item)) continue;
-
-                        $fullName = $item['name'] ?? 'Unknown User';
-                        $username = $fullName;
-                        if (preg_match('/@(\w+)/', $fullName, $matches)) {
-                            $username = $matches[1];
-                        }
-
-                        $rows[] = [
-                            'username' => $username,
-                            'count'    => (int)($item['y'] ?? $item['post_count'] ?? $item['posts'] ?? $item['count'] ?? 0),
-                        ];
-                    }
-                    usort($rows, fn($a, $b) => $b['count'] <=> $a['count']);
-                    $activeUsers = ['data' => array_slice($rows, 0, 6)];
+            
+            // Count from all data
+            foreach ($allMentions as $item) {
+                if (!is_array($item)) continue;
+                
+                $mediaTypeId = (int)($item['media_type_id'] ?? 0);
+                
+                if (in_array($mediaTypeId, $socialMediaIds)) {
+                    $counts['social']++;
+                } elseif (in_array($mediaTypeId, $newsMediaIds)) {
+                    $counts['news']++;
                 }
-            } catch (\Exception $e) {
-                Log::warning('dataOverview: mostActiveUsers timeout/error', [
-                    'error' => substr($e->getMessage(), 0, 200)
-                ]);
             }
-
-            // ── SENTIMENT TIMELINE ──
-            try {
-                $sentimentTimeline = $this->extractDailyTimeline($projectId, $mk);
+            
+        } else {
+            // For large datasets (> 5000), use statistical sampling
+            Log::info('📊 Using statistical sampling for large dataset');
+            
+            $sampleSize = min(count($batchData), 1000);
+            $sample = array_slice($batchData, 0, $sampleSize);
+            
+            // Count from sample
+            $sampleCounts = ['social' => 0, 'news' => 0];
+            foreach ($sample as $item) {
+                if (!is_array($item)) continue;
                 
-                Log::info('dataOverview: sentiment timeline extracted', [
-                    'dates_count' => count($sentimentTimeline['dates']),
-                    'sample_date' => $sentimentTimeline['dates'][0] ?? 'none',
-                ]);
-            } catch (\Exception $e) {
-                Log::warning('dataOverview: sentiment timeline failed', ['error' => $e->getMessage()]);
+                $mediaTypeId = (int)($item['media_type_id'] ?? 0);
+                
+                if (in_array($mediaTypeId, $socialMediaIds)) {
+                    $sampleCounts['social']++;
+                } elseif (in_array($mediaTypeId, $newsMediaIds)) {
+                    $sampleCounts['news']++;
+                }
             }
-
-            // ── GEO USERS (Buzzer Map) ──
-            try {
-                $rawGeo = $mk->geoTwitterUser(
-                    $projectId,
-                    $params['media'],
-                    $params['startDate'],
-                    $params['endDate'],
-                    $params['startTime'],
-                    $params['endTime']
-                );
-
-                $geoUsers = $rawGeo;
+            
+            // Calculate ratios and extrapolate
+            $sampleTotal = $sampleCounts['social'] + $sampleCounts['news'];
+            if ($sampleTotal > 0) {
+                $socialRatio = $sampleCounts['social'] / $sampleTotal;
+                $newsRatio = $sampleCounts['news'] / $sampleTotal;
                 
-                Log::info('dataOverview: geoTwitterUser response', [
-                    'has_country' => isset($rawGeo['country']),
-                    'has_locality' => isset($rawGeo['locality']),
-                    'locality_count' => isset($rawGeo['locality']['rows']) ? count($rawGeo['locality']['rows']) : 0
-                ]);
-                
-            } catch (\Exception $e) {
-                Log::warning('dataOverview: geoTwitterUser failed', ['error' => $e->getMessage()]);
-                $geoUsers = ['locality' => ['rows' => []]];
+                $counts['social'] = round($totalMentions * $socialRatio);
+                $counts['news'] = round($totalMentions * $newsRatio);
             }
+            
+            Log::info('📊 Extrapolated from sample', [
+                'sample_size' => $sampleSize,
+                'sample_counts' => $sampleCounts,
+                'extrapolated_counts' => $counts,
+                'total_mentions' => $totalMentions
+            ]);
         }
-
-        return view('mk.data-overview', [
-            'projects'           => $projects,
-            'projectId'          => $projectId,
-            'params'             => $params,
-            'startDate'          => $params['startDate'],
-            'endDate'            => $params['endDate'],
-            'trendingTopics'     => $trendingTopics,
-            'topHashtags'        => $topHashtags,
-            'mentionSocialMedia' => $mentionSocialMedia,
-            'mentionOnlineNews'  => $mentionOnlineNews,
-            'activeUsers'        => $activeUsers,
-            'sentimentTimeline'  => $sentimentTimeline,
-            'geoUsers'           => $geoUsers,
-        ]);
+        
+    } catch (\Exception $e) {
+        Log::error('fetchMentionCountsOptimized failed', ['error' => $e->getMessage()]);
     }
+    
+    return $counts;
+}
 }
