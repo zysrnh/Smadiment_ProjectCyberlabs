@@ -128,8 +128,8 @@
                 <tbody>
                     @foreach(array_slice($tags, 0, 8) as $i => $tag)
                     @php
-                    $tagName = $tag['hashtag'] ?? $tag['name'] ?? $tag['tag'] ?? 'unknown';
-                    $tagCount = (int)($tag['mention'] ?? $tag['count'] ?? $tag['total'] ?? 0);
+                   $tagName = $tag['name'] ?? $tag['hashtag'] ?? $tag['tag'] ?? 'unknown';
+$tagCount = (int)($tag['size'] ?? $tag['mention'] ?? $tag['count'] ?? 0);
                     $tagName = str_starts_with($tagName,'#') ? $tagName : '#'.$tagName;
                     @endphp
                     <tr>

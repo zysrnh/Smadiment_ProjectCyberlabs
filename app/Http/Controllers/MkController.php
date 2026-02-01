@@ -1012,11 +1012,17 @@ class MkController extends Controller
                     $params['endTime']
                 );
                 
-                if (isset($rawHashtags['data']) && is_array($rawHashtags['data'])) {
-                    $topHashtags = $rawHashtags;
-                } elseif (is_array($rawHashtags) && !empty($rawHashtags)) {
-                    $topHashtags = ['data' => array_values($rawHashtags)];
-                }
+              $rawItems = $rawHashtags['data'] ?? (is_array($rawHashtags) ? $rawHashtags : []);
+$normalized = [];
+foreach ($rawItems as $item) {
+    if (!is_array($item)) continue;
+    $normalized[] = [
+        'hashtag' => $item['name'] ?? $item['hashtag'] ?? $item['tag'] ?? 'unknown',
+        'mention' => (int)($item['size'] ?? $item['mention'] ?? $item['count'] ?? 0),
+    ];
+}
+usort($normalized, fn($a, $b) => $b['mention'] <=> $a['mention']);
+$topHashtags = ['data' => $normalized];
             } catch (\Exception $e) {
                 Log::warning('dataOverview: topHashtags failed', ['error' => $e->getMessage()]);
             }
