@@ -190,7 +190,7 @@
 </div>
 
 <!-- ============================================================
-     ROW 2 — Most Engaged User (Donut) + Sentiment Score (Line)
+     ROW 2 — Most Engaged User (Doughnut + external labels) + Sentiment Score (Line)
      ============================================================ -->
 <div class="do-row-mid">
 
@@ -211,10 +211,7 @@
             <span class="do-badge" style="background:#f0f0f0; color:#222;">X</span>
         </div>
         <div class="do-card-body do-body-donut">
-            <div class="do-donut-wrap">
-                <canvas id="chartDonut"></canvas>
-            </div>
-            <div class="do-donut-legend" id="donutLegend"></div>
+            <canvas id="chartDonut"></canvas>
         </div>
     </div>
 
@@ -523,29 +520,18 @@
         letter-spacing: -1px;
     }
 
-    /* ── Donut ── */
+    /* ── Donut with external labels ── */
     .do-body-donut {
-        display:flex; 
-        align-items:center; 
-        justify-content:center; 
-        gap:20px; 
-        flex-wrap:wrap;
-        min-height:180px;
-        max-height:180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 0 12px;
+        min-height: 240px;
     }
-    .do-donut-wrap { 
-        flex-shrink:0;
-        max-height:160px;
-        max-width:160px;
+    .do-body-donut canvas {
+        max-width: 100%;
+        max-height: 100%;
     }
-    .do-donut-wrap canvas {
-        max-height:100% !important;
-        max-width:100% !important;
-    }
-    .do-donut-legend { display:flex; flex-direction:column; gap:9px; max-width:170px; }
-    .do-legend-row { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:var(--dark-blue); }
-    .do-legend-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
-    .do-legend-cnt { margin-left:auto; font-size:11px; font-weight:800; color:var(--dark-blue); opacity:.55; }
 
     /* ── Line Chart ── */
     .do-body-line { 
@@ -602,40 +588,109 @@
     (function() {
 
         // ────────────────────────────────────────────
-        // 1. DONUT — Most Engaged User
+        // 1. DOUGHNUT — Most Engaged User
+        //    Pola persis dari activeUsers.blade.php:
+        //    PHP normalize → $doUserTable [{username, count}, ...]
+        //    JS pakai array_column-style: separate arrays for labels & counts
         // ────────────────────────────────────────────
         @php
-        $rawUsers = $activeUsers['data'] ?? (array) $activeUsers;
-        $topUsers = array_slice($rawUsers, 0, 6);
-        $uLabels = [];
-        $uCounts = [];
-        foreach($topUsers as $u) {
-            $handle = $u['screen_name'] ?? $u['name'] ?? $u['username'] ?? 'Unknown';
-            $cnt = (int)($u['tweet_count'] ?? $u['count'] ?? $u['total'] ?? 0);
-            $uLabels[] = '@'.ltrim($handle, '@');
-            $uCounts[] = $cnt;
+        // Normalize $activeUsers → format bersih sama kayak $tableData di activeUsers.blade.php
+        $rawUsers     = $activeUsers['data'] ?? (is_array($activeUsers) ? $activeUsers : []);
+        $doUserTable  = [];
+        foreach ($rawUsers as $u) {
+            if (!is_array($u)) continue;
+            $doUserTable[] = [
+                'username' => ltrim($u['screen_name'] ?? $u['name'] ?? $u['username'] ?? 'Unknown', '@'),
+                'count'    => (int)($u['tweet_count'] ?? $u['count'] ?? $u['total'] ?? 0),
+            ];
         }
+        // Ambil top 6
+        $doUserTable = array_slice($doUserTable, 0, 6);
         @endphp
 
-        var uLabels = @json($uLabels);
-        var uCounts = @json($uCounts);
-        var dColors = ['#22c55e', '#3b7dd8', '#7c3aed', '#e67e22', '#ef4444', '#06b6d4'];
+        // Persis pola activeUsers.blade.php — array_column di JS side
+        const doUsernames = @json(array_column($doUserTable, 'username'));
+        const doCounts    = @json(array_column($doUserTable, 'count'));
+        const dColors     = ['#4BACC6', '#F2994A', '#27AE60', '#8E8E8E', '#5BA3D9', '#E67E22'];
 
-        // Legend
-        var legendEl = document.getElementById('donutLegend');
-        uLabels.forEach(function(lbl, i) {
-            var row = document.createElement('div');
-            row.className = 'do-legend-row';
-            row.innerHTML =
-                '<span class="do-legend-dot" style="background:' + dColors[i % dColors.length] + '"></span>' +
-                '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;">' + lbl + '</span>' +
-                '<span class="do-legend-cnt">' + uCounts[i].toLocaleString() + ' tweets</span>';
-            legendEl.appendChild(row);
-        });
+        // Labels untuk chart: tambah '@' prefix
+        const uLabels = doUsernames.map(function(n) { return '@' + n; });
+        const uCounts = doCounts;
 
-        // Chart
+        // ── Custom plugin: external labels + leader lines ──
+        var externalLabelPlugin = {
+            id: 'externalLabelPlugin',
+            afterDraw: function(chart) {
+                if (uLabels.length === 0) return;
+
+                var ctx         = chart.ctx;
+                var meta        = chart.getDatasetMeta(0);
+                var centerX     = chart.width / 2;
+                var centerY     = chart.height / 2;
+                var outerRadius = meta.data[0].outerRadius;
+
+                ctx.save();
+
+                meta.data.forEach(function(slice, i) {
+                    if (slice.circumference === 0) return;
+
+                    var angle   = (slice.startAngle + slice.endAngle) / 2;
+                    var label   = uLabels[i] || '';
+                    var count   = '(' + (uCounts[i] || 0).toLocaleString() + ' twits)';
+                    var color   = dColors[i % dColors.length];
+                    var isRight = Math.cos(angle) >= 0;
+
+                    // A — edge of doughnut
+                    var ax = centerX + outerRadius * Math.cos(angle);
+                    var ay = centerY + outerRadius * Math.sin(angle);
+
+                    // B — elbow
+                    var elbowR = outerRadius + 14;
+                    var bx = centerX + elbowR * Math.cos(angle);
+                    var by = centerY + elbowR * Math.sin(angle);
+
+                    // C — horizontal end
+                    var cx = isRight ? bx + 28 : bx - 28;
+                    var cy = by;
+
+                    // Leader line
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth   = 1.2;
+                    ctx.lineCap     = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(ax, ay);
+                    ctx.lineTo(bx, by);
+                    ctx.lineTo(cx, cy);
+                    ctx.stroke();
+
+                    // Dot
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Text
+                    var tx = isRight ? cx + 6 : cx - 6;
+                    ctx.textAlign    = isRight ? 'left' : 'right';
+                    ctx.textBaseline = 'middle';
+
+                    ctx.fillStyle = '#1A2332';
+                    ctx.font      = '700 11px Poppins, sans-serif';
+                    ctx.fillText(label, tx, cy - 6);
+
+                    ctx.fillStyle = '#7A8B96';
+                    ctx.font      = '500 10px Poppins, sans-serif';
+                    ctx.fillText(count, tx, cy + 7);
+                });
+
+                ctx.restore();
+            }
+        };
+
+        // ── Render doughnut ──
         new Chart(document.getElementById('chartDonut').getContext('2d'), {
             type: 'doughnut',
+            plugins: [externalLabelPlugin],
             data: {
                 labels: uLabels,
                 datasets: [{
@@ -643,17 +698,39 @@
                     backgroundColor: dColors,
                     borderColor: '#fff',
                     borderWidth: 3,
-                    hoverOffset: 5
+                    hoverOffset: 4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
-                aspectRatio: 1,
-                cutout: '60%',
+                aspectRatio: 1.15,
+                cutout: '55%',
+                layout: {
+                    padding: {
+                        top:    32,
+                        right:  90,
+                        bottom: 32,
+                        left:   90
+                    }
+                },
                 plugins: {
-                    legend: {
-                        display: false
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(255,255,255,0.97)',
+                        titleColor:      '#1A2332',
+                        bodyColor:       '#1A2332',
+                        borderColor:     '#E8EAED',
+                        borderWidth:     1.5,
+                        cornerRadius:    8,
+                        titleFont:       { size: 12, weight: '700', family: 'Poppins' },
+                        bodyFont:        { size: 11, family: 'Poppins' },
+                        callbacks: {
+                            label: function(context) {
+                                return ' ' + context.parsed.toLocaleString() + ' tweets';
+                            }
+                        }
                     }
                 },
                 animation: {

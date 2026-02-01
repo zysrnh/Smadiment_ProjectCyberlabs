@@ -1040,7 +1040,8 @@ public function dataOverview(Request $request, MediaKernelsClient $mk)
             \Log::warning('dataOverview: mentions failed', ['error' => $e->getMessage()]);
         }
 
-        // ── ACTIVE USERS (Most Engaged) ──
+       // ── ACTIVE USERS (Most Engaged) ──
+        // Normalize persis dari activeUsers() method yang sudah berjalan
         try {
             $rawUsers = $mk->mostActiveUsers(
                 $projectId,
@@ -1050,23 +1051,33 @@ public function dataOverview(Request $request, MediaKernelsClient $mk)
                 $params['endTime']
             );
 
-            // Handle nested structure: data.data or just data
-            $usersData = $rawUsers['data']['data'] ?? $rawUsers['data'] ?? [];
-            
-            // Handle indexed array
-            if (is_array($usersData) && !empty($usersData) && !isset($usersData[0])) {
-                $usersData = array_values($usersData);
-            }
+            $data = $rawUsers['data']['data'] ?? $rawUsers['data'] ?? $rawUsers;
+            if (!empty($data) && is_array($data)) {
+                $rows = [];
+                foreach ($data as $item) {
+                    if (!is_array($item)) continue;
 
-            if (count($usersData) > 0) {
-                $activeUsers = ['data' => $usersData];
+                    // Extract username dari "Name @username" — persis pola activeUsers()
+                    $fullName = $item['name'] ?? 'Unknown User';
+                    $username = $fullName;
+                    if (preg_match('/@(\w+)/', $fullName, $matches)) {
+                        $username = $matches[1];
+                    }
+
+                    // Count dari key 'y' — persis pola activeUsers()
+                    $rows[] = [
+                        'username' => $username,
+                        'count'    => (int)($item['y'] ?? $item['post_count'] ?? $item['posts'] ?? $item['count'] ?? 0),
+                    ];
+                }
+                usort($rows, fn($a, $b) => $b['count'] <=> $a['count']);
+                $activeUsers = ['data' => array_slice($rows, 0, 6)];
             }
         } catch (\Exception $e) {
             \Log::warning('dataOverview: mostActiveUsers timeout/error', [
                 'error' => substr($e->getMessage(), 0, 200)
             ]);
         }
-
      try {
             $rawSentiment = $mk->sentimentTotal(
                 $projectId,
@@ -1087,6 +1098,7 @@ public function dataOverview(Request $request, MediaKernelsClient $mk)
             \Log::warning('dataOverview: sentimentTotal failed', ['error' => $e->getMessage()]);
             $sentiment = ['positive' => 0, 'neutral' => 0, 'negative' => 0];
         }
+        
 
         // ── GEO USERS (Buzzer Map) - using existing helper ──
        // ── GEO USERS (Buzzer Map) ──
