@@ -156,60 +156,7 @@
     </div>
 </div>
 
-<!-- MODAL: All Hashtags -->
-<div id="hashtagModal" class="do-modal">
-    <div class="do-modal-content">
-        <div class="do-modal-header">
-            <div>
-                <h3 class="do-modal-title">
-                    <svg viewBox="0 0 24 24" style="width:20px;height:20px;display:inline-block;vertical-align:middle;margin-right:8px;stroke:#3b7dd8;">
-                        <line x1="4" y1="9" x2="20" y2="9" />
-                        <line x1="4" y1="15" x2="20" y2="15" />
-                        <line x1="9" y1="4" x2="5" y2="20" />
-                        <line x1="15" y1="4" x2="11" y2="20" />
-                    </svg>
-                    Top Hashtags
-                </h3>
-                <p class="do-modal-subtitle">Showing all trending hashtags from X platform</p>
-            </div>
-            <button class="do-modal-close" onclick="closeHashtagModal()">
-                <svg viewBox="0 0 24 24">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
-        </div>
-        <div class="do-modal-body">
-            @if(count($tags) > 0)
-            <table class="do-tbl">
-                <thead>
-                    <tr>
-                        <th style="width:40px;">#</th>
-                        <th class="do-tbl-left">Hashtag</th>
-                        <th class="do-tbl-right">Mention</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($tags as $i => $tag)
-                    @php
-                    $tagName = $tag['hashtag'] ?? $tag['name'] ?? $tag['tag'] ?? 'unknown';
-                    $tagCount = (int)($tag['mention'] ?? $tag['size'] ?? $tag['count'] ?? 0);
-                    $tagName = str_starts_with($tagName,'#') ? $tagName : '#'.$tagName;
-                    @endphp
-                    <tr>
-                        <td class="do-tbl-rank">{{ $i+1 }}</td>
-                        <td class="do-tbl-name" style="color:#3b7dd8;">{{ $tagName }}</td>
-                        <td class="do-tbl-num">{{ number_format($tagCount) }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            @else
-            <div class="do-empty">Tidak ada data</div>
-            @endif
-        </div>
-    </div>
-</div>
+
 <!-- MODAL: All Hashtags -->
 <div id="hashtagModal" class="do-modal">
     <div class="do-modal-content">

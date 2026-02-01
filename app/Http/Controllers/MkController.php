@@ -899,15 +899,18 @@ public function dataOverview(Request $request, MediaKernelsClient $mk)
 /**
  * 🔥 NEW: Optimized mention counting with smart sampling
  */
+/**
+ * 🔥 NEW: Optimized mention counting - FIXED for STRING media_type_id
+ */
 private function fetchMentionCountsOptimized($projectId, $params, MediaKernelsClient $mk): array
 {
-    $socialMediaIds = [1, 2, 5, 6, 7, 8];
-    $newsMediaIds = [4, 9, 10];
+    // 🔥 IMPORTANT: API returns media_type_id as STRING, not integer!
+    $socialMediaIds = ['1', '2', '5', '6', '7', '8']; // STRING array
+    $newsMediaIds = ['4', '9', '10']; // STRING array
     
     $counts = ['social' => 0, 'news' => 0];
     
     try {
-        // Strategy 1: Fetch only first batch to get total
         $firstBatch = $mk->mentions(
             $projectId,
             $params['startDate'],
@@ -922,16 +925,16 @@ private function fetchMentionCountsOptimized($projectId, $params, MediaKernelsCl
         $totalMentions = (int)($firstBatch['total'] ?? $firstBatch['numFound'] ?? 0);
         $batchData = $firstBatch['data'] ?? [];
         
-        Log::info('📊 First batch for sampling', [
-            'total_available' => $totalMentions,
-            'sample_size' => count($batchData)
+        Log::info('📊 Mention batch received', [
+            'total' => $totalMentions,
+            'batch_size' => count($batchData),
+            'sample_item' => $batchData[0] ?? null
         ]);
         
         // If total is small enough (<= 5000), fetch all
         if ($totalMentions <= 5000) {
             $allMentions = $batchData;
             
-            // Fetch remaining batches
             $batches = ceil($totalMentions / 1000);
             for ($i = 1; $i < $batches && $i < 5; $i++) {
                 $batch = $mk->mentions(
@@ -946,44 +949,49 @@ private function fetchMentionCountsOptimized($projectId, $params, MediaKernelsCl
                 );
                 
                 $allMentions = array_merge($allMentions, $batch['data'] ?? []);
-                usleep(50000); // 0.05s delay
+                usleep(50000);
             }
             
-            // Count from all data
+            // 🔥 Count from all data - FIXED: use STRING comparison
             foreach ($allMentions as $item) {
                 if (!is_array($item)) continue;
                 
-                $mediaTypeId = (int)($item['media_type_id'] ?? 0);
+                // Get as STRING (API returns string)
+                $mediaTypeId = (string)($item['media_type_id'] ?? '');
                 
-                if (in_array($mediaTypeId, $socialMediaIds)) {
+                if (in_array($mediaTypeId, $socialMediaIds, true)) {
                     $counts['social']++;
-                } elseif (in_array($mediaTypeId, $newsMediaIds)) {
+                } elseif (in_array($mediaTypeId, $newsMediaIds, true)) {
                     $counts['news']++;
                 }
             }
             
+            Log::info('📊 Counted all mentions', [
+                'total_items' => count($allMentions),
+                'social' => $counts['social'],
+                'news' => $counts['news']
+            ]);
+            
         } else {
-            // For large datasets (> 5000), use statistical sampling
-            Log::info('📊 Using statistical sampling for large dataset');
+            // For large datasets, use sampling
+            Log::info('📊 Using sampling for large dataset');
             
             $sampleSize = min(count($batchData), 1000);
             $sample = array_slice($batchData, 0, $sampleSize);
             
-            // Count from sample
             $sampleCounts = ['social' => 0, 'news' => 0];
             foreach ($sample as $item) {
                 if (!is_array($item)) continue;
                 
-                $mediaTypeId = (int)($item['media_type_id'] ?? 0);
+                $mediaTypeId = (string)($item['media_type_id'] ?? '');
                 
-                if (in_array($mediaTypeId, $socialMediaIds)) {
+                if (in_array($mediaTypeId, $socialMediaIds, true)) {
                     $sampleCounts['social']++;
-                } elseif (in_array($mediaTypeId, $newsMediaIds)) {
+                } elseif (in_array($mediaTypeId, $newsMediaIds, true)) {
                     $sampleCounts['news']++;
                 }
             }
             
-            // Calculate ratios and extrapolate
             $sampleTotal = $sampleCounts['social'] + $sampleCounts['news'];
             if ($sampleTotal > 0) {
                 $socialRatio = $sampleCounts['social'] / $sampleTotal;
@@ -993,16 +1001,17 @@ private function fetchMentionCountsOptimized($projectId, $params, MediaKernelsCl
                 $counts['news'] = round($totalMentions * $newsRatio);
             }
             
-            Log::info('📊 Extrapolated from sample', [
-                'sample_size' => $sampleSize,
-                'sample_counts' => $sampleCounts,
-                'extrapolated_counts' => $counts,
-                'total_mentions' => $totalMentions
+            Log::info('📊 Extrapolated counts', [
+                'sample' => $sampleCounts,
+                'extrapolated' => $counts
             ]);
         }
         
     } catch (\Exception $e) {
-        Log::error('fetchMentionCountsOptimized failed', ['error' => $e->getMessage()]);
+        Log::error('fetchMentionCountsOptimized failed', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
     }
     
     return $counts;
