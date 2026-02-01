@@ -44,30 +44,22 @@
     }
 
     .logo-icon {
-      width: 120px;
-      height: 120px;
-      background: linear-gradient(135deg, #1e3a5f 0%, #2d5f8d 100%);
-      border-radius: 24px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 24px;
-      position: relative;
-      overflow: hidden;
+      width: auto;
+      max-width: 300px;
+      margin: 0 auto 24px;
     }
 
-    .logo-icon::before {
-      content: 'S';
-      font-size: 64px;
-      font-weight: 900;
-      color: #FFFFFF;
-      font-family: 'Poppins', sans-serif;
+    .logo-icon img {
+      width: 100%;
+      height: auto;
+      display: block;
     }
 
     .logo-text h1 {
       font-size: 48px;
       font-weight: 900;
       margin-bottom: 8px;
+      display: none;
     }
 
     .logo-text h1 .smadi {
@@ -84,6 +76,7 @@
       color: #1e3a5f;
       text-transform: uppercase;
       letter-spacing: 2px;
+      display: none;
     }
 
     .powered-by {
@@ -224,12 +217,7 @@
       }
 
       .logo-icon {
-        width: 80px;
-        height: 80px;
-      }
-
-      .logo-icon::before {
-        font-size: 40px;
+        max-width: 200px;
       }
 
       .logo-text h1 {
@@ -257,7 +245,9 @@
   <div class="left-side">
     <div class="logo-container">
       <div class="logo-image">
-        <div class="logo-icon"></div>
+        <div class="logo-icon">
+          <img src="{{ asset('images/SMADIMENT 2025 _ Logo-03.png') }}" alt="SMADIMENT Logo">
+        </div>
       </div>
       <div class="logo-text">
         <h1>
