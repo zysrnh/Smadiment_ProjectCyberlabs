@@ -231,8 +231,35 @@
             </div>
             <span class="do-badge" style="background:#e0f2fe; color:#0284c7;">All Media</span>
         </div>
-        <div class="do-card-body do-body-line">
+        <div class="do-card-body do-body-line" id="sentimentChartContainer">
+            <!-- Canvas ditaro di sini, JS yang putus mana yang dirender -->
             <canvas id="chartSentiment"></canvas>
+            <!-- Fallback: mini stat cards kalau data cuma total (no daily breakdown) -->
+            <div id="sentimentFallback" style="display:none; width:100%; height:100%; display:none; flex-direction:column; justify-content:center; gap:12px; padding:0 8px;">
+                <div style="display:flex; gap:12px; justify-content:center;">
+                    <div id="sentFallPos" class="do-sent-stat">
+                        <div class="do-sent-label do-sent-pos">Positive</div>
+                        <div class="do-sent-num do-sent-pos">0</div>
+                        <div class="do-sent-pct">0%</div>
+                    </div>
+                    <div id="sentFallNeu" class="do-sent-stat">
+                        <div class="do-sent-label do-sent-neu">Neutral</div>
+                        <div class="do-sent-num do-sent-neu">0</div>
+                        <div class="do-sent-pct">0%</div>
+                    </div>
+                    <div id="sentFallNeg" class="do-sent-stat">
+                        <div class="do-sent-label do-sent-neg">Negative</div>
+                        <div class="do-sent-num do-sent-neg">0</div>
+                        <div class="do-sent-pct">0%</div>
+                    </div>
+                </div>
+                <!-- Mini progress bar -->
+                <div class="do-sent-bar-wrap">
+                    <div id="sentBarPos" class="do-sent-bar do-sent-bar-pos" style="width:0%"></div>
+                    <div id="sentBarNeu" class="do-sent-bar do-sent-bar-neu" style="width:0%"></div>
+                    <div id="sentBarNeg" class="do-sent-bar do-sent-bar-neg" style="width:0%"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -267,7 +294,6 @@
 @section('styles')
 <style>
     /* ── Filter ── */
-    /* Circle Label - agar lebih readable */
     .circle-label {
         pointer-events: none !important;
     }
@@ -279,7 +305,6 @@
         height: 100%;
     }
 
-    /* Map Legend hover effect */
     .map-legend {
         pointer-events: none;
     }
@@ -583,6 +608,58 @@
         max-height: 100%;
     }
 
+    /* ── Sentiment Fallback Stats (total-only mode) ── */
+    .do-sent-stat {
+        flex: 1;
+        text-align: center;
+        padding: 12px 10px;
+        border-radius: 10px;
+        background: #f8fafc;
+        border: 1.5px solid #eef2f7;
+    }
+
+    .do-sent-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin-bottom: 6px;
+    }
+    .do-sent-label.do-sent-pos { color: #06b6d4; }
+    .do-sent-label.do-sent-neu { color: #9ca3af; }
+    .do-sent-label.do-sent-neg { color: #ef4444; }
+
+    .do-sent-num {
+        font-size: 26px;
+        font-weight: 800;
+        line-height: 1.1;
+        letter-spacing: -0.5px;
+    }
+    .do-sent-num.do-sent-pos { color: #06b6d4; }
+    .do-sent-num.do-sent-neu { color: #6b7280; }
+    .do-sent-num.do-sent-neg { color: #ef4444; }
+
+    .do-sent-pct {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--dark-blue);
+        opacity: .4;
+        margin-top: 3px;
+    }
+
+    .do-sent-bar-wrap {
+        display: flex;
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        background: #f0f2f5;
+    }
+
+    .do-sent-bar { height: 100%; transition: width .6s ease; }
+    .do-sent-bar-pos { background: #06b6d4; }
+    .do-sent-bar-neu { background: #d1d5db; }
+    .do-sent-bar-neg { background: #ef4444; }
+
     /* ── Leaflet map fix ── */
     #buzzMap .leaflet-container {
         height: 100%;
@@ -688,130 +765,197 @@
         });
 
         // ────────────────────────────────────────────
-        // 2. LINE — Sentiment Score
+        // 2. LINE / FALLBACK — Sentiment Score
+        //    Handles dua format data:
+        //      A) Daily rows  → [{ date, positive, negative, neutral }, ...]
+        //      B) Total only  → { positive: N, neutral: N, negative: N }
+        //         (format yang sama kayak di sentiment.blade.php)
         // ────────────────────────────────────────────
         @php
-        $sentRaw = $sentiment['data'] ?? (array) $sentiment;
+        // ── Resolve raw sentiment data ──
+        // Coba ambil dari $sentiment (data-overview variable)
+        // Kalau nggak ada, fallback ke $sentimentData (variable dari sentiment blade)
+        $sentimentSource = $sentiment ?? $sentimentData ?? [];
+
+        // Normalize: kalau ada key 'data' yang berisi array, ambil itu
+        $sentRaw = isset($sentimentSource['data']) && is_array($sentimentSource['data'])
+            ? $sentimentSource['data']
+            : (is_array($sentimentSource) ? $sentimentSource : []);
+
+        // ── Detect format ──
+        // Format A: array of daily rows → setiap elemen punya key 'date'/'day'
+        // Format B: flat total → punya key 'positive' langsung di top-level
+        $isDailyRows = false;
         $sDates = [];
-        $sPos = [];
-        $sNeg = [];
-        $sNeu = [];
-        if (is_array($sentRaw)) {
-            foreach($sentRaw as $r) {
-                if (!is_array($r)) continue;
-                $d = $r['date'] ?? $r['day'] ?? '';
-                if ($d === '') continue;
-                $sDates[] = $d;
-                $sPos[] = (int)($r['positive'] ?? 0);
-                $sNeg[] = (int)($r['negative'] ?? 0);
-                $sNeu[] = (int)($r['neutral'] ?? 0);
+        $sPos   = [];
+        $sNeg   = [];
+        $sNeu   = [];
+
+        if (is_array($sentRaw) && count($sentRaw) > 0) {
+            $firstItem = reset($sentRaw);
+
+            if (is_array($firstItem) && isset($firstItem['date']) || isset($firstItem['day'])) {
+                // ── Format A: daily breakdown ──
+                $isDailyRows = true;
+                foreach ($sentRaw as $r) {
+                    if (!is_array($r)) continue;
+                    $d = $r['date'] ?? $r['day'] ?? '';
+                    if ($d === '') continue;
+                    $sDates[] = $d;
+                    $sPos[]   = (int)($r['positive'] ?? 0);
+                    $sNeg[]   = (int)($r['negative'] ?? 0);
+                    $sNeu[]   = (int)($r['neutral']  ?? 0);
+                }
+                // Kalau setelah loop tetap kosong, reset flag
+                if (empty($sDates)) $isDailyRows = false;
             }
         }
+
+        // ── Format B: total only (flat) ──
+        // Ambil dari top-level source langsung
+        $totalPos = (int)($sentimentSource['positive'] ?? 0);
+        $totalNeu = (int)($sentimentSource['neutral']  ?? 0);
+        $totalNeg = (int)($sentimentSource['negative'] ?? 0);
+        $totalAll = max(1, $totalPos + $totalNeu + $totalNeg);
+        $pctPos   = round($totalPos / $totalAll * 100);
+        $pctNeu   = round($totalNeu / $totalAll * 100);
+        $pctNeg   = round($totalNeg / $totalAll * 100);
+        $hasTotal = ($totalPos + $totalNeu + $totalNeg) > 0;
         @endphp
 
-        var sDates = @json($sDates),
-            sPos = @json($sPos),
-            sNeg = @json($sNeg),
-            sNeu = @json($sNeu);
+        var isDailyRows = @json($isDailyRows);
+        var sDates = @json($sDates);
+        var sPos   = @json($sPos);
+        var sNeg   = @json($sNeg);
+        var sNeu   = @json($sNeu);
 
-        new Chart(document.getElementById('chartSentiment').getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: sDates,
-                datasets: [{
-                        label: 'Positive',
-                        data: sPos,
-                        borderColor: '#06b6d4',
-                        backgroundColor: 'rgba(6,182,212,.1)',
-                        borderWidth: 2.5,
-                        tension: .4,
-                        fill: true,
-                        pointRadius: 0,
-                        pointHoverRadius: 4
-                    },
-                    {
-                        label: 'Negative',
-                        data: sNeg,
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239,68,68,.07)',
-                        borderWidth: 2.5,
-                        tension: .4,
-                        fill: true,
-                        pointRadius: 0,
-                        pointHoverRadius: 4
-                    },
-                    {
-                        label: 'Neutral',
-                        data: sNeu,
-                        borderColor: '#9ca3af',
-                        backgroundColor: 'rgba(156,163,175,.05)',
-                        borderWidth: 2,
-                        tension: .4,
-                        fill: true,
-                        pointRadius: 0,
-                        pointHoverRadius: 4,
-                        borderDash: [5, 3]
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false
-                },
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            font: {
-                                family: 'Poppins',
-                                size: 11,
-                                weight: '600'
-                            },
-                            padding: 16,
-                            usePointStyle: true,
-                            pointStyleWidth: 10
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        ticks: {
-                            font: {
-                                family: 'Poppins',
-                                size: 10
-                            },
-                            maxRotation: 0,
-                            autoSkip: true,
-                            maxTicksLimit: 8
+        // Total-only vars (untuk fallback)
+        var totalPos = {{ $totalPos }};
+        var totalNeu = {{ $totalNeu }};
+        var totalNeg = {{ $totalNeg }};
+        var pctPos   = {{ $pctPos }};
+        var pctNeu   = {{ $pctNeu }};
+        var pctNeg   = {{ $pctNeg }};
+        var hasTotal = @json($hasTotal);
+
+        if (isDailyRows && sDates.length > 0) {
+            // ── RENDER: Line chart (ada daily breakdown) ──
+            document.getElementById('chartSentiment').style.display = 'block';
+            document.getElementById('sentimentFallback').style.display = 'none';
+
+            new Chart(document.getElementById('chartSentiment').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: sDates,
+                    datasets: [{
+                            label: 'Positive',
+                            data: sPos,
+                            borderColor: '#06b6d4',
+                            backgroundColor: 'rgba(6,182,212,.1)',
+                            borderWidth: 2.5,
+                            tension: .4,
+                            fill: true,
+                            pointRadius: 0,
+                            pointHoverRadius: 4
                         },
-                        grid: {
-                            display: false
+                        {
+                            label: 'Negative',
+                            data: sNeg,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239,68,68,.07)',
+                            borderWidth: 2.5,
+                            tension: .4,
+                            fill: true,
+                            pointRadius: 0,
+                            pointHoverRadius: 4
+                        },
+                        {
+                            label: 'Neutral',
+                            data: sNeu,
+                            borderColor: '#9ca3af',
+                            backgroundColor: 'rgba(156,163,175,.05)',
+                            borderWidth: 2,
+                            tension: .4,
+                            fill: true,
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
+                            borderDash: [5, 3]
                         }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
                     },
-                    y: {
-                        ticks: {
-                            font: {
-                                family: 'Poppins',
-                                size: 10
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    family: 'Poppins',
+                                    size: 11,
+                                    weight: '600'
+                                },
+                                padding: 16,
+                                usePointStyle: true,
+                                pointStyleWidth: 10
                             }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                font: { family: 'Poppins', size: 10 },
+                                maxRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 8
+                            },
+                            grid: { display: false }
                         },
-                        grid: {
-                            color: '#f0f2f5'
-                        },
-                        beginAtZero: true
-                    }
-                },
-                animation: {
-                    duration: 1000
+                        y: {
+                            ticks: { font: { family: 'Poppins', size: 10 } },
+                            grid: { color: '#f0f2f5' },
+                            beginAtZero: true
+                        }
+                    },
+                    animation: { duration: 1000 }
                 }
-            }
-        });
+            });
+
+        } else if (hasTotal) {
+            // ── RENDER: Fallback stat cards (cuma ada total, no daily rows) ──
+            // Ini yang sama kayak sentiment.blade.php
+            document.getElementById('chartSentiment').style.display = 'none';
+            var fb = document.getElementById('sentimentFallback');
+            fb.style.display = 'flex';
+
+            // Isi angka & persentase
+            fb.querySelector('#sentFallPos .do-sent-num').textContent = totalPos.toLocaleString();
+            fb.querySelector('#sentFallPos .do-sent-pct').textContent = pctPos + '%';
+            fb.querySelector('#sentFallNeu .do-sent-num').textContent = totalNeu.toLocaleString();
+            fb.querySelector('#sentFallNeu .do-sent-pct').textContent = pctNeu + '%';
+            fb.querySelector('#sentFallNeg .do-sent-num').textContent = totalNeg.toLocaleString();
+            fb.querySelector('#sentFallNeg .do-sent-pct').textContent = pctNeg + '%';
+
+            // Isi progress bar
+            document.getElementById('sentBarPos').style.width = pctPos + '%';
+            document.getElementById('sentBarNeu').style.width = pctNeu + '%';
+            document.getElementById('sentBarNeg').style.width = pctNeg + '%';
+
+        } else {
+            // ── Tidak ada data sama sekali ──
+            document.getElementById('chartSentiment').style.display = 'none';
+            document.getElementById('sentimentFallback').style.display = 'none';
+            // Tampil empty state
+            var container = document.getElementById('sentimentChartContainer');
+            container.innerHTML = '<div class="do-empty">Tidak ada data sentiment</div>';
+        }
 
         // ────────────────────────────────────────────
-        // 3. LEAFLET MAP — Buzzer Map (Fixed Radius + Label Position)
+        // 3. LEAFLET MAP — Buzzer Map
         // ────────────────────────────────────────────
         @php
         $geoRaw = $geoUsers['locality']['rows'] ??
@@ -830,7 +974,6 @@
             maxZoom: 19
         }).addTo(map);
 
-        // Find max count untuk scaling
         var maxCount = Math.max(...geoData.map(p => p.count || 0));
         var minCount = Math.min(...geoData.map(p => p.count || 0).filter(c => c > 0));
 
@@ -843,11 +986,10 @@
             var name = p.name || 'Unknown';
             var count = parseInt(p.count || 0);
 
-            // 🔥 CIRCLE - radius lebih kecil (dibagi 3-4x)
             if (count >= 10) {
-                var radius = Math.sqrt(count) * 2500; // ← CHANGED: dari 10000 ke 2500 (4x lebih kecil)
-                radius = Math.max(radius, 5000); // ← CHANGED: min dari 10km ke 5km
-                radius = Math.min(radius, 50000); // ← CHANGED: max dari 150km ke 50km
+                var radius = Math.sqrt(count) * 2500;
+                radius = Math.max(radius, 5000);
+                radius = Math.min(radius, 50000);
 
                 var opacity = Math.min(0.15 + (count / maxCount) * 0.45, 0.6);
 
@@ -861,7 +1003,6 @@
                 }).addTo(map);
             }
 
-            // 🔥 PIN di tengah
             var redPin = L.divIcon({
                 className: '',
                 html: '<div style="width:13px;height:13px;background:#ef4444;border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,.4);"></div>',
@@ -881,7 +1022,6 @@
                     '</div>'
                 );
 
-            // 🔥 ANGKA DI ATAS PIN (bukan di tengah)
             var label = count > 999 ? (count / 1000).toFixed(1) + 'k' : count;
             var fontSize = count >= 1000 ? '13px' : '11px';
 
@@ -902,64 +1042,54 @@
                         'letter-spacing:0.3px;' +
                         '">' + label + '</div>',
                     iconSize: [40, 20],
-                    iconAnchor: [20, 25] // ← CHANGED: posisi anchor agar label di ATAS pin
+                    iconAnchor: [20, 25]
                 }),
                 interactive: false
             }).addTo(map);
         });
 
-        // 🔥 LEGEND - Cleaner & threshold changed to ≥50
-var legend = L.control({ position: 'bottomright' });
+        // Legend
+        var legend = L.control({ position: 'bottomright' });
 
-legend.onAdd = function(map) {
-  var div = L.DomUtil.create('div', 'map-legend');
-  
-  div.innerHTML = 
-    '<div style="background:#fff; padding:14px 16px; border-radius:12px; box-shadow:0 3px 12px rgba(0,0,0,0.15); font-family:Poppins; min-width:180px;">' +
-      
-      // Title
-      '<div style="font-size:12px; font-weight:800; color:#1e293b; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.6px; border-bottom:2px solid #ef4444; padding-bottom:6px;">Buzzer Activity</div>' +
-      
-      // Heat circle info
-      '<div style="background:linear-gradient(135deg, #fef3ee 0%, #fff 100%); padding:8px 10px; border-radius:8px; margin-bottom:12px; border-left:3px solid #ef4444;">' +
-        '<div style="font-size:10px; color:#64748b; font-weight:600; line-height:1.5;">' +
-          'Heat circles appear for<br>' +
-          '<span style="color:#ef4444; font-weight:900; font-size:11px;">≥10 mentions</span>' +
-        '</div>' +
-      '</div>' +
-      
-      // Size indicators
-      '<div style="display:flex; align-items:flex-end; justify-content:space-between; gap:8px; margin-bottom:10px;">' +
-        '<div style="text-align:center; flex:1;">' +
-          '<div style="width:22px; height:22px; background:rgba(239,68,68,0.35); border:1.5px solid rgba(239,68,68,0.6); border-radius:50%; margin:0 auto 5px;"></div>' +
-          '<div style="font-size:9px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">Low</div>' +
-        '</div>' +
-        '<div style="text-align:center; flex:1;">' +
-          '<div style="width:32px; height:32px; background:rgba(239,68,68,0.55); border:1.5px solid rgba(239,68,68,0.7); border-radius:50%; margin:0 auto 5px;"></div>' +
-          '<div style="font-size:9px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">Med</div>' +
-        '</div>' +
-        '<div style="text-align:center; flex:1;">' +
-          '<div style="width:42px; height:42px; background:rgba(239,68,68,0.75); border:1.5px solid rgba(239,68,68,0.85); border-radius:50%; margin:0 auto 5px;"></div>' +
-          '<div style="font-size:9px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">High</div>' +
-        '</div>' +
-      '</div>' +
-      
-      // Count range
-      '<div style="padding-top:10px; border-top:1.5px solid #f0f2f5; font-size:10px; color:#64748b; font-weight:600; text-align:center;">' +
-        'Range: <span style="color:#ef4444; font-weight:900;">' + minCount + ' - ' + maxCount.toLocaleString() + '</span>' +
-      '</div>' +
-      
-    '</div>';
-  
-  return div;
-};
+        legend.onAdd = function(map) {
+          var div = L.DomUtil.create('div', 'map-legend');
 
-legend.addTo(map);
+          div.innerHTML =
+            '<div style="background:#fff; padding:14px 16px; border-radius:12px; box-shadow:0 3px 12px rgba(0,0,0,0.15); font-family:Poppins; min-width:180px;">' +
+              '<div style="font-size:12px; font-weight:800; color:#1e293b; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.6px; border-bottom:2px solid #ef4444; padding-bottom:6px;">Buzzer Activity</div>' +
+              '<div style="background:linear-gradient(135deg, #fef3ee 0%, #fff 100%); padding:8px 10px; border-radius:8px; margin-bottom:12px; border-left:3px solid #ef4444;">' +
+                '<div style="font-size:10px; color:#64748b; font-weight:600; line-height:1.5;">' +
+                  'Heat circles appear for<br>' +
+                  '<span style="color:#ef4444; font-weight:900; font-size:11px;">≥10 mentions</span>' +
+                '</div>' +
+              '</div>' +
+              '<div style="display:flex; align-items:flex-end; justify-content:space-between; gap:8px; margin-bottom:10px;">' +
+                '<div style="text-align:center; flex:1;">' +
+                  '<div style="width:22px; height:22px; background:rgba(239,68,68,0.35); border:1.5px solid rgba(239,68,68,0.6); border-radius:50%; margin:0 auto 5px;"></div>' +
+                  '<div style="font-size:9px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">Low</div>' +
+                '</div>' +
+                '<div style="text-align:center; flex:1;">' +
+                  '<div style="width:32px; height:32px; background:rgba(239,68,68,0.55); border:1.5px solid rgba(239,68,68,0.7); border-radius:50%; margin:0 auto 5px;"></div>' +
+                  '<div style="font-size:9px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">Med</div>' +
+                '</div>' +
+                '<div style="text-align:center; flex:1;">' +
+                  '<div style="width:42px; height:42px; background:rgba(239,68,68,0.75); border:1.5px solid rgba(239,68,68,0.85); border-radius:50%; margin:0 auto 5px;"></div>' +
+                  '<div style="font-size:9px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">High</div>' +
+                '</div>' +
+              '</div>' +
+              '<div style="padding-top:10px; border-top:1.5px solid #f0f2f5; font-size:10px; color:#64748b; font-weight:600; text-align:center;">' +
+                'Range: <span style="color:#ef4444; font-weight:900;">' + minCount + ' - ' + maxCount.toLocaleString() + '</span>' +
+              '</div>' +
+            '</div>';
+
+          return div;
+        };
+
+        legend.addTo(map);
 
         // ────────────────────────────────────────────
         // 4. FILTER BUTTON
         // ────────────────────────────────────────────
-        // ── FILTER BUTTON (update yang lama) ──
         document.getElementById('doBtnApply').addEventListener('click', function() {
             var pid = document.getElementById('doProject').value;
             var sd = document.getElementById('doStartDate').value;

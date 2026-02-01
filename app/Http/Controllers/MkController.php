@@ -1067,18 +1067,25 @@ public function dataOverview(Request $request, MediaKernelsClient $mk)
             ]);
         }
 
-        // ── SENTIMENT SCORE (using existing getSentiment) ──
-        try {
-            $sentiment = $mk->getSentiment(
+     try {
+            $rawSentiment = $mk->sentimentTotal(
                 $projectId,
-                $params['media'],
                 $params['startDate'],
                 $params['endDate'],
                 $params['startTime'],
                 $params['endTime']
             );
+
+            // Normalize pakai helper yang sudah ada — persis sama kayak di sentiment() method
+            $sentiment = $this->normalizeSentimentTotal($rawSentiment);
+
+            \Log::info('dataOverview: sentimentTotal response', [
+                'raw_keys' => is_array($rawSentiment) ? array_keys($rawSentiment) : 'not array',
+                'normalized' => $sentiment,
+            ]);
         } catch (\Exception $e) {
-            \Log::warning('dataOverview: getSentiment failed', ['error' => $e->getMessage()]);
+            \Log::warning('dataOverview: sentimentTotal failed', ['error' => $e->getMessage()]);
+            $sentiment = ['positive' => 0, 'neutral' => 0, 'negative' => 0];
         }
 
         // ── GEO USERS (Buzzer Map) - using existing helper ──
