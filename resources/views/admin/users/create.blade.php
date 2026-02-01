@@ -29,9 +29,9 @@
     <form method="POST" action="{{ route('admin.users.store') }}" class="user-form">
       @csrf
       
-      <!-- Name Field -->
+      <!-- Username Field -->
       <div class="form-group">
-        <label for="name" class="form-label">Full Name</label>
+        <label for="name" class="form-label">Username</label>
         <input 
           type="text" 
           id="name" 
@@ -40,33 +40,34 @@
           value="{{ old('name') }}" 
           required 
           autofocus
-          placeholder="Enter user's full name"
+          placeholder="Enter username (e.g., john, mary, admin)"
         >
         @error('name')
         <span class="error-message">{{ $message }}</span>
         @enderror
       </div>
       
-      <!-- Email Field -->
+      <!-- Email Display Field (Auto Generated) -->
       <div class="form-group">
-        <label for="email" class="form-label">Email Address</label>
+        <label for="email_display" class="form-label">Email (Auto-Generated)</label>
         <input 
-          type="email" 
-          id="email" 
-          name="email" 
-          class="form-input @error('email') is-invalid @enderror" 
-          value="{{ old('email') }}" 
-          required
-          placeholder="user@example.com"
+          type="text" 
+          id="email_display" 
+          class="form-input email-display" 
+          readonly
+          placeholder="Will be auto-generated: username@smadiment.com"
         >
-        @error('email')
-        <span class="error-message">{{ $message }}</span>
-        @enderror
+        <small class="form-hint">
+          Email format: <strong id="emailPreview">username@smadiment.com</strong>
+        </small>
       </div>
       
-      <!-- Password Field with Generate Button -->
+      <!-- Email Field (Hidden - Auto Generated) -->
+      <input type="hidden" id="email" name="email" value="{{ old('email') }}">
+      
+      <!-- Password Field (Auto Generated) -->
       <div class="form-group">
-        <label for="password" class="form-label">Password</label>
+        <label for="password" class="form-label">Password (Auto-Generated)</label>
         <div class="password-input-wrapper">
           <input 
             type="text" 
@@ -75,15 +76,9 @@
             class="form-input password-input @error('password') is-invalid @enderror" 
             value="{{ old('password') }}" 
             required
-            placeholder="Click 'Generate Password' button"
             readonly
+            placeholder="Will be auto-generated from username"
           >
-          <button type="button" class="btn-generate-password" onclick="generatePassword()">
-            <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;">
-              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
-            </svg>
-            Generate Password
-          </button>
           <button type="button" class="btn-copy-password" onclick="copyPassword()" id="copyBtn" style="display: none;">
             <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
@@ -235,6 +230,13 @@
   border-color: #DC2626;
 }
 
+.email-display {
+  background: #F0FDF4 !important;
+  border-color: var(--primary-green) !important;
+  font-weight: 600;
+  color: var(--primary-green);
+}
+
 .form-hint {
   display: flex;
   align-items: center;
@@ -273,28 +275,6 @@
   font-weight: 600;
   letter-spacing: 1px;
   background: #FAFBFC;
-}
-
-.btn-generate-password {
-  padding: 12px 20px;
-  background: var(--primary-green);
-  color: var(--white);
-  border: none;
-  border-radius: 10px;
-  font-family: 'Poppins', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-}
-
-.btn-generate-password:hover {
-  background: #025a34;
-  transform: translateY(-2px);
 }
 
 .btn-copy-password {
@@ -474,27 +454,45 @@
 @section('scripts')
 <script>
 /**
- * Generate Password from Email
- * Format: username_SMADIMENT_randomstring
- * Example: john_SMADIMENT_x9K2pL4m
+ * Auto-generate email and password from username
  */
-function generatePassword() {
+function generateFromUsername() {
+  const usernameInput = document.getElementById('name');
   const emailInput = document.getElementById('email');
+  const emailDisplayInput = document.getElementById('email_display');
   const passwordInput = document.getElementById('password');
   const copyBtn = document.getElementById('copyBtn');
   const passwordHint = document.getElementById('passwordHint');
+  const emailPreview = document.getElementById('emailPreview');
   
-  const email = emailInput.value.trim();
+  // Get username and remove spaces automatically
+  let username = usernameInput.value.trim().toLowerCase();
   
-  if (!email) {
-    alert('Please enter an email address first!');
-    emailInput.focus();
+  // Remove all spaces from username
+  username = username.replace(/\s+/g, '');
+  
+  // Update the input value without spaces
+  if (usernameInput.value !== username) {
+    usernameInput.value = username;
+  }
+  
+  if (!username) {
+    emailInput.value = '';
+    emailDisplayInput.value = '';
+    passwordInput.value = '';
+    copyBtn.style.display = 'none';
+    passwordHint.style.display = 'none';
+    emailPreview.textContent = 'username@smadiment.com';
     return;
   }
   
-  // Extract username from email (before @)
-  let username = email.split('@')[0].toLowerCase();
+  // Generate email: username@smadiment.com
+  const email = `${username}@smadiment.com`;
+  emailInput.value = email;
+  emailDisplayInput.value = email;
+  emailPreview.textContent = email;
   
+  // Generate password from username
   // Ganti huruf jadi angka: i->1, o->0, e->3, a->4
   let password = username
     .replace(/i/g, '1')
@@ -512,15 +510,12 @@ function generatePassword() {
   
   // Set password value
   passwordInput.value = generatedPassword;
-  passwordInput.removeAttribute('readonly');
   
   // Show copy button and hint
   copyBtn.style.display = 'flex';
   passwordHint.style.display = 'flex';
-  
-  // Highlight the password field
-  passwordInput.select();
 }
+
 /**
  * Copy Password to Clipboard
  */
@@ -553,13 +548,8 @@ function copyPassword() {
   }, 2000);
 }
 
-// Auto-generate password when email changes (optional)
-document.getElementById('email').addEventListener('blur', function() {
-  const passwordInput = document.getElementById('password');
-  if (this.value && !passwordInput.value) {
-    // Uncomment line below if you want auto-generate on email blur
-    // generatePassword();
-  }
-});
+// Auto-generate when username changes
+document.getElementById('name').addEventListener('input', generateFromUsername);
+document.getElementById('name').addEventListener('blur', generateFromUsername);
 </script>
 @endsection

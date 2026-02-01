@@ -45,7 +45,7 @@
 
     .logo-icon {
       width: auto;
-      max-width: 300px;
+      max-width: 650px;
       margin: 0 auto 24px;
     }
 
@@ -217,7 +217,7 @@
       }
 
       .logo-icon {
-        max-width: 200px;
+        max-width: 350px;
       }
 
       .logo-text h1 {

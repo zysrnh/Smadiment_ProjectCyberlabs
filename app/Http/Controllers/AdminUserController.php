@@ -41,11 +41,14 @@ class AdminUserController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+            'name' => 'required|string|max:255|alpha_dash', // username format
+            'email' => 'required|email|unique:users,email|ends_with:@smadiment.com',
             'password' => 'required|string|min:6',
             'projects' => 'required|array|min:1',
             'projects.*' => 'required|integer',
+        ], [
+            'email.ends_with' => 'Email must be in format: username@smadiment.com',
+            'name.alpha_dash' => 'Username can only contain letters, numbers, dashes and underscores',
         ]);
 
         // Pakai password dari form (yang udah di-generate di frontend)
@@ -95,12 +98,15 @@ class AdminUserController extends Controller
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'name' => 'required|string|max:255|alpha_dash',
+            'email' => 'required|email|unique:users,email,' . $user->id . '|ends_with:@smadiment.com',
             'projects' => 'required|array|min:1',
             'projects.*' => 'required|integer',
             'reset_password' => 'nullable|boolean',
             'new_password' => 'nullable|string|min:6', // Password baru dari frontend
+        ], [
+            'email.ends_with' => 'Email must be in format: username@smadiment.com',
+            'name.alpha_dash' => 'Username can only contain letters, numbers, dashes and underscores',
         ]);
 
         // Update user info
