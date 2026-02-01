@@ -751,62 +751,26 @@
         }
 
         // ────────────────────────────────────────────
-        // 2. LINE CHART — Sentiment Score
+        // 2. LINE CHART — Sentiment Score (FIXED)
         // ────────────────────────────────────────────
         @php
-        $sentimentSource = $sentiment ?? $sentimentData ?? [];
-        $sentRaw = isset($sentimentSource['data']) && is_array($sentimentSource['data'])
-            ? $sentimentSource['data']
-            : (is_array($sentimentSource) ? $sentimentSource : []);
-
-        $sDates = [];
-        $sPos = [];
-        $sNeg = [];
-        $sNeu = [];
-
-        if (is_array($sentRaw) && count($sentRaw) > 0) {
-            $firstItem = reset($sentRaw);
-            if (is_array($firstItem) && (isset($firstItem['date']) || isset($firstItem['day']))) {
-                foreach ($sentRaw as $r) {
-                    if (!is_array($r)) continue;
-                    $d = $r['date'] ?? $r['day'] ?? '';
-                    if ($d === '') continue;
-                    $sDates[] = date('d M', strtotime($d));
-                    $sPos[] = (int)($r['positive'] ?? 0);
-                    $sNeg[] = (int)($r['negative'] ?? 0);
-                    $sNeu[] = (int)($r['neutral'] ?? 0);
-                }
-            }
-        }
-
-        if (empty($sDates)) {
-            $totalPos = (int)($sentimentSource['positive'] ?? 0);
-            $totalNeu = (int)($sentimentSource['neutral'] ?? 0);
-            $totalNeg = (int)($sentimentSource['negative'] ?? 0);
-            
-            if ($totalPos > 0 || $totalNeu > 0 || $totalNeg > 0) {
-                $days = 7;
-                for ($i = 0; $i < $days; $i++) {
-                    $sDates[] = date('d M', strtotime("-" . ($days - $i - 1) . " days"));
-                    $factor = (0.8 + (rand(0, 40) / 100));
-                    $sPos[] = round($totalPos / $days * $factor);
-                    $sNeu[] = round($totalNeu / $days * $factor);
-                    $sNeg[] = round($totalNeg / $days * $factor);
-                }
-            } else {
-                $sDates = [date('d M')];
-                $sPos = [0];
-                $sNeu = [0];
-                $sNeg = [0];
-            }
-        }
+        // 🔥 Gunakan sentimentTimeline yang sudah dikirim dari controller
+        $timeline = $sentimentTimeline ?? [
+            'dates' => [],
+            'values' => [],
+            'sentiment' => [
+                'positive' => [],
+                'neutral' => [],
+                'negative' => [],
+            ]
+        ];
         @endphp
 
-        var sDates = @json($sDates);
-        var sPos = @json($sPos);
-        var sNeg = @json($sNeg);
-        var sNeu = @json($sNeu);
-        var sNew = sDates.map((_, i) => (sPos[i] || 0) + (sNeu[i] || 0) + (sNeg[i] || 0));
+        var sDates = @json($timeline['dates'] ?? []);
+        var sPos = @json($timeline['sentiment']['positive'] ?? []);
+        var sNeu = @json($timeline['sentiment']['neutral'] ?? []);
+        var sNeg = @json($timeline['sentiment']['negative'] ?? []);
+        var sNew = @json($timeline['values'] ?? []);
 
         console.log('📈 Sentiment Data:', { sDates, sPos, sNeu, sNeg, sNew });
 

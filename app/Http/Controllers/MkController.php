@@ -99,223 +99,220 @@ class MkController extends Controller
         return array_values($rawProjects);
     }
 
-    // 🔥 REPLACE METHOD dashboard() IN MkController.php
-
-/**
- * 📊 DASHBOARD (User - Filtered by assigned projects)
- */
-public function dashboard(Request $request, MediaKernelsClient $mk)
-{
-    // Get all projects from API
-    $allProjects = $this->getProjects($mk);
-    
-    // Filter projects based on user's access
-    $user = auth()->user();
-    $assignedProjectIds = $user->assignedProjectIds();
-    
-    // Filter projects: only show projects user has access to
-    $projects = array_filter($allProjects, function($project) use ($assignedProjectIds) {
-        return in_array($project['id'], $assignedProjectIds);
-    });
-    
-    // Re-index array
-    $projects = array_values($projects);
-    
-    return view('mk.dashboard', [
-        'projects' => $projects,
-    ]);
-}
-
     /**
-     * 👨‍💼 ADMIN DASHBOARD - List Projects Only
+     * 📊 DASHBOARD (User - Filtered by assigned projects)
      */
-   private function extractDailyTimeline($projectId, MediaKernelsClient $mk): array
-{
-    $timeline = [
-        'dates' => [],
-        'values' => [],
-        'sentiment' => [
-            'positive' => [],
-            'neutral' => [],
-            'negative' => [],
-        ]
-    ];
-    
-    try {
-        // Generate last 7 days
-        for ($i = 6; $i >= 0; $i--) {
-            $date = now()->subDays($i);
-            $dateStr = $date->format('Y-m-d');
-            $dateLabel = $date->format('d. M'); // "22. Jan"
-            
-            // Fetch sentiment data for this specific date
-            $sentimentData = $mk->sentimentTotal(
-                $projectId,
-                $dateStr,
-                $dateStr, // same date for single day
-                0,
-                23
-            );
-            
-            // Normalize sentiment response
-            $normalized = $this->normalizeSentimentTotal($sentimentData);
-            
-            $pos = $normalized['positive'];
-            $neu = $normalized['neutral'];
-            $neg = $normalized['negative'];
-            $total = $pos + $neu + $neg;
-            
-            // Add to timeline
-            $timeline['dates'][] = $dateLabel;
-            $timeline['values'][] = $total;
-            $timeline['sentiment']['positive'][] = $pos;
-            $timeline['sentiment']['neutral'][] = $neu;
-            $timeline['sentiment']['negative'][] = $neg;
-        }
+    public function dashboard(Request $request, MediaKernelsClient $mk)
+    {
+        // Get all projects from API
+        $allProjects = $this->getProjects($mk);
         
-    } catch (\Exception $e) {
-        Log::warning("Failed to fetch daily timeline for project {$projectId}", [
-            'error' => $e->getMessage()
+        // Filter projects based on user's access
+        $user = auth()->user();
+        $assignedProjectIds = $user->assignedProjectIds();
+        
+        // Filter projects: only show projects user has access to
+        $projects = array_filter($allProjects, function($project) use ($assignedProjectIds) {
+            return in_array($project['id'], $assignedProjectIds);
+        });
+        
+        // Re-index array
+        $projects = array_values($projects);
+        
+        return view('mk.dashboard', [
+            'projects' => $projects,
         ]);
     }
-    
-    return $timeline;
-}
 
-/**
- * UPDATE YOUR adminDashboard METHOD
- * Replace the line that calls extractTimeline with extractDailyTimeline
- */
-public function adminDashboard(Request $request, MediaKernelsClient $mk)
-{
-    $rawProjects = $mk->listProjects(0, 100);
-    $projects = array_values($rawProjects);
-    
-    // Enrich each project with stats data
-    $dateRange = [
-        'start' => now()->subDays(7)->toDateString(),
-        'end' => now()->toDateString(),
-    ];
-    
-    foreach ($projects as &$project) {
+    /**
+     * 🔥 Helper: Extract Daily Timeline with Sentiment Breakdown (7 days)
+     */
+    private function extractDailyTimeline($projectId, MediaKernelsClient $mk): array
+    {
+        $timeline = [
+            'dates' => [],
+            'values' => [],
+            'sentiment' => [
+                'positive' => [],
+                'neutral' => [],
+                'negative' => [],
+            ]
+        ];
+        
         try {
-            // Get project stats for each media type
-            $allStats = $mk->projectStats(
-                $project['id'],
-                'all',
-                $dateRange['start'],
-                $dateRange['end'],
-                0,
-                23,
-                'volumetotal'
-            );
-            
-            $newsStats = $mk->projectStats(
-                $project['id'],
-                'onlinenews',
-                $dateRange['start'],
-                $dateRange['end'],
-                0,
-                23,
-                'volumetotal'
-            );
-            
-            $twitStats = $mk->projectStats(
-                $project['id'],
-                'twit',
-                $dateRange['start'],
-                $dateRange['end'],
-                0,
-                23,
-                'volumetotal'
-            );
-            
-            $fbStats = $mk->projectStats(
-                $project['id'],
-                'fb',
-                $dateRange['start'],
-                $dateRange['end'],
-                0,
-                23,
-                'volumetotal'
-            );
-            
-            $igStats = $mk->projectStats(
-                $project['id'],
-                'ig',
-                $dateRange['start'],
-                $dateRange['end'],
-                0,
-                23,
-                'volumetotal'
-            );
-            
-            $ytStats = $mk->projectStats(
-                $project['id'],
-                'yt',
-                $dateRange['start'],
-                $dateRange['end'],
-                0,
-                23,
-                'volumetotal'
-            );
-            
-            $tiktokStats = $mk->projectStats(
-                $project['id'],
-                'tiktok',
-                $dateRange['start'],
-                $dateRange['end'],
-                0,
-                23,
-                'volumetotal'
-            );
-            
-            // Extract totals
-            $project['stats'] = [
-                'all' => $this->extractTotal($allStats),
-                'news' => $this->extractTotal($newsStats),
-                'twit' => $this->extractTotal($twitStats),
-                'fb' => $this->extractTotal($fbStats),
-                'ig' => $this->extractTotal($igStats),
-                'yt' => $this->extractTotal($ytStats),
-                'tiktok' => $this->extractTotal($tiktokStats),
-            ];
-            
-            // 🔥 CHANGED: Extract DAILY timeline with sentiment breakdown (7 days)
-            $project['timeline'] = $this->extractDailyTimeline($project['id'], $mk);
+            // Generate last 7 days
+            for ($i = 6; $i >= 0; $i--) {
+                $date = now()->subDays($i);
+                $dateStr = $date->format('Y-m-d');
+                $dateLabel = $date->format('d. M'); // "22. Jan"
+                
+                // Fetch sentiment data for this specific date
+                $sentimentData = $mk->sentimentTotal(
+                    $projectId,
+                    $dateStr,
+                    $dateStr, // same date for single day
+                    0,
+                    23
+                );
+                
+                // Normalize sentiment response
+                $normalized = $this->normalizeSentimentTotal($sentimentData);
+                
+                $pos = $normalized['positive'];
+                $neu = $normalized['neutral'];
+                $neg = $normalized['negative'];
+                $total = $pos + $neu + $neg;
+                
+                // Add to timeline
+                $timeline['dates'][] = $dateLabel;
+                $timeline['values'][] = $total;
+                $timeline['sentiment']['positive'][] = $pos;
+                $timeline['sentiment']['neutral'][] = $neu;
+                $timeline['sentiment']['negative'][] = $neg;
+            }
             
         } catch (\Exception $e) {
-            Log::warning("Failed to fetch stats for project {$project['id']}", [
+            Log::warning("Failed to fetch daily timeline for project {$projectId}", [
                 'error' => $e->getMessage()
             ]);
-            
-            // Fallback to zeros
-            $project['stats'] = [
-                'all' => 0,
-                'news' => 0,
-                'twit' => 0,
-                'fb' => 0,
-                'ig' => 0,
-                'yt' => 0,
-                'tiktok' => 0,
-            ];
-            $project['timeline'] = [
-                'dates' => [],
-                'values' => [],
-                'sentiment' => [
-                    'positive' => [],
-                    'neutral' => [],
-                    'negative' => [],
-                ]
-            ];
         }
+        
+        return $timeline;
     }
-    
-    return view('admin.dashboard', [
-        'projects' => $projects,
-        'dateRange' => $dateRange,
-    ]);
-}
+
+    /**
+     * 👨‍💼 ADMIN DASHBOARD - List Projects with Stats & Charts
+     */
+    public function adminDashboard(Request $request, MediaKernelsClient $mk)
+    {
+        $rawProjects = $mk->listProjects(0, 100);
+        $projects = array_values($rawProjects);
+        
+        // Enrich each project with stats data
+        $dateRange = [
+            'start' => now()->subDays(7)->toDateString(),
+            'end' => now()->toDateString(),
+        ];
+        
+        foreach ($projects as &$project) {
+            try {
+                // Get project stats for each media type
+                $allStats = $mk->projectStats(
+                    $project['id'],
+                    'all',
+                    $dateRange['start'],
+                    $dateRange['end'],
+                    0,
+                    23,
+                    'volumetotal'
+                );
+                
+                $newsStats = $mk->projectStats(
+                    $project['id'],
+                    'onlinenews',
+                    $dateRange['start'],
+                    $dateRange['end'],
+                    0,
+                    23,
+                    'volumetotal'
+                );
+                
+                $twitStats = $mk->projectStats(
+                    $project['id'],
+                    'twit',
+                    $dateRange['start'],
+                    $dateRange['end'],
+                    0,
+                    23,
+                    'volumetotal'
+                );
+                
+                $fbStats = $mk->projectStats(
+                    $project['id'],
+                    'fb',
+                    $dateRange['start'],
+                    $dateRange['end'],
+                    0,
+                    23,
+                    'volumetotal'
+                );
+                
+                $igStats = $mk->projectStats(
+                    $project['id'],
+                    'ig',
+                    $dateRange['start'],
+                    $dateRange['end'],
+                    0,
+                    23,
+                    'volumetotal'
+                );
+                
+                $ytStats = $mk->projectStats(
+                    $project['id'],
+                    'yt',
+                    $dateRange['start'],
+                    $dateRange['end'],
+                    0,
+                    23,
+                    'volumetotal'
+                );
+                
+                $tiktokStats = $mk->projectStats(
+                    $project['id'],
+                    'tiktok',
+                    $dateRange['start'],
+                    $dateRange['end'],
+                    0,
+                    23,
+                    'volumetotal'
+                );
+                
+                // Extract totals
+                $project['stats'] = [
+                    'all' => $this->extractTotal($allStats),
+                    'news' => $this->extractTotal($newsStats),
+                    'twit' => $this->extractTotal($twitStats),
+                    'fb' => $this->extractTotal($fbStats),
+                    'ig' => $this->extractTotal($igStats),
+                    'yt' => $this->extractTotal($ytStats),
+                    'tiktok' => $this->extractTotal($tiktokStats),
+                ];
+                
+                // 🔥 Extract DAILY timeline with sentiment breakdown (7 days)
+                $project['timeline'] = $this->extractDailyTimeline($project['id'], $mk);
+                
+            } catch (\Exception $e) {
+                Log::warning("Failed to fetch stats for project {$project['id']}", [
+                    'error' => $e->getMessage()
+                ]);
+                
+                // Fallback to zeros
+                $project['stats'] = [
+                    'all' => 0,
+                    'news' => 0,
+                    'twit' => 0,
+                    'fb' => 0,
+                    'ig' => 0,
+                    'yt' => 0,
+                    'tiktok' => 0,
+                ];
+                $project['timeline'] = [
+                    'dates' => [],
+                    'values' => [],
+                    'sentiment' => [
+                        'positive' => [],
+                        'neutral' => [],
+                        'negative' => [],
+                    ]
+                ];
+            }
+        }
+        
+        return view('admin.dashboard', [
+            'projects' => $projects,
+            'dateRange' => $dateRange,
+        ]);
+    }
     
     /**
      * Helper: Extract total from stats response
@@ -911,7 +908,6 @@ public function adminDashboard(Request $request, MediaKernelsClient $mk)
             }
         }
         
-
         // Sort by count descending
         if (!empty($normalized)) {
             usort($normalized, fn($a, $b) => $b['count'] <=> $a['count']);
@@ -946,202 +942,188 @@ public function adminDashboard(Request $request, MediaKernelsClient $mk)
             'size' => $size,
         ]);
     }
-    // ─── TAMBAHKAN METHOD INI KE DALAM CLASS MkController ───
 
- /**
- * 📊 DATA OVERVIEW - Dashboard ringkasan
- */
-public function dataOverview(Request $request, MediaKernelsClient $mk)
-{
-    $projects = $this->getProjects($mk);
-    $params = $this->getParams($request);
-    $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+    /**
+     * 📊 DATA OVERVIEW - Dashboard ringkasan dengan Sentiment Timeline
+     */
+    public function dataOverview(Request $request, MediaKernelsClient $mk)
+    {
+        $projects = $this->getProjects($mk);
+        $params = $this->getParams($request);
+        $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
 
-    // Initialize empty data
-    $trendingTopics = ['data' => []];
-    $topHashtags = ['data' => []];
-    $mentionSocialMedia = 0;
-    $mentionOnlineNews = 0;
-    $activeUsers = ['data' => []];
-    $sentiment = ['data' => []];
-    $geoUsers = ['data' => []];
+        // Initialize empty data
+        $trendingTopics = ['data' => []];
+        $topHashtags = ['data' => []];
+        $mentionSocialMedia = 0;
+        $mentionOnlineNews = 0;
+        $activeUsers = ['data' => []];
+        $sentimentTimeline = [
+            'dates' => [],
+            'values' => [],
+            'sentiment' => [
+                'positive' => [],
+                'neutral' => [],
+                'negative' => [],
+            ]
+        ];
+        $geoUsers = ['data' => []];
 
-    if ($projectId) {
-        // ── TRENDING TOPICS (News - public endpoint) ──
-        try {
-            $rawTopics = $mk->recentTopics('internasional', 10);
-            
-            // Normalize: check for indexed array vs data array
-            if (isset($rawTopics['data']) && is_array($rawTopics['data'])) {
-                $trendingTopics = $rawTopics;
-            } elseif (is_array($rawTopics) && !empty($rawTopics)) {
-                // API returns indexed array [0 => {...}, 1 => {...}]
-                $trendingTopics = ['data' => array_values($rawTopics)];
-            }
-        } catch (\Exception $e) {
-            \Log::warning('dataOverview: recentTopics failed', ['error' => $e->getMessage()]);
-        }
-
-        // ── TOP HASHTAGS ──
-        try {
-            $rawHashtags = $mk->topHashtags(
-                $projectId,
-                $params['media'],
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime']
-            );
-            
-            // Normalize: check for indexed array vs data array
-            if (isset($rawHashtags['data']) && is_array($rawHashtags['data'])) {
-                $topHashtags = $rawHashtags;
-            } elseif (is_array($rawHashtags) && !empty($rawHashtags)) {
-                $topHashtags = ['data' => array_values($rawHashtags)];
-            }
-        } catch (\Exception $e) {
-            \Log::warning('dataOverview: topHashtags failed', ['error' => $e->getMessage()]);
-        }
-
-        // ── MENTIONS (untuk hitung Social Media vs Online News) ──
-        try {
-            $rawMentions = $mk->mentions(
-                $projectId,
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime'],
-                false, // with_content = false (faster)
-                0,
-                100
-            );
-
-            // Normalize mentions
-            $mentionsData = [];
-            if (isset($rawMentions['data']) && is_array($rawMentions['data'])) {
-                $mentionsData = $rawMentions['data'];
-            } elseif (is_array($rawMentions) && !empty($rawMentions)) {
-                $mentionsData = array_values($rawMentions);
-            }
-
-            // Count by media type
-            foreach ($mentionsData as $item) {
-                if (!is_array($item)) continue;
+        if ($projectId) {
+            // ── TRENDING TOPICS (News - public endpoint) ──
+            try {
+                $rawTopics = $mk->recentTopics('internasional', 10);
                 
-                $mediaType = strtolower($item['media_type'] ?? $item['type'] ?? '');
-                
-                if (in_array($mediaType, ['twitter', 'x', 'facebook', 'fb', 'instagram', 'ig', 'youtube', 'yt', 'tiktok'])) {
-                    $mentionSocialMedia++;
-                } elseif (in_array($mediaType, ['news', 'online_news', 'onlinenews'])) {
-                    $mentionOnlineNews++;
+                if (isset($rawTopics['data']) && is_array($rawTopics['data'])) {
+                    $trendingTopics = $rawTopics;
+                } elseif (is_array($rawTopics) && !empty($rawTopics)) {
+                    $trendingTopics = ['data' => array_values($rawTopics)];
                 }
+            } catch (\Exception $e) {
+                Log::warning('dataOverview: recentTopics failed', ['error' => $e->getMessage()]);
             }
-        } catch (\Exception $e) {
-            \Log::warning('dataOverview: mentions failed', ['error' => $e->getMessage()]);
-        }
 
-       // ── ACTIVE USERS (Most Engaged) ──
-        // Normalize persis dari activeUsers() method yang sudah berjalan
-        try {
-            $rawUsers = $mk->mostActiveUsers(
-                $projectId,
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime']
-            );
+            // ── TOP HASHTAGS ──
+            try {
+                $rawHashtags = $mk->topHashtags(
+                    $projectId,
+                    $params['media'],
+                    $params['startDate'],
+                    $params['endDate'],
+                    $params['startTime'],
+                    $params['endTime']
+                );
+                
+                if (isset($rawHashtags['data']) && is_array($rawHashtags['data'])) {
+                    $topHashtags = $rawHashtags;
+                } elseif (is_array($rawHashtags) && !empty($rawHashtags)) {
+                    $topHashtags = ['data' => array_values($rawHashtags)];
+                }
+            } catch (\Exception $e) {
+                Log::warning('dataOverview: topHashtags failed', ['error' => $e->getMessage()]);
+            }
 
-            $data = $rawUsers['data']['data'] ?? $rawUsers['data'] ?? $rawUsers;
-            if (!empty($data) && is_array($data)) {
-                $rows = [];
-                foreach ($data as $item) {
+            // ── MENTIONS (untuk hitung Social Media vs Online News) ──
+            try {
+                $rawMentions = $mk->mentions(
+                    $projectId,
+                    $params['startDate'],
+                    $params['endDate'],
+                    $params['startTime'],
+                    $params['endTime'],
+                    false,
+                    0,
+                    100
+                );
+
+                $mentionsData = [];
+                if (isset($rawMentions['data']) && is_array($rawMentions['data'])) {
+                    $mentionsData = $rawMentions['data'];
+                } elseif (is_array($rawMentions) && !empty($rawMentions)) {
+                    $mentionsData = array_values($rawMentions);
+                }
+
+                foreach ($mentionsData as $item) {
                     if (!is_array($item)) continue;
-
-                    // Extract username dari "Name @username" — persis pola activeUsers()
-                    $fullName = $item['name'] ?? 'Unknown User';
-                    $username = $fullName;
-                    if (preg_match('/@(\w+)/', $fullName, $matches)) {
-                        $username = $matches[1];
+                    
+                    $mediaType = strtolower($item['media_type'] ?? $item['type'] ?? '');
+                    
+                    if (in_array($mediaType, ['twitter', 'x', 'facebook', 'fb', 'instagram', 'ig', 'youtube', 'yt', 'tiktok'])) {
+                        $mentionSocialMedia++;
+                    } elseif (in_array($mediaType, ['news', 'online_news', 'onlinenews'])) {
+                        $mentionOnlineNews++;
                     }
-
-                    // Count dari key 'y' — persis pola activeUsers()
-                    $rows[] = [
-                        'username' => $username,
-                        'count'    => (int)($item['y'] ?? $item['post_count'] ?? $item['posts'] ?? $item['count'] ?? 0),
-                    ];
                 }
-                usort($rows, fn($a, $b) => $b['count'] <=> $a['count']);
-                $activeUsers = ['data' => array_slice($rows, 0, 6)];
+            } catch (\Exception $e) {
+                Log::warning('dataOverview: mentions failed', ['error' => $e->getMessage()]);
             }
-        } catch (\Exception $e) {
-            \Log::warning('dataOverview: mostActiveUsers timeout/error', [
-                'error' => substr($e->getMessage(), 0, 200)
-            ]);
+
+            // ── ACTIVE USERS (Most Engaged) ──
+            try {
+                $rawUsers = $mk->mostActiveUsers(
+                    $projectId,
+                    $params['startDate'],
+                    $params['endDate'],
+                    $params['startTime'],
+                    $params['endTime']
+                );
+
+                $data = $rawUsers['data']['data'] ?? $rawUsers['data'] ?? $rawUsers;
+                if (!empty($data) && is_array($data)) {
+                    $rows = [];
+                    foreach ($data as $item) {
+                        if (!is_array($item)) continue;
+
+                        $fullName = $item['name'] ?? 'Unknown User';
+                        $username = $fullName;
+                        if (preg_match('/@(\w+)/', $fullName, $matches)) {
+                            $username = $matches[1];
+                        }
+
+                        $rows[] = [
+                            'username' => $username,
+                            'count'    => (int)($item['y'] ?? $item['post_count'] ?? $item['posts'] ?? $item['count'] ?? 0),
+                        ];
+                    }
+                    usort($rows, fn($a, $b) => $b['count'] <=> $a['count']);
+                    $activeUsers = ['data' => array_slice($rows, 0, 6)];
+                }
+            } catch (\Exception $e) {
+                Log::warning('dataOverview: mostActiveUsers timeout/error', [
+                    'error' => substr($e->getMessage(), 0, 200)
+                ]);
+            }
+
+            // ── SENTIMENT TIMELINE - 🔥 Gunakan extractDailyTimeline yang sama seperti Admin ──
+            try {
+                $sentimentTimeline = $this->extractDailyTimeline($projectId, $mk);
+                
+                Log::info('dataOverview: sentiment timeline extracted', [
+                    'dates_count' => count($sentimentTimeline['dates']),
+                    'sample_date' => $sentimentTimeline['dates'][0] ?? 'none',
+                ]);
+            } catch (\Exception $e) {
+                Log::warning('dataOverview: sentiment timeline failed', ['error' => $e->getMessage()]);
+            }
+
+            // ── GEO USERS (Buzzer Map) ──
+            try {
+                $rawGeo = $mk->geoTwitterUser(
+                    $projectId,
+                    $params['media'],
+                    $params['startDate'],
+                    $params['endDate'],
+                    $params['startTime'],
+                    $params['endTime']
+                );
+
+                $geoUsers = $rawGeo;
+                
+                Log::info('dataOverview: geoTwitterUser response', [
+                    'has_country' => isset($rawGeo['country']),
+                    'has_locality' => isset($rawGeo['locality']),
+                    'locality_count' => isset($rawGeo['locality']['rows']) ? count($rawGeo['locality']['rows']) : 0
+                ]);
+                
+            } catch (\Exception $e) {
+                Log::warning('dataOverview: geoTwitterUser failed', ['error' => $e->getMessage()]);
+                $geoUsers = ['locality' => ['rows' => []]];
+            }
         }
-     try {
-            $rawSentiment = $mk->sentimentTotal(
-                $projectId,
-                $params['startDate'],
-                $params['endDate'],
-                $params['startTime'],
-                $params['endTime']
-            );
 
-            // Normalize pakai helper yang sudah ada — persis sama kayak di sentiment() method
-            $sentiment = $this->normalizeSentimentTotal($rawSentiment);
-
-            \Log::info('dataOverview: sentimentTotal response', [
-                'raw_keys' => is_array($rawSentiment) ? array_keys($rawSentiment) : 'not array',
-                'normalized' => $sentiment,
-            ]);
-        } catch (\Exception $e) {
-            \Log::warning('dataOverview: sentimentTotal failed', ['error' => $e->getMessage()]);
-            $sentiment = ['positive' => 0, 'neutral' => 0, 'negative' => 0];
-        }
-        
-
-        // ── GEO USERS (Buzzer Map) - using existing helper ──
-       // ── GEO USERS (Buzzer Map) ──
-try {
-    $rawGeo = $mk->geoTwitterUser(
-        $projectId,
-        $params['media'],
-        $params['startDate'],
-        $params['endDate'],
-        $params['startTime'],
-        $params['endTime']
-    );
-
-    // 🔥 FIX: Jangan pakai normalizeGeoRows, langsung ambil dari locality.rows
-    // karena kita butuh latitude & longitude untuk map
-    $geoUsers = $rawGeo; // Pass full structure ke view
-    
-    // 🔥 Log untuk debug
-    \Log::info('dataOverview: geoTwitterUser response', [
-        'has_country' => isset($rawGeo['country']),
-        'has_locality' => isset($rawGeo['locality']),
-        'locality_count' => isset($rawGeo['locality']['rows']) ? count($rawGeo['locality']['rows']) : 0
-    ]);
-    
-} catch (\Exception $e) {
-    \Log::warning('dataOverview: geoTwitterUser failed', ['error' => $e->getMessage()]);
-    $geoUsers = ['locality' => ['rows' => []]]; // Empty structure
-}
+        return view('mk.data-overview', [
+            'projects'           => $projects,
+            'projectId'          => $projectId,
+            'params'             => $params,
+            'startDate'          => $params['startDate'],
+            'endDate'            => $params['endDate'],
+            'trendingTopics'     => $trendingTopics,
+            'topHashtags'        => $topHashtags,
+            'mentionSocialMedia' => $mentionSocialMedia,
+            'mentionOnlineNews'  => $mentionOnlineNews,
+            'activeUsers'        => $activeUsers,
+            'sentimentTimeline'  => $sentimentTimeline,
+            'geoUsers'           => $geoUsers,
+        ]);
     }
-
-    return view('mk.data-overview', [
-        'projects'           => $projects,
-        'projectId'          => $projectId,
-        'params'             => $params,
-        'startDate'          => $params['startDate'],
-        'endDate'            => $params['endDate'],
-        'trendingTopics'     => $trendingTopics,
-        'topHashtags'        => $topHashtags,
-        'mentionSocialMedia' => $mentionSocialMedia,
-        'mentionOnlineNews'  => $mentionOnlineNews,
-        'activeUsers'        => $activeUsers,
-        'sentiment'          => $sentiment,
-        'geoUsers'           => $geoUsers,
-    ]);
-}
 }
