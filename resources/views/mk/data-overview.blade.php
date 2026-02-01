@@ -14,7 +14,7 @@
     </div>
 
     <div style="display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap;">
-        <!-- 🔥 TAMBAH PROJECT SELECTOR -->
+        <!-- Project Selector -->
         <div class="do-filter-group">
             <label class="do-filter-label">Project</label>
             <select class="do-filter-input" id="doProject">
@@ -43,6 +43,7 @@
         </button>
     </div>
 </div>
+
 <!-- ============================================================
      ROW 1 — 4 Kotak Atas
      ============================================================ -->
@@ -190,7 +191,7 @@
 </div>
 
 <!-- ============================================================
-     ROW 2 — Most Engaged User (Doughnut + external labels) + Sentiment Score (Line)
+     ROW 2 — Most Engaged User (Doughnut with External Labels) + Sentiment Score (Line)
      ============================================================ -->
 <div class="do-row-mid">
 
@@ -210,8 +211,8 @@
             </div>
             <span class="do-badge" style="background:#f0f0f0; color:#222;">X</span>
         </div>
-        <div class="do-card-body do-body-donut">
-            <canvas id="chartDonut"></canvas>
+        <div class="do-card-body" style="padding: 15px; min-height: 300px; display: flex; align-items: center; justify-content: center; position: relative;">
+            <canvas id="chartDonut" style="max-width: 100%; max-height: 270px;"></canvas>
         </div>
     </div>
 
@@ -228,7 +229,7 @@
             </div>
             <span class="do-badge" style="background:#e0f2fe; color:#0284c7;">All Media</span>
         </div>
-        <div class="do-card-body do-body-line">
+        <div class="do-card-body" style="padding: 15px 20px 20px; height: 240px; position: relative;">
             <canvas id="chartSentiment"></canvas>
         </div>
     </div>
@@ -263,7 +264,7 @@
      ============================================================ -->
 @section('styles')
 <style>
-    /* ── Filter ── */
+    /* Filter */
     .circle-label {
         pointer-events: none !important;
     }
@@ -336,7 +337,7 @@
         transform: translateY(-1px);
     }
 
-    /* ── Grid Layouts ── */
+    /* Grid Layouts */
     .do-row-top {
         display: grid;
         grid-template-columns: 1.15fr 1.15fr .85fr .85fr;
@@ -351,7 +352,7 @@
         margin-top: 18px;
     }
 
-    /* ── Card ── */
+    /* Card */
     .do-card {
         background: var(--white);
         border: 1.5px solid var(--light-gray);
@@ -367,7 +368,7 @@
         box-shadow: 0 4px 18px rgba(0, 0, 0, .09);
     }
 
-    /* ── Card Head ── */
+    /* Card Head */
     .do-card-head {
         display: flex;
         align-items: center;
@@ -416,7 +417,7 @@
         letter-spacing: .4px;
     }
 
-    /* ── Card Body ── */
+    /* Card Body */
     .do-card-body {
         padding: 14px 18px 18px;
         flex: 1;
@@ -436,7 +437,7 @@
         border-radius: 2px;
     }
 
-    /* ── Mini Table ── */
+    /* Mini Table */
     .do-tbl {
         width: 100%;
         border-collapse: collapse;
@@ -497,7 +498,7 @@
         opacity: .65;
     }
 
-    /* ── Mention Big Number ── */
+    /* Mention Big Number */
     .do-body-mention {
         display: flex;
         flex-direction: column;
@@ -520,36 +521,13 @@
         letter-spacing: -1px;
     }
 
-    /* ── Donut with external labels ── */
-    .do-body-donut {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 8px 0 12px;
-        min-height: 240px;
-    }
-    .do-body-donut canvas {
-        max-width: 100%;
-        max-height: 100%;
-    }
-
-    /* ── Line Chart ── */
-    .do-body-line { 
-        position:relative; 
-        height:180px; 
-        display:flex; 
-        align-items:center; 
-        justify-content:center; 
-    }
-    .do-body-line canvas { max-height:100%; }
-
-    /* ── Leaflet map fix ── */
+    /* Leaflet map fix */
     #buzzMap .leaflet-container {
         height: 100%;
         font-family: 'Poppins', sans-serif;
     }
 
-    /* ── Empty ── */
+    /* Empty */
     .do-empty {
         font-size: 13px;
         color: var(--dark-blue);
@@ -559,7 +537,7 @@
         font-weight: 600;
     }
 
-    /* ── Responsive ── */
+    /* Responsive */
     @media(max-width:1100px) {
         .do-row-top {
             grid-template-columns: 1fr 1fr;
@@ -567,7 +545,6 @@
     }
 
     @media(max-width:700px) {
-
         .do-row-top,
         .do-row-mid {
             grid-template-columns: 1fr;
@@ -580,181 +557,212 @@
      SCRIPTS
      ============================================================ -->
 @section('scripts')
-<!-- Chart.js sudah di-load di app.blade.php, tidak perlu di-load lagi -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
     (function() {
+        console.log('🎯 Initializing Data Overview Charts...');
 
         // ────────────────────────────────────────────
-        // 1. DOUGHNUT — Most Engaged User
-        //    Pola persis dari activeUsers.blade.php:
-        //    PHP normalize → $doUserTable [{username, count}, ...]
-        //    JS pakai array_column-style: separate arrays for labels & counts
+        // 1. DOUGHNUT — Most Engaged User with IMPROVED External Labels
         // ────────────────────────────────────────────
         @php
-        // Normalize $activeUsers → format bersih sama kayak $tableData di activeUsers.blade.php
-        $rawUsers     = $activeUsers['data'] ?? (is_array($activeUsers) ? $activeUsers : []);
-        $doUserTable  = [];
+        $rawUsers = $activeUsers['data'] ?? (is_array($activeUsers) ? $activeUsers : []);
+        $doUserTable = [];
         foreach ($rawUsers as $u) {
             if (!is_array($u)) continue;
             $doUserTable[] = [
                 'username' => ltrim($u['screen_name'] ?? $u['name'] ?? $u['username'] ?? 'Unknown', '@'),
-                'count'    => (int)($u['tweet_count'] ?? $u['count'] ?? $u['total'] ?? 0),
+                'count' => (int)($u['tweet_count'] ?? $u['count'] ?? $u['total'] ?? 0),
             ];
         }
-        // Ambil top 6
         $doUserTable = array_slice($doUserTable, 0, 6);
         @endphp
 
-        // Persis pola activeUsers.blade.php — array_column di JS side
         const doUsernames = @json(array_column($doUserTable, 'username'));
-        const doCounts    = @json(array_column($doUserTable, 'count'));
-        const dColors     = ['#4BACC6', '#F2994A', '#27AE60', '#8E8E8E', '#5BA3D9', '#E67E22'];
+        const doCounts = @json(array_column($doUserTable, 'count'));
+        const dColors = ['#4BACC6', '#F2994A', '#27AE60', '#9B59B6', '#E74C3C', '#E67E22'];
 
-        // Labels untuk chart: tambah '@' prefix
-        const uLabels = doUsernames.map(function(n) { return '@' + n; });
+        const uLabels = doUsernames.map(n => '@' + n);
         const uCounts = doCounts;
 
-        // ── Custom plugin: external labels + leader lines ──
-        var externalLabelPlugin = {
-            id: 'externalLabelPlugin',
-            afterDraw: function(chart) {
+        console.log('📊 Doughnut Data:', { uLabels, uCounts });
+
+        // ── IMPROVED External Label Plugin with Better Positioning ──
+        var improvedExternalLabelPlugin = {
+            id: 'improvedExternalLabelPlugin',
+            afterDatasetsDraw: function(chart) {
                 if (uLabels.length === 0) return;
 
-                var ctx         = chart.ctx;
-                var meta        = chart.getDatasetMeta(0);
-                var centerX     = chart.width / 2;
-                var centerY     = chart.height / 2;
-                var outerRadius = meta.data[0].outerRadius;
+                var ctx = chart.ctx;
+                var meta = chart.getDatasetMeta(0);
+                var centerX = chart.chartArea.left + (chart.chartArea.right - chart.chartArea.left) / 2;
+                var centerY = chart.chartArea.top + (chart.chartArea.bottom - chart.chartArea.top) / 2;
+                var outerRadius = meta.data[0] ? meta.data[0].outerRadius : 0;
 
                 ctx.save();
+                ctx.textBaseline = 'middle';
 
+                // Calculate label positions to prevent overlap
+                var labelPositions = [];
+                
                 meta.data.forEach(function(slice, i) {
-                    if (slice.circumference === 0) return;
+                    if (!slice || slice.circumference === 0) return;
 
-                    var angle   = (slice.startAngle + slice.endAngle) / 2;
-                    var label   = uLabels[i] || '';
-                    var count   = '(' + (uCounts[i] || 0).toLocaleString() + ' twits)';
-                    var color   = dColors[i % dColors.length];
+                    var angle = (slice.startAngle + slice.endAngle) / 2;
+                    var label = uLabels[i] || '';
+                    var count = (uCounts[i] || 0).toLocaleString();
+                    var color = dColors[i % dColors.length];
                     var isRight = Math.cos(angle) >= 0;
 
-                    // A — edge of doughnut
-                    var ax = centerX + outerRadius * Math.cos(angle);
-                    var ay = centerY + outerRadius * Math.sin(angle);
+                    // Point on edge of doughnut
+                    var edgeX = centerX + outerRadius * Math.cos(angle);
+                    var edgeY = centerY + outerRadius * Math.sin(angle);
 
-                    // B — elbow
-                    var elbowR = outerRadius + 14;
-                    var bx = centerX + elbowR * Math.cos(angle);
-                    var by = centerY + elbowR * Math.sin(angle);
+                    // Extended point for label
+                    var extendDistance = 35;
+                    var labelX = centerX + (outerRadius + extendDistance) * Math.cos(angle);
+                    var labelY = centerY + (outerRadius + extendDistance) * Math.sin(angle);
 
-                    // C — horizontal end
-                    var cx = isRight ? bx + 28 : bx - 28;
-                    var cy = by;
+                    // Horizontal line end point
+                    var lineEndX = isRight ? labelX + 40 : labelX - 40;
 
-                    // Leader line
-                    ctx.strokeStyle = color;
-                    ctx.lineWidth   = 1.2;
-                    ctx.lineCap     = 'round';
+                    labelPositions.push({
+                        edgeX: edgeX,
+                        edgeY: edgeY,
+                        labelX: labelX,
+                        labelY: labelY,
+                        lineEndX: lineEndX,
+                        label: label,
+                        count: count,
+                        color: color,
+                        isRight: isRight,
+                        angle: angle
+                    });
+                });
+
+                // Sort by Y position to handle vertical spacing
+                labelPositions.sort((a, b) => a.labelY - b.labelY);
+
+                // Adjust overlapping labels
+                var minSpacing = 28;
+                for (var i = 1; i < labelPositions.length; i++) {
+                    var curr = labelPositions[i];
+                    var prev = labelPositions[i - 1];
+                    
+                    if (Math.abs(curr.labelY - prev.labelY) < minSpacing) {
+                        curr.labelY = prev.labelY + minSpacing;
+                    }
+                }
+
+                // Draw labels with leader lines
+                labelPositions.forEach(function(pos) {
+                    // Draw leader line
+                    ctx.strokeStyle = pos.color;
+                    ctx.lineWidth = 1.5;
                     ctx.beginPath();
-                    ctx.moveTo(ax, ay);
-                    ctx.lineTo(bx, by);
-                    ctx.lineTo(cx, cy);
+                    ctx.moveTo(pos.edgeX, pos.edgeY);
+                    ctx.lineTo(pos.labelX, pos.labelY);
+                    ctx.lineTo(pos.lineEndX, pos.labelY);
                     ctx.stroke();
 
-                    // Dot
-                    ctx.fillStyle = color;
+                    // Draw dot at line end
+                    ctx.fillStyle = pos.color;
                     ctx.beginPath();
-                    ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+                    ctx.arc(pos.lineEndX, pos.labelY, 3, 0, Math.PI * 2);
                     ctx.fill();
 
-                    // Text
-                    var tx = isRight ? cx + 6 : cx - 6;
-                    ctx.textAlign    = isRight ? 'left' : 'right';
-                    ctx.textBaseline = 'middle';
+                    // Draw text
+                    var textX = pos.isRight ? pos.lineEndX + 8 : pos.lineEndX - 8;
+                    ctx.textAlign = pos.isRight ? 'left' : 'right';
 
+                    // Username
                     ctx.fillStyle = '#1A2332';
-                    ctx.font      = '700 11px Poppins, sans-serif';
-                    ctx.fillText(label, tx, cy - 6);
+                    ctx.font = '700 11px Poppins, sans-serif';
+                    ctx.fillText(pos.label, textX, pos.labelY - 7);
 
+                    // Count
                     ctx.fillStyle = '#7A8B96';
-                    ctx.font      = '500 10px Poppins, sans-serif';
-                    ctx.fillText(count, tx, cy + 7);
+                    ctx.font = '500 10px Poppins, sans-serif';
+                    ctx.fillText('(' + pos.count + ' twits)', textX, pos.labelY + 7);
                 });
 
                 ctx.restore();
             }
         };
 
-        // ── Render doughnut ──
-        new Chart(document.getElementById('chartDonut').getContext('2d'), {
-            type: 'doughnut',
-            plugins: [externalLabelPlugin],
-            data: {
-                labels: uLabels,
-                datasets: [{
-                    data: uCounts,
-                    backgroundColor: dColors,
-                    borderColor: '#fff',
-                    borderWidth: 3,
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                aspectRatio: 1.15,
-                cutout: '55%',
-                layout: {
-                    padding: {
-                        top:    32,
-                        right:  90,
-                        bottom: 32,
-                        left:   90
-                    }
+        if (uLabels.length > 0 && uCounts.some(c => c > 0)) {
+            new Chart(document.getElementById('chartDonut').getContext('2d'), {
+                type: 'doughnut',
+                plugins: [improvedExternalLabelPlugin],
+                data: {
+                    labels: uLabels,
+                    datasets: [{
+                        data: uCounts,
+                        backgroundColor: dColors,
+                        borderColor: '#fff',
+                        borderWidth: 3,
+                        hoverOffset: 6
+                    }]
                 },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        enabled: true,
-                        backgroundColor: 'rgba(255,255,255,0.97)',
-                        titleColor:      '#1A2332',
-                        bodyColor:       '#1A2332',
-                        borderColor:     '#E8EAED',
-                        borderWidth:     1.5,
-                        cornerRadius:    8,
-                        titleFont:       { size: 12, weight: '700', family: 'Poppins' },
-                        bodyFont:        { size: 11, family: 'Poppins' },
-                        callbacks: {
-                            label: function(context) {
-                                return ' ' + context.parsed.toLocaleString() + ' tweets';
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1.35,
+                    cutout: '55%',
+                    layout: {
+                        padding: {
+                            top: 25,
+                            right: 110,
+                            bottom: 25,
+                            left: 110
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(255,255,255,0.98)',
+                            titleColor: '#1A2332',
+                            bodyColor: '#1A2332',
+                            borderColor: '#E8EAED',
+                            borderWidth: 1.5,
+                            cornerRadius: 8,
+                            padding: 12,
+                            titleFont: { size: 13, weight: '700', family: 'Poppins' },
+                            bodyFont: { size: 12, family: 'Poppins' },
+                            callbacks: {
+                                label: function(context) {
+                                    return ' ' + context.parsed.toLocaleString() + ' tweets';
+                                }
                             }
                         }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        duration: 900
                     }
-                },
-                animation: {
-                    animateRotate: true,
-                    duration: 900
                 }
-            }
-        });
+            });
+        } else {
+            document.getElementById('chartDonut').parentElement.innerHTML = 
+                '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#B4BCC7;font-size:14px;font-weight:600;">No active user data available</div>';
+        }
 
         // ────────────────────────────────────────────
-        // 2. LINE CHART — Sentiment Score (ALWAYS SHOW CHART)
+        // 2. LINE CHART — Sentiment Score
         // ────────────────────────────────────────────
         @php
-        // ── Resolve raw sentiment data ──
         $sentimentSource = $sentiment ?? $sentimentData ?? [];
         $sentRaw = isset($sentimentSource['data']) && is_array($sentimentSource['data'])
             ? $sentimentSource['data']
             : (is_array($sentimentSource) ? $sentimentSource : []);
 
-        // ── Try to get daily data first ──
         $sDates = [];
-        $sPos   = [];
-        $sNeg   = [];
-        $sNeu   = [];
+        $sPos = [];
+        $sNeg = [];
+        $sNeu = [];
 
         if (is_array($sentRaw) && count($sentRaw) > 0) {
             $firstItem = reset($sentRaw);
@@ -763,35 +771,30 @@
                     if (!is_array($r)) continue;
                     $d = $r['date'] ?? $r['day'] ?? '';
                     if ($d === '') continue;
-                    $sDates[] = $d;
-                    $sPos[]   = (int)($r['positive'] ?? 0);
-                    $sNeg[]   = (int)($r['negative'] ?? 0);
-                    $sNeu[]   = (int)($r['neutral']  ?? 0);
+                    $sDates[] = date('d M', strtotime($d));
+                    $sPos[] = (int)($r['positive'] ?? 0);
+                    $sNeg[] = (int)($r['negative'] ?? 0);
+                    $sNeu[] = (int)($r['neutral'] ?? 0);
                 }
             }
         }
 
-        // ── If no daily data, generate dummy data from totals ──
         if (empty($sDates)) {
             $totalPos = (int)($sentimentSource['positive'] ?? 0);
-            $totalNeu = (int)($sentimentSource['neutral']  ?? 0);
+            $totalNeu = (int)($sentimentSource['neutral'] ?? 0);
             $totalNeg = (int)($sentimentSource['negative'] ?? 0);
             
             if ($totalPos > 0 || $totalNeu > 0 || $totalNeg > 0) {
-                // Generate 7 days of dummy data with distribution
                 $days = 7;
                 for ($i = 0; $i < $days; $i++) {
-                    $sDates[] = date('Y-m-d', strtotime("-" . ($days - $i - 1) . " days"));
-                    
-                    // Distribute totals across days with some variation
-                    $factor = (0.8 + (rand(0, 40) / 100)); // Random factor 0.8 - 1.2
+                    $sDates[] = date('d M', strtotime("-" . ($days - $i - 1) . " days"));
+                    $factor = (0.8 + (rand(0, 40) / 100));
                     $sPos[] = round($totalPos / $days * $factor);
                     $sNeu[] = round($totalNeu / $days * $factor);
                     $sNeg[] = round($totalNeg / $days * $factor);
                 }
             } else {
-                // No data at all, create minimal dummy
-                $sDates = [date('Y-m-d')];
+                $sDates = [date('d M')];
                 $sPos = [0];
                 $sNeu = [0];
                 $sNeg = [0];
@@ -800,51 +803,48 @@
         @endphp
 
         var sDates = @json($sDates);
-        var sPos   = @json($sPos);
-        var sNeg   = @json($sNeg);
-        var sNeu   = @json($sNeu);
+        var sPos = @json($sPos);
+        var sNeg = @json($sNeg);
+        var sNeu = @json($sNeu);
+        var sNew = sDates.map((_, i) => (sPos[i] || 0) + (sNeu[i] || 0) + (sNeg[i] || 0));
 
-        // Calculate "new" (total per day)
-        var sNew = sDates.map(function(_, i) {
-            return (sPos[i] || 0) + (sNeu[i] || 0) + (sNeg[i] || 0);
-        });
+        console.log('📈 Sentiment Data:', { sDates, sPos, sNeu, sNeg, sNew });
 
-        // ALWAYS RENDER LINE CHART
         new Chart(document.getElementById('chartSentiment').getContext('2d'), {
             type: 'line',
             data: {
                 labels: sDates,
                 datasets: [
                     {
-                        label: 'new',
+                        label: 'Total',
                         data: sNew,
                         borderColor: '#5AB9EA',
-                        backgroundColor: 'transparent',
-                        borderWidth: 2,
+                        backgroundColor: 'rgba(90, 185, 234, 0.1)',
+                        borderWidth: 2.5,
                         tension: 0.4,
-                        pointRadius: 3,
-                        pointHoverRadius: 5,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
                         pointBackgroundColor: '#5AB9EA',
                         pointBorderColor: '#FFFFFF',
-                        pointBorderWidth: 1.5,
-                        fill: false
+                        pointBorderWidth: 2,
+                        fill: true
                     },
                     {
-                        label: 'pos',
+                        label: 'Positive',
                         data: sPos,
-                        borderColor: '#F2994A',
+                        borderColor: '#22C55E',
                         backgroundColor: 'transparent',
                         borderWidth: 2,
                         tension: 0.4,
                         pointRadius: 3,
                         pointHoverRadius: 5,
-                        pointBackgroundColor: '#F2994A',
+                        pointBackgroundColor: '#22C55E',
                         pointBorderColor: '#FFFFFF',
                         pointBorderWidth: 1.5,
                         fill: false
                     },
                     {
-                        label: 'neu',
+                        label: 'Neutral',
                         data: sNeu,
                         borderColor: '#B0BEC5',
                         backgroundColor: 'transparent',
@@ -858,15 +858,15 @@
                         fill: false
                     },
                     {
-                        label: 'neg',
+                        label: 'Negative',
                         data: sNeg,
-                        borderColor: '#FF6B6B',
+                        borderColor: '#EF4444',
                         backgroundColor: 'transparent',
                         borderWidth: 1.5,
                         tension: 0.4,
                         pointRadius: 2,
                         pointHoverRadius: 4,
-                        pointBackgroundColor: '#FF6B6B',
+                        pointBackgroundColor: '#EF4444',
                         pointBorderColor: '#FFFFFF',
                         pointBorderWidth: 1.5,
                         fill: false
@@ -876,9 +876,6 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                layout: {
-                    padding: { top: 5, right: 5, bottom: 5, left: 5 }
-                },
                 interaction: {
                     intersect: false,
                     mode: 'index'
@@ -892,11 +889,7 @@
                             usePointStyle: true,
                             pointStyle: 'circle',
                             padding: 10,
-                            font: {
-                                size: 10,
-                                weight: '500',
-                                family: 'Poppins'
-                            },
+                            font: { size: 10, weight: '600', family: 'Poppins' },
                             color: '#8B96A5',
                             boxWidth: 8,
                             boxHeight: 8
@@ -911,27 +904,17 @@
                         bodyColor: '#1A2332',
                         borderColor: '#E8EAED',
                         borderWidth: 1.5,
-                        padding: 10,
+                        padding: 12,
                         cornerRadius: 8,
-                        titleFont: {
-                            size: 11,
-                            weight: 'bold',
-                            family: 'Poppins'
-                        },
-                        bodyFont: {
-                            size: 10,
-                            family: 'Poppins'
-                        },
+                        titleFont: { size: 12, weight: 'bold', family: 'Poppins' },
+                        bodyFont: { size: 11, family: 'Poppins' },
                         displayColors: true,
-                        boxWidth: 8,
-                        boxHeight: 8,
+                        boxWidth: 10,
+                        boxHeight: 10,
                         boxPadding: 4,
                         callbacks: {
                             label: function(context) {
-                                var label = context.dataset.label || '';
-                                if (label) label += ': ';
-                                label += context.parsed.y.toLocaleString();
-                                return label;
+                                return ' ' + context.dataset.label + ': ' + context.parsed.y.toLocaleString();
                             }
                         }
                     }
@@ -939,12 +922,9 @@
                 scales: {
                     x: {
                         display: true,
-                        grid: {
-                            display: false,
-                            drawBorder: false
-                        },
+                        grid: { display: false, drawBorder: false },
                         ticks: {
-                            font: { size: 9, weight: '500', family: 'Poppins' },
+                            font: { size: 10, weight: '500', family: 'Poppins' },
                             color: '#B4BCC7',
                             padding: 6,
                             maxRotation: 0,
@@ -957,19 +937,19 @@
                         beginAtZero: true,
                         grid: {
                             display: true,
-                            color: 'rgba(0, 0, 0, 0.03)',
+                            color: 'rgba(0, 0, 0, 0.04)',
                             drawBorder: false,
                             lineWidth: 1
                         },
                         ticks: {
-                            font: { size: 9, weight: '500', family: 'Poppins' },
+                            font: { size: 10, weight: '500', family: 'Poppins' },
                             color: '#B4BCC7',
                             padding: 8,
                             callback: function(value) {
                                 if (value >= 1000) return (value / 1000) + 'k';
                                 return value;
                             },
-                            maxTicksLimit: 4
+                            maxTicksLimit: 5
                         }
                     }
                 }
@@ -980,134 +960,94 @@
         // 3. LEAFLET MAP — Buzzer Map
         // ────────────────────────────────────────────
         @php
-        $geoRaw = $geoUsers['locality']['rows'] ??
-            $geoUsers['administrative_area_level_1']['rows'] ?? [];
+        $geoRaw = $geoUsers['locality']['rows'] ?? 
+                  $geoUsers['administrative_area_level_1']['rows'] ?? [];
         @endphp
         var geoData = @json($geoRaw);
 
         console.log('🗺️ Geo Data:', geoData);
 
-        var map = L.map('buzzMap', {
-            center: [-2.5, 118],
-            zoom: 5
-        });
+        var map = L.map('buzzMap', { center: [-2.5, 118], zoom: 5 });
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors',
             maxZoom: 19
         }).addTo(map);
 
-        var maxCount = Math.max(...geoData.map(p => p.count || 0));
-        var minCount = Math.min(...geoData.map(p => p.count || 0).filter(c => c > 0));
+        if (geoData.length > 0) {
+            var maxCount = Math.max(...geoData.map(p => p.count || 0));
+            var minCount = Math.min(...geoData.map(p => p.count || 0).filter(c => c > 0));
 
-        geoData.forEach(function(p) {
-            var lat = parseFloat(p.latitude || 0);
-            var lng = parseFloat(p.longitude || 0);
+            geoData.forEach(function(p) {
+                var lat = parseFloat(p.latitude || 0);
+                var lng = parseFloat(p.longitude || 0);
+                if (lat === 0 && lng === 0) return;
 
-            if (lat === 0 && lng === 0) return;
+                var name = p.name || 'Unknown';
+                var count = parseInt(p.count || 0);
 
-            var name = p.name || 'Unknown';
-            var count = parseInt(p.count || 0);
+                if (count >= 10) {
+                    var radius = Math.sqrt(count) * 2500;
+                    radius = Math.max(radius, 5000);
+                    radius = Math.min(radius, 50000);
+                    var opacity = Math.min(0.15 + (count / maxCount) * 0.45, 0.6);
 
-            if (count >= 10) {
-                var radius = Math.sqrt(count) * 2500;
-                radius = Math.max(radius, 5000);
-                radius = Math.min(radius, 50000);
+                    L.circle([lat, lng], {
+                        radius: radius,
+                        fillColor: '#ef4444',
+                        color: '#ef4444',
+                        weight: 1,
+                        opacity: 0.3,
+                        fillOpacity: opacity
+                    }).addTo(map);
+                }
 
-                var opacity = Math.min(0.15 + (count / maxCount) * 0.45, 0.6);
+                var redPin = L.divIcon({
+                    className: '',
+                    html: '<div style="width:13px;height:13px;background:#ef4444;border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,.4);"></div>',
+                    iconSize: [13, 13],
+                    iconAnchor: [6.5, 6.5],
+                    popupAnchor: [0, -10]
+                });
 
-                L.circle([lat, lng], {
-                    radius: radius,
-                    fillColor: '#ef4444',
-                    color: '#ef4444',
-                    weight: 1,
-                    opacity: 0.3,
-                    fillOpacity: opacity
+                L.marker([lat, lng], { icon: redPin }).addTo(map)
+                    .bindPopup(
+                        '<div style="font-family:Poppins;text-align:center;padding:8px;">' +
+                        '<div style="font-weight:700;font-size:15px;color:#1e293b;margin-bottom:6px;">' + name + '</div>' +
+                        '<div style="font-size:24px;font-weight:800;color:#ef4444;margin-bottom:2px;">' + count.toLocaleString() + '</div>' +
+                        '<div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;font-weight:600;">mentions</div>' +
+                        '</div>'
+                    );
+
+                var label = count > 999 ? (count / 1000).toFixed(1) + 'k' : count;
+                var fontSize = count >= 1000 ? '13px' : '11px';
+
+                L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        className: 'circle-label',
+                        html: '<div style="font-family:Poppins;font-size:' + fontSize + ';font-weight:900;color:#fff;background:rgba(239,68,68,0.95);padding:3px 8px;border-radius:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);white-space:nowrap;letter-spacing:0.3px;">' + label + '</div>',
+                        iconSize: [40, 20],
+                        iconAnchor: [20, 25]
+                    }),
+                    interactive: false
                 }).addTo(map);
-            }
-
-            var redPin = L.divIcon({
-                className: '',
-                html: '<div style="width:13px;height:13px;background:#ef4444;border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,.4);"></div>',
-                iconSize: [13, 13],
-                iconAnchor: [6.5, 6.5],
-                popupAnchor: [0, -10]
             });
 
-            L.marker([lat, lng], {
-                    icon: redPin
-                }).addTo(map)
-                .bindPopup(
-                    '<div style="font-family:Poppins; text-align:center; padding:8px;">' +
-                    '<div style="font-weight:700; font-size:15px; color:#1e293b; margin-bottom:6px;">' + name + '</div>' +
-                    '<div style="font-size:24px; font-weight:800; color:#ef4444; margin-bottom:2px;">' + count.toLocaleString() + '</div>' +
-                    '<div style="font-size:10px; color:#64748b; text-transform:uppercase; letter-spacing:0.8px; font-weight:600;">mentions</div>' +
-                    '</div>'
-                );
-
-            var label = count > 999 ? (count / 1000).toFixed(1) + 'k' : count;
-            var fontSize = count >= 1000 ? '13px' : '11px';
-
-            L.marker([lat, lng], {
-                icon: L.divIcon({
-                    className: 'circle-label',
-                    html: '<div style="' +
-                        'font-family:Poppins;' +
-                        'font-size:' + fontSize + ';' +
-                        'font-weight:900;' +
-                        'color:#fff;' +
-                        'background:rgba(239,68,68,0.95);' +
-                        'padding:3px 8px;' +
-                        'border-radius:12px;' +
-                        'border:2px solid #fff;' +
-                        'box-shadow:0 2px 6px rgba(0,0,0,0.4);' +
-                        'white-space:nowrap;' +
-                        'letter-spacing:0.3px;' +
-                        '">' + label + '</div>',
-                    iconSize: [40, 20],
-                    iconAnchor: [20, 25]
-                }),
-                interactive: false
-            }).addTo(map);
-        });
-
-        // Legend
-        var legend = L.control({ position: 'bottomright' });
-
-        legend.onAdd = function(map) {
-          var div = L.DomUtil.create('div', 'map-legend');
-
-          div.innerHTML =
-            '<div style="background:#fff; padding:14px 16px; border-radius:12px; box-shadow:0 3px 12px rgba(0,0,0,0.15); font-family:Poppins; min-width:180px;">' +
-              '<div style="font-size:12px; font-weight:800; color:#1e293b; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.6px; border-bottom:2px solid #ef4444; padding-bottom:6px;">Buzzer Activity</div>' +
-              '<div style="background:linear-gradient(135deg, #fef3ee 0%, #fff 100%); padding:8px 10px; border-radius:8px; margin-bottom:12px; border-left:3px solid #ef4444;">' +
-                '<div style="font-size:10px; color:#64748b; font-weight:600; line-height:1.5;">' +
-                  'Heat circles appear for<br>' +
-                  '<span style="color:#ef4444; font-weight:900; font-size:11px;">≥10 mentions</span>' +
-                '</div>' +
-              '</div>' +
-              '<div style="display:flex; align-items:flex-end; justify-content:space-between; gap:8px; margin-bottom:10px;">' +
-                '<div style="text-align:center; flex:1;">' +
-                  '<div style="width:22px; height:22px; background:rgba(239,68,68,0.35); border:1.5px solid rgba(239,68,68,0.6); border-radius:50%; margin:0 auto 5px;"></div>' +
-                  '<div style="font-size:9px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">Low</div>' +
-                '</div>' +
-                '<div style="text-align:center; flex:1;">' +
-                  '<div style="width:32px; height:32px; background:rgba(239,68,68,0.55); border:1.5px solid rgba(239,68,68,0.7); border-radius:50%; margin:0 auto 5px;"></div>' +
-                  '<div style="font-size:9px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">Med</div>' +
-                '</div>' +
-                '<div style="text-align:center; flex:1;">' +
-                  '<div style="width:42px; height:42px; background:rgba(239,68,68,0.75); border:1.5px solid rgba(239,68,68,0.85); border-radius:50%; margin:0 auto 5px;"></div>' +
-                  '<div style="font-size:9px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">High</div>' +
-                '</div>' +
-              '</div>' +
-              '<div style="padding-top:10px; border-top:1.5px solid #f0f2f5; font-size:10px; color:#64748b; font-weight:600; text-align:center;">' +
-                'Range: <span style="color:#ef4444; font-weight:900;">' + minCount + ' - ' + maxCount.toLocaleString() + '</span>' +
-              '</div>' +
-            '</div>';
-
-          return div;
-        };
-
-        legend.addTo(map);
+            var legend = L.control({ position: 'bottomright' });
+            legend.onAdd = function(map) {
+                var div = L.DomUtil.create('div', 'map-legend');
+                div.innerHTML =
+                    '<div style="background:#fff;padding:14px 16px;border-radius:12px;box-shadow:0 3px 12px rgba(0,0,0,0.15);font-family:Poppins;min-width:180px;">' +
+                    '<div style="font-size:12px;font-weight:800;color:#1e293b;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.6px;border-bottom:2px solid #ef4444;padding-bottom:6px;">Buzzer Activity</div>' +
+                    '<div style="background:linear-gradient(135deg, #fef3ee 0%, #fff 100%);padding:8px 10px;border-radius:8px;margin-bottom:12px;border-left:3px solid #ef4444;">' +
+                    '<div style="font-size:10px;color:#64748b;font-weight:600;line-height:1.5;">Heat circles appear for<br><span style="color:#ef4444;font-weight:900;font-size:11px;">≥10 mentions</span></div>' +
+                    '</div>' +
+                    '<div style="padding-top:10px;border-top:1.5px solid #f0f2f5;font-size:10px;color:#64748b;font-weight:600;text-align:center;">' +
+                    'Range: <span style="color:#ef4444;font-weight:900;">' + minCount + ' - ' + maxCount.toLocaleString() + '</span>' +
+                    '</div></div>';
+                return div;
+            };
+            legend.addTo(map);
+        }
 
         // ────────────────────────────────────────────
         // 4. FILTER BUTTON
@@ -1124,6 +1064,7 @@
             window.location.search = p.toString();
         });
 
+        console.log('✅ Data Overview Charts Initialized');
     })();
 </script>
 @endsection
