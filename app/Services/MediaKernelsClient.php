@@ -584,4 +584,75 @@ class MediaKernelsClient
             return ['data' => []];
         }
     }
+    // ─── TAMBAHKAN DUA METHOD INI SEBELUM CLOSING BRACE CLASS ───
+
+    // 🔥 NEW: top_hashtags
+    public function topHashtags(
+        string $projectId,
+        string $media,
+        string $startDate,
+        string $endDate,
+        int $startTime = 0,
+        int $endTime = 23
+    ): array {
+        try {
+            $token = $this->getToken();
+
+            $res = Http::timeout(60)->acceptJson()->get(
+                $this->baseUrl() . '/top_hashtags/',
+                [
+                    'project_id' => $projectId,
+                    'media'      => $media,
+                    'start_date' => $startDate,
+                    'end_date'   => $endDate,
+                    'start_time' => $startTime,
+                    'end_time'   => $endTime,
+                    'token'      => $token,
+                ]
+            );
+
+            $res->throw();
+            return $this->parseJson($res);
+        } catch (\Exception $e) {
+            Log::warning('topHashtags API error', ['error' => $e->getMessage()]);
+            return ['data' => []];
+        }
+    }
+
+    // 🔥 NEW: mentions
+    public function mentions(
+        string $projectId,
+        string $startDate,
+        string $endDate,
+        int $startTime = 0,
+        int $endTime = 23,
+        bool $withContent = true,
+        int $start = 0,
+        int $rows = 10
+    ): array {
+        try {
+            $token = $this->getToken();
+
+            $res = Http::timeout(60)->acceptJson()->get(
+                $this->baseUrl() . '/mentions/',
+                [
+                    'project_id'   => $projectId,
+                    'start_date'   => $startDate,
+                    'end_date'     => $endDate,
+                    'start_time'   => $startTime,
+                    'end_time'     => $endTime,
+                    'with_content' => $withContent ? 'true' : 'false',
+                    'start'        => $start,
+                    'rows'         => $rows,
+                    'token'        => $token,
+                ]
+            );
+
+            $res->throw();
+            return $this->parseJson($res);
+        } catch (\Exception $e) {
+            Log::warning('mentions API error', ['error' => $e->getMessage()]);
+            return ['data' => []];
+        }
+    }
 }

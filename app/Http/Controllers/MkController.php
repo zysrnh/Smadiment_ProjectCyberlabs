@@ -910,6 +910,7 @@ public function adminDashboard(Request $request, MediaKernelsClient $mk)
                 }
             }
         }
+        
 
         // Sort by count descending
         if (!empty($normalized)) {
@@ -945,4 +946,183 @@ public function adminDashboard(Request $request, MediaKernelsClient $mk)
             'size' => $size,
         ]);
     }
+    // ─── TAMBAHKAN METHOD INI KE DALAM CLASS MkController ───
+
+ /**
+ * 📊 DATA OVERVIEW - Dashboard ringkasan
+ */
+public function dataOverview(Request $request, MediaKernelsClient $mk)
+{
+    $projects = $this->getProjects($mk);
+    $params = $this->getParams($request);
+    $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+
+    // Initialize empty data
+    $trendingTopics = ['data' => []];
+    $topHashtags = ['data' => []];
+    $mentionSocialMedia = 0;
+    $mentionOnlineNews = 0;
+    $activeUsers = ['data' => []];
+    $sentiment = ['data' => []];
+    $geoUsers = ['data' => []];
+
+    if ($projectId) {
+        // ── TRENDING TOPICS (News - public endpoint) ──
+        try {
+            $rawTopics = $mk->recentTopics('internasional', 10);
+            
+            // Normalize: check for indexed array vs data array
+            if (isset($rawTopics['data']) && is_array($rawTopics['data'])) {
+                $trendingTopics = $rawTopics;
+            } elseif (is_array($rawTopics) && !empty($rawTopics)) {
+                // API returns indexed array [0 => {...}, 1 => {...}]
+                $trendingTopics = ['data' => array_values($rawTopics)];
+            }
+        } catch (\Exception $e) {
+            \Log::warning('dataOverview: recentTopics failed', ['error' => $e->getMessage()]);
+        }
+
+        // ── TOP HASHTAGS ──
+        try {
+            $rawHashtags = $mk->topHashtags(
+                $projectId,
+                $params['media'],
+                $params['startDate'],
+                $params['endDate'],
+                $params['startTime'],
+                $params['endTime']
+            );
+            
+            // Normalize: check for indexed array vs data array
+            if (isset($rawHashtags['data']) && is_array($rawHashtags['data'])) {
+                $topHashtags = $rawHashtags;
+            } elseif (is_array($rawHashtags) && !empty($rawHashtags)) {
+                $topHashtags = ['data' => array_values($rawHashtags)];
+            }
+        } catch (\Exception $e) {
+            \Log::warning('dataOverview: topHashtags failed', ['error' => $e->getMessage()]);
+        }
+
+        // ── MENTIONS (untuk hitung Social Media vs Online News) ──
+        try {
+            $rawMentions = $mk->mentions(
+                $projectId,
+                $params['startDate'],
+                $params['endDate'],
+                $params['startTime'],
+                $params['endTime'],
+                false, // with_content = false (faster)
+                0,
+                100
+            );
+
+            // Normalize mentions
+            $mentionsData = [];
+            if (isset($rawMentions['data']) && is_array($rawMentions['data'])) {
+                $mentionsData = $rawMentions['data'];
+            } elseif (is_array($rawMentions) && !empty($rawMentions)) {
+                $mentionsData = array_values($rawMentions);
+            }
+
+            // Count by media type
+            foreach ($mentionsData as $item) {
+                if (!is_array($item)) continue;
+                
+                $mediaType = strtolower($item['media_type'] ?? $item['type'] ?? '');
+                
+                if (in_array($mediaType, ['twitter', 'x', 'facebook', 'fb', 'instagram', 'ig', 'youtube', 'yt', 'tiktok'])) {
+                    $mentionSocialMedia++;
+                } elseif (in_array($mediaType, ['news', 'online_news', 'onlinenews'])) {
+                    $mentionOnlineNews++;
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::warning('dataOverview: mentions failed', ['error' => $e->getMessage()]);
+        }
+
+        // ── ACTIVE USERS (Most Engaged) ──
+        try {
+            $rawUsers = $mk->mostActiveUsers(
+                $projectId,
+                $params['startDate'],
+                $params['endDate'],
+                $params['startTime'],
+                $params['endTime']
+            );
+
+            // Handle nested structure: data.data or just data
+            $usersData = $rawUsers['data']['data'] ?? $rawUsers['data'] ?? [];
+            
+            // Handle indexed array
+            if (is_array($usersData) && !empty($usersData) && !isset($usersData[0])) {
+                $usersData = array_values($usersData);
+            }
+
+            if (count($usersData) > 0) {
+                $activeUsers = ['data' => $usersData];
+            }
+        } catch (\Exception $e) {
+            \Log::warning('dataOverview: mostActiveUsers timeout/error', [
+                'error' => substr($e->getMessage(), 0, 200)
+            ]);
+        }
+
+        // ── SENTIMENT SCORE (using existing getSentiment) ──
+        try {
+            $sentiment = $mk->getSentiment(
+                $projectId,
+                $params['media'],
+                $params['startDate'],
+                $params['endDate'],
+                $params['startTime'],
+                $params['endTime']
+            );
+        } catch (\Exception $e) {
+            \Log::warning('dataOverview: getSentiment failed', ['error' => $e->getMessage()]);
+        }
+
+        // ── GEO USERS (Buzzer Map) - using existing helper ──
+       // ── GEO USERS (Buzzer Map) ──
+try {
+    $rawGeo = $mk->geoTwitterUser(
+        $projectId,
+        $params['media'],
+        $params['startDate'],
+        $params['endDate'],
+        $params['startTime'],
+        $params['endTime']
+    );
+
+    // 🔥 FIX: Jangan pakai normalizeGeoRows, langsung ambil dari locality.rows
+    // karena kita butuh latitude & longitude untuk map
+    $geoUsers = $rawGeo; // Pass full structure ke view
+    
+    // 🔥 Log untuk debug
+    \Log::info('dataOverview: geoTwitterUser response', [
+        'has_country' => isset($rawGeo['country']),
+        'has_locality' => isset($rawGeo['locality']),
+        'locality_count' => isset($rawGeo['locality']['rows']) ? count($rawGeo['locality']['rows']) : 0
+    ]);
+    
+} catch (\Exception $e) {
+    \Log::warning('dataOverview: geoTwitterUser failed', ['error' => $e->getMessage()]);
+    $geoUsers = ['locality' => ['rows' => []]]; // Empty structure
+}
+    }
+
+    return view('mk.data-overview', [
+        'projects'           => $projects,
+        'projectId'          => $projectId,
+        'params'             => $params,
+        'startDate'          => $params['startDate'],
+        'endDate'            => $params['endDate'],
+        'trendingTopics'     => $trendingTopics,
+        'topHashtags'        => $topHashtags,
+        'mentionSocialMedia' => $mentionSocialMedia,
+        'mentionOnlineNews'  => $mentionOnlineNews,
+        'activeUsers'        => $activeUsers,
+        'sentiment'          => $sentiment,
+        'geoUsers'           => $geoUsers,
+    ]);
+}
 }

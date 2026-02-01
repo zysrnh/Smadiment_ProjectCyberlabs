@@ -34,7 +34,9 @@
       min-height: 100vh;
     }
 
-    /* Sidebar Navigation */
+    /* ========================================================
+       SIDEBAR
+       ======================================================== */
     .sidebar {
       position: fixed;
       left: 0;
@@ -114,6 +116,7 @@
       background: var(--light-gray);
       border-radius: 8px;
       color: var(--primary-green);
+      flex-shrink: 0;
     }
 
     .nav-icon svg {
@@ -142,7 +145,9 @@
       padding: 10px 12px;
     }
 
-    /* Main Content */
+    /* ========================================================
+       MAIN CONTENT
+       ======================================================== */
     .main-content {
       margin-left: 280px;
       padding: 32px;
@@ -208,7 +213,9 @@
       border-color: var(--primary-green);
     }
 
-    /* Section */
+    /* ========================================================
+       SECTION
+       ======================================================== */
     .section {
       background: var(--white);
       border-radius: 20px;
@@ -244,7 +251,9 @@
       padding: 28px;
     }
 
-    /* Chart Container */
+    /* ========================================================
+       CHART
+       ======================================================== */
     .chart-container {
       position: relative;
       height: 320px;
@@ -259,7 +268,9 @@
       height: 380px;
     }
 
-    /* Mode Toggle */
+    /* ========================================================
+       MODE TOGGLE
+       ======================================================== */
     .mode-toggle {
       display: flex;
       gap: 8px;
@@ -289,7 +300,9 @@
       border-color: var(--primary-green);
     }
 
-    /* Stats Cards */
+    /* ========================================================
+       STATS CARDS
+       ======================================================== */
     .stats-container {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -357,7 +370,9 @@
       background: linear-gradient(90deg, var(--dark-blue), #1a2935);
     }
 
-    /* Table */
+    /* ========================================================
+       TABLE
+       ======================================================== */
     .data-table-wrapper {
       border: 2px solid var(--light-gray);
       border-radius: 12px;
@@ -405,7 +420,9 @@
       color: var(--primary-green);
     }
 
-    /* Empty State */
+    /* ========================================================
+       EMPTY STATE
+       ======================================================== */
     .empty-state {
       text-align: center;
       padding: 48px 24px;
@@ -425,7 +442,9 @@
       color: var(--dark-blue);
     }
 
-    /* Debug Section */
+    /* ========================================================
+       DEBUG
+       ======================================================== */
     .debug-toggle {
       font-size: 13px;
       font-weight: 700;
@@ -456,7 +475,9 @@
       line-height: 1.6;
     }
 
-    /* Topic Card (for Recent Topics page) */
+    /* ========================================================
+       TOPIC CARD
+       ======================================================== */
     .topic-card {
       transition: all 0.3s;
     }
@@ -475,7 +496,9 @@
       color: var(--primary-green) !important;
     }
 
-    /* Responsive */
+    /* ========================================================
+       RESPONSIVE
+       ======================================================== */
     @media (max-width: 1200px) {
       .stats-container {
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -512,21 +535,34 @@
 
 <body>
 
-  <!-- Sidebar Navigation -->
+  <!-- ============================================================
+       SIDEBAR
+       ============================================================ -->
   <div class="sidebar">
     <div class="logo">
       <h1>SMADIMENT</h1>
       <p>Social Media Analytics</p>
     </div>
 
+    <!-- MAIN -->
     <div class="nav-section">
       <div class="nav-label">Main</div>
+
       <a href="{{ route('mk.dashboard') }}" class="nav-item {{ request()->routeIs('mk.dashboard') ? 'active' : '' }}">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         </span>
         <span>Dashboard</span>
       </a>
+
+      <!-- 🔥 DATA OVERVIEW — baru ditambahkan -->
+      <a href="{{ route('mk.data-overview') }}" class="nav-item {{ request()->routeIs('mk.data-overview') ? 'active' : '' }}">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </span>
+        <span>Data Overview</span>
+      </a>
+
       <a href="{{ route('mk.projects') }}" class="nav-item {{ request()->routeIs('mk.projects') ? 'active' : '' }}">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
@@ -535,23 +571,24 @@
       </a>
     </div>
 
+    <!-- ANALYTICS -->
     <div class="nav-section">
       <div class="nav-label">Analytics</div>
-      
+
       <a href="{{ route('mk.sentiment') }}" class="nav-item {{ request()->routeIs('mk.sentiment') ? 'active' : '' }}">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         </span>
         <span>Sentiment Analysis</span>
       </a>
-      
+
       <a href="{{ route('mk.geographic') }}" class="nav-item {{ request()->routeIs('mk.geographic') ? 'active' : '' }}">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
         </span>
         <span>Geographic Data</span>
       </a>
-      
+
       <!-- Authors Submenu -->
       <div class="nav-item {{ request()->routeIs('mk.authors.*') ? 'active' : '' }}" style="cursor: default;">
         <span class="nav-icon">
@@ -570,14 +607,14 @@
           <span>Organization Type</span>
         </a>
       </div>
-      
+
       <a href="{{ route('mk.categories') }}" class="nav-item {{ request()->routeIs('mk.categories') ? 'active' : '' }}">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
         </span>
         <span>Categories</span>
       </a>
-      
+
       <!-- Engagement Submenu -->
       <div class="nav-item {{ request()->routeIs('mk.engagement.*') ? 'active' : '' }}" style="cursor: default;">
         <span class="nav-icon">
@@ -601,16 +638,17 @@
       </div>
     </div>
 
+    <!-- CONTENT -->
     <div class="nav-section">
       <div class="nav-label">Content</div>
-      
+
       <a href="{{ route('mk.publisher') }}" class="nav-item {{ request()->routeIs('mk.publisher') ? 'active' : '' }}">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
         </span>
         <span>Publisher Stats</span>
       </a>
-      
+
       <a href="{{ route('mk.topics') }}" class="nav-item {{ request()->routeIs('mk.topics') ? 'active' : '' }}">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -619,14 +657,17 @@
       </a>
     </div>
 
+    <!-- TOOLS -->
     <div class="nav-section">
       <div class="nav-label">Tools</div>
+
       <a href="#" class="nav-item">
         <span class="nav-icon">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m-9-9h6m6 0h6"/><path d="M4.2 4.2l4.3 4.3m5 5l4.3 4.3m0-12.8l-4.3 4.3m-5 5l-4.3 4.3"/></svg>
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </span>
         <span>Settings</span>
       </a>
+
       <a href="#" class="nav-item">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="10" y1="9" x2="16" y2="9"/><line x1="10" y1="13" x2="16" y2="13"/></svg>
@@ -636,7 +677,9 @@
     </div>
   </div>
 
-  <!-- Main Content -->
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
   <div class="main-content">
     @yield('content')
   </div>

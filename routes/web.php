@@ -58,7 +58,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 */
 
 Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
-    
+        Route::get('/data-overview', [MkController::class, 'dataOverview'])->name('data-overview');
     // Main Pages
     Route::get('/dashboard', [MkController::class, 'dashboard'])->name('dashboard');
     Route::get('/projects', [MkController::class, 'projects'])->name('projects');
