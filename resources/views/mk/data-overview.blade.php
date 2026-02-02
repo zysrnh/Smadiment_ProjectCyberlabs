@@ -1210,22 +1210,6 @@
                     interactive: false
                 }).addTo(map);
             });
-
-            var legend = L.control({ position: 'bottomright' });
-            legend.onAdd = function(map) {
-                var div = L.DomUtil.create('div', 'map-legend');
-                div.innerHTML =
-                    '<div style="background:#fff;padding:14px 16px;border-radius:12px;box-shadow:0 3px 12px rgba(0,0,0,0.15);font-family:Poppins;min-width:180px;">' +
-                    '<div style="font-size:12px;font-weight:800;color:#1e293b;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.6px;border-bottom:2px solid #ef4444;padding-bottom:6px;">Buzzer Activity</div>' +
-                    '<div style="background:linear-gradient(135deg, #fef3ee 0%, #fff 100%);padding:8px 10px;border-radius:8px;margin-bottom:12px;border-left:3px solid #ef4444;">' +
-                    '<div style="font-size:10px;color:#64748b;font-weight:600;line-height:1.5;">Heat circles appear for<br><span style="color:#ef4444;font-weight:900;font-size:11px;">≥10 mentions</span></div>' +
-                    '</div>' +
-                    '<div style="padding-top:10px;border-top:1.5px solid #f0f2f5;font-size:10px;color:#64748b;font-weight:600;text-align:center;">' +
-                    'Range: <span style="color:#ef4444;font-weight:900;">' + minCount + ' - ' + maxCount.toLocaleString() + '</span>' +
-                    '</div></div>';
-                return div;
-            };
-            legend.addTo(map);
         }
 
         // ────────────────────────────────────────────
