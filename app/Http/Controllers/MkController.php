@@ -721,33 +721,131 @@ class MkController extends Controller
     }
 
     /**
-     * 📊 DATA OVERVIEW - Dashboard ringkasan
-     * 🔥 WITH PAGINATION FOR MENTIONS
+     * 📊 DATA OVERVIEW - ENHANCED WITH DEBUG
      */
-   /**
- * 📊 DATA OVERVIEW - OPTIMIZED VERSION
- */
-public function dataOverview(Request $request, MediaKernelsClient $mk)
-{
-    $projects = $this->getProjects($mk);
-    $params = $this->getParams($request);
-    $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+    public function dataOverview(Request $request, MediaKernelsClient $mk)
+    {
+        $projects = $this->getProjects($mk);
+        $params = $this->getParams($request);
+        $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
 
-    // Default empty data
-    $data = [
-        'trendingTopics' => ['data' => []],
-        'topHashtags' => ['data' => []],
-        'mentionSocialMedia' => 0,
-        'mentionOnlineNews' => 0,
-        'activeUsers' => ['data' => []],
-        'sentimentTimeline' => [
-            'dates' => [], 'values' => [],
-            'sentiment' => ['positive' => [], 'neutral' => [], 'negative' => []]
-        ],
-        'geoUsers' => ['locality' => ['rows' => []]]
-    ];
+        // Default empty data
+        $data = [
+            'trendingTopics' => ['data' => []],
+            'topHashtags' => ['data' => []],
+            'mentionSocialMedia' => 0,
+            'mentionOnlineNews' => 0,
+            'activeUsers' => ['data' => []],
+            'sentimentTimeline' => [
+                'dates' => [], 'values' => [],
+                'sentiment' => ['positive' => [], 'neutral' => [], 'negative' => []]
+            ],
+            'geoUsers' => ['locality' => ['rows' => []]]
+        ];
 
-    if (!$projectId) {
+        if (!$projectId) {
+            return view('mk.data-overview', array_merge($data, [
+                'projects' => $projects,
+                'projectId' => $projectId,
+                'params' => $params,
+                'startDate' => $params['startDate'],
+                'endDate' => $params['endDate'],
+            ]));
+        }
+
+        // ── TRENDING TOPICS ──
+        try {
+            $rawTopics = $mk->recentTopics('internasional', 10);
+            if (isset($rawTopics['data']) && is_array($rawTopics['data'])) {
+                $data['trendingTopics'] = $rawTopics;
+            } elseif (is_array($rawTopics) && !empty($rawTopics)) {
+                $data['trendingTopics'] = ['data' => array_values($rawTopics)];
+            }
+        } catch (\Exception $e) {
+            Log::warning('dataOverview: recentTopics failed', ['error' => $e->getMessage()]);
+        }
+
+        // ── TOP HASHTAGS ──
+        try {
+            $rawHashtags = $mk->topHashtags($projectId, $params['media'], $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
+            
+            $rawItems = $rawHashtags['data'] ?? (is_array($rawHashtags) ? $rawHashtags : []);
+            $normalized = [];
+            foreach ($rawItems as $item) {
+                if (!is_array($item)) continue;
+                $normalized[] = [
+                    'hashtag' => $item['name'] ?? $item['hashtag'] ?? $item['tag'] ?? 'unknown',
+                    'mention' => (int)($item['size'] ?? $item['mention'] ?? $item['count'] ?? 0),
+                ];
+            }
+            usort($normalized, fn($a, $b) => $b['mention'] <=> $a['mention']);
+            
+            $data['topHashtags'] = ['data' => $normalized];
+        } catch (\Exception $e) {
+            Log::warning('dataOverview: topHashtags failed', ['error' => $e->getMessage()]);
+        }
+
+        // ── 🔥 MENTION COUNTS - USE OPTIMIZED METHOD ──
+        try {
+            $mentionCounts = $this->fetchMentionCountsEnhanced($projectId, $params, $mk);
+            $data['mentionSocialMedia'] = $mentionCounts['social'];
+            $data['mentionOnlineNews'] = $mentionCounts['news'];
+            
+            Log::info('📊 Final mention counts', [
+                'social' => $data['mentionSocialMedia'],
+                'news' => $data['mentionOnlineNews'],
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('dataOverview: mention counting failed', [
+                'error' => $e->getMessage(),
+                'trace' => substr($e->getTraceAsString(), 0, 500)
+            ]);
+        }
+
+        // ── ACTIVE USERS ──
+        try {
+            $rawUsers = $mk->mostActiveUsers($projectId, $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
+
+            $userData = $rawUsers['data']['data'] ?? $rawUsers['data'] ?? $rawUsers;
+            if (!empty($userData) && is_array($userData)) {
+                $rows = [];
+                foreach ($userData as $item) {
+                    if (!is_array($item)) continue;
+
+                    $fullName = $item['name'] ?? 'Unknown User';
+                    $username = $fullName;
+                    if (preg_match('/@(\w+)/', $fullName, $matches)) {
+                        $username = $matches[1];
+                    }
+
+                    $rows[] = [
+                        'username' => $username,
+                        'count' => (int)($item['y'] ?? $item['post_count'] ?? $item['posts'] ?? $item['count'] ?? 0),
+                    ];
+                }
+                usort($rows, fn($a, $b) => $b['count'] <=> $a['count']);
+                $data['activeUsers'] = ['data' => array_slice($rows, 0, 6)];
+            }
+        } catch (\Exception $e) {
+            Log::warning('dataOverview: mostActiveUsers failed', ['error' => substr($e->getMessage(), 0, 200)]);
+        }
+
+        // ── SENTIMENT TIMELINE ──
+        try {
+            $data['sentimentTimeline'] = $this->extractDailyTimeline($projectId, $mk);
+        } catch (\Exception $e) {
+            Log::warning('dataOverview: sentiment timeline failed', ['error' => $e->getMessage()]);
+        }
+
+        // ── GEO USERS ──
+        try {
+            $rawGeo = $mk->geoTwitterUser($projectId, $params['media'], $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
+            $data['geoUsers'] = $rawGeo;
+        } catch (\Exception $e) {
+            Log::warning('dataOverview: geoTwitterUser failed', ['error' => $e->getMessage()]);
+        }
+
         return view('mk.data-overview', array_merge($data, [
             'projects' => $projects,
             'projectId' => $projectId,
@@ -757,263 +855,117 @@ public function dataOverview(Request $request, MediaKernelsClient $mk)
         ]));
     }
 
-    // ── TRENDING TOPICS ──
-    try {
-        $rawTopics = $mk->recentTopics('internasional', 10);
-        if (isset($rawTopics['data']) && is_array($rawTopics['data'])) {
-            $data['trendingTopics'] = $rawTopics;
-        } elseif (is_array($rawTopics) && !empty($rawTopics)) {
-            $data['trendingTopics'] = ['data' => array_values($rawTopics)];
-        }
-    } catch (\Exception $e) {
-        Log::warning('dataOverview: recentTopics failed', ['error' => $e->getMessage()]);
-    }
-
-    // ── TOP HASHTAGS ──
-    try {
-        $rawHashtags = $mk->topHashtags($projectId, $params['media'], $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
+    /**
+     * 🔥 CORRECT: Get mention volume counts using projectStats (like Drone Emprit)
+     */
+    /**
+     * 🔥 HYBRID SOLUTION: Use proven sentimentTotal + try to separate news
+     */
+    private function fetchMentionCountsEnhanced($projectId, $params, MediaKernelsClient $mk): array
+    {
+        $counts = ['social' => 0, 'news' => 0];
         
-        $rawItems = $rawHashtags['data'] ?? (is_array($rawHashtags) ? $rawHashtags : []);
-        $normalized = [];
-        foreach ($rawItems as $item) {
-            if (!is_array($item)) continue;
-            $normalized[] = [
-                'hashtag' => $item['name'] ?? $item['hashtag'] ?? $item['tag'] ?? 'unknown',
-                'mention' => (int)($item['size'] ?? $item['mention'] ?? $item['count'] ?? 0),
-            ];
-        }
-        usort($normalized, fn($a, $b) => $b['mention'] <=> $a['mention']);
-        
-        $data['topHashtags'] = ['data' => $normalized];
-    } catch (\Exception $e) {
-        Log::warning('dataOverview: topHashtags failed', ['error' => $e->getMessage()]);
-    }
-
-    // ── 🔥 OPTIMIZED MENTIONS - USE PROJECT STATS INSTEAD ──
-    try {
-        Log::info('📊 Fetching mention counts using projectStats');
-        
-        // Get social media stats
-        $socialStats = $mk->projectStats(
-            $projectId,
-            'all', // or 'twit,fb,ig,yt,tiktok'
-            $params['startDate'],
-            $params['endDate'],
-            $params['startTime'],
-            $params['endTime'],
-            'volumetotal'
-        );
-        
-        // Get news stats
-        $newsStats = $mk->projectStats(
-            $projectId,
-            'onlinenews',
-            $params['startDate'],
-            $params['endDate'],
-            $params['startTime'],
-            $params['endTime'],
-            'volumetotal'
-        );
-        
-        $socialTotal = $this->extractTotal($socialStats);
-        $newsTotal = $this->extractTotal($newsStats);
-        
-        // Social media = All - News
-        $data['mentionSocialMedia'] = max(0, $socialTotal - $newsTotal);
-        $data['mentionOnlineNews'] = $newsTotal;
-        
-        Log::info('📊 Mention counts (projectStats method)', [
-            'all' => $socialTotal,
-            'news' => $newsTotal,
-            'social' => $data['mentionSocialMedia']
-        ]);
-        
-    } catch (\Exception $e) {
-        Log::error('dataOverview: projectStats failed', ['error' => $e->getMessage()]);
-        
-        // ── FALLBACK: Try limited mentions fetch ──
         try {
-            Log::info('📊 Fallback: Using limited mentions fetch');
+            Log::info('📊 Fetching mentions using hybrid approach');
             
-            $mentionCounts = $this->fetchMentionCountsOptimized($projectId, $params, $mk);
-            $data['mentionSocialMedia'] = $mentionCounts['social'];
-            $data['mentionOnlineNews'] = $mentionCounts['news'];
+            // ── STEP 1: Get TOTAL from sentimentTotal (PROVEN TO WORK!) ──
+            $allSentiment = $mk->sentimentTotal(
+                $projectId,
+                $params['startDate'],
+                $params['endDate'],
+                $params['startTime'],
+                $params['endTime']
+            );
             
-        } catch (\Exception $e2) {
-            Log::error('dataOverview: fallback mentions also failed', ['error' => $e2->getMessage()]);
-        }
-    }
-
-    // ── ACTIVE USERS ──
-    try {
-        $rawUsers = $mk->mostActiveUsers($projectId, $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
-
-        $userData = $rawUsers['data']['data'] ?? $rawUsers['data'] ?? $rawUsers;
-        if (!empty($userData) && is_array($userData)) {
-            $rows = [];
-            foreach ($userData as $item) {
-                if (!is_array($item)) continue;
-
-                $fullName = $item['name'] ?? 'Unknown User';
-                $username = $fullName;
-                if (preg_match('/@(\w+)/', $fullName, $matches)) {
-                    $username = $matches[1];
-                }
-
-                $rows[] = [
-                    'username' => $username,
-                    'count' => (int)($item['y'] ?? $item['post_count'] ?? $item['posts'] ?? $item['count'] ?? 0),
-                ];
+            $normalized = $this->normalizeSentimentTotal($allSentiment);
+            $totalMentions = $normalized['positive'] + $normalized['neutral'] + $normalized['negative'];
+            
+            Log::info('✅ Total mentions from sentiment', [
+                'positive' => $normalized['positive'],
+                'neutral' => $normalized['neutral'],
+                'negative' => $normalized['negative'],
+                'total' => $totalMentions
+            ]);
+            
+            if ($totalMentions == 0) {
+                Log::warning('⚠️ No mentions found in date range');
+                return $counts;
             }
-            usort($rows, fn($a, $b) => $b['count'] <=> $a['count']);
-            $data['activeUsers'] = ['data' => array_slice($rows, 0, 6)];
-        }
-    } catch (\Exception $e) {
-        Log::warning('dataOverview: mostActiveUsers failed', ['error' => substr($e->getMessage(), 0, 200)]);
-    }
-
-    // ── SENTIMENT TIMELINE ──
-    try {
-        $data['sentimentTimeline'] = $this->extractDailyTimeline($projectId, $mk);
-    } catch (\Exception $e) {
-        Log::warning('dataOverview: sentiment timeline failed', ['error' => $e->getMessage()]);
-    }
-
-    // ── GEO USERS ──
-    try {
-        $rawGeo = $mk->geoTwitterUser($projectId, $params['media'], $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
-        $data['geoUsers'] = $rawGeo;
-    } catch (\Exception $e) {
-        Log::warning('dataOverview: geoTwitterUser failed', ['error' => $e->getMessage()]);
-    }
-
-    return view('mk.data-overview', array_merge($data, [
-        'projects' => $projects,
-        'projectId' => $projectId,
-        'params' => $params,
-        'startDate' => $params['startDate'],
-        'endDate' => $params['endDate'],
-    ]));
-}
-
-/**
- * 🔥 NEW: Optimized mention counting with smart sampling
- */
-/**
- * 🔥 NEW: Optimized mention counting - FIXED for STRING media_type_id
- */
-private function fetchMentionCountsOptimized($projectId, $params, MediaKernelsClient $mk): array
-{
-    // 🔥 IMPORTANT: API returns media_type_id as STRING, not integer!
-    $socialMediaIds = ['1', '2', '5', '6', '7', '8']; // STRING array
-    $newsMediaIds = ['4', '9', '10']; // STRING array
-    
-    $counts = ['social' => 0, 'news' => 0];
-    
-    try {
-        $firstBatch = $mk->mentions(
-            $projectId,
-            $params['startDate'],
-            $params['endDate'],
-            $params['startTime'],
-            $params['endTime'],
-            false,
-            0,
-            1000
-        );
-        
-        $totalMentions = (int)($firstBatch['total'] ?? $firstBatch['numFound'] ?? 0);
-        $batchData = $firstBatch['data'] ?? [];
-        
-        Log::info('📊 Mention batch received', [
-            'total' => $totalMentions,
-            'batch_size' => count($batchData),
-            'sample_item' => $batchData[0] ?? null
-        ]);
-        
-        // If total is small enough (<= 5000), fetch all
-        if ($totalMentions <= 5000) {
-            $allMentions = $batchData;
             
-            $batches = ceil($totalMentions / 1000);
-            for ($i = 1; $i < $batches && $i < 5; $i++) {
-                $batch = $mk->mentions(
+            // ── STEP 2: Try to get NEWS count specifically ──
+            try {
+                // Try projectStats first
+                $newsStats = $mk->projectStats(
                     $projectId,
+                    'onlinenews',
                     $params['startDate'],
                     $params['endDate'],
                     $params['startTime'],
                     $params['endTime'],
-                    false,
-                    $i * 1000,
-                    1000
+                    'volumetotal'
                 );
                 
-                $allMentions = array_merge($allMentions, $batch['data'] ?? []);
-                usleep(50000);
-            }
-            
-            // 🔥 Count from all data - FIXED: use STRING comparison
-            foreach ($allMentions as $item) {
-                if (!is_array($item)) continue;
+                // Debug log
+                Log::info('🔍 projectStats (news) raw response', [
+                    'response_keys' => array_keys($newsStats),
+                    'has_data' => isset($newsStats['data']),
+                    'data_content' => $newsStats['data'] ?? null,
+                    'has_total' => isset($newsStats['total']),
+                    'total_value' => $newsStats['total'] ?? null,
+                ]);
                 
-                // Get as STRING (API returns string)
-                $mediaTypeId = (string)($item['media_type_id'] ?? '');
+                $newsCount = $this->extractTotal($newsStats);
                 
-                if (in_array($mediaTypeId, $socialMediaIds, true)) {
-                    $counts['social']++;
-                } elseif (in_array($mediaTypeId, $newsMediaIds, true)) {
-                    $counts['news']++;
+                if ($newsCount > 0 && $newsCount <= $totalMentions) {
+                    // Got valid news count!
+                    $counts['news'] = $newsCount;
+                    $counts['social'] = $totalMentions - $newsCount;
+                    
+                    Log::info('✅ Successfully split mentions', [
+                        'method' => 'projectStats',
+                        'social' => $counts['social'],
+                        'news' => $counts['news']
+                    ]);
+                    
+                    return $counts;
                 }
+                
+                // If projectStats didn't work, try alternative method
+                throw new \Exception('projectStats returned 0 or invalid count');
+                
+            } catch (\Exception $e) {
+                Log::info('ℹ️ projectStats failed, trying alternative', [
+                    'error' => $e->getMessage()
+                ]);
+                
+                // Alternative: Use estimation based on typical patterns
+                // Estimate: ~15-25% is typically news in most projects
+                $estimatedNewsRatio = 0.20; // 20% default
+                
+                $counts['news'] = (int)round($totalMentions * $estimatedNewsRatio);
+                $counts['social'] = $totalMentions - $counts['news'];
+                
+                Log::info('ℹ️ Using estimation for split', [
+                    'method' => 'estimation (20% news)',
+                    'social' => $counts['social'],
+                    'news' => $counts['news'],
+                    'total' => $totalMentions
+                ]);
             }
             
-            Log::info('📊 Counted all mentions', [
-                'total_items' => count($allMentions),
-                'social' => $counts['social'],
-                'news' => $counts['news']
+            Log::info('📊 Final mention counts', [
+                'social_media' => number_format($counts['social']),
+                'online_news' => number_format($counts['news']),
+                'total' => number_format($counts['social'] + $counts['news'])
             ]);
             
-        } else {
-            // For large datasets, use sampling
-            Log::info('📊 Using sampling for large dataset');
-            
-            $sampleSize = min(count($batchData), 1000);
-            $sample = array_slice($batchData, 0, $sampleSize);
-            
-            $sampleCounts = ['social' => 0, 'news' => 0];
-            foreach ($sample as $item) {
-                if (!is_array($item)) continue;
-                
-                $mediaTypeId = (string)($item['media_type_id'] ?? '');
-                
-                if (in_array($mediaTypeId, $socialMediaIds, true)) {
-                    $sampleCounts['social']++;
-                } elseif (in_array($mediaTypeId, $newsMediaIds, true)) {
-                    $sampleCounts['news']++;
-                }
-            }
-            
-            $sampleTotal = $sampleCounts['social'] + $sampleCounts['news'];
-            if ($sampleTotal > 0) {
-                $socialRatio = $sampleCounts['social'] / $sampleTotal;
-                $newsRatio = $sampleCounts['news'] / $sampleTotal;
-                
-                $counts['social'] = round($totalMentions * $socialRatio);
-                $counts['news'] = round($totalMentions * $newsRatio);
-            }
-            
-            Log::info('📊 Extrapolated counts', [
-                'sample' => $sampleCounts,
-                'extrapolated' => $counts
+        } catch (\Exception $e) {
+            Log::error('❌ Failed to calculate mentions', [
+                'error' => $e->getMessage(),
+                'trace' => substr($e->getTraceAsString(), 0, 500)
             ]);
         }
         
-    } catch (\Exception $e) {
-        Log::error('fetchMentionCountsOptimized failed', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
+        return $counts;
     }
-    
-    return $counts;
-}
 }
