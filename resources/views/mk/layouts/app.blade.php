@@ -230,7 +230,22 @@
     }
 
     .nav-sub .nav-item.active {
-      background: linear-gradient(135deg, var(--primary-green-light) 0%, var(--primary-green) 100%);
+      background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+      color: #ffffff;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(3, 128, 71, 0.2);
+    }
+    
+    .nav-sub .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: -14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 70%;
+      background: var(--primary-green);
+      border-radius: 0 3px 3px 0;
     }
 
     /* Dropdown Specific Styles */
@@ -463,9 +478,15 @@
                                $currentProject['label'] ?? 
                                'Project #' . ($currentProject['id'] ?? '');
                 echo $projectName;
+                
+                // DEBUG: Remove this after testing
+                // echo " (ID: {$projectId})";
               @endphp
             @else
               Select Project
+              {{-- DEBUG: Uncomment to see what's missing --}}
+              {{-- @if(!isset($projectId)) <small>(No projectId)</small> @endif --}}
+              {{-- @if(!isset($projects)) <small>(No projects)</small> @endif --}}
             @endif
           </span>
           <span class="dropdown-arrow">▼</span>
