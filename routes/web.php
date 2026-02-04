@@ -4,6 +4,7 @@ use App\Http\Controllers\MkController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\UserAuthController;
+use App\Http\Controllers\Api\DataOverviewApiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -45,10 +46,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [MkController::class, 'adminDashboard'])->name('dashboard');
         Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
         
-        // 🔥 NEW: User Management Routes
+        // User Management Routes
         Route::resource('users', AdminUserController::class);
     });
-    
 });
 
 /*
@@ -58,8 +58,36 @@ Route::prefix('admin')->name('admin.')->group(function () {
 */
 
 Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
-        Route::get('/data-overview', [MkController::class, 'dataOverview'])->name('data-overview');
+    
+    // ═══════════════════════════════════════════════════════════
+    // 🔥 API ENDPOINTS FOR LAZY LOADING (MUST BE BEFORE OTHER ROUTES!)
+    // ═══════════════════════════════════════════════════════════
+    Route::prefix('api')->name('api.')->group(function () {
+        Route::get('/trending-topics', [DataOverviewApiController::class, 'trendingTopics'])
+            ->name('trending-topics');
+        
+        Route::get('/top-hashtags', [DataOverviewApiController::class, 'topHashtags'])
+            ->name('top-hashtags');
+        
+        Route::get('/mention-counts', [DataOverviewApiController::class, 'mentionCounts'])
+            ->name('mention-counts');
+        
+        Route::get('/active-users', [DataOverviewApiController::class, 'activeUsers'])
+            ->name('active-users');
+        
+        Route::get('/sentiment-timeline', [DataOverviewApiController::class, 'sentimentTimeline'])
+            ->name('sentiment-timeline');
+        
+        Route::get('/geo-users', [DataOverviewApiController::class, 'geoUsers'])
+            ->name('geo-users');
+    });
+    
+    // ═══════════════════════════════════════════════════════════
+    // REGULAR MK ROUTES
+    // ═══════════════════════════════════════════════════════════
+    
     // Main Pages
+    Route::get('/data-overview', [MkController::class, 'dataOverview'])->name('data-overview');
     Route::get('/dashboard', [MkController::class, 'dashboard'])->name('dashboard');
     Route::get('/projects', [MkController::class, 'projects'])->name('projects');
     

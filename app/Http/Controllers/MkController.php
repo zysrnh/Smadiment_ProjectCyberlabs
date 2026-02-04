@@ -720,140 +720,26 @@ class MkController extends Controller
         ]);
     }
 
-    /**
-     * 📊 DATA OVERVIEW - ENHANCED WITH DEBUG
-     */
-    public function dataOverview(Request $request, MediaKernelsClient $mk)
-    {
-        $projects = $this->getProjects($mk);
-        $params = $this->getParams($request);
-        $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+  /**
+ * 📊 DATA OVERVIEW - SIMPLIFIED (Lazy Loading)
+ */
+public function dataOverview(Request $request, MediaKernelsClient $mk)
+{
+    $projects = $this->getProjects($mk);
+    $params = $this->getParams($request);
+    $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
 
-        // Default empty data
-        $data = [
-            'trendingTopics' => ['data' => []],
-            'topHashtags' => ['data' => []],
-            'mentionSocialMedia' => 0,
-            'mentionOnlineNews' => 0,
-            'activeUsers' => ['data' => []],
-            'sentimentTimeline' => [
-                'dates' => [], 'values' => [],
-                'sentiment' => ['positive' => [], 'neutral' => [], 'negative' => []]
-            ],
-            'geoUsers' => ['locality' => ['rows' => []]]
-        ];
-
-        if (!$projectId) {
-            return view('mk.data-overview', array_merge($data, [
-                'projects' => $projects,
-                'projectId' => $projectId,
-                'params' => $params,
-                'startDate' => $params['startDate'],
-                'endDate' => $params['endDate'],
-            ]));
-        }
-
-        // ── TRENDING TOPICS ──
-        try {
-            $rawTopics = $mk->recentTopics('internasional', 10);
-            if (isset($rawTopics['data']) && is_array($rawTopics['data'])) {
-                $data['trendingTopics'] = $rawTopics;
-            } elseif (is_array($rawTopics) && !empty($rawTopics)) {
-                $data['trendingTopics'] = ['data' => array_values($rawTopics)];
-            }
-        } catch (\Exception $e) {
-            Log::warning('dataOverview: recentTopics failed', ['error' => $e->getMessage()]);
-        }
-
-        // ── TOP HASHTAGS ──
-        try {
-            $rawHashtags = $mk->topHashtags($projectId, $params['media'], $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
-            
-            $rawItems = $rawHashtags['data'] ?? (is_array($rawHashtags) ? $rawHashtags : []);
-            $normalized = [];
-            foreach ($rawItems as $item) {
-                if (!is_array($item)) continue;
-                $normalized[] = [
-                    'hashtag' => $item['name'] ?? $item['hashtag'] ?? $item['tag'] ?? 'unknown',
-                    'mention' => (int)($item['size'] ?? $item['mention'] ?? $item['count'] ?? 0),
-                ];
-            }
-            usort($normalized, fn($a, $b) => $b['mention'] <=> $a['mention']);
-            
-            $data['topHashtags'] = ['data' => $normalized];
-        } catch (\Exception $e) {
-            Log::warning('dataOverview: topHashtags failed', ['error' => $e->getMessage()]);
-        }
-
-        // ── 🔥 MENTION COUNTS - USE OPTIMIZED METHOD ──
-        try {
-            $mentionCounts = $this->fetchMentionCountsEnhanced($projectId, $params, $mk);
-            $data['mentionSocialMedia'] = $mentionCounts['social'];
-            $data['mentionOnlineNews'] = $mentionCounts['news'];
-            
-            Log::info('📊 Final mention counts', [
-                'social' => $data['mentionSocialMedia'],
-                'news' => $data['mentionOnlineNews'],
-            ]);
-            
-        } catch (\Exception $e) {
-            Log::error('dataOverview: mention counting failed', [
-                'error' => $e->getMessage(),
-                'trace' => substr($e->getTraceAsString(), 0, 500)
-            ]);
-        }
-
-        // ── ACTIVE USERS ──
-        try {
-            $rawUsers = $mk->mostActiveUsers($projectId, $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
-
-            $userData = $rawUsers['data']['data'] ?? $rawUsers['data'] ?? $rawUsers;
-            if (!empty($userData) && is_array($userData)) {
-                $rows = [];
-                foreach ($userData as $item) {
-                    if (!is_array($item)) continue;
-
-                    $fullName = $item['name'] ?? 'Unknown User';
-                    $username = $fullName;
-                    if (preg_match('/@(\w+)/', $fullName, $matches)) {
-                        $username = $matches[1];
-                    }
-
-                    $rows[] = [
-                        'username' => $username,
-                        'count' => (int)($item['y'] ?? $item['post_count'] ?? $item['posts'] ?? $item['count'] ?? 0),
-                    ];
-                }
-                usort($rows, fn($a, $b) => $b['count'] <=> $a['count']);
-                $data['activeUsers'] = ['data' => array_slice($rows, 0, 6)];
-            }
-        } catch (\Exception $e) {
-            Log::warning('dataOverview: mostActiveUsers failed', ['error' => substr($e->getMessage(), 0, 200)]);
-        }
-
-        // ── SENTIMENT TIMELINE ──
-        try {
-            $data['sentimentTimeline'] = $this->extractDailyTimeline($projectId, $mk);
-        } catch (\Exception $e) {
-            Log::warning('dataOverview: sentiment timeline failed', ['error' => $e->getMessage()]);
-        }
-
-        // ── GEO USERS ──
-        try {
-            $rawGeo = $mk->geoTwitterUser($projectId, $params['media'], $params['startDate'], $params['endDate'], $params['startTime'], $params['endTime']);
-            $data['geoUsers'] = $rawGeo;
-        } catch (\Exception $e) {
-            Log::warning('dataOverview: geoTwitterUser failed', ['error' => $e->getMessage()]);
-        }
-
-        return view('mk.data-overview', array_merge($data, [
-            'projects' => $projects,
-            'projectId' => $projectId,
-            'params' => $params,
-            'startDate' => $params['startDate'],
-            'endDate' => $params['endDate'],
-        ]));
-    }
+    // Tidak perlu load semua data di sini!
+    // Semua data akan di-load via API saat user scroll
+    
+    return view('mk.data-overview', [
+        'projects' => $projects,
+        'projectId' => $projectId,
+        'params' => $params,
+        'startDate' => $params['startDate'],
+        'endDate' => $params['endDate'],
+    ]);
+}
 
     /**
      * 🔥 CORRECT: Get mention volume counts using projectStats (like Drone Emprit)

@@ -45,12 +45,12 @@
 </div>
 
 <!-- ============================================================
-     ROW 1 — 4 Kotak Atas
+     ROW 1 — 4 Kotak Atas (LAZY LOADED)
      ============================================================ -->
 <div class="do-row-top">
 
     <!-- 1. Trending Topics News -->
-    <div class="do-card">
+    <div class="do-card" data-lazy="trending-topics">
         <div class="do-card-head">
             <div class="do-card-head-left">
                 <span class="do-head-icon" style="background:#eef9f3; color:#22c55e;">
@@ -64,143 +64,45 @@
             <span class="do-badge" style="background:#fff3e0; color:#e67e22;">News</span>
         </div>
         <div class="do-card-body do-body-scroll">
-            @php
-            $topics = $trendingTopics['data'] ?? (array) $trendingTopics;
-            @endphp
-            @if(count($topics) > 0)
-            <table class="do-tbl">
-                <thead>
-                    <tr>
-                        <th style="width:28px;">#</th>
-                        <th class="do-tbl-left">Topic</th>
-                        <th class="do-tbl-right">Articles</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach(array_slice($topics, 0, 8) as $i => $t)
-                    @php
-                    $tName = $t['title'] ?? $t['name'] ?? $t['topic'] ?? 'Unknown';
-                    $tCount = (int)($t['articles'] ?? $t['count'] ?? $t['total'] ?? 0);
-                    @endphp
-                    <tr>
-                        <td class="do-tbl-rank">{{ $i+1 }}</td>
-                        <td class="do-tbl-name">{{ $tName }}</td>
-                        <td class="do-tbl-num">{{ number_format($tCount) }} docs</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            @else
-            <div class="do-empty">Tidak ada data</div>
-            @endif
-        </div>
-    </div>
-
-<!-- 2. Top Hashtag X -->
-<div class="do-card">
-    <div class="do-card-head">
-        <div class="do-card-head-left">
-            <span class="do-head-icon" style="background:#eef3f9; color:#3b7dd8;">
-                <svg viewBox="0 0 24 24">
-                    <line x1="4" y1="9" x2="20" y2="9" />
-                    <line x1="4" y1="15" x2="20" y2="15" />
-                    <line x1="9" y1="4" x2="5" y2="20" />
-                    <line x1="15" y1="4" x2="11" y2="20" />
-                </svg>
-            </span>
-            <span class="do-card-title">Top Hashtag</span>
-        </div>
-        <div style="display:flex; align-items:center; gap:8px;">
-            <span class="do-badge" style="background:#f0f0f0; color:#222;">X</span>
-            @php
-            $tags = $topHashtags['data'] ?? (array) $topHashtags;
-            @endphp
-            @if(count($tags) > 5)
-            <button class="do-view-all-btn" onclick="openHashtagModal()">
-                <svg viewBox="0 0 24 24" style="width:14px;height:14px;">
-                    <path d="M9 18l6-6-6-6"/>
-                </svg>
-                View All
-            </button>
-            @endif
-        </div>
-    </div>
-    <div class="do-card-body do-body-scroll">
-        @if(count($tags) > 0)
-        <table class="do-tbl">
-            <thead>
-                <tr>
-                    <th style="width:28px;">#</th>
-                    <th class="do-tbl-left">Hashtag</th>
-                    <th class="do-tbl-right">Mention</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach(array_slice($tags, 0, 50) as $i => $tag)
-                @php
-                $tagName = $tag['hashtag'] ?? $tag['name'] ?? $tag['tag'] ?? 'unknown';
-                $tagCount = (int)($tag['mention'] ?? $tag['size'] ?? $tag['count'] ?? 0);
-                $tagName = str_starts_with($tagName,'#') ? $tagName : '#'.$tagName;
-                @endphp
-                <tr>
-                    <td class="do-tbl-rank">{{ $i+1 }}</td>
-                    <td class="do-tbl-name" style="color:#3b7dd8;">{{ $tagName }}</td>
-                    <td class="do-tbl-num">{{ number_format($tagCount) }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-        @else
-        <div class="do-empty">Tidak ada data</div>
-        @endif
-    </div>
-</div>
-
-
-<!-- MODAL: All Hashtags -->
-<div id="hashtagModal" class="do-modal">
-    <div class="do-modal-content">
-        <div class="do-modal-header">
-            <div>
-                <h3 class="do-modal-title">Top Hashtags</h3>
-                <p class="do-modal-subtitle">Showing all trending hashtags</p>
+            <div class="do-skeleton">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
             </div>
-            <button class="do-modal-close" onclick="closeHashtagModal()">
-                <svg viewBox="0 0 24 24">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
-        </div>
-        <div class="do-modal-body">
-            <table class="do-tbl">
-                <thead>
-                    <tr>
-                        <th style="width:40px;">#</th>
-                        <th class="do-tbl-left">Hashtag</th>
-                        <th class="do-tbl-right">Mention</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($tags as $i => $tag)
-                    @php
-                    $tagName = $tag['hashtag'] ?? $tag['name'] ?? $tag['tag'] ?? 'unknown';
-                    $tagCount = (int)($tag['mention'] ?? $tag['size'] ?? $tag['count'] ?? 0);
-                    $tagName = str_starts_with($tagName,'#') ? $tagName : '#'.$tagName;
-                    @endphp
-                    <tr>
-                        <td class="do-tbl-rank">{{ $i+1 }}</td>
-                        <td class="do-tbl-name" style="color:#3b7dd8;">{{ $tagName }}</td>
-                        <td class="do-tbl-num">{{ number_format($tagCount) }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
         </div>
     </div>
-</div>
+
+    <!-- 2. Top Hashtag X -->
+    <div class="do-card" data-lazy="top-hashtags">
+        <div class="do-card-head">
+            <div class="do-card-head-left">
+                <span class="do-head-icon" style="background:#eef3f9; color:#3b7dd8;">
+                    <svg viewBox="0 0 24 24">
+                        <line x1="4" y1="9" x2="20" y2="9" />
+                        <line x1="4" y1="15" x2="20" y2="15" />
+                        <line x1="9" y1="4" x2="5" y2="20" />
+                        <line x1="15" y1="4" x2="11" y2="20" />
+                    </svg>
+                </span>
+                <span class="do-card-title">Top Hashtag</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span class="do-badge" style="background:#f0f0f0; color:#222;">X</span>
+            </div>
+        </div>
+        <div class="do-card-body do-body-scroll">
+            <div class="do-skeleton">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- 3. Mention by Social Media -->
-    <div class="do-card">
+    <div class="do-card" data-lazy="mention-social">
         <div class="do-card-head">
             <div class="do-card-head-left">
                 <span class="do-head-icon" style="background:#f3eef9; color:#7c3aed;">
@@ -214,12 +116,14 @@
         </div>
         <div class="do-card-body do-body-mention">
             <div class="do-mention-label">Social Media</div>
-            <div class="do-mention-val" style="color:#7c3aed;">{{ number_format((int)$mentionSocialMedia) }}</div>
+            <div class="do-mention-val" style="color:#7c3aed;">
+                <div class="skeleton-number"></div>
+            </div>
         </div>
     </div>
 
     <!-- 4. Mention by Online News -->
-    <div class="do-card">
+    <div class="do-card" data-lazy="mention-news">
         <div class="do-card-head">
             <div class="do-card-head-left">
                 <span class="do-head-icon" style="background:#fef3ee; color:#e67e22;">
@@ -237,19 +141,21 @@
         </div>
         <div class="do-card-body do-body-mention">
             <div class="do-mention-label">Online News</div>
-            <div class="do-mention-val" style="color:#e67e22;">{{ number_format((int)$mentionOnlineNews) }}</div>
+            <div class="do-mention-val" style="color:#e67e22;">
+                <div class="skeleton-number"></div>
+            </div>
         </div>
     </div>
 
 </div>
 
 <!-- ============================================================
-     ROW 2 — Most Engaged User (Doughnut with External Labels) + Sentiment Score (Line)
+     ROW 2 — Most Engaged User + Sentiment Score
      ============================================================ -->
 <div class="do-row-mid">
 
     <!-- Most Engaged User -->
-    <div class="do-card">
+    <div class="do-card" data-lazy="engaged-users">
         <div class="do-card-head">
             <div class="do-card-head-left">
                 <span class="do-head-icon" style="background:#eef9f3; color:#22c55e;">
@@ -266,11 +172,14 @@
         </div>
         <div class="do-card-body" style="padding: 15px; min-height: 300px; display: flex; align-items: center; justify-content: center; position: relative;">
             <canvas id="chartDonut" style="max-width: 100%; max-height: 270px;"></canvas>
+            <div class="do-skeleton-chart">
+                <div class="skeleton-circle"></div>
+            </div>
         </div>
     </div>
 
     <!-- Sentiment Score -->
-    <div class="do-card">
+    <div class="do-card" data-lazy="sentiment-timeline">
         <div class="do-card-head">
             <div class="do-card-head-left">
                 <span class="do-head-icon" style="background:#eef3f9; color:#3b7dd8;">
@@ -284,15 +193,20 @@
         </div>
         <div class="do-card-body" style="padding: 15px 20px 20px; height: 240px; position: relative;">
             <canvas id="chartSentiment"></canvas>
+            <div class="do-skeleton-chart">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+            </div>
         </div>
     </div>
 
 </div>
 
 <!-- ============================================================
-     ROW 3 — Buzzer Map (Leaflet)
+     ROW 3 — Buzzer Map
      ============================================================ -->
-<div class="do-card" style="margin-top:20px;">
+<div class="do-card" style="margin-top:20px;" data-lazy="buzzer-map">
     <div class="do-card-head">
         <div class="do-card-head-left">
             <span class="do-head-icon" style="background:#fef3ee; color:#e67e22;">
@@ -307,6 +221,30 @@
     </div>
     <div style="padding:0;">
         <div id="buzzMap" style="width:100%; height:420px;"></div>
+        <div class="do-skeleton-map">
+            <div class="skeleton-map-placeholder"></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: All Hashtags -->
+<div id="hashtagModal" class="do-modal">
+    <div class="do-modal-content">
+        <div class="do-modal-header">
+            <div>
+                <h3 class="do-modal-title">Top Hashtags</h3>
+                <p class="do-modal-subtitle">Showing all trending hashtags</p>
+            </div>
+            <button class="do-modal-close" onclick="closeHashtagModal()">
+                <svg viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="do-modal-body" id="hashtagModalBody">
+            <!-- Will be populated dynamically -->
+        </div>
     </div>
 </div>
 
@@ -317,154 +255,215 @@
      ============================================================ -->
 @section('styles')
 <style>
+    /* Skeleton Loading Styles */
+    .do-skeleton {
+        padding: 10px 0;
+    }
+
+    .skeleton-line {
+        height: 28px;
+        background: linear-gradient(90deg, #f0f2f5 25%, #e8eaed 50%, #f0f2f5 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+
+    .skeleton-number {
+        height: 50px;
+        width: 150px;
+        background: linear-gradient(90deg, #f0f2f5 25%, #e8eaed 50%, #f0f2f5 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 8px;
+    }
+
+    .skeleton-circle {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: linear-gradient(90deg, #f0f2f5 25%, #e8eaed 50%, #f0f2f5 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+
+    .skeleton-map-placeholder {
+        height: 420px;
+        background: linear-gradient(90deg, #f0f2f5 25%, #e8eaed 50%, #f0f2f5 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+
+    .do-skeleton-chart {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 80%;
+    }
+
+    @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    .do-card[data-loaded="true"] .do-skeleton,
+    .do-card[data-loaded="true"] .do-skeleton-chart,
+    .do-card[data-loaded="true"] .do-skeleton-map {
+        display: none;
+    }
 
     /* View All Button */
-.do-view-all-btn {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    background: transparent;
-    color: #3b7dd8;
-    border: 1.5px solid #3b7dd8;
-    border-radius: 6px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all .2s;
-}
-
-.do-view-all-btn:hover {
-    background: #3b7dd8;
-    color: #fff;
-    transform: translateY(-1px);
-}
-
-.do-view-all-btn svg {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-
-/* Modal Styles */
-.do-modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    animation: fadeIn 0.2s ease;
-}
-
-.do-modal.active {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.do-modal-content {
-    background: #fff;
-    border-radius: 16px;
-    width: 90%;
-    max-width: 600px;
-    max-height: 80vh;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    animation: slideUp 0.3s ease;
-    overflow: hidden;
-}
-
-.do-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 24px 28px;
-    border-bottom: 2px solid #f0f2f5;
-    background: linear-gradient(135deg, #eef3f9 0%, #fff 100%);
-}
-
-.do-modal-title {
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--dark-blue);
-    margin: 0 0 4px 0;
-}
-
-.do-modal-subtitle {
-    font-size: 12px;
-    font-weight: 500;
-    color: #7A8B96;
-    margin: 0;
-}
-
-.do-modal-close {
-    background: #fff;
-    border: 1.5px solid #e8eaed;
-    border-radius: 8px;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all .2s;
-}
-
-.do-modal-close:hover {
-    background: #f5f5f5;
-    border-color: #d0d5dd;
-    transform: rotate(90deg);
-}
-
-.do-modal-close svg {
-    width: 16px;
-    height: 16px;
-    stroke: #475569;
-    stroke-width: 2.5;
-    stroke-linecap: round;
-}
-
-.do-modal-body {
-    padding: 20px 28px 28px;
-    max-height: calc(80vh - 120px);
-    overflow-y: auto;
-}
-
-.do-modal-body::-webkit-scrollbar {
-    width: 6px;
-}
-
-.do-modal-body::-webkit-scrollbar-thumb {
-    background: #d0d5dd;
-    border-radius: 3px;
-}
-
-.do-modal-body::-webkit-scrollbar-thumb:hover {
-    background: #b4bcc7;
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideUp {
-    from { 
-        transform: translateY(30px);
-        opacity: 0;
+    .do-view-all-btn {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        background: transparent;
+        color: #3b7dd8;
+        border: 1.5px solid #3b7dd8;
+        border-radius: 6px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .2s;
     }
-    to { 
-        transform: translateY(0);
-        opacity: 1;
+
+    .do-view-all-btn:hover {
+        background: #3b7dd8;
+        color: #fff;
+        transform: translateY(-1px);
     }
-}
+
+    .do-view-all-btn svg {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    /* Modal Styles */
+    .do-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        animation: fadeIn 0.2s ease;
+    }
+
+    .do-modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .do-modal-content {
+        background: #fff;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease;
+        overflow: hidden;
+    }
+
+    .do-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 24px 28px;
+        border-bottom: 2px solid #f0f2f5;
+        background: linear-gradient(135deg, #eef3f9 0%, #fff 100%);
+    }
+
+    .do-modal-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--dark-blue);
+        margin: 0 0 4px 0;
+    }
+
+    .do-modal-subtitle {
+        font-size: 12px;
+        font-weight: 500;
+        color: #7A8B96;
+        margin: 0;
+    }
+
+    .do-modal-close {
+        background: #fff;
+        border: 1.5px solid #e8eaed;
+        border-radius: 8px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all .2s;
+    }
+
+    .do-modal-close:hover {
+        background: #f5f5f5;
+        border-color: #d0d5dd;
+        transform: rotate(90deg);
+    }
+
+    .do-modal-close svg {
+        width: 16px;
+        height: 16px;
+        stroke: #475569;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+    }
+
+    .do-modal-body {
+        padding: 20px 28px 28px;
+        max-height: calc(80vh - 120px);
+        overflow-y: auto;
+    }
+
+    .do-modal-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .do-modal-body::-webkit-scrollbar-thumb {
+        background: #d0d5dd;
+        border-radius: 3px;
+    }
+
+    .do-modal-body::-webkit-scrollbar-thumb:hover {
+        background: #b4bcc7;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+        from { 
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        to { 
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
     /* Filter */
     .circle-label {
         pointer-events: none !important;
@@ -762,39 +761,227 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-    (function() {
-        console.log('🎯 Initializing Data Overview Charts...');
+// ────────────────────────────────────────────
+// 🚀 LAZY LOADING DATA MANAGER
+// ────────────────────────────────────────────
+const DataOverviewLazyLoader = {
+    projectId: {{ $projectId ?? 'null' }},
+    startDate: '{{ $startDate }}',
+    endDate: '{{ $endDate }}',
+    loadedSections: new Set(),
+    charts: {},
 
-        // ────────────────────────────────────────────
-        // 1. DOUGHNUT — Most Engaged User with IMPROVED External Labels
-        // ────────────────────────────────────────────
-        @php
-        $rawUsers = $activeUsers['data'] ?? (is_array($activeUsers) ? $activeUsers : []);
-        $doUserTable = [];
-        foreach ($rawUsers as $u) {
-            if (!is_array($u)) continue;
-            $doUserTable[] = [
-                'username' => ltrim($u['screen_name'] ?? $u['name'] ?? $u['username'] ?? 'Unknown', '@'),
-                'count' => (int)($u['tweet_count'] ?? $u['count'] ?? $u['total'] ?? 0),
-            ];
+    init() {
+        console.log('🚀 Initializing Lazy Loader');
+        this.setupIntersectionObserver();
+        this.setupFilterButton();
+    },
+
+    setupIntersectionObserver() {
+        const options = {
+            root: null,
+            rootMargin: '100px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const card = entry.target;
+                    const section = card.dataset.lazy;
+                    
+                    if (!this.loadedSections.has(section)) {
+                        this.loadedSections.add(section);
+                        this.loadSection(section, card);
+                        observer.unobserve(card);
+                    }
+                }
+            });
+        }, options);
+
+        document.querySelectorAll('[data-lazy]').forEach(card => {
+            observer.observe(card);
+        });
+    },
+
+    async loadSection(section, card) {
+        console.log(`📦 Loading section: ${section}`);
+        
+        try {
+            switch(section) {
+                case 'trending-topics':
+                    await this.loadTrendingTopics(card);
+                    break;
+                case 'top-hashtags':
+                    await this.loadTopHashtags(card);
+                    break;
+                case 'mention-social':
+                case 'mention-news':
+                    await this.loadMentionCounts(section, card);
+                    break;
+                case 'engaged-users':
+                    await this.loadEngagedUsers(card);
+                    break;
+                case 'sentiment-timeline':
+                    await this.loadSentimentTimeline(card);
+                    break;
+                case 'buzzer-map':
+                    await this.loadBuzzerMap(card);
+                    break;
+            }
+            
+            card.dataset.loaded = 'true';
+        } catch (error) {
+            console.error(`❌ Failed to load ${section}:`, error);
+            this.showError(card);
         }
-        $doUserTable = array_slice($doUserTable, 0, 6);
-        @endphp
+    },
 
-        const doUsernames = @json(array_column($doUserTable, 'username'));
-        const doCounts = @json(array_column($doUserTable, 'count'));
-        const dColors = ['#4BACC6', '#F2994A', '#27AE60', '#9B59B6', '#E74C3C', '#E67E22'];
+    async loadTrendingTopics(card) {
+        const response = await fetch(`/mk/api/trending-topics?limit=8`);
+        const data = await response.json();
+        
+        const body = card.querySelector('.do-card-body');
+        const topics = data.data || [];
+        
+        if (topics.length === 0) {
+            body.innerHTML = '<div class="do-empty">Tidak ada data</div>';
+            return;
+        }
 
-        const uLabels = doUsernames.map(n => '@' + n);
-        const uCounts = doCounts;
+        let html = `
+            <table class="do-tbl">
+                <thead>
+                    <tr>
+                        <th style="width:28px;">#</th>
+                        <th class="do-tbl-left">Topic</th>
+                        <th class="do-tbl-right">Articles</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
 
-        console.log('📊 Doughnut Data:', { uLabels, uCounts });
+        topics.slice(0, 8).forEach((topic, i) => {
+            const name = topic.title || topic.name || topic.topic || 'Unknown';
+            const count = topic.articles || topic.count || topic.total || 0;
+            
+            html += `
+                <tr>
+                    <td class="do-tbl-rank">${i + 1}</td>
+                    <td class="do-tbl-name">${name}</td>
+                    <td class="do-tbl-num">${count.toLocaleString()} docs</td>
+                </tr>
+            `;
+        });
 
-        // ── IMPROVED External Label Plugin with Better Positioning ──
-        var improvedExternalLabelPlugin = {
+        html += '</tbody></table>';
+        body.innerHTML = html;
+    },
+
+    async loadTopHashtags(card) {
+        const response = await fetch(`/mk/api/top-hashtags?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`);
+        const data = await response.json();
+        
+        const body = card.querySelector('.do-card-body');
+        const hashtags = data.data || [];
+        
+        if (hashtags.length === 0) {
+            body.innerHTML = '<div class="do-empty">Tidak ada data</div>';
+            return;
+        }
+
+        // Add "View All" button if needed
+        if (hashtags.length > 5) {
+            const headerRight = card.querySelector('.do-card-head > div:last-child');
+            headerRight.innerHTML += `
+                <button class="do-view-all-btn" onclick="DataOverviewLazyLoader.openHashtagModal(${JSON.stringify(hashtags)})">
+                    <svg viewBox="0 0 24 24" style="width:14px;height:14px;">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                    View All
+                </button>
+            `;
+        }
+
+        let html = `
+            <table class="do-tbl">
+                <thead>
+                    <tr>
+                        <th style="width:28px;">#</th>
+                        <th class="do-tbl-left">Hashtag</th>
+                        <th class="do-tbl-right">Mention</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        hashtags.slice(0, 50).forEach((tag, i) => {
+            let tagName = tag.hashtag || tag.name || tag.tag || 'unknown';
+            const count = tag.mention || tag.size || tag.count || 0;
+            
+            if (!tagName.startsWith('#')) tagName = '#' + tagName;
+            
+            html += `
+                <tr>
+                    <td class="do-tbl-rank">${i + 1}</td>
+                    <td class="do-tbl-name" style="color:#3b7dd8;">${tagName}</td>
+                    <td class="do-tbl-num">${count.toLocaleString()}</td>
+                </tr>
+            `;
+        });
+
+        html += '</tbody></table>';
+        body.innerHTML = html;
+    },
+
+    async loadMentionCounts(section, card) {
+        const response = await fetch(`/mk/api/mention-counts?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`);
+        const data = await response.json();
+        
+        const valueEl = card.querySelector('.do-mention-val');
+        const count = section === 'mention-social' ? data.social : data.news;
+        
+        valueEl.innerHTML = count.toLocaleString();
+    },
+
+    async loadEngagedUsers(card) {
+        const response = await fetch(`/mk/api/active-users?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`);
+        const data = await response.json();
+        
+        const users = data.data || [];
+        
+        if (users.length === 0) {
+            card.querySelector('canvas').parentElement.innerHTML = 
+                '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#B4BCC7;font-size:14px;font-weight:600;">No active user data available</div>';
+            return;
+        }
+
+        const labels = users.map(u => '@' + u.username);
+        const counts = users.map(u => u.count);
+        const colors = ['#4BACC6', '#F2994A', '#27AE60', '#9B59B6', '#E74C3C', '#E67E22'];
+
+        this.renderDoughnutChart(labels, counts, colors);
+    },
+
+    async loadSentimentTimeline(card) {
+        const response = await fetch(`/mk/api/sentiment-timeline?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`);
+        const data = await response.json();
+        
+        this.renderLineChart(data);
+    },
+
+    async loadBuzzerMap(card) {
+        const response = await fetch(`/mk/api/geo-users?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`);
+        const data = await response.json();
+        
+        this.renderMap(data.data || []);
+    },
+
+    renderDoughnutChart(labels, counts, colors) {
+        const improvedExternalLabelPlugin = {
             id: 'improvedExternalLabelPlugin',
             afterDatasetsDraw: function(chart) {
-                if (uLabels.length === 0) return;
+                if (labels.length === 0) return;
 
                 var ctx = chart.ctx;
                 var meta = chart.getDatasetMeta(0);
@@ -805,48 +992,34 @@
                 ctx.save();
                 ctx.textBaseline = 'middle';
 
-                // Calculate label positions to prevent overlap
                 var labelPositions = [];
                 
                 meta.data.forEach(function(slice, i) {
                     if (!slice || slice.circumference === 0) return;
 
                     var angle = (slice.startAngle + slice.endAngle) / 2;
-                    var label = uLabels[i] || '';
-                    var count = (uCounts[i] || 0).toLocaleString();
-                    var color = dColors[i % dColors.length];
+                    var label = labels[i] || '';
+                    var count = (counts[i] || 0).toLocaleString();
+                    var color = colors[i % colors.length];
                     var isRight = Math.cos(angle) >= 0;
 
-                    // Point on edge of doughnut
                     var edgeX = centerX + outerRadius * Math.cos(angle);
                     var edgeY = centerY + outerRadius * Math.sin(angle);
 
-                    // Extended point for label
                     var extendDistance = 35;
                     var labelX = centerX + (outerRadius + extendDistance) * Math.cos(angle);
                     var labelY = centerY + (outerRadius + extendDistance) * Math.sin(angle);
 
-                    // Horizontal line end point
                     var lineEndX = isRight ? labelX + 40 : labelX - 40;
 
                     labelPositions.push({
-                        edgeX: edgeX,
-                        edgeY: edgeY,
-                        labelX: labelX,
-                        labelY: labelY,
-                        lineEndX: lineEndX,
-                        label: label,
-                        count: count,
-                        color: color,
-                        isRight: isRight,
-                        angle: angle
+                        edgeX, edgeY, labelX, labelY, lineEndX,
+                        label, count, color, isRight, angle
                     });
                 });
 
-                // Sort by Y position to handle vertical spacing
                 labelPositions.sort((a, b) => a.labelY - b.labelY);
 
-                // Adjust overlapping labels
                 var minSpacing = 28;
                 for (var i = 1; i < labelPositions.length; i++) {
                     var curr = labelPositions[i];
@@ -857,9 +1030,7 @@
                     }
                 }
 
-                // Draw labels with leader lines
                 labelPositions.forEach(function(pos) {
-                    // Draw leader line
                     ctx.strokeStyle = pos.color;
                     ctx.lineWidth = 1.5;
                     ctx.beginPath();
@@ -868,22 +1039,18 @@
                     ctx.lineTo(pos.lineEndX, pos.labelY);
                     ctx.stroke();
 
-                    // Draw dot at line end
                     ctx.fillStyle = pos.color;
                     ctx.beginPath();
                     ctx.arc(pos.lineEndX, pos.labelY, 3, 0, Math.PI * 2);
                     ctx.fill();
 
-                    // Draw text
                     var textX = pos.isRight ? pos.lineEndX + 8 : pos.lineEndX - 8;
                     ctx.textAlign = pos.isRight ? 'left' : 'right';
 
-                    // Username
                     ctx.fillStyle = '#1A2332';
                     ctx.font = '700 11px Poppins, sans-serif';
                     ctx.fillText(pos.label, textX, pos.labelY - 7);
 
-                    // Count
                     ctx.fillStyle = '#7A8B96';
                     ctx.font = '500 10px Poppins, sans-serif';
                     ctx.fillText('(' + pos.count + ' twits)', textX, pos.labelY + 7);
@@ -893,115 +1060,64 @@
             }
         };
 
-        if (uLabels.length > 0 && uCounts.some(c => c > 0)) {
-            new Chart(document.getElementById('chartDonut').getContext('2d'), {
-                type: 'doughnut',
-                plugins: [improvedExternalLabelPlugin],
-                data: {
-                    labels: uLabels,
-                    datasets: [{
-                        data: uCounts,
-                        backgroundColor: dColors,
-                        borderColor: '#fff',
-                        borderWidth: 3,
-                        hoverOffset: 6
-                    }]
+        new Chart(document.getElementById('chartDonut').getContext('2d'), {
+            type: 'doughnut',
+            plugins: [improvedExternalLabelPlugin],
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: counts,
+                    backgroundColor: colors,
+                    borderColor: '#fff',
+                    borderWidth: 3,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 1.35,
+                cutout: '55%',
+                layout: {
+                    padding: { top: 25, right: 110, bottom: 25, left: 110 }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 1.35,
-                    cutout: '55%',
-                    layout: {
-                        padding: {
-                            top: 25,
-                            right: 110,
-                            bottom: 25,
-                            left: 110
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(255,255,255,0.98)',
+                        titleColor: '#1A2332',
+                        bodyColor: '#1A2332',
+                        borderColor: '#E8EAED',
+                        borderWidth: 1.5,
+                        cornerRadius: 8,
+                        padding: 12,
+                        titleFont: { size: 13, weight: '700', family: 'Poppins' },
+                        bodyFont: { size: 12, family: 'Poppins' },
+                        callbacks: {
+                            label: ctx => ' ' + ctx.parsed.toLocaleString() + ' tweets'
                         }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            enabled: true,
-                            backgroundColor: 'rgba(255,255,255,0.98)',
-                            titleColor: '#1A2332',
-                            bodyColor: '#1A2332',
-                            borderColor: '#E8EAED',
-                            borderWidth: 1.5,
-                            cornerRadius: 8,
-                            padding: 12,
-                            titleFont: { size: 13, weight: '700', family: 'Poppins' },
-                            bodyFont: { size: 12, family: 'Poppins' },
-                            callbacks: {
-                                label: function(context) {
-                                    return ' ' + context.parsed.toLocaleString() + ' tweets';
-                                }
-                            }
-                        }
-                    },
-                    animation: {
-                        animateRotate: true,
-                        duration: 900
                     }
-                }
-            });
-        } else {
-            document.getElementById('chartDonut').parentElement.innerHTML = 
-                '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#B4BCC7;font-size:14px;font-weight:600;">No active user data available</div>';
-        }
-
-        // ────────────────────────────────────────────
-        // 2. LINE CHART — Sentiment Score (FIXED WITH DEBUG)
-        // ────────────────────────────────────────────
-        @php
-        // 🔥 Gunakan sentimentTimeline yang sudah dikirim dari controller
-        $timeline = $sentimentTimeline ?? [
-            'dates' => [],
-            'values' => [],
-            'sentiment' => [
-                'positive' => [],
-                'neutral' => [],
-                'negative' => [],
-            ]
-        ];
-        
-        // 🔥 Debug: Log timeline data
-        \Log::info('Sentiment Timeline Data in View', [
-            'dates_count' => count($timeline['dates']),
-            'dates' => $timeline['dates'],
-            'values' => $timeline['values'],
-        ]);
-        @endphp
-
-        var sDates = @json($timeline['dates'] ?? []);
-        var sPos = @json($timeline['sentiment']['positive'] ?? []);
-        var sNeu = @json($timeline['sentiment']['neutral'] ?? []);
-        var sNeg = @json($timeline['sentiment']['negative'] ?? []);
-        var sNew = @json($timeline['values'] ?? []);
-
-        console.log('📈 Sentiment Data (FROM CONTROLLER):', { 
-            sDates, 
-            sPos, 
-            sNeu, 
-            sNeg, 
-            sNew,
-            today: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+                },
+                animation: { animateRotate: true, duration: 900 }
+            }
         });
+    },
 
+    renderLineChart(timeline) {
         new Chart(document.getElementById('chartSentiment').getContext('2d'), {
             type: 'line',
             data: {
-                labels: sDates,
+                labels: timeline.dates,
                 datasets: [
                     {
                         label: 'Total',
-                        data: sNew,
+                        data: timeline.values,
                         borderColor: '#5AB9EA',
                         backgroundColor: 'rgba(90, 185, 234, 0.1)',
                         borderWidth: 2.5,
                         tension: 0.4,
-                        pointRadius: sDates.map((d, i) => i === sDates.length - 1 ? 6 : 4), // Bigger point for today
+                        pointRadius: timeline.dates.map((d, i) => i === timeline.dates.length - 1 ? 6 : 4),
                         pointHoverRadius: 6,
                         pointBackgroundColor: '#5AB9EA',
                         pointBorderColor: '#FFFFFF',
@@ -1010,44 +1126,32 @@
                     },
                     {
                         label: 'Positive',
-                        data: sPos,
+                        data: timeline.sentiment.positive,
                         borderColor: '#22C55E',
                         backgroundColor: 'transparent',
                         borderWidth: 2,
                         tension: 0.4,
-                        pointRadius: sDates.map((d, i) => i === sDates.length - 1 ? 5 : 3),
-                        pointHoverRadius: 5,
-                        pointBackgroundColor: '#22C55E',
-                        pointBorderColor: '#FFFFFF',
-                        pointBorderWidth: 1.5,
+                        pointRadius: 3,
                         fill: false
                     },
                     {
                         label: 'Neutral',
-                        data: sNeu,
+                        data: timeline.sentiment.neutral,
                         borderColor: '#B0BEC5',
                         backgroundColor: 'transparent',
                         borderWidth: 1.5,
                         tension: 0.4,
-                        pointRadius: sDates.map((d, i) => i === sDates.length - 1 ? 4 : 2),
-                        pointHoverRadius: 4,
-                        pointBackgroundColor: '#B0BEC5',
-                        pointBorderColor: '#FFFFFF',
-                        pointBorderWidth: 1.5,
+                        pointRadius: 2,
                         fill: false
                     },
                     {
                         label: 'Negative',
-                        data: sNeg,
+                        data: timeline.sentiment.negative,
                         borderColor: '#EF4444',
                         backgroundColor: 'transparent',
                         borderWidth: 1.5,
                         tension: 0.4,
-                        pointRadius: sDates.map((d, i) => i === sDates.length - 1 ? 4 : 2),
-                        pointHoverRadius: 4,
-                        pointBackgroundColor: '#EF4444',
-                        pointBorderColor: '#FFFFFF',
-                        pointBorderWidth: 1.5,
+                        pointRadius: 2,
                         fill: false
                     }
                 ]
@@ -1055,10 +1159,7 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                },
+                interaction: { intersect: false, mode: 'index' },
                 plugins: {
                     legend: {
                         display: true,
@@ -1087,25 +1188,18 @@
                         cornerRadius: 8,
                         titleFont: { size: 12, weight: 'bold', family: 'Poppins' },
                         bodyFont: { size: 11, family: 'Poppins' },
-                        displayColors: true,
-                        boxWidth: 10,
-                        boxHeight: 10,
-                        boxPadding: 4,
                         callbacks: {
-                            label: function(context) {
-                                return ' ' + context.dataset.label + ': ' + context.parsed.y.toLocaleString();
-                            }
+                            label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString()
                         }
                     }
                 },
                 scales: {
                     x: {
                         display: true,
-                        grid: { display: false, drawBorder: false },
+                        grid: { display: false },
                         ticks: {
                             font: { size: 10, weight: '500', family: 'Poppins' },
                             color: '#B4BCC7',
-                            padding: 6,
                             maxRotation: 0,
                             autoSkip: true,
                             maxTicksLimit: 7
@@ -1114,159 +1208,160 @@
                     y: {
                         display: true,
                         beginAtZero: true,
-                        grid: {
-                            display: true,
-                            color: 'rgba(0, 0, 0, 0.04)',
-                            drawBorder: false,
-                            lineWidth: 1
-                        },
+                        grid: { display: true, color: 'rgba(0, 0, 0, 0.04)' },
                         ticks: {
                             font: { size: 10, weight: '500', family: 'Poppins' },
                             color: '#B4BCC7',
-                            padding: 8,
-                            callback: function(value) {
-                                if (value >= 1000) return (value / 1000) + 'k';
-                                return value;
-                            },
+                            callback: val => val >= 1000 ? (val / 1000) + 'k' : val,
                             maxTicksLimit: 5
                         }
                     }
                 }
             }
         });
+    },
 
-        // ────────────────────────────────────────────
-        // 3. LEAFLET MAP — Buzzer Map
-        // ────────────────────────────────────────────
-        @php
-        $geoRaw = $geoUsers['locality']['rows'] ?? 
-                  $geoUsers['administrative_area_level_1']['rows'] ?? [];
-        @endphp
-        var geoData = @json($geoRaw);
-
-        console.log('🗺️ Geo Data:', geoData);
-
-        var map = L.map('buzzMap', { center: [-2.5, 118], zoom: 5 });
+    renderMap(geoData) {
+        const map = L.map('buzzMap', { center: [-2.5, 118], zoom: 5 });
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors',
             maxZoom: 19
         }).addTo(map);
 
-        if (geoData.length > 0) {
-            var maxCount = Math.max(...geoData.map(p => p.count || 0));
-            var minCount = Math.min(...geoData.map(p => p.count || 0).filter(c => c > 0));
+        if (geoData.length === 0) return;
 
-            geoData.forEach(function(p) {
-                var lat = parseFloat(p.latitude || 0);
-                var lng = parseFloat(p.longitude || 0);
-                if (lat === 0 && lng === 0) return;
+        const maxCount = Math.max(...geoData.map(p => p.count || 0));
 
-                var name = p.name || 'Unknown';
-                var count = parseInt(p.count || 0);
+        geoData.forEach(p => {
+            const lat = parseFloat(p.latitude || 0);
+            const lng = parseFloat(p.longitude || 0);
+            if (lat === 0 && lng === 0) return;
 
-                if (count >= 10) {
-                    var radius = Math.sqrt(count) * 2500;
-                    radius = Math.max(radius, 5000);
-                    radius = Math.min(radius, 50000);
-                    var opacity = Math.min(0.15 + (count / maxCount) * 0.45, 0.6);
+            const name = p.name || 'Unknown';
+            const count = parseInt(p.count || 0);
 
-                    L.circle([lat, lng], {
-                        radius: radius,
-                        fillColor: '#ef4444',
-                        color: '#ef4444',
-                        weight: 1,
-                        opacity: 0.3,
-                        fillOpacity: opacity
-                    }).addTo(map);
-                }
+            if (count >= 10) {
+                let radius = Math.sqrt(count) * 2500;
+                radius = Math.max(radius, 5000);
+                radius = Math.min(radius, 50000);
+                const opacity = Math.min(0.15 + (count / maxCount) * 0.45, 0.6);
 
-                var redPin = L.divIcon({
-                    className: '',
-                    html: '<div style="width:13px;height:13px;background:#ef4444;border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,.4);"></div>',
-                    iconSize: [13, 13],
-                    iconAnchor: [6.5, 6.5],
-                    popupAnchor: [0, -10]
-                });
-
-                L.marker([lat, lng], { icon: redPin }).addTo(map)
-                    .bindPopup(
-                        '<div style="font-family:Poppins;text-align:center;padding:8px;">' +
-                        '<div style="font-weight:700;font-size:15px;color:#1e293b;margin-bottom:6px;">' + name + '</div>' +
-                        '<div style="font-size:24px;font-weight:800;color:#ef4444;margin-bottom:2px;">' + count.toLocaleString() + '</div>' +
-                        '<div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;font-weight:600;">mentions</div>' +
-                        '</div>'
-                    );
-
-                var label = count > 999 ? (count / 1000).toFixed(1) + 'k' : count;
-                var fontSize = count >= 1000 ? '13px' : '11px';
-
-                L.marker([lat, lng], {
-                    icon: L.divIcon({
-                        className: 'circle-label',
-                        html: '<div style="font-family:Poppins;font-size:' + fontSize + ';font-weight:900;color:#fff;background:rgba(239,68,68,0.95);padding:3px 8px;border-radius:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);white-space:nowrap;letter-spacing:0.3px;">' + label + '</div>',
-                        iconSize: [40, 20],
-                        iconAnchor: [20, 25]
-                    }),
-                    interactive: false
+                L.circle([lat, lng], {
+                    radius: radius,
+                    fillColor: '#ef4444',
+                    color: '#ef4444',
+                    weight: 1,
+                    opacity: 0.3,
+                    fillOpacity: opacity
                 }).addTo(map);
-            });
-        }
+            }
 
-        // ────────────────────────────────────────────
-        // 4. FILTER BUTTON
-        // ────────────────────────────────────────────
-        document.getElementById('doBtnApply').addEventListener('click', function() {
-            var pid = document.getElementById('doProject').value;
-            var sd = document.getElementById('doStartDate').value;
-            var ed = document.getElementById('doEndDate').value;
+            const redPin = L.divIcon({
+                className: '',
+                html: '<div style="width:13px;height:13px;background:#ef4444;border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,.4);"></div>',
+                iconSize: [13, 13],
+                iconAnchor: [6.5, 6.5]
+            });
+
+            L.marker([lat, lng], { icon: redPin }).addTo(map)
+                .bindPopup(`
+                    <div style="font-family:Poppins;text-align:center;padding:8px;">
+                        <div style="font-weight:700;font-size:15px;color:#1e293b;margin-bottom:6px;">${name}</div>
+                        <div style="font-size:24px;font-weight:800;color:#ef4444;margin-bottom:2px;">${count.toLocaleString()}</div>
+                        <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;font-weight:600;">mentions</div>
+                    </div>
+                `);
+
+            const label = count > 999 ? (count / 1000).toFixed(1) + 'k' : count;
+            const fontSize = count >= 1000 ? '13px' : '11px';
+
+            L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: 'circle-label',
+                    html: `<div style="font-family:Poppins;font-size:${fontSize};font-weight:900;color:#fff;background:rgba(239,68,68,0.95);padding:3px 8px;border-radius:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);white-space:nowrap;">${label}</div>`,
+                    iconSize: [40, 20],
+                    iconAnchor: [20, 25]
+                }),
+                interactive: false
+            }).addTo(map);
+        });
+    },
+
+    openHashtagModal(hashtags) {
+        const modal = document.getElementById('hashtagModal');
+        const body = document.getElementById('hashtagModalBody');
+        
+        let html = `
+            <table class="do-tbl">
+                <thead>
+                    <tr>
+                        <th style="width:40px;">#</th>
+                        <th class="do-tbl-left">Hashtag</th>
+                        <th class="do-tbl-right">Mention</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        hashtags.forEach((tag, i) => {
+            let tagName = tag.hashtag || tag.name || tag.tag || 'unknown';
+            const count = tag.mention || tag.size || tag.count || 0;
+            
+            if (!tagName.startsWith('#')) tagName = '#' + tagName;
+            
+            html += `
+                <tr>
+                    <td class="do-tbl-rank">${i + 1}</td>
+                    <td class="do-tbl-name" style="color:#3b7dd8;">${tagName}</td>
+                    <td class="do-tbl-num">${count.toLocaleString()}</td>
+                </tr>
+            `;
+        });
+
+        html += '</tbody></table>';
+        body.innerHTML = html;
+        
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    },
+
+    showError(card) {
+        const body = card.querySelector('.do-card-body');
+        body.innerHTML = '<div class="do-empty">Failed to load data</div>';
+    },
+
+    setupFilterButton() {
+        document.getElementById('doBtnApply').addEventListener('click', () => {
+            const pid = document.getElementById('doProject').value;
+            const sd = document.getElementById('doStartDate').value;
+            const ed = document.getElementById('doEndDate').value;
+            
             if (!sd || !ed) return;
-            var p = new URLSearchParams(window.location.search);
+            
+            const p = new URLSearchParams(window.location.search);
             p.set('project_id', pid);
             p.set('start_date', sd);
             p.set('end_date', ed);
             window.location.search = p.toString();
         });
-
-        console.log('✅ Data Overview Charts Initialized');
-   
-    })();
-</script>
-<script>
-// ────────────────────────────────────────────
-// 🔥 MODAL FUNCTIONS - HARUS DI GLOBAL SCOPE
-// ────────────────────────────────────────────
-function openHashtagModal() {
-    console.log('🔵 Opening hashtag modal...');
-    const modal = document.getElementById('hashtagModal');
-    if (modal) {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        console.log('✅ Modal opened');
-    } else {
-        console.error('❌ Modal element not found!');
     }
-}
+};
 
+// ────────────────────────────────────────────
+// MODAL FUNCTIONS
+// ────────────────────────────────────────────
 function closeHashtagModal() {
-    console.log('🔴 Closing hashtag modal...');
     const modal = document.getElementById('hashtagModal');
-    if (modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
-        console.log('✅ Modal closed');
-    }
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
 }
 
-// Close modal when clicking outside
-window.addEventListener('click', function(event) {
+window.addEventListener('click', event => {
     const modal = document.getElementById('hashtagModal');
-    if (event.target === modal) {
-        closeHashtagModal();
-    }
+    if (event.target === modal) closeHashtagModal();
 });
 
-// Close modal with ESC key
-document.addEventListener('keydown', function(event) {
+document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
         const modal = document.getElementById('hashtagModal');
         if (modal && modal.classList.contains('active')) {
@@ -1276,15 +1371,10 @@ document.addEventListener('keydown', function(event) {
 });
 
 // ────────────────────────────────────────────
-// CHARTS & OTHER SCRIPTS
+// INITIALIZE ON PAGE LOAD
 // ────────────────────────────────────────────
-(function() {
-    console.log('🎯 Initializing Data Overview Charts...');
-
-    // ... (rest of your chart code stays the same)
-    // JANGAN UBAH CODE CHART YANG SUDAH ADA
-    
-    console.log('✅ Data Overview Charts Initialized');
-})();
+document.addEventListener('DOMContentLoaded', () => {
+    DataOverviewLazyLoader.init();
+});
 </script>
 @endsection
