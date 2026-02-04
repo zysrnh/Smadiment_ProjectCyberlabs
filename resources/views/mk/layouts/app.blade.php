@@ -279,6 +279,22 @@
       color: var(--primary-green);
     }
 
+    /* 🔥 HIGHLIGHT WHEN PROJECT IS SELECTED */
+    .dropdown-trigger.has-active-project {
+      background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(3, 128, 71, 0.15);
+    }
+
+    .dropdown-trigger.has-active-project .dropdown-arrow {
+      color: #ffffff;
+    }
+
+    .dropdown-trigger.has-active-project:hover {
+      background: linear-gradient(135deg, var(--primary-green-dark) 0%, var(--primary-green) 100%);
+    }
+
     /* Smooth Dropdown Animation */
     .nav-sub[style*="display: block"] {
       animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -449,7 +465,7 @@
 <body>
 
   <!-- ============================================================
-       SIDEBAR - UPDATED STRUCTURE WITH DYNAMIC PROJECT SELECT
+       SIDEBAR - UPDATED WITH AUTO ACTIVE STATE
        ============================================================ -->
   <div class="sidebar">
     <div class="logo">
@@ -460,51 +476,60 @@
     </div>
 
     <div class="nav-container">
-      <!-- PROJECT SELECT - DYNAMIC -->
+      <!-- PROJECT SELECT - DYNAMIC WITH AUTO ACTIVE -->
       <div class="nav-section">
         <div class="nav-label">Project</div>
-        <div class="nav-item dropdown-trigger project-select-trigger" onclick="toggleDropdown('projectDropdown', this)">
+        @php
+          // Get current project ID from URL or use first project as default
+          $currentProjectId = request()->query('project_id');
+          $hasProjects = isset($projects) && count($projects) > 0;
+          
+          // If no project selected but projects exist, auto-select first one
+          if (!$currentProjectId && $hasProjects) {
+              $currentProjectId = $projects[0]['id'] ?? null;
+          }
+          
+          // Find current project name
+          $currentProjectName = 'Select Project';
+          if ($currentProjectId && $hasProjects) {
+              $currentProject = collect($projects)->firstWhere('id', $currentProjectId);
+              if ($currentProject) {
+                  $currentProjectName = $currentProject['name'] ?? 
+                                       $currentProject['project_name'] ?? 
+                                       $currentProject['title'] ?? 
+                                       $currentProject['label'] ?? 
+                                       'Project #' . $currentProject['id'];
+              }
+          }
+          
+          // Check if we should highlight the trigger (has active project)
+          $hasActiveProject = !empty($currentProjectId);
+        @endphp
+        
+        <div class="nav-item dropdown-trigger project-select-trigger {{ $hasActiveProject ? 'has-active-project' : '' }}" 
+             onclick="toggleDropdown('projectDropdown', this)"
+             id="projectTrigger">
           <span class="nav-icon">
             <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
           </span>
-          <span class="current-project-name">
-            @if(isset($projectId) && isset($projects))
-              @php
-                $currentProject = collect($projects)->firstWhere('id', $projectId);
-                // Try multiple possible name keys
-                $projectName = $currentProject['name'] ?? 
-                               $currentProject['project_name'] ?? 
-                               $currentProject['title'] ?? 
-                               $currentProject['label'] ?? 
-                               'Project #' . ($currentProject['id'] ?? '');
-                echo $projectName;
-                
-                // DEBUG: Remove this after testing
-                // echo " (ID: {$projectId})";
-              @endphp
-            @else
-              Select Project
-              {{-- DEBUG: Uncomment to see what's missing --}}
-              {{-- @if(!isset($projectId)) <small>(No projectId)</small> @endif --}}
-              {{-- @if(!isset($projects)) <small>(No projects)</small> @endif --}}
-            @endif
-          </span>
+          <span class="current-project-name">{{ $currentProjectName }}</span>
           <span class="dropdown-arrow">▼</span>
         </div>
-        <div id="projectDropdown" class="nav-sub" style="display: none;">
-          @if(isset($projects) && count($projects) > 0)
+        
+        <div id="projectDropdown" class="nav-sub" style="display: {{ $hasProjects && count($projects) == 1 ? 'none' : 'none' }};">
+          @if($hasProjects)
             @foreach($projects as $project)
               @php
-                // Try multiple possible name keys from API
                 $pName = $project['name'] ?? 
                          $project['project_name'] ?? 
                          $project['title'] ?? 
                          $project['label'] ?? 
                          'Project #' . ($project['id'] ?? '');
                 $pId = $project['id'] ?? '';
+                $isActive = $currentProjectId == $pId;
               @endphp
               <a href="javascript:void(0)" 
-                 class="nav-item {{ (isset($projectId) && $projectId == $pId) ? 'active' : '' }}"
+                 class="nav-item {{ $isActive ? 'active' : '' }}"
                  onclick="changeProject({{ $pId }}, '{{ addslashes($pName) }}')">
                 <span>{{ $pName }}</span>
               </a>
@@ -528,7 +553,7 @@
           <span>Dashboard</span>
         </a>
 
-        <a href="{{ route('mk.data-overview') }}{{ isset($projectId) ? '?project_id='.$projectId : '' }}" 
+        <a href="{{ route('mk.data-overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
            class="nav-item {{ request()->routeIs('mk.data-overview') ? 'active' : '' }}">
           <span class="nav-icon">
             <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -709,8 +734,7 @@
     }
 
     /**
-     * 🔥 CHANGE PROJECT: Update URL with new project_id
-     * This function will reload the current page with the selected project_id
+     * 🔥 CHANGE PROJECT: Update URL with new project_id and preserve current route
      */
     function changeProject(projectId, projectName) {
       console.log('Changing project to:', projectId, projectName);
@@ -728,8 +752,12 @@
       window.location.href = url.toString();
     }
 
-    // Auto-open project dropdown if on a page that needs project selection
+    // 🔥 AUTO-SELECT FIRST PROJECT IF ONLY ONE EXISTS
     document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const currentProjectId = urlParams.get('project_id');
+      
+      // Check if we're on a page that needs project selection
       const currentPath = window.location.pathname;
       const needsProject = [
         '/mk/data-overview',
@@ -741,19 +769,27 @@
         '/mk/publisher'
       ];
       
-      // Check if current page needs project selection
       const requiresProject = needsProject.some(path => currentPath.includes(path));
       
-      // If no project_id in URL and page requires it, auto-open dropdown
-      const urlParams = new URLSearchParams(window.location.search);
-      if (requiresProject && !urlParams.has('project_id')) {
-        const projectDropdown = document.getElementById('projectDropdown');
-        const projectTrigger = document.querySelector('.project-select-trigger');
+      // If on a page that requires project but no project selected
+      if (requiresProject && !currentProjectId) {
+        const projectItems = document.querySelectorAll('#projectDropdown .nav-item');
         
-        if (projectDropdown && projectTrigger) {
-          setTimeout(() => {
-            toggleDropdown('projectDropdown', projectTrigger);
-          }, 500);
+        // If only one project exists, auto-select it
+        if (projectItems.length === 1) {
+          const firstProject = projectItems[0];
+          if (firstProject.textContent.trim() !== 'No Projects Available') {
+            firstProject.click(); // Auto-select first project
+          }
+        }
+        // If multiple projects, auto-open dropdown
+        else if (projectItems.length > 1) {
+          const projectTrigger = document.getElementById('projectTrigger');
+          if (projectTrigger) {
+            setTimeout(() => {
+              toggleDropdown('projectDropdown', projectTrigger);
+            }, 300);
+          }
         }
       }
     });

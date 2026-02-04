@@ -105,53 +105,68 @@
         <div class="empty-text">No projects available. Check API connection.</div>
       </div>
     @else
-      <div class="data-table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Project Title</th>
-              <th>Group</th>
-              <th>Type</th>
-              <th>Media Types</th>
-            </tr>
-          </thead>
-          <tbody>
-            @foreach(array_slice($projects, 0, 10) as $p)
-              @php
-                $id = $p['id'] ?? '-';
-                $title = $p['title'] ?? 'Untitled Project';
-                $group = $p['project_group_name'] ?? 'No Group';
-                $type = $p['project_type'] ?? 'Unknown';
-                $media = $p['media_types'] ?? 'None';
-              @endphp
-              <tr>
-                <td style="font-weight: 800; color: var(--primary-green);">#{{ $id }}</td>
-                <td style="font-weight: 700;">{{ $title }}</td>
-                <td>{{ $group }}</td>
-                <td>{{ $type }}</td>
-                <td>{{ $media }}</td>
-              </tr>
-            @endforeach
-          </tbody>
-        </table>
-      </div>
-
-      @if(count($projects) > 10)
-        <div style="margin-top: 16px; text-align: center;">
-          <a href="{{ route('mk.projects') }}" class="action-btn primary">
-            View All Projects ({{ count($projects) }}) →
-          </a>
+      <!-- 🔥 LAZY LOADING: Show skeleton first -->
+      <div id="projectsTableContainer">
+        <!-- Skeleton Loader -->
+        <div id="projectsSkeleton" style="display: block;">
+          @for($i = 0; $i < 5; $i++)
+          <div style="height: 48px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); 
+                      background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; margin-bottom: 8px;">
+          </div>
+          @endfor
         </div>
-      @endif
+        
+        <!-- Actual Table (will be shown after loaded) -->
+        <div id="projectsTable" style="display: none;">
+          <div class="data-table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Project Title</th>
+                  <th>Group</th>
+                  <th>Type</th>
+                  <th>Media Types</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach(array_slice($projects, 0, 10) as $p)
+                  @php
+                    $id = $p['id'] ?? '-';
+                    $title = $p['title'] ?? 'Untitled Project';
+                    $group = $p['project_group_name'] ?? 'No Group';
+                    $type = $p['project_type'] ?? 'Unknown';
+                    $media = $p['media_types'] ?? 'None';
+                  @endphp
+                  <tr>
+                    <td style="font-weight: 800; color: var(--primary-green);">#{{ $id }}</td>
+                    <td style="font-weight: 700;">{{ $title }}</td>
+                    <td>{{ $group }}</td>
+                    <td>{{ $type }}</td>
+                    <td>{{ $media }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+
+          @if(count($projects) > 10)
+            <div style="margin-top: 16px; text-align: center;">
+              <a href="{{ route('mk.projects') }}" class="action-btn primary">
+                View All Projects ({{ count($projects) }}) →
+              </a>
+            </div>
+          @endif
+        </div>
+      </div>
     @endif
   </div>
 </div>
 
-<!-- Features Grid -->
+<!-- Features Grid - LAZY LOADED -->
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-top: 24px;">
   
-  <div class="section">
+  <div class="section lazy-section">
     <div class="section-header">
       <h3 class="section-title">Categories</h3>
     </div>
@@ -171,7 +186,7 @@
     </div>
   </div>
 
-  <div class="section">
+  <div class="section lazy-section">
     <div class="section-header">
       <h3 class="section-title">Engagement</h3>
     </div>
@@ -216,5 +231,81 @@
   background: #B91C1C;
   transform: translateY(-2px);
 }
+
+/* 🔥 Shimmer Animation for Skeleton Loader */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* 🔥 Fade-in Animation for Loaded Content */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* 🔥 Lazy Section Styling */
+.lazy-section {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.lazy-section.loaded {
+  opacity: 1;
+  transform: translateY(0);
+}
 </style>
+@endsection
+
+@section('scripts')
+<script>
+// 🔥 LAZY LOADING: Show projects table after 300ms
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    const skeleton = document.getElementById('projectsSkeleton');
+    const table = document.getElementById('projectsTable');
+    
+    if (skeleton && table) {
+      // Hide skeleton
+      skeleton.style.display = 'none';
+      
+      // Show table with fade-in animation
+      table.style.display = 'block';
+      table.classList.add('fade-in');
+    }
+  }, 300);
+  
+  // 🔥 LAZY LOAD: Features Grid on scroll
+  const lazyObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('loaded');
+        lazyObserver.unobserve(entry.target);
+      }
+    });
+  }, {
+    rootMargin: '50px'
+  });
+  
+  // Observe all lazy sections
+  document.querySelectorAll('.lazy-section').forEach(section => {
+    lazyObserver.observe(section);
+  });
+});
+</script>
 @endsection
