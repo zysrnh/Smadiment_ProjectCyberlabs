@@ -114,7 +114,6 @@ class DataOverviewApiController extends Controller
         
         return Cache::remember($cacheKey, 300, function() use ($mk, $projectId, $startDate, $endDate) {
             try {
-                // Get total mentions
                 $allSentiment = $mk->sentimentTotal($projectId, $startDate, $endDate, 0, 23);
                 $normalized = $this->normalizeSentimentTotal($allSentiment);
                 $totalMentions = $normalized['positive'] + $normalized['neutral'] + $normalized['negative'];
@@ -127,7 +126,6 @@ class DataOverviewApiController extends Controller
                     ]);
                 }
                 
-                // Try to get news count
                 try {
                     $newsStats = $mk->projectStats($projectId, 'onlinenews', $startDate, $endDate, 0, 23, 'volumetotal');
                     $newsCount = $this->extractTotal($newsStats);
@@ -143,7 +141,6 @@ class DataOverviewApiController extends Controller
                     Log::info('Mention counts: using estimation', ['error' => $e->getMessage()]);
                 }
                 
-                // Fallback: estimate 20% news
                 $newsCount = (int)round($totalMentions * 0.20);
                 
                 return response()->json([
@@ -160,6 +157,87 @@ class DataOverviewApiController extends Controller
                     'social' => 0,
                     'news' => 0,
                     'error' => 'Failed to fetch mention counts'
+                ], 500);
+            }
+        });
+    }
+
+    /**
+     * 🔥 NEW API: Sentiment by Media
+     */
+    public function sentimentByMedia(Request $request, MediaKernelsClient $mk)
+    {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date', now()->subDay()->toDateString());
+        $endDate = $request->query('end_date', now()->toDateString());
+        
+        if (!$projectId) {
+            return response()->json([
+                'success' => false,
+                'data' => [],
+                'error' => 'Project ID required'
+            ], 400);
+        }
+        
+        $cacheKey = "sentiment_media_{$projectId}_{$startDate}_{$endDate}";
+        
+        return Cache::remember($cacheKey, 300, function() use ($mk, $projectId, $startDate, $endDate) {
+            try {
+                $rawData = $mk->sentimentMedia($projectId, $startDate, $endDate, 0, 23);
+                
+                $totalAll = (int)($rawData['all'] ?? 0);
+                $byMedia = $rawData['bymedia'] ?? [];
+                
+                // Transform data ke format yang lebih user-friendly
+                $mediaData = [];
+                
+                // Map media types to friendly names
+                $mediaNames = [
+                    'doc' => 'Online News',
+                    'twit' => 'X (Twitter)',
+                    'fb' => 'Facebook',
+                    'ig' => 'Instagram',
+                    'yt' => 'YouTube',
+                    'tiktok' => 'TikTok'
+                ];
+                
+                foreach ($byMedia as $mediaKey => $sentiments) {
+                    $mediaName = $mediaNames[$mediaKey] ?? ucfirst($mediaKey);
+                    
+                    $pos = (int)($sentiments['pos'] ?? 0);
+                    $neg = (int)($sentiments['neg'] ?? 0);
+                    $net = (int)($sentiments['net'] ?? ($pos - $neg));
+                    
+                    $total = $pos + $neg;
+                    
+                    $mediaData[] = [
+                        'media' => $mediaName,
+                        'media_key' => $mediaKey,
+                        'positive' => $pos,
+                        'negative' => $neg,
+                        'net_sentiment' => $net,
+                        'total' => $total,
+                        'positive_percentage' => $total > 0 ? round(($pos / $total) * 100, 1) : 0,
+                        'negative_percentage' => $total > 0 ? round(($neg / $total) * 100, 1) : 0,
+                    ];
+                }
+                
+                // Sort by total mentions (descending)
+                usort($mediaData, fn($a, $b) => $b['total'] <=> $a['total']);
+                
+                return response()->json([
+                    'success' => true,
+                    'total_all' => $totalAll,
+                    'data' => $mediaData
+                ]);
+                
+            } catch (\Exception $e) {
+                Log::error('API: sentiment by media failed', ['error' => $e->getMessage()]);
+                return response()->json([
+                    'success' => false,
+                    'total_all' => 0,
+                    'data' => [],
+                    'error' => 'Failed to fetch sentiment by media'
                 ], 500);
             }
         });

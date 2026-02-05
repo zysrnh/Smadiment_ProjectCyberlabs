@@ -204,6 +204,35 @@
 </div>
 
 <!-- ============================================================
+     🔥 NEW ROW 2.5 — Sentiment by Media (HORIZONTAL BAR CHART)
+     ============================================================ -->
+<div class="do-card" style="margin-top:20px;" data-lazy="sentiment-media">
+    <div class="do-card-head">
+        <div class="do-card-head-left">
+            <span class="do-head-icon" style="background:#fff7ed; color:#f97316;">
+                <svg viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+            </span>
+            <span class="do-card-title">Sentiment by Media</span>
+        </div>
+        <span class="do-badge" style="background:#fef3c7; color:#d97706;">Breakdown</span>
+    </div>
+    <div class="do-card-body" style="padding: 20px; min-height: 300px; position: relative;">
+        <canvas id="chartSentimentMedia" style="max-height: 280px;"></canvas>
+        <div class="do-skeleton-chart">
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
      ROW 3 — Buzzer Map
      ============================================================ -->
 <div class="do-card" style="margin-top:20px;" data-lazy="buzzer-map">
@@ -250,9 +279,6 @@
 
 @endsection
 
-<!-- ============================================================
-     STYLES
-     ============================================================ -->
 @section('styles')
 <style>
     /* Skeleton Loading Styles */
@@ -753,9 +779,6 @@
 </style>
 @endsection
 
-<!-- ============================================================
-     SCRIPTS
-     ============================================================ -->
 @section('scripts')
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -825,6 +848,9 @@ const DataOverviewLazyLoader = {
                 case 'sentiment-timeline':
                     await this.loadSentimentTimeline(card);
                     break;
+                case 'sentiment-media':
+                    await this.loadSentimentMedia(card);
+                    break;
                 case 'buzzer-map':
                     await this.loadBuzzerMap(card);
                     break;
@@ -890,7 +916,6 @@ const DataOverviewLazyLoader = {
             return;
         }
 
-        // Add "View All" button if needed
         if (hashtags.length > 5) {
             const headerRight = card.querySelector('.do-card-head > div:last-child');
             headerRight.innerHTML += `
@@ -915,7 +940,7 @@ const DataOverviewLazyLoader = {
                 <tbody>
         `;
 
-        hashtags.slice(0, 50).forEach((tag, i) => {
+        hashtags.slice(0, 5).forEach((tag, i) => {
             let tagName = tag.hashtag || tag.name || tag.tag || 'unknown';
             const count = tag.mention || tag.size || tag.count || 0;
             
@@ -968,6 +993,21 @@ const DataOverviewLazyLoader = {
         const data = await response.json();
         
         this.renderLineChart(data);
+    },
+
+    async loadSentimentMedia(card) {
+        const response = await fetch(`/mk/api/sentiment-by-media?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`);
+        const data = await response.json();
+        
+        const mediaData = data.data || [];
+        
+        if (mediaData.length === 0) {
+            card.querySelector('canvas').parentElement.innerHTML = 
+                '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#B4BCC7;font-size:14px;font-weight:600;">No sentiment data available</div>';
+            return;
+        }
+
+        this.renderSentimentMediaChart(mediaData);
     },
 
     async loadBuzzerMap(card) {
@@ -1214,6 +1254,104 @@ const DataOverviewLazyLoader = {
                             color: '#B4BCC7',
                             callback: val => val >= 1000 ? (val / 1000) + 'k' : val,
                             maxTicksLimit: 5
+                        }
+                    }
+                }
+            }
+        });
+    },
+
+    renderSentimentMediaChart(mediaData) {
+        const labels = mediaData.map(d => d.media);
+        const positiveData = mediaData.map(d => d.positive);
+        const negativeData = mediaData.map(d => d.negative);
+
+        new Chart(document.getElementById('chartSentimentMedia').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Positive',
+                        data: positiveData,
+                        backgroundColor: '#22C55E',
+                        borderColor: '#22C55E',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barThickness: 'flex',
+                        maxBarThickness: 40
+                    },
+                    {
+                        label: 'Negative',
+                        data: negativeData,
+                        backgroundColor: '#EF4444',
+                        borderColor: '#EF4444',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barThickness: 'flex',
+                        maxBarThickness: 40
+                    }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { intersect: false, mode: 'index' },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            padding: 15,
+                            font: { size: 11, weight: '600', family: 'Poppins' },
+                            color: '#1A2332',
+                            boxWidth: 10,
+                            boxHeight: 10
+                        }
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                        titleColor: '#1A2332',
+                        bodyColor: '#1A2332',
+                        borderColor: '#E8EAED',
+                        borderWidth: 1.5,
+                        padding: 12,
+                        cornerRadius: 8,
+                        titleFont: { size: 12, weight: 'bold', family: 'Poppins' },
+                        bodyFont: { size: 11, family: 'Poppins' },
+                        callbacks: {
+                            label: function(ctx) {
+                                const item = mediaData[ctx.dataIndex];
+                                const percentage = ctx.dataset.label === 'Positive' 
+                                    ? item.positive_percentage 
+                                    : item.negative_percentage;
+                                return ` ${ctx.dataset.label}: ${ctx.parsed.x.toLocaleString()} (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: false,
+                        grid: { display: true, color: 'rgba(0, 0, 0, 0.05)' },
+                        ticks: {
+                            font: { size: 10, weight: '500', family: 'Poppins' },
+                            color: '#B4BCC7',
+                            callback: val => val >= 1000 ? (val / 1000) + 'k' : val
+                        }
+                    },
+                    y: {
+                        stacked: false,
+                        grid: { display: false },
+                        ticks: {
+                            font: { size: 11, weight: '600', family: 'Poppins' },
+                            color: '#1A2332',
+                            crossAlign: 'far'
                         }
                     }
                 }
