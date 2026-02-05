@@ -5,7 +5,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\Api\DataOverviewApiController;
-use App\Http\Controllers\Api\DataSourceController; // 🔥 UPDATE: Api namespace
+use App\Http\Controllers\Api\DataSourceController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -72,6 +72,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         
         Route::get('/mention-counts', [DataOverviewApiController::class, 'mentionCounts'])
             ->name('mention-counts');
+        
+        // 🔥 NEW: Sentiment by Media
+        Route::get('/sentiment-by-media', [DataOverviewApiController::class, 'sentimentByMedia'])
+            ->name('sentiment-by-media');
         
         Route::get('/active-users', [DataOverviewApiController::class, 'activeUsers'])
             ->name('active-users');

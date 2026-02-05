@@ -219,10 +219,17 @@
             </span>
             <span class="do-card-title">Sentiment by Media</span>
         </div>
-        <span class="do-badge" style="background:#fef3c7; color:#d97706;">Breakdown</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span class="do-badge" style="background:#fef3c7; color:#d97706;">Breakdown</span>
+        </div>
     </div>
-    <div class="do-card-body" style="padding: 20px; min-height: 300px; position: relative;">
-        <canvas id="chartSentimentMedia" style="max-height: 280px;"></canvas>
+    <div class="do-card-body" style="padding: 24px; min-height: 350px; position: relative;">
+        <div style="margin-bottom: 16px;">
+            <p style="font-size: 13px; color: #475569; margin: 0;">Sentiment distribution across different media platforms</p>
+        </div>
+        <div style="position: relative; height: 300px;">
+            <canvas id="chartSentimentMedia"></canvas>
+        </div>
         <div class="do-skeleton-chart">
             <div class="skeleton-line"></div>
             <div class="skeleton-line"></div>
@@ -999,11 +1006,16 @@ const DataOverviewLazyLoader = {
         const response = await fetch(`/mk/api/sentiment-by-media?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`);
         const data = await response.json();
         
+        console.log('📊 Sentiment Media Data:', data);
+        
         const mediaData = data.data || [];
         
         if (mediaData.length === 0) {
-            card.querySelector('canvas').parentElement.innerHTML = 
-                '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#B4BCC7;font-size:14px;font-weight:600;">No sentiment data available</div>';
+            const canvas = card.querySelector('canvas');
+            if (canvas && canvas.parentElement) {
+                canvas.parentElement.innerHTML = 
+                    '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#B4BCC7;font-size:14px;font-weight:600;">No sentiment data available</div>';
+            }
             return;
         }
 
@@ -1266,7 +1278,13 @@ const DataOverviewLazyLoader = {
         const positiveData = mediaData.map(d => d.positive);
         const negativeData = mediaData.map(d => d.negative);
 
-        new Chart(document.getElementById('chartSentimentMedia').getContext('2d'), {
+        const ctx = document.getElementById('chartSentimentMedia');
+        if (!ctx) {
+            console.error('❌ Canvas element not found');
+            return;
+        }
+
+        new Chart(ctx.getContext('2d'), {
             type: 'bar',
             data: {
                 labels: labels,
@@ -1276,20 +1294,18 @@ const DataOverviewLazyLoader = {
                         data: positiveData,
                         backgroundColor: '#22C55E',
                         borderColor: '#22C55E',
-                        borderWidth: 1,
-                        borderRadius: 6,
-                        barThickness: 'flex',
-                        maxBarThickness: 40
+                        borderWidth: 0,
+                        borderRadius: 8,
+                        barThickness: 32
                     },
                     {
                         label: 'Negative',
                         data: negativeData,
                         backgroundColor: '#EF4444',
                         borderColor: '#EF4444',
-                        borderWidth: 1,
-                        borderRadius: 6,
-                        barThickness: 'flex',
-                        maxBarThickness: 40
+                        borderWidth: 0,
+                        borderRadius: 8,
+                        barThickness: 32
                     }
                 ]
             },
@@ -1297,7 +1313,10 @@ const DataOverviewLazyLoader = {
                 indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: { intersect: false, mode: 'index' },
+                interaction: { 
+                    intersect: false, 
+                    mode: 'index'
+                },
                 plugins: {
                     legend: {
                         display: true,
@@ -1307,7 +1326,7 @@ const DataOverviewLazyLoader = {
                             usePointStyle: true,
                             pointStyle: 'circle',
                             padding: 15,
-                            font: { size: 11, weight: '600', family: 'Poppins' },
+                            font: { size: 12, weight: '700', family: 'Poppins' },
                             color: '#1A2332',
                             boxWidth: 10,
                             boxHeight: 10
@@ -1315,15 +1334,15 @@ const DataOverviewLazyLoader = {
                     },
                     tooltip: {
                         enabled: true,
-                        backgroundColor: 'rgba(255, 255, 255, 0.98)',
-                        titleColor: '#1A2332',
-                        bodyColor: '#1A2332',
-                        borderColor: '#E8EAED',
-                        borderWidth: 1.5,
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: 'rgba(148, 163, 184, 0.3)',
+                        borderWidth: 1,
                         padding: 12,
                         cornerRadius: 8,
-                        titleFont: { size: 12, weight: 'bold', family: 'Poppins' },
-                        bodyFont: { size: 11, family: 'Poppins' },
+                        titleFont: { size: 13, weight: '700', family: 'Poppins' },
+                        bodyFont: { size: 12, family: 'Poppins' },
                         callbacks: {
                             label: function(ctx) {
                                 const item = mediaData[ctx.dataIndex];
@@ -1338,10 +1357,15 @@ const DataOverviewLazyLoader = {
                 scales: {
                     x: {
                         stacked: false,
-                        grid: { display: true, color: 'rgba(0, 0, 0, 0.05)' },
+                        beginAtZero: true,
+                        grid: { 
+                            color: 'rgba(148, 163, 184, 0.08)',
+                            drawBorder: false
+                        },
                         ticks: {
-                            font: { size: 10, weight: '500', family: 'Poppins' },
-                            color: '#B4BCC7',
+                            font: { size: 11, weight: '500', family: 'Poppins' },
+                            color: '#64748b',
+                            padding: 8,
                             callback: val => val >= 1000 ? (val / 1000) + 'k' : val
                         }
                     },
@@ -1349,14 +1373,20 @@ const DataOverviewLazyLoader = {
                         stacked: false,
                         grid: { display: false },
                         ticks: {
-                            font: { size: 11, weight: '600', family: 'Poppins' },
+                            font: { size: 12, weight: '700', family: 'Poppins' },
                             color: '#1A2332',
-                            crossAlign: 'far'
+                            padding: 10
                         }
                     }
+                },
+                animation: {
+                    duration: 750,
+                    easing: 'easeInOutQuart'
                 }
             }
         });
+
+        console.log('✅ Chart rendered successfully');
     },
 
     renderMap(geoData) {
@@ -1465,7 +1495,9 @@ const DataOverviewLazyLoader = {
 
     showError(card) {
         const body = card.querySelector('.do-card-body');
-        body.innerHTML = '<div class="do-empty">Failed to load data</div>';
+        if (body) {
+            body.innerHTML = '<div class="do-empty">Failed to load data</div>';
+        }
     },
 
     setupFilterButton() {

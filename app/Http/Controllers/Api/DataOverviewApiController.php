@@ -163,7 +163,7 @@ class DataOverviewApiController extends Controller
     }
 
     /**
-     * 🔥 NEW API: Sentiment by Media
+     * 🔥 NEW API: Sentiment by Media - FIXED
      */
     public function sentimentByMedia(Request $request, MediaKernelsClient $mk)
     {
@@ -188,7 +188,12 @@ class DataOverviewApiController extends Controller
                 $totalAll = (int)($rawData['all'] ?? 0);
                 $byMedia = $rawData['bymedia'] ?? [];
                 
-                // Transform data ke format yang lebih user-friendly
+                // Log untuk debugging
+                Log::info('Sentiment Media Raw Data', [
+                    'total' => $totalAll,
+                    'bymedia' => $byMedia
+                ]);
+                
                 $mediaData = [];
                 
                 // Map media types to friendly names
@@ -204,11 +209,15 @@ class DataOverviewApiController extends Controller
                 foreach ($byMedia as $mediaKey => $sentiments) {
                     $mediaName = $mediaNames[$mediaKey] ?? ucfirst($mediaKey);
                     
+                    // Handle missing pos/neg - default to 0
                     $pos = (int)($sentiments['pos'] ?? 0);
                     $neg = (int)($sentiments['neg'] ?? 0);
                     $net = (int)($sentiments['net'] ?? ($pos - $neg));
                     
                     $total = $pos + $neg;
+                    
+                    // Skip media with no data
+                    if ($total === 0) continue;
                     
                     $mediaData[] = [
                         'media' => $mediaName,
@@ -225,6 +234,11 @@ class DataOverviewApiController extends Controller
                 // Sort by total mentions (descending)
                 usort($mediaData, fn($a, $b) => $b['total'] <=> $a['total']);
                 
+                Log::info('Sentiment Media Processed', [
+                    'count' => count($mediaData),
+                    'data' => $mediaData
+                ]);
+                
                 return response()->json([
                     'success' => true,
                     'total_all' => $totalAll,
@@ -232,7 +246,10 @@ class DataOverviewApiController extends Controller
                 ]);
                 
             } catch (\Exception $e) {
-                Log::error('API: sentiment by media failed', ['error' => $e->getMessage()]);
+                Log::error('API: sentiment by media failed', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
                 return response()->json([
                     'success' => false,
                     'total_all' => 0,
