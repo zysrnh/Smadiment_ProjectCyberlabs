@@ -559,24 +559,45 @@
         </div>
       </div>
 
-      <!-- MAIN NAVIGATION - 🔥 UPDATED WITH DATA SOURCE -->
-      <div class="nav-section">
-        <div class="nav-label">Main</div>
+      <!-- MAIN NAVIGATION -->
+<div class="nav-section">
+  <div class="nav-label">Main</div>
 
-        <a href="{{ route('mk.dashboard') }}" class="nav-item {{ request()->routeIs('mk.dashboard') ? 'active' : '' }}">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          </span>
-          <span>Dashboard</span>
-        </a>
+  <a href="{{ route('mk.dashboard') }}" class="nav-item {{ request()->routeIs('mk.dashboard') ? 'active' : '' }}">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    </span>
+    <span>Dashboard</span>
+  </a>
 
-        <a href="{{ route('mk.data-overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
-           class="nav-item {{ request()->routeIs('mk.data-overview') ? 'active' : '' }}">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-          </span>
-          <span>Data Overview</span>
-        </a>
+  <a href="{{ route('mk.data-overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+     class="nav-item {{ request()->routeIs('mk.data-overview') ? 'active' : '' }}">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    </span>
+    <span>Data Overview</span>
+  </a>
+
+  <!-- 🔥 NEW: Topic Map -->
+  <a href="{{ route('mk.topic-map') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+     class="nav-item {{ request()->routeIs('mk.topic-map') ? 'active' : '' }}">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"/>
+        <circle cx="19" cy="5" r="2"/>
+        <circle cx="5" cy="19" r="2"/>
+        <circle cx="19" cy="19" r="2"/>
+        <circle cx="5" cy="5" r="2"/>
+        <line x1="12" y1="9" x2="6.5" y2="6.5"/>
+        <line x1="12" y1="15" x2="6.5" y2="17.5"/>
+        <line x1="15" y1="12" x2="17" y2="6.5"/>
+        <line x1="15" y1="12" x2="17" y2="17.5"/>
+      </svg>
+    </span>
+    <span>Topic Map</span>
+  </a>
+
+  <!-- Data Source Dropdown ... -->
 
         <!-- 🔥 DATA SOURCE DROPDOWN - NEW -->
         @php

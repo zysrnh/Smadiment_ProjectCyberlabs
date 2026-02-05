@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\Api\DataOverviewApiController;
 use App\Http\Controllers\Api\DataSourceController;
+use App\Http\Controllers\Api\TopicMapController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -85,6 +86,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         
         Route::get('/geo-users', [DataOverviewApiController::class, 'geoUsers'])
             ->name('geo-users');
+        
+        // 🔥 NEW: Topic Map API
+        Route::get('/topic-map', [TopicMapController::class, 'getTopicMap'])
+            ->name('topic-map');
     });
     
     // ═══════════════════════════════════════════════════════════
@@ -95,6 +100,9 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     Route::get('/data-overview', [MkController::class, 'dataOverview'])->name('data-overview');
     Route::get('/dashboard', [MkController::class, 'dashboard'])->name('dashboard');
     Route::get('/projects', [MkController::class, 'projects'])->name('projects');
+    
+    // 🔥 NEW: Topic Map Page
+    Route::get('/topic-map', [TopicMapController::class, 'index'])->name('topic-map');
     
     // Analytics Pages
     Route::get('/sentiment', [MkController::class, 'sentiment'])->name('sentiment');

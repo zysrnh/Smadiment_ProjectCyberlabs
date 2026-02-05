@@ -913,4 +913,48 @@ class MediaKernelsClient
             return ['data' => []];
         }
     }
+    // 🔥 NEW: topic_map
+public function topicMap(
+    string $projectId,
+    string $media,
+    string $startDate,
+    string $endDate,
+    int $startTime = 0,
+    int $endTime = 23
+): array {
+    try {
+        $token = $this->getToken();
+
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/topic_map/',
+            [
+                'project_id' => $projectId,
+                'media'      => $media,
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'start_time' => $startTime,
+                'end_time'   => $endTime,
+                'token'      => $token,
+            ]
+        );
+
+        $res->throw();
+        
+        $json = $this->parseJson($res);
+        
+        Log::info('topicMap API response', [
+            'total_topics' => count($json),
+            'sample' => array_slice($json, 0, 5, true)
+        ]);
+        
+        return $json;
+        
+    } catch (\Exception $e) {
+        Log::error('topicMap API error', [
+            'error' => $e->getMessage(),
+            'project_id' => $projectId,
+        ]);
+        return [];
+    }
+}
 }
