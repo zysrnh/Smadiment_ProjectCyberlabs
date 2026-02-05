@@ -295,6 +295,23 @@
       background: linear-gradient(135deg, var(--primary-green-dark) 0%, var(--primary-green) 100%);
     }
 
+    /* 🔥 HIGHLIGHT WHEN ANY CHILD IS ACTIVE */
+    .dropdown-trigger.has-active-child {
+      background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(3, 128, 71, 0.15);
+    }
+
+    .dropdown-trigger.has-active-child .dropdown-arrow {
+      color: #ffffff;
+      transform: rotate(180deg);
+    }
+
+    .dropdown-trigger.has-active-child:hover {
+      background: linear-gradient(135deg, var(--primary-green-dark) 0%, var(--primary-green) 100%);
+    }
+
     /* Smooth Dropdown Animation */
     .nav-sub[style*="display: block"] {
       animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -465,7 +482,7 @@
 <body>
 
   <!-- ============================================================
-       SIDEBAR - UPDATED WITH AUTO ACTIVE STATE
+       SIDEBAR - UPDATED WITH DATA SOURCE DROPDOWN
        ============================================================ -->
   <div class="sidebar">
     <div class="logo">
@@ -542,7 +559,7 @@
         </div>
       </div>
 
-      <!-- MAIN NAVIGATION -->
+      <!-- MAIN NAVIGATION - 🔥 UPDATED WITH DATA SOURCE -->
       <div class="nav-section">
         <div class="nav-label">Main</div>
 
@@ -560,6 +577,44 @@
           </span>
           <span>Data Overview</span>
         </a>
+
+        <!-- 🔥 DATA SOURCE DROPDOWN - NEW -->
+        @php
+          $dataSourceRoutes = ['mk.data-source.users', 'mk.data-source.authors', 'mk.data-source.volume', 'mk.data-source.trends'];
+          $isDataSourceActive = request()->routeIs($dataSourceRoutes);
+        @endphp
+        <div class="nav-item dropdown-trigger {{ $isDataSourceActive ? 'has-active-child' : '' }}" 
+             onclick="toggleDropdown('dataSourceDropdown', this)"
+             id="dataSourceTrigger">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24">
+              <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+              <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+              <line x1="6" y1="6" x2="6.01" y2="6"/>
+              <line x1="6" y1="18" x2="6.01" y2="18"/>
+            </svg>
+          </span>
+          <span>Data Source</span>
+          <span class="dropdown-arrow">▼</span>
+        </div>
+        <div id="dataSourceDropdown" class="nav-sub" style="display: {{ $isDataSourceActive ? 'block' : 'none' }};">
+          <a href="{{ route('mk.data-source.users') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+             class="nav-item {{ request()->routeIs('mk.data-source.users') ? 'active' : '' }}">
+            <span>Total Users</span>
+          </a>
+          <a href="{{ route('mk.data-source.authors') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+             class="nav-item {{ request()->routeIs('mk.data-source.authors') ? 'active' : '' }}">
+            <span>Total Authors</span>
+          </a>
+          <a href="{{ route('mk.data-source.volume') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+             class="nav-item {{ request()->routeIs('mk.data-source.volume') ? 'active' : '' }}">
+            <span>Volume Total</span>
+          </a>
+          <a href="{{ route('mk.data-source.trends') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+             class="nav-item {{ request()->routeIs('mk.data-source.trends') ? 'active' : '' }}">
+            <span>Trends Total</span>
+          </a>
+        </div>
       </div>
 
       <!-- NEWS SECTION -->
@@ -761,6 +816,10 @@
       const currentPath = window.location.pathname;
       const needsProject = [
         '/mk/data-overview',
+        '/mk/data-source/users',
+        '/mk/data-source/authors',
+        '/mk/data-source/volume',
+        '/mk/data-source/trends',
         '/mk/sentiment',
         '/mk/geographic',
         '/mk/authors',

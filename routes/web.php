@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\Api\DataOverviewApiController;
+use App\Http\Controllers\Api\DataSourceController; // 🔥 UPDATE: Api namespace
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -116,4 +117,14 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     // Content
     Route::get('/publisher', [MkController::class, 'publisherStats'])->name('publisher');
     Route::get('/topics', [MkController::class, 'recentTopics'])->name('topics');
+    
+    // ═══════════════════════════════════════════════════════════
+    // 🔥 DATA SOURCE ROUTES - UPDATED WITH Api NAMESPACE
+    // ═══════════════════════════════════════════════════════════
+    Route::prefix('data-source')->name('data-source.')->group(function () {
+        Route::get('/users', [DataSourceController::class, 'users'])->name('users');
+        Route::get('/authors', [DataSourceController::class, 'authors'])->name('authors');
+        Route::get('/volume', [DataSourceController::class, 'volume'])->name('volume');
+        Route::get('/trends', [DataSourceController::class, 'trends'])->name('trends');
+    });
 });

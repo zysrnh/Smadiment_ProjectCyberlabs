@@ -97,42 +97,40 @@ class MediaKernelsClient
 
 
     public function getToken(): string
-{
-    return Cache::remember('mk:token', now()->addMinutes(50), function () {
-        if (!$this->username() || !$this->password()) {
-            throw new \RuntimeException("ENV MEDIAKERNELS_USERNAME/PASSWORD belum di-set.");
-        }
+    {
+        return Cache::remember('mk:token', now()->addMinutes(50), function () {
+            if (!$this->username() || !$this->password()) {
+                throw new \RuntimeException("ENV MEDIAKERNELS_USERNAME/PASSWORD belum di-set.");
+            }
 
-        $res = Http::timeout(30)
-            ->acceptJson()
-            ->get($this->baseUrl() . '/token/', [
-                'username' => $this->username(),
-                'password' => $this->password(),
-                'for_api' => 'true',
-                'for_chatbot' => 'false',
-            ]);
+            $res = Http::timeout(30)
+                ->acceptJson()
+                ->get($this->baseUrl() . '/token/', [
+                    'username' => $this->username(),
+                    'password' => $this->password(),
+                    'for_api' => 'true',
+                    'for_chatbot' => 'false',
+                ]);
 
-        $res->throw();
+            $res->throw();
 
-        $json = $this->parseJson($res);
-        
-        // 🔥 ADD THIS: Log the actual response to see what's returned
-        Log::info('MediaKernels /token/ response', ['response' => $json]);
-        
-        $token = $json['token'] ?? null;
+            $json = $this->parseJson($res);
+            
+            Log::info('MediaKernels /token/ response', ['response' => $json]);
+            
+            $token = $json['token'] ?? null;
 
-        if (!$token) {
-            // 🔥 ADD THIS: Show what keys ARE available
-            Log::error('Token not found in response', [
-                'available_keys' => array_keys($json),
-                'full_response' => $json
-            ]);
-            throw new \RuntimeException("Token tidak ditemukan pada response /token/");
-        }
+            if (!$token) {
+                Log::error('Token not found in response', [
+                    'available_keys' => array_keys($json),
+                    'full_response' => $json
+                ]);
+                throw new \RuntimeException("Token tidak ditemukan pada response /token/");
+            }
 
-        return $token;
-    });
-}
+            return $token;
+        });
+    }
 
     public function listProjects(int $start = 0, int $limit = 20): array
     {
@@ -181,6 +179,50 @@ class MediaKernelsClient
 
         $res->throw();
         return $this->parseJson($res);
+    }
+
+    // 🔥 NEW: sentiment_media - Get sentiment breakdown by media type
+    public function sentimentMedia(
+        string $projectId,
+        string $startDate,
+        string $endDate,
+        int $startTime = 0,
+        int $endTime = 23
+    ): array {
+        try {
+            $token = $this->getToken();
+
+            $res = Http::timeout(60)->acceptJson()->get(
+                $this->baseUrl() . '/sentiment_media/',
+                [
+                    'project_id' => $projectId,
+                    'start_date' => $startDate,
+                    'end_date'   => $endDate,
+                    'start_time' => $startTime,
+                    'end_time'   => $endTime,
+                    'token'      => $token,
+                ]
+            );
+
+            $res->throw();
+            
+            $json = $this->parseJson($res);
+            
+            Log::info('sentimentMedia API response', [
+                'has_all' => isset($json['all']),
+                'has_bymedia' => isset($json['bymedia']),
+                'top_level_keys' => array_keys($json),
+            ]);
+            
+            return $json;
+            
+        } catch (\Exception $e) {
+            Log::error('sentimentMedia API error', [
+                'error' => $e->getMessage(),
+                'project_id' => $projectId,
+            ]);
+            return ['all' => 0, 'bymedia' => []];
+        }
     }
 
     // ✅ 2) get_geo_twitter_user_sentiment
@@ -337,7 +379,7 @@ class MediaKernelsClient
             return $this->parseJson($res);
         } catch (\Exception $e) {
             Log::warning('est_reach API timeout or error', ['error' => $e->getMessage()]);
-            return ['data' => []]; // Return empty on error
+            return ['data' => []];
         }
     }
 
@@ -466,7 +508,7 @@ class MediaKernelsClient
             return $this->parseJson($res);
         } catch (\Exception $e) {
             Log::warning('mostActiveUsers API timeout or error', ['error' => $e->getMessage()]);
-            return ['data' => []]; // Return empty array instead of throwing error
+            return ['data' => []];
         }
     }
 
@@ -526,7 +568,6 @@ class MediaKernelsClient
                 'token'      => $token,
             ];
 
-            // Add pagerank parameter if requested (empty string value)
             if ($includePagerank) {
                 $params['pagerank'] = '';
             }
@@ -540,7 +581,6 @@ class MediaKernelsClient
             
             $json = $this->parseJson($res);
             
-            // Log untuk debugging - helpful untuk development
             Log::info('publisherStats raw response', [
                 'has_data' => isset($json['data']),
                 'has_article' => isset($json['article']),
@@ -584,7 +624,6 @@ class MediaKernelsClient
             return ['data' => []];
         }
     }
-    // ─── TAMBAHKAN DUA METHOD INI SEBELUM CLOSING BRACE CLASS ───
 
     // 🔥 NEW: top_hashtags
     public function topHashtags(
@@ -652,6 +691,225 @@ class MediaKernelsClient
             return $this->parseJson($res);
         } catch (\Exception $e) {
             Log::warning('mentions API error', ['error' => $e->getMessage()]);
+            return ['data' => []];
+        }
+    }
+
+    // 🔥 DATA SOURCE API #1: total_users
+    public function totalUsers(
+        string $projectId,
+        string $startDate,
+        string $endDate,
+        int $startTime = 0,
+        int $endTime = 23
+    ): array {
+        try {
+            $token = $this->getToken();
+
+            $res = Http::timeout(60)->acceptJson()->get(
+                $this->baseUrl() . '/total_users/',
+                [
+                    'project_id' => $projectId,
+                    'start_date' => $startDate,
+                    'end_date'   => $endDate,
+                    'start_time' => $startTime,
+                    'end_time'   => $endTime,
+                    'token'      => $token,
+                ]
+            );
+
+            $res->throw();
+            
+            $json = $this->parseJson($res);
+            
+            Log::info('totalUsers API response', [
+                'has_data' => isset($json['data']),
+                'top_level_keys' => array_keys($json),
+            ]);
+            
+            return $json;
+            
+        } catch (\Exception $e) {
+            Log::error('totalUsers API error', [
+                'error' => $e->getMessage(),
+                'project_id' => $projectId,
+            ]);
+            return ['data' => []];
+        }
+    }
+
+    // 🔥 DATA SOURCE API #2: total_authors
+    public function totalAuthors(
+        string $projectId,
+        string $media,
+        string $startDate,
+        string $endDate,
+        int $startTime = 0,
+        int $endTime = 23
+    ): array {
+        try {
+            $token = $this->getToken();
+
+            $res = Http::timeout(60)->acceptJson()->get(
+                $this->baseUrl() . '/total_authors/',
+                [
+                    'project_id' => $projectId,
+                    'media'      => $media,
+                    'start_date' => $startDate,
+                    'end_date'   => $endDate,
+                    'start_time' => $startTime,
+                    'end_time'   => $endTime,
+                    'token'      => $token,
+                ]
+            );
+
+            $res->throw();
+            
+            $json = $this->parseJson($res);
+            
+            Log::info('totalAuthors API response', [
+                'has_data' => isset($json['data']),
+                'top_level_keys' => array_keys($json),
+            ]);
+            
+            return $json;
+            
+        } catch (\Exception $e) {
+            Log::error('totalAuthors API error', [
+                'error' => $e->getMessage(),
+                'project_id' => $projectId,
+            ]);
+            return ['data' => []];
+        }
+    }
+
+    // 🔥 DATA SOURCE API #3: volume_total
+    public function volumeTotal(
+        string $projectId,
+        string $media,
+        string $startDate,
+        string $endDate,
+        int $startTime = 0,
+        int $endTime = 23,
+        bool $isCache = true
+    ): array {
+        try {
+            $token = $this->getToken();
+
+            $res = Http::timeout(60)->acceptJson()->get(
+                $this->baseUrl() . '/volume_total/',
+                [
+                    'project_id' => $projectId,
+                    'media'      => $media,
+                    'start_date' => $startDate,
+                    'end_date'   => $endDate,
+                    'start_time' => $startTime,
+                    'end_time'   => $endTime,
+                    'is_cache'   => $isCache ? 'true' : 'false',
+                    'token'      => $token,
+                ]
+            );
+
+            $res->throw();
+            
+            $json = $this->parseJson($res);
+            
+            Log::info('volumeTotal API response', [
+                'has_data' => isset($json['data']),
+                'top_level_keys' => array_keys($json),
+            ]);
+            
+            return $json;
+            
+        } catch (\Exception $e) {
+            Log::error('volumeTotal API error', [
+                'error' => $e->getMessage(),
+                'project_id' => $projectId,
+            ]);
+            return ['data' => []];
+        }
+    }
+
+    // 🔥 DATA SOURCE API #4: trends_total - FIXED dengan transformasi data
+    public function trendsTotal(
+        string $projectId,
+        string $startDate,
+        string $endDate,
+        int $startTime = 0,
+        int $endTime = 23
+    ): array {
+        try {
+            $token = $this->getToken();
+
+            $res = Http::timeout(60)->acceptJson()->get(
+                $this->baseUrl() . '/trends_total/',
+                [
+                    'project_id' => $projectId,
+                    'start_date' => $startDate,
+                    'end_date'   => $endDate,
+                    'start_time' => $startTime,
+                    'end_time'   => $endTime,
+                    'token'      => $token,
+                ]
+            );
+
+            $res->throw();
+            
+            $json = $this->parseJson($res);
+            
+            Log::info('trendsTotal API raw response', [
+                'response' => $json,
+                'top_level_keys' => array_keys($json),
+            ]);
+            
+            $transformedData = [];
+            
+            foreach ($json as $datetime => $mediaCounts) {
+                if (!is_array($mediaCounts)) continue;
+                
+                $date = date('Y-m-d', strtotime($datetime));
+                
+                foreach ($mediaCounts as $mediaType => $count) {
+                    $keyword = strtoupper($mediaType);
+                    
+                    $found = false;
+                    foreach ($transformedData as &$trend) {
+                        if ($trend['keyword'] === $keyword) {
+                            $trend['data'][] = [
+                                'date' => $date,
+                                'count' => (int)$count
+                            ];
+                            $found = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!$found) {
+                        $transformedData[] = [
+                            'keyword' => $keyword,
+                            'data' => [
+                                [
+                                    'date' => $date,
+                                    'count' => (int)$count
+                                ]
+                            ]
+                        ];
+                    }
+                }
+            }
+            
+            Log::info('trendsTotal transformed data', [
+                'count' => count($transformedData),
+                'sample' => array_slice($transformedData, 0, 2, true)
+            ]);
+            
+            return ['data' => $transformedData];
+            
+        } catch (\Exception $e) {
+            Log::error('trendsTotal API error', [
+                'error' => $e->getMessage(),
+                'project_id' => $projectId,
+            ]);
             return ['data' => []];
         }
     }
