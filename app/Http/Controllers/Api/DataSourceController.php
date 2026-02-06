@@ -209,7 +209,7 @@ class DataSourceController extends Controller
     }
 
     // ========================================================================
-    // 🔥 3. VOLUME TOTAL - FLEXIBLE FORMAT (Array OR Aggregate)
+    // 🔥 3. VOLUME TOTAL - FLEXIBLE FORMAT (Array OR Aggregate) - UPDATED
     // ========================================================================
     public function volume(Request $request)
     {
@@ -246,7 +246,7 @@ class DataSourceController extends Controller
 
             // 🔥 Handle 3 possible response formats:
             
-            // Format 1: {"data": [{"date": "2024-12-08", "volume": 123}, ...]} - Per Date Array
+            // Format 1: {"data": [{"date": "2024-12-08", "volume": 123, "by_media": {...}}, ...]} - Per Date Array
             // Format 2: {"all": 12345, "bymedia": {...}} - Aggregate like authors
             // Format 3: {"data": {"total": 12345}} - Single aggregate value
             
@@ -260,13 +260,43 @@ class DataSourceController extends Controller
                 if (isset($response['data'][0]) && isset($response['data'][0]['date'])) {
                     // Format 1: Array per date
                     $volumeData = $response['data'];
+                    
+                    // Ensure each item has by_media data
+                    foreach ($volumeData as &$item) {
+                        if (!isset($item['by_media'])) {
+                            $item['by_media'] = [
+                                'doc' => 0,
+                                'twit' => 0,
+                                'fb' => 0,
+                                'instagram' => 0,
+                                'youtube' => 0,
+                                'tiktok' => 0,
+                            ];
+                        }
+                    }
+                    
                     $chartData = $this->transformVolumeDataForChart($volumeData);
                     $totalVolume = array_sum(array_column($volumeData, 'volume')) ?: array_sum(array_column($volumeData, 'count'));
+                    
+                    // Aggregate byMedia for the breakdown card
+                    $byMedia = $this->aggregateMediaData($volumeData);
+                    
                 } elseif (isset($response['data']['total'])) {
                     // Format 3: Single aggregate
                     $totalVolume = (int) $response['data']['total'];
-                    $volumeData = [['date' => "$startDate to $endDate", 'volume' => $totalVolume]];
-                    $chartData = ['labels' => ['Total Period'], 'values' => [$totalVolume]];
+                    $volumeData = [[
+                        'date' => "$startDate to $endDate", 
+                        'volume' => $totalVolume,
+                        'by_media' => [
+                            'doc' => 0,
+                            'twit' => 0,
+                            'fb' => 0,
+                            'instagram' => 0,
+                            'youtube' => 0,
+                            'tiktok' => 0,
+                        ]
+                    ]];
+                    $chartData = ['labels' => ['Total Period'], 'values' => [$totalVolume], 'by_media' => [[]]];
                 } else {
                     // Unknown data format, try to parse
                     $volumeData = $response['data'];
@@ -277,7 +307,11 @@ class DataSourceController extends Controller
                 $totalVolume = (int) $response['all'];
                 $byMedia = $response['bymedia'] ?? [];
                 
-                $volumeData = [['date' => "$startDate to $endDate", 'volume' => $totalVolume]];
+                $volumeData = [[
+                    'date' => "$startDate to $endDate", 
+                    'volume' => $totalVolume,
+                    'by_media' => $byMedia
+                ]];
                 
                 // Chart breakdown by media if available
                 if (!empty($byMedia)) {
@@ -287,13 +321,13 @@ class DataSourceController extends Controller
                         $chartLabels[] = strtoupper($mediaName);
                         $chartValues[] = (int)$count;
                     }
-                    $chartData = ['labels' => $chartLabels, 'values' => $chartValues];
+                    $chartData = ['labels' => $chartLabels, 'values' => $chartValues, 'by_media' => [$byMedia]];
                 } else {
-                    $chartData = ['labels' => ['Total Period'], 'values' => [$totalVolume]];
+                    $chartData = ['labels' => ['Total Period'], 'values' => [$totalVolume], 'by_media' => [[]]];
                 }
             } else {
                 $volumeData = [];
-                $chartData = ['labels' => [], 'values' => []];
+                $chartData = ['labels' => [], 'values' => [], 'by_media' => []];
             }
 
             return view('mk.data-source.volume', [
@@ -324,25 +358,54 @@ class DataSourceController extends Controller
     private function transformVolumeDataForChart(array $data): array
     {
         if (empty($data)) {
-            return ['labels' => [], 'values' => []];
+            return ['labels' => [], 'values' => [], 'by_media' => []];
         }
 
         $labels = [];
         $values = [];
+        $byMedia = [];
 
         foreach ($data as $item) {
             if (isset($item['date'])) {
                 $labels[] = $item['date'];
                 $values[] = $item['volume'] ?? $item['count'] ?? 0;
+                $byMedia[] = $item['by_media'] ?? [];
             }
         }
 
         return [
             'labels' => $labels,
             'values' => $values,
+            'by_media' => $byMedia
         ];
     }
 
+    private function aggregateMediaData(array $volumeData): array
+    {
+        $aggregated = [
+            'doc' => 0,
+            'twit' => 0,
+            'fb' => 0,
+            'instagram' => 0,
+            'youtube' => 0,
+            'tiktok' => 0,
+        ];
+
+        foreach ($volumeData as $item) {
+            if (isset($item['by_media']) && is_array($item['by_media'])) {
+                foreach ($item['by_media'] as $media => $count) {
+                    if (isset($aggregated[$media])) {
+                        $aggregated[$media] += (int)$count;
+                    }
+                }
+            }
+        }
+
+        // Remove zero values
+        return array_filter($aggregated, function($count) {
+            return $count > 0;
+        });
+    }
     // ========================================================================
     // 🔥 4. TRENDS TOTAL - ARRAY FORMAT (FIXED)
     // ========================================================================
