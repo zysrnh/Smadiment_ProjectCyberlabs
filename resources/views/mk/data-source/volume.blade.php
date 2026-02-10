@@ -21,14 +21,7 @@
 <div class="content-wrapper">
   @if(isset($error))
   <div class="alert alert-warning">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-      <line x1="12" y1="9" x2="12" y2="13"/>
-      <line x1="12" y1="17" x2="12.01" y2="17"/>
-    </svg>
-    <div>
-      <strong>Warning:</strong> {{ $error }}
-    </div>
+    <strong>Warning:</strong> {{ $error }}
   </div>
   @endif
 
@@ -151,7 +144,6 @@
           {{ !in_array($mediaName, ['doc', 'twit', 'fb', 'instagram', 'youtube', 'tiktok']) ? 'linear-gradient(135deg, #6B7280, #4B5563)' : '' }}">
           
           @if($mediaName === 'doc')
-            {{-- New Newspaper Icon --}}
             <svg viewBox="0 0 24 24" fill="white" stroke="none">
               <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
             </svg>
@@ -712,9 +704,6 @@
     padding: 16px 20px;
     border-radius: 10px;
     margin-bottom: 24px;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
     font-family: 'Poppins', sans-serif;
   }
 
@@ -722,11 +711,6 @@
     background: #fef3c7;
     border: 1px solid #fbbf24;
     color: #92400e;
-  }
-
-  .alert svg {
-    flex-shrink: 0;
-    margin-top: 2px;
   }
 
   .empty-state {

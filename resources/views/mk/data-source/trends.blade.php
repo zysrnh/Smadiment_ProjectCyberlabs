@@ -5,7 +5,7 @@
 @section('content')
 <div class="top-bar">
   <div class="page-title">
-    <h2>📈 Trends Total</h2>
+    <h2>Trends Total</h2>
     <p class="page-subtitle">Track trending topics and keyword performance over time</p>
   </div>
   <div class="top-actions">
@@ -21,7 +21,7 @@
 <div class="content-wrapper">
   @if(isset($error))
   <div class="alert alert-warning">
-    <strong>⚠️ Warning:</strong> {{ $error }}
+    <strong>Warning:</strong> {{ $error }}
   </div>
   @endif
 
@@ -131,13 +131,36 @@
   <div class="chart-card">
     <div class="chart-header">
       <div>
-        <h3>📊 Trends Timeline</h3>
+        <h3>Trends Timeline</h3>
         <p>Dual-axis chart: High volume (left) vs Low volume (right) for better visibility</p>
       </div>
-      <div class="chart-legend-toggle">
+      <div class="chart-header-actions">
         <button onclick="toggleAllDatasets()" class="action-btn" style="font-size: 12px; padding: 8px 14px;">
           Toggle All
         </button>
+        <div class="chart-controls">
+          <button class="chart-type-btn active" data-type="line" onclick="changeChartType('line', this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            Line
+          </button>
+          <button class="chart-type-btn" data-type="bar" onclick="changeChartType('bar', this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="20" x2="12" y2="10"/>
+              <line x1="18" y1="20" x2="18" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="16"/>
+            </svg>
+            Bar
+          </button>
+          <button class="chart-type-btn" data-type="area" onclick="changeChartType('area', this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 3v18h18"/>
+              <path d="M7 12L12 7l5 5"/>
+            </svg>
+            Area
+          </button>
+        </div>
       </div>
     </div>
     <div class="chart-container">
@@ -148,7 +171,7 @@
   <!-- Trends List Table -->
   <div class="data-table-card">
     <div class="table-header">
-      <h3>📋 Trends Overview</h3>
+      <h3>Trends Overview</h3>
       <button onclick="exportTableToCSV('trends-data.csv')" class="action-btn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -205,15 +228,15 @@
             <td>
               @if($trendDirection === 'up')
                 <span class="badge badge-success">
-                  ↗️ +{{ abs($trendPercentage) }}%
+                  +{{ abs($trendPercentage) }}%
                 </span>
               @elseif($trendDirection === 'down')
                 <span class="badge badge-danger">
-                  ↘️ -{{ abs($trendPercentage) }}%
+                  -{{ abs($trendPercentage) }}%
                 </span>
               @else
                 <span class="badge badge-secondary">
-                  → Stable
+                  Stable
                 </span>
               @endif
             </td>
@@ -366,6 +389,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
   }
 
   .chart-header h3, .table-header h3 {
@@ -379,6 +404,48 @@
     font-size: 13px;
     color: var(--text-secondary);
     margin: 4px 0 0 0;
+  }
+
+  .chart-header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .chart-controls {
+    display: flex;
+    gap: 8px;
+    background: #f8fafc;
+    padding: 4px;
+    border-radius: 10px;
+  }
+
+  .chart-type-btn {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .chart-type-btn:hover {
+    background: white;
+    color: var(--text-primary);
+  }
+
+  .chart-type-btn.active {
+    background: var(--primary-green);
+    color: white;
+    box-shadow: 0 2px 8px rgba(3, 128, 71, 0.2);
   }
 
   .chart-container {
@@ -514,9 +581,21 @@
     border-color: #026838;
   }
 
-  .chart-legend-toggle {
-    display: flex;
-    gap: 8px;
+  @media (max-width: 768px) {
+    .chart-header-actions {
+      width: 100%;
+      flex-direction: column-reverse;
+    }
+
+    .chart-controls {
+      width: 100%;
+      justify-content: stretch;
+    }
+
+    .chart-type-btn {
+      flex: 1;
+      justify-content: center;
+    }
   }
 </style>
 @endsection
@@ -525,6 +604,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
   let trendsChartInstance;
+  let currentChartType = 'line';
 
   @if(!empty($chartData['labels']) && !empty($chartData['datasets']))
   const colorPalette = [
@@ -532,21 +612,7 @@
     '#10b981', '#3b82f6', '#ec4899', '#6366f1', '#14b8a6'
   ];
 
-  const datasets = @json($chartData['datasets']).map((dataset, index) => ({
-    label: dataset.label,
-    data: dataset.data,
-    borderColor: colorPalette[index % colorPalette.length],
-    backgroundColor: colorPalette[index % colorPalette.length] + '20',
-    borderWidth: 2,
-    fill: false,
-    tension: 0.4,
-    pointRadius: 4,
-    pointHoverRadius: 6,
-    pointBackgroundColor: '#ffffff',
-    pointBorderWidth: 2,
-  }));
-
-  // 🔥 Pisahkan datasets berdasarkan magnitude untuk dual axis
+  // Store raw datasets
   const rawDatasets = @json($chartData['datasets']);
   
   // Hitung max value untuk setiap dataset
@@ -562,7 +628,7 @@
   // Sort by max value descending
   datasetsWithMax.sort((a, b) => b.maxValue - a.maxValue);
 
-  // Tentukan threshold (dataset dengan value > 1000 ke Y-axis kiri, sisanya ke kanan)
+  // Tentukan threshold (dataset dengan value > 500 ke Y-axis kiri, sisanya ke kanan)
   const threshold = 500;
   const leftAxisDatasets = [];
   const rightAxisDatasets = [];
@@ -592,116 +658,153 @@
 
   const allDatasets = [...leftAxisDatasets, ...rightAxisDatasets];
 
-  const ctx = document.getElementById('trendsChart').getContext('2d');
-  trendsChartInstance = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: @json($chartData['labels']),
-      datasets: allDatasets
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: {
-        mode: 'index',
-        intersect: false,
+  function initChart(type = 'line') {
+    const ctx = document.getElementById('trendsChart').getContext('2d');
+    
+    if (trendsChartInstance) {
+      trendsChartInstance.destroy();
+    }
+
+    // Prepare datasets based on chart type
+    let chartDatasets = allDatasets.map(ds => {
+      let dataset = { ...ds };
+      
+      if (type === 'bar') {
+        dataset.borderRadius = 6;
+        dataset.backgroundColor = ds.borderColor + 'CC';
+      } else if (type === 'area') {
+        dataset.fill = true;
+        dataset.backgroundColor = ds.borderColor + '20';
+      } else {
+        dataset.fill = false;
+      }
+      
+      return dataset;
+    });
+
+    trendsChartInstance = new Chart(ctx, {
+      type: type === 'area' ? 'line' : type,
+      data: {
+        labels: @json($chartData['labels']),
+        datasets: chartDatasets
       },
-      plugins: {
-        legend: {
-          display: true,
-          position: 'top',
-          labels: {
-            font: { family: 'Poppins', size: 12, weight: '600' },
-            padding: 12,
-            usePointStyle: true,
-            pointStyle: 'circle',
-            generateLabels: function(chart) {
-              const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
-              return original.map((label, i) => {
-                const dataset = chart.data.datasets[i];
-                const isRightAxis = dataset.yAxisID === 'y-right';
-                label.text = dataset.label + (isRightAxis ? ' ⚡' : '');
-                return label;
-              });
-            }
-          }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
         },
-        tooltip: {
-          backgroundColor: 'rgba(15, 23, 42, 0.95)',
-          titleFont: { family: 'Poppins', size: 13, weight: '600' },
-          bodyFont: { family: 'Poppins', size: 12 },
-          padding: 12,
-          borderColor: 'rgba(148, 163, 184, 0.3)',
-          borderWidth: 1,
-          displayColors: true,
-          callbacks: {
-            label: function(context) {
-              let label = context.dataset.label || '';
-              if (label) {
-                label += ': ';
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              font: { family: 'Poppins', size: 12, weight: '600' },
+              padding: 12,
+              usePointStyle: true,
+              pointStyle: 'circle',
+              generateLabels: function(chart) {
+                const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                return original.map((label, i) => {
+                  const dataset = chart.data.datasets[i];
+                  const isRightAxis = dataset.yAxisID === 'y-right';
+                  label.text = dataset.label + (isRightAxis ? ' (Low Vol)' : '');
+                  return label;
+                });
               }
-              label += new Intl.NumberFormat().format(context.parsed.y);
-              return label;
-            }
-          }
-        }
-      },
-      scales: {
-        'y-left': {
-          type: 'linear',
-          position: 'left',
-          beginAtZero: true,
-          grid: { 
-            color: 'rgba(148, 163, 184, 0.1)',
-            drawOnChartArea: true
-          },
-          ticks: {
-            font: { family: 'Poppins', size: 11 },
-            color: '#64748b',
-            callback: function(value) {
-              return new Intl.NumberFormat('en', { notation: 'compact' }).format(value);
             }
           },
-          title: {
-            display: true,
-            text: 'High Volume (DOC, TWIT)',
-            font: { family: 'Poppins', size: 11, weight: '600' },
-            color: '#475569'
+          tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            titleFont: { family: 'Poppins', size: 13, weight: '600' },
+            bodyFont: { family: 'Poppins', size: 12 },
+            padding: 12,
+            borderColor: 'rgba(148, 163, 184, 0.3)',
+            borderWidth: 1,
+            displayColors: true,
+            callbacks: {
+              label: function(context) {
+                let label = context.dataset.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                label += new Intl.NumberFormat().format(context.parsed.y);
+                return label;
+              }
+            }
           }
         },
-        'y-right': {
-          type: 'linear',
-          position: 'right',
-          beginAtZero: true,
-          grid: {
-            drawOnChartArea: false
-          },
-          ticks: {
-            font: { family: 'Poppins', size: 11 },
-            color: '#64748b',
-            callback: function(value) {
-              return new Intl.NumberFormat('en', { notation: 'compact' }).format(value);
+        scales: {
+          'y-left': {
+            type: 'linear',
+            position: 'left',
+            beginAtZero: true,
+            grid: { 
+              color: 'rgba(148, 163, 184, 0.1)',
+              drawOnChartArea: true
+            },
+            ticks: {
+              font: { family: 'Poppins', size: 11 },
+              color: '#64748b',
+              callback: function(value) {
+                return new Intl.NumberFormat('en', { notation: 'compact' }).format(value);
+              }
+            },
+            title: {
+              display: true,
+              text: 'High Volume',
+              font: { family: 'Poppins', size: 11, weight: '600' },
+              color: '#475569'
             }
           },
-          title: {
-            display: true,
-            text: 'Low Volume (FB, YT, IG, TikTok) ⚡',
-            font: { family: 'Poppins', size: 11, weight: '600' },
-            color: '#475569'
+          'y-right': {
+            type: 'linear',
+            position: 'right',
+            beginAtZero: true,
+            grid: {
+              drawOnChartArea: false
+            },
+            ticks: {
+              font: { family: 'Poppins', size: 11 },
+              color: '#64748b',
+              callback: function(value) {
+                return new Intl.NumberFormat('en', { notation: 'compact' }).format(value);
+              }
+            },
+            title: {
+              display: true,
+              text: 'Low Volume',
+              font: { family: 'Poppins', size: 11, weight: '600' },
+              color: '#475569'
+            }
+          },
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: { family: 'Poppins', size: 11 },
+              color: '#64748b',
+              maxRotation: 45,
+              minRotation: 0
+            }
           }
         },
-        x: {
-          grid: { display: false },
-          ticks: {
-            font: { family: 'Poppins', size: 11 },
-            color: '#64748b',
-            maxRotation: 45,
-            minRotation: 0
-          }
+        animation: {
+          duration: 750,
+          easing: 'easeInOutQuart'
         }
       }
-    }
-  });
+    });
+  }
+
+  function changeChartType(type, button) {
+    currentChartType = type;
+    document.querySelectorAll('.chart-type-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    button.classList.add('active');
+    initChart(type);
+  }
 
   function toggleAllDatasets() {
     const chart = trendsChartInstance;
@@ -713,6 +816,10 @@
     
     chart.update();
   }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    initChart('line');
+  });
   @endif
 
   function exportTableToCSV(filename) {
@@ -737,4 +844,4 @@
     window.URL.revokeObjectURL(url);
   }
 </script>
-@endsection 
+@endsection
