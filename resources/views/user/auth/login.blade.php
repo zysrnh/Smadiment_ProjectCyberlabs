@@ -31,12 +31,62 @@
       align-items: center;
       justify-content: center;
       padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Animated background particles */
+    .left-side::before {
+      content: '';
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(3, 128, 71, 0.05) 0%, transparent 70%);
+      border-radius: 50%;
+      top: -100px;
+      left: -100px;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .left-side::after {
+      content: '';
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(30, 58, 95, 0.05) 0%, transparent 70%);
+      border-radius: 50%;
+      bottom: -50px;
+      right: -50px;
+      animation: float 6s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translate(0, 0) scale(1);
+      }
+      50% {
+        transform: translate(30px, 30px) scale(1.1);
+      }
     }
 
     .logo-container {
       text-align: center;
       max-width: 450px;
       width: 100%;
+      position: relative;
+      z-index: 1;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .logo-image {
@@ -47,12 +97,29 @@
       width: auto;
       max-width: 650px;
       margin: 0 auto 24px;
+      animation: scaleIn 0.6s ease-out 0.2s both;
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
     .logo-icon img {
       width: 100%;
       height: auto;
       display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .logo-icon:hover img {
+      transform: scale(1.05);
     }
 
     .logo-text h1 {
@@ -84,6 +151,16 @@
       font-size: 14px;
       color: #6B7280;
       font-weight: 600;
+      animation: fadeIn 1s ease-out 0.6s both;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
     }
 
     /* Right Side - Blue/Green */
@@ -94,6 +171,42 @@
       align-items: center;
       justify-content: center;
       padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Animated background shapes */
+    .shape {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.1;
+    }
+
+    .shape-1 {
+      width: 400px;
+      height: 400px;
+      background: #038047;
+      top: -200px;
+      right: -200px;
+      animation: rotate 20s linear infinite;
+    }
+
+    .shape-2 {
+      width: 300px;
+      height: 300px;
+      background: #FFFFFF;
+      bottom: -150px;
+      left: -150px;
+      animation: rotate 15s linear infinite reverse;
+    }
+
+    @keyframes rotate {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .login-box {
@@ -103,10 +216,53 @@
       width: 100%;
       max-width: 420px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      position: relative;
+      z-index: 1;
+      animation: slideInRight 0.8s ease-out;
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .login-header h2 {
+      color: #FFFFFF;
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .login-header p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+      font-weight: 600;
     }
 
     .form-group {
       margin-bottom: 20px;
+      animation: fadeInUp 0.6s ease-out both;
+    }
+
+    .form-group:nth-child(1) {
+      animation-delay: 0.2s;
+    }
+
+    .form-group:nth-child(2) {
+      animation-delay: 0.3s;
     }
 
     .form-input {
@@ -121,7 +277,7 @@
       text-align: center;
       text-transform: uppercase;
       letter-spacing: 1px;
-      transition: all 0.2s;
+      transition: all 0.3s ease;
       background: #FFFFFF;
     }
 
@@ -133,10 +289,18 @@
     .form-input:focus {
       outline: none;
       box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
     }
 
     .form-input.is-invalid {
       border: 2px solid #DC2626;
+      animation: shake 0.5s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
     }
 
     .error-message {
@@ -146,11 +310,13 @@
       font-weight: 600;
       margin-top: 6px;
       text-align: center;
+      animation: fadeIn 0.3s ease-out;
     }
 
     .forgot-password {
       text-align: left;
       margin-bottom: 24px;
+      animation: fadeInUp 0.6s ease-out 0.4s both;
     }
 
     .forgot-password a {
@@ -159,10 +325,22 @@
       font-weight: 600;
       text-decoration: none;
       transition: all 0.2s;
+      position: relative;
     }
 
-    .forgot-password a:hover {
-      text-decoration: underline;
+    .forgot-password a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #FFFFFF;
+      transition: width 0.3s ease;
+    }
+
+    .forgot-password a:hover::after {
+      width: 100%;
     }
 
     .btn-submit {
@@ -176,15 +354,45 @@
       font-size: 15px;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.3s ease;
       text-transform: uppercase;
       letter-spacing: 1px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeInUp 0.6s ease-out 0.5s both;
+    }
+
+    .btn-submit::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-submit:hover::before {
+      width: 300px;
+      height: 300px;
     }
 
     .btn-submit:hover {
       background: #152d47;
       transform: translateY(-2px);
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    .btn-submit span {
+      position: relative;
+      z-index: 1;
     }
 
     .alert {
@@ -194,6 +402,18 @@
       font-size: 13px;
       text-align: center;
       font-weight: 600;
+      animation: slideDown 0.5s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .alert-success {
@@ -204,6 +424,30 @@
     .alert-error {
       background: #FEE2E2;
       color: #991B1B;
+    }
+
+    /* Loading animation for submit button */
+    .btn-submit.loading {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .btn-submit.loading::after {
+      content: '';
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #FFFFFF;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: translateY(-50%) rotate(360deg); }
     }
 
     /* Responsive */
@@ -235,6 +479,10 @@
       .login-box {
         padding: 32px 24px;
       }
+
+      .login-header h2 {
+        font-size: 24px;
+      }
     }
   </style>
 </head>
@@ -263,7 +511,17 @@
 
   <!-- Right Side - Login Form -->
   <div class="right-side">
+    <!-- Animated background shapes -->
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+
     <div class="login-box">
+
+      <!-- Login Header -->
+      <div class="login-header">
+        <h2>Welcome Back</h2>
+        <p>Login to your account</p>
+      </div>
 
       <!-- Success Message -->
       @if(session('success'))
@@ -280,7 +538,7 @@
       @endif
 
       <!-- Login Form -->
-      <form method="POST" action="{{ route('user.login.submit') }}">
+      <form method="POST" action="{{ route('user.login.submit') }}" id="loginForm">
         @csrf
 
         <!-- Email -->
@@ -319,14 +577,35 @@
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" class="btn-submit">
-          SUBMIT
+        <button type="submit" class="btn-submit" id="submitBtn">
+          <span>SUBMIT</span>
         </button>
 
       </form>
 
     </div>
   </div>
+
+  <script>
+    // Add loading animation on form submit
+    document.getElementById('loginForm').addEventListener('submit', function() {
+      const btn = document.getElementById('submitBtn');
+      btn.classList.add('loading');
+    });
+
+    // Add input focus animations
+    const inputs = document.querySelectorAll('.form-input');
+    inputs.forEach(input => {
+      input.addEventListener('focus', function() {
+        this.parentElement.style.transform = 'translateY(-2px)';
+        this.parentElement.style.transition = 'transform 0.3s ease';
+      });
+      
+      input.addEventListener('blur', function() {
+        this.parentElement.style.transform = 'translateY(0)';
+      });
+    });
+  </script>
 
 </body>
 </html>
