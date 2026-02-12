@@ -68,6 +68,7 @@ class TopAnalyticsController extends Controller
 
     /**
      * 🔥 API: Get Top Hashtags Data (Lazy Loading)
+     * API returns array directly: [{"name": "hashtag", "size": "count"}, ...]
      */
     public function getHashtagsData(Request $request)
     {
@@ -93,11 +94,12 @@ class TopAnalyticsController extends Controller
 
             Log::info('Top Hashtags API response', [
                 'project_id' => $projectId,
-                'data_count' => count($response['data'] ?? [])
+                'is_array' => is_array($response),
+                'data_count' => count($response)
             ]);
 
-            // Transform data for frontend
-            $hashtags = $response['data'] ?? [];
+            // API returns array directly, not wrapped in 'data' key
+            $hashtags = is_array($response) ? $response : [];
             $chartData = $this->transformHashtagsForChart($hashtags);
 
             return response()->json([
@@ -287,6 +289,7 @@ class TopAnalyticsController extends Controller
 
     /**
      * Transform hashtags data for chart visualization
+     * API Response format: [{"name": "hashtag", "size": "count"}, ...]
      */
     private function transformHashtagsForChart(array $hashtags): array
     {
@@ -301,8 +304,9 @@ class TopAnalyticsController extends Controller
         $values = [];
 
         foreach ($top10 as $item) {
-            $labels[] = $item['hashtag'] ?? $item['tag'] ?? $item['name'] ?? 'Unknown';
-            $values[] = (int)($item['count'] ?? $item['frequency'] ?? $item['total'] ?? 0);
+            // API uses 'name' for hashtag and 'size' for count
+            $labels[] = '#' . ($item['name'] ?? 'Unknown');
+            $values[] = (int)($item['size'] ?? 0);
         }
 
         return [
