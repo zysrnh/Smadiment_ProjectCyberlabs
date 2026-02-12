@@ -9,7 +9,7 @@
      ============================================================ -->
 <div class="top-bar">
     <div class="page-title">
-        <h2>📊 Analytics Overview</h2>
+        <h2>Analytics Overview</h2>
         <div class="page-subtitle">Topic trends, hashtags, locations & top influencers</div>
     </div>
 
@@ -125,7 +125,7 @@
     <div class="ao-card" data-lazy="top-hashtags">
         <div class="ao-card-head">
             <div class="ao-card-head-left">
-                <span class="ao-head-icon" style="background:#F1F5F8; color:#3b82f6;">
+                <span class="ao-head-icon" style="background:#F1F5F8; color:#27384A;">
                     <svg viewBox="0 0 24 24">
                         <line x1="4" y1="9" x2="20" y2="9" />
                         <line x1="4" y1="15" x2="20" y2="15" />
@@ -164,7 +164,7 @@
     <div class="ao-card" data-lazy="top-locations">
         <div class="ao-card-head">
             <div class="ao-card-head-left">
-                <span class="ao-head-icon" style="background:#F1F5F8; color:#10b981;">
+                <span class="ao-head-icon" style="background:#F1F5F8; color:#038047;">
                     <svg viewBox="0 0 24 24">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                         <circle cx="12" cy="10" r="3"/>
@@ -194,7 +194,7 @@
     <div class="ao-card" data-lazy="top-influencers">
         <div class="ao-card-head">
             <div class="ao-card-head-left">
-                <span class="ao-head-icon" style="background:#F1F5F8; color:#f59e0b;">
+                <span class="ao-head-icon" style="background:#F1F5F8; color:#27384A;">
                     <svg viewBox="0 0 24 24">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                         <circle cx="9" cy="7" r="4"/>
@@ -504,7 +504,7 @@
         gap: 4px;
         padding: 4px 10px;
         background: transparent;
-        color: #222;
+        color: #27384A;
         border: 1.5px solid #e2e8f0;
         border-radius: 6px;
         font-size: 10px;
@@ -772,7 +772,7 @@
 
 <script>
 // ────────────────────────────────────────────
-// 🚀 ANALYTICS OVERVIEW LAZY LOADER
+// ANALYTICS OVERVIEW LAZY LOADER
 // ────────────────────────────────────────────
 const AnalyticsOverviewLoader = {
     projectId: {{ $projectId ?? 'null' }},
@@ -787,7 +787,7 @@ const AnalyticsOverviewLoader = {
     influencersData: [],
 
     init() {
-        console.log('🚀 Initializing Analytics Overview Lazy Loader');
+        console.log('Initializing Analytics Overview Lazy Loader');
         this.setupIntersectionObserver();
         this.setupFilterButton();
         this.setupModalSearches();
@@ -821,7 +821,7 @@ const AnalyticsOverviewLoader = {
     },
 
     async loadSection(section, card) {
-        console.log(`📦 Loading section: ${section}`);
+        console.log(`Loading section: ${section}`);
         
         try {
             switch(section) {
@@ -841,7 +841,7 @@ const AnalyticsOverviewLoader = {
             
             card.dataset.loaded = 'true';
         } catch (error) {
-            console.error(`❌ Failed to load ${section}:`, error);
+            console.error(`Failed to load ${section}:`, error);
             this.showError(card);
         }
     },
@@ -851,6 +851,8 @@ const AnalyticsOverviewLoader = {
             `/mk/api/analytics/topic-map?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}&media=${this.media}`
         );
         const result = await response.json();
+        
+        console.log('Topic Map API Result:', result);
         
         if (result.success && result.data) {
             this.topicsData = result.data;
@@ -866,6 +868,8 @@ const AnalyticsOverviewLoader = {
         );
         const result = await response.json();
         
+        console.log('Hashtags API Result:', result);
+        
         if (result.success && result.data) {
             this.hashtagsData = result.data;
             this.renderHashtagsTable(result.data, card);
@@ -880,6 +884,8 @@ const AnalyticsOverviewLoader = {
         );
         const result = await response.json();
         
+        console.log('Locations API Result:', result);
+        
         if (result.success && result.data) {
             this.locationsData = result.data;
             this.renderLocationsTable(result.data, card);
@@ -893,6 +899,8 @@ const AnalyticsOverviewLoader = {
             `/mk/api/analytics/influencers?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`
         );
         const result = await response.json();
+        
+        console.log('Influencers API Result:', result);
         
         if (result.success && result.data) {
             this.influencersData = result.data;
@@ -921,7 +929,7 @@ const AnalyticsOverviewLoader = {
         
         const colors = [
             '#038047', '#04995a', '#06bf80', '#059669', '#10b981',
-            '#14b8a6', '#0891b2', '#0284c7', '#3b82f6', '#6366f1'
+            '#14b8a6', '#0891b2', '#0284c7', '#27384A', '#6366f1'
         ];
         
         WordCloud(canvas, {
@@ -976,7 +984,7 @@ const AnalyticsOverviewLoader = {
             html += `
                 <tr>
                     <td class="ao-tbl-rank">${i + 1}</td>
-                    <td class="ao-tbl-name" style="color:#3b82f6;">${tagName}</td>
+                    <td class="ao-tbl-name" style="color:#27384A;">${tagName}</td>
                     <td class="ao-tbl-num">${count.toLocaleString()}</td>
                 </tr>
             `;
@@ -1205,7 +1213,7 @@ function renderTopicPieChart() {
     const topTopics = AnalyticsOverviewLoader.topicsData.slice(0, 10);
     
     const colors = [
-        '#038047', '#04995a', '#2FC6F6', '#8b5cf6', '#f59e0b',
+        '#038047', '#04995a', '#27384A', '#8b5cf6', '#f59e0b',
         '#ef4444', '#10b981', '#3b82f6', '#ec4899', '#6366f1'
     ];
     
@@ -1268,7 +1276,7 @@ function openHashtagsModal() {
         html += `
             <tr>
                 <td class="ao-tbl-rank">${i + 1}</td>
-                <td class="ao-tbl-name" style="color:#3b82f6;">${tagName}</td>
+                <td class="ao-tbl-name" style="color:#27384A;">${tagName}</td>
                 <td class="ao-tbl-num">${count.toLocaleString()}</td>
             </tr>
         `;
