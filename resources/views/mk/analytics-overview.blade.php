@@ -1020,7 +1020,9 @@ const AnalyticsOverviewLoader = {
         `;
 
         locations.slice(0, 8).forEach((loc, i) => {
-            const name = loc.location || loc.city || loc.name || 'Unknown';
+            // 🔥 FIXED: Extract from correct API response structure
+            // API returns: { name: "Indonesia", count: 2842, detail: {...} }
+            const name = loc.name || loc.location || loc.city || 'Unknown';
             const count = loc.count || loc.frequency || loc.total || 0;
             
             html += `
@@ -1062,14 +1064,40 @@ const AnalyticsOverviewLoader = {
         `;
 
         influencers.slice(0, 8).forEach((inf, i) => {
-            const name = inf.name || inf.username || inf.author || 'Unknown';
-            const count = inf.followers || inf.reach || inf.influence_score || 0;
+            // 🔥 FIXED: Extract from correct API response structure
+            // API returns: { name: "@username", info: { screen_name: "username", followers_count: "123" } }
+            let username = 'Unknown';
+            let followers = 0;
+            
+            // Try multiple possible field names for username
+            if (inf.info && inf.info.screen_name) {
+                username = inf.info.screen_name;
+            } else if (inf.name) {
+                // Remove @ if exists
+                username = inf.name.replace(/^@/, '');
+            } else if (inf.username) {
+                username = inf.username;
+            } else if (inf.author) {
+                username = inf.author;
+            }
+            
+            // Try multiple possible field names for followers
+            if (inf.info && inf.info.followers_count) {
+                followers = parseInt(inf.info.followers_count) || 0;
+            } else if (inf.followers) {
+                followers = parseInt(inf.followers) || 0;
+            } else if (inf.reach) {
+                followers = parseInt(inf.reach) || 0;
+            } else if (inf.total) {
+                // Fallback to 'total' field (mentions count)
+                followers = parseInt(inf.total) || 0;
+            }
             
             html += `
                 <tr>
                     <td class="ao-tbl-rank">${i + 1}</td>
-                    <td class="ao-tbl-name">@${name}</td>
-                    <td class="ao-tbl-num">${count.toLocaleString()}</td>
+                    <td class="ao-tbl-name">@${username}</td>
+                    <td class="ao-tbl-num">${followers.toLocaleString()}</td>
                 </tr>
             `;
         });
