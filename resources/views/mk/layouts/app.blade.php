@@ -597,6 +597,37 @@
     <span>Topic Map</span>
   </a>
 
+  <!-- 🔥 NEW: TOP ANALYTICS DROPDOWN -->
+  @php
+    $topAnalyticsRoutes = ['mk.top-analytics.hashtags', 'mk.top-analytics.locations', 'mk.top-analytics.influencers'];
+    $isTopAnalyticsActive = request()->routeIs($topAnalyticsRoutes);
+  @endphp
+  <div class="nav-item dropdown-trigger {{ $isTopAnalyticsActive ? 'has-active-child' : '' }}" 
+       onclick="toggleDropdown('topAnalyticsDropdown', this)"
+       id="topAnalyticsTrigger">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+    </span>
+    <span>Top Analytics</span>
+    <span class="dropdown-arrow">▼</span>
+  </div>
+  <div id="topAnalyticsDropdown" class="nav-sub" style="display: {{ $isTopAnalyticsActive ? 'block' : 'none' }};">
+    <a href="{{ route('mk.top-analytics.hashtags') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+       class="nav-item {{ request()->routeIs('mk.top-analytics.hashtags') ? 'active' : '' }}">
+      <span>Top Hashtags</span>
+    </a>
+    <a href="{{ route('mk.top-analytics.locations') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+       class="nav-item {{ request()->routeIs('mk.top-analytics.locations') ? 'active' : '' }}">
+      <span>Top Locations</span>
+    </a>
+    <a href="{{ route('mk.top-analytics.influencers') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+       class="nav-item {{ request()->routeIs('mk.top-analytics.influencers') ? 'active' : '' }}">
+      <span>Top Influencers</span>
+    </a>
+  </div>
   <!-- Data Source Dropdown ... -->
 
         <!-- 🔥 DATA SOURCE DROPDOWN - NEW -->

@@ -7,6 +7,7 @@ use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\Api\DataOverviewApiController;
 use App\Http\Controllers\Api\DataSourceController;
 use App\Http\Controllers\Api\TopicMapController;
+use App\Http\Controllers\Api\TopAnalyticsController; // 🔥 NEW
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -65,16 +66,16 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     // 🔥 API ENDPOINTS FOR LAZY LOADING (MUST BE BEFORE OTHER ROUTES!)
     // ═══════════════════════════════════════════════════════════
     Route::prefix('api')->name('api.')->group(function () {
+        // Data Overview APIs
         Route::get('/trending-topics', [DataOverviewApiController::class, 'trendingTopics'])
             ->name('trending-topics');
         
-        Route::get('/top-hashtags', [DataOverviewApiController::class, 'topHashtags'])
-            ->name('top-hashtags');
+        Route::get('/top-hashtags-overview', [DataOverviewApiController::class, 'topHashtags'])
+            ->name('top-hashtags-overview');
         
         Route::get('/mention-counts', [DataOverviewApiController::class, 'mentionCounts'])
             ->name('mention-counts');
         
-        // 🔥 NEW: Sentiment by Media
         Route::get('/sentiment-by-media', [DataOverviewApiController::class, 'sentimentByMedia'])
             ->name('sentiment-by-media');
         
@@ -87,9 +88,19 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/geo-users', [DataOverviewApiController::class, 'geoUsers'])
             ->name('geo-users');
         
-        // 🔥 NEW: Topic Map API
+        // Topic Map API
         Route::get('/topic-map', [TopicMapController::class, 'getTopicMap'])
             ->name('topic-map');
+        
+        // 🔥 NEW: Top Analytics APIs
+        Route::get('/top-hashtags', [TopAnalyticsController::class, 'getHashtagsData'])
+            ->name('top-hashtags');
+        
+        Route::get('/top-locations', [TopAnalyticsController::class, 'getLocationsData'])
+            ->name('top-locations');
+        
+        Route::get('/top-influencers', [TopAnalyticsController::class, 'getInfluencersData'])
+            ->name('top-influencers');
     });
     
     // ═══════════════════════════════════════════════════════════
@@ -101,8 +112,15 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     Route::get('/dashboard', [MkController::class, 'dashboard'])->name('dashboard');
     Route::get('/projects', [MkController::class, 'projects'])->name('projects');
     
-    // 🔥 NEW: Topic Map Page
+    // Topic Map Page
     Route::get('/topic-map', [TopicMapController::class, 'index'])->name('topic-map');
+    
+    // 🔥 NEW: Top Analytics Pages
+    Route::prefix('top-analytics')->name('top-analytics.')->group(function () {
+        Route::get('/hashtags', [TopAnalyticsController::class, 'hashtags'])->name('hashtags');
+        Route::get('/locations', [TopAnalyticsController::class, 'locations'])->name('locations');
+        Route::get('/influencers', [TopAnalyticsController::class, 'influencers'])->name('influencers');
+    });
     
     // Analytics Pages
     Route::get('/sentiment', [MkController::class, 'sentiment'])->name('sentiment');
@@ -130,9 +148,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     Route::get('/publisher', [MkController::class, 'publisherStats'])->name('publisher');
     Route::get('/topics', [MkController::class, 'recentTopics'])->name('topics');
     
-    // ═══════════════════════════════════════════════════════════
-    // 🔥 DATA SOURCE ROUTES - UPDATED WITH Api NAMESPACE
-    // ═══════════════════════════════════════════════════════════
+    // Data Source Routes
     Route::prefix('data-source')->name('data-source.')->group(function () {
         Route::get('/users', [DataSourceController::class, 'users'])->name('users');
         Route::get('/authors', [DataSourceController::class, 'authors'])->name('authors');

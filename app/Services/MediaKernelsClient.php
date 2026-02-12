@@ -957,4 +957,69 @@ public function topicMap(
         return [];
     }
 }
+// 🔥 ADD THESE METHODS TO END OF MediaKernelsClient.php (AFTER topicMap method)
+
+    // 🔥 NEW: top_author_location
+    public function topAuthorLocation(
+        string $projectId,
+        string $media,
+        string $startDate,
+        string $endDate,
+        int $startTime = 0,
+        int $endTime = 23
+    ): array {
+        try {
+            $token = $this->getToken();
+
+            $res = Http::timeout(60)->acceptJson()->get(
+                $this->baseUrl() . '/top_author_location/',
+                [
+                    'project_id' => $projectId,
+                    'media'      => $media,
+                    'start_date' => $startDate,
+                    'end_date'   => $endDate,
+                    'start_time' => $startTime,
+                    'end_time'   => $endTime,
+                    'token'      => $token,
+                ]
+            );
+
+            $res->throw();
+            return $this->parseJson($res);
+        } catch (\Exception $e) {
+            Log::warning('topAuthorLocation API error', ['error' => $e->getMessage()]);
+            return ['data' => []];
+        }
+    }
+
+    // 🔥 NEW: top_influencers
+    public function topInfluencers(
+        string $projectId,
+        string $startDate,
+        string $endDate,
+        int $startTime = 0,
+        int $endTime = 23
+    ): array {
+        try {
+            $token = $this->getToken();
+
+            $res = Http::timeout(60)->acceptJson()->get(
+                $this->baseUrl() . '/top_influencers/',
+                [
+                    'project_id' => $projectId,
+                    'start_date' => $startDate,
+                    'end_date'   => $endDate,
+                    'start_time' => $startTime,
+                    'end_time'   => $endTime,
+                    'token'      => $token,
+                ]
+            );
+
+            $res->throw();
+            return $this->parseJson($res);
+        } catch (\Exception $e) {
+            Log::warning('topInfluencers API error', ['error' => $e->getMessage()]);
+            return ['data' => []];
+        }
+    }
 }
