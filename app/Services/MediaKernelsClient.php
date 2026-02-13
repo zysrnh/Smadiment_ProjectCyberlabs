@@ -1022,4 +1022,72 @@ public function topicMap(
             return ['data' => []];
         }
     }
+    public function getUserMentions(
+    string $projectId,
+    string $startDate,
+    string $endDate,
+    string $username,
+    int $startTime = 0,
+    int $endTime = 23,
+    int $rows = 50
+): array {
+    try {
+        $token = $this->getToken();
+
+        // Fetch mentions from API
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/mentions/',
+            [
+                'project_id'   => $projectId,
+                'start_date'   => $startDate,
+                'end_date'     => $endDate,
+                'start_time'   => $startTime,
+                'end_time'     => $endTime,
+                'with_content' => 'true',
+                'start'        => 0,
+                'rows'         => 100, // Get more to ensure we have enough after filtering
+                'token'        => $token,
+            ]
+        );
+
+        $res->throw();
+        
+        $json = $this->parseJson($res);
+        
+        Log::info('getUserMentions raw API response', [
+            'username' => $username,
+            'total_results' => count($json),
+        ]);
+
+        // Filter mentions by username
+        $userMentions = [];
+        foreach ($json as $mention) {
+            $authorScreenName = $mention['author_scr_name'] ?? '';
+            
+            // Check if this mention is from the target user
+            if (strtolower($authorScreenName) === strtolower($username)) {
+                $userMentions[] = $mention;
+                
+                // Stop when we have enough
+                if (count($userMentions) >= $rows) {
+                    break;
+                }
+            }
+        }
+        
+        Log::info('getUserMentions filtered results', [
+            'username' => $username,
+            'filtered_count' => count($userMentions),
+        ]);
+        
+        return $userMentions;
+        
+    } catch (\Exception $e) {
+        Log::error('getUserMentions API error', [
+            'error' => $e->getMessage(),
+            'username' => $username,
+        ]);
+        return [];
+    }
+}
 }

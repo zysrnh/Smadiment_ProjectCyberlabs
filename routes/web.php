@@ -182,4 +182,6 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/volume', [DataSourceController::class, 'volume'])->name('volume');
         Route::get('/trends', [DataSourceController::class, 'trends'])->name('trends');
     });
+    // X Overview API Routes
+Route::get('/mk/api/x/user-mentions', [XOverviewController::class, 'userMentions'])->name('mk.api.x.user-mentions');
 });
