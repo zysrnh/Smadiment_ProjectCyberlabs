@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\MediaKernelsClient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class MkController extends Controller
@@ -91,33 +92,57 @@ class MkController extends Controller
     }
 
     /**
-     * Helper: Get project list
+     * 🔥 FIXED: Get FILTERED projects based on user assignment
      */
     private function getProjects(MediaKernelsClient $mk): array
     {
+        $user = Auth::user();
+        
+        // Get user's assigned project IDs from database
+        $assignedProjectIds = $user->assignedProjectIds();
+        
+        Log::info('🔍 User assigned projects', [
+            'user_id' => $user->id,
+            'assigned_ids' => $assignedProjectIds
+        ]);
+        
+        // Fetch ALL projects from API
         $rawProjects = $mk->listProjects(0, 100);
-        return array_values($rawProjects);
+        $allProjects = array_values($rawProjects);
+        
+        // 🔥 FILTER: Only keep projects user has access to
+        $userProjects = array_filter($allProjects, function($project) use ($assignedProjectIds) {
+            $projectId = $project['id'] ?? null;
+            return in_array($projectId, $assignedProjectIds);
+        });
+        
+        // Re-index array
+        $filteredProjects = array_values($userProjects);
+        
+        Log::info('✅ Filtered projects', [
+            'total_projects' => count($allProjects),
+            'user_projects' => count($filteredProjects),
+            'project_ids' => array_column($filteredProjects, 'id')
+        ]);
+        
+        return $filteredProjects;
     }
 
     /**
      * 📊 DASHBOARD (User - Filtered by assigned projects)
+     * 
+     * 🔥 FIXED: Now filters projects based on user assignments
      */
     public function dashboard(Request $request, MediaKernelsClient $mk)
     {
-        // Get all projects from API
-        $allProjects = $this->getProjects($mk);
+        // 🔥 CHANGED: Use getProjects() which now filters by user
+        $projects = $this->getProjects($mk);
         
-        // Filter projects based on user's access
-        $user = auth()->user();
-        $assignedProjectIds = $user->assignedProjectIds();
-        
-        // Filter projects: only show projects user has access to
-        $projects = array_filter($allProjects, function($project) use ($assignedProjectIds) {
-            return in_array($project['id'], $assignedProjectIds);
-        });
-        
-        // Re-index array
-        $projects = array_values($projects);
+        Log::info('📊 Dashboard loaded', [
+            'user_id' => Auth::id(),
+            'projects_count' => count($projects),
+            'project_ids' => array_column($projects, 'id')
+        ]);
         
         return view('mk.dashboard', [
             'projects' => $projects,
@@ -181,9 +206,12 @@ class MkController extends Controller
 
     /**
      * 👨‍💼 ADMIN DASHBOARD - List Projects with Stats & Charts
+     * 
+     * Admin sees ALL projects (no filtering)
      */
     public function adminDashboard(Request $request, MediaKernelsClient $mk)
     {
+        // Admin sees ALL projects (no filtering needed)
         $rawProjects = $mk->listProjects(0, 100);
         $projects = array_values($rawProjects);
         
@@ -255,31 +283,35 @@ class MkController extends Controller
 
     /**
      * 📁 PROJECTS LIST
+     * 
+     * 🔥 FIXED: Now uses filtered projects
      */
     public function projects(Request $request, MediaKernelsClient $mk)
     {
-        $start  = (int) $request->query('start', 0);
-        $limit  = (int) $request->query('limit', 20);
-
-        $rawProjects = $mk->listProjects($start, $limit);
-        $projects    = array_values($rawProjects);
+        // Use filtered projects instead of all projects
+        $projects = $this->getProjects($mk);
 
         return view('mk.projects', [
-            'raw' => $rawProjects,
             'projects' => $projects,
-            'start' => $start,
-            'limit' => $limit,
         ]);
     }
 
     /**
      * 💬 SENTIMENT ANALYSIS
+     * 
+     * 🔥 FIXED: Uses filtered projects
      */
     public function sentiment(Request $request, MediaKernelsClient $mk)
     {
         $projects = $this->getProjects($mk);
         $params = $this->getParams($request);
         $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+
+        // 🔥 Verify user has access to this project
+        if ($projectId && !$this->userHasAccessToProject($projectId)) {
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'You do not have access to this project');
+        }
 
         $rawData = [];
         $sentimentData = ['positive' => 0, 'neutral' => 0, 'negative' => 0];
@@ -299,6 +331,14 @@ class MkController extends Controller
     }
 
     /**
+     * 🔥 NEW HELPER: Verify user has access to project
+     */
+    private function userHasAccessToProject(int $projectId): bool
+    {
+        return Auth::user()->hasAccessToProject($projectId);
+    }
+
+    /**
      * 🌍 GEOGRAPHIC DATA
      */
     public function geographic(Request $request, MediaKernelsClient $mk)
@@ -306,6 +346,11 @@ class MkController extends Controller
         $projects = $this->getProjects($mk);
         $params = $this->getParams($request);
         $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+
+        if ($projectId && !$this->userHasAccessToProject($projectId)) {
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'You do not have access to this project');
+        }
 
         $geoRawData = [];
         $geoRows = [];
@@ -340,6 +385,11 @@ class MkController extends Controller
         $params = $this->getParams($request);
         $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
 
+        if ($projectId && !$this->userHasAccessToProject($projectId)) {
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'You do not have access to this project');
+        }
+
         $rawData = [];
         $chartData = ['labels' => [], 'values' => []];
 
@@ -365,6 +415,11 @@ class MkController extends Controller
         $projects = $this->getProjects($mk);
         $params = $this->getParams($request);
         $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+
+        if ($projectId && !$this->userHasAccessToProject($projectId)) {
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'You do not have access to this project');
+        }
 
         $rawData = [];
         $chartData = ['labels' => [], 'values' => []];
@@ -392,6 +447,11 @@ class MkController extends Controller
         $params = $this->getParams($request);
         $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
 
+        if ($projectId && !$this->userHasAccessToProject($projectId)) {
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'You do not have access to this project');
+        }
+
         $rawData = [];
         $chartData = ['labels' => [], 'values' => []];
 
@@ -418,6 +478,11 @@ class MkController extends Controller
         $params = $this->getParams($request);
         $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
 
+        if ($projectId && !$this->userHasAccessToProject($projectId)) {
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'You do not have access to this project');
+        }
+
         $rawData = [];
 
         if ($projectId) {
@@ -440,6 +505,11 @@ class MkController extends Controller
         $projects = $this->getProjects($mk);
         $params = $this->getParams($request);
         $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+
+        if ($projectId && !$this->userHasAccessToProject($projectId)) {
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'You do not have access to this project');
+        }
 
         $rawData = [];
         $chartData = ['labels' => [], 'values' => []];
@@ -481,6 +551,11 @@ class MkController extends Controller
         $params = $this->getParams($request);
         $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
 
+        if ($projectId && !$this->userHasAccessToProject($projectId)) {
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'You do not have access to this project');
+        }
+
         $rawData = [];
         $tableData = [];
 
@@ -520,6 +595,11 @@ class MkController extends Controller
         $projects = $this->getProjects($mk);
         $params = $this->getParams($request);
         $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+
+        if ($projectId && !$this->userHasAccessToProject($projectId)) {
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'You do not have access to this project');
+        }
 
         $rawData = [];
         $tableData = [];
@@ -568,6 +648,11 @@ class MkController extends Controller
         $params = $this->getParams($request);
         $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
 
+        if ($projectId && !$this->userHasAccessToProject($projectId)) {
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'You do not have access to this project');
+        }
+
         $rawData = [];
         $tableData = [];
 
@@ -614,6 +699,11 @@ class MkController extends Controller
         $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
         $rows = (int) $request->query('rows', 100);
         $includePagerank = $request->query('pagerank', 'true') === 'true';
+
+        if ($projectId && !$this->userHasAccessToProject($projectId)) {
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'You do not have access to this project');
+        }
 
         $rawData = [];
         $tableData = [];
@@ -720,26 +810,31 @@ class MkController extends Controller
         ]);
     }
 
-  /**
- * 📊 DATA OVERVIEW - SIMPLIFIED (Lazy Loading)
- */
-public function dataOverview(Request $request, MediaKernelsClient $mk)
-{
-    $projects = $this->getProjects($mk);
-    $params = $this->getParams($request);
-    $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
+    /**
+     * 📊 DATA OVERVIEW - SIMPLIFIED (Lazy Loading)
+     */
+    public function dataOverview(Request $request, MediaKernelsClient $mk)
+    {
+        $projects = $this->getProjects($mk);
+        $params = $this->getParams($request);
+        $projectId = $request->query('project_id') ?? ($projects[0]['id'] ?? null);
 
-    // Tidak perlu load semua data di sini!
-    // Semua data akan di-load via API saat user scroll
-    
-    return view('mk.data-overview', [
-        'projects' => $projects,
-        'projectId' => $projectId,
-        'params' => $params,
-        'startDate' => $params['startDate'],
-        'endDate' => $params['endDate'],
-    ]);
-}
+        if ($projectId && !$this->userHasAccessToProject($projectId)) {
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'You do not have access to this project');
+        }
+
+        // Tidak perlu load semua data di sini!
+        // Semua data akan di-load via API saat user scroll
+        
+        return view('mk.data-overview', [
+            'projects' => $projects,
+            'projectId' => $projectId,
+            'params' => $params,
+            'startDate' => $params['startDate'],
+            'endDate' => $params['endDate'],
+        ]);
+    }
 
     /**
      * 🔥 CORRECT: Get mention volume counts using projectStats (like Drone Emprit)

@@ -681,6 +681,15 @@
      class="nav-item {{ request()->routeIs('mk.x.most-retweets') ? 'active' : '' }}">
     <span>Most Retweets</span>
   </a>
+  <!-- Di dalam X dropdown -->
+<a href="{{ route('mk.x.top-hashtags') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+   class="nav-item {{ request()->routeIs('mk.x.top-hashtags') ? 'active' : '' }}">
+  <span>Top Hashtags</span>
+</a>
+<a href="{{ route('mk.x.authors.demographics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+       class="nav-item {{ request()->routeIs('mk.x.authors.demographics') ? 'active' : '' }}">
+      <span>Authors Demographics</span>
+    </a>
 </div>
 
         <!-- Facebook -->

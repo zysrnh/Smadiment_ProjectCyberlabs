@@ -23,27 +23,14 @@ class XOverviewController extends Controller
     public function index(Request $request)
     {
         try {
-            // Get projects list first
             $projectsData = $this->client->listProjects(0, 100);
             $projects = $projectsData['data'] ?? [];
             
-            Log::info('X Overview - Projects loaded', [
-                'total_projects' => count($projects),
-                'projects' => $projects
-            ]);
-            
-            // Get project_id from query parameter or auto-select first project
             $projectId = $request->query('project_id');
             
-            // If no project_id provided, auto-select first project
             if (!$projectId && count($projects) > 0) {
                 $projectId = $projects[0]['id'] ?? null;
                 
-                Log::info('X Overview - Auto-selecting first project', [
-                    'project_id' => $projectId
-                ]);
-                
-                // Redirect with project_id to maintain clean URL
                 if ($projectId) {
                     return redirect()->route('mk.x.overview', [
                         'project_id' => $projectId,
@@ -53,11 +40,7 @@ class XOverviewController extends Controller
                 }
             }
             
-            // If still no project available
             if (!$projectId) {
-                Log::warning('X Overview - No projects available');
-                
-                // Still render the page but with empty project
                 $endDate = $request->query('end_date', now()->format('Y-m-d'));
                 $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
                 
@@ -69,18 +52,9 @@ class XOverviewController extends Controller
                 ]);
             }
 
-            // Get date range from query parameters or use defaults (last 7 days)
             $endDate = $request->query('end_date', now()->format('Y-m-d'));
             $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
 
-            Log::info('X Overview - Loading page', [
-                'project_id' => $projectId,
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'total_projects' => count($projects)
-            ]);
-
-            // Prepare view data - MAKE SURE ALL VARIABLES ARE PASSED
             return view('mk.x.overview')->with([
                 'projectId' => $projectId,
                 'startDate' => $startDate,
@@ -94,7 +68,6 @@ class XOverviewController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            // Return to page with error message instead of redirecting
             return view('mk.x.overview')->with([
                 'projectId' => null,
                 'startDate' => now()->subDays(6)->format('Y-m-d'),
@@ -106,87 +79,7 @@ class XOverviewController extends Controller
     }
 
     /**
-     * Display Most Retweets Page
-     */
-    public function mostRetweetsPage(Request $request)
-    {
-        try {
-            $projectsData = $this->client->listProjects(0, 100);
-            $projects = $projectsData['data'] ?? [];
-
-            Log::info('Most Retweets Page - Projects loaded', [
-                'total_projects' => count($projects),
-                'projects' => $projects
-            ]);
-
-            $projectId = $request->query('project_id');
-
-            if (!$projectId && count($projects) > 0) {
-                $projectId = $projects[0]['id'] ?? null;
-
-                Log::info('Most Retweets Page - Auto-selecting first project', [
-                    'project_id' => $projectId
-                ]);
-
-                if ($projectId) {
-                    return redirect()->route('mk.x.most-retweets', [
-                        'project_id' => $projectId,
-                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
-                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
-                    ]);
-                }
-            }
-
-            if (!$projectId) {
-                Log::warning('Most Retweets Page - No projects available');
-
-                $endDate   = $request->query('end_date', now()->format('Y-m-d'));
-                $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
-
-                return view('mk.x.most-retweets', [
-                    'projectId' => null,
-                    'startDate' => $startDate,
-                    'endDate'   => $endDate,
-                    'projects'  => [],
-                ]);
-            }
-
-            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
-            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
-
-            Log::info('Most Retweets Page - Loading page', [
-                'project_id' => $projectId,
-                'start_date' => $startDate,
-                'end_date'   => $endDate,
-                'total_projects' => count($projects)
-            ]);
-
-            return view('mk.x.most-retweets')->with([
-                'projectId' => $projectId,
-                'startDate' => $startDate,
-                'endDate'   => $endDate,
-                'projects'  => $projects,
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Most Retweets Page Error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return view('mk.x.most-retweets')->with([
-                'projectId' => null,
-                'startDate' => now()->subDays(6)->format('Y-m-d'),
-                'endDate'   => now()->format('Y-m-d'),
-                'projects'  => [],
-                'error'     => 'Failed to load page: ' . $e->getMessage(),
-            ]);
-        }
-    }
-
-    /**
      * API: Get Total Users for X
-     * Response format: {"status": "success", "data": {"total_author": "119021"}, "numrows": 1}
      */
     public function totalUsers(Request $request)
     {
@@ -203,10 +96,7 @@ class XOverviewController extends Controller
             }
 
             $result = $this->client->totalUsers($projectId, $startDate, $endDate);
-            
-            Log::info('totalUsers raw API response', ['result' => $result]);
 
-            // ✅ FIX: Extract total from nested data structure
             $total = 0;
             if (isset($result['data']['total_author'])) {
                 $total = (int) $result['data']['total_author'];
@@ -224,9 +114,7 @@ class XOverviewController extends Controller
         } catch (\Exception $e) {
             Log::error('X totalUsers API error', [
                 'error' => $e->getMessage(),
-                'project_id' => $request->query('project_id'),
-                'start_date' => $request->query('start_date'),
-                'end_date' => $request->query('end_date')
+                'project_id' => $request->query('project_id')
             ]);
             
             return response()->json([
@@ -238,7 +126,6 @@ class XOverviewController extends Controller
 
     /**
      * API: Get Total Authors for X
-     * Response format: {"all": 43276, "bymedia": {"fb": "282", "twit": "42662", ...}}
      */
     public function totalAuthors(Request $request)
     {
@@ -255,10 +142,7 @@ class XOverviewController extends Controller
             }
 
             $result = $this->client->totalAuthors($projectId, 'twitter', $startDate, $endDate);
-            
-            Log::info('totalAuthors raw API response', ['result' => $result]);
 
-            // ✅ FIX: Extract total from "all" field or "bymedia.twit"
             $total = 0;
             if (isset($result['all'])) {
                 $total = (int) $result['all'];
@@ -288,7 +172,6 @@ class XOverviewController extends Controller
 
     /**
      * API: Get Volume Total for X
-     * Response format: {"all": {"total": "3553"}, "bymedia": {"twit": "2639", ...}, "byplatforms": {...}}
      */
     public function volumeTotal(Request $request)
     {
@@ -305,10 +188,7 @@ class XOverviewController extends Controller
             }
 
             $result = $this->client->volumeTotal($projectId, 'twitter', $startDate, $endDate);
-            
-            Log::info('volumeTotal raw API response', ['result' => $result]);
 
-            // ✅ FIX: Extract total and chart data
             $total = 0;
             if (isset($result['all']['total'])) {
                 $total = (int) $result['all']['total'];
@@ -316,13 +196,11 @@ class XOverviewController extends Controller
                 $total = (int) $result['bymedia']['twit'];
             }
 
-            // Get chart data from trends_total API
             $chartData = [];
             try {
                 $trendsResult = $this->client->trendsTotal($projectId, $startDate, $endDate);
                 
                 if (isset($trendsResult['data']) && is_array($trendsResult['data'])) {
-                    // Find twitter data
                     foreach ($trendsResult['data'] as $trend) {
                         if (isset($trend['keyword']) && strtolower($trend['keyword']) === 'twit') {
                             $chartData = $trend['data'] ?? [];
@@ -357,8 +235,6 @@ class XOverviewController extends Controller
 
     /**
      * API: Get Sentiment Total for X
-     * Response format: {"neg": "1716", "pos": "5185", "net": "1017"}
-     * OR: {"all": 311, "bymedia": {"twit": {"neg": 49, "pos": 83, "net": 17}}}
      */
     public function sentimentTotal(Request $request)
     {
@@ -375,21 +251,16 @@ class XOverviewController extends Controller
             }
 
             $result = $this->client->sentimentTotal($projectId, $startDate, $endDate);
-            
-            Log::info('sentimentTotal raw API response', ['result' => $result]);
 
             $positive = 0;
             $negative = 0;
             $neutral = 0;
 
-            // ✅ FIX: Handle both response formats
             if (isset($result['pos']) && isset($result['neg']) && isset($result['net'])) {
-                // Format 1: Direct sentiment counts
                 $positive = (int) $result['pos'];
                 $negative = (int) $result['neg'];
                 $neutral = (int) $result['net'];
             } elseif (isset($result['bymedia']['twit'])) {
-                // Format 2: By media breakdown
                 $twitData = $result['bymedia']['twit'];
                 $positive = isset($twitData['pos']) ? (int) $twitData['pos'] : 0;
                 $negative = isset($twitData['neg']) ? (int) $twitData['neg'] : 0;
@@ -420,7 +291,6 @@ class XOverviewController extends Controller
 
     /**
      * API: Get Most Active Users for X
-     * Response format: {"status": "success", "data": {"data": [{"name": "...", "mentions": "77", ...}]}}
      */
     public function mostActiveUsers(Request $request)
     {
@@ -437,37 +307,29 @@ class XOverviewController extends Controller
             }
 
             $result = $this->client->mostActiveUsers($projectId, $startDate, $endDate);
-            
-            Log::info('mostActiveUsers raw API response', ['result' => $result]);
 
-            // ✅ FIX: Extract users from nested data structure with ALL fields
             $users = [];
             
             if (isset($result['data']['data']) && is_array($result['data']['data'])) {
                 foreach ($result['data']['data'] as $user) {
-                    // Extract username from name field or screen_name from contentJson
                     $username = '';
                     if (isset($user['contentJson']['screen_name'])) {
                         $username = $user['contentJson']['screen_name'];
                     } elseif (isset($user['name'])) {
-                        // Extract username from "Name @username" format
                         if (preg_match('/@(\w+)/', $user['name'], $matches)) {
                             $username = $matches[1];
                         }
                     }
                     
-                    // Extract profile URL
                     $profileUrl = '';
                     if (isset($user['profile_url'])) {
                         $profileUrl = $user['profile_url'];
                     } elseif (isset($user['contentJson']['profile_image_url_https'])) {
-                        // Convert _normal to larger size for better quality
                         $profileUrl = str_replace('_normal', '_bigger', $user['contentJson']['profile_image_url_https']);
                     } elseif (isset($user['contentJson']['profile_image_url'])) {
                         $profileUrl = str_replace('_normal', '_bigger', $user['contentJson']['profile_image_url']);
                     }
                     
-                    // Get follower count
                     $followers = 0;
                     if (isset($user['followers'])) {
                         $followers = (int) $user['followers'];
@@ -475,23 +337,19 @@ class XOverviewController extends Controller
                         $followers = (int) $user['contentJson']['followers_count'];
                     }
                     
-                    // Get following count
                     $following = 0;
                     if (isset($user['contentJson']['friends_count'])) {
                         $following = (int) $user['contentJson']['friends_count'];
                     }
                     
-                    // Get account name (real name, not username)
                     $accountName = '';
                     if (isset($user['contentJson']['name'])) {
                         $accountName = $user['contentJson']['name'];
                     } elseif (isset($user['name'])) {
-                        // Remove @username from "Name @username" format
                         $accountName = preg_replace('/@\w+/', '', $user['name']);
                         $accountName = trim($accountName);
                     }
                     
-                    // Calculate total posts (mentions + replies + retweets)
                     $mentions = isset($user['mentions']) ? (int) $user['mentions'] : 0;
                     $replies = isset($user['replies']) ? (int) $user['replies'] : 0;
                     $retweets = isset($user['retweets']) ? (int) $user['retweets'] : 0;
@@ -502,16 +360,16 @@ class XOverviewController extends Controller
                             'username' => $username,
                             'name' => $accountName ?: $username,
                             'profile_url' => $profileUrl,
-                            'profile_image_url' => $profileUrl, // Alias for compatibility
+                            'profile_image_url' => $profileUrl,
                             'followers' => $followers,
                             'following' => $following,
                             'mentions' => $mentions,
                             'replies' => $replies,
                             'retweets' => $retweets,
                             'posts' => $posts,
-                            'y' => $posts, // Alias for compatibility
+                            'y' => $posts,
                             'id' => $user['id'] ?? '',
-                            'contentJson' => $user['contentJson'] ?? null, // Include full contentJson for detail view
+                            'contentJson' => $user['contentJson'] ?? null,
                         ];
                     }
                 }
@@ -538,8 +396,55 @@ class XOverviewController extends Controller
     }
 
     /**
+     * Display Most Retweets Page
+     */
+    public function mostRetweetsPage(Request $request)
+    {
+        try {
+            $projectsData = $this->client->listProjects(0, 100);
+            $projects = $projectsData['data'] ?? [];
+
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+
+                if ($projectId) {
+                    return redirect()->route('mk.x.most-retweets', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+            return view('mk.x.most-retweets')->with([
+                'projectId' => $projectId,
+                'startDate' => $startDate,
+                'endDate'   => $endDate,
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Most Retweets Page Error', [
+                'error' => $e->getMessage()
+            ]);
+
+            return view('mk.x.most-retweets')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * API: Get Most Retweets for X
-     * Response format: array of tweet objects with freq, author, sentiment, content, etc.
      */
     public function mostRetweets(Request $request)
     {
@@ -557,16 +462,10 @@ class XOverviewController extends Controller
 
             $result = $this->client->mostRetweets($projectId, $startDate, $endDate);
 
-            Log::info('mostRetweets raw API response', [
-                'count'  => is_array($result) ? count($result) : 0,
-                'sample' => is_array($result) ? array_slice($result, 0, 2, true) : [],
-            ]);
-
             $tweets = [];
 
             if (is_array($result)) {
                 foreach ($result as $item) {
-                    // Normalise avatar: strip _normal for full-size image
                     $avatar = $item['avatar_url'] ?? $item['author']['image'] ?? '';
                     $avatar = str_replace('_normal.', '.', $avatar);
 
@@ -588,7 +487,6 @@ class XOverviewController extends Controller
                     ];
                 }
 
-                // Ensure sorted by freq descending (API biasanya sudah sorted, tapi pastiin)
                 usort($tweets, fn($a, $b) => $b['freq'] - $a['freq']);
             }
 
@@ -601,8 +499,6 @@ class XOverviewController extends Controller
             Log::error('X mostRetweets API error', [
                 'error'      => $e->getMessage(),
                 'project_id' => $request->query('project_id'),
-                'start_date' => $request->query('start_date'),
-                'end_date'   => $request->query('end_date'),
             ]);
 
             return response()->json([
@@ -614,7 +510,6 @@ class XOverviewController extends Controller
 
     /**
      * API: Get User Mentions for X
-     * Get all mentions/tweets from a specific user
      */
     public function userMentions(Request $request)
     {
@@ -631,27 +526,12 @@ class XOverviewController extends Controller
                 ], 400);
             }
 
-            // Call the Media Kernels API to get user mentions
             $result = $this->client->getUserMentions($projectId, $startDate, $endDate, $username);
-            
-            Log::info('userMentions raw API response', [
-                'username' => $username,
-                'result_count' => count($result)
-            ]);
 
             $mentions = [];
             
-            // Extract mentions from the response
-            // Response is array of mention objects directly
             if (is_array($result)) {
                 foreach ($result as $mention) {
-                    // Parse contentJson if it exists
-                    $contentJson = null;
-                    if (isset($mention['contentJson']) && is_string($mention['contentJson'])) {
-                        $contentJson = json_decode($mention['contentJson'], true);
-                    }
-                    
-                    // Get sentiment from class_sentiment_code
                     $sentimentCode = $mention['class_sentiment_code'] ?? 'neutral';
                     $sentiment = $sentimentCode === 'pos' ? 'positive' : 
                                 ($sentimentCode === 'neg' ? 'negative' : 'neutral');
@@ -689,6 +569,439 @@ class XOverviewController extends Controller
                 'success' => false,
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Display Top Hashtags Page
+     */
+    public function topHashtagsPage(Request $request)
+    {
+        try {
+            $projectsData = $this->client->listProjects(0, 100);
+            $projects = $projectsData['data'] ?? [];
+
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+
+                if ($projectId) {
+                    return redirect()->route('mk.x.top-hashtags', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+            return view('mk.x.top-hashtags')->with([
+                'projectId' => $projectId,
+                'startDate' => $startDate,
+                'endDate'   => $endDate,
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Top Hashtags Page Error', [
+                'error' => $e->getMessage()
+            ]);
+
+            return view('mk.x.top-hashtags')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * API: Get Top Hashtags Data
+     */
+    public function topHashtagsData(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+
+            if (!$projectId || !$startDate || !$endDate) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => 'Missing required parameters: project_id, start_date, end_date'
+                ], 400);
+            }
+
+            $result = $this->client->topHashtags($projectId, 'twitter', $startDate, $endDate);
+
+            $hashtags = [];
+            $totalMentions = 0;
+            $totalHashtags = 0;
+
+            if (is_array($result)) {
+                $data = $result;
+                if (isset($result['data']) && is_array($result['data'])) {
+                    $data = $result['data'];
+                }
+                
+                foreach ($data as $item) {
+                    if (!is_array($item)) continue;
+                    
+                    $name = $item['name'] ?? '';
+                    $size = (int) ($item['size'] ?? 0);
+                    
+                    if ($name && $size > 0) {
+                        $hashtags[] = [
+                            'name' => $name,
+                            'size' => $size,
+                            'hashtag' => '#' . ltrim($name, '#')
+                        ];
+                        $totalMentions += $size;
+                        $totalHashtags++;
+                    }
+                }
+
+                usort($hashtags, fn($a, $b) => $b['size'] - $a['size']);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data'    => [
+                    'hashtags' => $hashtags,
+                    'total_hashtags' => $totalHashtags,
+                    'total_mentions' => $totalMentions,
+                    'top_hashtag' => $hashtags[0] ?? null,
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('topHashtagsData API error', [
+                'error'      => $e->getMessage(),
+                'project_id' => $request->query('project_id'),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // ==========================================
+    // 🔥 AUTHORS DEMOGRAPHICS METHODS
+    // ==========================================
+
+    /**
+     * Display Authors Age Page
+     */
+    public function authorsAgePage(Request $request)
+    {
+        try {
+            $projectsData = $this->client->listProjects(0, 100);
+            $projects = $projectsData['data'] ?? [];
+
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+
+                if ($projectId) {
+                    return redirect()->route('mk.x.authors.age', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+            return view('mk.x.authors-age')->with([
+                'projectId' => $projectId,
+                'startDate' => $startDate,
+                'endDate'   => $endDate,
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Authors Age Page Error', [
+                'error' => $e->getMessage()
+            ]);
+
+            return view('mk.x.authors-age')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * API: Get Authors Age Data
+     */
+    public function authorsAgeData(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+
+            if (!$projectId || !$startDate || !$endDate) {
+                return response()->json([
+                    'error' => 'Missing required parameters'
+                ], 400);
+            }
+
+            // authorsAge already returns direct array from MediaKernels API
+            $result = $this->client->authorsAge($projectId, 'twitter', $startDate, $endDate);
+
+            Log::info('authorsAge API response', [
+                'count' => is_array($result) ? count($result) : 0,
+                'sample' => is_array($result) ? array_slice($result, 0, 2, true) : [],
+            ]);
+
+            // Return direct array, not wrapped
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            Log::error('authorsAge API error', [
+                'error' => $e->getMessage(),
+                'project_id' => $request->query('project_id'),
+            ]);
+
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Display Authors Gender Page
+     */
+    public function authorsGenderPage(Request $request)
+    {
+        try {
+            $projectsData = $this->client->listProjects(0, 100);
+            $projects = $projectsData['data'] ?? [];
+
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+
+                if ($projectId) {
+                    return redirect()->route('mk.x.authors.gender', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+            return view('mk.x.authors-gender')->with([
+                'projectId' => $projectId,
+                'startDate' => $startDate,
+                'endDate'   => $endDate,
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Authors Gender Page Error', [
+                'error' => $e->getMessage()
+            ]);
+
+            return view('mk.x.authors-gender')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * API: Get Authors Gender Data
+     */
+    public function authorsGenderData(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+
+            if (!$projectId || !$startDate || !$endDate) {
+                return response()->json([
+                    'error' => 'Missing required parameters'
+                ], 400);
+            }
+
+            // authorsGender already returns direct array from MediaKernels API
+            $result = $this->client->authorsGender($projectId, 'twitter', $startDate, $endDate);
+
+            Log::info('authorsGender API response', [
+                'count' => is_array($result) ? count($result) : 0,
+                'sample' => is_array($result) ? array_slice($result, 0, 2, true) : [],
+            ]);
+
+            // Return direct array, not wrapped
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            Log::error('authorsGender API error', [
+                'error' => $e->getMessage(),
+                'project_id' => $request->query('project_id'),
+            ]);
+
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Display Authors Type Page
+     */
+    public function authorsTypePage(Request $request)
+    {
+        try {
+            $projectsData = $this->client->listProjects(0, 100);
+            $projects = $projectsData['data'] ?? [];
+
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+
+                if ($projectId) {
+                    return redirect()->route('mk.x.authors.type', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+            return view('mk.x.authors-type')->with([
+                'projectId' => $projectId,
+                'startDate' => $startDate,
+                'endDate'   => $endDate,
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Authors Type Page Error', [
+                'error' => $e->getMessage()
+            ]);
+
+            return view('mk.x.authors-type')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * API: Get Authors Type Data
+     */
+    public function authorsTypeData(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+
+            if (!$projectId || !$startDate || !$endDate) {
+                return response()->json([
+                    'error' => 'Missing required parameters'
+                ], 400);
+            }
+
+            // authorsType already returns direct array from MediaKernels API
+            $result = $this->client->authorsType($projectId, 'twitter', $startDate, $endDate);
+
+            Log::info('authorsType API response', [
+                'count' => is_array($result) ? count($result) : 0,
+                'sample' => is_array($result) ? array_slice($result, 0, 2, true) : [],
+            ]);
+
+            // Return direct array, not wrapped
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            Log::error('authorsType API error', [
+                'error' => $e->getMessage(),
+                'project_id' => $request->query('project_id'),
+            ]);
+
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Display Authors Demographics Page (Single Page with All Demographics)
+     */
+    public function authorsDemographicsPage(Request $request)
+    {
+        try {
+            $projectsData = $this->client->listProjects(0, 100);
+            $projects = $projectsData['data'] ?? [];
+
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+
+                if ($projectId) {
+                    return redirect()->route('mk.x.authors.demographics', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+            return view('mk.x.authors-demographics')->with([
+                'projectId' => $projectId,
+                'startDate' => $startDate,
+                'endDate'   => $endDate,
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Authors Demographics Page Error', [
+                'error' => $e->getMessage()
+            ]);
+
+            return view('mk.x.authors-demographics')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
         }
     }
 }

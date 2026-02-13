@@ -43,7 +43,7 @@
     margin: 0;
   }
 
-  /* Filter Card — identical to X Overview */
+  /* Filter Card */
   .filter-card {
     background: var(--bg-white);
     border-radius: 16px;
@@ -141,7 +141,7 @@
     height: 18px;
   }
 
-  /* Stats Grid — identical structure to X Overview */
+  /* Stats Grid */
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -256,7 +256,55 @@
     transition: width 1s ease-out;
   }
 
-  /* Table Section — identical to X Overview */
+  /* Charts Section */
+  .charts-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .chart-card {
+    background: var(--bg-white);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-gray);
+    transition: all 0.3s;
+  }
+
+  .chart-card:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--bg-gray-50);
+  }
+
+  .chart-title-group h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 6px 0;
+  }
+
+  .chart-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .chart-container {
+    position: relative;
+    height: 320px;
+  }
+
+  /* Table Section */
   .table-section {
     background: var(--bg-white);
     border-radius: 16px;
@@ -329,7 +377,7 @@
     color: var(--text-secondary);
   }
 
-  /* Actions Dropdown — identical to X Overview */
+  /* Actions Dropdown */
   .actions-dropdown { position: relative; }
 
   .actions-dropdown-btn {
@@ -416,7 +464,7 @@
     margin: 6px 0;
   }
 
-  /* Data Table — identical to X Overview */
+  /* Data Table - MATCHING OVERVIEW */
   .data-table {
     width: 100%;
     border-collapse: separate;
@@ -463,24 +511,7 @@
   .data-table tbody tr:hover { background: #fafbfc; }
   .data-table tbody tr:last-child td { border-bottom: none; }
 
-  /* Rank badge */
-  .rank-badge {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 700;
-  }
-
-  .rank-badge.gold   { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; }
-  .rank-badge.silver { background: linear-gradient(135deg, #94a3b8, #64748b); color: #fff; }
-  .rank-badge.bronze { background: linear-gradient(135deg, #d97706, #b45309); color: #fff; }
-  .rank-badge.default{ background: var(--bg-gray-100); color: var(--text-secondary); }
-
-  /* Avatar — same as X Overview */
+  /* Avatar - MATCHING OVERVIEW */
   .avatar-container {
     position: relative;
     display: inline-block;
@@ -520,7 +551,7 @@
     font-size: 13px;
   }
 
-  /* Username/account links — same as X Overview */
+  /* Username/account links - MATCHING OVERVIEW */
   .username-link {
     color: #ea580c;
     text-decoration: none;
@@ -627,7 +658,7 @@
     fill: white;
   }
 
-  /* Loading — same as X Overview */
+  /* Loading */
   .loading-skeleton {
     background: linear-gradient(90deg, var(--bg-gray-50) 25%, #e2e8f0 50%, var(--bg-gray-50) 75%);
     background-size: 200% 100%;
@@ -692,7 +723,7 @@
     to   { opacity: 1; transform: scale(1); }
   }
 
-  /* Alert — identical to X Overview */
+  /* Alert */
   .alert {
     padding: 16px 20px;
     border-radius: 12px;
@@ -710,38 +741,164 @@
     border: 1px solid #fcd34d;
   }
 
-  /* Tweet Detail Modal — same structure as mentions modal in X Overview */
+  /* View All Button */
+  .view-all-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+    border-top: 1px solid var(--border-gray);
+    margin-top: 16px;
+  }
+
+  .view-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 28px;
+    background: var(--primary-green);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .view-all-btn:hover {
+    background: var(--primary-green-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(3, 128, 71, 0.3);
+  }
+
+  .view-all-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* All Tweets Modal - MATCHING OVERVIEW */
+  .all-tweets-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .all-tweets-modal.show {
+    display: flex;
+  }
+
+  .all-tweets-modal .modal-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  .all-tweets-modal .modal-content {
+    position: relative;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    width: 95%;
+    max-width: 1400px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    animation: modalSlideIn 0.3s ease-out;
+    z-index: 10001;
+  }
+
+  .all-tweets-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .all-tweets-modal .modal-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0;
+  }
+
+  .all-tweets-modal .modal-body {
+    padding: 0;
+    overflow-y: auto;
+    position: relative;
+    background: #ffffff;
+    border-radius: 0 0 16px 16px;
+  }
+
+  .all-tweets-modal .data-table {
+    margin: 0;
+    background: #ffffff;
+  }
+
+  .all-tweets-modal .data-table thead tr {
+    background: #ffffff;
+  }
+
+  .all-tweets-modal .data-table tbody tr {
+    background: #ffffff;
+  }
+
+  .all-tweets-modal .data-table tbody tr:hover {
+    background: #f8fafc;
+  }
+
+  .all-tweets-modal .data-table th {
+    background: #ffffff;
+  }
+
+  .all-tweets-modal .data-table td {
+    background: #ffffff;
+  }
+
+  /* Tweet Detail Modal - MATCHING OVERVIEW EXACTLY */
   .tweet-detail-modal {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     z-index: 9999;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 
-  .tweet-detail-modal.show { opacity: 1; }
+  .tweet-detail-modal.show { 
+    display: flex;
+  }
 
   .modal-overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.8);
   }
 
   .modal-content {
     position: relative;
-    background: var(--bg-white);
+    background: #ffffff;
     border-radius: 16px;
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
     width: 90%;
     max-width: 560px;
     max-height: 85vh;
     display: flex;
     flex-direction: column;
     animation: modalSlideIn 0.3s ease-out;
+    z-index: 10001;
   }
 
   @keyframes modalSlideIn {
@@ -753,14 +910,16 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 24px 28px;
-    border-bottom: 2px solid var(--bg-gray-50);
+    padding: 20px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 16px 16px 0 0;
   }
 
   .modal-header h3 {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
-    color: var(--text-primary);
+    color: #1a202c;
     margin: 0;
     display: flex;
     align-items: center;
@@ -768,8 +927,8 @@
   }
 
   .modal-header h3 .x-icon-sm {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     background: #000;
     border-radius: 6px;
     display: inline-flex;
@@ -779,8 +938,8 @@
   }
 
   .modal-header h3 .x-icon-sm svg {
-    width: 14px;
-    height: 14px;
+    width: 15px;
+    height: 15px;
     fill: #fff;
   }
 
@@ -803,6 +962,8 @@
   .modal-body {
     padding: 28px;
     overflow-y: auto;
+    background: #ffffff;
+    border-radius: 0 0 16px 16px;
   }
 
   /* Modal inner content */
@@ -917,7 +1078,7 @@
 
   .modal-open-twitter svg { width: 13px; height: 13px; fill: white; }
 
-  /* Responsive — same breakpoints as X Overview */
+  /* Responsive */
   @media (max-width: 1400px) {
     .data-table { font-size: 12px; }
     .data-table th, .data-table td { padding: 10px 12px; }
@@ -936,6 +1097,7 @@
 
   @media (max-width: 640px) {
     .stat-value { font-size: 28px; }
+    .chart-container { height: 250px; }
     .table-search { width: 100%; }
     .page-header h1 { font-size: 24px; }
     .modal-content { width: 95%; max-height: 90vh; }
@@ -1076,6 +1238,23 @@
 
   </div>
 
+  <!-- Sentiment Chart -->
+  <div class="charts-section">
+    <div class="chart-card" data-lazy-load="retweetSentiment">
+      <div class="chart-header">
+        <div class="chart-title-group">
+          <h3>Retweet Sentiment Distribution</h3>
+          <p class="chart-subtitle">Positive, neutral, and negative breakdown of viral tweets</p>
+        </div>
+      </div>
+      
+      <div class="chart-container">
+        <div id="sentimentChartLoading" class="loading-skeleton" style="height: 100%;"></div>
+        <canvas id="retweetSentimentChart" style="display: none;"></canvas>
+      </div>
+    </div>
+  </div>
+
   <!-- Retweets Table -->
   <div class="table-section" data-lazy-load="retweetsTable">
     <div class="table-header">
@@ -1144,6 +1323,18 @@
     <div id="tableLoading" class="loading-skeleton" style="height: 400px;"></div>
     <div id="tableWrapper" style="display: none; overflow-x: auto;"></div>
 
+    <!-- View All Button -->
+    <div id="viewAllContainer" class="view-all-container" style="display: none;">
+      <button class="view-all-btn" onclick="showAllTweetsModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"/>
+          <polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        View All Tweets (<span id="remainingCount">0</span> more)
+      </button>
+    </div>
+
     <!-- Empty state -->
     <div id="emptyState" style="display: none; text-align: center; padding: 60px 20px; color: var(--text-secondary);">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 48px; height: 48px; margin: 0 auto 16px; opacity: 0.4; display: block;">
@@ -1156,6 +1347,25 @@
   </div>
 
   @endif
+</div>
+
+<!-- All Tweets Modal -->
+<div class="all-tweets-modal" id="allTweetsModal">
+  <div class="modal-overlay" onclick="closeAllTweetsModal()"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>All Viral Tweets (<span id="totalTweetsCount">0</span> total)</h3>
+      <button class="modal-close" onclick="closeAllTweetsModal()">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="allTweetsTableContent"></div>
+    </div>
+  </div>
 </div>
 
 <!-- Tweet Detail Modal -->
@@ -1182,12 +1392,14 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
   const projectId = '{{ $projectId ?? '' }}';
   const startDate = '{{ $startDate ?? '' }}';
   const endDate   = '{{ $endDate ?? '' }}';
 
   let allData = [];
+  let displayedCount = 10; // Display top 10 only
 
   function formatNumber(n) {
     if (!n && n !== 0) return '0';
@@ -1211,14 +1423,7 @@
     return { bg: 'rgba(100,116,139,0.12)', color: '#475569', dot: '#64748b' };
   }
 
-  function getRankBadge(i) {
-    if (i === 0) return '<div class="rank-badge gold">1</div>';
-    if (i === 1) return '<div class="rank-badge silver">2</div>';
-    if (i === 2) return '<div class="rank-badge bronze">3</div>';
-    return `<div class="rank-badge default">${i + 1}</div>`;
-  }
-
-  // ─── Lazy Load — same pattern as X Overview ──────────────────────────────
+  // ─── Lazy Load ────────────────────────────────────────────────────────────
   const lazyLoadConfig  = { rootMargin: '50px', threshold: 0.01 };
   const loadedComponents = new Set();
 
@@ -1230,6 +1435,9 @@
           loadedComponents.add(id);
           if (id === 'retweetStats' || id === 'retweetsTable') {
             loadData();
+          }
+          if (id === 'retweetSentiment') {
+            loadSentimentChart();
           }
           lazyLoadObserver.unobserve(entry.target);
         }
@@ -1298,10 +1506,16 @@
           animateProgress(c, pcts[i] ?? 70);
         });
 
-        // Table
-        renderTable(allData);
+        // Table - Show only top 10
+        renderTable(allData.slice(0, 10));
         document.getElementById('tableLoading').style.display  = 'none';
         document.getElementById('tableWrapper').style.display  = 'block';
+
+        // Show "View All" button if more than 10 tweets
+        if (allData.length > 10) {
+          document.getElementById('viewAllContainer').style.display = 'flex';
+          document.getElementById('remainingCount').textContent = allData.length - 10;
+        }
 
       } else {
         document.getElementById('tableLoading').style.display = 'none';
@@ -1322,11 +1536,100 @@
     }
   }
 
+  // ─── Load Sentiment Chart ────────────────────────────────────────────────
+  async function loadSentimentChart() {
+    const card = document.querySelector('[data-lazy-load="retweetSentiment"]');
+    addLoadingBadge(card);
+
+    try {
+      const res = await fetch(`/mk/api/x/most-retweets?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
+      const result = await res.json();
+
+      if (result.success && result.data && result.data.length > 0) {
+        // Calculate sentiment distribution
+        const sentiments = { positive: 0, neutral: 0, negative: 0 };
+        
+        result.data.forEach(item => {
+          const sent = (item.sentiment_str || 'neutral').toLowerCase();
+          if (sent === 'positive') sentiments.positive++;
+          else if (sent === 'negative') sentiments.negative++;
+          else sentiments.neutral++;
+        });
+
+        renderSentimentChart(sentiments);
+      }
+    } catch (err) {
+      console.error('Error loading sentiment chart:', err);
+    } finally {
+      removeLoadingBadge(card);
+      card.classList.add('loaded');
+    }
+  }
+
+  function renderSentimentChart(sentiment) {
+    const canvas = document.getElementById('retweetSentimentChart');
+    const loading = document.getElementById('sentimentChartLoading');
+    
+    const ctx = canvas.getContext('2d');
+    
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Positive', 'Neutral', 'Negative'],
+        datasets: [{
+          data: [sentiment.positive, sentiment.neutral, sentiment.negative],
+          backgroundColor: ['#10b981', '#64748b', '#ef4444'],
+          borderWidth: 0,
+          hoverOffset: 15
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#1a202c',
+              font: { family: 'Poppins', size: 13, weight: '600' },
+              padding: 20,
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          },
+          tooltip: {
+            backgroundColor: '#1a202c',
+            padding: 16,
+            titleColor: '#ffffff',
+            bodyColor: '#ffffff',
+            titleFont: { size: 14, weight: '600' },
+            bodyFont: { size: 13 },
+            displayColors: false,
+            cornerRadius: 8,
+            callbacks: {
+              label: function(context) {
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                return `${context.label}: ${formatNumber(context.parsed)} (${percentage}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    loading.style.display = 'none';
+    canvas.style.display = 'block';
+  }
+
   function renderTable(data) {
     let html = `<table class="data-table" id="retweetsTable">
       <thead><tr>
-        <th>RANK</th>
-        <th>AUTHOR</th>
+        <th>NO.</th>
+        <th>AVATAR</th>
+        <th>NAME</th>
+        <th>ACCOUNT NAME</th>
         <th>TWEET</th>
         <th>SENTIMENT</th>
         <th style="text-align:center;">RETWEETS</th>
@@ -1356,16 +1659,16 @@
       // Escape for onclick attr
       const esc = s => s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
 
-      html += `<tr data-search="${(authorName + ' ' + authorScr + ' ' + content).toLowerCase()}">
-        <td>${getRankBadge(i)}</td>
+      html += `<tr>
+        <td><strong>${i + 1}</strong></td>
         <td>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div class="avatar-container">${avatarHtml}</div>
-            <div>
-              <a href="https://twitter.com/${authorScr}" target="_blank" class="account-name-link" style="display:block;">${authorName}</a>
-              <span style="font-size:11px;color:#ea580c;font-weight:500;">@${authorScr}</span>
-            </div>
-          </div>
+          <div class="avatar-container">${avatarHtml}</div>
+        </td>
+        <td>
+          <a href="https://twitter.com/${authorScr}" target="_blank" class="username-link">@${authorScr}</a>
+        </td>
+        <td>
+          <a href="https://twitter.com/${authorScr}" target="_blank" class="account-name-link">${authorName}</a>
         </td>
         <td>
           <div class="tweet-text-cell" onclick="openTweetModal('${esc(content)}','${esc(authorName)}','${esc(authorScr)}','${esc(avatarUrl)}','${freq}','${esc(sentStr)}','${esc(dateStr)}','${esc(tweetLink)}')">
@@ -1404,9 +1707,24 @@
 
   function filterTable() {
     const term = document.getElementById('searchInput').value.toLowerCase();
-    document.querySelectorAll('#retweetsTable tbody tr').forEach(row => {
-      row.style.display = (row.dataset.search || '').includes(term) ? '' : 'none';
+    
+    if (!term) {
+      // If no search term, show top 10
+      renderTable(allData.slice(0, 10));
+      return;
+    }
+    
+    // Filter all data
+    const filtered = allData.filter(item => {
+      const authorName = item.author?.name || item.name || '';
+      const authorScr = item.author?.scr_name || item.name || '';
+      const content = item.content || '';
+      const searchText = (authorName + ' ' + authorScr + ' ' + content).toLowerCase();
+      return searchText.includes(term);
     });
+    
+    // Render filtered results
+    renderTable(filtered);
   }
 
   // ─── Tweet Detail Modal ───────────────────────────────────────────────────
@@ -1463,6 +1781,92 @@
   }
 
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTweetModal(); });
+
+  // ─── All Tweets Modal ─────────────────────────────────────────────────────
+  function showAllTweetsModal() {
+    const modal = document.getElementById('allTweetsModal');
+    const container = document.getElementById('allTweetsTableContent');
+    document.getElementById('totalTweetsCount').textContent = allData.length;
+
+    // Generate table for all tweets
+    let html = '<table class="data-table"><thead><tr>';
+    html += '<th>NO.</th><th>AVATAR</th><th>NAME</th><th>ACCOUNT NAME</th><th>TWEET</th><th>SENTIMENT</th><th style="text-align:center;">RETWEETS</th><th>DATE</th><th></th>';
+    html += '</tr></thead><tbody>';
+
+    allData.forEach((item, i) => {
+      const authorName = item.author?.name   || item.name || 'Unknown';
+      const authorScr  = item.author?.scr_name || item.name || '';
+      const avatarUrl  = item.avatar_url || item.author?.image || '';
+      const content    = item.content || '';
+      const freq       = parseInt(item.freq || item.sentiment_freq || 0);
+      const sentStr    = item.sentiment_str || 'Neutral';
+      const dateStr    = item.date_created || '';
+      const tweetId    = item.sub_id || '';
+      const tweetLink  = tweetId ? `https://twitter.com/${authorScr}/status/${tweetId}` : `https://twitter.com/${authorScr}`;
+
+      const sStyle = getSentimentStyle(sentStr);
+
+      const avatarHtml = avatarUrl
+        ? `<img src="${avatarUrl}" alt="${authorName}" class="user-avatar-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+           <div class="user-avatar-fallback" style="display:none;">${authorName.charAt(0).toUpperCase()}</div>`
+        : `<div class="user-avatar">${authorName.charAt(0).toUpperCase()}</div>`;
+
+      const esc = s => s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+
+      html += `<tr>
+        <td><strong>${i + 1}</strong></td>
+        <td>
+          <div class="avatar-container">${avatarHtml}</div>
+        </td>
+        <td>
+          <a href="https://twitter.com/${authorScr}" target="_blank" class="username-link">@${authorScr}</a>
+        </td>
+        <td>
+          <a href="https://twitter.com/${authorScr}" target="_blank" class="account-name-link">${authorName}</a>
+        </td>
+        <td>
+          <div class="tweet-text-cell" onclick="openTweetModal('${esc(content)}','${esc(authorName)}','${esc(authorScr)}','${esc(avatarUrl)}','${freq}','${esc(sentStr)}','${esc(dateStr)}','${esc(tweetLink)}')">
+            ${content}
+          </div>
+        </td>
+        <td>
+          <span class="sentiment-badge" style="background:${sStyle.bg};color:${sStyle.color};">
+            <span class="sentiment-dot" style="background:${sStyle.dot};"></span>
+            ${sentStr}
+          </span>
+        </td>
+        <td style="text-align:center;">
+          <div class="retweet-count">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"/>
+              <polyline points="1 20 1 14 7 14"/>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            ${formatNumber(freq)}
+          </div>
+        </td>
+        <td style="color:var(--text-secondary);font-size:11px;white-space:nowrap;">${formatDate(dateStr)}</td>
+        <td>
+          <a href="${tweetLink}" target="_blank" class="view-tweet-btn">
+            <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            View
+          </a>
+        </td>
+      </tr>`;
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10);
+  }
+
+  function closeAllTweetsModal() {
+    const modal = document.getElementById('allTweetsModal');
+    modal.classList.remove('show');
+    setTimeout(() => modal.style.display = 'none', 300);
+  }
 
   // ─── Actions Dropdown ─────────────────────────────────────────────────────
   function toggleActionsDropdown(event) {
