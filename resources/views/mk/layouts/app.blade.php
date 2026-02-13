@@ -659,19 +659,26 @@
       <div class="nav-section">
         <div class="nav-label">Social Media</div>
         
-        <!-- X (Twitter) -->
-        <div class="nav-item dropdown-trigger" onclick="toggleDropdown('xDropdown', this)">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-          </span>
-          <span>X</span>
-          <span class="dropdown-arrow">▼</span>
-        </div>
-        <div id="xDropdown" class="nav-sub" style="display: none;">
-          <a href="#" class="nav-item">
-            <span>X Analytics</span>
-          </a>
-        </div>
+       <!-- X (Twitter) -->
+  @php
+    $xRoutes = ['mk.x.overview'];
+    $isXActive = request()->routeIs($xRoutes);
+  @endphp
+  <div class="nav-item dropdown-trigger {{ $isXActive ? 'has-active-child' : '' }}" 
+       onclick="toggleDropdown('xDropdown', this)"
+       id="xTrigger">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    </span>
+    <span>X</span>
+    <span class="dropdown-arrow">▼</span>
+  </div>
+  <div id="xDropdown" class="nav-sub" style="display: {{ $isXActive ? 'block' : 'none' }};">
+    <a href="{{ route('mk.x.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+       class="nav-item {{ request()->routeIs('mk.x.overview') ? 'active' : '' }}">
+      <span>X Overview</span>
+    </a>
+  </div>
 
         <!-- Facebook -->
         <div class="nav-item dropdown-trigger" onclick="toggleDropdown('facebookDropdown', this)">

@@ -7,7 +7,9 @@ use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\Api\DataOverviewApiController;
 use App\Http\Controllers\Api\DataSourceController;
 use App\Http\Controllers\Api\TopicMapController;
-use App\Http\Controllers\Api\TopAnalyticsController; // 🔥 NEW
+use App\Http\Controllers\Api\TopAnalyticsController;
+use App\Http\Controllers\Api\XOverviewApiController; // 🔥 NEW
+use App\Http\Controllers\MK\XOverviewController; // 🔥 NEW
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -92,7 +94,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/topic-map', [TopicMapController::class, 'getTopicMap'])
             ->name('topic-map');
         
-        // 🔥 NEW: Top Analytics APIs
+        // Top Analytics APIs
         Route::get('/top-hashtags', [TopAnalyticsController::class, 'getHashtagsData'])
             ->name('top-hashtags');
         
@@ -101,6 +103,27 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         
         Route::get('/top-influencers', [TopAnalyticsController::class, 'getInfluencersData'])
             ->name('top-influencers');
+        
+        // 🔥 NEW: X Overview APIs
+        Route::prefix('x')->name('x.')->group(function () {
+            Route::get('/total-users', [XOverviewApiController::class, 'totalUsers'])
+                ->name('total-users');
+            
+            Route::get('/total-authors', [XOverviewApiController::class, 'totalAuthors'])
+                ->name('total-authors');
+            
+            Route::get('/volume-total', [XOverviewApiController::class, 'volumeTotal'])
+                ->name('volume-total');
+            
+            Route::get('/sentiment-total', [XOverviewApiController::class, 'sentimentTotal'])
+                ->name('sentiment-total');
+            
+            Route::get('/top-hashtags', [XOverviewApiController::class, 'topHashtags'])
+                ->name('top-hashtags');
+            
+            Route::get('/most-active-users', [XOverviewApiController::class, 'mostActiveUsers'])
+                ->name('most-active-users');
+        });
     });
     
     // ═══════════════════════════════════════════════════════════
@@ -115,11 +138,16 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     // Topic Map Page
     Route::get('/topic-map', [TopicMapController::class, 'index'])->name('topic-map');
     
-    // 🔥 NEW: Top Analytics Pages
+    // Top Analytics Pages
     Route::prefix('top-analytics')->name('top-analytics.')->group(function () {
         Route::get('/hashtags', [TopAnalyticsController::class, 'hashtags'])->name('hashtags');
         Route::get('/locations', [TopAnalyticsController::class, 'locations'])->name('locations');
         Route::get('/influencers', [TopAnalyticsController::class, 'influencers'])->name('influencers');
+    });
+    
+    // 🔥 NEW: X (Twitter) Routes
+    Route::prefix('x')->name('x.')->group(function () {
+        Route::get('/overview', [XOverviewController::class, 'index'])->name('overview');
     });
     
     // Analytics Pages
