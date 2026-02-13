@@ -7,9 +7,7 @@ use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\Api\DataOverviewApiController;
 use App\Http\Controllers\Api\DataSourceController;
 use App\Http\Controllers\Api\TopicMapController;
-use App\Http\Controllers\Api\TopAnalyticsController;
-use App\Http\Controllers\Api\AnalyticsOverviewController;
-use App\Http\Controllers\X\XController;
+use App\Http\Controllers\Api\TopAnalyticsController; // 🔥 NEW
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -94,7 +92,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/topic-map', [TopicMapController::class, 'getTopicMap'])
             ->name('topic-map');
         
-        // 🔥 Top Analytics APIs
+        // 🔥 NEW: Top Analytics APIs
         Route::get('/top-hashtags', [TopAnalyticsController::class, 'getHashtagsData'])
             ->name('top-hashtags');
         
@@ -103,21 +101,6 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         
         Route::get('/top-influencers', [TopAnalyticsController::class, 'getInfluencersData'])
             ->name('top-influencers');
-        
-        // Analytics Overview APIs
-        Route::prefix('analytics')->name('analytics.')->group(function () {
-            Route::get('/topic-map', [AnalyticsOverviewController::class, 'getTopicMap'])
-                ->name('topic-map');
-            
-            Route::get('/hashtags', [AnalyticsOverviewController::class, 'getHashtags'])
-                ->name('hashtags');
-            
-            Route::get('/locations', [AnalyticsOverviewController::class, 'getLocations'])
-                ->name('locations');
-            
-            Route::get('/influencers', [AnalyticsOverviewController::class, 'getInfluencers'])
-                ->name('influencers');
-        });
     });
     
     // ═══════════════════════════════════════════════════════════
@@ -125,15 +108,14 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     // ═══════════════════════════════════════════════════════════
     
     // Main Pages
-    Route::get('/dashboard', [MkController::class, 'dashboard'])->name('dashboard');
     Route::get('/data-overview', [MkController::class, 'dataOverview'])->name('data-overview');
-    Route::get('/analytics-overview', [AnalyticsOverviewController::class, 'index'])->name('analytics-overview');
+    Route::get('/dashboard', [MkController::class, 'dashboard'])->name('dashboard');
     Route::get('/projects', [MkController::class, 'projects'])->name('projects');
     
     // Topic Map Page
     Route::get('/topic-map', [TopicMapController::class, 'index'])->name('topic-map');
     
-    // 🔥 Top Analytics Pages
+    // 🔥 NEW: Top Analytics Pages
     Route::prefix('top-analytics')->name('top-analytics.')->group(function () {
         Route::get('/hashtags', [TopAnalyticsController::class, 'hashtags'])->name('hashtags');
         Route::get('/locations', [TopAnalyticsController::class, 'locations'])->name('locations');
@@ -172,44 +154,5 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/authors', [DataSourceController::class, 'authors'])->name('authors');
         Route::get('/volume', [DataSourceController::class, 'volume'])->name('volume');
         Route::get('/trends', [DataSourceController::class, 'trends'])->name('trends');
-    });
-
-    // ════════════════════════════════════════════════════════════════
-    // X ANALYTICS ROUTES
-    // ════════════════════════════════════════════════════════════════
-    Route::prefix('x')->name('x.')->group(function () {
-
-        // ── Pages ──────────────────────────────────────────────────
-        Route::get('/overview',    [XController::class, 'overview'])->name('overview');
-        Route::get('/sentiment',   [XController::class, 'sentiment'])->name('sentiment');
-        Route::get('/authors',     [XController::class, 'authors'])->name('authors');
-        Route::get('/hashtags',    [XController::class, 'hashtags'])->name('hashtags');
-        Route::get('/influencers', [XController::class, 'influencers'])->name('influencers');
-        Route::get('/geographic',  [XController::class, 'geographic'])->name('geographic');
-        Route::get('/trending',    [XController::class, 'trending'])->name('trending');
-        Route::get('/most-status', [XController::class, 'mostStatus'])->name('most-status');
-        Route::get('/topic-map',   [XController::class, 'topicMap'])->name('topic-map');
-
-        // ── API (lazy loading, return JSON) ────────────────────────
-        Route::prefix('api')->name('api.')->group(function () {
-            Route::get('/overview-stats',       [XController::class, 'apiOverviewStats'])->name('overview-stats');
-            Route::get('/sentiment',            [XController::class, 'apiSentiment'])->name('sentiment');
-            Route::get('/sentiment-timeline',   [XController::class, 'apiSentimentTimeline'])->name('sentiment-timeline');
-            Route::get('/authors-age',          [XController::class, 'apiAuthorsAge'])->name('authors-age');
-            Route::get('/authors-gender',       [XController::class, 'apiAuthorsGender'])->name('authors-gender');
-            Route::get('/authors-type',         [XController::class, 'apiAuthorsType'])->name('authors-type');
-            Route::get('/hashtags',             [XController::class, 'apiHashtags'])->name('hashtags');
-            Route::get('/influencers',          [XController::class, 'apiInfluencers'])->name('influencers');
-            Route::get('/geo-users',            [XController::class, 'apiGeoUsers'])->name('geo-users');
-            Route::get('/geo-sentiment',        [XController::class, 'apiGeoSentiment'])->name('geo-sentiment');
-            Route::get('/trending-topics',      [XController::class, 'apiTrendingTopics'])->name('trending-topics');
-            Route::get('/most-status',          [XController::class, 'apiMostStatus'])->name('most-status');
-            Route::get('/most-retweets',        [XController::class, 'apiMostRetweets'])->name('most-retweets');
-            Route::get('/active-users',         [XController::class, 'apiActiveUsers'])->name('active-users');
-            Route::get('/shared-urls',          [XController::class, 'apiSharedUrls'])->name('shared-urls');
-            Route::get('/topic-map',            [XController::class, 'apiTopicMap'])->name('topic-map');
-            Route::get('/post-with-location',   [XController::class, 'apiPostWithLocation'])->name('post-with-location');
-            Route::get('/top-author-location',  [XController::class, 'apiTopAuthorLocation'])->name('top-author-location');
-        });
     });
 });

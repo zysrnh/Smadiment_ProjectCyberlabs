@@ -482,7 +482,7 @@
 <body>
 
   <!-- ============================================================
-       SIDEBAR
+       SIDEBAR - UPDATED WITH DATA SOURCE DROPDOWN
        ============================================================ -->
   <div class="sidebar">
     <div class="logo">
@@ -493,17 +493,20 @@
     </div>
 
     <div class="nav-container">
-      <!-- PROJECT SELECT -->
+      <!-- PROJECT SELECT - DYNAMIC WITH AUTO ACTIVE -->
       <div class="nav-section">
         <div class="nav-label">Project</div>
         @php
+          // Get current project ID from URL or use first project as default
           $currentProjectId = request()->query('project_id');
           $hasProjects = isset($projects) && count($projects) > 0;
           
+          // If no project selected but projects exist, auto-select first one
           if (!$currentProjectId && $hasProjects) {
               $currentProjectId = $projects[0]['id'] ?? null;
           }
           
+          // Find current project name
           $currentProjectName = 'Select Project';
           if ($currentProjectId && $hasProjects) {
               $currentProject = collect($projects)->firstWhere('id', $currentProjectId);
@@ -516,6 +519,7 @@
               }
           }
           
+          // Check if we should highlight the trigger (has active project)
           $hasActiveProject = !empty($currentProjectId);
         @endphp
         
@@ -529,7 +533,7 @@
           <span class="dropdown-arrow">▼</span>
         </div>
         
-        <div id="projectDropdown" class="nav-sub" style="display: none;">
+        <div id="projectDropdown" class="nav-sub" style="display: {{ $hasProjects && count($projects) == 1 ? 'none' : 'none' }};">
           @if($hasProjects)
             @foreach($projects as $project)
               @php
@@ -556,55 +560,50 @@
       </div>
 
       <!-- MAIN NAVIGATION -->
-      <div class="nav-section">
-        <div class="nav-label">Main</div>
+<div class="nav-section">
+  <div class="nav-label">Main</div>
 
-        <a href="{{ route('mk.dashboard') }}" 
-           class="nav-item {{ request()->routeIs('mk.dashboard') ? 'active' : '' }}">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24">
-              <rect x="3" y="3" width="7" height="7"/>
-              <rect x="14" y="3" width="7" height="7"/>
-              <rect x="14" y="14" width="7" height="7"/>
-              <rect x="3" y="14" width="7" height="7"/>
-            </svg>
-          </span>
-          <span>Dashboard</span>
-        </a>
+  <a href="{{ route('mk.dashboard') }}" class="nav-item {{ request()->routeIs('mk.dashboard') ? 'active' : '' }}">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    </span>
+    <span>Dashboard</span>
+  </a>
 
-        <a href="{{ route('mk.data-overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
-           class="nav-item {{ request()->routeIs('mk.data-overview') ? 'active' : '' }}">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24">
-              <line x1="18" y1="20" x2="18" y2="10"/>
-              <line x1="12" y1="20" x2="12" y2="4"/>
-              <line x1="6" y1="20" x2="6" y2="14"/>
-            </svg>
-          </span>
-          <span>Data Overview</span>
-        </a>
+  <a href="{{ route('mk.data-overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+     class="nav-item {{ request()->routeIs('mk.data-overview') ? 'active' : '' }}">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    </span>
+    <span>Data Overview</span>
+  </a>
 
-        <a href="{{ route('mk.analytics-overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
-           class="nav-item {{ request()->routeIs('mk.analytics-overview') ? 'active' : '' }}">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" />
-            </svg>
-          </span>
-          <span>Analytics Overview</span>
-        </a>
-      </div>
+  <!-- 🔥 NEW: Topic Map -->
+  <a href="{{ route('mk.topic-map') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+     class="nav-item {{ request()->routeIs('mk.topic-map') ? 'active' : '' }}">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"/>
+        <circle cx="19" cy="5" r="2"/>
+        <circle cx="5" cy="19" r="2"/>
+        <circle cx="19" cy="19" r="2"/>
+        <circle cx="5" cy="5" r="2"/>
+        <line x1="12" y1="9" x2="6.5" y2="6.5"/>
+        <line x1="12" y1="15" x2="6.5" y2="17.5"/>
+        <line x1="15" y1="12" x2="17" y2="6.5"/>
+        <line x1="15" y1="12" x2="17" y2="17.5"/>
+      </svg>
+    </span>
+    <span>Topic Map</span>
+  </a>
 
-      <!-- DATA SOURCE DROPDOWN -->
-      @php
-        $dataSourceRoutes = ['mk.data-source.users', 'mk.data-source.authors', 'mk.data-source.volume', 'mk.data-source.trends'];
-        $isDataSourceActive = request()->routeIs($dataSourceRoutes);
-      @endphp
-      
-      <div class="nav-section">
-        <div class="nav-label">Data Source</div>
-        
+  <!-- Data Source Dropdown ... -->
+
+        <!-- 🔥 DATA SOURCE DROPDOWN - NEW -->
+        @php
+          $dataSourceRoutes = ['mk.data-source.users', 'mk.data-source.authors', 'mk.data-source.volume', 'mk.data-source.trends'];
+          $isDataSourceActive = request()->routeIs($dataSourceRoutes);
+        @endphp
         <div class="nav-item dropdown-trigger {{ $isDataSourceActive ? 'has-active-child' : '' }}" 
              onclick="toggleDropdown('dataSourceDropdown', this)"
              id="dataSourceTrigger">
@@ -619,7 +618,6 @@
           <span>Data Source</span>
           <span class="dropdown-arrow">▼</span>
         </div>
-        
         <div id="dataSourceDropdown" class="nav-sub" style="display: {{ $isDataSourceActive ? 'block' : 'none' }};">
           <a href="{{ route('mk.data-source.users') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
              class="nav-item {{ request()->routeIs('mk.data-source.users') ? 'active' : '' }}">
@@ -645,10 +643,7 @@
         <div class="nav-label">News</div>
         <div class="nav-item dropdown-trigger" onclick="toggleDropdown('newsDropdown', this)">
           <span class="nav-icon">
-            <svg viewBox="0 0 24 24">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
           </span>
           <span>News</span>
           <span class="dropdown-arrow">▼</span>
@@ -664,74 +659,24 @@
       <div class="nav-section">
         <div class="nav-label">Social Media</div>
         
-        <!-- ════════════════════════════════════════════════════════════════ -->
-        <!-- X (Twitter) ANALYTICS DROPDOWN -->
-        <!-- ════════════════════════════════════════════════════════════════ -->
-        @php
-          $xRoutes = [
-            'mk.x.overview', 'mk.x.sentiment', 'mk.x.authors', 'mk.x.hashtags',
-            'mk.x.influencers', 'mk.x.geographic', 'mk.x.trending', 'mk.x.most-status', 'mk.x.topic-map'
-          ];
-          $isXActive = request()->routeIs($xRoutes);
-        @endphp
-        
-        <div class="nav-item dropdown-trigger {{ $isXActive ? 'has-active-child' : '' }}" 
-             onclick="toggleDropdown('xDropdown', this)"
-             id="xTrigger">
+        <!-- X (Twitter) -->
+        <div class="nav-item dropdown-trigger" onclick="toggleDropdown('xDropdown', this)">
           <span class="nav-icon">
-            <svg viewBox="0 0 24 24">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
           </span>
           <span>X</span>
           <span class="dropdown-arrow">▼</span>
         </div>
-        
-        <div id="xDropdown" class="nav-sub" style="display: {{ $isXActive ? 'block' : 'none' }};">
-          <a href="{{ route('mk.x.overview', ['project_id' => $currentProjectId]) }}" 
-             class="nav-item {{ request()->routeIs('mk.x.overview') ? 'active' : '' }}">
-            <span>Overview</span>
-          </a>
-          <a href="{{ route('mk.x.sentiment', ['project_id' => $currentProjectId]) }}" 
-             class="nav-item {{ request()->routeIs('mk.x.sentiment') ? 'active' : '' }}">
-            <span>Sentimen</span>
-          </a>
-          <a href="{{ route('mk.x.authors', ['project_id' => $currentProjectId]) }}" 
-             class="nav-item {{ request()->routeIs('mk.x.authors') ? 'active' : '' }}">
-            <span>Demografi Author</span>
-          </a>
-          <a href="{{ route('mk.x.hashtags', ['project_id' => $currentProjectId]) }}" 
-             class="nav-item {{ request()->routeIs('mk.x.hashtags') ? 'active' : '' }}">
-            <span>Top Hashtag</span>
-          </a>
-          <a href="{{ route('mk.x.influencers', ['project_id' => $currentProjectId]) }}" 
-             class="nav-item {{ request()->routeIs('mk.x.influencers') ? 'active' : '' }}">
-            <span>Top Influencer</span>
-          </a>
-          <a href="{{ route('mk.x.geographic', ['project_id' => $currentProjectId]) }}" 
-             class="nav-item {{ request()->routeIs('mk.x.geographic') ? 'active' : '' }}">
-            <span>Geografis</span>
-          </a>
-          <a href="{{ route('mk.x.trending', ['project_id' => $currentProjectId]) }}" 
-             class="nav-item {{ request()->routeIs('mk.x.trending') ? 'active' : '' }}">
-            <span>Trending Topics</span>
-          </a>
-          <a href="{{ route('mk.x.most-status', ['project_id' => $currentProjectId]) }}" 
-             class="nav-item {{ request()->routeIs('mk.x.most-status') ? 'active' : '' }}">
-            <span>Most Status</span>
-          </a>
-          <a href="{{ route('mk.x.topic-map', ['project_id' => $currentProjectId]) }}" 
-             class="nav-item {{ request()->routeIs('mk.x.topic-map') ? 'active' : '' }}">
-            <span>Topic Map</span>
+        <div id="xDropdown" class="nav-sub" style="display: none;">
+          <a href="#" class="nav-item">
+            <span>X Analytics</span>
           </a>
         </div>
 
         <!-- Facebook -->
         <div class="nav-item dropdown-trigger" onclick="toggleDropdown('facebookDropdown', this)">
           <span class="nav-icon">
-            <svg viewBox="0 0 24 24">
-              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
           </span>
           <span>Facebook</span>
           <span class="dropdown-arrow">▼</span>
@@ -745,11 +690,7 @@
         <!-- Instagram -->
         <div class="nav-item dropdown-trigger" onclick="toggleDropdown('instagramDropdown', this)">
           <span class="nav-icon">
-            <svg viewBox="0 0 24 24">
-              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-            </svg>
+            <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
           </span>
           <span>Instagram</span>
           <span class="dropdown-arrow">▼</span>
@@ -763,10 +704,7 @@
         <!-- YouTube -->
         <div class="nav-item dropdown-trigger" onclick="toggleDropdown('youtubeDropdown', this)">
           <span class="nav-icon">
-            <svg viewBox="0 0 24 24">
-              <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/>
-              <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
           </span>
           <span>Youtube</span>
           <span class="dropdown-arrow">▼</span>
@@ -780,9 +718,7 @@
         <!-- TikTok -->
         <div class="nav-item dropdown-trigger" onclick="toggleDropdown('tiktokDropdown', this)">
           <span class="nav-icon">
-            <svg viewBox="0 0 24 24">
-              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
           </span>
           <span>Tiktok</span>
           <span class="dropdown-arrow">▼</span>
@@ -799,13 +735,7 @@
         <div class="nav-label">Report</div>
         <div class="nav-item dropdown-trigger" onclick="toggleDropdown('reportDropdown', this)">
           <span class="nav-icon">
-            <svg viewBox="0 0 24 24">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/>
-              <line x1="16" y1="17" x2="8" y2="17"/>
-              <polyline points="10 9 9 9 8 9"/>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
           </span>
           <span>Report</span>
           <span class="dropdown-arrow">▼</span>
@@ -822,14 +752,7 @@
         <div class="nav-label">AI Insight</div>
         <div class="nav-item dropdown-trigger" onclick="toggleDropdown('aiDropdown', this)">
           <span class="nav-icon">
-            <svg viewBox="0 0 24 24">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-              <polyline points="7.5 4.21 12 6.81 16.5 4.21"/>
-              <polyline points="7.5 19.79 7.5 14.6 3 12"/>
-              <polyline points="21 12 16.5 14.6 16.5 19.79"/>
-              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-              <line x1="12" y1="22.08" x2="12" y2="12"/>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="7.5 4.21 12 6.81 16.5 4.21"/><polyline points="7.5 19.79 7.5 14.6 3 12"/><polyline points="21 12 16.5 14.6 16.5 19.79"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
           </span>
           <span>AI Insight</span>
           <span class="dropdown-arrow">▼</span>
@@ -851,7 +774,7 @@
   </div>
 
   <script>
-    // Global color palette
+    // Global color palette - Modern B24 Theme
     const colors = {
       primaryGreen: '#038047',
       primaryGreenDark: '#026738',
@@ -867,7 +790,7 @@
       ]
     };
 
-    // Dropdown toggle
+    // Enhanced Dropdown Functionality
     function toggleDropdown(dropdownId, trigger) {
       const dropdown = document.getElementById(dropdownId);
       if (!dropdown) return;
@@ -886,38 +809,61 @@
       }
     }
 
-    // Change project
+    /**
+     * 🔥 CHANGE PROJECT: Update URL with new project_id and preserve current route
+     */
     function changeProject(projectId, projectName) {
       console.log('Changing project to:', projectId, projectName);
+      
+      // Get current URL
       const url = new URL(window.location.href);
+      
+      // Update project_id parameter
       url.searchParams.set('project_id', projectId);
+      
+      // Keep other existing parameters (like start_date, end_date, etc)
+      // They will automatically be preserved
+      
+      // Reload page with new project_id
       window.location.href = url.toString();
     }
 
-    // Auto-select first project if needed
+    // 🔥 AUTO-SELECT FIRST PROJECT IF ONLY ONE EXISTS
     document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
       const currentProjectId = urlParams.get('project_id');
-      const currentPath = window.location.pathname;
       
+      // Check if we're on a page that needs project selection
+      const currentPath = window.location.pathname;
       const needsProject = [
         '/mk/data-overview',
-        '/mk/analytics-overview',
-        '/mk/data-source',
-        '/mk/x/'  // X Analytics routes also need project
+        '/mk/data-source/users',
+        '/mk/data-source/authors',
+        '/mk/data-source/volume',
+        '/mk/data-source/trends',
+        '/mk/sentiment',
+        '/mk/geographic',
+        '/mk/authors',
+        '/mk/categories',
+        '/mk/engagement',
+        '/mk/publisher'
       ];
       
       const requiresProject = needsProject.some(path => currentPath.includes(path));
       
+      // If on a page that requires project but no project selected
       if (requiresProject && !currentProjectId) {
         const projectItems = document.querySelectorAll('#projectDropdown .nav-item');
         
+        // If only one project exists, auto-select it
         if (projectItems.length === 1) {
           const firstProject = projectItems[0];
           if (firstProject.textContent.trim() !== 'No Projects Available') {
-            firstProject.click();
+            firstProject.click(); // Auto-select first project
           }
-        } else if (projectItems.length > 1) {
+        }
+        // If multiple projects, auto-open dropdown
+        else if (projectItems.length > 1) {
           const projectTrigger = document.getElementById('projectTrigger');
           if (projectTrigger) {
             setTimeout(() => {
