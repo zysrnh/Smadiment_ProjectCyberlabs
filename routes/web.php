@@ -8,8 +8,7 @@ use App\Http\Controllers\Api\DataOverviewApiController;
 use App\Http\Controllers\Api\DataSourceController;
 use App\Http\Controllers\Api\TopicMapController;
 use App\Http\Controllers\Api\TopAnalyticsController;
-use App\Http\Controllers\Api\XOverviewApiController; // 🔥 NEW
-use App\Http\Controllers\MK\XOverviewController; // 🔥 NEW
+use App\Http\Controllers\MK\XOverviewController; // 🔥 CONSOLIDATED CONTROLLER
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -104,24 +103,24 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/top-influencers', [TopAnalyticsController::class, 'getInfluencersData'])
             ->name('top-influencers');
         
-        // 🔥 NEW: X Overview APIs
+        // 🔥 X Overview APIs - CONSOLIDATED
         Route::prefix('x')->name('x.')->group(function () {
-            Route::get('/total-users', [XOverviewApiController::class, 'totalUsers'])
+            Route::get('/total-users', [XOverviewController::class, 'totalUsers'])
                 ->name('total-users');
             
-            Route::get('/total-authors', [XOverviewApiController::class, 'totalAuthors'])
+            Route::get('/total-authors', [XOverviewController::class, 'totalAuthors'])
                 ->name('total-authors');
             
-            Route::get('/volume-total', [XOverviewApiController::class, 'volumeTotal'])
+            Route::get('/volume-total', [XOverviewController::class, 'volumeTotal'])
                 ->name('volume-total');
             
-            Route::get('/sentiment-total', [XOverviewApiController::class, 'sentimentTotal'])
+            Route::get('/sentiment-total', [XOverviewController::class, 'sentimentTotal'])
                 ->name('sentiment-total');
             
-            Route::get('/top-hashtags', [XOverviewApiController::class, 'topHashtags'])
+            Route::get('/top-hashtags', [XOverviewController::class, 'topHashtags'])
                 ->name('top-hashtags');
             
-            Route::get('/most-active-users', [XOverviewApiController::class, 'mostActiveUsers'])
+            Route::get('/most-active-users', [XOverviewController::class, 'mostActiveUsers'])
                 ->name('most-active-users');
         });
     });
@@ -145,7 +144,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/influencers', [TopAnalyticsController::class, 'influencers'])->name('influencers');
     });
     
-    // 🔥 NEW: X (Twitter) Routes
+    // 🔥 X (Twitter) Routes - CONSOLIDATED
     Route::prefix('x')->name('x.')->group(function () {
         Route::get('/overview', [XOverviewController::class, 'index'])->name('overview');
     });
