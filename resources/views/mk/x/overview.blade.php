@@ -18,11 +18,13 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   }
 
-  /* Main Layout */
+  /* Main Layout - FIXED WIDTH */
   .dashboard-container {
     padding: 24px;
     background: var(--bg-gray-50);
     min-height: 100vh;
+    max-width: 1600px;
+    margin: 0 auto;
   }
 
   .page-header {
@@ -223,25 +225,6 @@
     color: var(--primary-green);
   }
 
-  .stat-menu {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    color: var(--text-secondary);
-  }
-
-  .stat-menu:hover {
-    background: var(--bg-gray-50);
-    color: var(--text-primary);
-  }
-
   .stat-label {
     font-size: 13px;
     font-weight: 600;
@@ -263,31 +246,6 @@
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1;
-  }
-
-  .stat-trend {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-  }
-
-  .stat-trend.positive {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-  }
-
-  .stat-trend.negative {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-  }
-
-  .stat-trend svg {
-    width: 14px;
-    height: 14px;
   }
 
   .stat-progress {
@@ -354,31 +312,6 @@
     font-weight: 500;
   }
 
-  .chart-actions {
-    display: flex;
-    gap: 8px;
-  }
-
-  .chart-action-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: var(--bg-gray-50);
-    border: 1px solid var(--border-gray);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    color: var(--text-secondary);
-  }
-
-  .chart-action-btn:hover {
-    background: var(--primary-green);
-    border-color: var(--primary-green);
-    color: white;
-  }
-
   .chart-container {
     position: relative;
     height: 320px;
@@ -401,6 +334,8 @@
     margin-bottom: 24px;
     padding-bottom: 20px;
     border-bottom: 2px solid var(--bg-gray-50);
+    gap: 16px;
+    flex-wrap: wrap;
   }
 
   .table-title h3 {
@@ -413,6 +348,12 @@
   .table-subtitle {
     font-size: 13px;
     color: var(--text-secondary);
+  }
+
+  .table-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
   .table-search {
@@ -448,130 +389,202 @@
     color: var(--text-secondary);
   }
 
+  /* Actions Dropdown */
+  .actions-dropdown {
+    position: relative;
+  }
+
+  .actions-dropdown-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--bg-white);
+    border: 1px solid var(--border-gray);
+    border-radius: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .actions-dropdown-btn:hover {
+    background: var(--bg-gray-50);
+    border-color: var(--primary-green);
+  }
+
+  .actions-dropdown-btn svg {
+    width: 16px;
+    height: 16px;
+    color: var(--text-secondary);
+  }
+
+  .actions-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--bg-white);
+    border: 1px solid var(--border-gray);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    min-width: 220px;
+    padding: 8px;
+    z-index: 1000;
+    display: none;
+  }
+
+  .actions-dropdown-menu.show {
+    display: block;
+    animation: dropdownSlideIn 0.2s ease-out;
+  }
+
+  @keyframes dropdownSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .actions-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+
+  .actions-dropdown-item:hover {
+    background: var(--bg-gray-50);
+    color: var(--primary-green);
+  }
+
+  .actions-dropdown-item svg {
+    width: 18px;
+    height: 18px;
+    color: var(--text-secondary);
+  }
+
+  .actions-dropdown-item:hover svg {
+    color: var(--primary-green);
+  }
+
+  .actions-dropdown-divider {
+    height: 1px;
+    background: var(--border-gray);
+    margin: 6px 0;
+  }
+
   .data-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
+    font-size: 12px;
   }
 
   .data-table thead tr {
-    background: var(--bg-gray-50);
+    background: var(--bg-white);
+    border-bottom: 1px solid var(--border-gray);
   }
 
   .data-table th {
-    padding: 14px 16px;
+    padding: 10px 12px;
     text-align: left;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid var(--border-gray);
+    letter-spacing: 0.3px;
+    border-bottom: 1px solid var(--border-gray);
+    white-space: nowrap;
   }
 
   .data-table th:first-child {
-    border-top-left-radius: 12px;
+    padding-left: 20px;
   }
 
   .data-table th:last-child {
-    border-top-right-radius: 12px;
+    padding-right: 20px;
   }
 
   .data-table td {
-    padding: 16px;
-    font-size: 14px;
+    padding: 12px;
+    font-size: 12px;
     color: var(--text-primary);
-    border-bottom: 1px solid var(--bg-gray-50);
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+  }
+
+  .data-table td:first-child {
+    padding-left: 20px;
+  }
+
+  .data-table td:last-child {
+    padding-right: 20px;
   }
 
   .data-table tbody tr {
     transition: all 0.2s;
+    background: var(--bg-white);
   }
 
   .data-table tbody tr:hover {
-    background: var(--bg-gray-50);
+    background: #fafbfc;
   }
 
   .data-table tbody tr:last-child td {
     border-bottom: none;
   }
 
-  .rank-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 14px;
-  }
-
-  .rank-1 {
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-    color: white;
-    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
-  }
-
-  .rank-2 {
-    background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
-    color: white;
-    box-shadow: 0 4px 12px rgba(148, 163, 184, 0.3);
-  }
-
-  .rank-3 {
-    background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
-    color: white;
-    box-shadow: 0 4px 12px rgba(251, 146, 60, 0.3);
-  }
-
-  .rank-other {
-    background: var(--bg-gray-100);
-    color: var(--text-secondary);
-    font-weight: 600;
-  }
-
-  .user-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  /* Avatar Container */
+  .avatar-container {
+    position: relative;
+    display: inline-block;
   }
 
   .user-avatar-img {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     object-fit: cover;
     display: block;
-    border: 2px solid var(--border-gray);
   }
 
   .user-avatar-fallback {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-weight: 700;
-    font-size: 16px;
-    border: 2px solid var(--border-gray);
+    font-size: 13px;
   }
 
   .user-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-weight: 700;
-    font-size: 16px;
-    border: 2px solid var(--border-gray);
+    font-size: 13px;
   }
 
   .username-link {
@@ -599,31 +612,133 @@
     text-decoration: underline;
   }
 
-  .detail-btn {
+  /* View All Button */
+  .view-all-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+    border-top: 1px solid var(--border-gray);
+    margin-top: 16px;
+  }
+
+  .view-all-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    background: var(--bg-gray-50);
-    border: 1px solid var(--border-gray);
-    border-radius: 8px;
+    gap: 8px;
+    padding: 10px 28px;
+    background: var(--primary-green);
+    border: none;
+    border-radius: 10px;
     font-family: 'Poppins', sans-serif;
     font-size: 13px;
     font-weight: 600;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .detail-btn:hover {
-    background: var(--primary-green);
-    border-color: var(--primary-green);
     color: white;
+    cursor: pointer;
+    transition: all 0.3s;
   }
 
-  .detail-btn svg {
+  .view-all-btn:hover {
+    background: var(--primary-green-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(3, 128, 71, 0.3);
+  }
+
+  .view-all-btn svg {
     width: 18px;
     height: 18px;
+  }
+
+  /* All Users Modal */
+  .all-users-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .all-users-modal.show {
+    display: flex;
+  }
+
+  .all-users-modal .modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  .all-users-modal .modal-content {
+    position: relative;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    width: 95%;
+    max-width: 1400px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    animation: modalSlideIn 0.3s ease-out;
+    z-index: 10001;
+  }
+
+  .all-users-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .all-users-modal .modal-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0;
+  }
+
+  .all-users-modal .modal-body {
+    padding: 0;
+    overflow-y: auto;
+    position: relative;
+    background: #ffffff;
+    border-radius: 0 0 16px 16px;
+  }
+
+  .all-users-modal .data-table {
+    margin: 0;
+    background: #ffffff;
+  }
+
+  .all-users-modal .data-table thead tr {
+    background: #ffffff;
+  }
+
+  .all-users-modal .data-table tbody tr {
+    background: #ffffff;
+  }
+
+  .all-users-modal .data-table tbody tr:hover {
+    background: #f8fafc;
+  }
+
+  .all-users-modal .data-table th {
+    background: #ffffff;
+  }
+
+  .all-users-modal .data-table td {
+    background: #ffffff;
   }
 
   /* User Detail Modal */
@@ -661,8 +776,8 @@
     border-radius: 16px;
     box-shadow: var(--shadow-lg);
     width: 90%;
-    max-width: 800px;
-    max-height: 80vh;
+    max-width: 1200px;
+    max-height: 85vh;
     display: flex;
     flex-direction: column;
     animation: modalSlideIn 0.3s ease-out;
@@ -717,47 +832,6 @@
     padding: 28px;
     overflow-y: auto;
     position: relative;
-  }
-
-  .json-viewer {
-    background: #1e293b;
-    border-radius: 12px;
-    padding: 20px;
-    overflow-x: auto;
-    margin-bottom: 16px;
-  }
-
-  .json-viewer pre {
-    margin: 0;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: 13px;
-    line-height: 1.6;
-  }
-
-  .json-viewer code {
-    color: #e2e8f0;
-  }
-
-  .copy-json-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background: var(--primary-green);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .copy-json-btn:hover {
-    background: var(--primary-green-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(3, 128, 71, 0.3);
   }
 
   /* Mentions Modal Styles */
@@ -838,11 +912,6 @@
     margin-bottom: 8px;
   }
 
-  .skeleton-small {
-    height: 20px;
-    width: 60%;
-  }
-
   /* Lazy Loading Badge */
   .lazy-loading-badge {
     position: absolute;
@@ -921,12 +990,22 @@
   /* Responsive */
   @media (max-width: 1400px) {
     .data-table {
-      font-size: 13px;
+      font-size: 12px;
     }
     
     .data-table th,
     .data-table td {
-      padding: 12px 10px;
+      padding: 10px 12px;
+    }
+
+    .data-table th:first-child,
+    .data-table td:first-child {
+      padding-left: 16px;
+    }
+
+    .data-table th:last-child,
+    .data-table td:last-child {
+      padding-right: 16px;
     }
   }
 
@@ -954,12 +1033,8 @@
       justify-content: center;
     }
 
-    .table-section {
-      overflow-x: auto;
-    }
-
     .data-table {
-      min-width: 1000px;
+      min-width: 900px;
     }
   }
 
@@ -987,6 +1062,10 @@
 
     .modal-header, .modal-body {
       padding: 20px;
+    }
+
+    .data-table {
+      font-size: 11px;
     }
   }
 </style>
@@ -1075,7 +1154,7 @@
   <!-- Stats Grid -->
   <div class="stats-grid">
     
-    <!-- Total Users Card -->
+    <!-- Total Users Card (NO DOT-3 BUTTON) -->
     <div class="stat-card" data-lazy-load="totalUsers">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
@@ -1086,13 +1165,6 @@
             <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
         </div>
-        <button class="stat-menu">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="1"/>
-            <circle cx="12" cy="5" r="1"/>
-            <circle cx="12" cy="19" r="1"/>
-          </svg>
-        </button>
       </div>
       
       <div class="stat-label">Total Users</div>
@@ -1106,7 +1178,7 @@
       </div>
     </div>
 
-    <!-- Total Authors Card -->
+    <!-- Total Authors Card (NO DOT-3 BUTTON) -->
     <div class="stat-card" data-lazy-load="totalAuthors">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
@@ -1115,13 +1187,6 @@
             <circle cx="12" cy="7" r="4"/>
           </svg>
         </div>
-        <button class="stat-menu">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="1"/>
-            <circle cx="12" cy="5" r="1"/>
-            <circle cx="12" cy="19" r="1"/>
-          </svg>
-        </button>
       </div>
       
       <div class="stat-label">Total Authors</div>
@@ -1135,7 +1200,7 @@
       </div>
     </div>
 
-    <!-- Volume Total Card -->
+    <!-- Volume Total Card (NO DOT-3 BUTTON) -->
     <div class="stat-card" data-lazy-load="volumeTotal">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
@@ -1145,13 +1210,6 @@
             <line x1="6" y1="20" x2="6" y2="14"/>
           </svg>
         </div>
-        <button class="stat-menu">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="1"/>
-            <circle cx="12" cy="5" r="1"/>
-            <circle cx="12" cy="19" r="1"/>
-          </svg>
-        </button>
       </div>
       
       <div class="stat-label">Volume Total</div>
@@ -1165,7 +1223,7 @@
       </div>
     </div>
 
-    <!-- Sentiment Score Card -->
+    <!-- Sentiment Score Card (NO DOT-3 BUTTON) -->
     <div class="stat-card" data-lazy-load="sentiment">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
@@ -1176,13 +1234,6 @@
             <line x1="15" y1="9" x2="15.01" y2="9"/>
           </svg>
         </div>
-        <button class="stat-menu">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="1"/>
-            <circle cx="12" cy="5" r="1"/>
-            <circle cx="12" cy="19" r="1"/>
-          </svg>
-        </button>
       </div>
       
       <div class="stat-label">Sentiment Score</div>
@@ -1198,7 +1249,7 @@
 
   </div>
 
-  <!-- Charts Section -->
+  <!-- Charts Section (NO REFRESH/DOWNLOAD BUTTONS) -->
   <div class="charts-section">
     
     <!-- Volume Trend Chart -->
@@ -1207,22 +1258,6 @@
         <div class="chart-title-group">
           <h3>Volume Trend</h3>
           <p class="chart-subtitle">Daily posting volume over time</p>
-        </div>
-        <div class="chart-actions">
-          <button class="chart-action-btn" title="Download">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-          </button>
-          <button class="chart-action-btn" title="Refresh">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="23 4 23 10 17 10"/>
-              <polyline points="1 20 1 14 7 14"/>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-            </svg>
-          </button>
         </div>
       </div>
       
@@ -1239,22 +1274,6 @@
           <h3>Sentiment Distribution</h3>
           <p class="chart-subtitle">Positive, neutral, and negative breakdown</p>
         </div>
-        <div class="chart-actions">
-          <button class="chart-action-btn" title="Download">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-          </button>
-          <button class="chart-action-btn" title="Refresh">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="23 4 23 10 17 10"/>
-              <polyline points="1 20 1 14 7 14"/>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-            </svg>
-          </button>
-        </div>
       </div>
       
       <div class="chart-container">
@@ -1265,24 +1284,86 @@
 
   </div>
 
-  <!-- Most Active Users Table -->
+  <!-- Most Active Users Table (TOP 10 + VIEW ALL BUTTON) -->
   <div class="table-section" data-lazy-load="activeUsers">
     <div class="table-header">
       <div class="table-title">
         <h3>Most Active Users</h3>
-        <p class="table-subtitle">Users with highest posting frequency</p>
+        <p class="table-subtitle">Top 10 users with highest posting frequency</p>
       </div>
-      <div class="table-search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input type="text" placeholder="Search users...">
+      
+      <div class="table-actions">
+        <div class="table-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" id="userSearchInput" placeholder="Search users..." onkeyup="filterUsers()">
+        </div>
+        
+        <!-- Actions Dropdown -->
+        <div class="actions-dropdown">
+          <button class="actions-dropdown-btn" onclick="toggleActionsDropdown(event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="1"/>
+              <circle cx="12" cy="5" r="1"/>
+              <circle cx="12" cy="19" r="1"/>
+            </svg>
+            Actions
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          
+          <div class="actions-dropdown-menu" id="actionsDropdownMenu">
+            <a href="#" class="actions-dropdown-item" onclick="event.preventDefault(); exportUsers()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Export to CSV
+            </a>
+            
+            <a href="#" class="actions-dropdown-item" onclick="event.preventDefault(); refreshUsers()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10"/>
+                <polyline points="1 20 1 14 7 14"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+              </svg>
+              Refresh Data
+            </a>
+            
+            <div class="actions-dropdown-divider"></div>
+            
+            <a href="#" class="actions-dropdown-item" onclick="event.preventDefault(); printTable()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"/>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                <rect x="6" y="14" width="12" height="8"/>
+              </svg>
+              Print Table
+            </a>
+          </div>
+        </div>
       </div>
     </div>
     
     <div id="activeUsersLoading" class="loading-skeleton" style="height: 400px;"></div>
-    <div id="activeUsersTable" style="display: none;"></div>
+    <div id="activeUsersTable" style="display: none; overflow-x: auto;"></div>
+    
+    <!-- View All Button -->
+    <div id="viewAllContainer" class="view-all-container" style="display: none;">
+      <button class="view-all-btn" onclick="showAllUsersModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        View All Users (<span id="remainingCount">0</span> more)
+      </button>
+    </div>
   </div>
 
   @endif
@@ -1295,6 +1376,9 @@
   const projectId = '{{ $projectId ?? '' }}';
   const startDate = '{{ $startDate ?? '' }}';
   const endDate = '{{ $endDate ?? '' }}';
+
+  let allUsers = []; // Store all users globally
+  let displayedCount = 10; // Initial display count
 
   if (projectId && startDate && endDate) {
     
@@ -1470,53 +1554,17 @@
         
         const container = document.getElementById('activeUsersTable');
         const loading = document.getElementById('activeUsersLoading');
+        const viewAllContainer = document.getElementById('viewAllContainer');
         
         if (result.success && result.data && result.data.data) {
-          const users = result.data.data.slice(0, 10);
+          allUsers = result.data.data; // Store all users
+          displayUsersTable(10); // Display first 10
           
-          let html = '<table class="data-table"><thead><tr>';
-          html += '<th>No.</th><th>Avatar</th><th>Name</th><th>Account Name</th><th>Engagement</th><th>Posts</th><th>Retweets</th><th>Replies</th><th>Followers</th><th>Following</th></tr></thead><tbody>';
-          
-          users.forEach((item, index) => {
-            const username = item.username || item.author || item.name || 'Unknown';
-            const profileUrl = item.profile_url || item.profile_image_url || '';
-            const accountName = item.contentJson?.name || item.name || username;
-            const followers = item.followers || item.contentJson?.followers_count || 0;
-            const following = item.contentJson?.friends_count || 0;
-            const mentions = item.mentions || 0;
-            const replies = item.replies || 0;
-            const retweets = item.retweets || 0;
-            const totalPosts = item.posts || item.y || (mentions + replies + retweets);
-            const engagement = totalPosts; // Engagement is same as total activity
-            
-            html += `<tr>
-              <td><strong>${index + 1}</strong></td>
-              <td>
-                ${profileUrl ? 
-                  `<img src="${profileUrl}" alt="${username}" class="user-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                   <div class="user-avatar-fallback" style="display:none">${username.charAt(0).toUpperCase()}</div>` 
-                  : 
-                  `<div class="user-avatar">${username.charAt(0).toUpperCase()}</div>`
-                }
-              </td>
-              <td>
-                <a href="#" class="username-link" onclick='event.preventDefault(); showMentionsModal("${username}"); return false;'>@${username}</a>
-              </td>
-              <td>
-                <a href="https://twitter.com/${username}" target="_blank" class="account-name-link">${accountName}</a>
-              </td>
-              <td><strong>${formatNumber(engagement)}</strong></td>
-              <td>${formatNumber(totalPosts)}</td>
-              <td>${formatNumber(retweets)}</td>
-              <td>${formatNumber(replies)}</td>
-              <td>${formatNumber(followers)}</td>
-              <td>${formatNumber(following)}</td>
-            </tr>`;
-          });
-          
-          html += '</tbody></table>';
-          container.innerHTML = html;
-          container.classList.add('data-loaded');
+          // Show "View All" button if more than 10 users
+          if (allUsers.length > 10) {
+            viewAllContainer.style.display = 'flex';
+            document.getElementById('remainingCount').textContent = allUsers.length - 10;
+          }
           
           loading.style.display = 'none';
           container.style.display = 'block';
@@ -1527,6 +1575,197 @@
         removeLoadingBadge(card);
         card.classList.add('loaded');
       }
+    }
+
+    function displayUsersTable(count) {
+      const container = document.getElementById('activeUsersTable');
+      const users = allUsers.slice(0, count);
+      
+      let html = '<table class="data-table"><thead><tr>';
+      html += '<th>NO.</th><th>AVATAR</th><th>NAME</th><th>ACCOUNT NAME</th><th>ENGAGEMENT</th><th>POSTS</th><th>RETWEETS</th><th>REPLIES</th><th>FOLLOWERS</th><th>FOLLOWING</th></tr></thead><tbody>';
+      
+      users.forEach((item, index) => {
+        const username = item.username || item.author || item.name || 'Unknown';
+        const profileUrl = item.profile_url || item.profile_image_url || '';
+        const accountName = item.contentJson?.name || item.name || username;
+        const followers = item.followers || item.contentJson?.followers_count || 0;
+        const following = item.contentJson?.friends_count || 0;
+        const mentions = item.mentions || 0;
+        const replies = item.replies || 0;
+        const retweets = item.retweets || 0;
+        const totalPosts = item.posts || item.y || (mentions + replies + retweets);
+        const engagement = totalPosts;
+        
+        html += `<tr>
+          <td><strong>${index + 1}</strong></td>
+          <td>
+            <div class="avatar-container">
+              ${profileUrl ? 
+                `<img src="${profileUrl}" alt="${username}" class="user-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                 <div class="user-avatar-fallback" style="display:none;">${username.charAt(0).toUpperCase()}</div>` 
+                : 
+                `<div class="user-avatar">${username.charAt(0).toUpperCase()}</div>`
+              }
+            </div>
+          </td>
+          <td>
+            <a href="#" class="username-link" onclick='event.preventDefault(); showMentionsModal("${username.replace(/'/g, "\\'")}"); return false;'>@${username}</a>
+          </td>
+          <td>
+            <a href="https://twitter.com/${username}" target="_blank" class="account-name-link">${accountName}</a>
+          </td>
+          <td><strong>${formatNumber(engagement)}</strong></td>
+          <td>${formatNumber(totalPosts)}</td>
+          <td>${formatNumber(retweets)}</td>
+          <td>${formatNumber(replies)}</td>
+          <td>${formatNumber(followers)}</td>
+          <td>${formatNumber(following)}</td>
+        </tr>`;
+      });
+      
+      html += '</tbody></table>';
+      container.innerHTML = html;
+      container.classList.add('data-loaded');
+      
+      displayedCount = count;
+    }
+
+    function showAllUsersModal() {
+      // Create modal
+      const modal = document.createElement('div');
+      modal.className = 'all-users-modal show';
+      modal.style.display = 'flex';
+      modal.innerHTML = `
+        <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>All Active Users (${allUsers.length} total)</h3>
+            <button class="modal-close" onclick="this.closest('.all-users-modal').remove()">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div id="allUsersTableContent"></div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Generate table for all users
+      const container = document.getElementById('allUsersTableContent');
+      let html = '<table class="data-table"><thead><tr>';
+      html += '<th>NO.</th><th>AVATAR</th><th>NAME</th><th>ACCOUNT NAME</th><th>ENGAGEMENT</th><th>POSTS</th><th>RETWEETS</th><th>REPLIES</th><th>FOLLOWERS</th><th>FOLLOWING</th></tr></thead><tbody>';
+      
+      allUsers.forEach((item, index) => {
+        const username = item.username || item.author || item.name || 'Unknown';
+        const profileUrl = item.profile_url || item.profile_image_url || '';
+        const accountName = item.contentJson?.name || item.name || username;
+        const followers = item.followers || item.contentJson?.followers_count || 0;
+        const following = item.contentJson?.friends_count || 0;
+        const mentions = item.mentions || 0;
+        const replies = item.replies || 0;
+        const retweets = item.retweets || 0;
+        const totalPosts = item.posts || item.y || (mentions + replies + retweets);
+        const engagement = totalPosts;
+        
+        html += `<tr>
+          <td><strong>${index + 1}</strong></td>
+          <td>
+            <div class="avatar-container">
+              ${profileUrl ? 
+                `<img src="${profileUrl}" alt="${username}" class="user-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                 <div class="user-avatar-fallback" style="display:none;">${username.charAt(0).toUpperCase()}</div>` 
+                : 
+                `<div class="user-avatar">${username.charAt(0).toUpperCase()}</div>`
+              }
+            </div>
+          </td>
+          <td>
+            <a href="#" class="username-link" onclick='event.preventDefault(); showMentionsModal("${username.replace(/'/g, "\\'")}"); return false;'>@${username}</a>
+          </td>
+          <td>
+            <a href="https://twitter.com/${username}" target="_blank" class="account-name-link">${accountName}</a>
+          </td>
+          <td><strong>${formatNumber(engagement)}</strong></td>
+          <td>${formatNumber(totalPosts)}</td>
+          <td>${formatNumber(retweets)}</td>
+          <td>${formatNumber(replies)}</td>
+          <td>${formatNumber(followers)}</td>
+          <td>${formatNumber(following)}</td>
+        </tr>`;
+      });
+      
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    function filterUsers() {
+      const searchTerm = document.getElementById('userSearchInput').value.toLowerCase();
+      
+      if (!searchTerm) {
+        displayUsersTable(displayedCount);
+        return;
+      }
+      
+      const filteredUsers = allUsers.filter(user => {
+        const username = (user.username || user.author || user.name || '').toLowerCase();
+        const accountName = (user.contentJson?.name || user.name || '').toLowerCase();
+        return username.includes(searchTerm) || accountName.includes(searchTerm);
+      });
+      
+      const container = document.getElementById('activeUsersTable');
+      let html = '<table class="data-table"><thead><tr>';
+      html += '<th>NO.</th><th>AVATAR</th><th>NAME</th><th>ACCOUNT NAME</th><th>ENGAGEMENT</th><th>POSTS</th><th>RETWEETS</th><th>REPLIES</th><th>FOLLOWERS</th><th>FOLLOWING</th></tr></thead><tbody>';
+      
+      if (filteredUsers.length === 0) {
+        html += '<tr><td colspan="10" style="text-align: center; padding: 40px; color: var(--text-secondary);">No users found matching "' + searchTerm + '"</td></tr>';
+      } else {
+        filteredUsers.forEach((item, index) => {
+          const username = item.username || item.author || item.name || 'Unknown';
+          const profileUrl = item.profile_url || item.profile_image_url || '';
+          const accountName = item.contentJson?.name || item.name || username;
+          const followers = item.followers || item.contentJson?.followers_count || 0;
+          const following = item.contentJson?.friends_count || 0;
+          const mentions = item.mentions || 0;
+          const replies = item.replies || 0;
+          const retweets = item.retweets || 0;
+          const totalPosts = item.posts || item.y || (mentions + replies + retweets);
+          const engagement = totalPosts;
+          
+          html += `<tr>
+            <td><strong>${index + 1}</strong></td>
+            <td>
+              <div class="avatar-container">
+                ${profileUrl ? 
+                  `<img src="${profileUrl}" alt="${username}" class="user-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                   <div class="user-avatar-fallback" style="display:none;">${username.charAt(0).toUpperCase()}</div>` 
+                  : 
+                  `<div class="user-avatar">${username.charAt(0).toUpperCase()}</div>`
+                }
+              </div>
+            </td>
+            <td>
+              <a href="#" class="username-link" onclick='event.preventDefault(); showMentionsModal("${username.replace(/'/g, "\\'")}"); return false;'>@${username}</a>
+            </td>
+            <td>
+              <a href="https://twitter.com/${username}" target="_blank" class="account-name-link">${accountName}</a>
+            </td>
+            <td><strong>${formatNumber(engagement)}</strong></td>
+            <td>${formatNumber(totalPosts)}</td>
+            <td>${formatNumber(retweets)}</td>
+            <td>${formatNumber(replies)}</td>
+            <td>${formatNumber(followers)}</td>
+            <td>${formatNumber(following)}</td>
+          </tr>`;
+        });
+      }
+      
+      html += '</tbody></table>';
+      container.innerHTML = html;
     }
 
     function addLoadingBadge(card) {
@@ -1694,7 +1933,6 @@
 
   // Global function to show mentions modal
   function showMentionsModal(username) {
-    // Show loading modal first
     const modal = document.createElement('div');
     modal.className = 'user-detail-modal';
     modal.innerHTML = `
@@ -1721,7 +1959,6 @@
     document.body.appendChild(modal);
     setTimeout(() => modal.classList.add('show'), 10);
 
-    // Fetch mentions data
     fetch(`/mk/api/x/user-mentions?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}&username=${username}`)
       .then(response => response.json())
       .then(result => {
@@ -1772,21 +2009,104 @@
       });
   }
 
-  // Global function to copy JSON to clipboard
-  function copyJsonToClipboard(button) {
-    const jsonText = button.previousElementSibling.querySelector('code').textContent;
-    navigator.clipboard.writeText(jsonText).then(() => {
-      const originalText = button.innerHTML;
-      button.innerHTML = `
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-        Copied!
-      `;
-      setTimeout(() => {
-        button.innerHTML = originalText;
-      }, 2000);
+  // Actions Dropdown Functions
+  function toggleActionsDropdown(event) {
+    event.stopPropagation();
+    const menu = document.getElementById('actionsDropdownMenu');
+    menu.classList.toggle('show');
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function(event) {
+    const dropdown = document.querySelector('.actions-dropdown');
+    const menu = document.getElementById('actionsDropdownMenu');
+    if (dropdown && !dropdown.contains(event.target)) {
+      menu?.classList.remove('show');
+    }
+  });
+
+  function exportUsers() {
+    const menu = document.getElementById('actionsDropdownMenu');
+    menu.classList.remove('show');
+    
+    // Create CSV content
+    let csvContent = "No.,Username,Account Name,Engagement,Posts,Retweets,Replies,Followers,Following\n";
+    
+    allUsers.forEach((item, index) => {
+      const username = item.username || item.author || item.name || 'Unknown';
+      const accountName = (item.contentJson?.name || item.name || username).replace(/,/g, ' ');
+      const followers = item.followers || item.contentJson?.followers_count || 0;
+      const following = item.contentJson?.friends_count || 0;
+      const mentions = item.mentions || 0;
+      const replies = item.replies || 0;
+      const retweets = item.retweets || 0;
+      const totalPosts = item.posts || item.y || (mentions + replies + retweets);
+      const engagement = totalPosts;
+      
+      csvContent += `${index + 1},@${username},"${accountName}",${engagement},${totalPosts},${retweets},${replies},${followers},${following}\n`;
     });
+    
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `active_users_${startDate}_${endDate}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function refreshUsers() {
+    const menu = document.getElementById('actionsDropdownMenu');
+    menu.classList.remove('show');
+    
+    // Reload the page to refresh data
+    window.location.reload();
+  }
+
+  function printTable() {
+    const menu = document.getElementById('actionsDropdownMenu');
+    menu.classList.remove('show');
+    
+    // Create print window
+    const printWindow = window.open('', '_blank');
+    const tableContent = document.getElementById('activeUsersTable').innerHTML;
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Most Active Users - X Overview</title>
+        <style>
+          body { font-family: 'Poppins', Arial, sans-serif; padding: 20px; }
+          h1 { color: #1a202c; margin-bottom: 10px; }
+          p { color: #64748b; margin-bottom: 20px; }
+          table { width: 100%; border-collapse: collapse; }
+          th { background: #f8fafc; padding: 12px; text-align: left; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; }
+          td { padding: 12px; font-size: 12px; border-bottom: 1px solid #f1f5f9; }
+          tr:hover { background: #fafbfc; }
+          .user-avatar { display: inline-block; width: 36px; height: 36px; border-radius: 50%; background: #038047; color: white; text-align: center; line-height: 36px; font-weight: 700; }
+          @media print {
+            body { padding: 0; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Most Active Users</h1>
+        <p>Date Range: ${startDate} to ${endDate}</p>
+        ${tableContent}
+      </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
   }
 </script>
 @endsection

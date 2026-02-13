@@ -122,6 +122,14 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             
             Route::get('/most-active-users', [XOverviewController::class, 'mostActiveUsers'])
                 ->name('most-active-users');
+
+            // ✅ NEW: Most Retweets API
+            Route::get('/most-retweets', [XOverviewController::class, 'mostRetweets'])
+                ->name('most-retweets');
+
+            // ✅ FIXED: user-mentions dipindah ke dalam group (sebelumnya salah posisi di luar)
+            Route::get('/user-mentions', [XOverviewController::class, 'userMentions'])
+                ->name('user-mentions');
         });
     });
     
@@ -147,6 +155,9 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     // 🔥 X (Twitter) Routes - CONSOLIDATED
     Route::prefix('x')->name('x.')->group(function () {
         Route::get('/overview', [XOverviewController::class, 'index'])->name('overview');
+
+        // ✅ NEW: Most Retweets Page
+        Route::get('/most-retweets', [XOverviewController::class, 'mostRetweetsPage'])->name('most-retweets');
     });
     
     // Analytics Pages
@@ -182,6 +193,4 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/volume', [DataSourceController::class, 'volume'])->name('volume');
         Route::get('/trends', [DataSourceController::class, 'trends'])->name('trends');
     });
-    // X Overview API Routes
-Route::get('/mk/api/x/user-mentions', [XOverviewController::class, 'userMentions'])->name('mk.api.x.user-mentions');
 });

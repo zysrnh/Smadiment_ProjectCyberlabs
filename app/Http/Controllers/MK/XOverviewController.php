@@ -106,6 +106,85 @@ class XOverviewController extends Controller
     }
 
     /**
+     * Display Most Retweets Page
+     */
+    public function mostRetweetsPage(Request $request)
+    {
+        try {
+            $projectsData = $this->client->listProjects(0, 100);
+            $projects = $projectsData['data'] ?? [];
+
+            Log::info('Most Retweets Page - Projects loaded', [
+                'total_projects' => count($projects),
+                'projects' => $projects
+            ]);
+
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+
+                Log::info('Most Retweets Page - Auto-selecting first project', [
+                    'project_id' => $projectId
+                ]);
+
+                if ($projectId) {
+                    return redirect()->route('mk.x.most-retweets', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            if (!$projectId) {
+                Log::warning('Most Retweets Page - No projects available');
+
+                $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+                $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+                return view('mk.x.most-retweets', [
+                    'projectId' => null,
+                    'startDate' => $startDate,
+                    'endDate'   => $endDate,
+                    'projects'  => [],
+                ]);
+            }
+
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+            Log::info('Most Retweets Page - Loading page', [
+                'project_id' => $projectId,
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'total_projects' => count($projects)
+            ]);
+
+            return view('mk.x.most-retweets')->with([
+                'projectId' => $projectId,
+                'startDate' => $startDate,
+                'endDate'   => $endDate,
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Most Retweets Page Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return view('mk.x.most-retweets')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => 'Failed to load page: ' . $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * API: Get Total Users for X
      * Response format: {"status": "success", "data": {"total_author": "119021"}, "numrows": 1}
      */
@@ -459,6 +538,81 @@ class XOverviewController extends Controller
     }
 
     /**
+     * API: Get Most Retweets for X
+     * Response format: array of tweet objects with freq, author, sentiment, content, etc.
+     */
+    public function mostRetweets(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+
+            if (!$projectId || !$startDate || !$endDate) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => 'Missing required parameters: project_id, start_date, end_date'
+                ], 400);
+            }
+
+            $result = $this->client->mostRetweets($projectId, $startDate, $endDate);
+
+            Log::info('mostRetweets raw API response', [
+                'count'  => is_array($result) ? count($result) : 0,
+                'sample' => is_array($result) ? array_slice($result, 0, 2, true) : [],
+            ]);
+
+            $tweets = [];
+
+            if (is_array($result)) {
+                foreach ($result as $item) {
+                    // Normalise avatar: strip _normal for full-size image
+                    $avatar = $item['avatar_url'] ?? $item['author']['image'] ?? '';
+                    $avatar = str_replace('_normal.', '.', $avatar);
+
+                    $tweets[] = [
+                        'id'             => $item['id']             ?? '',
+                        'sub_id'         => $item['sub_id']         ?? '',
+                        'name'           => $item['name']           ?? '',
+                        'content'        => $item['content']        ?? '',
+                        'freq'           => (int) ($item['freq']    ?? $item['sentiment_freq'] ?? 0),
+                        'sentiment_str'  => $item['sentiment_str']  ?? 'Neutral',
+                        'sentiment_freq' => $item['sentiment_freq'] ?? 0,
+                        'date_created'   => $item['date_created']   ?? '',
+                        'avatar_url'     => $avatar,
+                        'author'         => [
+                            'name'     => $item['author']['name']     ?? $item['name'] ?? '',
+                            'scr_name' => $item['author']['scr_name'] ?? $item['name'] ?? '',
+                            'image'    => $item['author']['image']    ?? $avatar,
+                        ],
+                    ];
+                }
+
+                // Ensure sorted by freq descending (API biasanya sudah sorted, tapi pastiin)
+                usort($tweets, fn($a, $b) => $b['freq'] - $a['freq']);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data'    => $tweets,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('X mostRetweets API error', [
+                'error'      => $e->getMessage(),
+                'project_id' => $request->query('project_id'),
+                'start_date' => $request->query('start_date'),
+                'end_date'   => $request->query('end_date'),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * API: Get User Mentions for X
      * Get all mentions/tweets from a specific user
      */
@@ -467,13 +621,13 @@ class XOverviewController extends Controller
         try {
             $projectId = $request->query('project_id');
             $startDate = $request->query('start_date');
-            $endDate = $request->query('end_date');
-            $username = $request->query('username');
+            $endDate   = $request->query('end_date');
+            $username  = $request->query('username');
 
             if (!$projectId || !$startDate || !$endDate || !$username) {
                 return response()->json([
                     'success' => false,
-                    'error' => 'Missing required parameters: project_id, start_date, end_date, username'
+                    'error'   => 'Missing required parameters: project_id, start_date, end_date, username'
                 ], 400);
             }
 
