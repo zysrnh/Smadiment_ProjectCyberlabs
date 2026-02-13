@@ -189,7 +189,7 @@ class AnalyticsOverviewController extends Controller
     }
 
     // ========================================================================
-    // 🔥 API: TOP LOCATIONS - FIXED RESPONSE STRUCTURE
+    // 🔥 API: TOP LOCATIONS
     // ========================================================================
     public function getLocations(Request $request)
     {
@@ -220,18 +220,14 @@ class AnalyticsOverviewController extends Controller
                 'has_data' => isset($response['data'])
             ]);
 
-            // 🔥 FIXED: Handle actual response structure
-            // Response structure: { "country": { "total": X, "rows": [...] } }
+            // Handle response structure: { "country": { "total": X, "rows": [...] } }
             $locations = [];
             
             if (isset($response['country']['rows'])) {
-                // Structure has country->rows
                 $locations = $response['country']['rows'];
             } elseif (isset($response['data'])) {
-                // Fallback: check if data exists
                 $locations = $response['data'];
             } elseif (is_array($response)) {
-                // Fallback: use response directly if it's an array
                 $locations = $response;
             }
 
@@ -262,7 +258,7 @@ class AnalyticsOverviewController extends Controller
     }
 
     // ========================================================================
-    // 🔥 API: TOP INFLUENCERS - FIXED RESPONSE STRUCTURE
+    // 🔥 API: TOP INFLUENCERS - PROPERLY FORMATTED
     // ========================================================================
     public function getInfluencers(Request $request)
     {
@@ -286,27 +282,50 @@ class AnalyticsOverviewController extends Controller
 
             Log::info('Top Influencers API raw response', [
                 'project_id' => $projectId,
-                'response_keys' => is_array($response) ? array_keys($response) : 'not_array',
+                'response_type' => gettype($response),
                 'is_array' => is_array($response),
-                'has_data' => isset($response['data']),
+                'count' => is_array($response) ? count($response) : 0,
                 'sample' => is_array($response) ? array_slice($response, 0, 2, true) : null
             ]);
 
-            // 🔥 FIXED: Handle actual response structure
-            // Response is array of objects directly: [{ author_id, total, name, info }, ...]
+            // Process influencers data
             $influencers = [];
             
             if (isset($response['data']) && is_array($response['data'])) {
-                // If wrapped in data key
-                $influencers = $response['data'];
+                $rawInfluencers = $response['data'];
             } elseif (is_array($response) && !empty($response)) {
-                // Check if first element has expected structure
-                $firstElement = reset($response);
-                if (is_array($firstElement) && isset($firstElement['author_id'])) {
-                    // Response is array of influencer objects directly
-                    $influencers = $response;
-                }
+                $rawInfluencers = $response;
+            } else {
+                $rawInfluencers = [];
             }
+
+            // Transform data to consistent format
+            foreach ($rawInfluencers as $inf) {
+                if (!isset($inf['author_id'])) continue;
+
+                $info = $inf['info'] ?? [];
+                $username = $info['screen_name'] ?? str_replace('@', '', $inf['name'] ?? 'Unknown');
+                $followersCount = (int) ($info['followers_count'] ?? 0);
+                $mentions = (int) ($inf['total'] ?? 0);
+                $verified = !empty($info['verified']) || !empty($info['verified_type']);
+
+                $influencers[] = [
+                    'author_id' => $inf['author_id'],
+                    'username' => $username,
+                    'name' => $info['name'] ?? $username,
+                    'followers_count' => $followersCount,
+                    'mentions' => $mentions,
+                    'profile_image' => $info['profile_image_url_https'] ?? $info['profile_image_url'] ?? '',
+                    'verified' => $verified,
+                    'description' => $info['description'] ?? '',
+                    'location' => $info['location'] ?? ''
+                ];
+            }
+
+            // Sort by followers count
+            usort($influencers, function($a, $b) {
+                return $b['followers_count'] - $a['followers_count'];
+            });
 
             Log::info('Top Influencers processed data', [
                 'influencers_count' => count($influencers),

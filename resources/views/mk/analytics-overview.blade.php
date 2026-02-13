@@ -757,10 +757,229 @@
         font-weight: 600;
     }
 
+    /* ─────────────────────────────────────────────────────────────────────────────────
+       🔥 INFLUENCERS LIST - IMPROVED STYLES
+       ───────────────────────────────────────────────────────────────────────────────── */
+
+    .influencers-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .influencer-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 14px;
+        background: #FFFFFF;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        gap: 12px;
+        transition: all 0.2s ease;
+    }
+
+    .influencer-item:hover {
+        border-color: #038047;
+        box-shadow: 0 4px 12px rgba(3, 128, 71, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .influencer-rank {
+        font-size: 14px;
+        font-weight: 800;
+        color: #038047;
+        min-width: 26px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .influencer-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2.5px solid #e2e8f0;
+        flex-shrink: 0;
+        transition: border-color 0.2s;
+    }
+
+    .influencer-item:hover .influencer-avatar {
+        border-color: #038047;
+    }
+
+    .influencer-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .influencer-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: #27384A;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .influencer-username {
+        font-size: 11px;
+        font-weight: 500;
+        color: #64748b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .influencer-location {
+        font-size: 10px;
+        font-weight: 500;
+        color: #94a3b8;
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .influencer-bio {
+        font-size: 11px;
+        font-weight: 400;
+        color: #64748b;
+        margin-top: 4px;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .verified-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        background: #1DA1F2;
+        color: #FFFFFF;
+        border-radius: 50%;
+        font-size: 10px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .influencer-stats {
+        display: flex;
+        gap: 20px;
+        flex-shrink: 0;
+        margin-left: auto;
+    }
+
+    .stat-item {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .stat-value {
+        font-size: 14px;
+        font-weight: 800;
+        color: #27384A;
+        white-space: nowrap;
+    }
+
+    .stat-label {
+        font-size: 9px;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Modal Version */
+    .influencers-list-modal {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .influencer-item-modal {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 18px;
+        background: #FFFFFF;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        gap: 20px;
+        transition: all 0.2s ease;
+    }
+
+    .influencer-item-modal:hover {
+        border-color: #038047;
+        box-shadow: 0 4px 12px rgba(3, 128, 71, 0.12);
+        transform: translateX(4px);
+    }
+
+    .influencer-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex: 1;
+        min-width: 0;
+    }
+
     /* Responsive */
     @media(max-width:1100px) {
         .ao-row-dual {
             grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .influencer-item {
+            flex-wrap: wrap;
+            padding: 14px;
+        }
+        
+        .influencer-stats {
+            width: 100%;
+            justify-content: flex-end;
+            gap: 20px;
+            padding-left: 60px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .influencer-rank {
+            min-width: 22px;
+            font-size: 13px;
+        }
+        
+        .influencer-avatar {
+            width: 42px;
+            height: 42px;
+        }
+        
+        .influencer-item-modal {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .influencer-left {
+            width: 100%;
+        }
+        
+        .influencer-stats {
+            width: 100%;
+            justify-content: flex-start;
+            padding-left: 0;
         }
     }
 </style>
@@ -958,7 +1177,6 @@ const AnalyticsOverviewLoader = {
             return;
         }
 
-        // Show "View All" button if more than 8 hashtags
         if (hashtags.length > 8) {
             document.getElementById('hashtagsViewAllBtn').style.display = 'flex';
         }
@@ -1002,7 +1220,6 @@ const AnalyticsOverviewLoader = {
             return;
         }
 
-        // Show "View All" button if more than 8 locations
         if (locations.length > 8) {
             document.getElementById('locationsViewAllBtn').style.display = 'flex';
         }
@@ -1020,8 +1237,6 @@ const AnalyticsOverviewLoader = {
         `;
 
         locations.slice(0, 8).forEach((loc, i) => {
-            // 🔥 FIXED: Extract from correct API response structure
-            // API returns: { name: "Indonesia", count: 2842, detail: {...} }
             const name = loc.name || loc.location || loc.city || 'Unknown';
             const count = loc.count || loc.frequency || loc.total || 0;
             
@@ -1038,72 +1253,67 @@ const AnalyticsOverviewLoader = {
         body.innerHTML = html;
     },
 
+    // 🔥 IMPROVED: Render Influencers with Profile Images
     renderInfluencersTable(influencers, card) {
         const body = card.querySelector('.ao-card-body');
         
         if (influencers.length === 0) {
-            body.innerHTML = '<div class="ao-empty">No influencers data</div>';
+            body.innerHTML = '<div class="ao-empty">No influencers data available</div>';
             return;
         }
 
-        // Show "View All" button if more than 8 influencers
         if (influencers.length > 8) {
             document.getElementById('influencersViewAllBtn').style.display = 'flex';
         }
 
-        let html = `
-            <table class="ao-tbl">
-                <thead>
-                    <tr>
-                        <th style="width:28px;">#</th>
-                        <th class="ao-tbl-left">Influencer</th>
-                        <th class="ao-tbl-right">Followers</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
+        let html = '<div class="influencers-list">';
 
         influencers.slice(0, 8).forEach((inf, i) => {
-            // 🔥 FIXED: Extract from correct API response structure
-            // API returns: { name: "@username", info: { screen_name: "username", followers_count: "123" } }
-            let username = 'Unknown';
-            let followers = 0;
-            
-            // Try multiple possible field names for username
-            if (inf.info && inf.info.screen_name) {
-                username = inf.info.screen_name;
-            } else if (inf.name) {
-                // Remove @ if exists
-                username = inf.name.replace(/^@/, '');
-            } else if (inf.username) {
-                username = inf.username;
-            } else if (inf.author) {
-                username = inf.author;
-            }
-            
-            // Try multiple possible field names for followers
-            if (inf.info && inf.info.followers_count) {
-                followers = parseInt(inf.info.followers_count) || 0;
-            } else if (inf.followers) {
-                followers = parseInt(inf.followers) || 0;
-            } else if (inf.reach) {
-                followers = parseInt(inf.reach) || 0;
-            } else if (inf.total) {
-                // Fallback to 'total' field (mentions count)
-                followers = parseInt(inf.total) || 0;
-            }
+            const profileImg = inf.profile_image || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png';
+            const verified = inf.verified ? '<span class="verified-badge">✓</span>' : '';
+            const followers = this.formatNumber(inf.followers_count);
+            const mentions = this.formatNumber(inf.mentions);
             
             html += `
-                <tr>
-                    <td class="ao-tbl-rank">${i + 1}</td>
-                    <td class="ao-tbl-name">@${username}</td>
-                    <td class="ao-tbl-num">${followers.toLocaleString()}</td>
-                </tr>
+                <div class="influencer-item">
+                    <div class="influencer-rank">${i + 1}</div>
+                    <img src="${profileImg}" alt="${inf.username}" class="influencer-avatar" 
+                         onerror="this.src='https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png'">
+                    <div class="influencer-info">
+                        <div class="influencer-name">
+                            ${inf.name}
+                            ${verified}
+                        </div>
+                        <div class="influencer-username">@${inf.username}</div>
+                        ${inf.location ? `<div class="influencer-location">📍 ${inf.location}</div>` : ''}
+                    </div>
+                    <div class="influencer-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">${followers}</div>
+                            <div class="stat-label">Followers</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${mentions}</div>
+                            <div class="stat-label">Mentions</div>
+                        </div>
+                    </div>
+                </div>
             `;
         });
 
-        html += '</tbody></table>';
+        html += '</div>';
         body.innerHTML = html;
+    },
+
+    // 🔥 NEW: Format Number Helper
+    formatNumber(num) {
+        if (num >= 1000000) {
+            return (num / 1000000).toFixed(1) + 'M';
+        }
+        if (num >= 1000) {
+            return (num / 1000).toFixed(1) + 'K';
+        }
+        return num.toLocaleString();
     },
 
     showError(card) {
@@ -1157,7 +1367,7 @@ const AnalyticsOverviewLoader = {
         // Influencers search
         document.getElementById('influencersSearch')?.addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
-            const items = document.querySelectorAll('#influencersModalBody .ao-tbl tbody tr');
+            const items = document.querySelectorAll('#influencersModalBody .influencer-item-modal');
             
             items.forEach(item => {
                 const text = item.textContent.toLowerCase();
@@ -1340,7 +1550,7 @@ function openLocationsModal() {
     `;
 
     AnalyticsOverviewLoader.locationsData.forEach((loc, i) => {
-        const name = loc.location || loc.city || loc.name || 'Unknown';
+        const name = loc.name || loc.location || loc.city || 'Unknown';
         const count = loc.count || loc.frequency || loc.total || 0;
         
         html += `
@@ -1365,36 +1575,51 @@ function closeLocationsModal() {
     document.getElementById('locationsSearch').value = '';
 }
 
+// 🔥 IMPROVED: Influencers Modal with Better Layout
 function openInfluencersModal() {
     const modal = document.getElementById('influencersModal');
     const body = document.getElementById('influencersModalBody');
     
-    let html = `
-        <table class="ao-tbl">
-            <thead>
-                <tr>
-                    <th style="width:40px;">#</th>
-                    <th class="ao-tbl-left">Influencer</th>
-                    <th class="ao-tbl-right">Followers</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
+    let html = '<div class="influencers-list-modal">';
 
     AnalyticsOverviewLoader.influencersData.forEach((inf, i) => {
-        const name = inf.name || inf.username || inf.author || 'Unknown';
-        const count = inf.followers || inf.reach || inf.influence_score || 0;
+        const profileImg = inf.profile_image || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png';
+        const verified = inf.verified ? '<span class="verified-badge">✓</span>' : '';
+        const followers = AnalyticsOverviewLoader.formatNumber(inf.followers_count);
+        const mentions = AnalyticsOverviewLoader.formatNumber(inf.mentions);
+        const bio = inf.description ? `<div class="influencer-bio">${truncateText(inf.description, 80)}</div>` : '';
         
         html += `
-            <tr>
-                <td class="ao-tbl-rank">${i + 1}</td>
-                <td class="ao-tbl-name">@${name}</td>
-                <td class="ao-tbl-num">${count.toLocaleString()}</td>
-            </tr>
+            <div class="influencer-item-modal">
+                <div class="influencer-left">
+                    <div class="influencer-rank">${i + 1}</div>
+                    <img src="${profileImg}" alt="${inf.username}" class="influencer-avatar" 
+                         onerror="this.src='https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png'">
+                    <div class="influencer-info">
+                        <div class="influencer-name">
+                            ${inf.name}
+                            ${verified}
+                        </div>
+                        <div class="influencer-username">@${inf.username}</div>
+                        ${bio}
+                        ${inf.location ? `<div class="influencer-location">📍 ${inf.location}</div>` : ''}
+                    </div>
+                </div>
+                <div class="influencer-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">${followers}</div>
+                        <div class="stat-label">Followers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${mentions}</div>
+                        <div class="stat-label">Mentions</div>
+                    </div>
+                </div>
+            </div>
         `;
     });
 
-    html += '</tbody></table>';
+    html += '</div>';
     body.innerHTML = html;
     
     modal.classList.add('active');
@@ -1405,6 +1630,12 @@ function closeInfluencersModal() {
     document.getElementById('influencersModal').classList.remove('active');
     document.body.style.overflow = 'auto';
     document.getElementById('influencersSearch').value = '';
+}
+
+// 🔥 NEW: Helper function for truncating text
+function truncateText(text, maxLength) {
+    if (!text || text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
 }
 
 // Close modals on overlay click
