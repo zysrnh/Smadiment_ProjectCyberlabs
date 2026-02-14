@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\DataOverviewApiController;
 use App\Http\Controllers\Api\DataSourceController;
 use App\Http\Controllers\Api\TopicMapController;
 use App\Http\Controllers\Api\TopAnalyticsController;
-use App\Http\Controllers\MK\XOverviewController; // 🔥 CONSOLIDATED CONTROLLER
+use App\Http\Controllers\MK\XOverviewController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -105,6 +105,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         
         // 🔥 X Overview APIs - CONSOLIDATED
         Route::prefix('x')->name('x.')->group(function () {
+            // Overview APIs
             Route::get('/total-users', [XOverviewController::class, 'totalUsers'])
                 ->name('total-users');
             
@@ -120,34 +121,28 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/most-active-users', [XOverviewController::class, 'mostActiveUsers'])
                 ->name('most-active-users');
 
+            // Engagement APIs
             Route::get('/most-retweets', [XOverviewController::class, 'mostRetweets'])
                 ->name('most-retweets');
 
-            // 🔥 NEW: Most Status API
             Route::get('/most-status', [XOverviewController::class, 'mostStatus'])
                 ->name('most-status');
 
-            // 🔥 NEW: Post with Location API
-            Route::get('/post-with-location', [XOverviewController::class, 'postWithLocation'])
-                ->name('post-with-location');
-
             Route::get('/user-mentions', [XOverviewController::class, 'userMentions'])
                 ->name('user-mentions');
-            
+
+            // Content APIs
             Route::get('/top-hashtags-data', [XOverviewController::class, 'topHashtagsData'])
                 ->name('top-hashtags-data');
             
-            // 🔥 AUTHORS DEMOGRAPHICS API ENDPOINTS
-            Route::get('/authors-age', [XOverviewController::class, 'authorsAgeData'])
-                ->name('authors-age');
+            // 🔥 Trending Topics API
+            Route::get('/trending-topics', [XOverviewController::class, 'trendingTopicsData'])
+                ->name('trending-topics');
+
+            // Geographic APIs
+            Route::get('/post-with-location', [XOverviewController::class, 'postWithLocation'])
+                ->name('post-with-location');
             
-            Route::get('/authors-gender', [XOverviewController::class, 'authorsGenderData'])
-                ->name('authors-gender');
-            
-            Route::get('/authors-type', [XOverviewController::class, 'authorsTypeData'])
-                ->name('authors-type');
-            
-            // 🔥 GEOGRAPHIC API ENDPOINTS
             Route::get('/geo-user', [XOverviewController::class, 'geoUser'])
                 ->name('geo-user');
             
@@ -156,6 +151,16 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             
             Route::get('/top-locations', [XOverviewController::class, 'topLocations'])
                 ->name('top-locations');
+            
+            // Demographics APIs
+            Route::get('/authors-age', [XOverviewController::class, 'authorsAgeData'])
+                ->name('authors-age');
+            
+            Route::get('/authors-gender', [XOverviewController::class, 'authorsGenderData'])
+                ->name('authors-gender');
+            
+            Route::get('/authors-type', [XOverviewController::class, 'authorsTypeData'])
+                ->name('authors-type');
         });
     });
     
@@ -180,24 +185,33 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     
     // 🔥 X (Twitter) Routes - CONSOLIDATED
     Route::prefix('x')->name('x.')->group(function () {
+        // Overview & Engagement
         Route::get('/overview', [XOverviewController::class, 'index'])->name('overview');
-        Route::get('/most-retweets', [XOverviewController::class, 'mostRetweetsPage'])->name('most-retweets');
         
-        // 🔥 NEW: Most Status Page
-        Route::get('/most-status', [XOverviewController::class, 'mostStatusPage'])->name('most-status');
+        // 🔥 Trending Topics Page (No project_id required)
+        Route::get('/trending-topics', [XOverviewController::class, 'trendingTopicsPage'])
+            ->name('trending-topics');
         
-        // 🔥 NEW: Post with Location Page
-        Route::get('/post-with-location', [XOverviewController::class, 'postWithLocationPage'])->name('post-with-location');
+        Route::get('/most-status', [XOverviewController::class, 'mostStatusPage'])
+            ->name('most-status');
         
-        Route::get('/top-hashtags', [XOverviewController::class, 'topHashtagsPage'])->name('top-hashtags');
+        Route::get('/most-retweets', [XOverviewController::class, 'mostRetweetsPage'])
+            ->name('most-retweets');
         
-        // 🔥 AUTHORS DEMOGRAPHICS - SINGLE PAGE
+        // Content Analysis
+        Route::get('/top-hashtags', [XOverviewController::class, 'topHashtagsPage'])
+            ->name('top-hashtags');
+        
+        // Demographics
         Route::get('/authors-demographics', [XOverviewController::class, 'authorsDemographicsPage'])
             ->name('authors.demographics');
         
-        // 🔥 GEOGRAPHIC
+        // Geographic
         Route::get('/geographic', [XOverviewController::class, 'geographicPage'])
             ->name('geographic');
+        
+        Route::get('/post-with-location', [XOverviewController::class, 'postWithLocationPage'])
+            ->name('post-with-location');
     });
     
     // Analytics Pages

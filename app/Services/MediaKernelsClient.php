@@ -1166,4 +1166,47 @@ public function postWithLocation(
         return [];
     }
 }
+public function twitterTrendingTopics(
+    string $startDate,
+    string $endDate,
+    int $startTime = 0,
+    int $endTime = 23,
+    string $location = 'Indonesia',
+    string $topics = ''
+): array {
+    try {
+        $token = $this->getToken();
+
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/twitter_trending_topics/',
+            [
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'start_time' => $startTime,
+                'end_time'   => $endTime,
+                'location'   => $location,
+                'topics'     => $topics,
+                'token'      => $token,
+            ]
+        );
+
+        $res->throw();
+        
+        $json = $this->parseJson($res);
+        
+        Log::info('twitterTrendingTopics API response', [
+            'count' => is_array($json) ? count($json) : 0,
+            'sample' => is_array($json) && count($json) > 0 ? array_keys($json)[0] : null
+        ]);
+        
+        return $json;
+        
+    } catch (\Exception $e) {
+        Log::error('twitterTrendingTopics API error', [
+            'error' => $e->getMessage(),
+            'start_date' => $startDate,
+        ]);
+        return [];
+    }
+}
 }

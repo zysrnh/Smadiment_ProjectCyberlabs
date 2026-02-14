@@ -694,19 +694,22 @@
     'mk.x.top-hashtags', 
     'mk.x.authors.demographics', 
     'mk.x.geographic', 
-    'mk.x.post-with-location'
+    'mk.x.post-with-location',
+    'mk.x.trending-topics'  // 🔥 NEW
   ];
   $isXActive = request()->routeIs($xRoutes);
 @endphp
+
 <div class="nav-item dropdown-trigger {{ $isXActive ? 'has-active-child' : '' }}" 
      onclick="toggleDropdown('xDropdown', this)"
      id="xTrigger">
   <span class="nav-icon">
     <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
   </span>
-  <span>X</span>
+  <span>X (Twitter)</span>
   <span class="dropdown-arrow">▼</span>
 </div>
+
 <div id="xDropdown" class="nav-sub" style="display: {{ $isXActive ? 'block' : 'none' }};">
   
   <!-- 1. Overview -->
@@ -723,7 +726,19 @@
     <span>Overview</span>
   </a>
 
-  <!-- 2. Most Viewed Posts -->
+  <!-- 2. Trending Topics - NEW 🔥 -->
+  <a href="{{ route('mk.x.trending-topics') }}" 
+     class="nav-item {{ request()->routeIs('mk.x.trending-topics') ? 'active' : '' }}">
+    <span class="menu-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+        <polyline points="17 6 23 6 23 12"/>
+      </svg>
+    </span>
+    <span>Trending Topics</span>
+  </a>
+
+  <!-- 3. Most Viewed Posts -->
   <a href="{{ route('mk.x.most-status') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
      class="nav-item {{ request()->routeIs('mk.x.most-status') ? 'active' : '' }}">
     <span class="menu-icon">
@@ -732,10 +747,10 @@
         <circle cx="12" cy="12" r="3"/>
       </svg>
     </span>
-    <span>Viewed</span>
+    <span>Most Viewed Posts</span>
   </a>
 
-  <!-- 3. Most Retweets -->
+  <!-- 4. Most Retweets -->
   <a href="{{ route('mk.x.most-retweets') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
      class="nav-item {{ request()->routeIs('mk.x.most-retweets') ? 'active' : '' }}">
     <span class="menu-icon">
@@ -746,10 +761,10 @@
         <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
       </svg>
     </span>
-    <span>Retweets</span>
+    <span>Most Retweets</span>
   </a>
 
-  <!-- 4. Top Hashtags -->
+  <!-- 5. Top Hashtags -->
   <a href="{{ route('mk.x.top-hashtags') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
      class="nav-item {{ request()->routeIs('mk.x.top-hashtags') ? 'active' : '' }}">
     <span class="menu-icon">
@@ -763,7 +778,7 @@
     <span>Top Hashtags</span>
   </a>
 
-  <!-- 5. User Demographics -->
+  <!-- 6. Author Profiles -->
   <a href="{{ route('mk.x.authors.demographics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
      class="nav-item {{ request()->routeIs('mk.x.authors.demographics') ? 'active' : '' }}">
     <span class="menu-icon">
@@ -774,10 +789,10 @@
         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
       </svg>
     </span>
-    <span> User Stats</span>
+    <span>Author Profiles</span>
   </a>
 
-  <!-- 6. Geographic Analysis -->
+  <!-- 7. Location Map -->
   <a href="{{ route('mk.x.geographic') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
      class="nav-item {{ request()->routeIs('mk.x.geographic') ? 'active' : '' }}">
     <span class="menu-icon">
@@ -790,7 +805,7 @@
     <span>Location Map</span>
   </a>
 
-  <!-- 7. Posts with Location -->
+  <!-- 8. Posts with Location -->
   <a href="{{ route('mk.x.post-with-location') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
      class="nav-item {{ request()->routeIs('mk.x.post-with-location') ? 'active' : '' }}">
     <span class="menu-icon">
@@ -799,7 +814,7 @@
         <circle cx="12" cy="10" r="3"/>
       </svg>
     </span>
-    <span>Posts</span>
+    <span>Posts with Location</span>
   </a>
   
 </div>

@@ -1452,5 +1452,148 @@ public function postWithLocation(Request $request)
         ], 500);
     }
 }
+public function trendingTopicsPage(Request $request)
+{
+    try {
+        $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+        $location  = $request->query('location', 'Indonesia');
+
+        return view('mk.x.trending-topics')->with([
+            'startDate' => $startDate,
+            'endDate'   => $endDate,
+            'location'  => $location,
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('X Trending Topics Page Error', [
+            'error' => $e->getMessage()
+        ]);
+
+        return view('mk.x.trending-topics')->with([
+            'startDate' => now()->subDays(6)->format('Y-m-d'),
+            'endDate'   => now()->format('Y-m-d'),
+            'location'  => 'Indonesia',
+            'error'     => $e->getMessage(),
+        ]);
+    }
+}
+
+/**
+ * API: Get X Trending Topics Data
+ */
+public function trendingTopicsData(Request $request)
+{
+    try {
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+        $location  = $request->query('location', 'Indonesia');
+
+        if (!$startDate || !$endDate) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Missing required parameters: start_date, end_date'
+            ], 400);
+        }
+
+        $result = $this->client->twitterTrendingTopics(
+            $startDate,
+            $endDate,
+            0,  // start_time
+            23, // end_time
+            $location,
+            ''  // topics (empty for all)
+        );
+
+        // Transform data
+        $trending = [];
+        $allTopics = [];
+        
+        foreach ($result as $datetime => $period) {
+            if (!is_array($period) || !isset($period['data'])) continue;
+            
+            $date = date('Y-m-d', strtotime($datetime));
+            $timeAgo = $period['str_datetime_ago'] ?? '';
+            
+            foreach ($period['data'] as $topic) {
+                $name = $topic['name'] ?? '';
+                $volume = (int) ($topic['tweet_volume_i'] ?? 0);
+                $rank = (int) ($topic['rank_i'] ?? 0);
+                $url = $topic['url'] ?? '';
+                
+                if (!$name) continue;
+                
+                // Collect all unique topics
+                if (!isset($allTopics[$name])) {
+                    $allTopics[$name] = [
+                        'name' => $name,
+                        'total_volume' => 0,
+                        'appearances' => 0,
+                        'avg_rank' => 0,
+                        'url' => $url,
+                        'history' => []
+                    ];
+                }
+                
+                $allTopics[$name]['total_volume'] += $volume;
+                $allTopics[$name]['appearances']++;
+                $allTopics[$name]['avg_rank'] += $rank;
+                $allTopics[$name]['history'][] = [
+                    'date' => $date,
+                    'datetime' => $datetime,
+                    'rank' => $rank,
+                    'volume' => $volume,
+                    'time_ago' => $timeAgo
+                ];
+            }
+            
+            // Store by date
+            if (!isset($trending[$date])) {
+                $trending[$date] = [
+                    'date' => $date,
+                    'datetime' => $datetime,
+                    'time_ago' => $timeAgo,
+                    'topics' => []
+                ];
+            }
+            
+            $trending[$date]['topics'] = $period['data'];
+        }
+        
+        // Calculate averages and sort
+        foreach ($allTopics as &$topic) {
+            if ($topic['appearances'] > 0) {
+                $topic['avg_rank'] = round($topic['avg_rank'] / $topic['appearances'], 1);
+            }
+        }
+        
+        // Sort by total volume
+        usort($allTopics, fn($a, $b) => $b['total_volume'] - $a['total_volume']);
+        
+        // Sort trending by date
+        krsort($trending);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'trending' => array_values($trending),
+                'top_topics' => array_slice($allTopics, 0, 20),
+                'total_periods' => count($trending),
+                'total_unique_topics' => count($allTopics),
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('trendingTopicsData API error', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'error'   => $e->getMessage()
+        ], 500);
+    }
+}
 
 }
