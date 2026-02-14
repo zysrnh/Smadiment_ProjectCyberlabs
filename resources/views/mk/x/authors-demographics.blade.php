@@ -211,23 +211,64 @@
     margin-bottom: 16px;
   }
 
+  /* Icon Wrapper - SAMA seperti di X Overview */
+  .stat-icon-wrapper {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(3, 128, 71, 0.1) 0%, rgba(3, 128, 71, 0.05) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .stat-icon-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 16px;
+    padding: 4px;
+    background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .metric-card:hover .stat-icon-wrapper::after {
+    opacity: 0.5;
+  }
+
+  .stat-icon {
+    width: 28px;
+    height: 28px;
+    color: var(--primary-green);
+  }
+
   .metric-title {
     font-size: 13px;
     font-weight: 600;
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
   }
 
-  .metric-title svg {
-    width: 20px;
-    height: 20px;
+  .metric-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
   }
 
-  .metric-value {
+  .stat-value-wrapper {
+    margin-bottom: 8px;
+  }
+
+  .metric-value, .stat-value {
     font-size: 32px;
     font-weight: 700;
     color: var(--text-primary);
@@ -235,9 +276,26 @@
     margin-bottom: 8px;
   }
 
-  .metric-label {
+  .metric-label-sub {
     font-size: 13px;
     color: var(--text-secondary);
+    margin-bottom: 12px;
+  }
+
+  /* Stat Progress Bar - SAMA seperti di X Overview */
+  .stat-progress {
+    height: 6px;
+    background: var(--bg-gray-100);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .stat-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+    border-radius: 10px;
+    transition: width 1s ease-out;
   }
 
   /* Chart Card */
@@ -386,7 +444,7 @@
   }
 
   @media (max-width: 640px) {
-    .metric-value {
+    .metric-value, .stat-value {
       font-size: 24px;
     }
 
@@ -497,23 +555,52 @@
     <!-- Total Authors by Age -->
     <div class="metric-card">
       <div class="metric-header">
-        <div class="metric-title">Total Authors</div>
+        <div class="stat-icon-wrapper">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
       </div>
-      <div id="ageAuthorsValue">
+      
+      <div class="metric-label">Total Authors</div>
+      
+      <div id="ageAuthorsValue" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 120px;"></div>
       </div>
-      <div class="metric-label">Across all age groups</div>
+      
+      <div class="metric-label-sub">Across all age groups</div>
+      
+      <div class="stat-progress">
+        <div class="stat-progress-bar" id="ageAuthorsProgress" style="width: 0%"></div>
+      </div>
     </div>
 
     <!-- Total Posts by Age -->
     <div class="metric-card">
       <div class="metric-header">
-        <div class="metric-title">Total Posts</div>
+        <div class="stat-icon-wrapper">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+        </div>
       </div>
-      <div id="agePostsValue">
+      
+      <div class="metric-label">Total Posts</div>
+      
+      <div id="agePostsValue" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 120px;"></div>
       </div>
-      <div class="metric-label">Total engagement</div>
+      
+      <div class="metric-label-sub">Total engagement</div>
+      
+      <div class="stat-progress">
+        <div class="stat-progress-bar" id="agePostsProgress" style="width: 0%"></div>
+      </div>
     </div>
 
     <!-- Age Distribution Chart -->
@@ -557,23 +644,52 @@
     <!-- Male Authors -->
     <div class="metric-card">
       <div class="metric-header">
-        <div class="metric-title">Male Authors</div>
+        <div class="stat-icon-wrapper">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2">
+            <circle cx="12" cy="8" r="5"/>
+            <path d="M20 21a8 8 0 1 0-16 0"/>
+            <path d="M12 13v-2"/>
+          </svg>
+        </div>
       </div>
-      <div id="maleAuthorsValue">
+      
+      <div class="metric-label">Male Authors</div>
+      
+      <div id="maleAuthorsValue" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 120px;"></div>
       </div>
-      <div class="metric-label">Total male contributors</div>
+      
+      <div class="metric-label-sub">Total male contributors</div>
+      
+      <div class="stat-progress">
+        <div class="stat-progress-bar" id="maleProgress" style="width: 0%"></div>
+      </div>
     </div>
 
     <!-- Female Authors -->
     <div class="metric-card">
       <div class="metric-header">
-        <div class="metric-title">Female Authors</div>
+        <div class="stat-icon-wrapper">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2">
+            <circle cx="12" cy="8" r="5"/>
+            <path d="M20 21a8 8 0 1 0-16 0"/>
+            <path d="M12 13v8"/>
+            <path d="M8 17h8"/>
+          </svg>
+        </div>
       </div>
-      <div id="femaleAuthorsValue">
+      
+      <div class="metric-label">Female Authors</div>
+      
+      <div id="femaleAuthorsValue" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 120px;"></div>
       </div>
-      <div class="metric-label">Total female contributors</div>
+      
+      <div class="metric-label-sub">Total female contributors</div>
+      
+      <div class="stat-progress">
+        <div class="stat-progress-bar" id="femaleProgress" style="width: 0%"></div>
+      </div>
     </div>
 
     <!-- Gender Distribution Chart -->
@@ -617,36 +733,50 @@
     <!-- Individual Authors -->
     <div class="metric-card">
       <div class="metric-header">
-        <div class="metric-title">
+        <div class="stat-icon-wrapper">
           <!-- 👤 User Icon -->
-          <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
           </svg>
-          Individual Authors
         </div>
       </div>
-      <div id="individualAuthorsValue">
+      
+      <div class="metric-label">Individual Authors</div>
+      
+      <div id="individualAuthorsValue" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 120px;"></div>
       </div>
-      <div class="metric-label">Personal accounts</div>
+      
+      <div class="metric-label-sub">Personal accounts</div>
+      
+      <div class="stat-progress">
+        <div class="stat-progress-bar" id="individualProgress" style="width: 0%"></div>
+      </div>
     </div>
 
     <!-- Organization Authors -->
     <div class="metric-card">
       <div class="metric-header">
-        <div class="metric-title">
+        <div class="stat-icon-wrapper">
           <!-- ⭐ Star Icon -->
-          <svg viewBox="0 0 24 24" fill="none" stroke="#038047" stroke-width="2">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
           </svg>
-          Organizations
         </div>
       </div>
-      <div id="organizationAuthorsValue">
+      
+      <div class="metric-label">Organizations</div>
+      
+      <div id="organizationAuthorsValue" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 120px;"></div>
       </div>
-      <div class="metric-label">Organizational accounts</div>
+      
+      <div class="metric-label-sub">Organizational accounts</div>
+      
+      <div class="stat-progress">
+        <div class="stat-progress-bar" id="organizationProgress" style="width: 0%"></div>
+      </div>
     </div>
 
     <!-- Type Distribution Chart -->
@@ -761,19 +891,25 @@
             totalPosts += parseInt(item.post_freq) || 0;
           });
           
-          document.getElementById('ageAuthorsValue').innerHTML = `<div class="metric-value">${formatNumber(totalAuthors)}</div>`;
-          document.getElementById('agePostsValue').innerHTML = `<div class="metric-value">${formatNumber(totalPosts)}</div>`;
+          document.getElementById('ageAuthorsValue').innerHTML = `<div class="stat-value">${formatNumber(totalAuthors)}</div>`;
+          document.getElementById('agePostsValue').innerHTML = `<div class="stat-value">${formatNumber(totalPosts)}</div>`;
+          
+          // Animate progress bars
+          setTimeout(() => {
+            document.getElementById('ageAuthorsProgress').style.width = '75%';
+            document.getElementById('agePostsProgress').style.width = '85%';
+          }, 100);
           
           renderAgeDistributionChart(data);
           renderAgeEngagementChart(data);
         } else {
-          document.getElementById('ageAuthorsValue').innerHTML = `<div class="metric-value">0</div>`;
-          document.getElementById('agePostsValue').innerHTML = `<div class="metric-value">0</div>`;
+          document.getElementById('ageAuthorsValue').innerHTML = `<div class="stat-value">0</div>`;
+          document.getElementById('agePostsValue').innerHTML = `<div class="stat-value">0</div>`;
         }
       } catch (error) {
         console.error('Error loading age data:', error);
-        document.getElementById('ageAuthorsValue').innerHTML = `<div class="metric-value" style="color: #ef4444;">Error</div>`;
-        document.getElementById('agePostsValue').innerHTML = `<div class="metric-value" style="color: #ef4444;">Error</div>`;
+        document.getElementById('ageAuthorsValue').innerHTML = `<div class="stat-value" style="color: #ef4444;">Error</div>`;
+        document.getElementById('agePostsValue').innerHTML = `<div class="stat-value" style="color: #ef4444;">Error</div>`;
       } finally {
         removeLoadingBadge(section);
         section.classList.add('loaded');
@@ -919,20 +1055,30 @@
           
           const maleAuthors = maleData ? parseInt(maleData.author_freq) || 0 : 0;
           const femaleAuthors = femaleData ? parseInt(femaleData.author_freq) || 0 : 0;
+          const total = maleAuthors + femaleAuthors;
           
-          document.getElementById('maleAuthorsValue').innerHTML = `<div class="metric-value">${formatNumber(maleAuthors)}</div>`;
-          document.getElementById('femaleAuthorsValue').innerHTML = `<div class="metric-value">${formatNumber(femaleAuthors)}</div>`;
+          document.getElementById('maleAuthorsValue').innerHTML = `<div class="stat-value">${formatNumber(maleAuthors)}</div>`;
+          document.getElementById('femaleAuthorsValue').innerHTML = `<div class="stat-value">${formatNumber(femaleAuthors)}</div>`;
+          
+          // Animate progress bars
+          setTimeout(() => {
+            const malePercentage = total > 0 ? (maleAuthors / total) * 100 : 0;
+            const femalePercentage = total > 0 ? (femaleAuthors / total) * 100 : 0;
+            
+            document.getElementById('maleProgress').style.width = malePercentage + '%';
+            document.getElementById('femaleProgress').style.width = femalePercentage + '%';
+          }, 100);
           
           renderGenderDistributionChart(data);
           renderGenderEngagementChart(data);
         } else {
-          document.getElementById('maleAuthorsValue').innerHTML = `<div class="metric-value">0</div>`;
-          document.getElementById('femaleAuthorsValue').innerHTML = `<div class="metric-value">0</div>`;
+          document.getElementById('maleAuthorsValue').innerHTML = `<div class="stat-value">0</div>`;
+          document.getElementById('femaleAuthorsValue').innerHTML = `<div class="stat-value">0</div>`;
         }
       } catch (error) {
         console.error('Error loading gender data:', error);
-        document.getElementById('maleAuthorsValue').innerHTML = `<div class="metric-value" style="color: #ef4444;">Error</div>`;
-        document.getElementById('femaleAuthorsValue').innerHTML = `<div class="metric-value" style="color: #ef4444;">Error</div>`;
+        document.getElementById('maleAuthorsValue').innerHTML = `<div class="stat-value" style="color: #ef4444;">Error</div>`;
+        document.getElementById('femaleAuthorsValue').innerHTML = `<div class="stat-value" style="color: #ef4444;">Error</div>`;
       } finally {
         removeLoadingBadge(section);
         section.classList.add('loaded');
@@ -1109,22 +1255,33 @@
           
           const individualAuthors = nonOrgData ? parseInt(nonOrgData.author_freq) || 0 : 0;
           const organizationAuthors = orgData ? parseInt(orgData.author_freq) || 0 : 0;
+          const total = individualAuthors + organizationAuthors;
           
           console.log('✅ Individual:', individualAuthors, 'Organization:', organizationAuthors);
           
-          document.getElementById('individualAuthorsValue').innerHTML = `<div class="metric-value">${formatNumber(individualAuthors)}</div>`;
-          document.getElementById('organizationAuthorsValue').innerHTML = `<div class="metric-value">${formatNumber(organizationAuthors)}</div>`;
+          // Update values
+          document.getElementById('individualAuthorsValue').innerHTML = `<div class="stat-value">${formatNumber(individualAuthors)}</div>`;
+          document.getElementById('organizationAuthorsValue').innerHTML = `<div class="stat-value">${formatNumber(organizationAuthors)}</div>`;
+          
+          // ✅ Animate progress bars
+          setTimeout(() => {
+            const individualPercentage = total > 0 ? (individualAuthors / total) * 100 : 0;
+            const organizationPercentage = total > 0 ? (organizationAuthors / total) * 100 : 0;
+            
+            document.getElementById('individualProgress').style.width = individualPercentage + '%';
+            document.getElementById('organizationProgress').style.width = organizationPercentage + '%';
+          }, 100);
           
           renderTypeDistributionChart(data);
           renderTypeEngagementChart(data);
         } else {
-          document.getElementById('individualAuthorsValue').innerHTML = `<div class="metric-value">0</div>`;
-          document.getElementById('organizationAuthorsValue').innerHTML = `<div class="metric-value">0</div>`;
+          document.getElementById('individualAuthorsValue').innerHTML = `<div class="stat-value">0</div>`;
+          document.getElementById('organizationAuthorsValue').innerHTML = `<div class="stat-value">0</div>`;
         }
       } catch (error) {
         console.error('Error loading type data:', error);
-        document.getElementById('individualAuthorsValue').innerHTML = `<div class="metric-value" style="color: #ef4444;">Error</div>`;
-        document.getElementById('organizationAuthorsValue').innerHTML = `<div class="metric-value" style="color: #ef4444;">Error</div>`;
+        document.getElementById('individualAuthorsValue').innerHTML = `<div class="stat-value" style="color: #ef4444;">Error</div>`;
+        document.getElementById('organizationAuthorsValue').innerHTML = `<div class="stat-value" style="color: #ef4444;">Error</div>`;
       } finally {
         removeLoadingBadge(section);
         section.classList.add('loaded');
