@@ -123,6 +123,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/most-retweets', [XOverviewController::class, 'mostRetweets'])
                 ->name('most-retweets');
 
+            // 🔥 NEW: Most Status API
+            Route::get('/most-status', [XOverviewController::class, 'mostStatus'])
+                ->name('most-status');
+
             Route::get('/user-mentions', [XOverviewController::class, 'userMentions'])
                 ->name('user-mentions');
             
@@ -139,7 +143,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/authors-type', [XOverviewController::class, 'authorsTypeData'])
                 ->name('authors-type');
             
-            // 🔥 GEOGRAPHIC API ENDPOINTS - NEW!
+            // 🔥 GEOGRAPHIC API ENDPOINTS
             Route::get('/geo-user', [XOverviewController::class, 'geoUser'])
                 ->name('geo-user');
             
@@ -174,13 +178,17 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     Route::prefix('x')->name('x.')->group(function () {
         Route::get('/overview', [XOverviewController::class, 'index'])->name('overview');
         Route::get('/most-retweets', [XOverviewController::class, 'mostRetweetsPage'])->name('most-retweets');
+        
+        // 🔥 NEW: Most Status Page
+        Route::get('/most-status', [XOverviewController::class, 'mostStatusPage'])->name('most-status');
+        
         Route::get('/top-hashtags', [XOverviewController::class, 'topHashtagsPage'])->name('top-hashtags');
         
         // 🔥 AUTHORS DEMOGRAPHICS - SINGLE PAGE
         Route::get('/authors-demographics', [XOverviewController::class, 'authorsDemographicsPage'])
             ->name('authors.demographics');
         
-        // 🔥 GEOGRAPHIC - NEW!
+        // 🔥 GEOGRAPHIC
         Route::get('/geographic', [XOverviewController::class, 'geographicPage'])
             ->name('geographic');
     });

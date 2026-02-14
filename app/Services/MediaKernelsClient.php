@@ -1090,4 +1090,42 @@ public function topicMap(
         return [];
     }
 }
+// 🔥 ADD THIS METHOD TO MediaKernelsClient.php (after getUserMentions method)
+
+/**
+ * Get Most Status (Most Viewed Posts)
+ */
+public function mostStatus(
+    string $projectId,
+    string $media,
+    string $startDate,
+    string $endDate,
+    int $startTime = 0,
+    int $endTime = 23,
+    string $mentionType = 'view_all'
+): array {
+    try {
+        $token = $this->getToken();
+
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/twitter_most_status/',
+            [
+                'project_id'   => $projectId,
+                'media'        => $media,
+                'start_date'   => $startDate,
+                'end_date'     => $endDate,
+                'start_time'   => $startTime,
+                'end_time'     => $endTime,
+                'mention_type' => $mentionType,
+                'token'        => $token,
+            ]
+        );
+
+        $res->throw();
+        return $this->parseJson($res);
+    } catch (\Exception $e) {
+        Log::warning('mostStatus API error', ['error' => $e->getMessage()]);
+        return [];
+    }
+}
 }

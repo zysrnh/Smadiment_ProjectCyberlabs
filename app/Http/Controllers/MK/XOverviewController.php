@@ -1186,4 +1186,122 @@ public function topLocations(Request $request)
         ], 500);
     }
 }
+// 🔥 ADD THESE METHODS TO XOverviewController.php (after geographicPage method)
+
+/**
+ * Display Most Status Page
+ */
+public function mostStatusPage(Request $request)
+{
+    try {
+        $projectsData = $this->client->listProjects(0, 100);
+        $projects = $projectsData['data'] ?? [];
+
+        $projectId = $request->query('project_id');
+
+        if (!$projectId && count($projects) > 0) {
+            $projectId = $projects[0]['id'] ?? null;
+
+            if ($projectId) {
+                return redirect()->route('mk.x.most-status', [
+                    'project_id' => $projectId,
+                    'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                    'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                ]);
+            }
+        }
+
+        $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+        return view('mk.x.most-status')->with([
+            'projectId' => $projectId,
+            'startDate' => $startDate,
+            'endDate'   => $endDate,
+            'projects'  => $projects,
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Most Status Page Error', [
+            'error' => $e->getMessage()
+        ]);
+
+        return view('mk.x.most-status')->with([
+            'projectId' => null,
+            'startDate' => now()->subDays(6)->format('Y-m-d'),
+            'endDate'   => now()->format('Y-m-d'),
+            'projects'  => [],
+            'error'     => $e->getMessage(),
+        ]);
+    }
+}
+
+/**
+ * API: Get Most Status (Most Viewed Posts)
+ */
+public function mostStatus(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+
+        if (!$projectId || !$startDate || !$endDate) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Missing required parameters: project_id, start_date, end_date'
+            ], 400);
+        }
+
+        $result = $this->client->mostStatus($projectId, 'all', $startDate, $endDate);
+
+        $posts = [];
+
+        if (is_array($result)) {
+            foreach ($result as $item) {
+                $avatar = $item['avatar_url'] ?? $item['author']['image'] ?? '';
+                $avatar = str_replace('_normal.', '.', $avatar);
+
+                $posts[] = [
+                    'id'             => $item['id']             ?? '',
+                    'sub_id'         => $item['sub_id']         ?? '',
+                    'name'           => $item['name']           ?? $item['author']['scr_name'] ?? '',
+                    'content'        => $item['content']        ?? '',
+                    'view_cnt'       => (int) ($item['view_cnt'] ?? $item['freq'] ?? 0),
+                    'rt'             => (int) ($item['rt']      ?? 0),
+                    'sentiment_str'  => $item['sentiment_str']  ?? 'Neutral',
+                    'sentiment_freq' => $item['sentiment_freq'] ?? 0,
+                    'sentiment_prec' => $item['sentiment_prec'] ?? 0,
+                    'date_created'   => $item['date_created']   ?? '',
+                    'avatar_url'     => $avatar,
+                    'author'         => [
+                        'name'     => $item['author']['name']     ?? $item['name'] ?? '',
+                        'scr_name' => $item['author']['scr_name'] ?? $item['name'] ?? '',
+                        'image'    => $item['author']['image']    ?? $avatar,
+                        'flw_cnt'  => $item['author']['flw_cnt']  ?? 0,
+                    ],
+                ];
+            }
+
+            // Sort by view count descending
+            usort($posts, fn($a, $b) => $b['view_cnt'] - $a['view_cnt']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data'    => $posts,
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('X mostStatus API error', [
+            'error'      => $e->getMessage(),
+            'project_id' => $request->query('project_id'),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'error'   => $e->getMessage()
+        ], 500);
+    }
+}
 }

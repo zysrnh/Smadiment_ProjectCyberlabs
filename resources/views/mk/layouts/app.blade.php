@@ -694,6 +694,10 @@
      class="nav-item {{ request()->routeIs('mk.x.geographic') ? 'active' : '' }}">
     <span>Geographic</span>
   </a>
+  <a href="{{ route('mk.x.most-status') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+     class="nav-item {{ request()->routeIs('mk.x.most-status') ? 'active' : '' }}">
+    <span>Most Viewed</span>
+  </a>
 </div>
 
         <!-- Facebook -->
