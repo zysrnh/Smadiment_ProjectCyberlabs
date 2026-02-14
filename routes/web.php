@@ -129,7 +129,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/top-hashtags-data', [XOverviewController::class, 'topHashtagsData'])
                 ->name('top-hashtags-data');
             
-            // 🔥 AUTHORS DEMOGRAPHICS API ENDPOINTS (INI YANG KURANG!)
+            // 🔥 AUTHORS DEMOGRAPHICS API ENDPOINTS
             Route::get('/authors-age', [XOverviewController::class, 'authorsAgeData'])
                 ->name('authors-age');
             
@@ -138,6 +138,16 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             
             Route::get('/authors-type', [XOverviewController::class, 'authorsTypeData'])
                 ->name('authors-type');
+            
+            // 🔥 GEOGRAPHIC API ENDPOINTS - NEW!
+            Route::get('/geo-user', [XOverviewController::class, 'geoUser'])
+                ->name('geo-user');
+            
+            Route::get('/geo-sentiment', [XOverviewController::class, 'geoSentiment'])
+                ->name('geo-sentiment');
+            
+            Route::get('/top-locations', [XOverviewController::class, 'topLocations'])
+                ->name('top-locations');
         });
     });
     
@@ -160,7 +170,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/influencers', [TopAnalyticsController::class, 'influencers'])->name('influencers');
     });
     
-    // 🔥 X (Twitter) Routes - CONSOLIDATED (HAPUS DUPLIKASI!)
+    // 🔥 X (Twitter) Routes - CONSOLIDATED
     Route::prefix('x')->name('x.')->group(function () {
         Route::get('/overview', [XOverviewController::class, 'index'])->name('overview');
         Route::get('/most-retweets', [XOverviewController::class, 'mostRetweetsPage'])->name('most-retweets');
@@ -169,6 +179,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         // 🔥 AUTHORS DEMOGRAPHICS - SINGLE PAGE
         Route::get('/authors-demographics', [XOverviewController::class, 'authorsDemographicsPage'])
             ->name('authors.demographics');
+        
+        // 🔥 GEOGRAPHIC - NEW!
+        Route::get('/geographic', [XOverviewController::class, 'geographicPage'])
+            ->name('geographic');
     });
     
     // Analytics Pages

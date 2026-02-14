@@ -690,6 +690,10 @@
        class="nav-item {{ request()->routeIs('mk.x.authors.demographics') ? 'active' : '' }}">
       <span>Authors Demographics</span>
     </a>
+    <a href="{{ route('mk.x.geographic') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+     class="nav-item {{ request()->routeIs('mk.x.geographic') ? 'active' : '' }}">
+    <span>Geographic</span>
+  </a>
 </div>
 
         <!-- Facebook -->

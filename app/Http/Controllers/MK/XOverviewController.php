@@ -1004,4 +1004,186 @@ class XOverviewController extends Controller
             ]);
         }
     }
+    // 🔥 ADD THESE METHODS TO XOverviewController.php
+
+/**
+ * Display X Geographic Page
+ */
+public function geographicPage(Request $request)
+{
+    try {
+        $projectsData = $this->client->listProjects(0, 100);
+        $projects = $projectsData['data'] ?? [];
+
+        $projectId = $request->query('project_id');
+
+        if (!$projectId && count($projects) > 0) {
+            $projectId = $projects[0]['id'] ?? null;
+
+            if ($projectId) {
+                return redirect()->route('mk.x.geographic', [
+                    'project_id' => $projectId,
+                    'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                    'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                ]);
+            }
+        }
+
+        $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+        return view('mk.x.geographic')->with([
+            'projectId' => $projectId,
+            'startDate' => $startDate,
+            'endDate'   => $endDate,
+            'projects'  => $projects,
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('X Geographic Page Error', [
+            'error' => $e->getMessage()
+        ]);
+
+        return view('mk.x.geographic')->with([
+            'projectId' => null,
+            'startDate' => now()->subDays(6)->format('Y-m-d'),
+            'endDate'   => now()->format('Y-m-d'),
+            'projects'  => [],
+            'error'     => $e->getMessage(),
+        ]);
+    }
+}
+
+/**
+ * API: Get Geo Twitter User Data
+ */
+public function geoUser(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+
+        if (!$projectId || !$startDate || !$endDate) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Missing required parameters: project_id, start_date, end_date'
+            ], 400);
+        }
+
+        $result = $this->client->geoTwitterUser($projectId, 'twitter', $startDate, $endDate);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $result,
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('geoUser API error', [
+            'error' => $e->getMessage(),
+            'project_id' => $request->query('project_id'),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'error'   => $e->getMessage()
+        ], 500);
+    }
+}
+
+/**
+ * API: Get Geo Twitter User Sentiment Data
+ */
+public function geoSentiment(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+
+        if (!$projectId || !$startDate || !$endDate) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Missing required parameters: project_id, start_date, end_date'
+            ], 400);
+        }
+
+        $result = $this->client->geoTwitterUserSentiment(
+            $projectId, 
+            'twitter', 
+            $startDate, 
+            $endDate,
+            0, // start_time
+            23, // end_time
+            1 // sentiment (1 = all sentiments)
+        );
+
+        return response()->json([
+            'success' => true,
+            'data'    => $result,
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('geoSentiment API error', [
+            'error' => $e->getMessage(),
+            'project_id' => $request->query('project_id'),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'error'   => $e->getMessage()
+        ], 500);
+    }
+}
+
+/**
+ * API: Get Top Author Locations Data
+ */
+public function topLocations(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+
+        if (!$projectId || !$startDate || !$endDate) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Missing required parameters: project_id, start_date, end_date'
+            ], 400);
+        }
+
+        $result = $this->client->topAuthorLocation($projectId, 'twitter', $startDate, $endDate);
+
+        // Transform data for table
+        $locations = [];
+        if (is_array($result)) {
+            foreach ($result as $location) {
+                $locations[] = [
+                    'name' => $location['name'] ?? $location['location'] ?? 'Unknown',
+                    'count' => $location['count'] ?? $location['total'] ?? 0,
+                ];
+            }
+            
+            // Sort by count descending
+            usort($locations, fn($a, $b) => $b['count'] - $a['count']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data'    => $locations,
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('topLocations API error', [
+            'error' => $e->getMessage(),
+            'project_id' => $request->query('project_id'),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'error'   => $e->getMessage()
+        ], 500);
+    }
+}
 }
