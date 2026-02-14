@@ -1479,9 +1479,6 @@ public function trendingTopicsPage(Request $request)
     }
 }
 
-/**
- * API: Get X Trending Topics Data
- */
 public function trendingTopicsData(Request $request)
 {
     try {
@@ -1505,7 +1502,7 @@ public function trendingTopicsData(Request $request)
             ''  // topics (empty for all)
         );
 
-        // Transform data
+        // Transform data - FILTER ONLY TWITTER/X DATA
         $trending = [];
         $allTopics = [];
         
@@ -1515,15 +1512,40 @@ public function trendingTopicsData(Request $request)
             $date = date('Y-m-d', strtotime($datetime));
             $timeAgo = $period['str_datetime_ago'] ?? '';
             
+            // 🔥 FILTER: Only process Twitter/X topics
             foreach ($period['data'] as $topic) {
                 $name = $topic['name'] ?? '';
                 $volume = (int) ($topic['tweet_volume_i'] ?? 0);
                 $rank = (int) ($topic['rank_i'] ?? 0);
                 $url = $topic['url'] ?? '';
                 
+                // Skip if not a valid topic
                 if (!$name) continue;
                 
-                // Collect all unique topics
+                // 🔥 CRITICAL FIX: Check if this is a Twitter/X topic
+                // Twitter trending topics should have 'url' field containing 'twitter.com' or 'x.com'
+                // OR check the source field if available
+                $source = strtolower($topic['source'] ?? '');
+                $isTwitter = (
+                    stripos($url, 'twitter.com') !== false || 
+                    stripos($url, 'x.com') !== false ||
+                    $source === 'twitter' ||
+                    $source === 'x' ||
+                    $source === 'twit'
+                );
+                
+                // Skip non-Twitter topics
+                if (!$isTwitter && $url && $url !== '#') {
+                    // If there's a URL but it's not Twitter, skip it
+                    if (stripos($url, 'facebook.com') !== false ||
+                        stripos($url, 'youtube.com') !== false ||
+                        stripos($url, 'instagram.com') !== false ||
+                        stripos($url, 'tiktok.com') !== false) {
+                        continue;
+                    }
+                }
+                
+                // Collect all unique Twitter topics
                 if (!isset($allTopics[$name])) {
                     $allTopics[$name] = [
                         'name' => $name,
@@ -1547,7 +1569,7 @@ public function trendingTopicsData(Request $request)
                 ];
             }
             
-            // Store by date
+            // Store by date - only Twitter topics
             if (!isset($trending[$date])) {
                 $trending[$date] = [
                     'date' => $date,
@@ -1557,7 +1579,33 @@ public function trendingTopicsData(Request $request)
                 ];
             }
             
-            $trending[$date]['topics'] = $period['data'];
+            // Filter period data to only include Twitter topics
+            $twitterTopics = array_filter($period['data'], function($topic) {
+                $url = $topic['url'] ?? '';
+                $source = strtolower($topic['source'] ?? '');
+                
+                $isTwitter = (
+                    stripos($url, 'twitter.com') !== false || 
+                    stripos($url, 'x.com') !== false ||
+                    $source === 'twitter' ||
+                    $source === 'x' ||
+                    $source === 'twit'
+                );
+                
+                // Exclude other social media
+                if ($url && $url !== '#') {
+                    if (stripos($url, 'facebook.com') !== false ||
+                        stripos($url, 'youtube.com') !== false ||
+                        stripos($url, 'instagram.com') !== false ||
+                        stripos($url, 'tiktok.com') !== false) {
+                        return false;
+                    }
+                }
+                
+                return $isTwitter || (!$url || $url === '#');
+            });
+            
+            $trending[$date]['topics'] = array_values($twitterTopics);
         }
         
         // Calculate averages and sort
@@ -1573,11 +1621,18 @@ public function trendingTopicsData(Request $request)
         // Sort trending by date
         krsort($trending);
 
+        Log::info('trendingTopicsData - Twitter/X only', [
+            'total_periods' => count($trending),
+            'total_unique_topics' => count($allTopics),
+            'sample_topic' => $allTopics[0] ?? null
+        ]);
+
+        // ✅ SEND ALL TWITTER/X TOPICS
         return response()->json([
             'success' => true,
             'data' => [
                 'trending' => array_values($trending),
-                'top_topics' => array_slice($allTopics, 0, 20),
+                'top_topics' => $allTopics,  // ✅ All Twitter/X topics
                 'total_periods' => count($trending),
                 'total_unique_topics' => count($allTopics),
             ]
@@ -1595,5 +1650,6 @@ public function trendingTopicsData(Request $request)
         ], 500);
     }
 }
+
 
 }

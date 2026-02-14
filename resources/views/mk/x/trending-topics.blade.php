@@ -168,7 +168,7 @@
     /* Stats Grid */
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         gap: 16px;
         margin-bottom: 24px;
     }
@@ -296,20 +296,7 @@
         font-size: 14px;
     }
 
-    /* Volume Column */
-    .volume-cell {
-        font-weight: 600;
-        color: var(--text-primary);
-        font-size: 14px;
-        text-align: right;
-    }
-
-    .volume-value {
-        color: var(--primary-green);
-        font-weight: 700;
-    }
-
-    /* Other Stats Columns */
+    /* Stats Columns */
     .appearances-cell,
     .rank-avg-cell {
         font-weight: 500;
@@ -394,13 +381,9 @@
         font-weight: 500;
     }
 
-    /* Skeleton Loading */
-    .skeleton-line {
-        height: 16px;
-        background: linear-gradient(90deg, var(--bg-gray-50) 25%, var(--border-gray) 50%, var(--bg-gray-50) 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
-        border-radius: 4px;
+    .pagination-info strong {
+        color: var(--text-primary);
+        font-weight: 700;
     }
 
     /* Skeleton Loading */
@@ -572,12 +555,6 @@
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">Top Topic Volume</div>
-            <div id="topVolume" class="stat-value">
-                <div class="skeleton-line" style="width:60%;"></div>
-            </div>
-        </div>
-        <div class="stat-card">
             <div class="stat-label">Avg Topics/Period</div>
             <div id="avgTopics" class="stat-value">
                 <div class="skeleton-line" style="width:60%;"></div>
@@ -728,7 +705,11 @@ const TrendingLoader = {
             this.trendingData = result.data;
             this.allTopics = this.trendingData.top_topics || [];
             
-            console.log('💾 Data stored:', this.allTopics.length, 'topics');
+            console.log('💾 Data stored:', {
+                totalTopics: this.allTopics.length,
+                totalPeriods: this.trendingData.total_periods,
+                uniqueTopics: this.trendingData.total_unique_topics
+            });
             
             this.updateStats();
             this.renderTable();
@@ -743,14 +724,12 @@ const TrendingLoader = {
         
         const totalPeriods = data.total_periods || 0;
         const uniqueTopics = data.total_unique_topics || 0;
-        const topVolume = this.allTopics.length > 0 ? this.allTopics[0].total_volume : 0;
         const avgTopics = totalPeriods > 0 ? Math.round(uniqueTopics / totalPeriods) : 0;
 
-        console.log('📊 Stats:', { totalPeriods, uniqueTopics, topVolume, avgTopics });
+        console.log('📊 Stats:', { totalPeriods, uniqueTopics, avgTopics });
 
         document.getElementById('totalPeriods').textContent = totalPeriods;
         document.getElementById('uniqueTopics').textContent = uniqueTopics;
-        document.getElementById('topVolume').textContent = this.formatNumber(topVolume);
         document.getElementById('avgTopics').textContent = avgTopics;
     },
 
@@ -760,11 +739,12 @@ const TrendingLoader = {
         const emptyState = document.getElementById('emptyState');
         const pagination = document.getElementById('pagination');
 
-        if (!this.allTopics.length) {
+        if (!this.allTopics || !this.allTopics.length) {
             console.warn('⚠️ No topics to display - showing empty state');
             loadingTable.style.display = 'none';
             trendingTable.style.display = 'none';
             emptyState.style.display = 'block';
+            pagination.style.display = 'none';
             return;
         }
 
@@ -781,9 +761,17 @@ const TrendingLoader = {
 
         // Update pagination
         this.updatePagination();
-        pagination.style.display = 'flex';
         
-        console.log('✅ Table rendered successfully');
+        // Only show pagination if there are multiple pages
+        const totalPages = Math.ceil(this.allTopics.length / this.topicsPerPage);
+        pagination.style.display = totalPages > 1 ? 'flex' : 'none';
+        
+        console.log('✅ Table rendered successfully', {
+            totalTopics: this.allTopics.length,
+            currentPage: this.currentPage,
+            showing: currentTopics.length,
+            totalPages: totalPages
+        });
     },
 
     createTableRow(topic, rank) {
@@ -823,9 +811,18 @@ const TrendingLoader = {
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
 
-        pageInfo.textContent = `Page ${this.currentPage} of ${totalPages}`;
+        const startIdx = (this.currentPage - 1) * this.topicsPerPage + 1;
+        const endIdx = Math.min(this.currentPage * this.topicsPerPage, this.allTopics.length);
+
+        pageInfo.innerHTML = `Showing <strong>${startIdx}-${endIdx}</strong> of <strong>${this.allTopics.length}</strong> topics`;
         prevBtn.disabled = this.currentPage === 1;
         nextBtn.disabled = this.currentPage === totalPages;
+        
+        console.log('📄 Pagination updated', {
+            currentPage: this.currentPage,
+            totalPages: totalPages,
+            showing: `${startIdx}-${endIdx} of ${this.allTopics.length}`
+        });
     },
 
     changePage(direction) {
@@ -838,6 +835,8 @@ const TrendingLoader = {
             
             // Scroll to top of table
             document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth' });
+            
+            console.log('🔄 Page changed to:', newPage);
         }
     },
 
@@ -872,7 +871,6 @@ const TrendingLoader = {
         
         document.getElementById('totalPeriods').textContent = '0';
         document.getElementById('uniqueTopics').textContent = '0';
-        document.getElementById('topVolume').textContent = '0';
         document.getElementById('avgTopics').textContent = '0';
     }
 };
