@@ -1728,5 +1728,118 @@ public function trendingWordCloudPage(Request $request)
         ]);
     }
 }
+ public function sharedUrlsPage(Request $request)
+    {
+        try {
+            $projectsData = $this->client->listProjects(0, 100);
+            $projects     = $projectsData['data'] ?? [];
+
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+
+                if ($projectId) {
+                    return redirect()->route('mk.x.shared-urls', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+            return view('mk.x.shared-urls')->with([
+                'projectId' => $projectId,
+                'startDate' => $startDate,
+                'endDate'   => $endDate,
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Shared URLs Page Error', ['error' => $e->getMessage()]);
+
+            return view('mk.x.shared-urls')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
+        }
+    }
+    public function sharedUrls(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+
+            if (!$projectId || !$startDate || !$endDate) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => 'Missing required parameters: project_id, start_date, end_date',
+                ], 400);
+            }
+
+            $result = $this->client->sharedUrlFreq($projectId, $startDate, $endDate);
+
+            // Normalise data from API response
+            $urls = [];
+
+            if (isset($result['data']) && is_array($result['data'])) {
+                foreach ($result['data'] as $item) {
+                    $url      = $item['url']      ?? '';
+                    $freq     = (int) ($item['freq'] ?? 0);
+                    $hostname = $item['hostname']  ?? '';
+
+                    // Auto-derive hostname if missing
+                    if (!$hostname && $url) {
+                        try {
+                            $hostname = parse_url($url, PHP_URL_HOST) ?: '';
+                        } catch (\Exception $e) {
+                            $hostname = '';
+                        }
+                    }
+
+                    if (!$url) continue;
+
+                    $urls[] = [
+                        'url'      => $url,
+                        'freq'     => $freq,
+                        'hostname' => $hostname,
+                    ];
+                }
+
+                // Sort descending by freq (API usually returns sorted, but ensure it)
+                usort($urls, fn($a, $b) => $b['freq'] - $a['freq']);
+            }
+
+            Log::info('sharedUrls controller', [
+                'project_id'  => $projectId,
+                'total_items' => count($urls),
+                'sample'      => array_slice($urls, 0, 3),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data'    => $urls,
+                'total'   => count($urls),
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('sharedUrls API error', [
+                'error'      => $e->getMessage(),
+                'project_id' => $request->query('project_id'),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
 
 }

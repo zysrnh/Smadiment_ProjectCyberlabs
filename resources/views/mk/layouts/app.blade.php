@@ -688,15 +688,16 @@
         <div class="nav-label">Social Media</div>
 @php
   $xRoutes = [
-    'mk.x.overview', 
+    'mk.x.overview',
     'mk.x.most-status',
-    'mk.x.most-retweets', 
-    'mk.x.top-hashtags', 
-    'mk.x.authors.demographics', 
-    'mk.x.geographic', 
+    'mk.x.most-retweets',
+    'mk.x.top-hashtags',
+    'mk.x.authors.demographics',
+    'mk.x.geographic',
     'mk.x.post-with-location',
     'mk.x.trending-topics',
-    'mk.x.trending-word-cloud'  // 🔥 ADD THIS
+    'mk.x.trending-word-cloud',
+    'mk.x.shared-urls',   // <-- tambahkan ini
   ];
   $isXActive = request()->routeIs($xRoutes);
 @endphp
@@ -707,7 +708,7 @@
   <span class="nav-icon">
     <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
   </span>
-  <span>X (Twitter)</span>
+  <span>X</span>
   <span class="dropdown-arrow">▼</span>
 </div>
 
@@ -833,6 +834,16 @@
       </svg>
     </span>
     <span>Trending Word Cloud</span>
+  </a>
+    <a href="{{ route('mk.x.shared-urls') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+     class="nav-item {{ request()->routeIs('mk.x.shared-urls') ? 'active' : '' }}">
+    <span class="menu-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+      </svg>
+    </span>
+    <span>Shared URLs</span>
   </a>
   
 </div>
