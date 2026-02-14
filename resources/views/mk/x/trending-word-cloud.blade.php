@@ -41,7 +41,6 @@
         margin: 0;
     }
 
-    /* Filter Card */
     .filter-card {
         background: var(--bg-white);
         border-radius: 16px;
@@ -96,6 +95,7 @@
         stroke: currentColor;
         fill: none;
         stroke-width: 2;
+        flex-shrink: 0;
     }
 
     .date-separator {
@@ -165,7 +165,6 @@
         fill: none;
     }
 
-    /* Sentiment Filter Buttons */
     .sentiment-filters {
         display: flex;
         gap: 8px;
@@ -207,66 +206,9 @@
         height: 10px;
         border-radius: 50%;
         display: inline-block;
+        flex-shrink: 0;
     }
 
-    /* Stats Grid */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-
-    .stat-card {
-        background: var(--bg-white);
-        border: 1px solid var(--border-gray);
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: var(--shadow-sm);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-        border-color: var(--primary-green);
-    }
-
-    .stat-card:hover::before {
-        opacity: 1;
-    }
-
-    .stat-label {
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--text-secondary);
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        margin-bottom: 8px;
-    }
-
-    .stat-value {
-        font-size: 28px;
-        font-weight: 700;
-        color: var(--text-primary);
-        line-height: 1.2;
-    }
-
-    /* Word Cloud Container */
     .wordcloud-container {
         background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
         border-radius: 20px;
@@ -284,14 +226,34 @@
     .wordcloud-container::before {
         content: '';
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: 
+        top: 0; left: 0; right: 0; bottom: 0;
+        background:
             radial-gradient(circle at 20% 30%, rgba(3, 128, 71, 0.03) 0%, transparent 50%),
             radial-gradient(circle at 80% 70%, rgba(47, 198, 246, 0.03) 0%, transparent 50%);
         pointer-events: none;
+    }
+
+    /* Hint shown after cloud is rendered */
+    .wordcloud-hint {
+        position: absolute;
+        bottom: 16px;
+        right: 20px;
+        font-size: 11px;
+        color: var(--text-muted);
+        font-style: italic;
+        display: none;
+        align-items: center;
+        gap: 5px;
+        z-index: 2;
+        pointer-events: none;
+    }
+
+    .wordcloud-hint svg {
+        width: 13px;
+        height: 13px;
+        stroke: currentColor;
+        fill: none;
+        flex-shrink: 0;
     }
 
     #wordCloudChart {
@@ -299,9 +261,9 @@
         height: 700px !important;
         position: relative;
         z-index: 1;
+        cursor: pointer;
     }
 
-    /* Loading State */
     .loading-state {
         display: flex;
         flex-direction: column;
@@ -320,9 +282,7 @@
         animation: spin 0.8s linear infinite;
     }
 
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     .loading-text {
         font-size: 14px;
@@ -330,7 +290,6 @@
         font-weight: 500;
     }
 
-    /* Empty State */
     .empty-state {
         text-align: center;
         padding: 80px 20px;
@@ -358,55 +317,16 @@
         margin: 0;
     }
 
-    /* Skeleton Loading */
-    .skeleton-line {
-        height: 16px;
-        background: linear-gradient(90deg, var(--bg-gray-50) 25%, var(--border-gray) 50%, var(--bg-gray-50) 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
-        border-radius: 8px;
-        margin-bottom: 12px;
-    }
-
-    @keyframes shimmer {
-        0% { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
-    }
-
-    /* Responsive */
     @media (max-width: 768px) {
-        .dashboard-container {
-            padding: 16px;
-        }
-        .filter-content {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        .date-range-wrapper {
-            flex-direction: column;
-        }
-        .location-select {
-            width: 100%;
-        }
-        .apply-btn {
-            width: 100%;
-            justify-content: center;
-        }
-        .sentiment-filters {
-            width: 100%;
-        }
-        .sentiment-btn {
-            flex: 1;
-            justify-content: center;
-        }
-        
-        #wordCloudChart {
-            height: 500px !important;
-        }
-        .wordcloud-container {
-            padding: 24px;
-            min-height: 550px;
-        }
+        .dashboard-container { padding: 16px; }
+        .filter-content { flex-direction: column; align-items: stretch; }
+        .date-range-wrapper { flex-direction: column; }
+        .location-select { width: 100%; }
+        .apply-btn { width: 100%; justify-content: center; }
+        .sentiment-filters { width: 100%; }
+        .sentiment-btn { flex: 1; justify-content: center; }
+        #wordCloudChart { height: 500px !important; }
+        .wordcloud-container { padding: 24px; min-height: 550px; }
     }
 </style>
 @endsection
@@ -440,7 +360,7 @@
                             <line x1="8" y1="2" x2="8" y2="6"/>
                             <line x1="3" y1="10" x2="21" y2="10"/>
                         </svg>
-                        <input type="date" name="start_date" class="date-input" 
+                        <input type="date" name="start_date" class="date-input"
                                value="{{ $startDate }}" max="{{ date('Y-m-d') }}" required>
                     </div>
                     <span class="date-separator">to</span>
@@ -451,15 +371,15 @@
                             <line x1="8" y1="2" x2="8" y2="6"/>
                             <line x1="3" y1="10" x2="21" y2="10"/>
                         </svg>
-                        <input type="date" name="end_date" class="date-input" 
+                        <input type="date" name="end_date" class="date-input"
                                value="{{ $endDate }}" max="{{ date('Y-m-d') }}" required>
                     </div>
                 </div>
                 <select name="location" class="location-select">
-                    <option value="Indonesia" {{ $location === 'Indonesia' ? 'selected' : '' }}>Indonesia</option>
-                    <option value="Worldwide" {{ $location === 'Worldwide' ? 'selected' : '' }}>Worldwide</option>
+                    <option value="Indonesia"     {{ $location === 'Indonesia'     ? 'selected' : '' }}>Indonesia</option>
+                    <option value="Worldwide"     {{ $location === 'Worldwide'     ? 'selected' : '' }}>Worldwide</option>
                     <option value="United States" {{ $location === 'United States' ? 'selected' : '' }}>United States</option>
-                    <option value="United Kingdom" {{ $location === 'United Kingdom' ? 'selected' : '' }}>United Kingdom</option>
+                    <option value="United Kingdom"{{ $location === 'United Kingdom'? 'selected' : '' }}>United Kingdom</option>
                 </select>
                 <button type="submit" class="apply-btn">
                     <svg viewBox="0 0 24 24">
@@ -506,17 +426,24 @@
 
     <!-- Word Cloud Container -->
     <div class="wordcloud-container">
-        <!-- Loading State -->
+
         <div id="loadingState" class="loading-state">
             <div class="loading-spinner"></div>
             <div class="loading-text" id="loadingText">Loading trending topics data...</div>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 8px;" id="loadingProgress"></div>
         </div>
 
-        <!-- ECharts Container -->
         <div id="wordCloudChart" style="display: none;"></div>
 
-        <!-- Empty State -->
+        <div class="wordcloud-hint" id="wordCloudHint">
+            <svg viewBox="0 0 24 24">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+            Click a word to search on X
+        </div>
+
         <div id="emptyState" class="empty-state" style="display: none;">
             <svg viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10"/>
@@ -526,45 +453,149 @@
             <h3>No Trending Topics Found</h3>
             <p>No trending topics data available for the selected date range.</p>
         </div>
+
     </div>
 
 </div>
 @endsection
 
 @section('scripts')
-<!-- ECharts & WordCloud Plugin -->
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
 
 <script>
 const WordCloudGenerator = {
     startDate: '{{ $startDate ?? "" }}',
-    endDate: '{{ $endDate ?? "" }}',
-    location: '{{ $location ?? "Indonesia" }}',
-    trendingData: null,
+    endDate:   '{{ $endDate ?? "" }}',
+    location:  '{{ $location ?? "Indonesia" }}',
+    trendingData:     null,
     currentSentiment: 'all',
     chart: null,
 
+    // ---------------------------------------------------------------
+    // Keyword lists — checked as EXACT TOKENS (whole-word matching)
+    // to avoid false positives like "protest" matching inside "pro".
+    // Multi-word phrases (e.g. "tidak adil") use substring matching
+    // on the full topic string instead.
+    // ---------------------------------------------------------------
+    NEGATIVE_KEYWORDS: [
+        // English — single words
+        'bad','worst','hate','hated','sad','fail','failed','failure',
+        'lose','lost','loss','angry','anger','terrible','awful',
+        'poor','dead','death','die','died','dies','kill','killed','killing',
+        'corrupt','corruption','crime','criminal','fraud','scam',
+        'lie','lies','liar','cheat','cheating','cheater',
+        'abuse','abuser','abusive','terror','terrorist','terrorism',
+        'attack','attacked','war','riot','rioting','scandal',
+        'boycott','crisis','disaster','catastrophe',
+        'wrong','broken','hurt','pain','suffer','suffering',
+        'injustice','unfair','illegal','violence','violent',
+        'racist','racism','bully','bullying','harassment','harass',
+        'threat','threaten','danger','dangerous','emergency',
+        'victim','bankrupt','poverty','hunger','famine',
+        'shooting','murdered','murder','arrested','arrest',
+        'fired','layoff','layoffs','resign','resignation',
+        // Indonesian — single words
+        'buruk','terburuk','benci','sedih','gagal','kalah',
+        'marah','parah','miskin','mati','maut','bunuh','tewas',
+        'korupsi','korup','kejahatan','kriminal','penipuan','tipu',
+        'bohong','curang','kekerasan','serang','perang','rusuh',
+        'skandal','boikot','krisis','bencana','musibah',
+        'salah','rusak','sakit','derita','menderita',
+        'ilegal','rasis','rasisme','ancaman','bahaya','berbahaya',
+        'darurat','korban','bangkrut','kemiskinan','kelaparan',
+        'tersangka','terdakwa','penjara','ditangkap','tangkap',
+        'pecat','dipecat','mengundurkan','narkoba','narkotika',
+        'meninggal','wafat','terbunuh','dibunuh','penembakan',
+        'kebakaran','banjir','gempa','longsor','kecelakaan',
+    ],
+
+    // Multi-word phrases (Indonesian) — substring matched
+    NEGATIVE_PHRASES: [
+        'tidak adil','tidak beres','tidak bisa','tidak mampu',
+        'tidak aman','unjuk rasa','demo besar','huru hara',
+        'kasus korupsi','dugaan korupsi','terseret kasus',
+        'ditangkap polisi','diciduk polisi','dicokok polisi',
+    ],
+
+    POSITIVE_KEYWORDS: [
+        // English
+        'win','won','winner','best','good','great','love',
+        'happy','success','successful','amazing','excellent',
+        'awesome','celebrate','celebration','proud','pride',
+        'champion','victory','achieve','achievement',
+        'congratulations','congrats','hope','inspire','inspiration',
+        'wonderful','beautiful','brilliant','fantastic','superb',
+        'legend','hero','heroic','progress','growth','improve',
+        // Indonesian
+        'menang','juara','terbaik','baik','bagus','cinta',
+        'senang','sukses','berhasil','hebat','keren',
+        'rayakan','bangga','kemenangan','prestasi','selamat',
+        'harapan','inspirasi','positif','indah','cemerlang',
+        'fantastis','legenda','pahlawan','kemajuan','merdeka',
+        'damai','harmonis','aman','sejahtera',
+    ],
+
+    // ---------------------------------------------------------------
+    // Classify sentiment with whole-word token matching
+    // ---------------------------------------------------------------
+    getSentimentFromTopic(topicName) {
+        const lower  = topicName.toLowerCase().replace(/^#/, '').trim();
+        const tokens = lower.split(/[^a-z0-9]+/).filter(t => t.length > 0);
+
+        // Check negative single-word keywords
+        for (const kw of this.NEGATIVE_KEYWORDS) {
+            if (tokens.includes(kw)) return 'negative';
+        }
+        // Check negative phrases (substring)
+        for (const phrase of this.NEGATIVE_PHRASES) {
+            if (lower.includes(phrase)) return 'negative';
+        }
+        // Check positive single-word keywords
+        for (const kw of this.POSITIVE_KEYWORDS) {
+            if (tokens.includes(kw)) return 'positive';
+        }
+
+        return 'neutral';
+    },
+
+    getSentimentColor() {
+        const colorSchemes = {
+            positive: ['#10b981','#059669','#34d399','#6ee7b7','#047857'],
+            negative: ['#ef4444','#dc2626','#b91c1c','#f87171','#c53030'],
+            neutral:  ['#f59e0b','#d97706','#fbbf24','#b45309','#fcd34d'],
+            all:      ['#038047','#04995a','#2FC6F6','#06b6d4','#8b5cf6',
+                       '#a78bfa','#f59e0b','#fbbf24','#10b981','#34d399',
+                       '#ef4444','#f87171'],
+        };
+        return colorSchemes[this.currentSentiment] || colorSchemes.all;
+    },
+
+    // ---------------------------------------------------------------
+    // Open X search in a new tab
+    // ---------------------------------------------------------------
+    openXSearch(topicName) {
+        const query = encodeURIComponent(topicName);
+        window.open(
+            `https://x.com/search?q=${query}&src=trend_click`,
+            '_blank',
+            'noopener,noreferrer'
+        );
+    },
+
+    // ---------------------------------------------------------------
+    // Init
+    // ---------------------------------------------------------------
     async init() {
-        console.log('🚀 WordCloudGenerator init started');
-        console.log('📅 Date Range:', this.startDate, 'to', this.endDate);
-        console.log('📍 Location:', this.location);
-        
-        // Check if ECharts loaded
         if (typeof echarts === 'undefined') {
-            console.error('❌ ECharts library not loaded!');
             this.showError('ECharts library failed to load');
             return;
         }
-        
-        console.log('✅ ECharts loaded successfully');
-        
         this.initSentimentFilters();
-        
         try {
             await this.loadData();
         } catch (error) {
-            console.error('❌ Failed to load trending data:', error);
+            console.error('Failed to load trending data:', error);
             this.showError('Failed to load data');
         }
     },
@@ -574,13 +605,9 @@ const WordCloudGenerator = {
         buttons.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                
                 buttons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                
                 this.currentSentiment = btn.dataset.sentiment;
-                console.log('🎯 Sentiment filter changed to:', this.currentSentiment);
-                
                 this.generateWordCloud();
             });
         });
@@ -588,147 +615,88 @@ const WordCloudGenerator = {
 
     async loadData() {
         const url = `/mk/api/x/trending-topics?start_date=${this.startDate}&end_date=${this.endDate}&location=${this.location}`;
-        
-        console.log('🌐 Fetching from URL:', url);
-        
-        // Update loading text
-        const loadingText = document.getElementById('loadingText');
+        const loadingText     = document.getElementById('loadingText');
         const loadingProgress = document.getElementById('loadingProgress');
-        
+
         loadingText.textContent = 'Fetching data from server...';
-        
-        try {
-            const startTime = Date.now();
-            
-            const response = await fetch(url);
-            console.log('📡 Response status:', response.status);
-            
-            loadingText.textContent = 'Processing trending topics...';
-            
-            const result = await response.json();
-            console.log('📊 Full API response:', result);
 
-            if (!result.success) {
-                console.error('❌ API returned success=false:', result.error);
-                throw new Error(result.error || 'Failed to load data');
-            }
+        const startTime = Date.now();
+        const response  = await fetch(url);
 
-            this.trendingData = result.data;
-            
-            const loadTime = ((Date.now() - startTime) / 1000).toFixed(1);
-            
-            console.log('💾 Data stored:', {
-                totalTopics: this.trendingData.top_topics?.length || 0,
-                totalPeriods: this.trendingData.total_periods,
-                uniqueTopics: this.trendingData.total_unique_topics,
-                loadTime: loadTime + 's'
-            });
-            
-            loadingText.textContent = 'Generating word cloud...';
-            loadingProgress.textContent = `Loaded ${this.trendingData.top_topics?.length || 0} topics in ${loadTime}s`;
-            
-            // Small delay to show the progress message
-            await new Promise(resolve => setTimeout(resolve, 200));
-            
-            this.generateWordCloud();
-        } catch (error) {
-            console.error('💥 Error in loadData:', error);
-            throw error;
+        loadingText.textContent = 'Processing trending topics...';
+
+        const result = await response.json();
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to load data');
         }
+
+        this.trendingData = result.data;
+        const loadTime    = ((Date.now() - startTime) / 1000).toFixed(1);
+
+        loadingText.textContent     = 'Generating word cloud...';
+        loadingProgress.textContent = `Loaded ${this.trendingData.top_topics?.length || 0} topics in ${loadTime}s`;
+
+        await new Promise(resolve => setTimeout(resolve, 200));
+        this.generateWordCloud();
     },
 
-    getSentimentFromTopic(topicName) {
-        const positive = ['win', 'best', 'good', 'great', 'love', 'happy', 'success', 'winner', 'amazing', 'excellent'];
-        const negative = ['bad', 'worst', 'hate', 'sad', 'fail', 'lose', 'angry', 'terrible', 'awful', 'poor'];
-        
-        const lowerName = topicName.toLowerCase();
-        
-        if (positive.some(word => lowerName.includes(word))) return 'positive';
-        if (negative.some(word => lowerName.includes(word))) return 'negative';
-        
-        return 'neutral';
-    },
-
-    getSentimentColor() {
-        const colorSchemes = {
-            positive: ['#10b981', '#059669', '#34d399', '#6ee7b7', '#a7f3d0'],
-            negative: ['#ef4444', '#dc2626', '#f87171', '#fca5a5', '#fecaca'],
-            neutral: ['#f59e0b', '#d97706', '#fbbf24', '#fcd34d', '#fde68a'],
-            all: ['#038047', '#04995a', '#2FC6F6', '#06b6d4', '#8b5cf6', '#a78bfa', '#f59e0b', '#fbbf24', '#10b981', '#34d399', '#ef4444', '#f87171']
-        };
-
-        return colorSchemes[this.currentSentiment] || colorSchemes.all;
-    },
-
+    // ---------------------------------------------------------------
+    // Render
+    // ---------------------------------------------------------------
     generateWordCloud() {
         const loadingState = document.getElementById('loadingState');
-        const chartDiv = document.getElementById('wordCloudChart');
-        const emptyState = document.getElementById('emptyState');
+        const chartDiv     = document.getElementById('wordCloudChart');
+        const emptyState   = document.getElementById('emptyState');
+        const hintEl       = document.getElementById('wordCloudHint');
 
         let topics = this.trendingData.top_topics || [];
 
         // Apply sentiment filter
         if (this.currentSentiment !== 'all') {
-            topics = topics.filter(topic => {
-                const sentiment = this.getSentimentFromTopic(topic.name);
-                return sentiment === this.currentSentiment;
-            });
+            topics = topics.filter(t => this.getSentimentFromTopic(t.name) === this.currentSentiment);
         }
 
-        if (!topics || !topics.length) {
-            console.warn('⚠️ No topics to display for sentiment:', this.currentSentiment);
+        if (!topics.length) {
             loadingState.style.display = 'none';
-            chartDiv.style.display = 'none';
-            emptyState.style.display = 'block';
+            chartDiv.style.display     = 'none';
+            hintEl.style.display       = 'none';
+            emptyState.style.display   = 'block';
+
+            const label = this.currentSentiment === 'all'
+                ? ''
+                : this.currentSentiment.charAt(0).toUpperCase() + this.currentSentiment.slice(1) + ' ';
+
             emptyState.innerHTML = `
                 <svg viewBox="0 0 24 24" style="width:64px;height:64px;stroke:currentColor;fill:none;margin-bottom:16px;">
                     <circle cx="12" cy="12" r="10"/>
                     <line x1="12" y1="8" x2="12" y2="12"/>
                     <line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
-                <h3>No ${this.currentSentiment === 'all' ? '' : this.currentSentiment.charAt(0).toUpperCase() + this.currentSentiment.slice(1)} Topics Found</h3>
+                <h3>No ${label}Topics Found</h3>
                 <p>Try selecting a different sentiment filter or date range.</p>
             `;
             return;
         }
 
-        // ⚡ OPTIMIZATION: Limit to top 100 topics for better performance
-        const MAX_TOPICS = 100;
-        if (topics.length > MAX_TOPICS) {
-            console.log(`⚡ Optimizing: Limiting ${topics.length} topics to top ${MAX_TOPICS}`);
-            topics = topics.slice(0, MAX_TOPICS);
-        }
+        // Limit to top 100
+        if (topics.length > 100) topics = topics.slice(0, 100);
 
-        console.log('🎨 Generating word cloud with', topics.length, 'topics for sentiment:', this.currentSentiment);
+        const wordData = topics.map(topic => ({
+            name:  topic.name.replace(/^#/, ''),
+            value: topic.total_volume || (topic.appearances * 100) || 100,
+            originalTopic: topic,
+        }));
 
-        // Prepare data for ECharts with optimization
-        const wordData = topics.map(topic => {
-            const cleanName = topic.name.replace(/^#/, '');
-            const weight = topic.total_volume || (topic.appearances * 100) || 100;
-            return {
-                name: cleanName,
-                value: weight,
-                // Store original topic data for tooltip
-                originalTopic: topic
-            };
-        });
-
-        console.log('📝 Word data prepared:', wordData.length, 'items');
-
-        // Hide loading, show chart
         loadingState.style.display = 'none';
-        chartDiv.style.display = 'block';
-        emptyState.style.display = 'none';
+        chartDiv.style.display     = 'block';
+        emptyState.style.display   = 'none';
+        hintEl.style.display       = 'flex';
 
-        // Destroy previous chart if exists
-        if (this.chart) {
-            this.chart.dispose();
-        }
+        if (this.chart) this.chart.dispose();
 
-        // Initialize ECharts
         this.chart = echarts.init(chartDiv, null, {
-            renderer: 'canvas', // Use canvas for better performance
-            devicePixelRatio: window.devicePixelRatio || 1
+            renderer: 'canvas',
+            devicePixelRatio: window.devicePixelRatio || 1,
         });
 
         const colors = this.getSentimentColor();
@@ -740,42 +708,37 @@ const WordCloudGenerator = {
                 backgroundColor: '#ffffff',
                 borderColor: '#e2e8f0',
                 borderWidth: 1,
-                textStyle: {
-                    color: '#1a202c',
-                    fontSize: 13,
-                    fontFamily: 'Poppins, sans-serif'
-                },
+                textStyle: { color: '#1a202c', fontSize: 13, fontFamily: 'Poppins, sans-serif' },
                 padding: 16,
                 shadowBlur: 20,
-                shadowColor: 'rgba(0, 0, 0, 0.15)',
+                shadowColor: 'rgba(0,0,0,0.15)',
                 shadowOffsetY: 4,
-                formatter: function(params) {
-                    const topic = params.data.originalTopic;
-                    const sentiment = WordCloudGenerator.getSentimentFromTopic(topic.name);
-                    
+                formatter: (params) => {
+                    const topic     = params.data.originalTopic;
+                    const sentiment = this.getSentimentFromTopic(topic.name);
                     const sentimentColors = {
-                        'positive': '#22c55e',
-                        'negative': '#ef4444',
-                        'neutral': '#94a3b8'
+                        positive: '#22c55e',
+                        negative: '#ef4444',
+                        neutral:  '#94a3b8',
                     };
-                    
                     const color = sentimentColors[sentiment];
-                    const sentimentLabel = sentiment.charAt(0).toUpperCase() + sentiment.slice(1);
-                    
+                    const label = sentiment.charAt(0).toUpperCase() + sentiment.slice(1);
                     return `
                         <div style="font-family:Poppins,sans-serif;min-width:200px;">
                             <div style="font-weight:700;font-size:15px;color:#1a202c;margin-bottom:8px;text-align:center;">
                                 ${params.name}
                             </div>
-                            <div style="display:inline-block;padding:4px 12px;background:${color}20;border-radius:12px;margin-bottom:12px;width:100%;text-align:center;">
+                            <div style="padding:4px 12px;background:${color}20;border-radius:12px;margin-bottom:10px;text-align:center;">
                                 <span style="font-size:10px;font-weight:700;color:${color};text-transform:uppercase;">
-                                    ${sentimentLabel}
+                                    ${label}
                                 </span>
                             </div>
-                          
+                            <div style="font-size:11px;color:#94a3b8;text-align:center;">
+                                Click to search on X
+                            </div>
                         </div>
                     `;
-                }
+                },
             },
             series: [{
                 type: 'wordCloud',
@@ -790,53 +753,49 @@ const WordCloudGenerator = {
                 sizeRange: [16, 70],
                 rotationRange: [-45, 45],
                 rotationStep: 45,
-                gridSize: 12, // Increased for faster layout
+                gridSize: 12,
                 drawOutOfBound: false,
                 layoutAnimation: true,
                 textStyle: {
                     fontFamily: 'Poppins, Inter, sans-serif',
                     fontWeight: 'bold',
-                    color: function() {
-                        return colors[Math.floor(Math.random() * colors.length)];
-                    }
+                    color: () => colors[Math.floor(Math.random() * colors.length)],
                 },
                 emphasis: {
                     focus: 'self',
                     textStyle: {
-                        textShadowBlur: 8,
-                        textShadowColor: 'rgba(0, 0, 0, 0.3)'
-                    }
+                        textShadowBlur: 10,
+                        textShadowColor: 'rgba(0,0,0,0.35)',
+                    },
                 },
-                data: wordData
-            }]
+                data: wordData,
+            }],
         };
 
-        // Use setTimeout to avoid blocking UI
         setTimeout(() => {
             this.chart.setOption(option, true);
-            console.log('✅ Word cloud generated successfully for sentiment:', this.currentSentiment);
+
+            // Click -> open X search
+            this.chart.on('click', (params) => {
+                if (params && params.data && params.data.originalTopic) {
+                    this.openXSearch(params.data.originalTopic.name);
+                }
+            });
         }, 10);
 
-        // Handle window resize with debounce
+        // Resize with debounce
         let resizeTimer;
         const handleResize = () => {
             clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => {
-                if (this.chart) {
-                    this.chart.resize();
-                }
-            }, 250);
+            resizeTimer = setTimeout(() => { if (this.chart) this.chart.resize(); }, 250);
         };
-        
         window.removeEventListener('resize', handleResize);
         window.addEventListener('resize', handleResize);
     },
 
     showError(message = 'Failed to load data') {
-        const loadingState = document.getElementById('loadingState');
+        document.getElementById('loadingState').style.display = 'none';
         const emptyState = document.getElementById('emptyState');
-        
-        loadingState.style.display = 'none';
         emptyState.innerHTML = `
             <div class="empty-state">
                 <svg viewBox="0 0 24 24" style="color:#ef4444;width:64px;height:64px;stroke:currentColor;fill:none;margin-bottom:16px;">
@@ -848,12 +807,9 @@ const WordCloudGenerator = {
                 <p>${message}. Please try again later.</p>
             </div>`;
         emptyState.style.display = 'block';
-    }
+    },
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🎬 DOM Content Loaded - Starting WordCloudGenerator');
-    WordCloudGenerator.init();
-});
+document.addEventListener('DOMContentLoaded', () => { WordCloudGenerator.init(); });
 </script>
 @endsection
