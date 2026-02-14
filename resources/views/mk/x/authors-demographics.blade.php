@@ -217,23 +217,14 @@
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
-  .metric-badge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-
-  .metric-badge.positive {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-  }
-
-  .metric-badge.negative {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+  .metric-title svg {
+    width: 20px;
+    height: 20px;
   }
 
   .metric-value {
@@ -288,15 +279,6 @@
   .chart-container {
     position: relative;
     height: 280px;
-  }
-
-  .chart-container.large {
-    height: 320px;
-  }
-
-  /* Full Width Chart */
-  .full-width-chart {
-    grid-column: 1 / -1;
   }
 
   /* Loading States */
@@ -359,21 +341,6 @@
     transform: translateY(0);
   }
 
-  .data-loaded {
-    animation: fadeIn 0.4s ease-out;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
   /* Alert */
   .alert {
     padding: 16px 20px;
@@ -390,37 +357,6 @@
     background: #fef3c7;
     color: #92400e;
     border: 1px solid #fcd34d;
-  }
-
-  /* Legend */
-  .chart-legend {
-    display: flex;
-    gap: 20px;
-    margin-top: 16px;
-    flex-wrap: wrap;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-  }
-
-  .legend-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-  }
-
-  .legend-label {
-    color: var(--text-secondary);
-    font-weight: 500;
-  }
-
-  .legend-value {
-    color: var(--text-primary);
-    font-weight: 600;
   }
 
   /* Responsive */
@@ -681,7 +617,14 @@
     <!-- Individual Authors -->
     <div class="metric-card">
       <div class="metric-header">
-        <div class="metric-title">Individual Authors</div>
+        <div class="metric-title">
+          <!-- 👤 User Icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          Individual Authors
+        </div>
       </div>
       <div id="individualAuthorsValue">
         <div class="loading-skeleton skeleton-text" style="width: 120px;"></div>
@@ -692,7 +635,13 @@
     <!-- Organization Authors -->
     <div class="metric-card">
       <div class="metric-header">
-        <div class="metric-title">Organizations</div>
+        <div class="metric-title">
+          <!-- ⭐ Star Icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="#038047" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          Organizations
+        </div>
       </div>
       <div id="organizationAuthorsValue">
         <div class="loading-skeleton skeleton-text" style="width: 120px;"></div>
@@ -803,7 +752,6 @@
         
         console.log('Age data received:', data);
         
-        // API returns direct array, not wrapped object
         if (Array.isArray(data) && data.length > 0) {
           let totalAuthors = 0;
           let totalPosts = 0;
@@ -819,7 +767,6 @@
           renderAgeDistributionChart(data);
           renderAgeEngagementChart(data);
         } else {
-          console.warn('No age data available');
           document.getElementById('ageAuthorsValue').innerHTML = `<div class="metric-value">0</div>`;
           document.getElementById('agePostsValue').innerHTML = `<div class="metric-value">0</div>`;
         }
@@ -966,7 +913,6 @@
         
         console.log('Gender data received:', data);
         
-        // API returns direct array
         if (Array.isArray(data) && data.length > 0) {
           const maleData = data.find(d => (d.gender || d.name) === 'male');
           const femaleData = data.find(d => (d.gender || d.name) === 'female');
@@ -980,7 +926,6 @@
           renderGenderDistributionChart(data);
           renderGenderEngagementChart(data);
         } else {
-          console.warn('No gender data available');
           document.getElementById('maleAuthorsValue').innerHTML = `<div class="metric-value">0</div>`;
           document.getElementById('femaleAuthorsValue').innerHTML = `<div class="metric-value">0</div>`;
         }
@@ -1132,7 +1077,7 @@
     }
 
     // ========================================
-    // AUTHOR TYPE
+    // AUTHOR TYPE (FIXED!)
     // ========================================
     async function loadTypeData() {
       const section = document.querySelector('[data-lazy-load="type"]');
@@ -1149,13 +1094,23 @@
         
         console.log('Type data received:', data);
         
-        // API returns direct array
         if (Array.isArray(data) && data.length > 0) {
-          const nonOrgData = data.find(d => (d.is_organization || d.name) === 'non-org');
-          const orgData = data.find(d => (d.is_organization || d.name) === 'is-org' || (d.is_organization || d.name) === 'org');
+          // ✅ FIX: Cari non-org (Individual)
+          const nonOrgData = data.find(d => {
+            const val = (d.is_organization || d.name || '').toString().toLowerCase();
+            return val === 'non-org' || val === '0' || val === 'false';
+          });
+          
+          // ✅ FIX: Cari org (Organization)
+          const orgData = data.find(d => {
+            const val = (d.is_organization || d.name || '').toString().toLowerCase();
+            return val === 'is-org' || val === 'org' || val === '1' || val === 'true';
+          });
           
           const individualAuthors = nonOrgData ? parseInt(nonOrgData.author_freq) || 0 : 0;
           const organizationAuthors = orgData ? parseInt(orgData.author_freq) || 0 : 0;
+          
+          console.log('✅ Individual:', individualAuthors, 'Organization:', organizationAuthors);
           
           document.getElementById('individualAuthorsValue').innerHTML = `<div class="metric-value">${formatNumber(individualAuthors)}</div>`;
           document.getElementById('organizationAuthorsValue').innerHTML = `<div class="metric-value">${formatNumber(organizationAuthors)}</div>`;
@@ -1163,7 +1118,6 @@
           renderTypeDistributionChart(data);
           renderTypeEngagementChart(data);
         } else {
-          console.warn('No type data available');
           document.getElementById('individualAuthorsValue').innerHTML = `<div class="metric-value">0</div>`;
           document.getElementById('organizationAuthorsValue').innerHTML = `<div class="metric-value">0</div>`;
         }
@@ -1188,18 +1142,26 @@
 
       const ctx = canvas.getContext('2d');
       
-      const labels = data.map(d => {
-        const type = d.is_organization || d.name;
-        return type === 'org' ? 'Organization' : 'Individual';
+      // ✅ FIX: Proper label mapping
+      const chartData = [];
+      data.forEach(d => {
+        const val = (d.is_organization || d.name || '').toString().toLowerCase();
+        const freq = parseInt(d.author_freq) || 0;
+        
+        if (val === 'non-org' || val === '0' || val === 'false') {
+          chartData.push({ label: 'Individual', value: freq, color: '#3b82f6' });
+        } else if (val === 'is-org' || val === 'org' || val === '1' || val === 'true') {
+          chartData.push({ label: 'Organization', value: freq, color: '#038047' });
+        }
       });
       
       new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: labels,
+          labels: chartData.map(d => d.label),
           datasets: [{
-            data: data.map(d => parseInt(d.author_freq) || 0),
-            backgroundColor: ['#3b82f6', '#038047'],
+            data: chartData.map(d => d.value),
+            backgroundColor: chartData.map(d => d.color),
             borderWidth: 0,
             hoverOffset: 10
           }]
@@ -1252,20 +1214,28 @@
 
       const ctx = canvas.getContext('2d');
       
-      const labels = data.map(d => {
-        const type = d.is_organization || d.name;
-        return type === 'org' ? 'Organization' : 'Individual';
+      // ✅ FIX: Proper label mapping
+      const chartData = [];
+      data.forEach(d => {
+        const val = (d.is_organization || d.name || '').toString().toLowerCase();
+        const freq = parseInt(d.post_freq) || 0;
+        
+        if (val === 'non-org' || val === '0' || val === 'false') {
+          chartData.push({ label: 'Individual', value: freq, color: 'rgba(59, 130, 246, 0.8)', border: '#3b82f6' });
+        } else if (val === 'is-org' || val === 'org' || val === '1' || val === 'true') {
+          chartData.push({ label: 'Organization', value: freq, color: 'rgba(3, 128, 71, 0.8)', border: '#038047' });
+        }
       });
       
       new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: labels,
+          labels: chartData.map(d => d.label),
           datasets: [{
             label: 'Posts',
-            data: data.map(d => parseInt(d.post_freq) || 0),
-            backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(3, 128, 71, 0.8)'],
-            borderColor: ['#3b82f6', '#038047'],
+            data: chartData.map(d => d.value),
+            backgroundColor: chartData.map(d => d.color),
+            borderColor: chartData.map(d => d.border),
             borderWidth: 2,
             borderRadius: 8
           }]
