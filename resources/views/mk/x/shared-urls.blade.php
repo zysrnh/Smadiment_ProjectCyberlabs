@@ -63,6 +63,16 @@
         font-weight: 600;
         color: var(--text-primary);
         white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .filter-label svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        fill: none;
     }
 
     .date-range-wrapper {
@@ -163,10 +173,10 @@
         border: 1px solid #fcd34d;
     }
 
-    /* Stats Grid */
+    /* Stats Grid - MATCHING MOST RETWEETS */
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 20px;
         margin-bottom: 24px;
     }
@@ -180,10 +190,6 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
-        min-height: 120px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
     }
 
     .stat-card::before {
@@ -204,90 +210,41 @@
 
     .stat-card:hover::before { opacity: 1; }
 
-    .stat-label {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-secondary);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 12px;
-    }
-
-    .stat-value {
-        font-size: 32px;
-        font-weight: 700;
-        color: var(--text-primary);
-        line-height: 1.2;
-        word-break: break-word;
-    }
-
-    /* Export Button */
-    .export-btn {
-        padding: 10px 20px;
-        background: var(--bg-white);
-        border: 1px solid var(--border-gray);
-        border-radius: 10px;
-        font-family: 'Poppins', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-primary);
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .export-btn:hover {
-        border-color: var(--primary-green);
-        color: var(--primary-green);
-        box-shadow: var(--shadow-md);
-    }
-
-    .export-btn svg {
-        width: 16px;
-        height: 16px;
-        stroke: currentColor;
-        fill: none;
-    }
-
-    /* Chart Container */
-    .chart-container {
-        background: var(--bg-white);
-        border-radius: 16px;
-        border: 1px solid var(--border-gray);
-        box-shadow: var(--shadow-sm);
-        overflow: hidden;
-        margin-bottom: 24px;
-    }
-
-    .chart-header {
-        padding: 20px 24px;
-        border-bottom: 2px solid var(--bg-gray-50);
+    .stat-header {
         display: flex;
-        align-items: center;
         justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
     }
 
-    .chart-header-left {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .chart-icon {
+    .stat-icon-wrapper {
         width: 56px;
         height: 56px;
         border-radius: 14px;
-        background: linear-gradient(135deg, rgba(3,128,71,0.1) 0%, rgba(3,128,71,0.05) 100%);
+        background: linear-gradient(135deg, rgba(3, 128, 71, 0.1) 0%, rgba(3, 128, 71, 0.05) 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-shrink: 0;
+        position: relative;
     }
 
-    .chart-icon svg {
+    .stat-icon-wrapper::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 16px;
+        padding: 4px;
+        background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .stat-card:hover .stat-icon-wrapper::after { opacity: 0.5; }
+
+    .stat-icon {
         width: 28px;
         height: 28px;
         color: var(--primary-green);
@@ -296,17 +253,86 @@
         stroke-width: 2;
     }
 
-    .chart-title {
+    .stat-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .stat-value-wrapper {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .stat-value {
+        font-size: 36px;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1;
+    }
+
+    .stat-progress {
+        height: 6px;
+        background: var(--bg-gray-100);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 8px;
+    }
+
+    .stat-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+        border-radius: 10px;
+        transition: width 1s ease-out;
+        width: 0%;
+    }
+
+    /* Chart Card - MATCHING MOST RETWEETS */
+    .charts-section {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .chart-card {
+        background: var(--bg-white);
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-gray);
+        transition: all 0.3s;
+    }
+
+    .chart-card:hover {
+        box-shadow: var(--shadow-md);
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid var(--bg-gray-50);
+    }
+
+    .chart-title-group h3 {
         font-size: 18px;
         font-weight: 700;
         color: var(--text-primary);
-        margin: 0 0 4px 0;
+        margin: 0 0 6px 0;
     }
 
     .chart-subtitle {
         font-size: 13px;
         color: var(--text-secondary);
-        margin: 0;
+        font-weight: 500;
     }
 
     .chart-toggle-btn {
@@ -339,71 +365,146 @@
         transition: transform 0.3s;
     }
 
-    .chart-toggle-btn.collapsed svg { transform: rotate(180deg); }
-
-    .chart-body {
-        padding: 24px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow: hidden;
+    .chart-toggle-btn.collapsed svg { 
+        transform: rotate(180deg); 
     }
 
-    .chart-body.hidden {
-        max-height: 0;
-        padding: 0 24px;
+    .chart-container {
+        position: relative;
+        height: 320px;
+        overflow: hidden;
+        transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    }
+
+    .chart-container.hidden {
+        height: 0 !important;
         opacity: 0;
     }
 
-    /* Table Container */
-    .table-container {
+    /* Export Button */
+    .export-btn-wrapper {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 24px;
+    }
+
+    .export-btn {
+        padding: 10px 20px;
+        background: var(--bg-white);
+        border: 1px solid var(--border-gray);
+        border-radius: 10px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .export-btn:hover {
+        border-color: var(--primary-green);
+        color: var(--primary-green);
+        box-shadow: var(--shadow-md);
+    }
+
+    .export-btn svg {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+        fill: none;
+    }
+
+    /* Table Section - MATCHING MOST RETWEETS */
+    .table-section {
         background: var(--bg-white);
         border-radius: 16px;
-        border: 1px solid var(--border-gray);
+        padding: 28px;
         box-shadow: var(--shadow-sm);
-        overflow: hidden;
+        border: 1px solid var(--border-gray);
+        margin-bottom: 24px;
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid var(--bg-gray-50);
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .table-title h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 6px 0;
+    }
+
+    .table-title p {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin: 0;
     }
 
     .table-wrapper { overflow-x: auto; }
 
+    /* Data Table - MATCHING MOST RETWEETS */
     .url-table {
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
         font-family: 'Poppins', sans-serif;
+        font-size: 12px;
     }
 
-    .url-table thead {
-        background: linear-gradient(135deg, var(--bg-gray-50) 0%, var(--bg-white) 100%);
-        border-bottom: 2px solid var(--border-gray);
+    .url-table thead tr {
+        background: var(--bg-white);
+        border-bottom: 1px solid var(--border-gray);
     }
 
     .url-table th {
-        padding: 16px 20px;
+        padding: 10px 12px;
         text-align: left;
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 700;
         color: var(--text-secondary);
         text-transform: uppercase;
-        letter-spacing: 0.8px;
+        letter-spacing: 0.3px;
         white-space: nowrap;
+        border-bottom: 1px solid var(--border-gray);
     }
 
+    .url-table th:first-child { padding-left: 20px; }
+    .url-table th:last-child { padding-right: 20px; }
     .url-table th.text-center { text-align: center; }
     .url-table th.text-right { text-align: right; }
 
     .url-table tbody tr {
-        border-bottom: 1px solid var(--bg-gray-100);
+        border-bottom: 1px solid #f1f5f9;
         transition: all 0.2s;
+        background: var(--bg-white);
     }
 
-    .url-table tbody tr:hover { background: var(--bg-gray-50); }
+    .url-table tbody tr:hover { background: #fafbfc; }
     .url-table tbody tr:last-child { border-bottom: none; }
 
     .url-table td {
-        padding: 16px 20px;
-        font-size: 13px;
+        padding: 12px;
+        font-size: 12px;
         color: var(--text-primary);
         vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
     }
+
+    .url-table td:first-child { padding-left: 20px; }
+    .url-table td:last-child { padding-right: 20px; }
+    .url-table tbody tr:last-child td { border-bottom: none; }
 
     /* Rank Column */
     .rank-cell {
@@ -591,7 +692,24 @@
         transition: width 0.6s ease;
     }
 
-    /* Skeleton Loading */
+    /* Skeleton Loading - MATCHING MOST RETWEETS */
+    .loading-skeleton {
+        background: linear-gradient(90deg, var(--bg-gray-50) 25%, #e2e8f0 50%, var(--bg-gray-50) 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s ease-in-out infinite;
+        border-radius: 8px;
+    }
+
+    @keyframes loading {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    .skeleton-text {
+        height: 44px;
+        margin-bottom: 8px;
+    }
+
     .skeleton-line {
         height: 16px;
         background: linear-gradient(90deg, var(--bg-gray-50) 25%, var(--border-gray) 50%, var(--bg-gray-50) 75%);
@@ -684,19 +802,80 @@
         font-weight: 500;
     }
 
+    /* Lazy Load */
+    .lazy-loading-badge {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        background: rgba(3, 128, 71, 0.1);
+        color: var(--primary-green);
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        z-index: 10;
+    }
+
+    .spinner {
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(3, 128, 71, 0.2);
+        border-top-color: var(--primary-green);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    [data-lazy-load] {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+
+    [data-lazy-load].loaded {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .data-loaded {
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to   { opacity: 1; transform: scale(1); }
+    }
+
     /* Responsive */
     @media (max-width: 1200px) {
         .stats-grid { grid-template-columns: repeat(2, 1fr); }
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
         .dashboard-container { padding: 16px; }
-        .stats-grid { grid-template-columns: 1fr; }
+        .stats-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
         .filter-content { flex-direction: column; align-items: stretch; }
         .date-range-wrapper { flex-direction: column; }
         .apply-btn { width: 100%; justify-content: center; }
+        .url-table { min-width: 900px; }
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid { grid-template-columns: 1fr; }
         .url-cell { min-width: 240px; }
-        .url-table th, .url-table td { padding: 12px 10px; }
+        .url-table th, .url-table td { padding: 10px 12px; }
+        .url-table th:first-child, .url-table td:first-child { padding-left: 16px; }
+        .url-table th:last-child, .url-table td:last-child { padding-right: 16px; }
+    }
+
+    @media (max-width: 640px) {
+        .stat-value { font-size: 28px; }
+        .chart-container { height: 250px; }
+        .page-header h1 { font-size: 24px; }
     }
 </style>
 @endsection
@@ -726,7 +905,7 @@
             <input type="hidden" name="project_id" value="{{ $projectId }}">
             <div class="filter-content">
                 <div class="filter-label">
-                    <svg viewBox="0 0 24 24" style="width:18px;height:18px;display:inline;vertical-align:middle;margin-right:6px;stroke:currentColor;fill:none;">
+                    <svg viewBox="0 0 24 24">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                         <line x1="16" y1="2" x2="16" y2="6"/>
                         <line x1="8" y1="2" x2="8" y2="6"/>
@@ -769,75 +948,124 @@
 
     <!-- Stats Grid -->
     <div class="stats-grid">
-        <div class="stat-card">
+        <div class="stat-card" data-lazy-load="urlStats">
+            <div class="stat-header">
+                <div class="stat-icon-wrapper">
+                    <svg class="stat-icon" viewBox="0 0 24 24">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    </svg>
+                </div>
+            </div>
             <div class="stat-label">Total URLs</div>
-            <div id="statTotalUrls" class="stat-value">
-                <div class="skeleton-line" style="width:60%;height:32px;margin:0;"></div>
+            <div id="statTotalUrls" class="stat-value-wrapper">
+                <div class="loading-skeleton skeleton-text" style="width:140px;"></div>
+            </div>
+            <div class="stat-progress">
+                <div class="stat-progress-bar"></div>
             </div>
         </div>
-        <div class="stat-card">
+
+        <div class="stat-card" data-lazy-load="urlStats">
+            <div class="stat-header">
+                <div class="stat-icon-wrapper">
+                    <svg class="stat-icon" viewBox="0 0 24 24">
+                        <path d="M15.5 9.5v13a1 1 0 0 1 -1 1h-13a1 1 0 0 1 -1 -1v-13a1 1 0 0 1 1 -1h4"/>
+                        <path d="m19.5 0.499 4 4 -4 4"/>
+                        <path d="M23.5 4.5H14A5.5 5.5 0 0 0 8.5 10v1.5"/>
+                    </svg>
+                </div>
+            </div>
             <div class="stat-label">Total Shares</div>
-            <div id="statTotalShares" class="stat-value">
-                <div class="skeleton-line" style="width:60%;height:32px;margin:0;"></div>
+            <div id="statTotalShares" class="stat-value-wrapper">
+                <div class="loading-skeleton skeleton-text" style="width:140px;"></div>
+            </div>
+            <div class="stat-progress">
+                <div class="stat-progress-bar"></div>
             </div>
         </div>
-        <div class="stat-card">
+
+        <div class="stat-card" data-lazy-load="urlStats">
+            <div class="stat-header">
+                <div class="stat-icon-wrapper">
+                    <svg class="stat-icon" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                </div>
+            </div>
             <div class="stat-label">Unique Hostnames</div>
-            <div id="statUniqueHosts" class="stat-value">
-                <div class="skeleton-line" style="width:60%;height:32px;margin:0;"></div>
+            <div id="statUniqueHosts" class="stat-value-wrapper">
+                <div class="loading-skeleton skeleton-text" style="width:140px;"></div>
+            </div>
+            <div class="stat-progress">
+                <div class="stat-progress-bar"></div>
             </div>
         </div>
-        <div class="stat-card">
+
+        <div class="stat-card" data-lazy-load="urlStats">
+            <div class="stat-header">
+                <div class="stat-icon-wrapper">
+                    <svg class="stat-icon" viewBox="0 0 24 24">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                </div>
+            </div>
             <div class="stat-label">Most Shared</div>
-            <div id="statTopFreq" class="stat-value">
-                <div class="skeleton-line" style="width:60%;height:32px;margin:0;"></div>
+            <div id="statTopFreq" class="stat-value-wrapper">
+                <div class="loading-skeleton skeleton-text" style="width:140px;"></div>
+            </div>
+            <div class="stat-progress">
+                <div class="stat-progress-bar"></div>
             </div>
         </div>
     </div>
 
     <!-- Export Button -->
-    <div style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
+    <div class="export-btn-wrapper">
         <button class="export-btn" onclick="SharedUrlsLoader.exportCSV()">
             <svg viewBox="0 0 24 24">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/>
                 <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
-            Download CSV
+            Export to CSV
         </button>
     </div>
 
     <!-- Top URLs Chart -->
-    <div class="chart-container">
-        <div class="chart-header">
-            <div class="chart-header-left">
-                <div class="chart-icon">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="chart-title">Top 10 Most Shared URLs</h3>
+    <div class="charts-section">
+        <div class="chart-card" data-lazy-load="urlChart">
+            <div class="chart-header">
+                <div class="chart-title-group">
+                    <h3>Top 10 Most Shared URLs</h3>
                     <p class="chart-subtitle">Ranked by share frequency across X posts</p>
                 </div>
+                <button class="chart-toggle-btn" id="chartToggleBtn" onclick="SharedUrlsLoader.toggleChart()">
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                    <span id="chartToggleText">Hide Chart</span>
+                </button>
             </div>
-            <button class="chart-toggle-btn" id="chartToggleBtn" onclick="SharedUrlsLoader.toggleChart()">
-                <svg viewBox="0 0 24 24">
-                    <polyline points="6 9 12 15 18 9"/>
-                </svg>
-                <span id="chartToggleText">Hide Chart</span>
-            </button>
-        </div>
-        <div class="chart-body" id="chartBody">
-            <canvas id="topUrlsChart" style="max-height: 400px;"></canvas>
+            <div class="chart-container" id="chartContainer">
+                <div id="chartLoading" class="loading-skeleton" style="height: 100%;"></div>
+                <canvas id="topUrlsChart" style="display: none;"></canvas>
+            </div>
         </div>
     </div>
 
-    <!-- Table Container -->
-    <div class="table-container">
-        <div class="table-wrapper">
+    <!-- Table Section -->
+    <div class="table-section" data-lazy-load="urlTable">
+        <div class="table-header">
+            <div class="table-title">
+                <h3>Shared URLs Ranking</h3>
+                <p>Complete list of all shared links sorted by frequency</p>
+            </div>
+        </div>
 
+        <div class="table-wrapper">
             <!-- Loading State -->
             <table class="url-table" id="loadingTable">
                 <thead>
@@ -921,57 +1149,158 @@ const SharedUrlsLoader = {
     rowsPerPage: 20,
     chart: null,
     maxFreq: 1,
+    dataLoaded: false,
+    chartLoaded: false,
 
     async init() {
         if (!this.projectId) return;
-        try {
-            await this.loadData();
-        } catch (error) {
-            console.error('Failed to load shared URLs:', error);
-            this.showError();
+        this.setupLazyLoad();
+    },
+
+    setupLazyLoad() {
+        const lazyLoadConfig = { rootMargin: '50px', threshold: 0.01 };
+        const loadedComponents = new Set();
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.dataset.lazyLoad;
+                    if (!loadedComponents.has(id)) {
+                        loadedComponents.add(id);
+                        this.addLoadingBadge(entry.target);
+                        
+                        if (id === 'urlStats' || id === 'urlTable') {
+                            this.loadData();
+                        }
+                        if (id === 'urlChart') {
+                            this.loadChart();
+                        }
+                        
+                        observer.unobserve(entry.target);
+                    }
+                }
+            });
+        }, lazyLoadConfig);
+
+        document.querySelectorAll('[data-lazy-load]').forEach(el => observer.observe(el));
+    },
+
+    addLoadingBadge(card) {
+        if (!card || card.querySelector('.lazy-loading-badge')) return;
+        const badge = document.createElement('div');
+        badge.className = 'lazy-loading-badge';
+        badge.innerHTML = '<div class="spinner"></div><span>Loading...</span>';
+        card.style.position = 'relative';
+        card.appendChild(badge);
+    },
+
+    removeLoadingBadge(card) {
+        if (!card) return;
+        const badge = card.querySelector('.lazy-loading-badge');
+        if (badge) {
+            badge.style.opacity = '0';
+            setTimeout(() => badge.remove(), 300);
         }
     },
 
+    animateProgress(card, pct) {
+        const bar = card.querySelector('.stat-progress-bar');
+        if (bar) setTimeout(() => bar.style.width = Math.min(pct, 100) + '%', 100);
+    },
+
     async loadData() {
-        const url = `/mk/api/x/shared-urls?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`;
-        const response = await fetch(url);
-        const result   = await response.json();
+        if (this.dataLoaded) return;
+        this.dataLoaded = true;
 
-        if (!result.success) throw new Error(result.error || 'API error');
+        const statCards = document.querySelectorAll('[data-lazy-load="urlStats"]');
 
-        this.allUrls = result.data || [];
-        this.maxFreq = this.allUrls.length > 0 ? (this.allUrls[0].freq || 1) : 1;
+        try {
+            const url = `/mk/api/x/shared-urls?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`;
+            const response = await fetch(url);
+            const result   = await response.json();
 
-        this.updateStats();
-        this.renderChart();
-        this.renderTable();
+            if (!result.success) throw new Error(result.error || 'API error');
+
+            this.allUrls = result.data || [];
+            this.maxFreq = this.allUrls.length > 0 ? (this.allUrls[0].freq || 1) : 1;
+
+            this.updateStats();
+            this.renderTable();
+
+            const pcts = [80, 90, 65, 100];
+            statCards.forEach((c, i) => {
+                this.animateProgress(c, pcts[i] ?? 70);
+            });
+
+        } catch (error) {
+            console.error('Failed to load shared URLs:', error);
+            this.showError();
+        } finally {
+            statCards.forEach(c => {
+                this.removeLoadingBadge(c);
+                c.classList.add('loaded');
+            });
+            document.querySelector('[data-lazy-load="urlTable"]')?.classList.add('loaded');
+        }
+    },
+
+    async loadChart() {
+        if (this.chartLoaded) return;
+        this.chartLoaded = true;
+
+        const card = document.querySelector('[data-lazy-load="urlChart"]');
+
+        try {
+            const url = `/mk/api/x/shared-urls?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`;
+            const response = await fetch(url);
+            const result   = await response.json();
+
+            if (result.success && result.data && result.data.length > 0) {
+                this.renderChart(result.data);
+            }
+        } catch (error) {
+            console.error('Failed to load chart:', error);
+        } finally {
+            this.removeLoadingBadge(card);
+            card.classList.add('loaded');
+        }
     },
 
     updateStats() {
         const total       = this.allUrls.length;
         const totalShares = this.allUrls.reduce((s, u) => s + parseInt(u.freq || 0), 0);
-        const hosts       = new Set(this.allUrls.map(u => u.hostname)).size;
+        const hosts       = new Set(this.allUrls.map(u => this.extractHostname(u.url || ''))).size;
         const topFreq     = this.allUrls.length > 0 ? parseInt(this.allUrls[0].freq || 0) : 0;
 
-        document.getElementById('statTotalUrls').textContent   = total.toLocaleString();
-        document.getElementById('statTotalShares').textContent = totalShares.toLocaleString();
-        document.getElementById('statUniqueHosts').textContent = hosts.toLocaleString();
-        document.getElementById('statTopFreq').textContent     = topFreq.toLocaleString();
+        document.getElementById('statTotalUrls').innerHTML   = `<div class="stat-value">${this.formatNumber(total)}</div>`;
+        document.getElementById('statTotalShares').innerHTML = `<div class="stat-value">${this.formatNumber(totalShares)}</div>`;
+        document.getElementById('statUniqueHosts').innerHTML = `<div class="stat-value">${this.formatNumber(hosts)}</div>`;
+        document.getElementById('statTopFreq').innerHTML     = `<div class="stat-value">${this.formatNumber(topFreq)}</div>`;
+
+        document.getElementById('statTotalUrls').classList.add('data-loaded');
+        document.getElementById('statTotalShares').classList.add('data-loaded');
+        document.getElementById('statUniqueHosts').classList.add('data-loaded');
+        document.getElementById('statTopFreq').classList.add('data-loaded');
     },
 
-    renderChart() {
+    renderChart(data) {
         const canvas = document.getElementById('topUrlsChart');
+        const loading = document.getElementById('chartLoading');
         if (!canvas) return;
 
-        const top10 = this.allUrls.slice(0, 10);
+        const top10 = data.slice(0, 10);
         if (!top10.length) return;
 
         if (this.chart) this.chart.destroy();
 
         const ctx = canvas.getContext('2d');
 
-        const labels = top10.map((u, i) => `#${i + 1} ${u.hostname || 'unknown'}`);
-        const data   = top10.map(u => parseInt(u.freq || 0));
+        // Build labels: only show domain (hostname) without path
+        const labels = top10.map((u, i) => {
+            const host = this.extractHostname(u.url || '');
+            return `#${i + 1} ${host}`;
+        });
+        const chartData = top10.map(u => parseInt(u.freq || 0));
 
         this.chart = new Chart(ctx, {
             type: 'bar',
@@ -979,7 +1308,7 @@ const SharedUrlsLoader = {
                 labels,
                 datasets: [{
                     label: 'Shares',
-                    data,
+                    data: chartData,
                     backgroundColor: 'rgba(3, 128, 71, 0.8)',
                     borderColor: '#038047',
                     borderWidth: 2,
@@ -988,7 +1317,7 @@ const SharedUrlsLoader = {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 indexAxis: 'y',
                 plugins: {
                     legend: { display: false },
@@ -1020,6 +1349,9 @@ const SharedUrlsLoader = {
                 }
             }
         });
+
+        loading.style.display = 'none';
+        canvas.style.display = 'block';
     },
 
     renderTable() {
@@ -1049,18 +1381,19 @@ const SharedUrlsLoader = {
         pagination.style.display = 'flex';
     },
 
-    // Detect URL content type from extension / hostname / path
     detectType(url, hostname) {
         const lower = (url || '').toLowerCase();
+        const host  = (hostname || '').toLowerCase();
 
         const videoHosts = ['youtube.com', 'youtu.be', 'vimeo.com', 'dailymotion.com', 'tiktok.com'];
-        if (videoHosts.some(h => (hostname || '').includes(h))) return 'video';
+        if (videoHosts.some(h => host.includes(h))) return 'video';
 
-        if (/\.(mp4|webm|mov|avi|mkv)(\?|$)/.test(lower)) return 'video';
-        if (/\.(jpg|jpeg|png|gif|webp|svg|bmp|avif)(\?|$)/.test(lower)) return 'image';
+        if (/\.(mp4|webm|mov|avi|mkv)(\?|$|&)/.test(lower)) return 'video';
+        if (host.includes('pbs.twimg.com') && lower.includes('ext_tw_video_thumb')) return 'video';
+        if (/\.(jpg|jpeg|png|gif|webp|svg|bmp|avif)(\?|$|&|%3F)/.test(lower)) return 'image';
+        if (host.includes('pbs.twimg.com') || host.includes('twimg.com')) return 'image';
         if (/\.(pdf)(\?|$)/.test(lower)) return 'article';
-        if (/(pbs\.twimg\.com|twimg\.com)/.test(hostname || '')) return 'image';
-        if (/(twitter\.com|x\.com)/.test(hostname || '')) return 'article';
+        if (host.includes('twitter.com') || host.includes('x.com')) return 'article';
 
         return 'other';
     },
@@ -1113,8 +1446,8 @@ const SharedUrlsLoader = {
     },
 
     createRow(item, rank) {
-        const url      = item.url      || '';
-        const hostname = item.hostname || this.extractHostname(url);
+        const url      = item.url || '';
+        const hostname = this.extractHostname(url);
         const freq     = parseInt(item.freq || 0);
         const pct      = Math.round((freq / this.maxFreq) * 100);
         const type     = this.detectType(url, hostname);
@@ -1123,11 +1456,7 @@ const SharedUrlsLoader = {
         return `
             <tr>
                 <td class="rank-cell">${rank}</td>
-
-                <td class="preview-cell">
-                    ${this.previewHtml(url, type)}
-                </td>
-
+                <td class="preview-cell">${this.previewHtml(url, type)}</td>
                 <td class="url-cell">
                     <div class="url-info">
                         <div class="url-hostname">
@@ -1149,13 +1478,9 @@ const SharedUrlsLoader = {
                         </a>
                     </div>
                 </td>
-
-                <td>
-                    ${this.typeBadgeHtml(type)}
-                </td>
-
+                <td>${this.typeBadgeHtml(type)}</td>
                 <td class="freq-cell">
-                    <span class="freq-value">${freq.toLocaleString()}</span>
+                    <span class="freq-value">${this.formatNumber(freq)}</span>
                     <span class="freq-label">Shares</span>
                     <div class="freq-bar-wrapper">
                         <div class="freq-bar-track">
@@ -1168,16 +1493,16 @@ const SharedUrlsLoader = {
     },
 
     toggleChart() {
-        const body = document.getElementById('chartBody');
-        const btn  = document.getElementById('chartToggleBtn');
-        const txt  = document.getElementById('chartToggleText');
+        const container = document.getElementById('chartContainer');
+        const btn = document.getElementById('chartToggleBtn');
+        const txt = document.getElementById('chartToggleText');
 
-        if (body.classList.contains('hidden')) {
-            body.classList.remove('hidden');
+        if (container.classList.contains('hidden')) {
+            container.classList.remove('hidden');
             btn.classList.remove('collapsed');
             txt.textContent = 'Hide Chart';
         } else {
-            body.classList.add('hidden');
+            container.classList.add('hidden');
             btn.classList.add('collapsed');
             txt.textContent = 'Show Chart';
         }
@@ -1196,7 +1521,7 @@ const SharedUrlsLoader = {
         if (next >= 1 && next <= total) {
             this.currentPage = next;
             this.renderTable();
-            document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth' });
+            document.querySelector('.table-section').scrollIntoView({ behavior: 'smooth' });
         }
     },
 
@@ -1204,13 +1529,16 @@ const SharedUrlsLoader = {
         if (!this.allUrls.length) { alert('No data to export'); return; }
 
         const headers = ['Rank', 'URL', 'Hostname', 'Type', 'Frequency'];
-        const rows = this.allUrls.map((u, i) => [
-            i + 1,
-            `"${(u.url || '').replace(/"/g, '""')}"`,
-            `"${(u.hostname || '').replace(/"/g, '""')}"`,
-            this.detectType(u.url, u.hostname),
-            u.freq || 0
-        ]);
+        const rows = this.allUrls.map((u, i) => {
+            const host = this.extractHostname(u.url || '');
+            return [
+                i + 1,
+                `"${(u.url || '').replace(/"/g, '""')}"`,
+                `"${host.replace(/"/g, '""')}"`,
+                this.detectType(u.url, host),
+                u.freq || 0,
+            ];
+        });
 
         const csv  = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1224,13 +1552,24 @@ const SharedUrlsLoader = {
     },
 
     extractHostname(url) {
-        try { return new URL(url).hostname; } catch { return url; }
+        try {
+            const parsed = new URL(url);
+            return parsed.hostname.replace(/^www\./, '');
+        } catch {
+            const m = url.match(/https?:\/\/([^\/\?#]+)/i);
+            return m ? m[1].replace(/^www\./, '') : url;
+        }
     },
 
     escapeHtml(text) {
         const d = document.createElement('div');
         d.textContent = text;
         return d.innerHTML;
+    },
+
+    formatNumber(n) {
+        if (!n && n !== 0) return '0';
+        return new Intl.NumberFormat('en-US').format(n);
     },
 
     showError() {
@@ -1248,7 +1587,7 @@ const SharedUrlsLoader = {
             </div>`;
         es.style.display = 'block';
         ['statTotalUrls','statTotalShares','statUniqueHosts','statTopFreq']
-            .forEach(id => document.getElementById(id).textContent = '0');
+            .forEach(id => document.getElementById(id).innerHTML = '<div class="stat-value">0</div>');
     }
 };
 
