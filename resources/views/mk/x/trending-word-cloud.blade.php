@@ -374,18 +374,9 @@
     }
 
     /* Responsive */
-    @media (max-width: 1200px) {
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
     @media (max-width: 768px) {
         .dashboard-container {
             padding: 16px;
-        }
-        .stats-grid {
-            grid-template-columns: 1fr;
         }
         .filter-content {
             flex-direction: column;
@@ -513,28 +504,6 @@
         </div>
     </div>
 
-    <!-- Stats Grid -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-label">Total Periods</div>
-            <div id="totalPeriods" class="stat-value">
-                <div class="skeleton-line" style="width:60%;"></div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Unique Topics</div>
-            <div id="uniqueTopics" class="stat-value">
-                <div class="skeleton-line" style="width:60%;"></div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Avg Topics/Period</div>
-            <div id="avgTopics" class="stat-value">
-                <div class="skeleton-line" style="width:60%;"></div>
-            </div>
-        </div>
-    </div>
-
     <!-- Word Cloud Container -->
     <div class="wordcloud-container">
         <!-- Loading State -->
@@ -658,8 +627,6 @@ const WordCloudGenerator = {
             loadingText.textContent = 'Generating word cloud...';
             loadingProgress.textContent = `Loaded ${this.trendingData.top_topics?.length || 0} topics in ${loadTime}s`;
             
-            this.updateStats();
-            
             // Small delay to show the progress message
             await new Promise(resolve => setTimeout(resolve, 200));
             
@@ -668,20 +635,6 @@ const WordCloudGenerator = {
             console.error('💥 Error in loadData:', error);
             throw error;
         }
-    },
-
-    updateStats() {
-        const data = this.trendingData;
-        
-        const totalPeriods = data.total_periods || 0;
-        const uniqueTopics = data.total_unique_topics || 0;
-        const avgTopics = totalPeriods > 0 ? Math.round(uniqueTopics / totalPeriods) : 0;
-
-        console.log('📊 Stats:', { totalPeriods, uniqueTopics, avgTopics });
-
-        document.getElementById('totalPeriods').textContent = totalPeriods;
-        document.getElementById('uniqueTopics').textContent = uniqueTopics;
-        document.getElementById('avgTopics').textContent = avgTopics;
     },
 
     getSentimentFromTopic(topicName) {
@@ -783,29 +736,43 @@ const WordCloudGenerator = {
         const option = {
             tooltip: {
                 show: true,
-                backgroundColor: 'rgba(0, 0, 0, 0.85)',
-                borderColor: 'transparent',
+                trigger: 'item',
+                backgroundColor: '#ffffff',
+                borderColor: '#e2e8f0',
+                borderWidth: 1,
                 textStyle: {
-                    color: '#fff',
-                    fontSize: 13
+                    color: '#1a202c',
+                    fontSize: 13,
+                    fontFamily: 'Poppins, sans-serif'
                 },
                 padding: 16,
+                shadowBlur: 20,
+                shadowColor: 'rgba(0, 0, 0, 0.15)',
+                shadowOffsetY: 4,
                 formatter: function(params) {
                     const topic = params.data.originalTopic;
                     const sentiment = WordCloudGenerator.getSentimentFromTopic(topic.name);
-                    const sentimentEmoji = {
-                        'positive': '😊',
-                        'negative': '😞',
-                        'neutral': '😐'
+                    
+                    const sentimentColors = {
+                        'positive': '#22c55e',
+                        'negative': '#ef4444',
+                        'neutral': '#94a3b8'
                     };
                     
+                    const color = sentimentColors[sentiment];
+                    const sentimentLabel = sentiment.charAt(0).toUpperCase() + sentiment.slice(1);
+                    
                     return `
-                        <div style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">📊 ${params.name}</div>
-                        <div style="line-height: 1.6;">
-                            ${sentimentEmoji[sentiment]} <strong>Sentiment:</strong> ${sentiment.charAt(0).toUpperCase() + sentiment.slice(1)}<br/>
-                            🔢 <strong>Appearances:</strong> ${topic.appearances}<br/>
-                            📈 <strong>Avg Rank:</strong> ${topic.avg_rank}<br/>
-                            📢 <strong>Volume:</strong> ${topic.total_volume.toLocaleString()}
+                        <div style="font-family:Poppins,sans-serif;min-width:200px;">
+                            <div style="font-weight:700;font-size:15px;color:#1a202c;margin-bottom:8px;text-align:center;">
+                                ${params.name}
+                            </div>
+                            <div style="display:inline-block;padding:4px 12px;background:${color}20;border-radius:12px;margin-bottom:12px;width:100%;text-align:center;">
+                                <span style="font-size:10px;font-weight:700;color:${color};text-transform:uppercase;">
+                                    ${sentimentLabel}
+                                </span>
+                            </div>
+                          
                         </div>
                     `;
                 }
@@ -881,10 +848,6 @@ const WordCloudGenerator = {
                 <p>${message}. Please try again later.</p>
             </div>`;
         emptyState.style.display = 'block';
-        
-        document.getElementById('totalPeriods').textContent = '0';
-        document.getElementById('uniqueTopics').textContent = '0';
-        document.getElementById('avgTopics').textContent = '0';
     }
 };
 
