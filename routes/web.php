@@ -67,7 +67,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     // 🔥 API ENDPOINTS FOR LAZY LOADING (MUST BE BEFORE OTHER ROUTES!)
     // ═══════════════════════════════════════════════════════════
     Route::prefix('api')->name('api.')->group(function () {
+        
+        // ─────────────────────────────────────────────────────
         // Data Overview APIs
+        // ─────────────────────────────────────────────────────
         Route::get('/trending-topics', [DataOverviewApiController::class, 'trendingTopics'])
             ->name('trending-topics');
         
@@ -89,11 +92,15 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/geo-users', [DataOverviewApiController::class, 'geoUsers'])
             ->name('geo-users');
         
+        // ─────────────────────────────────────────────────────
         // Topic Map API
+        // ─────────────────────────────────────────────────────
         Route::get('/topic-map', [TopicMapController::class, 'getTopicMap'])
             ->name('topic-map');
         
+        // ─────────────────────────────────────────────────────
         // Top Analytics APIs
+        // ─────────────────────────────────────────────────────
         Route::get('/top-hashtags', [TopAnalyticsController::class, 'getHashtagsData'])
             ->name('top-hashtags');
         
@@ -103,9 +110,12 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/top-influencers', [TopAnalyticsController::class, 'getInfluencersData'])
             ->name('top-influencers');
         
-        // 🔥 X Overview APIs - CONSOLIDATED
+        // ─────────────────────────────────────────────────────
+        // 🔥 X (Twitter) APIs - CONSOLIDATED
+        // ─────────────────────────────────────────────────────
         Route::prefix('x')->name('x.')->group(function () {
-            // Overview APIs
+            
+            // Overview Stats APIs
             Route::get('/total-users', [XOverviewController::class, 'totalUsers'])
                 ->name('total-users');
             
@@ -135,7 +145,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/top-hashtags-data', [XOverviewController::class, 'topHashtagsData'])
                 ->name('top-hashtags-data');
             
-            // 🔥 Trending Topics API
+            // 🔥 Trending Topics API (used by both table and word cloud)
             Route::get('/trending-topics', [XOverviewController::class, 'trendingTopicsData'])
                 ->name('trending-topics');
 
@@ -165,60 +175,100 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     });
     
     // ═══════════════════════════════════════════════════════════
-    // REGULAR MK ROUTES
+    // REGULAR MK ROUTES (Pages)
     // ═══════════════════════════════════════════════════════════
     
-    // Main Pages
-    Route::get('/data-overview', [MkController::class, 'dataOverview'])->name('data-overview');
+    // ─────────────────────────────────────────────────────
+    // Main Dashboard Pages
+    // ─────────────────────────────────────────────────────
     Route::get('/dashboard', [MkController::class, 'dashboard'])->name('dashboard');
+    Route::get('/data-overview', [MkController::class, 'dataOverview'])->name('data-overview');
     Route::get('/projects', [MkController::class, 'projects'])->name('projects');
     
+    // ─────────────────────────────────────────────────────
     // Topic Map Page
+    // ─────────────────────────────────────────────────────
     Route::get('/topic-map', [TopicMapController::class, 'index'])->name('topic-map');
     
+    // ─────────────────────────────────────────────────────
     // Top Analytics Pages
+    // ─────────────────────────────────────────────────────
     Route::prefix('top-analytics')->name('top-analytics.')->group(function () {
         Route::get('/hashtags', [TopAnalyticsController::class, 'hashtags'])->name('hashtags');
         Route::get('/locations', [TopAnalyticsController::class, 'locations'])->name('locations');
         Route::get('/influencers', [TopAnalyticsController::class, 'influencers'])->name('influencers');
     });
     
-    // 🔥 X (Twitter) Routes - CONSOLIDATED
+    // ─────────────────────────────────────────────────────
+    // 🔥 X (Twitter) Routes - COMPLETE & ORGANIZED
+    // ─────────────────────────────────────────────────────
     Route::prefix('x')->name('x.')->group(function () {
-        // Overview & Engagement
-        Route::get('/overview', [XOverviewController::class, 'index'])->name('overview');
         
-        // 🔥 Trending Topics Page (No project_id required)
+        // Overview & Main Stats
+        Route::get('/overview', [XOverviewController::class, 'index'])
+            ->name('overview');
+        
+        // ───────────────────────────────────────────────────
+        // 📊 Trending & Content Analysis
+        // ───────────────────────────────────────────────────
+        
+        // 🔥 Trending Topics - Table View (No project_id required)
         Route::get('/trending-topics', [XOverviewController::class, 'trendingTopicsPage'])
             ->name('trending-topics');
         
-        Route::get('/most-status', [XOverviewController::class, 'mostStatusPage'])
-            ->name('most-status');
+        // 🔥 Trending Topics - Word Cloud View (No project_id required)
+        Route::get('/trending-word-cloud', [XOverviewController::class, 'trendingWordCloudPage'])
+            ->name('trending-word-cloud');
         
-        Route::get('/most-retweets', [XOverviewController::class, 'mostRetweetsPage'])
-            ->name('most-retweets');
-        
-        // Content Analysis
+        // Top Hashtags
         Route::get('/top-hashtags', [XOverviewController::class, 'topHashtagsPage'])
             ->name('top-hashtags');
         
-        // Demographics
+        // ───────────────────────────────────────────────────
+        // 🎯 Engagement & Popular Content
+        // ───────────────────────────────────────────────────
+        
+        // Most Viewed Posts
+        Route::get('/most-status', [XOverviewController::class, 'mostStatusPage'])
+            ->name('most-status');
+        
+        // Most Retweeted Posts
+        Route::get('/most-retweets', [XOverviewController::class, 'mostRetweetsPage'])
+            ->name('most-retweets');
+        
+        // ───────────────────────────────────────────────────
+        // 👥 Author Demographics
+        // ───────────────────────────────────────────────────
+        
+        // All Demographics in One Page
         Route::get('/authors-demographics', [XOverviewController::class, 'authorsDemographicsPage'])
             ->name('authors.demographics');
         
-        // Geographic
+        // ───────────────────────────────────────────────────
+        // 🌍 Geographic Analysis
+        // ───────────────────────────────────────────────────
+        
+        // Geographic Overview (Map + Stats)
         Route::get('/geographic', [XOverviewController::class, 'geographicPage'])
             ->name('geographic');
         
+        // Posts with Location Data
         Route::get('/post-with-location', [XOverviewController::class, 'postWithLocationPage'])
             ->name('post-with-location');
     });
     
-    // Analytics Pages
+    // ─────────────────────────────────────────────────────
+    // Other Social Media (Placeholder Routes)
+    // ─────────────────────────────────────────────────────
+    // TODO: Add Facebook, Instagram, YouTube, TikTok routes when ready
+    
+    // ─────────────────────────────────────────────────────
+    // Legacy Analytics Pages (from MkController)
+    // ─────────────────────────────────────────────────────
     Route::get('/sentiment', [MkController::class, 'sentiment'])->name('sentiment');
     Route::get('/geographic', [MkController::class, 'geographic'])->name('geographic');
     
-    // Authors Demographics (OLD ROUTES - dari MkController)
+    // Authors Demographics (OLD ROUTES - Consider deprecating in favor of X routes)
     Route::prefix('authors')->name('authors.')->group(function () {
         Route::get('/age', [MkController::class, 'authorsAge'])->name('age');
         Route::get('/gender', [MkController::class, 'authorsGender'])->name('gender');
@@ -240,7 +290,9 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     Route::get('/publisher', [MkController::class, 'publisherStats'])->name('publisher');
     Route::get('/topics', [MkController::class, 'recentTopics'])->name('topics');
     
+    // ─────────────────────────────────────────────────────
     // Data Source Routes
+    // ─────────────────────────────────────────────────────
     Route::prefix('data-source')->name('data-source.')->group(function () {
         Route::get('/users', [DataSourceController::class, 'users'])->name('users');
         Route::get('/authors', [DataSourceController::class, 'authors'])->name('authors');

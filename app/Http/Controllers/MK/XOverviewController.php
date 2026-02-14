@@ -1506,6 +1506,19 @@ public function trendingTopicsData(Request $request)
         $trending = [];
         $allTopics = [];
         
+        // 🔥 SENTIMENT KEYWORDS FOR CLASSIFICATION
+        $positiveKeywords = [
+            'win', 'winner', 'won', 'best', 'good', 'great', 'love', 'happy', 'success', 
+            'amazing', 'excellent', 'perfect', 'beautiful', 'wonderful', 'fantastic',
+            'celebrate', 'celebration', 'victory', 'achievement', 'congratulations'
+        ];
+        
+        $negativeKeywords = [
+            'bad', 'worst', 'hate', 'sad', 'fail', 'failed', 'lose', 'lost', 'angry',
+            'terrible', 'awful', 'poor', 'wrong', 'crisis', 'disaster', 'tragic',
+            'death', 'died', 'scandal', 'controversial', 'protest', 'boycott'
+        ];
+        
         foreach ($result as $datetime => $period) {
             if (!is_array($period) || !isset($period['data'])) continue;
             
@@ -1522,9 +1535,7 @@ public function trendingTopicsData(Request $request)
                 // Skip if not a valid topic
                 if (!$name) continue;
                 
-                // 🔥 CRITICAL FIX: Check if this is a Twitter/X topic
-                // Twitter trending topics should have 'url' field containing 'twitter.com' or 'x.com'
-                // OR check the source field if available
+                // 🔥 Check if this is a Twitter/X topic
                 $source = strtolower($topic['source'] ?? '');
                 $isTwitter = (
                     stripos($url, 'twitter.com') !== false || 
@@ -1536,12 +1547,33 @@ public function trendingTopicsData(Request $request)
                 
                 // Skip non-Twitter topics
                 if (!$isTwitter && $url && $url !== '#') {
-                    // If there's a URL but it's not Twitter, skip it
                     if (stripos($url, 'facebook.com') !== false ||
                         stripos($url, 'youtube.com') !== false ||
                         stripos($url, 'instagram.com') !== false ||
                         stripos($url, 'tiktok.com') !== false) {
                         continue;
+                    }
+                }
+                
+                // 🔥 DETECT SENTIMENT
+                $sentiment = 'neutral';
+                $lowerName = strtolower($name);
+                
+                // Check positive keywords
+                foreach ($positiveKeywords as $keyword) {
+                    if (stripos($lowerName, $keyword) !== false) {
+                        $sentiment = 'positive';
+                        break;
+                    }
+                }
+                
+                // Check negative keywords (only if not already positive)
+                if ($sentiment === 'neutral') {
+                    foreach ($negativeKeywords as $keyword) {
+                        if (stripos($lowerName, $keyword) !== false) {
+                            $sentiment = 'negative';
+                            break;
+                        }
                     }
                 }
                 
@@ -1553,8 +1585,14 @@ public function trendingTopicsData(Request $request)
                         'appearances' => 0,
                         'avg_rank' => 0,
                         'url' => $url,
+                        'sentiment' => $sentiment,  // 🔥 ADD SENTIMENT
                         'history' => []
                     ];
+                } else {
+                    // Update sentiment if we found a more specific one
+                    if ($allTopics[$name]['sentiment'] === 'neutral' && $sentiment !== 'neutral') {
+                        $allTopics[$name]['sentiment'] = $sentiment;
+                    }
                 }
                 
                 $allTopics[$name]['total_volume'] += $volume;
@@ -1565,7 +1603,8 @@ public function trendingTopicsData(Request $request)
                     'datetime' => $datetime,
                     'rank' => $rank,
                     'volume' => $volume,
-                    'time_ago' => $timeAgo
+                    'time_ago' => $timeAgo,
+                    'sentiment' => $sentiment
                 ];
             }
             
@@ -1621,20 +1660,33 @@ public function trendingTopicsData(Request $request)
         // Sort trending by date
         krsort($trending);
 
-        Log::info('trendingTopicsData - Twitter/X only', [
+        // 🔥 COUNT SENTIMENTS
+        $sentimentCounts = [
+            'positive' => 0,
+            'neutral' => 0,
+            'negative' => 0
+        ];
+        
+        foreach ($allTopics as $topic) {
+            $sentimentCounts[$topic['sentiment']]++;
+        }
+
+        Log::info('trendingTopicsData - Twitter/X with Sentiment', [
             'total_periods' => count($trending),
             'total_unique_topics' => count($allTopics),
+            'sentiment_breakdown' => $sentimentCounts,
             'sample_topic' => $allTopics[0] ?? null
         ]);
 
-        // ✅ SEND ALL TWITTER/X TOPICS
+        // ✅ SEND ALL TWITTER/X TOPICS WITH SENTIMENT DATA
         return response()->json([
             'success' => true,
             'data' => [
                 'trending' => array_values($trending),
-                'top_topics' => $allTopics,  // ✅ All Twitter/X topics
+                'top_topics' => $allTopics,
                 'total_periods' => count($trending),
                 'total_unique_topics' => count($allTopics),
+                'sentiment_counts' => $sentimentCounts,  // 🔥 ADD SENTIMENT STATS
             ]
         ]);
 
@@ -1650,6 +1702,31 @@ public function trendingTopicsData(Request $request)
         ], 500);
     }
 }
+public function trendingWordCloudPage(Request $request)
+{
+    try {
+        $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+        $location  = $request->query('location', 'Indonesia');
 
+        return view('mk.x.trending-word-cloud')->with([
+            'startDate' => $startDate,
+            'endDate'   => $endDate,
+            'location'  => $location,
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('X Trending Word Cloud Page Error', [
+            'error' => $e->getMessage()
+        ]);
+
+        return view('mk.x.trending-word-cloud')->with([
+            'startDate' => now()->subDays(6)->format('Y-m-d'),
+            'endDate'   => now()->format('Y-m-d'),
+            'location'  => 'Indonesia',
+            'error'     => $e->getMessage(),
+        ]);
+    }
+}
 
 }
