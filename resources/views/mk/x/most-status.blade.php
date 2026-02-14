@@ -183,6 +183,7 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
+        z-index: 1;
     }
 
     .stat-card::before {
@@ -228,7 +229,6 @@
     .view-tabs {
         display: flex;
         gap: 8px;
-        margin-bottom: 24px;
         background: var(--bg-white);
         padding: 8px;
         border-radius: 12px;
@@ -260,6 +260,98 @@
         box-shadow: 0 2px 8px rgba(3, 128, 71, 0.2);
     }
 
+    /* Chart Container */
+    .chart-container {
+        background: var(--bg-white);
+        border-radius: 16px;
+        border: 1px solid var(--border-gray);
+        box-shadow: var(--shadow-sm);
+        padding: 24px;
+        margin-bottom: 24px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .chart-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .chart-subtitle {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin: 4px 0 0 0;
+    }
+
+    .chart-toggle-btn {
+        padding: 8px 16px;
+        background: var(--bg-gray-50);
+        border: 1px solid var(--border-gray);
+        border-radius: 10px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .chart-toggle-btn:hover {
+        background: var(--primary-green);
+        color: white;
+        border-color: var(--primary-green);
+    }
+
+    .chart-toggle-btn svg {
+        width: 14px;
+        height: 14px;
+        stroke: currentColor;
+        fill: none;
+        transition: transform 0.3s;
+    }
+
+    .chart-toggle-btn.collapsed svg {
+        transform: rotate(180deg);
+    }
+
+    .chart-body {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+
+    .chart-body.hidden {
+        max-height: 0;
+        opacity: 0;
+        margin-top: 0;
+    }
+
+    .chart-badge {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 20px;
+        background: var(--bg-gray-100);
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: .4px;
+    }
+
+    #viewsChart {
+        max-height: 300px;
+    }
+
     /* Table Container */
     .table-container {
         background: var(--bg-white);
@@ -267,6 +359,8 @@
         border: 1px solid var(--border-gray);
         box-shadow: var(--shadow-sm);
         overflow: hidden;
+        position: relative;
+        z-index: 1;
     }
 
     .table-wrapper {
@@ -529,6 +623,279 @@
         transform: translateY(-1px);
     }
 
+    /* Modal Styles */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 99999;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+        from { 
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+        }
+        to { 
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .modal-content {
+        background: #ffffff;
+        border-radius: 20px;
+        max-width: 700px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        animation: slideUp 0.3s ease-out;
+        position: relative;
+        z-index: 100000;
+    }
+
+    .modal-header {
+        padding: 24px 28px;
+        border-bottom: 2px solid var(--bg-gray-50);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        background: #ffffff;
+        z-index: 100001;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .modal-header h3 {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .modal-close {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--bg-gray-50);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-secondary);
+        transition: all 0.2s;
+    }
+
+    .modal-close:hover {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .modal-close svg {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2.5;
+    }
+
+    .modal-body {
+        padding: 28px;
+        background: #ffffff;
+    }
+
+    .modal-author {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--bg-gray-100);
+    }
+
+    .modal-author-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        border: 3px solid var(--border-gray);
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+
+    .modal-author-avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .modal-author-info h4 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a202c;
+        margin: 0 0 4px 0;
+    }
+
+    .modal-author-handle {
+        font-size: 14px;
+        color: #64748b;
+        margin-bottom: 6px;
+    }
+
+    .modal-author-followers {
+        font-size: 12px;
+        color: #94a3b8;
+        font-weight: 600;
+    }
+
+    .modal-post-content {
+        font-size: 16px;
+        line-height: 1.7;
+        color: #1a202c;
+        margin-bottom: 24px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    .modal-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .modal-stat-card {
+        background: var(--bg-gray-50);
+        padding: 16px;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid var(--border-gray);
+    }
+
+    .modal-stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+
+    .modal-stat-value.views { color: var(--primary-green); }
+    .modal-stat-value.retweets { color: var(--accent-blue); }
+
+    .modal-stat-label {
+        font-size: 11px;
+        color: var(--text-secondary);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .modal-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 16px 0;
+        border-top: 1px solid var(--bg-gray-100);
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+
+    .modal-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .modal-meta-item svg {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+        fill: none;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        padding-top: 20px;
+        border-top: 1px solid var(--bg-gray-100);
+    }
+
+    .modal-btn {
+        flex: 1;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .modal-btn-primary {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+        color: white;
+        box-shadow: 0 2px 8px rgba(3, 128, 71, 0.2);
+    }
+
+    .modal-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(3, 128, 71, 0.3);
+    }
+
+    .modal-btn-secondary {
+        background: var(--bg-white);
+        color: var(--text-primary);
+        border: 1px solid var(--border-gray);
+    }
+
+    .modal-btn-secondary:hover {
+        background: var(--bg-gray-50);
+        border-color: var(--primary-green);
+        color: var(--primary-green);
+    }
+
+    .modal-btn svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        fill: none;
+    }
+
     /* Export Button */
     .export-btn {
         padding: 10px 20px;
@@ -651,6 +1018,283 @@
         font-size: 14px;
         color: var(--text-secondary);
         margin: 0;
+    }
+
+
+    /* Modal Styles */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    .modal-overlay.show {
+        display: flex;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+        from { 
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+        }
+        to { 
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .modal-content {
+        background: var(--bg-white);
+        border-radius: 16px;
+        width: 90%;
+        max-width: 700px;
+        max-height: 85vh;
+        overflow: hidden;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header {
+        padding: 20px 24px;
+        border-bottom: 2px solid var(--bg-gray-50);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .modal-header h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .modal-close {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: var(--bg-gray-50);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        color: var(--text-secondary);
+    }
+
+    .modal-close:hover {
+        background: #ef4444;
+        color: white;
+    }
+
+    .modal-close svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2.5;
+    }
+
+    .modal-body {
+        padding: 24px;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .modal-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .modal-body::-webkit-scrollbar-thumb {
+        background: var(--border-gray);
+        border-radius: 3px;
+    }
+
+    .modal-author-section {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--bg-gray-100);
+        margin-bottom: 20px;
+    }
+
+    .modal-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        border: 3px solid var(--border-gray);
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+
+    .modal-avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .modal-author-info {
+        flex: 1;
+    }
+
+    .modal-author-name {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 4px 0;
+    }
+
+    .modal-author-handle {
+        font-size: 14px;
+        color: var(--text-secondary);
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .modal-author-stats {
+        display: flex;
+        gap: 16px;
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .modal-author-stats span {
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .modal-post-content {
+        font-size: 15px;
+        line-height: 1.7;
+        color: var(--text-primary);
+        margin-bottom: 20px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    .modal-post-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 0;
+        border-top: 1px solid var(--bg-gray-100);
+        border-bottom: 1px solid var(--bg-gray-100);
+        margin-bottom: 20px;
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+
+    .modal-post-meta svg {
+        width: 14px;
+        height: 14px;
+        stroke: currentColor;
+    }
+
+    .modal-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .modal-stat-box {
+        text-align: center;
+        padding: 16px;
+        background: var(--bg-gray-50);
+        border-radius: 12px;
+        border: 1px solid var(--border-gray);
+    }
+
+    .modal-stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+
+    .modal-stat-value.views { color: var(--primary-green); }
+    .modal-stat-value.retweets { color: var(--accent-blue); }
+
+    .modal-stat-label {
+        font-size: 11px;
+        color: var(--text-secondary);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .modal-btn {
+        flex: 1;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .modal-btn.primary {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+        color: white;
+        border: none;
+    }
+
+    .modal-btn.primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(3, 128, 71, 0.3);
+    }
+
+    .modal-btn.secondary {
+        background: var(--bg-white);
+        color: var(--text-primary);
+        border: 1px solid var(--border-gray);
+    }
+
+    .modal-btn.secondary:hover {
+        background: var(--bg-gray-50);
+        border-color: var(--primary-green);
+        color: var(--primary-green);
+    }
+
+    .modal-btn svg {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+        fill: none;
     }
 
     /* Responsive */
@@ -804,30 +1448,7 @@
     </div>
 
     <!-- View Tabs & Export -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-        <div class="view-tabs">
-            <button class="view-tab active" data-view="table">
-                <svg viewBox="0 0 24 24" style="width:16px;height:16px;display:inline;vertical-align:middle;margin-right:6px;stroke:currentColor;fill:none;stroke-width:2;">
-                    <line x1="8" y1="6" x2="21" y2="6"/>
-                    <line x1="8" y1="12" x2="21" y2="12"/>
-                    <line x1="8" y1="18" x2="21" y2="18"/>
-                    <line x1="3" y1="6" x2="3.01" y2="6"/>
-                    <line x1="3" y1="12" x2="3.01" y2="12"/>
-                    <line x1="3" y1="18" x2="3.01" y2="18"/>
-                </svg>
-                Table View
-            </button>
-            <button class="view-tab" data-view="avatar">
-                <svg viewBox="0 0 24 24" style="width:16px;height:16px;display:inline;vertical-align:middle;margin-right:6px;stroke:currentColor;fill:none;stroke-width:2;">
-                    <rect x="3" y="3" width="7" height="7"/>
-                    <rect x="14" y="3" width="7" height="7"/>
-                    <rect x="14" y="14" width="7" height="7"/>
-                    <rect x="3" y="14" width="7" height="7"/>
-                </svg>
-                Avatar View
-            </button>
-        </div>
-        
+    <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 24px;">
         <button class="export-btn" onclick="MostStatusLoader.exportCSV()">
             <svg viewBox="0 0 24 24">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -836,6 +1457,36 @@
             </svg>
             Download CSV
         </button>
+    </div>
+
+    <!-- Top Posts Chart -->
+    <div class="table-container" style="margin-bottom: 24px;">
+        <div style="padding: 20px 24px; border-bottom: 2px solid var(--bg-gray-50);">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, rgba(3,128,71,0.1) 0%, rgba(3,128,71,0.05) 100%); display: flex; align-items: center; justify-content: center;">
+                        <svg viewBox="0 0 24 24" style="width: 28px; height: 28px; color: var(--primary-green); fill: none; stroke: currentColor; stroke-width: 2;">
+                            <line x1="18" y1="20" x2="18" y2="10"/>
+                            <line x1="12" y1="20" x2="12" y2="4"/>
+                            <line x1="6" y1="20" x2="6" y2="14"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px 0;">Top 10 Posts by Views</h3>
+                        <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">Highest performing posts ranked by view count</p>
+                    </div>
+                </div>
+                <button class="chart-toggle-btn" id="chartToggleBtn" onclick="MostStatusLoader.toggleChart()">
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                    <span id="chartToggleText">Hide Chart</span>
+                </button>
+            </div>
+        </div>
+        <div class="chart-body" id="chartBody" style="padding: 24px;">
+            <canvas id="topPostsChart" style="max-height: 400px;"></canvas>
+        </div>
     </div>
 
     <!-- Table Container -->
@@ -938,11 +1589,31 @@
         </div>
     </div>
 
+
+    <!-- Post Detail Modal -->
+    <div class="modal-overlay" id="postModal" onclick="if(event.target === this) MostStatusLoader.closeModal()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Post Details</h3>
+                <button class="modal-close" onclick="MostStatusLoader.closeModal()">
+                    <svg viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be injected here -->
+            </div>
+        </div>
+    </div>
+
     @endif
 </div>
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 const MostStatusLoader = {
     projectId: '{{ $projectId ?? "" }}',
@@ -955,16 +1626,6 @@ const MostStatusLoader = {
 
     async init() {
         if (!this.projectId) return;
-        
-        // View tab switching
-        document.querySelectorAll('.view-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                this.currentView = tab.dataset.view;
-                this.renderCurrentView();
-            });
-        });
         
         try {
             await this.loadData();
@@ -991,8 +1652,231 @@ const MostStatusLoader = {
         // Update stats
         this.updateStats(this.allPosts);
         
+        // Render chart
+        this.renderChart();
+        
         // Render table
         this.renderTable();
+    },
+
+    renderChart() {
+        const canvas = document.getElementById('topPostsChart');
+        if (!canvas) return;
+
+        const top10 = this.allPosts.slice(0, 10);
+        
+        if (!top10.length) return;
+
+        const ctx = canvas.getContext('2d');
+        
+        // Destroy existing chart if any
+        if (this.chart) {
+            this.chart.destroy();
+        }
+
+        const labels = top10.map((post, idx) => {
+            const author = post.author?.scr_name || post.name || 'Unknown';
+            return `#${idx + 1} @${author}`;
+        });
+
+        const data = top10.map(post => post.view_cnt || 0);
+
+        this.chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Views',
+                    data: data,
+                    backgroundColor: 'rgba(3, 128, 71, 0.8)',
+                    borderColor: '#038047',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#1a202c',
+                        titleFont: { family: 'Poppins', size: 13, weight: '600' },
+                        bodyFont: { family: 'Poppins', size: 12 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                return ' ' + context.parsed.x.toLocaleString() + ' views';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#e2e8f0',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: { family: 'Poppins', size: 11 },
+                            color: '#64748b',
+                            callback: function(value) {
+                                if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                                if (value >= 1000) return (value / 1000).toFixed(0) + 'K';
+                                return value;
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: { family: 'Poppins', size: 11, weight: '600' },
+                            color: '#1a202c'
+                        }
+                    }
+                }
+            }
+        });
+    },
+
+    viewPost(index) {
+        const startIdx = (this.currentPage - 1) * this.postsPerPage;
+        const post = this.allPosts[startIdx + index];
+        
+        if (!post) return;
+
+        const authorName = this.escapeHtml(post.author?.name || post.name || 'Unknown User');
+        const authorHandle = post.author?.scr_name || post.name || 'unknown';
+        const initials = this.getInitials(authorName);
+        
+        let avatarHtml = initials;
+        const hasValidAvatar = post.avatar_url && 
+                               !post.avatar_url.startsWith('/external') && 
+                               post.avatar_url !== '/images/default-avatar.png';
+        
+        if (hasValidAvatar) {
+            avatarHtml = `<img src="${post.avatar_url}" alt="${authorName}" onerror="this.parentElement.innerHTML='${initials}'">`;
+        } else {
+            const username = authorHandle.replace('@', '');
+            avatarHtml = `<img src="https://unavatar.io/twitter/${username}" alt="${authorName}" onerror="this.parentElement.innerHTML='${initials}'">`;
+        }
+
+        const content = this.escapeHtml(post.content || '');
+        const viewCount = post.view_cnt || 0;
+        const rtCount = post.rt || 0;
+        const followers = post.author?.flw_cnt || 0;
+        const sentimentClass = post.sentiment_str.toLowerCase();
+        const sentimentPrec = post.sentiment_prec || 0;
+        const date = this.formatDate(post.date_created);
+        const twitterUrl = post.sub_id ? `https://twitter.com/i/web/status/${post.sub_id}` : '#';
+
+        const modalBody = document.getElementById('modalBody');
+        modalBody.innerHTML = `
+            <div class="modal-author-section">
+                <div class="modal-avatar">${avatarHtml}</div>
+                <div class="modal-author-info">
+                    <h4 class="modal-author-name">${authorName}</h4>
+                    <div class="modal-author-handle">@${authorHandle}</div>
+                    <div class="modal-author-stats">
+                        <div><span>${this.formatNumber(followers)}</span> Followers</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-post-content">${content}</div>
+
+            <div class="modal-post-meta">
+                <svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                ${date}
+            </div>
+
+            <div class="modal-stats-grid">
+                <div class="modal-stat-box">
+                    <div class="modal-stat-value views">${this.formatNumber(viewCount)}</div>
+                    <div class="modal-stat-label">Views</div>
+                </div>
+                <div class="modal-stat-box">
+                    <div class="modal-stat-value retweets">${this.formatNumber(rtCount)}</div>
+                    <div class="modal-stat-label">Retweets</div>
+                </div>
+                <div class="modal-stat-box">
+                    <span class="sentiment-badge ${sentimentClass}" style="display:block;margin:0;">
+                        ${post.sentiment_str}
+                        ${sentimentPrec > 0 ? `<span class="sentiment-percentage">${sentimentPrec.toFixed(0)}%</span>` : ''}
+                    </span>
+                    <div class="modal-stat-label" style="margin-top:8px;">Sentiment</div>
+                </div>
+            </div>
+
+            ${post.sub_id ? `
+            <div class="modal-actions">
+                <a href="${twitterUrl}" target="_blank" class="modal-btn primary">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        <polyline points="15 3 21 3 21 9"/>
+                        <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                    View on X (Twitter)
+                </a>
+                <button onclick="MostStatusLoader.closeModal()" class="modal-btn secondary">
+                    Close
+                </button>
+            </div>
+            ` : ''}
+        `;
+
+        document.getElementById('postModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    },
+
+    openModal(index) {
+        this.viewPost(index);
+        
+        // Add ESC key listener
+        this._escKeyHandler = (e) => {
+            if (e.key === 'Escape') {
+                this.closeModal();
+            }
+        };
+        document.addEventListener('keydown', this._escKeyHandler);
+    },
+
+    closeModal() {
+        const modal = document.getElementById('postModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        
+        // Remove ESC key listener
+        if (this._escKeyHandler) {
+            document.removeEventListener('keydown', this._escKeyHandler);
+            this._escKeyHandler = null;
+        }
+    },
+
+    toggleChart() {
+        const chartBody = document.getElementById('chartBody');
+        const toggleBtn = document.getElementById('chartToggleBtn');
+        const toggleText = document.getElementById('chartToggleText');
+        
+        if (chartBody.classList.contains('hidden')) {
+            chartBody.classList.remove('hidden');
+            toggleBtn.classList.remove('collapsed');
+            toggleText.textContent = 'Hide Chart';
+        } else {
+            chartBody.classList.add('hidden');
+            toggleBtn.classList.add('collapsed');
+            toggleText.textContent = 'Show Chart';
+        }
     },
 
     updateStats(posts) {
@@ -1090,11 +1974,10 @@ const MostStatusLoader = {
                             ${date}
                         </span>
                         ${post.sub_id ? `
-                        <a href="https://twitter.com/i/web/status/${post.sub_id}" target="_blank" class="status-link">
+                        <a href="javascript:void(0)" onclick="MostStatusLoader.viewPost(${rank - 1})" class="status-link">
                             <svg viewBox="0 0 24 24" style="width:13px;height:13px;display:inline;vertical-align:middle;">
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                                <polyline points="15 3 21 3 21 9"/>
-                                <line x1="10" y1="14" x2="21" y2="3"/>
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
                             </svg>
                             View
                         </a>
@@ -1156,15 +2039,6 @@ const MostStatusLoader = {
             
             // Scroll to top of table
             document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth' });
-        }
-    },
-
-    renderCurrentView() {
-        if (this.currentView === 'table') {
-            this.renderTable();
-        } else if (this.currentView === 'avatar') {
-            // Avatar view implementation (future enhancement)
-            alert('Avatar view coming soon!');
         }
     },
 
@@ -1257,6 +2131,13 @@ const MostStatusLoader = {
 
 document.addEventListener('DOMContentLoaded', () => {
     MostStatusLoader.init();
+    
+    // ESC key to close modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            MostStatusLoader.closeModal();
+        }
+    });
 });
 </script>
 @endsection
