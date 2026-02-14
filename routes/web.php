@@ -127,6 +127,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/most-status', [XOverviewController::class, 'mostStatus'])
                 ->name('most-status');
 
+            // 🔥 NEW: Post with Location API
+            Route::get('/post-with-location', [XOverviewController::class, 'postWithLocation'])
+                ->name('post-with-location');
+
             Route::get('/user-mentions', [XOverviewController::class, 'userMentions'])
                 ->name('user-mentions');
             
@@ -181,6 +185,9 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         
         // 🔥 NEW: Most Status Page
         Route::get('/most-status', [XOverviewController::class, 'mostStatusPage'])->name('most-status');
+        
+        // 🔥 NEW: Post with Location Page
+        Route::get('/post-with-location', [XOverviewController::class, 'postWithLocationPage'])->name('post-with-location');
         
         Route::get('/top-hashtags', [XOverviewController::class, 'topHashtagsPage'])->name('top-hashtags');
         

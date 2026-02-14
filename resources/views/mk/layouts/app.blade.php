@@ -698,6 +698,10 @@
      class="nav-item {{ request()->routeIs('mk.x.most-status') ? 'active' : '' }}">
     <span>Most Viewed</span>
   </a>
+  <a href="{{ route('mk.x.post-with-location') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" 
+     class="nav-item {{ request()->routeIs('mk.x.post-with-location') ? 'active' : '' }}">
+    <span>Post with Location</span>
+  </a>
 </div>
 
         <!-- Facebook -->

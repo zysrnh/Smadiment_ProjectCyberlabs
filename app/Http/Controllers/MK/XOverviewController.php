@@ -1304,4 +1304,153 @@ public function mostStatus(Request $request)
         ], 500);
     }
 }
+public function postWithLocationPage(Request $request)
+{
+    try {
+        $projectsData = $this->client->listProjects(0, 100);
+        $projects = $projectsData['data'] ?? [];
+
+        $projectId = $request->query('project_id');
+
+        if (!$projectId && count($projects) > 0) {
+            $projectId = $projects[0]['id'] ?? null;
+
+            if ($projectId) {
+                return redirect()->route('mk.x.post-with-location', [
+                    'project_id' => $projectId,
+                    'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                    'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                ]);
+            }
+        }
+
+        $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+        return view('mk.x.post-with-location')->with([
+            'projectId' => $projectId,
+            'startDate' => $startDate,
+            'endDate'   => $endDate,
+            'projects'  => $projects,
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Post with Location Page Error', [
+            'error' => $e->getMessage()
+        ]);
+
+        return view('mk.x.post-with-location')->with([
+            'projectId' => null,
+            'startDate' => now()->subDays(6)->format('Y-m-d'),
+            'endDate'   => now()->format('Y-m-d'),
+            'projects'  => [],
+            'error'     => $e->getMessage(),
+        ]);
+    }
+}
+
+/**
+ * API: Get Post with Location Data
+ */
+/**
+ * API: Get Post with Location Data
+ */
+public function postWithLocation(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+
+        if (!$projectId || !$startDate || !$endDate) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Missing required parameters: project_id, start_date, end_date'
+            ], 400);
+        }
+
+        // Call the API
+        $result = $this->client->postWithLocation(
+            $projectId, 
+            $startDate, 
+            $endDate,
+            0,   // start_time
+            23,  // end_time
+            0,   // start (pagination)
+            1000 // rows (increased limit)
+        );
+
+        Log::info('postWithLocation API response', [
+            'count' => is_array($result) ? count($result) : 0,
+            'sample' => is_array($result) && count($result) > 0 ? $result[0] : null
+        ]);
+
+        // Filter posts that have location data
+        $posts = [];
+        
+        if (is_array($result)) {
+            foreach ($result as $item) {
+                // Only include posts with location
+                if (empty($item['author_location']) && empty($item['cat_loc'])) {
+                    continue;
+                }
+                
+                // Parse author JSON
+                $author = [];
+                if (isset($item['author'])) {
+                    $author = is_string($item['author']) 
+                        ? json_decode($item['author'], true) 
+                        : $item['author'];
+                }
+                
+                // Parse contentJson
+                $contentJson = [];
+                if (isset($item['contentJson'])) {
+                    $contentJson = is_string($item['contentJson']) 
+                        ? json_decode($item['contentJson'], true) 
+                        : $item['contentJson'];
+                }
+                
+                $posts[] = [
+                    'docid'                  => $item['id'] ?? '',
+                    'author_id'              => $author['id'] ?? '',
+                    'author_scr_name'        => $item['name'] ?? $author['scr_name'] ?? '',
+                    'date_created'           => $item['date_created'] ?? '',
+                    'location'               => $item['author_location'] ?? $item['cat_loc'] ?? '',
+                    'coordinates'            => $item['cat_coord'] ?? '',
+                    'content'                => $item['content'] ?? '',
+                    'user_mention1'          => null, // Not available in this endpoint
+                    'user_mention2'          => null,
+                    'user_mention3'          => null,
+                    'class_sentiment'        => $item['class_sentiment'] ?? '0',
+                    'class_sentiment_label'  => $item['class_sentiment'] ?? 'neutral',
+                ];
+            }
+        }
+
+        Log::info('postWithLocation filtered posts', [
+            'total_received' => is_array($result) ? count($result) : 0,
+            'with_location' => count($posts)
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $posts,
+            'total'   => count($posts),
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('postWithLocation API error', [
+            'error'      => $e->getMessage(),
+            'trace'      => $e->getTraceAsString(),
+            'project_id' => $request->query('project_id'),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'error'   => $e->getMessage()
+        ], 500);
+    }
+}
+
 }
