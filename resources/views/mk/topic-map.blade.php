@@ -4,54 +4,182 @@
 
 @section('styles')
 <style>
-  /* Import Poppins Font */
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
-
-  * {
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  :root {
+    --primary-green: #038047;
+    --primary-green-dark: #026738;
+    --accent-blue: #2FC6F6;
+    --text-primary: #1a202c;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --bg-white: #ffffff;
+    --bg-gray-50: #f8fafc;
+    --bg-gray-100: #f1f5f9;
+    --border-gray: #e2e8f0;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   }
 
+  body { background: var(--bg-gray-50); }
+
+  .dashboard-container {
+    padding: 24px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .page-header { 
+    margin-bottom: 32px; 
+  }
+
+  .page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+  }
+
+  .page-header p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  /* Stats Grid - MATCHING X TRENDING */
   .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
     margin-bottom: 24px;
   }
 
   .stat-card {
-    background: white;
+    background: var(--bg-white);
+    border: 1px solid var(--border-gray);
     border-radius: 16px;
-    padding: 20px;
-    box-shadow: var(--card-shadow);
-    transition: all 0.3s ease;
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
   }
 
   .stat-card:hover {
     transform: translateY(-4px);
-    box-shadow: var(--card-shadow-hover);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-green);
+  }
+
+  .stat-card:hover::before { opacity: 1; }
+
+  .stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+
+  .stat-icon-wrapper {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(3, 128, 71, 0.1) 0%, rgba(3, 128, 71, 0.05) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .stat-icon-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 16px;
+    padding: 4px;
+    background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .stat-card:hover .stat-icon-wrapper::after { opacity: 0.5; }
+
+  .stat-icon {
+    width: 28px;
+    height: 28px;
+    color: var(--primary-green);
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
   }
 
   .stat-label {
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     margin-bottom: 8px;
   }
 
-  .stat-value {
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--text-primary);
+  .stat-value-wrapper {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 16px;
   }
 
+  .stat-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .stat-progress {
+    height: 6px;
+    background: var(--bg-gray-100);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .stat-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+    border-radius: 10px;
+    transition: width 1s ease-out;
+    width: 0%;
+  }
+
+  /* Chart Container - MATCHING X TRENDING */
   .chart-container {
-    background: white;
+    background: var(--bg-white);
     border-radius: 16px;
-    padding: 32px;
-    box-shadow: var(--card-shadow);
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-gray);
     margin-bottom: 24px;
+    transition: all 0.3s;
+  }
+
+  .chart-container:hover {
+    box-shadow: var(--shadow-md);
   }
 
   .section-header {
@@ -59,20 +187,23 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--bg-gray-50);
     flex-wrap: wrap;
     gap: 16px;
   }
 
   .section-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--text-primary);
+    margin: 0;
   }
 
   .chart-switcher {
     display: flex;
     gap: 8px;
-    background: #f1f5f9;
+    background: var(--bg-gray-100);
     padding: 4px;
     border-radius: 12px;
   }
@@ -84,7 +215,7 @@
     background: transparent;
     color: var(--text-secondary);
     font-family: 'Poppins', sans-serif;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -110,22 +241,57 @@
     display: block;
   }
 
-  /* Word Cloud Styles */
+  /* Word Cloud - MATCHING X TRENDING */
   .topic-cloud {
     min-height: 500px;
     position: relative;
-    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 40px;
+    overflow: hidden;
+  }
+
+  .topic-cloud::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+        radial-gradient(circle at 20% 30%, rgba(3, 128, 71, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(47, 198, 246, 0.03) 0%, transparent 50%);
+    pointer-events: none;
   }
 
   #wordCloudCanvas {
     width: 100% !important;
     height: 500px !important;
-    cursor: default;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+  }
+
+  .wordcloud-hint {
+    position: absolute;
+    bottom: 16px;
+    right: 20px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+    display: none;
+    align-items: center;
+    gap: 5px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .wordcloud-hint svg {
+    width: 13px;
+    height: 13px;
+    stroke: currentColor;
+    fill: none;
+    flex-shrink: 0;
   }
 
   /* Bar Chart Container */
@@ -143,11 +309,13 @@
     justify-content: center;
   }
 
+  /* Topic List Container - MATCHING X TRENDING */
   .topic-list-container {
-    background: white;
+    background: var(--bg-white);
     border-radius: 16px;
-    padding: 32px;
-    box-shadow: var(--card-shadow);
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-gray);
   }
 
   .topic-item {
@@ -155,7 +323,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 16px 20px;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--bg-gray-100);
     transition: all 0.2s;
   }
 
@@ -164,7 +332,7 @@
   }
 
   .topic-item:hover {
-    background: #f8fafc;
+    background: var(--bg-gray-50);
     padding-left: 28px;
   }
 
@@ -185,6 +353,7 @@
     font-weight: 600;
     color: var(--text-primary);
     margin-left: 16px;
+    font-size: 14px;
   }
 
   .topic-count {
@@ -211,14 +380,15 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(3, 128, 71, 0.2);
   }
 
   .view-all-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(3, 128, 71, 0.3);
+    box-shadow: 0 6px 20px rgba(3, 128, 71, 0.3);
   }
 
-  /* Modal Styles */
+  /* Modal - MATCHING X TRENDING */
   .modal-overlay {
     display: none;
     position: fixed;
@@ -226,10 +396,10 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.75);
     z-index: 9999;
-    backdrop-filter: blur(4px);
-    animation: fadeIn 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 
   .modal-overlay.active {
@@ -246,13 +416,13 @@
     max-height: 80vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
     animation: slideUp 0.3s ease;
   }
 
   .modal-header {
     padding: 24px 32px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border-gray);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -266,20 +436,23 @@
   }
 
   .modal-close {
-    background: #f1f5f9;
+    background: var(--bg-gray-50);
     border: none;
     width: 36px;
     height: 36px;
     border-radius: 50%;
     cursor: pointer;
     font-size: 20px;
-    color: #64748b;
+    color: var(--text-secondary);
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .modal-close:hover {
-    background: #e2e8f0;
-    color: #334155;
+    background: #ef4444;
+    color: white;
   }
 
   .modal-body {
@@ -291,7 +464,7 @@
   .modal-search {
     width: 100%;
     padding: 12px 16px;
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--border-gray);
     border-radius: 12px;
     font-family: 'Poppins', sans-serif;
     font-size: 14px;
@@ -305,11 +478,6 @@
     box-shadow: 0 0 0 3px rgba(3, 128, 71, 0.1);
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
   @keyframes slideUp {
     from {
       opacity: 0;
@@ -321,63 +489,144 @@
     }
   }
 
+  /* Loading State - MATCHING X TRENDING */
   .loading-state {
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
     padding: 80px 20px;
-    color: var(--text-muted);
   }
 
-  .loading-state .spinner {
+  .loading-spinner {
     width: 48px;
     height: 48px;
-    border: 4px solid #e2e8f0;
+    border: 4px solid var(--bg-gray-100);
     border-top-color: var(--primary-green);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
-    margin: 0 auto 20px;
   }
 
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
 
+  .loading-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* Empty State - MATCHING X TRENDING */
   .empty-state {
     text-align: center;
-    padding: 60px 20px;
-    color: var(--text-secondary);
+    padding: 80px 20px;
   }
 
   .empty-state svg {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 20px;
-    opacity: 0.3;
+    width: 64px;
+    height: 64px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    stroke: currentColor;
+    fill: none;
+  }
+
+  .empty-state h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+  }
+
+  .empty-state p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .dashboard-container { padding: 16px; }
+    .stats-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  }
+
+  @media (max-width: 768px) {
+    .page-header h1 { font-size: 24px; }
+    .chart-container, .topic-list-container { padding: 20px; }
+    .section-header { flex-direction: column; align-items: stretch; }
+    .chart-switcher { width: 100%; }
+    .chart-btn { flex: 1; }
+    #wordCloudCanvas { height: 400px !important; }
+    .topic-cloud { padding: 20px; min-height: 450px; }
+    .stat-value { font-size: 28px; }
   }
 </style>
 @endsection
 
 @section('content')
-<div class="top-bar">
-  <div class="page-title">
-    <h2>Topic Map</h2>
-    <p class="page-subtitle">Visualisasi topik yang sedang trending</p>
-  </div>
-</div>
+<div class="dashboard-container">
 
-<div class="content-wrapper">
+  <div class="page-header">
+    <h1>Topic Map</h1>
+    <p>Visual representation of trending topics and discussion themes</p>
+  </div>
+
   <!-- Stats Cards -->
   <div class="stats-grid">
     <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon-wrapper">
+          <svg class="stat-icon" viewBox="0 0 24 24">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+      </div>
       <div class="stat-label">Total Topics</div>
-      <div class="stat-value" id="totalTopics">-</div>
+      <div id="totalTopics" class="stat-value-wrapper">
+        <div class="stat-value">-</div>
+      </div>
+      <div class="stat-progress">
+        <div class="stat-progress-bar"></div>
+      </div>
     </div>
+
     <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon-wrapper">
+          <svg class="stat-icon" viewBox="0 0 24 24">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+      </div>
       <div class="stat-label">Top Topic</div>
-      <div class="stat-value" id="topTopic" style="font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">-</div>
+      <div id="topTopic" class="stat-value-wrapper">
+        <div class="stat-value" style="font-size: 20px;">-</div>
+      </div>
+      <div class="stat-progress">
+        <div class="stat-progress-bar"></div>
+      </div>
     </div>
+
     <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon-wrapper">
+          <svg class="stat-icon" viewBox="0 0 24 24">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          </svg>
+        </div>
+      </div>
       <div class="stat-label">Total Mentions</div>
-      <div class="stat-value" id="totalMentions">-</div>
+      <div id="totalMentions" class="stat-value-wrapper">
+        <div class="stat-value">-</div>
+      </div>
+      <div class="stat-progress">
+        <div class="stat-progress-bar"></div>
+      </div>
     </div>
   </div>
 
@@ -403,10 +652,18 @@
     <!-- Word Cloud View -->
     <div class="chart-view active" id="wordCloudView">
       <div class="topic-cloud" id="topicCloud">
-        <canvas id="wordCloudCanvas"></canvas>
         <div class="loading-state" id="wordCloudLoading">
-          <div class="spinner"></div>
-          <p style="font-size: 16px; font-weight: 600;">Loading topics...</p>
+          <div class="loading-spinner"></div>
+          <p class="loading-text">Loading topics...</p>
+        </div>
+        <canvas id="wordCloudCanvas" style="display: none;"></canvas>
+        <div class="wordcloud-hint" id="wordCloudHint">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          Click a word to view details
         </div>
       </div>
     </div>
@@ -428,12 +685,12 @@
 
   <!-- Topic List -->
   <div class="topic-list-container">
-    <div class="section-header">
+    <div class="section-header" style="border-bottom: none; padding-bottom: 0;">
       <h3 class="section-title">Topic Details</h3>
     </div>
     <div id="topicList">
       <div class="loading-state">
-        <div class="spinner"></div>
+        <div class="loading-spinner"></div>
       </div>
     </div>
     <button class="view-all-btn" id="viewAllBtn" style="display: none;" onclick="openModal()">
@@ -447,7 +704,12 @@
   <div class="modal-content" onclick="event.stopPropagation()">
     <div class="modal-header">
       <h3>All Topics</h3>
-      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <button class="modal-close" onclick="closeModal()">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
     </div>
     <div class="modal-body">
       <input type="text" class="modal-search" id="modalSearch" placeholder="Search topics...">
@@ -537,7 +799,7 @@
     else if (type === 'pie') {
       document.getElementById('btnPie').classList.add('active');
       document.getElementById('pieChartView').classList.add('active');
-      document.getElementById('chartTitle').textContent = 'Topic Pie Chart';
+      document.getElementById('chartTitle').textContent = 'Topic Distribution';
       
       if (!pieChartInstance && topicsData.length > 0) {
         renderPieChart(topicsData);
@@ -550,24 +812,34 @@
     const topTopic = topics[0]?.name || '-';
     const totalMentions = topics.reduce((sum, t) => sum + t.count, 0);
 
-    document.getElementById('totalTopics').textContent = totalTopics.toLocaleString();
-    document.getElementById('topTopic').textContent = topTopic;
-    document.getElementById('topTopic').title = topTopic;
-    document.getElementById('totalMentions').textContent = totalMentions.toLocaleString();
+    document.getElementById('totalTopics').innerHTML = `<div class="stat-value">${totalTopics.toLocaleString()}</div>`;
+    document.getElementById('topTopic').innerHTML = `<div class="stat-value" style="font-size: 20px;" title="${topTopic}">${topTopic}</div>`;
+    document.getElementById('totalMentions').innerHTML = `<div class="stat-value">${totalMentions.toLocaleString()}</div>`;
+
+    // Animate progress bars
+    const cards = document.querySelectorAll('.stat-card');
+    const pcts = [80, 100, 90];
+    cards.forEach((card, i) => {
+      const bar = card.querySelector('.stat-progress-bar');
+      if (bar) setTimeout(() => bar.style.width = pcts[i] + '%', 100);
+    });
   }
 
   function renderWordCloud(topics) {
     const canvas = document.getElementById('wordCloudCanvas');
     const loading = document.getElementById('wordCloudLoading');
+    const hint = document.getElementById('wordCloudHint');
     
     if (!canvas) return;
     
     if (topics.length === 0) {
-      loading.innerHTML = '<div class="empty-state">No topics to display</div>';
+      loading.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><h3>No Topics Found</h3><p>No topics to display</p></div>';
       return;
     }
 
     loading.style.display = 'none';
+    canvas.style.display = 'block';
+    hint.style.display = 'flex';
     
     // Top 40 topics for better visibility
     const topTopics = topics.slice(0, 40);
@@ -583,16 +855,9 @@
     
     // Professional color palette
     const colors = [
-      '#038047',
-      '#04995a',
-      '#06bf80',
-      '#059669',
-      '#10b981',
-      '#14b8a6',
-      '#0891b2',
-      '#0284c7',
-      '#3b82f6',
-      '#6366f1'
+      '#038047','#04995a','#06bf80','#059669','#10b981',
+      '#14b8a6','#0891b2','#0284c7','#3b82f6','#6366f1',
+      '#8b5cf6','#a78bfa','#f59e0b'
     ];
     
     const ctx = canvas.getContext('2d');
@@ -634,10 +899,7 @@
         datasets: [{
           label: 'Mentions',
           data: topTopics.map(t => t.count),
-          backgroundColor: topTopics.map((_, i) => {
-            const opacity = 1 - (i * 0.03);
-            return `rgba(3, 128, 71, ${opacity})`;
-          }),
+          backgroundColor: 'rgba(3, 128, 71, 0.8)',
           borderColor: '#038047',
           borderWidth: 2,
           borderRadius: 8,
@@ -648,21 +910,12 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: {
-            display: false
-          },
+          legend: { display: false },
           tooltip: {
             backgroundColor: 'rgba(15, 23, 42, 0.95)',
             padding: 12,
-            titleFont: {
-              size: 14,
-              weight: 'bold',
-              family: "'Poppins', sans-serif"
-            },
-            bodyFont: {
-              size: 13,
-              family: "'Poppins', sans-serif"
-            },
+            titleFont: { size: 14, weight: 'bold', family: "'Poppins', sans-serif" },
+            bodyFont: { size: 13, family: "'Poppins', sans-serif" },
             borderColor: '#038047',
             borderWidth: 1,
             callbacks: {
@@ -675,27 +928,12 @@
         scales: {
           x: {
             beginAtZero: true,
-            grid: {
-              color: 'rgba(0, 0, 0, 0.05)'
-            },
-            ticks: {
-              font: {
-                weight: 600,
-                family: "'Poppins', sans-serif"
-              }
-            }
+            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+            ticks: { font: { weight: 600, family: "'Poppins', sans-serif" } }
           },
           y: {
-            grid: {
-              display: false
-            },
-            ticks: {
-              font: {
-                weight: 600,
-                size: 12,
-                family: "'Poppins', sans-serif"
-              }
-            }
+            grid: { display: false },
+            ticks: { font: { weight: 600, size: 12, family: "'Poppins', sans-serif" } }
           }
         }
       }
@@ -721,9 +959,8 @@
     }
     
     const colors = [
-      '#038047', '#04995a', '#2FC6F6', '#8b5cf6', '#f59e0b',
-      '#ef4444', '#10b981', '#3b82f6', '#ec4899', '#6366f1',
-      '#94a3b8'
+      '#038047','#04995a','#2FC6F6','#8b5cf6','#f59e0b',
+      '#ef4444','#10b981','#3b82f6','#ec4899','#6366f1','#94a3b8'
     ];
     
     pieChartInstance = new Chart(ctx, {
@@ -746,11 +983,7 @@
             position: 'right',
             labels: {
               padding: 20,
-              font: {
-                size: 13,
-                weight: 600,
-                family: "'Poppins', sans-serif"
-              },
+              font: { size: 13, weight: 600, family: "'Poppins', sans-serif" },
               generateLabels: function(chart) {
                 const data = chart.data;
                 return data.labels.map((label, i) => {
@@ -768,15 +1001,8 @@
           tooltip: {
             backgroundColor: 'rgba(15, 23, 42, 0.95)',
             padding: 12,
-            titleFont: {
-              size: 14,
-              weight: 'bold',
-              family: "'Poppins', sans-serif"
-            },
-            bodyFont: {
-              size: 13,
-              family: "'Poppins', sans-serif"
-            },
+            titleFont: { size: 14, weight: 'bold', family: "'Poppins', sans-serif" },
+            bodyFont: { size: 13, family: "'Poppins', sans-serif" },
             borderColor: '#038047',
             borderWidth: 1,
             callbacks: {
@@ -798,7 +1024,7 @@
     const viewAllBtn = document.getElementById('viewAllBtn');
     
     if (topics.length === 0) {
-      listContainer.innerHTML = '<div class="empty-state">No topics to display</div>';
+      listContainer.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><h3>No Topics Found</h3><p>No topics to display</p></div>';
       viewAllBtn.style.display = 'none';
       return;
     }
@@ -890,21 +1116,22 @@
   function showEmptyState(message) {
     const cloudHtml = `
       <div class="empty-state">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <svg viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10"/>
           <line x1="12" y1="8" x2="12" y2="12"/>
           <line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
-        <p style="font-size: 16px; font-weight: 600;">${message}</p>
+        <h3>No Topics Found</h3>
+        <p>${message}</p>
       </div>
     `;
     
     document.getElementById('wordCloudLoading').innerHTML = cloudHtml;
     document.getElementById('topicList').innerHTML = cloudHtml;
     
-    document.getElementById('totalTopics').textContent = '0';
-    document.getElementById('topTopic').textContent = '-';
-    document.getElementById('totalMentions').textContent = '0';
+    document.getElementById('totalTopics').innerHTML = '<div class="stat-value">0</div>';
+    document.getElementById('topTopic').innerHTML = '<div class="stat-value" style="font-size: 20px;">-</div>';
+    document.getElementById('totalMentions').innerHTML = '<div class="stat-value">0</div>';
     document.getElementById('viewAllBtn').style.display = 'none';
   }
 </script>

@@ -469,7 +469,7 @@
     }
 
     .url-table th {
-        padding: 10px 12px;
+        padding: 12px 16px;
         text-align: left;
         font-size: 10px;
         font-weight: 700;
@@ -495,7 +495,7 @@
     .url-table tbody tr:last-child { border-bottom: none; }
 
     .url-table td {
-        padding: 12px;
+        padding: 14px 16px;
         font-size: 12px;
         color: var(--text-primary);
         vertical-align: middle;
@@ -516,12 +516,12 @@
     }
 
     /* Preview Column */
-    .preview-cell { width: 80px; }
+    .preview-cell { width: 70px; }
 
     .url-preview {
-        width: 64px;
-        height: 64px;
-        border-radius: 12px;
+        width: 56px;
+        height: 56px;
+        border-radius: 10px;
         object-fit: cover;
         border: 2px solid var(--border-gray);
         background: var(--bg-gray-100);
@@ -530,9 +530,9 @@
     }
 
     .url-preview-placeholder {
-        width: 64px;
-        height: 64px;
-        border-radius: 12px;
+        width: 56px;
+        height: 56px;
+        border-radius: 10px;
         background: linear-gradient(135deg, var(--bg-gray-100) 0%, var(--border-gray) 100%);
         display: flex;
         align-items: center;
@@ -541,8 +541,8 @@
     }
 
     .url-preview-placeholder svg {
-        width: 24px;
-        height: 24px;
+        width: 22px;
+        height: 22px;
         stroke: var(--text-muted);
         fill: none;
     }
@@ -550,7 +550,7 @@
     /* URL Column */
     .url-cell { min-width: 360px; max-width: 480px; }
 
-    .url-info { display: flex; flex-direction: column; gap: 6px; }
+    .url-info { display: flex; flex-direction: column; gap: 4px; }
 
     .url-hostname {
         font-size: 12px;
@@ -563,15 +563,15 @@
     }
 
     .url-hostname svg {
-        width: 13px;
-        height: 13px;
+        width: 12px;
+        height: 12px;
         stroke: currentColor;
         fill: none;
         flex-shrink: 0;
     }
 
     .url-text {
-        font-size: 12px;
+        font-size: 11px;
         color: var(--text-secondary);
         font-weight: 500;
         white-space: nowrap;
@@ -579,18 +579,19 @@
         text-overflow: ellipsis;
         max-width: 420px;
         font-family: 'Courier New', monospace;
+        line-height: 1.4;
     }
 
     .url-link {
         color: var(--accent-blue);
         text-decoration: none;
         font-weight: 600;
-        font-size: 12px;
+        font-size: 11px;
         transition: all 0.2s;
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        margin-top: 2px;
+        margin-top: 0;
     }
 
     .url-link:hover {
@@ -657,19 +658,21 @@
 
     .freq-value {
         display: block;
-        font-size: 22px;
+        font-size: 20px;
         font-weight: 700;
         color: var(--primary-green);
-        margin-bottom: 2px;
+        margin-bottom: 0;
+        line-height: 1.2;
     }
 
     .freq-label {
         display: block;
-        font-size: 10px;
+        font-size: 9px;
         color: var(--text-muted);
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.3px;
+        margin-top: 2px;
     }
 
     /* Bar indicator */
@@ -679,7 +682,7 @@
 
     .freq-bar-track {
         width: 100%;
-        height: 4px;
+        height: 3px;
         background: var(--bg-gray-100);
         border-radius: 2px;
         overflow: hidden;
@@ -720,9 +723,9 @@
     }
 
     .skeleton-box {
-        width: 64px;
-        height: 64px;
-        border-radius: 12px;
+        width: 56px;
+        height: 56px;
+        border-radius: 10px;
         background: linear-gradient(90deg, var(--bg-gray-50) 25%, var(--border-gray) 50%, var(--bg-gray-50) 75%);
         background-size: 200% 100%;
         animation: shimmer 1.5s infinite;
@@ -867,9 +870,11 @@
     @media (max-width: 768px) {
         .stats-grid { grid-template-columns: 1fr; }
         .url-cell { min-width: 240px; }
-        .url-table th, .url-table td { padding: 10px 12px; }
+        .url-table th, .url-table td { padding: 12px 14px; }
         .url-table th:first-child, .url-table td:first-child { padding-left: 16px; }
         .url-table th:last-child, .url-table td:last-child { padding-right: 16px; }
+        .url-preview, .url-preview-placeholder { width: 48px; height: 48px; }
+        .freq-value { font-size: 18px; }
     }
 
     @media (max-width: 640px) {
