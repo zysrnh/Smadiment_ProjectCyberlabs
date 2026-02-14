@@ -347,6 +347,21 @@
         object-fit: cover;
         border: 2px solid var(--border-gray);
         flex-shrink: 0;
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 16px;
+        text-transform: uppercase;
+    }
+
+    .author-avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
     }
 
     .author-details {
@@ -1023,9 +1038,26 @@ const MostStatusLoader = {
 
     createTableRow(post, rank) {
         const sentimentClass = post.sentiment_str.toLowerCase();
-        const avatarUrl = post.avatar_url || '/images/default-avatar.png';
         const authorName = this.escapeHtml(post.author?.name || post.name || 'Unknown User');
         const authorHandle = post.author?.scr_name || post.name || 'unknown';
+        
+        // Get initials from author name
+        const initials = this.getInitials(authorName);
+        
+        // Better avatar URL handling with unavatar.io as fallback
+        let avatarHtml = '';
+        const hasValidAvatar = post.avatar_url && 
+                               !post.avatar_url.startsWith('/external') && 
+                               post.avatar_url !== '/images/default-avatar.png';
+        
+        if (hasValidAvatar) {
+            avatarHtml = `<img src="${post.avatar_url}" alt="${authorName}" onerror="this.parentElement.innerHTML='${initials}'">`;
+        } else {
+            // Try unavatar.io service
+            const username = authorHandle.replace('@', '');
+            avatarHtml = `<img src="https://unavatar.io/twitter/${username}" alt="${authorName}" onerror="this.parentElement.innerHTML='${initials}'">`;
+        }
+        
         const content = this.escapeHtml(post.content || '');
         const viewCount = post.view_cnt || 0;
         const rtCount = post.rt || 0;
@@ -1039,8 +1071,7 @@ const MostStatusLoader = {
                 
                 <td class="author-cell">
                     <div class="author-info">
-                        <img src="${avatarUrl}" alt="${authorName}" class="author-avatar" 
-                             onerror="this.src='/images/default-avatar.png'">
+                        <div class="author-avatar">${avatarHtml}</div>
                         <div class="author-details">
                             <div class="author-name" title="${authorName}">${authorName}</div>
                             <div class="author-handle">@${authorHandle}</div>
@@ -1093,6 +1124,15 @@ const MostStatusLoader = {
                     </span>
                 </td>
             </tr>`;
+    },
+
+    getInitials(name) {
+        if (!name || name === 'Unknown User') return '?';
+        const parts = name.trim().split(/\s+/);
+        if (parts.length === 1) {
+            return parts[0].substring(0, 2).toUpperCase();
+        }
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     },
 
     updatePagination() {
