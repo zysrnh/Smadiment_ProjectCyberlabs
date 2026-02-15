@@ -2,1048 +2,265 @@
 
 @section('title', 'Data Overview - SMADIMENT')
 
-@section('styles')
-<style>
-    :root {
-        --primary-green: #038047;
-        --primary-green-dark: #026738;
-        --text-primary: #1a202c;
-        --text-secondary: #64748b;
-        --bg-white: #ffffff;
-        --bg-gray-50: #f8fafc;
-        --bg-gray-100: #f1f5f9;
-        --border-gray: #e2e8f0;
-        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
-
-    body {
-        background: var(--bg-gray-50);
-    }
-
-    /* Page Container */
-    .dashboard-container {
-        padding: 24px;
-        max-width: 1600px;
-        margin: 0 auto;
-    }
-
-    /* Page Header */
-    .page-header {
-        margin-bottom: 32px;
-    }
-
-    .page-header h1 {
-        font-size: 28px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin: 0 0 8px 0;
-    }
-
-    .page-header p {
-        font-size: 14px;
-        color: var(--text-secondary);
-        margin: 0;
-    }
-
-    /* Filter Card */
-    .filter-card {
-        background: var(--bg-white);
-        border-radius: 16px;
-        padding: 20px 24px;
-        margin-bottom: 24px;
-        box-shadow: var(--shadow-sm);
-        border: 1px solid var(--border-gray);
-    }
-
-    .filter-content {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        flex-wrap: wrap;
-    }
-
-    .filter-label {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--text-primary);
-        white-space: nowrap;
-    }
-
-    .date-range-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex: 1;
-    }
-
-    .date-input-group {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 16px;
-        background: var(--bg-gray-50);
-        border: 1px solid var(--border-gray);
-        border-radius: 12px;
-        transition: all 0.2s;
-    }
-
-    .date-input-group:focus-within {
-        border-color: var(--primary-green);
-        background: var(--bg-white);
-        box-shadow: 0 0 0 3px rgba(3, 128, 71, 0.1);
-    }
-
-    .date-input-group svg {
-        width: 18px;
-        height: 18px;
-        color: var(--text-secondary);
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 2;
-    }
-
-    .date-input {
-        border: none;
-        background: transparent;
-        font-family: 'Poppins', sans-serif;
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--text-primary);
-        outline: none;
-        min-width: 140px;
-    }
-
-    .date-separator {
-        color: var(--text-secondary);
-        font-weight: 600;
-        font-size: 14px;
-    }
-
-    .do-filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .do-filter-label {
-        font-size: 10px;
-        font-weight: 700;
-        color: var(--text-primary);
-        opacity: .6;
-        text-transform: uppercase;
-        letter-spacing: .5px;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .do-filter-input {
-        padding: 10px 16px;
-        border: 1px solid var(--border-gray);
-        border-radius: 12px;
-        font-family: 'Poppins', sans-serif;
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--text-primary);
-        background: var(--bg-gray-50);
-        outline: none;
-        transition: all 0.2s;
-    }
-
-    .do-filter-input:focus {
-        border-color: var(--primary-green);
-        background: var(--bg-white);
-        box-shadow: 0 0 0 3px rgba(3, 128, 71, 0.1);
-    }
-
-    .do-btn-apply,
-    .apply-btn {
-        padding: 12px 28px;
-        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        font-family: 'Poppins', sans-serif;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: 0 4px 12px rgba(3, 128, 71, 0.2);
-    }
-
-    .do-btn-apply:hover,
-    .apply-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(3, 128, 71, 0.3);
-    }
-
-    .do-btn-apply svg,
-    .apply-btn svg {
-        width: 18px;
-        height: 18px;
-        stroke: currentColor;
-        fill: none;
-    }
-
-    /* Grid Layouts */
-    .do-row-top {
-        display: grid;
-        grid-template-columns: 1.15fr 1.15fr 0.85fr;
-        gap: 20px;
-        margin-bottom: 24px;
-    }
-
-    .do-row-mid {
-        display: grid;
-        grid-template-columns: 1fr 1.5fr;
-        gap: 20px;
-        margin-bottom: 24px;
-    }
-
-    /* Card Styles - Matching X Overview */
-    .do-card {
-        background: var(--bg-white);
-        border: 1px solid var(--border-gray);
-        border-radius: 16px;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        box-shadow: var(--shadow-sm);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-    }
-
-    .do-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-
-    .do-card:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-lg);
-        border-color: var(--primary-green);
-    }
-
-    .do-card:hover::before {
-        opacity: 1;
-    }
-
-    /* Card Header - Updated Icons */
-    .do-card-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 20px 24px;
-        border-bottom: 2px solid var(--bg-gray-50);
-        background: var(--bg-white);
-    }
-
-    .do-card-head-left {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .do-head-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 14px;
-        background: linear-gradient(135deg, rgba(3, 128, 71, 0.1) 0%, rgba(3, 128, 71, 0.05) 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-    }
-
-    .do-head-icon::after {
-        content: '';
-        position: absolute;
-        inset: -4px;
-        border-radius: 16px;
-        padding: 4px;
-        background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
-        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-        -webkit-mask-composite: xor;
-        mask-composite: exclude;
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-
-    .do-card:hover .do-head-icon::after {
-        opacity: 0.5;
-    }
-
-    .do-head-icon svg {
-        width: 28px;
-        height: 28px;
-        color: var(--primary-green);
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-    }
-
-    .do-card-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--text-primary);
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .do-badge {
-        font-size: 11px;
-        font-weight: 600;
-        padding: 6px 12px;
-        border-radius: 20px;
-        background: var(--bg-gray-100);
-        color: var(--text-secondary);
-        text-transform: uppercase;
-        letter-spacing: .4px;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    /* Card Body */
-    .do-card-body {
-        padding: 20px 24px 24px;
-        flex: 1;
-    }
-
-    .do-body-scroll {
-        max-height: 185px;
-        overflow-y: auto;
-    }
-
-    .do-body-scroll::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .do-body-scroll::-webkit-scrollbar-thumb {
-        background: var(--border-gray);
-        border-radius: 3px;
-    }
-
-    .do-body-scroll::-webkit-scrollbar-thumb:hover {
-        background: var(--text-secondary);
-    }
-
-    /* Mentions Breakdown */
-    .mentions-breakdown {
-        display: flex;
-        flex-direction: column;
-        gap: 32px;
-        padding: 10px 0;
-    }
-
-    .mention-item {
-        text-align: center;
-    }
-
-    .mention-item-label {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-secondary);
-        margin-bottom: 12px;
-        font-family: 'Poppins', sans-serif;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .mention-item-value {
-        font-size: 42px;
-        font-weight: 700;
-        line-height: 1;
-        letter-spacing: -1px;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    /* Mini Table */
-    .do-tbl {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .do-tbl thead tr {
-        background: var(--bg-white);
-    }
-
-    .do-tbl th {
-        padding: 10px 12px;
-        font-size: 10px;
-        font-weight: 700;
-        color: var(--text-secondary);
-        text-transform: uppercase;
-        letter-spacing: .3px;
-        border-bottom: 1px solid var(--border-gray);
-        text-align: left;
-    }
-
-    .do-tbl-left {
-        text-align: left;
-    }
-
-    .do-tbl-right {
-        text-align: right;
-    }
-
-    .do-tbl td {
-        padding: 12px;
-        font-size: 13px;
-        color: var(--text-primary);
-        border-bottom: 1px solid var(--bg-gray-100);
-    }
-
-    .do-tbl tbody tr {
-        transition: all 0.2s;
-        background: var(--bg-white);
-    }
-
-    .do-tbl tbody tr:hover {
-        background: var(--bg-gray-50);
-    }
-
-    .do-tbl tr:last-child td {
-        border-bottom: none;
-    }
-
-    .do-tbl-rank {
-        font-weight: 700;
-        color: var(--primary-green);
-        width: 28px;
-        font-size: 13px;
-    }
-
-    .do-tbl-name {
-        font-weight: 600;
-        max-width: 200px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .do-tbl-num {
-        text-align: right;
-        font-weight: 600;
-        font-size: 13px;
-        color: var(--text-primary);
-    }
-
-    /* Chart Controls */
-    .chart-controls-inline {
-        display: flex;
-        gap: 4px;
-        background: var(--bg-gray-100);
-        padding: 4px;
-        border-radius: 10px;
-    }
-
-    .chart-type-btn-small {
-        padding: 8px 12px;
-        border: none;
-        background: transparent;
-        color: var(--text-secondary);
-        cursor: pointer;
-        border-radius: 8px;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .chart-type-btn-small svg {
-        width: 16px;
-        height: 16px;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-    }
-
-    .chart-type-btn-small:hover {
-        background: var(--bg-white);
-        color: var(--text-primary);
-    }
-
-    .chart-type-btn-small.active {
-        background: var(--primary-green);
-        color: var(--bg-white);
-        box-shadow: 0 2px 4px rgba(3, 128, 71, 0.2);
-    }
-
-    /* View All Button */
-    .do-view-all-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 16px;
-        background: var(--bg-white);
-        color: var(--text-primary);
-        border: 1px solid var(--border-gray);
-        border-radius: 10px;
-        font-family: 'Poppins', sans-serif;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all .2s;
-    }
-
-    .do-view-all-btn:hover {
-        background: var(--bg-gray-50);
-        border-color: var(--primary-green);
-        color: var(--primary-green);
-        transform: translateY(-1px);
-    }
-
-    .do-view-all-btn svg {
-        width: 16px;
-        height: 16px;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 2.5;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-    }
-
-    /* Modal Styles */
-    .do-modal {
-        display: none;
-        position: fixed;
-        z-index: 9999;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.75);
-        backdrop-filter: blur(10px);
-    }
-
-    .do-modal.active {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .do-modal-content {
-        background: var(--bg-white);
-        border-radius: 16px;
-        width: 90%;
-        max-width: 600px;
-        max-height: 85vh;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-        animation: modalSlideIn 0.3s ease-out;
-        overflow: hidden;
-    }
-
-    @keyframes modalSlideIn {
-        from {
-            transform: translateY(-20px) scale(0.95);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0) scale(1);
-            opacity: 1;
-        }
-    }
-
-    .do-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        padding: 24px 28px;
-        border-bottom: 2px solid var(--bg-gray-50);
-        background: var(--bg-white);
-    }
-
-    .do-modal-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin: 0 0 6px 0;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .do-modal-subtitle {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--text-secondary);
-        margin: 0;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .do-modal-close {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        background: var(--bg-gray-50);
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-        color: var(--text-secondary);
-    }
-
-    .do-modal-close:hover {
-        background: #ef4444;
-        color: white;
-    }
-
-    .do-modal-close svg {
-        width: 18px;
-        height: 18px;
-        stroke: currentColor;
-        stroke-width: 2.5;
-        stroke-linecap: round;
-        fill: none;
-    }
-
-    .do-modal-body {
-        padding: 20px 28px 28px;
-        max-height: calc(85vh - 120px);
-        overflow-y: auto;
-    }
-
-    .do-modal-body::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .do-modal-body::-webkit-scrollbar-thumb {
-        background: var(--border-gray);
-        border-radius: 3px;
-    }
-
-    .do-modal-body::-webkit-scrollbar-thumb:hover {
-        background: var(--text-secondary);
-    }
-
-    /* Skeleton Loading Styles */
-    .do-skeleton {
-        padding: 10px 0;
-    }
-
-    .skeleton-line {
-        height: 28px;
-        background: linear-gradient(90deg, var(--bg-gray-50) 25%, var(--border-gray) 50%, var(--bg-gray-50) 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
-        border-radius: 8px;
-        margin-bottom: 10px;
-    }
-
-    .skeleton-number-inline {
-        height: 48px;
-        width: 140px;
-        background: linear-gradient(90deg, var(--bg-gray-50) 25%, var(--border-gray) 50%, var(--bg-gray-50) 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
-        border-radius: 8px;
-        display: inline-block;
-        margin: 0 auto;
-    }
-
-    .skeleton-circle {
-        width: 200px;
-        height: 200px;
-        border-radius: 50%;
-        background: linear-gradient(90deg, var(--bg-gray-50) 25%, var(--border-gray) 50%, var(--bg-gray-50) 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
-    }
-
-    .skeleton-map-placeholder {
-        height: 420px;
-        background: linear-gradient(90deg, var(--bg-gray-50) 25%, var(--border-gray) 50%, var(--bg-gray-50) 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
-    }
-
-    .do-skeleton-chart {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        width: 80%;
-    }
-
-    @keyframes shimmer {
-        0% { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
-    }
-
-    .do-card[data-loaded="true"] .do-skeleton,
-    .do-card[data-loaded="true"] .do-skeleton-chart,
-    .do-card[data-loaded="true"] .do-skeleton-map,
-    .do-card[data-loaded="true"] .skeleton-number-inline {
-        display: none;
-    }
-
-    /* Empty State */
-    .do-empty {
-        font-size: 14px;
-        color: var(--text-secondary);
-        text-align: center;
-        padding: 60px 20px;
-        font-weight: 500;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    /* Leaflet map fix */
-    #buzzMap .leaflet-container {
-        height: 100%;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .circle-label {
-        pointer-events: none !important;
-    }
-
-    .circle-label div {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-    }
-
-    .map-legend {
-        pointer-events: none;
-    }
-
-    .map-legend>div {
-        pointer-events: auto;
-    }
-
-    /* Responsive */
-    @media(max-width:1100px) {
-        .do-row-top {
-            grid-template-columns: 1fr 1fr;
-        }
-    }
-
-    @media(max-width:768px) {
-        .dashboard-container {
-            padding: 16px;
-        }
-
-        .do-row-top,
-        .do-row-mid {
-            grid-template-columns: 1fr;
-        }
-
-        .filter-content {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .date-range-wrapper {
-            flex-direction: column;
-        }
-
-        .do-btn-apply,
-        .apply-btn {
-            width: 100%;
-            justify-content: center;
-        }
-    }
-</style>
-@endsection
-
 @section('content')
-<div class="dashboard-container">
 
-    <!-- Page Header -->
-    <div class="page-header">
-        <h1>Data Overview</h1>
-        <p>Monitor and analyze your social media and news performance metrics</p>
+<!-- ============================================================
+     TOP BAR
+     ============================================================ -->
+<div class="top-bar">
+    <div class="page-title">
+        <h2>Data Overview</h2>
+        <div class="page-subtitle">Ringkasan analitik sosial media dan berita</div>
     </div>
 
-    <!-- Filter Card -->
-    <div class="filter-card">
-        <div class="filter-content">
-            <div class="filter-label">
-                <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; display: inline; vertical-align: middle; margin-right: 6px; stroke: currentColor; fill: none;">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                    <line x1="16" y1="2" x2="16" y2="6"/>
-                    <line x1="8" y1="2" x2="8" y2="6"/>
-                    <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-                Filters
-            </div>
-
-            <!-- Project Selector -->
-            <div class="do-filter-group">
-                <label class="do-filter-label">Project</label>
-                <select class="do-filter-input" id="doProject">
-                    @foreach($projects as $p)
-                    <option value="{{ $p['id'] }}" {{ $p['id'] == $projectId ? 'selected' : '' }}>
-                        {{ $p['name'] ?? $p['title'] ?? 'Project #' . $p['id'] }}
-                    </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="date-range-wrapper">
-                <div class="date-input-group">
-                    <svg viewBox="0 0 24 24">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
-                    <input type="date" class="date-input" id="doStartDate" value="{{ $startDate }}">
-                </div>
-
-                <span class="date-separator">to</span>
-
-                <div class="date-input-group">
-                    <svg viewBox="0 0 24 24">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
-                    <input type="date" class="date-input" id="doEndDate" value="{{ $endDate }}">
-                </div>
-            </div>
-
-            <button class="apply-btn" id="doBtnApply">
-                <svg viewBox="0 0 24 24">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                </svg>
-                Apply Filter
-            </button>
+    <div style="display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap;">
+        <!-- Project Selector -->
+        <div class="do-filter-group">
+            <label class="do-filter-label">Project</label>
+            <select class="do-filter-input" id="doProject">
+                @foreach($projects as $p)
+                <option value="{{ $p['id'] }}" {{ $p['id'] == $projectId ? 'selected' : '' }}>
+                    {{ $p['name'] ?? $p['title'] ?? 'Project #' . $p['id'] }}
+                </option>
+                @endforeach
+            </select>
         </div>
+
+        <div class="do-filter-group">
+            <label class="do-filter-label">Tanggal Awal</label>
+            <input type="date" class="do-filter-input" id="doStartDate" value="{{ $startDate }}">
+        </div>
+        <div class="do-filter-group">
+            <label class="do-filter-label">Tanggal Akhir</label>
+            <input type="date" class="do-filter-input" id="doEndDate" value="{{ $endDate }}">
+        </div>
+        <button class="do-btn-apply" id="doBtnApply">
+            <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            Filter
+        </button>
     </div>
+</div>
 
-    <!-- ROW 1 — 3 Cards -->
-    <div class="do-row-top">
+<!-- ============================================================
+     ROW 1 — 4 Kotak Atas (LAZY LOADED)
+     ============================================================ -->
+<div class="do-row-top">
 
-        <!-- 1. Trending Topics News -->
-        <div class="do-card" data-lazy="trending-topics">
-            <div class="do-card-head">
-                <div class="do-card-head-left">
-                    <div class="do-head-icon">
-                        <svg viewBox="0 0 24 24">
-                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                            <polyline points="17 6 23 6 23 12" />
-                        </svg>
-                    </div>
-                    <span class="do-card-title">Trending Topics</span>
-                </div>
-                <span class="do-badge">News</span>
-            </div>
-            <div class="do-card-body do-body-scroll">
-                <div class="do-skeleton">
-                    <div class="skeleton-line"></div>
-                    <div class="skeleton-line"></div>
-                    <div class="skeleton-line"></div>
-                    <div class="skeleton-line"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. Top Hashtag X -->
-        <div class="do-card" data-lazy="top-hashtags">
-            <div class="do-card-head">
-                <div class="do-card-head-left">
-                    <div class="do-head-icon">
-                        <svg viewBox="0 0 24 24">
-                            <line x1="4" y1="9" x2="20" y2="9" />
-                            <line x1="4" y1="15" x2="20" y2="15" />
-                            <line x1="9" y1="4" x2="5" y2="20" />
-                            <line x1="15" y1="4" x2="11" y2="20" />
-                        </svg>
-                    </div>
-                    <span class="do-card-title">Top Hashtag</span>
-                </div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <span class="do-badge">X</span>
-                </div>
-            </div>
-            <div class="do-card-body do-body-scroll">
-                <div class="do-skeleton">
-                    <div class="skeleton-line"></div>
-                    <div class="skeleton-line"></div>
-                    <div class="skeleton-line"></div>
-                    <div class="skeleton-line"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. Mentions Card -->
-        <div class="do-card" data-lazy="mention-stats">
-            <div class="do-card-head">
-                <div class="do-card-head-left">
-                    <div class="do-head-icon">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                        </svg>
-                    </div>
-                    <span class="do-card-title">Mentions</span>
-                </div>
-                <span class="do-badge">All Media</span>
-            </div>
-            <div class="do-card-body" style="padding: 20px;">
-                <div class="mentions-breakdown">
-                    <div class="mention-item">
-                        <div class="mention-item-label">Mass Media</div>
-                        <div class="mention-item-value" style="color:#1a202c;">
-                            <div class="skeleton-number-inline"></div>
-                        </div>
-                    </div>
-                    <div class="mention-item">
-                        <div class="mention-item-label">Social Media</div>
-                        <div class="mention-item-value" style="color:#038047;">
-                            <div class="skeleton-number-inline"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- ROW 2 — Most Engaged User + Sentiment Score -->
-    <div class="do-row-mid">
-
-        <!-- Most Engaged User -->
-        <div class="do-card" data-lazy="engaged-users">
-            <div class="do-card-head">
-                <div class="do-card-head-left">
-                    <div class="do-head-icon">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                            <circle cx="9" cy="7" r="4" />
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                        </svg>
-                    </div>
-                    <span class="do-card-title">Most Engaged User</span>
-                </div>
-                <span class="do-badge">X</span>
-            </div>
-            <div class="do-card-body" style="padding: 15px; min-height: 300px; display: flex; align-items: center; justify-content: center; position: relative;">
-                <canvas id="chartDonut" style="max-width: 100%; max-height: 270px;"></canvas>
-                <div class="do-skeleton-chart">
-                    <div class="skeleton-circle"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sentiment Score -->
-        <div class="do-card" data-lazy="sentiment-timeline">
-            <div class="do-card-head">
-                <div class="do-card-head-left">
-                    <div class="do-head-icon">
-                        <svg viewBox="0 0 24 24">
-                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-                        </svg>
-                    </div>
-                    <span class="do-card-title">Sentiment Score</span>
-                </div>
-                <div class="chart-controls-inline">
-                    <button class="chart-type-btn-small active" data-type="line" onclick="changeSentimentChartType('line', this)">
-                        <svg viewBox="0 0 24 24">
-                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                        </svg>
-                    </button>
-                    <button class="chart-type-btn-small" data-type="bar" onclick="changeSentimentChartType('bar', this)">
-                        <svg viewBox="0 0 24 24">
-                            <line x1="12" y1="20" x2="12" y2="10"/>
-                            <line x1="18" y1="20" x2="18" y2="4"/>
-                            <line x1="6" y1="20" x2="6" y2="16"/>
-                        </svg>
-                    </button>
-                    <button class="chart-type-btn-small" data-type="area" onclick="changeSentimentChartType('area', this)">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M3 3v18h18"/>
-                            <path d="M7 12L12 7l5 5"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="do-card-body" style="padding: 15px 20px 20px; height: 240px; position: relative;">
-                <canvas id="chartSentiment"></canvas>
-                <div class="do-skeleton-chart">
-                    <div class="skeleton-line"></div>
-                    <div class="skeleton-line"></div>
-                    <div class="skeleton-line"></div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- ROW 2.5 — Sentiment by Media -->
-    <div class="do-card" data-lazy="sentiment-media">
+    <!-- 1. Trending Topics News -->
+    <div class="do-card" data-lazy="trending-topics">
         <div class="do-card-head">
             <div class="do-card-head-left">
-                <div class="do-head-icon">
+                <span class="do-head-icon" style="background:#eef9f3; color:#22c55e;">
                     <svg viewBox="0 0 24 24">
-                        <rect x="3" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="14" width="7" height="7"></rect>
-                        <rect x="3" y="14" width="7" height="7"></rect>
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                        <polyline points="17 6 23 6 23 12" />
                     </svg>
-                </div>
-                <span class="do-card-title">Sentiment by Media</span>
+                </span>
+                <span class="do-card-title">Trending Topics</span>
             </div>
-            <span class="do-badge">Breakdown</span>
+            <span class="do-badge" style="background:#fff3e0; color:#e67e22;">News</span>
         </div>
-        <div class="do-card-body" style="padding: 24px; min-height: 350px; position: relative;">
-            <div style="margin-bottom: 16px;">
-                <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">Sentiment distribution across different media platforms</p>
+        <div class="do-card-body do-body-scroll">
+            <div class="do-skeleton">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
             </div>
-            <div style="position: relative; height: 300px;">
-                <canvas id="chartSentimentMedia"></canvas>
+        </div>
+    </div>
+
+    <!-- 2. Top Hashtag X -->
+    <div class="do-card" data-lazy="top-hashtags">
+        <div class="do-card-head">
+            <div class="do-card-head-left">
+                <span class="do-head-icon" style="background:#eef3f9; color:#3b7dd8;">
+                    <svg viewBox="0 0 24 24">
+                        <line x1="4" y1="9" x2="20" y2="9" />
+                        <line x1="4" y1="15" x2="20" y2="15" />
+                        <line x1="9" y1="4" x2="5" y2="20" />
+                        <line x1="15" y1="4" x2="11" y2="20" />
+                    </svg>
+                </span>
+                <span class="do-card-title">Top Hashtag</span>
             </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span class="do-badge" style="background:#f0f0f0; color:#222;">X</span>
+            </div>
+        </div>
+        <div class="do-card-body do-body-scroll">
+            <div class="do-skeleton">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Mention by Social Media -->
+    <div class="do-card" data-lazy="mention-social">
+        <div class="do-card-head">
+            <div class="do-card-head-left">
+                <span class="do-head-icon" style="background:#f3eef9; color:#7c3aed;">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                </span>
+                <span class="do-card-title">Mention</span>
+            </div>
+            <span class="do-badge" style="background:#ede9fe; color:#7c3aed;">Social Media</span>
+        </div>
+        <div class="do-card-body do-body-mention">
+            <div class="do-mention-label">Social Media</div>
+            <div class="do-mention-val" style="color:#7c3aed;">
+                <div class="skeleton-number"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Mention by Online News -->
+    <div class="do-card" data-lazy="mention-news">
+        <div class="do-card-head">
+            <div class="do-card-head-left">
+                <span class="do-head-icon" style="background:#fef3ee; color:#e67e22;">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                        <line x1="8" y1="6" x2="16" y2="6" />
+                        <line x1="8" y1="10" x2="16" y2="10" />
+                        <line x1="8" y1="14" x2="12" y2="14" />
+                    </svg>
+                </span>
+                <span class="do-card-title">Mention</span>
+            </div>
+            <span class="do-badge" style="background:#fff3e0; color:#e67e22;">Online News</span>
+        </div>
+        <div class="do-card-body do-body-mention">
+            <div class="do-mention-label">Online News</div>
+            <div class="do-mention-val" style="color:#e67e22;">
+                <div class="skeleton-number"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ============================================================
+     ROW 2 — Most Engaged User + Sentiment Score
+     ============================================================ -->
+<div class="do-row-mid">
+
+    <!-- Most Engaged User -->
+    <div class="do-card" data-lazy="engaged-users">
+        <div class="do-card-head">
+            <div class="do-card-head-left">
+                <span class="do-head-icon" style="background:#eef9f3; color:#22c55e;">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                </span>
+                <span class="do-card-title">Most Engaged User</span>
+            </div>
+            <span class="do-badge" style="background:#f0f0f0; color:#222;">X</span>
+        </div>
+        <div class="do-card-body" style="padding: 15px; min-height: 300px; display: flex; align-items: center; justify-content: center; position: relative;">
+            <canvas id="chartDonut" style="max-width: 100%; max-height: 270px;"></canvas>
+            <div class="do-skeleton-chart">
+                <div class="skeleton-circle"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sentiment Score -->
+    <div class="do-card" data-lazy="sentiment-timeline">
+        <div class="do-card-head">
+            <div class="do-card-head-left">
+                <span class="do-head-icon" style="background:#eef3f9; color:#3b7dd8;">
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                    </svg>
+                </span>
+                <span class="do-card-title">Sentiment Score</span>
+            </div>
+            <span class="do-badge" style="background:#e0f2fe; color:#0284c7;">All Media</span>
+        </div>
+        <div class="do-card-body" style="padding: 15px 20px 20px; height: 240px; position: relative;">
+            <canvas id="chartSentiment"></canvas>
             <div class="do-skeleton-chart">
                 <div class="skeleton-line"></div>
                 <div class="skeleton-line"></div>
                 <div class="skeleton-line"></div>
-                <div class="skeleton-line"></div>
             </div>
         </div>
     </div>
 
-    <!-- ROW 3 — Buzzer Map -->
-    <div class="do-card" data-lazy="buzzer-map">
-        <div class="do-card-head">
-            <div class="do-card-head-left">
-                <div class="do-head-icon">
-                    <svg viewBox="0 0 24 24">
-                        <circle cx="12" cy="10" r="3" />
-                        <path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z" />
-                    </svg>
-                </div>
-                <span class="do-card-title">Buzzer Map</span>
-            </div>
-            <span class="do-badge">Geographic</span>
+</div>
+
+<!-- ============================================================
+     🔥 NEW ROW 2.5 — Sentiment by Media (HORIZONTAL BAR CHART)
+     ============================================================ -->
+<div class="do-card" style="margin-top:20px;" data-lazy="sentiment-media">
+    <div class="do-card-head">
+        <div class="do-card-head-left">
+            <span class="do-head-icon" style="background:#fff7ed; color:#f97316;">
+                <svg viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+            </span>
+            <span class="do-card-title">Sentiment by Media</span>
         </div>
-        <div style="padding:0;">
-            <div id="buzzMap" style="width:100%; height:420px;"></div>
-            <div class="do-skeleton-map">
-                <div class="skeleton-map-placeholder"></div>
-            </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span class="do-badge" style="background:#fef3c7; color:#d97706;">Breakdown</span>
         </div>
     </div>
+    <div class="do-card-body" style="padding: 24px; min-height: 350px; position: relative;">
+        <div style="margin-bottom: 16px;">
+            <p style="font-size: 13px; color: #475569; margin: 0;">Sentiment distribution across different media platforms</p>
+        </div>
+        <div style="position: relative; height: 300px;">
+            <canvas id="chartSentimentMedia"></canvas>
+        </div>
+        <div class="do-skeleton-chart">
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+        </div>
+    </div>
+</div>
 
+<!-- ============================================================
+     ROW 3 — Buzzer Map
+     ============================================================ -->
+<div class="do-card" style="margin-top:20px;" data-lazy="buzzer-map">
+    <div class="do-card-head">
+        <div class="do-card-head-left">
+            <span class="do-head-icon" style="background:#fef3ee; color:#e67e22;">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="10" r="3" />
+                    <path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z" />
+                </svg>
+            </span>
+            <span class="do-card-title">Buzzer Map</span>
+        </div>
+        <span class="do-badge" style="background:#fef3c7; color:#d97706;">Geographic</span>
+    </div>
+    <div style="padding:0;">
+        <div id="buzzMap" style="width:100%; height:420px;"></div>
+        <div class="do-skeleton-map">
+            <div class="skeleton-map-placeholder"></div>
+        </div>
+    </div>
 </div>
 
 <!-- MODAL: All Hashtags -->
@@ -1069,6 +286,506 @@
 
 @endsection
 
+@section('styles')
+<style>
+    /* Skeleton Loading Styles */
+    .do-skeleton {
+        padding: 10px 0;
+    }
+
+    .skeleton-line {
+        height: 28px;
+        background: linear-gradient(90deg, #f0f2f5 25%, #e8eaed 50%, #f0f2f5 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+
+    .skeleton-number {
+        height: 50px;
+        width: 150px;
+        background: linear-gradient(90deg, #f0f2f5 25%, #e8eaed 50%, #f0f2f5 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 8px;
+    }
+
+    .skeleton-circle {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: linear-gradient(90deg, #f0f2f5 25%, #e8eaed 50%, #f0f2f5 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+
+    .skeleton-map-placeholder {
+        height: 420px;
+        background: linear-gradient(90deg, #f0f2f5 25%, #e8eaed 50%, #f0f2f5 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+
+    .do-skeleton-chart {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 80%;
+    }
+
+    @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    .do-card[data-loaded="true"] .do-skeleton,
+    .do-card[data-loaded="true"] .do-skeleton-chart,
+    .do-card[data-loaded="true"] .do-skeleton-map {
+        display: none;
+    }
+
+    /* View All Button */
+    .do-view-all-btn {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        background: transparent;
+        color: #3b7dd8;
+        border: 1.5px solid #3b7dd8;
+        border-radius: 6px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .2s;
+    }
+
+    .do-view-all-btn:hover {
+        background: #3b7dd8;
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .do-view-all-btn svg {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    /* Modal Styles */
+    .do-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        animation: fadeIn 0.2s ease;
+    }
+
+    .do-modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .do-modal-content {
+        background: #fff;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease;
+        overflow: hidden;
+    }
+
+    .do-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 24px 28px;
+        border-bottom: 2px solid #f0f2f5;
+        background: linear-gradient(135deg, #eef3f9 0%, #fff 100%);
+    }
+
+    .do-modal-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--dark-blue);
+        margin: 0 0 4px 0;
+    }
+
+    .do-modal-subtitle {
+        font-size: 12px;
+        font-weight: 500;
+        color: #7A8B96;
+        margin: 0;
+    }
+
+    .do-modal-close {
+        background: #fff;
+        border: 1.5px solid #e8eaed;
+        border-radius: 8px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all .2s;
+    }
+
+    .do-modal-close:hover {
+        background: #f5f5f5;
+        border-color: #d0d5dd;
+        transform: rotate(90deg);
+    }
+
+    .do-modal-close svg {
+        width: 16px;
+        height: 16px;
+        stroke: #475569;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+    }
+
+    .do-modal-body {
+        padding: 20px 28px 28px;
+        max-height: calc(80vh - 120px);
+        overflow-y: auto;
+    }
+
+    .do-modal-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .do-modal-body::-webkit-scrollbar-thumb {
+        background: #d0d5dd;
+        border-radius: 3px;
+    }
+
+    .do-modal-body::-webkit-scrollbar-thumb:hover {
+        background: #b4bcc7;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+        from { 
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        to { 
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    /* Filter */
+    .circle-label {
+        pointer-events: none !important;
+    }
+
+    .circle-label div {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .map-legend {
+        pointer-events: none;
+    }
+
+    .map-legend>div {
+        pointer-events: auto;
+    }
+
+    .do-filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .do-filter-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--dark-blue);
+        opacity: .45;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    .do-filter-input {
+        padding: 8px 12px;
+        border: 1.5px solid var(--light-gray);
+        border-radius: 8px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--dark-blue);
+        background: var(--white);
+        outline: none;
+        transition: border-color .2s;
+    }
+
+    .do-filter-input:focus {
+        border-color: var(--primary-green);
+    }
+
+    .do-btn-apply {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        background: var(--primary-green);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .2s, transform .15s;
+    }
+
+    .do-btn-apply:hover {
+        background: #1a9a5c;
+        transform: translateY(-1px);
+    }
+
+    /* Grid Layouts */
+    .do-row-top {
+        display: grid;
+        grid-template-columns: 1.15fr 1.15fr .85fr .85fr;
+        gap: 18px;
+        margin-top: 24px;
+    }
+
+    .do-row-mid {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 18px;
+        margin-top: 18px;
+    }
+
+    /* Card */
+    .do-card {
+        background: var(--white);
+        border: 1.5px solid var(--light-gray);
+        border-radius: 14px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+        transition: box-shadow .2s;
+    }
+
+    .do-card:hover {
+        box-shadow: 0 4px 18px rgba(0, 0, 0, .09);
+    }
+
+    /* Card Head */
+    .do-card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 13px 18px 11px;
+        border-bottom: 1.5px solid var(--light-gray);
+    }
+
+    .do-card-head-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .do-head-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .do-head-icon svg {
+        width: 17px;
+        height: 17px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .do-card-title {
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--dark-blue);
+    }
+
+    .do-badge {
+        font-size: 10px;
+        font-weight: 800;
+        padding: 3px 9px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+    }
+
+    /* Card Body */
+    .do-card-body {
+        padding: 14px 18px 18px;
+        flex: 1;
+    }
+
+    .do-body-scroll {
+        max-height: 185px;
+        overflow-y: auto;
+    }
+
+    .do-body-scroll::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .do-body-scroll::-webkit-scrollbar-thumb {
+        background: var(--light-gray);
+        border-radius: 2px;
+    }
+
+    /* Mini Table */
+    .do-tbl {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .do-tbl th {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--dark-blue);
+        opacity: .4;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        padding: 0 0 7px;
+        border-bottom: 1px solid var(--light-gray);
+        text-align: left;
+    }
+
+    .do-tbl-left {
+        text-align: left;
+    }
+
+    .do-tbl-right {
+        text-align: right;
+    }
+
+    .do-tbl td {
+        padding: 6.5px 0;
+        font-size: 13px;
+        color: var(--dark-blue);
+        border-bottom: 1px solid #f0f2f5;
+    }
+
+    .do-tbl tr:last-child td {
+        border-bottom: none;
+    }
+
+    .do-tbl-rank {
+        font-weight: 800;
+        color: var(--primary-green);
+        width: 22px;
+        font-size: 12px;
+    }
+
+    .do-tbl-name {
+        font-weight: 600;
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .do-tbl-num {
+        text-align: right;
+        font-weight: 700;
+        font-size: 12px;
+        color: var(--dark-blue);
+        opacity: .65;
+    }
+
+    /* Mention Big Number */
+    .do-body-mention {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 150px;
+    }
+
+    .do-mention-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--dark-blue);
+        opacity: .5;
+        margin-bottom: 6px;
+    }
+
+    .do-mention-val {
+        font-size: 44px;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -1px;
+    }
+
+    /* Leaflet map fix */
+    #buzzMap .leaflet-container {
+        height: 100%;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* Empty */
+    .do-empty {
+        font-size: 13px;
+        color: var(--dark-blue);
+        opacity: .35;
+        text-align: center;
+        padding: 40px 0;
+        font-weight: 600;
+    }
+
+    /* Responsive */
+    @media(max-width:1100px) {
+        .do-row-top {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media(max-width:700px) {
+        .do-row-top,
+        .do-row-mid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+@endsection
+
 @section('scripts')
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1083,7 +800,6 @@ const DataOverviewLazyLoader = {
     endDate: '{{ $endDate }}',
     loadedSections: new Set(),
     charts: {},
-    currentSentimentType: 'line',
 
     init() {
         console.log('🚀 Initializing Lazy Loader');
@@ -1123,14 +839,15 @@ const DataOverviewLazyLoader = {
         
         try {
             switch(section) {
-                case 'mention-stats':
-                    await this.loadMentionStats(card);
-                    break;
                 case 'trending-topics':
                     await this.loadTrendingTopics(card);
                     break;
                 case 'top-hashtags':
                     await this.loadTopHashtags(card);
+                    break;
+                case 'mention-social':
+                case 'mention-news':
+                    await this.loadMentionCounts(section, card);
                     break;
                 case 'engaged-users':
                     await this.loadEngagedUsers(card);
@@ -1153,19 +870,6 @@ const DataOverviewLazyLoader = {
         }
     },
 
-    async loadMentionStats(card) {
-        const response = await fetch(`/mk/api/mention-counts?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`);
-        const data = await response.json();
-        
-        const values = card.querySelectorAll('.mention-item-value');
-        
-        const news = data.news || 0;
-        const social = data.social || 0;
-        
-        values[0].innerHTML = news.toLocaleString();
-        values[1].innerHTML = social.toLocaleString();
-    },
-
     async loadTrendingTopics(card) {
         const response = await fetch(`/mk/api/trending-topics?limit=8`);
         const data = await response.json();
@@ -1174,7 +878,7 @@ const DataOverviewLazyLoader = {
         const topics = data.data || [];
         
         if (topics.length === 0) {
-            body.innerHTML = '<div class="do-empty">No data available</div>';
+            body.innerHTML = '<div class="do-empty">Tidak ada data</div>';
             return;
         }
 
@@ -1215,7 +919,7 @@ const DataOverviewLazyLoader = {
         const hashtags = data.data || [];
         
         if (hashtags.length === 0) {
-            body.innerHTML = '<div class="do-empty">No data available</div>';
+            body.innerHTML = '<div class="do-empty">Tidak ada data</div>';
             return;
         }
 
@@ -1223,10 +927,10 @@ const DataOverviewLazyLoader = {
             const headerRight = card.querySelector('.do-card-head > div:last-child');
             headerRight.innerHTML += `
                 <button class="do-view-all-btn" onclick="DataOverviewLazyLoader.openHashtagModal(${JSON.stringify(hashtags)})">
-                    View All
-                    <svg viewBox="0 0 24 24">
+                    <svg viewBox="0 0 24 24" style="width:14px;height:14px;">
                         <path d="M9 18l6-6-6-6"/>
                     </svg>
+                    View All
                 </button>
             `;
         }
@@ -1262,6 +966,16 @@ const DataOverviewLazyLoader = {
         body.innerHTML = html;
     },
 
+    async loadMentionCounts(section, card) {
+        const response = await fetch(`/mk/api/mention-counts?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`);
+        const data = await response.json();
+        
+        const valueEl = card.querySelector('.do-mention-val');
+        const count = section === 'mention-social' ? data.social : data.news;
+        
+        valueEl.innerHTML = count.toLocaleString();
+    },
+
     async loadEngagedUsers(card) {
         const response = await fetch(`/mk/api/active-users?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`);
         const data = await response.json();
@@ -1270,7 +984,7 @@ const DataOverviewLazyLoader = {
         
         if (users.length === 0) {
             card.querySelector('canvas').parentElement.innerHTML = 
-                '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);font-size:14px;font-weight:500;">No active user data available</div>';
+                '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#B4BCC7;font-size:14px;font-weight:600;">No active user data available</div>';
             return;
         }
 
@@ -1285,8 +999,7 @@ const DataOverviewLazyLoader = {
         const response = await fetch(`/mk/api/sentiment-timeline?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`);
         const data = await response.json();
         
-        this.sentimentTimelineData = data;
-        this.renderLineChart(data, this.currentSentimentType);
+        this.renderLineChart(data);
     },
 
     async loadSentimentMedia(card) {
@@ -1301,7 +1014,7 @@ const DataOverviewLazyLoader = {
             const canvas = card.querySelector('canvas');
             if (canvas && canvas.parentElement) {
                 canvas.parentElement.innerHTML = 
-                    '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);font-size:14px;font-weight:500;">No sentiment data available</div>';
+                    '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#B4BCC7;font-size:14px;font-weight:600;">No sentiment data available</div>';
             }
             return;
         }
@@ -1386,11 +1099,11 @@ const DataOverviewLazyLoader = {
                     var textX = pos.isRight ? pos.lineEndX + 8 : pos.lineEndX - 8;
                     ctx.textAlign = pos.isRight ? 'left' : 'right';
 
-                    ctx.fillStyle = '#1a202c';
+                    ctx.fillStyle = '#1A2332';
                     ctx.font = '700 11px Poppins, sans-serif';
                     ctx.fillText(pos.label, textX, pos.labelY - 7);
 
-                    ctx.fillStyle = '#64748b';
+                    ctx.fillStyle = '#7A8B96';
                     ctx.font = '500 10px Poppins, sans-serif';
                     ctx.fillText('(' + pos.count + ' twits)', textX, pos.labelY + 7);
                 });
@@ -1425,9 +1138,9 @@ const DataOverviewLazyLoader = {
                     tooltip: {
                         enabled: true,
                         backgroundColor: 'rgba(255,255,255,0.98)',
-                        titleColor: '#1a202c',
-                        bodyColor: '#1a202c',
-                        borderColor: '#e2e8f0',
+                        titleColor: '#1A2332',
+                        bodyColor: '#1A2332',
+                        borderColor: '#E8EAED',
                         borderWidth: 1.5,
                         cornerRadius: 8,
                         padding: 12,
@@ -1443,16 +1156,9 @@ const DataOverviewLazyLoader = {
         });
     },
 
-    renderLineChart(timeline, type = 'line') {
-        const ctx = document.getElementById('chartSentiment');
-        if (!ctx) return;
-
-        if (this.charts.sentiment) {
-            this.charts.sentiment.destroy();
-        }
-
-        const config = {
-            type: type === 'area' ? 'line' : type,
+    renderLineChart(timeline) {
+        new Chart(document.getElementById('chartSentiment').getContext('2d'), {
+            type: 'line',
             data: {
                 labels: timeline.dates,
                 datasets: [
@@ -1460,44 +1166,44 @@ const DataOverviewLazyLoader = {
                         label: 'Total',
                         data: timeline.values,
                         borderColor: '#5AB9EA',
-                        backgroundColor: type === 'area' || type === 'line' ? 'rgba(90, 185, 234, 0.1)' : 'rgba(90, 185, 234, 0.8)',
-                        borderWidth: type === 'bar' ? 2 : 2.5,
+                        backgroundColor: 'rgba(90, 185, 234, 0.1)',
+                        borderWidth: 2.5,
                         tension: 0.4,
-                        pointRadius: type === 'line' ? timeline.dates.map((d, i) => i === timeline.dates.length - 1 ? 6 : 4) : 0,
-                        pointHoverRadius: type === 'line' ? 6 : 0,
+                        pointRadius: timeline.dates.map((d, i) => i === timeline.dates.length - 1 ? 6 : 4),
+                        pointHoverRadius: 6,
                         pointBackgroundColor: '#5AB9EA',
                         pointBorderColor: '#FFFFFF',
                         pointBorderWidth: 2,
-                        fill: type === 'area' || type === 'line' ? true : false
+                        fill: true
                     },
                     {
                         label: 'Positive',
                         data: timeline.sentiment.positive,
                         borderColor: '#22C55E',
-                        backgroundColor: type === 'bar' ? 'rgba(34, 197, 94, 0.8)' : 'transparent',
-                        borderWidth: type === 'bar' ? 2 : 2,
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
                         tension: 0.4,
-                        pointRadius: type === 'line' ? 3 : 0,
+                        pointRadius: 3,
                         fill: false
                     },
                     {
                         label: 'Neutral',
                         data: timeline.sentiment.neutral,
                         borderColor: '#B0BEC5',
-                        backgroundColor: type === 'bar' ? 'rgba(176, 190, 197, 0.8)' : 'transparent',
-                        borderWidth: type === 'bar' ? 2 : 1.5,
+                        backgroundColor: 'transparent',
+                        borderWidth: 1.5,
                         tension: 0.4,
-                        pointRadius: type === 'line' ? 2 : 0,
+                        pointRadius: 2,
                         fill: false
                     },
                     {
                         label: 'Negative',
                         data: timeline.sentiment.negative,
                         borderColor: '#EF4444',
-                        backgroundColor: type === 'bar' ? 'rgba(239, 68, 68, 0.8)' : 'transparent',
-                        borderWidth: type === 'bar' ? 2 : 1.5,
+                        backgroundColor: 'transparent',
+                        borderWidth: 1.5,
                         tension: 0.4,
-                        pointRadius: type === 'line' ? 2 : 0,
+                        pointRadius: 2,
                         fill: false
                     }
                 ]
@@ -1516,7 +1222,7 @@ const DataOverviewLazyLoader = {
                             pointStyle: 'circle',
                             padding: 10,
                             font: { size: 10, weight: '600', family: 'Poppins' },
-                            color: '#64748b',
+                            color: '#8B96A5',
                             boxWidth: 8,
                             boxHeight: 8
                         }
@@ -1526,9 +1232,9 @@ const DataOverviewLazyLoader = {
                         mode: 'index',
                         intersect: false,
                         backgroundColor: 'rgba(255, 255, 255, 0.98)',
-                        titleColor: '#1a202c',
-                        bodyColor: '#1a202c',
-                        borderColor: '#e2e8f0',
+                        titleColor: '#1A2332',
+                        bodyColor: '#1A2332',
+                        borderColor: '#E8EAED',
                         borderWidth: 1.5,
                         padding: 12,
                         cornerRadius: 8,
@@ -1545,7 +1251,7 @@ const DataOverviewLazyLoader = {
                         grid: { display: false },
                         ticks: {
                             font: { size: 10, weight: '500', family: 'Poppins' },
-                            color: '#64748b',
+                            color: '#B4BCC7',
                             maxRotation: 0,
                             autoSkip: true,
                             maxTicksLimit: 7
@@ -1557,22 +1263,14 @@ const DataOverviewLazyLoader = {
                         grid: { display: true, color: 'rgba(0, 0, 0, 0.04)' },
                         ticks: {
                             font: { size: 10, weight: '500', family: 'Poppins' },
-                            color: '#64748b',
+                            color: '#B4BCC7',
                             callback: val => val >= 1000 ? (val / 1000) + 'k' : val,
                             maxTicksLimit: 5
                         }
                     }
                 }
             }
-        };
-
-        if (type === 'bar') {
-            config.data.datasets.forEach(ds => {
-                ds.borderRadius = 6;
-            });
-        }
-
-        this.charts.sentiment = new Chart(ctx, config);
+        });
     },
 
     renderSentimentMediaChart(mediaData) {
@@ -1629,14 +1327,14 @@ const DataOverviewLazyLoader = {
                             pointStyle: 'circle',
                             padding: 15,
                             font: { size: 12, weight: '700', family: 'Poppins' },
-                            color: '#1a202c',
+                            color: '#1A2332',
                             boxWidth: 10,
                             boxHeight: 10
                         }
                     },
                     tooltip: {
                         enabled: true,
-                        backgroundColor: 'rgba(26, 32, 44, 0.95)',
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
                         titleColor: '#fff',
                         bodyColor: '#fff',
                         borderColor: 'rgba(148, 163, 184, 0.3)',
@@ -1676,7 +1374,7 @@ const DataOverviewLazyLoader = {
                         grid: { display: false },
                         ticks: {
                             font: { size: 12, weight: '700', family: 'Poppins' },
-                            color: '#1a202c',
+                            color: '#1A2332',
                             padding: 10
                         }
                     }
@@ -1736,7 +1434,7 @@ const DataOverviewLazyLoader = {
             L.marker([lat, lng], { icon: redPin }).addTo(map)
                 .bindPopup(`
                     <div style="font-family:Poppins;text-align:center;padding:8px;">
-                        <div style="font-weight:700;font-size:15px;color:#1a202c;margin-bottom:6px;">${name}</div>
+                        <div style="font-weight:700;font-size:15px;color:#1e293b;margin-bottom:6px;">${name}</div>
                         <div style="font-size:24px;font-weight:800;color:#ef4444;margin-bottom:2px;">${count.toLocaleString()}</div>
                         <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;font-weight:600;">mentions</div>
                     </div>
@@ -1796,7 +1494,7 @@ const DataOverviewLazyLoader = {
     },
 
     showError(card) {
-        const body = card.querySelector('.do-card-body') || card.querySelector('.stat-value');
+        const body = card.querySelector('.do-card-body');
         if (body) {
             body.innerHTML = '<div class="do-empty">Failed to load data</div>';
         }
@@ -1819,18 +1517,9 @@ const DataOverviewLazyLoader = {
     }
 };
 
-function changeSentimentChartType(type, button) {
-    DataOverviewLazyLoader.currentSentimentType = type;
-    document.querySelectorAll('.chart-type-btn-small').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    button.classList.add('active');
-    
-    if (DataOverviewLazyLoader.sentimentTimelineData) {
-        DataOverviewLazyLoader.renderLineChart(DataOverviewLazyLoader.sentimentTimelineData, type);
-    }
-}
-
+// ────────────────────────────────────────────
+// MODAL FUNCTIONS
+// ────────────────────────────────────────────
 function closeHashtagModal() {
     const modal = document.getElementById('hashtagModal');
     modal.classList.remove('active');
@@ -1851,6 +1540,9 @@ document.addEventListener('keydown', event => {
     }
 });
 
+// ────────────────────────────────────────────
+// INITIALIZE ON PAGE LOAD
+// ────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     DataOverviewLazyLoader.init();
 });
