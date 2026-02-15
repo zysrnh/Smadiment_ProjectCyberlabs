@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\DataSourceController;
 use App\Http\Controllers\Api\TopicMapController;
 use App\Http\Controllers\Api\TopAnalyticsController;
 use App\Http\Controllers\MK\XOverviewController;
+use App\Http\Controllers\MK\FacebookOverviewController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -172,6 +173,27 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/authors-type', [XOverviewController::class, 'authorsTypeData'])
                 ->name('authors-type');
         });
+
+        // ─────────────────────────────────────────────────────
+        // Facebook APIs
+        // ─────────────────────────────────────────────────────
+        Route::prefix('facebook')->name('facebook.')->group(function () {
+            // Overview Stats
+            Route::get('/total-users', [FacebookOverviewController::class, 'totalUsers'])
+                ->name('total-users');
+
+            Route::get('/total-authors', [FacebookOverviewController::class, 'totalAuthors'])
+                ->name('total-authors');
+
+            Route::get('/volume-total', [FacebookOverviewController::class, 'volumeTotal'])
+                ->name('volume-total');
+
+            Route::get('/sentiment-total', [FacebookOverviewController::class, 'sentimentTotal'])
+                ->name('sentiment-total');
+
+            Route::get('/most-active-users', [FacebookOverviewController::class, 'mostActiveUsers'])
+                ->name('most-active-users');
+        });
     });
 
     // ═══════════════════════════════════════════════════════════
@@ -240,7 +262,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/most-retweets', [XOverviewController::class, 'mostRetweetsPage'])
             ->name('most-retweets');
 
-        // ✅ Most Active Users - PAGE (bukan API!)
+        // Most Active Users
         Route::get('/most-active-users', [XOverviewController::class, 'mostActiveUsersPage'])
             ->name('most-active-users');
 
@@ -263,6 +285,15 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         // Posts with Location Data
         Route::get('/post-with-location', [XOverviewController::class, 'postWithLocationPage'])
             ->name('post-with-location');
+    });
+
+    // ─────────────────────────────────────────────────────
+    // Facebook Routes
+    // ─────────────────────────────────────────────────────
+    Route::prefix('facebook')->name('facebook.')->group(function () {
+        // Overview Page
+        Route::get('/overview', [FacebookOverviewController::class, 'index'])
+            ->name('overview');
     });
 
     // ─────────────────────────────────────────────────────

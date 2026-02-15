@@ -81,49 +81,56 @@
         /**
          * API: Get Total Users for X
          */
-        public function totalUsers(Request $request)
-        {
-            try {
-                $projectId = $request->query('project_id');
-                $startDate = $request->query('start_date');
-                $endDate = $request->query('end_date');
+public function totalUsers(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
 
-                if (!$projectId || !$startDate || !$endDate) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Missing required parameters: project_id, start_date, end_date'
-                    ], 400);
-                }
-
-                $result = $this->client->totalUsers($projectId, $startDate, $endDate);
-
-                $total = 0;
-                if (isset($result['data']['total_author'])) {
-                    $total = (int) $result['data']['total_author'];
-                } elseif (isset($result['data']['total'])) {
-                    $total = (int) $result['data']['total'];
-                }
-
-                return response()->json([
-                    'success' => true,
-                    'data' => [
-                        'total' => $total
-                    ]
-                ]);
-
-            } catch (\Exception $e) {
-                Log::error('X totalUsers API error', [
-                    'error' => $e->getMessage(),
-                    'project_id' => $request->query('project_id')
-                ]);
-                
-                return response()->json([
-                    'success' => false,
-                    'error' => $e->getMessage()
-                ], 500);
-            }
+        if (!$projectId || !$startDate || !$endDate) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Missing required parameters: project_id, start_date, end_date'
+            ], 400);
         }
 
+        // 🔥 UBAH: Tambahkan filter untuk Twitter/X saja
+        $result = $this->client->totalUsers($projectId, $startDate, $endDate);
+
+        $total = 0;
+        
+        // 🔥 PRIORITAS: Ambil dari bymedia->twit jika ada
+        if (isset($result['bymedia']['twit'])) {
+            $total = (int) $result['bymedia']['twit'];
+        } 
+        // Fallback ke total_author hanya jika bymedia tidak ada
+        elseif (isset($result['data']['total_author'])) {
+            $total = (int) $result['data']['total_author'];
+        } 
+        elseif (isset($result['data']['total'])) {
+            $total = (int) $result['data']['total'];
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'total' => $total
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('X totalUsers API error', [
+            'error' => $e->getMessage(),
+            'project_id' => $request->query('project_id')
+        ]);
+        
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
         /**
          * API: Get Total Authors for X
          */
