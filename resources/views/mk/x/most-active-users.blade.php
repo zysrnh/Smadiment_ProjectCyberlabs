@@ -1,6 +1,6 @@
 @extends('mk.layouts.app')
 
-@section('title', 'Most Retweets - X | SMADIMENT')
+@section('title', 'Most Active Users - X Analytics')
 
 @section('styles')
 <style>
@@ -256,54 +256,6 @@
     transition: width 1s ease-out;
   }
 
-  /* Charts Section */
-  .charts-section {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 24px;
-    margin-bottom: 24px;
-  }
-
-  .chart-card {
-    background: var(--bg-white);
-    border-radius: 16px;
-    padding: 28px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-gray);
-    transition: all 0.3s;
-  }
-
-  .chart-card:hover {
-    box-shadow: var(--shadow-md);
-  }
-
-  .chart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 24px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid var(--bg-gray-50);
-  }
-
-  .chart-title-group h3 {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0 0 6px 0;
-  }
-
-  .chart-subtitle {
-    font-size: 13px;
-    color: var(--text-secondary);
-    font-weight: 500;
-  }
-
-  .chart-container {
-    position: relative;
-    height: 320px;
-  }
-
   /* Table Section */
   .table-section {
     background: var(--bg-white);
@@ -506,17 +458,13 @@
   .data-table tbody tr {
     transition: all 0.2s;
     background: var(--bg-white);
+    cursor: pointer;
   }
 
   .data-table tbody tr:hover { background: #fafbfc; }
   .data-table tbody tr:last-child td { border-bottom: none; }
 
   /* Avatar */
-  .avatar-container {
-    position: relative;
-    display: inline-block;
-  }
-
   .user-avatar-img {
     width: 36px;
     height: 36px;
@@ -526,19 +474,6 @@
   }
 
   .user-avatar-fallback {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 700;
-    font-size: 13px;
-  }
-
-  .user-avatar {
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -577,59 +512,24 @@
     text-decoration: underline;
   }
 
-  /* Tweet content cell */
-  .tweet-text-cell {
-    max-width: 320px;
-    font-size: 12px;
-    color: var(--text-secondary);
-    line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    cursor: pointer;
-    transition: color 0.2s;
-  }
-
-  .tweet-text-cell:hover { color: var(--primary-green); }
-
-  /* Sentiment badge */
-  .sentiment-badge {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
+  /* Activity Stats */
+  .activity-stat {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    white-space: nowrap;
-  }
-
-  .sentiment-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  /* Retweet count cell */
-  .retweet-count {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 600;
     color: var(--text-primary);
   }
 
-  .retweet-count svg {
+  .activity-stat svg {
     width: 14px;
     height: 14px;
     color: var(--primary-green);
   }
 
-  /* View tweet btn */
-  .view-tweet-btn {
+  /* View profile btn */
+  .view-profile-btn {
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -647,12 +547,12 @@
     white-space: nowrap;
   }
 
-  .view-tweet-btn:hover {
+  .view-profile-btn:hover {
     background: #1d1d1d;
     transform: translateY(-1px);
   }
 
-  .view-tweet-btn svg {
+  .view-profile-btn svg {
     width: 11px;
     height: 11px;
     fill: white;
@@ -783,8 +683,8 @@
     border: 1px solid #fcd34d;
   }
 
-  /* Tweet Detail Modal */
-  .tweet-detail-modal {
+  /* User Detail Modal */
+  .user-detail-modal {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     z-index: 9999;
@@ -796,7 +696,7 @@
     -webkit-backdrop-filter: blur(10px);
   }
 
-  .tweet-detail-modal.show { 
+  .user-detail-modal.show { 
     display: flex;
   }
 
@@ -886,103 +786,151 @@
   }
 
   /* Modal inner content */
-  .modal-author-row {
+  .modal-user-row {
     display: flex;
     align-items: center;
     gap: 14px;
     margin-bottom: 18px;
   }
 
-  .modal-author-avatar {
-    width: 48px;
-    height: 48px;
+  .modal-user-avatar {
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     object-fit: cover;
     flex-shrink: 0;
+    border: 3px solid #e2e8f0;
   }
 
-  .modal-author-avatar-fallback {
-    width: 48px;
-    height: 48px;
+  .modal-user-avatar-fallback {
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 18px;
+    font-size: 24px;
     font-weight: 700;
     flex-shrink: 0;
+    border: 3px solid #e2e8f0;
   }
 
-  .modal-author-name {
-    font-size: 15px;
+  .modal-user-name {
+    font-size: 17px;
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1.2;
   }
 
-  .modal-author-scr {
-    font-size: 13px;
-    color: var(--text-secondary);
-  }
-
-  .modal-tweet-text {
-    font-size: 15px;
-    line-height: 1.65;
-    color: var(--text-primary);
-    margin-bottom: 20px;
-    word-break: break-word;
-    padding: 16px;
-    background: var(--bg-gray-50);
-    border-radius: 12px;
-    border: 1px solid var(--border-gray);
-  }
-
-  .modal-meta-row {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
-
-  .modal-meta-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: var(--text-secondary);
-  }
-
-  .modal-meta-item strong {
-    color: var(--text-primary);
-    font-weight: 700;
+  .modal-user-scr {
     font-size: 14px;
+    color: var(--text-secondary);
   }
 
-  .modal-meta-item svg { width: 15px; height: 15px; }
+  .modal-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .modal-stat-card {
+    background: var(--bg-gray-50);
+    border: 1px solid var(--border-gray);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .modal-stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .modal-stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+
+  .modal-activity-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .modal-activity-card {
+    border-radius: 12px;
+    padding: 14px 12px;
+    text-align: center;
+    border: 1px solid transparent;
+  }
+
+  .modal-activity-card.mentions  { background: #f0fdf4; border-color: #bbf7d0; }
+  .modal-activity-card.replies   { background: #eff6ff; border-color: #bfdbfe; }
+  .modal-activity-card.retweets  { background: #fef3c7; border-color: #fde68a; }
+
+  .modal-activity-value {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+  }
+
+  .modal-activity-card.mentions .modal-activity-value  { color: #15803d; }
+  .modal-activity-card.replies .modal-activity-value   { color: #1d4ed8; }
+  .modal-activity-card.retweets .modal-activity-value  { color: #d97706; }
+
+  .modal-activity-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+    opacity: 0.7;
+  }
+
+  .modal-total-badge {
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+    border-radius: 12px;
+    padding: 16px 20px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-total-label {
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.9;
+  }
+
+  .modal-total-value {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
 
   .modal-footer {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
+    justify-content: center;
     padding-top: 16px;
     border-top: 1px solid var(--border-gray);
-  }
-
-  .modal-date {
-    font-size: 12px;
-    color: var(--text-secondary);
+    margin-top: 16px;
   }
 
   .modal-open-twitter {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 9px 18px;
+    padding: 10px 20px;
     background: #000;
     color: #fff;
     border-radius: 10px;
@@ -1001,8 +949,6 @@
   @media (max-width: 1400px) {
     .data-table { font-size: 12px; }
     .data-table th, .data-table td { padding: 10px 12px; }
-    .data-table th:first-child, .data-table td:first-child { padding-left: 16px; }
-    .data-table th:last-child,  .data-table td:last-child  { padding-right: 16px; }
   }
 
   @media (max-width: 1024px) {
@@ -1016,11 +962,11 @@
 
   @media (max-width: 640px) {
     .stat-value { font-size: 28px; }
-    .chart-container { height: 250px; }
     .table-search { width: 100%; }
     .page-header h1 { font-size: 24px; }
     .modal-content { width: 95%; max-height: 90vh; }
     .modal-header, .modal-body { padding: 20px; }
+    .modal-stats-grid { grid-template-columns: 1fr; }
   }
 </style>
 @endsection
@@ -1030,8 +976,8 @@
 
   <!-- Page Header -->
   <div class="page-header">
-    <h1>Most Retweets</h1>
-    <p>Top tweets with the highest retweet count on X (Twitter) in the selected date range</p>
+    <h1>Most Active Users</h1>
+    <p>Top users with the highest activity based on total interactions (mentions, replies, retweets)</p>
   </div>
 
   @if(!$projectId)
@@ -1041,13 +987,13 @@
       <line x1="12" y1="9" x2="12" y2="13"/>
       <line x1="12" y1="17" x2="12.01" y2="17"/>
     </svg>
-    <span>No project selected. Please select a project from the sidebar to view Most Retweets data.</span>
+    <span>No project selected. Please select a project from the sidebar to view Most Active Users data.</span>
   </div>
   @else
 
   <!-- Date Filter Card -->
   <div class="filter-card">
-    <form id="filterForm" method="GET" action="{{ route('mk.x.most-retweets') }}">
+    <form id="filterForm" method="GET" action="{{ route('mk.x.most-active-users') }}">
       <input type="hidden" name="project_id" value="{{ $projectId }}">
 
       <div class="filter-content">
@@ -1098,19 +1044,20 @@
   <!-- Stats Grid -->
   <div class="stats-grid">
 
-    <!-- Total Tweets -->
-    <div class="stat-card" data-lazy-load="retweetStats">
+    <!-- Total Users -->
+    <div class="stat-card" data-lazy-load="userStats">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
           <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="23 4 23 10 17 10"/>
-            <polyline points="1 20 1 14 7 14"/>
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
         </div>
       </div>
-      <div class="stat-label">Total Tweets</div>
-      <div id="statTotalTweets" class="stat-value-wrapper">
+      <div class="stat-label">Total Users</div>
+      <div id="statTotalUsers" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 140px;"></div>
       </div>
       <div class="stat-progress">
@@ -1118,18 +1065,19 @@
       </div>
     </div>
 
-    <!-- Unique Authors -->
-    <div class="stat-card" data-lazy-load="retweetStats">
+    <!-- Total Interactions -->
+    <div class="stat-card" data-lazy-load="userStats">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
           <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
           </svg>
         </div>
       </div>
-      <div class="stat-label">Unique Authors</div>
-      <div id="statUniqueAuthors" class="stat-value-wrapper">
+      <div class="stat-label">Total Interactions</div>
+      <div id="statTotalInteractions" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 140px;"></div>
       </div>
       <div class="stat-progress">
@@ -1137,8 +1085,8 @@
       </div>
     </div>
 
-    <!-- Highest Retweets -->
-    <div class="stat-card" data-lazy-load="retweetStats">
+    <!-- Most Active -->
+    <div class="stat-card" data-lazy-load="userStats">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
           <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1146,8 +1094,8 @@
           </svg>
         </div>
       </div>
-      <div class="stat-label">Highest Retweets</div>
-      <div id="statHighestRT" class="stat-value-wrapper">
+      <div class="stat-label">Most Active</div>
+      <div id="statMostActive" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 140px;"></div>
       </div>
       <div class="stat-progress">
@@ -1157,29 +1105,12 @@
 
   </div>
 
-  <!-- Sentiment Chart -->
-  <div class="charts-section">
-    <div class="chart-card" data-lazy-load="retweetSentiment">
-      <div class="chart-header">
-        <div class="chart-title-group">
-          <h3>Retweet Sentiment Distribution</h3>
-          <p class="chart-subtitle">Positive, neutral, and negative breakdown of viral tweets</p>
-        </div>
-      </div>
-      
-      <div class="chart-container">
-        <div id="sentimentChartLoading" class="loading-skeleton" style="height: 100%;"></div>
-        <canvas id="retweetSentimentChart" style="display: none;"></canvas>
-      </div>
-    </div>
-  </div>
-
-  <!-- Retweets Table -->
-  <div class="table-section" data-lazy-load="retweetsTable">
+  <!-- Users Table -->
+  <div class="table-section" data-lazy-load="usersTable">
     <div class="table-header">
       <div class="table-title">
-        <h3>Viral Tweets Ranking</h3>
-        <p class="table-subtitle">Sorted by retweet count — click tweet content to view detail</p>
+        <h3>Active Users Ranking</h3>
+        <p class="table-subtitle">Sorted by total activity — click user to view detail</p>
       </div>
 
       <div class="table-actions">
@@ -1188,7 +1119,7 @@
             <circle cx="11" cy="11" r="8"/>
             <path d="m21 21-4.35-4.35"/>
           </svg>
-          <input type="text" id="searchInput" placeholder="Search tweets or authors..." onkeyup="filterTable()">
+          <input type="text" id="searchInput" placeholder="Search users..." onkeyup="filterTable()">
         </div>
 
         <!-- Actions Dropdown -->
@@ -1256,42 +1187,40 @@
     <!-- Empty state -->
     <div id="emptyState" style="display: none; text-align: center; padding: 60px 20px; color: var(--text-secondary);">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 48px; height: 48px; margin: 0 auto 16px; opacity: 0.4; display: block;">
-        <polyline points="23 4 23 10 17 10"/>
-        <polyline points="1 20 1 14 7 14"/>
-        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
       </svg>
-      <p style="font-size: 15px; font-weight: 500;">No retweet data found for the selected date range.</p>
+      <p style="font-size: 15px; font-weight: 500;">No user data found for the selected date range.</p>
     </div>
   </div>
 
   @endif
 </div>
 
-<!-- Tweet Detail Modal -->
-<div class="tweet-detail-modal" id="tweetDetailModal">
-  <div class="modal-overlay" onclick="closeTweetModal()"></div>
+<!-- User Detail Modal -->
+<div class="user-detail-modal" id="userDetailModal">
+  <div class="modal-overlay" onclick="closeUserModal()"></div>
   <div class="modal-content">
     <div class="modal-header">
       <h3>
         <span class="x-icon-sm">
           <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
         </span>
-        Tweet Detail
+        User Profile
       </h3>
-      <button class="modal-close" onclick="closeTweetModal()">
+      <button class="modal-close" onclick="closeUserModal()">
         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="18" y1="6" x2="6" y2="18"/>
           <line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
     </div>
-    <div class="modal-body" id="tweetModalBody"></div>
+    <div class="modal-body" id="userModalBody"></div>
   </div>
 </div>
 @endsection
 
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
   const projectId = '{{ $projectId ?? '' }}';
   const startDate = '{{ $startDate ?? '' }}';
@@ -1299,28 +1228,11 @@
 
   let allData = [];
   let currentPage = 1;
-  let tweetsPerPage = 20;
+  let usersPerPage = 20;
 
   function formatNumber(n) {
     if (!n && n !== 0) return '0';
     return new Intl.NumberFormat('en-US').format(n);
-  }
-
-  function formatDate(dateStr) {
-    if (!dateStr) return '—';
-    try {
-      return new Date(dateStr).toLocaleDateString('en-US', {
-        year: 'numeric', month: 'short', day: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      });
-    } catch(e) { return dateStr; }
-  }
-
-  function getSentimentStyle(sentimentStr) {
-    const s = (sentimentStr || '').toLowerCase();
-    if (s === 'positive') return { bg: 'rgba(16,185,129,0.12)', color: '#059669', dot: '#10b981' };
-    if (s === 'negative') return { bg: 'rgba(239,68,68,0.12)',  color: '#dc2626', dot: '#ef4444' };
-    return { bg: 'rgba(100,116,139,0.12)', color: '#475569', dot: '#64748b' };
   }
 
   function getInitials(name) {
@@ -1342,11 +1254,8 @@
         const id = entry.target.dataset.lazyLoad;
         if (!loadedComponents.has(id)) {
           loadedComponents.add(id);
-          if (id === 'retweetStats' || id === 'retweetsTable') {
+          if (id === 'userStats' || id === 'usersTable') {
             loadData();
-          }
-          if (id === 'retweetSentiment') {
-            loadSentimentChart();
           }
           lazyLoadObserver.unobserve(entry.target);
         }
@@ -1387,35 +1296,36 @@
     if (dataLoaded) return;
     dataLoaded = true;
 
-    const statCards = document.querySelectorAll('[data-lazy-load="retweetStats"]');
+    const statCards = document.querySelectorAll('[data-lazy-load="userStats"]');
     statCards.forEach(c => addLoadingBadge(c));
 
     try {
-      const res    = await fetch(`/mk/api/x/most-retweets?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
+      const res = await fetch(`/mk/api/x/most-active-users?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
       const result = await res.json();
 
-      if (result.success && result.data && result.data.length > 0) {
-        allData = result.data;
+      if (result.success && result.data?.data && result.data.data.length > 0) {
+        allData = result.data.data;
 
         // Stats
-        const uniqueAuthors = new Set(allData.map(d => d.author?.scr_name || d.name)).size;
-        const highest       = Math.max(...allData.map(d => parseInt(d.freq || 0)));
-        const totalTweets   = allData.length;
+        const totalUsers = allData.length;
+        const totalInteractions = allData.reduce((sum, u) => sum + (u.posts || 0), 0);
+        const mostActive = Math.max(...allData.map(u => u.posts || 0));
+        const topUser = allData.find(u => u.posts === mostActive);
 
-        document.getElementById('statTotalTweets').innerHTML   = `<div class="stat-value">${formatNumber(totalTweets)}</div>`;
-        document.getElementById('statUniqueAuthors').innerHTML = `<div class="stat-value">${formatNumber(uniqueAuthors)}</div>`;
-        document.getElementById('statHighestRT').innerHTML     = `<div class="stat-value">${formatNumber(highest)}</div>`;
+        document.getElementById('statTotalUsers').innerHTML = `<div class="stat-value">${formatNumber(totalUsers)}</div>`;
+        document.getElementById('statTotalInteractions').innerHTML = `<div class="stat-value">${formatNumber(totalInteractions)}</div>`;
+        document.getElementById('statMostActive').innerHTML = `<div class="stat-value">${formatNumber(mostActive)}</div>`;
 
-        document.getElementById('statTotalTweets').classList.add('data-loaded');
-        document.getElementById('statUniqueAuthors').classList.add('data-loaded');
-        document.getElementById('statHighestRT').classList.add('data-loaded');
+        document.getElementById('statTotalUsers').classList.add('data-loaded');
+        document.getElementById('statTotalInteractions').classList.add('data-loaded');
+        document.getElementById('statMostActive').classList.add('data-loaded');
 
         statCards.forEach((c, i) => {
-          const pcts = [80, 65, 100];
+          const pcts = [80, 100, 65];
           animateProgress(c, pcts[i] ?? 70);
         });
 
-        // Render table with pagination
+        // Render table
         renderTable();
         updatePagination();
         
@@ -1427,195 +1337,102 @@
         document.getElementById('tableLoading').style.display = 'none';
         document.getElementById('emptyState').style.display   = 'block';
 
-        ['statTotalTweets','statUniqueAuthors','statHighestRT'].forEach(id => {
+        ['statTotalUsers','statTotalInteractions','statMostActive'].forEach(id => {
           document.getElementById(id).innerHTML = '<div class="stat-value">0</div>';
         });
       }
 
     } catch(err) {
-      console.error('Error loading most retweets:', err);
+      console.error('Error loading most active users:', err);
       document.getElementById('tableLoading').style.display = 'none';
       document.getElementById('emptyState').style.display   = 'block';
     } finally {
       statCards.forEach(c => { removeLoadingBadge(c); c.classList.add('loaded'); });
-      document.querySelector('[data-lazy-load="retweetsTable"]')?.classList.add('loaded');
+      document.querySelector('[data-lazy-load="usersTable"]')?.classList.add('loaded');
     }
-  }
-
-  // ─── Load Sentiment Chart ────────────────────────────────────────────────
-  async function loadSentimentChart() {
-    const card = document.querySelector('[data-lazy-load="retweetSentiment"]');
-    addLoadingBadge(card);
-
-    try {
-      const res = await fetch(`/mk/api/x/most-retweets?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
-      const result = await res.json();
-
-      if (result.success && result.data && result.data.length > 0) {
-        // Calculate sentiment distribution
-        const sentiments = { positive: 0, neutral: 0, negative: 0 };
-        
-        result.data.forEach(item => {
-          const sent = (item.sentiment_str || 'neutral').toLowerCase();
-          if (sent === 'positive') sentiments.positive++;
-          else if (sent === 'negative') sentiments.negative++;
-          else sentiments.neutral++;
-        });
-
-        renderSentimentChart(sentiments);
-      }
-    } catch (err) {
-      console.error('Error loading sentiment chart:', err);
-    } finally {
-      removeLoadingBadge(card);
-      card.classList.add('loaded');
-    }
-  }
-
-  function renderSentimentChart(sentiment) {
-    const canvas = document.getElementById('retweetSentimentChart');
-    const loading = document.getElementById('sentimentChartLoading');
-    
-    const ctx = canvas.getContext('2d');
-    
-    new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Positive', 'Neutral', 'Negative'],
-        datasets: [{
-          data: [sentiment.positive, sentiment.neutral, sentiment.negative],
-          backgroundColor: ['#10b981', '#64748b', '#ef4444'],
-          borderWidth: 0,
-          hoverOffset: 15
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '70%',
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              color: '#1a202c',
-              font: { family: 'Poppins', size: 13, weight: '600' },
-              padding: 20,
-              usePointStyle: true,
-              pointStyle: 'circle'
-            }
-          },
-          tooltip: {
-            backgroundColor: '#1a202c',
-            padding: 16,
-            titleColor: '#ffffff',
-            bodyColor: '#ffffff',
-            titleFont: { size: 14, weight: '600' },
-            bodyFont: { size: 13 },
-            displayColors: false,
-            cornerRadius: 8,
-            callbacks: {
-              label: function(context) {
-                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                const percentage = ((context.parsed / total) * 100).toFixed(1);
-                return `${context.label}: ${formatNumber(context.parsed)} (${percentage}%)`;
-              }
-            }
-          }
-        }
-      }
-    });
-
-    loading.style.display = 'none';
-    canvas.style.display = 'block';
   }
 
   function renderTable() {
-    const startIdx = (currentPage - 1) * tweetsPerPage;
-    const endIdx = startIdx + tweetsPerPage;
+    const startIdx = (currentPage - 1) * usersPerPage;
+    const endIdx = startIdx + usersPerPage;
     const currentData = allData.slice(startIdx, endIdx);
 
-    let html = `<table class="data-table" id="retweetsTable">
+    let html = `<table class="data-table" id="usersTable">
       <thead><tr>
-        <th>NO.</th>
+        <th>RANK</th>
         <th>AVATAR</th>
+        <th>USERNAME</th>
         <th>NAME</th>
-        <th>ACCOUNT NAME</th>
-        <th>TWEET</th>
-        <th>SENTIMENT</th>
-        <th style="text-align:center;">RETWEETS</th>
-        <th>DATE</th>
+        <th>FOLLOWERS</th>
+        <th>MENTIONS</th>
+        <th>REPLIES</th>
+        <th>RETWEETS</th>
+        <th style="text-align:center;">TOTAL</th>
         <th></th>
       </tr></thead>
       <tbody>`;
 
-    currentData.forEach((item, i) => {
+    currentData.forEach((user, i) => {
       const actualRank = startIdx + i + 1;
-      const authorName = item.author?.name   || item.name || 'Unknown';
-      const authorScr  = item.author?.scr_name || item.name || '';
-      const avatarUrl  = item.avatar_url || item.author?.image || '';
-      const content    = item.content || '';
-      const freq       = parseInt(item.freq || item.sentiment_freq || 0);
-      const sentStr    = item.sentiment_str || 'Neutral';
-      const dateStr    = item.date_created || '';
-      const tweetId    = item.sub_id || '';
-      const tweetLink  = tweetId ? `https://twitter.com/${authorScr}/status/${tweetId}` : `https://twitter.com/${authorScr}`;
+      const name = user.name || user.username || 'Unknown';
+      const username = user.username || '';
+      const avatarUrl = user.profile_image_url || '';
+      const followers = user.followers || 0;
+      const mentions = user.mentions || 0;
+      const replies = user.replies || 0;
+      const retweets = user.retweets || 0;
+      const total = user.posts || 0;
 
-      const sStyle = getSentimentStyle(sentStr);
-      const initials = getInitials(authorName);
+      const initials = getInitials(name);
 
-      // Better avatar HTML with fallback to unavatar.io
+      // Avatar with unavatar fallback
       let avatarHtml = '';
-      const hasValidAvatar = avatarUrl && 
-                             !avatarUrl.startsWith('/external') && 
-                             avatarUrl !== '/images/default-avatar.png';
+      const hasValidAvatar = avatarUrl && !avatarUrl.startsWith('/external');
       
       if (hasValidAvatar) {
-        avatarHtml = `<img src="${avatarUrl}" alt="${authorName}" class="user-avatar-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        avatarHtml = `<img src="${avatarUrl}" alt="${name}" class="user-avatar-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                       <div class="user-avatar-fallback" style="display:none;">${initials}</div>`;
       } else {
-        const username = authorScr.replace('@', '');
-        avatarHtml = `<img src="https://unavatar.io/twitter/${username}" alt="${authorName}" class="user-avatar-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        avatarHtml = `<img src="https://unavatar.io/twitter/${username}" alt="${name}" class="user-avatar-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                       <div class="user-avatar-fallback" style="display:none;">${initials}</div>`;
       }
 
-      // Escape for onclick attr
-      const esc = s => s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+      const esc = s => (s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+      const userJson = JSON.stringify(user).replace(/'/g, "\\'");
 
-      html += `<tr>
+      html += `<tr onclick="openUserModal('${esc(userJson)}')">
         <td><strong>${actualRank}</strong></td>
+        <td>${avatarHtml}</td>
         <td>
-          <div class="avatar-container">${avatarHtml}</div>
+          <a href="https://twitter.com/${username}" target="_blank" class="username-link" onclick="event.stopPropagation();">@${username}</a>
         </td>
         <td>
-          <a href="https://twitter.com/${authorScr}" target="_blank" class="username-link">@${authorScr}</a>
+          <a href="https://twitter.com/${username}" target="_blank" class="account-name-link" onclick="event.stopPropagation();">${name}</a>
         </td>
         <td>
-          <a href="https://twitter.com/${authorScr}" target="_blank" class="account-name-link">${authorName}</a>
-        </td>
-        <td>
-          <div class="tweet-text-cell" onclick="openTweetModal('${esc(content)}','${esc(authorName)}','${esc(authorScr)}','${esc(avatarUrl)}','${freq}','${esc(sentStr)}','${esc(dateStr)}','${esc(tweetLink)}')">
-            ${content}
-          </div>
-        </td>
-        <td>
-          <span class="sentiment-badge" style="background:${sStyle.bg};color:${sStyle.color};">
-            <span class="sentiment-dot" style="background:${sStyle.dot};"></span>
-            ${sentStr}
-          </span>
-        </td>
-        <td style="text-align:center;">
-          <div class="retweet-count">
+          <div class="activity-stat">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="23 4 23 10 17 10"/>
-              <polyline points="1 20 1 14 7 14"/>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
             </svg>
-            ${formatNumber(freq)}
+            ${formatNumber(followers)}
           </div>
         </td>
-        <td style="color:var(--text-secondary);font-size:11px;white-space:nowrap;">${formatDate(dateStr)}</td>
+        <td style="color:var(--text-secondary);font-weight:600">${formatNumber(mentions)}</td>
+        <td style="color:var(--text-secondary);font-weight:600">${formatNumber(replies)}</td>
+        <td style="color:var(--text-secondary);font-weight:600">${formatNumber(retweets)}</td>
+        <td style="text-align:center;">
+          <div class="activity-stat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+            ${formatNumber(total)}
+          </div>
+        </td>
         <td>
-          <a href="${tweetLink}" target="_blank" class="view-tweet-btn">
+          <a href="https://twitter.com/${username}" target="_blank" class="view-profile-btn" onclick="event.stopPropagation();">
             <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
             View
           </a>
@@ -1628,7 +1445,7 @@
   }
 
   function updatePagination() {
-    const totalPages = Math.ceil(allData.length / tweetsPerPage);
+    const totalPages = Math.ceil(allData.length / usersPerPage);
     const pageInfo = document.getElementById('pageInfo');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
@@ -1639,15 +1456,13 @@
   }
 
   function changePage(direction) {
-    const totalPages = Math.ceil(allData.length / tweetsPerPage);
+    const totalPages = Math.ceil(allData.length / usersPerPage);
     const newPage = currentPage + direction;
 
     if (newPage >= 1 && newPage <= totalPages) {
       currentPage = newPage;
       renderTable();
       updatePagination();
-      
-      // Scroll to top of table
       document.querySelector('.table-section').scrollIntoView({ behavior: 'smooth' });
     }
   }
@@ -1656,7 +1471,6 @@
     const term = document.getElementById('searchInput').value.toLowerCase();
     
     if (!term) {
-      // Reset to page 1 with all data
       currentPage = 1;
       renderTable();
       updatePagination();
@@ -1665,94 +1479,88 @@
     }
     
     // Filter data
-    const filtered = allData.filter(item => {
-      const authorName = item.author?.name || item.name || '';
-      const authorScr = item.author?.scr_name || item.name || '';
-      const content = item.content || '';
-      const searchText = (authorName + ' ' + authorScr + ' ' + content).toLowerCase();
+    const filtered = allData.filter(user => {
+      const name = user.name || '';
+      const username = user.username || '';
+      const searchText = (name + ' ' + username).toLowerCase();
       return searchText.includes(term);
     });
     
-    // Render filtered results (without pagination for search)
-    let html = `<table class="data-table" id="retweetsTable">
+    // Render filtered results without pagination
+    let html = `<table class="data-table" id="usersTable">
       <thead><tr>
-        <th>NO.</th>
+        <th>RANK</th>
         <th>AVATAR</th>
+        <th>USERNAME</th>
         <th>NAME</th>
-        <th>ACCOUNT NAME</th>
-        <th>TWEET</th>
-        <th>SENTIMENT</th>
-        <th style="text-align:center;">RETWEETS</th>
-        <th>DATE</th>
+        <th>FOLLOWERS</th>
+        <th>MENTIONS</th>
+        <th>REPLIES</th>
+        <th>RETWEETS</th>
+        <th style="text-align:center;">TOTAL</th>
         <th></th>
       </tr></thead>
       <tbody>`;
 
-    filtered.forEach((item, i) => {
-      const authorName = item.author?.name   || item.name || 'Unknown';
-      const authorScr  = item.author?.scr_name || item.name || '';
-      const avatarUrl  = item.avatar_url || item.author?.image || '';
-      const content    = item.content || '';
-      const freq       = parseInt(item.freq || item.sentiment_freq || 0);
-      const sentStr    = item.sentiment_str || 'Neutral';
-      const dateStr    = item.date_created || '';
-      const tweetId    = item.sub_id || '';
-      const tweetLink  = tweetId ? `https://twitter.com/${authorScr}/status/${tweetId}` : `https://twitter.com/${authorScr}`;
+    filtered.forEach((user, i) => {
+      const name = user.name || user.username || 'Unknown';
+      const username = user.username || '';
+      const avatarUrl = user.profile_image_url || '';
+      const followers = user.followers || 0;
+      const mentions = user.mentions || 0;
+      const replies = user.replies || 0;
+      const retweets = user.retweets || 0;
+      const total = user.posts || 0;
 
-      const sStyle = getSentimentStyle(sentStr);
-      const initials = getInitials(authorName);
+      const initials = getInitials(name);
 
       let avatarHtml = '';
-      const hasValidAvatar = avatarUrl && 
-                             !avatarUrl.startsWith('/external') && 
-                             avatarUrl !== '/images/default-avatar.png';
+      const hasValidAvatar = avatarUrl && !avatarUrl.startsWith('/external');
       
       if (hasValidAvatar) {
-        avatarHtml = `<img src="${avatarUrl}" alt="${authorName}" class="user-avatar-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        avatarHtml = `<img src="${avatarUrl}" alt="${name}" class="user-avatar-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                       <div class="user-avatar-fallback" style="display:none;">${initials}</div>`;
       } else {
-        const username = authorScr.replace('@', '');
-        avatarHtml = `<img src="https://unavatar.io/twitter/${username}" alt="${authorName}" class="user-avatar-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        avatarHtml = `<img src="https://unavatar.io/twitter/${username}" alt="${name}" class="user-avatar-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                       <div class="user-avatar-fallback" style="display:none;">${initials}</div>`;
       }
 
-      const esc = s => s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+      const esc = s => (s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+      const userJson = JSON.stringify(user).replace(/'/g, "\\'");
 
-      html += `<tr>
+      html += `<tr onclick="openUserModal('${esc(userJson)}')">
         <td><strong>${i + 1}</strong></td>
+        <td>${avatarHtml}</td>
         <td>
-          <div class="avatar-container">${avatarHtml}</div>
+          <a href="https://twitter.com/${username}" target="_blank" class="username-link" onclick="event.stopPropagation();">@${username}</a>
         </td>
         <td>
-          <a href="https://twitter.com/${authorScr}" target="_blank" class="username-link">@${authorScr}</a>
+          <a href="https://twitter.com/${username}" target="_blank" class="account-name-link" onclick="event.stopPropagation();">${name}</a>
         </td>
         <td>
-          <a href="https://twitter.com/${authorScr}" target="_blank" class="account-name-link">${authorName}</a>
-        </td>
-        <td>
-          <div class="tweet-text-cell" onclick="openTweetModal('${esc(content)}','${esc(authorName)}','${esc(authorScr)}','${esc(avatarUrl)}','${freq}','${esc(sentStr)}','${esc(dateStr)}','${esc(tweetLink)}')">
-            ${content}
-          </div>
-        </td>
-        <td>
-          <span class="sentiment-badge" style="background:${sStyle.bg};color:${sStyle.color};">
-            <span class="sentiment-dot" style="background:${sStyle.dot};"></span>
-            ${sentStr}
-          </span>
-        </td>
-        <td style="text-align:center;">
-          <div class="retweet-count">
+          <div class="activity-stat">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="23 4 23 10 17 10"/>
-              <polyline points="1 20 1 14 7 14"/>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
             </svg>
-            ${formatNumber(freq)}
+            ${formatNumber(followers)}
           </div>
         </td>
-        <td style="color:var(--text-secondary);font-size:11px;white-space:nowrap;">${formatDate(dateStr)}</td>
+        <td style="color:var(--text-secondary);font-weight:600">${formatNumber(mentions)}</td>
+        <td style="color:var(--text-secondary);font-weight:600">${formatNumber(replies)}</td>
+        <td style="color:var(--text-secondary);font-weight:600">${formatNumber(retweets)}</td>
+        <td style="text-align:center;">
+          <div class="activity-stat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+            ${formatNumber(total)}
+          </div>
+        </td>
         <td>
-          <a href="${tweetLink}" target="_blank" class="view-tweet-btn">
+          <a href="https://twitter.com/${username}" target="_blank" class="view-profile-btn" onclick="event.stopPropagation();">
             <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
             View
           </a>
@@ -1762,76 +1570,88 @@
 
     html += '</tbody></table>';
     document.getElementById('tableWrapper').innerHTML = html;
-    
-    // Hide pagination during search
     document.getElementById('pagination').style.display = 'none';
   }
 
-  // ─── Tweet Detail Modal ───────────────────────────────────────────────────
-  function openTweetModal(content, authorName, authorScr, avatarUrl, freq, sentStr, dateStr, tweetLink) {
-    const sStyle = getSentimentStyle(sentStr);
-    const initials = getInitials(authorName);
+  // ─── User Detail Modal ────────────────────────────────────────────────────
+  function openUserModal(userJsonStr) {
+    const user = JSON.parse(userJsonStr);
+    const name = user.name || user.username || 'Unknown';
+    const username = user.username || '';
+    const avatarUrl = user.profile_image_url || '';
+    const initials = getInitials(name);
     
     let avatarHtml = '';
-    const hasValidAvatar = avatarUrl && 
-                           !avatarUrl.startsWith('/external') && 
-                           avatarUrl !== '/images/default-avatar.png';
+    const hasValidAvatar = avatarUrl && !avatarUrl.startsWith('/external');
     
     if (hasValidAvatar) {
-      avatarHtml = `<img src="${avatarUrl}" class="modal-author-avatar" alt="${authorName}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                    <div class="modal-author-avatar-fallback" style="display:none;">${initials}</div>`;
+      avatarHtml = `<img src="${avatarUrl}" class="modal-user-avatar" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                    <div class="modal-user-avatar-fallback" style="display:none;">${initials}</div>`;
     } else {
-      const username = authorScr.replace('@', '');
-      avatarHtml = `<img src="https://unavatar.io/twitter/${username}" class="modal-author-avatar" alt="${authorName}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                    <div class="modal-author-avatar-fallback" style="display:none;">${initials}</div>`;
+      avatarHtml = `<img src="https://unavatar.io/twitter/${username}" class="modal-user-avatar" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                    <div class="modal-user-avatar-fallback" style="display:none;">${initials}</div>`;
     }
 
-    document.getElementById('tweetModalBody').innerHTML = `
-      <div class="modal-author-row">
+    document.getElementById('userModalBody').innerHTML = `
+      <div class="modal-user-row">
         ${avatarHtml}
         <div>
-          <div class="modal-author-name">${authorName}</div>
-          <div class="modal-author-scr">@${authorScr}</div>
+          <div class="modal-user-name">${name}</div>
+          <div class="modal-user-scr">@${username}</div>
         </div>
       </div>
-      <div class="modal-tweet-text">${content}</div>
-      <div class="modal-meta-row">
-        <div class="modal-meta-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="23 4 23 10 17 10"/>
-            <polyline points="1 20 1 14 7 14"/>
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-          </svg>
-          <strong>${formatNumber(freq)}</strong>&nbsp;Retweets
+
+      <div class="modal-stats-grid">
+        <div class="modal-stat-card">
+          <div class="modal-stat-value">${formatNumber(user.followers || 0)}</div>
+          <div class="modal-stat-label">Followers</div>
         </div>
-        <div class="modal-meta-item">
-          <span class="sentiment-badge" style="background:${sStyle.bg};color:${sStyle.color};font-size:11px;">
-            <span class="sentiment-dot" style="background:${sStyle.dot};"></span>
-            ${sentStr}
-          </span>
+        <div class="modal-stat-card">
+          <div class="modal-stat-value">${formatNumber(user.following || 0)}</div>
+          <div class="modal-stat-label">Following</div>
         </div>
       </div>
+
+      <div class="modal-activity-grid">
+        <div class="modal-activity-card mentions">
+          <div class="modal-activity-value">${formatNumber(user.mentions || 0)}</div>
+          <div class="modal-activity-label">Mentions</div>
+        </div>
+        <div class="modal-activity-card replies">
+          <div class="modal-activity-value">${formatNumber(user.replies || 0)}</div>
+          <div class="modal-activity-label">Replies</div>
+        </div>
+        <div class="modal-activity-card retweets">
+          <div class="modal-activity-value">${formatNumber(user.retweets || 0)}</div>
+          <div class="modal-activity-label">Retweets</div>
+        </div>
+      </div>
+
+      <div class="modal-total-badge">
+        <span class="modal-total-label">Total Interactions</span>
+        <span class="modal-total-value">${formatNumber(user.posts || 0)}</span>
+      </div>
+
       <div class="modal-footer">
-        <span class="modal-date">${formatDate(dateStr)}</span>
-        <a href="${tweetLink}" target="_blank" class="modal-open-twitter">
+        <a href="https://twitter.com/${username}" target="_blank" class="modal-open-twitter">
           <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-          Open on X
+          View Profile on X
         </a>
       </div>
     `;
 
-    const modal = document.getElementById('tweetDetailModal');
+    const modal = document.getElementById('userDetailModal');
     modal.style.display = 'flex';
     setTimeout(() => modal.classList.add('show'), 10);
   }
 
-  function closeTweetModal() {
-    const modal = document.getElementById('tweetDetailModal');
+  function closeUserModal() {
+    const modal = document.getElementById('userDetailModal');
     modal.classList.remove('show');
     setTimeout(() => modal.style.display = 'none', 300);
   }
 
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTweetModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeUserModal(); });
 
   // ─── Actions Dropdown ─────────────────────────────────────────────────────
   function toggleActionsDropdown(event) {
@@ -1847,21 +1667,17 @@
     document.getElementById('actionsDropdownMenu').classList.remove('show');
     if (!allData.length) return;
 
-    let csv = 'Rank,Author Name,@Username,Tweet Content,Sentiment,Retweets,Date\n';
-    allData.forEach((item, i) => {
-      const name    = (item.author?.name   || item.name || '').replace(/,/g,' ').replace(/"/g,'""');
-      const scr     = item.author?.scr_name || item.name || '';
-      const content = (item.content || '').replace(/,/g,' ').replace(/"/g,'""').replace(/\n/g,' ');
-      const sent    = item.sentiment_str || 'Neutral';
-      const freq    = item.freq || 0;
-      const date    = item.date_created || '';
-      csv += `${i+1},"${name}","@${scr}","${content}","${sent}",${freq},"${date}"\n`;
+    let csv = 'Rank,Username,Name,Followers,Following,Mentions,Replies,Retweets,Total\n';
+    allData.forEach((user, i) => {
+      const name = (user.name || '').replace(/,/g,' ').replace(/"/g,'""');
+      const username = user.username || '';
+      csv += `${i+1},"@${username}","${name}",${user.followers||0},${user.following||0},${user.mentions||0},${user.replies||0},${user.retweets||0},${user.posts||0}\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const a    = document.createElement('a');
-    a.href     = URL.createObjectURL(blob);
-    a.download = `most_retweets_${startDate}_${endDate}.csv`;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `most_active_users_${startDate}_${endDate}.csv`;
     a.click();
   }
 
@@ -1872,12 +1688,12 @@
 
   function printTable() {
     document.getElementById('actionsDropdownMenu').classList.remove('show');
-    const printWindow  = window.open('', '_blank');
     const tableContent = document.getElementById('tableWrapper').innerHTML;
 
+    const printWindow = window.open('', '_blank');
     printWindow.document.write(`
       <!DOCTYPE html><html><head>
-        <title>Most Retweets - X</title>
+        <title>Most Active Users - X</title>
         <style>
           body { font-family: Arial, sans-serif; padding: 20px; }
           h1   { color: #1a202c; margin-bottom: 6px; }
@@ -1888,7 +1704,7 @@
           @media print { body { padding: 0; } }
         </style>
       </head><body>
-        <h1>Most Retweets — X (Twitter)</h1>
+        <h1>Most Active Users — X (Twitter)</h1>
         <p>Date Range: ${startDate} to ${endDate}</p>
         ${tableContent}
       </body></html>

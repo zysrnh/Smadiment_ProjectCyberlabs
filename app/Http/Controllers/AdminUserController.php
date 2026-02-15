@@ -103,7 +103,6 @@ class AdminUserController extends Controller
             'projects' => 'required|array|min:1',
             'projects.*' => 'required|integer',
             'reset_password' => 'nullable|boolean',
-            'new_password' => 'nullable|string|min:6', // Password baru dari frontend
         ], [
             'email.ends_with' => 'Email must be in format: username@smadiment.com',
             'name.alpha_dash' => 'Username can only contain letters, numbers, dashes and underscores',
@@ -115,10 +114,22 @@ class AdminUserController extends Controller
             'email' => $validated['email'],
         ]);
 
-        // Reset password if requested
+        // Reset password if requested - generate new password automatically
         $newPassword = null;
-        if ($request->boolean('reset_password') && $request->filled('new_password')) {
-            $newPassword = $validated['new_password'];
+        if ($request->boolean('reset_password')) {
+            // Generate password sama seperti saat create user
+            $username = strtolower(str_replace(' ', '', $validated['name']));
+            
+            $password = $username;
+            $password = str_replace(['i', 'o', 'e', 'a'], ['1', '0', '3', '4'], $password);
+            
+            // Random uppercase (30% per karakter)
+            $password = implode('', array_map(function($char) {
+                return rand(1, 10) > 7 ? strtoupper($char) : $char;
+            }, str_split($password)));
+            
+            $newPassword = $password . '_SMADIMENT';
+            
             $user->update([
                 'password' => Hash::make($newPassword),
             ]);

@@ -123,6 +123,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/sentiment-total', [XOverviewController::class, 'sentimentTotal'])
                 ->name('sentiment-total');
 
+            // Most Active Users API (JSON)
             Route::get('/most-active-users', [XOverviewController::class, 'mostActiveUsers'])
                 ->name('most-active-users');
 
@@ -238,6 +239,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         // Most Retweeted Posts
         Route::get('/most-retweets', [XOverviewController::class, 'mostRetweetsPage'])
             ->name('most-retweets');
+
+        // ✅ Most Active Users - PAGE (bukan API!)
+        Route::get('/most-active-users', [XOverviewController::class, 'mostActiveUsersPage'])
+            ->name('most-active-users');
 
         // ─────────────────────────────────────────────────
         // Author Demographics

@@ -622,7 +622,7 @@
         <line x1="15" y1="12" x2="17" y2="17.5"/>
       </svg>
     </span>
-    <span>Topic Map</span>
+    <span>World Map</span>
   </a>
 
   <!-- Data Source Dropdown ... -->
@@ -698,6 +698,8 @@
     'mk.x.trending-topics',
     'mk.x.trending-word-cloud',
     'mk.x.shared-urls',   // <-- tambahkan ini
+      'mk.x.most-active-users',   // <-- tambahkan ini
+
   ];
   $isXActive = request()->routeIs($xRoutes);
 @endphp
@@ -833,7 +835,7 @@
         <line x1="15" y1="12" x2="17" y2="17.5"/>
       </svg>
     </span>
-    <span>Trending Word Cloud</span>
+    <span>Word Cloud</span>
   </a>
     <a href="{{ route('mk.x.shared-urls') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
      class="nav-item {{ request()->routeIs('mk.x.shared-urls') ? 'active' : '' }}">
@@ -844,6 +846,18 @@
       </svg>
     </span>
     <span>Shared URLs</span>
+  </a>
+  <a href="{{ route('mk.x.most-active-users') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+     class="nav-item {{ request()->routeIs('mk.x.most-active-users') ? 'active' : '' }}">
+    <span class="menu-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    </span>
+    <span>Most Active Users</span>
   </a>
   
 </div>

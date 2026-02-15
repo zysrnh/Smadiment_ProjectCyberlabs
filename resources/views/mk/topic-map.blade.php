@@ -241,20 +241,21 @@
     display: block;
   }
 
-  /* Word Cloud - MATCHING X TRENDING */
-  .topic-cloud {
-    min-height: 500px;
+  /* Word Cloud - MATCHING X TRENDING EXACTLY */
+  .wordcloud-container {
+    min-height: 800px;
+    height: 800px;
     position: relative;
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 40px;
+    padding: 10px;
     overflow: hidden;
   }
 
-  .topic-cloud::before {
+  .wordcloud-container::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -264,11 +265,13 @@
     pointer-events: none;
   }
 
-  #wordCloudCanvas {
+  #wordCloudChart {
     width: 100% !important;
-    height: 500px !important;
+    height: 100% !important;
     cursor: pointer;
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     z-index: 1;
   }
 
@@ -558,8 +561,12 @@
     .section-header { flex-direction: column; align-items: stretch; }
     .chart-switcher { width: 100%; }
     .chart-btn { flex: 1; }
-    #wordCloudCanvas { height: 400px !important; }
-    .topic-cloud { padding: 20px; min-height: 450px; }
+    #wordCloudChart { height: 100% !important; }
+    .wordcloud-container { 
+      padding: 10px; 
+      min-height: 600px;
+      height: 600px;
+    }
     .stat-value { font-size: 28px; }
   }
 </style>
@@ -651,19 +658,19 @@
 
     <!-- Word Cloud View -->
     <div class="chart-view active" id="wordCloudView">
-      <div class="topic-cloud" id="topicCloud">
+      <div class="wordcloud-container" id="topicCloud">
         <div class="loading-state" id="wordCloudLoading">
           <div class="loading-spinner"></div>
           <p class="loading-text">Loading topics...</p>
         </div>
-        <canvas id="wordCloudCanvas" style="display: none;"></canvas>
+        <div id="wordCloudChart" style="display: none;"></div>
         <div class="wordcloud-hint" id="wordCloudHint">
           <svg viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10"/>
             <line x1="12" y1="8" x2="12" y2="12"/>
             <line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
-          Click a word to view details
+          Hover to view details
         </div>
       </div>
     </div>
@@ -720,8 +727,9 @@
 @endsection
 
 @section('scripts')
-<!-- WordCloud2.js Library -->
-<script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
+<!-- ECharts + WordCloud Plugin - SAME AS X TRENDING -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
 
 <script>
   const projectId = new URLSearchParams(window.location.search).get('project_id');
@@ -729,6 +737,7 @@
   let barChartInstance = null;
   let pieChartInstance = null;
   let currentChart = 'wordcloud';
+  let wordCloudChart = null; // ECharts instance
 
   // Chart.js default config
   Chart.defaults.font.family = "'Poppins', sans-serif";
@@ -825,12 +834,13 @@
     });
   }
 
+  // USING ECHARTS LIKE X TRENDING!
   function renderWordCloud(topics) {
-    const canvas = document.getElementById('wordCloudCanvas');
+    const chartDiv = document.getElementById('wordCloudChart');
     const loading = document.getElementById('wordCloudLoading');
     const hint = document.getElementById('wordCloudHint');
     
-    if (!canvas) return;
+    if (!chartDiv || typeof echarts === 'undefined') return;
     
     if (topics.length === 0) {
       loading.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><h3>No Topics Found</h3><p>No topics to display</p></div>';
@@ -838,49 +848,119 @@
     }
 
     loading.style.display = 'none';
-    canvas.style.display = 'block';
+    chartDiv.style.display = 'block';
     hint.style.display = 'flex';
     
-    // Top 40 topics for better visibility
-    const topTopics = topics.slice(0, 40);
+    // Limit to top 60 topics for better, larger visualization
+    const displayTopics = topics.slice(0, 60);
     
-    const maxCount = Math.max(...topTopics.map(t => t.count));
-    const minCount = Math.min(...topTopics.map(t => t.count));
+    // Prepare word cloud data with aggressive value scaling for larger words
+    const maxCount = Math.max(...displayTopics.map(t => t.count));
+    const minCount = Math.min(...displayTopics.map(t => t.count));
     
-    // Prepare data
-    const wordList = topTopics.map(topic => {
-      const normalizedWeight = ((topic.count - minCount) / (maxCount - minCount)) * 100;
-      return [topic.name, Math.max(normalizedWeight, 25)];
+    const wordData = displayTopics.map(topic => {
+      // More aggressive scaling - emphasize size differences
+      const normalizedValue = (topic.count - minCount) / (maxCount - minCount);
+      const scaledValue = Math.pow(normalizedValue, 0.5) * 1200 + 200; // Power scale for better distribution
+      
+      return {
+        name: topic.name.replace(/^#/, ''),
+        value: scaledValue,
+        originalTopic: topic,
+      };
     });
     
-    // Professional color palette
+    // Professional color palette - SAME AS X TRENDING
     const colors = [
-      '#038047','#04995a','#06bf80','#059669','#10b981',
-      '#14b8a6','#0891b2','#0284c7','#3b82f6','#6366f1',
-      '#8b5cf6','#a78bfa','#f59e0b'
+      '#038047','#04995a','#2FC6F6','#06b6d4','#8b5cf6',
+      '#a78bfa','#f59e0b','#fbbf24','#10b981','#34d399',
+      '#ef4444','#f87171'
     ];
     
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Initialize ECharts
+    if (wordCloudChart) wordCloudChart.dispose();
     
-    WordCloud(canvas, {
-      list: wordList,
-      gridSize: 10,
-      weightFactor: function(size) {
-        return size * 3;
-      },
-      fontFamily: "'Poppins', 'Arial', sans-serif",
-      fontWeight: '700',
-      color: function() {
-        return colors[Math.floor(Math.random() * colors.length)];
-      },
-      rotateRatio: 0.4,
-      rotationSteps: 2,
-      minSize: 18,
-      backgroundColor: 'transparent',
-      drawOutOfBound: false,
-      shrinkToFit: true
+    wordCloudChart = echarts.init(chartDiv, null, {
+      renderer: 'canvas',
+      devicePixelRatio: window.devicePixelRatio || 1,
     });
+    
+    const option = {
+      tooltip: {
+        show: true,
+        trigger: 'item',
+        backgroundColor: '#ffffff',
+        borderColor: '#e2e8f0',
+        borderWidth: 1,
+        textStyle: { 
+          color: '#1a202c', 
+          fontSize: 13, 
+          fontFamily: 'Poppins, sans-serif' 
+        },
+        padding: 16,
+        shadowBlur: 20,
+        shadowColor: 'rgba(0,0,0,0.15)',
+        shadowOffsetY: 4,
+        formatter: (params) => {
+          const topic = params.data.originalTopic;
+          return `
+            <div style="font-family:Poppins,sans-serif;min-width:180px;">
+              <div style="font-weight:700;font-size:15px;color:#1a202c;margin-bottom:8px;text-align:center;">
+                ${params.name}
+              </div>
+              <div style="font-size:13px;color:#64748b;text-align:center;">
+                <strong>${topic.count.toLocaleString()}</strong> mentions
+              </div>
+            </div>
+          `;
+        },
+      },
+      series: [{
+        type: 'wordCloud',
+        shape: 'circle',
+        keepAspect: false,
+        left: 'center',
+        top: 'center',
+        width: '98%',
+        height: '98%',
+        right: null,
+        bottom: null,
+        sizeRange: [24, 120], // Much larger size range
+        rotationRange: [-45, 45],
+        rotationStep: 45,
+        gridSize: 8, // Tighter grid for better packing
+        drawOutOfBound: false,
+        layoutAnimation: true,
+        textStyle: {
+          fontFamily: 'Poppins, Inter, sans-serif',
+          fontWeight: 'bold',
+          color: () => colors[Math.floor(Math.random() * colors.length)],
+        },
+        emphasis: {
+          focus: 'self',
+          textStyle: {
+            textShadowBlur: 10,
+            textShadowColor: 'rgba(0,0,0,0.35)',
+          },
+        },
+        data: wordData,
+      }],
+    };
+    
+    setTimeout(() => {
+      wordCloudChart.setOption(option, true);
+    }, 10);
+    
+    // Resize handler
+    let resizeTimer;
+    const handleResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => { 
+        if (wordCloudChart) wordCloudChart.resize(); 
+      }, 250);
+    };
+    window.removeEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize);
   }
 
   function renderBarChart(topics) {

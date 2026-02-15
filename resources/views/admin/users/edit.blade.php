@@ -26,13 +26,13 @@
   </div>
   <div class="section-body">
     
-    <form method="POST" action="{{ route('admin.users.update', $user) }}" class="user-form">
+    <form method="POST" action="{{ route('admin.users.update', $user) }}" class="user-form" id="editUserForm">
       @csrf
       @method('PUT')
       
       <!-- Name Field -->
       <div class="form-group">
-        <label for="name" class="form-label">Full Name</label>
+        <label for="name" class="form-label">Username</label>
         <input 
           type="text" 
           id="name" 
@@ -41,7 +41,7 @@
           value="{{ old('name', $user->name) }}" 
           required 
           autofocus
-          placeholder="Enter user's full name"
+          placeholder="Enter username"
         >
         @error('name')
         <span class="error-message">{{ $message }}</span>
@@ -58,22 +58,57 @@
           class="form-input @error('email') is-invalid @enderror" 
           value="{{ old('email', $user->email) }}" 
           required
-          placeholder="user@example.com"
+          placeholder="user@smadiment.com"
         >
         @error('email')
         <span class="error-message">{{ $message }}</span>
         @enderror
       </div>
       
-      <!-- Reset Password Checkbox -->
+      <!-- Reset Password Section -->
       <div class="form-group">
-        <label class="checkbox-label">
-          <input type="checkbox" name="reset_password" value="1" {{ old('reset_password') ? 'checked' : '' }}>
+        <label class="checkbox-label" id="resetPasswordLabel">
+          <input 
+            type="checkbox" 
+            name="reset_password" 
+            id="reset_password"
+            value="1" 
+            {{ old('reset_password') ? 'checked' : '' }}
+            onchange="togglePasswordPreview()"
+          >
           <span class="checkbox-text">
             <strong>Reset Password</strong>
-            <small>Generate a new random password for this user</small>
+            <small>Generate a new password for this user based on their username</small>
           </span>
         </label>
+        
+        <!-- Password Preview (shown when checkbox is checked) -->
+        <div id="passwordPreviewBox" style="display: none; margin-top: 12px;">
+          <div class="password-preview-wrapper">
+            <input 
+              type="text" 
+              id="passwordPreview" 
+              class="form-input password-preview-input" 
+              readonly
+              placeholder="Password will be generated..."
+            >
+            <button type="button" class="btn-copy-password" onclick="copyGeneratedPassword()" id="copyPasswordBtn">
+              <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copy
+            </button>
+          </div>
+          <small class="form-hint password-hint">
+            <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2;">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <strong>Important!</strong> This password will be shown to you after saving. Make sure to save it.
+          </small>
+        </div>
       </div>
       
       <!-- Project Assignment -->
@@ -224,6 +259,12 @@
   background: #FFF3CD;
   border: 2px solid #FFE69C;
   border-radius: 10px;
+  transition: all 0.2s;
+}
+
+.checkbox-label:hover {
+  background: #FEF3C7;
+  border-color: #FCD34D;
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -250,6 +291,61 @@
   display: block;
   font-size: 12px;
   color: #78350F;
+}
+
+/* Password Preview */
+.password-preview-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.password-preview-input {
+  flex: 1;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  letter-spacing: 1px;
+  background: #FAFBFC !important;
+  border-color: var(--primary-green) !important;
+}
+
+.form-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6B7280;
+  margin-top: 6px;
+}
+
+.password-hint {
+  color: #92400E;
+  background: #FEF3C7;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #FCD34D;
+}
+
+.btn-copy-password {
+  padding: 12px 16px;
+  background: #DBEAFE;
+  color: #1E40AF;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.btn-copy-password:hover {
+  background: #1E40AF;
+  color: var(--white);
 }
 
 .projects-grid {
@@ -402,4 +498,100 @@
   color: var(--white);
 }
 </style>
+@endsection
+
+@section('scripts')
+<script>
+/**
+ * Toggle password preview box visibility
+ */
+function togglePasswordPreview() {
+  const checkbox = document.getElementById('reset_password');
+  const previewBox = document.getElementById('passwordPreviewBox');
+  const nameInput = document.getElementById('name');
+  
+  if (checkbox.checked) {
+    previewBox.style.display = 'block';
+    generatePasswordPreview();
+  } else {
+    previewBox.style.display = 'none';
+  }
+}
+
+/**
+ * Generate password preview based on username
+ */
+function generatePasswordPreview() {
+  const nameInput = document.getElementById('name');
+  const passwordPreview = document.getElementById('passwordPreview');
+  
+  let username = nameInput.value.trim().toLowerCase();
+  username = username.replace(/\s+/g, '');
+  
+  if (!username) {
+    passwordPreview.value = '';
+    return;
+  }
+  
+  // Generate password sama seperti di create form
+  let password = username
+    .replace(/i/g, '1')
+    .replace(/o/g, '0')
+    .replace(/e/g, '3')
+    .replace(/a/g, '4');
+  
+  // Random uppercase (30% chance per karakter)
+  password = password.split('').map(char => {
+    return Math.random() > 0.7 ? char.toUpperCase() : char;
+  }).join('');
+  
+  const generatedPassword = `${password}_SMADIMENT`;
+  passwordPreview.value = generatedPassword;
+}
+
+/**
+ * Copy generated password to clipboard
+ */
+function copyGeneratedPassword() {
+  const passwordPreview = document.getElementById('passwordPreview');
+  
+  if (!passwordPreview.value) {
+    alert('No password to copy!');
+    return;
+  }
+  
+  // Copy to clipboard
+  passwordPreview.select();
+  document.execCommand('copy');
+  
+  // Visual feedback
+  const copyBtn = document.getElementById('copyPasswordBtn');
+  const originalHTML = copyBtn.innerHTML;
+  
+  copyBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+      <polyline points="22 4 12 14.01 9 11.01"/>
+    </svg>
+    Copied!
+  `;
+  
+  setTimeout(() => {
+    copyBtn.innerHTML = originalHTML;
+  }, 2000);
+}
+
+// Auto-update password preview when username changes
+document.getElementById('name').addEventListener('input', function() {
+  const checkbox = document.getElementById('reset_password');
+  if (checkbox.checked) {
+    generatePasswordPreview();
+  }
+});
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  togglePasswordPreview();
+});
+</script>
 @endsection
