@@ -114,6 +114,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             // Word Cloud API
             Route::get('/word-cloud', [NewsController::class, 'newsWordCloudData'])
                 ->name('word-cloud-api');
+            
+            // 🔥 Top Publisher API (NEW)
+            Route::get('/top-publisher', [NewsController::class, 'topPublisherData'])
+                ->name('top-publisher-api');
         });
 
         // ─────────────────────────────────────────────────────
@@ -238,6 +242,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         // Word Cloud Page
         Route::get('/word-cloud', [NewsController::class, 'newsWordCloudPage'])
             ->name('word-cloud');
+        
+        // 🔥 Top Publisher Page (NEW)
+        Route::get('/top-publishers', [NewsController::class, 'topPublisherPage'])
+            ->name('top-publishers');
     });
 
     // ─────────────────────────────────────────────────────

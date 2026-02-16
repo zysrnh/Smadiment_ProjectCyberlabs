@@ -1413,7 +1413,51 @@ public function wordCloud(
         ];
     }
 }
+public function topPublisher(
+    string $projectId,
+    string $startDate,
+    string $endDate,
+    int $startTime = 0,
+    int $endTime = 23,
+    int $rows = 100,
+    string $newsType = 'article'
+): array {
+    try {
+        $token = $this->getToken();
 
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/top_publisher/',
+            [
+                'project_id' => $projectId,
+                'start_date' => $startDate,
+                'start_time' => $startTime,
+                'end_date'   => $endDate,
+                'end_time'   => $endTime,
+                'rows'       => $rows,
+                'news_type'  => $newsType,
+                'token'      => $token,
+            ]
+        );
+
+        $res->throw();
+
+        $json = $this->parseJson($res);
+
+        Log::info('topPublisher API response', [
+            'total_publishers' => count($json),
+            'top_3'            => array_slice(array_keys($json), 0, 3),
+        ]);
+
+        return $json;
+
+    } catch (\Exception $e) {
+        Log::error('topPublisher API error', [
+            'error'      => $e->getMessage(),
+            'project_id' => $projectId,
+        ]);
+        return [];
+    }
+}
 
 
 

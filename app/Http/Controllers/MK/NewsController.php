@@ -389,4 +389,114 @@ class NewsController extends Controller
         arsort($wordFreq);
         return array_slice($wordFreq, 0, 80, true);
     }
+    public function topPublisherPage(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id', session('selected_project_id'));
+        
+        if (!$projectId) {
+            Log::warning('Top Publisher: No project selected');
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'Please select a project first');
+        }
+
+        session(['selected_project_id' => $projectId]);
+
+        $endDate = $request->query('end_date', now()->format('Y-m-d'));
+        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+        Log::info('Top Publisher Page Loaded', [
+            'project_id' => $projectId,
+            'start_date' => $startDate,
+            'end_date'   => $endDate,
+        ]);
+
+        return view('mk.news.top-publisher', [
+            'projectId' => $projectId,
+            'startDate' => $startDate,
+            'endDate'   => $endDate,
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Top Publisher Page Error', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        return redirect()->route('mk.dashboard')
+            ->with('error', 'Failed to load Top Publisher page');
+    }
+}
+
+/**
+ * API: Get Top Publisher Data
+ */
+public function topPublisherData(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
+        $newsType = $request->query('news_type', 'article');
+
+        if (!$projectId) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Project ID is required',
+            ], 400);
+        }
+
+        Log::info('🔍 Top Publisher Data Fetch Started', [
+            'project_id' => $projectId,
+            'start_date' => $startDate,
+            'end_date'   => $endDate,
+            'news_type'  => $newsType,
+        ]);
+
+        $publishersData = $this->mkClient->topPublisher(
+            $projectId,
+            $startDate,
+            $endDate,
+            0,
+            23,
+            100,
+            $newsType
+        );
+
+        // Transform data to array of objects
+        $publishers = [];
+        $rank = 1;
+        foreach ($publishersData as $domain => $count) {
+            $publishers[] = [
+                'rank'   => $rank++,
+                'domain' => $domain,
+                'count'  => (int)$count,
+            ];
+        }
+
+        Log::info('🎉 Top Publisher data retrieved', [
+            'total_publishers' => count($publishers),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $publishers,
+            'meta'    => [
+                'total_publishers' => count($publishers),
+                'total_articles'   => array_sum(array_column($publishers, 'count')),
+            ],
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('❌ Top Publisher API Error', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'error'   => 'Failed to fetch top publisher data',
+        ], 500);
+    }
+}
 }

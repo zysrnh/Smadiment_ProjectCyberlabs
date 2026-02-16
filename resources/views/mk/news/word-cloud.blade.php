@@ -794,81 +794,82 @@
         <h1>News Word Cloud</h1>
         <p>Visual representation of trending words in news mentions</p>
     </div>
-
-    <!-- Stats Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-header">
-                <div class="stat-icon-wrapper">
-                    <svg class="stat-icon" viewBox="0 0 24 24">
-                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                        <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
-                    </svg>
-                </div>
-            </div>
-            <div class="stat-label">Total Words</div>
-            <div id="totalWords" class="stat-value-wrapper">
-                <div class="stat-value">-</div>
-            </div>
-            <div class="stat-progress">
-                <div class="stat-progress-bar"></div>
+<!-- Stats Cards -->
+<div class="stats-grid">
+    <!-- CARD 1: Total Words -->
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon-wrapper">
+                <svg class="stat-icon" viewBox="0 0 24 24">
+                    <path d="M4 7h16M4 12h16M4 17h10"/>
+                </svg>
             </div>
         </div>
-
-        <div class="stat-card">
-            <div class="stat-header">
-                <div class="stat-icon-wrapper">
-                    <svg class="stat-icon" viewBox="0 0 24 24">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                    </svg>
-                </div>
-            </div>
-            <div class="stat-label">Top Word</div>
-            <div id="topWord" class="stat-value-wrapper">
-                <div class="stat-value" style="font-size: 20px;">-</div>
-            </div>
-            <div class="stat-progress">
-                <div class="stat-progress-bar"></div>
-            </div>
+        <div class="stat-label">Total Words</div>
+        <div id="totalWords" class="stat-value-wrapper">
+            <div class="stat-value">-</div>
         </div>
-
-        <div class="stat-card">
-            <div class="stat-header">
-                <div class="stat-icon-wrapper">
-                    <svg class="stat-icon" viewBox="0 0 24 24">
-                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
-                    </svg>
-                </div>
-            </div>
-            <div class="stat-label">Total Mentions</div>
-            <div id="totalMentions" class="stat-value-wrapper">
-                <div class="stat-value">-</div>
-            </div>
-            <div class="stat-progress">
-                <div class="stat-progress-bar"></div>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-header">
-                <div class="stat-icon-wrapper">
-                    <svg class="stat-icon" viewBox="0 0 24 24">
-    <line x1="18" y1="20" x2="18" y2="10"/>
-    <line x1="12" y1="20" x2="12" y2="4"/>
-    <line x1="6" y1="20" x2="6" y2="14"/>
-</svg>
-                </div>
-            </div>
-            <div class="stat-label">Avg per Word</div>
-            <div id="avgMentions" class="stat-value-wrapper">
-                <div class="stat-value">-</div>
-            </div>
-            <div class="stat-progress">
-                <div class="stat-progress-bar"></div>
-            </div>
+        <div class="stat-progress">
+            <div class="stat-progress-bar"></div>
         </div>
     </div>
 
+    <!-- CARD 2: Top Word -->
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon-wrapper">
+                <svg class="stat-icon" viewBox="0 0 24 24">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-label">Top Word</div>
+        <div id="topWord" class="stat-value-wrapper">
+            <div class="stat-value" style="font-size: 20px;">-</div>
+        </div>
+        <div class="stat-progress">
+            <div class="stat-progress-bar"></div>
+        </div>
+    </div>
+
+    <!-- CARD 3: Total Mentions -->
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon-wrapper">
+                <svg class="stat-icon" viewBox="0 0 24 24">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-label">Total Mentions</div>
+        <div id="totalMentions" class="stat-value-wrapper">
+            <div class="stat-value">-</div>
+        </div>
+        <div class="stat-progress">
+            <div class="stat-progress-bar"></div>
+        </div>
+    </div>
+
+    <!-- CARD 4: Avg per Word -->
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon-wrapper">
+                <svg class="stat-icon" viewBox="0 0 24 24">
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-label">Avg per Word</div>
+        <div id="avgMentions" class="stat-value-wrapper">
+            <div class="stat-value">-</div>
+        </div>
+        <div class="stat-progress">
+            <div class="stat-progress-bar"></div>
+        </div>
+    </div>
+</div>
     <div class="filter-card">
         <form id="filterForm" method="GET" action="{{ route('mk.news.word-cloud') }}">
             <input type="hidden" name="project_id" value="{{ $projectId }}">
