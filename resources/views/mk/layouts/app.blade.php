@@ -679,66 +679,66 @@
         </div>
       </div>
 
-   <div class="nav-label">News</div>
-        
-     @php
-$newsRoutes = ['mk.news.word-cloud', 'mk.news.top-publishers'];
-$isNewsActive = request()->routeIs($newsRoutes);
-@endphp
-        <div class="nav-item dropdown-trigger {{ $isNewsActive ? 'has-active-child' : '' }}" 
-             onclick="toggleDropdown('newsDropdown', this)"
-             id="newsTrigger">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      <div class="nav-label">News</div>
+
+      @php
+      $newsRoutes = ['mk.news.word-cloud', 'mk.news.top-publishers'];
+      $isNewsActive = request()->routeIs($newsRoutes);
+      @endphp
+      <div class="nav-item dropdown-trigger {{ $isNewsActive ? 'has-active-child' : '' }}"
+        onclick="toggleDropdown('newsDropdown', this)"
+        id="newsTrigger">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+          </svg>
+        </span>
+        <span>News</span>
+        <span class="dropdown-arrow">▼</span>
+      </div>
+
+      <div id="newsDropdown" class="nav-sub" style="display: {{ $isNewsActive ? 'block' : 'none' }};">
+
+        <!-- Word Cloud - 🔥 FIXED: Added project_id -->
+        <a href="{{ route('mk.news.word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+          class="nav-item {{ request()->routeIs('mk.news.word-cloud') ? 'active' : '' }}">
+          <span class="menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+              <line x1="12" y1="22.08" x2="12" y2="12" />
             </svg>
           </span>
-          <span>News</span>
-          <span class="dropdown-arrow">▼</span>
-        </div>
-        
-        <div id="newsDropdown" class="nav-sub" style="display: {{ $isNewsActive ? 'block' : 'none' }};">
-          
-          <!-- Word Cloud - 🔥 FIXED: Added project_id -->
-          <a href="{{ route('mk.news.word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.news.word-cloud') ? 'active' : '' }}">
-            <span class="menu-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                <line x1="12" y1="22.08" x2="12" y2="12"/>
-              </svg>
-            </span>
-            <span>Word Cloud</span>
-          </a>
-           <a href="{{ route('mk.news.top-publishers') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-     class="nav-item {{ request()->routeIs('mk.news.top-publishers') ? 'active' : '' }}">
-    <span class="menu-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-        <line x1="10" y1="6" x2="16" y2="6"/>
-        <line x1="10" y1="10" x2="16" y2="10"/>
-        <line x1="10" y1="14" x2="16" y2="14"/>
-      </svg>
-    </span>
-    <span>Top Publishers</span>
-  </a>
-  <a href="{{ route('mk.news.timeline') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.news.timeline') ? 'active' : '' }}">
-            <span class="menu-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="2" x2="12" y2="22"/>
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-              </svg>
-            </span>
-            <span>Mention</span>
-          </a>
-          
-          
-        </div>
+          <span>Word Cloud</span>
+        </a>
+        <a href="{{ route('mk.news.top-publishers') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+          class="nav-item {{ request()->routeIs('mk.news.top-publishers') ? 'active' : '' }}">
+          <span class="menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              <line x1="10" y1="6" x2="16" y2="6" />
+              <line x1="10" y1="10" x2="16" y2="10" />
+              <line x1="10" y1="14" x2="16" y2="14" />
+            </svg>
+          </span>
+          <span>Top Publishers</span>
+        </a>
+        <a href="{{ route('mk.news.timeline') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+          class="nav-item {{ request()->routeIs('mk.news.timeline') ? 'active' : '' }}">
+          <span class="menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="2" x2="12" y2="22" />
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+          </span>
+          <span>Mention</span>
+        </a>
+
+
       </div>
+    </div>
     <!-- SOCIAL MEDIA SECTION -->
     <div class="nav-section">
       <div class="nav-label">Social Media</div>
@@ -773,7 +773,7 @@ $isNewsActive = request()->routeIs($newsRoutes);
 
         <div id="xDropdown" class="nav-sub" style="display: {{ $isXActive ? 'block' : 'none' }};">
 
-          <!-- 1. Overview -->
+
           <a href="{{ route('mk.x.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
             class="nav-item {{ request()->routeIs('mk.x.overview') ? 'active' : '' }}">
             <span class="menu-icon">
@@ -787,7 +787,7 @@ $isNewsActive = request()->routeIs($newsRoutes);
             <span>Overview</span>
           </a>
 
-          <!-- 2. Trending Topics - NEW 🔥 -->
+
           <a href="{{ route('mk.x.trending-topics') }}"
             class="nav-item {{ request()->routeIs('mk.x.trending-topics') ? 'active' : '' }}">
             <span class="menu-icon">

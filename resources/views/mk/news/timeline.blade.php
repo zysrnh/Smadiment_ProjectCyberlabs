@@ -9,6 +9,7 @@
     --primary-green-dark: #026738;
     --text-primary: #1a202c;
     --text-secondary: #64748b;
+    --text-muted: #94a3b8;
     --bg-white: #ffffff;
     --bg-gray-50: #f8fafc;
     --bg-gray-100: #f1f5f9;
@@ -102,7 +103,7 @@
     height: 18px;
   }
 
-  /* Date Picker */
+  /* Date Picker Trigger */
   .date-picker-trigger {
     display: flex;
     align-items: center;
@@ -125,6 +126,305 @@
     border-color: var(--primary-green);
     background: var(--bg-white);
     box-shadow: 0 0 0 3px rgba(3, 128, 71, 0.1);
+  }
+
+  .date-picker-trigger svg:first-child {
+    width: 18px;
+    height: 18px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  .date-picker-trigger span {
+    flex: 1;
+    text-align: left;
+  }
+
+  .date-picker-trigger svg:last-child {
+    width: 16px;
+    height: 16px;
+    margin-left: auto;
+    color: var(--text-secondary);
+  }
+
+  /* Date Picker Modal */
+  .date-picker-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+  }
+
+  .date-picker-modal.show {
+    display: flex;
+  }
+
+  .date-picker-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+  }
+
+  .date-picker-container {
+    position: relative;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    display: flex;
+    max-width: 900px;
+    width: 90%;
+    max-height: 90vh;
+    z-index: 10001;
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes slideUp {
+    from { 
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Sidebar with Presets */
+  .date-picker-sidebar {
+    width: 180px;
+    background: var(--bg-gray-50);
+    border-right: 1px solid var(--border-gray);
+    padding: 16px 12px;
+    border-radius: 16px 0 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .date-preset {
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .date-preset:hover {
+    background: var(--bg-white);
+    color: var(--primary-green);
+  }
+
+  .date-preset.active {
+    background: var(--primary-green);
+    color: white;
+  }
+
+  /* Calendar Content */
+  .date-picker-content {
+    flex: 1;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .date-picker-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--bg-gray-50);
+    border: 1px solid var(--border-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .nav-btn:hover {
+    background: var(--primary-green);
+    border-color: var(--primary-green);
+    color: white;
+  }
+
+  .nav-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Calendars Wrapper */
+  .calendars-wrapper {
+    display: flex;
+    gap: 24px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .calendar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .calendar-month {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .weekday {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    padding: 8px 0;
+  }
+
+  .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+
+  .calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-primary);
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+
+  .calendar-day:hover:not(.disabled):not(.other-month) {
+    background: var(--bg-gray-100);
+  }
+
+  .calendar-day.other-month {
+    color: #cbd5e1;
+    cursor: default;
+  }
+
+  .calendar-day.disabled {
+    color: #e2e8f0;
+    cursor: not-allowed;
+  }
+
+  .calendar-day.today {
+    border: 2px solid var(--primary-green);
+  }
+
+  .calendar-day.selected {
+    background: var(--primary-green);
+    color: white;
+  }
+
+  .calendar-day.in-range {
+    background: rgba(3, 128, 71, 0.1);
+    color: var(--primary-green);
+  }
+
+  .calendar-day.range-start,
+  .calendar-day.range-end {
+    background: var(--primary-green);
+    color: white;
+  }
+
+  /* Date Display */
+  .date-picker-display {
+    padding: 16px 20px;
+    background: var(--bg-gray-50);
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-gray);
+  }
+
+  .date-picker-display span {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  /* Footer Buttons */
+  .date-picker-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+
+  .cancel-btn,
+  .apply-date-btn {
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+
+  .cancel-btn {
+    background: var(--bg-gray-100);
+    color: var(--text-primary);
+  }
+
+  .cancel-btn:hover {
+    background: var(--border-gray);
+  }
+
+  .apply-date-btn {
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(3, 128, 71, 0.2);
+  }
+
+  .apply-date-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(3, 128, 71, 0.3);
   }
 
   /* Stats Grid */
@@ -183,6 +483,25 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+  }
+
+  .stat-icon-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 16px;
+    padding: 4px;
+    background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .stat-card:hover .stat-icon-wrapper::after {
+    opacity: 0.5;
   }
 
   .stat-icon {
@@ -242,6 +561,11 @@
     padding: 28px;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-gray);
+    transition: all 0.3s;
+  }
+
+  .chart-card:hover {
+    box-shadow: var(--shadow-md);
   }
 
   .chart-header {
@@ -271,40 +595,19 @@
     height: 320px;
   }
 
-  /* Timeline Section */
-  .timeline-section {
-    background: var(--bg-white);
-    border-radius: 16px;
-    padding: 28px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-gray);
-    margin-bottom: 24px;
-  }
-
-  .timeline-header {
+  /* Filter Controls */
+  .filter-controls {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid var(--bg-gray-50);
-  }
-
-  .timeline-title h3 {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0 0 6px 0;
-  }
-
-  .timeline-subtitle {
-    font-size: 13px;
-    color: var(--text-secondary);
+    justify-content: flex-end;
+    gap: 12px;
   }
 
   .timeline-search {
     position: relative;
-    width: 280px;
+    flex: 1;
+    min-width: 240px;
+    max-width: 400px;
   }
 
   .timeline-search input {
@@ -335,87 +638,301 @@
     color: var(--text-secondary);
   }
 
-  /* Timeline Item */
-  .timeline-list {
-    position: relative;
-  }
-
-  .timeline-item {
-    position: relative;
-    padding-left: 32px;
-    padding-bottom: 24px;
-    margin-bottom: 24px;
-    border-left: 2px solid var(--border-gray);
-  }
-
-  .timeline-item:last-child {
-    border-left-color: transparent;
-    margin-bottom: 0;
-  }
-
-  .timeline-dot {
-    position: absolute;
-    left: -7px;
-    top: 8px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--primary-green);
-    border: 2px solid var(--bg-white);
-    box-shadow: 0 0 0 2px var(--primary-green);
-  }
-
-  .timeline-content {
-    background: var(--bg-gray-50);
-    border-radius: 12px;
-    padding: 16px;
-    border: 1px solid var(--border-gray);
-    transition: all 0.2s;
-  }
-
-  .timeline-content:hover {
+  /* Table Container */
+  .table-container {
     background: var(--bg-white);
+    border-radius: 16px;
+    border: 1px solid var(--border-gray);
     box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
   }
 
-  .timeline-meta {
+  .table-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
+    padding: 24px 28px;
+    border-bottom: 2px solid var(--bg-gray-50);
+    gap: 16px;
     flex-wrap: wrap;
   }
 
-  .timeline-date {
-    font-size: 12px;
+  .table-title-group h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+  }
+
+  .table-subtitle {
+    font-size: 13px;
     color: var(--text-secondary);
-    font-weight: 600;
   }
 
-  .timeline-source {
-    padding: 4px 10px;
-    background: var(--primary-green);
-    color: white;
-    border-radius: 12px;
+  .table-wrapper {
+    overflow-x: auto;
+  }
+
+  /* Modern Table */
+  .mentions-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .mentions-table thead {
+    background: linear-gradient(135deg, var(--bg-gray-50) 0%, var(--bg-white) 100%);
+    border-bottom: 2px solid var(--border-gray);
+  }
+
+  .mentions-table th {
+    padding: 16px 20px;
+    text-align: left;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
   }
 
-  .timeline-text {
+  .mentions-table th.text-center { text-align: center; }
+  .mentions-table th.text-right { text-align: right; }
+
+  .mentions-table tbody tr {
+    border-bottom: 1px solid var(--bg-gray-100);
+    transition: all 0.2s;
+  }
+
+  .mentions-table tbody tr:hover {
+    background: var(--bg-gray-50);
+  }
+
+  .mentions-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .mentions-table td {
+    padding: 16px 20px;
+    font-size: 13px;
+    color: var(--text-primary);
+    vertical-align: middle;
+  }
+
+  /* Rank Column */
+  .rank-cell {
+    font-weight: 700;
+    color: var(--primary-green);
+    font-size: 15px;
+    text-align: center;
+    width: 60px;
+  }
+
+  /* Date Column */
+  .date-cell {
+    min-width: 160px;
+  }
+
+  .date-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .date-main {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .date-time {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  /* Content Column */
+  .content-cell {
+    max-width: 500px;
+  }
+
+  .mention-content {
     font-size: 14px;
     line-height: 1.6;
     color: var(--text-primary);
-    margin-bottom: 12px;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-wrap: break-word;
   }
 
-  .timeline-author {
+  .mention-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+  }
+
+  .mention-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .mention-meta-item svg {
+    width: 13px;
+    height: 13px;
+    stroke: currentColor;
+    fill: none;
+  }
+
+  .mention-link {
+    color: var(--primary-green);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .mention-link:hover {
+    color: var(--primary-green-dark);
+    text-decoration: underline;
+  }
+
+  /* Author Column */
+  .author-cell {
+    min-width: 180px;
+  }
+
+  .author-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .author-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-gray);
+    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+    text-transform: uppercase;
+  }
+
+  .author-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .author-details {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .author-name {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 2px 0;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .author-handle {
     font-size: 12px;
     color: var(--text-secondary);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .timeline-author strong {
-    color: var(--text-primary);
+  /* Source Badge */
+  .source-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    min-width: 80px;
+  }
+
+  .source-badge.news {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    color: #1e40af;
+    border: 1px solid #93c5fd;
+  }
+
+  .source-badge.twitter {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    color: #1d4ed8;
+    border: 1px solid #60a5fa;
+  }
+
+  .source-badge.instagram {
+    background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+    color: #be185d;
+    border: 1px solid #f9a8d4;
+  }
+
+  .source-badge.facebook {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    color: #1e40af;
+    border: 1px solid #93c5fd;
+  }
+
+  .source-badge.youtube {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+  }
+
+  .source-badge.tiktok {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    color: #1f2937;
+    border: 1px solid #d1d5db;
+  }
+
+  /* Media Type Badge */
+  .media-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--bg-gray-50);
+    color: var(--text-secondary);
+    border-radius: 12px;
+    font-size: 11px;
     font-weight: 600;
+    border: 1px solid var(--border-gray);
+  }
+
+  .media-type-badge svg {
+    width: 12px;
+    height: 12px;
+    stroke: currentColor;
+    fill: none;
   }
 
   /* Pagination */
@@ -557,6 +1074,34 @@
     border: 1px solid #fcd34d;
   }
 
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+  }
+
+  .empty-state svg {
+    width: 64px;
+    height: 64px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    stroke: currentColor;
+    fill: none;
+  }
+
+  .empty-state h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+  }
+
+  .empty-state p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
   /* Responsive */
   @media (max-width: 1024px) {
     .dashboard-container {
@@ -581,6 +1126,29 @@
       width: 100%;
       justify-content: center;
     }
+
+    .filter-controls {
+      width: 100%;
+    }
+
+    .timeline-search {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .mentions-table th,
+    .mentions-table td {
+      padding: 12px 10px;
+      font-size: 12px;
+    }
+
+    .author-cell {
+      min-width: 150px;
+    }
+
+    .content-cell {
+      max-width: 300px;
+    }
   }
 
   @media (max-width: 768px) {
@@ -592,16 +1160,89 @@
       height: 250px;
     }
 
-    .timeline-search {
-      width: 100%;
-    }
-
     .page-header h1 {
       font-size: 24px;
     }
 
     .date-picker-trigger {
       max-width: 100%;
+    }
+
+    .date-picker-container {
+      flex-direction: column;
+      max-height: 85vh;
+      overflow-y: auto;
+      width: 95%;
+    }
+
+    .date-picker-sidebar {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid var(--border-gray);
+      border-radius: 16px 16px 0 0;
+      flex-direction: row;
+      overflow-x: auto;
+      padding: 12px 16px;
+    }
+
+    .date-preset {
+      white-space: nowrap;
+    }
+
+    .date-picker-content {
+      padding: 20px 16px;
+    }
+
+    .calendars-wrapper {
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .date-picker-header {
+      flex-wrap: wrap;
+    }
+
+    .calendar-day {
+      font-size: 12px;
+    }
+
+    .weekday {
+      font-size: 10px;
+    }
+
+    .cancel-btn,
+    .apply-date-btn {
+      flex: 1;
+    }
+
+    /* Mobile table adjustments */
+    .mentions-table th,
+    .mentions-table td {
+      padding: 10px 8px;
+      font-size: 11px;
+    }
+
+    .mention-content {
+      -webkit-line-clamp: 1;
+      font-size: 12px;
+    }
+
+    .author-info {
+      gap: 8px;
+    }
+
+    .author-avatar {
+      width: 36px;
+      height: 36px;
+      font-size: 14px;
+    }
+
+    .author-name {
+      font-size: 12px;
+    }
+
+    .author-handle {
+      font-size: 11px;
     }
   }
 </style>
@@ -668,6 +1309,57 @@
         </button>
       </div>
     </form>
+  </div>
+
+  <!-- Date Range Picker Modal -->
+  <div class="date-picker-modal" id="datePickerModal">
+    <div class="date-picker-overlay"></div>
+    <div class="date-picker-container">
+      <!-- Sidebar with Presets -->
+      <div class="date-picker-sidebar">
+        <button type="button" class="date-preset" data-preset="today">Today</button>
+        <button type="button" class="date-preset" data-preset="yesterday">Yesterday</button>
+        <button type="button" class="date-preset" data-preset="last7days">Last 7 Days</button>
+        <button type="button" class="date-preset" data-preset="last30days">Last 30 Days</button>
+        <button type="button" class="date-preset" data-preset="thismonth">This Month</button>
+        <button type="button" class="date-preset" data-preset="lastmonth">Last Month</button>
+        <button type="button" class="date-preset active" data-preset="custom">Custom Range</button>
+      </div>
+      
+      <!-- Calendar Content -->
+      <div class="date-picker-content">
+        <!-- Navigation Header -->
+        <div class="date-picker-header">
+          <button type="button" class="nav-btn" id="prevMonth">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          
+          <div class="calendars-wrapper">
+            <div class="calendar" id="calendar1"></div>
+            <div class="calendar" id="calendar2"></div>
+          </div>
+          
+          <button type="button" class="nav-btn" id="nextMonth">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Selected Date Display -->
+        <div class="date-picker-display">
+          <span id="selectedRangeText">{{ $startDate }} to {{ $endDate }}</span>
+        </div>
+        
+        <!-- Footer Buttons -->
+        <div class="date-picker-footer">
+          <button type="button" class="cancel-btn">Cancel</button>
+          <button type="button" class="apply-date-btn" id="applyDatePicker">Apply</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Stats Grid -->
@@ -778,24 +1470,56 @@
   </div>
 
   <!-- Timeline Section -->
-  <div class="timeline-section" data-lazy-load="timeline">
-    <div class="timeline-header">
-      <div class="timeline-title">
+  <div class="table-container" data-lazy-load="timeline">
+    <div class="table-header">
+      <div class="table-title-group">
         <h3>News Mentions Timeline</h3>
-        <p class="timeline-subtitle">Chronological list of all news mentions</p>
+        <p class="table-subtitle">All mentions across different media platforms</p>
       </div>
 
-      <div class="timeline-search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input type="text" id="timelineSearchInput" placeholder="Search mentions..." onkeyup="filterTimeline()">
+      <div class="filter-controls">
+        <div class="timeline-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" id="timelineSearchInput" placeholder="Search mentions..." onkeyup="filterMentions()">
+        </div>
       </div>
     </div>
 
-    <div id="timelineLoading" class="loading-skeleton" style="height: 400px;"></div>
-    <div id="timelineContent" style="display: none;"></div>
+    <div class="table-wrapper">
+      <!-- Loading State -->
+      <div id="timelineLoading" class="loading-skeleton" style="height: 400px; margin: 20px;"></div>
+
+      <!-- Actual Table (hidden initially) -->
+      <table class="mentions-table" id="mentionsTable" style="display: none;">
+        <thead>
+          <tr>
+            <th style="width: 60px;">#</th>
+            <th>Content</th>
+            <th style="width: 200px;">Author</th>
+            <th style="width: 180px;">Date & Time</th>
+          </tr>
+        </thead>
+        <tbody id="mentionsTableBody">
+          <!-- Will be populated by JavaScript -->
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div id="emptyState" style="display: none;">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" style="width: 64px; height: 64px; color: var(--text-secondary); stroke: currentColor; fill: none;">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <h3>No Mentions Found</h3>
+          <p>No mentions available for the selected filters.</p>
+        </div>
+      </div>
+    </div>
 
     <!-- Pagination -->
     <div class="pagination" id="pagination" style="display: none;">
@@ -818,6 +1542,300 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 // ========================================
+// DATE PICKER JAVASCRIPT
+// ========================================
+(function() {
+  'use strict';
+  
+  let selectedStartDate = null;
+  let selectedEndDate = null;
+  let currentMonth1 = new Date();
+  let currentMonth2 = new Date();
+  let selectingStart = true;
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const startDateInput = document.getElementById('hiddenStartDate');
+    const endDateInput = document.getElementById('hiddenEndDate');
+    
+    if (startDateInput && startDateInput.value) {
+      selectedStartDate = new Date(startDateInput.value);
+    } else {
+      selectedEndDate = new Date();
+      selectedStartDate = new Date();
+      selectedStartDate.setDate(selectedStartDate.getDate() - 6);
+    }
+    
+    if (endDateInput && endDateInput.value) {
+      selectedEndDate = new Date(endDateInput.value);
+    }
+    
+    currentMonth1 = new Date(selectedStartDate);
+    currentMonth2 = new Date(selectedStartDate);
+    currentMonth2.setMonth(currentMonth2.getMonth() + 1);
+    
+    renderCalendars();
+    setupEventListeners();
+  });
+
+  function setupEventListeners() {
+    const trigger = document.getElementById('datePickerTrigger');
+    if (trigger) {
+      trigger.addEventListener('click', openDatePicker);
+    }
+
+    const overlay = document.querySelector('.date-picker-overlay');
+    if (overlay) {
+      overlay.addEventListener('click', closeDatePicker);
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('datePickerModal');
+        if (modal && modal.classList.contains('show')) {
+          closeDatePicker();
+        }
+      }
+    });
+
+    document.querySelectorAll('.date-preset').forEach(btn => {
+      btn.addEventListener('click', handlePresetClick);
+    });
+
+    const prevBtn = document.getElementById('prevMonth');
+    const nextBtn = document.getElementById('nextMonth');
+    
+    if (prevBtn) {
+      prevBtn.addEventListener('click', function() {
+        currentMonth1.setMonth(currentMonth1.getMonth() - 1);
+        currentMonth2.setMonth(currentMonth2.getMonth() - 1);
+        renderCalendars();
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function() {
+        currentMonth1.setMonth(currentMonth1.getMonth() + 1);
+        currentMonth2.setMonth(currentMonth2.getMonth() + 1);
+        renderCalendars();
+      });
+    }
+
+    const applyBtn = document.getElementById('applyDatePicker');
+    if (applyBtn) {
+      applyBtn.addEventListener('click', applyDateSelection);
+    }
+
+    const cancelBtn = document.querySelector('.cancel-btn');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', closeDatePicker);
+    }
+  }
+
+  function openDatePicker() {
+    document.getElementById('datePickerModal').classList.add('show');
+    renderCalendars();
+  }
+
+  function closeDatePicker() {
+    document.getElementById('datePickerModal').classList.remove('show');
+  }
+
+  function handlePresetClick(e) {
+    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+
+    const preset = e.target.dataset.preset;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    switch(preset) {
+      case 'today':
+        selectedStartDate = new Date(today);
+        selectedEndDate = new Date(today);
+        break;
+      case 'yesterday':
+        selectedStartDate = new Date(today);
+        selectedStartDate.setDate(today.getDate() - 1);
+        selectedEndDate = new Date(selectedStartDate);
+        break;
+      case 'last7days':
+        selectedEndDate = new Date(today);
+        selectedStartDate = new Date(today);
+        selectedStartDate.setDate(today.getDate() - 6);
+        break;
+      case 'last30days':
+        selectedEndDate = new Date(today);
+        selectedStartDate = new Date(today);
+        selectedStartDate.setDate(today.getDate() - 29);
+        break;
+      case 'thismonth':
+        selectedStartDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        selectedEndDate = new Date(today);
+        break;
+      case 'lastmonth':
+        selectedStartDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        selectedEndDate = new Date(today.getFullYear(), today.getMonth(), 0);
+        break;
+    }
+    
+    if (preset !== 'custom') {
+      currentMonth1 = new Date(selectedStartDate);
+      currentMonth2 = new Date(selectedStartDate);
+      currentMonth2.setMonth(currentMonth2.getMonth() + 1);
+      
+      updateDateDisplay();
+      renderCalendars();
+    }
+  }
+
+  function applyDateSelection() {
+    const start = formatDate(selectedStartDate);
+    const end = formatDate(selectedEndDate);
+    
+    document.getElementById('hiddenStartDate').value = start;
+    document.getElementById('hiddenEndDate').value = end;
+    
+    const displayElement = document.getElementById('dateRangeDisplay');
+    if (displayElement) {
+      displayElement.textContent = `${start} to ${end}`;
+    }
+    
+    closeDatePicker();
+  }
+
+  function renderCalendars() {
+    renderCalendar('calendar1', currentMonth1);
+    renderCalendar('calendar2', currentMonth2);
+    updateDateDisplay();
+  }
+
+  function renderCalendar(elementId, month) {
+    const calendar = document.getElementById(elementId);
+    if (!calendar) return;
+
+    const year = month.getFullYear();
+    const monthNum = month.getMonth();
+    const firstDay = new Date(year, monthNum, 1);
+    const lastDay = new Date(year, monthNum + 1, 0);
+    const prevLastDay = new Date(year, monthNum, 0);
+    
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+    const weekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+    
+    let html = `
+      <div class="calendar-month">${monthNames[monthNum]} ${year}</div>
+      <div class="calendar-weekdays">
+        ${weekdays.map(day => `<div class="weekday">${day}</div>`).join('')}
+      </div>
+      <div class="calendar-days">
+    `;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const firstDayOfWeek = firstDay.getDay();
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      const prevMonthDay = prevLastDay.getDate() - (firstDayOfWeek - 1 - i);
+      html += `<button type="button" class="calendar-day other-month" disabled>${prevMonthDay}</button>`;
+    }
+    
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      const date = new Date(year, monthNum, day);
+      date.setHours(0, 0, 0, 0);
+      
+      const dateStr = formatDate(date);
+      let classes = 'calendar-day';
+      
+      if (isSameDay(date, today)) classes += ' today';
+      if (date > today) classes += ' disabled';
+      
+      if (selectedStartDate && selectedEndDate) {
+        if (isSameDay(date, selectedStartDate)) {
+          classes += ' selected range-start';
+        } else if (isSameDay(date, selectedEndDate)) {
+          classes += ' selected range-end';
+        } else if (date > selectedStartDate && date < selectedEndDate) {
+          classes += ' in-range';
+        }
+      }
+      
+      const disabled = date > today ? 'disabled' : '';
+      html += `<button type="button" class="${classes}" data-date="${dateStr}" ${disabled}>${day}</button>`;
+    }
+    
+    const lastDayOfWeek = lastDay.getDay();
+    const remainingCells = lastDayOfWeek === 6 ? 0 : 6 - lastDayOfWeek;
+    for (let i = 1; i <= remainingCells; i++) {
+      html += `<button type="button" class="calendar-day other-month" disabled>${i}</button>`;
+    }
+    
+    html += '</div>';
+    calendar.innerHTML = html;
+    
+    calendar.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)').forEach(btn => {
+      btn.addEventListener('click', handleDateClick);
+    });
+  }
+
+  function handleDateClick(e) {
+    const dateStr = e.target.dataset.date;
+    const date = new Date(dateStr);
+    date.setHours(0, 0, 0, 0);
+    
+    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+    const customPreset = document.querySelector('[data-preset="custom"]');
+    if (customPreset) customPreset.classList.add('active');
+    
+    if (selectingStart || date < selectedStartDate) {
+      selectedStartDate = date;
+      selectedEndDate = date;
+      selectingStart = false;
+    } else {
+      if (date >= selectedStartDate) {
+        selectedEndDate = date;
+      } else {
+        selectedEndDate = selectedStartDate;
+        selectedStartDate = date;
+      }
+      selectingStart = true;
+    }
+    
+    updateDateDisplay();
+    renderCalendars();
+  }
+
+  function updateDateDisplay() {
+    if (!selectedStartDate || !selectedEndDate) return;
+    
+    const start = formatDate(selectedStartDate);
+    const end = formatDate(selectedEndDate);
+    
+    const displayElement = document.getElementById('selectedRangeText');
+    if (displayElement) {
+      displayElement.textContent = `${start} to ${end}`;
+    }
+  }
+
+  function formatDate(date) {
+    if (!date) return '';
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function isSameDay(date1, date2) {
+    if (!date1 || !date2) return false;
+    
+    return date1.getFullYear() === date2.getFullYear() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getDate() === date2.getDate();
+  }
+})();
+
+// ========================================
 // MAIN LOGIC
 // ========================================
 const projectId = '{{ $projectId ?? '' }}';
@@ -825,8 +1843,10 @@ const startDate = '{{ $startDate ?? '' }}';
 const endDate = '{{ $endDate ?? '' }}';
 
 let allMentions = [];
+let filteredMentions = [];
 let currentPage = 1;
-let mentionsPerPage = 10;
+let mentionsPerPage = 20;
+let currentSearchTerm = '';
 
 function formatNumber(num) {
   return new Intl.NumberFormat('en-US').format(num);
@@ -835,16 +1855,54 @@ function formatNumber(num) {
 function formatDate(dateStr) {
   if (!dateStr) return '—';
   try {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const date = new Date(dateStr);
+    return {
+      date: date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      }),
+      time: date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    };
   } catch (e) {
-    return dateStr;
+    return { date: dateStr, time: '' };
   }
+}
+
+function getMediaTypeLabel(mediaTypeId) {
+  const types = {
+    '1': { label: 'X', class: 'twitter', icon: '𝕏' },
+    '2': { label: 'Facebook', class: 'facebook', icon: '📘' },
+    '3': { label: 'Instagram', class: 'instagram', icon: '📷' },
+    '4': { label: 'YouTube', class: 'youtube', icon: '▶️' },
+    '5': { label: 'News', class: 'news', icon: '📰' },
+    '6': { label: 'TikTok', class: 'tiktok', icon: '🎵' }
+  };
+  return types[mediaTypeId] || { label: 'Other', class: 'news', icon: '📌' };
+}
+
+function getInitials(name) {
+  if (!name || name === 'Unknown') return '?';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) {
+    return parts[0].substring(0, 2).toUpperCase();
+  }
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function cleanContent(content) {
+  if (!content) return '';
+  // Remove HTML tags
+  return content.replace(/<[^>]*>/g, '').trim();
 }
 
 if (projectId && startDate && endDate) {
@@ -926,12 +1984,12 @@ if (projectId && startDate && endDate) {
     statCards.forEach(c => addLoadingBadge(c));
 
     try {
-      // Fetch news mentions with filter media='news'
       const response = await fetch(`/mk/api/news/mentions?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
       const result = await response.json();
 
       if (result.success && result.data && result.data.length > 0) {
         allMentions = result.data;
+        filteredMentions = [...allMentions]; // Initialize filtered mentions
 
         // Calculate stats
         const totalMentions = allMentions.length;
@@ -974,10 +2032,9 @@ if (projectId && startDate && endDate) {
 
         // Render timeline
         renderTimeline();
-        updatePagination();
         
         document.getElementById('timelineLoading').style.display = 'none';
-        document.getElementById('timelineContent').style.display = 'block';
+        document.getElementById('mentionsTable').style.display = 'table';
         document.getElementById('pagination').style.display = 'flex';
 
       } else {
@@ -1197,39 +2254,99 @@ if (projectId && startDate && endDate) {
   function renderTimeline() {
     const startIdx = (currentPage - 1) * mentionsPerPage;
     const endIdx = startIdx + mentionsPerPage;
-    const currentData = allMentions.slice(startIdx, endIdx);
+    const currentData = filteredMentions.slice(startIdx, endIdx);
 
-    let html = '<div class="timeline-list">';
+    const tbody = document.getElementById('mentionsTableBody');
+    
+    if (!currentData.length) {
+      document.getElementById('mentionsTable').style.display = 'none';
+      document.getElementById('emptyState').style.display = 'block';
+      document.getElementById('pagination').style.display = 'none';
+      return;
+    }
 
-    currentData.forEach(item => {
-      const content = item.content || 'No content';
-      const date = formatDate(item.date_created);
+    tbody.innerHTML = currentData.map((item, idx) => {
+      const rank = startIdx + idx + 1;
+      const content = cleanContent(item.content || 'No content');
+      const dateInfo = formatDate(item.date_created);
       const author = item.author_scr_name || item.author_name || 'Unknown';
-      const source = item.hostname || 'News';
+      const authorName = item.author_name || 'Unknown User';
+      const source = item.hostname || item.media_name || 'Unknown';
+      const mediaType = getMediaTypeLabel(item.media_type_id || '5');
+      const url = item.url || '#';
+      const initials = getInitials(authorName);
+      
+      // Check for valid avatar
+      let avatarHtml = initials;
+      const hasValidAvatar = item.avatar_url && 
+                             !item.avatar_url.startsWith('/external') && 
+                             item.avatar_url !== '/images/default-avatar.png';
+      
+      if (hasValidAvatar) {
+        avatarHtml = `<img src="${item.avatar_url}" alt="${escapeHtml(authorName)}" onerror="this.parentElement.innerHTML='${initials}'">`;
+      } else if (item.media_type_id === '1') {
+        // Twitter/X - try unavatar
+        const username = author.replace('@', '');
+        avatarHtml = `<img src="https://unavatar.io/twitter/${username}" alt="${escapeHtml(authorName)}" onerror="this.parentElement.innerHTML='${initials}'">`;
+      }
 
-      html += `
-        <div class="timeline-item">
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <div class="timeline-meta">
-              <span class="timeline-date">${date}</span>
-              <span class="timeline-source">${source}</span>
+      return `
+        <tr>
+          <td class="rank-cell">${rank}</td>
+          
+          <td class="content-cell">
+            <div class="mention-content">${escapeHtml(content)}</div>
+            <div class="mention-meta">
+              <span class="mention-meta-item">
+                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                ${source}
+              </span>
+              ${url !== '#' ? `
+              <a href="${url}" target="_blank" class="mention-link">
+                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                View
+              </a>
+              ` : ''}
             </div>
-            <div class="timeline-text">${content}</div>
-            <div class="timeline-author">
-              By <strong>${author}</strong>
+          </td>
+          
+          <td class="author-cell">
+            <div class="author-info">
+              <div class="author-avatar">${avatarHtml}</div>
+              <div class="author-details">
+                <div class="author-name" title="${escapeHtml(authorName)}">${escapeHtml(authorName)}</div>
+                <div class="author-handle">@${author}</div>
+              </div>
             </div>
-          </div>
-        </div>
+          </td>
+          
+          <td class="date-cell">
+            <div class="date-info">
+              <div class="date-main">${dateInfo.date}</div>
+              <div class="date-time">${dateInfo.time}</div>
+            </div>
+          </td>
+        </tr>
       `;
-    });
+    }).join('');
 
-    html += '</div>';
-    document.getElementById('timelineContent').innerHTML = html;
+    document.getElementById('timelineLoading').style.display = 'none';
+    document.getElementById('mentionsTable').style.display = 'table';
+    document.getElementById('emptyState').style.display = 'none';
+    
+    updatePagination();
+    document.getElementById('pagination').style.display = 'flex';
   }
 
   function updatePagination() {
-    const totalPages = Math.ceil(allMentions.length / mentionsPerPage);
+    const totalPages = Math.ceil(filteredMentions.length / mentionsPerPage);
     const pageInfo = document.getElementById('pageInfo');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
@@ -1240,7 +2357,7 @@ if (projectId && startDate && endDate) {
   }
 
   function changePage(direction) {
-    const totalPages = Math.ceil(allMentions.length / mentionsPerPage);
+    const totalPages = Math.ceil(filteredMentions.length / mentionsPerPage);
     const newPage = currentPage + direction;
 
     if (newPage >= 1 && newPage <= totalPages) {
@@ -1248,57 +2365,27 @@ if (projectId && startDate && endDate) {
       renderTimeline();
       updatePagination();
       
-      document.querySelector('.timeline-section').scrollIntoView({ behavior: 'smooth' });
+      document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth' });
     }
   }
 
-  function filterTimeline() {
-    const term = document.getElementById('timelineSearchInput').value.toLowerCase();
+  function filterMentions() {
+    const searchTerm = document.getElementById('timelineSearchInput').value.toLowerCase();
     
-    if (!term) {
-      currentPage = 1;
-      renderTimeline();
-      updatePagination();
-      document.getElementById('pagination').style.display = 'flex';
-      return;
-    }
+    currentSearchTerm = searchTerm;
     
-    const filtered = allMentions.filter(item => {
+    filteredMentions = allMentions.filter(item => {
+      // Filter by search term only
       const content = (item.content || '').toLowerCase();
       const author = (item.author_scr_name || item.author_name || '').toLowerCase();
       const source = (item.hostname || '').toLowerCase();
-      return content.includes(term) || author.includes(term) || source.includes(term);
+      const matchesSearch = !searchTerm || content.includes(searchTerm) || author.includes(searchTerm) || source.includes(searchTerm);
+      
+      return matchesSearch;
     });
     
-    let html = '<div class="timeline-list">';
-
-    filtered.forEach(item => {
-      const content = item.content || 'No content';
-      const date = formatDate(item.date_created);
-      const author = item.author_scr_name || item.author_name || 'Unknown';
-      const source = item.hostname || 'News';
-
-      html += `
-        <div class="timeline-item">
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <div class="timeline-meta">
-              <span class="timeline-date">${date}</span>
-              <span class="timeline-source">${source}</span>
-            </div>
-            <div class="timeline-text">${content}</div>
-            <div class="timeline-author">
-              By <strong>${author}</strong>
-            </div>
-          </div>
-        </div>
-      `;
-    });
-
-    html += '</div>';
-    document.getElementById('timelineContent').innerHTML = html;
-    
-    document.getElementById('pagination').style.display = 'none';
+    currentPage = 1;
+    renderTimeline();
   }
 }
 </script>
