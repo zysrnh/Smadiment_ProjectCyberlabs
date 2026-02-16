@@ -110,4 +110,105 @@ class NewsController extends Controller
             ], 500);
         }
     }
+    public function newsWordCloudPage(Request $request)
+    {
+        try {
+            // Get selected project
+            $projectId = $request->query('project_id', session('selected_project_id'));
+            
+            if (!$projectId) {
+                Log::warning('News Word Cloud: No project selected');
+                return redirect()->route('mk.dashboard')
+                    ->with('error', 'Please select a project first');
+            }
+
+            // Store in session
+            session(['selected_project_id' => $projectId]);
+
+            // Get date range (default: last 7 days)
+            $endDate = $request->query('end_date', now()->format('Y-m-d'));
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+            Log::info('News Word Cloud Page Loaded', [
+                'project_id' => $projectId,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ]);
+
+            return view('mk.news.word-cloud', [
+                'projectId' => $projectId,
+                'startDate' => $startDate,
+                'endDate' => $endDate,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('News Word Cloud Page Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'Failed to load News Word Cloud page');
+        }
+    }
+
+    /**
+     * API: Get News Word Cloud Data
+     */
+    public function newsWordCloudData(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate = $request->query('end_date');
+            $sentiment = $request->query('sentiment', '2'); // 2 = all
+
+            if (!$projectId) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Project ID is required',
+                ], 400);
+            }
+
+            Log::info('News Word Cloud API Request', [
+                'project_id' => $projectId,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'sentiment' => $sentiment,
+            ]);
+
+            // Call MediaKernels API
+            $data = $this->mkClient->wordCloud(
+                $projectId,
+                $startDate,
+                0, // start_time
+                $endDate,
+                23, // end_time
+                $sentiment
+            );
+
+            Log::info('News Word Cloud Data Retrieved', [
+                'has_data' => isset($data['data']),
+                'has_phrases' => isset($data['data']['phrases']),
+                'phrases_count' => isset($data['data']['phrases']) ? count($data['data']['phrases']) : 0,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('News Word Cloud API Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to fetch word cloud data',
+            ], 500);
+        }
+    }
+
 }

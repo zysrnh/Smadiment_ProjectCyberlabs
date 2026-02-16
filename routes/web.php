@@ -111,9 +111,9 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         // News APIs
         // ─────────────────────────────────────────────────────
         Route::prefix('news')->name('news.')->group(function () {
-            // Recent Topics API (for lazy loading)
-            Route::get('/recent-topics', [NewsController::class, 'recentTopicsApi'])
-                ->name('recent-topics-api');
+            // Word Cloud API
+            Route::get('/word-cloud', [NewsController::class, 'newsWordCloudData'])
+                ->name('word-cloud-api');
         });
 
         // ─────────────────────────────────────────────────────
@@ -235,9 +235,9 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     // News Routes
     // ─────────────────────────────────────────────────────
     Route::prefix('news')->name('news.')->group(function () {
-        // Recent Topics Page
-        Route::get('/recent-topics', [NewsController::class, 'recentTopicsPage'])
-            ->name('recent-topics');
+        // Word Cloud Page
+        Route::get('/word-cloud', [NewsController::class, 'newsWordCloudPage'])
+            ->name('word-cloud');
     });
 
     // ─────────────────────────────────────────────────────
