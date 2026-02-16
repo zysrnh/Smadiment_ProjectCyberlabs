@@ -797,6 +797,9 @@
     text-decoration: none;
     font-weight: 600;
     transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
 
   .mention-link:hover {
@@ -804,9 +807,14 @@
     text-decoration: underline;
   }
 
+  .mention-link svg {
+    width: 13px;
+    height: 13px;
+  }
+
   /* Author Column */
   .author-cell {
-    min-width: 180px;
+    min-width: 200px;
   }
 
   .author-info {
@@ -1498,7 +1506,7 @@
           <tr>
             <th style="width: 60px;">#</th>
             <th>Content</th>
-            <th style="width: 200px;">Author</th>
+            <th style="width: 220px;">Author / Publisher</th>
             <th style="width: 180px;">Date & Time</th>
           </tr>
         </thead>
@@ -1885,7 +1893,7 @@ function getMediaTypeLabel(mediaTypeId) {
 }
 
 function getInitials(name) {
-  if (!name || name === 'Unknown') return '?';
+  if (!name || name === 'Unknown' || name === 'Unknown Author') return '?';
   const parts = name.trim().split(/\s+/);
   if (parts.length === 1) {
     return parts[0].substring(0, 2).toUpperCase();
@@ -2071,12 +2079,18 @@ if (projectId && startDate && endDate) {
           dateCounts[date] = (dateCounts[date] || 0) + 1;
         });
 
-        // Create chart data
-        const sortedDates = Object.keys(dateCounts).sort();
-        const chartData = sortedDates.map(date => ({
-          date,
-          count: dateCounts[date]
-        }));
+        // Create complete date range (fill in missing dates with 0)
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const chartData = [];
+        
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+          const dateStr = d.toISOString().split('T')[0];
+          chartData.push({
+            date: dateStr,
+            count: dateCounts[dateStr] || 0
+          });
+        }
 
         renderVolumeChart(chartData);
       }
@@ -2092,12 +2106,30 @@ if (projectId && startDate && endDate) {
     const canvas = document.getElementById('volumeOverTimeChart');
     const loading = document.getElementById('volumeChartLoading');
     
+    if (!canvas || !data || data.length === 0) {
+      console.error('Cannot render chart: missing canvas or data');
+      if (loading) loading.style.display = 'none';
+      return;
+    }
+    
+    // Destroy existing chart if it exists
+    const existingChart = Chart.getChart(canvas);
+    if (existingChart) {
+      existingChart.destroy();
+    }
+    
     const ctx = canvas.getContext('2d');
+    
+    // Format dates for display (e.g., "Feb 16" instead of "2026-02-16")
+    const labels = data.map(d => {
+      const date = new Date(d.date);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
     
     new Chart(ctx, {
       type: 'line',
       data: {
-        labels: data.map(d => d.date),
+        labels: labels,
         datasets: [{
           label: 'Mentions',
           data: data.map(d => d.count),
@@ -2106,7 +2138,7 @@ if (projectId && startDate && endDate) {
           borderWidth: 3,
           tension: 0.4,
           fill: true,
-          pointRadius: 5,
+          pointRadius: 4,
           pointHoverRadius: 7,
           pointBackgroundColor: '#038047',
           pointBorderColor: '#ffffff',
@@ -2116,6 +2148,10 @@ if (projectId && startDate && endDate) {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -2128,7 +2164,16 @@ if (projectId && startDate && endDate) {
             borderColor: '#e2e8f0',
             borderWidth: 1,
             displayColors: false,
-            cornerRadius: 8
+            cornerRadius: 8,
+            callbacks: {
+              title: function(context) {
+                // Show full date in tooltip
+                return data[context[0].dataIndex].date;
+              },
+              label: function(context) {
+                return context.parsed.y + ' mentions';
+              }
+            }
           }
         },
         scales: {
@@ -2138,15 +2183,20 @@ if (projectId && startDate && endDate) {
             ticks: { 
               color: '#64748b', 
               font: { family: 'Poppins', size: 12 },
-              padding: 8
+              padding: 8,
+              precision: 0
             }
           },
           x: {
             grid: { display: false, drawBorder: false },
             ticks: { 
               color: '#64748b', 
-              font: { family: 'Poppins', size: 12 },
-              padding: 8
+              font: { family: 'Poppins', size: 11 },
+              padding: 8,
+              maxRotation: 45,
+              minRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 10
             }
           }
         }
@@ -2189,9 +2239,32 @@ if (projectId && startDate && endDate) {
     const canvas = document.getElementById('peakHoursChart');
     const loading = document.getElementById('peakHoursChartLoading');
     
+    if (!canvas) {
+      console.error('Cannot render peak hours chart: canvas not found');
+      if (loading) loading.style.display = 'none';
+      return;
+    }
+    
+    // Destroy existing chart if it exists
+    const existingChart = Chart.getChart(canvas);
+    if (existingChart) {
+      existingChart.destroy();
+    }
+    
     const ctx = canvas.getContext('2d');
     
-    const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`);
+    const labels = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
+    
+    // Find max value for dynamic coloring
+    const maxCount = Math.max(...hourCounts);
+    
+    // Create gradient colors based on value
+    const backgroundColors = hourCounts.map(count => {
+      const intensity = count / maxCount;
+      if (intensity > 0.7) return 'rgba(3, 128, 71, 0.9)'; // Dark green for high
+      if (intensity > 0.4) return 'rgba(3, 128, 71, 0.7)'; // Medium green
+      return 'rgba(3, 128, 71, 0.5)'; // Light green for low
+    });
     
     new Chart(ctx, {
       type: 'bar',
@@ -2200,15 +2273,20 @@ if (projectId && startDate && endDate) {
         datasets: [{
           label: 'Mentions',
           data: hourCounts,
-          backgroundColor: 'rgba(3, 128, 71, 0.8)',
+          backgroundColor: backgroundColors,
           borderColor: '#038047',
           borderWidth: 1,
-          borderRadius: 6
+          borderRadius: 6,
+          hoverBackgroundColor: '#026738'
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -2219,7 +2297,21 @@ if (projectId && startDate && endDate) {
             titleFont: { size: 14, weight: '600' },
             bodyFont: { size: 13 },
             displayColors: false,
-            cornerRadius: 8
+            cornerRadius: 8,
+            callbacks: {
+              title: function(context) {
+                const hour = context[0].dataIndex;
+                return `${String(hour).padStart(2, '0')}:00 - ${String(hour).padStart(2, '0')}:59`;
+              },
+              label: function(context) {
+                return context.parsed.y + ' mentions';
+              },
+              afterLabel: function(context) {
+                const total = hourCounts.reduce((a, b) => a + b, 0);
+                const percentage = ((context.parsed.y / total) * 100).toFixed(1);
+                return percentage + '% of total';
+              }
+            }
           }
         },
         scales: {
@@ -2229,17 +2321,19 @@ if (projectId && startDate && endDate) {
             ticks: { 
               color: '#64748b', 
               font: { family: 'Poppins', size: 12 },
-              padding: 8
+              padding: 8,
+              precision: 0
             }
           },
           x: {
             grid: { display: false, drawBorder: false },
             ticks: { 
               color: '#64748b', 
-              font: { family: 'Poppins', size: 11 },
+              font: { family: 'Poppins', size: 10 },
               padding: 8,
               maxRotation: 45,
-              minRotation: 45
+              minRotation: 45,
+              autoSkip: false
             }
           }
         }
@@ -2269,25 +2363,62 @@ if (projectId && startDate && endDate) {
       const rank = startIdx + idx + 1;
       const content = cleanContent(item.content || 'No content');
       const dateInfo = formatDate(item.date_created);
-      const author = item.author_scr_name || item.author_name || 'Unknown';
-      const authorName = item.author_name || 'Unknown User';
-      const source = item.hostname || item.media_name || 'Unknown';
+      
+      // ===================================================
+      // FIX: Proper author name extraction for news articles
+      // ===================================================
+      let authorName = 'Unknown Author';
+      let authorHandle = 'unknown';
+      
+      // Priority 1: Use author_name if available and not empty
+      if (item.author_name && item.author_name.trim() !== '') {
+        authorName = item.author_name.trim();
+      } 
+      // Priority 2: Use author_scr_name if available
+      else if (item.author_scr_name && item.author_scr_name.trim() !== '') {
+        authorName = item.author_scr_name.trim();
+      } 
+      // Priority 3: For news articles, use hostname as publisher name
+      else if (item.hostname && item.hostname.trim() !== '') {
+        // Convert hostname to readable name (e.g., "kompas.com" -> "Kompas")
+        authorName = item.hostname.replace('www.', '').split('.')[0];
+        authorName = authorName.charAt(0).toUpperCase() + authorName.slice(1);
+      }
+      
+      // Author handle (for display under name)
+      if (item.author_scr_name && item.author_scr_name.trim() !== '') {
+        authorHandle = item.author_scr_name.replace('@', '');
+      } else if (item.hostname) {
+        authorHandle = item.hostname.replace('www.', '');
+      }
+      
+      const source = item.hostname || item.media_name || 'Unknown Source';
       const mediaType = getMediaTypeLabel(item.media_type_id || '5');
       const url = item.url || '#';
       const initials = getInitials(authorName);
       
-      // Check for valid avatar
+      // ===================================================
+      // FIX: Avatar handling for news articles
+      // ===================================================
       let avatarHtml = initials;
+      
+      // Check if valid avatar URL exists (must be full URL, not relative path)
       const hasValidAvatar = item.avatar_url && 
+                             item.avatar_url.trim() !== '' &&
                              !item.avatar_url.startsWith('/external') && 
-                             item.avatar_url !== '/images/default-avatar.png';
+                             !item.avatar_url.includes('default-avatar') &&
+                             item.avatar_url.startsWith('http'); // Must be full URL
       
       if (hasValidAvatar) {
+        // Use provided avatar
         avatarHtml = `<img src="${item.avatar_url}" alt="${escapeHtml(authorName)}" onerror="this.parentElement.innerHTML='${initials}'">`;
-      } else if (item.media_type_id === '1') {
+      } else if (item.media_type_id === '1' && authorHandle !== 'unknown') {
         // Twitter/X - try unavatar
-        const username = author.replace('@', '');
-        avatarHtml = `<img src="https://unavatar.io/twitter/${username}" alt="${escapeHtml(authorName)}" onerror="this.parentElement.innerHTML='${initials}'">`;
+        avatarHtml = `<img src="https://unavatar.io/twitter/${authorHandle}" alt="${escapeHtml(authorName)}" onerror="this.parentElement.innerHTML='${initials}'">`;
+      } else if (item.media_type_id === '5' && item.hostname) {
+        // News articles - use Clearbit logo API for publisher logo
+        const domain = item.hostname.replace('www.', '');
+        avatarHtml = `<img src="https://logo.clearbit.com/${domain}" alt="${escapeHtml(authorName)}" onerror="this.parentElement.innerHTML='${initials}'">`;
       }
 
       return `
@@ -2302,16 +2433,16 @@ if (projectId && startDate && endDate) {
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                   <circle cx="12" cy="10" r="3"/>
                 </svg>
-                ${source}
+                ${escapeHtml(source)}
               </span>
               ${url !== '#' ? `
-              <a href="${url}" target="_blank" class="mention-link">
+              <a href="${url}" target="_blank" rel="noopener noreferrer" class="mention-link">
                 <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
                   <polyline points="15 3 21 3 21 9"/>
                   <line x1="10" y1="14" x2="21" y2="3"/>
                 </svg>
-                View
+                View Article
               </a>
               ` : ''}
             </div>
@@ -2322,7 +2453,7 @@ if (projectId && startDate && endDate) {
               <div class="author-avatar">${avatarHtml}</div>
               <div class="author-details">
                 <div class="author-name" title="${escapeHtml(authorName)}">${escapeHtml(authorName)}</div>
-                <div class="author-handle">@${author}</div>
+                <div class="author-handle">${escapeHtml(authorHandle)}</div>
               </div>
             </div>
           </td>
@@ -2387,6 +2518,10 @@ if (projectId && startDate && endDate) {
     currentPage = 1;
     renderTimeline();
   }
+
+  // Make functions globally accessible
+  window.changePage = changePage;
+  window.filterMentions = filterMentions;
 }
 </script>
 @endsection
