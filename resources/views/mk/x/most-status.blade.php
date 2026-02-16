@@ -72,49 +72,6 @@
         flex: 1;
     }
 
-    .date-input-group {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 16px;
-        background: var(--bg-gray-50);
-        border: 1px solid var(--border-gray);
-        border-radius: 12px;
-        transition: all 0.2s;
-    }
-
-    .date-input-group:focus-within {
-        border-color: var(--primary-green);
-        background: var(--bg-white);
-        box-shadow: 0 0 0 3px rgba(3, 128, 71, 0.1);
-    }
-
-    .date-input-group svg {
-        width: 18px;
-        height: 18px;
-        color: var(--text-secondary);
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 2;
-    }
-
-    .date-separator {
-        color: var(--text-secondary);
-        font-weight: 600;
-        font-size: 14px;
-    }
-
-    .date-input {
-        border: none;
-        background: transparent;
-        font-family: 'Poppins', sans-serif;
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--text-primary);
-        outline: none;
-        min-width: 140px;
-    }
-
     .apply-btn {
         padding: 12px 28px;
         background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
@@ -225,41 +182,6 @@
         word-break: break-word;
     }
 
-    /* View Tabs */
-    .view-tabs {
-        display: flex;
-        gap: 8px;
-        background: var(--bg-white);
-        padding: 8px;
-        border-radius: 12px;
-        border: 1px solid var(--border-gray);
-        box-shadow: var(--shadow-sm);
-    }
-
-    .view-tab {
-        padding: 10px 20px;
-        background: transparent;
-        border: none;
-        border-radius: 8px;
-        font-family: 'Poppins', sans-serif;
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--text-secondary);
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .view-tab:hover {
-        background: var(--bg-gray-50);
-        color: var(--text-primary);
-    }
-
-    .view-tab.active {
-        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
-        color: white;
-        box-shadow: 0 2px 8px rgba(3, 128, 71, 0.2);
-    }
-
     /* Chart Container */
     .chart-container {
         background: var(--bg-white);
@@ -335,21 +257,6 @@
         max-height: 0;
         opacity: 0;
         margin-top: 0;
-    }
-
-    .chart-badge {
-        font-size: 11px;
-        font-weight: 600;
-        padding: 6px 12px;
-        border-radius: 20px;
-        background: var(--bg-gray-100);
-        color: var(--text-secondary);
-        text-transform: uppercase;
-        letter-spacing: .4px;
-    }
-
-    #viewsChart {
-        max-height: 300px;
     }
 
     /* Table Container */
@@ -539,14 +446,14 @@
         white-space: nowrap;
     }
 
-    .stat-value {
+    .stat-cell .stat-value {
         display: block;
         font-size: 16px;
         color: var(--text-primary);
         margin-bottom: 2px;
     }
 
-    .stat-label {
+    .stat-cell .stat-label {
         display: block;
         font-size: 10px;
         color: var(--text-muted);
@@ -595,305 +502,6 @@
         font-size: 10px;
         opacity: 0.8;
         margin-left: 4px;
-    }
-
-    /* Action Buttons */
-    .action-cell {
-        text-align: center;
-    }
-
-    .btn-view {
-        padding: 6px 14px;
-        background: var(--bg-gray-50);
-        border: 1px solid var(--border-gray);
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-primary);
-        cursor: pointer;
-        transition: all 0.2s;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .btn-view:hover {
-        background: var(--primary-green);
-        color: white;
-        border-color: var(--primary-green);
-        transform: translateY(-1px);
-    }
-
-    /* Modal Styles */
-    .modal-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(8px);
-        z-index: 99999;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        animation: fadeIn 0.2s ease-out;
-    }
-
-    .modal-overlay.active {
-        display: flex;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    @keyframes slideUp {
-        from { 
-            opacity: 0;
-            transform: translateY(30px) scale(0.95);
-        }
-        to { 
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-    }
-
-    .modal-content {
-        background: #ffffff;
-        border-radius: 20px;
-        max-width: 700px;
-        width: 100%;
-        max-height: 90vh;
-        overflow-y: auto;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-        animation: slideUp 0.3s ease-out;
-        position: relative;
-        z-index: 100000;
-    }
-
-    .modal-header {
-        padding: 24px 28px;
-        border-bottom: 2px solid var(--bg-gray-50);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        position: sticky;
-        top: 0;
-        background: #ffffff;
-        z-index: 100001;
-        border-radius: 20px 20px 0 0;
-    }
-
-    .modal-header h3 {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .modal-close {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        background: var(--bg-gray-50);
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--text-secondary);
-        transition: all 0.2s;
-    }
-
-    .modal-close:hover {
-        background: #fee2e2;
-        color: #dc2626;
-    }
-
-    .modal-close svg {
-        width: 20px;
-        height: 20px;
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 2.5;
-    }
-
-    .modal-body {
-        padding: 28px;
-        background: #ffffff;
-    }
-
-    .modal-author {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 24px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid var(--bg-gray-100);
-    }
-
-    .modal-author-avatar {
-        width: 64px;
-        height: 64px;
-        border-radius: 50%;
-        border: 3px solid var(--border-gray);
-        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 700;
-        font-size: 24px;
-        flex-shrink: 0;
-    }
-
-    .modal-author-avatar img {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        object-fit: cover;
-    }
-
-    .modal-author-info h4 {
-        font-size: 18px;
-        font-weight: 700;
-        color: #1a202c;
-        margin: 0 0 4px 0;
-    }
-
-    .modal-author-handle {
-        font-size: 14px;
-        color: #64748b;
-        margin-bottom: 6px;
-    }
-
-    .modal-author-followers {
-        font-size: 12px;
-        color: #94a3b8;
-        font-weight: 600;
-    }
-
-    .modal-post-content {
-        font-size: 16px;
-        line-height: 1.7;
-        color: #1a202c;
-        margin-bottom: 24px;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-    }
-
-    .modal-stats-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-
-    .modal-stat-card {
-        background: var(--bg-gray-50);
-        padding: 16px;
-        border-radius: 12px;
-        text-align: center;
-        border: 1px solid var(--border-gray);
-    }
-
-    .modal-stat-value {
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 4px;
-    }
-
-    .modal-stat-value.views { color: var(--primary-green); }
-    .modal-stat-value.retweets { color: var(--accent-blue); }
-
-    .modal-stat-label {
-        font-size: 11px;
-        color: var(--text-secondary);
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .modal-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-        padding: 16px 0;
-        border-top: 1px solid var(--bg-gray-100);
-        font-size: 13px;
-        color: var(--text-secondary);
-    }
-
-    .modal-meta-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .modal-meta-item svg {
-        width: 16px;
-        height: 16px;
-        stroke: currentColor;
-        fill: none;
-    }
-
-    .modal-actions {
-        display: flex;
-        gap: 12px;
-        padding-top: 20px;
-        border-top: 1px solid var(--bg-gray-100);
-    }
-
-    .modal-btn {
-        flex: 1;
-        padding: 12px 20px;
-        border-radius: 10px;
-        font-family: 'Poppins', sans-serif;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-
-    .modal-btn-primary {
-        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
-        color: white;
-        box-shadow: 0 2px 8px rgba(3, 128, 71, 0.2);
-    }
-
-    .modal-btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(3, 128, 71, 0.3);
-    }
-
-    .modal-btn-secondary {
-        background: var(--bg-white);
-        color: var(--text-primary);
-        border: 1px solid var(--border-gray);
-    }
-
-    .modal-btn-secondary:hover {
-        background: var(--bg-gray-50);
-        border-color: var(--primary-green);
-        color: var(--primary-green);
-    }
-
-    .modal-btn svg {
-        width: 18px;
-        height: 18px;
-        stroke: currentColor;
-        fill: none;
     }
 
     /* Export Button */
@@ -1020,7 +628,6 @@
         margin: 0;
     }
 
-
     /* Modal Styles */
     .modal-overlay {
         display: none;
@@ -1034,7 +641,8 @@
         animation: fadeIn 0.2s ease-out;
     }
 
-    .modal-overlay.show {
+    .modal-overlay.show,
+    .modal-overlay.active {
         display: flex;
     }
 
@@ -1297,16 +905,320 @@
         fill: none;
     }
 
-    /* Responsive */
-    @media (max-width: 1200px) {
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        .status-cell {
-            max-width: 300px;
-        }
+    /* Date Picker Trigger */
+    .date-picker-trigger {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px;
+        background: var(--bg-gray-50);
+        border: 1px solid var(--border-gray);
+        border-radius: 12px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.2s;
+        width: 100%;
+        max-width: 400px;
     }
 
+    .date-picker-trigger:hover {
+        border-color: var(--primary-green);
+        background: var(--bg-white);
+        box-shadow: 0 0 0 3px rgba(3, 128, 71, 0.1);
+    }
+
+    .date-picker-trigger svg:first-child {
+        width: 18px;
+        height: 18px;
+        color: var(--text-secondary);
+        flex-shrink: 0;
+    }
+
+    .date-picker-trigger span {
+        flex: 1;
+        text-align: left;
+    }
+
+    .date-picker-trigger svg:last-child {
+        width: 16px;
+        height: 16px;
+        margin-left: auto;
+        color: var(--text-secondary);
+    }
+
+    /* Date Picker Modal */
+    .date-picker-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+    }
+
+    .date-picker-modal.show {
+        display: flex;
+    }
+
+    .date-picker-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        cursor: pointer;
+    }
+
+    .date-picker-container {
+        position: relative;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        display: flex;
+        max-width: 900px;
+        width: 90%;
+        max-height: 90vh;
+        z-index: 10001;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    /* Sidebar with Presets */
+    .date-picker-sidebar {
+        width: 180px;
+        background: var(--bg-gray-50);
+        border-right: 1px solid var(--border-gray);
+        padding: 16px 12px;
+        border-radius: 16px 0 0 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex-shrink: 0;
+    }
+
+    .date-preset {
+        padding: 10px 16px;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-primary);
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .date-preset:hover {
+        background: var(--bg-white);
+        color: var(--primary-green);
+    }
+
+    .date-preset.active {
+        background: var(--primary-green);
+        color: white;
+    }
+
+    /* Calendar Content */
+    .date-picker-content {
+        flex: 1;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .date-picker-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .nav-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: var(--bg-gray-50);
+        border: 1px solid var(--border-gray);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+
+    .nav-btn:hover {
+        background: var(--primary-green);
+        border-color: var(--primary-green);
+        color: white;
+    }
+
+    .nav-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Calendars Wrapper */
+    .calendars-wrapper {
+        display: flex;
+        gap: 24px;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .calendar {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .calendar-month {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 16px;
+        text-align: center;
+    }
+
+    .calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+        margin-bottom: 8px;
+    }
+
+    .weekday {
+        text-align: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        padding: 8px 0;
+    }
+
+    .calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+    }
+
+    .calendar-day {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: var(--text-primary);
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
+
+    .calendar-day:hover:not(.disabled):not(.other-month) {
+        background: var(--bg-gray-100);
+    }
+
+    .calendar-day.other-month {
+        color: #cbd5e1;
+        cursor: default;
+    }
+
+    .calendar-day.disabled {
+        color: #e2e8f0;
+        cursor: not-allowed;
+    }
+
+    .calendar-day.today {
+        border: 2px solid var(--primary-green);
+    }
+
+    .calendar-day.selected {
+        background: var(--primary-green);
+        color: white;
+    }
+
+    .calendar-day.in-range {
+        background: rgba(3, 128, 71, 0.1);
+        color: var(--primary-green);
+    }
+
+    .calendar-day.range-start,
+    .calendar-day.range-end {
+        background: var(--primary-green);
+        color: white;
+    }
+
+    /* Date Display */
+    .date-picker-display {
+        padding: 16px 20px;
+        background: var(--bg-gray-50);
+        border-radius: 12px;
+        text-align: center;
+        margin-bottom: 20px;
+        border: 1px solid var(--border-gray);
+    }
+
+    .date-picker-display span {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    /* Footer Buttons */
+    .date-picker-footer {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+
+    .cancel-btn,
+    .apply-date-btn {
+        padding: 10px 24px;
+        border-radius: 10px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+    }
+
+    .cancel-btn {
+        background: var(--bg-gray-100);
+        color: var(--text-primary);
+    }
+
+    .cancel-btn:hover {
+        background: var(--border-gray);
+    }
+
+    .apply-date-btn {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(3, 128, 71, 0.2);
+    }
+
+    .apply-date-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(3, 128, 71, 0.3);
+    }
+
+    /* Mobile Responsive */
     @media (max-width: 768px) {
         .dashboard-container {
             padding: 16px;
@@ -1326,7 +1238,6 @@
             justify-content: center;
         }
         
-        /* Mobile Table Adjustments */
         .status-table th,
         .status-table td {
             padding: 12px 10px;
@@ -1346,8 +1257,55 @@
             font-size: 12px;
         }
         
-        .view-tabs {
+        .date-picker-container {
+            flex-direction: column;
+            max-height: 85vh;
+            overflow-y: auto;
+            width: 95%;
+        }
+
+        .date-picker-sidebar {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid var(--border-gray);
+            border-radius: 16px 16px 0 0;
+            flex-direction: row;
             overflow-x: auto;
+            padding: 12px 16px;
+        }
+
+        .date-preset {
+            white-space: nowrap;
+        }
+
+        .date-picker-content {
+            padding: 20px 16px;
+        }
+
+        .calendars-wrapper {
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .date-picker-header {
+            flex-wrap: wrap;
+        }
+
+        .date-picker-trigger {
+            max-width: 100%;
+        }
+
+        .calendar-day {
+            font-size: 12px;
+        }
+
+        .weekday {
+            font-size: 10px;
+        }
+
+        .cancel-btn,
+        .apply-date-btn {
+            flex: 1;
         }
     }
 </style>
@@ -1355,7 +1313,6 @@
 
 @section('content')
 <div class="dashboard-container">
-
     <div class="page-header">
         <h1>Most Viewed Posts</h1>
         <p>Top performing X (Twitter) posts by view count</p>
@@ -1376,6 +1333,9 @@
     <div class="filter-card">
         <form id="filterForm" method="GET" action="{{ route('mk.x.most-status') }}">
             <input type="hidden" name="project_id" value="{{ $projectId }}">
+            <input type="hidden" name="start_date" id="hiddenStartDate" value="{{ $startDate }}">
+            <input type="hidden" name="end_date" id="hiddenEndDate" value="{{ $endDate }}">
+            
             <div class="filter-content">
                 <div class="filter-label">
                     <svg viewBox="0 0 24 24" style="width:18px;height:18px;display:inline;vertical-align:middle;margin-right:6px;stroke:currentColor;fill:none;">
@@ -1386,29 +1346,22 @@
                     </svg>
                     Date Range
                 </div>
+                
                 <div class="date-range-wrapper">
-                    <div class="date-input-group">
-                        <svg viewBox="0 0 24 24">
+                    <button type="button" class="date-picker-trigger" id="datePickerTrigger">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                             <line x1="16" y1="2" x2="16" y2="6"/>
                             <line x1="8" y1="2" x2="8" y2="6"/>
                             <line x1="3" y1="10" x2="21" y2="10"/>
                         </svg>
-                        <input type="date" name="start_date" class="date-input" 
-                               value="{{ $startDate }}" max="{{ date('Y-m-d') }}" required>
-                    </div>
-                    <span class="date-separator">to</span>
-                    <div class="date-input-group">
-                        <svg viewBox="0 0 24 24">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                            <line x1="16" y1="2" x2="16" y2="6"/>
-                            <line x1="8" y1="2" x2="8" y2="6"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        <span id="dateRangeDisplay">{{ $startDate }} to {{ $endDate }}</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
                         </svg>
-                        <input type="date" name="end_date" class="date-input" 
-                               value="{{ $endDate }}" max="{{ date('Y-m-d') }}" required>
-                    </div>
+                    </button>
                 </div>
+                
                 <button type="submit" class="apply-btn">
                     <svg viewBox="0 0 24 24">
                         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -1419,31 +1372,74 @@
         </form>
     </div>
 
+    <!-- Date Range Picker Modal -->
+    <div class="date-picker-modal" id="datePickerModal">
+        <div class="date-picker-overlay"></div>
+        <div class="date-picker-container">
+            <!-- Sidebar with Presets -->
+            <div class="date-picker-sidebar">
+                <button type="button" class="date-preset" data-preset="today">Today</button>
+                <button type="button" class="date-preset" data-preset="yesterday">Yesterday</button>
+                <button type="button" class="date-preset" data-preset="last7days">Last 7 Days</button>
+                <button type="button" class="date-preset" data-preset="last30days">Last 30 Days</button>
+                <button type="button" class="date-preset" data-preset="thismonth">This Month</button>
+                <button type="button" class="date-preset" data-preset="lastmonth">Last Month</button>
+                <button type="button" class="date-preset active" data-preset="custom">Custom Range</button>
+            </div>
+            
+            <!-- Calendar Content -->
+            <div class="date-picker-content">
+                <!-- Navigation Header -->
+                <div class="date-picker-header">
+                    <button type="button" class="nav-btn" id="prevMonth">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                    </button>
+                    
+                    <div class="calendars-wrapper">
+                        <div class="calendar" id="calendar1"></div>
+                        <div class="calendar" id="calendar2"></div>
+                    </div>
+                    
+                    <button type="button" class="nav-btn" id="nextMonth">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Selected Date Display -->
+                <div class="date-picker-display">
+                    <span id="selectedRangeText">{{ $startDate }} to {{ $endDate }}</span>
+                </div>
+                
+                <!-- Footer Buttons -->
+                <div class="date-picker-footer">
+                    <button type="button" class="cancel-btn">Cancel</button>
+                    <button type="button" class="apply-date-btn" id="applyDatePicker">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Stats Grid -->
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-label">Total Posts</div>
-            <div id="totalPosts" class="stat-value">
-                <div class="skeleton-number-inline"></div>
-            </div>
+            <div id="totalPosts" class="stat-value">0</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Total Views</div>
-            <div id="totalViews" class="stat-value">
-                <div class="skeleton-number-inline"></div>
-            </div>
+            <div id="totalViews" class="stat-value">0</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Avg. Views per Post</div>
-            <div id="avgViews" class="stat-value">
-                <div class="skeleton-number-inline"></div>
-            </div>
+            <div id="avgViews" class="stat-value">0</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Top Post Views</div>
-            <div id="topViews" class="stat-value">
-                <div class="skeleton-number-inline"></div>
-            </div>
+            <div id="topViews" class="stat-value">0</div>
         </div>
     </div>
 
@@ -1518,30 +1514,6 @@
                             </div>
                         </td>
                     </tr>
-                    <tr>
-                        <td colspan="7" style="padding: 40px 20px;">
-                            <div style="display: flex; align-items: center; gap: 16px;">
-                                <div class="skeleton-avatar"></div>
-                                <div style="flex: 1;">
-                                    <div class="skeleton-line" style="width: 30%;"></div>
-                                    <div class="skeleton-line" style="width: 60%;"></div>
-                                    <div class="skeleton-line" style="width: 45%;"></div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="7" style="padding: 40px 20px;">
-                            <div style="display: flex; align-items: center; gap: 16px;">
-                                <div class="skeleton-avatar"></div>
-                                <div style="flex: 1;">
-                                    <div class="skeleton-line" style="width: 30%;"></div>
-                                    <div class="skeleton-line" style="width: 60%;"></div>
-                                    <div class="skeleton-line" style="width: 45%;"></div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
                 </tbody>
             </table>
 
@@ -1589,7 +1561,6 @@
         </div>
     </div>
 
-
     <!-- Post Detail Modal -->
     <div class="modal-overlay" id="postModal" onclick="if(event.target === this) MostStatusLoader.closeModal()">
         <div class="modal-content">
@@ -1615,6 +1586,307 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
+// ========================================
+// DATE PICKER JAVASCRIPT
+// ========================================
+(function() {
+  'use strict';
+  
+  let selectedStartDate = null;
+  let selectedEndDate = null;
+  let currentMonth1 = new Date();
+  let currentMonth2 = new Date();
+  let selectingStart = true;
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const startDateInput = document.getElementById('hiddenStartDate');
+    const endDateInput = document.getElementById('hiddenEndDate');
+    
+    if (startDateInput && startDateInput.value) {
+      selectedStartDate = new Date(startDateInput.value);
+    } else {
+      selectedEndDate = new Date();
+      selectedStartDate = new Date();
+      selectedStartDate.setDate(selectedStartDate.getDate() - 6);
+    }
+    
+    if (endDateInput && endDateInput.value) {
+      selectedEndDate = new Date(endDateInput.value);
+    }
+    
+    currentMonth1 = new Date(selectedStartDate);
+    currentMonth2 = new Date(selectedStartDate);
+    currentMonth2.setMonth(currentMonth2.getMonth() + 1);
+    
+    renderCalendars();
+    setupEventListeners();
+  });
+
+  function setupEventListeners() {
+    const trigger = document.getElementById('datePickerTrigger');
+    if (trigger) {
+      trigger.addEventListener('click', openDatePicker);
+    }
+
+    const overlay = document.querySelector('.date-picker-overlay');
+    if (overlay) {
+      overlay.addEventListener('click', closeDatePicker);
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('datePickerModal');
+        if (modal && modal.classList.contains('show')) {
+          closeDatePicker();
+        }
+      }
+    });
+
+    document.querySelectorAll('.date-preset').forEach(btn => {
+      btn.addEventListener('click', handlePresetClick);
+    });
+
+    const prevBtn = document.getElementById('prevMonth');
+    const nextBtn = document.getElementById('nextMonth');
+    
+    if (prevBtn) {
+      prevBtn.addEventListener('click', function() {
+        currentMonth1.setMonth(currentMonth1.getMonth() - 1);
+        currentMonth2.setMonth(currentMonth2.getMonth() - 1);
+        renderCalendars();
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function() {
+        currentMonth1.setMonth(currentMonth1.getMonth() + 1);
+        currentMonth2.setMonth(currentMonth2.getMonth() + 1);
+        renderCalendars();
+      });
+    }
+
+    const applyBtn = document.getElementById('applyDatePicker');
+    if (applyBtn) {
+      applyBtn.addEventListener('click', applyDateSelection);
+    }
+
+    const cancelBtn = document.querySelector('.cancel-btn');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', closeDatePicker);
+    }
+  }
+
+  function openDatePicker() {
+    document.getElementById('datePickerModal').classList.add('show');
+    renderCalendars();
+  }
+
+  function closeDatePicker() {
+    document.getElementById('datePickerModal').classList.remove('show');
+  }
+
+  function handlePresetClick(e) {
+    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+
+    const preset = e.target.dataset.preset;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    switch(preset) {
+      case 'today':
+        selectedStartDate = new Date(today);
+        selectedEndDate = new Date(today);
+        break;
+      case 'yesterday':
+        selectedStartDate = new Date(today);
+        selectedStartDate.setDate(today.getDate() - 1);
+        selectedEndDate = new Date(selectedStartDate);
+        break;
+      case 'last7days':
+        selectedEndDate = new Date(today);
+        selectedStartDate = new Date(today);
+        selectedStartDate.setDate(today.getDate() - 6);
+        break;
+      case 'last30days':
+        selectedEndDate = new Date(today);
+        selectedStartDate = new Date(today);
+        selectedStartDate.setDate(today.getDate() - 29);
+        break;
+      case 'thismonth':
+        selectedStartDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        selectedEndDate = new Date(today);
+        break;
+      case 'lastmonth':
+        selectedStartDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        selectedEndDate = new Date(today.getFullYear(), today.getMonth(), 0);
+        break;
+    }
+    
+    if (preset !== 'custom') {
+      currentMonth1 = new Date(selectedStartDate);
+      currentMonth2 = new Date(selectedStartDate);
+      currentMonth2.setMonth(currentMonth2.getMonth() + 1);
+      
+      updateDateDisplay();
+      renderCalendars();
+    }
+  }
+
+  function applyDateSelection() {
+    const start = formatDate(selectedStartDate);
+    const end = formatDate(selectedEndDate);
+    
+    document.getElementById('hiddenStartDate').value = start;
+    document.getElementById('hiddenEndDate').value = end;
+    
+    const displayElement = document.getElementById('dateRangeDisplay');
+    if (displayElement) {
+      displayElement.textContent = `${start} to ${end}`;
+    }
+    
+    closeDatePicker();
+  }
+
+  function renderCalendars() {
+    renderCalendar('calendar1', currentMonth1);
+    renderCalendar('calendar2', currentMonth2);
+    updateDateDisplay();
+  }
+
+  function renderCalendar(elementId, month) {
+    const calendar = document.getElementById(elementId);
+    if (!calendar) return;
+
+    const year = month.getFullYear();
+    const monthNum = month.getMonth();
+    const firstDay = new Date(year, monthNum, 1);
+    const lastDay = new Date(year, monthNum + 1, 0);
+    const prevLastDay = new Date(year, monthNum, 0);
+    
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+    const weekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+    
+    let html = `
+      <div class="calendar-month">${monthNames[monthNum]} ${year}</div>
+      <div class="calendar-weekdays">
+        ${weekdays.map(day => `<div class="weekday">${day}</div>`).join('')}
+      </div>
+      <div class="calendar-days">
+    `;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Add empty cells for days before the first day of the month
+    const firstDayOfWeek = firstDay.getDay();
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      const prevMonthDay = prevLastDay.getDate() - (firstDayOfWeek - 1 - i);
+      html += `<button type="button" class="calendar-day other-month" disabled>${prevMonthDay}</button>`;
+    }
+    
+    // Add all days of the current month
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      const date = new Date(year, monthNum, day);
+      date.setHours(0, 0, 0, 0);
+      
+      const dateStr = formatDate(date);
+      let classes = 'calendar-day';
+      
+      if (isSameDay(date, today)) classes += ' today';
+      if (date > today) classes += ' disabled';
+      
+      if (selectedStartDate && selectedEndDate) {
+        if (isSameDay(date, selectedStartDate)) {
+          classes += ' selected range-start';
+        } else if (isSameDay(date, selectedEndDate)) {
+          classes += ' selected range-end';
+        } else if (date > selectedStartDate && date < selectedEndDate) {
+          classes += ' in-range';
+        }
+      }
+      
+      const disabled = date > today ? 'disabled' : '';
+      html += `<button type="button" class="${classes}" data-date="${dateStr}" ${disabled}>${day}</button>`;
+    }
+    
+    // Add empty cells for days after the last day of the month
+    const lastDayOfWeek = lastDay.getDay();
+    const remainingCells = lastDayOfWeek === 6 ? 0 : 6 - lastDayOfWeek;
+    for (let i = 1; i <= remainingCells; i++) {
+      html += `<button type="button" class="calendar-day other-month" disabled>${i}</button>`;
+    }
+    
+    html += '</div>';
+    calendar.innerHTML = html;
+    
+    // Add click listeners to enabled date buttons
+    calendar.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)').forEach(btn => {
+      btn.addEventListener('click', handleDateClick);
+    });
+  }
+
+  function handleDateClick(e) {
+    const dateStr = e.target.dataset.date;
+    const date = new Date(dateStr);
+    date.setHours(0, 0, 0, 0);
+    
+    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+    const customPreset = document.querySelector('[data-preset="custom"]');
+    if (customPreset) customPreset.classList.add('active');
+    
+    if (selectingStart || date < selectedStartDate) {
+      selectedStartDate = date;
+      selectedEndDate = date;
+      selectingStart = false;
+    } else {
+      if (date >= selectedStartDate) {
+        selectedEndDate = date;
+      } else {
+        selectedEndDate = selectedStartDate;
+        selectedStartDate = date;
+      }
+      selectingStart = true;
+    }
+    
+    updateDateDisplay();
+    renderCalendars();
+  }
+
+  function updateDateDisplay() {
+    if (!selectedStartDate || !selectedEndDate) return;
+    
+    const start = formatDate(selectedStartDate);
+    const end = formatDate(selectedEndDate);
+    
+    const displayElement = document.getElementById('selectedRangeText');
+    if (displayElement) {
+      displayElement.textContent = `${start} to ${end}`;
+    }
+  }
+
+  function formatDate(date) {
+    if (!date) return '';
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function isSameDay(date1, date2) {
+    if (!date1 || !date2) return false;
+    
+    return date1.getFullYear() === date2.getFullYear() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getDate() === date2.getDate();
+  }
+})();
+
+// ========================================
+// MOST STATUS LOADER
+// ========================================
 const MostStatusLoader = {
     projectId: '{{ $projectId ?? "" }}',
     startDate: '{{ $startDate ?? "" }}',
@@ -1649,13 +1921,8 @@ const MostStatusLoader = {
 
         this.allPosts = result.data || [];
         
-        // Update stats
         this.updateStats(this.allPosts);
-        
-        // Render chart
         this.renderChart();
-        
-        // Render table
         this.renderTable();
     },
 
@@ -1669,7 +1936,6 @@ const MostStatusLoader = {
 
         const ctx = canvas.getContext('2d');
         
-        // Destroy existing chart if any
         if (this.chart) {
             this.chart.destroy();
         }
@@ -1842,7 +2108,6 @@ const MostStatusLoader = {
     openModal(index) {
         this.viewPost(index);
         
-        // Add ESC key listener
         this._escKeyHandler = (e) => {
             if (e.key === 'Escape') {
                 this.closeModal();
@@ -1856,7 +2121,6 @@ const MostStatusLoader = {
         modal.classList.remove('active');
         document.body.style.overflow = '';
         
-        // Remove ESC key listener
         if (this._escKeyHandler) {
             document.removeEventListener('keydown', this._escKeyHandler);
             this._escKeyHandler = null;
@@ -1915,7 +2179,6 @@ const MostStatusLoader = {
         statusTable.style.display = 'table';
         emptyState.style.display = 'none';
 
-        // Update pagination
         this.updatePagination();
         pagination.style.display = 'flex';
     },
@@ -1925,10 +2188,8 @@ const MostStatusLoader = {
         const authorName = this.escapeHtml(post.author?.name || post.name || 'Unknown User');
         const authorHandle = post.author?.scr_name || post.name || 'unknown';
         
-        // Get initials from author name
         const initials = this.getInitials(authorName);
         
-        // Better avatar URL handling with unavatar.io as fallback
         let avatarHtml = '';
         const hasValidAvatar = post.avatar_url && 
                                !post.avatar_url.startsWith('/external') && 
@@ -1937,7 +2198,6 @@ const MostStatusLoader = {
         if (hasValidAvatar) {
             avatarHtml = `<img src="${post.avatar_url}" alt="${authorName}" onerror="this.parentElement.innerHTML='${initials}'">`;
         } else {
-            // Try unavatar.io service
             const username = authorHandle.replace('@', '');
             avatarHtml = `<img src="https://unavatar.io/twitter/${username}" alt="${authorName}" onerror="this.parentElement.innerHTML='${initials}'">`;
         }
@@ -2037,7 +2297,6 @@ const MostStatusLoader = {
             this.currentPage = newPage;
             this.renderTable();
             
-            // Scroll to top of table
             document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth' });
         }
     },
@@ -2121,7 +2380,6 @@ const MostStatusLoader = {
             </div>`;
         emptyState.style.display = 'block';
         
-        // Reset stats to 0
         document.getElementById('totalPosts').textContent = '0';
         document.getElementById('totalViews').textContent = '0';
         document.getElementById('avgViews').textContent = '0';
@@ -2132,7 +2390,6 @@ const MostStatusLoader = {
 document.addEventListener('DOMContentLoaded', () => {
     MostStatusLoader.init();
     
-    // ESC key to close modal
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             MostStatusLoader.closeModal();
