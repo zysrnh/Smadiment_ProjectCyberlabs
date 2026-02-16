@@ -71,7 +71,6 @@
         flex: 1;
     }
 
-    /* Date Picker Trigger */
     .date-picker-trigger {
         display: flex;
         align-items: center;
@@ -115,7 +114,6 @@
         color: var(--text-secondary);
     }
 
-    /* Date Picker Modal */
     .date-picker-modal {
         position: fixed;
         top: 0;
@@ -168,7 +166,6 @@
         }
     }
 
-    /* Sidebar with Presets */
     .date-picker-sidebar {
         width: 180px;
         background: var(--bg-gray-50);
@@ -205,7 +202,6 @@
         color: white;
     }
 
-    /* Calendar Content */
     .date-picker-content {
         flex: 1;
         padding: 24px;
@@ -246,7 +242,6 @@
         height: 20px;
     }
 
-    /* Calendars Wrapper */
     .calendars-wrapper {
         display: flex;
         gap: 24px;
@@ -340,7 +335,6 @@
         color: white;
     }
 
-    /* Date Display */
     .date-picker-display {
         padding: 16px 20px;
         background: var(--bg-gray-50);
@@ -356,7 +350,6 @@
         color: var(--text-primary);
     }
 
-    /* Footer Buttons */
     .date-picker-footer {
         display: flex;
         gap: 12px;
@@ -474,8 +467,9 @@
         border: 1px solid var(--border-gray);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
         overflow: hidden;
-        padding: 48px;
-        min-height: 700px;
+        padding: 20px;
+        min-height: 800px;
+        height: 800px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -516,8 +510,10 @@
 
     #wordCloudChart {
         width: 100% !important;
-        height: 700px !important;
-        position: relative;
+        height: 100% !important;
+        position: absolute;
+        top: 0;
+        left: 0;
         z-index: 1;
         cursor: pointer;
     }
@@ -582,8 +578,12 @@
         .apply-btn { width: 100%; justify-content: center; }
         .sentiment-filters { width: 100%; }
         .sentiment-btn { flex: 1; justify-content: center; }
-        #wordCloudChart { height: 500px !important; }
-        .wordcloud-container { padding: 24px; min-height: 550px; }
+        #wordCloudChart { height: 100% !important; }
+        .wordcloud-container { 
+            padding: 10px; 
+            min-height: 600px;
+            height: 600px;
+        }
 
         .date-picker-container {
             flex-direction: column;
@@ -647,7 +647,6 @@
         <p>Visual representation of trending words in news mentions</p>
     </div>
 
-    <!-- Filter Card -->
     <div class="filter-card">
         <form id="filterForm" method="GET" action="{{ route('mk.news.word-cloud') }}">
             <input type="hidden" name="project_id" value="{{ $projectId }}">
@@ -688,7 +687,6 @@
         </form>
     </div>
 
-    <!-- Date Range Picker Modal (Same as X Trending) -->
     <div class="date-picker-modal" id="datePickerModal">
         <div class="date-picker-overlay-inner"></div>
         <div class="date-picker-container">
@@ -734,7 +732,6 @@
         </div>
     </div>
 
-    <!-- Sentiment Filter Card -->
     <div class="filter-card">
         <div class="filter-content">
             <div class="filter-label">
@@ -767,7 +764,6 @@
         </div>
     </div>
 
-    <!-- Word Cloud Container -->
     <div class="wordcloud-container">
 
         <div id="loadingState" class="loading-state">
@@ -807,7 +803,6 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
 
 <script>
-// Date Picker JavaScript (Exact copy from X Trending Word Cloud)
 (function() {
   'use strict';
   
@@ -826,7 +821,7 @@
     } else {
       selectedEndDate = new Date();
       selectedStartDate = new Date();
-      selectedStartDate.setDate(selectedStartDate.getDate() - 6);
+      selectedStartDate.setDate(selectedStartDate.getDate() - 29);
     }
     
     if (endDateInput && endDateInput.value) {
@@ -1099,12 +1094,11 @@
   }
 })();
 
-// News Word Cloud Generator
 const NewsWordCloudGenerator = {
     projectId: '{{ $projectId ?? "" }}',
     startDate: '{{ $startDate ?? "" }}',
     endDate:   '{{ $endDate ?? "" }}',
-    currentSentiment: '2', // 2 = all
+    currentSentiment: '2',
     chart: null,
 
     async init() {
@@ -1135,10 +1129,20 @@ const NewsWordCloudGenerator = {
     },
 
     async loadData() {
+        const loadingState = document.getElementById('loadingState');
+        const chartDiv = document.getElementById('wordCloudChart');
+        const emptyState = document.getElementById('emptyState');
+        const hintEl = document.getElementById('wordCloudHint');
         const loadingText = document.getElementById('loadingText');
         const loadingProgress = document.getElementById('loadingProgress');
 
+        loadingState.style.display = 'flex';
+        chartDiv.style.display = 'none';
+        emptyState.style.display = 'none';
+        hintEl.style.display = 'none';
+
         loadingText.textContent = 'Fetching data from server...';
+        loadingProgress.textContent = '';
 
         const url = `/mk/api/news/word-cloud?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}&sentiment=${this.currentSentiment}`;
 
@@ -1175,10 +1179,26 @@ const NewsWordCloudGenerator = {
             return;
         }
 
-        const wordData = Object.entries(phrases).map(([word, count]) => ({
-            name: word,
-            value: count,
-        }));
+        // 🔥 AGGRESSIVE SCALING FOR MAXIMUM SIZE
+        const entries = Object.entries(phrases);
+        const maxCount = Math.max(...entries.map(([_, count]) => count));
+        const minCount = Math.min(...entries.map(([_, count]) => count));
+        
+        // Power scaling for dramatic size differences
+        const wordData = entries
+            .sort((a, b) => b[1] - a[1]) // Sort by frequency
+            .slice(0, 60) // Limit to top 60 for better visualization
+            .map(([word, count]) => {
+                const normalizedValue = (count - minCount) / (maxCount - minCount || 1);
+                // AGGRESSIVE power scaling: makes top words MUCH bigger
+                const scaledValue = Math.pow(normalizedValue, 0.4) * 1500 + 300;
+                
+                return {
+                    name: word,
+                    value: scaledValue,
+                    originalCount: count,
+                };
+            });
 
         loadingState.style.display = 'none';
         chartDiv.style.display = 'block';
@@ -1187,7 +1207,10 @@ const NewsWordCloudGenerator = {
 
         if (this.chart) this.chart.dispose();
 
-        this.chart = echarts.init(chartDiv);
+        this.chart = echarts.init(chartDiv, null, {
+            renderer: 'canvas',
+            devicePixelRatio: window.devicePixelRatio || 1,
+        });
 
         const colors = this.getSentimentColor();
 
@@ -1198,7 +1221,11 @@ const NewsWordCloudGenerator = {
                 backgroundColor: '#ffffff',
                 borderColor: '#e2e8f0',
                 borderWidth: 1,
-                textStyle: { color: '#1a202c', fontSize: 13, fontFamily: 'Poppins, sans-serif' },
+                textStyle: { 
+                    color: '#1a202c', 
+                    fontSize: 13, 
+                    fontFamily: 'Poppins, sans-serif' 
+                },
                 padding: 16,
                 shadowBlur: 20,
                 shadowColor: 'rgba(0,0,0,0.15)',
@@ -1211,7 +1238,7 @@ const NewsWordCloudGenerator = {
                             </div>
                             <div style="padding:8px 12px;background:#f1f5f9;border-radius:12px;margin-bottom:10px;text-align:center;">
                                 <span style="font-size:13px;font-weight:700;color:#038047;">
-                                    ${params.value} mentions
+                                    ${params.data.originalCount} mentions
                                 </span>
                             </div>
                             <div style="font-size:11px;color:#94a3b8;text-align:center;">
@@ -1227,24 +1254,25 @@ const NewsWordCloudGenerator = {
                 keepAspect: false,
                 left: 'center',
                 top: 'center',
-                width: '90%',
-                height: '90%',
-                sizeRange: [16, 70],
+                width: '98%',
+                height: '98%',
+                sizeRange: [28, 140], // 🔥 MUCH LARGER RANGE
                 rotationRange: [-45, 45],
-                rotationStep: 45,
-                gridSize: 12,
+                rotationStep: 30,
+                gridSize: 6, // 🔥 TIGHTER PACKING
                 drawOutOfBound: false,
                 layoutAnimation: true,
                 textStyle: {
-                    fontFamily: 'Poppins, Inter, sans-serif',
-                    fontWeight: 'bold',
+                    fontFamily: 'Poppins, Inter, Arial, sans-serif',
+                    fontWeight: '900', // 🔥 ULTRA BOLD
                     color: () => colors[Math.floor(Math.random() * colors.length)],
                 },
                 emphasis: {
                     focus: 'self',
                     textStyle: {
-                        textShadowBlur: 10,
-                        textShadowColor: 'rgba(0,0,0,0.35)',
+                        fontSize: undefined,
+                        textShadowBlur: 15,
+                        textShadowColor: 'rgba(0,0,0,0.4)',
                     },
                 },
                 data: wordData,
@@ -1264,12 +1292,22 @@ const NewsWordCloudGenerator = {
                     );
                 }
             });
+
+            this.chart.on('mouseover', () => {
+                chartDiv.style.cursor = 'pointer';
+            });
+
+            this.chart.on('mouseout', () => {
+                chartDiv.style.cursor = 'default';
+            });
         }, 10);
 
         let resizeTimer;
         const handleResize = () => {
             clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => { if (this.chart) this.chart.resize(); }, 250);
+            resizeTimer = setTimeout(() => { 
+                if (this.chart) this.chart.resize(); 
+            }, 250);
         };
         window.removeEventListener('resize', handleResize);
         window.addEventListener('resize', handleResize);
@@ -1277,12 +1315,24 @@ const NewsWordCloudGenerator = {
 
     getSentimentColor() {
         const colorSchemes = {
-            '0':  ['#10b981','#059669','#34d399','#6ee7b7','#047857'], // positive
-            '-1': ['#ef4444','#dc2626','#b91c1c','#f87171','#c53030'], // negative
-            '1':  ['#f59e0b','#d97706','#fbbf24','#b45309','#fcd34d'], // neutral
-            '2':  ['#038047','#04995a','#2FC6F6','#06b6d4','#8b5cf6', // all
-                   '#a78bfa','#f59e0b','#fbbf24','#10b981','#34d399',
-                   '#ef4444','#f87171'],
+            '0':  [
+                '#10b981', '#059669', '#34d399', '#6ee7b7', '#047857',
+                '#0d9488', '#14b8a6', '#5eead4', '#2dd4bf'
+            ],
+            '-1': [
+                '#ef4444', '#dc2626', '#b91c1c', '#f87171', '#c53030',
+                '#f43f5e', '#e11d48', '#fb7185', '#be123c'
+            ],
+            '1':  [
+                '#f59e0b', '#d97706', '#fbbf24', '#b45309', '#fcd34d',
+                '#f97316', '#ea580c', '#fb923c', '#fdba74'
+            ],
+            '2':  [
+                '#038047', '#04995a', '#2FC6F6', '#06b6d4', '#8b5cf6',
+                '#a78bfa', '#f59e0b', '#fbbf24', '#10b981', '#34d399',
+                '#ef4444', '#f87171', '#ec4899', '#f472b6', '#3b82f6',
+                '#60a5fa', '#14b8a6', '#2dd4bf'
+            ],
         };
         return colorSchemes[this.currentSentiment] || colorSchemes['2'];
     },

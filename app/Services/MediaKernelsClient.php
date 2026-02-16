@@ -1362,7 +1362,57 @@ class MediaKernelsClient
             }
         }
     }
+public function wordCloud(
+    string $projectId,
+    string $startDate,
+    int $startTime = 0,
+    string $endDate,
+    int $endTime = 23,
+    string $sentiment = '2'
+): array {
+    try {
+        $token = $this->getToken();
 
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/wordcloud/',
+            [
+                'project_id' => $projectId,
+                'start_date' => $startDate,
+                'start_time' => $startTime,
+                'end_date'   => $endDate,
+                'end_time'   => $endTime,
+                'sentiment'  => $sentiment,
+                'token'      => $token,
+            ]
+        );
+
+        $res->throw();
+
+        $json = $this->parseJson($res);
+
+        Log::info('wordCloud API response', [
+            'status'        => $json['status'] ?? 'unknown',
+            'has_data'      => isset($json['data']),
+            'has_phrases'   => isset($json['data']['phrases']),
+            'phrases_count' => isset($json['data']['phrases']) ? count($json['data']['phrases']) : 0,
+            'numrows'       => $json['numrows'] ?? 0,
+        ]);
+
+        return $json;
+
+    } catch (\Exception $e) {
+        Log::error('wordCloud API error', [
+            'error'      => $e->getMessage(),
+            'project_id' => $projectId,
+            'sentiment'  => $sentiment,
+        ]);
+        return [
+            'status' => 'error',
+            'data'   => ['phrases' => [], 'sites' => []],
+            'numrows' => 0,
+        ];
+    }
+}
 
 
 
