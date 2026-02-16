@@ -41,6 +41,148 @@
         margin: 0;
     }
 
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: var(--bg-white);
+        border: 1px solid var(--border-gray);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--primary-green);
+    }
+
+    .stat-card:hover::before { opacity: 1; }
+
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+    .stat-icon-wrapper {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(3, 128, 71, 0.1) 0%, rgba(3, 128, 71, 0.05) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .stat-icon-wrapper::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 16px;
+        padding: 4px;
+        background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .stat-card:hover .stat-icon-wrapper::after { opacity: 0.5; }
+
+    .stat-icon {
+        width: 28px;
+        height: 28px;
+        color: var(--primary-green);
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .stat-value-wrapper {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .stat-value {
+        font-size: 36px;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .stat-trend {
+        font-size: 13px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .stat-trend.positive {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .stat-trend.neutral {
+        background: rgba(100, 116, 139, 0.1);
+        color: #64748b;
+    }
+
+    .stat-progress {
+        height: 6px;
+        background: var(--bg-gray-100);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 8px;
+    }
+
+    .stat-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+        border-radius: 10px;
+        transition: width 1s ease-out;
+        width: 0%;
+    }
+
     .filter-card {
         background: var(--bg-white);
         border-radius: 16px;
@@ -571,6 +713,11 @@
         margin: 0;
     }
 
+    @media (max-width: 1024px) {
+        .dashboard-container { padding: 16px; }
+        .stats-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    }
+
     @media (max-width: 768px) {
         .dashboard-container { padding: 16px; }
         .filter-content { flex-direction: column; align-items: stretch; }
@@ -584,6 +731,7 @@
             min-height: 600px;
             height: 600px;
         }
+        .stat-value { font-size: 28px; }
 
         .date-picker-container {
             flex-direction: column;
@@ -645,6 +793,80 @@
     <div class="page-header">
         <h1>News Word Cloud</h1>
         <p>Visual representation of trending words in news mentions</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon-wrapper">
+                    <svg class="stat-icon" viewBox="0 0 24 24">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-label">Total Words</div>
+            <div id="totalWords" class="stat-value-wrapper">
+                <div class="stat-value">-</div>
+            </div>
+            <div class="stat-progress">
+                <div class="stat-progress-bar"></div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon-wrapper">
+                    <svg class="stat-icon" viewBox="0 0 24 24">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-label">Top Word</div>
+            <div id="topWord" class="stat-value-wrapper">
+                <div class="stat-value" style="font-size: 20px;">-</div>
+            </div>
+            <div class="stat-progress">
+                <div class="stat-progress-bar"></div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon-wrapper">
+                    <svg class="stat-icon" viewBox="0 0 24 24">
+                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-label">Total Mentions</div>
+            <div id="totalMentions" class="stat-value-wrapper">
+                <div class="stat-value">-</div>
+            </div>
+            <div class="stat-progress">
+                <div class="stat-progress-bar"></div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon-wrapper">
+                    <svg class="stat-icon" viewBox="0 0 24 24">
+    <line x1="18" y1="20" x2="18" y2="10"/>
+    <line x1="12" y1="20" x2="12" y2="4"/>
+    <line x1="6" y1="20" x2="6" y2="14"/>
+</svg>
+                </div>
+            </div>
+            <div class="stat-label">Avg per Word</div>
+            <div id="avgMentions" class="stat-value-wrapper">
+                <div class="stat-value">-</div>
+            </div>
+            <div class="stat-progress">
+                <div class="stat-progress-bar"></div>
+            </div>
+        </div>
     </div>
 
     <div class="filter-card">
@@ -1176,21 +1398,19 @@ const NewsWordCloudGenerator = {
             chartDiv.style.display = 'none';
             hintEl.style.display = 'none';
             emptyState.style.display = 'block';
+            this.updateStats({ totalWords: 0, topWord: '-', totalMentions: 0, avgMentions: 0 });
             return;
         }
 
-        // 🔥 AGGRESSIVE SCALING FOR MAXIMUM SIZE
         const entries = Object.entries(phrases);
         const maxCount = Math.max(...entries.map(([_, count]) => count));
         const minCount = Math.min(...entries.map(([_, count]) => count));
         
-        // Power scaling for dramatic size differences
         const wordData = entries
-            .sort((a, b) => b[1] - a[1]) // Sort by frequency
-            .slice(0, 60) // Limit to top 60 for better visualization
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 60)
             .map(([word, count]) => {
                 const normalizedValue = (count - minCount) / (maxCount - minCount || 1);
-                // AGGRESSIVE power scaling: makes top words MUCH bigger
                 const scaledValue = Math.pow(normalizedValue, 0.4) * 1500 + 300;
                 
                 return {
@@ -1199,6 +1419,14 @@ const NewsWordCloudGenerator = {
                     originalCount: count,
                 };
             });
+
+        // Update stats
+        const totalWords = entries.length;
+        const topWord = entries[0][0];
+        const totalMentions = entries.reduce((sum, [_, count]) => sum + count, 0);
+        const avgMentions = Math.round(totalMentions / totalWords);
+
+        this.updateStats({ totalWords, topWord, totalMentions, avgMentions });
 
         loadingState.style.display = 'none';
         chartDiv.style.display = 'block';
@@ -1256,15 +1484,15 @@ const NewsWordCloudGenerator = {
                 top: 'center',
                 width: '98%',
                 height: '98%',
-                sizeRange: [28, 140], // 🔥 MUCH LARGER RANGE
+                sizeRange: [28, 140],
                 rotationRange: [-45, 45],
                 rotationStep: 30,
-                gridSize: 6, // 🔥 TIGHTER PACKING
+                gridSize: 6,
                 drawOutOfBound: false,
                 layoutAnimation: true,
                 textStyle: {
                     fontFamily: 'Poppins, Inter, Arial, sans-serif',
-                    fontWeight: '900', // 🔥 ULTRA BOLD
+                    fontWeight: '900',
                     color: () => colors[Math.floor(Math.random() * colors.length)],
                 },
                 emphasis: {
@@ -1313,6 +1541,21 @@ const NewsWordCloudGenerator = {
         window.addEventListener('resize', handleResize);
     },
 
+    updateStats({ totalWords, topWord, totalMentions, avgMentions }) {
+        document.getElementById('totalWords').innerHTML = `<div class="stat-value">${totalWords.toLocaleString()}</div>`;
+        document.getElementById('topWord').innerHTML = `<div class="stat-value" style="font-size: 20px;" title="${topWord}">${topWord}</div>`;
+        document.getElementById('totalMentions').innerHTML = `<div class="stat-value">${totalMentions.toLocaleString()}</div>`;
+        document.getElementById('avgMentions').innerHTML = `<div class="stat-value">${avgMentions.toLocaleString()}</div>`;
+
+        // Animate progress bars
+        const cards = document.querySelectorAll('.stat-card');
+        const pcts = [80, 100, 95, 85];
+        cards.forEach((card, i) => {
+            const bar = card.querySelector('.stat-progress-bar');
+            if (bar) setTimeout(() => bar.style.width = pcts[i] + '%', 100);
+        });
+    },
+
     getSentimentColor() {
         const colorSchemes = {
             '0':  [
@@ -1351,6 +1594,7 @@ const NewsWordCloudGenerator = {
                 <p>${message}. Please try again later.</p>
             </div>`;
         emptyState.style.display = 'block';
+        this.updateStats({ totalWords: 0, topWord: '-', totalMentions: 0, avgMentions: 0 });
     },
 };
 
