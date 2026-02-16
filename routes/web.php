@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\TopicMapController;
 use App\Http\Controllers\Api\TopAnalyticsController;
 use App\Http\Controllers\MK\XOverviewController;
 use App\Http\Controllers\MK\FacebookOverviewController;
+use App\Http\Controllers\MK\NewsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -105,6 +106,15 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
 
         Route::get('/top-influencers', [TopAnalyticsController::class, 'getInfluencersData'])
             ->name('top-influencers');
+
+        // ─────────────────────────────────────────────────────
+        // News APIs
+        // ─────────────────────────────────────────────────────
+        Route::prefix('news')->name('news.')->group(function () {
+            // Recent Topics API (for lazy loading)
+            Route::get('/recent-topics', [NewsController::class, 'recentTopicsApi'])
+                ->name('recent-topics-api');
+        });
 
         // ─────────────────────────────────────────────────────
         // X (Twitter) APIs - CONSOLIDATED
@@ -219,6 +229,15 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/hashtags', [TopAnalyticsController::class, 'hashtags'])->name('hashtags');
         Route::get('/locations', [TopAnalyticsController::class, 'locations'])->name('locations');
         Route::get('/influencers', [TopAnalyticsController::class, 'influencers'])->name('influencers');
+    });
+
+    // ─────────────────────────────────────────────────────
+    // News Routes
+    // ─────────────────────────────────────────────────────
+    Route::prefix('news')->name('news.')->group(function () {
+        // Recent Topics Page
+        Route::get('/recent-topics', [NewsController::class, 'recentTopicsPage'])
+            ->name('recent-topics');
     });
 
     // ─────────────────────────────────────────────────────

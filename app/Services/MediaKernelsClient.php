@@ -1228,4 +1228,153 @@ class MediaKernelsClient
             return ['status' => 'error', 'data' => []];
         }
     }
+   public function recentTopicsHybrid(
+        string $level = 'internasional',
+        int $size = 5
+    ): array {
+        Log::info('=== HYBRID recentTopics CALLED ===', [
+            'level' => $level,
+            'size' => $size,
+        ]);
+
+        // Try v2 first
+        try {
+            Log::info('Attempting v2 endpoint...');
+            
+            $token = $this->getToken();
+            $url = $this->baseUrl() . '/recenttopics_v2/';
+            
+            $res = Http::timeout(60)->acceptJson()->get($url, [
+                'level' => $level,
+                'size'  => $size,
+                'token' => $token,
+            ]);
+
+            Log::info('v2 HTTP Response', [
+                'status_code' => $res->status(),
+                'success' => $res->successful(),
+            ]);
+
+            $res->throw();
+            $json = $this->parseJson($res);
+
+            Log::info('v2 Raw Response', [
+                'status' => $json['status'] ?? 'not_set',
+                'has_current_issue' => isset($json['current_issue']),
+                'response_sample' => json_encode($json, JSON_PRETTY_PRINT),
+            ]);
+
+            // Check if v2 has valid data
+            if (isset($json['status']) && $json['status'] === 'success' && isset($json['current_issue'][$level])) {
+                $count = count($json['current_issue'][$level]);
+                Log::info('✅ v2 SUCCESS - Using v2 data', [
+                    'level' => $level,
+                    'count' => $count,
+                ]);
+                
+                // Transform v2 structure to standardized format
+                $transformed = [
+                    'daftar_isu' => [],
+                    'api_version' => 'v2',
+                    'status' => 'success',
+                ];
+
+                foreach ($json['current_issue'][$level] as $issue) {
+                    $transformed['daftar_isu'][] = [
+                        'judul' => $issue['issue_title'] ?? 'Untitled',
+                        'deskripsi' => '', // v2 doesn't have description
+                        'referensi' => isset($issue['urls']) && count($issue['urls']) > 0 ? $issue['urls'][0] : null,
+                        'urls' => $issue['urls'] ?? [],
+                    ];
+                }
+
+                return $transformed;
+            }
+
+            // v2 returned error or empty data
+            Log::warning('⚠️ v2 returned error/empty, falling back to v1', [
+                'v2_status' => $json['status'] ?? 'unknown',
+                'v2_message' => $json['message'] ?? 'no message',
+            ]);
+            
+            throw new \Exception('v2 returned error or empty data, fallback to v1');
+
+        } catch (\Exception $e) {
+            Log::warning('v2 failed, attempting v1 fallback', [
+                'v2_error' => $e->getMessage(),
+            ]);
+
+            // Fallback to v1
+            try {
+                Log::info('Attempting v1 endpoint...');
+                
+                $token = $this->getToken();
+                $url = $this->baseUrl() . '/recenttopics/';
+                
+                $res = Http::timeout(60)->acceptJson()->get($url, [
+                    'level' => $level,
+                    'size'  => $size,
+                    'token' => $token,
+                ]);
+
+                Log::info('v1 HTTP Response', [
+                    'status_code' => $res->status(),
+                    'success' => $res->successful(),
+                ]);
+
+                $res->throw();
+                $json = $this->parseJson($res);
+
+                Log::info('v1 Raw Response', [
+                    'has_daftar_isu' => isset($json['daftar_isu']),
+                    'count' => isset($json['daftar_isu']) ? count($json['daftar_isu']) : 0,
+                    'response_sample' => json_encode($json, JSON_PRETTY_PRINT),
+                ]);
+
+                // Check if v1 has valid data
+                if (isset($json['daftar_isu']) && is_array($json['daftar_isu']) && count($json['daftar_isu']) > 0) {
+                    Log::info('✅ v1 SUCCESS - Using v1 data', [
+                        'level' => $level,
+                        'count' => count($json['daftar_isu']),
+                    ]);
+                    
+                    $json['api_version'] = 'v1';
+                    $json['status'] = 'success';
+                    return $json;
+                }
+
+                // v1 also empty
+                Log::warning('⚠️ v1 also returned empty data');
+                throw new \Exception('v1 returned empty data');
+
+            } catch (\Exception $e1) {
+                Log::error('❌ Both v2 and v1 failed', [
+                    'v2_error' => $e->getMessage(),
+                    'v1_error' => $e1->getMessage(),
+                ]);
+
+                return [
+                    'daftar_isu' => [],
+                    'api_version' => 'error',
+                    'status' => 'error',
+                    'message' => 'Both v2 and v1 endpoints failed',
+                ];
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
