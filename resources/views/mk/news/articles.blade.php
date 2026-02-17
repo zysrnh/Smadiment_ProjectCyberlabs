@@ -3,13 +3,6 @@
 @section('title', 'News Articles - SMADIMENT')
 
 @section('styles')
-<!-- Flatpickr CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<!-- Flatpickr JS -->
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
 <style>
   :root {
     --primary-green: #038047;
@@ -24,103 +17,6 @@
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  }
-
-  /* Flatpickr Custom Theme */
-  .flatpickr-calendar {
-    border-radius: 16px !important;
-    border: 1px solid var(--border-gray) !important;
-    box-shadow: var(--shadow-lg) !important;
-    font-family: 'Poppins', sans-serif !important;
-    overflow: hidden;
-  }
-
-  .flatpickr-months {
-    background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%) !important;
-    border-radius: 16px 16px 0 0 !important;
-    padding: 8px 0 !important;
-  }
-
-  .flatpickr-month {
-    color: white !important;
-    fill: white !important;
-  }
-
-  .flatpickr-current-month {
-    color: white !important;
-    font-size: 15px !important;
-    font-weight: 600 !important;
-  }
-
-  .flatpickr-current-month .numInputWrapper input {
-    color: white !important;
-  }
-
-  .flatpickr-current-month .flatpickr-monthDropdown-months {
-    color: white !important;
-    background: transparent !important;
-    font-weight: 600 !important;
-  }
-
-  .flatpickr-prev-month svg,
-  .flatpickr-next-month svg {
-    fill: white !important;
-  }
-
-  .flatpickr-prev-month:hover,
-  .flatpickr-next-month:hover {
-    background: rgba(255,255,255,0.2) !important;
-    border-radius: 8px !important;
-  }
-
-  .flatpickr-weekday {
-    color: var(--text-secondary) !important;
-    font-weight: 600 !important;
-    font-size: 12px !important;
-  }
-
-  .flatpickr-day {
-    border-radius: 8px !important;
-    font-size: 13px !important;
-    font-weight: 500 !important;
-    color: var(--text-primary) !important;
-  }
-
-  .flatpickr-day:hover {
-    background: rgba(3, 128, 71, 0.1) !important;
-    border-color: transparent !important;
-    color: var(--primary-green) !important;
-  }
-
-  .flatpickr-day.selected,
-  .flatpickr-day.startRange,
-  .flatpickr-day.endRange {
-    background: var(--primary-green) !important;
-    border-color: var(--primary-green) !important;
-    color: white !important;
-    font-weight: 700 !important;
-  }
-
-  .flatpickr-day.inRange {
-    background: rgba(3, 128, 71, 0.12) !important;
-    border-color: transparent !important;
-    color: var(--primary-green) !important;
-    box-shadow: none !important;
-  }
-
-  .flatpickr-day.today {
-    border-color: var(--primary-green) !important;
-    color: var(--primary-green) !important;
-    font-weight: 700 !important;
-  }
-
-  .flatpickr-day.today:hover {
-    background: var(--primary-green) !important;
-    color: white !important;
-  }
-
-  .numInputWrapper:hover {
-    background: rgba(255,255,255,0.1) !important;
   }
 
   /* Main Layout */
@@ -253,12 +149,6 @@
     box-shadow: 0 0 0 3px rgba(3, 128, 71, 0.1);
   }
 
-  .date-picker-trigger.active {
-    border-color: var(--primary-green);
-    background: var(--bg-white);
-    box-shadow: 0 0 0 3px rgba(3, 128, 71, 0.1);
-  }
-
   .date-picker-trigger svg:first-child {
     width: 18px;
     height: 18px;
@@ -276,11 +166,286 @@
     height: 16px;
     margin-left: auto;
     color: var(--text-secondary);
-    transition: transform 0.2s;
   }
 
-  .date-picker-trigger.active svg:last-child {
-    transform: rotate(180deg);
+  /* Date Picker Modal */
+  .date-picker-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+  }
+
+  .date-picker-modal.show {
+    display: flex;
+  }
+
+  .date-picker-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+  }
+
+  .date-picker-container {
+    position: relative;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    display: flex;
+    max-width: 900px;
+    width: 90%;
+    max-height: 90vh;
+    z-index: 10001;
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Sidebar with Presets */
+  .date-picker-sidebar {
+    width: 180px;
+    background: var(--bg-gray-50);
+    border-right: 1px solid var(--border-gray);
+    padding: 16px 12px;
+    border-radius: 16px 0 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .date-preset {
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .date-preset:hover {
+    background: var(--bg-white);
+    color: var(--primary-green);
+  }
+
+  .date-preset.active {
+    background: var(--primary-green);
+    color: white;
+  }
+
+  /* Calendar Content */
+  .date-picker-content {
+    flex: 1;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .date-picker-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--bg-gray-50);
+    border: 1px solid var(--border-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .nav-btn:hover {
+    background: var(--primary-green);
+    border-color: var(--primary-green);
+    color: white;
+  }
+
+  .nav-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Calendars Wrapper */
+  .calendars-wrapper {
+    display: flex;
+    gap: 24px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .calendar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .calendar-month {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .weekday {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    padding: 8px 0;
+  }
+
+  .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+
+  .calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-primary);
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+
+  .calendar-day:hover:not(.disabled):not(.other-month) {
+    background: var(--bg-gray-100);
+  }
+
+  .calendar-day.other-month {
+    color: #cbd5e1;
+    cursor: default;
+  }
+
+  .calendar-day.disabled {
+    color: #e2e8f0;
+    cursor: not-allowed;
+  }
+
+  .calendar-day.today {
+    border: 2px solid var(--primary-green);
+  }
+
+  .calendar-day.selected {
+    background: var(--primary-green);
+    color: white;
+  }
+
+  .calendar-day.in-range {
+    background: rgba(3, 128, 71, 0.1);
+    color: var(--primary-green);
+  }
+
+  .calendar-day.range-start,
+  .calendar-day.range-end {
+    background: var(--primary-green);
+    color: white;
+  }
+
+  /* Date Display */
+  .date-picker-display {
+    padding: 16px 20px;
+    background: var(--bg-gray-50);
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-gray);
+  }
+
+  .date-picker-display span {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  /* Footer Buttons */
+  .date-picker-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+
+  .cancel-btn,
+  .apply-date-btn {
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+
+  .cancel-btn {
+    background: var(--bg-gray-100);
+    color: var(--text-primary);
+  }
+
+  .cancel-btn:hover {
+    background: var(--border-gray);
+  }
+
+  .apply-date-btn {
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(3, 128, 71, 0.2);
+  }
+
+  .apply-date-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(3, 128, 71, 0.3);
   }
 
   /* Stats Grid */
@@ -379,10 +544,6 @@
   }
 
   /* Sentiment Card */
-  .sentiment-card {
-    grid-column: span 1;
-  }
-
   .sentiment-chart-container {
     display: flex;
     align-items: center;
@@ -780,20 +941,9 @@
     text-transform: capitalize;
   }
 
-  .quote-sentiment.positif {
-    background: #d1fae5;
-    color: #065f46;
-  }
-
-  .quote-sentiment.negatif {
-    background: #fee2e2;
-    color: #991b1b;
-  }
-
-  .quote-sentiment.netral {
-    background: #f3f4f6;
-    color: #374151;
-  }
+  .quote-sentiment.positif { background: #d1fae5; color: #065f46; }
+  .quote-sentiment.negatif { background: #fee2e2; color: #991b1b; }
+  .quote-sentiment.netral  { background: #f3f4f6; color: #374151; }
 
   /* Pagination */
   .pagination {
@@ -845,7 +995,7 @@
   }
 
   @keyframes loading {
-    0% { background-position: 200% 0; }
+    0%   { background-position: 200% 0; }
     100% { background-position: -200% 0; }
   }
 
@@ -905,7 +1055,6 @@
     .filter-content { flex-direction: column; align-items: stretch; }
     .date-range-wrapper { flex-direction: column; }
     .apply-btn { width: 100%; justify-content: center; }
-    .date-picker-trigger { max-width: 100%; }
   }
 
   @media (max-width: 768px) {
@@ -915,6 +1064,29 @@
     .article-title { font-size: 16px; }
     .article-meta { flex-direction: column; align-items: flex-start; gap: 8px; }
     .sentiment-chart-container { flex-direction: column; }
+    .date-picker-trigger { max-width: 100%; }
+    .date-picker-container {
+      flex-direction: column;
+      max-height: 85vh;
+      overflow-y: auto;
+      width: 95%;
+    }
+    .date-picker-sidebar {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid var(--border-gray);
+      border-radius: 16px 16px 0 0;
+      flex-direction: row;
+      overflow-x: auto;
+      padding: 12px 16px;
+    }
+    .date-preset { white-space: nowrap; }
+    .date-picker-content { padding: 20px 16px; }
+    .calendars-wrapper { flex-direction: column; gap: 16px; }
+    .date-picker-header { flex-wrap: wrap; }
+    .calendar-day { font-size: 12px; }
+    .weekday { font-size: 10px; }
+    .cancel-btn, .apply-date-btn { flex: 1; }
   }
 </style>
 @endsection
@@ -974,16 +1146,16 @@
 
         <div class="filter-label">Media Type</div>
         <select name="media" id="mediaType" class="filter-select">
-          <option value="doc" {{ (request('media', 'doc') === 'doc') ? 'selected' : '' }}>Online News</option>
-          <option value="cetak" {{ (request('media') === 'cetak') ? 'selected' : '' }}>Print Media</option>
+          <option value="doc"   {{ (request('media', 'doc') === 'doc')   ? 'selected' : '' }}>Online News</option>
+          <option value="cetak" {{ (request('media') === 'cetak')         ? 'selected' : '' }}>Print Media</option>
         </select>
 
         <div class="filter-label">Sentiment</div>
         <select name="sentiment" id="sentimentFilter" class="filter-select">
           <option value="all" {{ (request('sentiment', 'all') === 'all') ? 'selected' : '' }}>All Sentiment</option>
-          <option value="1" {{ (request('sentiment') === '1') ? 'selected' : '' }}>Positive</option>
-          <option value="0" {{ (request('sentiment') === '0') ? 'selected' : '' }}>Neutral</option>
-          <option value="-1" {{ (request('sentiment') === '-1') ? 'selected' : '' }}>Negative</option>
+          <option value="1"   {{ (request('sentiment') === '1')           ? 'selected' : '' }}>Positive</option>
+          <option value="0"   {{ (request('sentiment') === '0')           ? 'selected' : '' }}>Neutral</option>
+          <option value="-1"  {{ (request('sentiment') === '-1')          ? 'selected' : '' }}>Negative</option>
         </select>
 
         <button type="submit" class="apply-btn">
@@ -996,10 +1168,49 @@
     </form>
   </div>
 
+  <!-- Date Range Picker Modal — SAMA PERSIS DENGAN TIMELINE -->
+  <div class="date-picker-modal" id="datePickerModal">
+    <div class="date-picker-overlay"></div>
+    <div class="date-picker-container">
+      <div class="date-picker-sidebar">
+        <button type="button" class="date-preset" data-preset="today">Today</button>
+        <button type="button" class="date-preset" data-preset="yesterday">Yesterday</button>
+        <button type="button" class="date-preset" data-preset="last7days">Last 7 Days</button>
+        <button type="button" class="date-preset" data-preset="last30days">Last 30 Days</button>
+        <button type="button" class="date-preset" data-preset="thismonth">This Month</button>
+        <button type="button" class="date-preset" data-preset="lastmonth">Last Month</button>
+        <button type="button" class="date-preset active" data-preset="custom">Custom Range</button>
+      </div>
+      <div class="date-picker-content">
+        <div class="date-picker-header">
+          <button type="button" class="nav-btn" id="prevMonth">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <div class="calendars-wrapper">
+            <div class="calendar" id="calendar1"></div>
+            <div class="calendar" id="calendar2"></div>
+          </div>
+          <button type="button" class="nav-btn" id="nextMonth">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+        <div class="date-picker-display">
+          <span id="selectedRangeText">{{ $startDate }} to {{ $endDate }}</span>
+        </div>
+        <div class="date-picker-footer">
+          <button type="button" class="cancel-btn">Cancel</button>
+          <button type="button" class="apply-date-btn" id="applyDatePicker">Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Stats Grid -->
   <div class="stats-grid">
-
-    <!-- Total Articles -->
     <div class="stat-card">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
@@ -1013,12 +1224,9 @@
       <div id="statTotalArticles" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 140px;"></div>
       </div>
-      <div class="stat-progress">
-        <div class="stat-progress-bar" style="width: 0%"></div>
-      </div>
+      <div class="stat-progress"><div class="stat-progress-bar" style="width: 0%"></div></div>
     </div>
 
-    <!-- Total Publishers -->
     <div class="stat-card">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
@@ -1034,13 +1242,10 @@
       <div id="statTotalPublishers" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 120px;"></div>
       </div>
-      <div class="stat-progress">
-        <div class="stat-progress-bar" style="width: 0%"></div>
-      </div>
+      <div class="stat-progress"><div class="stat-progress-bar" style="width: 0%"></div></div>
     </div>
 
-    <!-- Sentiment Distribution -->
-    <div class="stat-card sentiment-card">
+    <div class="stat-card">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
           <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1056,7 +1261,6 @@
         <div class="loading-skeleton skeleton-text" style="width: 100%; height: 200px;"></div>
       </div>
     </div>
-
   </div>
 
   <!-- Articles Container -->
@@ -1077,13 +1281,9 @@
       </div>
     </div>
 
-    <!-- Loading State -->
     <div id="articlesLoading" class="loading-skeleton" style="height: 400px; margin: 20px;"></div>
-
-    <!-- Articles List -->
     <div id="articlesList" class="articles-list" style="display: none;"></div>
 
-    <!-- Empty State -->
     <div id="emptyState" style="display: none;">
       <div class="empty-state">
         <svg viewBox="0 0 24 24" style="stroke: currentColor; fill: none;">
@@ -1096,7 +1296,6 @@
       </div>
     </div>
 
-    <!-- Pagination -->
     <div class="pagination" id="pagination" style="display: none;">
       <button class="pagination-btn" id="prevBtn" onclick="changePage(-1)">← Previous</button>
       <span class="pagination-info" id="pageInfo">Page 1 of 1</span>
@@ -1105,90 +1304,307 @@
   </div>
 
   @endif
-
 </div>
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-// =============================================
-// DATE PICKER — Flatpickr Integration
-// =============================================
-document.addEventListener('DOMContentLoaded', function () {
+// ========================================
+// DATE PICKER JAVASCRIPT — COPY PASTE DARI TIMELINE
+// ========================================
+(function() {
+  'use strict';
+  
+  let selectedStartDate = null;
+  let selectedEndDate = null;
+  let currentMonth1 = new Date();
+  let currentMonth2 = new Date();
+  let selectingStart = true;
 
-  const trigger   = document.getElementById('datePickerTrigger');
-  const hiddenStart = document.getElementById('hiddenStartDate');
-  const hiddenEnd   = document.getElementById('hiddenEndDate');
-  const display   = document.getElementById('dateRangeDisplay');
+  document.addEventListener('DOMContentLoaded', function() {
+    const startDateInput = document.getElementById('hiddenStartDate');
+    const endDateInput = document.getElementById('hiddenEndDate');
+    
+    if (startDateInput && startDateInput.value) {
+      selectedStartDate = new Date(startDateInput.value);
+    } else {
+      selectedEndDate = new Date();
+      selectedStartDate = new Date();
+      selectedStartDate.setDate(selectedStartDate.getDate() - 6);
+    }
+    
+    if (endDateInput && endDateInput.value) {
+      selectedEndDate = new Date(endDateInput.value);
+    }
+    
+    currentMonth1 = new Date(selectedStartDate);
+    currentMonth2 = new Date(selectedStartDate);
+    currentMonth2.setMonth(currentMonth2.getMonth() + 1);
+    
+    renderCalendars();
+    setupEventListeners();
+  });
 
-  if (trigger && hiddenStart && hiddenEnd) {
+  function setupEventListeners() {
+    const trigger = document.getElementById('datePickerTrigger');
+    if (trigger) {
+      trigger.addEventListener('click', openDatePicker);
+    }
 
-    // Buat hidden input sebagai anchor Flatpickr (tidak terlihat user)
-    const fpInput = document.createElement('input');
-    fpInput.type = 'text';
-    fpInput.style.cssText = 'position:absolute;opacity:0;pointer-events:none;width:0;height:0;';
-    trigger.parentNode.appendChild(fpInput);
+    const overlay = document.querySelector('.date-picker-overlay');
+    if (overlay) {
+      overlay.addEventListener('click', closeDatePicker);
+    }
 
-    const fp = flatpickr(fpInput, {
-      mode: 'range',
-      dateFormat: 'Y-m-d',
-      defaultDate: [hiddenStart.value, hiddenEnd.value],
-      maxDate: 'today',
-      showMonths: window.innerWidth > 768 ? 2 : 1, // 2 bulan di desktop
-      locale: {
-        rangeSeparator: ' → '
-      },
-      onOpen: function () {
-        trigger.classList.add('active');
-      },
-      onClose: function () {
-        trigger.classList.remove('active');
-      },
-      onChange: function (selectedDates) {
-        if (selectedDates.length === 2) {
-          // Format tanggal ke YYYY-MM-DD
-          const fmt = (d) => {
-            const y = d.getFullYear();
-            const m = String(d.getMonth() + 1).padStart(2, '0');
-            const dd = String(d.getDate()).padStart(2, '0');
-            return `${y}-${m}-${dd}`;
-          };
-
-          const s = fmt(selectedDates[0]);
-          const e = fmt(selectedDates[1]);
-
-          // Update hidden inputs yang akan dikirim via form
-          hiddenStart.value = s;
-          hiddenEnd.value   = e;
-
-          // Update teks display pada tombol
-          display.textContent = `${s} to ${e}`;
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('datePickerModal');
+        if (modal && modal.classList.contains('show')) {
+          closeDatePicker();
         }
       }
     });
 
-    // Klik tombol → buka/tutup kalender
-    trigger.addEventListener('click', function (e) {
-      e.preventDefault();
-      if (fp.isOpen) {
-        fp.close();
-      } else {
-        // Posisikan kalender di bawah tombol
-        fp.open();
-      }
+    document.querySelectorAll('.date-preset').forEach(btn => {
+      btn.addEventListener('click', handlePresetClick);
     });
 
-    // Resize handler — update jumlah bulan yang ditampilkan
-    window.addEventListener('resize', function () {
-      fp.set('showMonths', window.innerWidth > 768 ? 2 : 1);
+    const prevBtn = document.getElementById('prevMonth');
+    const nextBtn = document.getElementById('nextMonth');
+    
+    if (prevBtn) {
+      prevBtn.addEventListener('click', function() {
+        currentMonth1.setMonth(currentMonth1.getMonth() - 1);
+        currentMonth2.setMonth(currentMonth2.getMonth() - 1);
+        renderCalendars();
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function() {
+        currentMonth1.setMonth(currentMonth1.getMonth() + 1);
+        currentMonth2.setMonth(currentMonth2.getMonth() + 1);
+        renderCalendars();
+      });
+    }
+
+    const applyBtn = document.getElementById('applyDatePicker');
+    if (applyBtn) {
+      applyBtn.addEventListener('click', applyDateSelection);
+    }
+
+    const cancelBtn = document.querySelector('.cancel-btn');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', closeDatePicker);
+    }
+  }
+
+  function openDatePicker() {
+    document.getElementById('datePickerModal').classList.add('show');
+    renderCalendars();
+  }
+
+  function closeDatePicker() {
+    document.getElementById('datePickerModal').classList.remove('show');
+  }
+
+  function handlePresetClick(e) {
+    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+
+    const preset = e.target.dataset.preset;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    switch(preset) {
+      case 'today':
+        selectedStartDate = new Date(today);
+        selectedEndDate = new Date(today);
+        break;
+      case 'yesterday':
+        selectedStartDate = new Date(today);
+        selectedStartDate.setDate(today.getDate() - 1);
+        selectedEndDate = new Date(selectedStartDate);
+        break;
+      case 'last7days':
+        selectedEndDate = new Date(today);
+        selectedStartDate = new Date(today);
+        selectedStartDate.setDate(today.getDate() - 6);
+        break;
+      case 'last30days':
+        selectedEndDate = new Date(today);
+        selectedStartDate = new Date(today);
+        selectedStartDate.setDate(today.getDate() - 29);
+        break;
+      case 'thismonth':
+        selectedStartDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        selectedEndDate = new Date(today);
+        break;
+      case 'lastmonth':
+        selectedStartDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        selectedEndDate = new Date(today.getFullYear(), today.getMonth(), 0);
+        break;
+    }
+    
+    if (preset !== 'custom') {
+      currentMonth1 = new Date(selectedStartDate);
+      currentMonth2 = new Date(selectedStartDate);
+      currentMonth2.setMonth(currentMonth2.getMonth() + 1);
+      
+      updateDateDisplay();
+      renderCalendars();
+    }
+  }
+
+  function applyDateSelection() {
+    const start = formatDate(selectedStartDate);
+    const end = formatDate(selectedEndDate);
+    
+    document.getElementById('hiddenStartDate').value = start;
+    document.getElementById('hiddenEndDate').value = end;
+    
+    const displayElement = document.getElementById('dateRangeDisplay');
+    if (displayElement) {
+      displayElement.textContent = `${start} to ${end}`;
+    }
+    
+    closeDatePicker();
+  }
+
+  function renderCalendars() {
+    renderCalendar('calendar1', currentMonth1);
+    renderCalendar('calendar2', currentMonth2);
+    updateDateDisplay();
+  }
+
+  function renderCalendar(elementId, month) {
+    const calendar = document.getElementById(elementId);
+    if (!calendar) return;
+
+    const year = month.getFullYear();
+    const monthNum = month.getMonth();
+    const firstDay = new Date(year, monthNum, 1);
+    const lastDay = new Date(year, monthNum + 1, 0);
+    const prevLastDay = new Date(year, monthNum, 0);
+    
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+    const weekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+    
+    let html = `
+      <div class="calendar-month">${monthNames[monthNum]} ${year}</div>
+      <div class="calendar-weekdays">
+        ${weekdays.map(day => `<div class="weekday">${day}</div>`).join('')}
+      </div>
+      <div class="calendar-days">
+    `;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const firstDayOfWeek = firstDay.getDay();
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      const prevMonthDay = prevLastDay.getDate() - (firstDayOfWeek - 1 - i);
+      html += `<button type="button" class="calendar-day other-month" disabled>${prevMonthDay}</button>`;
+    }
+    
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      const date = new Date(year, monthNum, day);
+      date.setHours(0, 0, 0, 0);
+      
+      const dateStr = formatDate(date);
+      let classes = 'calendar-day';
+      
+      if (isSameDay(date, today)) classes += ' today';
+      if (date > today) classes += ' disabled';
+      
+      if (selectedStartDate && selectedEndDate) {
+        if (isSameDay(date, selectedStartDate)) {
+          classes += ' selected range-start';
+        } else if (isSameDay(date, selectedEndDate)) {
+          classes += ' selected range-end';
+        } else if (date > selectedStartDate && date < selectedEndDate) {
+          classes += ' in-range';
+        }
+      }
+      
+      const disabled = date > today ? 'disabled' : '';
+      html += `<button type="button" class="${classes}" data-date="${dateStr}" ${disabled}>${day}</button>`;
+    }
+    
+    const lastDayOfWeek = lastDay.getDay();
+    const remainingCells = lastDayOfWeek === 6 ? 0 : 6 - lastDayOfWeek;
+    for (let i = 1; i <= remainingCells; i++) {
+      html += `<button type="button" class="calendar-day other-month" disabled>${i}</button>`;
+    }
+    
+    html += '</div>';
+    calendar.innerHTML = html;
+    
+    calendar.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)').forEach(btn => {
+      btn.addEventListener('click', handleDateClick);
     });
   }
 
-});
+  function handleDateClick(e) {
+    const dateStr = e.target.dataset.date;
+    const date = new Date(dateStr);
+    date.setHours(0, 0, 0, 0);
+    
+    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+    const customPreset = document.querySelector('[data-preset="custom"]');
+    if (customPreset) customPreset.classList.add('active');
+    
+    if (selectingStart || date < selectedStartDate) {
+      selectedStartDate = date;
+      selectedEndDate = date;
+      selectingStart = false;
+    } else {
+      if (date >= selectedStartDate) {
+        selectedEndDate = date;
+      } else {
+        selectedEndDate = selectedStartDate;
+        selectedStartDate = date;
+      }
+      selectingStart = true;
+    }
+    
+    updateDateDisplay();
+    renderCalendars();
+  }
 
-// =============================================
-// ARTICLES — Logic utama
-// =============================================
+  function updateDateDisplay() {
+    if (!selectedStartDate || !selectedEndDate) return;
+    
+    const start = formatDate(selectedStartDate);
+    const end = formatDate(selectedEndDate);
+    
+    const displayElement = document.getElementById('selectedRangeText');
+    if (displayElement) {
+      displayElement.textContent = `${start} to ${end}`;
+    }
+  }
+
+  function formatDate(date) {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function isSameDay(date1, date2) {
+    if (!date1 || !date2) return false;
+    return date1.getFullYear() === date2.getFullYear() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getDate() === date2.getDate();
+  }
+})();
+
+// ========================================
+// ARTICLES LOGIC
+// ========================================
 const projectId = '{{ $projectId ?? '' }}';
 const startDate = '{{ $startDate ?? '' }}';
 const endDate   = '{{ $endDate ?? '' }}';
@@ -1206,10 +1622,10 @@ function formatNumber(num) {
 function formatDate(dateStr) {
   if (!dateStr) return { date: '—', time: '' };
   try {
-    const date = new Date(dateStr);
+    const d = new Date(dateStr);
     return {
-      date: date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-      time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      date: d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
     };
   } catch (e) {
     return { date: dateStr, time: '' };
@@ -1236,43 +1652,32 @@ function cleanContent(content) {
 
 if (projectId && startDate && endDate) {
 
-  document.addEventListener('DOMContentLoaded', function () {
-    loadArticles();
-  });
+  document.addEventListener('DOMContentLoaded', loadArticles);
 
   async function loadArticles() {
     try {
       const mediaType = document.getElementById('mediaType')?.value || 'doc';
       const sentiment = document.getElementById('sentimentFilter')?.value || 'all';
 
-      let apiUrl = `/mk/api/news/articles?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}&media=${mediaType}`;
-      if (sentiment !== 'all') apiUrl += `&sentiment=${sentiment}`;
+      let url = `/mk/api/news/articles?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}&media=${mediaType}`;
+      if (sentiment !== 'all') url += `&sentiment=${sentiment}`;
 
-      console.log('🔍 Fetching articles from:', apiUrl);
-
-      const response = await fetch(apiUrl);
-      const result   = await response.json();
-
-      console.log('📊 API Response:', result);
+      const res    = await fetch(url);
+      const result = await res.json();
 
       if (result.success && result.data && result.data.length > 0) {
         allArticles      = result.data;
         filteredArticles = [...allArticles];
 
-        // Hitung sentiment distribution
-        const sentimentCounts = { positive: 0, neutral: 0, negative: 0 };
-        allArticles.forEach(article => {
-          sentimentCounts[getSentimentClass(article.sentiment)]++;
-        });
+        const counts     = { positive: 0, neutral: 0, negative: 0 };
+        allArticles.forEach(a => counts[getSentimentClass(a.sentiment)]++);
 
-        // Hitung unique publishers
-        const uniquePublishers = [...new Set(allArticles.map(a => a.publisher))].length;
+        const publishers = [...new Set(allArticles.map(a => a.publisher))].length;
 
-        // Update stats cards
         document.getElementById('statTotalArticles').innerHTML   = `<div class="stat-value">${formatNumber(allArticles.length)}</div>`;
-        document.getElementById('statTotalPublishers').innerHTML = `<div class="stat-value">${formatNumber(uniquePublishers)}</div>`;
+        document.getElementById('statTotalPublishers').innerHTML = `<div class="stat-value">${formatNumber(publishers)}</div>`;
 
-        createSentimentChart(sentimentCounts);
+        createSentimentChart(counts);
         animateProgress(document.querySelectorAll('.stat-card')[0], 90);
         animateProgress(document.querySelectorAll('.stat-card')[1], 75);
 
@@ -1283,34 +1688,31 @@ if (projectId && startDate && endDate) {
         document.getElementById('pagination').style.display      = 'flex';
 
       } else {
-        console.warn('⚠️ No articles found');
-        showEmptyState();
+        showEmpty();
       }
-
-    } catch (error) {
-      console.error('❌ Error loading articles:', error);
-      showEmptyState();
+    } catch (err) {
+      console.error(err);
+      showEmpty();
     }
   }
 
-  function showEmptyState() {
-    document.getElementById('statTotalArticles').innerHTML   = '<div class="stat-value">0</div>';
-    document.getElementById('statTotalPublishers').innerHTML = '<div class="stat-value">0</div>';
-    document.getElementById('statSentiment').innerHTML       = '<p style="text-align:center;color:var(--text-muted);padding:20px;">No data</p>';
+  function showEmpty() {
+    ['statTotalArticles', 'statTotalPublishers'].forEach(id => {
+      document.getElementById(id).innerHTML = '<div class="stat-value">0</div>';
+    });
+    document.getElementById('statSentiment').innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">No data</p>';
     document.getElementById('articlesLoading').style.display = 'none';
     document.getElementById('emptyState').style.display      = 'block';
   }
 
-  function createSentimentChart(sentimentCounts) {
-    const container  = document.getElementById('statSentiment');
-    const totalArticles = sentimentCounts.positive + sentimentCounts.neutral + sentimentCounts.negative;
-
-    container.innerHTML = `
+  function createSentimentChart(counts) {
+    const total = counts.positive + counts.neutral + counts.negative;
+    document.getElementById('statSentiment').innerHTML = `
       <div class="sentiment-chart-container">
         <div class="sentiment-donut">
           <canvas id="sentimentChart"></canvas>
           <div class="sentiment-center-text">
-            <div class="sentiment-center-value">${totalArticles}</div>
+            <div class="sentiment-center-value">${total}</div>
             <div class="sentiment-center-label">Articles</div>
           </div>
         </div>
@@ -1318,31 +1720,30 @@ if (projectId && startDate && endDate) {
           <div class="sentiment-legend-item">
             <div class="sentiment-legend-color" style="background:#10b981;"></div>
             <span class="sentiment-legend-label">Positive</span>
-            <span class="sentiment-legend-value">${sentimentCounts.positive}</span>
+            <span class="sentiment-legend-value">${counts.positive}</span>
           </div>
           <div class="sentiment-legend-item">
             <div class="sentiment-legend-color" style="background:#6b7280;"></div>
             <span class="sentiment-legend-label">Neutral</span>
-            <span class="sentiment-legend-value">${sentimentCounts.neutral}</span>
+            <span class="sentiment-legend-value">${counts.neutral}</span>
           </div>
           <div class="sentiment-legend-item">
             <div class="sentiment-legend-color" style="background:#ef4444;"></div>
             <span class="sentiment-legend-label">Negative</span>
-            <span class="sentiment-legend-value">${sentimentCounts.negative}</span>
+            <span class="sentiment-legend-value">${counts.negative}</span>
           </div>
         </div>
       </div>
     `;
 
-    const ctx = document.getElementById('sentimentChart').getContext('2d');
     if (sentimentChart) sentimentChart.destroy();
 
-    sentimentChart = new Chart(ctx, {
+    sentimentChart = new Chart(document.getElementById('sentimentChart').getContext('2d'), {
       type: 'doughnut',
       data: {
         labels: ['Positive', 'Neutral', 'Negative'],
         datasets: [{
-          data: [sentimentCounts.positive, sentimentCounts.neutral, sentimentCounts.negative],
+          data: [counts.positive, counts.neutral, counts.negative],
           backgroundColor: ['#10b981', '#6b7280', '#ef4444'],
           borderWidth: 0,
           hoverOffset: 4
@@ -1355,11 +1756,11 @@ if (projectId && startDate && endDate) {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: function (context) {
-                const value = context.parsed || 0;
-                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                const pct   = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                return `${context.label}: ${value} (${pct}%)`;
+              label: function(ctx) {
+                const val = ctx.parsed || 0;
+                const tot = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                const pct = tot > 0 ? ((val / tot) * 100).toFixed(1) : 0;
+                return `${ctx.label}: ${val} (${pct}%)`;
               }
             }
           }
@@ -1370,35 +1771,36 @@ if (projectId && startDate && endDate) {
   }
 
   function animateProgress(card, percentage) {
-    const bar = card.querySelector('.stat-progress-bar');
-    if (bar) setTimeout(() => { bar.style.width = percentage + '%'; }, 100);
+    const progressBar = card.querySelector('.stat-progress-bar');
+    if (progressBar) {
+      setTimeout(() => {
+        progressBar.style.width = percentage + '%';
+      }, 100);
+    }
   }
 
   function renderArticles() {
-    const startIdx   = (currentPage - 1) * articlesPerPage;
-    const currentData = filteredArticles.slice(startIdx, startIdx + articlesPerPage);
-    const container  = document.getElementById('articlesList');
+    const startIdx  = (currentPage - 1) * articlesPerPage;
+    const data      = filteredArticles.slice(startIdx, startIdx + articlesPerPage);
+    const container = document.getElementById('articlesList');
 
-    if (!currentData.length) {
-      container.style.display = 'none';
-      document.getElementById('emptyState').style.display   = 'block';
-      document.getElementById('pagination').style.display   = 'none';
+    if (!data.length) {
+      container.style.display                              = 'none';
+      document.getElementById('emptyState').style.display = 'block';
+      document.getElementById('pagination').style.display = 'none';
       return;
     }
 
-    document.getElementById('emptyState').style.display   = 'none';
-    document.getElementById('pagination').style.display   = 'flex';
+    document.getElementById('emptyState').style.display  = 'none';
+    document.getElementById('pagination').style.display  = 'flex';
 
-    container.innerHTML = currentData.map((article) => {
+    container.innerHTML = data.map(article => {
       const dateInfo  = formatDate(article.date_created);
       const sentiment = getSentimentClass(article.sentiment);
       const content   = cleanContent(article.content);
-
-      let quotes = [];
-      if (Array.isArray(article.quotes)) {
-        quotes = article.quotes.filter(q => q && q.Kutipan && q.Kutipan.trim() !== '');
-      }
-
+      const quotes    = Array.isArray(article.quotes)
+        ? article.quotes.filter(q => q && q.Kutipan && q.Kutipan.trim() !== '')
+        : [];
       const hasQuotes = quotes.length > 0;
 
       return `
@@ -1521,8 +1923,8 @@ if (projectId && startDate && endDate) {
   function updatePagination() {
     const totalPages = Math.ceil(filteredArticles.length / articlesPerPage);
     document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
-    document.getElementById('prevBtn').disabled = currentPage === 1;
-    document.getElementById('nextBtn').disabled = currentPage === totalPages || totalPages === 0;
+    document.getElementById('prevBtn').disabled     = currentPage === 1;
+    document.getElementById('nextBtn').disabled     = currentPage === totalPages || totalPages === 0;
   }
 
   function changePage(direction) {
@@ -1531,23 +1933,24 @@ if (projectId && startDate && endDate) {
     if (newPage >= 1 && newPage <= totalPages) {
       currentPage = newPage;
       renderArticles();
+      updatePagination();
       document.querySelector('.articles-container').scrollIntoView({ behavior: 'smooth' });
     }
   }
 
   function filterArticles() {
-    const term = document.getElementById('searchInput').value.toLowerCase();
-    filteredArticles = allArticles.filter(article =>
-      (article.title     || '').toLowerCase().includes(term) ||
-      (article.content   || '').toLowerCase().includes(term) ||
-      (article.publisher || '').toLowerCase().includes(term)
-    );
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    filteredArticles = allArticles.filter(article => {
+      const title     = (article.title     || '').toLowerCase();
+      const content   = (article.content   || '').toLowerCase();
+      const publisher = (article.publisher || '').toLowerCase();
+      return title.includes(searchTerm) || content.includes(searchTerm) || publisher.includes(searchTerm);
+    });
     currentPage = 1;
     renderArticles();
   }
 
-  // Expose globals
-  window.changePage    = changePage;
+  window.changePage     = changePage;
   window.filterArticles = filterArticles;
 }
 </script>

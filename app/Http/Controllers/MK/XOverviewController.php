@@ -631,74 +631,105 @@ public function totalUsers(Request $request)
         /**
          * API: Get Top Hashtags Data
          */
-        public function topHashtagsData(Request $request)
-        {
-            try {
-                $projectId = $request->query('project_id');
-                $startDate = $request->query('start_date');
-                $endDate   = $request->query('end_date');
+       public function topHashtagsData(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
 
-                if (!$projectId || !$startDate || !$endDate) {
-                    return response()->json([
-                        'success' => false,
-                        'error'   => 'Missing required parameters: project_id, start_date, end_date'
-                    ], 400);
-                }
-
-                $result = $this->client->topHashtags($projectId, 'twitter', $startDate, $endDate);
-
-                $hashtags = [];
-                $totalMentions = 0;
-                $totalHashtags = 0;
-
-                if (is_array($result)) {
-                    $data = $result;
-                    if (isset($result['data']) && is_array($result['data'])) {
-                        $data = $result['data'];
-                    }
-                    
-                    foreach ($data as $item) {
-                        if (!is_array($item)) continue;
-                        
-                        $name = $item['name'] ?? '';
-                        $size = (int) ($item['size'] ?? 0);
-                        
-                        if ($name && $size > 0) {
-                            $hashtags[] = [
-                                'name' => $name,
-                                'size' => $size,
-                                'hashtag' => '#' . ltrim($name, '#')
-                            ];
-                            $totalMentions += $size;
-                            $totalHashtags++;
-                        }
-                    }
-
-                    usort($hashtags, fn($a, $b) => $b['size'] - $a['size']);
-                }
-
-                return response()->json([
-                    'success' => true,
-                    'data'    => [
-                        'hashtags' => $hashtags,
-                        'total_hashtags' => $totalHashtags,
-                        'total_mentions' => $totalMentions,
-                        'top_hashtag' => $hashtags[0] ?? null,
-                    ],
-                ]);
-
-            } catch (\Exception $e) {
-                Log::error('topHashtagsData API error', [
-                    'error'      => $e->getMessage(),
-                    'project_id' => $request->query('project_id'),
-                ]);
-
+            if (!$projectId || !$startDate || !$endDate) {
                 return response()->json([
                     'success' => false,
-                    'error'   => $e->getMessage()
-                ], 500);
+                    'error'   => 'Missing required parameters: project_id, start_date, end_date'
+                ], 400);
             }
+
+            // ✅ FIX: Jangan pass 'twitter' ke API — MediaKernels bug dengan media filter di endpoint ini
+            // Ambil semua data dulu, filter Twitter di PHP
+            $result = $this->client->topHashtags($projectId, 'twit', $startDate, $endDate);
+
+            Log::info('topHashtagsData raw result', [
+                'type'    => gettype($result),
+                'keys'    => is_array($result) ? array_keys($result) : [],
+                'sample'  => is_array($result) ? array_slice($result, 0, 2, true) : $result,
+            ]);
+
+            $hashtags      = [];
+            $totalMentions = 0;
+
+            // Normalise: find the array of hashtag items regardless of wrapping
+            $rawItems = [];
+            if (isset($result['data']['hashtags']) && is_array($result['data']['hashtags'])) {
+                $rawItems = $result['data']['hashtags'];
+            } elseif (isset($result['data']) && is_array($result['data'])) {
+                $rawItems = $result['data'];
+            } elseif (is_array($result)) {
+                // Could be a flat array of items, or a keyed response
+                // Filter out non-array top-level keys (e.g. 'twit', 'fb', etc.)
+                $firstVal = reset($result);
+                if (is_array($firstVal) && isset($firstVal['name'])) {
+                    // Flat array of hashtag objects
+                    $rawItems = $result;
+                } elseif (isset($result['twit']) && is_array($result['twit'])) {
+                    // Keyed by media: {'twit': [...], 'fb': [...]}  ← ideal, use Twitter key directly
+                    $rawItems = $result['twit'];
+                } else {
+                    $rawItems = $result;
+                }
+            }
+
+            foreach ($rawItems as $item) {
+                if (!is_array($item)) continue;
+
+                $name = $item['name'] ?? $item['hashtag'] ?? '';
+                $size = (int) ($item['size'] ?? $item['count'] ?? $item['total'] ?? 0);
+
+                // ✅ TWITTER FILTER: skip if item explicitly belongs to another media
+                $media = strtolower($item['media'] ?? $item['source'] ?? $item['platform'] ?? '');
+                if ($media && !in_array($media, ['twit', 'twitter', 'x', ''])) {
+                    continue; // skip fb, ig, youtube, etc.
+                }
+
+                if ($name && $size > 0) {
+                    $hashtags[] = [
+                        'name'    => ltrim($name, '#'),
+                        'size'    => $size,
+                        'hashtag' => '#' . ltrim($name, '#'),
+                    ];
+                    $totalMentions += $size;
+                }
+            }
+
+            usort($hashtags, fn($a, $b) => $b['size'] - $a['size']);
+
+            Log::info('topHashtagsData processed', [
+                'raw_items'   => count($rawItems),
+                'after_filter' => count($hashtags),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data'    => [
+                    'hashtags'       => $hashtags,
+                    'total_hashtags' => count($hashtags),
+                    'total_mentions' => $totalMentions,
+                    'top_hashtag'    => $hashtags[0] ?? null,
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('topHashtagsData API error', [
+                'error'      => $e->getMessage(),
+                'project_id' => $request->query('project_id'),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error'   => $e->getMessage()
+            ], 500);
         }
+    }
 
         // ==========================================
         // 🔥 AUTHORS DEMOGRAPHICS METHODS
@@ -1896,4 +1927,4 @@ public function mostActiveUsersPage(Request $request)
         ]);
     }
 }
-    }
+    }   
