@@ -812,6 +812,17 @@
             flex: 1;
         }
     }
+    .page-btn {
+    width: 36px; height: 36px; border-radius: 10px;
+    border: 1px solid var(--border-gray); background: var(--bg-white);
+    color: var(--text-primary); font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Poppins', sans-serif;
+}
+.page-btn:hover:not(:disabled) { border-color: var(--primary-green); color: var(--primary-green); background: rgba(3,128,71,0.05); }
+.page-btn.active { background: var(--primary-green); color: white; border-color: var(--primary-green); }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 </style>
 @endsection
 
@@ -1031,15 +1042,8 @@
         </div>
 
         <!-- Pagination -->
-        <div class="pagination" id="pagination" style="display: none;">
-            <button class="pagination-btn" id="prevBtn" onclick="TrendingLoader.changePage(-1)">
-                ← Previous
-            </button>
-            <span class="pagination-info" id="pageInfo">Page 1 of 1</span>
-            <button class="pagination-btn" id="nextBtn" onclick="TrendingLoader.changePage(1)">
-                Next →
-            </button>
-        </div>
+                <div id="paginationWrapper" class="pagination" style="display: none; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;"></div>
+
     </div>
 
 </div>
@@ -1425,14 +1429,12 @@ const TrendingLoader = {
         const loadingTable = document.getElementById('loadingTable');
         const trendingTable = document.getElementById('trendingTable');
         const emptyState = document.getElementById('emptyState');
-        const pagination = document.getElementById('pagination');
-
         if (!this.allTopics || !this.allTopics.length) {
             console.warn('⚠️ No topics to display - showing empty state');
             loadingTable.style.display = 'none';
             trendingTable.style.display = 'none';
             emptyState.style.display = 'block';
-            pagination.style.display = 'none';
+            document.getElementById('paginationWrapper').style.display = 'none';
             return;
         }
 
@@ -1450,9 +1452,7 @@ const TrendingLoader = {
         // Update pagination
         this.updatePagination();
         
-        // Only show pagination if there are multiple pages
-        const totalPages = Math.ceil(this.allTopics.length / this.topicsPerPage);
-        pagination.style.display = totalPages > 1 ? 'flex' : 'none';
+      
         
         console.log('✅ Table rendered successfully', {
             totalTopics: this.allTopics.length,
@@ -1493,40 +1493,46 @@ const TrendingLoader = {
             </tr>`;
     },
 
-    updatePagination() {
-        const totalPages = Math.ceil(this.allTopics.length / this.topicsPerPage);
-        const pageInfo = document.getElementById('pageInfo');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
+    getPageRange(cur, total) {
+    if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+    if (cur <= 4)   return [1, 2, 3, 4, 5, '...', total];
+    if (cur >= total - 3) return [1, '...', total-4, total-3, total-2, total-1, total];
+    return [1, '...', cur-1, cur, cur+1, '...', total];
+},
 
-        const startIdx = (this.currentPage - 1) * this.topicsPerPage + 1;
-        const endIdx = Math.min(this.currentPage * this.topicsPerPage, this.allTopics.length);
+updatePagination() {
+    const totalPages = Math.ceil(this.allTopics.length / this.topicsPerPage);
+    const wrapper = document.getElementById('paginationWrapper');
+    const from = this.allTopics.length ? (this.currentPage - 1) * this.topicsPerPage + 1 : 0;
+    const to   = Math.min(this.currentPage * this.topicsPerPage, this.allTopics.length);
 
-        pageInfo.innerHTML = `Showing <strong>${startIdx}-${endIdx}</strong> of <strong>${this.allTopics.length}</strong> topics`;
-        prevBtn.disabled = this.currentPage === 1;
-        nextBtn.disabled = this.currentPage === totalPages;
-        
-        console.log('📄 Pagination updated', {
-            currentPage: this.currentPage,
-            totalPages: totalPages,
-            showing: `${startIdx}-${endIdx} of ${this.allTopics.length}`
-        });
-    },
+    let html = `<div class="pagination-info">Showing ${from}–${to} of ${this.allTopics.length} topics</div>`;
+    html += `<div style="display:flex;align-items:center;gap:6px;">`;
+    html += `<button class="page-btn" onclick="TrendingLoader.changePage(${this.currentPage - 1})" ${this.currentPage === 1 ? 'disabled' : ''}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>`;
 
-    changePage(direction) {
-        const totalPages = Math.ceil(this.allTopics.length / this.topicsPerPage);
-        const newPage = this.currentPage + direction;
+    this.getPageRange(this.currentPage, totalPages).forEach(p => {
+        html += p === '...'
+            ? `<button class="page-btn" disabled style="cursor:default;">…</button>`
+            : `<button class="page-btn ${p === this.currentPage ? 'active' : ''}" onclick="TrendingLoader.changePage(${p})">${p}</button>`;
+    });
 
-        if (newPage >= 1 && newPage <= totalPages) {
-            this.currentPage = newPage;
-            this.renderTable();
-            
-            // Scroll to top of table
-            document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth' });
-            
-            console.log('🔄 Page changed to:', newPage);
-        }
-    },
+    html += `<button class="page-btn" onclick="TrendingLoader.changePage(${this.currentPage + 1})" ${this.currentPage === totalPages ? 'disabled' : ''}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+    </button></div>`;
+
+    wrapper.innerHTML = html;
+    wrapper.style.display = this.allTopics.length > 0 ? 'flex' : 'none';
+},
+
+changePage(p) {
+    const totalPages = Math.ceil(this.allTopics.length / this.topicsPerPage);
+    if (p < 1 || p > totalPages) return;
+    this.currentPage = p;
+    this.renderTable();
+    document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+},
 
     escapeHtml(text) {
         const div = document.createElement('div');
@@ -1534,27 +1540,7 @@ const TrendingLoader = {
         return div.innerHTML;
     },
 
-    showError() {
-        const loadingTable = document.getElementById('loadingTable');
-        const emptyState = document.getElementById('emptyState');
-        
-        loadingTable.style.display = 'none';
-        emptyState.innerHTML = `
-            <div class="empty-state">
-                <svg viewBox="0 0 24 24" style="color:#ef4444;">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="15" y1="9" x2="9" y2="15"/>
-                    <line x1="9" y1="9" x2="15" y2="15"/>
-                </svg>
-                <h3>Failed to Load Data</h3>
-                <p>Unable to fetch trending topics. Please try again later.</p>
-            </div>`;
-        emptyState.style.display = 'block';
-        
-        document.getElementById('totalPeriods').textContent = '0';
-        document.getElementById('uniqueTopics').textContent = '0';
-        document.getElementById('avgTopics').textContent = '0';
-    }
+   
 };
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -1308,6 +1308,17 @@
             flex: 1;
         }
     }
+    .page-btn {
+  width: 36px; height: 36px; border-radius: 10px;
+  border: 1px solid var(--border-gray); background: var(--bg-white);
+  color: var(--text-primary); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Poppins', sans-serif;
+}
+.page-btn:hover:not(:disabled) { border-color: var(--primary-green); color: var(--primary-green); background: rgba(3,128,71,0.05); }
+.page-btn.active { background: var(--primary-green); color: white; border-color: var(--primary-green); }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 </style>
 @endsection
 
@@ -1549,17 +1560,10 @@
             </div>
         </div>
 
-        <!-- Pagination -->
-        <div class="pagination" id="pagination" style="display: none;">
-            <button class="pagination-btn" id="prevBtn" onclick="MostStatusLoader.changePage(-1)">
-                ← Previous
-            </button>
-            <span class="pagination-info" id="pageInfo">Page 1 of 1</span>
-            <button class="pagination-btn" id="nextBtn" onclick="MostStatusLoader.changePage(1)">
-                Next →
-            </button>
-        </div>
-    </div>
+        <div id="paginationWrapper" class="pagination" style="display: none; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;"></div>
+        </div><!-- end table-wrapper -->
+    </div><!-- end table-container -->
+
 
     <!-- Post Detail Modal -->
     <div class="modal-overlay" id="postModal" onclick="if(event.target === this) MostStatusLoader.closeModal()">
@@ -2159,8 +2163,7 @@ const MostStatusLoader = {
         const loadingTable = document.getElementById('loadingTable');
         const statusTable = document.getElementById('statusTable');
         const emptyState = document.getElementById('emptyState');
-        const pagination = document.getElementById('pagination');
-
+    
         if (!this.allPosts.length) {
             loadingTable.style.display = 'none';
             statusTable.style.display = 'none';
@@ -2180,7 +2183,7 @@ const MostStatusLoader = {
         emptyState.style.display = 'none';
 
         this.updatePagination();
-        pagination.style.display = 'flex';
+       
     },
 
     createTableRow(post, rank) {
@@ -2278,28 +2281,46 @@ const MostStatusLoader = {
         return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     },
 
-    updatePagination() {
-        const totalPages = Math.ceil(this.allPosts.length / this.postsPerPage);
-        const pageInfo = document.getElementById('pageInfo');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
+   getPageRange(cur, total) {
+    if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+    if (cur <= 4)   return [1, 2, 3, 4, 5, '...', total];
+    if (cur >= total - 3) return [1, '...', total-4, total-3, total-2, total-1, total];
+    return [1, '...', cur-1, cur, cur+1, '...', total];
+},
 
-        pageInfo.textContent = `Page ${this.currentPage} of ${totalPages}`;
-        prevBtn.disabled = this.currentPage === 1;
-        nextBtn.disabled = this.currentPage === totalPages;
-    },
+updatePagination() {
+    const totalPages = Math.ceil(this.allPosts.length / this.postsPerPage);
+    const wrapper = document.getElementById('paginationWrapper');
+    const from = this.allPosts.length ? (this.currentPage - 1) * this.postsPerPage + 1 : 0;
+    const to   = Math.min(this.currentPage * this.postsPerPage, this.allPosts.length);
 
-    changePage(direction) {
-        const totalPages = Math.ceil(this.allPosts.length / this.postsPerPage);
-        const newPage = this.currentPage + direction;
+    let html = `<div class="pagination-info">Showing ${this.formatNumber(from)}–${this.formatNumber(to)} of ${this.formatNumber(this.allPosts.length)} posts</div>`;
+    html += `<div style="display:flex;align-items:center;gap:6px;">`;
+    html += `<button class="page-btn" onclick="MostStatusLoader.changePage(${this.currentPage - 1})" ${this.currentPage === 1 ? 'disabled' : ''}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>`;
 
-        if (newPage >= 1 && newPage <= totalPages) {
-            this.currentPage = newPage;
-            this.renderTable();
-            
-            document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth' });
-        }
-    },
+    this.getPageRange(this.currentPage, totalPages).forEach(p => {
+        html += p === '...'
+            ? `<button class="page-btn" disabled style="cursor:default;">…</button>`
+            : `<button class="page-btn ${p === this.currentPage ? 'active' : ''}" onclick="MostStatusLoader.changePage(${p})">${p}</button>`;
+    });
+
+    html += `<button class="page-btn" onclick="MostStatusLoader.changePage(${this.currentPage + 1})" ${this.currentPage === totalPages ? 'disabled' : ''}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+    </button></div>`;
+
+    wrapper.innerHTML = html;
+    wrapper.style.display = this.allPosts.length > 0 ? 'flex' : 'none';
+},
+
+changePage(p) {
+    const totalPages = Math.ceil(this.allPosts.length / this.postsPerPage);
+    if (p < 1 || p > totalPages) return;
+    this.currentPage = p;
+    this.renderTable();
+    document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+},
 
     exportCSV() {
         if (!this.allPosts.length) {
