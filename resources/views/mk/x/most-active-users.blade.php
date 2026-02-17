@@ -854,18 +854,17 @@
     margin-top: 16px;
   }
 
-  .pagination-btn {
-    padding: 8px 16px;
-    background: var(--bg-white);
-    border: 1px solid var(--border-gray);
-    border-radius: 8px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
+  .page-btn {
+  width: 36px; height: 36px; border-radius: 10px;
+  border: 1px solid var(--border-gray); background: var(--bg-white);
+  color: var(--text-primary); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Poppins', sans-serif;
+}
+.page-btn:hover:not(:disabled) { border-color: var(--primary-green); color: var(--primary-green); background: rgba(3,128,71,0.05); }
+.page-btn.active { background: var(--primary-green); color: white; border-color: var(--primary-green); }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .pagination-btn:hover:not(:disabled) {
     background: var(--primary-green);
@@ -1555,15 +1554,8 @@
     <div id="tableWrapper" style="display: none; overflow-x: auto;"></div>
 
     <!-- Pagination -->
-    <div class="pagination" id="pagination" style="display: none;">
-      <button class="pagination-btn" id="prevBtn" onclick="changePage(-1)">
-        ← Previous
-      </button>
-      <span class="pagination-info" id="pageInfo">Page 1 of 1</span>
-      <button class="pagination-btn" id="nextBtn" onclick="changePage(1)">
-        Next →
-      </button>
-    </div>
+    <div id="paginationWrapper" class="pagination" style="display: none; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;"></div>
+
 
     <!-- Empty state -->
     <div id="emptyState" style="display: none; text-align: center; padding: 60px 20px; color: var(--text-secondary);">
@@ -2123,29 +2115,52 @@
     document.getElementById('tableWrapper').innerHTML = html;
   }
 
-  function updatePagination() {
-    const totalPages = Math.ceil(allData.length / usersPerPage);
-    const pageInfo = document.getElementById('pageInfo');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
+  function getPageRange(cur, total) {
+  if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+  if (cur <= 4)   return [1, 2, 3, 4, 5, '...', total];
+  if (cur >= total - 3) return [1, '...', total-4, total-3, total-2, total-1, total];
+  return [1, '...', cur-1, cur, cur+1, '...', total];
+}
 
-    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-    prevBtn.disabled = currentPage === 1;
-    nextBtn.disabled = currentPage === totalPages;
-  }
+function updatePagination() {
+  const totalPages = Math.ceil(allData.length / usersPerPage);
+  const wrapper = document.getElementById('paginationWrapper');
 
-  function changePage(direction) {
-    const totalPages = Math.ceil(allData.length / usersPerPage);
-    const newPage = currentPage + direction;
+  const from = allData.length ? (currentPage - 1) * usersPerPage + 1 : 0;
+  const to   = Math.min(currentPage * usersPerPage, allData.length);
 
-    if (newPage >= 1 && newPage <= totalPages) {
-      currentPage = newPage;
-      renderTable();
-      updatePagination();
-      document.querySelector('.table-section').scrollIntoView({ behavior: 'smooth' });
-    }
-  }
+  let html = `<div class="pagination-info">Showing ${formatNumber(from)}–${formatNumber(to)} of ${formatNumber(allData.length)} users</div>`;
+  html += `<div style="display:flex;align-items:center;gap:6px;">`;
 
+  // Prev
+  html += `<button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>`;
+
+  getPageRange(currentPage, totalPages).forEach(p => {
+    html += p === '...'
+      ? `<button class="page-btn" disabled style="cursor:default;">…</button>`
+      : `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>`;
+  });
+
+  // Next
+  html += `<button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>`;
+
+  html += `</div>`;
+  wrapper.innerHTML = html;
+  wrapper.style.display = allData.length > 0 ? 'flex' : 'none';
+}
+
+function changePage(p) {
+  const totalPages = Math.ceil(allData.length / usersPerPage);
+  if (p < 1 || p > totalPages) return;
+  currentPage = p;
+  renderTable();
+  updatePagination();
+  document.querySelector('.table-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
   function filterTable() {
     const term = document.getElementById('searchInput').value.toLowerCase();
     
@@ -2153,7 +2168,6 @@
       currentPage = 1;
       renderTable();
       updatePagination();
-      document.getElementById('pagination').style.display = 'flex';
       return;
     }
     
@@ -2249,7 +2263,7 @@
 
     html += '</tbody></table>';
     document.getElementById('tableWrapper').innerHTML = html;
-    document.getElementById('pagination').style.display = 'none';
+    document.getElementById('paginationWrapper').style.display = 'none';
   }
 
   // ─── User Detail Modal ────────────────────────────────────────────────────
