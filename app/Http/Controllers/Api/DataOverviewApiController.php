@@ -11,26 +11,107 @@ use Illuminate\Support\Facades\Cache;
 class DataOverviewApiController extends Controller
 {
     /**
-     * 🔥 API: Trending Topics (with cache)
+     * 🔥 API: Trending Topics (FIXED - using Twitter trending endpoint without platform filter)
      */
     public function trendingTopics(Request $request, MediaKernelsClient $mk)
     {
-        $limit = (int) $request->query('limit', 10);
-        $level = $request->query('level', 'internasional');
+        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+        $endDate = $request->query('end_date', now()->format('Y-m-d'));
+        $location = $request->query('location', 'Indonesia');
+        $limit = (int) $request->query('limit', 50); // Get more for "View All"
         
-        $cacheKey = "trending_topics_{$level}_{$limit}";
+        $cacheKey = "trending_topics_{$startDate}_{$endDate}_{$location}";
         
-        return Cache::remember($cacheKey, 300, function() use ($mk, $level, $limit) {
+        return Cache::remember($cacheKey, 300, function() use ($mk, $startDate, $endDate, $location, $limit) {
             try {
-                $rawData = $mk->recentTopics($level, $limit);
-                $topics = $rawData['data'] ?? $rawData;
+                // Use Twitter trending topics endpoint (no platform filter)
+                $result = $mk->twitterTrendingTopics(
+                    $startDate,
+                    $endDate,
+                    0,  // start_time
+                    23, // end_time
+                    $location,
+                    ''  // topics (empty for all)
+                );
+                
+                Log::info('Trending Topics Raw Data from Twitter API', [
+                    'count' => count($result),
+                    'sample_keys' => array_slice(array_keys($result), 0, 3)
+                ]);
+                
+                // Collect all unique topics across all time periods
+                $allTopics = [];
+                
+                foreach ($result as $datetime => $period) {
+                    if (!is_array($period) || !isset($period['data'])) continue;
+                    
+                    foreach ($period['data'] as $topic) {
+                        $name = $topic['name'] ?? '';
+                        $volume = (int) ($topic['tweet_volume_i'] ?? 0);
+                        $url = $topic['url'] ?? '';
+                        
+                        if (!$name) continue;
+                        
+                        // Aggregate by topic name
+                        if (!isset($allTopics[$name])) {
+                            $allTopics[$name] = [
+                                'name' => $name,
+                                'title' => $name,
+                                'topic' => $name,
+                                'total_volume' => 0,
+                                'appearances' => 0,
+                                'url' => $url,
+                                'urls' => [$url]
+                            ];
+                        }
+                        
+                        $allTopics[$name]['total_volume'] += $volume;
+                        $allTopics[$name]['appearances']++;
+                        
+                        if ($url && !in_array($url, $allTopics[$name]['urls'])) {
+                            $allTopics[$name]['urls'][] = $url;
+                        }
+                    }
+                }
+                
+                // Convert to array and add required fields
+                $normalized = [];
+                foreach ($allTopics as $topic) {
+                    $normalized[] = [
+                        'title' => $topic['name'],
+                        'name' => $topic['name'],
+                        'topic' => $topic['name'],
+                        'volume' => $topic['total_volume'],
+                        'count' => $topic['total_volume'],
+                        'total' => $topic['total_volume'],
+                        'appearances' => $topic['appearances'],
+                        'description' => '',
+                        'reference' => $topic['url'],
+                        'urls' => array_filter($topic['urls']),
+                    ];
+                }
+                
+                // Sort by volume descending
+                usort($normalized, fn($a, $b) => $b['total'] - $a['total']);
+                
+                // Limit to top 50
+                $normalized = array_slice($normalized, 0, $limit);
+                
+                Log::info('Trending Topics Normalized', [
+                    'count' => count($normalized),
+                    'sample' => array_slice($normalized, 0, 2)
+                ]);
                 
                 return response()->json([
                     'success' => true,
-                    'data' => array_values($topics)
+                    'data' => $normalized,
+                    'total' => count($normalized)
                 ]);
             } catch (\Exception $e) {
-                Log::error('API: trending topics failed', ['error' => $e->getMessage()]);
+                Log::error('API: trending topics failed', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
                 return response()->json([
                     'success' => false,
                     'data' => [],
@@ -41,7 +122,7 @@ class DataOverviewApiController extends Controller
     }
 
     /**
-     * 🔥 API: Top Hashtags (with cache)
+     * 🔥 API: Top Hashtags (FIXED - better error handling)
      */
     public function topHashtags(Request $request, MediaKernelsClient $mk)
     {
@@ -64,25 +145,62 @@ class DataOverviewApiController extends Controller
             try {
                 $rawData = $mk->topHashtags($projectId, $media, $startDate, $endDate, 0, 23);
                 
-                $rawItems = $rawData['data'] ?? (is_array($rawData) ? $rawData : []);
+                Log::info('Top Hashtags Raw Response', [
+                    'has_data' => isset($rawData['data']),
+                    'is_array' => is_array($rawData),
+                    'structure' => array_keys($rawData),
+                    'sample' => json_encode(array_slice($rawData, 0, 3))
+                ]);
+                
+                // Handle different response structures
+                $rawItems = [];
+                
+                if (isset($rawData['data']) && is_array($rawData['data'])) {
+                    $rawItems = $rawData['data'];
+                } elseif (is_array($rawData)) {
+                    $rawItems = $rawData;
+                }
+                
                 $normalized = [];
                 
                 foreach ($rawItems as $item) {
                     if (!is_array($item)) continue;
+                    
+                    $name = $item['name'] ?? $item['hashtag'] ?? $item['tag'] ?? null;
+                    $mention = (int)($item['size'] ?? $item['mention'] ?? $item['count'] ?? $item['y'] ?? 0);
+                    
+                    // Skip invalid entries
+                    if (empty($name) || $mention === 0) {
+                        continue;
+                    }
+                    
                     $normalized[] = [
-                        'hashtag' => $item['name'] ?? $item['hashtag'] ?? $item['tag'] ?? 'unknown',
-                        'mention' => (int)($item['size'] ?? $item['mention'] ?? $item['count'] ?? 0),
+                        'hashtag' => $name,
+                        'name' => $name,
+                        'tag' => $name,
+                        'mention' => $mention,
+                        'count' => $mention,
+                        'size' => $mention,
                     ];
                 }
                 
+                // Sort by mention count
                 usort($normalized, fn($a, $b) => $b['mention'] <=> $a['mention']);
+                
+                Log::info('Top Hashtags Normalized', [
+                    'count' => count($normalized),
+                    'top_3' => array_slice($normalized, 0, 3)
+                ]);
                 
                 return response()->json([
                     'success' => true,
                     'data' => $normalized
                 ]);
             } catch (\Exception $e) {
-                Log::error('API: top hashtags failed', ['error' => $e->getMessage()]);
+                Log::error('API: top hashtags failed', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
                 return response()->json([
                     'success' => false,
                     'data' => [],
@@ -163,7 +281,7 @@ class DataOverviewApiController extends Controller
     }
 
     /**
-     * 🔥 NEW API: Sentiment by Media - FIXED
+     * 🔥 API: Sentiment by Media
      */
     public function sentimentByMedia(Request $request, MediaKernelsClient $mk)
     {
@@ -188,7 +306,6 @@ class DataOverviewApiController extends Controller
                 $totalAll = (int)($rawData['all'] ?? 0);
                 $byMedia = $rawData['bymedia'] ?? [];
                 
-                // Log untuk debugging
                 Log::info('Sentiment Media Raw Data', [
                     'total' => $totalAll,
                     'bymedia' => $byMedia
@@ -196,7 +313,6 @@ class DataOverviewApiController extends Controller
                 
                 $mediaData = [];
                 
-                // Map media types to friendly names
                 $mediaNames = [
                     'doc' => 'Online News',
                     'twit' => 'X (Twitter)',
@@ -209,14 +325,12 @@ class DataOverviewApiController extends Controller
                 foreach ($byMedia as $mediaKey => $sentiments) {
                     $mediaName = $mediaNames[$mediaKey] ?? ucfirst($mediaKey);
                     
-                    // Handle missing pos/neg - default to 0
                     $pos = (int)($sentiments['pos'] ?? 0);
                     $neg = (int)($sentiments['neg'] ?? 0);
                     $net = (int)($sentiments['net'] ?? ($pos - $neg));
                     
                     $total = $pos + $neg;
                     
-                    // Skip media with no data
                     if ($total === 0) continue;
                     
                     $mediaData[] = [
@@ -231,13 +345,7 @@ class DataOverviewApiController extends Controller
                     ];
                 }
                 
-                // Sort by total mentions (descending)
                 usort($mediaData, fn($a, $b) => $b['total'] <=> $a['total']);
-                
-                Log::info('Sentiment Media Processed', [
-                    'count' => count($mediaData),
-                    'data' => $mediaData
-                ]);
                 
                 return response()->json([
                     'success' => true,
@@ -261,7 +369,7 @@ class DataOverviewApiController extends Controller
     }
 
     /**
-     * 🔥 API: Active Users (with cache)
+     * 🔥 API: Active Users (FIXED - better data extraction)
      */
     public function activeUsers(Request $request, MediaKernelsClient $mk)
     {
@@ -283,26 +391,71 @@ class DataOverviewApiController extends Controller
             try {
                 $rawUsers = $mk->mostActiveUsers($projectId, $startDate, $endDate, 0, 23);
                 
-                $userData = $rawUsers['data']['data'] ?? $rawUsers['data'] ?? $rawUsers;
+                Log::info('Active Users Raw Response', [
+                    'has_data' => isset($rawUsers['data']),
+                    'structure' => array_keys($rawUsers),
+                    'sample' => json_encode(array_slice($rawUsers, 0, 2))
+                ]);
+                
+                // Try multiple paths to find the actual user data
+                $userData = $rawUsers['data']['data'] ?? 
+                           $rawUsers['data'] ?? 
+                           $rawUsers['users'] ?? 
+                           $rawUsers;
+                
+                // If still not an array, try to extract from response
+                if (!is_array($userData) || empty($userData)) {
+                    Log::warning('No valid user data found in response');
+                    return response()->json([
+                        'success' => false,
+                        'data' => [],
+                        'error' => 'No active user data available'
+                    ]);
+                }
+                
                 $rows = [];
                 
                 foreach ($userData as $item) {
                     if (!is_array($item)) continue;
 
-                    $fullName = $item['name'] ?? 'Unknown User';
+                    // Extract username from various possible fields
+                    $fullName = $item['name'] ?? $item['username'] ?? $item['author'] ?? 'Unknown User';
                     $username = $fullName;
                     
+                    // Try to extract @username if present
                     if (preg_match('/@(\w+)/', $fullName, $matches)) {
                         $username = $matches[1];
+                    } elseif (preg_match('/\((@\w+)\)/', $fullName, $matches)) {
+                        $username = ltrim($matches[1], '@');
+                    }
+                    
+                    // Extract count from various possible fields
+                    $count = (int)($item['y'] ?? 
+                                  $item['post_count'] ?? 
+                                  $item['posts'] ?? 
+                                  $item['count'] ?? 
+                                  $item['tweets'] ?? 
+                                  $item['mentions'] ?? 0);
+                    
+                    // Skip if no valid count
+                    if ($count === 0) {
+                        continue;
                     }
 
                     $rows[] = [
                         'username' => $username,
-                        'count' => (int)($item['y'] ?? $item['post_count'] ?? $item['posts'] ?? $item['count'] ?? 0),
+                        'count' => $count,
+                        'full_name' => $fullName,
                     ];
                 }
                 
+                // Sort by count descending
                 usort($rows, fn($a, $b) => $b['count'] <=> $a['count']);
+                
+                Log::info('Active Users Normalized', [
+                    'count' => count($rows),
+                    'top_3' => array_slice($rows, 0, 3)
+                ]);
                 
                 return response()->json([
                     'success' => true,
@@ -310,7 +463,10 @@ class DataOverviewApiController extends Controller
                 ]);
                 
             } catch (\Exception $e) {
-                Log::error('API: active users failed', ['error' => $e->getMessage()]);
+                Log::error('API: active users failed', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
                 return response()->json([
                     'success' => false,
                     'data' => [],
