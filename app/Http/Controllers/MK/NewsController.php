@@ -779,6 +779,102 @@ public function articlesPage(Request $request)
             ], 500);
         }
     }
+    public function newsTimelinePage(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id', session('selected_project_id'));
+
+        if (!$projectId) {
+            Log::warning('News Timeline: No project selected');
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'Please select a project first');
+        }
+
+        session(['selected_project_id' => $projectId]);
+
+        $endDate = $request->query('end_date', now()->format('Y-m-d'));
+        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+        Log::info('News Timeline Page Loaded', [
+            'project_id' => $projectId,
+            'start_date' => $startDate,
+            'end_date'   => $endDate,
+        ]);
+
+        return view('mk.news.timeline', [
+            'projectId' => $projectId,
+            'startDate' => $startDate,
+            'endDate'   => $endDate,
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('News Timeline Page Error', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        return redirect()->route('mk.dashboard')
+            ->with('error', 'Failed to load News Timeline page');
+    }
+}
+/**
+ * API: Get News Mentions Data for Timeline
+ */
+public function newsMentionsData(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
+
+        if (!$projectId) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Project ID is required',
+            ], 400);
+        }
+
+        Log::info('🔍 News Mentions Timeline Data Fetch', [
+            'project_id' => $projectId,
+            'start_date' => $startDate,
+            'end_date'   => $endDate,
+        ]);
+
+        $mentions = $this->mkClient->mentions(
+            $projectId,
+            $startDate,
+            $endDate,
+            0,    // start_time
+            23,   // end_time
+            true, // with_quotes or similar flag
+            0,    // offset
+            1000  // rows
+        );
+
+        Log::info('✅ News Mentions fetched', [
+            'total' => count($mentions),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $mentions,
+            'meta'    => [
+                'total' => count($mentions),
+            ],
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('❌ News Mentions API Error', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'error'   => 'Failed to fetch mentions data',
+        ], 500);
+    }
+}
 }
 
 

@@ -3,6 +3,13 @@
 @section('title', 'News Articles - SMADIMENT')
 
 @section('styles')
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <style>
   :root {
     --primary-green: #038047;
@@ -17,6 +24,103 @@
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Flatpickr Custom Theme */
+  .flatpickr-calendar {
+    border-radius: 16px !important;
+    border: 1px solid var(--border-gray) !important;
+    box-shadow: var(--shadow-lg) !important;
+    font-family: 'Poppins', sans-serif !important;
+    overflow: hidden;
+  }
+
+  .flatpickr-months {
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%) !important;
+    border-radius: 16px 16px 0 0 !important;
+    padding: 8px 0 !important;
+  }
+
+  .flatpickr-month {
+    color: white !important;
+    fill: white !important;
+  }
+
+  .flatpickr-current-month {
+    color: white !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+  }
+
+  .flatpickr-current-month .numInputWrapper input {
+    color: white !important;
+  }
+
+  .flatpickr-current-month .flatpickr-monthDropdown-months {
+    color: white !important;
+    background: transparent !important;
+    font-weight: 600 !important;
+  }
+
+  .flatpickr-prev-month svg,
+  .flatpickr-next-month svg {
+    fill: white !important;
+  }
+
+  .flatpickr-prev-month:hover,
+  .flatpickr-next-month:hover {
+    background: rgba(255,255,255,0.2) !important;
+    border-radius: 8px !important;
+  }
+
+  .flatpickr-weekday {
+    color: var(--text-secondary) !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+  }
+
+  .flatpickr-day {
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: var(--text-primary) !important;
+  }
+
+  .flatpickr-day:hover {
+    background: rgba(3, 128, 71, 0.1) !important;
+    border-color: transparent !important;
+    color: var(--primary-green) !important;
+  }
+
+  .flatpickr-day.selected,
+  .flatpickr-day.startRange,
+  .flatpickr-day.endRange {
+    background: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: white !important;
+    font-weight: 700 !important;
+  }
+
+  .flatpickr-day.inRange {
+    background: rgba(3, 128, 71, 0.12) !important;
+    border-color: transparent !important;
+    color: var(--primary-green) !important;
+    box-shadow: none !important;
+  }
+
+  .flatpickr-day.today {
+    border-color: var(--primary-green) !important;
+    color: var(--primary-green) !important;
+    font-weight: 700 !important;
+  }
+
+  .flatpickr-day.today:hover {
+    background: var(--primary-green) !important;
+    color: white !important;
+  }
+
+  .numInputWrapper:hover {
+    background: rgba(255,255,255,0.1) !important;
   }
 
   /* Main Layout */
@@ -149,6 +253,12 @@
     box-shadow: 0 0 0 3px rgba(3, 128, 71, 0.1);
   }
 
+  .date-picker-trigger.active {
+    border-color: var(--primary-green);
+    background: var(--bg-white);
+    box-shadow: 0 0 0 3px rgba(3, 128, 71, 0.1);
+  }
+
   .date-picker-trigger svg:first-child {
     width: 18px;
     height: 18px;
@@ -166,6 +276,11 @@
     height: 16px;
     margin-left: auto;
     color: var(--text-secondary);
+    transition: transform 0.2s;
+  }
+
+  .date-picker-trigger.active svg:last-child {
+    transform: rotate(180deg);
   }
 
   /* Stats Grid */
@@ -730,12 +845,8 @@
   }
 
   @keyframes loading {
-    0% {
-      background-position: 200% 0;
-    }
-    100% {
-      background-position: -200% 0;
-    }
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
   }
 
   .skeleton-text {
@@ -789,61 +900,23 @@
 
   /* Responsive */
   @media (max-width: 1024px) {
-    .dashboard-container {
-      padding: 16px;
-    }
-
-    .stats-grid {
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-    }
-
-    .filter-content {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .date-range-wrapper {
-      flex-direction: column;
-    }
-
-    .apply-btn {
-      width: 100%;
-      justify-content: center;
-    }
+    .dashboard-container { padding: 16px; }
+    .stats-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .filter-content { flex-direction: column; align-items: stretch; }
+    .date-range-wrapper { flex-direction: column; }
+    .apply-btn { width: 100%; justify-content: center; }
+    .date-picker-trigger { max-width: 100%; }
   }
 
   @media (max-width: 768px) {
-    .stat-value {
-      font-size: 28px;
-    }
-
-    .page-header h1 {
-      font-size: 24px;
-    }
-
-    .article-card {
-      padding: 16px;
-    }
-
-    .article-title {
-      font-size: 16px;
-    }
-
-    .article-meta {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
-    }
-
-    .sentiment-chart-container {
-      flex-direction: column;
-    }
+    .stat-value { font-size: 28px; }
+    .page-header h1 { font-size: 24px; }
+    .article-card { padding: 16px; }
+    .article-title { font-size: 16px; }
+    .article-meta { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .sentiment-chart-container { flex-direction: column; }
   }
 </style>
-
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 @endsection
 
 @section('content')
@@ -901,16 +974,16 @@
 
         <div class="filter-label">Media Type</div>
         <select name="media" id="mediaType" class="filter-select">
-          <option value="doc">Online News</option>
-          <option value="cetak">Print Media</option>
+          <option value="doc" {{ (request('media', 'doc') === 'doc') ? 'selected' : '' }}>Online News</option>
+          <option value="cetak" {{ (request('media') === 'cetak') ? 'selected' : '' }}>Print Media</option>
         </select>
 
         <div class="filter-label">Sentiment</div>
         <select name="sentiment" id="sentimentFilter" class="filter-select">
-          <option value="all">All Sentiment</option>
-          <option value="1">Positive</option>
-          <option value="0">Neutral</option>
-          <option value="-1">Negative</option>
+          <option value="all" {{ (request('sentiment', 'all') === 'all') ? 'selected' : '' }}>All Sentiment</option>
+          <option value="1" {{ (request('sentiment') === '1') ? 'selected' : '' }}>Positive</option>
+          <option value="0" {{ (request('sentiment') === '0') ? 'selected' : '' }}>Neutral</option>
+          <option value="-1" {{ (request('sentiment') === '-1') ? 'selected' : '' }}>Negative</option>
         </select>
 
         <button type="submit" class="apply-btn">
@@ -936,13 +1009,10 @@
           </svg>
         </div>
       </div>
-      
       <div class="stat-label">Total Articles</div>
-      
       <div id="statTotalArticles" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 140px;"></div>
       </div>
-      
       <div class="stat-progress">
         <div class="stat-progress-bar" style="width: 0%"></div>
       </div>
@@ -960,13 +1030,10 @@
           </svg>
         </div>
       </div>
-      
       <div class="stat-label">Total Publishers</div>
-      
       <div id="statTotalPublishers" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 120px;"></div>
       </div>
-      
       <div class="stat-progress">
         <div class="stat-progress-bar" style="width: 0%"></div>
       </div>
@@ -984,9 +1051,7 @@
           </svg>
         </div>
       </div>
-      
       <div class="stat-label">Sentiment Distribution</div>
-      
       <div id="statSentiment" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 100%; height: 200px;"></div>
       </div>
@@ -1001,7 +1066,6 @@
         <h3>News Articles</h3>
         <p class="articles-subtitle">Latest articles from monitored online news sources</p>
       </div>
-
       <div class="filter-controls">
         <div class="search-box">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1017,9 +1081,7 @@
     <div id="articlesLoading" class="loading-skeleton" style="height: 400px; margin: 20px;"></div>
 
     <!-- Articles List -->
-    <div id="articlesList" class="articles-list" style="display: none;">
-      <!-- Will be populated by JavaScript -->
-    </div>
+    <div id="articlesList" class="articles-list" style="display: none;"></div>
 
     <!-- Empty State -->
     <div id="emptyState" style="display: none;">
@@ -1036,13 +1098,9 @@
 
     <!-- Pagination -->
     <div class="pagination" id="pagination" style="display: none;">
-      <button class="pagination-btn" id="prevBtn" onclick="changePage(-1)">
-        ← Previous
-      </button>
+      <button class="pagination-btn" id="prevBtn" onclick="changePage(-1)">← Previous</button>
       <span class="pagination-info" id="pageInfo">Page 1 of 1</span>
-      <button class="pagination-btn" id="nextBtn" onclick="changePage(1)">
-        Next →
-      </button>
+      <button class="pagination-btn" id="nextBtn" onclick="changePage(1)">Next →</button>
     </div>
   </div>
 
@@ -1053,34 +1111,105 @@
 
 @section('scripts')
 <script>
+// =============================================
+// DATE PICKER — Flatpickr Integration
+// =============================================
+document.addEventListener('DOMContentLoaded', function () {
+
+  const trigger   = document.getElementById('datePickerTrigger');
+  const hiddenStart = document.getElementById('hiddenStartDate');
+  const hiddenEnd   = document.getElementById('hiddenEndDate');
+  const display   = document.getElementById('dateRangeDisplay');
+
+  if (trigger && hiddenStart && hiddenEnd) {
+
+    // Buat hidden input sebagai anchor Flatpickr (tidak terlihat user)
+    const fpInput = document.createElement('input');
+    fpInput.type = 'text';
+    fpInput.style.cssText = 'position:absolute;opacity:0;pointer-events:none;width:0;height:0;';
+    trigger.parentNode.appendChild(fpInput);
+
+    const fp = flatpickr(fpInput, {
+      mode: 'range',
+      dateFormat: 'Y-m-d',
+      defaultDate: [hiddenStart.value, hiddenEnd.value],
+      maxDate: 'today',
+      showMonths: window.innerWidth > 768 ? 2 : 1, // 2 bulan di desktop
+      locale: {
+        rangeSeparator: ' → '
+      },
+      onOpen: function () {
+        trigger.classList.add('active');
+      },
+      onClose: function () {
+        trigger.classList.remove('active');
+      },
+      onChange: function (selectedDates) {
+        if (selectedDates.length === 2) {
+          // Format tanggal ke YYYY-MM-DD
+          const fmt = (d) => {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${dd}`;
+          };
+
+          const s = fmt(selectedDates[0]);
+          const e = fmt(selectedDates[1]);
+
+          // Update hidden inputs yang akan dikirim via form
+          hiddenStart.value = s;
+          hiddenEnd.value   = e;
+
+          // Update teks display pada tombol
+          display.textContent = `${s} to ${e}`;
+        }
+      }
+    });
+
+    // Klik tombol → buka/tutup kalender
+    trigger.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (fp.isOpen) {
+        fp.close();
+      } else {
+        // Posisikan kalender di bawah tombol
+        fp.open();
+      }
+    });
+
+    // Resize handler — update jumlah bulan yang ditampilkan
+    window.addEventListener('resize', function () {
+      fp.set('showMonths', window.innerWidth > 768 ? 2 : 1);
+    });
+  }
+
+});
+
+// =============================================
+// ARTICLES — Logic utama
+// =============================================
 const projectId = '{{ $projectId ?? '' }}';
 const startDate = '{{ $startDate ?? '' }}';
-const endDate = '{{ $endDate ?? '' }}';
+const endDate   = '{{ $endDate ?? '' }}';
 
-let allArticles = [];
+let allArticles      = [];
 let filteredArticles = [];
-let currentPage = 1;
-let articlesPerPage = 10;
-let sentimentChart = null;
+let currentPage      = 1;
+const articlesPerPage = 10;
+let sentimentChart   = null;
 
 function formatNumber(num) {
   return new Intl.NumberFormat('en-US').format(num);
 }
 
 function formatDate(dateStr) {
-  if (!dateStr) return '—';
+  if (!dateStr) return { date: '—', time: '' };
   try {
     const date = new Date(dateStr);
     return {
-      date: date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      }),
-      time: date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+      date: date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
     };
   } catch (e) {
     return { date: dateStr, time: '' };
@@ -1106,9 +1235,8 @@ function cleanContent(content) {
 }
 
 if (projectId && startDate && endDate) {
-  
-  // Load Articles Data
-  document.addEventListener('DOMContentLoaded', function() {
+
+  document.addEventListener('DOMContentLoaded', function () {
     loadArticles();
   });
 
@@ -1116,95 +1244,67 @@ if (projectId && startDate && endDate) {
     try {
       const mediaType = document.getElementById('mediaType')?.value || 'doc';
       const sentiment = document.getElementById('sentimentFilter')?.value || 'all';
-      
+
       let apiUrl = `/mk/api/news/articles?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}&media=${mediaType}`;
-      
-      if (sentiment !== 'all') {
-        apiUrl += `&sentiment=${sentiment}`;
-      }
+      if (sentiment !== 'all') apiUrl += `&sentiment=${sentiment}`;
 
       console.log('🔍 Fetching articles from:', apiUrl);
-      
+
       const response = await fetch(apiUrl);
-      const result = await response.json();
+      const result   = await response.json();
 
       console.log('📊 API Response:', result);
 
       if (result.success && result.data && result.data.length > 0) {
-        allArticles = result.data;
+        allArticles      = result.data;
         filteredArticles = [...allArticles];
 
-        // Calculate stats
-        const totalArticles = allArticles.length;
-        const totalQuotes = result.meta?.total_quotes || allArticles.reduce((sum, art) => sum + (art.total_quotes || 0), 0);
-        
-        // Calculate sentiment distribution
-        const sentimentCounts = {
-          positive: 0,
-          neutral: 0,
-          negative: 0
-        };
-
+        // Hitung sentiment distribution
+        const sentimentCounts = { positive: 0, neutral: 0, negative: 0 };
         allArticles.forEach(article => {
-          const sentClass = getSentimentClass(article.sentiment);
-          sentimentCounts[sentClass]++;
+          sentimentCounts[getSentimentClass(article.sentiment)]++;
         });
 
-        // Calculate unique publishers
-        const uniquePublishers = [...new Set(allArticles.map(article => article.publisher))].length;
+        // Hitung unique publishers
+        const uniquePublishers = [...new Set(allArticles.map(a => a.publisher))].length;
 
-        console.log('✅ Stats calculated:', {
-          totalArticles,
-          uniquePublishers,
-          sentimentCounts
-        });
-
-        // Update stats
-        document.getElementById('statTotalArticles').innerHTML = `<div class="stat-value">${formatNumber(totalArticles)}</div>`;
+        // Update stats cards
+        document.getElementById('statTotalArticles').innerHTML   = `<div class="stat-value">${formatNumber(allArticles.length)}</div>`;
         document.getElementById('statTotalPublishers').innerHTML = `<div class="stat-value">${formatNumber(uniquePublishers)}</div>`;
 
-        // Create sentiment chart
         createSentimentChart(sentimentCounts);
+        animateProgress(document.querySelectorAll('.stat-card')[0], 90);
+        animateProgress(document.querySelectorAll('.stat-card')[1], 75);
 
-        // Animate progress bars
-        animateProgress(document.querySelectorAll('.stat-card')[0], 90);  // Total Articles
-        animateProgress(document.querySelectorAll('.stat-card')[1], 75);  // Total Publishers
-
-
-        // Render articles
         renderArticles();
-        
+
         document.getElementById('articlesLoading').style.display = 'none';
-        document.getElementById('articlesList').style.display = 'block';
-        document.getElementById('pagination').style.display = 'flex';
+        document.getElementById('articlesList').style.display    = 'block';
+        document.getElementById('pagination').style.display      = 'flex';
 
       } else {
         console.warn('⚠️ No articles found');
-        
-        document.getElementById('statTotalArticles').innerHTML = '<div class="stat-value">0</div>';
-        document.getElementById('statTotalPublishers').innerHTML = '<div class="stat-value">0</div>';
-        document.getElementById('statSentiment').innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 20px;">No data</p>';
-        
-        document.getElementById('articlesLoading').style.display = 'none';
-        document.getElementById('emptyState').style.display = 'block';
+        showEmptyState();
       }
 
     } catch (error) {
       console.error('❌ Error loading articles:', error);
-      
-      document.getElementById('statTotalArticles').innerHTML = '<div class="stat-value">0</div>';
-      document.getElementById('statTotalPublishers').innerHTML = '<div class="stat-value">0</div>';
-      document.getElementById('statSentiment').innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 20px;">Error loading data</p>';
-      
-      document.getElementById('articlesLoading').style.display = 'none';
-      document.getElementById('emptyState').style.display = 'block';
+      showEmptyState();
     }
   }
 
+  function showEmptyState() {
+    document.getElementById('statTotalArticles').innerHTML   = '<div class="stat-value">0</div>';
+    document.getElementById('statTotalPublishers').innerHTML = '<div class="stat-value">0</div>';
+    document.getElementById('statSentiment').innerHTML       = '<p style="text-align:center;color:var(--text-muted);padding:20px;">No data</p>';
+    document.getElementById('articlesLoading').style.display = 'none';
+    document.getElementById('emptyState').style.display      = 'block';
+  }
+
   function createSentimentChart(sentimentCounts) {
-    const container = document.getElementById('statSentiment');
+    const container  = document.getElementById('statSentiment');
     const totalArticles = sentimentCounts.positive + sentimentCounts.neutral + sentimentCounts.negative;
-    
+
     container.innerHTML = `
       <div class="sentiment-chart-container">
         <div class="sentiment-donut">
@@ -1216,17 +1316,17 @@ if (projectId && startDate && endDate) {
         </div>
         <div class="sentiment-legend">
           <div class="sentiment-legend-item">
-            <div class="sentiment-legend-color" style="background: #10b981;"></div>
+            <div class="sentiment-legend-color" style="background:#10b981;"></div>
             <span class="sentiment-legend-label">Positive</span>
             <span class="sentiment-legend-value">${sentimentCounts.positive}</span>
           </div>
           <div class="sentiment-legend-item">
-            <div class="sentiment-legend-color" style="background: #6b7280;"></div>
+            <div class="sentiment-legend-color" style="background:#6b7280;"></div>
             <span class="sentiment-legend-label">Neutral</span>
             <span class="sentiment-legend-value">${sentimentCounts.neutral}</span>
           </div>
           <div class="sentiment-legend-item">
-            <div class="sentiment-legend-color" style="background: #ef4444;"></div>
+            <div class="sentiment-legend-color" style="background:#ef4444;"></div>
             <span class="sentiment-legend-label">Negative</span>
             <span class="sentiment-legend-value">${sentimentCounts.negative}</span>
           </div>
@@ -1235,10 +1335,7 @@ if (projectId && startDate && endDate) {
     `;
 
     const ctx = document.getElementById('sentimentChart').getContext('2d');
-    
-    if (sentimentChart) {
-      sentimentChart.destroy();
-    }
+    if (sentimentChart) sentimentChart.destroy();
 
     sentimentChart = new Chart(ctx, {
       type: 'doughnut',
@@ -1246,11 +1343,7 @@ if (projectId && startDate && endDate) {
         labels: ['Positive', 'Neutral', 'Negative'],
         datasets: [{
           data: [sentimentCounts.positive, sentimentCounts.neutral, sentimentCounts.negative],
-          backgroundColor: [
-            '#10b981',
-            '#6b7280',
-            '#ef4444'
-          ],
+          backgroundColor: ['#10b981', '#6b7280', '#ef4444'],
           borderWidth: 0,
           hoverOffset: 4
         }]
@@ -1259,17 +1352,14 @@ if (projectId && startDate && endDate) {
         responsive: true,
         maintainAspectRatio: true,
         plugins: {
-          legend: {
-            display: false
-          },
+          legend: { display: false },
           tooltip: {
             callbacks: {
-              label: function(context) {
-                const label = context.label || '';
+              label: function (context) {
                 const value = context.parsed || 0;
                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                const percentage = ((value / total) * 100).toFixed(1);
-                return `${label}: ${value} (${percentage}%)`;
+                const pct   = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                return `${context.label}: ${value} (${pct}%)`;
               }
             }
           }
@@ -1280,39 +1370,35 @@ if (projectId && startDate && endDate) {
   }
 
   function animateProgress(card, percentage) {
-    const progressBar = card.querySelector('.stat-progress-bar');
-    if (progressBar) {
-      setTimeout(() => {
-        progressBar.style.width = percentage + '%';
-      }, 100);
-    }
+    const bar = card.querySelector('.stat-progress-bar');
+    if (bar) setTimeout(() => { bar.style.width = percentage + '%'; }, 100);
   }
 
   function renderArticles() {
-    const startIdx = (currentPage - 1) * articlesPerPage;
-    const endIdx = startIdx + articlesPerPage;
-    const currentData = filteredArticles.slice(startIdx, endIdx);
+    const startIdx   = (currentPage - 1) * articlesPerPage;
+    const currentData = filteredArticles.slice(startIdx, startIdx + articlesPerPage);
+    const container  = document.getElementById('articlesList');
 
-    const container = document.getElementById('articlesList');
-    
     if (!currentData.length) {
-      document.getElementById('articlesList').style.display = 'none';
-      document.getElementById('emptyState').style.display = 'block';
-      document.getElementById('pagination').style.display = 'none';
+      container.style.display = 'none';
+      document.getElementById('emptyState').style.display   = 'block';
+      document.getElementById('pagination').style.display   = 'none';
       return;
     }
 
+    document.getElementById('emptyState').style.display   = 'none';
+    document.getElementById('pagination').style.display   = 'flex';
+
     container.innerHTML = currentData.map((article) => {
-      const dateInfo = formatDate(article.date_created);
+      const dateInfo  = formatDate(article.date_created);
       const sentiment = getSentimentClass(article.sentiment);
-      const content = cleanContent(article.content);
-      
-      // Handle quotes
+      const content   = cleanContent(article.content);
+
       let quotes = [];
       if (Array.isArray(article.quotes)) {
         quotes = article.quotes.filter(q => q && q.Kutipan && q.Kutipan.trim() !== '');
       }
-      
+
       const hasQuotes = quotes.length > 0;
 
       return `
@@ -1339,13 +1425,13 @@ if (projectId && startDate && endDate) {
                 <circle cx="12" cy="12" r="10"/>
                 <polyline points="12 6 12 12 16 14"/>
               </svg>
-              <span>${dateInfo.date} • ${dateInfo.time}</span>
+              <span>${dateInfo.date}${dateInfo.time ? ' • ' + dateInfo.time : ''}</span>
             </div>
           </div>
 
           ${content ? `
             <div class="article-content">
-              ${escapeHtml(content).substring(0, 300)}${content.length > 300 ? '...' : ''}
+              ${escapeHtml(content.substring(0, 300))}${content.length > 300 ? '...' : ''}
             </div>
           ` : ''}
 
@@ -1365,7 +1451,7 @@ if (projectId && startDate && endDate) {
                   <div class="quote-meta">
                     ${quote.Tempat && quote.Tempat.trim() ? `
                       <div class="quote-meta-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
                           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                           <circle cx="12" cy="10" r="3"/>
                         </svg>
@@ -1374,7 +1460,7 @@ if (projectId && startDate && endDate) {
                     ` : ''}
                     ${quote.Waktu && quote.Waktu.trim() ? `
                       <div class="quote-meta-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
                           <circle cx="12" cy="12" r="10"/>
                           <polyline points="12 6 12 12 16 14"/>
                         </svg>
@@ -1387,7 +1473,11 @@ if (projectId && startDate && endDate) {
                   </div>
                 </div>
               `).join('')}
-              ${quotes.length > 2 ? `<div style="text-align: center; padding: 8px; color: var(--text-secondary); font-size: 13px;">+${quotes.length - 2} more quote${quotes.length - 2 > 1 ? 's' : ''}</div>` : ''}
+              ${quotes.length > 2 ? `
+                <div style="text-align:center;padding:8px;color:var(--text-secondary);font-size:13px;">
+                  +${quotes.length - 2} more quote${quotes.length - 2 > 1 ? 's' : ''}
+                </div>
+              ` : ''}
             </div>
           ` : ''}
 
@@ -1400,7 +1490,7 @@ if (projectId && startDate && endDate) {
                 <span>${quotes.length} ${quotes.length === 1 ? 'Quote' : 'Quotes'}</span>
               </div>
             ` : `
-              <div class="quotes-count" style="opacity: 0.6;">
+              <div class="quotes-count" style="opacity:0.6;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                   <polyline points="14 2 14 8 20 8"/>
@@ -1408,7 +1498,11 @@ if (projectId && startDate && endDate) {
                 <span>${content.length > 0 ? Math.round(content.length / 100) + ' min read' : 'News Article'}</span>
               </div>
             `}
-            <a href="${article.url || '#'}" target="_blank" rel="noopener noreferrer" class="view-article-btn" ${!article.url || article.url === '#' ? 'style="opacity: 0.5; pointer-events: none;"' : ''}>
+            <a href="${article.url || '#'}"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="view-article-btn"
+               ${!article.url || article.url === '#' ? 'style="opacity:0.5;pointer-events:none;"' : ''}>
               Read Full Article
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
@@ -1426,44 +1520,34 @@ if (projectId && startDate && endDate) {
 
   function updatePagination() {
     const totalPages = Math.ceil(filteredArticles.length / articlesPerPage);
-    const pageInfo = document.getElementById('pageInfo');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-
-    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-    prevBtn.disabled = currentPage === 1;
-    nextBtn.disabled = currentPage === totalPages;
+    document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+    document.getElementById('prevBtn').disabled = currentPage === 1;
+    document.getElementById('nextBtn').disabled = currentPage === totalPages || totalPages === 0;
   }
 
   function changePage(direction) {
     const totalPages = Math.ceil(filteredArticles.length / articlesPerPage);
-    const newPage = currentPage + direction;
-
+    const newPage    = currentPage + direction;
     if (newPage >= 1 && newPage <= totalPages) {
       currentPage = newPage;
       renderArticles();
-      updatePagination();
-      
       document.querySelector('.articles-container').scrollIntoView({ behavior: 'smooth' });
     }
   }
 
   function filterArticles() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    
-    filteredArticles = allArticles.filter(article => {
-      const title = (article.title || '').toLowerCase();
-      const content = (article.content || '').toLowerCase();
-      const publisher = (article.publisher || '').toLowerCase();
-      
-      return title.includes(searchTerm) || content.includes(searchTerm) || publisher.includes(searchTerm);
-    });
-    
+    const term = document.getElementById('searchInput').value.toLowerCase();
+    filteredArticles = allArticles.filter(article =>
+      (article.title     || '').toLowerCase().includes(term) ||
+      (article.content   || '').toLowerCase().includes(term) ||
+      (article.publisher || '').toLowerCase().includes(term)
+    );
     currentPage = 1;
     renderArticles();
   }
 
-  window.changePage = changePage;
+  // Expose globals
+  window.changePage    = changePage;
   window.filterArticles = filterArticles;
 }
 </script>
