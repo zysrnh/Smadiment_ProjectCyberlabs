@@ -681,8 +681,8 @@
 
       <div class="nav-label">News</div>
 
-      @php
-      $newsRoutes = ['mk.news.word-cloud', 'mk.news.top-publishers'];
+       @php
+      $newsRoutes = ['mk.news.word-cloud', 'mk.news.top-publishers', 'mk.news.timeline', 'mk.news.articles'];
       $isNewsActive = request()->routeIs($newsRoutes);
       @endphp
       <div class="nav-item dropdown-trigger {{ $isNewsActive ? 'has-active-child' : '' }}"
@@ -733,6 +733,19 @@
 </svg>
           </span>
           <span>Mention</span>
+        </a>
+         <a href="{{ route('mk.news.articles') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+          class="nav-item {{ request()->routeIs('mk.news.articles') ? 'active' : '' }}">
+          <span class="menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </span>
+          <span>Articles</span>
         </a>
 
 

@@ -1460,6 +1460,70 @@ public function topPublisher(
 }
 
 
+public function articles(
+    string $projectId,
+    string $media = 'doc',
+    string $startDate,
+    string $endDate,
+    int $startTime = 0,
+    int $endTime = 23,
+    int $start = 0,
+    int $rows = 100,
+    bool $withQuotes = true
+): array {
+    try {
+        $token = $this->getToken();
+
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/articles/',
+            [
+                'project_id'  => $projectId,
+                'media'       => $media,
+                'start_date'  => $startDate,
+                'start_time'  => $startTime,
+                'end_date'    => $endDate,
+                'end_time'    => $endTime,
+                'start'       => $start,
+                'rows'        => $rows,
+                'with_quotes' => $withQuotes ? 'true' : 'false',
+                'token'       => $token,
+            ]
+        );
+
+        $res->throw();
+
+        $json = $this->parseJson($res);
+
+        Log::info('articles API response', [
+            'total_articles' => count($json),
+            'has_quotes'     => $withQuotes,
+            'media_type'     => $media,
+        ]);
+
+        return $json;
+
+    } catch (\Exception $e) {
+        Log::error('articles API error', [
+            'error'      => $e->getMessage(),
+            'project_id' => $projectId,
+        ]);
+        return [];
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

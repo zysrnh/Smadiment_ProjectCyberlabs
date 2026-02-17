@@ -499,113 +499,285 @@ public function topPublisherData(Request $request)
         ], 500);
     }
 }
-public function newsTimelinePage(Request $request)
-{
-    try {
-        $projectId = $request->query('project_id', session('selected_project_id'));
-        
-        if (!$projectId) {
-            Log::warning('News Timeline: No project selected');
+public function articlesPage(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id', session('selected_project_id'));
+            
+            if (!$projectId) {
+                Log::warning('Articles: No project selected');
+                return redirect()->route('mk.dashboard')
+                    ->with('error', 'Please select a project first');
+            }
+
+            session(['selected_project_id' => $projectId]);
+
+            $endDate = $request->query('end_date', now()->format('Y-m-d'));
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+            Log::info('📄 Articles Page Loaded', [
+                'project_id' => $projectId,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ]);
+
+            return view('mk.news.articles', [
+                'projectId' => $projectId,
+                'startDate' => $startDate,
+                'endDate' => $endDate,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('❌ Articles Page Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return redirect()->route('mk.dashboard')
-                ->with('error', 'Please select a project first');
+                ->with('error', 'Failed to load Articles page');
         }
-
-        session(['selected_project_id' => $projectId]);
-
-        $endDate = $request->query('end_date', now()->format('Y-m-d'));
-        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
-
-        Log::info('News Timeline Page Loaded', [
-            'project_id' => $projectId,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-        ]);
-
-        return view('mk.news.timeline', [
-            'projectId' => $projectId,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('News Timeline Page Error', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
-        ]);
-
-        return redirect()->route('mk.dashboard')
-            ->with('error', 'Failed to load News Timeline page');
     }
-}
 
-/**
- * API: Get News Mentions Data
- */
-public function newsMentionsData(Request $request)
-{
-    try {
-        $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date');
-        $endDate = $request->query('end_date');
+    /**
+     * API: Get Articles Data with Quotes (FINAL FIX WITH DEEP DEBUGGING)
+     */
+    public function articlesData(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate = $request->query('end_date');
+            $media = $request->query('media', 'doc');
+            $sentiment = $request->query('sentiment', 'all');
 
-        if (!$projectId) {
+            if (!$projectId) {
+                Log::warning('⚠️ Articles API: Missing project ID');
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Project ID is required',
+                ], 400);
+            }
+
+            Log::info('🔍 Articles Data Fetch Started', [
+                'project_id' => $projectId,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'media' => $media,
+                'sentiment' => $sentiment,
+            ]);
+
+            // Fetch articles with quotes
+            $articles = $this->mkClient->articles(
+                $projectId,
+                $media,
+                $startDate,
+                $endDate,
+                0,       // start_time
+                23,      // end_time
+                0,       // start (offset)
+                1000,    // rows
+                true     // with_quotes - MAKE SURE THIS IS TRUE!
+            );
+
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            // DEEP QUOTES DEBUGGING
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            $articlesWithQuotesField = 0;
+            $rawQuotesCountTotal = 0;
+            
+            foreach ($articles as $art) {
+                if (isset($art['quotes'])) {
+                    $articlesWithQuotesField++;
+                    if (is_array($art['quotes'])) {
+                        $rawQuotesCountTotal += count($art['quotes']);
+                    }
+                }
+            }
+
+            Log::info('📊 Raw API Response Analysis', [
+                'total_articles_fetched' => count($articles),
+                'articles_with_quotes_field' => $articlesWithQuotesField,
+                'raw_quotes_count_before_filtering' => $rawQuotesCountTotal,
+                'percentage_with_quotes' => count($articles) > 0 ? round(($articlesWithQuotesField / count($articles)) * 100, 2) . '%' : '0%',
+                'first_article_sample' => count($articles) > 0 ? [
+                    'title' => substr($articles[0]['title'] ?? 'N/A', 0, 50) . '...',
+                    'has_quotes_field' => isset($articles[0]['quotes']),
+                    'quotes_type' => isset($articles[0]['quotes']) ? gettype($articles[0]['quotes']) : 'NOT_SET',
+                    'quotes_count' => is_array($articles[0]['quotes'] ?? null) ? count($articles[0]['quotes']) : 0,
+                    'first_quote_has_Kutipan' => (isset($articles[0]['quotes']) && is_array($articles[0]['quotes']) && count($articles[0]['quotes']) > 0) 
+                        ? isset($articles[0]['quotes'][0]['Kutipan']) 
+                        : false,
+                    'first_quote_Kutipan_value' => (isset($articles[0]['quotes']) && is_array($articles[0]['quotes']) && count($articles[0]['quotes']) > 0 && isset($articles[0]['quotes'][0]['Kutipan'])) 
+                        ? substr($articles[0]['quotes'][0]['Kutipan'], 0, 50) . '...'
+                        : 'N/A',
+                ] : 'No articles returned',
+            ]);
+
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            // PROCESS ARTICLES WITH DETAILED TRACKING
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            $totalQuotesBeforeFilter = 0;
+            $totalQuotesAfterFilter = 0;
+            $articlesWithValidQuotes = 0;
+            $quotesFilteredOut = 0;
+
+            $articles = array_map(function($article) use (&$totalQuotesBeforeFilter, &$totalQuotesAfterFilter, &$articlesWithValidQuotes, &$quotesFilteredOut) {
+                // Ensure all required fields exist
+                $article['title'] = $article['title'] ?? 'Untitled';
+                $article['publisher'] = $article['publisher'] ?? 'Unknown Publisher';
+                $article['url'] = $article['url'] ?? '#';
+                $article['date_created'] = $article['date_created'] ?? now()->toDateTimeString();
+                $article['content'] = $article['content'] ?? '';
+                $article['sentiment'] = $article['sentiment'] ?? 'Neutral';
+                $article['sentiment_class'] = $article['sentiment_class'] ?? 'neutral';
+                
+                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                // HANDLE QUOTES WITH DETAILED LOGGING
+                // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                $quotes = $article['quotes'] ?? [];
+                $beforeFilterCount = is_array($quotes) ? count($quotes) : 0;
+                $totalQuotesBeforeFilter += $beforeFilterCount;
+                
+                if (is_array($quotes) && count($quotes) > 0) {
+                    // Filter valid quotes
+                    $validQuotes = array_filter($quotes, function($quote) use (&$quotesFilteredOut) {
+                        // Check if quote is array
+                        if (!is_array($quote)) {
+                            $quotesFilteredOut++;
+                            return false;
+                        }
+                        
+                        // Check if has Kutipan field
+                        if (!isset($quote['Kutipan'])) {
+                            $quotesFilteredOut++;
+                            return false;
+                        }
+                        
+                        // Check if Kutipan is not empty
+                        $kutipan = trim($quote['Kutipan']);
+                        if ($kutipan === '') {
+                            $quotesFilteredOut++;
+                            return false;
+                        }
+                        
+                        return true;
+                    });
+                    
+                    $quotes = array_values($validQuotes);
+                } else {
+                    $quotes = [];
+                }
+                
+                $afterFilterCount = count($quotes);
+                $totalQuotesAfterFilter += $afterFilterCount;
+                
+                if ($afterFilterCount > 0) {
+                    $articlesWithValidQuotes++;
+                }
+                
+                $article['quotes'] = $quotes;
+                $article['total_quotes'] = $afterFilterCount;
+                
+                return $article;
+            }, $articles);
+
+            Log::info('💬 Quotes Processing Results', [
+                'quotes_before_filtering' => $totalQuotesBeforeFilter,
+                'quotes_after_filtering' => $totalQuotesAfterFilter,
+                'quotes_filtered_out' => $quotesFilteredOut,
+                'articles_with_valid_quotes' => $articlesWithValidQuotes,
+                'filter_success_rate' => $totalQuotesBeforeFilter > 0 ? round(($totalQuotesAfterFilter / $totalQuotesBeforeFilter) * 100, 2) . '%' : 'N/A',
+            ]);
+
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            // SENTIMENT FILTERING
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            if ($sentiment !== 'all') {
+                $beforeSentimentFilter = count($articles);
+                
+                $articles = array_filter($articles, function($article) use ($sentiment) {
+                    $articleSentiment = $article['class_sentiment'] ?? $article['sentiment_class'] ?? '0';
+                    
+                    // Normalize sentiment values
+                    $sentimentLower = strtolower($article['sentiment'] ?? '');
+                    if ($sentimentLower === 'positive' || $sentimentLower === 'positif') {
+                        $articleSentiment = '1';
+                    } elseif ($sentimentLower === 'negative' || $sentimentLower === 'negatif') {
+                        $articleSentiment = '-1';
+                    } elseif ($sentimentLower === 'neutral' || $sentimentLower === 'netral') {
+                        $articleSentiment = '0';
+                    }
+                    
+                    return $articleSentiment == $sentiment;
+                });
+                
+                $articles = array_values($articles);
+                
+                Log::info('🎯 Sentiment Filter Applied', [
+                    'filter' => $sentiment,
+                    'before' => $beforeSentimentFilter,
+                    'after' => count($articles),
+                    'removed' => $beforeSentimentFilter - count($articles),
+                ]);
+            }
+
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            // FINAL TOTALS
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            $totalQuotes = array_sum(array_column($articles, 'total_quotes'));
+            $finalArticlesWithQuotes = count(array_filter($articles, function($art) {
+                return ($art['total_quotes'] ?? 0) > 0;
+            }));
+
+            Log::info('✅ Articles Data Processing Complete', [
+                'final_total_articles' => count($articles),
+                'final_articles_with_quotes' => $finalArticlesWithQuotes,
+                'final_total_quotes' => $totalQuotes,
+                'avg_quotes_per_article' => count($articles) > 0 ? round($totalQuotes / count($articles), 2) : 0,
+                'sentiment_filter_applied' => $sentiment,
+                'sample_article_with_quotes' => $finalArticlesWithQuotes > 0 ? [
+                    'title' => $articles[0]['title'] ?? 'N/A',
+                    'quotes_count' => $articles[0]['total_quotes'] ?? 0,
+                    'first_quote_preview' => (isset($articles[0]['quotes'][0]['Kutipan'])) 
+                        ? substr($articles[0]['quotes'][0]['Kutipan'], 0, 60) . '...'
+                        : 'No quotes',
+                ] : 'No articles with quotes found',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $articles,
+                'meta' => [
+                    'total_articles' => count($articles),
+                    'articles_with_quotes' => $finalArticlesWithQuotes,
+                    'total_quotes' => $totalQuotes,
+                    'avg_quotes_per_article' => count($articles) > 0 ? round($totalQuotes / count($articles), 2) : 0,
+                    'sentiment_filter' => $sentiment,
+                    'media_type' => $media,
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('❌ Articles API Error', [
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => basename($e->getFile()),
+                'trace' => $e->getTraceAsString(),
+                'request_params' => [
+                    'project_id' => $request->query('project_id'),
+                    'start_date' => $request->query('start_date'),
+                    'end_date' => $request->query('end_date'),
+                    'media' => $request->query('media'),
+                    'sentiment' => $request->query('sentiment'),
+                ],
+            ]);
+
             return response()->json([
                 'success' => false,
-                'error' => 'Project ID is required',
-            ], 400);
+                'error' => 'Failed to fetch articles data',
+                'message' => config('app.debug') ? $e->getMessage() : 'Internal server error',
+            ], 500);
         }
-
-        Log::info('🔍 News Mentions Data Fetch Started', [
-            'project_id' => $projectId,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-        ]);
-
-        // Fetch mentions with filter for news media
-        // Note: The mentions() method should filter by media_type='news' or media_type_id=5
-        $mentions = $this->mkClient->mentions(
-            $projectId,
-            $startDate,
-            $endDate,
-            0,       // start_time
-            23,      // end_time
-            true,    // with_content
-            0,       // start (offset)
-            1000     // rows (get more data for timeline)
-        );
-
-        // Filter for news mentions only (media_type_id = 5 based on your JSON)
-        $newsMentions = array_filter($mentions, function($mention) {
-            return ($mention['media_type_id'] ?? '') === '5' || 
-                   ($mention['media_type'] ?? '') === 'news' ||
-                   ($mention['media_type'] ?? '') === 'article';
-        });
-
-        // Re-index array after filtering
-        $newsMentions = array_values($newsMentions);
-
-        Log::info('🎉 News Mentions data retrieved', [
-            'total_mentions' => count($newsMentions),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'data' => $newsMentions,
-            'meta' => [
-                'total_mentions' => count($newsMentions),
-            ],
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('❌ News Mentions API Error', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
-        ]);
-
-        return response()->json([
-            'success' => false,
-            'error' => 'Failed to fetch news mentions data',
-        ], 500);
     }
 }
 
@@ -614,13 +786,4 @@ public function newsMentionsData(Request $request)
 
 
 
-
-
-
-
-
-
-
-
-
-}
+    

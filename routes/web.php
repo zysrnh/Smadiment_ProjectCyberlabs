@@ -119,9 +119,13 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/top-publisher', [NewsController::class, 'topPublisherData'])
                 ->name('top-publisher-api');
             
-            // 🔥 News Timeline/Mentions API (NEW)
+            // News Timeline/Mentions API
             Route::get('/mentions', [NewsController::class, 'newsMentionsData'])
                 ->name('mentions-api');
+            
+            // 🔥 NEW: Articles with Quotes API
+            Route::get('/articles', [NewsController::class, 'articlesData'])
+                ->name('articles-api');
         });
 
         // ─────────────────────────────────────────────────────
@@ -251,9 +255,13 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/top-publishers', [NewsController::class, 'topPublisherPage'])
             ->name('top-publishers');
         
-        // 🔥 News Timeline Page (NEW)
+        // News Timeline Page
         Route::get('/timeline', [NewsController::class, 'newsTimelinePage'])
             ->name('timeline');
+        
+        // 🔥 NEW: Articles with Quotes Page
+        Route::get('/articles', [NewsController::class, 'articlesPage'])
+            ->name('articles');
     });
 
     // ─────────────────────────────────────────────────────
