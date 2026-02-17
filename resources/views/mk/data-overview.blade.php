@@ -182,7 +182,7 @@
   }
   .apply-date-btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(3,128,71,0.3); }
 
-  /* Card — matches X Overview stat-card exactly */
+  /* Card */
   .do-card {
     background: var(--bg-white);
     border: 1px solid var(--border-gray);
@@ -200,14 +200,12 @@
   .do-card:hover { box-shadow:var(--shadow-lg); border-color:rgba(3,128,71,0.25); }
   .do-card:hover::before { opacity:1; }
 
-  /* Card Head — MONOCHROME, single green accent */
   .do-card-head {
     display:flex; align-items:center; justify-content:space-between;
     padding:16px 20px; border-bottom:1px solid var(--border-gray);
   }
   .do-card-head-left { display:flex; align-items:center; gap:12px; }
 
-  /* Icon wrapper — same as X Overview stat-icon-wrapper */
   .do-head-icon {
     width:40px; height:40px; border-radius:12px;
     background:linear-gradient(135deg, rgba(3,128,71,0.1) 0%, rgba(3,128,71,0.05) 100%);
@@ -220,7 +218,6 @@
   }
   .do-card-title { font-size:16px; font-weight:700; color:var(--text-primary); }
 
-  /* Badge — neutral, same as X Overview */
   .do-badge {
     display:inline-flex; align-items:center;
     padding:4px 12px; border-radius:20px;
@@ -229,7 +226,6 @@
     background:var(--bg-gray-100); color:var(--text-secondary);
   }
 
-  /* Card body */
   .do-card-body { padding:20px; flex:1; }
   .do-body-scroll { max-height:220px; overflow-y:auto; }
   .do-body-scroll::-webkit-scrollbar { width:4px; }
@@ -263,14 +259,18 @@
   .do-tbl tbody tr:hover { background:#fafbfc; }
   .do-tbl tbody tr:last-child td { border-bottom:none; }
   .do-tbl-rank { font-weight:800; color:var(--primary-green); width:24px; font-size:12px; }
-  .do-tbl-name { font-weight:600; max-width:160px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .do-tbl-name { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .do-tbl-num  { text-align:right; font-weight:700; font-size:12px; color:var(--text-secondary); }
 
-  /* Mention — merged two-column card */
-  .mention-split {
-    display:grid; grid-template-columns:1fr 1fr;
-    flex:1;
+  /* Topic Link */
+  .topic-link {
+    color: var(--text-primary); text-decoration: none;
+    transition: all 0.2s; display: block; cursor: pointer;
   }
+  .topic-link:hover { color: var(--primary-green); text-decoration: underline; }
+
+  /* Mention */
+  .mention-split { display:grid; grid-template-columns:1fr 1fr; flex:1; }
   .mention-split-item {
     display:flex; flex-direction:column;
     justify-content:center; padding:24px 20px; min-height:160px;
@@ -278,30 +278,19 @@
   .mention-split-item:first-child { border-right:1px solid var(--border-gray); }
   .mention-split-label {
     font-size:11px; font-weight:700; color:var(--text-secondary);
-    text-transform:uppercase; letter-spacing:0.5px;
-    margin-bottom:10px;
+    text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;
     display:flex; align-items:center; gap:6px;
   }
-  .mention-split-label svg {
-    width:14px; height:14px;
-    stroke:var(--primary-green); fill:none;
-    stroke-width:2; stroke-linecap:round;
-  }
-  .mention-val {
-    font-size:48px; font-weight:700;
-    line-height:1; letter-spacing:-2px;
-    color:var(--text-primary);
-  }
+  .mention-split-label svg { width:14px; height:14px; stroke:var(--primary-green); fill:none; stroke-width:2; stroke-linecap:round; }
+  .mention-val { font-size:48px; font-weight:700; line-height:1; letter-spacing:-2px; color:var(--text-primary); }
 
   /* View All Button */
   .do-view-all-btn {
     display:inline-flex; align-items:center; gap:6px;
     padding:6px 14px; background:transparent;
-    color:var(--primary-green);
-    border:1.5px solid var(--primary-green);
+    color:var(--primary-green); border:1.5px solid var(--primary-green);
     border-radius:8px; font-family:'Poppins',sans-serif;
-    font-size:11px; font-weight:700;
-    cursor:pointer; transition:all 0.2s;
+    font-size:11px; font-weight:700; cursor:pointer; transition:all 0.2s;
   }
   .do-view-all-btn:hover { background:var(--primary-green); color:white; transform:translateY(-1px); }
   .do-view-all-btn svg { fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; width:13px; height:13px; }
@@ -310,33 +299,40 @@
   .do-modal {
     display:none; position:fixed; z-index:9999;
     left:0; top:0; width:100%; height:100%;
-    background:rgba(0,0,0,0.6); backdrop-filter:blur(8px);
+    background:rgba(0,0,0,0.75); backdrop-filter:blur(10px);
   }
   .do-modal.active { display:flex; align-items:center; justify-content:center; }
   .do-modal-content {
-    background:var(--bg-white); border-radius:16px;
+    background:#ffffff !important; border-radius:16px;
     width:90%; max-width:600px; max-height:80vh;
-    box-shadow:0 20px 60px rgba(0,0,0,0.3);
+    box-shadow:0 20px 60px rgba(0,0,0,0.4);
     animation:mSlide 0.3s ease-out; overflow:hidden;
   }
   .do-modal-header {
     display:flex; justify-content:space-between; align-items:flex-start;
-    padding:24px 28px; border-bottom:1px solid var(--border-gray);
-    background:var(--bg-gray-50); border-radius:16px 16px 0 0;
+    padding:24px 28px; border-bottom:2px solid var(--border-gray);
+    background:#ffffff !important; border-radius:16px 16px 0 0;
   }
-  .do-modal-title    { font-size:20px; font-weight:700; color:var(--text-primary); margin:0 0 4px 0; }
-  .do-modal-subtitle { font-size:12px; font-weight:500; color:var(--text-secondary); margin:0; }
+  .do-modal-title    { font-size:20px; font-weight:700; color:#1a202c !important; margin:0 0 4px 0; }
+  .do-modal-subtitle { font-size:12px; font-weight:500; color:#64748b !important; margin:0; }
   .do-modal-close {
     width:36px; height:36px; border-radius:10px;
-    background:var(--bg-white); border:1px solid var(--border-gray);
+    background:#ffffff !important; border:1px solid var(--border-gray);
     display:flex; align-items:center; justify-content:center;
     cursor:pointer; transition:all 0.2s;
   }
-  .do-modal-close:hover { background:#ef4444; border-color:#ef4444; color:white; transform:rotate(90deg); }
+  .do-modal-close:hover { background:#ef4444 !important; border-color:#ef4444; color:white; transform:rotate(90deg); }
   .do-modal-close svg { width:16px; height:16px; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; fill:none; }
-  .do-modal-body { padding:20px 28px 28px; max-height:calc(80vh - 100px); overflow-y:auto; }
+  .do-modal-body {
+    padding:20px 28px 28px; max-height:calc(80vh - 100px);
+    overflow-y:auto; background:#ffffff !important;
+  }
   .do-modal-body::-webkit-scrollbar { width:6px; }
   .do-modal-body::-webkit-scrollbar-thumb { background:var(--border-gray); border-radius:3px; }
+  .do-modal-body .do-tbl { background:#ffffff !important; }
+  .do-modal-body .do-tbl thead tr { background:#ffffff !important; }
+  .do-modal-body .do-tbl tbody tr { background:#ffffff !important; }
+  .do-modal-body .do-tbl tbody tr:hover { background:#f8fafc !important; }
 
   /* Skeleton */
   .loading-skeleton {
@@ -367,50 +363,25 @@
     background: var(--bg-white);
   }
   .location-panel-title {
-    padding: 14px 16px 10px;
-    font-size: 11px; font-weight: 700;
-    color: var(--text-secondary);
-    text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 14px 16px 10px; font-size: 11px; font-weight: 700;
+    color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;
     border-bottom: 1px solid var(--bg-gray-100);
   }
-  .location-list {
-    overflow-y: auto; flex: 1;
-    max-height: 420px;
-  }
+  .location-list { overflow-y: auto; flex: 1; max-height: 420px; }
   .location-list::-webkit-scrollbar { width: 4px; }
   .location-list::-webkit-scrollbar-thumb { background: var(--border-gray); border-radius: 2px; }
   .location-item {
     display: flex; align-items: center; gap: 10px;
     padding: 10px 14px; cursor: pointer;
-    border-bottom: 1px solid var(--bg-gray-50);
-    transition: all 0.15s;
+    border-bottom: 1px solid var(--bg-gray-50); transition: all 0.15s;
   }
   .location-item:hover { background: rgba(3, 128, 71, 0.06); }
-  .location-item.active {
-    background: rgba(3, 128, 71, 0.08);
-    border-left: 3px solid var(--primary-green);
-    padding-left: 11px;
-  }
-  .location-item-rank {
-    font-size: 10px; font-weight: 700;
-    color: var(--primary-green);
-    width: 18px; flex-shrink: 0;
-  }
+  .location-item.active { background: rgba(3, 128, 71, 0.08); border-left: 3px solid var(--primary-green); padding-left: 11px; }
+  .location-item-rank { font-size: 10px; font-weight: 700; color: var(--primary-green); width: 18px; flex-shrink: 0; }
   .location-item-info { flex: 1; min-width: 0; }
-  .location-item-name {
-    font-size: 12px; font-weight: 600;
-    color: var(--text-primary);
-    white-space: nowrap; overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .location-item-count {
-    font-size: 11px; color: var(--text-secondary);
-    font-weight: 500;
-  }
-  .location-item-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%; flex-shrink: 0;
-  }
+  .location-item-name { font-size: 12px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .location-item-count { font-size: 11px; color: var(--text-secondary); font-weight: 500; }
+  .location-item-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
   /* Animations */
   @keyframes mSlide { from{transform:translateY(-20px) scale(0.95);opacity:0;} to{transform:translateY(0) scale(1);opacity:1;} }
@@ -443,8 +414,6 @@
     .mention-val { font-size:36px; }
     .page-header h1 { font-size:22px; }
   }
-
-  /* Circle Label */
   .circle-label { pointer-events: none !important; }
 </style>
 @endsection
@@ -452,20 +421,17 @@
 @section('content')
 <div class="dashboard-container">
 
-  <!-- Page Header -->
   <div class="page-header">
     <h1>Data Overview</h1>
     <p>Ringkasan analitik sosial media dan berita</p>
   </div>
 
-  <!-- Filter Card -->
   <div class="filter-card">
     <form id="filterForm" method="GET">
       <input type="hidden" name="project_id" id="hiddenProjectId" value="{{ $projectId }}">
       <input type="hidden" name="start_date" id="hiddenStartDate" value="{{ $startDate }}">
       <input type="hidden" name="end_date"   id="hiddenEndDate"   value="{{ $endDate }}">
       <div class="filter-content">
-
         <div class="filter-group">
           <label class="filter-label">Project</label>
           <select class="filter-select" id="doProject">
@@ -476,7 +442,6 @@
             @endforeach
           </select>
         </div>
-
         <div class="filter-group">
           <label class="filter-label">Tanggal</label>
           <button type="button" class="date-picker-trigger" id="datePickerTrigger">
@@ -486,12 +451,9 @@
               <line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
             <span id="dateRangeDisplay">{{ $startDate }} to {{ $endDate }}</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
         </div>
-
         <div class="filter-group">
           <label class="filter-label" style="opacity:0;pointer-events:none;">‎</label>
           <button type="submit" class="apply-btn">
@@ -499,7 +461,6 @@
             Filter
           </button>
         </div>
-
       </div>
     </form>
   </div>
@@ -541,9 +502,7 @@
     </div>
   </div>
 
-  <!-- ============================================================
-       ROW 1 — Trending | Top Hashtag | Mention (merged)
-       ============================================================ -->
+  <!-- ROW 1 -->
   <div class="do-row-top">
 
     <!-- Trending Topics -->
@@ -595,7 +554,7 @@
       </div>
     </div>
 
-    <!-- Mention — MERGED Social Media + Online News in 1 card -->
+    <!-- Mention -->
     <div class="do-card" data-lazy="mention-combined">
       <div class="do-card-head">
         <div class="do-card-head-left">
@@ -606,7 +565,6 @@
         </div>
         <span class="do-badge">All Media</span>
       </div>
-      <!-- Two-column split body -->
       <div class="mention-split">
         <div class="mention-split-item">
           <div class="mention-split-label">
@@ -634,9 +592,7 @@
 
   </div>
 
-  <!-- ============================================================
-       ROW 2 — Most Engaged User + Sentiment Score
-       ============================================================ -->
+  <!-- ROW 2 -->
   <div class="do-row-mid">
 
     <div class="do-card" data-lazy="engaged-users">
@@ -682,9 +638,7 @@
 
   </div>
 
-  <!-- ============================================================
-       ROW 3 — Sentiment by Media
-       ============================================================ -->
+  <!-- ROW 3 -->
   <div class="do-card" style="margin-bottom:20px;" data-lazy="sentiment-media">
     <div class="do-card-head">
       <div class="do-card-head-left">
@@ -712,9 +666,7 @@
     </div>
   </div>
 
-  <!-- ============================================================
-       ROW 4 — Buzzer Map with Location Panel
-       ============================================================ -->
+  <!-- ROW 4 -->
   <div class="do-card" data-lazy="buzzer-map">
     <div class="do-card-head">
       <div class="do-card-head-left">
@@ -729,14 +681,12 @@
       <span class="do-badge">Geographic</span>
     </div>
     <div class="map-with-panel">
-      <!-- Map Area -->
       <div class="map-area">
         <div id="buzzMap" style="width:100%; height:420px;"></div>
         <div id="mapSkeleton" style="position:absolute;inset:0;height:420px;border-radius:0 0 0 16px;">
           <div class="loading-skeleton" style="height:100%;border-radius:0 0 0 16px;"></div>
         </div>
       </div>
-      <!-- Location Panel -->
       <div class="location-panel" id="buzzMapPanel">
         <div class="location-panel-title">📍 Locations</div>
         <div class="location-list" id="buzzMapList">
@@ -900,6 +850,7 @@ const DataOverviewLazyLoader = {
   endDate:   '{{ $endDate }}',
   loaded: new Set(),
   _allTopics: [],
+  _allHashtags: [],
 
   init() {
     const obs = new IntersectionObserver((entries) => {
@@ -933,22 +884,24 @@ const DataOverviewLazyLoader = {
     const d = await r.json();
     const body = card.querySelector('.do-card-body');
     const topics = d.data || [];
-    
     if (!topics.length) { body.innerHTML = this.empty(); return; }
-
-    // Store all for modal
     this._allTopics = topics;
-
-    // Show View All button if > 10
     if (topics.length > 10) {
       const right = card.querySelector('.do-card-head > div:last-child');
       right.innerHTML += `<button class="do-view-all-btn" onclick="DataOverviewLazyLoader.openTrendingModal()">
         <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>View All</button>`;
     }
-
     let h = `<table class="do-tbl"><thead><tr><th style="width:24px;">#</th><th>Topic</th></tr></thead><tbody>`;
     topics.slice(0,10).forEach((t,i) => {
-      h += `<tr><td class="do-tbl-rank">${i+1}</td><td class="do-tbl-name">${t.title||t.name||t.topic||'Unknown'}</td></tr>`;
+      const topicName = t.title || t.name || t.topic || 'Unknown';
+      const url = t.reference || t.url || (t.urls && t.urls[0]) || '#';
+      const esc = topicName.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      h += `<tr>
+        <td class="do-tbl-rank">${i+1}</td>
+        <td class="do-tbl-name" style="max-width:400px;">
+          ${url !== '#' ? `<a href="${url}" target="_blank" rel="noopener noreferrer" class="topic-link">${esc}</a>` : esc}
+        </td>
+      </tr>`;
     });
     h += '</tbody></table>';
     body.innerHTML = h; body.classList.add('data-loaded');
@@ -957,7 +910,15 @@ const DataOverviewLazyLoader = {
   openTrendingModal() {
     let h = `<table class="do-tbl"><thead><tr><th style="width:40px;">#</th><th>Topic</th></tr></thead><tbody>`;
     this._allTopics.forEach((t,i) => {
-      h += `<tr><td class="do-tbl-rank">${i+1}</td><td class="do-tbl-name">${t.title||t.name||t.topic||'Unknown'}</td></tr>`;
+      const topicName = t.title || t.name || t.topic || 'Unknown';
+      const url = t.reference || t.url || (t.urls && t.urls[0]) || '#';
+      const esc = topicName.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      h += `<tr>
+        <td class="do-tbl-rank">${i+1}</td>
+        <td class="do-tbl-name" style="max-width:480px;">
+          ${url !== '#' ? `<a href="${url}" target="_blank" rel="noopener noreferrer" class="topic-link">${esc}</a>` : esc}
+        </td>
+      </tr>`;
     });
     h += '</tbody></table>';
     document.getElementById('trendingModalBody').innerHTML = h;
@@ -969,22 +930,58 @@ const DataOverviewLazyLoader = {
     const r = await fetch(`/mk/api/top-hashtags?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`);
     const d = await r.json();
     const body = card.querySelector('.do-card-body');
-    const tags = d.data || [];
+
+    // ✅ FIX: struktur response adalah d.data.hashtags bukan d.data langsung
+    let tags = [];
+    if (d.data && Array.isArray(d.data.hashtags)) {
+      tags = d.data.hashtags;
+    } else if (Array.isArray(d.data)) {
+      tags = d.data;
+    }
+
     if (!tags.length) { body.innerHTML = this.empty(); return; }
+
+    // Simpan semua untuk modal
+    this._allHashtags = tags;
+
     if (tags.length > 5) {
       const right = card.querySelector('.do-card-head > div:last-child');
-      const safe  = JSON.stringify(tags).replace(/'/g,"\\'");
-      right.innerHTML += `<button class="do-view-all-btn" onclick="DataOverviewLazyLoader.openHashtagModal(${safe})">
+      right.innerHTML += `<button class="do-view-all-btn" onclick="DataOverviewLazyLoader.openHashtagModal()">
         <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>View All</button>`;
     }
+
     let h = `<table class="do-tbl"><thead><tr><th style="width:24px;">#</th><th>Hashtag</th><th style="text-align:right;">Mention</th></tr></thead><tbody>`;
     tags.slice(0,5).forEach((tag,i) => {
-      let name = tag.hashtag||tag.name||tag.tag||'unknown';
-      if (!name.startsWith('#')) name='#'+name;
-      h += `<tr><td class="do-tbl-rank">${i+1}</td><td class="do-tbl-name" style="color:var(--primary-green);font-weight:700;">${name}</td><td class="do-tbl-num">${(tag.mention||tag.size||tag.count||0).toLocaleString()}</td></tr>`;
+      let name = tag.name || tag.hashtag || tag.tag || 'unknown';
+      if (!name.startsWith('#')) name = '#' + name;
+      const count = parseInt(tag.size || tag.mention || tag.count || 0);
+      h += `<tr>
+        <td class="do-tbl-rank">${i+1}</td>
+        <td class="do-tbl-name" style="color:var(--primary-green);font-weight:700;">${name}</td>
+        <td class="do-tbl-num">${count.toLocaleString()}</td>
+      </tr>`;
     });
     h += '</tbody></table>';
     body.innerHTML = h; body.classList.add('data-loaded');
+  },
+
+  openHashtagModal() {
+    const tags = this._allHashtags || [];
+    let h = `<table class="do-tbl"><thead><tr><th style="width:40px;">#</th><th>Hashtag</th><th style="text-align:right;">Mention</th></tr></thead><tbody>`;
+    tags.forEach((tag,i) => {
+      let name = tag.name || tag.hashtag || tag.tag || 'unknown';
+      if (!name.startsWith('#')) name = '#' + name;
+      const count = parseInt(tag.size || tag.mention || tag.count || 0);
+      h += `<tr>
+        <td class="do-tbl-rank">${i+1}</td>
+        <td class="do-tbl-name" style="color:var(--primary-green);font-weight:700;">${name}</td>
+        <td class="do-tbl-num">${count.toLocaleString()}</td>
+      </tr>`;
+    });
+    h += '</tbody></table>';
+    document.getElementById('hashtagModalBody').innerHTML = h;
+    document.getElementById('hashtagModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
   },
 
   async loadMentions(card) {
@@ -1027,7 +1024,6 @@ const DataOverviewLazyLoader = {
     const d  = await r.json();
     const sk = document.getElementById('mapSkeleton');
     if (sk) sk.style.display='none';
-    
     const rows = d.data || [];
     const mapResult = this.renderMap('buzzMap', rows);
     this.buildLocationPanel('buzzMapList', rows, mapResult, '#038047');
@@ -1039,54 +1035,41 @@ const DataOverviewLazyLoader = {
       attribution: '© OpenStreetMap, © CARTO',
       subdomains: 'abcd', maxZoom: 19
     }).addTo(map);
-
     if (!rows.length) return { map, markerRefs: [] };
-
     const max = Math.max(...rows.map(p=>parseInt(p.count||0)));
     const markerRefs = [];
-
     rows.forEach(p => {
       const lat = parseFloat(p.latitude||0), lng = parseFloat(p.longitude||0);
       if (lat===0 && lng===0) { markerRefs.push(null); return; }
-      
       const name  = p.name || 'Unknown';
       const count = parseInt(p.count || 0);
-      
       if (count >= 10) {
         let r = Math.sqrt(count) * 2500;
         r = Math.max(5000, Math.min(r, 50000));
         L.circle([lat,lng],{ radius:r, fillColor:'#038047', color:'#038047', weight:1, opacity:0.2, fillOpacity:Math.min(0.15+(count/max)*0.4,0.55) }).addTo(map);
       }
-      
       const pin = L.marker([lat,lng],{ icon:L.divIcon({ className:'', html:'<div style="width:13px;height:13px;background:#038047;border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,.4);"></div>', iconSize:[13,13], iconAnchor:[6.5,6.5] })}).addTo(map)
         .bindPopup(`<div style="font-family:Poppins;text-align:center;padding:8px;"><div style="font-weight:700;font-size:15px;color:#1a202c;margin-bottom:6px;">${name}</div><div style="font-size:24px;font-weight:700;color:#038047;margin-bottom:2px;">${count.toLocaleString()}</div><div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;font-weight:600;">mentions</div></div>`);
-      
       markerRefs.push({ marker: pin, lat, lng });
-      
       const lbl = count>999 ? (count/1000).toFixed(1)+'k' : count;
       L.marker([lat,lng],{ icon:L.divIcon({ className:'circle-label', html:`<div style="font-family:Poppins;font-size:11px;font-weight:800;color:#fff;background:rgba(3,128,71,0.92);padding:3px 8px;border-radius:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);white-space:nowrap;">${lbl}</div>`, iconSize:[40,20], iconAnchor:[20,25] }), interactive:false }).addTo(map);
     });
-
     return { map, markerRefs };
   },
 
   buildLocationPanel(listId, rows, mapResult, color) {
     const listEl = document.getElementById(listId);
     if (!listEl) return;
-    
     const { map, markerRefs } = mapResult;
     const validRows = rows.filter(p => {
       const lat = parseFloat(p.latitude||0), lng = parseFloat(p.longitude||0);
       return !(lat===0 && lng===0);
     });
-    
     if (!validRows.length) {
       listEl.innerHTML = '<div class="do-empty" style="padding:24px 14px;font-size:12px;">No location data</div>';
       return;
     }
-    
     const sorted = [...validRows].sort((a,b) => parseInt(b.count||0) - parseInt(a.count||0));
-    
     let h = '';
     sorted.forEach((p,rank) => {
       const name  = p.name || 'Unknown';
@@ -1101,31 +1084,24 @@ const DataOverviewLazyLoader = {
         <div class="location-item-dot" style="background:${color};"></div>
       </div>`;
     });
-    
     listEl.innerHTML = h;
-    
     listEl.querySelectorAll('.location-item').forEach(item => {
       item.addEventListener('click', () => {
         const name = item.dataset.name;
         const targetRow = validRows.find(p => (p.name||'Unknown') === name);
         if (!targetRow) return;
-        
         const lat = parseFloat(targetRow.latitude||0);
         const lng = parseFloat(targetRow.longitude||0);
         if (lat===0 && lng===0) return;
-        
         map.flyTo([lat, lng], 8, { animate:true, duration:1 });
-        
         const ref = markerRefs.find(r => r && Math.abs(r.lat-lat)<0.001 && Math.abs(r.lng-lng)<0.001);
         if (ref) setTimeout(() => ref.marker.openPopup(), 800);
-        
         listEl.querySelectorAll('.location-item').forEach(i => i.classList.remove('active'));
         item.classList.add('active');
       });
     });
   },
 
-  /* ── Chart Renderers ── */
   renderDonut(labels, counts, colors) {
     const plugin = { id:'extLabel', afterDatasetsDraw(chart) {
       const ctx=chart.ctx, meta=chart.getDatasetMeta(0);
@@ -1222,19 +1198,6 @@ const DataOverviewLazyLoader = {
     });
   },
 
-  openHashtagModal(tags) {
-    let h = `<table class="do-tbl"><thead><tr><th style="width:40px;">#</th><th>Hashtag</th><th style="text-align:right;">Mention</th></tr></thead><tbody>`;
-    tags.forEach((tag,i) => {
-      let name=tag.hashtag||tag.name||tag.tag||'unknown';
-      if(!name.startsWith('#')) name='#'+name;
-      h+=`<tr><td class="do-tbl-rank">${i+1}</td><td class="do-tbl-name" style="color:var(--primary-green);font-weight:700;">${name}</td><td class="do-tbl-num">${(tag.mention||tag.size||tag.count||0).toLocaleString()}</td></tr>`;
-    });
-    h+='</tbody></table>';
-    document.getElementById('hashtagModalBody').innerHTML=h;
-    document.getElementById('hashtagModal').classList.add('active');
-    document.body.style.overflow='hidden';
-  },
-
   empty(msg='Tidak ada data') {
     return `<div class="do-empty"><svg class="do-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="do-empty-text">${msg}</span></div>`;
   },
@@ -1244,16 +1207,16 @@ const DataOverviewLazyLoader = {
 function closeHashtagModal() { document.getElementById('hashtagModal').classList.remove('active'); document.body.style.overflow='auto'; }
 function closeTrendingModal() { document.getElementById('trendingModal').classList.remove('active'); document.body.style.overflow='auto'; }
 
-window.addEventListener('click', e => { 
-  const hm=document.getElementById('hashtagModal'); 
-  if(e.target===hm) closeHashtagModal(); 
+window.addEventListener('click', e => {
+  const hm=document.getElementById('hashtagModal');
+  if(e.target===hm) closeHashtagModal();
   const tm=document.getElementById('trendingModal');
   if(e.target===tm) closeTrendingModal();
 });
 
-document.addEventListener('keydown', e => { 
-  if(e.key==='Escape'){ 
-    const hm=document.getElementById('hashtagModal'); 
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape'){
+    const hm=document.getElementById('hashtagModal');
     if(hm&&hm.classList.contains('active')) closeHashtagModal();
     const tm=document.getElementById('trendingModal');
     if(tm&&tm.classList.contains('active')) closeTrendingModal();

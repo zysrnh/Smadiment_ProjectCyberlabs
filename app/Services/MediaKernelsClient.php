@@ -946,37 +946,59 @@ class MediaKernelsClient
     // HASHTAGS & TOPICS
     // ─────────────────────────────────────────────────────
 
-    public function topHashtags(
-        string $projectId,
-        string $media,
-        string $startDate,
-        string $endDate,
-        int $startTime = 0,
-        int $endTime = 23
-    ): array {
-        try {
-            $token = $this->getToken();
+   public function topHashtags(
+    string $projectId,
+    string $media,
+    string $startDate,
+    string $endDate,
+    int $startTime = 0,
+    int $endTime = 23
+): array {
+    try {
+        $token = $this->getToken();
 
-            $res = Http::timeout(60)->acceptJson()->get(
-                $this->baseUrl() . '/top_hashtags/',
-                [
-                    'project_id' => $projectId,
-                    'media'      => $media,
-                    'start_date' => $startDate,
-                    'end_date'   => $endDate,
-                    'start_time' => $startTime,
-                    'end_time'   => $endTime,
-                    'token'      => $token,
-                ]
-            );
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/top_hashtags/',
+            [
+                'project_id' => $projectId,
+                'media'      => $media,
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'start_time' => $startTime,
+                'end_time'   => $endTime,
+                'token'      => $token,
+            ]
+        );
 
-            $res->throw();
-            return $this->parseJson($res);
-        } catch (\Exception $e) {
-            Log::warning('topHashtags API error', ['error' => $e->getMessage()]);
-            return ['data' => []];
-        }
+        Log::info('Top Hashtags HTTP status', [
+            'status'     => $res->status(),
+            'project_id' => $projectId,
+        ]);
+
+        $json = $this->parseJson($res);
+
+        Log::info('Top Hashtags API response', [
+            'project_id' => $projectId,
+            'is_array'   => is_array($json),
+            'data_count' => is_array($json) ? count($json) : 0,
+            'keys'       => is_array($json) ? array_keys($json) : 'not_array',
+            'first_item' => is_array($json) && count($json) > 0 ? $json[array_keys($json)[0]] : null,
+        ]);
+
+        $res->throw();
+        return $json;
+
+    } catch (\Exception $e) {
+        Log::error('topHashtags API error', [
+            'error'      => $e->getMessage(),
+            'project_id' => $projectId,
+            'class'      => get_class($e),
+            'line'       => $e->getLine(),
+            'file'       => $e->getFile(),
+        ]);
+        return ['data' => []];
     }
+}
 
     public function twitterTrendingTopics(
         string $startDate,
