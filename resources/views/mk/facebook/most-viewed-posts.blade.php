@@ -94,12 +94,7 @@
         box-shadow: 0 6px 20px rgba(3, 128, 71, 0.3);
     }
 
-    .apply-btn svg {
-        width: 18px;
-        height: 18px;
-        stroke: currentColor;
-        fill: none;
-    }
+    .apply-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; }
 
     /* Alert */
     .alert {
@@ -153,12 +148,7 @@
         transition: opacity 0.3s;
     }
 
-    .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-lg);
-        border-color: var(--primary-green);
-    }
-
+    .stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary-green); }
     .stat-card:hover::before { opacity: 1; }
 
     .stat-label {
@@ -197,18 +187,8 @@
         margin-bottom: 20px;
     }
 
-    .chart-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin: 0;
-    }
-
-    .chart-subtitle {
-        font-size: 13px;
-        color: var(--text-secondary);
-        margin: 4px 0 0 0;
-    }
+    .chart-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0; }
+    .chart-subtitle { font-size: 13px; color: var(--text-secondary); margin: 4px 0 0 0; }
 
     .chart-toggle-btn {
         padding: 8px 16px;
@@ -226,32 +206,16 @@
         gap: 6px;
     }
 
-    .chart-toggle-btn:hover {
-        background: var(--primary-green);
-        color: white;
-        border-color: var(--primary-green);
-    }
-
-    .chart-toggle-btn svg {
-        width: 14px; height: 14px;
-        stroke: currentColor; fill: none;
-        transition: transform 0.3s;
-    }
-
+    .chart-toggle-btn:hover { background: var(--primary-green); color: white; border-color: var(--primary-green); }
+    .chart-toggle-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; transition: transform 0.3s; }
     .chart-toggle-btn.collapsed svg { transform: rotate(180deg); }
 
-    .chart-body {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow: hidden;
-    }
+    .chart-body { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
+    .chart-body.hidden { max-height: 0; opacity: 0; margin-top: 0; }
 
-    .chart-body.hidden {
-        max-height: 0;
-        opacity: 0;
-        margin-top: 0;
-    }
-
-    /* Table Container */
+    /* ============================================
+       TABLE - FIXED LAYOUT WITH PROPER PROPORTIONS
+       ============================================ */
     .table-container {
         background: var(--bg-white);
         border-radius: 16px;
@@ -262,14 +226,34 @@
         z-index: 1;
     }
 
-    .table-wrapper { overflow-x: auto; }
+    .table-wrapper {
+        overflow-x: auto;
+        /* Custom scrollbar */
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-gray) transparent;
+    }
+
+    .table-wrapper::-webkit-scrollbar { height: 6px; }
+    .table-wrapper::-webkit-scrollbar-track { background: transparent; }
+    .table-wrapper::-webkit-scrollbar-thumb { background: var(--border-gray); border-radius: 3px; }
 
     .status-table {
         width: 100%;
+        min-width: 900px; /* Prevent over-squishing */
         border-collapse: separate;
         border-spacing: 0;
         font-family: 'Poppins', sans-serif;
+        table-layout: fixed; /* KEY FIX: fixed layout for predictable columns */
     }
+
+    /* Column width definitions */
+    .status-table .col-rank     { width: 52px; }
+    .status-table .col-author   { width: 180px; }
+    .status-table .col-post     { width: auto; } /* Takes remaining space */
+    .status-table .col-likes    { width: 96px; }
+    .status-table .col-comments { width: 96px; }
+    .status-table .col-shares   { width: 96px; }
+    .status-table .col-sentiment{ width: 110px; }
 
     .status-table thead {
         background: linear-gradient(135deg, var(--bg-gray-50) 0%, var(--bg-white) 100%);
@@ -277,7 +261,7 @@
     }
 
     .status-table th {
-        padding: 16px 20px;
+        padding: 14px 16px;
         text-align: left;
         font-size: 11px;
         font-weight: 700;
@@ -285,123 +269,130 @@
         text-transform: uppercase;
         letter-spacing: 0.8px;
         white-space: nowrap;
+        overflow: hidden;
     }
 
     .status-table th.text-center { text-align: center; }
-    .status-table th.text-right { text-align: right; }
+    .status-table th.text-right  { text-align: right; }
 
     .status-table tbody tr {
         border-bottom: 1px solid var(--bg-gray-100);
-        transition: all 0.2s;
+        transition: background 0.15s;
     }
 
     .status-table tbody tr:hover { background: var(--bg-gray-50); }
     .status-table tbody tr:last-child { border-bottom: none; }
 
     .status-table td {
-        padding: 16px 20px;
+        padding: 14px 16px;
         font-size: 13px;
         color: var(--text-primary);
         vertical-align: middle;
+        overflow: hidden;
     }
 
+    /* Rank */
     .rank-cell {
         font-weight: 700;
         color: var(--primary-green);
         font-size: 15px;
         text-align: center;
-        width: 60px;
+        padding: 14px 8px;
     }
 
-    .author-cell { min-width: 200px; }
-
-    .author-info { display: flex; align-items: center; gap: 12px; }
+    /* Author */
+    .author-cell { padding: 14px 12px; }
+    .author-info { display: flex; align-items: center; gap: 10px; }
 
     .author-avatar {
-        width: 44px; height: 44px;
+        width: 40px; height: 40px;
         border-radius: 50%;
         border: 2px solid var(--border-gray);
         flex-shrink: 0;
         background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
         display: flex; align-items: center; justify-content: center;
-        color: white; font-weight: 700; font-size: 16px; text-transform: uppercase;
+        color: white; font-weight: 700; font-size: 14px; text-transform: uppercase;
         overflow: hidden;
     }
 
-    .author-avatar img {
-        width: 100%; height: 100%;
-        border-radius: 50%; object-fit: cover;
-    }
-
+    .author-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
     .author-details { flex: 1; min-width: 0; }
 
     .author-name {
         font-weight: 700;
         color: var(--text-primary);
         margin: 0 0 2px 0;
-        font-size: 14px;
+        font-size: 13px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
     .author-handle {
-        font-size: 12px;
+        font-size: 11px;
         color: var(--text-secondary);
         font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
-    .status-cell { max-width: 450px; }
+    /* Post content cell */
+    .status-cell { padding: 14px 12px; }
 
     .status-content {
         font-size: 13px;
-        line-height: 1.5;
+        line-height: 1.55;
         color: var(--text-primary);
-        margin-bottom: 8px;
+        margin-bottom: 6px;
         display: -webkit-box;
-        -webkit-line-clamp: 3;
+        -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        word-wrap: break-word;
+        word-break: break-word;
+    }
+
+    .status-content.empty-content {
+        color: var(--text-muted);
+        font-style: italic;
     }
 
     .status-meta {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         font-size: 11px;
         color: var(--text-muted);
     }
 
     .status-meta-item { display: flex; align-items: center; gap: 4px; }
-    .status-meta-item svg { width: 13px; height: 13px; stroke: currentColor; fill: none; }
+    .status-meta-item svg { width: 12px; height: 12px; stroke: currentColor; fill: none; flex-shrink: 0; }
 
     .status-link {
         color: var(--accent-blue);
         text-decoration: none;
         font-weight: 600;
-        transition: all 0.2s;
+        font-size: 11px;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        transition: color 0.2s;
     }
 
-    .status-link:hover {
-        color: var(--primary-green);
-        text-decoration: underline;
-    }
+    .status-link:hover { color: var(--primary-green); }
+    .status-link svg { width: 11px; height: 11px; stroke: currentColor; fill: none; }
 
+    /* Stat cells */
     .stat-cell {
         text-align: right;
         font-weight: 700;
         white-space: nowrap;
+        padding: 14px 12px;
     }
 
     .stat-cell .stat-num {
         display: block;
-        font-size: 16px;
+        font-size: 15px;
         color: var(--text-primary);
         margin-bottom: 2px;
+        font-weight: 700;
     }
 
     .stat-cell .stat-lbl {
@@ -413,23 +404,24 @@
         letter-spacing: 0.3px;
     }
 
-    .likes-cell .stat-num    { color: #ef4444; }
+    .likes-cell    .stat-num { color: #ef4444; }
     .comments-cell .stat-num { color: #f59e0b; }
-    .shares-cell .stat-num   { color: var(--primary-green); }
+    .shares-cell   .stat-num { color: var(--primary-green); }
 
-    /* Sentiment Badge */
+    /* Sentiment */
+    .sentiment-cell { text-align: center; padding: 14px 8px; }
+
     .sentiment-badge {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 6px 12px;
+        padding: 5px 10px;
         border-radius: 20px;
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.4px;
         white-space: nowrap;
-        min-width: 80px;
     }
 
     .sentiment-badge.positive { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); color: #065f46; border: 1px solid #6ee7b7; }
@@ -454,12 +446,7 @@
         box-shadow: var(--shadow-sm);
     }
 
-    .export-btn:hover {
-        border-color: var(--primary-green);
-        color: var(--primary-green);
-        box-shadow: var(--shadow-md);
-    }
-
+    .export-btn:hover { border-color: var(--primary-green); color: var(--primary-green); box-shadow: var(--shadow-md); }
     .export-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
 
     /* Pagination */
@@ -474,11 +461,7 @@
         border-top: 1px solid var(--border-gray);
     }
 
-    .pagination-info {
-        font-size: 13px;
-        color: var(--text-secondary);
-        font-weight: 500;
-    }
+    .pagination-info { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
 
     .page-btn {
         width: 36px; height: 36px;
@@ -497,30 +480,31 @@
     .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* Skeleton */
-    .skeleton-line {
-        height: 16px;
-        background: linear-gradient(90deg, var(--bg-gray-50) 25%, var(--border-gray) 50%, var(--bg-gray-50) 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
-        border-radius: 8px;
-        margin-bottom: 12px;
-    }
-
-    .skeleton-avatar {
-        width: 44px; height: 44px; border-radius: 50%;
-        background: linear-gradient(90deg, var(--bg-gray-50) 25%, var(--border-gray) 50%, var(--bg-gray-50) 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
-    }
-
     @keyframes shimmer {
         0% { background-position: 200% 0; }
         100% { background-position: -200% 0; }
     }
 
+    .skeleton-line {
+        height: 14px;
+        background: linear-gradient(90deg, var(--bg-gray-50) 25%, var(--border-gray) 50%, var(--bg-gray-50) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+
+    .skeleton-avatar {
+        width: 40px; height: 40px; border-radius: 50%;
+        background: linear-gradient(90deg, var(--bg-gray-50) 25%, var(--border-gray) 50%, var(--bg-gray-50) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        flex-shrink: 0;
+    }
+
     /* Empty State */
     .empty-state { text-align: center; padding: 80px 20px; }
-    .empty-state svg { width: 64px; height: 64px; color: var(--text-secondary); margin-bottom: 16px; stroke: currentColor; fill: none; }
+    .empty-state svg { width: 56px; height: 56px; color: var(--text-secondary); margin-bottom: 16px; stroke: currentColor; fill: none; }
     .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px 0; }
     .empty-state p { font-size: 14px; color: var(--text-secondary); margin: 0; }
 
@@ -528,10 +512,10 @@
     .modal-overlay {
         display: none;
         position: fixed; inset: 0;
-        background: rgba(0,0,0,0.7);
-        backdrop-filter: blur(4px);
+        background: rgba(0, 0, 0, 0.75);
         z-index: 9999;
         align-items: center; justify-content: center;
+        /* NO backdrop-filter - causes transparency issues */
     }
 
     .modal-overlay.show,
@@ -543,13 +527,15 @@
     }
 
     .modal-content {
-        background: var(--bg-white);
+        background: #ffffff !important; /* Force solid white - no transparency */
         border-radius: 16px;
         width: 90%; max-width: 700px; max-height: 85vh;
         overflow: hidden;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
         animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex; flex-direction: column;
+        position: relative;
+        isolation: isolate; /* Creates new stacking context */
     }
 
     .modal-header {
@@ -645,18 +631,9 @@
         text-decoration: none;
     }
 
-    .modal-btn.primary {
-        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
-        color: white; border: none;
-    }
-
+    .modal-btn.primary { background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%); color: white; border: none; }
     .modal-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(3,128,71,0.3); }
-
-    .modal-btn.secondary {
-        background: var(--bg-white); color: var(--text-primary);
-        border: 1px solid var(--border-gray);
-    }
-
+    .modal-btn.secondary { background: var(--bg-white); color: var(--text-primary); border: 1px solid var(--border-gray); }
     .modal-btn.secondary:hover { background: var(--bg-gray-50); border-color: var(--primary-green); color: var(--primary-green); }
     .modal-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
 
@@ -670,12 +647,7 @@
         width: 100%; max-width: 400px;
     }
 
-    .date-picker-trigger:hover {
-        border-color: var(--primary-green);
-        background: var(--bg-white);
-        box-shadow: 0 0 0 3px rgba(3,128,71,0.1);
-    }
-
+    .date-picker-trigger:hover { border-color: var(--primary-green); background: var(--bg-white); box-shadow: 0 0 0 3px rgba(3,128,71,0.1); }
     .date-picker-trigger svg { width: 18px; height: 18px; stroke: currentColor; fill: none; flex-shrink: 0; }
     .date-picker-trigger span { flex: 1; text-align: left; }
 
@@ -689,10 +661,7 @@
 
     .date-picker-modal.show { display: flex; }
 
-    .date-picker-overlay {
-        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.5); cursor: pointer;
-    }
+    .date-picker-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); cursor: pointer; }
 
     .date-picker-container {
         position: relative; background: #ffffff; border-radius: 16px;
@@ -718,7 +687,6 @@
     .date-preset.active { background: var(--primary-green); color: white; }
 
     .date-picker-content { flex: 1; padding: 24px; display: flex; flex-direction: column; overflow: hidden; }
-
     .date-picker-header { display: flex; align-items: flex-start; gap: 20px; margin-bottom: 20px; }
 
     .nav-btn {
@@ -733,12 +701,9 @@
 
     .calendars-wrapper { display: flex; gap: 24px; flex: 1; min-height: 0; }
     .calendar { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-
     .calendar-month { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; text-align: center; }
-
     .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 8px; }
     .weekday { text-align: center; font-size: 11px; font-weight: 700; color: var(--text-secondary); padding: 8px 0; }
-
     .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
 
     .calendar-day {
@@ -754,8 +719,7 @@
     .calendar-day.today { border: 2px solid var(--primary-green); }
     .calendar-day.selected { background: var(--primary-green); color: white; }
     .calendar-day.in-range { background: rgba(3,128,71,0.1); color: var(--primary-green); }
-    .calendar-day.range-start,
-    .calendar-day.range-end { background: var(--primary-green); color: white; }
+    .calendar-day.range-start, .calendar-day.range-end { background: var(--primary-green); color: white; }
 
     .date-picker-display {
         padding: 16px 20px; background: var(--bg-gray-50);
@@ -783,16 +747,19 @@
 
     .apply-date-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(3,128,71,0.3); }
 
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .status-table .col-author { width: 150px; }
+        .status-table .col-likes, .status-table .col-comments, .status-table .col-shares { width: 80px; }
+        .status-table .col-sentiment { width: 100px; }
+    }
+
     @media (max-width: 768px) {
         .dashboard-container { padding: 16px; }
         .stats-grid { grid-template-columns: 1fr 1fr; }
         .filter-content { flex-direction: column; align-items: stretch; }
         .date-range-wrapper { flex-direction: column; }
         .apply-btn { width: 100%; justify-content: center; }
-        .status-table th, .status-table td { padding: 12px 10px; font-size: 12px; }
-        .author-cell { min-width: 150px; }
-        .status-cell { max-width: 200px; }
-        .status-content { -webkit-line-clamp: 2; font-size: 12px; }
         .modal-stats-grid { grid-template-columns: repeat(2, 1fr); }
         .date-picker-container { flex-direction: column; max-height: 85vh; overflow-y: auto; width: 95%; }
         .date-picker-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border-gray); border-radius: 16px 16px 0 0; flex-direction: row; overflow-x: auto; padding: 12px 16px; }
@@ -801,9 +768,10 @@
         .calendars-wrapper { flex-direction: column; gap: 16px; }
         .date-picker-header { flex-wrap: wrap; }
         .date-picker-trigger { max-width: 100%; }
-        .calendar-day { font-size: 12px; }
-        .weekday { font-size: 10px; }
         .cancel-btn, .apply-date-btn { flex: 1; }
+        .status-table { min-width: 700px; }
+        .status-table .col-author { width: 130px; }
+        .status-table .col-sentiment { width: 90px; }
     }
 </style>
 @endsection
@@ -885,18 +853,14 @@
             <div class="date-picker-content">
                 <div class="date-picker-header">
                     <button type="button" class="nav-btn" id="prevMonth">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="15 18 9 12 15 6"/>
-                        </svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
                     </button>
                     <div class="calendars-wrapper">
                         <div class="calendar" id="calendar1"></div>
                         <div class="calendar" id="calendar2"></div>
                     </div>
                     <button type="button" class="nav-btn" id="nextMonth">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="9 18 15 12 9 6"/>
-                        </svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                     </button>
                 </div>
                 <div class="date-picker-display">
@@ -947,16 +911,16 @@
         <div style="padding: 20px 24px; border-bottom: 2px solid var(--bg-gray-50);">
             <div style="display: flex; align-items: center; justify-content: space-between;">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,rgba(3,128,71,0.1) 0%,rgba(3,128,71,0.05) 100%);display:flex;align-items:center;justify-content:center;">
-                        <svg viewBox="0 0 24 24" style="width:28px;height:28px;color:var(--primary-green);fill:none;stroke:currentColor;stroke-width:2;">
+                    <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,rgba(3,128,71,0.1) 0%,rgba(3,128,71,0.05) 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg viewBox="0 0 24 24" style="width:24px;height:24px;color:var(--primary-green);fill:none;stroke:currentColor;stroke-width:2;">
                             <line x1="18" y1="20" x2="18" y2="10"/>
                             <line x1="12" y1="20" x2="12" y2="4"/>
                             <line x1="6" y1="20" x2="6" y2="14"/>
                         </svg>
                     </div>
                     <div>
-                        <h3 style="font-size:18px;font-weight:700;color:var(--text-primary);margin:0 0 4px 0;">Top 10 Posts by Engagement</h3>
-                        <p style="font-size:13px;color:var(--text-secondary);margin:0;">Ranked by likes + comments + shares</p>
+                        <h3 style="font-size:16px;font-weight:700;color:var(--text-primary);margin:0 0 2px 0;">Top 10 Posts by Engagement</h3>
+                        <p style="font-size:12px;color:var(--text-secondary);margin:0;">Ranked by likes + comments + shares</p>
                     </div>
                 </div>
                 <button class="chart-toggle-btn" id="chartToggleBtn" onclick="FBPostsLoader.toggleChart()">
@@ -966,53 +930,85 @@
             </div>
         </div>
         <div class="chart-body" id="chartBody" style="padding: 24px;">
-            <canvas id="topPostsChart" style="max-height: 400px;"></canvas>
+            <canvas id="topPostsChart" style="max-height: 380px;"></canvas>
         </div>
     </div>
 
     <!-- Table Container -->
     <div class="table-container">
         <div class="table-wrapper">
+
             <!-- Loading State -->
-            <table class="status-table" id="loadingTable" style="display: table;">
+            <table class="status-table" id="loadingTable" style="display: table; table-layout: fixed;">
+                <colgroup>
+                    <col class="col-rank">
+                    <col class="col-author">
+                    <col class="col-post">
+                    <col class="col-likes">
+                    <col class="col-comments">
+                    <col class="col-shares">
+                    <col class="col-sentiment">
+                </colgroup>
                 <thead>
                     <tr>
-                        <th style="width:60px;">#</th>
+                        <th class="text-center">#</th>
                         <th>Author</th>
                         <th>Post</th>
-                        <th class="text-right" style="width:110px;">❤️ Likes</th>
-                        <th class="text-right" style="width:110px;">💬 Comments</th>
-                        <th class="text-right" style="width:110px;">🔁 Shares</th>
-                        <th class="text-center" style="width:130px;">Sentiment</th>
+                        <th class="text-right">❤️ Likes</th>
+                        <th class="text-right">💬 Comments</th>
+                        <th class="text-right">🔁 Shares</th>
+                        <th class="text-center">Sentiment</th>
                     </tr>
                 </thead>
                 <tbody>
+                    @for($i = 0; $i < 5; $i++)
                     <tr>
-                        <td colspan="7" style="padding: 40px 20px;">
-                            <div style="display:flex;align-items:center;gap:16px;">
+                        <td style="text-align:center;">
+                            <div class="skeleton-line" style="width:24px;margin:0 auto;"></div>
+                        </td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:10px;">
                                 <div class="skeleton-avatar"></div>
-                                <div style="flex:1;">
-                                    <div class="skeleton-line" style="width:30%;"></div>
-                                    <div class="skeleton-line" style="width:60%;"></div>
-                                    <div class="skeleton-line" style="width:45%;"></div>
+                                <div style="flex:1;min-width:0;">
+                                    <div class="skeleton-line" style="width:80%;margin-bottom:6px;"></div>
+                                    <div class="skeleton-line" style="width:50%;height:10px;"></div>
                                 </div>
                             </div>
                         </td>
+                        <td>
+                            <div class="skeleton-line" style="width:90%;margin-bottom:6px;"></div>
+                            <div class="skeleton-line" style="width:70%;margin-bottom:6px;"></div>
+                            <div class="skeleton-line" style="width:40%;height:10px;"></div>
+                        </td>
+                        <td><div class="skeleton-line" style="width:60%;margin-left:auto;"></div></td>
+                        <td><div class="skeleton-line" style="width:60%;margin-left:auto;"></div></td>
+                        <td><div class="skeleton-line" style="width:60%;margin-left:auto;"></div></td>
+                        <td><div class="skeleton-line" style="width:70%;margin:0 auto;"></div></td>
                     </tr>
+                    @endfor
                 </tbody>
             </table>
 
             <!-- Actual Table -->
             <table class="status-table" id="statusTable" style="display: none;">
+                <colgroup>
+                    <col class="col-rank">
+                    <col class="col-author">
+                    <col class="col-post">
+                    <col class="col-likes">
+                    <col class="col-comments">
+                    <col class="col-shares">
+                    <col class="col-sentiment">
+                </colgroup>
                 <thead>
                     <tr>
-                        <th style="width:60px;">#</th>
+                        <th class="text-center">#</th>
                         <th>Author</th>
                         <th>Post</th>
-                        <th class="text-right" style="width:110px;">❤️ Likes</th>
-                        <th class="text-right" style="width:110px;">💬 Comments</th>
-                        <th class="text-right" style="width:110px;">🔁 Shares</th>
-                        <th class="text-center" style="width:130px;">Sentiment</th>
+                        <th class="text-right">❤️ Likes</th>
+                        <th class="text-right">💬 Comments</th>
+                        <th class="text-right">🔁 Shares</th>
+                        <th class="text-center">Sentiment</th>
                     </tr>
                 </thead>
                 <tbody id="statusTableBody"></tbody>
@@ -1021,11 +1017,7 @@
             <!-- Empty State -->
             <div id="emptyState" style="display: none;">
                 <div class="empty-state">
-                    <svg viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="8" x2="12" y2="12"/>
-                        <line x1="12" y1="16" x2="12.01" y2="16"/>
-                    </svg>
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                     <h3>No Facebook Posts Found</h3>
                     <p>No posts available for the selected date range.</p>
                 </div>
@@ -1041,10 +1033,7 @@
             <div class="modal-header">
                 <h3>Post Details</h3>
                 <button class="modal-close" onclick="FBPostsLoader.closeModal()">
-                    <svg viewBox="0 0 24 24">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
             </div>
             <div class="modal-body" id="modalBody"></div>
@@ -1232,9 +1221,9 @@ const FBPostsLoader = {
             data: {
                 labels: top10.map((p, i) => `#${i+1} ${(p.author?.name || p.name || 'Unknown').substring(0,20)}`),
                 datasets: [
-                    { label: 'Likes',    data: top10.map(p => p.likes    || 0), backgroundColor: 'rgba(239,68,68,0.8)',  borderColor: '#ef4444', borderWidth: 2, borderRadius: 8, stack: 'a' },
-                    { label: 'Comments', data: top10.map(p => p.comments || 0), backgroundColor: 'rgba(245,158,11,0.8)', borderColor: '#f59e0b', borderWidth: 2, borderRadius: 8, stack: 'a' },
-                    { label: 'Shares',   data: top10.map(p => p.shares   || 0), backgroundColor: 'rgba(3,128,71,0.8)',   borderColor: '#038047', borderWidth: 2, borderRadius: 8, stack: 'a' },
+                    { label: 'Likes',    data: top10.map(p => p.likes    || 0), backgroundColor: 'rgba(239,68,68,0.8)',  borderColor: '#ef4444', borderWidth: 2, borderRadius: 6, stack: 'a' },
+                    { label: 'Comments', data: top10.map(p => p.comments || 0), backgroundColor: 'rgba(245,158,11,0.8)', borderColor: '#f59e0b', borderWidth: 2, borderRadius: 6, stack: 'a' },
+                    { label: 'Shares',   data: top10.map(p => p.shares   || 0), backgroundColor: 'rgba(3,128,71,0.8)',   borderColor: '#038047', borderWidth: 2, borderRadius: 6, stack: 'a' },
                 ]
             },
             options: {
@@ -1258,8 +1247,8 @@ const FBPostsLoader = {
     },
 
     toggleChart() {
-        const chartBody = document.getElementById('chartBody');
-        const toggleBtn = document.getElementById('chartToggleBtn');
+        const chartBody  = document.getElementById('chartBody');
+        const toggleBtn  = document.getElementById('chartToggleBtn');
         const toggleText = document.getElementById('chartToggleText');
         if (chartBody.classList.contains('hidden')) {
             chartBody.classList.remove('hidden'); toggleBtn.classList.remove('collapsed'); toggleText.textContent = 'Hide Chart';
@@ -1274,28 +1263,41 @@ const FBPostsLoader = {
         const emptyState   = document.getElementById('emptyState');
 
         if (!this.allPosts.length) {
-            loadingTable.style.display = 'none'; statusTable.style.display = 'none'; emptyState.style.display = 'block'; return;
+            loadingTable.style.display = 'none';
+            statusTable.style.display  = 'none';
+            emptyState.style.display   = 'block';
+            return;
         }
 
-        const startIdx = (this.currentPage - 1) * this.postsPerPage;
+        const startIdx    = (this.currentPage - 1) * this.postsPerPage;
         const currentPosts = this.allPosts.slice(startIdx, startIdx + this.postsPerPage);
         document.getElementById('statusTableBody').innerHTML = currentPosts.map((post, idx) => this.createTableRow(post, startIdx + idx + 1, startIdx + idx)).join('');
 
-        loadingTable.style.display = 'none'; statusTable.style.display = 'table'; emptyState.style.display = 'none';
+        loadingTable.style.display = 'none';
+        statusTable.style.display  = 'table';
+        emptyState.style.display   = 'none';
         this.updatePagination();
     },
 
     createTableRow(post, rank, globalIdx) {
-        const authorName   = this.escapeHtml(post.author?.name || post.name || 'Unknown User');
-        const initials     = this.getInitials(authorName);
-        const avatar       = post.avatar_url || '';
-        const avatarHtml   = avatar ? `<img src="${avatar}" alt="${authorName}" onerror="this.parentElement.innerHTML='${initials}'">` : initials;
-        const content      = this.escapeHtml(post.content || '');
-        const likes        = post.likes    || 0;
-        const comments     = post.comments || 0;
-        const shares       = post.shares   || 0;
-        const sentimentClass = (post.sentiment_str || 'neutral').toLowerCase();
-        const date         = this.formatDate(post.date_created);
+        const authorName     = this.escapeHtml(post.author?.name || post.name || 'Unknown User');
+        const initials       = this.getInitials(authorName);
+        const rawAvatar      = post.avatar_url || '';
+        const avatar         = rawAvatar
+            ? (rawAvatar.startsWith('http') ? rawAvatar : `${window.location.origin}${rawAvatar}`)
+            : '';
+        const avatarHtml     = avatar
+            ? `<img src="${avatar}" alt="${authorName}" onerror="this.parentElement.innerHTML='${initials}'">`
+            : initials;
+        const rawContent     = post.content || '';
+        const content        = this.escapeHtml(rawContent);
+        const likes          = post.likes    || 0;
+        const comments       = post.comments || 0;
+        const shares         = post.shares   || 0;
+        const sentimentRaw   = (post.sentiment_str || 'neutral').toLowerCase();
+        const sentimentLabel = post.sentiment_str || 'Neutral';
+        const date           = this.formatDate(post.date_created);
+        const hasContent     = rawContent.trim().length > 0;
 
         return `<tr>
             <td class="rank-cell">${rank}</td>
@@ -1309,17 +1311,14 @@ const FBPostsLoader = {
                 </div>
             </td>
             <td class="status-cell">
-                <div class="status-content">${content}</div>
+                <div class="status-content${hasContent ? '' : ' empty-content'}">${hasContent ? content : '(No content available)'}</div>
                 <div class="status-meta">
                     <span class="status-meta-item">
                         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         ${date}
                     </span>
                     <a href="javascript:void(0)" onclick="FBPostsLoader.openModal(${globalIdx})" class="status-link">
-                        <svg viewBox="0 0 24 24" style="width:13px;height:13px;display:inline;vertical-align:middle;stroke:currentColor;fill:none;">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                            <circle cx="12" cy="12" r="3"/>
-                        </svg>
+                        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                         View
                     </a>
                 </div>
@@ -1336,8 +1335,8 @@ const FBPostsLoader = {
                 <span class="stat-num">${this.formatNumber(shares)}</span>
                 <span class="stat-lbl">Shares</span>
             </td>
-            <td class="text-center">
-                <span class="sentiment-badge ${sentimentClass}">${post.sentiment_str || 'Neutral'}</span>
+            <td class="sentiment-cell">
+                <span class="sentiment-badge ${sentimentRaw}">${sentimentLabel}</span>
             </td>
         </tr>`;
     },
@@ -1346,18 +1345,26 @@ const FBPostsLoader = {
         const post = this.allPosts[globalIdx];
         if (!post) return;
 
-        const authorName   = this.escapeHtml(post.author?.name || post.name || 'Unknown User');
-        const initials     = this.getInitials(authorName);
-        const avatar       = post.avatar_url || '';
-        const avatarHtml   = avatar ? `<img src="${avatar}" alt="${authorName}" onerror="this.parentElement.innerHTML='${initials}'">` : initials;
-        const content      = this.escapeHtml(post.content || '');
-        const likes        = post.likes    || 0;
-        const comments     = post.comments || 0;
-        const shares       = post.shares   || 0;
-        const engagement   = likes + comments + shares;
-        const sentimentClass = (post.sentiment_str || 'neutral').toLowerCase();
-        const date         = this.formatDate(post.date_created);
-        const fbUrl        = post.sub_id ? `https://facebook.com/${post.sub_id}` : null;
+        const authorName     = this.escapeHtml(post.author?.name || post.name || 'Unknown User');
+        const initials       = this.getInitials(authorName);
+        const rawAvatar      = post.avatar_url || '';
+        const avatar         = rawAvatar
+            ? (rawAvatar.startsWith('http') ? rawAvatar : `${window.location.origin}${rawAvatar}`)
+            : '';
+        const avatarHtml     = avatar
+            ? `<img src="${avatar}" alt="${authorName}" onerror="this.parentElement.innerHTML='${initials}'">`
+            : initials;
+        const rawContent     = post.content || '';
+        const content        = this.escapeHtml(rawContent);
+        const likes          = post.likes    || 0;
+        const comments       = post.comments || 0;
+        const shares         = post.shares   || 0;
+        const engagement     = likes + comments + shares;
+        const sentimentRaw   = (post.sentiment_str || 'neutral').toLowerCase();
+        const sentimentLabel = post.sentiment_str || 'Neutral';
+        const date           = this.formatDate(post.date_created);
+        const fbUrl          = post.sub_id ? `https://facebook.com/${post.sub_id}` : null;
+        const hasContent     = rawContent.trim().length > 0;
 
         document.getElementById('modalBody').innerHTML = `
             <div class="modal-author-section">
@@ -1365,14 +1372,12 @@ const FBPostsLoader = {
                 <div class="modal-author-info">
                     <h4 class="modal-author-name">${authorName}</h4>
                     <div class="modal-author-handle">Facebook</div>
+                    <span class="sentiment-badge ${sentimentRaw}" style="margin-top:4px;">${sentimentLabel}</span>
                 </div>
             </div>
-            <div class="modal-post-content">${content}</div>
+            <div class="modal-post-content">${hasContent ? content : '<span style="color:var(--text-muted);font-style:italic;">(No content available)</span>'}</div>
             <div class="modal-post-meta">
-                <svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;">
-                    <circle cx="12" cy="12" r="10"/>
-                    <polyline points="12 6 12 12 16 14"/>
-                </svg>
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 ${date}
             </div>
             <div class="modal-stats-grid">
@@ -1394,7 +1399,7 @@ const FBPostsLoader = {
                 </div>
             </div>
             <div class="modal-actions">
-                ${fbUrl ? `<a href="${fbUrl}" target="_blank" class="modal-btn primary">
+                ${fbUrl ? `<a href="${fbUrl}" target="_blank" rel="noopener" class="modal-btn primary">
                     <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                     View on Facebook
                 </a>` : ''}
@@ -1446,7 +1451,7 @@ const FBPostsLoader = {
         if (p < 1 || p > totalPages) return;
         this.currentPage = p;
         this.renderTable();
-        document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelector('.table-container:last-of-type')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     },
 
     exportCSV() {
@@ -1473,20 +1478,25 @@ const FBPostsLoader = {
     },
 
     formatDate(dateString) {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        if (!dateString) return '—';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString;
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        } catch(e) { return dateString; }
     },
 
     formatNumber(num) {
+        if (!num) return '0';
         if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
         if (num >= 1000)    return (num / 1000).toFixed(1) + 'K';
-        return (num || 0).toLocaleString();
+        return num.toLocaleString();
     },
 
     escapeHtml(text) {
+        if (!text) return '';
         const div = document.createElement('div');
-        div.textContent = text;
+        div.textContent = String(text);
         return div.innerHTML;
     },
 
@@ -1510,7 +1520,10 @@ const FBPostsLoader = {
                 <p>Unable to fetch Facebook posts. Please try again later.</p>
             </div>`;
         emptyState.style.display = 'block';
-        ['totalPosts','totalLikes','totalComments','totalShares'].forEach(id => document.getElementById(id).textContent = '0');
+        ['totalPosts','totalLikes','totalComments','totalShares'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '0';
+        });
     }
 };
 
@@ -1519,4 +1532,4 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', e => { if (e.key === 'Escape') FBPostsLoader.closeModal(); });
 });
 </script>
-@endsection
+@endsection 
