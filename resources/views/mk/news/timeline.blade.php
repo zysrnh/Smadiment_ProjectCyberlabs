@@ -1253,6 +1253,17 @@
       font-size: 11px;
     }
   }
+  .page-btn {
+  width: 36px; height: 36px; border-radius: 10px;
+  border: 1px solid var(--border-gray); background: var(--bg-white);
+  color: var(--text-primary); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Poppins', sans-serif;
+}
+.page-btn:hover:not(:disabled) { border-color: var(--primary-green); color: var(--primary-green); background: rgba(3,128,71,0.05); }
+.page-btn.active { background: var(--primary-green); color: white; border-color: var(--primary-green); }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 </style>
 @endsection
 
@@ -1530,15 +1541,8 @@
     </div>
 
     <!-- Pagination -->
-    <div class="pagination" id="pagination" style="display: none;">
-      <button class="pagination-btn" id="prevBtn" onclick="changePage(-1)">
-        ← Previous
-      </button>
-      <span class="pagination-info" id="pageInfo">Page 1 of 1</span>
-      <button class="pagination-btn" id="nextBtn" onclick="changePage(1)">
-        Next →
-      </button>
-    </div>
+   <!-- Pagination -->
+<div class="pagination" id="pagination" style="display: none; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;"></div>
   </div>
 
   @endif
@@ -2343,7 +2347,20 @@ if (projectId && startDate && endDate) {
     loading.style.display = 'none';
     canvas.style.display = 'block';
   }
+function getPageRange(cur, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  if (cur <= 4)         return [1, 2, 3, 4, 5, '...', total];
+  if (cur >= total - 3) return [1, '...', total-4, total-3, total-2, total-1, total];
+  return [1, '...', cur-1, cur, cur+1, '...', total];
+}
 
+function goPage(p) {
+  const totalPages = Math.ceil(filteredMentions.length / mentionsPerPage);
+  if (p < 1 || p > totalPages) return;
+  currentPage = p;
+  renderTimeline();
+  document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
   // ─── Render Timeline ──────────────────────────────────
   function renderTimeline() {
     const startIdx = (currentPage - 1) * mentionsPerPage;
@@ -2477,28 +2494,37 @@ if (projectId && startDate && endDate) {
   }
 
   function updatePagination() {
-    const totalPages = Math.ceil(filteredMentions.length / mentionsPerPage);
-    const pageInfo = document.getElementById('pageInfo');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
+  const totalPages = Math.ceil(filteredMentions.length / mentionsPerPage);
+  const wrapper    = document.getElementById('pagination');
+  const from       = filteredMentions.length ? (currentPage - 1) * mentionsPerPage + 1 : 0;
+  const to         = Math.min(currentPage * mentionsPerPage, filteredMentions.length);
 
-    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-    prevBtn.disabled = currentPage === 1;
-    nextBtn.disabled = currentPage === totalPages;
+  if (filteredMentions.length === 0) {
+    wrapper.style.display = 'none';
+    return;
   }
 
-  function changePage(direction) {
-    const totalPages = Math.ceil(filteredMentions.length / mentionsPerPage);
-    const newPage = currentPage + direction;
+  let html = `<div class="pagination-info">Showing ${formatNumber(from)}–${formatNumber(to)} of ${formatNumber(filteredMentions.length)} mentions</div>`;
+  html += `<div style="display:flex;align-items:center;gap:6px;">`;
 
-    if (newPage >= 1 && newPage <= totalPages) {
-      currentPage = newPage;
-      renderTimeline();
-      updatePagination();
-      
-      document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth' });
-    }
-  }
+  html += `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>`;
+
+  getPageRange(currentPage, totalPages).forEach(p => {
+    html += p === '...'
+      ? `<button class="page-btn" disabled style="cursor:default;">…</button>`
+      : `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`;
+  });
+
+  html += `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>`;
+
+  html += `</div>`;
+  wrapper.innerHTML     = html;
+  wrapper.style.display = 'flex';
+}
 
   function filterMentions() {
     const searchTerm = document.getElementById('timelineSearchInput').value.toLowerCase();
@@ -2519,9 +2545,9 @@ if (projectId && startDate && endDate) {
     renderTimeline();
   }
 
-  // Make functions globally accessible
-  window.changePage = changePage;
-  window.filterMentions = filterMentions;
+window.changePage    = changePage;
+window.goPage        = goPage;
+window.filterMentions = filterMentions;
 }
 </script>
 @endsection

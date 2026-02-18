@@ -310,13 +310,8 @@
     white-space: nowrap;
   }
 
-  .data-table th:first-child {
-    padding-left: 20px;
-  }
-
-  .data-table th:last-child {
-    padding-right: 20px;
-  }
+  .data-table th:first-child { padding-left: 20px; }
+  .data-table th:last-child { padding-right: 20px; }
 
   .data-table td {
     padding: 16px;
@@ -326,13 +321,8 @@
     vertical-align: middle;
   }
 
-  .data-table td:first-child {
-    padding-left: 20px;
-  }
-
-  .data-table td:last-child {
-    padding-right: 20px;
-  }
+  .data-table td:first-child { padding-left: 20px; }
+  .data-table td:last-child { padding-right: 20px; }
 
   .data-table tbody tr {
     transition: all 0.2s;
@@ -469,14 +459,8 @@
   }
 
   @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
   }
 
   /* Alert */
@@ -584,14 +568,8 @@
   }
 
   @keyframes slideUp {
-    from { 
-      opacity: 0;
-      transform: translateY(20px) scale(0.95);
-    }
-    to { 
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
 
   /* Sidebar with Presets */
@@ -621,15 +599,8 @@
     transition: all 0.2s;
   }
 
-  .date-preset:hover {
-    background: var(--bg-white);
-    color: var(--primary-green);
-  }
-
-  .date-preset.active {
-    background: var(--primary-green);
-    color: white;
-  }
+  .date-preset:hover { background: var(--bg-white); color: var(--primary-green); }
+  .date-preset.active { background: var(--primary-green); color: white; }
 
   /* Calendar Content */
   .date-picker-content {
@@ -667,10 +638,7 @@
     color: white;
   }
 
-  .nav-btn svg {
-    width: 20px;
-    height: 20px;
-  }
+  .nav-btn svg { width: 20px; height: 20px; }
 
   /* Calendars Wrapper */
   .calendars-wrapper {
@@ -732,39 +700,13 @@
     padding: 0;
   }
 
-  .calendar-day:hover:not(.disabled):not(.other-month) {
-    background: var(--bg-gray-100);
-  }
-
-  .calendar-day.other-month {
-    color: #cbd5e1;
-    cursor: default;
-  }
-
-  .calendar-day.disabled {
-    color: #e2e8f0;
-    cursor: not-allowed;
-  }
-
-  .calendar-day.today {
-    border: 2px solid var(--primary-green);
-  }
-
-  .calendar-day.selected {
-    background: var(--primary-green);
-    color: white;
-  }
-
-  .calendar-day.in-range {
-    background: rgba(3, 128, 71, 0.1);
-    color: var(--primary-green);
-  }
-
-  .calendar-day.range-start,
-  .calendar-day.range-end {
-    background: var(--primary-green);
-    color: white;
-  }
+  .calendar-day:hover:not(.disabled):not(.other-month) { background: var(--bg-gray-100); }
+  .calendar-day.other-month { color: #cbd5e1; cursor: default; }
+  .calendar-day.disabled { color: #e2e8f0; cursor: not-allowed; }
+  .calendar-day.today { border: 2px solid var(--primary-green); }
+  .calendar-day.selected { background: var(--primary-green); color: white; }
+  .calendar-day.in-range { background: rgba(3, 128, 71, 0.1); color: var(--primary-green); }
+  .calendar-day.range-start, .calendar-day.range-end { background: var(--primary-green); color: white; }
 
   /* Date Display */
   .date-picker-display {
@@ -801,14 +743,8 @@
     border: none;
   }
 
-  .cancel-btn {
-    background: var(--bg-gray-100);
-    color: var(--text-primary);
-  }
-
-  .cancel-btn:hover {
-    background: var(--border-gray);
-  }
+  .cancel-btn { background: var(--bg-gray-100); color: var(--text-primary); }
+  .cancel-btn:hover { background: var(--border-gray); }
 
   .apply-date-btn {
     background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
@@ -821,40 +757,17 @@
     box-shadow: 0 6px 20px rgba(3, 128, 71, 0.3);
   }
 
-  /* Pagination */
+  /* Pagination — numbered style */
   .pagination {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px;
-    padding: 20px;
+    gap: 12px;
+    padding: 20px 24px;
     background: var(--bg-white);
     border-top: 1px solid var(--border-gray);
     margin-top: 16px;
-  }
-
-  .pagination-btn {
-    padding: 8px 16px;
-    background: var(--bg-white);
-    border: 1px solid var(--border-gray);
-    border-radius: 8px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .pagination-btn:hover:not(:disabled) {
-    background: var(--primary-green);
-    color: white;
-    border-color: var(--primary-green);
-  }
-
-  .pagination-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+    flex-wrap: wrap;
   }
 
   .pagination-info {
@@ -863,106 +776,66 @@
     font-weight: 500;
   }
 
+  .page-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid var(--border-gray);
+    background: var(--bg-white);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .page-btn:hover:not(:disabled) {
+    border-color: var(--primary-green);
+    color: var(--primary-green);
+    background: rgba(3, 128, 71, 0.05);
+  }
+
+  .page-btn.active {
+    background: var(--primary-green);
+    color: white;
+    border-color: var(--primary-green);
+  }
+
+  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
   /* Responsive */
   @media (max-width: 1024px) {
-    .dashboard-container {
-      padding: 16px;
-    }
-
-    .stats-grid {
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-    }
-
-    .filter-content {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .date-range-wrapper {
-      flex-direction: column;
-    }
-
-    .apply-btn,
-    .filter-select {
-      width: 100%;
-      justify-content: center;
-    }
+    .dashboard-container { padding: 16px; }
+    .stats-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .filter-content { flex-direction: column; align-items: stretch; }
+    .date-range-wrapper { flex-direction: column; }
+    .apply-btn, .filter-select { width: 100%; justify-content: center; }
   }
 
   @media (max-width: 768px) {
-    .stat-value {
-      font-size: 28px;
-    }
-
-    .table-search {
-      width: 100%;
-    }
-
-    .page-header h1 {
-      font-size: 24px;
-    }
-
-    .data-table {
-      font-size: 12px;
-    }
-
-    .data-table th,
-    .data-table td {
-      padding: 10px 12px;
-    }
-
-    .date-picker-trigger,
-    .filter-select {
-      max-width: 100%;
-    }
-
-    .date-picker-container {
-      flex-direction: column;
-      max-height: 85vh;
-      overflow-y: auto;
-      width: 95%;
-    }
-
+    .stat-value { font-size: 28px; }
+    .table-search { width: 100%; }
+    .page-header h1 { font-size: 24px; }
+    .data-table { font-size: 12px; }
+    .data-table th, .data-table td { padding: 10px 12px; }
+    .date-picker-trigger, .filter-select { max-width: 100%; }
+    .date-picker-container { flex-direction: column; max-height: 85vh; overflow-y: auto; width: 95%; }
     .date-picker-sidebar {
-      width: 100%;
-      border-right: none;
-      border-bottom: 1px solid var(--border-gray);
-      border-radius: 16px 16px 0 0;
-      flex-direction: row;
-      overflow-x: auto;
-      padding: 12px 16px;
+      width: 100%; border-right: none; border-bottom: 1px solid var(--border-gray);
+      border-radius: 16px 16px 0 0; flex-direction: row; overflow-x: auto; padding: 12px 16px;
     }
-
-    .date-preset {
-      white-space: nowrap;
-    }
-
-    .date-picker-content {
-      padding: 20px 16px;
-    }
-
-    .calendars-wrapper {
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .date-picker-header {
-      flex-wrap: wrap;
-    }
-
-    .calendar-day {
-      font-size: 12px;
-    }
-
-    .weekday {
-      font-size: 10px;
-    }
-
-    .cancel-btn,
-    .apply-date-btn {
-      flex: 1;
-    }
+    .date-preset { white-space: nowrap; }
+    .date-picker-content { padding: 20px 16px; }
+    .calendars-wrapper { flex-direction: column; gap: 16px; }
+    .date-picker-header { flex-wrap: wrap; }
+    .calendar-day { font-size: 12px; }
+    .weekday { font-size: 10px; }
+    .cancel-btn, .apply-date-btn { flex: 1; }
+    .pagination { padding: 16px; }
   }
 </style>
 @endsection
@@ -995,7 +868,6 @@
       <input type="hidden" name="end_date" id="hiddenEndDate" value="{{ $endDate }}">
       
       <div class="filter-content">
-        <!-- Date Range -->
         <div class="filter-label">
           <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; display: inline; vertical-align: middle; margin-right: 6px; stroke: currentColor; fill: none;">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -1021,7 +893,6 @@
           </button>
         </div>
 
-        <!-- News Type Filter -->
         <div class="filter-label">
           <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; display: inline; vertical-align: middle; margin-right: 6px; stroke: currentColor; fill: none;">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -1050,7 +921,6 @@
   <div class="date-picker-modal" id="datePickerModal">
     <div class="date-picker-overlay"></div>
     <div class="date-picker-container">
-      <!-- Sidebar with Presets -->
       <div class="date-picker-sidebar">
         <button type="button" class="date-preset" data-preset="today">Today</button>
         <button type="button" class="date-preset" data-preset="yesterday">Yesterday</button>
@@ -1060,35 +930,26 @@
         <button type="button" class="date-preset" data-preset="lastmonth">Last Month</button>
         <button type="button" class="date-preset active" data-preset="custom">Custom Range</button>
       </div>
-      
-      <!-- Calendar Content -->
       <div class="date-picker-content">
-        <!-- Navigation Header -->
         <div class="date-picker-header">
           <button type="button" class="nav-btn" id="prevMonth">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="15 18 9 12 15 6"/>
             </svg>
           </button>
-          
           <div class="calendars-wrapper">
             <div class="calendar" id="calendar1"></div>
             <div class="calendar" id="calendar2"></div>
           </div>
-          
           <button type="button" class="nav-btn" id="nextMonth">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="9 18 15 12 9 6"/>
             </svg>
           </button>
         </div>
-        
-        <!-- Selected Date Display -->
         <div class="date-picker-display">
           <span id="selectedRangeText">{{ $startDate }} to {{ $endDate }}</span>
         </div>
-        
-        <!-- Footer Buttons -->
         <div class="date-picker-footer">
           <button type="button" class="cancel-btn">Cancel</button>
           <button type="button" class="apply-date-btn" id="applyDatePicker">Apply</button>
@@ -1100,7 +961,6 @@
   <!-- Stats Grid -->
   <div class="stats-grid">
     
-    <!-- Total Publishers Card -->
     <div class="stat-card" data-lazy-load="publishers">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
@@ -1110,19 +970,13 @@
           </svg>
         </div>
       </div>
-      
       <div class="stat-label">Total Publishers</div>
-      
       <div id="totalPublishersValue" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 120px;"></div>
       </div>
-      
-      <div class="stat-progress">
-        <div class="stat-progress-bar" style="width: 0%"></div>
-      </div>
+      <div class="stat-progress"><div class="stat-progress-bar" style="width: 0%"></div></div>
     </div>
 
-    <!-- Total Articles Card -->
     <div class="stat-card" data-lazy-load="publishers">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
@@ -1135,19 +989,13 @@
           </svg>
         </div>
       </div>
-      
       <div class="stat-label">Total Articles</div>
-      
       <div id="totalArticlesValue" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 140px;"></div>
       </div>
-      
-      <div class="stat-progress">
-        <div class="stat-progress-bar" style="width: 0%"></div>
-      </div>
+      <div class="stat-progress"><div class="stat-progress-bar" style="width: 0%"></div></div>
     </div>
 
-    <!-- Top Publisher Card -->
     <div class="stat-card" data-lazy-load="publishers">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
@@ -1156,16 +1004,11 @@
           </svg>
         </div>
       </div>
-      
       <div class="stat-label">Top Publisher</div>
-      
       <div id="topPublisherValue" class="stat-value-wrapper">
         <div class="loading-skeleton skeleton-text" style="width: 160px;"></div>
       </div>
-      
-      <div class="stat-progress">
-        <div class="stat-progress-bar" style="width: 0%"></div>
-      </div>
+      <div class="stat-progress"><div class="stat-progress-bar" style="width: 0%"></div></div>
     </div>
 
   </div>
@@ -1189,16 +1032,8 @@
     <div id="publishersLoading" class="loading-skeleton" style="height: 500px;"></div>
     <div id="publishersTable" style="display: none; overflow-x: auto;"></div>
     
-    <!-- Pagination -->
-    <div class="pagination" id="pagination" style="display: none;">
-      <button class="pagination-btn" id="prevBtn" onclick="changePage(-1)">
-        ← Previous
-      </button>
-      <span class="pagination-info" id="pageInfo">Page 1 of 1</span>
-      <button class="pagination-btn" id="nextBtn" onclick="changePage(1)">
-        Next →
-      </button>
-    </div>
+    <!-- Pagination — numbered style -->
+    <div class="pagination" id="pagination" style="display: none;"></div>
   </div>
 
   @endif
@@ -1246,21 +1081,15 @@
 
   function setupEventListeners() {
     const trigger = document.getElementById('datePickerTrigger');
-    if (trigger) {
-      trigger.addEventListener('click', openDatePicker);
-    }
+    if (trigger) trigger.addEventListener('click', openDatePicker);
 
     const overlay = document.querySelector('.date-picker-overlay');
-    if (overlay) {
-      overlay.addEventListener('click', closeDatePicker);
-    }
+    if (overlay) overlay.addEventListener('click', closeDatePicker);
 
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         const modal = document.getElementById('datePickerModal');
-        if (modal && modal.classList.contains('show')) {
-          closeDatePicker();
-        }
+        if (modal && modal.classList.contains('show')) closeDatePicker();
       }
     });
 
@@ -1288,14 +1117,10 @@
     }
 
     const applyBtn = document.getElementById('applyDatePicker');
-    if (applyBtn) {
-      applyBtn.addEventListener('click', applyDateSelection);
-    }
+    if (applyBtn) applyBtn.addEventListener('click', applyDateSelection);
 
     const cancelBtn = document.querySelector('.cancel-btn');
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', closeDatePicker);
-    }
+    if (cancelBtn) cancelBtn.addEventListener('click', closeDatePicker);
   }
 
   function openDatePicker() {
@@ -1349,7 +1174,6 @@
       currentMonth1 = new Date(selectedStartDate);
       currentMonth2 = new Date(selectedStartDate);
       currentMonth2.setMonth(currentMonth2.getMonth() + 1);
-      
       updateDateDisplay();
       renderCalendars();
     }
@@ -1358,15 +1182,10 @@
   function applyDateSelection() {
     const start = formatDate(selectedStartDate);
     const end = formatDate(selectedEndDate);
-    
     document.getElementById('hiddenStartDate').value = start;
     document.getElementById('hiddenEndDate').value = end;
-    
     const displayElement = document.getElementById('dateRangeDisplay');
-    if (displayElement) {
-      displayElement.textContent = `${start} to ${end}`;
-    }
-    
+    if (displayElement) displayElement.textContent = `${start} to ${end}`;
     closeDatePicker();
   }
 
@@ -1401,18 +1220,15 @@
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    // Add empty cells for days before the first day of the month
     const firstDayOfWeek = firstDay.getDay();
     for (let i = 0; i < firstDayOfWeek; i++) {
       const prevMonthDay = prevLastDay.getDate() - (firstDayOfWeek - 1 - i);
       html += `<button type="button" class="calendar-day other-month" disabled>${prevMonthDay}</button>`;
     }
     
-    // Add all days of the current month
     for (let day = 1; day <= lastDay.getDate(); day++) {
       const date = new Date(year, monthNum, day);
       date.setHours(0, 0, 0, 0);
-      
       const dateStr = formatDate(date);
       let classes = 'calendar-day';
       
@@ -1420,20 +1236,15 @@
       if (date > today) classes += ' disabled';
       
       if (selectedStartDate && selectedEndDate) {
-        if (isSameDay(date, selectedStartDate)) {
-          classes += ' selected range-start';
-        } else if (isSameDay(date, selectedEndDate)) {
-          classes += ' selected range-end';
-        } else if (date > selectedStartDate && date < selectedEndDate) {
-          classes += ' in-range';
-        }
+        if (isSameDay(date, selectedStartDate))      classes += ' selected range-start';
+        else if (isSameDay(date, selectedEndDate))   classes += ' selected range-end';
+        else if (date > selectedStartDate && date < selectedEndDate) classes += ' in-range';
       }
       
       const disabled = date > today ? 'disabled' : '';
       html += `<button type="button" class="${classes}" data-date="${dateStr}" ${disabled}>${day}</button>`;
     }
     
-    // Add empty cells for days after the last day of the month
     const lastDayOfWeek = lastDay.getDay();
     const remainingCells = lastDayOfWeek === 6 ? 0 : 6 - lastDayOfWeek;
     for (let i = 1; i <= remainingCells; i++) {
@@ -1443,7 +1254,6 @@
     html += '</div>';
     calendar.innerHTML = html;
     
-    // Add click listeners to enabled date buttons
     calendar.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)').forEach(btn => {
       btn.addEventListener('click', handleDateClick);
     });
@@ -1478,19 +1288,14 @@
 
   function updateDateDisplay() {
     if (!selectedStartDate || !selectedEndDate) return;
-    
     const start = formatDate(selectedStartDate);
     const end = formatDate(selectedEndDate);
-    
     const displayElement = document.getElementById('selectedRangeText');
-    if (displayElement) {
-      displayElement.textContent = `${start} to ${end}`;
-    }
+    if (displayElement) displayElement.textContent = `${start} to ${end}`;
   }
 
   function formatDate(date) {
     if (!date) return '';
-    
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -1499,7 +1304,6 @@
 
   function isSameDay(date1, date2) {
     if (!date1 || !date2) return false;
-    
     return date1.getFullYear() === date2.getFullYear() &&
            date1.getMonth() === date2.getMonth() &&
            date1.getDate() === date2.getDate();
@@ -1525,25 +1329,16 @@ if (projectId && startDate && endDate) {
   }
 
   // Lazy loading setup
-  const lazyLoadConfig = {
-    rootMargin: '50px',
-    threshold: 0.01
-  };
-
+  const lazyLoadConfig = { rootMargin: '50px', threshold: 0.01 };
   const loadedComponents = new Set();
 
   const lazyLoadObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const componentId = entry.target.dataset.lazyLoad;
-        
         if (!loadedComponents.has(componentId)) {
           loadedComponents.add(componentId);
-          
-          if (componentId === 'publishers') {
-            loadPublishers();
-          }
-          
+          if (componentId === 'publishers') loadPublishers();
           lazyLoadObserver.unobserve(entry.target);
         }
       }
@@ -1551,13 +1346,8 @@ if (projectId && startDate && endDate) {
   }, lazyLoadConfig);
 
   document.addEventListener('DOMContentLoaded', function() {
-    // Set news type in select
     const newsTypeSelect = document.getElementById('newsTypeSelect');
-    if (newsTypeSelect) {
-      newsTypeSelect.value = newsType;
-    }
-
-    // Observe lazy load elements
+    if (newsTypeSelect) newsTypeSelect.value = newsType;
     document.querySelectorAll('[data-lazy-load]').forEach(element => {
       lazyLoadObserver.observe(element);
     });
@@ -1574,43 +1364,29 @@ if (projectId && startDate && endDate) {
       if (result.success && result.data) {
         allPublishers = result.data;
         
-        // Update stats
         const totalPublishers = result.meta.total_publishers || 0;
-        const totalArticles = result.meta.total_articles || 0;
-        const topPublisher = allPublishers.length > 0 ? allPublishers[0].domain : 'N/A';
+        const totalArticles   = result.meta.total_articles  || 0;
+        const topPublisher    = allPublishers.length > 0 ? allPublishers[0].domain : 'N/A';
         
-        // Total Publishers
-        const totalPubEl = document.getElementById('totalPublishersValue');
-        totalPubEl.innerHTML = `<div class="stat-value">${formatNumber(totalPublishers)}</div>`;
-        totalPubEl.classList.add('data-loaded');
+        document.getElementById('totalPublishersValue').innerHTML = `<div class="stat-value">${formatNumber(totalPublishers)}</div>`;
+        document.getElementById('totalPublishersValue').classList.add('data-loaded');
+
+        document.getElementById('totalArticlesValue').innerHTML = `<div class="stat-value">${formatNumber(totalArticles)}</div>`;
+        document.getElementById('totalArticlesValue').classList.add('data-loaded');
+
+        document.getElementById('topPublisherValue').innerHTML = `<div class="stat-value" style="font-size: 20px; word-break: break-all;">${topPublisher}</div>`;
+        document.getElementById('topPublisherValue').classList.add('data-loaded');
         
-        // Total Articles
-        const totalArticlesEl = document.getElementById('totalArticlesValue');
-        totalArticlesEl.innerHTML = `<div class="stat-value">${formatNumber(totalArticles)}</div>`;
-        totalArticlesEl.classList.add('data-loaded');
-        
-        // Top Publisher
-        const topPubEl = document.getElementById('topPublisherValue');
-        topPubEl.innerHTML = `<div class="stat-value" style="font-size: 20px; word-break: break-all;">${topPublisher}</div>`;
-        topPubEl.classList.add('data-loaded');
-        
-        // Animate progress bars
         const statCards = document.querySelectorAll('.stat-card[data-lazy-load="publishers"]');
         animateProgress(statCards[0], 85);
         animateProgress(statCards[1], 92);
         animateProgress(statCards[2], 100);
         
-        // Render table
+        document.getElementById('publishersLoading').style.display = 'none';
+        document.getElementById('publishersTable').style.display   = 'block';
+
         renderPublishersTable();
         updatePagination();
-        
-        const loading = document.getElementById('publishersLoading');
-        const table = document.getElementById('publishersTable');
-        const pagination = document.getElementById('pagination');
-        
-        loading.style.display = 'none';
-        table.style.display = 'block';
-        pagination.style.display = 'flex';
       }
     } catch (error) {
       console.error('Error loading publishers:', error);
@@ -1630,30 +1406,26 @@ if (projectId && startDate && endDate) {
       return;
     }
     
-    const startIdx = (currentPage - 1) * publishersPerPage;
-    const endIdx = startIdx + publishersPerPage;
-    const currentData = allPublishers.slice(startIdx, endIdx);
-    
+    const startIdx     = (currentPage - 1) * publishersPerPage;
+    const currentData  = allPublishers.slice(startIdx, startIdx + publishersPerPage);
     const totalArticles = allPublishers.reduce((sum, p) => sum + p.count, 0);
     
     let html = '<table class="data-table"><thead><tr>';
     html += '<th>RANK</th><th>PUBLISHER</th><th>ARTICLES</th><th>PERCENTAGE</th></tr></thead><tbody>';
     
     currentData.forEach((item, index) => {
-      const rank = startIdx + index + 1;
-      const domain = item.domain || 'Unknown';
-      const count = item.count || 0;
+      const rank       = startIdx + index + 1;
+      const domain     = item.domain || 'Unknown';
+      const count      = item.count  || 0;
       const percentage = totalArticles > 0 ? ((count / totalArticles) * 100).toFixed(2) : 0;
       
       let rankClass = 'rank-other';
-      if (rank === 1) rankClass = 'rank-1';
+      if (rank === 1)      rankClass = 'rank-1';
       else if (rank === 2) rankClass = 'rank-2';
       else if (rank === 3) rankClass = 'rank-3';
       
       html += `<tr>
-        <td>
-          <div class="rank-badge ${rankClass}">${rank}</div>
-        </td>
+        <td><div class="rank-badge ${rankClass}">${rank}</div></td>
         <td>
           <a href="http://${domain}" target="_blank" class="publisher-link">
             ${domain}
@@ -1674,29 +1446,55 @@ if (projectId && startDate && endDate) {
     container.classList.add('data-loaded');
   }
 
-  function updatePagination() {
-    const totalPages = Math.ceil(allPublishers.length / publishersPerPage);
-    const pageInfo = document.getElementById('pageInfo');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
+  // ─── Helpers ─────────────────────────────────────────
 
-    if (pageInfo) pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-    if (prevBtn) prevBtn.disabled = currentPage === 1;
-    if (nextBtn) nextBtn.disabled = currentPage === totalPages;
+  function getPageRange(cur, total) {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    if (cur <= 4)          return [1, 2, 3, 4, 5, '...', total];
+    if (cur >= total - 3)  return [1, '...', total-4, total-3, total-2, total-1, total];
+    return [1, '...', cur-1, cur, cur+1, '...', total];
   }
 
-  function changePage(direction) {
+  function updatePagination() {
     const totalPages = Math.ceil(allPublishers.length / publishersPerPage);
-    const newPage = currentPage + direction;
+    const wrapper    = document.getElementById('pagination');
+    const from       = allPublishers.length ? (currentPage - 1) * publishersPerPage + 1 : 0;
+    const to         = Math.min(currentPage * publishersPerPage, allPublishers.length);
 
-    if (newPage >= 1 && newPage <= totalPages) {
-      currentPage = newPage;
-      renderPublishersTable();
-      updatePagination();
-      
-      // Scroll to top of table
-      document.querySelector('.table-section').scrollIntoView({ behavior: 'smooth' });
+    if (allPublishers.length === 0) {
+      wrapper.style.display = 'none';
+      return;
     }
+
+    let html = `<div class="pagination-info">Showing ${formatNumber(from)}–${formatNumber(to)} of ${formatNumber(allPublishers.length)} publishers</div>`;
+    html += `<div style="display:flex;align-items:center;gap:6px;">`;
+
+    html += `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>`;
+
+    getPageRange(currentPage, totalPages).forEach(p => {
+      html += p === '...'
+        ? `<button class="page-btn" disabled style="cursor:default;">…</button>`
+        : `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`;
+    });
+
+    html += `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>`;
+
+    html += `</div>`;
+    wrapper.innerHTML     = html;
+    wrapper.style.display = 'flex';
+  }
+
+  function goPage(p) {
+    const totalPages = Math.ceil(allPublishers.length / publishersPerPage);
+    if (p < 1 || p > totalPages) return;
+    currentPage = p;
+    renderPublishersTable();
+    updatePagination();
+    document.querySelector('.table-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function filterPublishers() {
@@ -1706,37 +1504,29 @@ if (projectId && startDate && endDate) {
       currentPage = 1;
       renderPublishersTable();
       updatePagination();
-      document.getElementById('pagination').style.display = 'flex';
       return;
     }
     
-    const filtered = allPublishers.filter(pub => {
-      const domain = (pub.domain || '').toLowerCase();
-      return domain.includes(searchTerm);
-    });
-    
-    // Render filtered results without pagination
-    const container = document.getElementById('publishersTable');
+    const filtered      = allPublishers.filter(pub => (pub.domain || '').toLowerCase().includes(searchTerm));
+    const container     = document.getElementById('publishersTable');
     const totalArticles = allPublishers.reduce((sum, p) => sum + p.count, 0);
     
     let html = '<table class="data-table"><thead><tr>';
     html += '<th>RANK</th><th>PUBLISHER</th><th>ARTICLES</th><th>PERCENTAGE</th></tr></thead><tbody>';
     
     filtered.forEach((item, index) => {
-      const rank = index + 1;
-      const domain = item.domain || 'Unknown';
-      const count = item.count || 0;
+      const rank       = index + 1;
+      const domain     = item.domain || 'Unknown';
+      const count      = item.count  || 0;
       const percentage = totalArticles > 0 ? ((count / totalArticles) * 100).toFixed(2) : 0;
       
       let rankClass = 'rank-other';
-      if (rank === 1) rankClass = 'rank-1';
+      if (rank === 1)      rankClass = 'rank-1';
       else if (rank === 2) rankClass = 'rank-2';
       else if (rank === 3) rankClass = 'rank-3';
       
       html += `<tr>
-        <td>
-          <div class="rank-badge ${rankClass}">${rank}</div>
-        </td>
+        <td><div class="rank-badge ${rankClass}">${rank}</div></td>
         <td>
           <a href="http://${domain}" target="_blank" class="publisher-link">
             ${domain}
@@ -1761,7 +1551,6 @@ if (projectId && startDate && endDate) {
 
   function addLoadingBadge(card) {
     if (!card || card.querySelector('.lazy-loading-badge')) return;
-    
     const badge = document.createElement('div');
     badge.className = 'lazy-loading-badge';
     badge.innerHTML = '<div class="spinner"></div><span>Loading...</span>';
@@ -1781,15 +1570,12 @@ if (projectId && startDate && endDate) {
   function animateProgress(card, percentage) {
     const progressBar = card.querySelector('.stat-progress-bar');
     if (progressBar) {
-      setTimeout(() => {
-        progressBar.style.width = percentage + '%';
-      }, 100);
+      setTimeout(() => { progressBar.style.width = percentage + '%'; }, 100);
     }
   }
 
-  // Expose changePage to global scope
-  window.changePage = changePage;
-  window.filterPublishers = filterPublishers;
+  window.goPage            = goPage;
+  window.filterPublishers  = filterPublishers;
 }
 </script>
 @endsection

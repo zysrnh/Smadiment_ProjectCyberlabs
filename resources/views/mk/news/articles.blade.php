@@ -19,7 +19,6 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   }
 
-  /* Main Layout */
   .dashboard-container {
     padding: 24px;
     background: var(--bg-gray-50);
@@ -28,22 +27,9 @@
     margin: 0 auto;
   }
 
-  .page-header {
-    margin-bottom: 32px;
-  }
-
-  .page-header h1 {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0 0 8px 0;
-  }
-
-  .page-header p {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin: 0;
-  }
+  .page-header { margin-bottom: 32px; }
+  .page-header h1 { font-size: 28px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px 0; }
+  .page-header p  { font-size: 14px; color: var(--text-secondary); margin: 0; }
 
   /* Filter Card */
   .filter-card {
@@ -119,10 +105,7 @@
     box-shadow: 0 6px 20px rgba(3, 128, 71, 0.3);
   }
 
-  .apply-btn svg {
-    width: 18px;
-    height: 18px;
-  }
+  .apply-btn svg { width: 18px; height: 18px; }
 
   /* Date Picker Trigger */
   .date-picker-trigger {
@@ -149,796 +132,332 @@
     box-shadow: 0 0 0 3px rgba(3, 128, 71, 0.1);
   }
 
-  .date-picker-trigger svg:first-child {
-    width: 18px;
-    height: 18px;
-    color: var(--text-secondary);
-    flex-shrink: 0;
-  }
-
-  .date-picker-trigger span {
-    flex: 1;
-    text-align: left;
-  }
-
-  .date-picker-trigger svg:last-child {
-    width: 16px;
-    height: 16px;
-    margin-left: auto;
-    color: var(--text-secondary);
-  }
+  .date-picker-trigger svg:first-child { width: 18px; height: 18px; color: var(--text-secondary); flex-shrink: 0; }
+  .date-picker-trigger span { flex: 1; text-align: left; }
+  .date-picker-trigger svg:last-child { width: 16px; height: 16px; margin-left: auto; color: var(--text-secondary); }
 
   /* Date Picker Modal */
   .date-picker-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 10000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(8px);
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10000;
+    display: none; align-items: center; justify-content: center;
+    background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(8px);
   }
 
-  .date-picker-modal.show {
-    display: flex;
-  }
+  .date-picker-modal.show { display: flex; }
 
   .date-picker-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    cursor: pointer;
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5); cursor: pointer;
   }
 
   .date-picker-container {
-    position: relative;
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-    display: flex;
-    max-width: 900px;
-    width: 90%;
-    max-height: 90vh;
-    z-index: 10001;
+    position: relative; background: #ffffff; border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); display: flex;
+    max-width: 900px; width: 90%; max-height: 90vh; z-index: 10001;
     animation: slideUp 0.3s ease-out;
   }
 
   @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px) scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
 
-  /* Sidebar with Presets */
   .date-picker-sidebar {
-    width: 180px;
-    background: var(--bg-gray-50);
-    border-right: 1px solid var(--border-gray);
-    padding: 16px 12px;
-    border-radius: 16px 0 0 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex-shrink: 0;
+    width: 180px; background: var(--bg-gray-50); border-right: 1px solid var(--border-gray);
+    padding: 16px 12px; border-radius: 16px 0 0 16px;
+    display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;
   }
 
   .date-preset {
-    padding: 10px 16px;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-primary);
-    text-align: left;
-    cursor: pointer;
-    transition: all 0.2s;
+    padding: 10px 16px; background: transparent; border: none; border-radius: 8px;
+    font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 500;
+    color: var(--text-primary); text-align: left; cursor: pointer; transition: all 0.2s;
   }
 
-  .date-preset:hover {
-    background: var(--bg-white);
-    color: var(--primary-green);
-  }
+  .date-preset:hover { background: var(--bg-white); color: var(--primary-green); }
+  .date-preset.active { background: var(--primary-green); color: white; }
 
-  .date-preset.active {
-    background: var(--primary-green);
-    color: white;
-  }
-
-  /* Calendar Content */
   .date-picker-content {
-    flex: 1;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    flex: 1; padding: 24px; display: flex; flex-direction: column; overflow: hidden;
   }
 
   .date-picker-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 20px;
-    margin-bottom: 20px;
+    display: flex; align-items: flex-start; gap: 20px; margin-bottom: 20px;
   }
 
   .nav-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    background: var(--bg-gray-50);
-    border: 1px solid var(--border-gray);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    flex-shrink: 0;
+    width: 36px; height: 36px; border-radius: 8px; background: var(--bg-gray-50);
+    border: 1px solid var(--border-gray); display: flex; align-items: center;
+    justify-content: center; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
   }
 
-  .nav-btn:hover {
-    background: var(--primary-green);
-    border-color: var(--primary-green);
-    color: white;
-  }
+  .nav-btn:hover { background: var(--primary-green); border-color: var(--primary-green); color: white; }
+  .nav-btn svg { width: 20px; height: 20px; }
 
-  .nav-btn svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  /* Calendars Wrapper */
-  .calendars-wrapper {
-    display: flex;
-    gap: 24px;
-    flex: 1;
-    min-height: 0;
-  }
-
-  .calendar {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
-
-  .calendar-month {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 16px;
-    text-align: center;
-  }
-
-  .calendar-weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-    margin-bottom: 8px;
-  }
-
-  .weekday {
-    text-align: center;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-secondary);
-    padding: 8px 0;
-  }
-
-  .calendar-days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-  }
+  .calendars-wrapper { display: flex; gap: 24px; flex: 1; min-height: 0; }
+  .calendar { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .calendar-month { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; text-align: center; }
+  .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 8px; }
+  .weekday { text-align: center; font-size: 11px; font-weight: 700; color: var(--text-secondary); padding: 8px 0; }
+  .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
 
   .calendar-day {
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    font-weight: 500;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: var(--text-primary);
-    background: transparent;
-    border: none;
-    padding: 0;
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 500; border-radius: 8px; cursor: pointer;
+    transition: all 0.2s; color: var(--text-primary); background: transparent; border: none; padding: 0;
   }
 
-  .calendar-day:hover:not(.disabled):not(.other-month) {
-    background: var(--bg-gray-100);
-  }
+  .calendar-day:hover:not(.disabled):not(.other-month) { background: var(--bg-gray-100); }
+  .calendar-day.other-month { color: #cbd5e1; cursor: default; }
+  .calendar-day.disabled { color: #e2e8f0; cursor: not-allowed; }
+  .calendar-day.today { border: 2px solid var(--primary-green); }
+  .calendar-day.selected { background: var(--primary-green); color: white; }
+  .calendar-day.in-range { background: rgba(3, 128, 71, 0.1); color: var(--primary-green); }
+  .calendar-day.range-start, .calendar-day.range-end { background: var(--primary-green); color: white; }
 
-  .calendar-day.other-month {
-    color: #cbd5e1;
-    cursor: default;
-  }
-
-  .calendar-day.disabled {
-    color: #e2e8f0;
-    cursor: not-allowed;
-  }
-
-  .calendar-day.today {
-    border: 2px solid var(--primary-green);
-  }
-
-  .calendar-day.selected {
-    background: var(--primary-green);
-    color: white;
-  }
-
-  .calendar-day.in-range {
-    background: rgba(3, 128, 71, 0.1);
-    color: var(--primary-green);
-  }
-
-  .calendar-day.range-start,
-  .calendar-day.range-end {
-    background: var(--primary-green);
-    color: white;
-  }
-
-  /* Date Display */
   .date-picker-display {
-    padding: 16px 20px;
-    background: var(--bg-gray-50);
-    border-radius: 12px;
-    text-align: center;
-    margin-bottom: 20px;
-    border: 1px solid var(--border-gray);
+    padding: 16px 20px; background: var(--bg-gray-50); border-radius: 12px;
+    text-align: center; margin-bottom: 20px; border: 1px solid var(--border-gray);
   }
 
-  .date-picker-display span {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
+  .date-picker-display span { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+
+  .date-picker-footer { display: flex; gap: 12px; justify-content: flex-end; }
+
+  .cancel-btn, .apply-date-btn {
+    padding: 10px 24px; border-radius: 10px; font-family: 'Poppins', sans-serif;
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none;
   }
 
-  /* Footer Buttons */
-  .date-picker-footer {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-  }
-
-  .cancel-btn,
-  .apply-date-btn {
-    padding: 10px 24px;
-    border-radius: 10px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-  }
-
-  .cancel-btn {
-    background: var(--bg-gray-100);
-    color: var(--text-primary);
-  }
-
-  .cancel-btn:hover {
-    background: var(--border-gray);
-  }
+  .cancel-btn { background: var(--bg-gray-100); color: var(--text-primary); }
+  .cancel-btn:hover { background: var(--border-gray); }
 
   .apply-date-btn {
     background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
-    color: white;
-    box-shadow: 0 4px 12px rgba(3, 128, 71, 0.2);
+    color: white; box-shadow: 0 4px 12px rgba(3, 128, 71, 0.2);
   }
 
-  .apply-date-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(3, 128, 71, 0.3);
-  }
+  .apply-date-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(3, 128, 71, 0.3); }
 
   /* Stats Grid */
   .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-    margin-bottom: 24px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px; margin-bottom: 24px;
   }
 
   .stat-card {
-    background: var(--bg-white);
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-gray);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
+    background: var(--bg-white); border-radius: 16px; padding: 24px;
+    box-shadow: var(--shadow-sm); border: 1px solid var(--border-gray);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;
   }
 
   .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
     background: linear-gradient(90deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
-    opacity: 0;
-    transition: opacity 0.3s;
+    opacity: 0; transition: opacity 0.3s;
   }
 
-  .stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--primary-green);
-  }
+  .stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary-green); }
+  .stat-card:hover::before { opacity: 1; }
 
-  .stat-card:hover::before {
-    opacity: 1;
-  }
-
-  .stat-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 20px;
-  }
+  .stat-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
 
   .stat-icon-wrapper {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
+    width: 56px; height: 56px; border-radius: 14px;
     background: linear-gradient(135deg, rgba(3, 128, 71, 0.1) 0%, rgba(3, 128, 71, 0.05) 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
   }
 
-  .stat-icon {
-    width: 28px;
-    height: 28px;
-    color: var(--primary-green);
-  }
+  .stat-icon { width: 28px; height: 28px; color: var(--primary-green); }
 
   .stat-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
+    font-size: 13px; font-weight: 600; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
   }
 
-  .stat-value {
-    font-size: 36px;
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1;
-  }
+  .stat-value { font-size: 36px; font-weight: 700; color: var(--text-primary); line-height: 1; }
 
-  .stat-progress {
-    height: 6px;
-    background: var(--bg-gray-100);
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: 16px;
-  }
+  .stat-progress { height: 6px; background: var(--bg-gray-100); border-radius: 10px; overflow: hidden; margin-top: 16px; }
 
   .stat-progress-bar {
     height: 100%;
     background: linear-gradient(90deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
-    border-radius: 10px;
-    transition: width 1s ease-out;
+    border-radius: 10px; transition: width 1s ease-out;
   }
 
   /* Sentiment Card */
   .sentiment-chart-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 24px;
-    margin-top: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 24px; margin-top: 12px;
   }
 
-  .sentiment-donut {
-    width: 180px;
-    height: 180px;
-    position: relative;
-  }
+  .sentiment-donut { width: 180px; height: 180px; position: relative; }
 
   .sentiment-center-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    pointer-events: none;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    text-align: center; pointer-events: none;
   }
 
-  .sentiment-center-value {
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1;
-    margin-bottom: 4px;
-  }
+  .sentiment-center-value { font-size: 32px; font-weight: 700; color: var(--text-primary); line-height: 1; margin-bottom: 4px; }
+  .sentiment-center-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
 
-  .sentiment-center-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .sentiment-legend {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .sentiment-legend-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-  }
-
-  .sentiment-legend-color {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-    flex-shrink: 0;
-  }
-
-  .sentiment-legend-label {
-    color: var(--text-secondary);
-    flex: 1;
-  }
-
-  .sentiment-legend-value {
-    font-weight: 700;
-    color: var(--text-primary);
-  }
+  .sentiment-legend { display: flex; flex-direction: column; gap: 12px; }
+  .sentiment-legend-item { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .sentiment-legend-color { width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0; }
+  .sentiment-legend-label { color: var(--text-secondary); flex: 1; }
+  .sentiment-legend-value { font-weight: 700; color: var(--text-primary); }
 
   /* Articles Container */
   .articles-container {
-    background: var(--bg-white);
-    border-radius: 16px;
-    border: 1px solid var(--border-gray);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
+    background: var(--bg-white); border-radius: 16px;
+    border: 1px solid var(--border-gray); box-shadow: var(--shadow-sm); overflow: hidden;
   }
 
   .articles-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 24px 28px;
-    border-bottom: 2px solid var(--bg-gray-50);
-    gap: 16px;
-    flex-wrap: wrap;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 24px 28px; border-bottom: 2px solid var(--bg-gray-50); gap: 16px; flex-wrap: wrap;
   }
 
-  .articles-title-group h3 {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0 0 4px 0;
-  }
+  .articles-title-group h3 { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px 0; }
+  .articles-subtitle { font-size: 13px; color: var(--text-secondary); }
 
-  .articles-subtitle {
-    font-size: 13px;
-    color: var(--text-secondary);
-  }
+  .filter-controls { display: flex; align-items: center; gap: 12px; }
 
-  .filter-controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .search-box {
-    position: relative;
-    min-width: 240px;
-  }
+  .search-box { position: relative; min-width: 240px; }
 
   .search-box input {
-    width: 100%;
-    padding: 10px 16px 10px 44px;
-    border: 1px solid var(--border-gray);
-    border-radius: 12px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 14px;
-    background: var(--bg-gray-50);
-    transition: all 0.2s;
+    width: 100%; padding: 10px 16px 10px 44px; border: 1px solid var(--border-gray);
+    border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: 14px;
+    background: var(--bg-gray-50); transition: all 0.2s;
   }
 
   .search-box input:focus {
-    outline: none;
-    border-color: var(--primary-green);
-    background: var(--bg-white);
+    outline: none; border-color: var(--primary-green); background: var(--bg-white);
     box-shadow: 0 0 0 3px rgba(3, 128, 71, 0.1);
   }
 
   .search-box svg {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 18px;
-    height: 18px;
-    color: var(--text-secondary);
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    width: 18px; height: 18px; color: var(--text-secondary);
   }
 
   /* Article Card */
-  .articles-list {
-    padding: 20px;
-  }
+  .articles-list { padding: 20px; }
 
   .article-card {
-    background: var(--bg-white);
-    border: 1px solid var(--border-gray);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 16px;
-    transition: all 0.3s;
-    cursor: pointer;
+    background: var(--bg-white); border: 1px solid var(--border-gray);
+    border-radius: 12px; padding: 24px; margin-bottom: 16px; transition: all 0.3s; cursor: pointer;
   }
 
-  .article-card:hover {
-    box-shadow: var(--shadow-md);
-    border-color: var(--primary-green);
-    transform: translateY(-2px);
-  }
+  .article-card:hover { box-shadow: var(--shadow-md); border-color: var(--primary-green); transform: translateY(-2px); }
 
   .article-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 16px;
-    gap: 16px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 16px; gap: 16px;
   }
 
   .article-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0 0 12px 0;
-    line-height: 1.4;
-    flex: 1;
+    font-size: 18px; font-weight: 700; color: var(--text-primary);
+    margin: 0 0 12px 0; line-height: 1.4; flex: 1;
   }
 
-  .article-title a {
-    color: var(--text-primary);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-
-  .article-title a:hover {
-    color: var(--primary-green);
-  }
+  .article-title a { color: var(--text-primary); text-decoration: none; transition: color 0.2s; }
+  .article-title a:hover { color: var(--primary-green); }
 
   .sentiment-badge {
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
+    padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;
   }
 
   .sentiment-badge.positive {
     background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-    color: #065f46;
-    border: 1px solid #6ee7b7;
+    color: #065f46; border: 1px solid #6ee7b7;
   }
 
   .sentiment-badge.negative {
     background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-    color: #991b1b;
-    border: 1px solid #fca5a5;
+    color: #991b1b; border: 1px solid #fca5a5;
   }
 
   .sentiment-badge.neutral {
     background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-    color: #374151;
-    border: 1px solid #d1d5db;
+    color: #374151; border: 1px solid #d1d5db;
   }
 
   .article-meta {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;
   }
 
-  .article-meta-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .article-meta-item svg {
-    width: 16px;
-    height: 16px;
-    stroke: currentColor;
-    fill: none;
-  }
-
-  .publisher-name {
-    font-weight: 600;
-    color: var(--primary-green);
-  }
+  .article-meta-item { display: flex; align-items: center; gap: 6px; }
+  .article-meta-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
+  .publisher-name { font-weight: 600; color: var(--primary-green); }
 
   .article-content {
-    font-size: 14px;
-    line-height: 1.7;
-    color: var(--text-primary);
-    margin-bottom: 16px;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    font-size: 14px; line-height: 1.7; color: var(--text-primary); margin-bottom: 16px;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
   }
 
   .article-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 16px;
-    border-top: 1px solid var(--bg-gray-100);
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 16px; border-top: 1px solid var(--bg-gray-100);
   }
 
   .quotes-count {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    background: var(--bg-gray-50);
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-primary);
+    display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+    background: var(--bg-gray-50); border-radius: 8px; font-size: 13px;
+    font-weight: 600; color: var(--text-primary);
   }
 
-  .quotes-count svg {
-    width: 16px;
-    height: 16px;
-    color: var(--primary-green);
-  }
+  .quotes-count svg { width: 16px; height: 16px; color: var(--primary-green); }
 
   .view-article-btn {
-    padding: 8px 16px;
-    background: var(--primary-green);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    text-decoration: none;
+    padding: 8px 16px; background: var(--primary-green); color: white; border: none;
+    border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s; display: flex; align-items: center; gap: 6px; text-decoration: none;
   }
 
-  .view-article-btn:hover {
-    background: var(--primary-green-dark);
-    transform: translateX(2px);
-  }
-
-  .view-article-btn svg {
-    width: 14px;
-    height: 14px;
-  }
+  .view-article-btn:hover { background: var(--primary-green-dark); transform: translateX(2px); }
+  .view-article-btn svg { width: 14px; height: 14px; }
 
   /* Quote Card */
-  .quotes-section {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 2px solid var(--bg-gray-50);
-  }
+  .quotes-section { margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--bg-gray-50); }
 
   .quotes-header {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    font-size: 14px; font-weight: 600; color: var(--text-primary);
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
   }
 
-  .quotes-header svg {
-    width: 18px;
-    height: 18px;
-    color: var(--primary-green);
-  }
+  .quotes-header svg { width: 18px; height: 18px; color: var(--primary-green); }
 
   .quote-card {
-    background: var(--bg-gray-50);
-    border-left: 4px solid var(--primary-green);
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 12px;
+    background: var(--bg-gray-50); border-left: 4px solid var(--primary-green);
+    border-radius: 8px; padding: 16px; margin-bottom: 12px;
   }
 
-  .quote-card:last-child {
-    margin-bottom: 0;
-  }
-
-  .quote-speaker {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 4px;
-  }
-
-  .quote-position {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-bottom: 12px;
-  }
+  .quote-card:last-child { margin-bottom: 0; }
+  .quote-speaker { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+  .quote-position { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; }
 
   .quote-text {
-    font-size: 14px;
-    line-height: 1.6;
-    color: var(--text-primary);
-    font-style: italic;
-    position: relative;
-    padding-left: 20px;
+    font-size: 14px; line-height: 1.6; color: var(--text-primary);
+    font-style: italic; position: relative; padding-left: 20px;
   }
 
   .quote-text::before {
-    content: '"';
-    position: absolute;
-    left: 0;
-    top: -5px;
-    font-size: 32px;
-    color: var(--primary-green);
-    opacity: 0.3;
-    font-family: Georgia, serif;
+    content: '"'; position: absolute; left: 0; top: -5px; font-size: 32px;
+    color: var(--primary-green); opacity: 0.3; font-family: Georgia, serif;
   }
 
   .quote-meta {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 12px;
-    font-size: 12px;
-    color: var(--text-muted);
+    display: flex; align-items: center; gap: 12px; margin-top: 12px;
+    font-size: 12px; color: var(--text-muted);
   }
 
-  .quote-meta-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
+  .quote-meta-item { display: flex; align-items: center; gap: 4px; }
 
   .quote-sentiment {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: capitalize;
+    padding: 4px 10px; border-radius: 12px; font-size: 11px;
+    font-weight: 600; text-transform: capitalize;
   }
 
   .quote-sentiment.positif { background: #d1fae5; color: #065f46; }
@@ -947,44 +466,29 @@
 
   /* Pagination */
   .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    padding: 20px;
-    background: var(--bg-white);
-    border-top: 1px solid var(--border-gray);
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px; padding: 20px 24px; background: var(--bg-white);
+    border-top: 1px solid var(--border-gray); flex-wrap: wrap;
   }
 
-  .pagination-btn {
-    padding: 8px 16px;
-    background: var(--bg-white);
-    border: 1px solid var(--border-gray);
-    border-radius: 8px;
+  .pagination-info { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+
+  .page-btn {
+    width: 36px; height: 36px; border-radius: 10px;
+    border: 1px solid var(--border-gray); background: var(--bg-white);
+    color: var(--text-primary); font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
     font-family: 'Poppins', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all 0.2s;
   }
 
-  .pagination-btn:hover:not(:disabled) {
-    background: var(--primary-green);
-    color: white;
-    border-color: var(--primary-green);
+  .page-btn:hover:not(:disabled) {
+    border-color: var(--primary-green); color: var(--primary-green);
+    background: rgba(3,128,71,0.05);
   }
 
-  .pagination-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  .pagination-info {
-    font-size: 13px;
-    color: var(--text-secondary);
-    font-weight: 500;
-  }
+  .page-btn.active { background: var(--primary-green); color: white; border-color: var(--primary-green); }
+  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   /* Loading */
   .loading-skeleton {
@@ -999,54 +503,21 @@
     100% { background-position: -200% 0; }
   }
 
-  .skeleton-text {
-    height: 44px;
-    margin-bottom: 8px;
-  }
+  .skeleton-text { height: 44px; margin-bottom: 8px; }
 
   /* Empty State */
-  .empty-state {
-    text-align: center;
-    padding: 80px 20px;
-  }
-
-  .empty-state svg {
-    width: 64px;
-    height: 64px;
-    color: var(--text-secondary);
-    margin-bottom: 16px;
-  }
-
-  .empty-state h3 {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0 0 8px 0;
-  }
-
-  .empty-state p {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin: 0;
-  }
+  .empty-state { text-align: center; padding: 80px 20px; }
+  .empty-state svg { width: 64px; height: 64px; color: var(--text-secondary); margin-bottom: 16px; }
+  .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px 0; }
+  .empty-state p { font-size: 14px; color: var(--text-secondary); margin: 0; }
 
   /* Alert */
   .alert {
-    padding: 16px 20px;
-    border-radius: 12px;
-    margin-bottom: 24px;
-    font-size: 14px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    padding: 16px 20px; border-radius: 12px; margin-bottom: 24px;
+    font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 12px;
   }
 
-  .alert-warning {
-    background: #fef3c7;
-    color: #92400e;
-    border: 1px solid #fcd34d;
-  }
+  .alert-warning { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
 
   /* Responsive */
   @media (max-width: 1024px) {
@@ -1066,19 +537,11 @@
     .sentiment-chart-container { flex-direction: column; }
     .date-picker-trigger { max-width: 100%; }
     .date-picker-container {
-      flex-direction: column;
-      max-height: 85vh;
-      overflow-y: auto;
-      width: 95%;
+      flex-direction: column; max-height: 85vh; overflow-y: auto; width: 95%;
     }
     .date-picker-sidebar {
-      width: 100%;
-      border-right: none;
-      border-bottom: 1px solid var(--border-gray);
-      border-radius: 16px 16px 0 0;
-      flex-direction: row;
-      overflow-x: auto;
-      padding: 12px 16px;
+      width: 100%; border-right: none; border-bottom: 1px solid var(--border-gray);
+      border-radius: 16px 16px 0 0; flex-direction: row; overflow-x: auto; padding: 12px 16px;
     }
     .date-preset { white-space: nowrap; }
     .date-picker-content { padding: 20px 16px; }
@@ -1087,6 +550,7 @@
     .calendar-day { font-size: 12px; }
     .weekday { font-size: 10px; }
     .cancel-btn, .apply-date-btn { flex: 1; }
+    .pagination { padding: 16px; }
   }
 </style>
 @endsection
@@ -1168,7 +632,7 @@
     </form>
   </div>
 
-  <!-- Date Range Picker Modal — SAMA PERSIS DENGAN TIMELINE -->
+  <!-- Date Range Picker Modal -->
   <div class="date-picker-modal" id="datePickerModal">
     <div class="date-picker-overlay"></div>
     <div class="date-picker-container">
@@ -1268,7 +732,7 @@
     <div class="articles-header">
       <div class="articles-title-group">
         <h3>News Articles</h3>
-        <p class="articles-subtitle">Latest articles from monitored online news sources</p>
+        <p class="articles-subtitle" id="articlesSubtitle">Latest articles from monitored online news sources</p>
       </div>
       <div class="filter-controls">
         <div class="search-box">
@@ -1296,11 +760,7 @@
       </div>
     </div>
 
-    <div class="pagination" id="pagination" style="display: none;">
-      <button class="pagination-btn" id="prevBtn" onclick="changePage(-1)">← Previous</button>
-      <span class="pagination-info" id="pageInfo">Page 1 of 1</span>
-      <button class="pagination-btn" id="nextBtn" onclick="changePage(1)">Next →</button>
-    </div>
+    <div id="paginationWrapper" class="pagination" style="display: none;"></div>
   </div>
 
   @endif
@@ -1311,93 +771,57 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 // ========================================
-// DATE PICKER JAVASCRIPT — COPY PASTE DARI TIMELINE
+// DATE PICKER
 // ========================================
 (function() {
   'use strict';
-  
+
   let selectedStartDate = null;
-  let selectedEndDate = null;
-  let currentMonth1 = new Date();
-  let currentMonth2 = new Date();
-  let selectingStart = true;
+  let selectedEndDate   = null;
+  let currentMonth1     = new Date();
+  let currentMonth2     = new Date();
+  let selectingStart    = true;
 
   document.addEventListener('DOMContentLoaded', function() {
-    const startDateInput = document.getElementById('hiddenStartDate');
-    const endDateInput = document.getElementById('hiddenEndDate');
-    
-    if (startDateInput && startDateInput.value) {
-      selectedStartDate = new Date(startDateInput.value);
-    } else {
-      selectedEndDate = new Date();
-      selectedStartDate = new Date();
-      selectedStartDate.setDate(selectedStartDate.getDate() - 6);
-    }
-    
-    if (endDateInput && endDateInput.value) {
-      selectedEndDate = new Date(endDateInput.value);
-    }
-    
+    const startVal = document.getElementById('hiddenStartDate').value;
+    const endVal   = document.getElementById('hiddenEndDate').value;
+
+    selectedStartDate = startVal ? new Date(startVal) : (() => { const d = new Date(); d.setDate(d.getDate() - 6); return d; })();
+    selectedEndDate   = endVal   ? new Date(endVal)   : new Date();
+
     currentMonth1 = new Date(selectedStartDate);
     currentMonth2 = new Date(selectedStartDate);
     currentMonth2.setMonth(currentMonth2.getMonth() + 1);
-    
+
     renderCalendars();
     setupEventListeners();
   });
 
   function setupEventListeners() {
-    const trigger = document.getElementById('datePickerTrigger');
-    if (trigger) {
-      trigger.addEventListener('click', openDatePicker);
-    }
-
-    const overlay = document.querySelector('.date-picker-overlay');
-    if (overlay) {
-      overlay.addEventListener('click', closeDatePicker);
-    }
+    document.getElementById('datePickerTrigger').addEventListener('click', openDatePicker);
+    document.querySelector('.date-picker-overlay').addEventListener('click', closeDatePicker);
+    document.querySelector('.cancel-btn').addEventListener('click', closeDatePicker);
+    document.getElementById('applyDatePicker').addEventListener('click', applyDateSelection);
 
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        const modal = document.getElementById('datePickerModal');
-        if (modal && modal.classList.contains('show')) {
-          closeDatePicker();
-        }
-      }
+      if (e.key === 'Escape') closeDatePicker();
+    });
+
+    document.getElementById('prevMonth').addEventListener('click', function() {
+      currentMonth1.setMonth(currentMonth1.getMonth() - 1);
+      currentMonth2.setMonth(currentMonth2.getMonth() - 1);
+      renderCalendars();
+    });
+
+    document.getElementById('nextMonth').addEventListener('click', function() {
+      currentMonth1.setMonth(currentMonth1.getMonth() + 1);
+      currentMonth2.setMonth(currentMonth2.getMonth() + 1);
+      renderCalendars();
     });
 
     document.querySelectorAll('.date-preset').forEach(btn => {
       btn.addEventListener('click', handlePresetClick);
     });
-
-    const prevBtn = document.getElementById('prevMonth');
-    const nextBtn = document.getElementById('nextMonth');
-    
-    if (prevBtn) {
-      prevBtn.addEventListener('click', function() {
-        currentMonth1.setMonth(currentMonth1.getMonth() - 1);
-        currentMonth2.setMonth(currentMonth2.getMonth() - 1);
-        renderCalendars();
-      });
-    }
-
-    if (nextBtn) {
-      nextBtn.addEventListener('click', function() {
-        currentMonth1.setMonth(currentMonth1.getMonth() + 1);
-        currentMonth2.setMonth(currentMonth2.getMonth() + 1);
-        renderCalendars();
-      });
-    }
-
-    const applyBtn = document.getElementById('applyDatePicker');
-    if (applyBtn) {
-      applyBtn.addEventListener('click', applyDateSelection);
-    }
-
-    const cancelBtn = document.querySelector('.cancel-btn');
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', closeDatePicker);
-    }
   }
 
   function openDatePicker() {
@@ -1409,18 +833,27 @@
     document.getElementById('datePickerModal').classList.remove('show');
   }
 
+  function applyDateSelection() {
+    const start = formatDate(selectedStartDate);
+    const end   = formatDate(selectedEndDate);
+    document.getElementById('hiddenStartDate').value = start;
+    document.getElementById('hiddenEndDate').value   = end;
+    document.getElementById('dateRangeDisplay').textContent = `${start} to ${end}`;
+    closeDatePicker();
+  }
+
   function handlePresetClick(e) {
     document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
     e.target.classList.add('active');
 
     const preset = e.target.dataset.preset;
-    const today = new Date();
+    const today  = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     switch(preset) {
       case 'today':
         selectedStartDate = new Date(today);
-        selectedEndDate = new Date(today);
+        selectedEndDate   = new Date(today);
         break;
       case 'yesterday':
         selectedStartDate = new Date(today);
@@ -1428,48 +861,32 @@
         selectedEndDate = new Date(selectedStartDate);
         break;
       case 'last7days':
-        selectedEndDate = new Date(today);
+        selectedEndDate   = new Date(today);
         selectedStartDate = new Date(today);
         selectedStartDate.setDate(today.getDate() - 6);
         break;
       case 'last30days':
-        selectedEndDate = new Date(today);
+        selectedEndDate   = new Date(today);
         selectedStartDate = new Date(today);
         selectedStartDate.setDate(today.getDate() - 29);
         break;
       case 'thismonth':
         selectedStartDate = new Date(today.getFullYear(), today.getMonth(), 1);
-        selectedEndDate = new Date(today);
+        selectedEndDate   = new Date(today);
         break;
       case 'lastmonth':
         selectedStartDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        selectedEndDate = new Date(today.getFullYear(), today.getMonth(), 0);
+        selectedEndDate   = new Date(today.getFullYear(), today.getMonth(), 0);
         break;
     }
-    
+
     if (preset !== 'custom') {
       currentMonth1 = new Date(selectedStartDate);
       currentMonth2 = new Date(selectedStartDate);
       currentMonth2.setMonth(currentMonth2.getMonth() + 1);
-      
       updateDateDisplay();
       renderCalendars();
     }
-  }
-
-  function applyDateSelection() {
-    const start = formatDate(selectedStartDate);
-    const end = formatDate(selectedEndDate);
-    
-    document.getElementById('hiddenStartDate').value = start;
-    document.getElementById('hiddenEndDate').value = end;
-    
-    const displayElement = document.getElementById('dateRangeDisplay');
-    if (displayElement) {
-      displayElement.textContent = `${start} to ${end}`;
-    }
-    
-    closeDatePicker();
   }
 
   function renderCalendars() {
@@ -1482,123 +899,99 @@
     const calendar = document.getElementById(elementId);
     if (!calendar) return;
 
-    const year = month.getFullYear();
+    const year     = month.getFullYear();
     const monthNum = month.getMonth();
     const firstDay = new Date(year, monthNum, 1);
-    const lastDay = new Date(year, monthNum + 1, 0);
-    const prevLastDay = new Date(year, monthNum, 0);
-    
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                       'July', 'August', 'September', 'October', 'November', 'December'];
-    const weekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-    
-    let html = `
-      <div class="calendar-month">${monthNames[monthNum]} ${year}</div>
-      <div class="calendar-weekdays">
-        ${weekdays.map(day => `<div class="weekday">${day}</div>`).join('')}
-      </div>
-      <div class="calendar-days">
-    `;
-    
-    const today = new Date();
+    const lastDay  = new Date(year, monthNum + 1, 0);
+    const prevLast = new Date(year, monthNum, 0);
+
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const weekdays   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+    const today      = new Date();
     today.setHours(0, 0, 0, 0);
-    
-    const firstDayOfWeek = firstDay.getDay();
-    for (let i = 0; i < firstDayOfWeek; i++) {
-      const prevMonthDay = prevLastDay.getDate() - (firstDayOfWeek - 1 - i);
-      html += `<button type="button" class="calendar-day other-month" disabled>${prevMonthDay}</button>`;
+
+    let html = `<div class="calendar-month">${monthNames[monthNum]} ${year}</div>`;
+    html += `<div class="calendar-weekdays">${weekdays.map(d => `<div class="weekday">${d}</div>`).join('')}</div>`;
+    html += `<div class="calendar-days">`;
+
+    for (let i = 0; i < firstDay.getDay(); i++) {
+      html += `<button type="button" class="calendar-day other-month" disabled>${prevLast.getDate() - (firstDay.getDay() - 1 - i)}</button>`;
     }
-    
+
     for (let day = 1; day <= lastDay.getDate(); day++) {
       const date = new Date(year, monthNum, day);
       date.setHours(0, 0, 0, 0);
-      
       const dateStr = formatDate(date);
-      let classes = 'calendar-day';
-      
-      if (isSameDay(date, today)) classes += ' today';
-      if (date > today) classes += ' disabled';
-      
+      let cls = 'calendar-day';
+
+      if (isSameDay(date, today)) cls += ' today';
+      if (date > today) cls += ' disabled';
+
       if (selectedStartDate && selectedEndDate) {
-        if (isSameDay(date, selectedStartDate)) {
-          classes += ' selected range-start';
-        } else if (isSameDay(date, selectedEndDate)) {
-          classes += ' selected range-end';
-        } else if (date > selectedStartDate && date < selectedEndDate) {
-          classes += ' in-range';
-        }
+        if (isSameDay(date, selectedStartDate))      cls += ' selected range-start';
+        else if (isSameDay(date, selectedEndDate))   cls += ' selected range-end';
+        else if (date > selectedStartDate && date < selectedEndDate) cls += ' in-range';
       }
-      
+
       const disabled = date > today ? 'disabled' : '';
-      html += `<button type="button" class="${classes}" data-date="${dateStr}" ${disabled}>${day}</button>`;
+      html += `<button type="button" class="${cls}" data-date="${dateStr}" ${disabled}>${day}</button>`;
     }
-    
-    const lastDayOfWeek = lastDay.getDay();
-    const remainingCells = lastDayOfWeek === 6 ? 0 : 6 - lastDayOfWeek;
-    for (let i = 1; i <= remainingCells; i++) {
+
+    const lastDow = lastDay.getDay();
+    for (let i = 1; i < (lastDow === 6 ? 1 : 7 - lastDow); i++) {
       html += `<button type="button" class="calendar-day other-month" disabled>${i}</button>`;
     }
-    
+
     html += '</div>';
     calendar.innerHTML = html;
-    
+
     calendar.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)').forEach(btn => {
       btn.addEventListener('click', handleDateClick);
     });
   }
 
   function handleDateClick(e) {
-    const dateStr = e.target.dataset.date;
-    const date = new Date(dateStr);
+    const date = new Date(e.target.dataset.date);
     date.setHours(0, 0, 0, 0);
-    
+
     document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
     const customPreset = document.querySelector('[data-preset="custom"]');
     if (customPreset) customPreset.classList.add('active');
-    
+
     if (selectingStart || date < selectedStartDate) {
       selectedStartDate = date;
-      selectedEndDate = date;
-      selectingStart = false;
+      selectedEndDate   = date;
+      selectingStart    = false;
     } else {
-      if (date >= selectedStartDate) {
-        selectedEndDate = date;
-      } else {
-        selectedEndDate = selectedStartDate;
+      selectedEndDate = date >= selectedStartDate ? date : selectedStartDate;
+      if (date < selectedStartDate) {
+        selectedEndDate   = selectedStartDate;
         selectedStartDate = date;
       }
       selectingStart = true;
     }
-    
+
     updateDateDisplay();
     renderCalendars();
   }
 
   function updateDateDisplay() {
     if (!selectedStartDate || !selectedEndDate) return;
-    
-    const start = formatDate(selectedStartDate);
-    const end = formatDate(selectedEndDate);
-    
-    const displayElement = document.getElementById('selectedRangeText');
-    if (displayElement) {
-      displayElement.textContent = `${start} to ${end}`;
-    }
+    const el = document.getElementById('selectedRangeText');
+    if (el) el.textContent = `${formatDate(selectedStartDate)} to ${formatDate(selectedEndDate)}`;
   }
 
   function formatDate(date) {
     if (!date) return '';
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
-  function isSameDay(date1, date2) {
-    if (!date1 || !date2) return false;
-    return date1.getFullYear() === date2.getFullYear() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getDate() === date2.getDate();
+  function isSameDay(a, b) {
+    if (!a || !b) return false;
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
   }
 })();
 
@@ -1619,7 +1012,7 @@ function formatNumber(num) {
   return new Intl.NumberFormat('en-US').format(num);
 }
 
-function formatDate(dateStr) {
+function formatDateDisplay(dateStr) {
   if (!dateStr) return { date: '—', time: '' };
   try {
     const d = new Date(dateStr);
@@ -1681,11 +1074,11 @@ if (projectId && startDate && endDate) {
         animateProgress(document.querySelectorAll('.stat-card')[0], 90);
         animateProgress(document.querySelectorAll('.stat-card')[1], 75);
 
-        renderArticles();
-
+        // Hide loading, show list
         document.getElementById('articlesLoading').style.display = 'none';
         document.getElementById('articlesList').style.display    = 'block';
-        document.getElementById('pagination').style.display      = 'flex';
+
+        renderArticles();
 
       } else {
         showEmpty();
@@ -1703,6 +1096,7 @@ if (projectId && startDate && endDate) {
     document.getElementById('statSentiment').innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">No data</p>';
     document.getElementById('articlesLoading').style.display = 'none';
     document.getElementById('emptyState').style.display      = 'block';
+    document.getElementById('paginationWrapper').style.display = 'none';
   }
 
   function createSentimentChart(counts) {
@@ -1773,10 +1167,15 @@ if (projectId && startDate && endDate) {
   function animateProgress(card, percentage) {
     const progressBar = card.querySelector('.stat-progress-bar');
     if (progressBar) {
-      setTimeout(() => {
-        progressBar.style.width = percentage + '%';
-      }, 100);
+      setTimeout(() => { progressBar.style.width = percentage + '%'; }, 100);
     }
+  }
+
+  function getPageRange(cur, total) {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    if (cur <= 4)         return [1, 2, 3, 4, 5, '...', total];
+    if (cur >= total - 3) return [1, '...', total-4, total-3, total-2, total-1, total];
+    return [1, '...', cur-1, cur, cur+1, '...', total];
   }
 
   function renderArticles() {
@@ -1785,17 +1184,20 @@ if (projectId && startDate && endDate) {
     const container = document.getElementById('articlesList');
 
     if (!data.length) {
-      container.style.display                              = 'none';
-      document.getElementById('emptyState').style.display = 'block';
-      document.getElementById('pagination').style.display = 'none';
+      container.style.display = 'none';
+      document.getElementById('emptyState').style.display      = 'block';
+      document.getElementById('paginationWrapper').style.display = 'none';
       return;
     }
 
-    document.getElementById('emptyState').style.display  = 'none';
-    document.getElementById('pagination').style.display  = 'flex';
+    document.getElementById('emptyState').style.display = 'none';
+
+    // Update subtitle
+    const subtitle = document.getElementById('articlesSubtitle');
+    if (subtitle) subtitle.textContent = `Showing ${formatNumber(filteredArticles.length)} articles`;
 
     container.innerHTML = data.map(article => {
-      const dateInfo  = formatDate(article.date_created);
+      const dateInfo  = formatDateDisplay(article.date_created);
       const sentiment = getSentimentClass(article.sentiment);
       const content   = cleanContent(article.content);
       const quotes    = Array.isArray(article.quotes)
@@ -1922,20 +1324,47 @@ if (projectId && startDate && endDate) {
 
   function updatePagination() {
     const totalPages = Math.ceil(filteredArticles.length / articlesPerPage);
-    document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
-    document.getElementById('prevBtn').disabled     = currentPage === 1;
-    document.getElementById('nextBtn').disabled     = currentPage === totalPages || totalPages === 0;
+    const wrapper    = document.getElementById('paginationWrapper');
+    const from       = filteredArticles.length ? (currentPage - 1) * articlesPerPage + 1 : 0;
+    const to         = Math.min(currentPage * articlesPerPage, filteredArticles.length);
+
+    if (filteredArticles.length === 0) {
+      wrapper.style.display = 'none';
+      return;
+    }
+
+    let html = `<div class="pagination-info">Showing ${formatNumber(from)}–${formatNumber(to)} of ${formatNumber(filteredArticles.length)} articles</div>`;
+    html += `<div style="display:flex;align-items:center;gap:6px;">`;
+
+    // Prev button
+    html += `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>`;
+
+    // Page numbers
+    getPageRange(currentPage, totalPages).forEach(p => {
+      html += p === '...'
+        ? `<button class="page-btn" disabled style="cursor:default;">…</button>`
+        : `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`;
+    });
+
+    // Next button
+    html += `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>`;
+
+    html += `</div>`;
+
+    wrapper.innerHTML     = html;
+    wrapper.style.display = 'flex';
   }
 
-  function changePage(direction) {
+  function goPage(p) {
     const totalPages = Math.ceil(filteredArticles.length / articlesPerPage);
-    const newPage    = currentPage + direction;
-    if (newPage >= 1 && newPage <= totalPages) {
-      currentPage = newPage;
-      renderArticles();
-      updatePagination();
-      document.querySelector('.articles-container').scrollIntoView({ behavior: 'smooth' });
-    }
+    if (p < 1 || p > totalPages) return;
+    currentPage = p;
+    renderArticles();
+    document.querySelector('.articles-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function filterArticles() {
@@ -1950,7 +1379,7 @@ if (projectId && startDate && endDate) {
     renderArticles();
   }
 
-  window.changePage     = changePage;
+  window.goPage         = goPage;
   window.filterArticles = filterArticles;
 }
 </script>

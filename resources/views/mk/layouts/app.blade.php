@@ -931,30 +931,56 @@
 
         </div>
 
-        <!-- Facebook -->
-        <div class="nav-item dropdown-trigger" onclick="toggleDropdown('facebookDropdown', this)">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24">
-              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-            </svg>
-          </span>
-          <span>Facebook</span>
-          <span class="dropdown-arrow">▼</span>
-        </div>
-        <div id="facebookDropdown" class="nav-sub" style="display: none;">
-          <a href="{{ route('mk.facebook.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-            class="nav-item {{ request()->routeIs('mk.facebook.overview') ? 'active' : '' }}">
-            <span class="menu-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        @php
+$facebookRoutes = [
+    'mk.facebook.overview',
+    'mk.facebook.trending-topics',
+
+];
+$isFacebookActive = request()->routeIs($facebookRoutes);
+@endphp
+
+<div class="nav-item dropdown-trigger {{ $isFacebookActive ? 'has-active-child' : '' }}"
+    onclick="toggleDropdown('facebookDropdown', this)"
+    id="facebookTrigger">
+    <span class="nav-icon">
+        <svg viewBox="0 0 24 24">
+            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+        </svg>
+    </span>
+    <span>Facebook</span>
+    <span class="dropdown-arrow">▼</span>
+</div>
+
+<div id="facebookDropdown" class="nav-sub" style="display: {{ $isFacebookActive ? 'block' : 'none' }};">
+
+    {{-- Overview --}}
+    <a href="{{ route('mk.facebook.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+        class="nav-item {{ request()->routeIs('mk.facebook.overview') ? 'active' : '' }}">
+        <span class="menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="7" height="7" />
                 <rect x="14" y="3" width="7" height="7" />
                 <rect x="14" y="14" width="7" height="7" />
                 <rect x="3" y="14" width="7" height="7" />
-              </svg>
-            </span>
-            <span>Overview</span>
-          </a>
-        </div>
+            </svg>
+        </span>
+        <span>Overview</span>
+    </a>
+
+    {{-- ✅ Trending Topics --}}
+    <a href="{{ route('mk.facebook.trending-topics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+        class="nav-item {{ request()->routeIs('mk.facebook.trending-topics') ? 'active' : '' }}">
+        <span class="menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                <polyline points="17 6 23 6 23 12" />
+            </svg>
+        </span>
+        <span>Trending Topics</span>
+    </a>
+
+</div>
         <!-- Instagram -->
         <div class="nav-item dropdown-trigger" onclick="toggleDropdown('instagramDropdown', this)">
           <span class="nav-icon">

@@ -114,16 +114,16 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             // Word Cloud API
             Route::get('/word-cloud', [NewsController::class, 'newsWordCloudData'])
                 ->name('word-cloud-api');
-            
+
             // Top Publisher API
             Route::get('/top-publisher', [NewsController::class, 'topPublisherData'])
                 ->name('top-publisher-api');
-            
+
             // News Timeline/Mentions API
             Route::get('/mentions', [NewsController::class, 'newsMentionsData'])
                 ->name('mentions-api');
-            
-            // 🔥 NEW: Articles with Quotes API
+
+            // Articles with Quotes API
             Route::get('/articles', [NewsController::class, 'articlesData'])
                 ->name('articles-api');
         });
@@ -200,6 +200,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         // Facebook APIs
         // ─────────────────────────────────────────────────────
         Route::prefix('facebook')->name('facebook.')->group(function () {
+
             // Overview Stats
             Route::get('/total-users', [FacebookOverviewController::class, 'totalUsers'])
                 ->name('total-users');
@@ -215,6 +216,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
 
             Route::get('/most-active-users', [FacebookOverviewController::class, 'mostActiveUsers'])
                 ->name('most-active-users');
+
+            // ✅ FIX: Trending Topics API (was missing — caused 404)
+            Route::get('/trending-topics', [FacebookOverviewController::class, 'trendingTopicsData'])
+                ->name('trending-topics');
         });
     });
 
@@ -250,16 +255,16 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         // Word Cloud Page
         Route::get('/word-cloud', [NewsController::class, 'newsWordCloudPage'])
             ->name('word-cloud');
-        
+
         // Top Publisher Page
         Route::get('/top-publishers', [NewsController::class, 'topPublisherPage'])
             ->name('top-publishers');
-        
+
         // News Timeline Page
         Route::get('/timeline', [NewsController::class, 'newsTimelinePage'])
             ->name('timeline');
-        
-        // 🔥 NEW: Articles with Quotes Page
+
+        // Articles with Quotes Page
         Route::get('/articles', [NewsController::class, 'articlesPage'])
             ->name('articles');
     });
@@ -277,11 +282,11 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         // Trending & Content Analysis
         // ─────────────────────────────────────────────────
 
-        // Trending Topics - Table View (no project_id required)
+        // Trending Topics - Table View
         Route::get('/trending-topics', [XOverviewController::class, 'trendingTopicsPage'])
             ->name('trending-topics');
 
-        // Trending Topics - Word Cloud View (no project_id required)
+        // Trending Topics - Word Cloud View
         Route::get('/trending-word-cloud', [XOverviewController::class, 'trendingWordCloudPage'])
             ->name('trending-word-cloud');
 
@@ -334,9 +339,14 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     // Facebook Routes
     // ─────────────────────────────────────────────────────
     Route::prefix('facebook')->name('facebook.')->group(function () {
+
         // Overview Page
         Route::get('/overview', [FacebookOverviewController::class, 'index'])
             ->name('overview');
+
+        // Trending Topics Page
+        Route::get('/trending-topics', [FacebookOverviewController::class, 'trendingTopicsPage'])
+            ->name('trending-topics');
     });
 
     // ─────────────────────────────────────────────────────
