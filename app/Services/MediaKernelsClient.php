@@ -1534,7 +1534,40 @@ public function articles(
 }
 
 
+public function fbTopStatus(
+    string $projectId,
+    string $startDate,
+    string $endDate,
+    int $startTime = 0,
+    int $endTime = 23,
+    int $rows = 100,
+    string $sub = 'fblike'
+): array {
+    try {
+        $token = $this->getToken();
 
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/fb_top_status/',
+            [
+                'project_id' => $projectId,
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'start_time' => $startTime,
+                'end_time'   => $endTime,
+                'rows'       => $rows,
+                'sub'        => $sub,
+                'is_cache'   => 'true',
+                'token'      => $token,
+            ]
+        );
+
+        $res->throw();
+        return $this->parseJson($res);
+    } catch (\Exception $e) {
+        Log::warning('fbTopStatus API error', ['error' => $e->getMessage()]);
+        return [];
+    }
+}
 
 
 

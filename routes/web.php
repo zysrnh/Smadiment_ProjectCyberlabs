@@ -220,6 +220,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             // ✅ FIX: Trending Topics API (was missing — caused 404)
             Route::get('/trending-topics', [FacebookOverviewController::class, 'trendingTopicsData'])
                 ->name('trending-topics');
+
+            // ✅ NEW: Most Viewed Posts API
+            Route::get('/most-viewed-posts', [FacebookOverviewController::class, 'mostViewedPostsData'])
+                ->name('most-viewed-posts');
         });
     });
 
@@ -347,6 +351,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         // Trending Topics Page
         Route::get('/trending-topics', [FacebookOverviewController::class, 'trendingTopicsPage'])
             ->name('trending-topics');
+
+        // ✅ NEW: Most Viewed Posts Page
+        Route::get('/most-viewed-posts', [FacebookOverviewController::class, 'mostViewedPostsPage'])
+            ->name('most-viewed-posts');
     });
 
     // ─────────────────────────────────────────────────────

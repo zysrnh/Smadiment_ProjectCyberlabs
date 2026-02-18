@@ -130,7 +130,6 @@ class FacebookOverviewController extends Controller
 
     /**
      * API: Get Facebook Trending Topics Data
-     * Uses topHashtags endpoint filtered to 'fb' media
      */
     public function trendingTopicsData(Request $request)
     {
@@ -146,7 +145,6 @@ class FacebookOverviewController extends Controller
                 ], 400);
             }
 
-            // Fetch hashtags with 'fb' media filter
             $result = $this->client->topHashtags($projectId, 'fb', $startDate, $endDate);
 
             Log::info('FB trendingTopicsData raw result', [
@@ -158,9 +156,7 @@ class FacebookOverviewController extends Controller
 
             $hashtags      = [];
             $totalMentions = 0;
-
-            // Normalise response — handles multiple wrapping formats from MediaKernels
-            $rawItems = [];
+            $rawItems      = [];
 
             if (isset($result['data']['hashtags']) && is_array($result['data']['hashtags'])) {
                 $rawItems = $result['data']['hashtags'];
@@ -169,10 +165,8 @@ class FacebookOverviewController extends Controller
             } elseif (is_array($result)) {
                 $firstVal = reset($result);
                 if (is_array($firstVal) && isset($firstVal['name'])) {
-                    // Flat array of hashtag objects
                     $rawItems = $result;
                 } elseif (isset($result['fb']) && is_array($result['fb'])) {
-                    // Keyed by media: {'fb': [...], 'twit': [...]}
                     $rawItems = $result['fb'];
                 } else {
                     $rawItems = $result;
@@ -182,33 +176,19 @@ class FacebookOverviewController extends Controller
             foreach ($rawItems as $item) {
                 if (!is_array($item)) continue;
 
-                $name = $item['name'] ?? $item['hashtag'] ?? '';
-                $size = (int) ($item['size'] ?? $item['count'] ?? $item['total'] ?? 0);
-
-                // Extra safety: skip explicitly non-Facebook items
+                $name  = $item['name'] ?? $item['hashtag'] ?? '';
+                $size  = (int) ($item['size'] ?? $item['count'] ?? $item['total'] ?? 0);
                 $media = strtolower($item['media'] ?? $item['source'] ?? $item['platform'] ?? '');
-                if ($media && !in_array($media, ['fb', 'facebook', ''])) {
-                    continue;
-                }
+
+                if ($media && !in_array($media, ['fb', 'facebook', ''])) continue;
 
                 if ($name && $size > 0) {
-                    $hashtags[] = [
-                        'name'    => ltrim($name, '#'),
-                        'size'    => $size,
-                        'hashtag' => ltrim($name, '#'),
-                    ];
+                    $hashtags[]     = ['name' => ltrim($name, '#'), 'size' => $size, 'hashtag' => ltrim($name, '#')];
                     $totalMentions += $size;
                 }
             }
 
-            // Sort descending by mention count
             usort($hashtags, fn($a, $b) => $b['size'] - $a['size']);
-
-            Log::info('FB trendingTopicsData processed', [
-                'raw_items'      => count($rawItems),
-                'after_filter'   => count($hashtags),
-                'total_mentions' => $totalMentions,
-            ]);
 
             return response()->json([
                 'success' => true,
@@ -221,15 +201,197 @@ class FacebookOverviewController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('FB trendingTopicsData error', [
+            Log::error('FB trendingTopicsData error', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────
+    // MOST VIEWED POSTS (Facebook)
+    // ─────────────────────────────────────────────────────
+
+    /**
+     * Display Facebook Most Viewed Posts Page
+     */
+    public function mostViewedPostsPage(Request $request)
+    {
+        try {
+            $projectsData = $this->client->listProjects(0, 100);
+            $projects     = $projectsData['data'] ?? [];
+
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+
+                if ($projectId) {
+                    return redirect()->route('mk.facebook.most-viewed-posts', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+            return view('mk.facebook.most-viewed-posts')->with([
+                'projectId' => $projectId,
+                'startDate' => $startDate,
+                'endDate'   => $endDate,
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Facebook Most Viewed Posts Page Error', ['error' => $e->getMessage()]);
+
+            return view('mk.facebook.most-viewed-posts')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * API: Get Facebook Most Viewed Posts Data
+     * Uses /fb_top_status/ endpoint (correct Facebook-specific endpoint)
+     */
+    public function mostViewedPostsData(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+
+            if (!$projectId || !$startDate || !$endDate) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => 'Missing required parameters: project_id, start_date, end_date',
+                ], 400);
+            }
+
+            // ✅ FIX: Use fb_top_status endpoint instead of twitter_most_status
+            $result = $this->client->fbTopStatus($projectId, $startDate, $endDate);
+
+            Log::info('FB mostViewedPostsData raw result', [
+                'type'   => gettype($result),
+                'count'  => is_array($result) ? count($result) : 0,
+                'sample' => is_array($result) ? array_slice($result, 0, 2, true) : $result,
+            ]);
+
+            $posts = [];
+
+            // Handle both flat array and nested data structures
+            $items = [];
+            if (isset($result['data']) && is_array($result['data'])) {
+                $items = $result['data'];
+            } elseif (is_array($result) && !isset($result['success'])) {
+                $items = $result;
+            }
+
+            foreach ($items as $item) {
+                if (!is_array($item)) continue;
+
+                // Extra safety filter: only FB posts
+                $media = strtolower($item['media'] ?? $item['source'] ?? $item['tcode'] ?? '');
+                if ($media && !str_contains($media, 'fb') && !str_contains($media, 'facebook')) {
+                    continue;
+                }
+
+                // Try to get author name from multiple possible fields
+                $authorName = $item['contentJson']['from']['name']
+                    ?? $item['author_name']
+                    ?? $item['author']['name']
+                    ?? $item['name']
+                    ?? 'Unknown';
+
+                // Clean up name if it contains HTML bold tags (e.g. "<b>Name:</b> ...")
+                if (str_contains($authorName, '<b>')) {
+                    preg_match('/<b>(.*?)<\/b>/', $authorName, $matches);
+                    $authorName = $matches[1] ?? $authorName;
+                    $authorName = trim(str_replace(':', '', $authorName));
+                }
+
+                // Try to get profile picture from multiple sources
+                $profilePic = $item['contentJson']['from']['picture']['data']['url']
+                    ?? $item['profile_url']
+                    ?? $item['avatar_url']
+                    ?? $item['author']['image']
+                    ?? '';
+
+                $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
+                $shares   = (int) ($item['num_shares']   ?? $item['shares']   ?? 0);
+                $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
+
+                // Engagement score: likes + comments + shares
+                $engagement = $likes + $comments + $shares;
+
+                // Some FB items have freq (comment count) or interaction fields
+                $viewCount = (int) ($item['view_cnt']
+                    ?? $item['freq']
+                    ?? $engagement);
+
+                // Get post URL
+                $postUrl = $item['url'] ?? $item['link'] ?? null;
+
+                // Get post ID for direct Facebook link
+                $subId = $item['sub_id'] ?? $item['docid'] ?? $item['id'] ?? '';
+
+                // Clean content - strip HTML if present
+                $content = $item['content'] ?? $item['name'] ?? '';
+                if (str_contains($content, '<b>')) {
+                    // Remove name prefix pattern like "<b>Name:</b> content"
+                    $content = preg_replace('/<b>.*?<\/b>\s*/', '', $content);
+                    $content = trim($content);
+                }
+
+                $posts[] = [
+                    'id'             => $item['id']            ?? '',
+                    'sub_id'         => $subId,
+                    'name'           => $authorName,
+                    'content'        => $content,
+                    'view_cnt'       => $viewCount,
+                    'likes'          => $likes,
+                    'shares'         => $shares,
+                    'comments'       => $comments,
+                    'engagement'     => $engagement,
+                    'sentiment_str'  => $item['sentiment_str']  ?? 'Neutral',
+                    'sentiment_prec' => $item['sentiment_prec'] ?? 0,
+                    'date_created'   => $item['date_created']   ?? '',
+                    'url'            => $postUrl,
+                    'avatar_url'     => $profilePic,
+                    'tcode'          => $item['tcode']          ?? 'fb-post',
+                    'author'         => [
+                        'name'     => $authorName,
+                        'scr_name' => $authorName,
+                        'image'    => $profilePic,
+                    ],
+                ];
+            }
+
+            // Sort by engagement (likes + comments + shares) descending
+            usort($posts, fn($a, $b) => $b['engagement'] - $a['engagement']);
+
+            Log::info('FB mostViewedPostsData processed', [
+                'total_posts' => count($posts),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data'    => $posts,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('FB mostViewedPostsData error', [
                 'error'      => $e->getMessage(),
                 'project_id' => $request->query('project_id'),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'error'   => $e->getMessage(),
-            ], 500);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
 
@@ -248,10 +410,7 @@ class FacebookOverviewController extends Controller
             $endDate   = $request->query('end_date');
 
             if (!$projectId || !$startDate || !$endDate) {
-                return response()->json([
-                    'success' => false,
-                    'error'   => 'Missing required parameters: project_id, start_date, end_date',
-                ], 400);
+                return response()->json(['success' => false, 'error' => 'Missing required parameters: project_id, start_date, end_date'], 400);
             }
 
             $result = $this->client->totalAuthors($projectId, 'facebook', $startDate, $endDate);
@@ -265,17 +424,10 @@ class FacebookOverviewController extends Controller
                 $total = (int) $result['bymedia']['facebook'];
             }
 
-            return response()->json([
-                'success' => true,
-                'data'    => ['total' => $total],
-            ]);
+            return response()->json(['success' => true, 'data' => ['total' => $total]]);
 
         } catch (\Exception $e) {
-            Log::error('Facebook totalUsers API error', [
-                'error'      => $e->getMessage(),
-                'project_id' => $request->query('project_id'),
-            ]);
-
+            Log::error('Facebook totalUsers API error', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
@@ -291,10 +443,7 @@ class FacebookOverviewController extends Controller
             $endDate   = $request->query('end_date');
 
             if (!$projectId || !$startDate || !$endDate) {
-                return response()->json([
-                    'success' => false,
-                    'error'   => 'Missing required parameters: project_id, start_date, end_date',
-                ], 400);
+                return response()->json(['success' => false, 'error' => 'Missing required parameters: project_id, start_date, end_date'], 400);
             }
 
             $result = $this->client->totalAuthors($projectId, 'facebook', $startDate, $endDate);
@@ -308,17 +457,10 @@ class FacebookOverviewController extends Controller
                 $total = (int) $result['bymedia']['facebook'];
             }
 
-            return response()->json([
-                'success' => true,
-                'data'    => ['total' => $total],
-            ]);
+            return response()->json(['success' => true, 'data' => ['total' => $total]]);
 
         } catch (\Exception $e) {
-            Log::error('Facebook totalAuthors API error', [
-                'error'      => $e->getMessage(),
-                'project_id' => $request->query('project_id'),
-            ]);
-
+            Log::error('Facebook totalAuthors API error', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
@@ -334,10 +476,7 @@ class FacebookOverviewController extends Controller
             $endDate   = $request->query('end_date');
 
             if (!$projectId || !$startDate || !$endDate) {
-                return response()->json([
-                    'success' => false,
-                    'error'   => 'Missing required parameters: project_id, start_date, end_date',
-                ], 400);
+                return response()->json(['success' => false, 'error' => 'Missing required parameters: project_id, start_date, end_date'], 400);
             }
 
             $result = $this->client->volumeTotal($projectId, 'facebook', $startDate, $endDate);
@@ -351,11 +490,9 @@ class FacebookOverviewController extends Controller
                 $total = (int) $result['bymedia']['facebook'];
             }
 
-            // Chart data from trends
             $chartData = [];
             try {
                 $trendsResult = $this->client->trendsTotal($projectId, $startDate, $endDate);
-
                 if (isset($trendsResult['data']) && is_array($trendsResult['data'])) {
                     foreach ($trendsResult['data'] as $trend) {
                         $keyword = strtolower($trend['keyword'] ?? '');
@@ -369,17 +506,10 @@ class FacebookOverviewController extends Controller
                 Log::warning('Failed to load trends data for chart', ['error' => $e->getMessage()]);
             }
 
-            return response()->json([
-                'success' => true,
-                'data'    => ['total' => $total, 'chart' => $chartData],
-            ]);
+            return response()->json(['success' => true, 'data' => ['total' => $total, 'chart' => $chartData]]);
 
         } catch (\Exception $e) {
-            Log::error('Facebook volumeTotal API error', [
-                'error'      => $e->getMessage(),
-                'project_id' => $request->query('project_id'),
-            ]);
-
+            Log::error('Facebook volumeTotal API error', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
@@ -395,14 +525,10 @@ class FacebookOverviewController extends Controller
             $endDate   = $request->query('end_date');
 
             if (!$projectId || !$startDate || !$endDate) {
-                return response()->json([
-                    'success' => false,
-                    'error'   => 'Missing required parameters: project_id, start_date, end_date',
-                ], 400);
+                return response()->json(['success' => false, 'error' => 'Missing required parameters: project_id, start_date, end_date'], 400);
             }
 
-            $result = $this->client->getSentiment($projectId, 'facebook', $startDate, $endDate);
-
+            $result   = $this->client->getSentiment($projectId, 'facebook', $startDate, $endDate);
             $positive = 0;
             $negative = 0;
             $neutral  = 0;
@@ -412,32 +538,21 @@ class FacebookOverviewController extends Controller
                 $negative = (int) $result['neg'];
                 $neutral  = (int) $result['net'];
             } elseif (isset($result['bymedia']['fb'])) {
-                $d        = $result['bymedia']['fb'];
+                $d = $result['bymedia']['fb'];
                 $positive = (int) ($d['pos'] ?? 0);
                 $negative = (int) ($d['neg'] ?? 0);
                 $neutral  = (int) ($d['net'] ?? 0);
             } elseif (isset($result['bymedia']['facebook'])) {
-                $d        = $result['bymedia']['facebook'];
+                $d = $result['bymedia']['facebook'];
                 $positive = (int) ($d['pos'] ?? 0);
                 $negative = (int) ($d['neg'] ?? 0);
                 $neutral  = (int) ($d['net'] ?? 0);
             }
 
-            return response()->json([
-                'success' => true,
-                'data'    => [
-                    'positive' => $positive,
-                    'negative' => $negative,
-                    'neutral'  => $neutral,
-                ],
-            ]);
+            return response()->json(['success' => true, 'data' => ['positive' => $positive, 'negative' => $negative, 'neutral' => $neutral]]);
 
         } catch (\Exception $e) {
-            Log::error('Facebook sentimentTotal API error', [
-                'error'      => $e->getMessage(),
-                'project_id' => $request->query('project_id'),
-            ]);
-
+            Log::error('Facebook sentimentTotal API error', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
@@ -453,23 +568,16 @@ class FacebookOverviewController extends Controller
             $endDate   = $request->query('end_date');
 
             if (!$projectId || !$startDate || !$endDate) {
-                return response()->json([
-                    'success' => false,
-                    'error'   => 'Missing required parameters: project_id, start_date, end_date',
-                ], 400);
+                return response()->json(['success' => false, 'error' => 'Missing required parameters: project_id, start_date, end_date'], 400);
             }
 
             $result = $this->client->mostActiveUsers($projectId, $startDate, $endDate);
-
-            $users = [];
+            $users  = [];
 
             if (isset($result['data']['data']) && is_array($result['data']['data'])) {
                 foreach ($result['data']['data'] as $user) {
-                    // Filter only Facebook users
                     $media = strtolower($user['media'] ?? '');
-                    if ($media !== 'fb' && $media !== 'facebook') {
-                        continue;
-                    }
+                    if ($media !== 'fb' && $media !== 'facebook') continue;
 
                     $username   = $user['contentJson']['from']['name'] ?? $user['name'] ?? '';
                     $profileUrl = $user['profile_url'] ?? $user['contentJson']['from']['picture']['data']['url'] ?? '';
@@ -495,17 +603,10 @@ class FacebookOverviewController extends Controller
                 }
             }
 
-            return response()->json([
-                'success' => true,
-                'data'    => ['data' => $users],
-            ]);
+            return response()->json(['success' => true, 'data' => ['data' => $users]]);
 
         } catch (\Exception $e) {
-            Log::error('Facebook mostActiveUsers API error', [
-                'error'      => $e->getMessage(),
-                'project_id' => $request->query('project_id'),
-            ]);
-
+            Log::error('Facebook mostActiveUsers API error', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
