@@ -111,19 +111,15 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         // News APIs
         // ─────────────────────────────────────────────────────
         Route::prefix('news')->name('news.')->group(function () {
-            // Word Cloud API
             Route::get('/word-cloud', [NewsController::class, 'newsWordCloudData'])
                 ->name('word-cloud-api');
 
-            // Top Publisher API
             Route::get('/top-publisher', [NewsController::class, 'topPublisherData'])
                 ->name('top-publisher-api');
 
-            // News Timeline/Mentions API
             Route::get('/mentions', [NewsController::class, 'newsMentionsData'])
                 ->name('mentions-api');
 
-            // Articles with Quotes API
             Route::get('/articles', [NewsController::class, 'articlesData'])
                 ->name('articles-api');
         });
@@ -133,7 +129,6 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         // ─────────────────────────────────────────────────────
         Route::prefix('x')->name('x.')->group(function () {
 
-            // Overview Stats
             Route::get('/total-users', [XOverviewController::class, 'totalUsers'])
                 ->name('total-users');
 
@@ -146,11 +141,9 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/sentiment-total', [XOverviewController::class, 'sentimentTotal'])
                 ->name('sentiment-total');
 
-            // Most Active Users API (JSON)
             Route::get('/most-active-users', [XOverviewController::class, 'mostActiveUsers'])
                 ->name('most-active-users');
 
-            // Engagement
             Route::get('/most-retweets', [XOverviewController::class, 'mostRetweets'])
                 ->name('most-retweets');
 
@@ -160,19 +153,15 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/user-mentions', [XOverviewController::class, 'userMentions'])
                 ->name('user-mentions');
 
-            // Content
             Route::get('/top-hashtags-data', [XOverviewController::class, 'topHashtagsData'])
                 ->name('top-hashtags-data');
 
-            // Trending Topics API (used by both table view and word cloud)
             Route::get('/trending-topics', [XOverviewController::class, 'trendingTopicsData'])
                 ->name('trending-topics');
 
-            // Shared URLs API
             Route::get('/shared-urls', [XOverviewController::class, 'sharedUrls'])
                 ->name('shared-urls');
 
-            // Geographic
             Route::get('/post-with-location', [XOverviewController::class, 'postWithLocation'])
                 ->name('post-with-location');
 
@@ -185,7 +174,6 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/top-locations', [XOverviewController::class, 'topLocations'])
                 ->name('top-locations');
 
-            // Demographics
             Route::get('/authors-age', [XOverviewController::class, 'authorsAgeData'])
                 ->name('authors-age');
 
@@ -201,7 +189,6 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         // ─────────────────────────────────────────────────────
         Route::prefix('facebook')->name('facebook.')->group(function () {
 
-            // Overview Stats
             Route::get('/total-users', [FacebookOverviewController::class, 'totalUsers'])
                 ->name('total-users');
 
@@ -217,11 +204,11 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/most-active-users', [FacebookOverviewController::class, 'mostActiveUsers'])
                 ->name('most-active-users');
 
-            // ✅ FIX: Trending Topics API (was missing — caused 404)
+            // Trending Topics API (also used by Top Hashtags page)
             Route::get('/trending-topics', [FacebookOverviewController::class, 'trendingTopicsData'])
                 ->name('trending-topics');
 
-            // ✅ NEW: Most Viewed Posts API
+            // Most Viewed Posts API
             Route::get('/most-viewed-posts', [FacebookOverviewController::class, 'mostViewedPostsData'])
                 ->name('most-viewed-posts');
         });
@@ -256,19 +243,15 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     // News Routes
     // ─────────────────────────────────────────────────────
     Route::prefix('news')->name('news.')->group(function () {
-        // Word Cloud Page
         Route::get('/word-cloud', [NewsController::class, 'newsWordCloudPage'])
             ->name('word-cloud');
 
-        // Top Publisher Page
         Route::get('/top-publishers', [NewsController::class, 'topPublisherPage'])
             ->name('top-publishers');
 
-        // News Timeline Page
         Route::get('/timeline', [NewsController::class, 'newsTimelinePage'])
             ->name('timeline');
 
-        // Articles with Quotes Page
         Route::get('/articles', [NewsController::class, 'articlesPage'])
             ->name('articles');
     });
@@ -278,63 +261,36 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     // ─────────────────────────────────────────────────────
     Route::prefix('x')->name('x.')->group(function () {
 
-        // Overview & Main Stats
         Route::get('/overview', [XOverviewController::class, 'index'])
             ->name('overview');
 
-        // ─────────────────────────────────────────────────
-        // Trending & Content Analysis
-        // ─────────────────────────────────────────────────
-
-        // Trending Topics - Table View
         Route::get('/trending-topics', [XOverviewController::class, 'trendingTopicsPage'])
             ->name('trending-topics');
 
-        // Trending Topics - Word Cloud View
         Route::get('/trending-word-cloud', [XOverviewController::class, 'trendingWordCloudPage'])
             ->name('trending-word-cloud');
 
-        // Top Hashtags
         Route::get('/top-hashtags', [XOverviewController::class, 'topHashtagsPage'])
             ->name('top-hashtags');
 
-        // Shared URLs
         Route::get('/shared-urls', [XOverviewController::class, 'sharedUrlsPage'])
             ->name('shared-urls');
 
-        // ─────────────────────────────────────────────────
-        // Engagement & Popular Content
-        // ─────────────────────────────────────────────────
-
-        // Most Viewed Posts
         Route::get('/most-status', [XOverviewController::class, 'mostStatusPage'])
             ->name('most-status');
 
-        // Most Retweeted Posts
         Route::get('/most-retweets', [XOverviewController::class, 'mostRetweetsPage'])
             ->name('most-retweets');
 
-        // Most Active Users
         Route::get('/most-active-users', [XOverviewController::class, 'mostActiveUsersPage'])
             ->name('most-active-users');
 
-        // ─────────────────────────────────────────────────
-        // Author Demographics
-        // ─────────────────────────────────────────────────
-
-        // All Demographics in One Page
         Route::get('/authors-demographics', [XOverviewController::class, 'authorsDemographicsPage'])
             ->name('authors.demographics');
 
-        // ─────────────────────────────────────────────────
-        // Geographic Analysis
-        // ─────────────────────────────────────────────────
-
-        // Geographic Overview (Map + Stats)
         Route::get('/geographic', [XOverviewController::class, 'geographicPage'])
             ->name('geographic');
 
-        // Posts with Location Data
         Route::get('/post-with-location', [XOverviewController::class, 'postWithLocationPage'])
             ->name('post-with-location');
     });
@@ -352,9 +308,13 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/trending-topics', [FacebookOverviewController::class, 'trendingTopicsPage'])
             ->name('trending-topics');
 
-        // ✅ NEW: Most Viewed Posts Page
+        // Most Viewed Posts Page
         Route::get('/most-viewed-posts', [FacebookOverviewController::class, 'mostViewedPostsPage'])
             ->name('most-viewed-posts');
+
+        // ✅ NEW: Top Hashtags Page
+        Route::get('/top-hashtags', [FacebookOverviewController::class, 'topHashtagsPage'])
+            ->name('top-hashtags');
     });
 
     // ─────────────────────────────────────────────────────
@@ -363,17 +323,14 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     Route::get('/sentiment', [MkController::class, 'sentiment'])->name('sentiment');
     Route::get('/geographic', [MkController::class, 'geographic'])->name('geographic');
 
-    // Authors Demographics (legacy - consider migrating to X routes)
     Route::prefix('authors')->name('authors.')->group(function () {
         Route::get('/age', [MkController::class, 'authorsAge'])->name('age');
         Route::get('/gender', [MkController::class, 'authorsGender'])->name('gender');
         Route::get('/type', [MkController::class, 'authorsType'])->name('type');
     });
 
-    // Categories
     Route::get('/categories', [MkController::class, 'categories'])->name('categories');
 
-    // Engagement Metrics
     Route::prefix('engagement')->name('engagement.')->group(function () {
         Route::get('/reach', [MkController::class, 'reach'])->name('reach');
         Route::get('/urls', [MkController::class, 'sharedUrls'])->name('urls');
@@ -381,7 +338,6 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/retweets', [MkController::class, 'mostRetweets'])->name('retweets');
     });
 
-    // Content
     Route::get('/publisher', [MkController::class, 'publisherStats'])->name('publisher');
     Route::get('/topics', [MkController::class, 'recentTopics'])->name('topics');
 

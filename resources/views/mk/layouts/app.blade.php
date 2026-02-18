@@ -726,7 +726,7 @@
           class="nav-item {{ request()->routeIs('mk.news.timeline') ? 'active' : '' }}">
           <span class="menu-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
           </span>
           <span>Mention</span>
@@ -735,11 +735,11 @@
           class="nav-item {{ request()->routeIs('mk.news.articles') ? 'active' : '' }}">
           <span class="menu-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/>
-              <line x1="16" y1="17" x2="8" y2="17"/>
-              <polyline points="10 9 9 9 8 9"/>
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
             </svg>
           </span>
           <span>Articles</span>
@@ -754,17 +754,17 @@
 
       @php
       $xRoutes = [
-        'mk.x.overview',
-        'mk.x.most-status',
-        'mk.x.most-retweets',
-        'mk.x.top-hashtags',
-        'mk.x.authors.demographics',
-        'mk.x.geographic',
-        'mk.x.post-with-location',
-        'mk.x.trending-topics',
-        'mk.x.trending-word-cloud',
-        'mk.x.shared-urls',
-        'mk.x.most-active-users',
+      'mk.x.overview',
+      'mk.x.most-status',
+      'mk.x.most-retweets',
+      'mk.x.top-hashtags',
+      'mk.x.authors.demographics',
+      'mk.x.geographic',
+      'mk.x.post-with-location',
+      'mk.x.trending-topics',
+      'mk.x.trending-word-cloud',
+      'mk.x.shared-urls',
+      'mk.x.most-active-users',
       ];
       $isXActive = request()->routeIs($xRoutes);
       @endphp
@@ -926,11 +926,7 @@
 
       {{-- ✅ FACEBOOK DROPDOWN - Updated with most-viewed-posts --}}
       @php
-      $facebookRoutes = [
-        'mk.facebook.overview',
-        'mk.facebook.trending-topics',
-        'mk.facebook.most-viewed-posts',
-      ];
+      $facebookRoutes = $facebookRoutes = ['mk.facebook.overview', 'mk.facebook.trending-topics', 'mk.facebook.most-viewed-posts', 'mk.facebook.top-hashtags'];
       $isFacebookActive = request()->routeIs($facebookRoutes);
       @endphp
 
@@ -984,6 +980,18 @@
             </svg>
           </span>
           <span>Most Viewed Posts</span>
+        </a>
+        <a href="{{ route('mk.facebook.top-hashtags') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+          class="nav-item {{ request()->routeIs('mk.facebook.top-hashtags') ? 'active' : '' }}">
+          <span class="menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="4" y1="9" x2="20" y2="9" />
+              <line x1="4" y1="15" x2="20" y2="15" />
+              <line x1="10" y1="3" x2="8" y2="21" />
+              <line x1="16" y1="3" x2="14" y2="21" />
+            </svg>
+          </span>
+          <span>Top Hashtags</span>
         </a>
 
       </div>

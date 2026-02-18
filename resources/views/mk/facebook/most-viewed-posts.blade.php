@@ -1280,30 +1280,25 @@ const FBPostsLoader = {
     },
 
     createTableRow(post, rank, globalIdx) {
-        const authorName     = this.escapeHtml(post.author?.name || post.name || 'Unknown User');
-        const initials       = this.getInitials(authorName);
-        const rawAvatar      = post.avatar_url || '';
-        const avatar         = rawAvatar
-            ? (rawAvatar.startsWith('http') ? rawAvatar : `${window.location.origin}${rawAvatar}`)
-            : '';
-        const avatarHtml     = avatar
-            ? `<img src="${avatar}" alt="${authorName}" onerror="this.parentElement.innerHTML='${initials}'">`
-            : initials;
+        // FB API: author_name null, tidak ada data nama/foto user
+        const authorName     = 'Facebook User';
+        const avatarHtml     = `<svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:white;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>`;
         const rawContent     = post.content || '';
         const content        = this.escapeHtml(rawContent);
-        const likes          = post.likes    || 0;
-        const comments       = post.comments || 0;
-        const shares         = post.shares   || 0;
+        const likes          = parseInt(post.likes    || post.num_likes    || 0);
+        const comments       = parseInt(post.comments || post.num_comments || 0);
+        const shares         = parseInt(post.shares   || post.num_shares   || 0);
         const sentimentRaw   = (post.sentiment_str || 'neutral').toLowerCase();
         const sentimentLabel = post.sentiment_str || 'Neutral';
         const date           = this.formatDate(post.date_created);
         const hasContent     = rawContent.trim().length > 0;
+        const postUrl        = post.url || (post.sub_id ? `https://facebook.com/${post.sub_id}` : null);
 
         return `<tr>
             <td class="rank-cell">${rank}</td>
             <td class="author-cell">
                 <div class="author-info">
-                    <div class="author-avatar">${avatarHtml}</div>
+                    <div class="author-avatar" style="background: linear-gradient(135deg, #1877f2 0%, #0a5fd8 100%);">${avatarHtml}</div>
                     <div class="author-details">
                         <div class="author-name" title="${authorName}">${authorName}</div>
                         <div class="author-handle">Facebook</div>
@@ -1345,30 +1340,24 @@ const FBPostsLoader = {
         const post = this.allPosts[globalIdx];
         if (!post) return;
 
-        const authorName     = this.escapeHtml(post.author?.name || post.name || 'Unknown User');
-        const initials       = this.getInitials(authorName);
-        const rawAvatar      = post.avatar_url || '';
-        const avatar         = rawAvatar
-            ? (rawAvatar.startsWith('http') ? rawAvatar : `${window.location.origin}${rawAvatar}`)
-            : '';
-        const avatarHtml     = avatar
-            ? `<img src="${avatar}" alt="${authorName}" onerror="this.parentElement.innerHTML='${initials}'">`
-            : initials;
+        // FB API: author_name null, tidak ada data nama/foto user
+        const authorName     = 'Facebook User';
+        const avatarHtml     = `<svg viewBox="0 0 24 24" style="width:32px;height:32px;fill:white;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>`;
         const rawContent     = post.content || '';
         const content        = this.escapeHtml(rawContent);
-        const likes          = post.likes    || 0;
-        const comments       = post.comments || 0;
-        const shares         = post.shares   || 0;
+        const likes          = parseInt(post.likes    || post.num_likes    || 0);
+        const comments       = parseInt(post.comments || post.num_comments || 0);
+        const shares         = parseInt(post.shares   || post.num_shares   || 0);
         const engagement     = likes + comments + shares;
         const sentimentRaw   = (post.sentiment_str || 'neutral').toLowerCase();
         const sentimentLabel = post.sentiment_str || 'Neutral';
         const date           = this.formatDate(post.date_created);
-        const fbUrl          = post.sub_id ? `https://facebook.com/${post.sub_id}` : null;
+        const fbUrl          = post.url || (post.sub_id ? `https://facebook.com/${post.sub_id}` : null);
         const hasContent     = rawContent.trim().length > 0;
 
         document.getElementById('modalBody').innerHTML = `
             <div class="modal-author-section">
-                <div class="modal-avatar">${avatarHtml}</div>
+                <div class="modal-avatar" style="background: linear-gradient(135deg, #1877f2 0%, #0a5fd8 100%);">${avatarHtml}</div>
                 <div class="modal-author-info">
                     <h4 class="modal-author-name">${authorName}</h4>
                     <div class="modal-author-handle">Facebook</div>
@@ -1532,4 +1521,4 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', e => { if (e.key === 'Escape') FBPostsLoader.closeModal(); });
 });
 </script>
-@endsection 
+@endsection
