@@ -89,6 +89,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/geo-users', [DataOverviewApiController::class, 'geoUsers'])
             ->name('geo-users');
 
+            Route::get('/geo-user',      [FacebookOverviewController::class, 'geoUser'])     ->name('geo-user');
+Route::get('/geo-sentiment', [FacebookOverviewController::class, 'geoSentiment'])->name('geo-sentiment');
+Route::get('/top-locations', [FacebookOverviewController::class, 'topLocations'])->name('top-locations');
+
         // ─────────────────────────────────────────────────────
         // Topic Map API
         // ─────────────────────────────────────────────────────
@@ -211,6 +215,16 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             // Most Viewed Posts API
             Route::get('/most-viewed-posts', [FacebookOverviewController::class, 'mostViewedPostsData'])
                 ->name('most-viewed-posts');
+
+            // ✅ NEW: Facebook Author Demographics APIs
+            Route::get('/authors-age', [FacebookOverviewController::class, 'authorsAgeData'])
+                ->name('authors-age');
+
+            Route::get('/authors-gender', [FacebookOverviewController::class, 'authorsGenderData'])
+                ->name('authors-gender');
+
+            Route::get('/authors-type', [FacebookOverviewController::class, 'authorsTypeData'])
+                ->name('authors-type');
         });
     });
 
@@ -312,9 +326,15 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/most-viewed-posts', [FacebookOverviewController::class, 'mostViewedPostsPage'])
             ->name('most-viewed-posts');
 
-        // ✅ NEW: Top Hashtags Page
+        // Top Hashtags Page
         Route::get('/top-hashtags', [FacebookOverviewController::class, 'topHashtagsPage'])
             ->name('top-hashtags');
+
+        // ✅ NEW: Author Profiles / Demographics Page
+        Route::get('/authors-demographics', [FacebookOverviewController::class, 'authorsDemographicsPage'])
+            ->name('authors.demographics');
+            Route::get('/geographic', [FacebookOverviewController::class, 'geographicPage'])->name('geographic');
+
     });
 
     // ─────────────────────────────────────────────────────

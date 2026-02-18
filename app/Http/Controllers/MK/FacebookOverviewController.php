@@ -652,5 +652,311 @@ class FacebookOverviewController extends Controller
         ]);
     }
 }
+public function authorsDemographicsPage(Request $request)
+    {
+        try {
+            $projectsData = $this->client->listProjects(0, 100);
+            $projects     = $projectsData['data'] ?? [];
+
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+
+                if ($projectId) {
+                    return redirect()->route('mk.facebook.authors.demographics', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+            return view('mk.facebook.authors-demographics')->with([
+                'projectId' => $projectId,
+                'startDate' => $startDate,
+                'endDate'   => $endDate,
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Facebook Authors Demographics Page Error', ['error' => $e->getMessage()]);
+
+            return view('mk.facebook.authors-demographics')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * API: Get Facebook Authors Age Data
+     */
+    public function authorsAgeData(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+
+            if (!$projectId || !$startDate || !$endDate) {
+                return response()->json(['error' => 'Missing required parameters'], 400);
+            }
+
+            $result = $this->client->authorsAge($projectId, 'facebook', $startDate, $endDate);
+
+            Log::info('FB authorsAge API response', [
+                'count'  => is_array($result) ? count($result) : 0,
+                'sample' => is_array($result) ? array_slice($result, 0, 2, true) : [],
+            ]);
+
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            Log::error('FB authorsAge API error', [
+                'error'      => $e->getMessage(),
+                'project_id' => $request->query('project_id'),
+            ]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * API: Get Facebook Authors Gender Data
+     */
+    public function authorsGenderData(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+
+            if (!$projectId || !$startDate || !$endDate) {
+                return response()->json(['error' => 'Missing required parameters'], 400);
+            }
+
+            $result = $this->client->authorsGender($projectId, 'facebook', $startDate, $endDate);
+
+            Log::info('FB authorsGender API response', [
+                'count'  => is_array($result) ? count($result) : 0,
+                'sample' => is_array($result) ? array_slice($result, 0, 2, true) : [],
+            ]);
+
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            Log::error('FB authorsGender API error', [
+                'error'      => $e->getMessage(),
+                'project_id' => $request->query('project_id'),
+            ]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * API: Get Facebook Authors Type Data
+     */
+    public function authorsTypeData(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+
+            if (!$projectId || !$startDate || !$endDate) {
+                return response()->json(['error' => 'Missing required parameters'], 400);
+            }
+
+            $result = $this->client->authorsType($projectId, 'facebook', $startDate, $endDate);
+
+            Log::info('FB authorsType API response', [
+                'count'  => is_array($result) ? count($result) : 0,
+                'sample' => is_array($result) ? array_slice($result, 0, 2, true) : [],
+            ]);
+
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            Log::error('FB authorsType API error', [
+                'error'      => $e->getMessage(),
+                'project_id' => $request->query('project_id'),
+            ]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+public function geographicPage(Request $request)
+    {
+        try {
+            $projectsData = $this->client->listProjects(0, 100);
+            $projects     = $projectsData['data'] ?? [];
+
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+
+                if ($projectId) {
+                    return redirect()->route('mk.facebook.geographic', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+            return view('mk.facebook.geographic')->with([
+                'projectId' => $projectId,
+                'startDate' => $startDate,
+                'endDate'   => $endDate,
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Facebook Geographic Page Error', ['error' => $e->getMessage()]);
+
+            return view('mk.facebook.geographic')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * API: Get Facebook Geo User Data (filtered to FB only via 'fb' keyword)
+     */
+    public function geoUser(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+
+            if (!$projectId || !$startDate || !$endDate) {
+                return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
+            }
+
+            // Gunakan 'fb' — sama seperti pattern FB lainnya di controller ini
+            $result = $this->client->geoUser($projectId, 'fb', $startDate, $endDate);
+
+            Log::info('FB geoUser raw response', [
+                'type'   => gettype($result),
+                'keys'   => is_array($result) ? array_keys($result) : [],
+                'sample' => is_array($result) ? array_slice($result, 0, 2, true) : $result,
+            ]);
+
+            return response()->json(['success' => true, 'data' => $result]);
+
+        } catch (\Exception $e) {
+            Log::error('FB geoUser API error', ['error' => $e->getMessage(), 'project_id' => $request->query('project_id')]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * API: Get Facebook Geo Sentiment Data (filtered to FB only)
+     */
+    public function geoSentiment(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+
+            if (!$projectId || !$startDate || !$endDate) {
+                return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
+            }
+
+            $result = $this->client->geoSentiment($projectId, 'fb', $startDate, $endDate);
+
+            Log::info('FB geoSentiment raw response', [
+                'type'   => gettype($result),
+                'keys'   => is_array($result) ? array_keys($result) : [],
+                'sample' => is_array($result) ? array_slice($result, 0, 2, true) : $result,
+            ]);
+
+            return response()->json(['success' => true, 'data' => $result]);
+
+        } catch (\Exception $e) {
+            Log::error('FB geoSentiment API error', ['error' => $e->getMessage(), 'project_id' => $request->query('project_id')]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * API: Get Facebook Top Locations Data
+     */
+    public function topLocations(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+
+            if (!$projectId || !$startDate || !$endDate) {
+                return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
+            }
+
+            $result    = $this->client->topLocations($projectId, 'fb', $startDate, $endDate);
+            $locations = [];
+
+            // Normalize berbagai kemungkinan shape response
+            $items = [];
+            if (isset($result['data']) && is_array($result['data'])) {
+                $items = $result['data'];
+            } elseif (is_array($result)) {
+                $items = $result;
+            }
+
+            foreach ($items as $item) {
+                if (!is_array($item)) continue;
+
+                $name  = $item['name'] ?? $item['location'] ?? $item['city'] ?? '';
+                $count = (int) ($item['count'] ?? $item['total'] ?? $item['y'] ?? 0);
+
+                if ($name && $count > 0) {
+                    $locations[] = ['name' => $name, 'count' => $count];
+                }
+            }
+
+            usort($locations, fn($a, $b) => $b['count'] - $a['count']);
+
+            Log::info('FB topLocations processed', ['count' => count($locations)]);
+
+            return response()->json(['success' => true, 'data' => $locations]);
+
+        } catch (\Exception $e) {
+            Log::error('FB topLocations API error', ['error' => $e->getMessage(), 'project_id' => $request->query('project_id')]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }

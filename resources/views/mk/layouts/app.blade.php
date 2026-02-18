@@ -924,76 +924,107 @@
 
       </div>
 
-      {{-- ✅ FACEBOOK DROPDOWN - Updated with most-viewed-posts --}}
-      @php
-      $facebookRoutes = $facebookRoutes = ['mk.facebook.overview', 'mk.facebook.trending-topics', 'mk.facebook.most-viewed-posts', 'mk.facebook.top-hashtags'];
-      $isFacebookActive = request()->routeIs($facebookRoutes);
-      @endphp
+    @php
+$facebookRoutes = [
+    'mk.facebook.overview',
+    'mk.facebook.trending-topics',
+    'mk.facebook.most-viewed-posts',
+    'mk.facebook.top-hashtags',
+    'mk.facebook.authors.demographics',
+];
+$isFacebookActive = request()->routeIs($facebookRoutes);
+@endphp
+<div class="nav-item dropdown-trigger {{ $isFacebookActive ? 'has-active-child' : '' }}"
+  onclick="toggleDropdown('facebookDropdown', this)"
+  id="facebookTrigger">
+  <span class="nav-icon">
+    <svg viewBox="0 0 24 24">
+      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+    </svg>
+  </span>
+  <span>Facebook</span>
+  <span class="dropdown-arrow">▼</span>
+</div>
 
-      <div class="nav-item dropdown-trigger {{ $isFacebookActive ? 'has-active-child' : '' }}"
-        onclick="toggleDropdown('facebookDropdown', this)"
-        id="facebookTrigger">
-        <span class="nav-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-          </svg>
-        </span>
-        <span>Facebook</span>
-        <span class="dropdown-arrow">▼</span>
-      </div>
+<div id="facebookDropdown" class="nav-sub" style="display: {{ $isFacebookActive ? 'block' : 'none' }};">
 
-      <div id="facebookDropdown" class="nav-sub" style="display: {{ $isFacebookActive ? 'block' : 'none' }};">
+  {{-- Overview --}}
+  <a href="{{ route('mk.facebook.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+    class="nav-item {{ request()->routeIs('mk.facebook.overview') ? 'active' : '' }}">
+    <span class="menu-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7" />
+        <rect x="14" y="3" width="7" height="7" />
+        <rect x="14" y="14" width="7" height="7" />
+        <rect x="3" y="14" width="7" height="7" />
+      </svg>
+    </span>
+    <span>Overview</span>
+  </a>
 
-        {{-- Overview --}}
-        <a href="{{ route('mk.facebook.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-          class="nav-item {{ request()->routeIs('mk.facebook.overview') ? 'active' : '' }}">
-          <span class="menu-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="7" height="7" />
-              <rect x="14" y="3" width="7" height="7" />
-              <rect x="14" y="14" width="7" height="7" />
-              <rect x="3" y="14" width="7" height="7" />
-            </svg>
-          </span>
-          <span>Overview</span>
-        </a>
+  {{-- Trending Topics --}}
+  <a href="{{ route('mk.facebook.trending-topics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+    class="nav-item {{ request()->routeIs('mk.facebook.trending-topics') ? 'active' : '' }}">
+    <span class="menu-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+        <polyline points="17 6 23 6 23 12" />
+      </svg>
+    </span>
+    <span>Trending Topics</span>
+  </a>
 
-        {{-- Trending Topics --}}
-        <a href="{{ route('mk.facebook.trending-topics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-          class="nav-item {{ request()->routeIs('mk.facebook.trending-topics') ? 'active' : '' }}">
-          <span class="menu-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-              <polyline points="17 6 23 6 23 12" />
-            </svg>
-          </span>
-          <span>Trending Topics</span>
-        </a>
+  {{-- Most Viewed Posts --}}
+  <a href="{{ route('mk.facebook.most-viewed-posts') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+    class="nav-item {{ request()->routeIs('mk.facebook.most-viewed-posts') ? 'active' : '' }}">
+    <span class="menu-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+        <circle cx="12" cy="12" r="3" />
+      </svg>
+    </span>
+    <span>Most Viewed Posts</span>
+  </a>
 
-        {{-- ✅ NEW: Most Viewed Posts --}}
-        <a href="{{ route('mk.facebook.most-viewed-posts') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-          class="nav-item {{ request()->routeIs('mk.facebook.most-viewed-posts') ? 'active' : '' }}">
-          <span class="menu-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          </span>
-          <span>Most Viewed Posts</span>
-        </a>
-        <a href="{{ route('mk.facebook.top-hashtags') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-          class="nav-item {{ request()->routeIs('mk.facebook.top-hashtags') ? 'active' : '' }}">
-          <span class="menu-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="4" y1="9" x2="20" y2="9" />
-              <line x1="4" y1="15" x2="20" y2="15" />
-              <line x1="10" y1="3" x2="8" y2="21" />
-              <line x1="16" y1="3" x2="14" y2="21" />
-            </svg>
-          </span>
-          <span>Top Hashtags</span>
-        </a>
+  {{-- Top Hashtags --}}
+  <a href="{{ route('mk.facebook.top-hashtags') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+    class="nav-item {{ request()->routeIs('mk.facebook.top-hashtags') ? 'active' : '' }}">
+    <span class="menu-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="4" y1="9" x2="20" y2="9" />
+        <line x1="4" y1="15" x2="20" y2="15" />
+        <line x1="10" y1="3" x2="8" y2="21" />
+        <line x1="16" y1="3" x2="14" y2="21" />
+      </svg>
+    </span>
+    <span>Top Hashtags</span>
+  </a>
 
+  {{-- ✅ NEW: Author Profiles --}}
+  <a href="{{ route('mk.facebook.authors.demographics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+    class="nav-item {{ request()->routeIs('mk.facebook.authors.demographics') ? 'active' : '' }}">
+    <span class="menu-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    </span>
+    <span>Author Profiles</span>
+  </a>
+  <a href="{{ route('mk.facebook.geographic') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+   class="nav-item {{ request()->routeIs('mk.facebook.geographic') ? 'active' : '' }}">
+    <span class="menu-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="10" r="3"/>
+            <path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z"/>
+        </svg>
+    </span>
+    <span>Geographic</span>
+</a>
+
+</div>
       </div>
 
       <!-- Instagram -->
