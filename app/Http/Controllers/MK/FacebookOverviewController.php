@@ -18,13 +18,33 @@ class FacebookOverviewController extends Controller
     }
 
     /**
+     * Fetch all projects without limit using pagination loop.
+     */
+    private function getAllProjects(): array
+    {
+        $allProjects = [];
+        $offset      = 0;
+        $limit       = 100;
+
+        do {
+            $projectsData = $this->client->listProjects($offset, $limit);
+            $data         = $projectsData['data'] ?? [];
+            $allProjects  = array_merge($allProjects, $data);
+            $offset      += $limit;
+
+            $total = $projectsData['total'] ?? $projectsData['meta']['total'] ?? null;
+        } while (count($data) === $limit && ($total === null || $offset < $total));
+
+        return $allProjects;
+    }
+
+    /**
      * Display Facebook Overview Page
      */
     public function index(Request $request)
     {
         try {
-            $projectsData = $this->client->listProjects(0, 100);
-            $projects = $projectsData['data'] ?? [];
+            $projects = $this->getAllProjects();
 
             $projectId = $request->query('project_id');
 
@@ -85,9 +105,7 @@ class FacebookOverviewController extends Controller
     public function trendingTopicsPage(Request $request)
     {
         try {
-            $projectsData = $this->client->listProjects(0, 100);
-            $projects     = $projectsData['data'] ?? [];
-
+            $projects  = $this->getAllProjects();
             $projectId = $request->query('project_id');
 
             if (!$projectId && count($projects) > 0) {
@@ -207,9 +225,7 @@ class FacebookOverviewController extends Controller
     public function mostViewedPostsPage(Request $request)
     {
         try {
-            $projectsData = $this->client->listProjects(0, 100);
-            $projects     = $projectsData['data'] ?? [];
-
+            $projects  = $this->getAllProjects();
             $projectId = $request->query('project_id');
 
             if (!$projectId && count($projects) > 0) {
@@ -565,9 +581,7 @@ class FacebookOverviewController extends Controller
     public function topHashtagsPage(Request $request)
     {
         try {
-            $projectsData = $this->client->listProjects(0, 100);
-            $projects     = $projectsData['data'] ?? [];
-
+            $projects  = $this->getAllProjects();
             $projectId = $request->query('project_id');
 
             if (!$projectId && count($projects) > 0) {
@@ -612,9 +626,7 @@ class FacebookOverviewController extends Controller
     public function authorsDemographicsPage(Request $request)
     {
         try {
-            $projectsData = $this->client->listProjects(0, 100);
-            $projects     = $projectsData['data'] ?? [];
-
+            $projects  = $this->getAllProjects();
             $projectId = $request->query('project_id');
 
             if (!$projectId && count($projects) > 0) {
@@ -737,9 +749,7 @@ class FacebookOverviewController extends Controller
     public function geographicPage(Request $request)
     {
         try {
-            $projectsData = $this->client->listProjects(0, 100);
-            $projects     = $projectsData['data'] ?? [];
-
+            $projects  = $this->getAllProjects();
             $projectId = $request->query('project_id');
 
             if (!$projectId && count($projects) > 0) {
@@ -779,7 +789,6 @@ class FacebookOverviewController extends Controller
 
     /**
      * API: Get Facebook Geo User Data
-     * Memanggil geoUserFacebook() di MediaKernelsClient — khusus FB (media='fb')
      */
     public function geoUser(Request $request)
     {
@@ -810,7 +819,6 @@ class FacebookOverviewController extends Controller
 
     /**
      * API: Get Facebook Geo Sentiment Data
-     * Memanggil geoSentimentFacebook() di MediaKernelsClient — khusus FB (media='fb')
      */
     public function geoSentiment(Request $request)
     {
@@ -841,7 +849,6 @@ class FacebookOverviewController extends Controller
 
     /**
      * API: Get Facebook Top Locations Data
-     * Memanggil topLocationsFacebook() di MediaKernelsClient — khusus FB (media='fb')
      */
     public function topLocations(Request $request)
     {
@@ -886,39 +893,90 @@ class FacebookOverviewController extends Controller
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
+
+    // ─────────────────────────────────────────────────────
+    // TRENDING WORD CLOUD
+    // ─────────────────────────────────────────────────────
+
     public function trendingWordCloudPage(Request $request)
-{
-    try {
-        $projectsData = $this->client->listProjects(0, 100);
-        $projects     = $projectsData['data'] ?? [];
+    {
+        try {
+            $projects  = $this->getAllProjects();
+            $projectId = $request->query('project_id');
 
-        $projectId = $request->query('project_id');
-
-        if (!$projectId && count($projects) > 0) {
-            $projectId = $projects[0]['id'] ?? null;
-            if ($projectId) {
-                return redirect()->route('mk.facebook.trending-word-cloud', [
-                    'project_id' => $projectId,
-                    'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
-                    'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
-                ]);
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+                if ($projectId) {
+                    return redirect()->route('mk.facebook.trending-word-cloud', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
             }
-        }
 
-        return view('mk.facebook.facebook-trending-word-cloud')->with([
-            'projectId' => $projectId,
-            'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
-            'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
-            'projects'  => $projects,
-        ]);
-    } catch (\Exception $e) {
-        return view('mk.facebook.facebook-trending-word-cloud')->with([
-            'projectId' => null,
-            'startDate' => now()->subDays(6)->format('Y-m-d'),
-            'endDate'   => now()->format('Y-m-d'),
-            'projects'  => [],
-            'error'     => $e->getMessage(),
-        ]);
+            return view('mk.facebook.facebook-trending-word-cloud')->with([
+                'projectId' => $projectId,
+                'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            return view('mk.facebook.facebook-trending-word-cloud')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
+        }
     }
-}
+
+    // ─────────────────────────────────────────────────────
+    // AI ANALYSIS
+    // ─────────────────────────────────────────────────────
+
+    public function aiAnalysisPage(Request $request)
+    {
+        try {
+            $projects  = $this->getAllProjects();
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+
+                if ($projectId) {
+                    return redirect()->route('mk.facebook.ai-analysis', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+            return view('mk.facebook.ai-analysis')->with([
+                'projectId' => $projectId,
+                'startDate' => $startDate,
+                'endDate'   => $endDate,
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Facebook AI Analysis Page Error', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return view('mk.facebook.ai-analysis')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
+        }
+    }
 }

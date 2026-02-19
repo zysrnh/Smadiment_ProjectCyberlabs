@@ -112,7 +112,6 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         // ─────────────────────────────────────────────────────
         Route::prefix('news')->name('news.')->group(function () {
 
-            // ── Existing ──────────────────────────────────────
             Route::get('/word-cloud', [NewsController::class, 'newsWordCloudData'])
                 ->name('word-cloud-api');
 
@@ -125,7 +124,6 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/articles', [NewsController::class, 'articlesData'])
                 ->name('articles-api');
 
-            // ── NEW: Platform Top Status APIs ─────────────────
             Route::get('/tiktok-top-status', [NewsController::class, 'tiktokTopStatus'])
                 ->name('tiktok-top-status');
 
@@ -138,13 +136,12 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/ytb-top-status', [NewsController::class, 'ytbTopStatus'])
                 ->name('ytb-top-status');
 
-            // ── NEW: AI Analysis Proxy ─────────────────────────
             Route::post('/ai-proxy', [NewsController::class, 'aiAnalysisProxy'])
                 ->name('ai-proxy');
         });
 
         // ─────────────────────────────────────────────────────
-        // X (Twitter) APIs - CONSOLIDATED
+        // X (Twitter) APIs
         // ─────────────────────────────────────────────────────
         Route::prefix('x')->name('x.')->group(function () {
 
@@ -238,14 +235,12 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/authors-type', [FacebookOverviewController::class, 'authorsTypeData'])
                 ->name('authors-type');
 
-            // ✅ FIXED: geo routes sekarang benar di dalam prefix facebook
             Route::get('/geo-user', [FacebookOverviewController::class, 'geoUser'])
                 ->name('geo-user');
 
             Route::get('/geo-sentiment', [FacebookOverviewController::class, 'geoSentiment'])
                 ->name('geo-sentiment');
 
-            // ✅ FIXED: rename agar tidak conflict dengan TopAnalyticsController top-locations
             Route::get('/top-locations', [FacebookOverviewController::class, 'topLocations'])
                 ->name('top-locations');
         });
@@ -292,7 +287,6 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/articles', [NewsController::class, 'articlesPage'])
             ->name('articles');
 
-        // ── NEW: AI Analysis Page ──────────────────────────
         Route::get('/ai-analysis', [NewsController::class, 'aiAnalysisPage'])
             ->name('ai-analysis');
     });
@@ -334,6 +328,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
 
         Route::get('/post-with-location', [XOverviewController::class, 'postWithLocationPage'])
             ->name('post-with-location');
+
+        // ✅ X AI Analysis Page
+        Route::get('/ai-analysis', [XOverviewController::class, 'aiAnalysisPage'])
+            ->name('ai-analysis');
     });
 
     // ─────────────────────────────────────────────────────
@@ -359,9 +357,12 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/geographic', [FacebookOverviewController::class, 'geographicPage'])
             ->name('geographic');
 
-        // ✅ NEW: Facebook Trending Word Cloud
         Route::get('/trending-word-cloud', [FacebookOverviewController::class, 'trendingWordCloudPage'])
             ->name('trending-word-cloud');
+
+        // ✅ Facebook AI Analysis Page
+        Route::get('/ai-analysis', [FacebookOverviewController::class, 'aiAnalysisPage'])
+            ->name('ai-analysis');
     });
 
     // ─────────────────────────────────────────────────────
