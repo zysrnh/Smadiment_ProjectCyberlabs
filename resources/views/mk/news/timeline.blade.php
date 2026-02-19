@@ -78,73 +78,83 @@
   .apply-btn svg { fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; }
 
   /* ── DATE PICKER MODAL ── */
-  .dp-modal {
-    position: fixed; inset: 0; z-index: 9999;
-    display: none; align-items: center; justify-content: center;
-    background: rgba(0,0,0,.5); backdrop-filter: blur(8px);
+  .date-picker-modal {
+    position: fixed; top:0; left:0; right:0; bottom:0;
+    z-index: 10000; display: none;
+    align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
   }
-  .dp-modal.open { display: flex; }
-  .dp-box {
-    background: #fff; border-radius: 16px;
-    box-shadow: 0 25px 50px rgba(0,0,0,.3);
-    display: flex; max-width: 900px; width: 92%; max-height: 90vh; overflow: auto;
-    animation: dpUp .25s ease-out;
+  .date-picker-modal.show { display: flex; }
+  .date-picker-overlay { position:absolute; top:0; left:0; right:0; bottom:0; cursor:pointer; }
+  .date-picker-container {
+    position: relative; background: #ffffff; border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    display: flex; max-width: 900px; width: 90%; max-height: 90vh;
+    z-index: 10001; animation: dpUp 0.3s ease-out;
   }
-  @keyframes dpUp { from{opacity:0;transform:translateY(20px) scale(.95)} to{opacity:1;transform:translateY(0) scale(1)} }
-  .dp-sidebar {
-    width: 180px; background: var(--bg-gray-50); border-right: 1px solid var(--border-gray);
-    border-radius: 16px 0 0 16px; padding: 16px 12px;
+  @keyframes dpUp {
+    from { opacity:0; transform:translateY(20px) scale(0.95); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
+  }
+  .date-picker-sidebar {
+    width: 180px; background: var(--bg-gray-50);
+    border-right: 1px solid var(--border-gray);
+    padding: 16px 12px; border-radius: 16px 0 0 16px;
     display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;
   }
-  .dp-preset {
-    padding: 10px 16px; background: transparent; border: none; border-radius: 8px;
-    font-size: 13px; font-weight: 500; color: var(--text-primary);
-    text-align: left; cursor: pointer; transition: all .2s;
+  .date-preset {
+    padding: 10px 16px; background: transparent; border: none;
+    border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--text-primary);
+    text-align: left; cursor: pointer; transition: all 0.2s;
   }
-  .dp-preset:hover  { background: #fff; color: var(--primary-green); }
-  .dp-preset.active { background: var(--primary-green); color: #fff; }
-  .dp-body { flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
-  .dp-nav  { display: flex; align-items: flex-start; gap: 14px; }
-  .nav-arrow {
-    width: 36px; height: 36px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    border: 1px solid var(--border-gray); border-radius: 8px; background: var(--bg-gray-50);
-    cursor: pointer; transition: all .2s;
+  .date-preset:hover  { background: var(--bg-white); color: var(--primary-green); }
+  .date-preset.active { background: var(--primary-green); color: white; }
+  .date-picker-content { flex:1; padding:24px; display:flex; flex-direction:column; overflow:hidden; }
+  .date-picker-header  { display:flex; align-items:flex-start; gap:20px; margin-bottom:20px; }
+  .nav-btn {
+    width:36px; height:36px; border-radius:8px;
+    background:var(--bg-gray-50); border:1px solid var(--border-gray);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:all 0.2s; flex-shrink:0;
   }
-  .nav-arrow:hover { background: var(--primary-green); border-color: var(--primary-green); color: #fff; }
-  .cals-wrap { display: flex; gap: 24px; flex: 1; }
-  .cal { flex: 1; }
-  .cal-month { font-size: 16px; font-weight: 700; color: var(--text-primary); text-align: center; margin-bottom: 16px; }
-  .cal-grid  { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
-  .wday { text-align: center; font-size: 11px; font-weight: 700; color: var(--text-secondary); padding: 8px 0; }
-  .cday {
-    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 500; border-radius: 8px;
-    cursor: pointer; border: none; background: transparent;
-    transition: all .15s; color: var(--text-primary);
+  .nav-btn:hover { background:var(--primary-green); border-color:var(--primary-green); color:white; }
+  .nav-btn svg { width:20px; height:20px; }
+  .calendars-wrapper { display:flex; gap:24px; flex:1; min-height:0; }
+  .calendar { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .calendar-month { font-size:16px; font-weight:700; color:var(--text-primary); margin-bottom:16px; text-align:center; }
+  .calendar-weekdays { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:8px; }
+  .weekday { text-align:center; font-size:11px; font-weight:700; color:var(--text-secondary); padding:8px 0; }
+  .calendar-days { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .calendar-day {
+    aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:500; border-radius:8px; cursor:pointer;
+    transition:all 0.2s; color:var(--text-primary); background:transparent; border:none; padding:0;
   }
-  .cday:hover:not(.other):not(.dis) { background: var(--bg-gray-100); }
-  .cday.other  { color: #cbd5e1; pointer-events: none; }
-  .cday.dis    { color: #e2e8f0; pointer-events: none; }
-  .cday.today  { border: 2px solid var(--primary-green); }
-  .cday.sel    { background: var(--primary-green); color: #fff; }
-  .cday.range  { background: rgba(3,128,71,.1); color: var(--primary-green); }
-  .dp-display {
-    padding: 16px 20px; background: var(--bg-gray-50); border: 1px solid var(--border-gray);
-    border-radius: var(--rs); text-align: center;
-    font-size: 14px; font-weight: 600; color: var(--text-primary);
+  .calendar-day:hover:not(.disabled):not(.other-month) { background:var(--bg-gray-100); }
+  .calendar-day.other-month { color:#cbd5e1; cursor:default; }
+  .calendar-day.disabled    { color:#e2e8f0; cursor:not-allowed; }
+  .calendar-day.today       { border:2px solid var(--primary-green); }
+  .calendar-day.selected    { background:var(--primary-green); color:white; }
+  .calendar-day.in-range    { background:rgba(3,128,71,0.1); color:var(--primary-green); }
+  .calendar-day.range-start,
+  .calendar-day.range-end   { background:var(--primary-green); color:white; }
+  .date-picker-display {
+    padding:16px 20px; background:var(--bg-gray-50); border-radius:12px;
+    text-align:center; margin-bottom:20px; border:1px solid var(--border-gray);
   }
-  .dp-footer { display: flex; gap: 12px; justify-content: flex-end; }
-  .btn-cancel {
-    padding: 10px 24px; background: var(--bg-gray-100); border: none; border-radius: 10px;
-    font-size: 14px; font-weight: 600; cursor: pointer; color: var(--text-primary);
+  .date-picker-display span { font-size:14px; font-weight:600; color:var(--text-primary); }
+  .date-picker-footer { display:flex; gap:12px; justify-content:flex-end; }
+  .cancel-btn, .apply-date-btn {
+    padding:10px 24px; border-radius:10px;
+    font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; border:none;
   }
-  .btn-apply-dp {
-    padding: 10px 24px;
-    background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
-    color: #fff; border: none; border-radius: 10px;
-    font-size: 14px; font-weight: 600; cursor: pointer;
+  .cancel-btn { background:var(--bg-gray-100); color:var(--text-primary); }
+  .cancel-btn:hover { background:var(--border-gray); }
+  .apply-date-btn {
+    background:linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+    color:white; box-shadow:0 4px 12px rgba(3,128,71,0.2);
   }
+  .apply-date-btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(3,128,71,0.3); }
 
   /* ── DO-CARD (shared base) ── */
   .do-card {
@@ -183,32 +193,41 @@
     background: var(--bg-gray-100); color: var(--text-secondary);
   }
 
-  /* ── STATS CARD ── */
-  .stats-grid {
+  /* ── OVERVIEW STATS (donut layout) ── */
+  .overview-body {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: 1fr 1px 1fr;
+    min-height: 240px;
   }
-  .stat-item {
-    padding: 20px 22px; border-right: 1px solid var(--border-gray); text-align: center;
+  .overview-panel { padding: 24px 28px; display: flex; flex-direction: column; justify-content: center; }
+  .overview-divider { background: var(--border-gray); }
+  .overview-title {
+    font-size: 11px; font-weight: 700; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: .6px; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 8px;
   }
-  .stat-item:last-child { border-right: none; }
-  .stat-lbl {
-    font-size: 10px; font-weight: 700; color: var(--text-secondary);
-    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px;
+  .overview-title-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .donut-row { display: flex; align-items: center; gap: 20px; }
+  .donut-canvas-wrap { flex-shrink: 0; position: relative; width: 150px; height: 150px; }
+  .donut-center-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    text-align: center; pointer-events: none;
   }
-  .stat-num {
-    font-size: 30px; font-weight: 700; line-height: 1; color: var(--text-primary);
+  .donut-center-num  { font-size: 19px; font-weight: 800; color: var(--text-primary); line-height: 1; }
+  .donut-center-lbl  { font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
+  .donut-legend { display: flex; flex-direction: column; gap: 7px; flex: 1; }
+  .dl-item { display: flex; align-items: center; gap: 8px; }
+  .dl-dot  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .dl-name { font-size: 12px; font-weight: 600; color: var(--text-secondary); flex: 1; }
+  .dl-val  { font-size: 13px; font-weight: 800; color: var(--text-primary); }
+  .dl-pct  { font-size: 10px; font-weight: 600; color: var(--text-secondary); min-width: 34px; text-align: right; }
+  .progress-bar-wrap { height: 3px; background: var(--bg-gray-100); overflow: hidden; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary-green), #34d399); width: 0%; transition: width .4s ease; }
+  @media(max-width:768px){
+    .overview-body { grid-template-columns: 1fr; }
+    .overview-divider { height: 1px; width: auto; }
+    .donut-canvas-wrap { width: 120px; height: 120px; }
   }
-  .stat-num.c-news   { color: var(--blue);   }
-  .stat-num.c-twit   { color: var(--sky);    }
-  .stat-num.c-fb     { color: var(--indigo); }
-  .stat-num.c-ig     { color: var(--pink);   }
-  .stat-num.c-ytb    { color: var(--red);    }
-  .stat-num.c-tiktok { color: #374151; }
-  .stat-num.c-pos    { color: #16a34a; }
-  .stat-num.c-neg    { color: var(--red); }
-  .stat-num.c-neu    { color: var(--text-secondary); }
-  .stats-divider { height: 1px; background: var(--bg-gray-100); margin: 0 20px; }
 
   /* ── CHART CARD ── */
   .chart-controls {
@@ -403,12 +422,15 @@
 
   @media(max-width:768px){
     .dashboard-container{ padding: 16px; }
-    .stats-grid{ grid-template-columns: repeat(2,1fr); }
-    .stat-item{ border-right: none; border-bottom: 1px solid var(--border-gray); }
     .content-cell{ max-width: 200px; }
-    .cals-wrap{ flex-direction: column; }
-    .dp-box{ flex-direction: column; }
-    .dp-sidebar{ width: 100%; border-right: none; border-bottom: 1px solid var(--border-gray); border-radius: 16px 16px 0 0; flex-direction: row; overflow-x: auto; }
+    .filter-content{ flex-direction: column; align-items: stretch; }
+    .date-trigger{ min-width: auto; }
+    .apply-btn{ width: 100%; justify-content: center; }
+    .date-picker-container{ flex-direction: column; max-height: 85vh; overflow-y: auto; width: 95%; }
+    .date-picker-sidebar{ width: 100%; border-right: none; border-bottom: 1px solid var(--border-gray); border-radius: 16px 16px 0 0; flex-direction: row; overflow-x: auto; padding: 12px 16px; }
+    .date-preset{ white-space: nowrap; }
+    .calendars-wrapper{ flex-direction: column; gap: 16px; }
+    .cancel-btn, .apply-date-btn{ flex: 1; }
   }
 </style>
 @endsection
@@ -463,35 +485,37 @@
   </div>
 
   {{-- DATE PICKER MODAL --}}
-  <div class="dp-modal" id="dpModal">
-    <div style="position:absolute;inset:0;cursor:pointer" id="dpOverlay"></div>
-    <div class="dp-box">
-      <div class="dp-sidebar">
-        <button class="dp-preset" data-p="today">Today</button>
-        <button class="dp-preset" data-p="yesterday">Yesterday</button>
-        <button class="dp-preset" data-p="7d">Last 7 Days</button>
-        <button class="dp-preset" data-p="30d">Last 30 Days</button>
-        <button class="dp-preset" data-p="thismonth">This Month</button>
-        <button class="dp-preset" data-p="lastmonth">Last Month</button>
-        <button class="dp-preset active" data-p="custom">Custom Range</button>
+  <div class="date-picker-modal" id="datePickerModal">
+    <div class="date-picker-overlay" id="dpOverlay"></div>
+    <div class="date-picker-container">
+      <div class="date-picker-sidebar">
+        <button type="button" class="date-preset" data-preset="today">Today</button>
+        <button type="button" class="date-preset" data-preset="yesterday">Yesterday</button>
+        <button type="button" class="date-preset" data-preset="last7days">Last 7 Days</button>
+        <button type="button" class="date-preset" data-preset="last30days">Last 30 Days</button>
+        <button type="button" class="date-preset" data-preset="thismonth">This Month</button>
+        <button type="button" class="date-preset" data-preset="lastmonth">Last Month</button>
+        <button type="button" class="date-preset active" data-preset="custom">Custom Range</button>
       </div>
-      <div class="dp-body">
-        <div class="dp-nav">
-          <button type="button" class="nav-arrow" id="dpPrev">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px"><polyline points="15 18 9 12 15 6"/></svg>
+      <div class="date-picker-content">
+        <div class="date-picker-header">
+          <button type="button" class="nav-btn" id="dpPrev">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
-          <div class="cals-wrap">
-            <div class="cal" id="dpCal1"></div>
-            <div class="cal" id="dpCal2"></div>
+          <div class="calendars-wrapper">
+            <div class="calendar" id="dpCal1"></div>
+            <div class="calendar" id="dpCal2"></div>
           </div>
-          <button type="button" class="nav-arrow" id="dpNext">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px"><polyline points="9 18 15 12 9 6"/></svg>
+          <button type="button" class="nav-btn" id="dpNext">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
-        <div class="dp-display" id="dpRange">{{ $startDate }} &rarr; {{ $endDate }}</div>
-        <div class="dp-footer">
-          <button class="btn-cancel" id="dpCancel">Cancel</button>
-          <button class="btn-apply-dp" id="dpApply">Apply</button>
+        <div class="date-picker-display">
+          <span id="dpRangeText">{{ $startDate }} to {{ $endDate }}</span>
+        </div>
+        <div class="date-picker-footer">
+          <button type="button" class="cancel-btn" id="dpCancel">Cancel</button>
+          <button type="button" class="apply-date-btn" id="dpApply">Apply</button>
         </div>
       </div>
     </div>
@@ -509,51 +533,65 @@
       <span class="do-badge">All Media Types</span>
     </div>
 
-    {{-- Row 1: Platform counts --}}
-    <div class="stats-grid">
-      @php
-        $platforms = [
-          ['All Media','all',''],
-          ['Online News','doc','c-news'],
-          ['Twitter','twit','c-twit'],
-          ['Facebook','fb','c-fb'],
-          ['Instagram','ig','c-ig'],
-          ['YouTube','ytb','c-ytb'],
-          ['TikTok','tiktok','c-tiktok'],
-        ];
-      @endphp
-      @foreach($platforms as $p)
-      <div class="stat-item">
-        <div class="stat-lbl">{{ $p[0] }}</div>
-        <div class="stat-num {{ $p[2] }}" id="sn-{{ $p[1] }}">
-          <div class="sk" style="height:32px;width:64px;margin:0 auto;"></div>
+    <div class="overview-body">
+
+      {{-- LEFT: Platform Donut --}}
+      <div class="overview-panel">
+        <div class="overview-title">
+          <div class="overview-title-dot" style="background:var(--primary-green)"></div>
+          Mentions by Platform
+        </div>
+        <div class="donut-row">
+          <div class="donut-canvas-wrap">
+            <div class="sk" id="skPlatform" style="width:150px;height:150px;border-radius:50%;"></div>
+            <canvas id="donutPlatform" width="150" height="150" style="display:none"></canvas>
+            <div class="donut-center-text">
+              <div class="donut-center-num" id="donutTotalPlatform">—</div>
+              <div class="donut-center-lbl">Total</div>
+            </div>
+          </div>
+          <div class="donut-legend" id="legendPlatform">
+            @foreach([['doc','#3b82f6'],['twit','#0ea5e9'],['fb','#6366f1'],['ig','#ec4899'],['ytb','#ef4444'],['tiktok','#6b7280']] as $p)
+            <div class="dl-item">
+              <div class="dl-dot" style="background:{{ $p[1] }}"></div>
+              <div class="dl-name" id="dlname-{{ $p[0] }}">{{ ucfirst($p[0]) }}</div>
+              <div class="dl-val" id="dlval-{{ $p[0] }}"><div class="sk" style="height:14px;width:40px;"></div></div>
+              <div class="dl-pct" id="dlpct-{{ $p[0] }}"></div>
+            </div>
+            @endforeach
+          </div>
         </div>
       </div>
-      @endforeach
-    </div>
 
-    <div class="stats-divider"></div>
+      <div class="overview-divider"></div>
 
-    {{-- Row 2: Sentiment --}}
-    <div class="stats-grid">
-      @php
-        $rows2 = [
-          ['All Mentions','all-m',''],
-          ['Relevant','rel','c-twit'],
-          ['Irrelevant','irr','c-neg'],
-          ['Positive','pos','c-pos'],
-          ['Negative','neg','c-neg'],
-          ['Neutral','neu','c-neu'],
-        ];
-      @endphp
-      @foreach($rows2 as $r)
-      <div class="stat-item">
-        <div class="stat-lbl">{{ $r[0] }}</div>
-        <div class="stat-num {{ $r[2] }}" id="sn-{{ $r[1] }}">
-          <div class="sk" style="height:32px;width:64px;margin:0 auto;"></div>
+      {{-- RIGHT: Sentiment Donut --}}
+      <div class="overview-panel">
+        <div class="overview-title">
+          <div class="overview-title-dot" style="background:#f59e0b"></div>
+          Sentiment Distribution
+        </div>
+        <div class="donut-row">
+          <div class="donut-canvas-wrap">
+            <div class="sk" id="skSentiment" style="width:150px;height:150px;border-radius:50%;"></div>
+            <canvas id="donutSentiment" width="150" height="150" style="display:none"></canvas>
+            <div class="donut-center-text">
+              <div class="donut-center-num" id="donutTotalSent">—</div>
+              <div class="donut-center-lbl">Total</div>
+            </div>
+          </div>
+          <div class="donut-legend" id="legendSentiment">
+            @foreach([['pos','Positive','#16a34a'],['neg','Negative','#ef4444'],['neu','Neutral','#94a3b8']] as $s)
+            <div class="dl-item">
+              <div class="dl-dot" style="background:{{ $s[2] }}"></div>
+              <div class="dl-name">{{ $s[1] }}</div>
+              <div class="dl-val" id="dlval-{{ $s[0] }}"><div class="sk" style="height:14px;width:40px;"></div></div>
+              <div class="dl-pct" id="dlpct-{{ $s[0] }}"></div>
+            </div>
+            @endforeach
+          </div>
         </div>
       </div>
-      @endforeach
     </div>
 
     <div class="progress-bar-wrap">
@@ -671,87 +709,111 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════════
-// DATE PICKER
+// DATE PICKER  (same logic as Data Overview — proven working)
 // ═══════════════════════════════════════════════════════════════════
-(function(){
-  let s=null,e=null,m1=new Date(),m2=new Date(),picking=true;
-  const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const WD=['Su','Mo','Tu','We','Th','Fr','Sa'];
+(function () {
+  'use strict';
+  let ds = null, de = null;
+  let m1 = new Date(), m2 = new Date();
+  let pickStart = true;
 
-  document.addEventListener('DOMContentLoaded',()=>{
-    const sv=document.getElementById('hStart').value;
-    const ev=document.getElementById('hEnd').value;
-    s = sv ? new Date(sv) : (()=>{ const d=new Date(); d.setDate(d.getDate()-6); return d; })();
-    e = ev ? new Date(ev) : new Date();
-    m1=new Date(s); m2=new Date(s); m2.setMonth(m2.getMonth()+1);
-    render();
-    document.getElementById('dpTrigger').onclick = () => document.getElementById('dpModal').classList.add('open');
-    document.getElementById('dpOverlay').onclick  = close;
-    document.getElementById('dpCancel').onclick   = close;
-    document.getElementById('dpApply').onclick    = apply;
-    document.getElementById('dpPrev').onclick     = () => { m1.setMonth(m1.getMonth()-1); m2.setMonth(m2.getMonth()-1); render(); };
-    document.getElementById('dpNext').onclick     = () => { m1.setMonth(m1.getMonth()+1); m2.setMonth(m2.getMonth()+1); render(); };
-    document.querySelectorAll('.dp-preset').forEach(b => b.onclick = preset);
-    document.addEventListener('keydown', k => { if(k.key==='Escape') close(); });
+  document.addEventListener('DOMContentLoaded', function () {
+    const si = document.getElementById('hStart');
+    const ei = document.getElementById('hEnd');
+    ds = si && si.value ? new Date(si.value) : (() => { const d=new Date(); d.setDate(d.getDate()-6); return d; })();
+    de = ei && ei.value ? new Date(ei.value) : new Date();
+    m1 = new Date(ds); m2 = new Date(ds); m2.setMonth(m2.getMonth()+1);
+    renderCals();
+
+    const trigger = document.getElementById('dpTrigger');
+    if (trigger) trigger.addEventListener('click', open);
+    const overlay = document.getElementById('dpOverlay');
+    if (overlay) overlay.addEventListener('click', close);
+    document.addEventListener('keydown', e => { if (e.key==='Escape') close(); });
+    document.querySelectorAll('.date-preset').forEach(b => b.addEventListener('click', preset));
+    document.getElementById('dpPrev').addEventListener('click', () => { m1.setMonth(m1.getMonth()-1); m2.setMonth(m2.getMonth()-1); renderCals(); });
+    document.getElementById('dpNext').addEventListener('click', () => { m1.setMonth(m1.getMonth()+1); m2.setMonth(m2.getMonth()+1); renderCals(); });
+    document.getElementById('dpApply').addEventListener('click', apply);
+    document.getElementById('dpCancel').addEventListener('click', close);
   });
 
-  function close(){ document.getElementById('dpModal').classList.remove('open'); }
-  function fmt(d){ if(!d)return''; return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-  function same(a,b){ return a&&b&&a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+  function open()  { document.getElementById('datePickerModal').classList.add('show'); renderCals(); }
+  function close() { document.getElementById('datePickerModal').classList.remove('show'); }
 
-  function apply(){
-    const fs=fmt(s), fe=fmt(e);
-    document.getElementById('hStart').value = fs;
-    document.getElementById('hEnd').value   = fe;
-    document.getElementById('dpDisplay').textContent = fs+' → '+fe;
+  function preset(e) {
+    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    const today = new Date(); today.setHours(0,0,0,0);
+    switch(e.target.dataset.preset) {
+      case 'today':      ds=new Date(today); de=new Date(today); break;
+      case 'yesterday':  ds=new Date(today); ds.setDate(today.getDate()-1); de=new Date(ds); break;
+      case 'last7days':  de=new Date(today); ds=new Date(today); ds.setDate(today.getDate()-6); break;
+      case 'last30days': de=new Date(today); ds=new Date(today); ds.setDate(today.getDate()-29); break;
+      case 'thismonth':  ds=new Date(today.getFullYear(),today.getMonth(),1); de=new Date(today); break;
+      case 'lastmonth':  ds=new Date(today.getFullYear(),today.getMonth()-1,1); de=new Date(today.getFullYear(),today.getMonth(),0); break;
+    }
+    if (e.target.dataset.preset !== 'custom') {
+      m1=new Date(ds); m2=new Date(ds); m2.setMonth(m2.getMonth()+1);
+      updateDisp(); renderCals();
+    }
+  }
+
+  function apply() {
+    document.getElementById('hStart').value = fmt(ds);
+    document.getElementById('hEnd').value   = fmt(de);
+    document.getElementById('dpDisplay').textContent = `${fmt(ds)} → ${fmt(de)}`;
     close();
   }
 
-  function preset(ev){
-    document.querySelectorAll('.dp-preset').forEach(b=>b.classList.remove('active'));
-    ev.currentTarget.classList.add('active');
-    const p=ev.currentTarget.dataset.p, t=new Date(); t.setHours(0,0,0,0);
-    if(p==='today'){ s=new Date(t); e=new Date(t); }
-    else if(p==='yesterday'){ s=new Date(t); s.setDate(t.getDate()-1); e=new Date(s); }
-    else if(p==='7d'){ e=new Date(t); s=new Date(t); s.setDate(t.getDate()-6); }
-    else if(p==='30d'){ e=new Date(t); s=new Date(t); s.setDate(t.getDate()-29); }
-    else if(p==='thismonth'){ s=new Date(t.getFullYear(),t.getMonth(),1); e=new Date(t); }
-    else if(p==='lastmonth'){ s=new Date(t.getFullYear(),t.getMonth()-1,1); e=new Date(t.getFullYear(),t.getMonth(),0); }
-    if(p!=='custom'){ m1=new Date(s); m2=new Date(s); m2.setMonth(m2.getMonth()+1); render(); }
-  }
+  function renderCals() { renderCal('dpCal1', m1); renderCal('dpCal2', m2); updateDisp(); }
 
-  function render(){ renderCal('dpCal1',m1); renderCal('dpCal2',m2); document.getElementById('dpRange').textContent=(fmt(s)||'…')+' → '+(fmt(e)||'…'); }
-
-  function renderCal(id,month){
-    const el=document.getElementById(id); if(!el)return;
-    const yr=month.getFullYear(), mo=month.getMonth();
-    const first=new Date(yr,mo,1), last=new Date(yr,mo+1,0), prev=new Date(yr,mo,0);
+  function renderCal(id, month) {
+    const el = document.getElementById(id); if (!el) return;
+    const y=month.getFullYear(), mn=month.getMonth();
+    const first=new Date(y,mn,1), last=new Date(y,mn+1,0), prevL=new Date(y,mn,0);
+    const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const WD=['Su','Mo','Tu','We','Th','Fr','Sa'];
     const today=new Date(); today.setHours(0,0,0,0);
-    let h=`<div class="cal-month">${MN[mo]} ${yr}</div><div class="cal-grid">`;
-    WD.forEach(d => h+=`<div class="wday">${d}</div>`);
-    for(let i=0;i<first.getDay();i++) h+=`<button class="cday other">${prev.getDate()-(first.getDay()-1-i)}</button>`;
+    let h=`<div class="calendar-month">${MN[mn]} ${y}</div>
+      <div class="calendar-weekdays">${WD.map(d=>`<div class="weekday">${d}</div>`).join('')}</div>
+      <div class="calendar-days">`;
+    for(let i=0;i<first.getDay();i++)
+      h+=`<button type="button" class="calendar-day other-month" disabled>${prevL.getDate()-(first.getDay()-1-i)}</button>`;
     for(let d=1;d<=last.getDate();d++){
-      const dt=new Date(yr,mo,d); dt.setHours(0,0,0,0);
-      const ds=fmt(dt); let c='cday';
-      if(same(dt,today)) c+=' today';
-      if(dt>today) c+=' dis';
-      if(s&&e){ if(same(dt,s)||same(dt,e)) c+=' sel'; else if(dt>s&&dt<e) c+=' range'; }
-      h+=`<button class="${c}" data-d="${ds}" ${dt>today?'disabled':''}>${d}</button>`;
+      const date=new Date(y,mn,d); date.setHours(0,0,0,0);
+      let cls='calendar-day';
+      if(sameDay(date,today)) cls+=' today';
+      if(date>today) cls+=' disabled';
+      if(ds&&de){
+        if(sameDay(date,ds)) cls+=' selected range-start';
+        else if(sameDay(date,de)) cls+=' selected range-end';
+        else if(date>ds&&date<de) cls+=' in-range';
+      }
+      h+=`<button type="button" class="${cls}" data-date="${fmt(date)}" ${date>today?'disabled':''}>${d}</button>`;
     }
     const rem=last.getDay()===6?0:6-last.getDay();
-    for(let i=1;i<=rem;i++) h+=`<button class="cday other">${i}</button>`;
+    for(let i=1;i<=rem;i++) h+=`<button type="button" class="calendar-day other-month" disabled>${i}</button>`;
     h+='</div>'; el.innerHTML=h;
-    el.querySelectorAll('.cday:not(.other):not(.dis)').forEach(b=>b.onclick=clickDay);
+    el.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)').forEach(btn=>{
+      btn.addEventListener('click', function(){
+        const d=new Date(this.dataset.date); d.setHours(0,0,0,0);
+        document.querySelectorAll('.date-preset').forEach(b=>b.classList.remove('active'));
+        document.querySelector('[data-preset="custom"]').classList.add('active');
+        if(pickStart || d<ds){ ds=d; de=d; pickStart=false; }
+        else { if(d>=ds) de=d; else { de=ds; ds=d; } pickStart=true; }
+        updateDisp(); renderCals();
+      });
+    });
   }
 
-  function clickDay(ev){
-    document.querySelectorAll('.dp-preset').forEach(b=>b.classList.remove('active'));
-    document.querySelector('[data-p="custom"]').classList.add('active');
-    const dt=new Date(ev.currentTarget.dataset.d); dt.setHours(0,0,0,0);
-    if(picking||dt<s){ s=dt; e=dt; picking=false; }
-    else{ if(dt>=s) e=dt; else{ e=s; s=dt; } picking=true; }
-    render();
+  function updateDisp(){
+    const el=document.getElementById('dpRangeText');
+    if(el&&ds&&de) el.textContent=`${fmt(ds)} to ${fmt(de)}`;
+    const disp=document.getElementById('dpDisplay');
+    if(disp&&ds&&de) disp.textContent=`${fmt(ds)} → ${fmt(de)}`;
   }
+  function fmt(d){ if(!d)return''; return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+  function sameDay(a,b){ return a&&b&&a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
 })();
 
 // ═══════════════════════════════════════════════════════════════════
@@ -918,19 +980,96 @@ function updateTabCounts(){
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// STATS
+// STATS — renders two donut charts
 // ═══════════════════════════════════════════════════════════════════
+const PLAT_CFG_DONUT = [
+  { key:'doc',    label:'Online News', color:'#3b82f6' },
+  { key:'twit',   label:'Twitter',     color:'#0ea5e9' },
+  { key:'fb',     label:'Facebook',    color:'#6366f1' },
+  { key:'ig',     label:'Instagram',   color:'#ec4899' },
+  { key:'ytb',    label:'YouTube',     color:'#ef4444' },
+  { key:'tiktok', label:'TikTok',      color:'#6b7280' },
+];
+
 function renderStats(){
-  const pMap={all:store.all.length,doc:store.doc.length,twit:store.twit.length,fb:store.fb.length,ig:store.ig.length,ytb:store.ytb.length,tiktok:store.tiktok.length};
-  Object.entries(pMap).forEach(([k,v])=>{ const el=document.getElementById('sn-'+k); if(el) el.textContent=fmt(v); });
-  document.getElementById('sn-all-m').textContent=fmt(store.all.length);
-  const pos=store.all.filter(m=>['1','positive','positif'].includes(String(m.class_sentiment).toLowerCase())).length;
-  const neg=store.all.filter(m=>['-1','negative','negatif'].includes(String(m.class_sentiment).toLowerCase())).length;
-  document.getElementById('sn-pos').textContent=fmt(pos);
-  document.getElementById('sn-neg').textContent=fmt(neg);
-  document.getElementById('sn-neu').textContent=fmt(store.all.length-pos-neg);
-  document.getElementById('sn-rel').textContent=fmt(store.all.length);
-  document.getElementById('sn-irr').textContent='0';
+  const fmtN = n => new Intl.NumberFormat('en-US').format(n);
+
+  // ── Platform donut ──
+  const platVals = PLAT_CFG_DONUT.map(p => (store[p.key]||[]).length);
+  const platTotal = platVals.reduce((a,b)=>a+b,0);
+
+  document.getElementById('donutTotalPlatform').textContent = fmtN(platTotal);
+  PLAT_CFG_DONUT.forEach((p,i) => {
+    const v = platVals[i];
+    const pct = platTotal > 0 ? ((v/platTotal)*100).toFixed(1) : '0.0';
+    const nEl = document.getElementById('dlval-'+p.key);
+    const pEl = document.getElementById('dlpct-'+p.key);
+    const nameEl = document.getElementById('dlname-'+p.key);
+    if(nEl)    nEl.textContent    = fmtN(v);
+    if(pEl)    pEl.textContent    = pct+'%';
+    if(nameEl) nameEl.textContent = p.label;
+  });
+
+  document.getElementById('skPlatform').style.display = 'none';
+  const cvP = document.getElementById('donutPlatform');
+  cvP.style.display = 'block';
+  new Chart(cvP.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: PLAT_CFG_DONUT.map(p=>p.label),
+      datasets: [{ data: platVals, backgroundColor: PLAT_CFG_DONUT.map(p=>p.color), borderColor:'#fff', borderWidth:3, hoverOffset:8 }]
+    },
+    options: {
+      responsive: false, cutout:'68%',
+      plugins: {
+        legend: { display:false },
+        tooltip: {
+          backgroundColor:'#1a202c', padding:12, cornerRadius:10,
+          titleColor:'#fff', bodyColor:'#d1d5db',
+          titleFont:{size:12,weight:'700'}, bodyFont:{size:11},
+          callbacks:{label:ctx=>{const t=platVals.reduce((a,b)=>a+b,0); return ` ${ctx.label}: ${fmtN(ctx.parsed)} (${t>0?((ctx.parsed/t)*100).toFixed(1):0}%)`;}}
+        }
+      }
+    }
+  });
+
+  // ── Sentiment donut ──
+  const pos = store.all.filter(m=>['1','positive','positif'].includes(String(m.class_sentiment).toLowerCase())).length;
+  const neg = store.all.filter(m=>['-1','negative','negatif'].includes(String(m.class_sentiment).toLowerCase())).length;
+  const neu = store.all.length - pos - neg;
+  const sentTotal = store.all.length;
+
+  document.getElementById('donutTotalSent').textContent = fmtN(sentTotal);
+  [['pos',pos,'#16a34a'],['neg',neg,'#ef4444'],['neu',neu,'#94a3b8']].forEach(([k,v,c]) => {
+    const pct = sentTotal > 0 ? ((v/sentTotal)*100).toFixed(1) : '0.0';
+    const vEl = document.getElementById('dlval-'+k);
+    const pEl = document.getElementById('dlpct-'+k);
+    if(vEl) vEl.textContent = fmtN(v);
+    if(pEl) pEl.textContent = pct+'%';
+  });
+
+  document.getElementById('skSentiment').style.display = 'none';
+  const cvS = document.getElementById('donutSentiment');
+  cvS.style.display = 'block';
+  new Chart(cvS.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Positive','Negative','Neutral'],
+      datasets: [{ data:[pos,neg,neu], backgroundColor:['#16a34a','#ef4444','#94a3b8'], borderColor:'#fff', borderWidth:3, hoverOffset:8 }]
+    },
+    options: {
+      responsive: false, cutout:'68%',
+      plugins: {
+        legend: { display:false },
+        tooltip: {
+          backgroundColor:'#1a202c', padding:12, cornerRadius:10,
+          titleColor:'#fff', bodyColor:'#d1d5db',
+          titleFont:{size:12,weight:'700'}, bodyFont:{size:11},
+          callbacks:{label:ctx=>{return ` ${ctx.label}: ${fmtN(ctx.parsed)} (${sentTotal>0?((ctx.parsed/sentTotal)*100).toFixed(1):0}%)`;}}
+        }
+      }
+    }
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════
