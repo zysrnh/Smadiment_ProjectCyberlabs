@@ -17,8 +17,10 @@
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     --ig-gradient: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    --ig-color: #dc2743;
   }
 
+  /* Main Layout */
   .dashboard-container {
     padding: 24px;
     background: var(--bg-gray-50);
@@ -65,7 +67,7 @@
     margin: 0;
   }
 
-  /* Filter Card */
+  /* Date Filter Card */
   .filter-card {
     background: var(--bg-white);
     border-radius: 16px;
@@ -94,46 +96,6 @@
     align-items: center;
     gap: 12px;
     flex: 1;
-  }
-
-  .date-input-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background: var(--bg-gray-50);
-    border: 1px solid var(--border-gray);
-    border-radius: 12px;
-    transition: all 0.2s;
-  }
-
-  .date-input-group:focus-within {
-    border-color: #dc2743;
-    background: var(--bg-white);
-    box-shadow: 0 0 0 3px rgba(220, 39, 67, 0.1);
-  }
-
-  .date-input-group svg {
-    width: 18px;
-    height: 18px;
-    color: var(--text-secondary);
-  }
-
-  .date-input {
-    border: none;
-    background: transparent;
-    font-family: 'Poppins', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
-    outline: none;
-    min-width: 140px;
-  }
-
-  .date-separator {
-    color: var(--text-secondary);
-    font-weight: 600;
-    font-size: 14px;
   }
 
   .apply-btn {
@@ -195,6 +157,7 @@
   .stat-card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
+    border-color: #dc2743;
   }
 
   .stat-card:hover::before {
@@ -212,7 +175,7 @@
     width: 56px;
     height: 56px;
     border-radius: 14px;
-    background: linear-gradient(135deg, rgba(220,39,67,0.1) 0%, rgba(188,24,136,0.05) 100%);
+    background: linear-gradient(135deg, rgba(220, 39, 67, 0.1) 0%, rgba(188, 24, 136, 0.05) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -350,12 +313,6 @@
     color: var(--text-secondary);
   }
 
-  .table-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
   .table-search {
     position: relative;
     width: 280px;
@@ -389,87 +346,6 @@
     color: var(--text-secondary);
   }
 
-  .actions-dropdown { position: relative; }
-
-  .actions-dropdown-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background: var(--bg-white);
-    border: 1px solid var(--border-gray);
-    border-radius: 10px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .actions-dropdown-btn:hover {
-    background: var(--bg-gray-50);
-    border-color: #dc2743;
-  }
-
-  .actions-dropdown-btn svg {
-    width: 16px;
-    height: 16px;
-    color: var(--text-secondary);
-  }
-
-  .actions-dropdown-menu {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    background: var(--bg-white);
-    border: 1px solid var(--border-gray);
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    min-width: 220px;
-    padding: 8px;
-    z-index: 1000;
-    display: none;
-  }
-
-  .actions-dropdown-menu.show {
-    display: block;
-    animation: dropdownSlideIn 0.2s ease-out;
-  }
-
-  @keyframes dropdownSlideIn {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .actions-dropdown-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all 0.15s;
-    text-decoration: none;
-  }
-
-  .actions-dropdown-item:hover {
-    background: var(--bg-gray-50);
-    color: #dc2743;
-  }
-
-  .actions-dropdown-item svg {
-    width: 18px;
-    height: 18px;
-    color: var(--text-secondary);
-  }
-
-  .actions-dropdown-item:hover svg { color: #dc2743; }
-  .actions-dropdown-divider { height: 1px; background: var(--border-gray); margin: 6px 0; }
-
   .data-table {
     width: 100%;
     border-collapse: separate;
@@ -495,7 +371,7 @@
   }
 
   .data-table th:first-child { padding-left: 20px; }
-  .data-table th:last-child { padding-right: 20px; }
+  .data-table th:last-child  { padding-right: 20px; }
 
   .data-table td {
     padding: 12px;
@@ -506,7 +382,7 @@
   }
 
   .data-table td:first-child { padding-left: 20px; }
-  .data-table td:last-child { padding-right: 20px; }
+  .data-table td:last-child  { padding-right: 20px; }
 
   .data-table tbody tr {
     transition: all 0.2s;
@@ -516,6 +392,7 @@
   .data-table tbody tr:hover { background: #fafbfc; }
   .data-table tbody tr:last-child td { border-bottom: none; }
 
+  /* Avatar */
   .avatar-container { position: relative; display: inline-block; }
 
   .user-avatar-img {
@@ -529,24 +406,16 @@
     width: 36px; height: 36px;
     border-radius: 50%;
     background: var(--ig-gradient);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 700;
-    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 13px;
   }
 
   .user-avatar {
     width: 36px; height: 36px;
     border-radius: 50%;
     background: var(--ig-gradient);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 700;
-    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 13px;
   }
 
   .account-name-link {
@@ -558,6 +427,7 @@
 
   .account-name-link:hover { color: #dc2743; text-decoration: underline; }
 
+  /* View All */
   .view-all-container {
     display: flex;
     justify-content: center;
@@ -589,7 +459,7 @@
 
   .view-all-btn svg { width: 18px; height: 18px; }
 
-  /* Modal */
+  /* All Users Modal */
   .all-users-modal {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -597,8 +467,8 @@
     display: none;
     align-items: center;
     justify-content: center;
-    background: rgba(0,0,0,0.75);
-    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
   }
 
   .all-users-modal.show { display: flex; }
@@ -606,21 +476,20 @@
   .all-users-modal .modal-overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.8);
   }
 
   .all-users-modal .modal-content {
     position: relative;
-    background: #ffffff;
+    background: var(--bg-white);
     border-radius: 16px;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     width: 95%;
     max-width: 1400px;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
     animation: modalSlideIn 0.3s ease-out;
-    z-index: 10001;
+    z-index: 10000;
   }
 
   .all-users-modal .modal-header {
@@ -628,14 +497,14 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px 24px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border-gray);
     border-radius: 16px 16px 0 0;
   }
 
   .all-users-modal .modal-header h3 {
     font-size: 18px;
     font-weight: 700;
-    color: #1a202c;
+    color: var(--text-primary);
     margin: 0;
   }
 
@@ -651,9 +520,7 @@
     background: var(--bg-gray-50);
     border: none;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     transition: all 0.2s;
     color: var(--text-secondary);
   }
@@ -662,7 +529,7 @@
 
   @keyframes modalSlideIn {
     from { transform: translateY(-20px) scale(0.95); opacity: 0; }
-    to { transform: translateY(0) scale(1); opacity: 1; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
   }
 
   /* Loading */
@@ -674,7 +541,7 @@
   }
 
   @keyframes loading {
-    0% { background-position: 200% 0; }
+    0%   { background-position: 200% 0; }
     100% { background-position: -200% 0; }
   }
 
@@ -713,13 +580,11 @@
 
   [data-lazy-load].loaded { opacity: 1; transform: translateY(0); }
 
-  .data-loaded {
-    animation: fadeIn 0.4s ease-out;
-  }
+  .data-loaded { animation: fadeIn 0.4s ease-out; }
 
   @keyframes fadeIn {
     from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
+    to   { opacity: 1; transform: scale(1); }
   }
 
   .alert {
@@ -739,13 +604,296 @@
     border: 1px solid #fcd34d;
   }
 
+  /* ========================================
+     DATE PICKER STYLES (sama persis dengan X)
+     ======================================== */
+
+  .date-picker-trigger {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: var(--bg-gray-50);
+    border: 1px solid var(--border-gray);
+    border-radius: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .date-picker-trigger:hover {
+    border-color: #dc2743;
+    background: var(--bg-white);
+    box-shadow: 0 0 0 3px rgba(220, 39, 67, 0.1);
+  }
+
+  .date-picker-trigger svg:first-child {
+    width: 18px; height: 18px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  .date-picker-trigger span { flex: 1; text-align: left; }
+
+  .date-picker-trigger svg:last-child {
+    width: 16px; height: 16px;
+    margin-left: auto;
+    color: var(--text-secondary);
+  }
+
+  .date-picker-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+  }
+
+  .date-picker-modal.show { display: flex; }
+
+  .date-picker-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+  }
+
+  .date-picker-container {
+    position: relative;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    display: flex;
+    max-width: 900px;
+    width: 90%;
+    max-height: 90vh;
+    z-index: 10001;
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+
+  .date-picker-sidebar {
+    width: 180px;
+    background: var(--bg-gray-50);
+    border-right: 1px solid var(--border-gray);
+    padding: 16px 12px;
+    border-radius: 16px 0 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .date-preset {
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .date-preset:hover { background: var(--bg-white); color: #dc2743; }
+  .date-preset.active { background: var(--ig-gradient); color: white; }
+
+  .date-picker-content {
+    flex: 1;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .date-picker-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .nav-btn {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--bg-gray-50);
+    border: 1px solid var(--border-gray);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .nav-btn:hover {
+    background: var(--ig-gradient);
+    border-color: transparent;
+    color: white;
+  }
+
+  .nav-btn svg { width: 20px; height: 20px; }
+
+  .calendars-wrapper {
+    display: flex;
+    gap: 24px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .calendar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .calendar-month {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .weekday {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    padding: 8px 0;
+  }
+
+  .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+
+  .calendar-day {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-primary);
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+
+  .calendar-day:hover:not(.disabled):not(.other-month) { background: var(--bg-gray-100); }
+  .calendar-day.other-month { color: #cbd5e1; cursor: default; }
+  .calendar-day.disabled    { color: #e2e8f0; cursor: not-allowed; }
+  .calendar-day.today       { border: 2px solid #dc2743; }
+  .calendar-day.selected    { background: var(--ig-gradient); color: white; }
+  .calendar-day.in-range    { background: rgba(220, 39, 67, 0.1); color: #dc2743; }
+  .calendar-day.range-start,
+  .calendar-day.range-end   { background: var(--ig-gradient); color: white; }
+
+  .date-picker-display {
+    padding: 16px 20px;
+    background: var(--bg-gray-50);
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-gray);
+  }
+
+  .date-picker-display span {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .date-picker-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+
+  .cancel-btn, .apply-date-btn {
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+
+  .cancel-btn { background: var(--bg-gray-100); color: var(--text-primary); }
+  .cancel-btn:hover { background: var(--border-gray); }
+
+  .apply-date-btn {
+    background: var(--ig-gradient);
+    color: white;
+    box-shadow: 0 4px 12px rgba(220, 39, 67, 0.2);
+  }
+
+  .apply-date-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 39, 67, 0.35);
+  }
+
+  /* ========================================
+     RESPONSIVE
+     ======================================== */
+
+  @media (max-width: 768px) {
+    .date-picker-container {
+      flex-direction: column;
+      max-height: 85vh;
+      overflow-y: auto;
+      width: 95%;
+    }
+
+    .date-picker-sidebar {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid var(--border-gray);
+      border-radius: 16px 16px 0 0;
+      flex-direction: row;
+      overflow-x: auto;
+      padding: 12px 16px;
+    }
+
+    .date-preset { white-space: nowrap; }
+    .date-picker-content { padding: 20px 16px; }
+    .calendars-wrapper { flex-direction: column; gap: 16px; }
+    .date-picker-header { flex-wrap: wrap; }
+  }
+
   @media (max-width: 1024px) {
     .dashboard-container { padding: 16px; }
     .stats-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
     .filter-content { flex-direction: column; align-items: stretch; }
     .date-range-wrapper { flex-direction: column; }
     .apply-btn { width: 100%; justify-content: center; }
-    .data-table { min-width: 900px; }
+    .data-table { min-width: 700px; }
   }
 
   @media (max-width: 640px) {
@@ -753,6 +901,8 @@
     .chart-container { height: 250px; }
     .table-search { width: 100%; }
     .page-header h1 { font-size: 22px; }
+    .date-picker-trigger { max-width: 100%; }
+    .cancel-btn, .apply-date-btn { flex: 1; }
   }
 </style>
 @endsection
@@ -786,10 +936,12 @@
   </div>
   @else
 
-  <!-- Date Filter Card -->
+  <!-- Date Filter Card with Date Picker -->
   <div class="filter-card">
     <form id="filterForm" method="GET" action="{{ route('mk.instagram.overview') }}">
       <input type="hidden" name="project_id" value="{{ $projectId }}">
+      <input type="hidden" name="start_date" id="hiddenStartDate" value="{{ $startDate }}">
+      <input type="hidden" name="end_date"   id="hiddenEndDate"   value="{{ $endDate }}">
 
       <div class="filter-content">
         <div class="filter-label">
@@ -803,27 +955,18 @@
         </div>
 
         <div class="date-range-wrapper">
-          <div class="date-input-group">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <button type="button" class="date-picker-trigger" id="datePickerTrigger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
               <line x1="16" y1="2" x2="16" y2="6"/>
               <line x1="8" y1="2" x2="8" y2="6"/>
               <line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
-            <input type="date" name="start_date" class="date-input" value="{{ $startDate }}" max="{{ date('Y-m-d') }}" required>
-          </div>
-
-          <span class="date-separator">to</span>
-
-          <div class="date-input-group">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-              <line x1="16" y1="2" x2="16" y2="6"/>
-              <line x1="8" y1="2" x2="8" y2="6"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
+            <span id="dateRangeDisplay">{{ $startDate }} to {{ $endDate }}</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
             </svg>
-            <input type="date" name="end_date" class="date-input" value="{{ $endDate }}" max="{{ date('Y-m-d') }}" required>
-          </div>
+          </button>
         </div>
 
         <button type="submit" class="apply-btn">
@@ -836,10 +979,57 @@
     </form>
   </div>
 
+  <!-- Date Range Picker Modal -->
+  <div class="date-picker-modal" id="datePickerModal">
+    <div class="date-picker-overlay"></div>
+    <div class="date-picker-container">
+      <!-- Sidebar Presets -->
+      <div class="date-picker-sidebar">
+        <button type="button" class="date-preset" data-preset="today">Today</button>
+        <button type="button" class="date-preset" data-preset="yesterday">Yesterday</button>
+        <button type="button" class="date-preset" data-preset="last7days">Last 7 Days</button>
+        <button type="button" class="date-preset" data-preset="last30days">Last 30 Days</button>
+        <button type="button" class="date-preset" data-preset="thismonth">This Month</button>
+        <button type="button" class="date-preset" data-preset="lastmonth">Last Month</button>
+        <button type="button" class="date-preset active" data-preset="custom">Custom Range</button>
+      </div>
+
+      <!-- Calendar Content -->
+      <div class="date-picker-content">
+        <div class="date-picker-header">
+          <button type="button" class="nav-btn" id="prevMonth">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+
+          <div class="calendars-wrapper">
+            <div class="calendar" id="calendar1"></div>
+            <div class="calendar" id="calendar2"></div>
+          </div>
+
+          <button type="button" class="nav-btn" id="nextMonth">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="date-picker-display">
+          <span id="selectedRangeText">{{ $startDate }} to {{ $endDate }}</span>
+        </div>
+
+        <div class="date-picker-footer">
+          <button type="button" class="cancel-btn">Cancel</button>
+          <button type="button" class="apply-date-btn" id="applyDatePicker">Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Stats Grid -->
   <div class="stats-grid">
 
-    <!-- Total Users -->
     <div class="stat-card" data-lazy-load="totalUsers">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
@@ -858,7 +1048,6 @@
       <div class="stat-progress"><div class="stat-progress-bar" style="width:0%"></div></div>
     </div>
 
-    <!-- Total Authors -->
     <div class="stat-card" data-lazy-load="totalAuthors">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
@@ -875,7 +1064,6 @@
       <div class="stat-progress"><div class="stat-progress-bar" style="width:0%"></div></div>
     </div>
 
-    <!-- Volume Total -->
     <div class="stat-card" data-lazy-load="volumeTotal">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
@@ -893,7 +1081,6 @@
       <div class="stat-progress"><div class="stat-progress-bar" style="width:0%"></div></div>
     </div>
 
-    <!-- Sentiment -->
     <div class="stat-card" data-lazy-load="sentiment">
       <div class="stat-header">
         <div class="stat-icon-wrapper">
@@ -917,7 +1104,6 @@
   <!-- Charts Section -->
   <div class="charts-section">
 
-    <!-- Volume Trend Chart -->
     <div class="chart-card" data-lazy-load="volumeTotal">
       <div class="chart-header">
         <div class="chart-title-group">
@@ -931,7 +1117,6 @@
       </div>
     </div>
 
-    <!-- Sentiment Distribution Chart -->
     <div class="chart-card" data-lazy-load="sentiment">
       <div class="chart-header">
         <div class="chart-title-group">
@@ -954,57 +1139,12 @@
         <h3>Most Active Users</h3>
         <p class="table-subtitle">Top 10 users with highest posting frequency</p>
       </div>
-
-      <div class="table-actions">
-        <div class="table-search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="m21 21-4.35-4.35"/>
-          </svg>
-          <input type="text" id="userSearchInput" placeholder="Search users..." onkeyup="filterUsers()">
-        </div>
-
-        <div class="actions-dropdown">
-          <button class="actions-dropdown-btn" onclick="toggleActionsDropdown(event)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="1"/>
-              <circle cx="12" cy="5" r="1"/>
-              <circle cx="12" cy="19" r="1"/>
-            </svg>
-            Actions
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
-          </button>
-
-          <div class="actions-dropdown-menu" id="actionsDropdownMenu">
-            <a href="#" class="actions-dropdown-item" onclick="event.preventDefault(); exportUsers()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              Export to CSV
-            </a>
-            <a href="#" class="actions-dropdown-item" onclick="event.preventDefault(); refreshUsers()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="23 4 23 10 17 10"/>
-                <polyline points="1 20 1 14 7 14"/>
-                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-              </svg>
-              Refresh Data
-            </a>
-            <div class="actions-dropdown-divider"></div>
-            <a href="#" class="actions-dropdown-item" onclick="event.preventDefault(); printTable()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 6 2 18 2 18 9"/>
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                <rect x="6" y="14" width="12" height="8"/>
-              </svg>
-              Print Table
-            </a>
-          </div>
-        </div>
+      <div class="table-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" id="userSearchInput" placeholder="Search users..." onkeyup="filterUsers()">
       </div>
     </div>
 
@@ -1024,414 +1164,563 @@
   </div>
 
   @endif
-
 </div>
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  const projectId = '{{ $projectId ?? '' }}';
-  const startDate = '{{ $startDate ?? '' }}';
-  const endDate   = '{{ $endDate ?? '' }}';
+// ========================================
+// DATE PICKER
+// ========================================
+(function () {
+  'use strict';
 
-  let allUsers      = [];
-  let displayedCount = 10;
+  let selectedStartDate = null;
+  let selectedEndDate   = null;
+  let currentMonth1     = new Date();
+  let currentMonth2     = new Date();
+  let selectingStart    = true;
 
-  if (projectId && startDate && endDate) {
+  document.addEventListener('DOMContentLoaded', function () {
+    const s = document.getElementById('hiddenStartDate');
+    const e = document.getElementById('hiddenEndDate');
 
-    function formatNumber(num) {
-      return new Intl.NumberFormat('en-US').format(num);
-    }
+    selectedStartDate = s && s.value ? new Date(s.value) : (() => { const d = new Date(); d.setDate(d.getDate() - 6); return d; })();
+    selectedEndDate   = e && e.value ? new Date(e.value) : new Date();
 
-    const loadedComponents = new Set();
+    currentMonth1 = new Date(selectedStartDate);
+    currentMonth2 = new Date(selectedStartDate);
+    currentMonth2.setMonth(currentMonth2.getMonth() + 1);
 
-    const lazyLoadObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const id = entry.target.dataset.lazyLoad;
-          if (!loadedComponents.has(id)) {
-            loadedComponents.add(id);
-            switch (id) {
-              case 'totalUsers':   loadTotalUsers();    break;
-              case 'totalAuthors': loadTotalAuthors();  break;
-              case 'volumeTotal':  loadVolumeTotal();   break;
-              case 'sentiment':    loadSentimentTotal(); break;
-              case 'activeUsers':  loadMostActiveUsers(); break;
-            }
-            lazyLoadObserver.unobserve(entry.target);
-          }
-        }
-      });
-    }, { rootMargin: '50px', threshold: 0.01 });
+    renderCalendars();
+    setupEventListeners();
+  });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('[data-lazy-load]').forEach(el => lazyLoadObserver.observe(el));
+  function setupEventListeners() {
+    document.getElementById('datePickerTrigger')?.addEventListener('click', openDatePicker);
+    document.querySelector('.date-picker-overlay')?.addEventListener('click', closeDatePicker);
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && document.getElementById('datePickerModal')?.classList.contains('show')) {
+        closeDatePicker();
+      }
     });
 
-    // ── Loaders ──────────────────────────────────────────
+    document.querySelectorAll('.date-preset').forEach(btn => btn.addEventListener('click', handlePresetClick));
 
-    async function loadTotalUsers() {
-      const card = document.querySelector('[data-lazy-load="totalUsers"]');
-      addLoadingBadge(card);
-      try {
-        const res    = await fetch(`/mk/api/instagram/total-users?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
-        const result = await res.json();
-        if (result.success) {
-          const total  = result.data.total || 0;
-          const el     = document.getElementById('totalUsersValue');
-          el.innerHTML = `<div class="stat-value">${formatNumber(total)}</div>`;
-          el.classList.add('data-loaded');
-          animateProgress(card, 75);
-        }
-      } catch (e) { console.error(e); }
-      finally { removeLoadingBadge(card); card.classList.add('loaded'); }
+    document.getElementById('prevMonth')?.addEventListener('click', () => {
+      currentMonth1.setMonth(currentMonth1.getMonth() - 1);
+      currentMonth2.setMonth(currentMonth2.getMonth() - 1);
+      renderCalendars();
+    });
+
+    document.getElementById('nextMonth')?.addEventListener('click', () => {
+      currentMonth1.setMonth(currentMonth1.getMonth() + 1);
+      currentMonth2.setMonth(currentMonth2.getMonth() + 1);
+      renderCalendars();
+    });
+
+    document.getElementById('applyDatePicker')?.addEventListener('click', applyDateSelection);
+    document.querySelector('.cancel-btn')?.addEventListener('click', closeDatePicker);
+  }
+
+  function openDatePicker()  { document.getElementById('datePickerModal').classList.add('show'); renderCalendars(); }
+  function closeDatePicker() { document.getElementById('datePickerModal').classList.remove('show'); }
+
+  function handlePresetClick(e) {
+    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+
+    const today  = new Date(); today.setHours(0, 0, 0, 0);
+    const preset = e.target.dataset.preset;
+
+    switch (preset) {
+      case 'today':
+        selectedStartDate = new Date(today);
+        selectedEndDate   = new Date(today);
+        break;
+      case 'yesterday':
+        selectedStartDate = new Date(today); selectedStartDate.setDate(today.getDate() - 1);
+        selectedEndDate   = new Date(selectedStartDate);
+        break;
+      case 'last7days':
+        selectedEndDate   = new Date(today);
+        selectedStartDate = new Date(today); selectedStartDate.setDate(today.getDate() - 6);
+        break;
+      case 'last30days':
+        selectedEndDate   = new Date(today);
+        selectedStartDate = new Date(today); selectedStartDate.setDate(today.getDate() - 29);
+        break;
+      case 'thismonth':
+        selectedStartDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        selectedEndDate   = new Date(today);
+        break;
+      case 'lastmonth':
+        selectedStartDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        selectedEndDate   = new Date(today.getFullYear(), today.getMonth(), 0);
+        break;
     }
 
-    async function loadTotalAuthors() {
-      const card = document.querySelector('[data-lazy-load="totalAuthors"]');
-      addLoadingBadge(card);
-      try {
-        const res    = await fetch(`/mk/api/instagram/total-authors?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
-        const result = await res.json();
-        if (result.success) {
-          const total  = result.data.total || 0;
-          const el     = document.getElementById('totalAuthorsValue');
-          el.innerHTML = `<div class="stat-value">${formatNumber(total)}</div>`;
-          el.classList.add('data-loaded');
-          animateProgress(card, 68);
-        }
-      } catch (e) { console.error(e); }
-      finally { removeLoadingBadge(card); card.classList.add('loaded'); }
+    if (preset !== 'custom') {
+      currentMonth1 = new Date(selectedStartDate);
+      currentMonth2 = new Date(selectedStartDate);
+      currentMonth2.setMonth(currentMonth2.getMonth() + 1);
+      updateDateDisplay();
+      renderCalendars();
+    }
+  }
+
+  function applyDateSelection() {
+    const start = formatDate(selectedStartDate);
+    const end   = formatDate(selectedEndDate);
+    document.getElementById('hiddenStartDate').value = start;
+    document.getElementById('hiddenEndDate').value   = end;
+    document.getElementById('dateRangeDisplay').textContent = `${start} to ${end}`;
+    closeDatePicker();
+  }
+
+  function renderCalendars() {
+    renderCalendar('calendar1', currentMonth1);
+    renderCalendar('calendar2', currentMonth2);
+    updateDateDisplay();
+  }
+
+  function renderCalendar(id, month) {
+    const calendar = document.getElementById(id);
+    if (!calendar) return;
+
+    const year  = month.getFullYear();
+    const mon   = month.getMonth();
+    const first = new Date(year, mon, 1);
+    const last  = new Date(year, mon + 1, 0);
+    const prevLast = new Date(year, mon, 0);
+
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const weekdays   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+    const today      = new Date(); today.setHours(0,0,0,0);
+
+    let html = `<div class="calendar-month">${monthNames[mon]} ${year}</div>
+      <div class="calendar-weekdays">${weekdays.map(d => `<div class="weekday">${d}</div>`).join('')}</div>
+      <div class="calendar-days">`;
+
+    for (let i = first.getDay() - 1; i >= 0; i--) {
+      html += `<button type="button" class="calendar-day other-month" disabled>${prevLast.getDate() - i}</button>`;
     }
 
-    async function loadVolumeTotal() {
-      const cards = document.querySelectorAll('[data-lazy-load="volumeTotal"]');
-      cards.forEach(c => addLoadingBadge(c));
-      try {
-        const res    = await fetch(`/mk/api/instagram/volume-total?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
-        const result = await res.json();
-        if (result.success) {
-          const total  = result.data.total || 0;
-          const el     = document.getElementById('volumeTotalValue');
-          el.innerHTML = `<div class="stat-value">${formatNumber(total)}</div>`;
-          el.classList.add('data-loaded');
-          renderVolumeTrendChart(result.data.chart || []);
-          animateProgress(document.querySelector('.stat-card[data-lazy-load="volumeTotal"]'), 82);
-        }
-      } catch (e) { console.error(e); }
-      finally { cards.forEach(c => { removeLoadingBadge(c); c.classList.add('loaded'); }); }
+    for (let d = 1; d <= last.getDate(); d++) {
+      const date = new Date(year, mon, d); date.setHours(0,0,0,0);
+      const ds   = formatDate(date);
+      let cls    = 'calendar-day';
+
+      if (isSameDay(date, today))          cls += ' today';
+      if (date > today)                    cls += ' disabled';
+      if (selectedStartDate && selectedEndDate) {
+        if (isSameDay(date, selectedStartDate)) cls += ' selected range-start';
+        else if (isSameDay(date, selectedEndDate)) cls += ' selected range-end';
+        else if (date > selectedStartDate && date < selectedEndDate) cls += ' in-range';
+      }
+
+      const dis = date > today ? 'disabled' : '';
+      html += `<button type="button" class="${cls}" data-date="${ds}" ${dis}>${d}</button>`;
     }
 
-    async function loadSentimentTotal() {
-      const cards = document.querySelectorAll('[data-lazy-load="sentiment"]');
-      cards.forEach(c => addLoadingBadge(c));
-      try {
-        const res    = await fetch(`/mk/api/instagram/sentiment-total?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
-        const result = await res.json();
-        if (result.success) {
-          const { positive = 0, neutral = 0, negative = 0 } = result.data;
-          const total = positive + neutral + negative;
-          const score = total > 0 ? ((positive * 100 + neutral * 50) / total).toFixed(1) : 0;
-          const el    = document.getElementById('sentimentValue');
-          el.innerHTML = `<div class="stat-value">${score}%</div>`;
-          el.classList.add('data-loaded');
-          renderSentimentChart({ positive, neutral, negative });
-          animateProgress(document.querySelector('.stat-card[data-lazy-load="sentiment"]'), parseFloat(score));
-        }
-      } catch (e) { console.error(e); }
-      finally { cards.forEach(c => { removeLoadingBadge(c); c.classList.add('loaded'); }); }
+    const lastDow = last.getDay();
+    for (let i = 1; i < 7 - lastDow; i++) {
+      html += `<button type="button" class="calendar-day other-month" disabled>${i}</button>`;
     }
 
-    async function loadMostActiveUsers() {
-      const card    = document.querySelector('[data-lazy-load="activeUsers"]');
-      const loading = document.getElementById('activeUsersLoading');
-      const container     = document.getElementById('activeUsersTable');
-      const viewAllContainer = document.getElementById('viewAllContainer');
-      addLoadingBadge(card);
-      try {
-        const res    = await fetch(`/mk/api/instagram/most-active-users?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
-        const result = await res.json();
-        if (result.success && result.data?.data) {
-          allUsers = result.data.data;
-          displayUsersTable(10);
-          if (allUsers.length > 10) {
-            viewAllContainer.style.display = 'flex';
-            document.getElementById('remainingCount').textContent = allUsers.length - 10;
+    html += '</div>';
+    calendar.innerHTML = html;
+
+    calendar.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)').forEach(btn => {
+      btn.addEventListener('click', handleDateClick);
+    });
+  }
+
+  function handleDateClick(e) {
+    const date = new Date(e.target.dataset.date); date.setHours(0,0,0,0);
+
+    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-preset="custom"]')?.classList.add('active');
+
+    if (selectingStart || date < selectedStartDate) {
+      selectedStartDate = date;
+      selectedEndDate   = date;
+      selectingStart    = false;
+    } else {
+      selectedEndDate = date >= selectedStartDate ? date : selectedStartDate;
+      if (date < selectedStartDate) { selectedEndDate = selectedStartDate; selectedStartDate = date; }
+      selectingStart = true;
+    }
+
+    updateDateDisplay();
+    renderCalendars();
+  }
+
+  function updateDateDisplay() {
+    if (!selectedStartDate || !selectedEndDate) return;
+    const el = document.getElementById('selectedRangeText');
+    if (el) el.textContent = `${formatDate(selectedStartDate)} to ${formatDate(selectedEndDate)}`;
+  }
+
+  function formatDate(d) {
+    if (!d) return '';
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function isSameDay(a, b) {
+    return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+  }
+})();
+
+// ========================================
+// DASHBOARD LOGIC
+// ========================================
+const projectId = '{{ $projectId ?? '' }}';
+const startDate = '{{ $startDate ?? '' }}';
+const endDate   = '{{ $endDate ?? '' }}';
+
+let allUsers      = [];
+let displayedCount = 10;
+
+if (projectId && startDate && endDate) {
+
+  function formatNumber(num) {
+    return new Intl.NumberFormat('en-US').format(num);
+  }
+
+  const loadedComponents = new Set();
+
+  const lazyLoadObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.dataset.lazyLoad;
+        if (!loadedComponents.has(id)) {
+          loadedComponents.add(id);
+          switch (id) {
+            case 'totalUsers':   loadTotalUsers();     break;
+            case 'totalAuthors': loadTotalAuthors();   break;
+            case 'volumeTotal':  loadVolumeTotal();    break;
+            case 'sentiment':    loadSentimentTotal(); break;
+            case 'activeUsers':  loadMostActiveUsers(); break;
           }
-          loading.style.display   = 'none';
-          container.style.display = 'block';
+          lazyLoadObserver.unobserve(entry.target);
         }
-      } catch (e) { console.error(e); }
-      finally { removeLoadingBadge(card); card.classList.add('loaded'); }
-    }
-
-    // ── Table render ─────────────────────────────────────
-
-    function buildTableHTML(users) {
-      let html = `<table class="data-table"><thead><tr>
-        <th>NO.</th><th>AVATAR</th><th>NAME</th><th>POSTS</th><th>LIKES</th><th>COMMENTS</th>
-      </tr></thead><tbody>`;
-
-      users.forEach((item, i) => {
-        const name    = item.username || item.name || 'Unknown';
-        const pic     = item.profile_url || item.profile_image_url || '';
-        const posts   = item.posts || item.y || 0;
-        const likes   = item.likes   || 0;
-        const comments = item.comments || 0;
-
-        html += `<tr>
-          <td><strong>${i + 1}</strong></td>
-          <td>
-            <div class="avatar-container">
-              ${pic
-                ? `<img src="${pic}" alt="${name}" class="user-avatar-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                   <div class="user-avatar-fallback" style="display:none;">${name.charAt(0).toUpperCase()}</div>`
-                : `<div class="user-avatar">${name.charAt(0).toUpperCase()}</div>`}
-            </div>
-          </td>
-          <td><a href="https://instagram.com/${name}" target="_blank" class="account-name-link">${name}</a></td>
-          <td><strong>${formatNumber(posts)}</strong></td>
-          <td>${formatNumber(likes)}</td>
-          <td>${formatNumber(comments)}</td>
-        </tr>`;
-      });
-
-      html += '</tbody></table>';
-      return html;
-    }
-
-    function displayUsersTable(count) {
-      const container  = document.getElementById('activeUsersTable');
-      container.innerHTML = buildTableHTML(allUsers.slice(0, count));
-      container.classList.add('data-loaded');
-      displayedCount = count;
-    }
-
-    function filterUsers() {
-      const term      = document.getElementById('userSearchInput').value.toLowerCase();
-      const container = document.getElementById('activeUsersTable');
-      const filtered  = term
-        ? allUsers.filter(u => (u.username || u.name || '').toLowerCase().includes(term))
-        : allUsers.slice(0, displayedCount);
-
-      if (term && filtered.length === 0) {
-        container.innerHTML = `<table class="data-table"><tbody>
-          <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-secondary);">No users found matching "${term}"</td></tr>
-        </tbody></table>`;
-      } else {
-        container.innerHTML = buildTableHTML(filtered);
       }
-    }
+    });
+  }, { rootMargin: '50px', threshold: 0.01 });
 
-    function showAllUsersModal() {
-      const modal = document.createElement('div');
-      modal.className = 'all-users-modal show';
-      modal.innerHTML = `
-        <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3>All Active Users (${allUsers.length} total)</h3>
-            <button class="modal-close" onclick="this.closest('.all-users-modal').remove()">
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-lazy-load]').forEach(el => lazyLoadObserver.observe(el));
+  });
+
+  // ── Loaders ─────────────────────────────────────────
+
+  async function loadTotalUsers() {
+    const card = document.querySelector('[data-lazy-load="totalUsers"]');
+    addLoadingBadge(card);
+    try {
+      const res    = await fetch(`/mk/api/instagram/total-users?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
+      const result = await res.json();
+      if (result.success) {
+        const el = document.getElementById('totalUsersValue');
+        el.innerHTML = `<div class="stat-value">${formatNumber(result.data.total || 0)}</div>`;
+        el.classList.add('data-loaded');
+        animateProgress(card, 75);
+      }
+    } catch (e) { console.error(e); }
+    finally { removeLoadingBadge(card); card.classList.add('loaded'); }
+  }
+
+  async function loadTotalAuthors() {
+    const card = document.querySelector('[data-lazy-load="totalAuthors"]');
+    addLoadingBadge(card);
+    try {
+      const res    = await fetch(`/mk/api/instagram/total-authors?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
+      const result = await res.json();
+      if (result.success) {
+        const el = document.getElementById('totalAuthorsValue');
+        el.innerHTML = `<div class="stat-value">${formatNumber(result.data.total || 0)}</div>`;
+        el.classList.add('data-loaded');
+        animateProgress(card, 68);
+      }
+    } catch (e) { console.error(e); }
+    finally { removeLoadingBadge(card); card.classList.add('loaded'); }
+  }
+
+  async function loadVolumeTotal() {
+    const cards = document.querySelectorAll('[data-lazy-load="volumeTotal"]');
+    cards.forEach(c => addLoadingBadge(c));
+    try {
+      const res    = await fetch(`/mk/api/instagram/volume-total?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
+      const result = await res.json();
+      if (result.success) {
+        const el = document.getElementById('volumeTotalValue');
+        el.innerHTML = `<div class="stat-value">${formatNumber(result.data.total || 0)}</div>`;
+        el.classList.add('data-loaded');
+        renderVolumeTrendChart(result.data.chart || []);
+        animateProgress(document.querySelector('.stat-card[data-lazy-load="volumeTotal"]'), 82);
+      }
+    } catch (e) { console.error(e); }
+    finally { cards.forEach(c => { removeLoadingBadge(c); c.classList.add('loaded'); }); }
+  }
+
+  async function loadSentimentTotal() {
+    const cards = document.querySelectorAll('[data-lazy-load="sentiment"]');
+    cards.forEach(c => addLoadingBadge(c));
+    try {
+      const res    = await fetch(`/mk/api/instagram/sentiment-total?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
+      const result = await res.json();
+      if (result.success) {
+        const { positive = 0, neutral = 0, negative = 0 } = result.data;
+        const total = positive + neutral + negative;
+        const score = total > 0 ? ((positive * 100 + neutral * 50) / total).toFixed(1) : 0;
+        const el = document.getElementById('sentimentValue');
+        el.innerHTML = `<div class="stat-value">${score}%</div>`;
+        el.classList.add('data-loaded');
+        renderSentimentChart({ positive, neutral, negative });
+        animateProgress(document.querySelector('.stat-card[data-lazy-load="sentiment"]'), parseFloat(score));
+      }
+    } catch (e) { console.error(e); }
+    finally { cards.forEach(c => { removeLoadingBadge(c); c.classList.add('loaded'); }); }
+  }
+
+  async function loadMostActiveUsers() {
+    const card             = document.querySelector('[data-lazy-load="activeUsers"]');
+    const loading          = document.getElementById('activeUsersLoading');
+    const container        = document.getElementById('activeUsersTable');
+    const viewAllContainer = document.getElementById('viewAllContainer');
+    addLoadingBadge(card);
+    try {
+      const res    = await fetch(`/mk/api/instagram/most-active-users?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
+      const result = await res.json();
+      if (result.success && result.data?.data) {
+        allUsers = result.data.data;
+        displayUsersTable(10);
+        if (allUsers.length > 10) {
+          viewAllContainer.style.display = 'flex';
+          document.getElementById('remainingCount').textContent = allUsers.length - 10;
+        }
+        loading.style.display   = 'none';
+        container.style.display = 'block';
+      }
+    } catch (e) { console.error(e); }
+    finally { removeLoadingBadge(card); card.classList.add('loaded'); }
+  }
+
+  // ── Table ────────────────────────────────────────────
+
+  function buildTableHTML(users) {
+    let html = `<table class="data-table"><thead><tr>
+      <th>NO.</th><th>AVATAR</th><th>NAME</th><th>POSTS</th><th>LIKES</th><th>COMMENTS</th>
+    </tr></thead><tbody>`;
+
+    users.forEach((item, i) => {
+      const name     = item.username || item.name || 'Unknown';
+      const pic      = item.profile_url || item.profile_image_url || '';
+      const posts    = item.posts || item.y || 0;
+      const likes    = item.likes    || 0;
+      const comments = item.comments || 0;
+
+      html += `<tr>
+        <td><strong>${i + 1}</strong></td>
+        <td>
+          <div class="avatar-container">
+            ${pic
+              ? `<img src="${pic}" alt="${name}" class="user-avatar-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                 <div class="user-avatar-fallback" style="display:none;">${name.charAt(0).toUpperCase()}</div>`
+              : `<div class="user-avatar">${name.charAt(0).toUpperCase()}</div>`}
           </div>
-          <div class="modal-body">${buildTableHTML(allUsers)}</div>
-        </div>`;
-      document.body.appendChild(modal);
+        </td>
+        <td><a href="https://instagram.com/${name}" target="_blank" class="account-name-link">${name}</a></td>
+        <td><strong>${formatNumber(posts)}</strong></td>
+        <td>${formatNumber(likes)}</td>
+        <td>${formatNumber(comments)}</td>
+      </tr>`;
+    });
+
+    html += '</tbody></table>';
+    return html;
+  }
+
+  function displayUsersTable(count) {
+    const container = document.getElementById('activeUsersTable');
+    container.innerHTML = buildTableHTML(allUsers.slice(0, count));
+    container.classList.add('data-loaded');
+    displayedCount = count;
+  }
+
+  function filterUsers() {
+    const term      = document.getElementById('userSearchInput').value.toLowerCase();
+    const container = document.getElementById('activeUsersTable');
+    const filtered  = term
+      ? allUsers.filter(u => (u.username || u.name || '').toLowerCase().includes(term))
+      : allUsers.slice(0, displayedCount);
+
+    container.innerHTML = (term && filtered.length === 0)
+      ? `<table class="data-table"><tbody><tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-secondary);">No users found matching "${term}"</td></tr></tbody></table>`
+      : buildTableHTML(filtered);
+  }
+
+  function showAllUsersModal() {
+    const modal = document.createElement('div');
+    modal.className = 'all-users-modal show';
+    modal.innerHTML = `
+      <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>All Active Users (${allUsers.length} total)</h3>
+          <button class="modal-close" onclick="this.closest('.all-users-modal').remove()">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">${buildTableHTML(allUsers)}</div>
+      </div>`;
+    document.body.appendChild(modal);
+  }
+
+  // ── Charts ───────────────────────────────────────────
+
+  function renderVolumeTrendChart(data) {
+    const canvas  = document.getElementById('volumeTrendChart');
+    const loading = document.getElementById('volumeTrendLoading');
+
+    if (!data || data.length === 0) {
+      loading.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:40px;">No data available</p>';
+      return;
     }
 
-    // ── Charts ───────────────────────────────────────────
-
-    function renderVolumeTrendChart(data) {
-      const canvas  = document.getElementById('volumeTrendChart');
-      const loading = document.getElementById('volumeTrendLoading');
-
-      if (!data || data.length === 0) {
-        loading.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:40px;">No data available</p>';
-        return;
-      }
-
-      new Chart(canvas.getContext('2d'), {
-        type: 'line',
-        data: {
-          labels: data.map(d => d.date),
-          datasets: [{
-            label: 'Volume',
-            data: data.map(d => d.count || d.value || 0),
-            borderColor: '#dc2743',
-            backgroundColor: 'rgba(220,39,67,0.1)',
-            borderWidth: 3,
-            tension: 0.4,
-            fill: true,
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            pointBackgroundColor: '#dc2743',
-            pointBorderColor: '#ffffff',
-            pointBorderWidth: 2,
-          }]
+    new Chart(canvas.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: data.map(d => d.date),
+        datasets: [{
+          label: 'Volume',
+          data: data.map(d => d.count || d.value || 0),
+          borderColor: '#dc2743',
+          backgroundColor: 'rgba(220,39,67,0.1)',
+          borderWidth: 3,
+          tension: 0.4,
+          fill: true,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointBackgroundColor: '#dc2743',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1a202c',
+            padding: 16,
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            titleFont: { size: 14, weight: '600' },
+            bodyFont: { size: 13 },
+            displayColors: false,
+            cornerRadius: 8
+          }
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#1a202c',
-              padding: 16,
-              titleColor: '#fff',
-              bodyColor: '#fff',
-              titleFont: { size: 14, weight: '600' },
-              bodyFont: { size: 13 },
-              displayColors: false,
-              cornerRadius: 8
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: '#f1f5f9', drawBorder: false },
+            ticks: { color: '#64748b', font: { family: 'Poppins', size: 12 }, padding: 8 }
+          },
+          x: {
+            grid: { display: false, drawBorder: false },
+            ticks: { color: '#64748b', font: { family: 'Poppins', size: 12 }, padding: 8 }
+          }
+        }
+      }
+    });
+
+    loading.style.display = 'none';
+    canvas.style.display  = 'block';
+  }
+
+  function renderSentimentChart(sentiment) {
+    const canvas  = document.getElementById('sentimentChart');
+    const loading = document.getElementById('sentimentLoading');
+
+    new Chart(canvas.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Positive', 'Neutral', 'Negative'],
+        datasets: [{
+          data: [sentiment.positive, sentiment.neutral, sentiment.negative],
+          backgroundColor: ['#10b981', '#64748b', '#ef4444'],
+          borderWidth: 0,
+          hoverOffset: 15
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#1a202c',
+              font: { family: 'Poppins', size: 13, weight: '600' },
+              padding: 20,
+              usePointStyle: true,
+              pointStyle: 'circle'
             }
           },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: { color: '#f1f5f9', drawBorder: false },
-              ticks: { color: '#64748b', font: { family: 'Poppins', size: 12 }, padding: 8 }
-            },
-            x: {
-              grid: { display: false, drawBorder: false },
-              ticks: { color: '#64748b', font: { family: 'Poppins', size: 12 }, padding: 8 }
-            }
-          }
-        }
-      });
-
-      loading.style.display = 'none';
-      canvas.style.display  = 'block';
-    }
-
-    function renderSentimentChart(sentiment) {
-      const canvas  = document.getElementById('sentimentChart');
-      const loading = document.getElementById('sentimentLoading');
-
-      new Chart(canvas.getContext('2d'), {
-        type: 'doughnut',
-        data: {
-          labels: ['Positive', 'Neutral', 'Negative'],
-          datasets: [{
-            data: [sentiment.positive, sentiment.neutral, sentiment.negative],
-            backgroundColor: ['#10b981', '#64748b', '#ef4444'],
-            borderWidth: 0,
-            hoverOffset: 15
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '70%',
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: { color: '#1a202c', font: { family: 'Poppins', size: 13, weight: '600' }, padding: 20, usePointStyle: true, pointStyle: 'circle' }
-            },
-            tooltip: {
-              backgroundColor: '#1a202c',
-              padding: 16,
-              titleColor: '#fff',
-              bodyColor: '#fff',
-              titleFont: { size: 14, weight: '600' },
-              bodyFont: { size: 13 },
-              displayColors: false,
-              cornerRadius: 8,
-              callbacks: {
-                label: function(ctx) {
-                  const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                  const pct   = ((ctx.parsed / total) * 100).toFixed(1);
-                  return `${ctx.label}: ${formatNumber(ctx.parsed)} (${pct}%)`;
-                }
+          tooltip: {
+            backgroundColor: '#1a202c',
+            padding: 16,
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            titleFont: { size: 14, weight: '600' },
+            bodyFont: { size: 13 },
+            displayColors: false,
+            cornerRadius: 8,
+            callbacks: {
+              label: function (ctx) {
+                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                const pct   = ((ctx.parsed / total) * 100).toFixed(1);
+                return `${ctx.label}: ${formatNumber(ctx.parsed)} (${pct}%)`;
               }
             }
           }
         }
-      });
-
-      loading.style.display = 'none';
-      canvas.style.display  = 'block';
-    }
-
-    // ── Helpers ──────────────────────────────────────────
-
-    function addLoadingBadge(card) {
-      if (!card || card.querySelector('.lazy-loading-badge')) return;
-      const badge = document.createElement('div');
-      badge.className = 'lazy-loading-badge';
-      badge.innerHTML = '<div class="spinner"></div><span>Loading...</span>';
-      card.style.position = 'relative';
-      card.appendChild(badge);
-    }
-
-    function removeLoadingBadge(card) {
-      const badge = card?.querySelector('.lazy-loading-badge');
-      if (badge) { badge.style.opacity = '0'; setTimeout(() => badge.remove(), 300); }
-    }
-
-    function animateProgress(card, pct) {
-      const bar = card?.querySelector('.stat-progress-bar');
-      if (bar) setTimeout(() => { bar.style.width = pct + '%'; }, 100);
-    }
-  }
-
-  // ── Dropdown & Actions ───────────────────────────────
-
-  function toggleActionsDropdown(event) {
-    event.stopPropagation();
-    document.getElementById('actionsDropdownMenu').classList.toggle('show');
-  }
-
-  document.addEventListener('click', () => {
-    document.getElementById('actionsDropdownMenu')?.classList.remove('show');
-  });
-
-  function exportUsers() {
-    document.getElementById('actionsDropdownMenu').classList.remove('show');
-    let csv = "No.,Name,Posts,Likes,Comments\n";
-    allUsers.forEach((u, i) => {
-      const name    = (u.username || u.name || '').replace(/,/g, ' ');
-      const posts   = u.posts || u.y || 0;
-      const likes   = u.likes   || 0;
-      const comments = u.comments || 0;
-      csv += `${i + 1},"${name}",${posts},${likes},${comments}\n`;
+      }
     });
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const a    = document.createElement('a');
-    a.href     = URL.createObjectURL(blob);
-    a.download = `instagram_active_users_${startDate}_${endDate}.csv`;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+
+    loading.style.display = 'none';
+    canvas.style.display  = 'block';
   }
 
-  function refreshUsers() {
-    document.getElementById('actionsDropdownMenu').classList.remove('show');
-    window.location.reload();
+  // ── Helpers ──────────────────────────────────────────
+
+  function addLoadingBadge(card) {
+    if (!card || card.querySelector('.lazy-loading-badge')) return;
+    const badge = document.createElement('div');
+    badge.className = 'lazy-loading-badge';
+    badge.innerHTML = '<div class="spinner"></div><span>Loading...</span>';
+    card.style.position = 'relative';
+    card.appendChild(badge);
   }
 
-  function printTable() {
-    document.getElementById('actionsDropdownMenu').classList.remove('show');
-    const win = window.open('', '_blank');
-    win.document.write(`<!DOCTYPE html><html><head>
-      <title>Most Active Users - Instagram Overview</title>
-      <style>
-        body{font-family:Arial,sans-serif;padding:20px;}
-        h1{color:#1a202c;margin-bottom:10px;}
-        p{color:#64748b;margin-bottom:20px;}
-        table{width:100%;border-collapse:collapse;}
-        th{background:#f8fafc;padding:12px;text-align:left;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;border-bottom:1px solid #e2e8f0;}
-        td{padding:12px;font-size:12px;border-bottom:1px solid #f1f5f9;}
-      </style></head><body>
-      <h1>Most Active Users - Instagram</h1>
-      <p>Date Range: ${startDate} to ${endDate}</p>
-      ${document.getElementById('activeUsersTable').innerHTML}
-    </body></html>`);
-    win.document.close();
-    setTimeout(() => { win.print(); win.close(); }, 250);
+  function removeLoadingBadge(card) {
+    const badge = card?.querySelector('.lazy-loading-badge');
+    if (badge) { badge.style.opacity = '0'; setTimeout(() => badge.remove(), 300); }
   }
+
+  function animateProgress(card, pct) {
+    const bar = card?.querySelector('.stat-progress-bar');
+    if (bar) setTimeout(() => { bar.style.width = pct + '%'; }, 100);
+  }
+}
 </script>
 @endsection

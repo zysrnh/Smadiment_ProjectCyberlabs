@@ -105,13 +105,22 @@ class InstagramOverviewController extends Controller
 
             $result = $this->client->totalAuthors($projectId, 'instagram', $startDate, $endDate);
 
+            // 🔥 FIX: Log bymedia keys untuk debug
+            Log::info('IG totalUsers raw', [
+                'all'     => $result['all'] ?? null,
+                'bymedia' => $result['bymedia'] ?? [],
+            ]);
+
             $total = 0;
-            if (isset($result['all'])) {
-                $total = (int) $result['all'];
-            } elseif (isset($result['bymedia']['ig'])) {
+            // 🔥 FIX: Coba semua kemungkinan key bymedia Instagram
+            if (isset($result['bymedia']['ig'])) {
                 $total = (int) $result['bymedia']['ig'];
             } elseif (isset($result['bymedia']['instagram'])) {
                 $total = (int) $result['bymedia']['instagram'];
+            } elseif (isset($result['bymedia']['ig_post'])) {
+                $total = (int) $result['bymedia']['ig_post'];
+            } elseif (isset($result['all'])) {
+                $total = (int) $result['all'];
             }
 
             return response()->json(['success' => true, 'data' => ['total' => $total]]);
@@ -135,13 +144,22 @@ class InstagramOverviewController extends Controller
 
             $result = $this->client->totalAuthors($projectId, 'instagram', $startDate, $endDate);
 
+            // 🔥 FIX: Log bymedia keys untuk debug
+            Log::info('IG totalAuthors raw', [
+                'all'     => $result['all'] ?? null,
+                'bymedia' => $result['bymedia'] ?? [],
+            ]);
+
             $total = 0;
-            if (isset($result['all'])) {
-                $total = (int) $result['all'];
-            } elseif (isset($result['bymedia']['ig'])) {
+            // 🔥 FIX: Coba semua kemungkinan key bymedia Instagram
+            if (isset($result['bymedia']['ig'])) {
                 $total = (int) $result['bymedia']['ig'];
             } elseif (isset($result['bymedia']['instagram'])) {
                 $total = (int) $result['bymedia']['instagram'];
+            } elseif (isset($result['bymedia']['ig_post'])) {
+                $total = (int) $result['bymedia']['ig_post'];
+            } elseif (isset($result['all'])) {
+                $total = (int) $result['all'];
             }
 
             return response()->json(['success' => true, 'data' => ['total' => $total]]);
@@ -165,6 +183,11 @@ class InstagramOverviewController extends Controller
 
             $result = $this->client->volumeTotal($projectId, 'instagram', $startDate, $endDate);
 
+            Log::info('IG volumeTotal raw', [
+                'all'     => $result['all'] ?? null,
+                'bymedia' => $result['bymedia'] ?? [],
+            ]);
+
             $total = 0;
             if (isset($result['all']['total'])) {
                 $total = (int) $result['all']['total'];
@@ -172,20 +195,39 @@ class InstagramOverviewController extends Controller
                 $total = (int) $result['bymedia']['ig'];
             } elseif (isset($result['bymedia']['instagram'])) {
                 $total = (int) $result['bymedia']['instagram'];
+            } elseif (isset($result['bymedia']['ig_post'])) {
+                $total = (int) $result['bymedia']['ig_post'];
             }
 
             $chartData = [];
             try {
+                // 🔥 FIX: Parse format trendsTotal yang benar
+                // Format API: {"2026-02-13 00:00:00": {"instagram": "29", "twit": "3156", ...}, ...}
                 $trendsResult = $this->client->trendsTotal($projectId, $startDate, $endDate);
-                if (isset($trendsResult['data']) && is_array($trendsResult['data'])) {
-                    foreach ($trendsResult['data'] as $trend) {
-                        $keyword = strtolower($trend['keyword'] ?? '');
-                        if ($keyword === 'ig' || $keyword === 'instagram') {
-                            $chartData = $trend['data'] ?? [];
-                            break;
-                        }
-                    }
+
+                Log::info('IG trendsTotal raw', ['result' => $trendsResult]);
+
+                foreach ($trendsResult as $datetime => $mediaData) {
+                    if (!is_array($mediaData)) continue;
+
+                    $dateKey = substr($datetime, 0, 10); // "2026-02-13"
+
+                    // Ambil nilai Instagram — coba semua kemungkinan key
+                    $count = (int) (
+                        $mediaData['instagram'] ??
+                        $mediaData['ig']        ??
+                        $mediaData['ig_post']   ??
+                        0
+                    );
+
+                    $chartData[] = ['date' => $dateKey, 'count' => $count];
                 }
+
+                // Sort ascending by date
+                usort($chartData, fn($a, $b) => strcmp($a['date'], $b['date']));
+
+                Log::info('IG trendsTotal parsed chartData', ['count' => count($chartData), 'data' => $chartData]);
+
             } catch (\Exception $e) {
                 Log::warning('Instagram: Failed to load trends data', ['error' => $e->getMessage()]);
             }
@@ -210,20 +252,34 @@ class InstagramOverviewController extends Controller
             }
 
             $result   = $this->client->getSentiment($projectId, 'instagram', $startDate, $endDate);
+
+            Log::info('IG sentimentTotal raw', ['result' => $result]);
+
             $positive = 0;
             $negative = 0;
             $neutral  = 0;
 
-            if (isset($result['pos'], $result['neg'], $result['net'])) {
+            // 🔥 FIX: Format dari log adalah result['data']['pos/neg/net']
+            if (isset($result['data']['pos'], $result['data']['neg'], $result['data']['net'])) {
+                $positive = (int) $result['data']['pos'];
+                $negative = (int) $result['data']['neg'];
+                $neutral  = (int) $result['data']['net'];
+            }
+            // Fallback: flat result['pos/neg/net']
+            elseif (isset($result['pos'], $result['neg'], $result['net'])) {
                 $positive = (int) $result['pos'];
                 $negative = (int) $result['neg'];
                 $neutral  = (int) $result['net'];
-            } elseif (isset($result['bymedia']['ig'])) {
+            }
+            // Fallback: bymedia['ig']
+            elseif (isset($result['bymedia']['ig'])) {
                 $d        = $result['bymedia']['ig'];
                 $positive = (int) ($d['pos'] ?? 0);
                 $negative = (int) ($d['neg'] ?? 0);
                 $neutral  = (int) ($d['net'] ?? 0);
-            } elseif (isset($result['bymedia']['instagram'])) {
+            }
+            // Fallback: bymedia['instagram']
+            elseif (isset($result['bymedia']['instagram'])) {
                 $d        = $result['bymedia']['instagram'];
                 $positive = (int) ($d['pos'] ?? 0);
                 $negative = (int) ($d['neg'] ?? 0);
@@ -250,12 +306,21 @@ class InstagramOverviewController extends Controller
             }
 
             $result = $this->client->mostActiveUsers($projectId, $startDate, $endDate);
-            $users  = [];
+
+            Log::info('IG mostActiveUsers raw', [
+                'type'   => gettype($result),
+                'keys'   => is_array($result) ? array_keys($result) : [],
+                'sample' => is_array($result['data']['data'] ?? null)
+                    ? array_slice($result['data']['data'], 0, 2)
+                    : ($result[0] ?? null),
+            ]);
+
+            $users = [];
 
             if (isset($result['data']['data']) && is_array($result['data']['data'])) {
                 foreach ($result['data']['data'] as $user) {
                     $media = strtolower($user['media'] ?? '');
-                    if ($media !== 'ig' && $media !== 'instagram') continue;
+                    if ($media && !in_array($media, ['ig', 'instagram', 'ig_post', ''])) continue;
 
                     $username   = $user['name'] ?? $user['author_name'] ?? '';
                     $profileUrl = $user['profile_url'] ?? $user['avatar_url'] ?? '';
@@ -486,7 +551,7 @@ class InstagramOverviewController extends Controller
                 $size  = (int) ($item['size'] ?? $item['count'] ?? $item['total'] ?? 0);
                 $media = strtolower($item['media'] ?? $item['source'] ?? $item['platform'] ?? '');
 
-                if ($media && !in_array($media, ['ig', 'instagram', ''])) continue;
+                if ($media && !in_array($media, ['ig', 'instagram', 'ig_post', ''])) continue;
 
                 if ($name && $size > 0) {
                     $hashtags[]     = ['name' => ltrim($name, '#'), 'size' => $size, 'hashtag' => ltrim($name, '#')];
