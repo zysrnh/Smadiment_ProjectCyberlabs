@@ -875,8 +875,8 @@ public function newsMentionsData(Request $request)
         try {
             $projectId = $request->query('project_id');
             $startDate = $request->query('start_date');
-            $endDate   = $request->query('end_date');
-            $rows      = (int) $request->query('rows', 500);
+            $endDate   = $request->query('end_date');       
+            $rows      = (int) $request->query('rows', 9999);
             $start     = (int) $request->query('start', 0);
             $sub       = $request->query('sub', 'postbylike');
 
@@ -956,7 +956,7 @@ public function newsMentionsData(Request $request)
             $projectId = $request->query('project_id');
             $startDate = $request->query('start_date');
             $endDate   = $request->query('end_date');
-            $rows      = (int) $request->query('rows', 500);
+            $rows      = (int) $request->query('rows', 9999);
             $start     = (int) $request->query('start', 0);
             $sub       = $request->query('sub', 'postbylike');
 
@@ -1070,7 +1070,7 @@ public function newsMentionsData(Request $request)
             $projectId = $request->query('project_id');
             $startDate = $request->query('start_date');
             $endDate   = $request->query('end_date');
-            $rows      = (int) $request->query('rows', 500);
+            $rows      = (int) $request->query('rows', 9999);
             $start     = (int) $request->query('start', 0);
             $sub       = $request->query('sub', 'fblike');
 
@@ -1159,7 +1159,7 @@ public function newsMentionsData(Request $request)
             $projectId = $request->query('project_id');
             $startDate = $request->query('start_date');
             $endDate   = $request->query('end_date');
-            $rows      = (int) $request->query('rows', 500);
+            $rows      = (int) $request->query('rows', 9999);
             $start     = (int) $request->query('start', 0);
 
             if (!$projectId) {

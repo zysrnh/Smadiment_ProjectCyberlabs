@@ -942,10 +942,9 @@ if(PID && SD && ED){
   async function safeGet(url){ try{ const r=await fetch(url); return await r.json(); }catch(e){ return null; } }
   async function fetchMentions(){ const r=await safeGet(`${BASE}/mentions?project_id=${PID}&start_date=${SD}&end_date=${ED}`); tickProgress(); if(!r?.success||!Array.isArray(r.data)) return []; return r.data.map(m=>norm(m,detectPlatform(m))); }
   async function fetchTwitter(){ const r=await safeGet(`${XB}/most-status?project_id=${PID}&start_date=${SD}&end_date=${ED}&media=all&mention_type=view_all`); tickProgress(); if(!r?.data||!Array.isArray(r.data)) return []; return r.data.map(m=>norm(m,'twit')); }
-  async function fetchFacebook(){ const r=await safeGet(`${BASE}/fb-top-status?project_id=${PID}&start_date=${SD}&end_date=${ED}&rows=100`); tickProgress(); if(!r?.success||!Array.isArray(r.data)) return []; return r.data.map(m=>norm(m,'fb')); }
-  async function fetchInstagram(){ const r=await safeGet(`${BASE}/ig-top-status?project_id=${PID}&start_date=${SD}&end_date=${ED}&rows=100`); tickProgress(); if(!r?.success||!Array.isArray(r.data)) return []; return r.data.map(m=>norm(m,'ig')); }
-  async function fetchTiktok(){ const r=await safeGet(`${BASE}/tiktok-top-status?project_id=${PID}&start_date=${SD}&end_date=${ED}&rows=100`); tickProgress(); if(!r?.success||!Array.isArray(r.data)) return []; return r.data.map(m=>norm(m,'tiktok')); }
-
+  async function fetchFacebook(){ const r=await safeGet(`${BASE}/fb-top-status?project_id=${PID}&start_date=${SD}&end_date=${ED}`); tickProgress(); if(!r?.success||!Array.isArray(r.data)) return []; return r.data.map(m=>norm(m,'fb')); }
+async function fetchInstagram(){ const r=await safeGet(`${BASE}/ig-top-status?project_id=${PID}&start_date=${SD}&end_date=${ED}`); tickProgress(); if(!r?.success||!Array.isArray(r.data)) return []; return r.data.map(m=>norm(m,'ig')); }
+async function fetchTiktok(){ const r=await safeGet(`${BASE}/tiktok-top-status?project_id=${PID}&start_date=${SD}&end_date=${ED}`); tickProgress(); if(!r?.success||!Array.isArray(r.data)) return []; return r.data.map(m=>norm(m,'tiktok')); }
   Promise.all([fetchMentions(),fetchTwitter(),fetchFacebook(),fetchInstagram(),fetchTiktok()])
   .then(([mentions,twit,fb,ig,tiktok])=>{
     const mDoc=mentions.filter(m=>m._platform==='doc');
