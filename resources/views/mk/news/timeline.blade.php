@@ -513,13 +513,32 @@
     <div class="chart-head">
       <div>
         <h3>Mentions &amp; Trends</h3>
-        <p>Daily volume per media platform</p>
+        <p>Daily volume per media platform — click legend to show/hide</p>
       </div>
-      <div class="legend" id="chartLegend">
-        <div class="sk" style="height:18px;width:340px;border-radius:5px;"></div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        {{-- Chart type toggle --}}
+        <div style="display:flex;background:var(--gray-100);border-radius:8px;padding:3px;gap:2px">
+          <button id="chartBtnLine" onclick="setChartMode('line')"
+            style="padding:5px 13px;border:none;border-radius:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;background:var(--white);color:var(--gray-900);box-shadow:0 1px 3px rgba(0,0,0,.1)">
+            Line
+          </button>
+          <button id="chartBtnBar" onclick="setChartMode('bar')"
+            style="padding:5px 13px;border:none;border-radius:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;background:transparent;color:var(--gray-500)">
+            Bar
+          </button>
+          <button id="chartBtnLog" onclick="setChartMode('log')"
+            style="padding:5px 13px;border:none;border-radius:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;background:transparent;color:var(--gray-500)"
+            title="Log scale — makes small platforms visible">
+            Log
+          </button>
+        </div>
+        {{-- Legend --}}
+        <div class="legend" id="chartLegend">
+          <div class="sk" style="height:18px;width:340px;border-radius:5px;"></div>
+        </div>
       </div>
     </div>
-    <div class="chart-wrap">
+    <div class="chart-wrap" style="height:300px">
       <div class="sk" id="chartSk" style="height:100%;"></div>
       <canvas id="volChart" style="display:none"></canvas>
     </div>
@@ -791,14 +810,33 @@ function norm(item, platform){
   };
 }
 
-// Detect platform from media_type / media_type_id field
+// Detect platform from media_type / media_type_id / id prefix / url
 function detectPlatform(item){
-  const t = String(item.media_type_id||item.media_type||item.tcode||'').toLowerCase();
-  if(t==='1'||t.includes('twit')) return 'twit';
-  if(t==='2'||t.includes('fb')||t.includes('facebook')) return 'fb';
-  if(t==='3'||t.includes('ig')||t.includes('instagram')) return 'ig';
-  if(t==='4'||t.includes('ytb')||t.includes('youtube')) return 'ytb';
-  if(t==='6'||t.includes('tiktok')) return 'tiktok';
+  const mt  = String(item.media_type_id||item.media_type||item.tcode||'').toLowerCase();
+  const id  = String(item.id||item.docid||'').toLowerCase();
+  const url = String(item.url||'').toLowerCase();
+
+  // By media_type_id
+  if(mt==='1'||mt.includes('twit'))                              return 'twit';
+  if(mt==='2'||mt.includes('fb')||mt.includes('facebook'))       return 'fb';
+  if(mt==='3'||mt.includes('ig')||mt.includes('instagram'))      return 'ig';
+  if(mt==='4'||mt.includes('ytb')||mt.includes('youtube'))       return 'ytb';
+  if(mt==='6'||mt.includes('tiktok'))                            return 'tiktok';
+
+  // By id prefix (raw MK data pattern)
+  if(id.startsWith('in-'))                                        return 'ig';
+  if(id.startsWith('fb-'))                                        return 'fb';
+  if(id.startsWith('yt-'))                                        return 'ytb';
+  if(id.startsWith('twit-')||id.startsWith('tw-'))               return 'twit';
+  if(id.startsWith('tiktok-')||id.startsWith('tt-'))             return 'tiktok';
+
+  // By URL
+  if(url.includes('instagram.com'))                              return 'ig';
+  if(url.includes('facebook.com')||url.includes('fb.com'))       return 'fb';
+  if(url.includes('youtube.com')||url.includes('youtu.be'))      return 'ytb';
+  if(url.includes('tiktok.com'))                                 return 'tiktok';
+  if(url.includes('twitter.com')||url.includes('x.com'))        return 'twit';
+
   return 'doc';
 }
 
@@ -942,84 +980,154 @@ function renderStats(){
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// RENDER VOLUME CHART
+// RENDER VOLUME CHART — with log scale + clickable legend + chart type
 // ═══════════════════════════════════════════════════════════════════
-function renderChart(){
-  const canvas=document.getElementById('volChart');
-  const sk=document.getElementById('chartSk');
-  if(!canvas)return;
+let chartMode = 'line'; // 'line' | 'bar' | 'log'
+let chartInstance = null;
+const hiddenPlatforms = new Set(); // platforms toggled off by user
 
-  const start=new Date(SD), end=new Date(ED);
-  const dates=[];
-  for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1))
+function setChartMode(mode){
+  chartMode = mode;
+  // Update button styles
+  ['line','bar','log'].forEach(m => {
+    const btn = document.getElementById('chartBtn' + m.charAt(0).toUpperCase() + m.slice(1));
+    if(!btn) return;
+    const active = m === mode;
+    btn.style.background = active ? 'var(--white)' : 'transparent';
+    btn.style.color = active ? 'var(--gray-900)' : 'var(--gray-500)';
+    btn.style.boxShadow = active ? '0 1px 3px rgba(0,0,0,.1)' : 'none';
+  });
+  renderChart();
+}
+
+function renderChart(){
+  const canvas = document.getElementById('volChart');
+  const sk     = document.getElementById('chartSk');
+  if(!canvas) return;
+
+  const start = new Date(SD), end = new Date(ED);
+  const dates = [];
+  for(let d = new Date(start); d <= end; d.setDate(d.getDate() + 1))
     dates.push(d.toISOString().split('T')[0]);
 
-  const platforms=['doc','twit','fb','ig','ytb','tiktok'];
+  const platforms = ['doc','twit','fb','ig','ytb','tiktok'];
+  const isLog     = chartMode === 'log';
+  const isBar     = chartMode === 'bar';
 
   const datasets = platforms.map(p => {
     const cfg = PLATFORM_CFG[p];
-    const dayMap={};
-    store[p].forEach(m=>{
-      if(!m.date_created)return;
-      const day=(m.date_created+'').split('T')[0].split(' ')[0];
-      dayMap[day]=(dayMap[day]||0)+1;
+    const dayMap = {};
+    (store[p] || []).forEach(m => {
+      if(!m.date_created) return;
+      const day = (m.date_created + '').split('T')[0].split(' ')[0];
+      dayMap[day] = (dayMap[day] || 0) + 1;
     });
+    const data = dates.map(d => dayMap[d] || 0);
+    const total = data.reduce((a,b)=>a+b, 0);
     return {
-      label: cfg.label,
-      data: dates.map(d=>dayMap[d]||0),
-      borderColor: cfg.color,
-      backgroundColor: cfg.color+'18',
-      borderWidth: 2.5,
-      tension: .4,
-      fill: false,
-      pointRadius: 3,
-      pointHoverRadius: 6,
-      pointBorderColor: '#fff',
-      pointBorderWidth: 1.5,
+      label:           cfg.label,
+      data:            isLog ? data.map(v => v > 0 ? v : 0.1) : data,
+      borderColor:     cfg.color,
+      backgroundColor: isBar ? cfg.color + 'cc' : cfg.color + '18',
+      borderWidth:     isBar ? 0 : 2.5,
+      tension:         isBar ? 0 : 0.4,
+      fill:            false,
+      pointRadius:     isBar ? 0 : (data.length > 30 ? 2 : 4),
+      pointHoverRadius:6,
+      pointBorderColor:'#fff',
+      pointBorderWidth:1.5,
+      hidden:          hiddenPlatforms.has(p),
+      _platform:       p,
+      _total:          total,
     };
   });
 
-  // Legend
-  document.getElementById('chartLegend').innerHTML = platforms.map(p=>`
-    <div class="legend-item">
-      <div class="legend-dot" style="background:${PLATFORM_CFG[p].color}"></div>
-      ${PLATFORM_CFG[p].label}
-    </div>
-  `).join('');
+  // ── Clickable legend HTML ──────────────────────────────────────
+  document.getElementById('chartLegend').innerHTML = platforms.map(p => {
+    const cfg   = PLATFORM_CFG[p];
+    const total = (store[p] || []).length;
+    const off   = hiddenPlatforms.has(p);
+    return `<div class="legend-item" onclick="togglePlatform('${p}')" style="cursor:pointer;opacity:${off?0.35:1};user-select:none;transition:opacity .2s">
+      <div class="legend-dot" style="background:${cfg.color}"></div>
+      <span>${cfg.label}</span>
+      <span style="font-size:10px;font-weight:800;color:${cfg.color};background:${cfg.color}18;padding:1px 6px;border-radius:8px">${fmt(total)}</span>
+    </div>`;
+  }).join('');
 
-  const existing=Chart.getChart(canvas);
-  if(existing)existing.destroy();
+  // ── Build/update chart ─────────────────────────────────────────
+  if(chartInstance) chartInstance.destroy();
 
-  new Chart(canvas.getContext('2d'),{
-    type:'line',
-    data:{
-      labels:dates.map(d=>{
-        const dt=new Date(d);
-        return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  const yConfig = isLog
+    ? {
+        type: 'logarithmic',
+        beginAtZero: false,
+        min: 0.1,
+        grid: { color: '#f3f4f6' },
+        ticks: {
+          color: '#6b7280',
+          font: { size: 11 },
+          callback: v => v >= 1 ? fmt(Math.round(v)) : '',
+        }
+      }
+    : {
+        beginAtZero: true,
+        grid: { color: '#f3f4f6' },
+        ticks: { color: '#6b7280', font: { size: 11 }, precision: 0 }
+      };
+
+  chartInstance = new Chart(canvas.getContext('2d'), {
+    type: isBar ? 'bar' : 'line',
+    data: {
+      labels: dates.map(d => {
+        const dt = new Date(d + 'T00:00:00');
+        return dt.toLocaleDateString('en-US', { month:'short', day:'numeric' });
       }),
       datasets
     },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      interaction:{mode:'index',intersect:false},
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'#111827',padding:14,cornerRadius:10,
-          titleColor:'#fff',bodyColor:'#d1d5db',
-          titleFont:{size:13,weight:'700'},bodyFont:{size:12},
-          displayColors:true,boxWidth:10,boxHeight:10,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#111827',
+          padding: 14,
+          cornerRadius: 10,
+          titleColor: '#fff',
+          bodyColor: '#d1d5db',
+          titleFont: { size: 13, weight: '700' },
+          bodyFont: { size: 12 },
+          displayColors: true,
+          boxWidth: 10,
+          boxHeight: 10,
+          callbacks: {
+            label: ctx => {
+              const v = Math.round(ctx.parsed.y);
+              return ` ${ctx.dataset.label}: ${fmt(v)}`;
+            }
+          }
         }
       },
-      scales:{
-        y:{beginAtZero:true,grid:{color:'#f3f4f6'},ticks:{color:'#6b7280',font:{size:11},precision:0}},
-        x:{grid:{display:false},ticks:{color:'#6b7280',font:{size:11},maxRotation:45,autoSkip:true,maxTicksLimit:12}}
+      scales: {
+        y: yConfig,
+        x: {
+          stacked: isBar,
+          grid: { display: false },
+          ticks: { color: '#6b7280', font: { size: 11 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 14 }
+        }
       }
     }
   });
 
-  sk.style.display='none';
-  canvas.style.display='block';
+  sk.style.display  = 'none';
+  canvas.style.display = 'block';
+}
+
+function togglePlatform(p){
+  if(hiddenPlatforms.has(p)) hiddenPlatforms.delete(p);
+  else hiddenPlatforms.add(p);
+  renderChart();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1078,16 +1186,21 @@ function renderTable(){
 
     // Avatar logic
     let avaInner=initl;
-    if(item.avatar_url){
-      avaInner=`<img src="${esc(item.avatar_url)}" alt="${esc(dname)}" onerror="this.parentElement.textContent='${initl}'">`;
+    if(item.avatar_url && item.avatar_url.startsWith('http')){
+      avaInner=`<img src="${esc(item.avatar_url)}" alt="${esc(dname)}" onerror="this.parentElement.innerHTML='${initl}'">`;
     } else if(item._platform==='twit'&&handle){
-      avaInner=`<img src="https://unavatar.io/twitter/${esc(handle)}" alt="${esc(dname)}" onerror="this.parentElement.textContent='${initl}'">`;
-    } else if(item._platform==='doc'&&domain){
-      avaInner=`<img src="https://logo.clearbit.com/${esc(domain)}" alt="${esc(dname)}" onerror="this.parentElement.textContent='${initl}'">`;
+      avaInner=`<img src="https://unavatar.io/twitter/${esc(handle)}" alt="${esc(dname)}" onerror="this.parentElement.innerHTML='${initl}'">`;
     } else if(item._platform==='ig'&&handle){
-      avaInner=`<img src="https://unavatar.io/instagram/${esc(handle)}" alt="${esc(dname)}" onerror="this.parentElement.textContent='${initl}'">`;
+      // Use lowercase author_id (e.g. "beritasatu") — more reliable than display name
+      const igId = (item.author_handle||handle).toLowerCase();
+      avaInner=`<img src="https://unavatar.io/instagram/${esc(igId)}" alt="${esc(dname)}" onerror="this.parentElement.innerHTML='${initl}'">`;
     } else if(item._platform==='tiktok'&&handle){
-      avaInner=`<img src="https://unavatar.io/tiktok/${esc(handle)}" alt="${esc(dname)}" onerror="this.parentElement.textContent='${initl}'">`;
+      const ttId = (item.author_handle||handle).toLowerCase();
+      avaInner=`<img src="https://unavatar.io/tiktok/${esc(ttId)}" alt="${esc(dname)}" onerror="this.parentElement.innerHTML='${initl}'">`;
+    } else if(item._platform==='doc'&&domain){
+      avaInner=`<img src="https://logo.clearbit.com/${esc(domain)}" alt="${esc(dname)}" onerror="this.parentElement.innerHTML='${initl}'">`;
+    } else if(item._platform==='ytb'&&handle){
+      avaInner=`<img src="https://unavatar.io/youtube/${esc(handle)}" alt="${esc(dname)}" onerror="this.parentElement.innerHTML='${initl}'">`;
     }
 
     const likesNum = item.num_likes || item.num_retweeted || 0;
@@ -1178,5 +1291,7 @@ function goPage(p){
 window.switchTab=switchTab;
 window.doSearch=doSearch;
 window.goPage=goPage;
+window.setChartMode=setChartMode;
+window.togglePlatform=togglePlatform;
 </script>
 @endsection

@@ -820,359 +820,405 @@ public function articlesPage(Request $request)
 /**
  * API: Get News Mentions Data for Timeline
  */
+
 public function newsMentionsData(Request $request)
-{
-    try {
-        $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date');
-        $endDate = $request->query('end_date');
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+            $start     = (int) $request->query('start', 0);
+            $rows      = (int) $request->query('rows', 1000);
 
-        if (!$projectId) {
+            if (!$projectId) {
+                return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
+            }
+
+            Log::info('🔍 News Mentions Timeline Data Fetch', [
+                'project_id' => $projectId,
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'start'      => $start,
+                'rows'       => $rows,
+            ]);
+
+            $mentions = $this->mkClient->mentions(
+                $projectId,
+                $startDate,
+                $endDate,
+                0,      // start_time
+                23,     // end_time
+                true,   // flag
+                $start, // offset — support pagination
+                $rows   // rows per page
+            );
+
+            Log::info('✅ News Mentions fetched', ['total' => count($mentions), 'start' => $start]);
+
             return response()->json([
-                'success' => false,
-                'error'   => 'Project ID is required',
-            ], 400);
+                'success' => true,
+                'data'    => $mentions,
+                'meta'    => ['total' => count($mentions), 'start' => $start, 'rows' => $rows],
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('❌ News Mentions API Error', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => 'Failed to fetch mentions data'], 500);
         }
-
-        Log::info('🔍 News Mentions Timeline Data Fetch', [
-            'project_id' => $projectId,
-            'start_date' => $startDate,
-            'end_date'   => $endDate,
-        ]);
-
-        $mentions = $this->mkClient->mentions(
-            $projectId,
-            $startDate,
-            $endDate,
-            0,    // start_time
-            23,   // end_time
-            true, // with_quotes or similar flag
-            0,    // offset
-            1000  // rows
-        );
-
-        Log::info('✅ News Mentions fetched', [
-            'total' => count($mentions),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'data'    => $mentions,
-            'meta'    => [
-                'total' => count($mentions),
-            ],
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('❌ News Mentions API Error', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
-        ]);
-
-        return response()->json([
-            'success' => false,
-            'error'   => 'Failed to fetch mentions data',
-        ], 500);
     }
-}
-public function tiktokTopStatus(Request $request)
-{
-    try {
-        $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date');
-        $endDate   = $request->query('end_date');
-        $rows      = (int) $request->query('rows', 100);
-        $sub       = $request->query('sub', 'postbylike'); // postbylike | postbycomment | postbyshare | postbyview
 
-        if (!$projectId) {
-            return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
+    // ════════════════════════════════════════════════════════════════
+    // TikTok Top Status
+    // ════════════════════════════════════════════════════════════════
+    public function tiktokTopStatus(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+            $rows      = (int) $request->query('rows', 500);
+            $start     = (int) $request->query('start', 0);
+            $sub       = $request->query('sub', 'postbylike');
+
+            if (!$projectId) {
+                return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
+            }
+
+            Log::info('🎵 TikTok Top Status Fetch', compact('projectId', 'startDate', 'endDate', 'rows', 'start', 'sub'));
+
+            $data = [];
+
+            // ── Try dedicated TikTok API ──────────────────────────
+            try {
+                $data = $this->mkClient->tiktokTopStatus(
+                    $projectId, $startDate, $endDate, 0, 23, $rows, $sub
+                );
+                Log::info('✅ TikTok dedicated API returned', ['count' => count((array)$data)]);
+            } catch (\Exception $e) {
+                Log::warning('⚠️ TikTok dedicated API failed, falling back to mentions', ['error' => $e->getMessage()]);
+            }
+
+            // ── Fallback: filter mentions by TikTok media_type_id ─
+            if (empty($data)) {
+                Log::info('📋 TikTok: using mentions fallback');
+                $mentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
+                $data = array_values(array_filter($mentions, function ($item) {
+                    $mt = strtolower((string) ($item['media_type_id'] ?? $item['media_type'] ?? $item['tcode'] ?? ''));
+                    return $mt === '6' || str_contains($mt, 'tiktok');
+                }));
+                Log::info('📋 TikTok fallback result', ['count' => count($data)]);
+            }
+
+            $normalised = array_map(fn($item) => $this->normaliseTiktok($item), is_array($data) ? $data : []);
+
+            return response()->json([
+                'success' => true,
+                'data'    => $normalised,
+                'meta'    => ['total' => count($normalised), 'platform' => 'tiktok', 'sub' => $sub],
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('❌ TikTok Top Status Error', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => 'Failed to fetch TikTok data'], 500);
         }
-
-        Log::info('🎵 TikTok Top Status Fetch', [
-            'project_id' => $projectId,
-            'start_date' => $startDate,
-            'end_date'   => $endDate,
-            'sub'        => $sub,
-            'rows'       => $rows,
-        ]);
-
-        $data = $this->mkClient->tiktokTopStatus(
-            $projectId,
-            $startDate,
-            $endDate,
-            0,    // start_time
-            23,   // end_time
-            $rows,
-            $sub
-        );
-
-        // Normalise ke format yang konsisten
-        $normalised = array_map(function ($item) {
-            return [
-                '_platform'      => 'tiktok',
-                'id'             => $item['id'] ?? '',
-                'url'            => $item['url'] ?? '',
-                'content'        => $item['content'] ?? $item['name'] ?? '',
-                'author_name'    => $item['author_scr_name'] ?? '',
-                'author_handle'  => $item['author_scr_name'] ?? '',
-                'avatar_url'     => $item['image'] ?? '',
-                'date_created'   => $item['date_created'] ?? '',
-                'num_likes'      => (int) ($item['likes'] ?? $item['num_likes'] ?? 0),
-                'num_comments'   => (int) ($item['comments'] ?? $item['num_comments'] ?? 0),
-                'num_shares'     => (int) ($item['shares'] ?? 0),
-                'num_views'      => (int) ($item['views'] ?? 0),
-                'num_followers'  => (int) ($item['num_followers'] ?? 0),
-                'class_sentiment'=> (string) ($item['sentiment'] ?? '0'),
-                'mention_type'   => $item['mention_type'] ?? 'video',
-                'media_type_id'  => '6',
-                'hostname'       => parse_url($item['url'] ?? '', PHP_URL_HOST) ?: 'tiktok.com',
-            ];
-        }, is_array($data) ? $data : []);
-
-        Log::info('✅ TikTok Top Status fetched', ['total' => count($normalised)]);
-
-        return response()->json([
-            'success' => true,
-            'data'    => $normalised,
-            'meta'    => ['total' => count($normalised), 'platform' => 'tiktok', 'sub' => $sub],
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('❌ TikTok Top Status Error', ['error' => $e->getMessage()]);
-        return response()->json(['success' => false, 'error' => 'Failed to fetch TikTok data'], 500);
     }
-}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// API: Instagram Top Status
-// GET /mk/api/news/ig-top-status
-// ─────────────────────────────────────────────────────────────────────────────
-public function igTopStatus(Request $request)
-{
-    try {
-        $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date');
-        $endDate   = $request->query('end_date');
-        $rows      = (int) $request->query('rows', 100);
-        $sub       = $request->query('sub', 'postbylike'); // postbylike | postbycomment | postbyview
+    private function normaliseTiktok(array $item): array
+    {
+        $handle = $item['author_scr_name'] ?? $item['author_id'] ?? '';
+        return [
+            '_platform'       => 'tiktok',
+            'media_type_id'   => '6',
+            'id'              => $item['id'] ?? $item['docid'] ?? '',
+            'url'             => $item['url'] ?? '',
+            'content'         => strip_tags($item['content'] ?? $item['name'] ?? ''),
+            'author_name'     => $handle,
+            'author_handle'   => $handle,
+            'avatar_url'      => ($item['image'] ?? '') ?: '', // TikTok often empty
+            'date_created'    => $item['date_created'] ?? '',
+            'num_likes'       => (int) ($item['likes'] ?? $item['num_likes'] ?? $item['freq'] ?? 0),
+            'num_comments'    => (int) ($item['comments'] ?? $item['num_comments'] ?? 0),
+            'num_shares'      => (int) ($item['shares'] ?? 0),
+            'num_views'       => (int) ($item['views'] ?? $item['num_views'] ?? 0),
+            'num_followers'   => (int) ($item['num_followers'] ?? 0),
+            'class_sentiment' => (string) ($item['sentiment'] ?? $item['class_sentiment'] ?? '0'),
+            'mention_type'    => $item['mention_type'] ?? 'video',
+            'hostname'        => 'tiktok.com',
+        ];
+    }
 
-        if (!$projectId) {
-            return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
+    // ════════════════════════════════════════════════════════════════
+    // Instagram Top Status — FIXED
+    // ════════════════════════════════════════════════════════════════
+    public function igTopStatus(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+            $rows      = (int) $request->query('rows', 500);
+            $start     = (int) $request->query('start', 0);
+            $sub       = $request->query('sub', 'postbylike');
+
+            if (!$projectId) {
+                return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
+            }
+
+            Log::info('📷 Instagram Top Status Fetch', compact('projectId', 'startDate', 'endDate', 'rows', 'start', 'sub'));
+
+            $data = [];
+
+            // ── Try dedicated IG API ───────────────────────────────
+            try {
+                $data = $this->mkClient->igTopStatus(
+                    $projectId, $startDate, $endDate, 0, 23, $rows, $sub
+                );
+                Log::info('✅ IG dedicated API returned', ['count' => count((array)$data)]);
+            } catch (\Exception $e) {
+                Log::warning('⚠️ IG dedicated API failed, falling back to mentions', ['error' => $e->getMessage()]);
+            }
+
+            // ── Fallback: filter mentions by Instagram media_type_id ─
+            // Raw IG data dari mentions TIDAK punya media_type_id, tapi punya:
+            // - id starts with "in-"
+            // - url contains "instagram.com"
+            // - mention_type = "image"
+            if (empty($data)) {
+                Log::info('📋 Instagram: using mentions fallback');
+                $mentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
+
+                $data = array_values(array_filter($mentions, function ($item) {
+                    $mt    = strtolower((string) ($item['media_type_id'] ?? $item['media_type'] ?? $item['tcode'] ?? ''));
+                    $id    = (string) ($item['id'] ?? $item['docid'] ?? '');
+                    $url   = (string) ($item['url'] ?? '');
+
+                    // Detect Instagram by media_type OR by id prefix "in-" OR by URL
+                    return $mt === '3'
+                        || str_contains($mt, 'ig')
+                        || str_contains($mt, 'instagram')
+                        || str_starts_with($id, 'in-')
+                        || str_contains($url, 'instagram.com');
+                }));
+
+                // Sort by likes desc
+                usort($data, fn($a, $b) =>
+                    (int)($b['num_likes'] ?? $b['likes'] ?? $b['freq'] ?? 0)
+                    - (int)($a['num_likes'] ?? $a['likes'] ?? $a['freq'] ?? 0)
+                );
+
+                Log::info('📋 Instagram fallback result', ['count' => count($data)]);
+            }
+
+            $normalised = array_map(fn($item) => $this->normaliseInstagram($item), is_array($data) ? $data : []);
+
+            Log::info('✅ Instagram Top Status final', ['total' => count($normalised)]);
+
+            return response()->json([
+                'success' => true,
+                'data'    => $normalised,
+                'meta'    => ['total' => count($normalised), 'platform' => 'instagram', 'sub' => $sub],
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('❌ Instagram Top Status Error', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => 'Failed to fetch Instagram data'], 500);
         }
-
-        Log::info('📷 Instagram Top Status Fetch', [
-            'project_id' => $projectId,
-            'start_date' => $startDate,
-            'end_date'   => $endDate,
-            'sub'        => $sub,
-        ]);
-
-        $data = $this->mkClient->igTopStatus(
-            $projectId,
-            $startDate,
-            $endDate,
-            0,
-            23,
-            $rows,
-            $sub
-        );
-
-        $normalised = array_map(function ($item) {
-            return [
-                '_platform'      => 'ig',
-                'id'             => $item['id'] ?? '',
-                'url'            => $item['url'] ?? '',
-                'content'        => $item['content'] ?? $item['name'] ?? '',
-                'author_name'    => $item['author_scr_name'] ?? '',
-                'author_handle'  => $item['author_scr_name'] ?? '',
-                'avatar_url'     => $item['image'] ?? '',
-                'date_created'   => $item['date_created'] ?? '',
-                'num_likes'      => (int) ($item['likes'] ?? $item['num_likes'] ?? 0),
-                'num_comments'   => (int) ($item['comments'] ?? $item['num_comments'] ?? 0),
-                'num_shares'     => (int) ($item['shares'] ?? 0),
-                'num_views'      => (int) ($item['views'] ?? 0),
-                'num_followers'  => (int) ($item['num_followers'] ?? 0),
-                'class_sentiment'=> (string) ($item['sentiment'] ?? '0'),
-                'mention_type'   => $item['mention_type'] ?? 'image',
-                'media_type_id'  => '3',
-                'hostname'       => 'instagram.com',
-            ];
-        }, is_array($data) ? $data : []);
-
-        Log::info('✅ Instagram Top Status fetched', ['total' => count($normalised)]);
-
-        return response()->json([
-            'success' => true,
-            'data'    => $normalised,
-            'meta'    => ['total' => count($normalised), 'platform' => 'instagram', 'sub' => $sub],
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('❌ Instagram Top Status Error', ['error' => $e->getMessage()]);
-        return response()->json(['success' => false, 'error' => 'Failed to fetch Instagram data'], 500);
     }
-}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// API: Facebook Top Status (reuse fb_top_status)
-// GET /mk/api/news/fb-top-status
-// ─────────────────────────────────────────────────────────────────────────────
-public function fbTopStatusApi(Request $request)
-{
-    try {
-        $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date');
-        $endDate   = $request->query('end_date');
-        $rows      = (int) $request->query('rows', 100);
-        $sub       = $request->query('sub', 'fblike'); // fblike | fbcomment | fbshare | fbview
+    private function normaliseInstagram(array $item): array
+    {
+        // Raw IG dari mentions: author_id = "beritasatu", author_scr_name = "BeritaSatu"
+        $handle    = $item['author_scr_name'] ?? $item['author_id'] ?? '';
+        $authorId  = $item['author_id'] ?? $handle; // lowercase, e.g. "beritasatu"
+        $rawImage  = $item['image'] ?? '';
 
-        if (!$projectId) {
-            return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
+        // Avatar: IG API sering kirim kosong — fallback ke unavatar
+        // unavatar.io/instagram/{handle} cukup reliable untuk public accounts
+        $avatarUrl = ($rawImage && str_starts_with($rawImage, 'http'))
+            ? $rawImage
+            : ($handle ? "https://unavatar.io/instagram/{$authorId}" : '');
+
+        return [
+            '_platform'       => 'ig',
+            'media_type_id'   => '3',
+            'id'              => $item['id'] ?? $item['docid'] ?? '',
+            'url'             => $item['url'] ?? '',
+            'content'         => strip_tags($item['content'] ?? $item['name'] ?? ''),
+            'author_name'     => $handle, // IG biasanya display name = scr_name
+            'author_handle'   => $authorId, // lowercase ID for unavatar
+            'avatar_url'      => $avatarUrl,
+            'date_created'    => $item['date_created'] ?? '',
+            'num_likes'       => (int) ($item['num_likes'] ?? $item['likes'] ?? $item['freq'] ?? 0),
+            'num_comments'    => (int) ($item['num_comments'] ?? $item['comments'] ?? 0),
+            'num_shares'      => (int) ($item['shares'] ?? 0),
+            'num_views'       => (int) ($item['views'] ?? $item['num_views'] ?? 0),
+            'num_followers'   => (int) ($item['num_followers'] ?? 0),
+            'interaction'     => (int) ($item['interaction'] ?? $item['interaction_with_post'] ?? 0),
+            'class_sentiment' => (string) ($item['sentiment'] ?? $item['class_sentiment'] ?? '0'),
+            'sentiment_str'   => $item['sentiment_str'] ?? '',
+            'mention_type'    => $item['mention_type'] ?? 'image',
+            'hostname'        => 'instagram.com',
+        ];
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // Facebook Top Status
+    // ════════════════════════════════════════════════════════════════
+    public function fbTopStatusApi(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+            $rows      = (int) $request->query('rows', 500);
+            $start     = (int) $request->query('start', 0);
+            $sub       = $request->query('sub', 'fblike');
+
+            if (!$projectId) {
+                return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
+            }
+
+            Log::info('📘 Facebook Top Status Fetch', compact('projectId', 'startDate', 'endDate', 'rows', 'start', 'sub'));
+
+            $data = [];
+
+            try {
+                $data = $this->mkClient->fbTopStatus(
+                    $projectId, $startDate, $endDate, 0, 23, $rows, $sub
+                );
+                Log::info('✅ FB dedicated API returned', ['count' => count((array)$data)]);
+            } catch (\Exception $e) {
+                Log::warning('⚠️ FB dedicated API failed, falling back to mentions', ['error' => $e->getMessage()]);
+            }
+
+            if (empty($data)) {
+                Log::info('📋 Facebook: using mentions fallback');
+                $mentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
+                $data = array_values(array_filter($mentions, function ($item) {
+                    $mt  = strtolower((string) ($item['media_type_id'] ?? $item['media_type'] ?? $item['tcode'] ?? ''));
+                    $id  = (string) ($item['id'] ?? '');
+                    $url = (string) ($item['url'] ?? '');
+                    return $mt === '2'
+                        || str_contains($mt, 'fb')
+                        || str_contains($mt, 'facebook')
+                        || str_starts_with($id, 'fb-')
+                        || str_contains($url, 'facebook.com');
+                }));
+                usort($data, fn($a, $b) =>
+                    (int)($b['num_likes'] ?? $b['likes'] ?? 0)
+                    - (int)($a['num_likes'] ?? $a['likes'] ?? 0)
+                );
+                Log::info('📋 Facebook fallback result', ['count' => count($data)]);
+            }
+
+            $normalised = array_map(fn($item) => $this->normaliseFacebook($item), is_array($data) ? $data : []);
+
+            return response()->json([
+                'success' => true,
+                'data'    => $normalised,
+                'meta'    => ['total' => count($normalised), 'platform' => 'facebook', 'sub' => $sub],
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('❌ Facebook Top Status Error', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => 'Failed to fetch Facebook data'], 500);
         }
-
-        Log::info('📘 Facebook Top Status Fetch', [
-            'project_id' => $projectId,
-            'start_date' => $startDate,
-            'end_date'   => $endDate,
-            'sub'        => $sub,
-        ]);
-
-        $data = $this->mkClient->fbTopStatus(
-            $projectId,
-            $startDate,
-            $endDate,
-            0,
-            23,
-            $rows,
-            $sub
-        );
-
-        $normalised = array_map(function ($item) {
-            $authorHandle = $item['author_scr_name'] ?? $item['author_id'] ?? '';
-            $authorName   = $item['author_name'] ?? $authorHandle;
-
-            return [
-                '_platform'      => 'fb',
-                'id'             => $item['id'] ?? '',
-                'url'            => $item['url'] ?? '',
-                'content'        => $item['content'] ?? $item['name'] ?? '',
-                'author_name'    => $authorName,
-                'author_handle'  => $authorHandle,
-                'avatar_url'     => $item['image'] ?? '',
-                'date_created'   => $item['date_created'] ?? '',
-                'num_likes'      => (int) ($item['likes'] ?? $item['num_likes'] ?? 0),
-                'num_comments'   => (int) ($item['comments'] ?? $item['num_comments'] ?? 0),
-                'num_shares'     => (int) ($item['shares'] ?? 0),
-                'num_views'      => (int) ($item['views'] ?? $item['view_cnt'] ?? 0),
-                'num_followers'  => (int) ($item['num_followers'] ?? 0),
-                'class_sentiment'=> (string) ($item['sentiment'] ?? $item['sentiment_id'] ?? '0'),
-                'mention_type'   => $item['mention_type'] ?? 'post',
-                'media_type_id'  => '2',
-                'hostname'       => 'facebook.com',
-            ];
-        }, is_array($data) ? $data : []);
-
-        Log::info('✅ Facebook Top Status fetched', ['total' => count($normalised)]);
-
-        return response()->json([
-            'success' => true,
-            'data'    => $normalised,
-            'meta'    => ['total' => count($normalised), 'platform' => 'facebook', 'sub' => $sub],
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('❌ Facebook Top Status Error', ['error' => $e->getMessage()]);
-        return response()->json(['success' => false, 'error' => 'Failed to fetch Facebook data'], 500);
     }
-}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// API: YouTube Top Status
-// GET /mk/api/news/ytb-top-status
-// ─────────────────────────────────────────────────────────────────────────────
-public function ytbTopStatus(Request $request)
-{
-    try {
-        $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date');
-        $endDate   = $request->query('end_date');
-        $rows      = (int) $request->query('rows', 100);
-        $sub       = $request->query('sub', 'postbylike');
+    private function normaliseFacebook(array $item): array
+    {
+        $handle = $item['author_scr_name'] ?? $item['author_id'] ?? '';
+        $name   = $item['author_name'] ?? $handle;
+        return [
+            '_platform'       => 'fb',
+            'media_type_id'   => '2',
+            'id'              => $item['id'] ?? $item['docid'] ?? '',
+            'url'             => $item['url'] ?? '',
+            'content'         => strip_tags($item['content'] ?? $item['name'] ?? ''),
+            'author_name'     => $name,
+            'author_handle'   => $handle,
+            'avatar_url'      => ($item['image'] ?? ''),
+            'date_created'    => $item['date_created'] ?? '',
+            'num_likes'       => (int) ($item['likes'] ?? $item['num_likes'] ?? $item['freq'] ?? 0),
+            'num_comments'    => (int) ($item['comments'] ?? $item['num_comments'] ?? 0),
+            'num_shares'      => (int) ($item['shares'] ?? 0),
+            'num_views'       => (int) ($item['views'] ?? $item['view_cnt'] ?? $item['num_views'] ?? 0),
+            'num_followers'   => (int) ($item['num_followers'] ?? 0),
+            'class_sentiment' => (string) ($item['sentiment'] ?? $item['sentiment_id'] ?? $item['class_sentiment'] ?? '0'),
+            'mention_type'    => $item['mention_type'] ?? 'post',
+            'hostname'        => 'facebook.com',
+        ];
+    }
 
-        if (!$projectId) {
-            return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
+    // ════════════════════════════════════════════════════════════════
+    // YouTube Top Status
+    // ════════════════════════════════════════════════════════════════
+    public function ytbTopStatus(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+            $rows      = (int) $request->query('rows', 500);
+            $start     = (int) $request->query('start', 0);
+
+            if (!$projectId) {
+                return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
+            }
+
+            Log::info('▶️ YouTube Top Status Fetch', compact('projectId', 'startDate', 'endDate', 'rows', 'start'));
+
+            $mentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
+
+            $ytbItems = array_values(array_filter($mentions, function ($item) {
+                $mt  = strtolower((string) ($item['media_type_id'] ?? $item['media_type'] ?? $item['tcode'] ?? ''));
+                $id  = (string) ($item['id'] ?? $item['docid'] ?? '');
+                $url = (string) ($item['url'] ?? '');
+                return $mt === '4'
+                    || str_contains($mt, 'ytb')
+                    || str_contains($mt, 'youtube')
+                    || str_starts_with($id, 'yt-')
+                    || str_contains($url, 'youtube.com')
+                    || str_contains($url, 'youtu.be');
+            }));
+
+            usort($ytbItems, fn($a, $b) =>
+                (int)($b['num_likes'] ?? 0) - (int)($a['num_likes'] ?? 0)
+            );
+
+            $normalised = array_map(fn($item) => [
+                '_platform'       => 'ytb',
+                'media_type_id'   => '4',
+                'id'              => $item['id'] ?? $item['docid'] ?? '',
+                'url'             => $item['url'] ?? '',
+                'content'         => strip_tags($item['content'] ?? ''),
+                'author_name'     => $item['author_name'] ?? $item['author_scr_name'] ?? '',
+                'author_handle'   => $item['author_scr_name'] ?? '',
+                'avatar_url'      => '',
+                'date_created'    => $item['date_created'] ?? '',
+                'num_likes'       => (int) ($item['num_likes'] ?? 0),
+                'num_comments'    => (int) ($item['num_comments'] ?? 0),
+                'num_shares'      => (int) ($item['num_shares'] ?? 0),
+                'num_views'       => (int) ($item['num_views'] ?? 0),
+                'num_followers'   => 0,
+                'class_sentiment' => (string) ($item['class_sentiment'] ?? '0'),
+                'mention_type'    => $item['mention_type'] ?? 'video',
+                'hostname'        => 'youtube.com',
+            ], $ytbItems);
+
+            Log::info('✅ YouTube Top Status fetched', ['total' => count($normalised)]);
+
+            return response()->json([
+                'success' => true,
+                'data'    => $normalised,
+                'meta'    => ['total' => count($normalised), 'platform' => 'youtube'],
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('❌ YouTube Top Status Error', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => 'Failed to fetch YouTube data'], 500);
         }
-
-        Log::info('▶️ YouTube Top Status Fetch', [
-            'project_id' => $projectId,
-            'start_date' => $startDate,
-            'end_date'   => $endDate,
-        ]);
-
-        // YouTube pakai mentions biasa, filter by media_type_id = 4
-        $data = $this->mkClient->mentions(
-            $projectId,
-            $startDate,
-            $endDate,
-            0,
-            23,
-            true,
-            0,
-            $rows
-        );
-
-        // Filter hanya YouTube
-        $ytbItems = array_filter(is_array($data) ? $data : [], function ($item) {
-            $mt = (string) ($item['media_type_id'] ?? $item['media_type'] ?? '');
-            return $mt === '4' || strtolower($mt) === 'ytb' || strtolower($mt) === 'youtube';
-        });
-
-        // Sort by likes desc
-        usort($ytbItems, fn($a, $b) => (int)($b['num_likes'] ?? 0) - (int)($a['num_likes'] ?? 0));
-
-        $normalised = array_map(function ($item) {
-            return [
-                '_platform'      => 'ytb',
-                'id'             => $item['id'] ?? $item['docid'] ?? '',
-                'url'            => $item['url'] ?? '',
-                'content'        => strip_tags($item['content'] ?? ''),
-                'author_name'    => $item['author_name'] ?? $item['author_scr_name'] ?? '',
-                'author_handle'  => $item['author_scr_name'] ?? '',
-                'avatar_url'     => '',
-                'date_created'   => $item['date_created'] ?? '',
-                'num_likes'      => (int) ($item['num_likes'] ?? 0),
-                'num_comments'   => (int) ($item['num_comments'] ?? 0),
-                'num_shares'     => (int) ($item['num_shares'] ?? 0),
-                'num_views'      => (int) ($item['num_views'] ?? 0),
-                'num_followers'  => 0,
-                'class_sentiment'=> (string) ($item['class_sentiment'] ?? '0'),
-                'mention_type'   => $item['mention_type'] ?? 'video',
-                'media_type_id'  => '4',
-                'hostname'       => 'youtube.com',
-            ];
-        }, array_values($ytbItems));
-
-        Log::info('✅ YouTube Top Status fetched', ['total' => count($normalised)]);
-
-        return response()->json([
-            'success' => true,
-            'data'    => $normalised,
-            'meta'    => ['total' => count($normalised), 'platform' => 'youtube'],
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('❌ YouTube Top Status Error', ['error' => $e->getMessage()]);
-        return response()->json(['success' => false, 'error' => 'Failed to fetch YouTube data'], 500);
     }
-}
-
-
-
-
-
-
-
-
 
 }
 

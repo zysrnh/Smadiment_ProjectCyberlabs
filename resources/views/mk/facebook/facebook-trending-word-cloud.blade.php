@@ -629,7 +629,7 @@
 
     <div class="page-header">
         <h1>Facebook Trending Word Cloud</h1>
-        <p>Visual representation of trending hashtags & topics on Facebook</p>
+        <p>Visual representation of trending hashtags &amp; topics on Facebook</p>
     </div>
 
     <!-- Filter Card -->
@@ -676,7 +676,6 @@
     <div class="date-picker-modal" id="datePickerModal">
         <div class="date-picker-overlay-inner"></div>
         <div class="date-picker-container">
-            <!-- Sidebar with Presets -->
             <div class="date-picker-sidebar">
                 <button type="button" class="date-preset" data-preset="today">Today</button>
                 <button type="button" class="date-preset" data-preset="yesterday">Yesterday</button>
@@ -687,9 +686,7 @@
                 <button type="button" class="date-preset active" data-preset="custom">Custom Range</button>
             </div>
 
-            <!-- Calendar Content -->
             <div class="date-picker-content">
-                <!-- Navigation Header -->
                 <div class="date-picker-header">
                     <button type="button" class="nav-btn" id="prevMonth">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -709,12 +706,10 @@
                     </button>
                 </div>
 
-                <!-- Selected Date Display -->
                 <div class="date-picker-display">
                     <span id="selectedRangeText">{{ $startDate }} to {{ $endDate }}</span>
                 </div>
 
-                <!-- Footer Buttons -->
                 <div class="date-picker-footer">
                     <button type="button" class="cancel-btn">Cancel</button>
                     <button type="button" class="apply-date-btn" id="applyDatePicker">Apply</button>
@@ -994,9 +989,9 @@
             if (date > today)           classes += ' disabled';
 
             if (selectedStartDate && selectedEndDate) {
-                if (isSameDay(date, selectedStartDate))      classes += ' selected range-start';
-                else if (isSameDay(date, selectedEndDate))   classes += ' selected range-end';
-                else if (date > selectedStartDate && date < selectedEndDate) classes += ' in-range';
+                if (isSameDay(date, selectedStartDate))                          classes += ' selected range-start';
+                else if (isSameDay(date, selectedEndDate))                       classes += ' selected range-end';
+                else if (date > selectedStartDate && date < selectedEndDate)     classes += ' in-range';
             }
 
             const disabled = date > today ? 'disabled' : '';
@@ -1056,9 +1051,9 @@
 
     function formatDate(date) {
         if (!date) return '';
-        const y  = date.getFullYear();
-        const m  = String(date.getMonth() + 1).padStart(2, '0');
-        const d  = String(date.getDate()).padStart(2, '0');
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
         return `${y}-${m}-${d}`;
     }
 
@@ -1097,7 +1092,6 @@ const WordCloudGenerator = {
         'victim','bankrupt','poverty','hunger','famine',
         'shooting','murdered','murder','arrested','arrest',
         'fired','layoff','layoffs','resign','resignation',
-        // Indonesian
         'buruk','terburuk','benci','sedih','gagal','kalah',
         'marah','parah','miskin','mati','maut','bunuh','tewas',
         'korupsi','korup','kejahatan','kriminal','penipuan','tipu',
@@ -1127,7 +1121,6 @@ const WordCloudGenerator = {
         'congratulations','congrats','hope','inspire','inspiration',
         'wonderful','beautiful','brilliant','fantastic','superb',
         'legend','hero','heroic','progress','growth','improve',
-        // Indonesian
         'menang','juara','terbaik','baik','bagus','cinta',
         'senang','sukses','berhasil','hebat','keren',
         'rayakan','bangga','kemenangan','prestasi','selamat',
@@ -1224,11 +1217,9 @@ const WordCloudGenerator = {
             throw new Error(result.error || 'Failed to load data');
         }
 
-        // Normalise: the FB trending endpoint returns hashtags, not topics
-        const rawData = result.data || {};
+        const rawData  = result.data || {};
         const hashtags = rawData.hashtags || [];
 
-        // Build a top_topics-style array from hashtags
         const topTopics = hashtags.map(h => ({
             name:         h.hashtag || h.name || '',
             total_volume: h.size    || 0,
@@ -1238,7 +1229,6 @@ const WordCloudGenerator = {
             sentiment:    this.getSentimentFromTopic(h.name || h.hashtag || ''),
         }));
 
-        // Sort by volume desc
         topTopics.sort((a, b) => b.total_volume - a.total_volume);
 
         this.trendingData = { top_topics: topTopics };
@@ -1290,7 +1280,7 @@ const WordCloudGenerator = {
 
         const wordData = topics.map(topic => ({
             name:          topic.name.replace(/^#/, ''),
-            value:         topic.total_volume || 100,
+            value:         topic.total_volume || (topic.appearances * 100) || 100,
             originalTopic: topic,
         }));
 
@@ -1387,7 +1377,6 @@ const WordCloudGenerator = {
         setTimeout(() => {
             this.chart.setOption(option, true);
 
-            // Click -> open Facebook search
             this.chart.on('click', (params) => {
                 if (params && params.data && params.data.originalTopic) {
                     this.openFacebookSearch(params.data.originalTopic.name);
