@@ -4,6 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>@yield('title', 'SMADIMENT - Analytics Platform')</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -744,6 +745,17 @@
           </span>
           <span>Articles</span>
         </a>
+        <a href="{{ route('mk.news.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+   class="nav-item {{ request()->routeIs('mk.news.ai-analysis') ? 'active' : '' }}">
+    <span class="menu-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M8 12h8M12 8v8"/>
+            <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.15"/>
+        </svg>
+    </span>
+    <span>AI Analysis</span>
+</a>
 
       </div>
     </div>

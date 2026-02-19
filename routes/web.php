@@ -137,6 +137,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
 
             Route::get('/ytb-top-status', [NewsController::class, 'ytbTopStatus'])
                 ->name('ytb-top-status');
+
+            // ── NEW: AI Analysis Proxy ─────────────────────────
+            Route::post('/ai-proxy', [NewsController::class, 'aiAnalysisProxy'])
+                ->name('ai-proxy');
         });
 
         // ─────────────────────────────────────────────────────
@@ -287,6 +291,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
 
         Route::get('/articles', [NewsController::class, 'articlesPage'])
             ->name('articles');
+
+        // ── NEW: AI Analysis Page ──────────────────────────
+        Route::get('/ai-analysis', [NewsController::class, 'aiAnalysisPage'])
+            ->name('ai-analysis');
     });
 
     // ─────────────────────────────────────────────────────

@@ -149,7 +149,12 @@
   .mention-meta { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text-secondary); flex-wrap:wrap; }
   .view-link { color:var(--primary-green); font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:3px; font-size:11px; transition:all .15s; }
   .view-link:hover { color:var(--primary-green-dark); text-decoration:underline; }
-  .num-cell { text-align:center; min-width:64px; font-weight:700; font-size:13px; color:var(--text-secondary); }
+  .eng-cell { text-align:center; min-width:100px; vertical-align:middle; }
+  .eng-primary-val { font-weight:800; font-size:15px; color:var(--text-primary); line-height:1; }
+  .eng-primary-lbl { font-size:10px; font-weight:600; color:var(--text-secondary); margin-bottom:4px; }
+  .eng-secondary { display:flex; flex-direction:column; gap:2px; margin-top:2px; }
+  .eng-sec-item { font-size:10px; font-weight:600; color:var(--text-secondary); white-space:nowrap; }
+  .eng-empty { color:var(--border-gray); font-size:20px; font-weight:300; }
   .author-cell { min-width:170px; }
   .author-wrap { display:flex; align-items:center; gap:10px; }
   .ava { width:38px; height:38px; border-radius:50%; border:2px solid var(--border-gray); flex-shrink:0; background:linear-gradient(135deg, var(--primary-green), var(--primary-green-dark)); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:13px; overflow:hidden; }
@@ -342,6 +347,7 @@
       <div class="chart-controls">
         <div class="chart-toggle">
           <button id="chartBtnLine" class="ct-btn active" onclick="setChartMode('line')">Line</button>
+          <button id="chartBtnArea" class="ct-btn"        onclick="setChartMode('area')">Area</button>
           <button id="chartBtnBar"  class="ct-btn"        onclick="setChartMode('bar')">Bar</button>
           <button id="chartBtnLog"  class="ct-btn"        onclick="setChartMode('log')">Log</button>
         </div>
@@ -530,20 +536,20 @@ function mediaBadge(p){
   var r=map[p]||['mb-doc','Other'];
   return'<span class="media-badge '+r[0]+'">'+r[1]+'</span>';
 }
+// ── Global avatar fallback — avoids inline onerror escaping bugs ──
+window._avaFail = function(el, initl) {
+  el.parentElement.textContent = initl;
+};
+// ── Build avatar img tag safely ──
+function avaImg(src, name, initl) {
+  var safeInitl = initl.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+  return '<img src="'+esc(src)+'" alt="'+esc(name)+'" onerror="_avaFail(this,\''+safeInitl+'\')">';
+}
 
 // ═══════════════════════════════════════════════════════════
-// DETECT PLATFORM — FIXED berdasarkan debug log
-//
-// TEMUAN: MK API project ini punya mapping BERBEDA dari standar:
-//   media_type_id: 1=berita(Online News), 5=Twitter, 4=Facebook(!)
-//   tcode: "berita"=OnlineNews, "rt/mention/reply"=Twitter,
-//          "fb-post/fb-comment"=Facebook, "youtube"=YouTube, "video"=TikTok?
-//   media_type: "fb"=Facebook (lebih reliable dari media_type_id!)
-//
-// PRIORITAS: tcode → media_type → id prefix → url → media_type_id → default
+// DETECT PLATFORM
 // ═══════════════════════════════════════════════════════════
 function detectPlatform(item) {
-  // ── STEP 1: tcode — paling spesifik, langsung dari MK API ──
   var tcode = String(item.tcode || '').toLowerCase().trim();
   if (tcode === 'berita')                                    return 'doc';
   if (tcode === 'rt' || tcode === 'mention' || tcode === 'reply' || tcode === 'tweet' || tcode === 'retweet') return 'twit';
@@ -551,7 +557,6 @@ function detectPlatform(item) {
   if (tcode === 'youtube')                                   return 'ytb';
   if (tcode === 'ig-post' || tcode === 'ig-story' || tcode === 'ig-reel') return 'ig';
 
-  // ── STEP 2: media_type string (lebih reliable dari media_type_id!) ──
   var mt = String(item.media_type || '').toLowerCase().trim();
   if (mt === 'fb' || mt === 'facebook')                      return 'fb';
   if (mt === 'ig' || mt === 'instagram')                     return 'ig';
@@ -560,7 +565,6 @@ function detectPlatform(item) {
   if (mt === 'twit' || mt === 'twitter' || mt === 'x')       return 'twit';
   if (mt === 'berita' || mt === 'online' || mt === 'news' || mt === 'article' || mt === 'doc') return 'doc';
 
-  // ── STEP 3: ID prefix ──
   var id = String(item.id || item.docid || '').toLowerCase();
   if (id.startsWith('tiktok-') || id.startsWith('tt-'))     return 'tiktok';
   if (id.startsWith('in-')  || id.startsWith('ig-'))        return 'ig';
@@ -568,7 +572,6 @@ function detectPlatform(item) {
   if (id.startsWith('yt-')  || id.startsWith('ytb-'))       return 'ytb';
   if (id.startsWith('tw-')  || id.startsWith('twit-'))      return 'twit';
 
-  // ── STEP 4: URL pattern ──
   var url = String(item.url || '').toLowerCase();
   if (url.includes('tiktok.com'))                            return 'tiktok';
   if (url.includes('instagram.com'))                         return 'ig';
@@ -576,7 +579,6 @@ function detectPlatform(item) {
   if (url.includes('youtube.com')  || url.includes('youtu.be')) return 'ytb';
   if (url.includes('twitter.com')  || url.includes('x.com')) return 'twit';
 
-  // ── STEP 5: hostname ──
   var host = String(item.hostname || '').toLowerCase();
   if (host.includes('tiktok'))                               return 'tiktok';
   if (host.includes('instagram'))                            return 'ig';
@@ -584,39 +586,34 @@ function detectPlatform(item) {
   if (host.includes('youtube') || host.includes('youtu'))   return 'ytb';
   if (host.includes('twitter') || host === 'x.com')         return 'twit';
 
-  // ── STEP 6: media_type_id — LAST resort, tidak reliable lintas project ──
-  // Di project ini: 1=berita, 5=Twitter, 4=Facebook, 20=video?
-  // Tapi kita sudah handle tcode/media_type duluan, ini hanya safety net
   var mtid = String(item.media_type_id || '').trim();
   if (mtid === '6')                                          return 'tiktok';
   if (mtid === '3')                                          return 'ig';
 
-  // ── Default: Online News ──
   return 'doc';
 }
 
 // ═══════════════════════════════════════════════════════════
-// NORMALIZE ITEM
+// NORMALIZE ITEM — fixed field mapping per platform
 // ═══════════════════════════════════════════════════════════
 function norm(item, platform) {
-  // Parse author JSON string if needed
   var authorObj = {};
   if (item.author && typeof item.author === 'string') {
     try { authorObj = JSON.parse(item.author); } catch(e) {}
-  } else if (item.author && typeof item.author === 'object') {
+  } else if (item.author && typeof item.author === 'object' && item.author !== null) {
     authorObj = item.author;
   }
 
   var authorHandle = item.author_scr_name || item.author_id
     || authorObj.scr_name || authorObj.username || '';
-  var authorName = authorObj.name || item.author_name || authorHandle;
+  var authorName = authorObj.name || item.author_name || authorHandle || '';
 
-  // Try to get avatar from contentJson for Twitter
-  var rawAvatar = item.avatar_url || authorObj.image || item.image || '';
+  // Avatar: coba semua kemungkinan field
+  var rawAvatar = item.avatar_url || item.image || item.profile_image || authorObj.image || '';
   if (!rawAvatar && item.contentJson) {
     try {
       var cj = typeof item.contentJson === 'string' ? JSON.parse(item.contentJson) : item.contentJson;
-      rawAvatar = (cj.user && cj.user.image) ? cj.user.image : '';
+      rawAvatar = (cj.user && cj.user.image) ? cj.user.image : (cj.image || '');
     } catch(e) {}
   }
 
@@ -629,23 +626,86 @@ function norm(item, platform) {
 
   var sent = String(item.class_sentiment || item.sentiment || item.sentiment_id || '0').toLowerCase().trim();
 
+  // ── Engagement per-platform fallback chain ──
+  var numLikes, numComments, numShares, numViews, numRetweet, numFollowers;
+
+  if (platform === 'twit') {
+    numLikes     = parseInt(item.num_likes     || item.likes          || item.favorite_count  || 0, 10);
+    numRetweet   = parseInt(item.num_retweeted || item.rt             || item.retweet_count   || 0, 10);
+    numComments  = parseInt(item.num_comments  || item.replies        || item.reply_count     || 0, 10);
+    numShares    = parseInt(item.num_shares    || item.shares         || 0, 10);
+    numViews     = parseInt(item.view_cnt      || item.num_views      || item.impression_count|| item.views || 0, 10);
+    numFollowers = parseInt(item.num_followers || (authorObj && authorObj.flw_cnt) || (authorObj && authorObj.followers_count) || 0, 10);
+  } else if (platform === 'fb') {
+    numLikes     = parseInt(item.likes         || item.num_likes      || item.reactions       || item.freq || 0, 10);
+    numComments  = parseInt(item.comments      || item.num_comments   || 0, 10);
+    numShares    = parseInt(item.shares        || item.num_shares     || 0, 10);
+    numViews     = parseInt(item.views         || item.view_cnt       || item.num_views       || 0, 10);
+    numRetweet   = 0;
+    numFollowers = parseInt(item.num_followers || item.followers      || 0, 10);
+  } else if (platform === 'ig') {
+    numLikes     = parseInt(item.num_likes     || item.likes          || item.freq            || 0, 10);
+    numComments  = parseInt(item.num_comments  || item.comments       || 0, 10);
+    numShares    = parseInt(item.num_shares    || item.shares         || 0, 10);
+    numViews     = parseInt(item.num_views     || item.views          || item.view_cnt        || 0, 10);
+    numRetweet   = 0;
+    numFollowers = parseInt(item.num_followers || item.followers      || 0, 10);
+  } else if (platform === 'ytb') {
+    numViews     = parseInt(item.view_cnt      || item.views          || item.num_views       || 0, 10);
+    numLikes     = parseInt(item.num_likes     || item.likes          || 0, 10);
+    numComments  = parseInt(item.num_comments  || item.comments       || 0, 10);
+    numShares    = parseInt(item.num_shares    || item.shares         || 0, 10);
+    numRetweet   = 0;
+    numFollowers = parseInt(item.num_followers || item.subscribers    || 0, 10);
+  } else if (platform === 'tiktok') {
+    numViews     = parseInt(item.views         || item.num_views      || item.view_cnt        || item.play_count  || 0, 10);
+    numLikes     = parseInt(item.likes         || item.num_likes      || item.digg_count      || item.freq        || 0, 10);
+    numComments  = parseInt(item.comments      || item.num_comments   || item.comment_count   || 0, 10);
+    numShares    = parseInt(item.shares        || item.num_shares     || item.share_count     || 0, 10);
+    numRetweet   = 0;
+    numFollowers = parseInt(item.num_followers || item.followers      || 0, 10);
+  } else {
+    // doc / default — untuk online news, freq biasanya = jumlah artikel (bukan engagement)
+    // Jangan pakai freq sebagai likes karena nilainya selalu 1
+    numViews     = parseInt(item.view_cnt      || item.views          || item.num_views       || 0, 10);
+    numLikes     = parseInt(item.num_likes     || item.likes          || 0, 10);
+    numComments  = parseInt(item.num_comments  || item.comments       || 0, 10);
+    numShares    = parseInt(item.num_shares    || item.shares         || 0, 10);
+    numRetweet   = 0;
+    numFollowers = 0;
+  }
+
+  // URL: normalise — pastikan absolute dan valid
+  var rawUrl = item.url || item.link || item.permalink || '';
+  var finalUrl = '';
+  if (rawUrl) {
+    rawUrl = String(rawUrl).trim();
+    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+      finalUrl = rawUrl;
+    } else if (rawUrl.startsWith('//')) {
+      finalUrl = 'https:' + rawUrl;
+    } else if (rawUrl.length > 5 && rawUrl.includes('.')) {
+      finalUrl = 'https://' + rawUrl;
+    }
+  }
+
   return {
     _platform:       platform,
-    content:         strip(item.content || item.name || ''),
+    content:         strip(item.content || item.name || item.title || item.text || ''),
     author_name:     authorName,
     author_handle:   authorHandle,
-    avatar_url:      (rawAvatar && rawAvatar.startsWith('http')) ? rawAvatar : '',
+    avatar_url:      (rawAvatar && String(rawAvatar).startsWith('http')) ? rawAvatar : '',
     hostname:        hostname,
-    url:             item.url || '',
-    date_created:    item.date_created || '',
-    num_likes:       parseInt(item.num_likes    || item.likes    || item.freq   || 0, 10),
-    num_comments:    parseInt(item.num_comments || item.comments || 0, 10),
-    num_shares:      parseInt(item.num_shares   || item.shares   || 0, 10),
-    num_views:       parseInt(item.view_cnt     || item.views    || item.num_views || 0, 10),
-    num_retweeted:   parseInt(item.rt           || item.num_retweeted || 0, 10),
-    num_followers:   parseInt(item.num_followers|| item.followers || (authorObj && authorObj.flw_cnt) || 0, 10),
+    url:             finalUrl,
+    date_created:    item.date_created || item.created_at || item.published_at || '',
+    num_likes:       numLikes,
+    num_comments:    numComments,
+    num_shares:      numShares,
+    num_views:       numViews,
+    num_retweeted:   numRetweet,
+    num_followers:   numFollowers,
     class_sentiment: sent,
-    mention_type:    item.mention_type || item.tcode || 'post',
+    mention_type:    item.mention_type || item.tcode || item.type || 'post',
   };
 }
 
@@ -675,11 +735,8 @@ async function safeGet(url, retries) {
 // ═══════════════════════════════════════════════════════════
 function extractItems(r) {
   if (!r) return null;
-  // {success, data}
   if (r.success === true && Array.isArray(r.data)) return r.data;
-  // {data: [...]}
   if (Array.isArray(r.data)) return r.data;
-  // raw array
   if (Array.isArray(r)) return r;
   return null;
 }
@@ -719,7 +776,7 @@ function updateLazyLoadRow() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// PLATFORM READY — called when each platform finishes loading
+// PLATFORM READY
 // ═══════════════════════════════════════════════════════════
 function platformReady(platform, items, isError) {
   store[platform] = items || [];
@@ -728,6 +785,18 @@ function platformReady(platform, items, isError) {
 
   loadingPlatforms.delete(platform);
   if (isError) errorPlatforms.add(platform);
+
+  // Debug: lihat field engagement dari item pertama tiap platform
+  if (items && items.length > 0) {
+    var s = items[0];
+    console.log('[Timeline] '+platform+' sample fields:', {
+      url: s.url, hostname: s.hostname,
+      num_likes: s.num_likes, num_views: s.num_views,
+      num_comments: s.num_comments, num_shares: s.num_shares,
+      num_retweeted: s.num_retweeted, num_followers: s.num_followers,
+      class_sentiment: s.class_sentiment
+    });
+  }
 
   setPlatformBadge(platform, isError && items.length===0 ? 'error' : 'done', items.length);
   updateProgressBar();
@@ -747,7 +816,7 @@ function platformReady(platform, items, isError) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// FALLBACK STORE — populated from mentions fetch
+// FALLBACK STORE
 // ═══════════════════════════════════════════════════════════
 var fallbackStore = {twit:[],fb:[],ig:[],ytb:[],tiktok:[]};
 
@@ -770,7 +839,7 @@ if (PID && SD && ED) {
   var XB   = '/mk/api/x';
   var Q    = 'project_id='+PID+'&start_date='+SD+'&end_date='+ED+'&rows=2000&start=0';
 
-  // ── 1. mentions → Online News + fallback buckets ──────────
+  // ── 1. mentions → Online News + fallback buckets ──
   safeGet(BASE+'/mentions?'+Q, 2).then(function(r) {
     mentionsFetchDone = true;
     var all = extractItems(r);
@@ -793,10 +862,8 @@ if (PID && SD && ED) {
 
     console.log('[Timeline] classified:', Object.keys(buckets).map(function(k){ return k+':'+buckets[k].length; }).join(' | '));
 
-    // Online News → store
     platformReady('doc', buckets.doc);
 
-    // Social → fallback store
     ['twit','fb','ig','ytb','tiktok'].forEach(function(p) {
       fallbackStore[p] = buckets[p];
     });
@@ -807,7 +874,7 @@ if (PID && SD && ED) {
     platformReady('doc', [], true);
   });
 
-  // ── 2. Twitter ────────────────────────────────────────────
+  // ── 2. Twitter ──
   safeGet(XB+'/most-status?'+Q+'&media=all&mention_type=view_all', 2).then(function(r) {
     var items = extractItems(r);
     if (items && items.length > 0) {
@@ -819,11 +886,10 @@ if (PID && SD && ED) {
     waitFallback('twit', function(fb){ platformReady('twit', fb, true); });
   });
 
-  // ── 3. Facebook ───────────────────────────────────────────
+  // ── 3. Facebook ──
   safeGet(BASE+'/fb-top-status?'+Q+'&sub=fblike', 2).then(function(r) {
     var items = extractItems(r);
     if (items && items.length > 0) {
-      // Already normalised by controller, just add platform
       platformReady('fb', items.map(function(m){ return m._platform ? m : norm(m,'fb'); }));
     } else {
       waitFallback('fb', function(fb){ platformReady('fb', fb, !items); });
@@ -832,7 +898,7 @@ if (PID && SD && ED) {
     waitFallback('fb', function(fb){ platformReady('fb', fb, true); });
   });
 
-  // ── 4. Instagram ──────────────────────────────────────────
+  // ── 4. Instagram ──
   safeGet(BASE+'/ig-top-status?'+Q+'&sub=postbylike', 2).then(function(r) {
     var items = extractItems(r);
     if (items && items.length > 0) {
@@ -844,7 +910,7 @@ if (PID && SD && ED) {
     waitFallback('ig', function(fb){ platformReady('ig', fb, true); });
   });
 
-  // ── 5. TikTok ─────────────────────────────────────────────
+  // ── 5. TikTok ──
   safeGet(BASE+'/tiktok-top-status?'+Q+'&sub=postbylike', 2).then(function(r) {
     var items = extractItems(r);
     if (items && items.length > 0) {
@@ -856,7 +922,7 @@ if (PID && SD && ED) {
     waitFallback('tiktok', function(fb){ platformReady('tiktok', fb, true); });
   });
 
-  // ── 6. YouTube ────────────────────────────────────────────
+  // ── 6. YouTube ──
   safeGet(BASE+'/ytb-top-status?'+Q, 2).then(function(r) {
     var items = extractItems(r);
     if (items && items.length > 0) {
@@ -938,12 +1004,13 @@ function renderStats() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// CHART
+// CHART — Line / Area / Bar / Log
 // ═══════════════════════════════════════════════════════════
 function setChartMode(mode) {
   chartMode = mode;
-  ['line','bar','log'].forEach(function(m){
-    var btn = document.getElementById('chartBtn'+m.charAt(0).toUpperCase()+m.slice(1));
+  ['line','area','bar','log'].forEach(function(m){
+    var id = 'chartBtn' + m.charAt(0).toUpperCase() + m.slice(1);
+    var btn = document.getElementById(id);
     if(btn) btn.classList.toggle('active', m===mode);
   });
   renderChart();
@@ -957,8 +1024,9 @@ function renderChart() {
   var start=new Date(SD), end=new Date(ED), dates=[];
   for(var d=new Date(start);d<=end;d.setDate(d.getDate()+1)) dates.push(d.toISOString().split('T')[0]);
 
-  var isLog = chartMode==='log';
-  var isBar = chartMode==='bar';
+  var isLog  = chartMode==='log';
+  var isBar  = chartMode==='bar';
+  var isArea = chartMode==='area';
 
   var datasets = PLAT_KEYS.map(function(p){
     var cfg=PLATFORM_CFG[p], dayMap={};
@@ -968,19 +1036,32 @@ function renderChart() {
       dayMap[day]=(dayMap[day]||0)+1;
     });
     var data=dates.map(function(d){return dayMap[d]||0;});
+    var rawData = isLog ? data.map(function(v){return v>0?v:0.1;}) : data;
+
     return {
-      label:cfg.label, data:isLog?data.map(function(v){return v>0?v:0.1;}):data,
-      borderColor:cfg.color, backgroundColor:isBar?cfg.color+'cc':cfg.color+'18',
-      borderWidth:isBar?0:2.5, tension:isBar?0:0.4, fill:false,
-      pointRadius:isBar?0:(data.length>30?2:4), pointHoverRadius:6,
-      pointBorderColor:'#fff', pointBorderWidth:1.5, hidden:hiddenPlatforms.has(p)
+      label:            cfg.label,
+      data:             rawData,
+      borderColor:      cfg.color,
+      backgroundColor:  isBar  ? cfg.color+'cc'
+                      : isArea ? cfg.color+'33'
+                      :          cfg.color+'15',
+      borderWidth:      isBar ? 0 : 2,
+      tension:          isBar ? 0 : 0.4,
+      fill:             isArea,
+      pointRadius:      isBar ? 0 : (data.length > 30 ? 2 : 4),
+      pointHoverRadius: 7,
+      pointBackgroundColor: cfg.color,
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      hidden:           hiddenPlatforms.has(p)
     };
   });
 
+  // Rebuild legend
   document.getElementById('chartLegend').innerHTML = PLAT_KEYS.map(function(p){
     var cfg=PLATFORM_CFG[p], total=(store[p]||[]).length;
     var off=hiddenPlatforms.has(p), loading=loadingPlatforms.has(p);
-    return '<div class="legend-item" onclick="togglePlatform(\''+p+'\')" style="opacity:'+(off?'.4':'1')+'">'
+    return '<div class="legend-item" onclick="togglePlatform(\''+p+'\')" title="Click to toggle" style="opacity:'+(off?'.35':'1')+'">'
       +'<div class="legend-dot" style="background:'+cfg.color+'"></div>'
       +'<span>'+cfg.label+'</span>'
       +'<span class="legend-cnt" style="color:'+cfg.color+';background:'+cfg.color+'18">'
@@ -988,19 +1069,62 @@ function renderChart() {
   }).join('');
 
   if (chartInstance) chartInstance.destroy();
+
   var yConfig = isLog
-    ? {type:'logarithmic',beginAtZero:false,min:0.1,grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#94a3b8',font:{size:11},callback:function(v){return v>=1?fmtN(Math.round(v)):'';}}}
-    : {beginAtZero:true,grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#94a3b8',font:{size:11},precision:0}};
+    ? {type:'logarithmic',beginAtZero:false,min:0.1,
+       grid:{color:'rgba(0,0,0,.04)'},
+       ticks:{color:'#94a3b8',font:{size:11},callback:function(v){return v>=1?fmtN(Math.round(v)):'';}}
+      }
+    : {beginAtZero:true,
+       grid:{color:'rgba(0,0,0,.04)'},
+       ticks:{color:'#94a3b8',font:{size:11},precision:0}
+      };
 
   chartInstance = new Chart(canvas.getContext('2d'),{
-    type:isBar?'bar':'line',
-    data:{labels:dates.map(function(d){var dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});}),datasets:datasets},
-    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a202c',padding:14,cornerRadius:10,displayColors:true,boxWidth:10,boxHeight:10,
-        callbacks:{label:function(ctx){return ' '+ctx.dataset.label+': '+fmtN(Math.round(ctx.parsed.y));}}}},
-      scales:{y:yConfig,x:{stacked:isBar,grid:{display:false},ticks:{color:'#94a3b8',font:{size:11},maxRotation:45,autoSkip:true,maxTicksLimit:14}}}}
+    type: isBar ? 'bar' : 'line',
+    data: {
+      labels: dates.map(function(d){
+        var dt=new Date(d+'T00:00:00');
+        return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      }),
+      datasets: datasets
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#1e293b', titleColor:'#e2e8f0', bodyColor:'#cbd5e1',
+          footerColor:'#94a3b8', padding:14, cornerRadius:10, displayColors:true,
+          boxWidth:10, boxHeight:10,
+          filter: function(item){ return Math.round(item.parsed.y) > 0; },
+          callbacks:{
+            title: function(items){ return items[0] ? items[0].label : ''; },
+            label: function(ctx){
+              var v = Math.round(ctx.parsed.y);
+              return v > 0 ? '  '+ctx.dataset.label+': '+fmtN(v) : null;
+            },
+            footer: function(items){
+              var total = items.reduce(function(s,i){ return s+Math.round(i.parsed.y); },0);
+              return total > 0 ? 'Total: '+fmtN(total) : '';
+            }
+          }
+        }
+      },
+      scales:{
+        y: yConfig,
+        x:{
+          stacked: isBar,
+          grid:{display:false},
+          ticks:{color:'#94a3b8',font:{size:11},maxRotation:45,autoSkip:true,maxTicksLimit:14}
+        }
+      }
+    }
   });
-  sk.style.display='none'; canvas.style.display='block';
+
+  sk.style.display='none';
+  canvas.style.display='block';
 }
 
 function togglePlatform(p) {
@@ -1009,7 +1133,7 @@ function togglePlatform(p) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// TABLE
+// TABLE — fixed engagement display + view source
 // ═══════════════════════════════════════════════════════════
 function switchTab(tab) {
   activeTab=tab; q=''; page=1;
@@ -1055,44 +1179,112 @@ function renderTable() {
   var slice = filtered.slice(from, from+PER);
 
   tbody.innerHTML = slice.map(function(item, i) {
-    var rank = from+i+1;
-    var dt   = fmtDate(item.date_created);
+    var rank  = from+i+1;
+    var dt    = fmtDate(item.date_created);
     var initl = initials(item.author_name||item.author_handle);
     var handle = item.author_handle || (item.hostname?item.hostname.replace('www.','').split('.')[0]:'') || '';
     var dname  = item.author_name || handle || 'Unknown';
     var domain = item.hostname ? item.hostname.replace('www.','') : '';
 
-    var avaInner = initl;
+    // ── Avatar — pakai avaImg() helper, aman dari escaping bug ──
+    var avaInner = esc(initl);
     if (item.avatar_url && item.avatar_url.startsWith('http')) {
-      avaInner='<img src="'+esc(item.avatar_url)+'" alt="'+esc(dname)+'" onerror="this.parentElement.innerHTML=\''+initl+'\'">';
+      avaInner = avaImg(item.avatar_url, dname, initl);
     } else {
+      var hClean = handle.replace('@','');
       switch(item._platform) {
         case 'twit':
-          if(handle) avaInner='<img src="https://unavatar.io/twitter/'+esc(handle)+'" alt="'+esc(dname)+'" onerror="this.parentElement.innerHTML=\''+initl+'\'">';
+          if(hClean) avaInner = avaImg('https://unavatar.io/twitter/'+encodeURIComponent(hClean), dname, initl);
           break;
         case 'ig':
-          var igH=(item.author_handle||handle).toLowerCase();
-          if(igH) avaInner='<img src="https://unavatar.io/instagram/'+esc(igH)+'" alt="'+esc(dname)+'" onerror="this.parentElement.innerHTML=\''+initl+'\'">';
+          if(hClean) avaInner = avaImg('https://unavatar.io/instagram/'+encodeURIComponent(hClean), dname, initl);
           break;
         case 'tiktok':
-          var ttH=(item.author_handle||handle).toLowerCase();
-          if(ttH) avaInner='<img src="https://unavatar.io/tiktok/'+esc(ttH)+'" alt="'+esc(dname)+'" onerror="this.parentElement.innerHTML=\''+initl+'\'">';
+          if(hClean) avaInner = avaImg('https://unavatar.io/tiktok/'+encodeURIComponent(hClean), dname, initl);
           break;
         case 'ytb':
-          if(handle) avaInner='<img src="https://unavatar.io/youtube/'+esc(handle)+'" alt="'+esc(dname)+'" onerror="this.parentElement.innerHTML=\''+initl+'\'">';
+          if(hClean) avaInner = avaImg('https://unavatar.io/youtube/'+encodeURIComponent(hClean), dname, initl);
           break;
         case 'doc':
-          if(domain) avaInner='<img src="https://logo.clearbit.com/'+esc(domain)+'" alt="'+esc(dname)+'" onerror="this.parentElement.innerHTML=\''+initl+'\'">';
+          if(domain) avaInner = avaImg('https://logo.clearbit.com/'+encodeURIComponent(domain), dname, initl);
           break;
       }
     }
 
-    var likesNum = item.num_likes || item.num_retweeted || 0;
-    var eng='';
-    if(item.num_views    >0) eng+='<div style="font-size:10px;color:var(--text-secondary);font-weight:600">'+fmtN(item.num_views)+' views</div>';
-    if(item.num_comments >0) eng+='<div style="font-size:10px;color:var(--text-secondary);font-weight:600">'+fmtN(item.num_comments)+' comments</div>';
-    if(item.num_shares   >0) eng+='<div style="font-size:10px;color:var(--text-secondary);font-weight:600">'+fmtN(item.num_shares)+' shares</div>';
-    if(item.num_followers>0) eng+='<div style="font-size:10px;color:var(--text-secondary);font-weight:600">'+fmtN(item.num_followers)+' followers</div>';
+    // ── Engagement: primary metric (tampil besar) ──
+    var primaryVal = 0, primaryLabel = '';
+    if (item._platform === 'twit') {
+      if (item.num_retweeted > 0) { primaryVal = item.num_retweeted; primaryLabel = 'Retweets'; }
+      else if (item.num_likes > 0) { primaryVal = item.num_likes; primaryLabel = 'Likes'; }
+    } else if (item._platform === 'ytb') {
+      if (item.num_views > 0) { primaryVal = item.num_views; primaryLabel = 'Views'; }
+      else if (item.num_likes > 0) { primaryVal = item.num_likes; primaryLabel = 'Likes'; }
+    } else if (item._platform === 'tiktok') {
+      if (item.num_views > 0) { primaryVal = item.num_views; primaryLabel = 'Views'; }
+      else if (item.num_likes > 0) { primaryVal = item.num_likes; primaryLabel = 'Likes'; }
+    } else if (item._platform === 'ig') {
+      if (item.num_likes > 0) { primaryVal = item.num_likes; primaryLabel = 'Likes'; }
+      else if (item.num_views > 0) { primaryVal = item.num_views; primaryLabel = 'Views'; }
+    } else if (item._platform === 'fb') {
+      if (item.num_likes > 0) { primaryVal = item.num_likes; primaryLabel = 'Reactions'; }
+      else if (item.num_shares > 0) { primaryVal = item.num_shares; primaryLabel = 'Shares'; }
+    }
+    // doc: tidak ada primaryVal — engagement online news memang N/A
+
+    var primaryHtml;
+    if (primaryVal > 0) {
+      primaryHtml = '<div class="eng-primary-val">'+fmtN(primaryVal)+'</div>'
+                  + '<div class="eng-primary-lbl">'+primaryLabel+'</div>';
+    } else if (item._platform === 'doc') {
+      // Online News: tampilkan tipe artikel sebagai info
+      primaryHtml = '<div style="font-size:10px;font-weight:600;color:var(--text-secondary);line-height:1.4">Online<br>Article</div>';
+    } else {
+      primaryHtml = '<div class="eng-empty">—</div>';
+    }
+
+    // ── Secondary metrics ──
+    var secParts = [];
+    if (item._platform === 'twit') {
+      if(item.num_likes     > 0) secParts.push(fmtN(item.num_likes)+'&thinsp;❤');
+      if(item.num_comments  > 0) secParts.push(fmtN(item.num_comments)+'&thinsp;💬');
+      if(item.num_views     > 0) secParts.push(fmtN(item.num_views)+'&thinsp;👁');
+      if(item.num_followers > 0) secParts.push(fmtN(item.num_followers)+'&thinsp;flw');
+    } else if (item._platform === 'ytb' || item._platform === 'tiktok') {
+      if(item.num_likes    > 0)  secParts.push(fmtN(item.num_likes)+'&thinsp;❤');
+      if(item.num_comments > 0)  secParts.push(fmtN(item.num_comments)+'&thinsp;💬');
+      if(item.num_shares   > 0)  secParts.push(fmtN(item.num_shares)+'&thinsp;↗');
+      if(item.num_followers> 0)  secParts.push(fmtN(item.num_followers)+'&thinsp;subs');
+    } else if (item._platform === 'ig' || item._platform === 'fb') {
+      if(item.num_comments > 0)  secParts.push(fmtN(item.num_comments)+'&thinsp;💬');
+      if(item.num_shares   > 0)  secParts.push(fmtN(item.num_shares)+'&thinsp;↗');
+      if(item.num_views    > 0)  secParts.push(fmtN(item.num_views)+'&thinsp;👁');
+      if(item.num_followers> 0)  secParts.push(fmtN(item.num_followers)+'&thinsp;flw');
+    } else {
+      // doc
+      if(item.num_comments > 0)  secParts.push(fmtN(item.num_comments)+'&thinsp;💬');
+      if(item.num_shares   > 0)  secParts.push(fmtN(item.num_shares)+'&thinsp;↗');
+    }
+
+    var secHtml = secParts.length
+      ? '<div class="eng-secondary">'
+          + secParts.map(function(p){ return '<div class="eng-sec-item">'+p+'</div>'; }).join('')
+        + '</div>'
+      : '';
+
+    // ── View Source: tampilkan jika URL valid ──
+    var hasUrl = item.url && item.url.length > 0 && item.url !== '#';
+    var metaHtml = '';
+    if (domain) {
+      metaHtml += '<span>'+esc(domain)+'</span>';
+    }
+    if (hasUrl) {
+      metaHtml += (metaHtml ? '&ensp;·&ensp;' : '')
+        + '<a href="'+esc(item.url)+'" target="_blank" rel="noopener noreferrer" class="view-link">'
+        + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:10px;height:10px;flex-shrink:0">'
+        + '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>'
+        + '<polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>'
+        + '</svg> View source</a>';
+    }
 
     return '<tr>'
       +'<td class="no-cell">'+rank+'</td>'
@@ -1100,15 +1292,10 @@ function renderTable() {
       +'<td><span class="type-badge">'+esc(item.mention_type||'-')+'</span></td>'
       +'<td class="content-cell">'
         +'<div class="mention-text">'+esc(item.content||'No content')+'</div>'
-        +'<div class="mention-meta">'
-          +(item.hostname?'<span>'+esc(item.hostname)+'</span>':'')
-          +(item.url&&item.url!=='#'?'<a href="'+esc(item.url)+'" target="_blank" rel="noopener noreferrer" class="view-link">View source</a>':'')
-        +'</div>'
+        +'<div class="mention-meta">'+metaHtml+'</div>'
       +'</td>'
-      +'<td class="num-cell">'
-        +'<div style="font-weight:700;font-size:14px;color:var(--text-primary)">'
-          +(likesNum?fmtN(likesNum):'<span style="color:var(--border-gray)">—</span>')
-        +'</div>'+eng
+      +'<td class="eng-cell">'
+        + primaryHtml + secHtml
       +'</td>'
       +'<td class="author-cell"><div class="author-wrap">'
         +'<div class="ava">'+avaInner+'</div>'
@@ -1146,13 +1333,15 @@ function renderPager(total) {
     return [1,'…',cur-1,cur,cur+1,'…',tot];
   }
   var h='<div class="pager-info">Showing '+fmtN(from)+'–'+fmtN(to)+' of '+fmtN(filtered.length)+'</div><div class="pager-btns">';
-  h+='<button class="pbtn" onclick="goPage('+(page-1)+')" '+(page===1?'disabled':'')+'><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px"><polyline points="15 18 9 12 15 6"/></svg></button>';
+  h+='<button class="pbtn" onclick="goPage('+(page-1)+')" '+(page===1?'disabled':'')+'>'
+    +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px"><polyline points="15 18 9 12 15 6"/></svg></button>';
   range(page,total).forEach(function(p){
     h+=p==='…'
       ?'<button class="pbtn" disabled style="cursor:default;font-size:14px">…</button>'
       :'<button class="pbtn '+(p===page?'active':'')+'" onclick="goPage('+p+')">'+p+'</button>';
   });
-  h+='<button class="pbtn" onclick="goPage('+(page+1)+')" '+(page===total?'disabled':'')+'><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px"><polyline points="9 18 15 12 9 6"/></svg></button></div>';
+  h+='<button class="pbtn" onclick="goPage('+(page+1)+')" '+(page===total?'disabled':'')+'>'
+    +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px"><polyline points="9 18 15 12 9 6"/></svg></button></div>';
   wrap.innerHTML=h; wrap.style.display='flex';
 }
 
@@ -1163,10 +1352,10 @@ function goPage(p) {
   document.querySelector('.do-card:last-child').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-window.switchTab=switchTab;
-window.doSearch=doSearch;
-window.goPage=goPage;
-window.setChartMode=setChartMode;
-window.togglePlatform=togglePlatform;
+window.switchTab    = switchTab;
+window.doSearch     = doSearch;
+window.goPage       = goPage;
+window.setChartMode = setChartMode;
+window.togglePlatform = togglePlatform;
 </script>
 @endsection

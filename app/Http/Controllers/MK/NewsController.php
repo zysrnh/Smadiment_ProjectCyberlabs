@@ -884,4 +884,114 @@ class NewsController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to fetch YouTube data'], 500);
         }
     }
+    public function aiAnalysisPage(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id', session('selected_project_id'));
+
+        if (!$projectId) {
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'Please select a project first');
+        }
+
+        session(['selected_project_id' => $projectId]);
+
+        return view('mk.news.ai-analysis', [
+            'projectId' => $projectId,
+            'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+            'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('AI Analysis Page Error', ['error' => $e->getMessage()]);
+        return redirect()->route('mk.dashboard')
+            ->with('error', 'Failed to load AI Analysis page');
+    }
+}
+
+public function aiAnalysisProxy(Request $request)
+{
+    try {
+        $apiKey = env('GROQ_API_KEY');
+
+        if (!$apiKey) {
+            return response()->json([
+                'error' => 'GROQ_API_KEY belum diset di .env — Daftar gratis di console.groq.com',
+            ], 500);
+        }
+
+        $messages  = $request->input('messages', []);
+        $system    = $request->input('system', '');
+        $maxTokens = (int) $request->input('max_tokens', 1500);
+
+        if (empty($messages)) {
+            return response()->json(['error' => 'Messages tidak boleh kosong'], 400);
+        }
+
+        // ── Groq pakai format OpenAI-compatible ─────────────────────
+        // System prompt dimasukkan sebagai message pertama dengan role "system"
+        $groqMessages = [];
+
+        if (!empty($system)) {
+            $groqMessages[] = [
+                'role'    => 'system',
+                'content' => $system,
+            ];
+        }
+
+        foreach ($messages as $msg) {
+            $groqMessages[] = [
+                'role'    => $msg['role'],   // 'user' atau 'assistant'
+                'content' => $msg['content'],
+            ];
+        }
+
+        // ── Kirim ke Groq API ────────────────────────────────────────
+        $response = \Illuminate\Support\Facades\Http::withHeaders([
+            'Authorization' => 'Bearer ' . $apiKey,
+            'Content-Type'  => 'application/json',
+        ])->timeout(60)->post('https://api.groq.com/openai/v1/chat/completions', [
+            'model'       => 'llama-3.3-70b-versatile',  // model terbaik Groq, gratis
+            'messages'    => $groqMessages,
+            'max_tokens'  => $maxTokens,
+            'temperature' => 0.7,
+        ]);
+
+        if ($response->failed()) {
+            Log::error('Groq API Error', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+            return response()->json([
+                'error' => 'Groq API error: ' . $response->status() . ' — ' . $response->body(),
+            ], $response->status());
+        }
+
+        $data = $response->json();
+
+        // ── Konversi respons Groq (OpenAI format) → format Anthropic ─
+        // Supaya frontend tidak perlu diubah sama sekali
+        $text = $data['choices'][0]['message']['content'] ?? '';
+
+        if (empty($text)) {
+            Log::warning('Groq empty response', ['data' => $data]);
+            return response()->json(['error' => 'Groq tidak mengembalikan respons'], 500);
+        }
+
+        // Return dalam format yang sama dengan Anthropic
+        return response()->json([
+            'content' => [
+                ['type' => 'text', 'text' => $text]
+            ],
+            'model' => 'llama-3.3-70b-versatile',
+        ]);
+
+    } catch (\Illuminate\Http\Client\ConnectionException $e) {
+        Log::error('Groq Connection Error', ['error' => $e->getMessage()]);
+        return response()->json(['error' => 'Tidak bisa terhubung ke Groq API'], 503);
+    } catch (\Exception $e) {
+        Log::error('AI Proxy Error', ['error' => $e->getMessage()]);
+        return response()->json(['error' => 'Internal server error: ' . $e->getMessage()], 500);
+    }
+}
 }
