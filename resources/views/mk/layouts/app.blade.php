@@ -690,18 +690,60 @@
         </div>
       </div>
 
-      <!-- Instagram -->
-      <div class="nav-item dropdown-trigger" onclick="toggleNav('instagramSub', this)">
-        <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></span>
+    {{-- Instagram --}}
+      @php
+        $instagramRoutes   = ['mk.instagram.overview','mk.instagram.trending-topics','mk.instagram.most-viewed-posts','mk.instagram.authors.demographics','mk.instagram.geographic','mk.instagram.trending-word-cloud','mk.instagram.ai-analysis'];
+        $isInstagramActive = request()->routeIs($instagramRoutes);
+      @endphp
+
+      <div class="nav-item dropdown-trigger {{ $isInstagramActive ? 'has-active-child open' : '' }}"
+           onclick="toggleNav('instagramSub', this)">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+        </span>
         <span>Instagram</span>
         <span class="dropdown-arrow"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
       </div>
-      <div class="nav-sub-wrapper" id="instagramSub">
+
+      <div class="nav-sub-wrapper {{ $isInstagramActive ? 'open' : '' }}" id="instagramSub">
         <div class="nav-sub">
-          <a href="#" class="nav-item"><span>Coming Soon</span></a>
+          <a href="{{ route('mk.instagram.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.instagram.overview') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+            <span>Overview</span>
+          </a>
+          <a href="{{ route('mk.instagram.trending-topics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.instagram.trending-topics') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
+            <span>Top Hashtags</span>
+          </a>
+          <a href="{{ route('mk.instagram.most-viewed-posts') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.instagram.most-viewed-posts') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
+            <span>Most Viewed Posts</span>
+          </a>
+          <a href="{{ route('mk.instagram.authors.demographics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.instagram.authors.demographics') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+            <span>Author Profiles</span>
+          </a>
+          <a href="{{ route('mk.instagram.geographic') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.instagram.geographic') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+            <span>Location Map</span>
+          </a>
+          <a href="{{ route('mk.instagram.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.instagram.trending-word-cloud') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
+            <span>Word Cloud</span>
+          </a>
+          <a href="{{ route('mk.instagram.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.instagram.ai-analysis') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/><circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.15"/></svg></span>
+            <span>AI Analysis</span>
+          </a>
         </div>
       </div>
-
       <!-- YouTube -->
       <div class="nav-item dropdown-trigger" onclick="toggleNav('youtubeSub', this)">
         <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg></span>

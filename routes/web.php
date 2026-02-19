@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\TopicMapController;
 use App\Http\Controllers\Api\TopAnalyticsController;
 use App\Http\Controllers\MK\XOverviewController;
 use App\Http\Controllers\MK\FacebookOverviewController;
+use App\Http\Controllers\MK\InstagramOverviewController;
 use App\Http\Controllers\MK\NewsController;
 use Illuminate\Support\Facades\Route;
 
@@ -244,6 +245,51 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/top-locations', [FacebookOverviewController::class, 'topLocations'])
                 ->name('top-locations');
         });
+
+        // ─────────────────────────────────────────────────────
+        // Instagram APIs
+        // ─────────────────────────────────────────────────────
+        Route::prefix('instagram')->name('instagram.')->group(function () {
+
+            Route::get('/total-users', [InstagramOverviewController::class, 'totalUsers'])
+                ->name('total-users');
+
+            Route::get('/total-authors', [InstagramOverviewController::class, 'totalAuthors'])
+                ->name('total-authors');
+
+            Route::get('/volume-total', [InstagramOverviewController::class, 'volumeTotal'])
+                ->name('volume-total');
+
+            Route::get('/sentiment-total', [InstagramOverviewController::class, 'sentimentTotal'])
+                ->name('sentiment-total');
+
+            Route::get('/most-active-users', [InstagramOverviewController::class, 'mostActiveUsers'])
+                ->name('most-active-users');
+
+            Route::get('/trending-topics', [InstagramOverviewController::class, 'trendingTopicsData'])
+                ->name('trending-topics');
+
+            Route::get('/most-viewed-posts', [InstagramOverviewController::class, 'mostViewedPostsData'])
+                ->name('most-viewed-posts');
+
+            Route::get('/authors-age', [InstagramOverviewController::class, 'authorsAgeData'])
+                ->name('authors-age');
+
+            Route::get('/authors-gender', [InstagramOverviewController::class, 'authorsGenderData'])
+                ->name('authors-gender');
+
+            Route::get('/authors-type', [InstagramOverviewController::class, 'authorsTypeData'])
+                ->name('authors-type');
+
+            Route::get('/geo-user', [InstagramOverviewController::class, 'geoUser'])
+                ->name('geo-user');
+
+            Route::get('/geo-sentiment', [InstagramOverviewController::class, 'geoSentiment'])
+                ->name('geo-sentiment');
+
+            Route::get('/top-locations', [InstagramOverviewController::class, 'topLocations'])
+                ->name('top-locations');
+        });
     });
 
     // ═══════════════════════════════════════════════════════════
@@ -329,7 +375,6 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/post-with-location', [XOverviewController::class, 'postWithLocationPage'])
             ->name('post-with-location');
 
-        // ✅ X AI Analysis Page
         Route::get('/ai-analysis', [XOverviewController::class, 'aiAnalysisPage'])
             ->name('ai-analysis');
     });
@@ -360,8 +405,34 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/trending-word-cloud', [FacebookOverviewController::class, 'trendingWordCloudPage'])
             ->name('trending-word-cloud');
 
-        // ✅ Facebook AI Analysis Page
         Route::get('/ai-analysis', [FacebookOverviewController::class, 'aiAnalysisPage'])
+            ->name('ai-analysis');
+    });
+
+    // ─────────────────────────────────────────────────────
+    // Instagram Routes
+    // ─────────────────────────────────────────────────────
+    Route::prefix('instagram')->name('instagram.')->group(function () {
+
+        Route::get('/overview', [InstagramOverviewController::class, 'index'])
+            ->name('overview');
+
+        Route::get('/trending-topics', [InstagramOverviewController::class, 'trendingTopicsPage'])
+            ->name('trending-topics');
+
+        Route::get('/most-viewed-posts', [InstagramOverviewController::class, 'mostViewedPostsPage'])
+            ->name('most-viewed-posts');
+
+        Route::get('/authors-demographics', [InstagramOverviewController::class, 'authorsDemographicsPage'])
+            ->name('authors.demographics');
+
+        Route::get('/geographic', [InstagramOverviewController::class, 'geographicPage'])
+            ->name('geographic');
+
+        Route::get('/trending-word-cloud', [InstagramOverviewController::class, 'trendingWordCloudPage'])
+            ->name('trending-word-cloud');
+
+        Route::get('/ai-analysis', [InstagramOverviewController::class, 'aiAnalysisPage'])
             ->name('ai-analysis');
     });
 
