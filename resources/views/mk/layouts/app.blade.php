@@ -930,7 +930,6 @@ $facebookRoutes = [
     'mk.facebook.trending-topics',
     'mk.facebook.most-viewed-posts',
     'mk.facebook.top-hashtags',
-    'mk.facebook.authors.demographics',
     'mk.facebook.geographic',
     'mk.facebook.trending-word-cloud', // tambahkan ini
 ];
@@ -1001,30 +1000,6 @@ $isFacebookActive = request()->routeIs($facebookRoutes);
     </span>
     <span>Top Hashtags</span>
   </a>
-
-  {{-- ✅ NEW: Author Profiles --}}
-  <a href="{{ route('mk.facebook.authors.demographics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-    class="nav-item {{ request()->routeIs('mk.facebook.authors.demographics') ? 'active' : '' }}">
-    <span class="menu-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-      </svg>
-    </span>
-    <span>Author Profiles</span>
-  </a>
-  <a href="{{ route('mk.facebook.geographic') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-   class="nav-item {{ request()->routeIs('mk.facebook.geographic') ? 'active' : '' }}">
-    <span class="menu-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="10" r="3"/>
-            <path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z"/>
-        </svg>
-    </span>
-    <span>Geographic</span>
-</a>
 <a href="{{ route('mk.facebook.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
    class="nav-item {{ request()->routeIs('mk.facebook.trending-word-cloud') ? 'active' : '' }}">
     <span class="menu-icon">
