@@ -1703,6 +1703,115 @@ public function topLocationsFacebook(
         return ['data' => []];
     }
 }
+public function tiktokTopStatus(
+    string $projectId,
+    string $startDate,
+    string $endDate,
+    int $startTime = 0,
+    int $endTime = 23,
+    int $rows = 100,
+    string $sub = 'postbylike'
+): array {
+    try {
+        $token = $this->getToken();
+
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/tiktok_top_status/',
+            [
+                'project_id' => $projectId,
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'start_time' => $startTime,
+                'end_time'   => $endTime,
+                'rows'       => $rows,
+                'sub'        => $sub,
+                'token'      => $token,
+            ]
+        );
+
+        $res->throw();
+
+        $json = $this->parseJson($res);
+
+        Log::info('tiktokTopStatus API response', [
+            'project_id'    => $projectId,
+            'sub'           => $sub,
+            'total_items'   => is_array($json) ? count($json) : 0,
+            'first_item'    => is_array($json) && count($json) > 0 ? array_slice($json[0], 0, 5) : null,
+        ]);
+
+        return is_array($json) ? $json : [];
+
+    } catch (\Exception $e) {
+        Log::error('tiktokTopStatus API error', [
+            'error'      => $e->getMessage(),
+            'project_id' => $projectId,
+        ]);
+        return [];
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INSTAGRAM TOP STATUS
+// API: GET /ig_top_status/
+// Params: project_id, rows, start_date, end_date, start_time, end_time, sub, token
+// sub options: postbylike | postbycomment | postbyview
+// ─────────────────────────────────────────────────────────────────────────────
+public function igTopStatus(
+    string $projectId,
+    string $startDate,
+    string $endDate,
+    int $startTime = 0,
+    int $endTime = 23,
+    int $rows = 100,
+    string $sub = 'postbylike'
+): array {
+    try {
+        $token = $this->getToken();
+
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/ig_top_status/',
+            [
+                'project_id' => $projectId,
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'start_time' => $startTime,
+                'end_time'   => $endTime,
+                'rows'       => $rows,
+                'sub'        => $sub,
+                'token'      => $token,
+            ]
+        );
+
+        $res->throw();
+
+        $json = $this->parseJson($res);
+
+        Log::info('igTopStatus API response', [
+            'project_id'  => $projectId,
+            'sub'         => $sub,
+            'total_items' => is_array($json) ? count($json) : 0,
+        ]);
+
+        return is_array($json) ? $json : [];
+
+    } catch (\Exception $e) {
+        Log::error('igTopStatus API error', [
+            'error'      => $e->getMessage(),
+            'project_id' => $projectId,
+        ]);
+        return [];
+    }
+}
+
+
+
+
+
+
+
+
+
 
 
 

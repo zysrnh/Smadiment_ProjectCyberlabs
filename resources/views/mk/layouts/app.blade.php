@@ -931,6 +931,8 @@ $facebookRoutes = [
     'mk.facebook.most-viewed-posts',
     'mk.facebook.top-hashtags',
     'mk.facebook.authors.demographics',
+    'mk.facebook.geographic',
+    'mk.facebook.trending-word-cloud', // tambahkan ini
 ];
 $isFacebookActive = request()->routeIs($facebookRoutes);
 @endphp
@@ -1022,6 +1024,23 @@ $isFacebookActive = request()->routeIs($facebookRoutes);
         </svg>
     </span>
     <span>Geographic</span>
+</a>
+<a href="{{ route('mk.facebook.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+   class="nav-item {{ request()->routeIs('mk.facebook.trending-word-cloud') ? 'active' : '' }}">
+    <span class="menu-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <circle cx="19" cy="5" r="2"/>
+            <circle cx="5" cy="19" r="2"/>
+            <circle cx="19" cy="19" r="2"/>
+            <circle cx="5" cy="5" r="2"/>
+            <line x1="12" y1="9" x2="6.5" y2="6.5"/>
+            <line x1="12" y1="15" x2="6.5" y2="17.5"/>
+            <line x1="15" y1="12" x2="17" y2="6.5"/>
+            <line x1="15" y1="12" x2="17" y2="17.5"/>
+        </svg>
+    </span>
+    <span>Word Cloud</span>
 </a>
 
 </div>

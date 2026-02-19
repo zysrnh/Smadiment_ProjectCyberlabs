@@ -111,6 +111,8 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         // News APIs
         // ─────────────────────────────────────────────────────
         Route::prefix('news')->name('news.')->group(function () {
+
+            // ── Existing ──────────────────────────────────────
             Route::get('/word-cloud', [NewsController::class, 'newsWordCloudData'])
                 ->name('word-cloud-api');
 
@@ -122,6 +124,19 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
 
             Route::get('/articles', [NewsController::class, 'articlesData'])
                 ->name('articles-api');
+
+            // ── NEW: Platform Top Status APIs ─────────────────
+            Route::get('/tiktok-top-status', [NewsController::class, 'tiktokTopStatus'])
+                ->name('tiktok-top-status');
+
+            Route::get('/ig-top-status', [NewsController::class, 'igTopStatus'])
+                ->name('ig-top-status');
+
+            Route::get('/fb-top-status', [NewsController::class, 'fbTopStatusApi'])
+                ->name('fb-top-status');
+
+            Route::get('/ytb-top-status', [NewsController::class, 'ytbTopStatus'])
+                ->name('ytb-top-status');
         });
 
         // ─────────────────────────────────────────────────────
@@ -335,6 +350,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
 
         Route::get('/geographic', [FacebookOverviewController::class, 'geographicPage'])
             ->name('geographic');
+
+        // ✅ NEW: Facebook Trending Word Cloud
+        Route::get('/trending-word-cloud', [FacebookOverviewController::class, 'trendingWordCloudPage'])
+            ->name('trending-word-cloud');
     });
 
     // ─────────────────────────────────────────────────────
