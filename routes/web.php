@@ -89,10 +89,6 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/geo-users', [DataOverviewApiController::class, 'geoUsers'])
             ->name('geo-users');
 
-            Route::get('/geo-user',      [FacebookOverviewController::class, 'geoUser'])     ->name('geo-user');
-Route::get('/geo-sentiment', [FacebookOverviewController::class, 'geoSentiment'])->name('geo-sentiment');
-Route::get('/top-locations', [FacebookOverviewController::class, 'topLocations'])->name('top-locations');
-
         // ─────────────────────────────────────────────────────
         // Topic Map API
         // ─────────────────────────────────────────────────────
@@ -208,15 +204,12 @@ Route::get('/top-locations', [FacebookOverviewController::class, 'topLocations']
             Route::get('/most-active-users', [FacebookOverviewController::class, 'mostActiveUsers'])
                 ->name('most-active-users');
 
-            // Trending Topics API (also used by Top Hashtags page)
             Route::get('/trending-topics', [FacebookOverviewController::class, 'trendingTopicsData'])
                 ->name('trending-topics');
 
-            // Most Viewed Posts API
             Route::get('/most-viewed-posts', [FacebookOverviewController::class, 'mostViewedPostsData'])
                 ->name('most-viewed-posts');
 
-            // ✅ NEW: Facebook Author Demographics APIs
             Route::get('/authors-age', [FacebookOverviewController::class, 'authorsAgeData'])
                 ->name('authors-age');
 
@@ -225,6 +218,17 @@ Route::get('/top-locations', [FacebookOverviewController::class, 'topLocations']
 
             Route::get('/authors-type', [FacebookOverviewController::class, 'authorsTypeData'])
                 ->name('authors-type');
+
+            // ✅ FIXED: geo routes sekarang benar di dalam prefix facebook
+            Route::get('/geo-user', [FacebookOverviewController::class, 'geoUser'])
+                ->name('geo-user');
+
+            Route::get('/geo-sentiment', [FacebookOverviewController::class, 'geoSentiment'])
+                ->name('geo-sentiment');
+
+            // ✅ FIXED: rename agar tidak conflict dengan TopAnalyticsController top-locations
+            Route::get('/top-locations', [FacebookOverviewController::class, 'topLocations'])
+                ->name('top-locations');
         });
     });
 
@@ -271,7 +275,7 @@ Route::get('/top-locations', [FacebookOverviewController::class, 'topLocations']
     });
 
     // ─────────────────────────────────────────────────────
-    // X (Twitter) Routes - COMPLETE & ORGANIZED
+    // X (Twitter) Routes
     // ─────────────────────────────────────────────────────
     Route::prefix('x')->name('x.')->group(function () {
 
@@ -314,27 +318,23 @@ Route::get('/top-locations', [FacebookOverviewController::class, 'topLocations']
     // ─────────────────────────────────────────────────────
     Route::prefix('facebook')->name('facebook.')->group(function () {
 
-        // Overview Page
         Route::get('/overview', [FacebookOverviewController::class, 'index'])
             ->name('overview');
 
-        // Trending Topics Page
         Route::get('/trending-topics', [FacebookOverviewController::class, 'trendingTopicsPage'])
             ->name('trending-topics');
 
-        // Most Viewed Posts Page
         Route::get('/most-viewed-posts', [FacebookOverviewController::class, 'mostViewedPostsPage'])
             ->name('most-viewed-posts');
 
-        // Top Hashtags Page
         Route::get('/top-hashtags', [FacebookOverviewController::class, 'topHashtagsPage'])
             ->name('top-hashtags');
 
-        // ✅ NEW: Author Profiles / Demographics Page
         Route::get('/authors-demographics', [FacebookOverviewController::class, 'authorsDemographicsPage'])
             ->name('authors.demographics');
-            Route::get('/geographic', [FacebookOverviewController::class, 'geographicPage'])->name('geographic');
 
+        Route::get('/geographic', [FacebookOverviewController::class, 'geographicPage'])
+            ->name('geographic');
     });
 
     // ─────────────────────────────────────────────────────

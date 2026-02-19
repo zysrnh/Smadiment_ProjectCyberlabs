@@ -82,9 +82,6 @@ class FacebookOverviewController extends Controller
     // TRENDING TOPICS
     // ─────────────────────────────────────────────────────
 
-    /**
-     * Display Facebook Trending Topics Page
-     */
     public function trendingTopicsPage(Request $request)
     {
         try {
@@ -128,9 +125,6 @@ class FacebookOverviewController extends Controller
         }
     }
 
-    /**
-     * API: Get Facebook Trending Topics Data
-     */
     public function trendingTopicsData(Request $request)
     {
         try {
@@ -207,12 +201,9 @@ class FacebookOverviewController extends Controller
     }
 
     // ─────────────────────────────────────────────────────
-    // MOST VIEWED POSTS (Facebook)
+    // MOST VIEWED POSTS
     // ─────────────────────────────────────────────────────
 
-    /**
-     * Display Facebook Most Viewed Posts Page
-     */
     public function mostViewedPostsPage(Request $request)
     {
         try {
@@ -256,10 +247,6 @@ class FacebookOverviewController extends Controller
         }
     }
 
-    /**
-     * API: Get Facebook Most Viewed Posts Data
-     * Uses /fb_top_status/ endpoint (correct Facebook-specific endpoint)
-     */
     public function mostViewedPostsData(Request $request)
     {
         try {
@@ -274,7 +261,6 @@ class FacebookOverviewController extends Controller
                 ], 400);
             }
 
-            // ✅ FIX: Use fb_top_status endpoint instead of twitter_most_status
             $result = $this->client->fbTopStatus($projectId, $startDate, $endDate);
 
             Log::info('FB mostViewedPostsData raw result', [
@@ -284,9 +270,8 @@ class FacebookOverviewController extends Controller
             ]);
 
             $posts = [];
-
-            // Handle both flat array and nested data structures
             $items = [];
+
             if (isset($result['data']) && is_array($result['data'])) {
                 $items = $result['data'];
             } elseif (is_array($result) && !isset($result['success'])) {
@@ -296,55 +281,39 @@ class FacebookOverviewController extends Controller
             foreach ($items as $item) {
                 if (!is_array($item)) continue;
 
-                // Extra safety filter: only FB posts
                 $media = strtolower($item['media'] ?? $item['source'] ?? $item['tcode'] ?? '');
                 if ($media && !str_contains($media, 'fb') && !str_contains($media, 'facebook')) {
                     continue;
                 }
 
-                // Try to get author name from multiple possible fields
                 $authorName = $item['contentJson']['from']['name']
                     ?? $item['author_name']
                     ?? $item['author']['name']
                     ?? $item['name']
                     ?? 'Unknown';
 
-                // Clean up name if it contains HTML bold tags (e.g. "<b>Name:</b> ...")
                 if (str_contains($authorName, '<b>')) {
                     preg_match('/<b>(.*?)<\/b>/', $authorName, $matches);
                     $authorName = $matches[1] ?? $authorName;
                     $authorName = trim(str_replace(':', '', $authorName));
                 }
 
-                // Try to get profile picture from multiple sources
                 $profilePic = $item['contentJson']['from']['picture']['data']['url']
                     ?? $item['profile_url']
                     ?? $item['avatar_url']
                     ?? $item['author']['image']
                     ?? '';
 
-                $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
-                $shares   = (int) ($item['num_shares']   ?? $item['shares']   ?? 0);
-                $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
-
-                // Engagement score: likes + comments + shares
+                $likes      = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
+                $shares     = (int) ($item['num_shares']   ?? $item['shares']   ?? 0);
+                $comments   = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
                 $engagement = $likes + $comments + $shares;
+                $viewCount  = (int) ($item['view_cnt'] ?? $item['freq'] ?? $engagement);
+                $postUrl    = $item['url'] ?? $item['link'] ?? null;
+                $subId      = $item['sub_id'] ?? $item['docid'] ?? $item['id'] ?? '';
 
-                // Some FB items have freq (comment count) or interaction fields
-                $viewCount = (int) ($item['view_cnt']
-                    ?? $item['freq']
-                    ?? $engagement);
-
-                // Get post URL
-                $postUrl = $item['url'] ?? $item['link'] ?? null;
-
-                // Get post ID for direct Facebook link
-                $subId = $item['sub_id'] ?? $item['docid'] ?? $item['id'] ?? '';
-
-                // Clean content - strip HTML if present
                 $content = $item['content'] ?? $item['name'] ?? '';
                 if (str_contains($content, '<b>')) {
-                    // Remove name prefix pattern like "<b>Name:</b> content"
                     $content = preg_replace('/<b>.*?<\/b>\s*/', '', $content);
                     $content = trim($content);
                 }
@@ -373,24 +342,17 @@ class FacebookOverviewController extends Controller
                 ];
             }
 
-            // Sort by engagement (likes + comments + shares) descending
             usort($posts, fn($a, $b) => $b['engagement'] - $a['engagement']);
 
-            Log::info('FB mostViewedPostsData processed', [
-                'total_posts' => count($posts),
-            ]);
+            Log::info('FB mostViewedPostsData processed', ['total_posts' => count($posts)]);
 
-            return response()->json([
-                'success' => true,
-                'data'    => $posts,
-            ]);
+            return response()->json(['success' => true, 'data' => $posts]);
 
         } catch (\Exception $e) {
             Log::error('FB mostViewedPostsData error', [
                 'error'      => $e->getMessage(),
                 'project_id' => $request->query('project_id'),
             ]);
-
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
@@ -399,9 +361,6 @@ class FacebookOverviewController extends Controller
     // STATS APIs (Overview)
     // ─────────────────────────────────────────────────────
 
-    /**
-     * API: Get Total Users for Facebook
-     */
     public function totalUsers(Request $request)
     {
         try {
@@ -432,9 +391,6 @@ class FacebookOverviewController extends Controller
         }
     }
 
-    /**
-     * API: Get Total Authors for Facebook
-     */
     public function totalAuthors(Request $request)
     {
         try {
@@ -465,9 +421,6 @@ class FacebookOverviewController extends Controller
         }
     }
 
-    /**
-     * API: Get Volume Total for Facebook
-     */
     public function volumeTotal(Request $request)
     {
         try {
@@ -514,9 +467,6 @@ class FacebookOverviewController extends Controller
         }
     }
 
-    /**
-     * API: Get Sentiment Total for Facebook
-     */
     public function sentimentTotal(Request $request)
     {
         try {
@@ -538,12 +488,12 @@ class FacebookOverviewController extends Controller
                 $negative = (int) $result['neg'];
                 $neutral  = (int) $result['net'];
             } elseif (isset($result['bymedia']['fb'])) {
-                $d = $result['bymedia']['fb'];
+                $d        = $result['bymedia']['fb'];
                 $positive = (int) ($d['pos'] ?? 0);
                 $negative = (int) ($d['neg'] ?? 0);
                 $neutral  = (int) ($d['net'] ?? 0);
             } elseif (isset($result['bymedia']['facebook'])) {
-                $d = $result['bymedia']['facebook'];
+                $d        = $result['bymedia']['facebook'];
                 $positive = (int) ($d['pos'] ?? 0);
                 $negative = (int) ($d['neg'] ?? 0);
                 $neutral  = (int) ($d['net'] ?? 0);
@@ -557,9 +507,6 @@ class FacebookOverviewController extends Controller
         }
     }
 
-    /**
-     * API: Get Most Active Users for Facebook
-     */
     public function mostActiveUsers(Request $request)
     {
         try {
@@ -610,49 +557,59 @@ class FacebookOverviewController extends Controller
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
+
+    // ─────────────────────────────────────────────────────
+    // TOP HASHTAGS
+    // ─────────────────────────────────────────────────────
+
     public function topHashtagsPage(Request $request)
-{
-    try {
-        $projectsData = $this->client->listProjects(0, 100);
-        $projects     = $projectsData['data'] ?? [];
+    {
+        try {
+            $projectsData = $this->client->listProjects(0, 100);
+            $projects     = $projectsData['data'] ?? [];
 
-        $projectId = $request->query('project_id');
+            $projectId = $request->query('project_id');
 
-        if (!$projectId && count($projects) > 0) {
-            $projectId = $projects[0]['id'] ?? null;
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
 
-            if ($projectId) {
-                return redirect()->route('mk.facebook.top-hashtags', [
-                    'project_id' => $projectId,
-                    'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
-                    'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
-                ]);
+                if ($projectId) {
+                    return redirect()->route('mk.facebook.top-hashtags', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
             }
+
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+            return view('mk.facebook.top-hashtags')->with([
+                'projectId' => $projectId,
+                'startDate' => $startDate,
+                'endDate'   => $endDate,
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Facebook Top Hashtags Page Error', ['error' => $e->getMessage()]);
+
+            return view('mk.facebook.top-hashtags')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
         }
-
-        $endDate   = $request->query('end_date', now()->format('Y-m-d'));
-        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
-
-        return view('mk.facebook.top-hashtags')->with([
-            'projectId' => $projectId,
-            'startDate' => $startDate,
-            'endDate'   => $endDate,
-            'projects'  => $projects,
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('Facebook Top Hashtags Page Error', ['error' => $e->getMessage()]);
-
-        return view('mk.facebook.top-hashtags')->with([
-            'projectId' => null,
-            'startDate' => now()->subDays(6)->format('Y-m-d'),
-            'endDate'   => now()->format('Y-m-d'),
-            'projects'  => [],
-            'error'     => $e->getMessage(),
-        ]);
     }
-}
-public function authorsDemographicsPage(Request $request)
+
+    // ─────────────────────────────────────────────────────
+    // AUTHORS DEMOGRAPHICS
+    // ─────────────────────────────────────────────────────
+
+    public function authorsDemographicsPage(Request $request)
     {
         try {
             $projectsData = $this->client->listProjects(0, 100);
@@ -695,9 +652,6 @@ public function authorsDemographicsPage(Request $request)
         }
     }
 
-    /**
-     * API: Get Facebook Authors Age Data
-     */
     public function authorsAgeData(Request $request)
     {
         try {
@@ -719,17 +673,11 @@ public function authorsDemographicsPage(Request $request)
             return response()->json($result);
 
         } catch (\Exception $e) {
-            Log::error('FB authorsAge API error', [
-                'error'      => $e->getMessage(),
-                'project_id' => $request->query('project_id'),
-            ]);
+            Log::error('FB authorsAge API error', ['error' => $e->getMessage(), 'project_id' => $request->query('project_id')]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    /**
-     * API: Get Facebook Authors Gender Data
-     */
     public function authorsGenderData(Request $request)
     {
         try {
@@ -751,17 +699,11 @@ public function authorsDemographicsPage(Request $request)
             return response()->json($result);
 
         } catch (\Exception $e) {
-            Log::error('FB authorsGender API error', [
-                'error'      => $e->getMessage(),
-                'project_id' => $request->query('project_id'),
-            ]);
+            Log::error('FB authorsGender API error', ['error' => $e->getMessage(), 'project_id' => $request->query('project_id')]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    /**
-     * API: Get Facebook Authors Type Data
-     */
     public function authorsTypeData(Request $request)
     {
         try {
@@ -783,14 +725,16 @@ public function authorsDemographicsPage(Request $request)
             return response()->json($result);
 
         } catch (\Exception $e) {
-            Log::error('FB authorsType API error', [
-                'error'      => $e->getMessage(),
-                'project_id' => $request->query('project_id'),
-            ]);
+            Log::error('FB authorsType API error', ['error' => $e->getMessage(), 'project_id' => $request->query('project_id')]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-public function geographicPage(Request $request)
+
+    // ─────────────────────────────────────────────────────
+    // GEOGRAPHIC
+    // ─────────────────────────────────────────────────────
+
+    public function geographicPage(Request $request)
     {
         try {
             $projectsData = $this->client->listProjects(0, 100);
@@ -834,7 +778,8 @@ public function geographicPage(Request $request)
     }
 
     /**
-     * API: Get Facebook Geo User Data (filtered to FB only via 'fb' keyword)
+     * API: Get Facebook Geo User Data
+     * Memanggil geoUserFacebook() di MediaKernelsClient — khusus FB (media='fb')
      */
     public function geoUser(Request $request)
     {
@@ -847,8 +792,7 @@ public function geographicPage(Request $request)
                 return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
             }
 
-            // Gunakan 'fb' — sama seperti pattern FB lainnya di controller ini
-            $result = $this->client->geoUser($projectId, 'fb', $startDate, $endDate);
+            $result = $this->client->geoUserFacebook($projectId, $startDate, $endDate);
 
             Log::info('FB geoUser raw response', [
                 'type'   => gettype($result),
@@ -865,7 +809,8 @@ public function geographicPage(Request $request)
     }
 
     /**
-     * API: Get Facebook Geo Sentiment Data (filtered to FB only)
+     * API: Get Facebook Geo Sentiment Data
+     * Memanggil geoSentimentFacebook() di MediaKernelsClient — khusus FB (media='fb')
      */
     public function geoSentiment(Request $request)
     {
@@ -878,7 +823,7 @@ public function geographicPage(Request $request)
                 return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
             }
 
-            $result = $this->client->geoSentiment($projectId, 'fb', $startDate, $endDate);
+            $result = $this->client->geoSentimentFacebook($projectId, $startDate, $endDate);
 
             Log::info('FB geoSentiment raw response', [
                 'type'   => gettype($result),
@@ -896,6 +841,7 @@ public function geographicPage(Request $request)
 
     /**
      * API: Get Facebook Top Locations Data
+     * Memanggil topLocationsFacebook() di MediaKernelsClient — khusus FB (media='fb')
      */
     public function topLocations(Request $request)
     {
@@ -908,10 +854,9 @@ public function geographicPage(Request $request)
                 return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
             }
 
-            $result    = $this->client->topLocations($projectId, 'fb', $startDate, $endDate);
+            $result    = $this->client->topLocationsFacebook($projectId, $startDate, $endDate);
             $locations = [];
 
-            // Normalize berbagai kemungkinan shape response
             $items = [];
             if (isset($result['data']) && is_array($result['data'])) {
                 $items = $result['data'];
@@ -941,22 +886,39 @@ public function geographicPage(Request $request)
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
+    public function trendingWordCloudPage(Request $request)
+{
+    try {
+        $projectsData = $this->client->listProjects(0, 100);
+        $projects     = $projectsData['data'] ?? [];
 
+        $projectId = $request->query('project_id');
 
+        if (!$projectId && count($projects) > 0) {
+            $projectId = $projects[0]['id'] ?? null;
+            if ($projectId) {
+                return redirect()->route('mk.facebook.trending-word-cloud', [
+                    'project_id' => $projectId,
+                    'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                    'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                ]);
+            }
+        }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        return view('mk.facebook.facebook-trending-word-cloud')->with([
+            'projectId' => $projectId,
+            'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+            'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
+            'projects'  => $projects,
+        ]);
+    } catch (\Exception $e) {
+        return view('mk.facebook.facebook-trending-word-cloud')->with([
+            'projectId' => null,
+            'startDate' => now()->subDays(6)->format('Y-m-d'),
+            'endDate'   => now()->format('Y-m-d'),
+            'projects'  => [],
+            'error'     => $e->getMessage(),
+        ]);
+    }
+}
 }

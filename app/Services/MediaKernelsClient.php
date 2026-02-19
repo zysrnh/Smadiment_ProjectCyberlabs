@@ -1570,6 +1570,140 @@ public function fbTopStatus(
 }
 
 
+// ─────────────────────────────────────────────────────
+// GEOGRAPHIC - FACEBOOK
+// ─────────────────────────────────────────────────────
+
+public function geoUserFacebook(
+    string $projectId,
+    string $startDate,
+    string $endDate,
+    int $startTime = 0,
+    int $endTime = 23
+): array {
+    try {
+        $token = $this->getToken();
+
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/get_geo_twitter_user/',
+            [
+                'project_id' => $projectId,
+                'media'      => 'fb',
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'start_time' => $startTime,
+                'end_time'   => $endTime,
+                'format'     => 'json',
+                'token'      => $token,
+            ]
+        );
+
+        $res->throw();
+
+        $json = $this->parseJson($res);
+
+        if (isset($json['data']) && is_array($json['data'])) {
+            $json['data'] = array_values(array_filter($json['data'], function ($item) {
+                $itemMedia = strtolower($item['media'] ?? $item['source'] ?? $item['tcode'] ?? '');
+                if (!$itemMedia) return true;
+                return str_contains($itemMedia, 'fb');
+            }));
+        }
+
+        return $json;
+    } catch (\Exception $e) {
+        Log::warning('geoUserFacebook API error', ['error' => $e->getMessage()]);
+        return ['data' => []];
+    }
+}
+
+public function geoSentimentFacebook(
+    string $projectId,
+    string $startDate,
+    string $endDate,
+    int $startTime = 0,
+    int $endTime = 23,
+    int $sentiment = 1
+): array {
+    try {
+        $token = $this->getToken();
+
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/get_geo_twitter_user_sentiment/',
+            [
+                'project_id' => $projectId,
+                'media'      => 'fb',
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'start_time' => $startTime,
+                'end_time'   => $endTime,
+                'sentiment'  => $sentiment,
+                'format'     => 'json',
+                'token'      => $token,
+            ]
+        );
+
+        $res->throw();
+
+        $json = $this->parseJson($res);
+
+        if (isset($json['data']) && is_array($json['data'])) {
+            $json['data'] = array_values(array_filter($json['data'], function ($item) {
+                $itemMedia = strtolower($item['media'] ?? $item['source'] ?? $item['tcode'] ?? '');
+                if (!$itemMedia) return true;
+                return str_contains($itemMedia, 'fb');
+            }));
+        }
+
+        return $json;
+    } catch (\Exception $e) {
+        Log::warning('geoSentimentFacebook API error', ['error' => $e->getMessage()]);
+        return ['data' => []];
+    }
+}
+
+public function topLocationsFacebook(
+    string $projectId,
+    string $startDate,
+    string $endDate,
+    int $startTime = 0,
+    int $endTime = 23
+): array {
+    try {
+        $token = $this->getToken();
+
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/top_author_location/',
+            [
+                'project_id' => $projectId,
+                'media'      => 'fb',
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'start_time' => $startTime,
+                'end_time'   => $endTime,
+                'token'      => $token,
+            ]
+        );
+
+        $res->throw();
+
+        $json = $this->parseJson($res);
+
+        $items = isset($json['data']) ? $json['data'] : (is_array($json) ? $json : []);
+        $filtered = array_values(array_filter($items, function ($item) {
+            $itemMedia = strtolower($item['media'] ?? $item['source'] ?? '');
+            if (!$itemMedia) return true;
+            return str_contains($itemMedia, 'fb');
+        }));
+
+        return isset($json['data']) ? array_merge($json, ['data' => $filtered]) : $filtered;
+
+    } catch (\Exception $e) {
+        Log::warning('topLocationsFacebook API error', ['error' => $e->getMessage()]);
+        return ['data' => []];
+    }
+}
+
 
 
 
