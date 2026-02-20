@@ -1437,7 +1437,16 @@ const YTPostsLoader = {
         const sentimentRaw = (post.sentiment_str || 'neutral').toLowerCase();
         const sentimentLbl = post.sentiment_str || 'Neutral';
         const date         = this.formatDate(post.date_created);
-        const ytUrl        = post.url || null;
+        // Build YouTube URL: prefer post.url, fallback to sub_id/id as video ID
+        const rawYtUrl = post.url || '';
+        let ytUrl = null;
+        if (rawYtUrl && rawYtUrl.startsWith('http')) {
+            ytUrl = rawYtUrl;
+        } else if (post.sub_id && post.sub_id.length > 5) {
+            ytUrl = `https://www.youtube.com/watch?v=${post.sub_id}`;
+        } else if (post.id && post.id.length > 5) {
+            ytUrl = `https://www.youtube.com/watch?v=${post.id}`;
+        }
         const hasContent   = rawContent.trim().length > 0;
 
         document.getElementById('modalBody').innerHTML = `
