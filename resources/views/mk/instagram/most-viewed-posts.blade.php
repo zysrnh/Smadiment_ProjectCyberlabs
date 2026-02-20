@@ -130,7 +130,7 @@
     .sort-tab:hover { color: var(--text-primary); background: var(--bg-gray-50); }
 
     .sort-tab.active {
-        background: var(--ig-gradient);
+        background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
         color: white;
         box-shadow: 0 3px 10px rgba(220,39,67,0.22);
     }
