@@ -290,10 +290,7 @@
         font-size: 15px;
         text-align: center;
         padding: 14px 8px;
-        background: var(--ig-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: #dc2743;
     }
 
     /* Author */
@@ -1362,11 +1359,11 @@ const IGPostsLoader = {
     createTableRow(post, rank, globalIdx) {
         const authorName   = post.author?.name || post.name || 'Instagram User';
         const authorHandle = post.author?.scr_name || post.author?.name || 'instagram';
-        const avatarUrl    = post.author?.image || post.avatar_url || '';
         const initials     = this.getInitials(authorName);
-        const avatarHtml   = avatarUrl
-            ? `<img src="${avatarUrl}" alt="${this.escapeHtml(authorName)}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'">`
-            : initials;
+        const avatarUrl    = post.author?.image || post.avatar_url || '';
+        const avatarHtml   = avatarUrl && !avatarUrl.includes('ui-avatars.com')
+            ? `<img src="${avatarUrl}" alt="${this.escapeHtml(authorName)}" onerror="this.parentElement.innerHTML='<span style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;\'>${initials}</span>'">`
+            : `<span style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;">${initials}</span>`;
 
         const rawContent   = post.content || '';
         const content      = this.escapeHtml(rawContent);
@@ -1426,11 +1423,11 @@ const IGPostsLoader = {
 
         const authorName   = post.author?.name || post.name || 'Instagram User';
         const authorHandle = post.author?.scr_name || post.author?.name || 'instagram';
-        const avatarUrl    = post.author?.image || post.avatar_url || '';
         const initials     = this.getInitials(authorName);
-        const avatarHtml   = avatarUrl
-            ? `<img src="${avatarUrl}" alt="${this.escapeHtml(authorName)}" onerror="this.style.display='none';this.parentElement.textContent='${initials}'">`
-            : initials;
+        const avatarUrl    = post.author?.image || post.avatar_url || '';
+        const avatarHtml   = avatarUrl && !avatarUrl.includes('ui-avatars.com')
+            ? `<img src="${avatarUrl}" alt="${this.escapeHtml(authorName)}" onerror="this.parentElement.innerHTML='<span style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#fff;\'>${initials}</span>'">`
+            : `<span style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#fff;">${initials}</span>`;
 
         const rawContent   = post.content || '';
         const content      = this.escapeHtml(rawContent);
