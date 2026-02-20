@@ -1803,7 +1803,53 @@ public function igTopStatus(
         return [];
     }
 }
+public function ytbTopStatus(
+    string $projectId,
+    string $startDate,
+    string $endDate,
+    int $startTime = 0,
+    int $endTime = 23,
+    int $rows = 100,
+    string $sub = 'postbyview'
+): array {
+    try {
+        $token = $this->getToken();
 
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/yt_top_status/',
+            [
+                'project_id' => $projectId,
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'start_time' => $startTime,
+                'end_time'   => $endTime,
+                'rows'       => $rows,
+                'sub'        => $sub,
+                'token'      => $token,
+            ]
+        );
+
+        $res->throw();
+
+        $json = $this->parseJson($res);
+
+        Log::info('ytbTopStatus API response', [
+            'project_id'  => $projectId,
+            'sub'         => $sub,
+            'total_items' => is_array($json) ? count($json) : 0,
+            'first_item'  => is_array($json) && count($json) > 0 ? array_slice($json[0], 0, 5) : null,
+        ]);
+
+        return is_array($json) ? $json : [];
+
+    } catch (\Exception $e) {
+        Log::error('ytbTopStatus API error', [
+            'error'      => $e->getMessage(),
+            'project_id' => $projectId,
+        ]);
+        return [];
+    }
+}
 
 
 

@@ -734,18 +734,55 @@
           </a>
         </div>
       </div>
-      <!-- YouTube -->
-      <div class="nav-item dropdown-trigger" onclick="toggleNav('youtubeSub', this)">
-        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg></span>
+      @php
+        $youtubeRoutes   = ['mk.youtube.overview','mk.youtube.trending-topics','mk.youtube.most-viewed-posts','mk.youtube.authors.demographics','mk.youtube.geographic','mk.youtube.trending-word-cloud','mk.youtube.ai-analysis'];
+        $isYoutubeActive = request()->routeIs($youtubeRoutes);
+      @endphp
+
+      <div class="nav-item dropdown-trigger {{ $isYoutubeActive ? 'has-active-child open' : '' }}"
+           onclick="toggleNav('youtubeSub', this)">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+        </span>
         <span>Youtube</span>
         <span class="dropdown-arrow"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
       </div>
-      <div class="nav-sub-wrapper" id="youtubeSub">
+
+      <div class="nav-sub-wrapper {{ $isYoutubeActive ? 'open' : '' }}" id="youtubeSub">
         <div class="nav-sub">
-          <a href="#" class="nav-item"><span>Coming Soon</span></a>
+
+          <a href="{{ route('mk.youtube.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.youtube.overview') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+            <span>Overview</span>
+          </a>
+
+          <a href="{{ route('mk.youtube.trending-topics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.youtube.trending-topics') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
+            <span>Top Hashtags</span>
+          </a>
+
+          <a href="{{ route('mk.youtube.most-viewed-posts') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.youtube.most-viewed-posts') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
+            <span>Most Viewed Posts</span>
+          </a>
+
+          <a href="{{ route('mk.youtube.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.youtube.trending-word-cloud') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
+            <span>Word Cloud</span>
+          </a>
+
+          <a href="{{ route('mk.youtube.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.youtube.ai-analysis') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/><circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.15"/></svg></span>
+            <span>AI Analysis</span>
+          </a>
+
         </div>
       </div>
-
       <!-- TikTok -->
       <div class="nav-item dropdown-trigger" onclick="toggleNav('tiktokSub', this)">
         <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg></span>

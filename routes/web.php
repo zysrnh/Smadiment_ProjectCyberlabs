@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\TopAnalyticsController;
 use App\Http\Controllers\MK\XOverviewController;
 use App\Http\Controllers\MK\FacebookOverviewController;
 use App\Http\Controllers\MK\InstagramOverviewController;
+use App\Http\Controllers\MK\YoutubeOverviewController;
 use App\Http\Controllers\MK\NewsController;
 use Illuminate\Support\Facades\Route;
 
@@ -290,6 +291,51 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/top-locations', [InstagramOverviewController::class, 'topLocations'])
                 ->name('top-locations');
         });
+
+        // ─────────────────────────────────────────────────────
+        // YouTube APIs
+        // ─────────────────────────────────────────────────────
+        Route::prefix('youtube')->name('youtube.')->group(function () {
+
+            Route::get('/total-users', [YoutubeOverviewController::class, 'totalUsers'])
+                ->name('total-users');
+
+            Route::get('/total-authors', [YoutubeOverviewController::class, 'totalAuthors'])
+                ->name('total-authors');
+
+            Route::get('/volume-total', [YoutubeOverviewController::class, 'volumeTotal'])
+                ->name('volume-total');
+
+            Route::get('/sentiment-total', [YoutubeOverviewController::class, 'sentimentTotal'])
+                ->name('sentiment-total');
+
+            Route::get('/most-active-users', [YoutubeOverviewController::class, 'mostActiveUsers'])
+                ->name('most-active-users');
+
+            Route::get('/trending-topics', [YoutubeOverviewController::class, 'trendingTopicsData'])
+                ->name('trending-topics');
+
+            Route::get('/most-viewed-posts', [YoutubeOverviewController::class, 'mostViewedPostsData'])
+                ->name('most-viewed-posts');
+
+            Route::get('/authors-age', [YoutubeOverviewController::class, 'authorsAgeData'])
+                ->name('authors-age');
+
+            Route::get('/authors-gender', [YoutubeOverviewController::class, 'authorsGenderData'])
+                ->name('authors-gender');
+
+            Route::get('/authors-type', [YoutubeOverviewController::class, 'authorsTypeData'])
+                ->name('authors-type');
+
+            Route::get('/geo-user', [YoutubeOverviewController::class, 'geoUser'])
+                ->name('geo-user');
+
+            Route::get('/geo-sentiment', [YoutubeOverviewController::class, 'geoSentiment'])
+                ->name('geo-sentiment');
+
+            Route::get('/top-locations', [YoutubeOverviewController::class, 'topLocations'])
+                ->name('top-locations');
+        });
     });
 
     // ═══════════════════════════════════════════════════════════
@@ -433,6 +479,33 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             ->name('trending-word-cloud');
 
         Route::get('/ai-analysis', [InstagramOverviewController::class, 'aiAnalysisPage'])
+            ->name('ai-analysis');
+    });
+
+    // ─────────────────────────────────────────────────────
+    // YouTube Routes
+    // ─────────────────────────────────────────────────────
+    Route::prefix('youtube')->name('youtube.')->group(function () {
+
+        Route::get('/overview', [YoutubeOverviewController::class, 'index'])
+            ->name('overview');
+
+        Route::get('/trending-topics', [YoutubeOverviewController::class, 'trendingTopicsPage'])
+            ->name('trending-topics');
+
+        Route::get('/most-viewed-posts', [YoutubeOverviewController::class, 'mostViewedPostsPage'])
+            ->name('most-viewed-posts');
+
+        Route::get('/authors-demographics', [YoutubeOverviewController::class, 'authorsDemographicsPage'])
+            ->name('authors.demographics');
+
+        Route::get('/geographic', [YoutubeOverviewController::class, 'geographicPage'])
+            ->name('geographic');
+
+        Route::get('/trending-word-cloud', [YoutubeOverviewController::class, 'trendingWordCloudPage'])
+            ->name('trending-word-cloud');
+
+        Route::get('/ai-analysis', [YoutubeOverviewController::class, 'aiAnalysisPage'])
             ->name('ai-analysis');
     });
 
