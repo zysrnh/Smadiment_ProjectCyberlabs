@@ -105,14 +105,12 @@ class InstagramOverviewController extends Controller
 
             $result = $this->client->totalAuthors($projectId, 'instagram', $startDate, $endDate);
 
-            // 🔥 FIX: Log bymedia keys untuk debug
             Log::info('IG totalUsers raw', [
                 'all'     => $result['all'] ?? null,
                 'bymedia' => $result['bymedia'] ?? [],
             ]);
 
             $total = 0;
-            // 🔥 FIX: Coba semua kemungkinan key bymedia Instagram
             if (isset($result['bymedia']['ig'])) {
                 $total = (int) $result['bymedia']['ig'];
             } elseif (isset($result['bymedia']['instagram'])) {
@@ -144,14 +142,12 @@ class InstagramOverviewController extends Controller
 
             $result = $this->client->totalAuthors($projectId, 'instagram', $startDate, $endDate);
 
-            // 🔥 FIX: Log bymedia keys untuk debug
             Log::info('IG totalAuthors raw', [
                 'all'     => $result['all'] ?? null,
                 'bymedia' => $result['bymedia'] ?? [],
             ]);
 
             $total = 0;
-            // 🔥 FIX: Coba semua kemungkinan key bymedia Instagram
             if (isset($result['bymedia']['ig'])) {
                 $total = (int) $result['bymedia']['ig'];
             } elseif (isset($result['bymedia']['instagram'])) {
@@ -201,8 +197,6 @@ class InstagramOverviewController extends Controller
 
             $chartData = [];
             try {
-                // 🔥 FIX: Parse format trendsTotal yang benar
-                // Format API: {"2026-02-13 00:00:00": {"instagram": "29", "twit": "3156", ...}, ...}
                 $trendsResult = $this->client->trendsTotal($projectId, $startDate, $endDate);
 
                 Log::info('IG trendsTotal raw', ['result' => $trendsResult]);
@@ -210,9 +204,8 @@ class InstagramOverviewController extends Controller
                 foreach ($trendsResult as $datetime => $mediaData) {
                     if (!is_array($mediaData)) continue;
 
-                    $dateKey = substr($datetime, 0, 10); // "2026-02-13"
+                    $dateKey = substr($datetime, 0, 10);
 
-                    // Ambil nilai Instagram — coba semua kemungkinan key
                     $count = (int) (
                         $mediaData['instagram'] ??
                         $mediaData['ig']        ??
@@ -223,10 +216,7 @@ class InstagramOverviewController extends Controller
                     $chartData[] = ['date' => $dateKey, 'count' => $count];
                 }
 
-                // Sort ascending by date
                 usort($chartData, fn($a, $b) => strcmp($a['date'], $b['date']));
-
-                Log::info('IG trendsTotal parsed chartData', ['count' => count($chartData), 'data' => $chartData]);
 
             } catch (\Exception $e) {
                 Log::warning('Instagram: Failed to load trends data', ['error' => $e->getMessage()]);
@@ -251,7 +241,7 @@ class InstagramOverviewController extends Controller
                 return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
             }
 
-            $result   = $this->client->getSentiment($projectId, 'instagram', $startDate, $endDate);
+            $result = $this->client->getSentiment($projectId, 'instagram', $startDate, $endDate);
 
             Log::info('IG sentimentTotal raw', ['result' => $result]);
 
@@ -259,27 +249,20 @@ class InstagramOverviewController extends Controller
             $negative = 0;
             $neutral  = 0;
 
-            // 🔥 FIX: Format dari log adalah result['data']['pos/neg/net']
             if (isset($result['data']['pos'], $result['data']['neg'], $result['data']['net'])) {
                 $positive = (int) $result['data']['pos'];
                 $negative = (int) $result['data']['neg'];
                 $neutral  = (int) $result['data']['net'];
-            }
-            // Fallback: flat result['pos/neg/net']
-            elseif (isset($result['pos'], $result['neg'], $result['net'])) {
+            } elseif (isset($result['pos'], $result['neg'], $result['net'])) {
                 $positive = (int) $result['pos'];
                 $negative = (int) $result['neg'];
                 $neutral  = (int) $result['net'];
-            }
-            // Fallback: bymedia['ig']
-            elseif (isset($result['bymedia']['ig'])) {
+            } elseif (isset($result['bymedia']['ig'])) {
                 $d        = $result['bymedia']['ig'];
                 $positive = (int) ($d['pos'] ?? 0);
                 $negative = (int) ($d['neg'] ?? 0);
                 $neutral  = (int) ($d['net'] ?? 0);
-            }
-            // Fallback: bymedia['instagram']
-            elseif (isset($result['bymedia']['instagram'])) {
+            } elseif (isset($result['bymedia']['instagram'])) {
                 $d        = $result['bymedia']['instagram'];
                 $positive = (int) ($d['pos'] ?? 0);
                 $negative = (int) ($d['neg'] ?? 0);
@@ -400,7 +383,7 @@ class InstagramOverviewController extends Controller
             $projectId = $request->query('project_id');
             $startDate = $request->query('start_date');
             $endDate   = $request->query('end_date');
-            $sub       = $request->query('sub', 'postbylike'); // postbylike | postbycomment | postbyview
+            $sub       = $request->query('sub', 'postbylike');
 
             if (!$projectId || !$startDate || !$endDate) {
                 return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
@@ -411,7 +394,7 @@ class InstagramOverviewController extends Controller
             Log::info('IG mostViewedPostsData raw result', [
                 'type'   => gettype($result),
                 'count'  => is_array($result) ? count($result) : 0,
-                'sample' => is_array($result) ? array_slice($result, 0, 2, true) : $result,
+                'sample' => is_array($result) ? array_slice($result, 0, 1, true) : $result,
             ]);
 
             $posts = [];
@@ -420,39 +403,81 @@ class InstagramOverviewController extends Controller
             foreach ($items as $item) {
                 if (!is_array($item)) continue;
 
-                $authorName = $item['name']        ?? $item['author_name'] ?? $item['author']['name'] ?? 'Unknown';
-                $profilePic = $item['profile_url'] ?? $item['avatar_url']  ?? $item['author']['image'] ?? '';
-                $likes      = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
-                $comments   = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
-                $views      = (int) ($item['view_cnt']     ?? $item['freq']     ?? 0);
-                $engagement = $likes + $comments;
-                $postUrl    = $item['url'] ?? $item['link'] ?? null;
-                $content    = $item['content'] ?? $item['caption'] ?? '';
+                // ── Author fields ──────────────────────────────────────
+                // API response: author_id = "beritasatu", author_scr_name = "BeritaSatu"
+                // name field contains "Username: post content..." format
+                $rawName    = $item['name'] ?? '';
+                $authorId   = $item['author_id']      ?? $item['author_scr_name'] ?? '';
+                $authorName = $item['author_scr_name'] ?? $item['author_id']      ?? '';
+
+                // Fallback: kalau author_scr_name kosong, parse dari field 'name'
+                // Format name: "BeritaSatu: Menteri Pendidikan..."
+                if (!$authorName && $rawName) {
+                    $colonPos   = strpos($rawName, ':');
+                    $authorName = $colonPos !== false
+                        ? trim(substr($rawName, 0, $colonPos))
+                        : '';
+                }
+
+                // Final fallback
+                if (!$authorName) $authorName = 'Instagram User';
+
+                // ── Image: API returns empty string, tidak ada foto profil ──
+                // Gunakan UI Avatars sebagai generated avatar berdasarkan nama
+                $profilePic = $item['profile_url'] ?? $item['avatar_url'] ?? $item['image'] ?? '';
+                if (!$profilePic && $authorName && $authorName !== 'Instagram User') {
+                    $initials   = urlencode($this->getInitials($authorName));
+                    $profilePic = "https://ui-avatars.com/api/?name={$initials}&background=e6683c&color=fff&size=80&bold=true&format=png";
+                }
+
+                // ── Stats ──────────────────────────────────────────────
+                $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
+                $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
+                $views    = (int) ($item['view_cnt']     ?? $item['freq']     ?? $item['views'] ?? 0);
+                $postUrl  = $item['url']     ?? $item['link']    ?? null;
+                $content  = $item['content'] ?? $item['caption'] ?? '';
+
+                // ── Handle name field: "Username: content..." → ambil content saja ──
+                if (!$content && $rawName) {
+                    $colonPos = strpos($rawName, ':');
+                    $content  = $colonPos !== false
+                        ? trim(substr($rawName, $colonPos + 1))
+                        : $rawName;
+                }
 
                 $posts[] = [
-                    'id'             => $item['id']           ?? '',
-                    'sub_id'         => $item['sub_id']       ?? $item['docid'] ?? $item['id'] ?? '',
+                    'id'             => $item['id']      ?? '',
+                    'sub_id'         => $item['sub_id']  ?? $item['docid'] ?? $item['id'] ?? '',
                     'name'           => $authorName,
                     'content'        => $content,
                     'view_cnt'       => $views,
                     'likes'          => $likes,
                     'comments'       => $comments,
-                    'engagement'     => $engagement,
+                    'engagement'     => $likes + $comments,
                     'sentiment_str'  => $item['sentiment_str']  ?? 'Neutral',
                     'sentiment_prec' => $item['sentiment_prec'] ?? 0,
                     'date_created'   => $item['date_created']   ?? '',
                     'url'            => $postUrl,
                     'avatar_url'     => $profilePic,
-                    'tcode'          => $item['tcode']          ?? 'ig-post',
+                    'tcode'          => $item['tcode'] ?? 'ig-post',
                     'author'         => [
                         'name'     => $authorName,
-                        'scr_name' => $item['author_scr_name'] ?? $authorName,
+                        'scr_name' => $item['author_scr_name'] ?? $authorId ?? $authorName,
                         'image'    => $profilePic,
                     ],
                 ];
             }
 
-            usort($posts, fn($a, $b) => $b['engagement'] - $a['engagement']);
+            // Sort by sub type
+            if ($sub === 'postbylike') {
+                usort($posts, fn($a, $b) => $b['likes'] - $a['likes']);
+            } elseif ($sub === 'postbycomment') {
+                usort($posts, fn($a, $b) => $b['comments'] - $a['comments']);
+            } elseif ($sub === 'postbyview') {
+                usort($posts, fn($a, $b) => $b['view_cnt'] - $a['view_cnt']);
+            } else {
+                usort($posts, fn($a, $b) => $b['engagement'] - $a['engagement']);
+            }
 
             Log::info('IG mostViewedPostsData processed', ['total_posts' => count($posts)]);
 
@@ -462,6 +487,19 @@ class InstagramOverviewController extends Controller
             Log::error('IG mostViewedPostsData error', ['error' => $e->getMessage(), 'project_id' => $request->query('project_id')]);
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Generate 1-2 letter initials from a name.
+     */
+    private function getInitials(string $name): string
+    {
+        $name  = trim($name);
+        $parts = preg_split('/[\s_\-]+/', $name);
+        if (count($parts) === 1) {
+            return strtoupper(substr($parts[0], 0, 2));
+        }
+        return strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
     }
 
     // ─────────────────────────────────────────────────────
@@ -507,75 +545,85 @@ class InstagramOverviewController extends Controller
     }
 
     public function trendingTopicsData(Request $request)
-    {
-        try {
-            $projectId = $request->query('project_id');
-            $startDate = $request->query('start_date');
-            $endDate   = $request->query('end_date');
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
 
-            if (!$projectId || !$startDate || !$endDate) {
-                return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
-            }
-
-            $result = $this->client->topHashtags($projectId, 'ig', $startDate, $endDate);
-
-            Log::info('IG trendingTopicsData raw result', [
-                'type'   => gettype($result),
-                'keys'   => is_array($result) ? array_keys($result) : [],
-                'count'  => is_array($result) ? count($result) : 0,
-            ]);
-
-            $hashtags      = [];
-            $totalMentions = 0;
-            $rawItems      = [];
-
-            if (isset($result['data']['hashtags']) && is_array($result['data']['hashtags'])) {
-                $rawItems = $result['data']['hashtags'];
-            } elseif (isset($result['data']) && is_array($result['data'])) {
-                $rawItems = $result['data'];
-            } elseif (is_array($result)) {
-                $firstVal = reset($result);
-                if (is_array($firstVal) && isset($firstVal['name'])) {
-                    $rawItems = $result;
-                } elseif (isset($result['ig']) && is_array($result['ig'])) {
-                    $rawItems = $result['ig'];
-                } else {
-                    $rawItems = $result;
-                }
-            }
-
-            foreach ($rawItems as $item) {
-                if (!is_array($item)) continue;
-
-                $name  = $item['name'] ?? $item['hashtag'] ?? '';
-                $size  = (int) ($item['size'] ?? $item['count'] ?? $item['total'] ?? 0);
-                $media = strtolower($item['media'] ?? $item['source'] ?? $item['platform'] ?? '');
-
-                if ($media && !in_array($media, ['ig', 'instagram', 'ig_post', ''])) continue;
-
-                if ($name && $size > 0) {
-                    $hashtags[]     = ['name' => ltrim($name, '#'), 'size' => $size, 'hashtag' => ltrim($name, '#')];
-                    $totalMentions += $size;
-                }
-            }
-
-            usort($hashtags, fn($a, $b) => $b['size'] - $a['size']);
-
-            return response()->json([
-                'success' => true,
-                'data'    => [
-                    'hashtags'       => $hashtags,
-                    'total_hashtags' => count($hashtags),
-                    'total_mentions' => $totalMentions,
-                    'top_hashtag'    => $hashtags[0] ?? null,
-                ],
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('IG trendingTopicsData error', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        if (!$projectId || !$startDate || !$endDate) {
+            return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
         }
+
+        // ── Ambil posts Instagram (pakai igTopStatus yang sudah terbukti jalan) ──
+        // Ambil banyak post supaya hashtag representatif
+        $posts = $this->client->igTopStatus($projectId, $startDate, $endDate, 0, 23, 500, 'postbylike');
+
+        Log::info('IG trendingTopicsData via igTopStatus', [
+            'type'  => gettype($posts),
+            'count' => is_array($posts) ? count($posts) : 0,
+        ]);
+
+        // ── Parse hashtag dari field content setiap post ──
+        $hashtagCount = [];
+
+        if (is_array($posts)) {
+            foreach ($posts as $post) {
+                if (!is_array($post)) continue;
+
+                // Cari konten di berbagai kemungkinan key
+                $content = $post['content'] ?? $post['caption'] ?? $post['text'] ?? $post['name'] ?? '';
+
+                if (empty($content)) continue;
+
+                // Extract semua hashtag dengan regex
+                preg_match_all('/#([a-zA-Z0-9_\x{00C0}-\x{024F}\x{0400}-\x{04FF}]+)/u', $content, $matches);
+
+                foreach ($matches[1] as $tag) {
+                    $tag = strtolower(trim($tag));
+                    if (strlen($tag) < 2) continue; // skip hashtag terlalu pendek
+                    $hashtagCount[$tag] = ($hashtagCount[$tag] ?? 0) + 1;
+                }
+            }
+        }
+
+        // ── Sort descending by count ──
+        arsort($hashtagCount);
+
+        // ── Format output ──
+        $hashtags      = [];
+        $totalMentions = 0;
+
+        foreach ($hashtagCount as $name => $size) {
+            $hashtags[]     = [
+                'name'    => $name,
+                'hashtag' => $name,
+                'size'    => $size,
+            ];
+            $totalMentions += $size;
+        }
+
+        Log::info('IG trendingTopicsData parsed from content', [
+            'total_hashtags' => count($hashtags),
+            'total_mentions' => $totalMentions,
+            'top5'           => array_slice($hashtags, 0, 5),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'hashtags'       => $hashtags,
+                'total_hashtags' => count($hashtags),
+                'total_mentions' => $totalMentions,
+                'top_hashtag'    => $hashtags[0] ?? null,
+            ],
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('IG trendingTopicsData error', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
     }
+}
 
     // ─────────────────────────────────────────────────────
     // AUTHORS DEMOGRAPHICS
