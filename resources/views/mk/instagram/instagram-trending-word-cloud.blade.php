@@ -192,7 +192,7 @@
     }
 
     .date-preset:hover { background: var(--bg-white); color: #dc2743; }
-    .date-preset.active { background: var(--ig-gradient); color: white; }
+    .date-preset.active { background: #dc2743; background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: white; }
 
     .date-picker-content {
         flex: 1;
@@ -335,7 +335,8 @@
     .cancel-btn:hover { background: var(--border-gray); }
 
     .apply-date-btn {
-        background: var(--ig-gradient);
+        background: #dc2743;
+        background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
         color: white;
         box-shadow: 0 4px 12px rgba(220, 39, 67, 0.25);
     }
@@ -347,7 +348,8 @@
 
     .apply-btn {
         padding: 12px 28px;
-        background: var(--ig-gradient);
+        background: #dc2743;
+        background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
         color: white;
         border: none;
         border-radius: 12px;
@@ -359,12 +361,14 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        box-shadow: 0 4px 12px rgba(220, 39, 67, 0.2);
+        box-shadow: 0 4px 12px rgba(220, 39, 67, 0.3);
+        white-space: nowrap;
     }
 
     .apply-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(220, 39, 67, 0.35);
+        box-shadow: 0 6px 20px rgba(220, 39, 67, 0.45);
+        opacity: 0.92;
     }
 
     .apply-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; }
@@ -395,10 +399,11 @@
     }
 
     .sentiment-btn.active {
-        background: var(--ig-gradient);
+        background: #dc2743;
+        background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
         border-color: transparent;
         color: white;
-        box-shadow: 0 4px 12px rgba(220, 39, 67, 0.25);
+        box-shadow: 0 4px 12px rgba(220, 39, 67, 0.3);
     }
 
     .sentiment-dot {
