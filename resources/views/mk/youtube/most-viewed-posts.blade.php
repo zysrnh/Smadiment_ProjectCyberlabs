@@ -78,7 +78,7 @@
 
     .apply-btn {
         padding: 12px 28px;
-        background: var(--yt-gradient);
+        background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%);
         color: white;
         border: none;
         border-radius: 12px;
@@ -132,7 +132,7 @@
     .sort-tab:hover { color: var(--text-primary); background: var(--bg-gray-50); }
 
     .sort-tab.active {
-        background: var(--yt-gradient);
+        background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%);
         color: white;
         box-shadow: 0 3px 10px rgba(255, 0, 0, 0.25);
     }
@@ -186,7 +186,7 @@
         position: absolute;
         top: 0; left: 0; right: 0;
         height: 4px;
-        background: var(--yt-gradient);
+        background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%);
         opacity: 0;
         transition: opacity 0.3s;
     }
@@ -304,7 +304,7 @@
         border-radius: 50%;
         border: 2px solid var(--border-gray);
         flex-shrink: 0;
-        background: var(--yt-gradient);
+        background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%);
         display: flex; align-items: center; justify-content: center;
         color: white; font-weight: 700; font-size: 14px; text-transform: uppercase;
         overflow: hidden;
@@ -506,7 +506,7 @@
     }
 
     .page-btn:hover:not(:disabled) { border-color: var(--yt-red); color: var(--yt-red); background: rgba(255,0,0,0.05); }
-    .page-btn.active { background: var(--yt-gradient); color: white; border-color: transparent; }
+    .page-btn.active { background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%); color: white; border-color: transparent; }
     .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* Skeleton */
@@ -571,7 +571,7 @@
         border-bottom: 2px solid var(--bg-gray-50);
         display: flex; justify-content: space-between; align-items: center;
         flex-shrink: 0;
-        background: var(--yt-gradient);
+        background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%);
     }
 
     .modal-header h3 { font-size: 18px; font-weight: 700; color: #fff; margin: 0; }
@@ -600,7 +600,7 @@
     .modal-avatar {
         width: 64px; height: 64px; border-radius: 50%;
         border: 3px solid var(--border-gray);
-        background: var(--yt-gradient);
+        background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%);
         display: flex; align-items: center; justify-content: center;
         color: white; font-weight: 700; font-size: 24px; flex-shrink: 0;
         overflow: hidden;
@@ -643,7 +643,7 @@
     }
 
     .modal-stat-value { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
-    .modal-stat-value.engagement { background: var(--yt-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .modal-stat-value.engagement { background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .modal-stat-value.likes    { color: #ef4444; }
     .modal-stat-value.comments { color: #f59e0b; }
     .modal-stat-value.views    { color: #8b5cf6; }
@@ -660,7 +660,7 @@
         text-decoration: none;
     }
 
-    .modal-btn.primary { background: var(--yt-gradient); color: white; border: none; }
+    .modal-btn.primary { background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%); color: white; border: none; }
     .modal-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,0,0,0.3); }
     .modal-btn.secondary { background: var(--bg-white); color: var(--text-primary); border: 1px solid var(--border-gray); }
     .modal-btn.secondary:hover { background: var(--bg-gray-50); border-color: var(--yt-red); color: var(--yt-red); }
@@ -713,7 +713,7 @@
     }
 
     .date-preset:hover { background: var(--bg-white); color: var(--yt-red); }
-    .date-preset.active { background: var(--yt-gradient); color: white; }
+    .date-preset.active { background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%); color: white; }
 
     .date-picker-content { flex: 1; padding: 24px; display: flex; flex-direction: column; overflow: hidden; }
     .date-picker-header { display: flex; align-items: flex-start; gap: 20px; margin-bottom: 20px; }
@@ -725,7 +725,7 @@
         cursor: pointer; transition: all 0.2s; flex-shrink: 0;
     }
 
-    .nav-btn:hover { background: var(--yt-gradient); border-color: transparent; color: white; }
+    .nav-btn:hover { background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%); border-color: transparent; color: white; }
     .nav-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; }
 
     .calendars-wrapper { display: flex; gap: 24px; flex: 1; min-height: 0; }
@@ -746,9 +746,9 @@
     .calendar-day.other-month { color: #cbd5e1; cursor: default; }
     .calendar-day.disabled { color: #e2e8f0; cursor: not-allowed; }
     .calendar-day.today { border: 2px solid var(--yt-red); }
-    .calendar-day.selected { background: var(--yt-gradient); color: white; }
+    .calendar-day.selected { background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%); color: white; }
     .calendar-day.in-range { background: rgba(255,0,0,0.1); color: var(--yt-red); }
-    .calendar-day.range-start, .calendar-day.range-end { background: var(--yt-gradient); color: white; }
+    .calendar-day.range-start, .calendar-day.range-end { background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%); color: white; }
 
     .date-picker-display {
         padding: 16px 20px; background: var(--bg-gray-50);
@@ -769,7 +769,7 @@
     .cancel-btn { background: var(--bg-gray-100); color: var(--text-primary); }
     .cancel-btn:hover { background: var(--border-gray); }
 
-    .apply-date-btn { background: var(--yt-gradient); color: white; box-shadow: 0 4px 12px rgba(255,0,0,0.2); }
+    .apply-date-btn { background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%); color: white; box-shadow: 0 4px 12px rgba(255,0,0,0.2); }
     .apply-date-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,0,0,0.3); }
 
     /* Responsive */
