@@ -12,6 +12,7 @@ use App\Http\Controllers\MK\XOverviewController;
 use App\Http\Controllers\MK\FacebookOverviewController;
 use App\Http\Controllers\MK\InstagramOverviewController;
 use App\Http\Controllers\MK\YoutubeOverviewController;
+use App\Http\Controllers\MK\TiktokOverviewController;
 use App\Http\Controllers\MK\NewsController;
 use Illuminate\Support\Facades\Route;
 
@@ -336,6 +337,27 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/top-locations', [YoutubeOverviewController::class, 'topLocations'])
                 ->name('top-locations');
         });
+
+        // ─────────────────────────────────────────────────────
+        // TikTok APIs
+        // ─────────────────────────────────────────────────────
+        Route::prefix('tiktok')->name('tiktok.')->group(function () {
+
+            Route::get('/volume-total', [TiktokOverviewController::class, 'volumeTotal'])
+                ->name('volume-total');
+
+            Route::get('/sentiment-total', [TiktokOverviewController::class, 'sentimentTotal'])
+                ->name('sentiment-total');
+
+            Route::get('/most-active-users', [TiktokOverviewController::class, 'mostActiveUsers'])
+                ->name('most-active-users');
+
+            Route::get('/trending-topics', [TiktokOverviewController::class, 'trendingTopicsData'])
+                ->name('trending-topics');
+
+            Route::get('/most-viewed-posts', [TiktokOverviewController::class, 'mostViewedPostsData'])
+                ->name('most-viewed-posts');
+        });
     });
 
     // ═══════════════════════════════════════════════════════════
@@ -506,6 +528,27 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             ->name('trending-word-cloud');
 
         Route::get('/ai-analysis', [YoutubeOverviewController::class, 'aiAnalysisPage'])
+            ->name('ai-analysis');
+    });
+
+    // ─────────────────────────────────────────────────────
+    // TikTok Routes
+    // ─────────────────────────────────────────────────────
+    Route::prefix('tiktok')->name('tiktok.')->group(function () {
+
+        Route::get('/overview', [TiktokOverviewController::class, 'index'])
+            ->name('overview');
+
+        Route::get('/trending-topics', [TiktokOverviewController::class, 'trendingTopicsPage'])
+            ->name('trending-topics');
+
+        Route::get('/most-viewed-posts', [TiktokOverviewController::class, 'mostViewedPostsPage'])
+            ->name('most-viewed-posts');
+
+        Route::get('/trending-word-cloud', [TiktokOverviewController::class, 'trendingWordCloudPage'])
+            ->name('trending-word-cloud');
+
+        Route::get('/ai-analysis', [TiktokOverviewController::class, 'aiAnalysisPage'])
             ->name('ai-analysis');
     });
 

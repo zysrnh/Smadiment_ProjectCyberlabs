@@ -23,7 +23,7 @@ class InstagramOverviewController extends Controller
     {
         $allProjects = [];
         $offset      = 0;
-        $limit       = 100;
+        $limit       = 1000;
 
         do {
             $projectsData = $this->client->listProjects($offset, $limit);
@@ -389,7 +389,7 @@ class InstagramOverviewController extends Controller
                 return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
             }
 
-            $result = $this->client->igTopStatus($projectId, $startDate, $endDate, 0, 23, 100, $sub);
+            $result = $this->client->igTopStatus($projectId, $startDate, $endDate, 0, 23, 1000, $sub);
 
             Log::info('IG mostViewedPostsData raw result', [
                 'type'   => gettype($result),

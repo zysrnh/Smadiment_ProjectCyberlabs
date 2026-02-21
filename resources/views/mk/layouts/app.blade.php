@@ -784,14 +784,56 @@
         </div>
       </div>
       <!-- TikTok -->
-      <div class="nav-item dropdown-trigger" onclick="toggleNav('tiktokSub', this)">
-        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg></span>
+      @php
+        $tiktokRoutes   = ['mk.tiktok.overview','mk.tiktok.trending-topics','mk.tiktok.most-viewed-posts','mk.tiktok.trending-word-cloud','mk.tiktok.ai-analysis'];
+        $isTiktokActive = request()->routeIs($tiktokRoutes);
+      @endphp
+
+      <div class="nav-item dropdown-trigger {{ $isTiktokActive ? 'has-active-child open' : '' }}"
+           onclick="toggleNav('tiktokSub', this)">
+        <span class="nav-icon">
+          {{-- TikTok filled icon --}}
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.16 8.16 0 0 0 4.77 1.52V6.74a4.85 4.85 0 0 1-1-.05z"/>
+          </svg>
+        </span>
         <span>TikTok</span>
         <span class="dropdown-arrow"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
       </div>
-      <div class="nav-sub-wrapper" id="tiktokSub">
+
+      <div class="nav-sub-wrapper {{ $isTiktokActive ? 'open' : '' }}" id="tiktokSub">
         <div class="nav-sub">
-          <a href="#" class="nav-item"><span>Coming Soon</span></a>
+
+          <a href="{{ route('mk.tiktok.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.tiktok.overview') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+            <span>Overview</span>
+          </a>
+
+          <a href="{{ route('mk.tiktok.trending-topics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.tiktok.trending-topics') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
+            <span>Top Hashtags</span>
+          </a>
+
+          <a href="{{ route('mk.tiktok.most-viewed-posts') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.tiktok.most-viewed-posts') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
+            <span>Most Viewed Posts</span>
+          </a>
+
+          <a href="{{ route('mk.tiktok.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.tiktok.trending-word-cloud') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
+            <span>Word Cloud</span>
+          </a>
+
+          <a href="{{ route('mk.tiktok.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.tiktok.ai-analysis') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/><circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.15"/></svg></span>
+            <span>AI Analysis</span>
+          </a>
+
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 @extends('mk.layouts.app')
 
-@section('title', 'YouTube Trending Word Cloud - SMADIMENT')
+@section('title', 'TikTok Trending Word Cloud - SMADIMENT')
 
 @section('styles')
 <style>
@@ -18,12 +18,6 @@
         --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-
-        /* YouTube red palette */
-        --yt-red: #FF0000;
-        --yt-dark-red: #CC0000;
-        --yt-gradient: linear-gradient(45deg, #FF0000, #CC0000, #ff4444, #990000);
-        --yt-solid: #e00000;
     }
 
     body { background: var(--bg-gray-50); }
@@ -40,22 +34,6 @@
         font-weight: 700;
         color: var(--text-primary);
         margin: 0 0 8px 0;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .page-header h1 .yt-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 12px;
-        background: #e00000 !important;
-        background: linear-gradient(45deg, #FF0000, #CC0000, #ff4444, #990000) !important;
-        color: white !important;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
-        opacity: 1 !important;
     }
     .page-header p {
         font-size: 14px;
@@ -93,6 +71,7 @@
         flex: 1;
     }
 
+    /* Date Picker Trigger */
     .date-picker-trigger {
         display: flex;
         align-items: center;
@@ -112,21 +91,26 @@
     }
 
     .date-picker-trigger:hover {
-        border-color: var(--yt-red);
+        border-color: var(--primary-green);
         background: var(--bg-white);
-        box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.1);
+        box-shadow: 0 0 0 3px rgba(3, 128, 71, 0.1);
     }
 
     .date-picker-trigger svg:first-child {
-        width: 18px; height: 18px;
+        width: 18px;
+        height: 18px;
         color: var(--text-secondary);
         flex-shrink: 0;
     }
 
-    .date-picker-trigger span { flex: 1; text-align: left; }
+    .date-picker-trigger span {
+        flex: 1;
+        text-align: left;
+    }
 
     .date-picker-trigger svg:last-child {
-        width: 16px; height: 16px;
+        width: 16px;
+        height: 16px;
         margin-left: auto;
         color: var(--text-secondary);
     }
@@ -134,7 +118,10 @@
     /* Date Picker Modal */
     .date-picker-modal {
         position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         z-index: 10000;
         display: none;
         align-items: center;
@@ -143,11 +130,16 @@
         backdrop-filter: blur(8px);
     }
 
-    .date-picker-modal.show { display: flex; }
+    .date-picker-modal.show {
+        display: flex;
+    }
 
     .date-picker-overlay-inner {
         position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         background: rgba(0, 0, 0, 0.5);
         cursor: pointer;
     }
@@ -166,10 +158,17 @@
     }
 
     @keyframes slideUpModal {
-        from { opacity: 0; transform: translateY(20px) scale(0.95); }
-        to   { opacity: 1; transform: translateY(0) scale(1); }
+        from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
     }
 
+    /* Sidebar with Presets */
     .date-picker-sidebar {
         width: 180px;
         background: var(--bg-gray-50);
@@ -196,9 +195,17 @@
         transition: all 0.2s;
     }
 
-    .date-preset:hover { background: var(--bg-white); color: var(--yt-red); }
-    .date-preset.active { background: #e00000 !important; background: linear-gradient(45deg, #FF0000, #CC0000, #ff4444, #990000) !important; color: white !important; opacity: 1 !important; }
+    .date-preset:hover {
+        background: var(--bg-white);
+        color: var(--primary-green);
+    }
 
+    .date-preset.active {
+        background: var(--primary-green);
+        color: white;
+    }
+
+    /* Calendar Content */
     .date-picker-content {
         flex: 1;
         padding: 24px;
@@ -215,7 +222,8 @@
     }
 
     .nav-btn {
-        width: 36px; height: 36px;
+        width: 36px;
+        height: 36px;
         border-radius: 8px;
         background: var(--bg-gray-50);
         border: 1px solid var(--border-gray);
@@ -228,13 +236,17 @@
     }
 
     .nav-btn:hover {
-        background: var(--yt-red);
-        border-color: var(--yt-red);
+        background: var(--primary-green);
+        border-color: var(--primary-green);
         color: white;
     }
 
-    .nav-btn svg { width: 20px; height: 20px; }
+    .nav-btn svg {
+        width: 20px;
+        height: 20px;
+    }
 
+    /* Calendars Wrapper */
     .calendars-wrapper {
         display: flex;
         gap: 24px;
@@ -294,15 +306,41 @@
         padding: 0;
     }
 
-    .calendar-day:hover:not(.disabled):not(.other-month) { background: var(--bg-gray-100); }
-    .calendar-day.other-month { color: #cbd5e1; cursor: default; }
-    .calendar-day.disabled    { color: #e2e8f0; cursor: not-allowed; }
-    .calendar-day.today       { border: 2px solid var(--yt-red); }
-    .calendar-day.selected    { background: var(--yt-red); color: white; }
-    .calendar-day.in-range    { background: rgba(255, 0, 0, 0.1); color: var(--yt-red); }
-    .calendar-day.range-start,
-    .calendar-day.range-end   { background: var(--yt-red); color: white; }
+    .calendar-day:hover:not(.disabled):not(.other-month) {
+        background: var(--bg-gray-100);
+    }
 
+    .calendar-day.other-month {
+        color: #cbd5e1;
+        cursor: default;
+    }
+
+    .calendar-day.disabled {
+        color: #e2e8f0;
+        cursor: not-allowed;
+    }
+
+    .calendar-day.today {
+        border: 2px solid var(--primary-green);
+    }
+
+    .calendar-day.selected {
+        background: var(--primary-green);
+        color: white;
+    }
+
+    .calendar-day.in-range {
+        background: rgba(3, 128, 71, 0.1);
+        color: var(--primary-green);
+    }
+
+    .calendar-day.range-start,
+    .calendar-day.range-end {
+        background: var(--primary-green);
+        color: white;
+    }
+
+    /* Date Display */
     .date-picker-display {
         padding: 16px 20px;
         background: var(--bg-gray-50);
@@ -318,6 +356,7 @@
         color: var(--text-primary);
     }
 
+    /* Footer Buttons */
     .date-picker-footer {
         display: flex;
         gap: 12px;
@@ -336,29 +375,31 @@
         border: none;
     }
 
-    .cancel-btn { background: var(--bg-gray-100); color: var(--text-primary); }
-    .cancel-btn:hover { background: var(--border-gray); }
+    .cancel-btn {
+        background: var(--bg-gray-100);
+        color: var(--text-primary);
+    }
+
+    .cancel-btn:hover {
+        background: var(--border-gray);
+    }
 
     .apply-date-btn {
-        background: #e00000 !important;
-        background: linear-gradient(45deg, #FF0000, #CC0000, #ff4444, #990000) !important;
-        color: white !important;
-        border: none !important;
-        box-shadow: 0 4px 12px rgba(255, 0, 0, 0.25);
-        opacity: 1 !important;
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(3, 128, 71, 0.2);
     }
 
     .apply-date-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(255, 0, 0, 0.35);
+        box-shadow: 0 6px 20px rgba(3, 128, 71, 0.3);
     }
 
     .apply-btn {
         padding: 12px 28px;
-        background: #e00000 !important;
-        background: linear-gradient(45deg, #FF0000, #CC0000, #ff4444, #990000) !important;
-        color: white !important;
-        border: none !important;
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+        color: white;
+        border: none;
         border-radius: 12px;
         font-family: 'Poppins', sans-serif;
         font-size: 14px;
@@ -368,20 +409,27 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
+        box-shadow: 0 4px 12px rgba(3, 128, 71, 0.2);
         white-space: nowrap;
-        opacity: 1 !important;
     }
 
     .apply-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(255, 0, 0, 0.45);
-        opacity: 0.92;
+        box-shadow: 0 6px 20px rgba(3, 128, 71, 0.3);
     }
 
-    .apply-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; }
+    .apply-btn svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        fill: none;
+    }
 
-    .sentiment-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+    .sentiment-filters {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
 
     .sentiment-btn {
         padding: 10px 20px;
@@ -400,31 +448,29 @@
     }
 
     .sentiment-btn:hover {
-        border-color: var(--yt-red);
+        border-color: var(--primary-green);
         color: var(--text-primary);
         transform: translateY(-2px);
         box-shadow: var(--shadow-md);
     }
 
     .sentiment-btn.active {
-        background: #e00000 !important;
-        background: linear-gradient(45deg, #FF0000, #CC0000, #ff4444, #990000) !important;
-        border-color: transparent !important;
-        color: white !important;
-        box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
-        opacity: 1 !important;
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+        border-color: var(--primary-green);
+        color: white;
+        box-shadow: 0 4px 12px rgba(3, 128, 71, 0.2);
     }
 
     .sentiment-dot {
-        width: 10px; height: 10px;
+        width: 10px;
+        height: 10px;
         border-radius: 50%;
         display: inline-block;
         flex-shrink: 0;
     }
 
-    /* Word Cloud Container */
     .wordcloud-container {
-        background: linear-gradient(135deg, #ffffff 0%, #fff5f5 50%, #f8fafc 100%);
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
         border-radius: 20px;
         border: 1px solid var(--border-gray);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
@@ -442,20 +488,8 @@
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
         background:
-            radial-gradient(circle at 20% 30%, rgba(255, 0, 0, 0.04) 0%, transparent 50%),
-            radial-gradient(circle at 80% 70%, rgba(204, 0, 0, 0.04) 0%, transparent 50%),
-            radial-gradient(circle at 50% 50%, rgba(255, 68, 68, 0.02) 0%, transparent 70%);
-        pointer-events: none;
-    }
-
-    .wordcloud-container::after {
-        content: '';
-        position: absolute;
-        top: 20px; right: 20px;
-        width: 60px; height: 60px;
-        border-radius: 12px;
-        background: var(--yt-gradient);
-        opacity: 0.08;
+            radial-gradient(circle at 20% 30%, rgba(3, 128, 71, 0.03) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(47, 198, 246, 0.03) 0%, transparent 50%);
         pointer-events: none;
     }
 
@@ -474,8 +508,10 @@
     }
 
     .wordcloud-hint svg {
-        width: 13px; height: 13px;
-        stroke: currentColor; fill: none;
+        width: 13px;
+        height: 13px;
+        stroke: currentColor;
+        fill: none;
         flex-shrink: 0;
     }
 
@@ -497,9 +533,10 @@
     }
 
     .loading-spinner {
-        width: 48px; height: 48px;
+        width: 48px;
+        height: 48px;
         border: 4px solid var(--bg-gray-100);
-        border-top-color: var(--yt-red);
+        border-top-color: var(--primary-green);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
     }
@@ -518,10 +555,12 @@
     }
 
     .empty-state svg {
-        width: 64px; height: 64px;
+        width: 64px;
+        height: 64px;
         color: var(--text-secondary);
         margin-bottom: 16px;
-        stroke: currentColor; fill: none;
+        stroke: currentColor;
+        fill: none;
     }
 
     .empty-state h3 {
@@ -564,14 +603,39 @@
             padding: 12px 16px;
         }
 
-        .date-preset { white-space: nowrap; }
-        .date-picker-content { padding: 20px 16px; }
-        .calendars-wrapper { flex-direction: column; gap: 16px; }
-        .date-picker-header { flex-wrap: wrap; }
-        .date-picker-trigger { max-width: 100%; }
-        .calendar-day { font-size: 12px; }
-        .weekday { font-size: 10px; }
-        .cancel-btn, .apply-date-btn { flex: 1; }
+        .date-preset {
+            white-space: nowrap;
+        }
+
+        .date-picker-content {
+            padding: 20px 16px;
+        }
+
+        .calendars-wrapper {
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .date-picker-header {
+            flex-wrap: wrap;
+        }
+
+        .date-picker-trigger {
+            max-width: 100%;
+        }
+
+        .calendar-day {
+            font-size: 12px;
+        }
+
+        .weekday {
+            font-size: 10px;
+        }
+
+        .cancel-btn,
+        .apply-date-btn {
+            flex: 1;
+        }
     }
 </style>
 @endsection
@@ -580,22 +644,13 @@
 <div class="dashboard-container">
 
     <div class="page-header">
-        <h1>
-            YouTube Trending Word Cloud
-            <span class="yt-badge">
-                {{-- YouTube icon --}}
-                <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;">
-                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                </svg>
-                YouTube
-            </span>
-        </h1>
-        <p>Visual representation of trending hashtags &amp; topics on YouTube</p>
+        <h1>TikTok Trending Word Cloud</h1>
+        <p>Visual representation of trending hashtags &amp; topics on TikTok</p>
     </div>
 
     <!-- Filter Card -->
     <div class="filter-card">
-        <form id="filterForm" method="GET" action="{{ route('mk.youtube.trending-word-cloud') }}">
+        <form id="filterForm" method="GET" action="{{ route('mk.tiktok.trending-word-cloud') }}">
             <input type="hidden" name="project_id" value="{{ $projectId }}">
             <input type="hidden" name="start_date" id="hiddenStartDate" value="{{ $startDate }}">
             <input type="hidden" name="end_date"   id="hiddenEndDate"   value="{{ $endDate }}">
@@ -638,6 +693,7 @@
     <div class="date-picker-modal" id="datePickerModal">
         <div class="date-picker-overlay-inner"></div>
         <div class="date-picker-container">
+            <!-- Sidebar with Presets -->
             <div class="date-picker-sidebar">
                 <button type="button" class="date-preset" data-preset="today">Today</button>
                 <button type="button" class="date-preset" data-preset="yesterday">Yesterday</button>
@@ -648,7 +704,9 @@
                 <button type="button" class="date-preset active" data-preset="custom">Custom Range</button>
             </div>
 
+            <!-- Calendar Content -->
             <div class="date-picker-content">
+                <!-- Navigation Header -->
                 <div class="date-picker-header">
                     <button type="button" class="nav-btn" id="prevMonth">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -668,10 +726,12 @@
                     </button>
                 </div>
 
+                <!-- Selected Date Display -->
                 <div class="date-picker-display">
                     <span id="selectedRangeText">{{ $startDate }} to {{ $endDate }}</span>
                 </div>
 
+                <!-- Footer Buttons -->
                 <div class="date-picker-footer">
                     <button type="button" class="cancel-btn">Cancel</button>
                     <button type="button" class="apply-date-btn" id="applyDatePicker">Apply</button>
@@ -694,7 +754,7 @@
             </div>
             <div class="sentiment-filters">
                 <button type="button" class="sentiment-btn active" data-sentiment="all">
-                    <span class="sentiment-dot" style="background: var(--yt-red);"></span>
+                    <span class="sentiment-dot" style="background: linear-gradient(135deg, #038047, #2FC6F6);"></span>
                     All Topics
                 </button>
                 <button type="button" class="sentiment-btn" data-sentiment="positive">
@@ -718,7 +778,7 @@
 
         <div id="loadingState" class="loading-state">
             <div class="loading-spinner"></div>
-            <div class="loading-text" id="loadingText">Loading YouTube trending topics data...</div>
+            <div class="loading-text" id="loadingText">Loading TikTok trending topics data...</div>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 8px;" id="loadingProgress"></div>
         </div>
 
@@ -730,7 +790,7 @@
                 <polyline points="15 3 21 3 21 9"/>
                 <line x1="10" y1="14" x2="21" y2="3"/>
             </svg>
-            Click a word to search on YouTube
+            Click a word to search on TikTok
         </div>
 
         <div id="emptyState" class="empty-state" style="display: none;">
@@ -769,13 +829,17 @@
         const startDateInput = document.getElementById('hiddenStartDate');
         const endDateInput   = document.getElementById('hiddenEndDate');
 
-        selectedStartDate = startDateInput && startDateInput.value
-            ? new Date(startDateInput.value)
-            : (() => { const d = new Date(); d.setDate(d.getDate() - 6); return d; })();
+        if (startDateInput && startDateInput.value) {
+            selectedStartDate = new Date(startDateInput.value);
+        } else {
+            selectedEndDate   = new Date();
+            selectedStartDate = new Date();
+            selectedStartDate.setDate(selectedStartDate.getDate() - 6);
+        }
 
-        selectedEndDate = endDateInput && endDateInput.value
-            ? new Date(endDateInput.value)
-            : new Date();
+        if (endDateInput && endDateInput.value) {
+            selectedEndDate = new Date(endDateInput.value);
+        }
 
         currentMonth1 = new Date(selectedStartDate);
         currentMonth2 = new Date(selectedStartDate);
@@ -822,10 +886,9 @@
             });
         }
 
-        const applyBtn = document.getElementById('applyDatePicker');
-        if (applyBtn) applyBtn.addEventListener('click', applyDateSelection);
-
+        const applyBtn  = document.getElementById('applyDatePicker');
         const cancelBtn = document.querySelector('.cancel-btn');
+        if (applyBtn)  applyBtn.addEventListener('click', applyDateSelection);
         if (cancelBtn) cancelBtn.addEventListener('click', closeDatePicker);
     }
 
@@ -938,7 +1001,6 @@
         for (let day = 1; day <= lastDay.getDate(); day++) {
             const date = new Date(year, monthNum, day);
             date.setHours(0, 0, 0, 0);
-
             const dateStr = formatDate(date);
             let classes   = 'calendar-day';
 
@@ -983,8 +1045,9 @@
             selectedEndDate   = date;
             selectingStart    = false;
         } else {
-            selectedEndDate = date >= selectedStartDate ? date : selectedStartDate;
-            if (date < selectedStartDate) {
+            if (date >= selectedStartDate) {
+                selectedEndDate = date;
+            } else {
                 selectedEndDate   = selectedStartDate;
                 selectedStartDate = date;
             }
@@ -1020,7 +1083,7 @@
 })();
 
 // ========================================
-// YOUTUBE WORD CLOUD GENERATOR
+// TIKTOK WORD CLOUD GENERATOR
 // ========================================
 const WordCloudGenerator = {
     startDate: '{{ $startDate ?? "" }}',
@@ -1028,7 +1091,7 @@ const WordCloudGenerator = {
     projectId: '{{ $projectId ?? "" }}',
     trendingData:     null,
     currentSentiment: 'all',
-    chart: null,
+    chart:            null,
 
     NEGATIVE_KEYWORDS: [
         'bad','worst','hate','hated','sad','fail','failed','failure',
@@ -1084,7 +1147,6 @@ const WordCloudGenerator = {
     ],
 
     getSentimentFromTopic(topicName) {
-        if (!topicName || typeof topicName !== 'string') return 'neutral';
         const lower  = topicName.toLowerCase().replace(/^#/, '').trim();
         const tokens = lower.split(/[^a-z0-9]+/).filter(t => t.length > 0);
 
@@ -1100,25 +1162,22 @@ const WordCloudGenerator = {
         return 'neutral';
     },
 
-    // YouTube color palette (red tones)
     getSentimentColor() {
         const colorSchemes = {
             positive: ['#10b981','#059669','#34d399','#6ee7b7','#047857'],
             negative: ['#ef4444','#dc2626','#b91c1c','#f87171','#c53030'],
             neutral:  ['#f59e0b','#d97706','#fbbf24','#b45309','#fcd34d'],
-            all: [
-                '#FF0000','#CC0000','#FF4444','#990000','#FF6666',
-                '#E60000','#FF2222','#B30000','#FF8888','#CC3333',
-                '#FF1A1A','#991A1A','#FF5555','#802020','#FF3333',
-            ],
+            all:      ['#038047','#04995a','#2FC6F6','#06b6d4','#8b5cf6',
+                       '#a78bfa','#f59e0b','#fbbf24','#10b981','#34d399',
+                       '#ef4444','#f87171'],
         };
         return colorSchemes[this.currentSentiment] || colorSchemes.all;
     },
 
-    openYouTubeSearch(topicName) {
+    openTikTokSearch(topicName) {
         const query = encodeURIComponent(topicName.replace(/^#/, ''));
         window.open(
-            `https://www.youtube.com/results?search_query=${query}`,
+            `https://www.tiktok.com/tag/${query}`,
             '_blank',
             'noopener,noreferrer'
         );
@@ -1133,7 +1192,7 @@ const WordCloudGenerator = {
         try {
             await this.loadData();
         } catch (error) {
-            console.error('Failed to load YouTube trending data:', error);
+            console.error('Failed to load TikTok trending data:', error);
             this.showError('Failed to load data');
         }
     },
@@ -1160,15 +1219,12 @@ const WordCloudGenerator = {
             return;
         }
 
-        // Re-use the same trendingTopicsData endpoint that already exists in the controller
-        const url = `/mk/api/youtube/trending-topics?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`;
-
+        const url = `/mk/api/tiktok/trending-topics?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`;
         loadingText.textContent = 'Fetching data from server...';
 
         const startTime = Date.now();
         const response  = await fetch(url);
-
-        loadingText.textContent = 'Processing YouTube trending hashtags...';
+        loadingText.textContent = 'Processing TikTok trending hashtags...';
 
         const result = await response.json();
         if (!result.success) {
@@ -1186,11 +1242,8 @@ const WordCloudGenerator = {
             .map(h => {
                 const name = (h.hashtag || h.name || '').trim();
                 return {
-                    name:         name,
-                    total_volume: h.size    || 0,
-                    appearances:  1,
-                    avg_rank:     0,
-                    url:          '',
+                    name,
+                    total_volume: h.size || 0,
                     sentiment:    this.getSentimentFromTopic(name),
                 };
             });
@@ -1284,7 +1337,7 @@ const WordCloudGenerator = {
                     };
                     const color  = sentimentColors[sentiment];
                     const label  = sentiment.charAt(0).toUpperCase() + sentiment.slice(1);
-                    const volume = (topic.total_volume || 0).toLocaleString();
+                    const volume = (topic.total_volume || 0).toLocaleString('id-ID');
                     return `
                         <div style="font-family:Poppins,sans-serif;min-width:200px;">
                             <div style="font-weight:700;font-size:15px;color:#1a202c;margin-bottom:8px;text-align:center;">
@@ -1300,7 +1353,7 @@ const WordCloudGenerator = {
                                 </span>
                             </div>
                             <div style="font-size:11px;color:#94a3b8;text-align:center;">
-                                Click to search on YouTube
+                                Click to search on TikTok
                             </div>
                         </div>
                     `;
@@ -1343,7 +1396,7 @@ const WordCloudGenerator = {
 
             this.chart.on('click', (params) => {
                 if (params && params.data && params.data.originalTopic) {
-                    this.openYouTubeSearch(params.data.originalTopic.name);
+                    this.openTikTokSearch(params.data.originalTopic.name);
                 }
             });
         }, 10);

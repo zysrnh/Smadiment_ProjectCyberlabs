@@ -24,7 +24,7 @@ class FacebookOverviewController extends Controller
     {
         $allProjects = [];
         $offset      = 0;
-        $limit       = 100;
+        $limit       = 1000;
 
         do {
             $projectsData = $this->client->listProjects($offset, $limit);
