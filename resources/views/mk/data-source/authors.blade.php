@@ -2,167 +2,519 @@
 
 @section('title', 'Total Authors - Data Source')
 
-@section('content')
-<div class="top-bar">
-  <div class="page-title">
-    <h2>Total Authors</h2>
-    <p class="page-subtitle">Analyze author distribution and activity across media platforms</p>
-  </div>
-  <div class="top-actions">
-    <a href="{{ route('mk.dashboard') }}" class="action-btn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-      </svg>
-      Dashboard
-    </a>
-  </div>
-</div>
+@section('styles')
+<style>
+  :root {
+    --primary-green: #038047;
+    --primary-green-dark: #026738;
+    --text-primary: #1a202c;
+    --text-secondary: #64748b;
+    --bg-white: #ffffff;
+    --bg-gray-50: #f8fafc;
+    --bg-gray-100: #f1f5f9;
+    --border-gray: #e2e8f0;
+    --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+  }
 
-<div class="content-wrapper">
+  .dashboard-container {
+    padding: 24px;
+    background: var(--bg-gray-50);
+    min-height: 100vh;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .page-header { margin-bottom: 32px; }
+  .page-header h1 { font-size: 28px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px 0; }
+  .page-header p  { font-size: 14px; color: var(--text-secondary); margin: 0; }
+
+  /* Filter Card */
+  .filter-card {
+    background: var(--bg-white);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-gray);
+  }
+  .filter-content { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .filter-label {
+    font-size: 14px; font-weight: 600; color: var(--text-primary);
+    white-space: nowrap; display: flex; align-items: center; gap: 6px;
+  }
+  .filter-label svg { width: 18px; height: 18px; stroke: var(--text-secondary); fill: none; }
+  .date-range-wrapper { display: flex; align-items: center; gap: 12px; flex: 1; }
+
+  .filter-select {
+    padding: 12px 16px;
+    background: var(--bg-gray-50);
+    border: 1px solid var(--border-gray);
+    border-radius: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 160px;
+    outline: none;
+  }
+  .filter-select:hover, .filter-select:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(3,128,71,0.1);
+    background: var(--bg-white);
+  }
+
+  .date-picker-trigger {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 20px;
+    background: var(--bg-gray-50);
+    border: 1px solid var(--border-gray);
+    border-radius: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px; font-weight: 500; color: var(--text-primary);
+    cursor: pointer; transition: all 0.2s; max-width: 340px; width: 100%;
+  }
+  .date-picker-trigger:hover {
+    border-color: var(--primary-green);
+    background: var(--bg-white);
+    box-shadow: 0 0 0 3px rgba(3,128,71,0.1);
+  }
+  .date-picker-trigger svg { width: 18px; height: 18px; stroke: var(--text-secondary); fill: none; flex-shrink: 0; }
+  .date-picker-trigger span { flex: 1; text-align: left; }
+
+  .apply-btn {
+    padding: 12px 28px;
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+    color: white; border: none; border-radius: 12px;
+    font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.3s;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 12px rgba(3,128,71,0.2);
+  }
+  .apply-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(3,128,71,0.3); }
+  .apply-btn svg { width: 18px; height: 18px; stroke: white; fill: none; }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px; margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--bg-white); border-radius: 16px; padding: 24px;
+    box-shadow: var(--shadow-sm); border: 1px solid var(--border-gray);
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary-green); }
+  .stat-card:hover::before { opacity: 1; }
+
+  .stat-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+  .stat-icon-wrapper {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: linear-gradient(135deg, rgba(3,128,71,0.1) 0%, rgba(3,128,71,0.05) 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stat-icon {
+    width: 28px; height: 28px; stroke: var(--primary-green); fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .stat-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .stat-value-wrapper { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; }
+  .stat-value { font-size: 36px; font-weight: 700; color: var(--text-primary); line-height: 1; }
+  .stat-sub { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+  .stat-progress { height: 6px; background: var(--bg-gray-100); border-radius: 10px; overflow: hidden; }
+  .stat-progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary-green) 0%, var(--primary-green-dark) 100%); border-radius: 10px; transition: width 1s ease-out; }
+
+  /* Chart Card */
+  .chart-card {
+    background: var(--bg-white); border-radius: 16px; padding: 28px;
+    box-shadow: var(--shadow-sm); border: 1px solid var(--border-gray);
+    margin-bottom: 24px; transition: all 0.3s;
+  }
+  .chart-card:hover { box-shadow: var(--shadow-md); }
+  .chart-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 24px; padding-bottom: 20px;
+    border-bottom: 2px solid var(--bg-gray-50);
+    flex-wrap: wrap; gap: 16px;
+  }
+  .chart-title-group h3 { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0 0 6px 0; }
+  .chart-subtitle { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+  .chart-controls { display: flex; gap: 6px; background: var(--bg-gray-50); padding: 4px; border-radius: 10px; }
+  .chart-type-btn {
+    padding: 8px 14px; border: none; background: transparent;
+    color: var(--text-secondary); font-family: 'Poppins', sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px;
+    transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+  }
+  .chart-type-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .chart-type-btn:hover { background: var(--bg-white); color: var(--text-primary); }
+  .chart-type-btn.active { background: var(--primary-green); color: white; box-shadow: 0 2px 8px rgba(3,128,71,0.25); }
+  .chart-container { position: relative; height: 340px; }
+
+  /* Table Section */
+  .table-section {
+    background: var(--bg-white); border-radius: 16px; padding: 28px;
+    box-shadow: var(--shadow-sm); border: 1px solid var(--border-gray); margin-bottom: 24px;
+  }
+  .table-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; padding-bottom: 20px;
+    border-bottom: 2px solid var(--bg-gray-50);
+    flex-wrap: wrap; gap: 16px;
+  }
+  .table-title h3 { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0 0 6px 0; }
+  .table-subtitle { font-size: 13px; color: var(--text-secondary); }
+
+  .export-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px; background: var(--bg-white);
+    border: 1px solid var(--border-gray); border-radius: 10px;
+    font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600;
+    color: var(--text-primary); cursor: pointer; transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+  }
+  .export-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .export-btn:hover { border-color: var(--primary-green); color: var(--primary-green); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+  .data-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  .data-table th {
+    padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700;
+    color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border-gray); background: var(--bg-gray-50);
+  }
+  .data-table td {
+    padding: 16px; font-size: 14px; color: var(--text-primary);
+    border-bottom: 1px solid var(--bg-gray-100); vertical-align: middle;
+  }
+  .data-table tbody tr { transition: background 0.2s; }
+  .data-table tbody tr:hover { background: var(--bg-gray-50); }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+  .data-table tbody tr.total-row { background: #f0fdf4; }
+  .data-table tbody tr.total-row td { font-weight: 600; }
+
+  .media-cell { display: flex; align-items: center; gap: 10px; }
+  .media-icon-sm {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .media-icon-sm svg { width: 16px; height: 16px; }
+
+  .badge {
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; font-family: 'Poppins', sans-serif;
+  }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+
+  /* Alert */
+  .alert {
+    padding: 16px 20px; border-radius: 12px; margin-bottom: 24px;
+    font-size: 14px; font-weight: 500;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .alert svg { width: 20px; height: 20px; flex-shrink: 0; stroke: currentColor; fill: none; }
+  .alert-warning { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center; padding: 80px 20px;
+    background: var(--bg-white); border-radius: 16px;
+    box-shadow: var(--shadow-sm); border: 1px solid var(--border-gray);
+  }
+  .empty-state-icon {
+    width: 72px; height: 72px; margin: 0 auto 20px;
+    background: var(--bg-gray-100); border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .empty-state-icon svg { width: 36px; height: 36px; stroke: var(--text-secondary); fill: none; stroke-width: 1.5; }
+  .empty-state h3 { font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+  .empty-state p { color: var(--text-secondary); font-size: 14px; }
+
+  /* Date Picker Modal (same as users page) */
+  .date-picker-modal {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 10000; display: none; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
+  }
+  .date-picker-modal.show { display: flex; }
+  .date-picker-overlay { position: absolute; top:0; left:0; right:0; bottom:0; cursor: pointer; }
+  .date-picker-container {
+    position: relative; background: #fff; border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.3); display: flex;
+    max-width: 900px; width: 90%; z-index: 10001;
+    animation: slideUp 0.3s ease-out;
+  }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .date-picker-sidebar {
+    width: 180px; background: var(--bg-gray-50);
+    border-right: 1px solid var(--border-gray); padding: 16px 12px;
+    border-radius: 16px 0 0 16px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;
+  }
+  .date-preset {
+    padding: 10px 16px; background: transparent; border: none; border-radius: 8px;
+    font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 500;
+    color: var(--text-primary); text-align: left; cursor: pointer; transition: all 0.2s;
+  }
+  .date-preset:hover { background: var(--bg-white); color: var(--primary-green); }
+  .date-preset.active { background: var(--primary-green); color: white; }
+  .date-picker-content { flex: 1; padding: 24px; display: flex; flex-direction: column; }
+  .date-picker-header { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+  .nav-btn {
+    width: 36px; height: 36px; border-radius: 8px; background: var(--bg-gray-50);
+    border: 1px solid var(--border-gray); display: flex; align-items: center;
+    justify-content: center; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+  }
+  .nav-btn:hover { background: var(--primary-green); border-color: var(--primary-green); color: white; }
+  .nav-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .calendars-wrapper { display: flex; gap: 24px; flex: 1; }
+  .calendar { flex: 1; }
+  .calendar-month { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; text-align: center; }
+  .calendar-weekdays { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-bottom: 8px; }
+  .weekday { text-align: center; font-size: 11px; font-weight: 700; color: var(--text-secondary); padding: 8px 0; }
+  .calendar-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+  .calendar-day {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 500; border-radius: 8px; cursor: pointer;
+    transition: all 0.2s; color: var(--text-primary); background: transparent; border: none; padding: 0;
+  }
+  .calendar-day:hover:not(.disabled):not(.other-month) { background: var(--bg-gray-100); }
+  .calendar-day.other-month { color: #cbd5e1; cursor: default; }
+  .calendar-day.disabled { color: #e2e8f0; cursor: not-allowed; }
+  .calendar-day.today { border: 2px solid var(--primary-green); }
+  .calendar-day.selected, .calendar-day.range-start, .calendar-day.range-end { background: var(--primary-green); color: white; }
+  .calendar-day.in-range { background: rgba(3,128,71,0.1); color: var(--primary-green); }
+  .date-picker-display {
+    padding: 14px 20px; background: var(--bg-gray-50); border-radius: 12px;
+    text-align: center; margin-bottom: 20px; border: 1px solid var(--border-gray);
+  }
+  .date-picker-display span { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .date-picker-footer { display: flex; gap: 12px; justify-content: flex-end; }
+  .cancel-btn, .apply-date-btn {
+    padding: 10px 24px; border-radius: 10px; font-family: 'Poppins', sans-serif;
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none;
+  }
+  .cancel-btn { background: var(--bg-gray-100); color: var(--text-primary); }
+  .cancel-btn:hover { background: var(--border-gray); }
+  .apply-date-btn {
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+    color: white; box-shadow: 0 4px 12px rgba(3,128,71,0.2);
+  }
+  .apply-date-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(3,128,71,0.3); }
+
+  @media (max-width: 1024px) {
+    .dashboard-container { padding: 16px; }
+    .filter-content { flex-direction: column; align-items: stretch; }
+    .apply-btn { justify-content: center; }
+  }
+  @media (max-width: 768px) {
+    .date-picker-container { flex-direction: column; width: 95%; max-height: 90vh; overflow-y: auto; }
+    .date-picker-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border-gray); border-radius: 16px 16px 0 0; flex-direction: row; overflow-x: auto; padding: 12px 16px; }
+    .date-preset { white-space: nowrap; }
+    .calendars-wrapper { flex-direction: column; }
+  }
+</style>
+@endsection
+
+@section('content')
+<div class="dashboard-container">
+
+  <div class="page-header">
+    <h1>Total Authors</h1>
+    <p>Analyze author distribution and activity across media platforms</p>
+  </div>
+
   @if(isset($error))
   <div class="alert alert-warning">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-      <line x1="12" y1="9" x2="12" y2="13"/>
-      <line x1="12" y1="17" x2="12.01" y2="17"/>
+      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
     </svg>
-    <div>
-      <strong>Warning:</strong> {{ $error }}
-    </div>
+    <span><strong>Warning:</strong> {{ $error }}</span>
   </div>
   @endif
 
-  <!-- Date Range Filter -->
+  <!-- Filter Card -->
   <div class="filter-card">
-    <form method="GET" action="{{ route('mk.data-source.authors') }}" class="filter-form">
+    <form id="filterForm" method="GET" action="{{ route('mk.data-source.authors') }}">
       <input type="hidden" name="project_id" value="{{ $projectId ?? '' }}">
-      
-      <div class="filter-group">
-        <label>Media Type</label>
-        <select name="media" class="form-input">
-          <option value="all" {{ ($media ?? 'all') === 'all' ? 'selected' : '' }}>All Media</option>
-          <option value="fb" {{ ($media ?? '') === 'fb' ? 'selected' : '' }}>Facebook</option>
-          <option value="twit" {{ ($media ?? '') === 'twit' ? 'selected' : '' }}>Twitter</option>
-          <option value="instagram" {{ ($media ?? '') === 'instagram' ? 'selected' : '' }}>Instagram</option>
-          <option value="youtube" {{ ($media ?? '') === 'youtube' ? 'selected' : '' }}>YouTube</option>
+      <input type="hidden" name="start_date" id="hiddenStartDate" value="{{ $startDate ?? '' }}">
+      <input type="hidden" name="end_date"   id="hiddenEndDate"   value="{{ $endDate ?? '' }}">
+
+      <div class="filter-content">
+        <div class="filter-label">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Filter
+        </div>
+
+        <select name="media" class="filter-select">
+          <option value="all"       {{ ($media ?? 'all') === 'all'       ? 'selected' : '' }}>All Media</option>
+          <option value="fb"        {{ ($media ?? '') === 'fb'           ? 'selected' : '' }}>Facebook</option>
+          <option value="twit"      {{ ($media ?? '') === 'twit'         ? 'selected' : '' }}>Twitter</option>
+          <option value="instagram" {{ ($media ?? '') === 'instagram'    ? 'selected' : '' }}>Instagram</option>
+          <option value="youtube"   {{ ($media ?? '') === 'youtube'      ? 'selected' : '' }}>YouTube</option>
         </select>
-      </div>
 
-      <div class="filter-group">
-        <label>Start Date</label>
-        <input type="date" name="start_date" value="{{ $startDate ?? '' }}" class="form-input">
-      </div>
+        <div class="date-range-wrapper">
+          <button type="button" class="date-picker-trigger" id="datePickerTrigger">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span id="dateRangeDisplay">{{ $startDate ?? '' }} – {{ $endDate ?? '' }}</span>
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+        </div>
 
-      <div class="filter-group">
-        <label>End Date</label>
-        <input type="date" name="end_date" value="{{ $endDate ?? '' }}" class="form-input">
+        <button type="submit" class="apply-btn">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          Apply Filter
+        </button>
       </div>
-
-      <button type="submit" class="action-btn primary">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="m21 21-4.35-4.35"/>
-        </svg>
-        Apply Filter
-      </button>
     </form>
   </div>
 
+  <!-- Date Picker Modal -->
+  <div class="date-picker-modal" id="datePickerModal">
+    <div class="date-picker-overlay"></div>
+    <div class="date-picker-container">
+      <div class="date-picker-sidebar">
+        <button type="button" class="date-preset" data-preset="today">Today</button>
+        <button type="button" class="date-preset" data-preset="yesterday">Yesterday</button>
+        <button type="button" class="date-preset" data-preset="last7days">Last 7 Days</button>
+        <button type="button" class="date-preset" data-preset="last30days">Last 30 Days</button>
+        <button type="button" class="date-preset" data-preset="thismonth">This Month</button>
+        <button type="button" class="date-preset" data-preset="lastmonth">Last Month</button>
+        <button type="button" class="date-preset active" data-preset="custom">Custom Range</button>
+      </div>
+      <div class="date-picker-content">
+        <div class="date-picker-header">
+          <button type="button" class="nav-btn" id="prevMonth"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div class="calendars-wrapper">
+            <div class="calendar" id="calendar1"></div>
+            <div class="calendar" id="calendar2"></div>
+          </div>
+          <button type="button" class="nav-btn" id="nextMonth"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+        </div>
+        <div class="date-picker-display">
+          <span id="selectedRangeText">{{ $startDate ?? '' }} – {{ $endDate ?? '' }}</span>
+        </div>
+        <div class="date-picker-footer">
+          <button type="button" class="cancel-btn">Cancel</button>
+          <button type="button" class="apply-date-btn" id="applyDatePicker">Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   @if(isset($totalAll) && $totalAll > 0)
-  <!-- Stats Summary -->
+
+  <!-- Stats Grid -->
   <div class="stats-grid">
-    <div class="stat-card highlight">
-      <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
+
+    <!-- Total Authors -->
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon-wrapper">
+          <svg class="stat-icon" viewBox="0 0 24 24">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
       </div>
-      <div class="stat-content">
-        <h3>Total Authors</h3>
-        <p class="stat-value">{{ number_format($totalAll) }}</p>
-        <span class="stat-label">{{ $startDate }} to {{ $endDate }}</span>
+      <div class="stat-label">Total Authors</div>
+      <div class="stat-value-wrapper">
+        <div class="stat-value">{{ number_format($totalAll) }}</div>
       </div>
+      <div class="stat-progress"><div class="stat-progress-bar" style="width:80%;"></div></div>
     </div>
 
     @if(!empty($byMedia))
       @foreach($byMedia as $mediaName => $count)
+      @php
+        $mediaColors = [
+          'fb'        => '#1877F2',
+          'twit'      => '#1DA1F2',
+          'instagram' => '#E4405F',
+          'youtube'   => '#FF0000',
+        ];
+        $color = $mediaColors[$mediaName] ?? '#6B7280';
+        $pct   = $totalAll > 0 ? round(($count / $totalAll) * 100) : 0;
+      @endphp
       <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, 
-          {{ $mediaName === 'fb' ? '#1877F2, #166FE5' : '' }}
-          {{ $mediaName === 'twit' ? '#1DA1F2, #0C85D0' : '' }}
-          {{ $mediaName === 'instagram' ? '#E4405F, #C13584' : '' }}
-          {{ $mediaName === 'youtube' ? '#FF0000, #CC0000' : '' }}
-          {{ !in_array($mediaName, ['fb', 'twit', 'instagram', 'youtube']) ? '#6B7280, #4B5563' : '' }});">
-          
-          @if($mediaName === 'fb')
-            <svg viewBox="0 0 24 24" fill="white" stroke="none">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        <div class="stat-header">
+          <div class="stat-icon-wrapper" style="background: {{ $color }}18;">
+            <svg class="stat-icon" style="stroke: {{ $color }};" viewBox="0 0 24 24">
+              @if($mediaName === 'fb')
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+              @elseif($mediaName === 'twit')
+                <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>
+              @elseif($mediaName === 'instagram')
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+              @elseif($mediaName === 'youtube')
+                <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/>
+                <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
+              @else
+                <circle cx="12" cy="12" r="10"/>
+              @endif
             </svg>
-          @elseif($mediaName === 'twit')
-            <svg viewBox="0 0 24 24" fill="white" stroke="none">
-              <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-            </svg>
-          @elseif($mediaName === 'instagram')
-            <svg viewBox="0 0 24 24" fill="white" stroke="none">
-              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-            </svg>
-          @elseif($mediaName === 'youtube')
-            <svg viewBox="0 0 24 24" fill="white" stroke="none">
-              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-            </svg>
-          @else
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-            </svg>
-          @endif
+          </div>
         </div>
-        <div class="stat-content">
-          <h3>{{ strtoupper($mediaName) }} Authors</h3>
-          <p class="stat-value">{{ number_format($count) }}</p>
-          <span class="stat-label">{{ number_format(($count / $totalAll) * 100, 1) }}% of total</span>
+        <div class="stat-label">{{ strtoupper($mediaName) }}</div>
+        <div class="stat-value-wrapper">
+          <div class="stat-value">{{ number_format($count) }}</div>
+          <div class="stat-sub">{{ $pct }}%</div>
+        </div>
+        <div class="stat-progress">
+          <div class="stat-progress-bar" style="width:{{ $pct }}%; background: linear-gradient(90deg, {{ $color }}, {{ $color }}cc);"></div>
         </div>
       </div>
       @endforeach
     @endif
+
   </div>
 
-  <!-- Chart Card with Controls -->
+  <!-- Chart Card -->
   <div class="chart-card">
     <div class="chart-header">
-      <div>
+      <div class="chart-title-group">
         <h3>Authors by Media Platform</h3>
-        <p>Distribution of authors across different social media platforms</p>
+        <p class="chart-subtitle">Distribution of authors across social media platforms</p>
       </div>
       <div class="chart-controls">
         <button class="chart-type-btn active" data-type="bar" onclick="changeChartType('bar', this)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="20" x2="12" y2="10"/>
-            <line x1="18" y1="20" x2="18" y2="4"/>
-            <line x1="6" y1="20" x2="6" y2="16"/>
-          </svg>
+          <svg viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
           Bar
         </button>
         <button class="chart-type-btn" data-type="line" onclick="changeChartType('line', this)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-          </svg>
+          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           Line
         </button>
         <button class="chart-type-btn" data-type="pie" onclick="changeChartType('pie', this)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
-            <path d="M22 12A10 10 0 0 0 12 2v10z"/>
-          </svg>
+          <svg viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
           Pie
         </button>
         <button class="chart-type-btn" data-type="doughnut" onclick="changeChartType('doughnut', this)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <circle cx="12" cy="12" r="6"/>
-          </svg>
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/></svg>
           Doughnut
         </button>
       </div>
@@ -172,12 +524,15 @@
     </div>
   </div>
 
-  <!-- Data Table -->
-  <div class="data-table-card">
+  <!-- Summary Table -->
+  <div class="table-section">
     <div class="table-header">
-      <h3>Summary</h3>
-      <button onclick="exportTableToCSV('authors-data.csv')" class="action-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <div class="table-title">
+        <h3>Summary</h3>
+        <p class="table-subtitle">{{ $startDate }} to {{ $endDate }}</p>
+      </div>
+      <button class="export-btn" onclick="exportTableToCSV('authors-data.csv')">
+        <svg viewBox="0 0 24 24">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
           <polyline points="7 10 12 15 17 10"/>
           <line x1="12" y1="15" x2="12" y2="3"/>
@@ -185,591 +540,266 @@
         Export CSV
       </button>
     </div>
-    <div class="table-responsive">
-      <table class="data-table" id="dataTable">
-        <thead>
+    <table class="data-table" id="dataTable">
+      <thead>
+        <tr>
+          <th>Media Platform</th>
+          <th>Total Authors</th>
+          <th>Percentage</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="total-row">
+          <td>All Media</td>
+          <td>{{ number_format($totalAll) }}</td>
+          <td><span class="badge badge-blue">100%</span></td>
+        </tr>
+        @if(!empty($byMedia))
+          @foreach($byMedia as $mediaName => $count)
+          @php $pct = $totalAll > 0 ? number_format(($count / $totalAll) * 100, 1) : 0; @endphp
           <tr>
-            <th>Media Platform</th>
-            <th>Total Authors</th>
-            <th>Percentage</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="total-row">
-            <td><strong>TOTAL (All Media)</strong></td>
-            <td><strong>{{ number_format($totalAll) }}</strong></td>
-            <td><strong>100%</strong></td>
-          </tr>
-          @if(!empty($byMedia))
-            @foreach($byMedia as $mediaName => $count)
-            <tr>
-              <td>
-                <div class="media-name-cell">
-                  <div class="media-icon-small">
-                    @if($mediaName === 'fb')
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                      </svg>
-                    @elseif($mediaName === 'twit')
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                      </svg>
-                    @elseif($mediaName === 'instagram')
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                      </svg>
-                    @elseif($mediaName === 'youtube')
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                      </svg>
+            <td>
+              <div class="media-cell">
+                <div class="media-icon-sm" style="background: {{ $mediaColors[$mediaName] ?? '#6B7280' }}18;">
+                  <svg viewBox="0 0 24 24" style="stroke: {{ $mediaColors[$mediaName] ?? '#6B7280' }}; fill: none; stroke-width: 1.8; width:16px; height:16px;" stroke-linecap="round" stroke-linejoin="round">
+                    @if($mediaName === 'fb') <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                    @elseif($mediaName === 'twit') <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>
+                    @elseif($mediaName === 'instagram') <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                    @elseif($mediaName === 'youtube') <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
+                    @else <circle cx="12" cy="12" r="10"/>
                     @endif
-                  </div>
-                  {{ strtoupper($mediaName) }}
+                  </svg>
                 </div>
-              </td>
-              <td>{{ number_format($count) }}</td>
-              <td>
-                <span class="badge badge-primary">
-                  {{ number_format(($count / $totalAll) * 100, 1) }}%
-                </span>
-              </td>
-            </tr>
-            @endforeach
-          @endif
-        </tbody>
-      </table>
-    </div>
+                {{ strtoupper($mediaName) }}
+              </div>
+            </td>
+            <td>{{ number_format($count) }}</td>
+            <td><span class="badge badge-blue">{{ $pct }}%</span></td>
+          </tr>
+          @endforeach
+        @endif
+      </tbody>
+    </table>
   </div>
+
   @else
   <div class="empty-state">
-    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="11" cy="11" r="8"/>
-      <path d="m21 21-4.35-4.35"/>
-    </svg>
+    <div class="empty-state-icon">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    </div>
     <h3>No Data Available</h3>
     <p>Please select a project and date range to view authors analytics.</p>
   </div>
   @endif
+
 </div>
-@endsection
-
-@section('styles')
-<style>
-  .filter-card {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 24px;
-    box-shadow: var(--card-shadow);
-  }
-
-  .filter-form {
-    display: flex;
-    gap: 16px;
-    align-items: end;
-    flex-wrap: wrap;
-  }
-
-  .filter-group {
-    flex: 1;
-    min-width: 200px;
-  }
-
-  .filter-group label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-    font-family: 'Poppins', sans-serif;
-  }
-
-  .form-input {
-    width: 100%;
-    padding: 10px 14px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 14px;
-    transition: all 0.2s;
-  }
-
-  .form-input:focus {
-    outline: none;
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(3, 128, 71, 0.1);
-  }
-
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-bottom: 24px;
-  }
-
-  .stat-card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    display: flex;
-    gap: 16px;
-    box-shadow: var(--card-shadow);
-    transition: all 0.3s;
-  }
-
-  .stat-card.highlight {
-    background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
-    border: 2px solid #8b5cf6;
-  }
-
-  .stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--card-shadow-hover);
-  }
-
-  .stat-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .stat-icon svg {
-    width: 28px;
-    height: 28px;
-  }
-
-  .stat-content h3 {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin-bottom: 4px;
-    font-family: 'Poppins', sans-serif;
-  }
-
-  .stat-value {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0;
-    line-height: 1.2;
-    font-family: 'Poppins', sans-serif;
-  }
-
-  .stat-label {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-family: 'Poppins', sans-serif;
-  }
-
-  .chart-card, .data-table-card {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 24px;
-    box-shadow: var(--card-shadow);
-  }
-
-  .chart-header, .table-header {
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-
-  .chart-header h3, .table-header h3 {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0;
-    font-family: 'Poppins', sans-serif;
-  }
-
-  .chart-header p {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin: 4px 0 0 0;
-    font-family: 'Poppins', sans-serif;
-  }
-
-  .chart-controls {
-    display: flex;
-    gap: 8px;
-    background: #f8fafc;
-    padding: 4px;
-    border-radius: 10px;
-  }
-
-  .chart-type-btn {
-    padding: 8px 16px;
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    font-family: 'Poppins', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .chart-type-btn:hover {
-    background: white;
-    color: var(--text-primary);
-  }
-
-  .chart-type-btn.active {
-    background: var(--primary-green);
-    color: white;
-    box-shadow: 0 2px 8px rgba(3, 128, 71, 0.2);
-  }
-
-  .chart-container {
-    position: relative;
-    height: 400px;
-  }
-
-  .table-responsive {
-    overflow-x: auto;
-  }
-
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: 'Poppins', sans-serif;
-  }
-
-  .data-table thead {
-    background: #f8fafc;
-  }
-
-  .data-table th {
-    padding: 12px 16px;
-    text-align: left;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text-primary);
-    border-bottom: 2px solid var(--border-color);
-    font-family: 'Poppins', sans-serif;
-  }
-
-  .data-table td {
-    padding: 14px 16px;
-    font-size: 14px;
-    color: var(--text-secondary);
-    border-bottom: 1px solid var(--border-color);
-    font-family: 'Poppins', sans-serif;
-  }
-
-  .data-table tbody tr:hover {
-    background: #f8fafc;
-  }
-
-  .total-row {
-    background: #f0f9ff !important;
-    font-weight: 600;
-  }
-
-  .media-name-cell {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .media-icon-small {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .media-icon-small svg {
-    width: 18px;
-    height: 18px;
-    color: var(--text-secondary);
-  }
-
-  .badge {
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    font-family: 'Poppins', sans-serif;
-  }
-
-  .badge-primary {
-    background: #dbeafe;
-    color: #1e40af;
-  }
-
-  .alert {
-    padding: 16px 20px;
-    border-radius: 10px;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    font-family: 'Poppins', sans-serif;
-  }
-
-  .alert-warning {
-    background: #fef3c7;
-    border: 1px solid #fbbf24;
-    color: #92400e;
-  }
-
-  .alert svg {
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-  }
-
-  .empty-state svg {
-    color: var(--text-muted);
-    margin-bottom: 16px;
-  }
-
-  .empty-state h3 {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 8px;
-    font-family: 'Poppins', sans-serif;
-  }
-
-  .empty-state p {
-    color: var(--text-secondary);
-    font-family: 'Poppins', sans-serif;
-  }
-
-  @media (max-width: 768px) {
-    .chart-controls {
-      width: 100%;
-      justify-content: stretch;
-    }
-
-    .chart-type-btn {
-      flex: 1;
-      justify-content: center;
-    }
-  }
-</style>
 @endsection
 
 @section('scripts')
 <script>
-  let authorsChart = null;
-  const chartData = {
-    labels: @json($chartData['labels'] ?? []),
-    values: @json($chartData['values'] ?? []),
-    colors: {
-      fb: '#1877F2',
-      twit: '#1DA1F2',
-      instagram: '#E4405F',
-      youtube: '#FF0000',
-      default: '#6B7280'
+// Date Picker (shared logic)
+(function () {
+  'use strict';
+  let selectedStartDate = null, selectedEndDate = null;
+  let currentMonth1 = new Date(), currentMonth2 = new Date();
+  let selectingStart = true;
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const s = document.getElementById('hiddenStartDate');
+    const e = document.getElementById('hiddenEndDate');
+    if (s && s.value) selectedStartDate = new Date(s.value);
+    else { selectedEndDate = new Date(); selectedStartDate = new Date(); selectedStartDate.setDate(selectedStartDate.getDate()-6); }
+    if (e && e.value) selectedEndDate = new Date(e.value);
+    currentMonth1 = new Date(selectedStartDate);
+    currentMonth2 = new Date(selectedStartDate); currentMonth2.setMonth(currentMonth2.getMonth()+1);
+    renderCalendars(); setupListeners();
+  });
+
+  function setupListeners() {
+    document.getElementById('datePickerTrigger')?.addEventListener('click', open);
+    document.querySelector('.date-picker-overlay')?.addEventListener('click', close);
+    document.querySelector('.cancel-btn')?.addEventListener('click', close);
+    document.getElementById('applyDatePicker')?.addEventListener('click', apply);
+    document.getElementById('prevMonth')?.addEventListener('click', () => shift(-1));
+    document.getElementById('nextMonth')?.addEventListener('click', () => shift(1));
+    document.querySelectorAll('.date-preset').forEach(b => b.addEventListener('click', preset));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  }
+
+  function open()  { document.getElementById('datePickerModal').classList.add('show'); renderCalendars(); }
+  function close() { document.getElementById('datePickerModal').classList.remove('show'); }
+  function shift(n) { currentMonth1.setMonth(currentMonth1.getMonth()+n); currentMonth2.setMonth(currentMonth2.getMonth()+n); renderCalendars(); }
+
+  function preset(e) {
+    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active')); e.target.classList.add('active');
+    const today = new Date(); today.setHours(0,0,0,0);
+    switch(e.target.dataset.preset) {
+      case 'today':      selectedStartDate = new Date(today); selectedEndDate = new Date(today); break;
+      case 'yesterday':  selectedStartDate = new Date(today); selectedStartDate.setDate(today.getDate()-1); selectedEndDate = new Date(selectedStartDate); break;
+      case 'last7days':  selectedEndDate = new Date(today); selectedStartDate = new Date(today); selectedStartDate.setDate(today.getDate()-6); break;
+      case 'last30days': selectedEndDate = new Date(today); selectedStartDate = new Date(today); selectedStartDate.setDate(today.getDate()-29); break;
+      case 'thismonth':  selectedStartDate = new Date(today.getFullYear(), today.getMonth(), 1); selectedEndDate = new Date(today); break;
+      case 'lastmonth':  selectedStartDate = new Date(today.getFullYear(), today.getMonth()-1, 1); selectedEndDate = new Date(today.getFullYear(), today.getMonth(), 0); break;
     }
+    if (e.target.dataset.preset !== 'custom') { currentMonth1 = new Date(selectedStartDate); currentMonth2 = new Date(selectedStartDate); currentMonth2.setMonth(currentMonth2.getMonth()+1); renderCalendars(); }
+  }
+
+  function apply() {
+    const start = fmt(selectedStartDate), end = fmt(selectedEndDate);
+    document.getElementById('hiddenStartDate').value = start;
+    document.getElementById('hiddenEndDate').value   = end;
+    document.getElementById('dateRangeDisplay').textContent = `${start} – ${end}`;
+    close();
+  }
+
+  function renderCalendars() { renderCal('calendar1', currentMonth1); renderCal('calendar2', currentMonth2); updateDisplay(); }
+
+  function renderCal(id, month) {
+    const el = document.getElementById(id); if (!el) return;
+    const y = month.getFullYear(), m = month.getMonth();
+    const first = new Date(y,m,1), last = new Date(y,m+1,0), prevLast = new Date(y,m,0);
+    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const today  = new Date(); today.setHours(0,0,0,0);
+    let html = `<div class="calendar-month">${MONTHS[m]} ${y}</div><div class="calendar-weekdays">${['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=>`<div class="weekday">${d}</div>`).join('')}</div><div class="calendar-days">`;
+    for (let i = first.getDay()-1; i >= 0; i--) html += `<button type="button" class="calendar-day other-month" disabled>${prevLast.getDate()-i}</button>`;
+    for (let d = 1; d <= last.getDate(); d++) {
+      const date = new Date(y,m,d); date.setHours(0,0,0,0); const ds = fmt(date);
+      let cls = 'calendar-day';
+      if (same(date,today)) cls += ' today'; if (date>today) cls += ' disabled';
+      if (selectedStartDate && selectedEndDate) {
+        if (same(date,selectedStartDate)) cls += ' selected range-start';
+        else if (same(date,selectedEndDate)) cls += ' selected range-end';
+        else if (date>selectedStartDate && date<selectedEndDate) cls += ' in-range';
+      }
+      html += `<button type="button" class="${cls}" data-date="${ds}" ${date>today?'disabled':''}>${d}</button>`;
+    }
+    const l6 = last.getDay(); for (let i=1; i<7-l6; i++) html += `<button type="button" class="calendar-day other-month" disabled>${i}</button>`;
+    html += '</div>'; el.innerHTML = html;
+    el.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)').forEach(b => b.addEventListener('click', dayClick));
+  }
+
+  function dayClick(e) {
+    const date = new Date(e.target.dataset.date); date.setHours(0,0,0,0);
+    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-preset="custom"]')?.classList.add('active');
+    if (selectingStart || date < selectedStartDate) { selectedStartDate = date; selectedEndDate = date; selectingStart = false; }
+    else { selectedEndDate = date >= selectedStartDate ? date : selectedStartDate; if (date < selectedStartDate) { selectedEndDate = selectedStartDate; selectedStartDate = date; } selectingStart = true; }
+    renderCalendars();
+  }
+
+  function updateDisplay() {
+    const t = document.getElementById('selectedRangeText');
+    if (t && selectedStartDate && selectedEndDate) t.textContent = `${fmt(selectedStartDate)} – ${fmt(selectedEndDate)}`;
+  }
+  function fmt(date) { if (!date) return ''; return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`; }
+  function same(a,b) { return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+})();
+
+// Chart
+@if(isset($chartData) && !empty($chartData['labels']))
+let authorsChart = null;
+const chartData = {
+  labels: @json($chartData['labels'] ?? []),
+  values: @json($chartData['values'] ?? []),
+};
+const mediaColorMap = { fb: '#1877F2', twit: '#1DA1F2', instagram: '#E4405F', youtube: '#FF0000' };
+
+function getColors() {
+  return chartData.labels.map(l => {
+    const k = l.toLowerCase();
+    if (k.includes('fb') || k.includes('facebook'))   return mediaColorMap.fb;
+    if (k.includes('twit') || k.includes('twitter'))  return mediaColorMap.twit;
+    if (k.includes('instagram') || k.includes('ig'))  return mediaColorMap.instagram;
+    if (k.includes('youtube') || k.includes('yt'))    return mediaColorMap.youtube;
+    return '#6B7280';
+  });
+}
+
+function initChart(type = 'bar') {
+  const ctx = document.getElementById('authorsChart').getContext('2d');
+  if (authorsChart) authorsChart.destroy();
+  const colors    = getColors();
+  const bgColors  = colors.map(c => c + 'CC');
+  const isPie     = type === 'pie' || type === 'doughnut';
+
+  const dataset = {
+    label: 'Authors Count',
+    data: chartData.values,
+    backgroundColor: bgColors,
+    borderColor: colors,
+    borderWidth: 2,
   };
 
-  @if(isset($chartData) && !empty($chartData['labels']))
-  // Initialize Chart
-  function initChart(type = 'bar') {
-    const ctx = document.getElementById('authorsChart').getContext('2d');
-    
-    // Destroy existing chart if exists
-    if (authorsChart) {
-      authorsChart.destroy();
-    }
+  if (type === 'bar')      { dataset.borderRadius = 8; }
+  if (!isPie && type !== 'bar') {
+    dataset.backgroundColor = 'rgba(3,128,71,0.1)';
+    dataset.borderColor     = '#038047';
+    dataset.fill            = true;
+    dataset.tension         = 0.4;
+    dataset.pointRadius     = 5;
+    dataset.pointBackgroundColor = '#038047';
+    dataset.pointBorderColor     = '#fff';
+    dataset.pointBorderWidth     = 2;
+  }
 
-    // Prepare colors based on labels
-    const backgroundColors = chartData.labels.map(label => {
-      const lowerLabel = label.toLowerCase();
-      if (lowerLabel.includes('fb') || lowerLabel.includes('facebook')) return chartData.colors.fb + 'CC';
-      if (lowerLabel.includes('twit') || lowerLabel.includes('twitter') || lowerLabel.includes('x')) return chartData.colors.twit + 'CC';
-      if (lowerLabel.includes('instagram') || lowerLabel.includes('ig')) return chartData.colors.instagram + 'CC';
-      if (lowerLabel.includes('youtube') || lowerLabel.includes('yt')) return chartData.colors.youtube + 'CC';
-      return chartData.colors.default + 'CC';
-    });
-
-    const borderColors = chartData.labels.map(label => {
-      const lowerLabel = label.toLowerCase();
-      if (lowerLabel.includes('fb') || lowerLabel.includes('facebook')) return chartData.colors.fb;
-      if (lowerLabel.includes('twit') || lowerLabel.includes('twitter') || lowerLabel.includes('x')) return chartData.colors.twit;
-      if (lowerLabel.includes('instagram') || lowerLabel.includes('ig')) return chartData.colors.instagram;
-      if (lowerLabel.includes('youtube') || lowerLabel.includes('yt')) return chartData.colors.youtube;
-      return chartData.colors.default;
-    });
-
-    // Common configuration
-    const commonOptions = {
+  authorsChart = new Chart(ctx, {
+    type: type,
+    data: { labels: chartData.labels, datasets: [dataset] },
+    options: {
       responsive: true,
       maintainAspectRatio: false,
+      cutout: type === 'doughnut' ? '65%' : undefined,
       plugins: {
         legend: {
-          display: type === 'pie' || type === 'doughnut',
+          display: isPie,
           position: 'right',
-          labels: {
-            font: { family: 'Poppins', size: 13 },
-            padding: 15,
-            usePointStyle: true,
-            pointStyle: 'circle'
-          }
+          labels: { font: { family: 'Poppins', size: 13, weight: '600' }, padding: 16, usePointStyle: true, pointStyle: 'circle' }
         },
         tooltip: {
-          backgroundColor: 'rgba(15, 23, 42, 0.95)',
-          titleFont: { family: 'Poppins', size: 13, weight: '600' },
-          bodyFont: { family: 'Poppins', size: 12 },
-          padding: 12,
-          borderColor: 'rgba(148, 163, 184, 0.3)',
-          borderWidth: 1,
+          backgroundColor: '#1a202c', padding: 14,
+          titleColor: '#fff', bodyColor: '#fff',
+          titleFont: { size: 13, weight: '600', family: 'Poppins' },
+          bodyFont: { size: 12, family: 'Poppins' },
+          displayColors: false, cornerRadius: 10,
           callbacks: {
-            label: function(context) {
-              const label = context.dataset.label || '';
-              const value = context.parsed.y !== undefined ? context.parsed.y : context.parsed;
-              const total = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = ((value / total) * 100).toFixed(1);
-              
-              if (type === 'pie' || type === 'doughnut') {
-                return ` ${context.label}: ${value.toLocaleString()} (${percentage}%)`;
-              }
-              return ` ${label}: ${value.toLocaleString()}`;
+            label: ctx => {
+              const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+              const pct   = ((ctx.parsed.y ?? ctx.parsed) / total * 100).toFixed(1);
+              return isPie ? ` ${ctx.label}: ${(ctx.parsed).toLocaleString()} (${pct}%)` : ` ${ctx.label}: ${ctx.parsed.y.toLocaleString()}`;
             }
           }
         }
-      }
-    };
-
-    // Chart type specific configurations
-    let chartConfig = {
-      type: type,
-      data: {
-        labels: chartData.labels,
-        datasets: [{
-          label: 'Authors Count',
-          data: chartData.values,
-          backgroundColor: backgroundColors,
-          borderColor: borderColors,
-          borderWidth: 2
-        }]
       },
-      options: commonOptions
-    };
-
-    // Specific adjustments per chart type
-    if (type === 'bar') {
-      chartConfig.data.datasets[0].borderRadius = 8;
-      chartConfig.options.scales = {
-        y: {
-          beginAtZero: true,
-          grid: { color: 'rgba(148, 163, 184, 0.1)' },
-          ticks: {
-            font: { family: 'Poppins', size: 12 },
-            color: '#64748b',
-            callback: function(value) {
-              return value.toLocaleString();
-            }
-          }
-        },
-        x: {
-          grid: { display: false },
-          ticks: {
-            font: { family: 'Poppins', size: 12 },
-            color: '#64748b'
-          }
-        }
-      };
-    } else if (type === 'line') {
-      chartConfig.data.datasets[0].tension = 0.4;
-      chartConfig.data.datasets[0].fill = true;
-      chartConfig.data.datasets[0].backgroundColor = 'rgba(3, 128, 71, 0.1)';
-      chartConfig.data.datasets[0].borderColor = '#038047';
-      chartConfig.data.datasets[0].pointBackgroundColor = '#038047';
-      chartConfig.data.datasets[0].pointBorderColor = '#fff';
-      chartConfig.data.datasets[0].pointBorderWidth = 2;
-      chartConfig.data.datasets[0].pointRadius = 5;
-      chartConfig.data.datasets[0].pointHoverRadius = 7;
-      chartConfig.options.scales = {
-        y: {
-          beginAtZero: true,
-          grid: { color: 'rgba(148, 163, 184, 0.1)' },
-          ticks: {
-            font: { family: 'Poppins', size: 12 },
-            color: '#64748b',
-            callback: function(value) {
-              return value.toLocaleString();
-            }
-          }
-        },
-        x: {
-          grid: { display: false },
-          ticks: {
-            font: { family: 'Poppins', size: 12 },
-            color: '#64748b'
-          }
-        }
-      };
-    } else if (type === 'doughnut') {
-      chartConfig.options.cutout = '65%';
+      scales: isPie ? {} : {
+        y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { font: { family: 'Poppins', size: 12 }, color: '#64748b', padding: 8, callback: v => v.toLocaleString() } },
+        x: { grid: { display: false, drawBorder: false }, ticks: { font: { family: 'Poppins', size: 12 }, color: '#64748b', padding: 8 } }
+      },
+      animation: { duration: 700, easing: 'easeInOutQuart' }
     }
-
-    authorsChart = new Chart(ctx, chartConfig);
-  }
-
-  // Change Chart Type
-  function changeChartType(type, button) {
-    // Update active button
-    document.querySelectorAll('.chart-type-btn').forEach(btn => {
-      btn.classList.remove('active');
-    });
-    button.classList.add('active');
-
-    // Reinitialize chart with new type
-    initChart(type);
-  }
-
-  // Initialize on load
-  document.addEventListener('DOMContentLoaded', function() {
-    initChart('bar');
   });
-  @endif
+}
 
-  // Export to CSV
-  function exportTableToCSV(filename) {
-    const table = document.getElementById('dataTable');
-    let csv = [];
-    
-    for (let row of table.rows) {
-      let rowData = [];
-      for (let cell of row.cells) {
-        rowData.push('"' + cell.textContent.trim().replace(/"/g, '""') + '"');
-      }
-      csv.push(rowData.join(','));
-    }
-    
-    const csvContent = csv.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
+function changeChartType(type, btn) {
+  document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  initChart(type);
+}
+
+document.addEventListener('DOMContentLoaded', () => initChart('bar'));
+@endif
+
+function exportTableToCSV(filename) {
+  const table = document.getElementById('dataTable');
+  let csv = [];
+  for (let row of table.rows) {
+    let cells = [];
+    for (let cell of row.cells) cells.push('"' + cell.textContent.trim().replace(/"/g, '""') + '"');
+    csv.push(cells.join(','));
   }
+  const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a'); a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
 </script>
 @endsection
