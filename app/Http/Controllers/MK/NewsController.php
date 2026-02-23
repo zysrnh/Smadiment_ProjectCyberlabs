@@ -344,7 +344,7 @@ class NewsController extends Controller
                 return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
             }
 
-            $publishersData = $this->mkClient->topPublisher($projectId, $startDate, $endDate, 0, 23, 100, $newsType);
+            $publishersData = $this->mkClient->topPublisher($projectId, $startDate, $endDate, 0, 23, 1000, $newsType);
 
             $publishers = [];
             $rank = 1;
@@ -992,6 +992,30 @@ public function aiAnalysisProxy(Request $request)
     } catch (\Exception $e) {
         Log::error('AI Proxy Error', ['error' => $e->getMessage()]);
         return response()->json(['error' => 'Internal server error: ' . $e->getMessage()], 500);
+    }
+}
+public function newsTopicMapPage(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id', session('selected_project_id'));
+
+        if (!$projectId) {
+            return redirect()->route('mk.dashboard')
+                ->with('error', 'Please select a project first');
+        }
+
+        session(['selected_project_id' => $projectId]);
+
+        return view('mk.news.topic-map', [
+            'projectId' => $projectId,
+            'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+            'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('News Topic Map Page Error', ['error' => $e->getMessage()]);
+        return redirect()->route('mk.dashboard')
+            ->with('error', 'Failed to load News Topic Map page');
     }
 }
 }

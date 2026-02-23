@@ -389,6 +389,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     // News Routes
     // ─────────────────────────────────────────────────────
     Route::prefix('news')->name('news.')->group(function () {
+
         Route::get('/word-cloud', [NewsController::class, 'newsWordCloudPage'])
             ->name('word-cloud');
 
@@ -400,6 +401,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
 
         Route::get('/articles', [NewsController::class, 'articlesPage'])
             ->name('articles');
+
+        // ✅ NEW — News Topic Map page
+        Route::get('/topic-map', [NewsController::class, 'newsTopicMapPage'])
+            ->name('topic-map');
 
         Route::get('/ai-analysis', [NewsController::class, 'aiAnalysisPage'])
             ->name('ai-analysis');

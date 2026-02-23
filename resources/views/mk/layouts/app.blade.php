@@ -506,7 +506,7 @@
       <div class="nav-label">News</div>
 
       @php
-        $newsRoutes  = ['mk.news.word-cloud','mk.news.top-publishers','mk.news.timeline','mk.news.articles','mk.news.ai-analysis'];
+        $newsRoutes = ['mk.news.word-cloud','mk.news.top-publishers','mk.news.timeline','mk.news.articles','mk.news.ai-analysis','mk.news.topic-map'];
         $isNewsActive = request()->routeIs($newsRoutes);
       @endphp
 
@@ -545,6 +545,19 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
             <span>Articles</span>
           </a>
+
+          <a href="{{ route('mk.news.topic-map') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+     class="nav-item {{ request()->routeIs('mk.news.topic-map') ? 'active' : '' }}">
+    <span class="menu-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="8" height="11"/>
+        <rect x="13" y="3" width="8" height="6"/>
+        <rect x="13" y="11" width="8" height="10"/>
+        <rect x="3" y="16" width="8" height="6"/>
+      </svg>
+    </span>
+    <span>Topic Map</span>
+  </a>
 
           <a href="{{ route('mk.news.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.news.ai-analysis') ? 'active' : '' }}">
@@ -823,7 +836,7 @@
           </a>
 
           <a href="{{ route('mk.tiktok.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.tiktok.trending-word-cloud') ? 'active' : '' }}">
+             class="nav-item {{ request()->routeIs('mk.tiktok.traending-word-cloud') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
             <span>Word Cloud</span>
           </a>

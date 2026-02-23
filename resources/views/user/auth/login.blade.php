@@ -35,7 +35,6 @@
       overflow: hidden;
     }
 
-    /* Animated background particles */
     .left-side::before {
       content: '';
       position: absolute;
@@ -61,12 +60,8 @@
     }
 
     @keyframes float {
-      0%, 100% {
-        transform: translate(0, 0) scale(1);
-      }
-      50% {
-        transform: translate(30px, 30px) scale(1.1);
-      }
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, 30px) scale(1.1); }
     }
 
     .logo-container {
@@ -79,14 +74,8 @@
     }
 
     @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .logo-image {
@@ -101,14 +90,8 @@
     }
 
     @keyframes scaleIn {
-      from {
-        opacity: 0;
-        transform: scale(0.9);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
     }
 
     .logo-icon img {
@@ -129,13 +112,8 @@
       display: none;
     }
 
-    .logo-text h1 .smadi {
-      color: #1e3a5f;
-    }
-
-    .logo-text h1 .ment {
-      color: #038047;
-    }
+    .logo-text h1 .smadi { color: #1e3a5f; }
+    .logo-text h1 .ment { color: #038047; }
 
     .logo-text p {
       font-size: 18px;
@@ -155,15 +133,11 @@
     }
 
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-      }
-      to {
-        opacity: 1;
-      }
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
-    /* Right Side - Blue/Green */
+    /* Right Side */
     .right-side {
       flex: 1;
       background: linear-gradient(135deg, #1e3a5f 0%, #2d5f8d 100%);
@@ -175,7 +149,6 @@
       overflow: hidden;
     }
 
-    /* Animated background shapes */
     .shape {
       position: absolute;
       border-radius: 50%;
@@ -201,12 +174,8 @@
     }
 
     @keyframes rotate {
-      from {
-        transform: rotate(0deg);
-      }
-      to {
-        transform: rotate(360deg);
-      }
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
     .login-box {
@@ -222,14 +191,8 @@
     }
 
     @keyframes slideInRight {
-      from {
-        opacity: 0;
-        transform: translateX(50px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
+      from { opacity: 0; transform: translateX(50px); }
+      to { opacity: 1; transform: translateX(0); }
     }
 
     .login-header {
@@ -257,13 +220,8 @@
       animation: fadeInUp 0.6s ease-out both;
     }
 
-    .form-group:nth-child(1) {
-      animation-delay: 0.2s;
-    }
-
-    .form-group:nth-child(2) {
-      animation-delay: 0.3s;
-    }
+    .form-group:nth-child(1) { animation-delay: 0.2s; }
+    .form-group:nth-child(2) { animation-delay: 0.3s; }
 
     .form-input {
       width: 100%;
@@ -406,14 +364,8 @@
     }
 
     @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .alert-success {
@@ -426,7 +378,34 @@
       color: #991B1B;
     }
 
-    /* Loading animation for submit button */
+    /* ✅ TAMBAHAN: Style untuk alert warning (sesi habis) */
+    .alert-warning {
+      background: #FEF3C7;
+      color: #92400E;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .alert-warning .alert-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .alert-warning .alert-body strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .alert-warning .alert-body span {
+      font-size: 12px;
+      font-weight: 500;
+      opacity: 0.85;
+    }
+
     .btn-submit.loading {
       pointer-events: none;
       opacity: 0.7;
@@ -450,39 +429,15 @@
       to { transform: translateY(-50%) rotate(360deg); }
     }
 
-    /* Responsive */
     @media (max-width: 968px) {
-      body {
-        flex-direction: column;
-      }
-
-      .left-side {
-        padding: 20px;
-      }
-
-      .logo-icon {
-        max-width: 350px;
-      }
-
-      .logo-text h1 {
-        font-size: 32px;
-      }
-
-      .logo-text p {
-        font-size: 14px;
-      }
-
-      .right-side {
-        padding: 20px;
-      }
-
-      .login-box {
-        padding: 32px 24px;
-      }
-
-      .login-header h2 {
-        font-size: 24px;
-      }
+      body { flex-direction: column; }
+      .left-side { padding: 20px; }
+      .logo-icon { max-width: 350px; }
+      .logo-text h1 { font-size: 32px; }
+      .logo-text p { font-size: 14px; }
+      .right-side { padding: 20px; }
+      .login-box { padding: 32px 24px; }
+      .login-header h2 { font-size: 24px; }
     }
   </style>
 </head>
@@ -498,9 +453,7 @@
         </div>
       </div>
       <div class="logo-text">
-        <h1>
-          <span class="smadi">SMADI</span><span class="ment">MENT</span>
-        </h1>
+        <h1><span class="smadi">SMADI</span><span class="ment">MENT</span></h1>
         <p>INTELLIGENCE</p>
       </div>
       <div class="powered-by">
@@ -511,37 +464,44 @@
 
   <!-- Right Side - Login Form -->
   <div class="right-side">
-    <!-- Animated background shapes -->
     <div class="shape shape-1"></div>
     <div class="shape shape-2"></div>
 
     <div class="login-box">
 
-      <!-- Login Header -->
       <div class="login-header">
         <h2>Welcome Back</h2>
         <p>Login to your account</p>
       </div>
 
-      <!-- Success Message -->
+      {{-- ✅ TAMBAHAN: Alert Sesi Habis --}}
+      @if(session('warning'))
+      <div class="alert alert-warning">
+        <div class="alert-icon"></div>
+        <div class="alert-body">
+          <strong>Sesi Berakhir!</strong>
+          <span>{{ session('warning') }}</span>
+        </div>
+      </div>
+      @endif
+
+      {{-- Success Message (logout berhasil) --}}
       @if(session('success'))
       <div class="alert alert-success">
         {{ session('success') }}
       </div>
       @endif
 
-      <!-- Error Message -->
+      {{-- Error Message --}}
       @if($errors->any())
       <div class="alert alert-error">
         {{ $errors->first() }}
       </div>
       @endif
 
-      <!-- Login Form -->
       <form method="POST" action="{{ route('user.login.submit') }}" id="loginForm">
         @csrf
 
-        <!-- Email -->
         <div class="form-group">
           <input 
             type="email" 
@@ -557,7 +517,6 @@
           @enderror
         </div>
 
-        <!-- Password -->
         <div class="form-group">
           <input 
             type="password" 
@@ -571,12 +530,10 @@
           @enderror
         </div>
 
-        <!-- Forgot Password -->
         <div class="forgot-password">
           <a href="#">Forgot Password?</a>
         </div>
 
-        <!-- Submit Button -->
         <button type="submit" class="btn-submit" id="submitBtn">
           <span>SUBMIT</span>
         </button>
@@ -587,13 +544,11 @@
   </div>
 
   <script>
-    // Add loading animation on form submit
     document.getElementById('loginForm').addEventListener('submit', function() {
       const btn = document.getElementById('submitBtn');
       btn.classList.add('loading');
     });
 
-    // Add input focus animations
     const inputs = document.querySelectorAll('.form-input');
     inputs.forEach(input => {
       input.addEventListener('focus', function() {
@@ -608,4 +563,4 @@
   </script>
 
 </body>
-</html> 
+</html>
