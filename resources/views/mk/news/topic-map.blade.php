@@ -18,7 +18,7 @@
 
   /* Filter card */
   .ntm-filter {
-    background: var(--white); border-radius: 14px; padding: 16px 20px;
+    background: #ffffff; border-radius: 14px; padding: 16px 20px;
     margin-bottom: 18px; border: 1px solid var(--border);
     box-shadow: 0 1px 3px rgba(0,0,0,.06);
     display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
@@ -38,7 +38,7 @@
   .ntm-sel {
     padding: 9px 13px; border: 1px solid var(--border); border-radius: 10px;
     font-family: 'Poppins',sans-serif; font-size: 13px; font-weight: 500;
-    color: var(--text); background: var(--white); outline: none; cursor: pointer;
+    color: var(--text); background: #ffffff; outline: none; cursor: pointer;
   }
   .ntm-sel:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(3,128,71,.08); }
   .ntm-apply {
@@ -56,7 +56,7 @@
   /* Stats row */
   .ntm-stats { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
   .ntm-sp {
-    background: var(--white); border: 1px solid var(--border); border-radius: 10px;
+    background: #ffffff; border: 1px solid var(--border); border-radius: 10px;
     padding: 12px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.05);
   }
   .ntm-sp .sl { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
@@ -64,7 +64,7 @@
 
   /* Controls bar */
   .ntm-ctrl {
-    background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+    background: #ffffff; border: 1px solid var(--border); border-radius: 12px;
     padding: 11px 16px; margin-bottom: 16px;
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     box-shadow: 0 1px 3px rgba(0,0,0,.05);
@@ -78,12 +78,12 @@
     display: flex; align-items: center; gap: 5px;
   }
   .ntm-vbtn svg { width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2; }
-  .ntm-vbtn.on { background: var(--white); color: var(--green); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+  .ntm-vbtn.on { background: #ffffff; color: var(--green); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
   .ntm-vbtn:hover:not(.on) { color: var(--text); }
   .ntm-sml {
     padding: 7px 11px; border: 1px solid var(--border); border-radius: 8px;
     font-family: 'Poppins',sans-serif; font-size: 12px; font-weight: 500;
-    color: var(--text); background: var(--white); outline: none; cursor: pointer;
+    color: var(--text); background: #ffffff; outline: none; cursor: pointer;
   }
   .ntm-sml:focus { border-color: var(--green); }
   .ntm-srch {
@@ -92,11 +92,11 @@
     color: var(--text); background: #f8fafc; outline: none; width: 190px;
     transition: border-color .2s, background .2s;
   }
-  .ntm-srch:focus { border-color: var(--green); background: var(--white); }
+  .ntm-srch:focus { border-color: var(--green); background: #ffffff; }
   .ntm-srch::placeholder { color: #94a3b8; }
   .ntm-rlbtn {
     width: 31px; height: 31px; border-radius: 8px; border: 1px solid var(--border);
-    background: var(--white); display: flex; align-items: center; justify-content: center;
+    background: #ffffff; display: flex; align-items: center; justify-content: center;
     cursor: pointer; transition: all .18s; color: var(--muted); margin-left: auto;
   }
   .ntm-rlbtn:hover { border-color: var(--green); color: var(--green); background: #f0fdf4; }
@@ -124,9 +124,9 @@
   .ntm-empty h4 { font-size:15px;font-weight:700;color:#64748b;margin:0; }
   .ntm-empty p  { font-size:13px;color:#94a3b8;margin:0;text-align:center; }
 
-  /* ━━━ TREEMAP (main view — like screenshot) ━━━ */
+  /* ━━━ TREEMAP ━━━ */
   .ntm-tmap-card {
-    background: var(--white); border: 1px solid var(--border);
+    background: #ffffff; border: 1px solid var(--border);
     border-radius: 14px; overflow: hidden;
     box-shadow: 0 1px 4px rgba(0,0,0,.07);
   }
@@ -140,7 +140,9 @@
   .ntm-tile-in { padding: 9px 11px; height: 100%; display: flex; flex-direction: column; gap: 3px; position: relative; }
   .ntm-tile-cat { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .7px; opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ntm-tile-hl  { font-weight: 700; line-height: 1.32; flex: 1; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; }
-  .ntm-tile-cnt { position: absolute; bottom: 7px; right: 8px; font-size: 9px; font-weight: 700; background: rgba(0,0,0,.22); padding: 2px 7px; border-radius: 20px; }
+  /* Badge docs DIHAPUS */
+  .ntm-tile-cnt { display: none !important; }
+
   /* colors */
   .c0{background:#7f1d1d;color:#fff} .c1{background:#991b1b;color:#fff} .c2{background:#b91c1c;color:#fff}
   .c3{background:#c2410c;color:#fff} .c4{background:#92400e;color:#fff} .c5{background:#78350f;color:#fff}
@@ -152,7 +154,7 @@
 
   /* ━━━ LIST VIEW ━━━ */
   .ntm-list-card {
-    background: var(--white); border: 1px solid var(--border);
+    background: #ffffff; border: 1px solid var(--border);
     border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.07);
   }
   .ntm-li {
@@ -180,29 +182,36 @@
 
   /* ━━━ BUBBLE VIEW ━━━ */
   .ntm-bub-card {
-    background: var(--white); border: 1px solid var(--border);
+    background: #ffffff; border: 1px solid var(--border);
     border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.07);
     height: 580px;
   }
   .ntm-bub-card svg { width:100%; height:100%; }
 
-  /* ━━━ DETAIL MODAL ━━━ */
+  /* ━━━ DETAIL MODAL — FIXED TRANSPARENCY ━━━ */
   .ntm-mback {
-    position: fixed; inset: 0; background: rgba(0,0,0,.55);
-    backdrop-filter: blur(5px); z-index: 9998;
+    position: fixed; inset: 0;
+    background: rgba(15, 23, 42, 0.75);
+    z-index: 9998;
     display: none; align-items: center; justify-content: center;
   }
   .ntm-mback.on { display: flex; }
   .ntm-modal {
-    background: var(--white); border-radius: 16px; width: 90%; max-width: 660px;
+    background: #ffffff;
+    border-radius: 16px; width: 90%; max-width: 660px;
     max-height: 85vh; display: flex; flex-direction: column;
-    box-shadow: 0 20px 60px rgba(0,0,0,.28);
+    box-shadow: 0 25px 60px rgba(0,0,0,.45);
     animation: ntmSlide .24s ease-out;
+    position: relative;
+    z-index: 9999;
+    isolation: isolate;
   }
   @keyframes ntmSlide { from{transform:translateY(-16px) scale(.96);opacity:0} to{transform:none;opacity:1} }
   .ntm-mhead {
     padding: 18px 22px; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; gap: 12px;
+    background: #ffffff;
+    border-radius: 16px 16px 0 0;
   }
   .ntm-mcol { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
   .ntm-mhead h3 { font-size: 17px; font-weight: 700; color: var(--text); flex: 1; margin: 0; }
@@ -212,12 +221,16 @@
   }
   .ntm-mclose {
     width: 30px; height: 30px; border-radius: 7px; border: 1px solid var(--border);
-    background: var(--white); cursor: pointer; display: flex; align-items: center;
+    background: #ffffff; cursor: pointer; display: flex; align-items: center;
     justify-content: center; transition: all .16s; color: var(--muted);
   }
   .ntm-mclose:hover { background: #fee2e2; border-color: #fca5a5; color: #ef4444; }
   .ntm-mclose svg { width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.5; }
-  .ntm-mbody { padding: 18px 22px; overflow-y: auto; flex: 1; }
+  .ntm-mbody {
+    padding: 18px 22px; overflow-y: auto; flex: 1;
+    background: #ffffff;
+    border-radius: 0 0 16px 16px;
+  }
   .ntm-art { padding: 12px 0; border-bottom: 1px solid #f8fafc; display:flex;flex-direction:column;gap:4px; }
   .ntm-art:last-child { border-bottom: none; }
   .ntm-art a { font-size: 14px; font-weight: 600; color: var(--text); text-decoration: none; line-height: 1.4; }
@@ -231,7 +244,7 @@
     position: fixed; background: #1e293b; color: #fff;
     padding: 8px 13px; border-radius: 9px; font-size: 12px; font-weight: 500;
     pointer-events: none; opacity: 0; transition: opacity .12s;
-    z-index: 9999; white-space: nowrap; box-shadow: 0 6px 20px rgba(0,0,0,.25);
+    z-index: 99999; white-space: nowrap; box-shadow: 0 6px 20px rgba(0,0,0,.25);
   }
   .ntm-tip.on { opacity: 1; }
   .ntm-tip b { color: #4ade80; }
@@ -240,7 +253,7 @@
   .ntm-dp {
     position: fixed; inset: 0; z-index: 10000;
     display: none; align-items: center; justify-content: center;
-    background: rgba(0,0,0,.52); backdrop-filter: blur(6px);
+    background: rgba(15,23,42,.6);
   }
   .ntm-dp.on { display: flex; }
   .ntm-dp-box {
@@ -648,7 +661,6 @@ function doMap(data){
     tile.innerHTML=`<div class="ntm-tile-in">
       <div class="ntm-tile-cat" style="font-size:${catFs}px;">${esc(d.topic)}</div>
       ${tH>55?`<div class="ntm-tile-hl" style="font-size:${fs}px;-webkit-line-clamp:${lines};">${esc(d.topic)}</div>`:''}
-      <div class="ntm-tile-cnt">${d.count} docs</div>
     </div>`;
     tile.addEventListener('mouseenter',e=>showTip(e,`<b>${d.topic}</b> — ${d.count} articles`));
     tile.addEventListener('mousemove',moveTip);
@@ -743,18 +755,18 @@ window.openModal=function(d,idx){
   $('ntmMtitle').textContent=d.topic;
   $('ntmMbadge').textContent=`${d.count} docs`;
   $('ntmMback').classList.add('on');
-  $('ntmMbody').innerHTML='<p style="color:var(--muted);font-size:13px;padding:10px 0;">Loading articles…</p>';
+  $('ntmMbody').innerHTML='<p style="color:#64748b;font-size:13px;padding:10px 0;">Loading articles…</p>';
 
   const url=`${CFG.artApi}?project_id=${CFG.pid}&media=doc&start_date=${CFG.s}&end_date=${CFG.e}&rows=50`;
   fetch(url).then(r=>r.json()).then(json=>{
     const arts=(json.data||[]).filter(a=>((a.title||'')+(a.content||'')).toLowerCase().includes(d.topic.toLowerCase()));
     if(!arts.length){
       $('ntmMbody').innerHTML=`<div style="padding:24px 0;text-align:center;">
-        <p style="font-size:13px;color:var(--muted);">No articles found for "<b>${esc(d.topic)}</b>" in this period.</p>
-        <p style="font-size:12px;margin-top:6px;color:#94a3b8;">This topic has <b style="color:var(--green);">${d.count}</b> mentions in the corpus.</p>
+        <p style="font-size:13px;color:#64748b;">No articles found for "<b>${esc(d.topic)}</b>" in this period.</p>
+        <p style="font-size:12px;margin-top:6px;color:#94a3b8;">This topic has <b style="color:#038047;">${d.count}</b> mentions in the corpus.</p>
       </div>`; return;
     }
-    let h=`<p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Found ${arts.length} article(s) mentioning this topic</p>`;
+    let h=`<p style="font-size:12px;color:#64748b;margin-bottom:12px;">Found ${arts.length} article(s) mentioning this topic</p>`;
     arts.forEach(a=>{
       h+=`<div class="ntm-art">
         <a href="${esc(a.url||'#')}" target="_blank" rel="noopener">${esc(a.title||'Untitled')}</a>
@@ -767,7 +779,7 @@ window.openModal=function(d,idx){
     });
     $('ntmMbody').innerHTML=h;
   }).catch(()=>{
-    $('ntmMbody').innerHTML=`<p style="font-size:13px;color:var(--muted);padding:16px 0;">Topic has <b style="color:var(--green);">${d.count}</b> mentions. Article detail unavailable.</p>`;
+    $('ntmMbody').innerHTML=`<p style="font-size:13px;color:#64748b;padding:16px 0;">Topic has <b style="color:#038047;">${d.count}</b> mentions. Article detail unavailable.</p>`;
   });
 };
 window.ntmCloseM=function(){ $('ntmMback').classList.remove('on'); };
@@ -818,6 +830,24 @@ window.addEventListener('resize',()=>{
     if(D.raw.length&&D.view==='map')    doMap(D.fil);
     if(D.raw.length&&D.view==='bubble') doBub(D.fil);
   },300);
+});
+// Force apply button style via JS — bypass CSS cascade issue
+document.addEventListener('DOMContentLoaded', function() {
+  const applyBtn = document.querySelector('.ntm-apply');
+  if (applyBtn) {
+    applyBtn.style.setProperty('background', 'linear-gradient(135deg, #038047 0%, #026738 100%)', 'important');
+    applyBtn.style.setProperty('color', '#ffffff', 'important');
+    applyBtn.style.setProperty('border', 'none', 'important');
+    applyBtn.style.setProperty('padding', '9px 20px', 'important');
+    applyBtn.style.setProperty('border-radius', '10px', 'important');
+    applyBtn.style.setProperty('font-weight', '600', 'important');
+    applyBtn.style.setProperty('font-size', '13px', 'important');
+    applyBtn.style.setProperty('cursor', 'pointer', 'important');
+    applyBtn.style.setProperty('display', 'inline-flex', 'important');
+    applyBtn.style.setProperty('align-items', 'center', 'important');
+    applyBtn.style.setProperty('gap', '7px', 'important');
+    applyBtn.style.setProperty('box-shadow', '0 3px 10px rgba(3,128,71,.2)', 'important');
+  }
 });
 
 })();
