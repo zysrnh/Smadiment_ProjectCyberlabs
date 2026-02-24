@@ -150,7 +150,6 @@
   .rank-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
   .rank-table th { padding: 10px 14px; text-align: left; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 2px solid var(--bg); }
   .rank-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; color: var(--text); }
-  .rank-table tbody tr:hover { background: #fafbfc; }
   .rank-table tbody tr:last-child td { border-bottom: none; }
 
   .rank-num { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; background: var(--bg); color: var(--text-muted); }
@@ -192,9 +191,37 @@
   .tab-btn { padding: 7px 16px; border: none; border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--text-muted); background: transparent; transition: all 0.2s; }
   .tab-btn.active { background: var(--white); color: var(--green); box-shadow: var(--shadow); }
 
-  /* Media breakdown badges */
   .media-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
   .media-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
+
+  /* ── Mentions Popup ── */
+  @keyframes cmpPopIn { from{opacity:0;transform:translateY(10px) scale(.95)} to{opacity:1;transform:none} }
+  #cmpMentionPopup .cph { display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e2e8f0;background:#f8fafc;flex-shrink:0; }
+  #cmpMentionPopup .cpt { font-size:13px;font-weight:700;color:#1a202c;display:flex;align-items:center;gap:8px; }
+  #cmpMentionPopup .cpd { width:10px;height:10px;border-radius:50%;flex-shrink:0; }
+  #cmpMentionPopup .cpc { width:26px;height:26px;border-radius:6px;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:18px;line-height:1;transition:all .15s; }
+  #cmpMentionPopup .cpc:hover { background:#fee2e2;color:#991b1b; }
+  #cmpMentionPopup .cpm { padding:7px 16px;border-bottom:1px solid #e2e8f0;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:8px;flex-shrink:0; }
+  #cmpMentionPopup .cpb { background:#038047;color:#fff;border-radius:10px;padding:1px 9px;font-size:11px;font-weight:800; }
+  #cmpMentionPopup .cpl { overflow-y:auto;flex:1;padding:4px 0;min-height:0; }
+  #cmpMentionPopup .cpl::-webkit-scrollbar { width:5px; }
+  #cmpMentionPopup .cpl::-webkit-scrollbar-thumb { background:#e2e8f0;border-radius:4px; }
+  #cmpMentionPopup .cpi { display:flex;gap:10px;padding:10px 16px;border-bottom:1px solid #f8fafc;transition:background .1s; }
+  #cmpMentionPopup .cpi:last-child { border-bottom:none; }
+  #cmpMentionPopup .cpi:hover { background:#f8fafc; }
+  #cmpMentionPopup .cpa { width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#038047,#026738);color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;border:1.5px solid #e2e8f0; }
+  #cmpMentionPopup .cpa img { width:100%;height:100%;object-fit:cover;border-radius:50%; }
+  #cmpMentionPopup .cpbd { flex:1;min-width:0; }
+  #cmpMentionPopup .cpan { font-size:12px;font-weight:700;color:#1a202c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px; }
+  #cmpMentionPopup .cptx { font-size:12px;color:#374151;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:4px; }
+  #cmpMentionPopup .cprw { display:flex;align-items:center;gap:6px;font-size:10px;color:#94a3b8; }
+  #cmpMentionPopup .css  { padding:1px 7px;border-radius:10px;font-size:9px;font-weight:800; }
+  #cmpMentionPopup .css-p { background:#d1fae5;color:#065f46; }
+  #cmpMentionPopup .css-n { background:#fee2e2;color:#991b1b; }
+  #cmpMentionPopup .css-u { background:#f1f5f9;color:#374151; }
+  #cmpMentionPopup .cploading { padding:40px 20px;text-align:center;color:#64748b;font-size:13px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:12px; }
+  #cmpMentionPopup .cpspin { width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:#038047;border-radius:50%;animation:spin .7s linear infinite; }
+  #cmpMentionPopup .cpempty { padding:40px 20px;text-align:center;color:#94a3b8;font-size:13px;font-weight:600; }
 </style>
 @endsection
 
@@ -303,7 +330,7 @@
       <div class="section-head">
         <div>
           <h3>Volume by Media</h3>
-          <div class="section-sub">Breakdown per platform per project</div>
+          <div class="section-sub">Breakdown per platform per project — klik bar untuk lihat mentions</div>
         </div>
       </div>
       <div id="mediaBreakdown"></div>
@@ -361,6 +388,12 @@ const PALETTE = [
 const SENT_COLORS = { pos: '#10b981', net: '#64748b', neg: '#ef4444' };
 const MEDIA_LABELS = { doc:'Online News', twit:'X (Twitter)', fb:'Facebook', instagram:'Instagram', youtube:'YouTube', tiktok:'TikTok' };
 
+// Map warna per platform (untuk popup & bar)
+const MEDIA_COLORS = {
+  doc: '#3b82f6', twit: '#0ea5e9', fb: '#6366f1',
+  instagram: '#ec4899', youtube: '#ef4444', tiktok: '#6b7280'
+};
+
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
@@ -369,6 +402,11 @@ let selectedIds       = new Set();
 let compareData       = null;
 let volumeChart       = null;
 let currentVolumeType = 'line';
+
+// Popup state
+let _cmpPopup      = null;
+let _cmpPopupCache = {};
+let _platPicker    = null;
 
 // ═══════════════════════════════════════════════
 // INIT
@@ -484,6 +522,9 @@ async function runCompare() {
   const endDate   = document.getElementById('endDate').value;
   if (!startDate || !endDate) { alert('Please select a date range.'); return; }
 
+  // Reset popup cache saat compare baru dijalankan
+  _cmpPopupCache = {};
+
   showLoading(true);
   try {
     const ids = [...selectedIds].join(',');
@@ -532,7 +573,6 @@ function renderProjectCards(ids, details, volume, sentiment) {
     const { pos, neg, net } = sent;
     const total = pos + neg + net || 1;
 
-    // Media breakdown mini
     const byMedia = extractByMedia(volume, id);
     const mediaBadges = Object.entries(byMedia)
       .filter(([,v]) => v > 0)
@@ -591,7 +631,6 @@ function renderVolumeChart(ids, details, volume) {
   const canvas = document.getElementById('volumeChart');
   const legend = document.getElementById('volumeLegend');
 
-  // compare_projects doesn't return daily trend — show total as single bar
   const totals = ids.map(id => extractVolumeTotal(volume, id));
   const labels = ids.map(id => {
     const p = details[id] || details[String(id)] || {};
@@ -642,12 +681,15 @@ function renderVolumeChart(ids, details, volume) {
   }).join('');
 }
 
-// ── Volume Ranking ─────────────────────────────
+// ── Volume Ranking — baris bisa diklik ────────
 function renderVolumeRanking(ids, details, volume) {
   const container = document.getElementById('volumeRanking');
+  const startDate = document.getElementById('startDate').value;
+  const endDate   = document.getElementById('endDate').value;
+
   const ranked = ids.map((id, i) => ({
     id, i,
-    title: (details[id]||details[String(id)]||{}).title || 'Project #' + id,
+    title: (details[id] || details[String(id)] || {}).title || 'Project #' + id,
     total: extractVolumeTotal(volume, id),
   })).sort((a, b) => b.total - a.total);
 
@@ -659,23 +701,37 @@ function renderVolumeRanking(ids, details, volume) {
       <table class="rank-table">
         <thead><tr><th>#</th><th>Project</th><th>Total</th><th>Bar</th></tr></thead>
         <tbody>
-          ${ranked.map((item, rank) => `
-            <tr>
-              <td><div class="rank-num ${rankClasses[rank]||''}">${rank+1}</div></td>
-              <td>
-                <div style="font-weight:600;font-size:13px">${escHtml(truncate(item.title,35))}</div>
-                <div style="font-size:10px;color:${PALETTE[item.i%PALETTE.length]};font-weight:700;margin-top:2px">●</div>
-              </td>
-              <td style="font-weight:700;font-size:15px">${fmtNum(item.total)}</td>
-              <td class="bar-cell">
-                <div class="bar-track">
-                  <div class="bar-fill" style="width:0%;background:${PALETTE[item.i%PALETTE.length]}" data-pct="${((item.total/max)*100).toFixed(0)}"></div>
-                </div>
-              </td>
-            </tr>
-          `).join('')}
+          ${ranked.map((item, rank) => {
+            const pct   = ((item.total / max) * 100).toFixed(0);
+            const color = PALETTE[item.i % PALETTE.length];
+            const jsTitle = item.title.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            return `
+              <tr
+                style="cursor:pointer;transition:background .15s"
+                onmouseover="this.style.background='#f8fafc'"
+                onmouseout="this.style.background=''"
+                onclick="_openPlatPicker(event,'${item.id}','${jsTitle}','${startDate}','${endDate}')"
+                title="Klik untuk lihat mentions per platform"
+              >
+                <td><div class="rank-num ${rankClasses[rank]||''}">${rank+1}</div></td>
+                <td>
+                  <div style="font-weight:600;font-size:13px">${escHtml(truncate(item.title,35))}</div>
+                  <div style="font-size:10px;color:${color};font-weight:700;margin-top:2px">●</div>
+                </td>
+                <td style="font-weight:700;font-size:15px">${fmtNum(item.total)}</td>
+                <td class="bar-cell">
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width:0%;background:${color}" data-pct="${pct}"></div>
+                  </div>
+                </td>
+              </tr>`;
+          }).join('')}
         </tbody>
       </table>
+    </div>
+    <div style="padding:8px 14px;font-size:11px;color:var(--text-muted);text-align:center;border-top:1px solid #f1f5f9;font-weight:500">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;vertical-align:-1px;margin-right:3px"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
+      Klik baris untuk lihat mentions per platform
     </div>`;
 
   setTimeout(() => {
@@ -683,41 +739,62 @@ function renderVolumeRanking(ids, details, volume) {
   }, 100);
 }
 
-// ── Media Breakdown ────────────────────────────
+// ── Media Breakdown — bar bisa diklik ─────────
 function renderMediaBreakdown(ids, details, volume) {
   const container = document.getElementById('mediaBreakdown');
   const mediaKeys = ['doc','twit','fb','instagram','youtube','tiktok'];
+  const startDate = document.getElementById('startDate').value;
+  const endDate   = document.getElementById('endDate').value;
 
   container.innerHTML = ids.map((id, i) => {
-    const p      = details[id] || details[String(id)] || {};
-    const color  = PALETTE[i % PALETTE.length];
+    const p       = details[id] || details[String(id)] || {};
+    const color   = PALETTE[i % PALETTE.length];
     const byMedia = extractByMedia(volume, id);
-    const total  = extractVolumeTotal(volume, id) || 1;
+    const total   = extractVolumeTotal(volume, id) || 1;
+    const jsTitle = (p.title || 'Project #' + id).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
     const bars = mediaKeys.map(k => {
       const val = byMedia[k] || 0;
       if (!val) return '';
-      const pct = ((val / total) * 100).toFixed(1);
+      const pct       = ((val / total) * 100).toFixed(1);
+      const platColor = MEDIA_COLORS[k] || color;
+
       return `
-        <div style="margin-bottom:8px">
-          <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;margin-bottom:3px">
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:600;margin-bottom:4px">
             <span style="color:var(--text-muted)">${MEDIA_LABELS[k]||k}</span>
-            <span style="color:var(--text)">${fmtNum(val)} <span style="color:var(--text-muted);font-weight:500">(${pct}%)</span></span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="color:var(--text)">${fmtNum(val)} <span style="color:var(--text-muted);font-weight:500">(${pct}%)</span></span>
+              <button
+                type="button"
+                onclick="openCmpMentionPopup('${id}','${jsTitle}','${k}','${startDate}','${endDate}',event.clientX,event.clientY);event.stopPropagation()"
+                style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;border:1px solid ${platColor}40;background:${platColor}12;color:${platColor};font-size:10px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;transition:all .15s"
+                onmouseover="this.style.background='${platColor}28';this.style.borderColor='${platColor}'"
+                onmouseout="this.style.background='${platColor}12';this.style.borderColor='${platColor}40'"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:10px;height:10px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                Lihat
+              </button>
+            </div>
           </div>
-          <div class="bar-track" style="height:6px">
-            <div class="bar-fill" style="width:0%;background:${color}" data-pct="${pct}"></div>
+          <div
+            class="bar-track"
+            style="height:8px;cursor:pointer"
+            title="Klik untuk lihat mentions ${MEDIA_LABELS[k]||k}"
+            onclick="openCmpMentionPopup('${id}','${jsTitle}','${k}','${startDate}','${endDate}',event.clientX,event.clientY)"
+          >
+            <div class="bar-fill" style="width:0%;background:${platColor}" data-pct="${pct}"></div>
           </div>
         </div>`;
     }).join('');
 
     return `
       <div style="padding:16px;border:1px solid var(--border);border-radius:12px;border-top:3px solid ${color}">
-        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">${escHtml(p.title||'Project #'+id)}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">${escHtml(truncate(p.title||'Project #'+id,35))}</div>
         ${bars || '<p style="font-size:12px;color:var(--text-muted)">No media data</p>'}
       </div>`;
   }).join('');
 
-  // Grid layout
   container.style.display = 'grid';
   container.style.gridTemplateColumns = `repeat(${Math.min(ids.length, 3)}, 1fr)`;
   container.style.gap = '16px';
@@ -787,27 +864,17 @@ function switchSentView(type, btn) {
 }
 
 // ═══════════════════════════════════════════════
-// DATA EXTRACTION — matches actual MK API structure:
-//
-// volumetotal response:
-//   { "17143": { volume_total: { all: { total: "23231" }, bymedia: { doc:"10441", twit:"11383", ... } } } }
-//
-// sentimenttotal response:
-//   { "17143": { sentiment_total: { pos: "13741", neg: "5791", net: "3699" } } }
+// DATA EXTRACTION
 // ═══════════════════════════════════════════════
-
 function getProjectNode(data, projectId) {
   if (!data || typeof data !== 'object') return null;
-  // Try string key first, then integer key
   return data[String(projectId)] ?? data[parseInt(projectId)] ?? null;
 }
 
 function extractVolumeTotal(data, projectId) {
   const node = getProjectNode(data, projectId);
   if (!node) return 0;
-  // Primary: volume_total.all.total
   if (node.volume_total?.all?.total !== undefined) return int(node.volume_total.all.total);
-  // Fallback: direct numeric
   if (typeof node === 'number') return node;
   return 0;
 }
@@ -841,5 +908,307 @@ function fmtDate(d) { return d.toISOString().split('T')[0]; }
 function int(v) { return parseInt(v, 10) || 0; }
 function truncate(s, n) { return s && s.length > n ? s.slice(0, n) + '…' : (s || ''); }
 function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ═══════════════════════════════════════════════
+// ════════════════════════════════════════════════
+// MENTIONS POPUP
+// ════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+
+// ── Build popup DOM (sekali saja) ─────────────
+function _buildCmpPopup() {
+  if (_cmpPopup) return;
+  _cmpPopup = document.createElement('div');
+  _cmpPopup.id = 'cmpMentionPopup';
+  _cmpPopup.style.cssText = `
+    position:fixed;z-index:99999;
+    background:#fff;border:1px solid #e2e8f0;border-radius:14px;
+    box-shadow:0 24px 64px rgba(0,0,0,.2),0 4px 16px rgba(0,0,0,.08);
+    width:400px;height:540px;display:none;flex-direction:column;
+    overflow:hidden;pointer-events:auto;
+    animation:cmpPopIn .18s cubic-bezier(.34,1.56,.64,1);
+    font-family:'Poppins',sans-serif;
+  `;
+  _cmpPopup.innerHTML = `
+    <div class="cph">
+      <div class="cpt"><div class="cpd" id="cmpPopDot"></div><span id="cmpPopTitle">Mentions</span></div>
+      <button class="cpc" onclick="closeCmpPopup()">×</button>
+    </div>
+    <div class="cpm">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;flex-shrink:0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <span id="cmpPopMeta">—</span>
+      <span class="cpb" id="cmpPopCount">…</span>
+      <span>mentions</span>
+    </div>
+    <div class="cpl" id="cmpPopList"></div>
+  `;
+  document.body.appendChild(_cmpPopup);
+
+  // Tutup kalau klik di luar
+  document.addEventListener('mousedown', function(e) {
+    if (_cmpPopup && _cmpPopup.style.display === 'flex' && !_cmpPopup.contains(e.target)) {
+      closeCmpPopup();
+    }
+  }, false);
+}
+
+// ── Posisi popup ──────────────────────────────
+function _positionCmpPopup(x, y) {
+  const pw = 400, ph = 540, vw = window.innerWidth, vh = window.innerHeight;
+  let left = x + 16, top = y - 40;
+  if (left + pw > vw - 12) left = x - pw - 16;
+  if (top + ph > vh - 12) top = vh - ph - 12;
+  if (top < 8) top = 8;
+  if (left < 8) left = 8;
+  _cmpPopup.style.left = left + 'px';
+  _cmpPopup.style.top  = top + 'px';
+}
+
+// ── Buka popup ────────────────────────────────
+async function openCmpMentionPopup(projectId, projectTitle, platform, startDate, endDate, x, y) {
+  _buildCmpPopup();
+
+  const color     = MEDIA_COLORS[platform] || '#038047';
+  const platLabel = MEDIA_LABELS[platform] || platform;
+
+  document.getElementById('cmpPopDot').style.background = color;
+  document.getElementById('cmpPopTitle').textContent    = truncate(projectTitle, 28) + ' · ' + platLabel;
+  document.getElementById('cmpPopMeta').textContent     = startDate + ' – ' + endDate;
+  document.getElementById('cmpPopCount').textContent    = '…';
+
+  const list = document.getElementById('cmpPopList');
+  list.innerHTML = `<div class="cploading"><div class="cpspin"></div>Memuat mentions…</div>`;
+
+  _cmpPopup.style.display = 'flex';
+  _positionCmpPopup(x, y);
+
+  const cacheKey = `${projectId}_${platform}_${startDate}_${endDate}`;
+
+  try {
+    let items = _cmpPopupCache[cacheKey];
+    if (!items) {
+      items = await _fetchCmpMentions(projectId, platform, startDate, endDate);
+      _cmpPopupCache[cacheKey] = items;
+    }
+    document.getElementById('cmpPopCount').textContent = fmtNum(items.length);
+    _renderCmpList(list, items, platform);
+  } catch (e) {
+    list.innerHTML = `<div class="cpempty">❌ Gagal memuat data<br><small style="font-size:11px;color:#94a3b8;margin-top:4px;display:block">${escHtml(e.message)}</small></div>`;
+    document.getElementById('cmpPopCount').textContent = '0';
+  }
+}
+
+function closeCmpPopup() {
+  if (_cmpPopup) _cmpPopup.style.display = 'none';
+}
+
+// ── Fetch mentions dari API ───────────────────
+async function _fetchCmpMentions(projectId, platform, startDate, endDate) {
+  const base = '/mk/api/news';
+  const q    = `project_id=${projectId}&start_date=${startDate}&end_date=${endDate}&rows=500&start=0`;
+
+  const endpointMap = {
+    doc:       `${base}/mentions?${q}`,
+    twit:      `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,
+    fb:        `${base}/fb-top-status?${q}&sub=fblike`,
+    instagram: `${base}/ig-top-status?${q}&sub=postbylike`,
+    youtube:   `${base}/ytb-top-status?${q}`,
+    tiktok:    `${base}/tiktok-top-status?${q}&sub=postbylike`,
+  };
+
+  const url = endpointMap[platform];
+  if (!url) throw new Error('Platform tidak dikenali: ' + platform);
+
+  const ctrl = new AbortController();
+  const tid  = setTimeout(() => ctrl.abort(), 30000);
+  const res  = await fetch(url, { signal: ctrl.signal });
+  clearTimeout(tid);
+
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+
+  let items = [];
+  if (data.success === true && Array.isArray(data.data)) items = data.data;
+  else if (Array.isArray(data.data)) items = data.data;
+  else if (Array.isArray(data)) items = data;
+
+  // Filter doc-only dari mentions campuran
+  if (platform === 'doc') {
+    items = items.filter(m => {
+      const tc = String(m.tcode || '').toLowerCase();
+      const mt = String(m.media_type || '').toLowerCase();
+      return tc === 'berita' || mt === 'berita' || mt === 'doc' || mt === 'news' || mt === 'online' || mt === 'article';
+    });
+  }
+
+  return items;
+}
+
+// ── Render list mentions ──────────────────────
+function _renderCmpList(list, items, platform) {
+  if (!items.length) {
+    list.innerHTML = `<div class="cpempty">📭 Tidak ada mentions untuk periode ini.</div>`;
+    return;
+  }
+
+  const SHOW = 60;
+  let html = items.slice(0, SHOW).map(item => {
+    const name    = _cmpName(item, platform);
+    const text    = _cmpContent(item);
+    const ini     = _cmpIni(name);
+    const sent    = _cmpSent(item.class_sentiment || item.sentiment || '0');
+    const sntCls  = sent === '1' ? 'css-p' : sent === '-1' ? 'css-n' : 'css-u';
+    const sntLbl  = sent === '1' ? 'Pos'   : sent === '-1' ? 'Neg'   : 'Neu';
+    const dt      = _cmpDate(item.date_created || '');
+    const eng     = _cmpEng(item, platform);
+    const safeIni = ini.replace(/'/g,'').replace(/"/g,'');
+
+    let avaHtml = ini;
+    const av = item.avatar_url || item.image || '';
+    if (av && String(av).startsWith('http')) {
+      avaHtml = `<img src="${escHtml(av)}" onerror="this.parentElement.textContent='${safeIni}'">`;
+    }
+
+    return `<div class="cpi">
+      <div class="cpa">${avaHtml}</div>
+      <div class="cpbd">
+        <div class="cpan">${escHtml(name)}</div>
+        <div class="cptx">${escHtml(text || '(tidak ada konten)')}</div>
+        <div class="cprw">
+          <span class="css ${sntCls}">${sntLbl}</span>
+          ${eng ? `<span>${eng}</span>` : ''}
+          ${dt ? `<span style="margin-left:auto">${dt}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (items.length > SHOW) {
+    html += `<div style="padding:9px 16px;text-align:center;font-size:11px;font-weight:600;color:#64748b;background:#f8fafc;border-top:1px dashed #e2e8f0;">
+      +${fmtNum(items.length - SHOW)} mentions lainnya
+    </div>`;
+  }
+
+  list.innerHTML = html;
+}
+
+// ── Helpers popup ─────────────────────────────
+function _cmpName(item, platform) {
+  const h = item.author_scr_name || item.author_id || item.username || '';
+  return platform === 'doc'
+    ? (item.author_name || item.publisher || item.source_name || item.hostname || h || 'Unknown')
+    : (item.author_name || h || 'Unknown');
+}
+function _cmpContent(item) {
+  return ((item.content || item.name || item.title || item.text || '')
+    .replace(/<[^>]*>/g, '').trim().slice(0, 200));
+}
+function _cmpIni(name) {
+  if (!name || name === 'Unknown') return '?';
+  const p = name.trim().split(/\s+/);
+  return p.length === 1 ? p[0].slice(0,2).toUpperCase() : (p[0][0]+p[p.length-1][0]).toUpperCase();
+}
+function _cmpSent(v) {
+  const s = String(v).toLowerCase().trim();
+  if (s==='1'||s==='positive'||s==='positif') return '1';
+  if (s==='-1'||s==='2'||s==='negative'||s==='negatif') return '-1';
+  return '0';
+}
+function _cmpDate(str) {
+  if (!str) return '';
+  try { return new Date(str).toLocaleDateString('id-ID', {day:'2-digit',month:'short',year:'numeric'}); }
+  catch(e) { return str.split('T')[0]; }
+}
+function _cmpEng(item, platform) {
+  const fmt = n => (n > 0) ? fmtNum(n) : null;
+  const parts = [];
+  if (platform === 'twit') {
+    const rt = fmt(item.num_retweeted || item.retweet_count || 0);
+    const lk = fmt(item.num_likes || item.likes || item.favorite_count || 0);
+    if (rt) parts.push(rt + ' RT');
+    if (lk) parts.push(lk + ' ❤');
+  } else if (platform === 'youtube') {
+    const v = fmt(item.num_views || item.views || 0);
+    if (v) parts.push(v + ' 👁');
+  } else if (platform === 'tiktok') {
+    const v  = fmt(item.views || item.num_views || 0);
+    const lk = fmt(item.likes || item.num_likes || 0);
+    if (v)  parts.push(v + ' 👁');
+    if (lk) parts.push(lk + ' ❤');
+  } else if (platform === 'instagram') {
+    const lk = fmt(item.num_likes || item.likes || 0);
+    if (lk) parts.push(lk + ' ❤');
+  } else if (platform === 'fb') {
+    const lk = fmt(item.likes || item.num_likes || 0);
+    if (lk) parts.push(lk + ' 👍');
+  }
+  return parts.join(' · ');
+}
+
+// ── Platform Picker (klik row ranking) ────────
+function _openPlatPicker(event, projectId, projectTitle, startDate, endDate) {
+  event.stopPropagation();
+  if (_platPicker) { _platPicker.remove(); _platPicker = null; }
+
+  const PLATS = [
+    { key:'doc',       label:'Online News', icon:'📰' },
+    { key:'twit',      label:'Twitter/X',   icon:'🐦' },
+    { key:'fb',        label:'Facebook',    icon:'📘' },
+    { key:'instagram', label:'Instagram',   icon:'📸' },
+    { key:'youtube',   label:'YouTube',     icon:'▶️' },
+    { key:'tiktok',    label:'TikTok',      icon:'🎵' },
+  ];
+
+  _platPicker = document.createElement('div');
+  _platPicker.style.cssText = `
+    position:fixed;z-index:999999;
+    background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+    box-shadow:0 16px 40px rgba(0,0,0,.18),0 4px 12px rgba(0,0,0,.08);
+    padding:6px;min-width:168px;
+    animation:cmpPopIn .15s ease-out;font-family:'Poppins',sans-serif;
+  `;
+
+  const hdr = document.createElement('div');
+  hdr.style.cssText = 'padding:5px 10px 8px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #f1f5f9;margin-bottom:4px;';
+  hdr.textContent = 'Pilih Platform';
+  _platPicker.appendChild(hdr);
+
+  PLATS.forEach(p => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.style.cssText = "display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;border:none;font-family:'Poppins',sans-serif;width:100%;text-align:left;color:#374151;transition:background .12s;";
+    btn.innerHTML = `<span style="font-size:14px">${p.icon}</span><span>${p.label}</span><span style="margin-left:auto;width:9px;height:9px;border-radius:50%;background:${MEDIA_COLORS[p.key]||'#94a3b8'};flex-shrink:0;display:inline-block"></span>`;
+    btn.onmouseover = () => btn.style.background = '#f8fafc';
+    btn.onmouseout  = () => btn.style.background = 'transparent';
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      if (_platPicker) { _platPicker.remove(); _platPicker = null; }
+      openCmpMentionPopup(projectId, projectTitle, p.key, startDate, endDate, event.clientX, event.clientY);
+    };
+    _platPicker.appendChild(btn);
+  });
+
+  document.body.appendChild(_platPicker);
+
+  // Posisi picker
+  const pw = 168, ph = PLATS.length * 34 + 50;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let left = event.clientX + 10, top = event.clientY - 10;
+  if (left + pw > vw - 8) left = event.clientX - pw - 10;
+  if (top + ph > vh - 8) top = vh - ph - 8;
+  if (top < 8) top = 8;
+  _platPicker.style.left = left + 'px';
+  _platPicker.style.top  = top + 'px';
+
+  // Tutup kalau klik di luar
+  setTimeout(() => {
+    document.addEventListener('mousedown', function _close(e) {
+      if (_platPicker && !_platPicker.contains(e.target)) {
+        _platPicker.remove(); _platPicker = null;
+        document.removeEventListener('mousedown', _close);
+      }
+    });
+  }, 50);
+}
 </script>
 @endsection
