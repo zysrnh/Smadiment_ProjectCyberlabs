@@ -209,9 +209,7 @@
   .lazy-load-row.show { display:block; }
   .lazy-load-info { font-size:12px; color:var(--text-secondary); font-weight:500; display:flex; align-items:center; justify-content:center; gap:8px; }
 
-  /* ═══════════════════════════════════════════════════════════
-     CHART POPUP — fixed: per-platform only + internal scroll
-     ═══════════════════════════════════════════════════════════ */
+  /* CHART POPUP */
   .chart-popup {
     position: fixed;
     z-index: 99999;
@@ -220,7 +218,6 @@
     border-radius: 14px;
     box-shadow: 0 24px 64px rgba(0,0,0,.2), 0 4px 16px rgba(0,0,0,.08);
     width: 380px;
-    /* FIX: Tinggi fixed biar list bisa scroll di dalam popup */
     height: 520px;
     display: none;
     flex-direction: column;
@@ -238,7 +235,7 @@
     padding: 13px 16px 11px;
     border-bottom: 1px solid var(--border-gray);
     background: var(--bg-gray-50);
-    flex-shrink: 0; /* FIX: header tidak ikut scroll */
+    flex-shrink: 0;
   }
   .chart-popup-title {
     font-size: 13px; font-weight: 700; color: var(--text-primary);
@@ -260,19 +257,18 @@
     font-size: 11px; font-weight: 700; color: var(--text-secondary);
     text-transform: uppercase; letter-spacing: .5px;
     display: flex; align-items: center; gap: 8px;
-    flex-shrink: 0; /* FIX: tidak ikut scroll */
+    flex-shrink: 0;
   }
   .chart-popup-count-badge {
     background: var(--primary-green); color: #fff;
     border-radius: 10px; padding: 2px 9px;
     font-size: 11px; font-weight: 800;
   }
-  /* FIX: List yang bisa scroll — flex:1 + overflow-y:auto */
   .chart-popup-list {
     overflow-y: auto;
     flex: 1;
     padding: 4px 0;
-    min-height: 0; /* critical untuk flex scroll */
+    min-height: 0;
   }
   .chart-popup-list::-webkit-scrollbar { width: 5px; }
   .chart-popup-list::-webkit-scrollbar-track { background: transparent; }
@@ -311,8 +307,6 @@
     display: inline-flex; align-items: center; gap: 3px;
   }
   .chart-popup-item-link:hover { text-decoration: underline; }
-  .chart-popup-empty { text-align: center; padding: 36px 20px; color: var(--text-secondary); font-size: 13px; }
-  /* FIX: Footer tetap di bawah, tidak scroll */
   .chart-popup-footer {
     padding: 10px 16px;
     border-top: 1px solid var(--border-gray);
@@ -327,18 +321,6 @@
   }
   .chart-popup-footer-btn:hover { background: rgba(3,128,71,.08); border-color: var(--primary-green); }
 
-  /* Popup platform pills (untuk mode all-platform) */
-  .cp-plat-pills {
-    display: flex; gap: 5px; flex-wrap: wrap;
-    padding: 8px 16px; border-bottom: 1px solid var(--border-gray);
-    background: var(--bg-white); flex-shrink: 0;
-  }
-  .cp-plat-pill {
-    padding: 2px 10px; border-radius: 20px; font-size: 10px; font-weight: 700;
-    border: 1px solid; cursor: pointer; transition: all .15s; opacity: .55;
-  }
-  .cp-plat-pill.active { opacity: 1; }
-
   @media(max-width:768px){
     .dashboard-container{padding:16px;} .content-cell{max-width:200px;} .filter-content{flex-direction:column;align-items:stretch;}
     .date-trigger{min-width:auto;} .apply-btn{width:100%;justify-content:center;}
@@ -350,6 +332,7 @@
   }
 </style>
 @endsection
+
 @section('content')
 <div class="dashboard-container">
   <div class="page-header">
@@ -559,6 +542,7 @@
   @endif
 </div>
 @endsection
+
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
@@ -663,8 +647,6 @@ var PLAT_CFG_DONUT=[
   {key:'ytb',   label:'YouTube',     color:'#ef4444'},
   {key:'tiktok',label:'TikTok',      color:'#6b7280'}
 ];
-
-// Dates array
 var chartDates = [];
 
 // ═══════════════════════════════════════════════════════════
@@ -679,12 +661,39 @@ function fmtDate(str){
   catch(e){return{d:str,t:''};}
 }
 function initials(n){if(!n||n==='Unknown')return'?';var p=n.trim().split(/\s+/);return p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase();}
+
+// ═══════════════════════════════════════════════════════════
+// FIX UTAMA: Normalisasi sentiment — handle semua kemungkinan value dari API
+// API bisa return: '1'/'positive'/'positif' → pos
+//                 '-1'/'2'/'negative'/'negatif' → neg  ← '2' sering jadi masalah!
+//                 '0'/'3'/'neutral'/'netral' → neu
+// ═══════════════════════════════════════════════════════════
+function normSentiment(v){
+  if(v===null||v===undefined)return'0';
+  var s=String(v).toLowerCase().trim();
+  // Positive
+  if(s==='1'||s==='positive'||s==='positif')return'1';
+  // Negative — '2' adalah encoding alternatif yang sering dipakai MK API
+  if(s==='-1'||s==='2'||s==='negative'||s==='negatif')return'-1';
+  // Neutral — '3' juga sering muncul
+  if(s==='0'||s==='3'||s==='neutral'||s==='netral'||s==='neu')return'0';
+  // Coba parse integer sebagai fallback terakhir
+  var n=parseInt(s,10);
+  if(!isNaN(n)){
+    if(n===1)return'1';
+    if(n===-1||n===2)return'-1';
+    if(n===0||n===3)return'0';
+  }
+  return'0';
+}
+
 function sentBadge(v){
-  var s=String(v||'0').toLowerCase().trim();
-  if(s==='1'||s==='positive'||s==='positif')return'<span class="sent-badge sp">Positive</span>';
-  if(s==='-1'||s==='negative'||s==='negatif')return'<span class="sent-badge sn">Negative</span>';
+  var s=normSentiment(v);
+  if(s==='1')return'<span class="sent-badge sp">Positive</span>';
+  if(s==='-1')return'<span class="sent-badge sn">Negative</span>';
   return'<span class="sent-badge su">Neutral</span>';
 }
+
 function mediaBadge(p){
   var map={doc:['mb-doc','News'],twit:['mb-twit','Twitter'],fb:['mb-fb','Facebook'],ig:['mb-ig','Instagram'],ytb:['mb-ytb','YouTube'],tiktok:['mb-tiktok','TikTok']};
   var r=map[p]||['mb-doc','Other'];
@@ -740,14 +749,11 @@ function detectPlatform(item){
 // ═══════════════════════════════════════════════════════════
 // NORMALIZE ITEM
 // ═══════════════════════════════════════════════════════════
-
-// Helper: pastikan value adalah string teks bukan angka/boolean
 function _safeStr(v){
   if(!v)return'';
   var s=String(v).trim();
-  // Tolak kalau pure angka, atau sangat pendek tapi bukan huruf
-  if(/^\d+$/.test(s))return''; // angka murni → skip
-  if(s.length<2)return'';       // 1 karakter → skip
+  if(/^\d+$/.test(s))return'';
+  if(s.length<2)return'';
   return s;
 }
 
@@ -756,7 +762,6 @@ function norm(item,platform){
   if(item.author&&typeof item.author==='string'){try{authorObj=JSON.parse(item.author);}catch(e){}}
   else if(item.author&&typeof item.author==='object'&&item.author!==null){authorObj=item.author;}
 
-  // Handle/username — pakai _safeStr supaya angka ga masuk
   var authorHandle=_safeStr(item.author_scr_name)
     ||_safeStr(item.author_id)
     ||_safeStr(authorObj.scr_name)
@@ -766,7 +771,6 @@ function norm(item,platform){
     ||_safeStr(item.user_name)
     ||'';
 
-  // Author name — pakai _safeStr, khusus doc ada banyak fallback
   var authorName='';
   if(platform==='doc'){
     authorName=_safeStr(authorObj.name)
@@ -780,15 +784,12 @@ function norm(item,platform){
       ||_safeStr(item.source)
       ||authorHandle
       ||'';
-    // Kalau masih kosong, ekstrak dari hostname → jadi "nama media"
     if(!authorName){
       var hn=item.hostname||'';
       if(!hn&&item.url){try{hn=new URL(item.url.startsWith('http')?item.url:'https://'+item.url).hostname;}catch(e){}}
       hn=hn.replace(/^www\./,'');
-      // Ambil bagian pertama domain (sebelum titik pertama)
       var domPart=hn.split('.')[0]||'';
       if(domPart.length>=2){
-        // CamelCase sederhana: capitalize tiap kata setelah tanda non-huruf
         authorName=domPart.replace(/[-_]/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});
       }
     }
@@ -803,7 +804,6 @@ function norm(item,platform){
       ||'';
   }
 
-  // Avatar: cek banyak field, pastikan URL valid
   function _validUrl(u){return u&&typeof u==='string'&&u.trim().startsWith('http');}
   var rawAvatar=
     (_validUrl(item.avatar_url)&&item.avatar_url)
@@ -825,7 +825,10 @@ function norm(item,platform){
   var hostname='';
   if(item.hostname){hostname=item.hostname;}
   else if(item.url){try{hostname=new URL(item.url.startsWith('http')?item.url:'https://'+item.url).hostname;}catch(e){}}
-  var sent=String(item.class_sentiment||item.sentiment||item.sentiment_id||'0').toLowerCase().trim();
+
+  // ★ FIX: Gunakan normSentiment() — handle '2' = negatif, dsb.
+  var sent=normSentiment(item.class_sentiment||item.sentiment||item.sentiment_id||item.sentiment_str||'0');
+
   var numLikes,numComments,numShares,numViews,numRetweet,numFollowers;
   if(platform==='twit'){
     numLikes=(parseInt(item.num_likes||item.likes||item.favorite_count||0,10));
@@ -882,7 +885,8 @@ function norm(item,platform){
     date_created:item.date_created||item.created_at||item.published_at||'',
     num_likes:numLikes,num_comments:numComments,num_shares:numShares,
     num_views:numViews,num_retweeted:numRetweet,num_followers:numFollowers,
-    class_sentiment:sent,mention_type:item.mention_type||item.tcode||item.type||'post',
+    class_sentiment:sent,  // ★ sudah dinormalisasi: '1', '-1', atau '0'
+    mention_type:item.mention_type||item.tcode||item.type||'post',
   };
 }
 
@@ -1031,6 +1035,7 @@ function updateTabCounts(){
 
 // ═══════════════════════════════════════════════════════════
 // STATS — donut charts
+// FIX: Pakai normSentiment() yang sudah ter-normalize di store
 // ═══════════════════════════════════════════════════════════
 function renderStats(){
   var platVals=PLAT_CFG_DONUT.map(function(p){return(store[p.key]||[]).length;});
@@ -1052,9 +1057,14 @@ function renderStats(){
       callbacks:{label:function(ctx){var t=platVals.reduce(function(a,b){return a+b;},0);
       return' '+ctx.label+': '+fmtN(ctx.parsed)+'('+(t>0?((ctx.parsed/t)*100).toFixed(1):0)+'%)';}}}}}
   });
-  var pos=store.all.filter(function(m){var s=String(m.class_sentiment||'').toLowerCase();return s==='1'||s==='positive'||s==='positif';}).length;
-  var neg=store.all.filter(function(m){var s=String(m.class_sentiment||'').toLowerCase();return s==='-1'||s==='negative'||s==='negatif';}).length;
-  var neu=store.all.length-pos-neg;var sentTotal=store.all.length;
+
+  // ★ FIX: class_sentiment di store sudah dinormalisasi jadi '1', '-1', '0'
+  // jadi cukup compare langsung, tidak perlu cek berbagai variant string
+  var pos=store.all.filter(function(m){return m.class_sentiment==='1';}).length;
+  var neg=store.all.filter(function(m){return m.class_sentiment==='-1';}).length;
+  var neu=store.all.length-pos-neg;
+  var sentTotal=store.all.length;
+
   document.getElementById('donutTotalSent').textContent=fmtN(sentTotal);
   [['pos',pos],['neg',neg],['neu',neu]].forEach(function(arr){
     var pct=sentTotal>0?((arr[1]/sentTotal)*100).toFixed(1):'0.0';
@@ -1074,8 +1084,7 @@ function renderStats(){
 }
 
 // ═══════════════════════════════════════════════════════════
-// CHART — Line / Area / Bar / Log
-// FIX: onClick hanya tangkap platform dot yang paling dekat
+// CHART
 // ═══════════════════════════════════════════════════════════
 function setChartMode(mode){
   chartMode=mode;
@@ -1107,17 +1116,14 @@ function renderChart(){
       borderColor:cfg.color,
       backgroundColor:isBar?cfg.color+'cc':isArea?cfg.color+'33':cfg.color+'15',
       borderWidth:isBar?0:2,tension:isBar?0:0.4,fill:isArea,
-      // FIX: Perbesar pointRadius biar mudah diklik
       pointRadius:isBar?0:(data.length>30?3:5),
       pointHoverRadius:10,
       pointBackgroundColor:cfg.color,pointBorderColor:'#fff',pointBorderWidth:2,
-      // FIX: pointHitRadius besar biar area klik lebih luas
       pointHitRadius:isBar?0:12,
       hidden:hiddenPlatforms.has(p)
     };
   });
 
-  // Rebuild legend
   document.getElementById('chartLegend').innerHTML=PLAT_KEYS.map(function(p){
     var cfg=PLATFORM_CFG[p],total=(store[p]||[]).length;
     var off=hiddenPlatforms.has(p),loading=loadingPlatforms.has(p);
@@ -1149,7 +1155,6 @@ function renderChart(){
     },
     options:{
       responsive:true,maintainAspectRatio:false,
-      // FIX: mode 'nearest' + intersect:true → hanya tangkap 1 dataset (platform) yang paling dekat
       interaction:{mode:'nearest',intersect:true},
       onHover:function(event,elements){
         if(event.native&&event.native.target){
@@ -1158,17 +1163,10 @@ function renderChart(){
       },
       onClick:function(event,elements){
         if(!event.native){closeChartPopup();return;}
-        // FIX: Cukup pakai elements langsung dari onClick
-        // elements sudah difilter nearest+intersect dari options.interaction
-        if(!elements||!elements.length){
-          closeChartPopup();
-          return;
-        }
-        // Ambil element teratas (paling dekat kursor)
+        if(!elements||!elements.length){closeChartPopup();return;}
         var el=elements[0];
         var dateStr=chartDates[el.index];
         var platKey=PLAT_KEYS[el.datasetIndex]||null;
-        // Jangan buka popup kalau platformnya di-hide
         if(platKey&&hiddenPlatforms.has(platKey)){closeChartPopup();return;}
         openChartPopup(dateStr,platKey,event.native.clientX,event.native.clientY);
       },
@@ -1178,7 +1176,6 @@ function renderChart(){
           backgroundColor:'#1e293b',titleColor:'#e2e8f0',bodyColor:'#cbd5e1',
           footerColor:'#94a3b8',padding:14,cornerRadius:10,displayColors:true,
           boxWidth:10,boxHeight:10,
-          // FIX: tooltip pakai nearest juga (sinkron dengan interaction)
           mode:'nearest',intersect:true,
           filter:function(item){return Math.round(item.parsed.y)>0;},
           callbacks:{
@@ -1210,9 +1207,7 @@ function togglePlatform(p){
 }
 
 // ═══════════════════════════════════════════════════════════
-// ██████████████████████████████████████████████████████████
-// CHART POPUP — FIX: per-platform only + bisa scroll di dalam
-// ██████████████████████████████████████████████████████████
+// CHART POPUP
 // ═══════════════════════════════════════════════════════════
 var _popupEl=null;
 var _popupPlatformFilter=null;
@@ -1237,14 +1232,12 @@ function _buildPopupDom(){
       +'<span class="chart-popup-count-badge" id="cpCount">0</span>'
       +'<span>mentions</span>'
     +'</div>'
-    // FIX: List bisa scroll — overflow-y:auto, flex:1, min-height:0
     +'<div class="chart-popup-list" id="cpList"></div>'
     +'<div class="chart-popup-footer" id="cpFooter">'
       +'<button class="chart-popup-footer-btn" onclick="popupViewAll()">Lihat semua di tabel →</button>'
     +'</div>';
   document.body.appendChild(_popupEl);
 
-  // Klik di luar popup = tutup, tapi jangan trigger kalau klik di dalam popup itu sendiri
   document.addEventListener('mousedown',function(e){
     if(_popupEl&&_popupEl.classList.contains('show')
        &&!_popupEl.contains(e.target)
@@ -1266,55 +1259,49 @@ function _positionPopup(x,y){
   _popupEl.style.top=top+'px';
 }
 
+// ★ FIX: _sentClass & _sentLabel pakai normSentiment() yang sudah konsisten
 function _sentClass(s){
-  s=String(s||'').toLowerCase();
-  if(s==='1'||s==='positive'||s==='positif')return'sp';
-  if(s==='-1'||s==='negative'||s==='negatif')return'sn';
+  var n=normSentiment(s);
+  if(n==='1')return'sp';
+  if(n==='-1')return'sn';
   return'su';
 }
 function _sentLabel(s){
-  s=String(s||'').toLowerCase();
-  if(s==='1'||s==='positive'||s==='positif')return'Pos';
-  if(s==='-1'||s==='negative'||s==='negatif')return'Neg';
+  var n=normSentiment(s);
+  if(n==='1')return'Pos';
+  if(n==='-1')return'Neg';
   return'Net';
 }
 
 function _buildAva(item){
-  // Gunakan authorName atau authorHandle buat initials, fallback ke domain
   var nameForInitl=item.author_name||item.author_handle||item.hostname||'?';
   var initl=initials(nameForInitl);
   var safeInitl=initl.replace(/\\/g,'').replace(/'/g,'').replace(/"/g,'');
 
-  // Kalau ada avatar_url yang valid, pakai langsung
   if(item.avatar_url&&item.avatar_url.startsWith('http')){
     return'<img src="'+esc(item.avatar_url)+'" onerror="this.parentElement.textContent=\''+safeInitl+'\'">';
   }
 
   var hClean=(item.author_handle||'').replace(/^@/,'').trim();
 
-  // Platform sosmed → pakai unavatar.io
   var svcMap={twit:'twitter',ig:'instagram',tiktok:'tiktok',ytb:'youtube'};
   if(svcMap[item._platform]&&hClean){
     return'<img src="https://unavatar.io/'+svcMap[item._platform]+'/'+encodeURIComponent(hClean)+'" onerror="this.parentElement.textContent=\''+safeInitl+'\'">';
   }
 
-  // Online News → favicon dari Google (lebih reliable dari Clearbit yang sering block)
   if(item._platform==='doc'&&item.hostname){
     var cleanHost=item.hostname.replace(/^www\./,'');
     return'<img src="https://www.google.com/s2/favicons?domain='+encodeURIComponent(cleanHost)+'&sz=64" onerror="this.parentElement.textContent=\''+safeInitl+'\'" style="width:100%;height:100%;object-fit:contain;padding:4px;">';
   }
 
-  // Fallback: inisial teks
   return esc(initl);
 }
 
-// FIX: openChartPopup — hanya tampilkan platform yang diklik (platKey selalu ada dari onClick)
 function openChartPopup(dateStr,platKey,x,y){
   _buildPopupDom();
   _popupDateFilter=dateStr;
   _popupPlatformFilter=platKey;
 
-  // Header: selalu satu platform spesifik (dari klik dot)
   var cfg=platKey?PLATFORM_CFG[platKey]:null;
   var dotColor=cfg?cfg.color:'var(--primary-green)';
   var platLabel=cfg?cfg.label:'All Platforms';
@@ -1322,13 +1309,11 @@ function openChartPopup(dateStr,platKey,x,y){
   document.getElementById('cpDot').style.background=dotColor;
   document.getElementById('cpTitle').textContent=platLabel+' — Mentions';
 
-  // Format tanggal
   var dtObj=new Date(dateStr+'T00:00:00');
   document.getElementById('cpDate').textContent=dtObj.toLocaleDateString('id-ID',{
     weekday:'long',year:'numeric',month:'long',day:'numeric'
   });
 
-  // FIX: Filter hanya platform yang diklik, bukan store.all
   var src=platKey?(store[platKey]||[]):store.all;
   var items=src.filter(function(m){
     if(!m.date_created)return false;
@@ -1341,7 +1326,6 @@ function openChartPopup(dateStr,platKey,x,y){
   var list=document.getElementById('cpList');
   var footer=document.getElementById('cpFooter');
 
-  // FIX: Scroll list ke atas setiap kali buka popup baru
   list.scrollTop=0;
 
   if(!items.length){
@@ -1349,8 +1333,6 @@ function openChartPopup(dateStr,platKey,x,y){
     footer.style.display='none';
   }else{
     footer.style.display='';
-    // FIX: Tampilkan semua item (scroll yang handle pembatasan, bukan potong list)
-    // Tapi batasi 50 untuk performa
     var SHOW=50;
     var html=items.slice(0,SHOW).map(function(item){
       var dt=fmtDate(item.date_created);
@@ -1441,11 +1423,9 @@ function renderTable(){
   var from=(page-1)*PER;var slice=filtered.slice(from,from+PER);
   tbody.innerHTML=slice.map(function(item,i){
     var rank=from+i+1;var dt=fmtDate(item.date_created);
-    var initl=initials(item.author_name||item.author_handle);
     var handle=item.author_handle||(item.hostname?item.hostname.replace('www.','').split('.')[0]:'')||'';
     var dname=item.author_name||handle||'Unknown';
     var domain=item.hostname?item.hostname.replace('www.',''):'';
-    // Initials: pakai authorName atau domain (bukan handle angka)
     var initl=initials(item.author_name||domain||handle||'?');
     var avaInner=esc(initl);
     if(item.avatar_url&&item.avatar_url.startsWith('http')){avaInner=avaImg(item.avatar_url,dname,initl);}
@@ -1456,7 +1436,6 @@ function renderTable(){
         case'ig':if(hClean)avaInner=avaImg('https://unavatar.io/instagram/'+encodeURIComponent(hClean),dname,initl);break;
         case'tiktok':if(hClean)avaInner=avaImg('https://unavatar.io/tiktok/'+encodeURIComponent(hClean),dname,initl);break;
         case'ytb':if(hClean)avaInner=avaImg('https://unavatar.io/youtube/'+encodeURIComponent(hClean),dname,initl);break;
-        // FIX: Online News pakai Google favicon (lebih reliable dari Clearbit)
         case'doc':
           if(domain){
             avaInner='<img src="https://www.google.com/s2/favicons?domain='+encodeURIComponent(domain)+'&sz=64" alt="'+esc(dname)+'" onerror="_avaFail(this,\''+initl.replace(/'/g,'').replace(/"/g,'')+'\')\" style="width:100%;height:100%;object-fit:contain;padding:4px;">';
