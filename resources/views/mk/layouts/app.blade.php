@@ -427,7 +427,7 @@
         </span>
       </div>
 
-      <div class="nav-sub-wrapper {{ $hasActiveProject ? '' : '' }}" id="projectSub">
+      <div class="nav-sub-wrapper" id="projectSub">
         <div class="nav-sub">
           @if($hasProjects)
             @foreach($projects as $project)
@@ -465,6 +465,17 @@
           <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         </span>
         <span>Data Overview</span>
+      </a>
+
+      {{-- ✅ Compare Projects --}}
+      <a href="{{ route('mk.compare.index') }}"
+         class="nav-item {{ request()->routeIs('mk.compare.index') ? 'active' : '' }}">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="2" y="3" width="6" height="18"/><rect x="10" y="8" width="6" height="13"/><rect x="18" y="5" width="4" height="16"/>
+          </svg>
+        </span>
+        <span>Compare Projects</span>
       </a>
 
       <a href="{{ route('mk.topic-map') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
@@ -547,19 +558,16 @@
           </a>
 
           <a href="{{ route('mk.news.topic-map') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-     class="nav-item {{ request()->routeIs('mk.news.topic-map') ? 'active' : '' }}">
-    <span class="menu-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="8" height="11"/>
-        <rect x="13" y="3" width="8" height="6"/>
-        <rect x="13" y="11" width="8" height="10"/>
-        <rect x="3" y="16" width="8" height="6"/>
-      </svg>
-    </span>
-    <span>Topic Map</span>
-  </a>
+             class="nav-item {{ request()->routeIs('mk.news.topic-map') ? 'active' : '' }}">
+            <span class="menu-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="8" height="11"/><rect x="13" y="3" width="8" height="6"/>
+                <rect x="13" y="11" width="8" height="10"/><rect x="3" y="16" width="8" height="6"/>
+              </svg>
+            </span>
+            <span>Topic Map</span>
+          </a>
 
-          
         </div>
       </div>
 
@@ -567,7 +575,7 @@
       <div class="nav-label">Social Media</div>
 
       @php
-        $xRoutes = ['mk.x.overview','mk.x.most-status','mk.x.most-retweets','mk.x.authors.demographics','mk.x.geographic','mk.x.post-with-location','mk.x.trending-topics','mk.x.trending-word-cloud','mk.x.shared-urls','mk.x.most-active-users','mk.x.ai-analysis',];
+        $xRoutes = ['mk.x.overview','mk.x.most-status','mk.x.most-retweets','mk.x.authors.demographics','mk.x.geographic','mk.x.post-with-location','mk.x.trending-topics','mk.x.trending-word-cloud','mk.x.shared-urls','mk.x.most-active-users','mk.x.ai-analysis'];
         $isXActive = request()->routeIs($xRoutes);
       @endphp
 
@@ -602,7 +610,6 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>
             <span>Most Retweets</span>
           </a>
-          
           <a href="{{ route('mk.x.authors.demographics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.x.authors.demographics') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
@@ -633,7 +640,6 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
             <span>Most Active Users</span>
           </a>
-            
         </div>
       </div>
 
@@ -668,17 +674,15 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
             <span>Most Viewed Posts</span>
           </a>
-          
           <a href="{{ route('mk.facebook.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.facebook.trending-word-cloud') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
             <span>Word Cloud</span>
           </a>
-          
         </div>
       </div>
 
-    {{-- Instagram --}}
+      {{-- Instagram --}}
       @php
         $instagramRoutes   = ['mk.instagram.overview','mk.instagram.trending-topics','mk.instagram.most-viewed-posts','mk.instagram.authors.demographics','mk.instagram.geographic','mk.instagram.trending-word-cloud','mk.instagram.ai-analysis'];
         $isInstagramActive = request()->routeIs($instagramRoutes);
@@ -715,9 +719,9 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
             <span>Word Cloud</span>
           </a>
-          
         </div>
       </div>
+
       @php
         $youtubeRoutes   = ['mk.youtube.overview','mk.youtube.trending-topics','mk.youtube.most-viewed-posts','mk.youtube.authors.demographics','mk.youtube.geographic','mk.youtube.trending-word-cloud','mk.youtube.ai-analysis'];
         $isYoutubeActive = request()->routeIs($youtubeRoutes);
@@ -734,33 +738,29 @@
 
       <div class="nav-sub-wrapper {{ $isYoutubeActive ? 'open' : '' }}" id="youtubeSub">
         <div class="nav-sub">
-
           <a href="{{ route('mk.youtube.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.youtube.overview') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
             <span>Overview</span>
           </a>
-
           <a href="{{ route('mk.youtube.trending-topics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.youtube.trending-topics') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
             <span>Top Hashtags</span>
           </a>
-
           <a href="{{ route('mk.youtube.most-viewed-posts') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.youtube.most-viewed-posts') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
             <span>Most Viewed Posts</span>
           </a>
-
           <a href="{{ route('mk.youtube.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.youtube.trending-word-cloud') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
             <span>Word Cloud</span>
           </a>
-
         </div>
       </div>
+
       <!-- TikTok -->
       @php
         $tiktokRoutes   = ['mk.tiktok.overview','mk.tiktok.trending-topics','mk.tiktok.most-viewed-posts','mk.tiktok.trending-word-cloud','mk.tiktok.ai-analysis'];
@@ -770,7 +770,6 @@
       <div class="nav-item dropdown-trigger {{ $isTiktokActive ? 'has-active-child open' : '' }}"
            onclick="toggleNav('tiktokSub', this)">
         <span class="nav-icon">
-          {{-- TikTok filled icon --}}
           <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
             <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.16 8.16 0 0 0 4.77 1.52V6.74a4.85 4.85 0 0 1-1-.05z"/>
           </svg>
@@ -781,32 +780,26 @@
 
       <div class="nav-sub-wrapper {{ $isTiktokActive ? 'open' : '' }}" id="tiktokSub">
         <div class="nav-sub">
-
           <a href="{{ route('mk.tiktok.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.tiktok.overview') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
             <span>Overview</span>
           </a>
-
           <a href="{{ route('mk.tiktok.trending-topics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.tiktok.trending-topics') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
             <span>Top Hashtags</span>
           </a>
-
           <a href="{{ route('mk.tiktok.most-viewed-posts') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.tiktok.most-viewed-posts') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
             <span>Most Viewed Posts</span>
           </a>
-
           <a href="{{ route('mk.tiktok.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.tiktok.traending-word-cloud') ? 'active' : '' }}">
+             class="nav-item {{ request()->routeIs('mk.tiktok.trending-word-cloud') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
             <span>Word Cloud</span>
           </a>
-
-          
         </div>
       </div>
 
@@ -828,27 +821,20 @@
       palette: ['#038047','#2FC6F6','#8b5cf6','#f59e0b','#ef4444','#10b981','#3b82f6','#ec4899','#6366f1','#14b8a6']
     };
 
-    // ── Accordion Toggle — smooth open/close ──────────────────────
     function toggleNav(subId, trigger) {
       const wrapper = document.getElementById(subId);
       if (!wrapper) return;
-
       const isOpen = wrapper.classList.contains('open');
-
       if (isOpen) {
-        // Close
         wrapper.classList.remove('open');
         trigger.classList.remove('open');
       } else {
-        // Open
         wrapper.classList.add('open');
         trigger.classList.add('open');
       }
     }
 
-    // Legacy support (in case any other code calls the old toggleDropdown)
     function toggleDropdown(dropdownId, trigger) {
-      // Map old IDs to new IDs
       const map = {
         projectDropdown   : 'projectSub',
         dataSourceDropdown: 'dataSourceSub',
@@ -863,24 +849,18 @@
       toggleNav(newId, trigger);
     }
 
-    // ── Change Project ────────────────────────────────────────────
     function changeProject(projectId, projectName) {
       const url = new URL(window.location.href);
       url.searchParams.set('project_id', projectId);
       window.location.href = url.toString();
     }
 
-    // ── Auto-open dropdown if active child on load ────────────────
     document.addEventListener('DOMContentLoaded', function() {
-      // Mark open state for wrappers that are already open (server-side rendered)
       document.querySelectorAll('.nav-sub-wrapper.open').forEach(wrapper => {
-        const triggerId = wrapper.id.replace('Sub', 'Trigger');
-        // Try to find by convention
         const trigger = document.querySelector(`[onclick*="${wrapper.id}"]`);
         if (trigger) trigger.classList.add('open');
       });
 
-      // Auto project selection logic
       const urlParams = new URLSearchParams(window.location.search);
       const currentProjectId = urlParams.get('project_id');
       const currentPath = window.location.pathname;

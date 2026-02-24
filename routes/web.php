@@ -14,6 +14,7 @@ use App\Http\Controllers\MK\InstagramOverviewController;
 use App\Http\Controllers\MK\YoutubeOverviewController;
 use App\Http\Controllers\MK\TiktokOverviewController;
 use App\Http\Controllers\MK\NewsController;
+use App\Http\Controllers\MK\CompareProjectController; // ✅ NEW
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -358,6 +359,27 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/most-viewed-posts', [TiktokOverviewController::class, 'mostViewedPostsData'])
                 ->name('most-viewed-posts');
         });
+
+        // ─────────────────────────────────────────────────────
+        // ✅ Compare Projects APIs
+        // ─────────────────────────────────────────────────────
+        Route::prefix('compare')->name('compare.')->group(function () {
+
+            Route::get('/projects', [CompareProjectController::class, 'projectsList'])
+                ->name('projects');
+
+            Route::get('/volume', [CompareProjectController::class, 'compareVolumeTotal'])
+                ->name('volume');
+
+            Route::get('/sentiment', [CompareProjectController::class, 'compareSentiment'])
+                ->name('sentiment');
+
+            Route::get('/authors', [CompareProjectController::class, 'compareAuthors'])
+                ->name('authors');
+
+            Route::get('/all', [CompareProjectController::class, 'compareAll'])
+                ->name('all');
+        });
     });
 
     // ═══════════════════════════════════════════════════════════
@@ -370,6 +392,11 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     Route::get('/dashboard', [MkController::class, 'dashboard'])->name('dashboard');
     Route::get('/data-overview', [MkController::class, 'dataOverview'])->name('data-overview');
     Route::get('/projects', [MkController::class, 'projects'])->name('projects');
+
+    // ─────────────────────────────────────────────────────
+    // ✅ Compare Projects Page
+    // ─────────────────────────────────────────────────────
+    Route::get('/compare', [CompareProjectController::class, 'index'])->name('compare.index');
 
     // ─────────────────────────────────────────────────────
     // Topic Map Page
@@ -402,7 +429,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/articles', [NewsController::class, 'articlesPage'])
             ->name('articles');
 
-        // ✅ NEW — News Topic Map page
+        // ✅ News Topic Map page
         Route::get('/topic-map', [NewsController::class, 'newsTopicMapPage'])
             ->name('topic-map');
 

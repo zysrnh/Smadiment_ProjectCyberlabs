@@ -1018,4 +1018,71 @@ public function newsTopicMapPage(Request $request)
             ->with('error', 'Failed to load News Topic Map page');
     }
 }
+public function updateSentiment(Request $request)
+    {
+        try {
+            $projectId = $request->input('project_id');
+            $docId     = $request->input('doc_id');
+            $platform  = $request->input('platform', 'doc');
+            $sentiment = $request->input('sentiment'); // '1', '-1', '0'
+            $url       = $request->input('url', '');
+
+            if (!$projectId || $sentiment === null) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => 'project_id dan sentiment wajib diisi',
+                ], 400);
+            }
+
+            // Validasi nilai sentiment
+            if (!in_array((string) $sentiment, ['1', '-1', '0'])) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => 'Nilai sentiment tidak valid. Gunakan: 1 (Positive), -1 (Negative), 0 (Neutral)',
+                ], 400);
+            }
+
+            Log::info('🎯 Update Sentiment Request', [
+                'project_id' => $projectId,
+                'doc_id'     => $docId,
+                'platform'   => $platform,
+                'sentiment'  => $sentiment,
+                'url'        => $url,
+            ]);
+
+            // Panggil MK API untuk update sentiment
+            // Sesuaikan method mkClient dengan yang tersedia di MediaKernelsClient kamu
+            $result = $this->mkClient->updateSentiment(
+                $projectId,
+                $docId,
+                (int) $sentiment,
+                $platform
+            );
+
+            Log::info('✅ Sentiment updated', [
+                'doc_id'    => $docId,
+                'sentiment' => $sentiment,
+                'result'    => $result,
+            ]);
+
+            return response()->json([
+                'success'   => true,
+                'message'   => 'Sentiment berhasil diperbarui',
+                'doc_id'    => $docId,
+                'sentiment' => $sentiment,
+                'platform'  => $platform,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('❌ Update Sentiment Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error'   => 'Gagal memperbarui sentiment: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }

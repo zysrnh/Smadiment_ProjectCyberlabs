@@ -1870,7 +1870,58 @@ public function ytbTopStatus(
 
 
 
+public function compareProjects(
+    array $projectIds,
+    string $startDate,
+    string $endDate,
+    string $types = 'volumetotal',
+    int $startTime = 0,
+    int $endTime = 23,
+    bool $isCache = true
+): array {
+    $projectIdsStr = implode(',', $projectIds);
 
+    try {
+        $token = $this->getToken();
+
+        $params = [
+            'project_ids' => $projectIdsStr,
+            'start_date'  => $startDate,
+            'start_time'  => $startTime,
+            'end_date'    => $endDate,
+            'end_time'    => $endTime,
+            'types'       => $types,
+            'is_cache'    => $isCache ? 'true' : 'false',
+            'token'       => $token,
+        ];
+
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/compare_projects/',
+            $params
+        );
+
+        $res->throw();
+
+        $json = $this->parseJson($res);
+
+        Log::info('compareProjects API response', [
+            'types'       => $types,
+            'project_ids' => $projectIdsStr,
+            'keys'        => is_array($json) ? array_keys($json) : gettype($json),
+            'sample'      => is_array($json) ? array_slice($json, 0, 2, true) : $json,
+        ]);
+
+        return is_array($json) ? $json : [];
+
+    } catch (\Exception $e) {
+        Log::error('compareProjects API error', [
+            'error'       => $e->getMessage(),
+            'project_ids' => $projectIdsStr,
+            'types'       => $types,
+        ]);
+        return [];
+    }
+}
 
 
 
