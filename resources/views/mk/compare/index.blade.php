@@ -206,13 +206,14 @@
   #cmpMentionPopup .cpl { overflow-y:auto;flex:1;padding:4px 0;min-height:0; }
   #cmpMentionPopup .cpl::-webkit-scrollbar { width:5px; }
   #cmpMentionPopup .cpl::-webkit-scrollbar-thumb { background:#e2e8f0;border-radius:4px; }
-  #cmpMentionPopup .cpi { display:flex;gap:10px;padding:10px 16px;border-bottom:1px solid #f8fafc;transition:background .1s; }
+  #cmpMentionPopup .cpi { display:flex;gap:10px;padding:10px 16px;border-bottom:1px solid #f8fafc;transition:background .1s;cursor:pointer; }
   #cmpMentionPopup .cpi:last-child { border-bottom:none; }
-  #cmpMentionPopup .cpi:hover { background:#f8fafc; }
-  #cmpMentionPopup .cpa { width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#038047,#026738);color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;border:1.5px solid #e2e8f0; }
+  #cmpMentionPopup .cpi:hover { background:#f0fdf4; }
+  #cmpMentionPopup .cpa { width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#038047,#026738);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;border:1.5px solid #e2e8f0; }
   #cmpMentionPopup .cpa img { width:100%;height:100%;object-fit:cover;border-radius:50%; }
   #cmpMentionPopup .cpbd { flex:1;min-width:0; }
-  #cmpMentionPopup .cpan { font-size:12px;font-weight:700;color:#1a202c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px; }
+  #cmpMentionPopup .cpan { font-size:12px;font-weight:700;color:#1a202c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px; }
+  #cmpMentionPopup .cpusn { font-size:10px;color:#94a3b8;font-weight:500;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
   #cmpMentionPopup .cptx { font-size:12px;color:#374151;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:4px; }
   #cmpMentionPopup .cprw { display:flex;align-items:center;gap:6px;font-size:10px;color:#94a3b8; }
   #cmpMentionPopup .css  { padding:1px 7px;border-radius:10px;font-size:9px;font-weight:800; }
@@ -222,6 +223,99 @@
   #cmpMentionPopup .cploading { padding:40px 20px;text-align:center;color:#64748b;font-size:13px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:12px; }
   #cmpMentionPopup .cpspin { width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:#038047;border-radius:50%;animation:spin .7s linear infinite; }
   #cmpMentionPopup .cpempty { padding:40px 20px;text-align:center;color:#94a3b8;font-size:13px;font-weight:600; }
+  /* thumbnail di list untuk youtube */
+  #cmpMentionPopup .cpthumb { width:60px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0;background:#000; }
+
+  /* ── Mention Detail Modal ── */
+  .cmp-modal-backdrop {
+    position:fixed;inset:0;z-index:200000;
+    background:rgba(10,15,25,.78);backdrop-filter:blur(10px);
+    display:none;align-items:center;justify-content:center;padding:20px;
+  }
+  .cmp-modal-backdrop.open { display:flex; }
+  @keyframes cmpModalUp { from{opacity:0;transform:translateY(22px) scale(.97)} to{opacity:1;transform:none} }
+  .cmp-modal-shell {
+    position:relative;width:100%;max-width:820px;max-height:calc(100vh - 40px);
+    background:#fff;border-radius:20px;
+    box-shadow:0 32px 80px rgba(0,0,0,.35);
+    display:flex;flex-direction:column;
+    animation:cmpModalUp .22s cubic-bezier(.34,1.3,.64,1);
+    overflow:hidden;font-family:'Poppins',sans-serif;
+  }
+  .cmp-modal-head {
+    display:flex;align-items:center;gap:10px;padding:12px 18px;
+    border-bottom:1px solid #e2e8f0;background:#f8fafc;flex-shrink:0;
+  }
+  .cmp-modal-plat-pill {
+    display:inline-flex;align-items:center;padding:3px 11px;border-radius:20px;
+    font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;
+  }
+  .cmp-modal-title { flex:1;font-size:13px;font-weight:700;color:#1a202c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0; }
+  .cmp-modal-ext {
+    display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;
+    font-size:11px;font-weight:700;color:#038047;background:rgba(3,128,71,.08);
+    border:1px solid rgba(3,128,71,.2);cursor:pointer;text-decoration:none;
+    flex-shrink:0;transition:all .15s;white-space:nowrap;
+  }
+  .cmp-modal-ext:hover { background:rgba(3,128,71,.15); }
+  .cmp-modal-close {
+    width:30px;height:30px;border-radius:8px;border:none;background:transparent;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+    color:#64748b;font-size:22px;line-height:1;transition:all .15s;flex-shrink:0;
+  }
+  .cmp-modal-close:hover { background:#fee2e2;color:#991b1b; }
+  .cmp-modal-author {
+    display:flex;align-items:center;gap:12px;padding:10px 18px;
+    border-bottom:1px solid #f1f5f9;background:#fff;flex-shrink:0;
+  }
+  .cmp-modal-ava {
+    width:42px;height:42px;border-radius:50%;border:2px solid #e2e8f0;flex-shrink:0;
+    background:linear-gradient(135deg,#038047,#026738);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:700;font-size:14px;overflow:hidden;
+  }
+  .cmp-modal-ava img { width:100%;height:100%;object-fit:cover;border-radius:50%; }
+  .cmp-modal-aname { font-size:13px;font-weight:700;color:#1a202c; }
+  .cmp-modal-ausn  { font-size:11px;color:#94a3b8;margin-top:1px; }
+  .cmp-modal-body  { flex:1;min-height:0;overflow-y:auto; }
+  .cmp-modal-body::-webkit-scrollbar { width:5px; }
+  .cmp-modal-body::-webkit-scrollbar-thumb { background:#e2e8f0;border-radius:4px; }
+  /* embed area */
+  .cmp-embed-wrap { position:relative;width:100%;background:#000; }
+  .cmp-embed-wrap iframe { width:100%;border:none;display:block; }
+  .cmp-embed-loader {
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:10px;background:#f8fafc;color:#64748b;
+    font-size:13px;font-weight:600;pointer-events:none;
+  }
+  .cmp-embed-loader.hidden { display:none; }
+  .cmp-embed-spin { width:28px;height:28px;border:3px solid #e2e8f0;border-top-color:#038047;border-radius:50%;animation:spin .7s linear infinite; }
+  /* thumbnail hero */
+  .cmp-thumb-hero { width:100%;max-height:280px;object-fit:cover;display:block;background:#000; }
+  /* content text */
+  .cmp-modal-content { padding:18px 20px;font-size:14px;line-height:1.75;color:#1a202c;word-break:break-word;border-bottom:1px solid #f1f5f9; }
+  /* stats row */
+  .cmp-stats-row { display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid #f1f5f9;flex-shrink:0; }
+  .cmp-stat { flex:1;min-width:80px;padding:12px 16px;text-align:center;border-right:1px solid #f1f5f9; }
+  .cmp-stat:last-child { border-right:none; }
+  .cmp-stat-val { font-size:17px;font-weight:800;color:#1a202c;line-height:1; }
+  .cmp-stat-lbl { font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-top:3px; }
+  /* sent badge in modal */
+  .cmp-modal-sent { padding:3px 12px;border-radius:20px;font-size:11px;font-weight:800; }
+  .cmp-modal-sent-p { background:#d1fae5;color:#065f46; }
+  .cmp-modal-sent-n { background:#fee2e2;color:#991b1b; }
+  .cmp-modal-sent-u { background:#f1f5f9;color:#374151; }
+  /* url bar */
+  .cmp-url-bar {
+    display:flex;align-items:center;gap:10px;margin:14px 20px;padding:10px 14px;
+    background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;
+    text-decoration:none;transition:all .15s;
+  }
+  .cmp-url-bar:hover { border-color:#038047; }
+  .cmp-url-fav { width:16px;height:16px;border-radius:3px;flex-shrink:0; }
+  .cmp-url-text { font-size:12px;font-weight:600;color:#038047;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+  /* tiktok */
+  .cmp-tiktok-wrap { display:flex;justify-content:center;background:#f8fafc;padding:16px;min-height:400px;align-items:flex-start;overflow-y:auto; }
 </style>
 @endsection
 
@@ -368,6 +462,9 @@
   </div>
 
 </div>
+
+<!-- Mention Detail Modal (built dynamically by JS, but backdrop declared here for SSR fallback) -->
+<div id="cmpModalMount"></div>
 
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-spinner"></div>
@@ -1044,39 +1141,204 @@ async function _fetchCmpMentions(projectId, platform, startDate, endDate) {
   return items;
 }
 
-// ── Render list mentions ──────────────────────
+// ════════════════════════════════════════════════
+// ITEM DATA HELPERS
+// ════════════════════════════════════════════════
+
+function _cmpName(item, platform) {
+  const h = item.author_scr_name || item.screen_name || item.author_id || item.username || '';
+  return platform === 'doc'
+    ? (item.author_name || item.publisher || item.source_name || item.hostname || h || 'Unknown')
+    : (item.author_name || item.channel_name || h || 'Unknown');
+}
+
+function _cmpUsername(item, platform) {
+  // return @handle or channel ID depending on platform
+  const raw =
+    item.author_scr_name || item.screen_name || item.username ||
+    item.author_id       || item.channel_id  || '';
+  if (!raw) return '';
+  if (platform === 'twit') return raw.startsWith('@') ? raw : '@' + raw;
+  if (platform === 'youtube') return item.channel_name ? '' : raw; // don't show if already in name
+  if (platform === 'instagram') return raw.startsWith('@') ? raw : '@' + raw;
+  if (platform === 'tiktok') return raw.startsWith('@') ? raw : '@' + raw;
+  return '';
+}
+
+function _cmpAvatar(item, platform) {
+  // returns best available avatar URL
+  return item.avatar_url   || item.profile_image_url ||
+         item.profile_img  || item.author_image      ||
+         item.channel_image|| item.thumbnail_url     || '';
+}
+
+function _cmpThumbnail(item, platform) {
+  // video thumbnail (YouTube, TikTok)
+  if (platform === 'youtube') {
+    const vid = _ytbVideoId(item);
+    if (vid) return `https://img.youtube.com/vi/${vid}/mqdefault.jpg`;
+    return item.thumbnail || item.thumbnail_url || '';
+  }
+  if (platform === 'tiktok') return item.video_cover || item.thumbnail_url || item.cover || '';
+  return '';
+}
+
+function _cmpUrl(item, platform) {
+  const raw = item.url || item.link || item.post_url || item.video_url || item.permalink || '';
+  if (raw) return raw;
+  if (platform === 'twit') {
+    const usn = item.author_scr_name || item.screen_name || '';
+    const id  = item.post_id || item.tweet_id || item.id_str || item.id || '';
+    if (usn && id) return `https://x.com/${usn}/status/${id}`;
+  }
+  if (platform === 'youtube') {
+    const vid = _ytbVideoId(item);
+    if (vid) return `https://www.youtube.com/watch?v=${vid}`;
+  }
+  if (platform === 'instagram') {
+    const sc = item.shortcode || item.post_shortcode || '';
+    if (sc) return `https://www.instagram.com/p/${sc}/`;
+  }
+  if (platform === 'tiktok') {
+    const uid = item.author_id || item.user_id || '';
+    const vid = item.video_id  || item.post_id || '';
+    if (uid && vid) return `https://www.tiktok.com/@${uid}/video/${vid}`;
+  }
+  if (platform === 'fb') {
+    const pid = item.post_id || item.id || '';
+    if (pid) return `https://www.facebook.com/${pid}`;
+  }
+  return '';
+}
+
+function _ytbVideoId(item) {
+  const u = item.url || item.link || item.video_url || '';
+  const m = u.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (m) return m[1];
+  return item.video_id || item.youtube_id || '';
+}
+
+function _cmpContent(item) {
+  return ((item.content || item.caption || item.description || item.name || item.title || item.text || '')
+    .replace(/<[^>]*>/g, '').trim());
+}
+
+function _cmpIni(name) {
+  if (!name || name === 'Unknown') return '?';
+  const p = name.trim().split(/\s+/);
+  return p.length === 1 ? p[0].slice(0,2).toUpperCase() : (p[0][0]+p[p.length-1][0]).toUpperCase();
+}
+
+function _cmpSent(v) {
+  const s = String(v).toLowerCase().trim();
+  if (s==='1'||s==='positive'||s==='positif') return '1';
+  if (s==='-1'||s==='2'||s==='negative'||s==='negatif') return '-1';
+  return '0';
+}
+
+function _cmpDate(str) {
+  if (!str) return '';
+  try { return new Date(str).toLocaleDateString('id-ID', {day:'2-digit',month:'short',year:'numeric'}); }
+  catch(e) { return str.split('T')[0]; }
+}
+
+function _cmpEng(item, platform) {
+  const fmt = n => (n > 0) ? fmtNum(n) : null;
+  const parts = [];
+  if (platform === 'twit') {
+    const rt  = fmt(item.num_retweeted || item.retweet_count || 0);
+    const lk  = fmt(item.num_likes || item.likes || item.favorite_count || 0);
+    const rep = fmt(item.reply_count || item.num_replies || 0);
+    if (rt)  parts.push('🔁 ' + rt);
+    if (lk)  parts.push('❤ ' + lk);
+    if (rep) parts.push('💬 ' + rep);
+  } else if (platform === 'youtube') {
+    const v   = fmt(item.num_views || item.views || item.view_count || 0);
+    const lk  = fmt(item.num_likes || item.likes || item.like_count || 0);
+    const com = fmt(item.num_comments || item.comment_count || 0);
+    if (v)   parts.push('👁 ' + v);
+    if (lk)  parts.push('👍 ' + lk);
+    if (com) parts.push('💬 ' + com);
+  } else if (platform === 'tiktok') {
+    const v   = fmt(item.views || item.num_views || item.play_count || 0);
+    const lk  = fmt(item.likes || item.num_likes || item.digg_count || 0);
+    const sh  = fmt(item.shares || item.share_count || 0);
+    const com = fmt(item.num_comments || item.comment_count || 0);
+    if (v)   parts.push('👁 ' + v);
+    if (lk)  parts.push('❤ ' + lk);
+    if (sh)  parts.push('📤 ' + sh);
+    if (com) parts.push('💬 ' + com);
+  } else if (platform === 'instagram') {
+    const lk  = fmt(item.num_likes || item.likes || item.like_count || 0);
+    const com = fmt(item.num_comments || item.comment_count || 0);
+    if (lk)  parts.push('❤ ' + lk);
+    if (com) parts.push('💬 ' + com);
+  } else if (platform === 'fb') {
+    const lk  = fmt(item.likes || item.num_likes || item.like_count || 0);
+    const sh  = fmt(item.shares || item.share_count || 0);
+    const com = fmt(item.num_comments || item.comment_count || 0);
+    if (lk)  parts.push('👍 ' + lk);
+    if (sh)  parts.push('📤 ' + sh);
+    if (com) parts.push('💬 ' + com);
+  }
+  return parts.join('  ');
+}
+
+// ════════════════════════════════════════════════
+// RENDER LIST (popup compact)
+// ════════════════════════════════════════════════
+// Store current platform for modal access
+let _cmpCurrentPlatform = '';
+let _cmpCurrentItems    = [];
+
 function _renderCmpList(list, items, platform) {
+  _cmpCurrentPlatform = platform;
+  _cmpCurrentItems    = items;
+
   if (!items.length) {
     list.innerHTML = `<div class="cpempty">📭 Tidak ada mentions untuk periode ini.</div>`;
     return;
   }
 
   const SHOW = 60;
-  let html = items.slice(0, SHOW).map(item => {
+
+  let html = items.slice(0, SHOW).map((item, idx) => {
     const name    = _cmpName(item, platform);
-    const text    = _cmpContent(item);
+    const usn     = _cmpUsername(item, platform);
+    const text    = _cmpContent(item).slice(0, 180);
     const ini     = _cmpIni(name);
     const sent    = _cmpSent(item.class_sentiment || item.sentiment || '0');
     const sntCls  = sent === '1' ? 'css-p' : sent === '-1' ? 'css-n' : 'css-u';
     const sntLbl  = sent === '1' ? 'Pos'   : sent === '-1' ? 'Neg'   : 'Neu';
     const dt      = _cmpDate(item.date_created || '');
     const eng     = _cmpEng(item, platform);
-    const safeIni = ini.replace(/'/g,'').replace(/"/g,'');
+    const safeIni = ini.replace(/['"]/g, '');
 
+    // Avatar
+    const av = _cmpAvatar(item, platform);
     let avaHtml = ini;
-    const av = item.avatar_url || item.image || '';
-    if (av && String(av).startsWith('http')) {
+    if (av && av.startsWith('http')) {
       avaHtml = `<img src="${escHtml(av)}" onerror="this.parentElement.textContent='${safeIni}'">`;
     }
 
-    return `<div class="cpi">
+    // YouTube thumbnail in list
+    const thumb = _cmpThumbnail(item, platform);
+    const thumbHtml = (platform === 'youtube' && thumb)
+      ? `<div class="cpthumb" style="width:60px;height:40px;border-radius:6px;overflow:hidden;flex-shrink:0;border:1px solid #e2e8f0;background:#000">
+           <img src="${escHtml(thumb)}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display='none'">
+         </div>`
+      : '';
+
+    return `<div class="cpi" onclick="_openCmpModal(${idx})" style="align-items:${platform==='youtube'?'flex-start':'center'}">
       <div class="cpa">${avaHtml}</div>
+      ${thumbHtml}
       <div class="cpbd">
         <div class="cpan">${escHtml(name)}</div>
+        ${usn ? `<div class="cpusn">${escHtml(usn)}</div>` : ''}
         <div class="cptx">${escHtml(text || '(tidak ada konten)')}</div>
         <div class="cprw">
           <span class="css ${sntCls}">${sntLbl}</span>
-          ${eng ? `<span>${eng}</span>` : ''}
+          ${eng ? `<span style="color:#64748b">${eng}</span>` : ''}
           ${dt ? `<span style="margin-left:auto">${dt}</span>` : ''}
         </div>
       </div>
@@ -1092,57 +1354,276 @@ function _renderCmpList(list, items, platform) {
   list.innerHTML = html;
 }
 
-// ── Helpers popup ─────────────────────────────
-function _cmpName(item, platform) {
-  const h = item.author_scr_name || item.author_id || item.username || '';
-  return platform === 'doc'
-    ? (item.author_name || item.publisher || item.source_name || item.hostname || h || 'Unknown')
-    : (item.author_name || h || 'Unknown');
+// ════════════════════════════════════════════════
+// MENTION DETAIL MODAL
+// ════════════════════════════════════════════════
+let _cmpModalEl = null;
+
+function _buildCmpModal() {
+  if (_cmpModalEl) return;
+  _cmpModalEl = document.createElement('div');
+  _cmpModalEl.className = 'cmp-modal-backdrop';
+  _cmpModalEl.innerHTML = `
+    <div class="cmp-modal-shell" onclick="event.stopPropagation()">
+      <!-- Header -->
+      <div class="cmp-modal-head">
+        <span class="cmp-modal-plat-pill" id="cmpMdPill"></span>
+        <span class="cmp-modal-title" id="cmpMdTitle"></span>
+        <a class="cmp-modal-ext" id="cmpMdExt" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Buka Link
+        </a>
+        <button class="cmp-modal-close" onclick="_closeCmpModal()">×</button>
+      </div>
+      <!-- Author row -->
+      <div class="cmp-modal-author">
+        <div class="cmp-modal-ava" id="cmpMdAva"></div>
+        <div>
+          <div class="cmp-modal-aname" id="cmpMdAname"></div>
+          <div class="cmp-modal-ausn"  id="cmpMdAusn"></div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+          <span class="cmp-modal-sent" id="cmpMdSent"></span>
+          <span style="font-size:11px;color:#94a3b8" id="cmpMdDate"></span>
+        </div>
+      </div>
+      <!-- Scrollable body -->
+      <div class="cmp-modal-body">
+        <!-- Embed / thumbnail / content injected here -->
+        <div id="cmpMdEmbed"></div>
+        <!-- Stats -->
+        <div class="cmp-stats-row" id="cmpMdStats"></div>
+        <!-- Text -->
+        <div class="cmp-modal-content" id="cmpMdText"></div>
+      </div>
+    </div>`;
+  document.body.appendChild(_cmpModalEl);
+  // Close on backdrop click
+  _cmpModalEl.addEventListener('click', _closeCmpModal);
+  // ESC key
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') _closeCmpModal(); });
 }
-function _cmpContent(item) {
-  return ((item.content || item.name || item.title || item.text || '')
-    .replace(/<[^>]*>/g, '').trim().slice(0, 200));
-}
-function _cmpIni(name) {
-  if (!name || name === 'Unknown') return '?';
-  const p = name.trim().split(/\s+/);
-  return p.length === 1 ? p[0].slice(0,2).toUpperCase() : (p[0][0]+p[p.length-1][0]).toUpperCase();
-}
-function _cmpSent(v) {
-  const s = String(v).toLowerCase().trim();
-  if (s==='1'||s==='positive'||s==='positif') return '1';
-  if (s==='-1'||s==='2'||s==='negative'||s==='negatif') return '-1';
-  return '0';
-}
-function _cmpDate(str) {
-  if (!str) return '';
-  try { return new Date(str).toLocaleDateString('id-ID', {day:'2-digit',month:'short',year:'numeric'}); }
-  catch(e) { return str.split('T')[0]; }
-}
-function _cmpEng(item, platform) {
-  const fmt = n => (n > 0) ? fmtNum(n) : null;
-  const parts = [];
-  if (platform === 'twit') {
-    const rt = fmt(item.num_retweeted || item.retweet_count || 0);
-    const lk = fmt(item.num_likes || item.likes || item.favorite_count || 0);
-    if (rt) parts.push(rt + ' RT');
-    if (lk) parts.push(lk + ' ❤');
-  } else if (platform === 'youtube') {
-    const v = fmt(item.num_views || item.views || 0);
-    if (v) parts.push(v + ' 👁');
-  } else if (platform === 'tiktok') {
-    const v  = fmt(item.views || item.num_views || 0);
-    const lk = fmt(item.likes || item.num_likes || 0);
-    if (v)  parts.push(v + ' 👁');
-    if (lk) parts.push(lk + ' ❤');
-  } else if (platform === 'instagram') {
-    const lk = fmt(item.num_likes || item.likes || 0);
-    if (lk) parts.push(lk + ' ❤');
-  } else if (platform === 'fb') {
-    const lk = fmt(item.likes || item.num_likes || 0);
-    if (lk) parts.push(lk + ' 👍');
+
+function _closeCmpModal() {
+  if (_cmpModalEl) {
+    _cmpModalEl.classList.remove('open');
+    // Destroy any iframe to stop video
+    const emb = document.getElementById('cmpMdEmbed');
+    if (emb) emb.innerHTML = '';
   }
-  return parts.join(' · ');
+}
+
+const PLAT_PILL_STYLE = {
+  doc:       'background:#dbeafe;color:#1d4ed8',
+  twit:      'background:#e0f2fe;color:#0369a1',
+  fb:        'background:#ede9fe;color:#5b21b6',
+  instagram: 'background:#fce7f3;color:#9d174d',
+  youtube:   'background:#fee2e2;color:#b91c1c',
+  tiktok:    'background:#f1f5f9;color:#334155',
+};
+
+function _openCmpModal(idx) {
+  _buildCmpModal();
+  const item     = _cmpCurrentItems[idx];
+  const platform = _cmpCurrentPlatform;
+  if (!item) return;
+
+  const name    = _cmpName(item, platform);
+  const usn     = _cmpUsername(item, platform);
+  const av      = _cmpAvatar(item, platform);
+  const ini     = _cmpIni(name);
+  const safeIni = ini.replace(/['"]/g, '');
+  const text    = _cmpContent(item);
+  const sent    = _cmpSent(item.class_sentiment || item.sentiment || '0');
+  const url     = _cmpUrl(item, platform);
+  const dt      = _cmpDate(item.date_created || '');
+  const platLabel = MEDIA_LABELS[platform] || platform;
+
+  // ── Pill ──
+  const pill = document.getElementById('cmpMdPill');
+  pill.textContent = platLabel;
+  pill.style.cssText = `display:inline-flex;align-items:center;padding:3px 11px;border-radius:20px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;${PLAT_PILL_STYLE[platform]||'background:#f1f5f9;color:#374151'}`;
+
+  // ── Title = first 60 chars of content ──
+  document.getElementById('cmpMdTitle').textContent = truncate(text || name, 60);
+
+  // ── Ext link ──
+  const extBtn = document.getElementById('cmpMdExt');
+  if (url) { extBtn.href = url; extBtn.style.display = 'inline-flex'; }
+  else     { extBtn.style.display = 'none'; }
+
+  // ── Author ──
+  const avaEl = document.getElementById('cmpMdAva');
+  if (av && av.startsWith('http')) {
+    avaEl.innerHTML = `<img src="${escHtml(av)}" onerror="this.parentElement.textContent='${safeIni}'">`;
+  } else {
+    avaEl.textContent = ini;
+  }
+  document.getElementById('cmpMdAname').textContent = name;
+  document.getElementById('cmpMdAusn').textContent  = usn || '';
+
+  // ── Sentiment ──
+  const sentEl = document.getElementById('cmpMdSent');
+  const sentMap = { '1': ['Positive ●','cmp-modal-sent-p'], '-1': ['Negative ●','cmp-modal-sent-n'], '0': ['Neutral ●','cmp-modal-sent-u'] };
+  const [sentTxt, sentCls] = sentMap[sent] || sentMap['0'];
+  sentEl.textContent  = sentTxt;
+  sentEl.className    = 'cmp-modal-sent ' + sentCls;
+
+  // ── Date ──
+  document.getElementById('cmpMdDate').textContent = dt;
+
+  // ── Embed / thumbnail ──
+  const embedEl = document.getElementById('cmpMdEmbed');
+  embedEl.innerHTML = _buildEmbed(item, platform, url);
+
+  // ── Stats ──
+  document.getElementById('cmpMdStats').innerHTML = _buildStats(item, platform);
+
+  // ── Text ──
+  document.getElementById('cmpMdText').textContent = text || '(tidak ada konten)';
+
+  // Show modal
+  _cmpModalEl.classList.add('open');
+}
+
+function _buildEmbed(item, platform, url) {
+  // ── YouTube — embed video ──
+  if (platform === 'youtube') {
+    const vid = _ytbVideoId(item);
+    if (vid) {
+      return `<div style="position:relative;padding-bottom:56.25%;height:0;background:#000">
+        <iframe src="https://www.youtube.com/embed/${vid}?autoplay=0&rel=0"
+          style="position:absolute;inset:0;width:100%;height:100%;border:none"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen loading="lazy"></iframe>
+      </div>`;
+    }
+    // fallback thumbnail
+    const th = _cmpThumbnail(item, platform);
+    if (th) return `<img src="${escHtml(th)}" class="cmp-thumb-hero" onerror="this.style.display='none'">`;
+  }
+
+  // ── Twitter/X — embed tweet ──
+  if (platform === 'twit' && url && url.includes('x.com')) {
+    const tweetUrl = url.replace('x.com','twitter.com');
+    return `<div class="cmp-embed-wrap" style="min-height:200px;background:#f8fafc;padding:16px;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;max-height:420px">
+      <div class="cmp-embed-loader" id="twitterLoader">
+        <div class="cmp-embed-spin"></div><span>Memuat tweet…</span>
+      </div>
+      <div id="twitterEmbedTarget" style="width:100%;max-width:550px"></div>
+    </div>
+    <script>
+    (function(){
+      var t = document.getElementById('twitterEmbedTarget');
+      var l = document.getElementById('twitterLoader');
+      function doEmbed(){
+        if(window.twttr && window.twttr.widgets){
+          window.twttr.widgets.createTweet('${url.split('/status/')[1]?.split('?')[0]||''}','${item.author_scr_name||item.screen_name||''}',t,{theme:'light',dnt:true})
+            .then(function(){ if(l) l.style.display='none'; })
+            .catch(function(){ if(l) l.innerHTML='<span style="font-size:12px;color:#94a3b8">Embed tidak tersedia</span>'; });
+        }
+      }
+      if(!window.twttr){ var s=document.createElement('script'); s.src='https://platform.twitter.com/widgets.js'; s.onload=doEmbed; document.head.appendChild(s); }
+      else doEmbed();
+    })();
+    <\/script>`;
+  }
+
+  // ── TikTok — embed ──
+  if (platform === 'tiktok') {
+    const vid = item.video_id || item.post_id || '';
+    const th  = _cmpThumbnail(item, platform);
+    if (vid) {
+      return `<div style="display:flex;justify-content:center;background:#f8fafc;padding:12px;max-height:500px;overflow-y:auto">
+        <blockquote class="tiktok-embed" cite="${escHtml(url)}"
+          data-video-id="${escHtml(vid)}" style="max-width:325px;min-width:280px">
+          <section></section>
+        </blockquote>
+        <script async src="https://www.tiktok.com/embed.js"><\/script>
+      </div>`;
+    }
+    if (th) return `<img src="${escHtml(th)}" class="cmp-thumb-hero" onerror="this.style.display='none'">`;
+  }
+
+  // ── Instagram — thumbnail (embed blocked by Meta) ──
+  if (platform === 'instagram') {
+    const img = item.image_url || item.media_url || item.thumbnail_url || '';
+    if (img && img.startsWith('http')) {
+      return `<img src="${escHtml(img)}" class="cmp-thumb-hero" onerror="this.style.display='none'">`;
+    }
+    return `<div style="padding:20px 18px;background:#fdf4ff;border-bottom:1px solid #e2e8f0">
+      <div style="font-size:12px;font-weight:600;color:#6b21a8">📸 Instagram — preview tidak tersedia karena pembatasan Meta. Klik "Buka Link" untuk lihat postingan asli.</div>
+    </div>`;
+  }
+
+  // ── Facebook — thumbnail ──
+  if (platform === 'fb') {
+    const img = item.image_url || item.full_picture || item.thumbnail_url || '';
+    if (img && img.startsWith('http')) {
+      return `<img src="${escHtml(img)}" class="cmp-thumb-hero" onerror="this.style.display='none'">`;
+    }
+  }
+
+  // ── Online News — gambar artikel ──
+  if (platform === 'doc') {
+    const img = item.image_url || item.image || item.thumbnail || '';
+    if (img && img.startsWith('http')) {
+      return `<img src="${escHtml(img)}" class="cmp-thumb-hero" onerror="this.style.display='none'">`;
+    }
+  }
+
+  return '';
+}
+
+function _buildStats(item, platform) {
+  const stat = (lbl, val) => {
+    const n = parseInt(val, 10) || 0;
+    if (!n) return '';
+    return `<div class="cmp-stat"><div class="cmp-stat-val">${fmtNum(n)}</div><div class="cmp-stat-lbl">${lbl}</div></div>`;
+  };
+
+  if (platform === 'twit') return [
+    stat('Retweet',  item.num_retweeted || item.retweet_count),
+    stat('Likes',    item.num_likes     || item.likes || item.favorite_count),
+    stat('Replies',  item.reply_count   || item.num_replies),
+    stat('Impressi', item.impressions   || item.impression_count),
+  ].join('');
+
+  if (platform === 'youtube') return [
+    stat('Views',    item.num_views  || item.views   || item.view_count),
+    stat('Likes',    item.num_likes  || item.likes   || item.like_count),
+    stat('Komentar', item.num_comments|| item.comment_count),
+    stat('Subscriber', item.subscriber_count || item.subscribers),
+  ].join('');
+
+  if (platform === 'tiktok') return [
+    stat('Views',    item.views     || item.num_views || item.play_count),
+    stat('Likes',    item.likes     || item.num_likes || item.digg_count),
+    stat('Share',    item.shares    || item.share_count),
+    stat('Komentar', item.num_comments || item.comment_count),
+  ].join('');
+
+  if (platform === 'instagram') return [
+    stat('Likes',    item.num_likes  || item.likes  || item.like_count),
+    stat('Komentar', item.num_comments || item.comment_count),
+    stat('Views',    item.num_views  || item.views),
+    stat('Followers', item.followers || item.follower_count),
+  ].join('');
+
+  if (platform === 'fb') return [
+    stat('Likes',    item.likes    || item.num_likes || item.like_count),
+    stat('Shares',   item.shares   || item.share_count),
+    stat('Komentar', item.num_comments || item.comment_count),
+    stat('Views',    item.num_views || item.views),
+  ].join('');
+
+  if (platform === 'doc') return [
+    stat('Est. Reach', item.est_reach || item.reach),
+    stat('Followers',  item.followers),
+    stat('AdValue',    item.ad_value  || item.advalue),
+  ].join('');
+
+  return '';
 }
 
 // ── Platform Picker (klik row ranking) ────────
@@ -1210,5 +1691,12 @@ function _openPlatPicker(event, projectId, projectTitle, startDate, endDate) {
     });
   }, 50);
 }
+
+// ── Global expose ─────────────────────────────
+window._openCmpModal    = _openCmpModal;
+window._closeCmpModal   = _closeCmpModal;
+window._openPlatPicker  = _openPlatPicker;
+window.openCmpMentionPopup = openCmpMentionPopup;
+window.closeCmpPopup       = closeCmpPopup;
 </script>
 @endsection
