@@ -14,8 +14,18 @@ use App\Http\Controllers\MK\InstagramOverviewController;
 use App\Http\Controllers\MK\YoutubeOverviewController;
 use App\Http\Controllers\MK\TiktokOverviewController;
 use App\Http\Controllers\MK\NewsController;
-use App\Http\Controllers\MK\CompareProjectController; // ✅ NEW
+use App\Http\Controllers\MK\CompareProjectController;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Root Redirect → User Login
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', function () {
+    return redirect()->route('user.login');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -361,7 +371,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         });
 
         // ─────────────────────────────────────────────────────
-        // ✅ Compare Projects APIs
+        // Compare Projects APIs
         // ─────────────────────────────────────────────────────
         Route::prefix('compare')->name('compare.')->group(function () {
 
@@ -394,7 +404,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     Route::get('/projects', [MkController::class, 'projects'])->name('projects');
 
     // ─────────────────────────────────────────────────────
-    // ✅ Compare Projects Page
+    // Compare Projects Page
     // ─────────────────────────────────────────────────────
     Route::get('/compare', [CompareProjectController::class, 'index'])->name('compare.index');
 
@@ -429,7 +439,6 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/articles', [NewsController::class, 'articlesPage'])
             ->name('articles');
 
-        // ✅ News Topic Map page
         Route::get('/topic-map', [NewsController::class, 'newsTopicMapPage'])
             ->name('topic-map');
 
@@ -617,4 +626,14 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/volume', [DataSourceController::class, 'volume'])->name('volume');
         Route::get('/trends', [DataSourceController::class, 'trends'])->name('trends');
     });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Fallback Route → User Login
+|--------------------------------------------------------------------------
+*/
+
+Route::fallback(function () {
+    return redirect()->route('user.login');
 });
