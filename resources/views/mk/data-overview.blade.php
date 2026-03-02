@@ -784,7 +784,7 @@
 
   {{-- ROW 4: Buzzer Map --}}
   <div class="do-card" data-lazy="buzzer-map">
-    <div class="do-card-head">
+    <div class="do-card-head"> 
       <div class="do-card-head-left">
         <span class="do-head-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z"/></svg></span>
         <span class="do-card-title">Buzzer Map</span>
