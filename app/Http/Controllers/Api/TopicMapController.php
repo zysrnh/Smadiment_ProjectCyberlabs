@@ -23,7 +23,7 @@ class TopicMapController extends Controller
     {
         try {
             $projects = $this->mkClient->listProjects(0, 100)['data'] ?? [];
-            
+
             return view('mk.topic-map', [
                 'projects' => $projects,
             ]);
@@ -41,12 +41,12 @@ class TopicMapController extends Controller
     public function getTopicMap(Request $request)
     {
         try {
-            $projectId = $request->query('project_id');
-            $media = $request->query('media', 'all');
-            $startDate = $request->query('start_date', now()->subDays(7)->format('Y-m-d'));
-            $endDate = $request->query('end_date', now()->format('Y-m-d'));
-            $startTime = (int) $request->query('start_time', 0);
-            $endTime = (int) $request->query('end_time', 23);
+            $projectId = $request->get('project_id');
+            $media     = $request->get('media', 'all');
+            $startDate = $request->get('start_date', now()->subDays(7)->format('Y-m-d')); // ✅ ->get() biar baca inject middleware
+            $endDate   = $request->get('end_date',   now()->format('Y-m-d'));              // ✅ ->get() biar baca inject middleware
+            $startTime = (int) $request->get('start_time', 0);
+            $endTime   = (int) $request->get('end_time',   23);
 
             if (!$projectId) {
                 return response()->json(['error' => 'project_id required'], 400);
@@ -65,31 +65,29 @@ class TopicMapController extends Controller
             $topics = [];
             foreach ($data as $topic => $info) {
                 $topics[] = [
-                    'name' => $topic,
-                    'count' => $info['num_docs'] ?? 0
+                    'name'  => $topic,
+                    'count' => $info['num_docs'] ?? 0,
                 ];
             }
 
             // Sort by count descending
-            usort($topics, function($a, $b) {
-                return $b['count'] - $a['count'];
-            });
+            usort($topics, fn($a, $b) => $b['count'] - $a['count']);
 
             return response()->json([
                 'success' => true,
-                'data' => $topics,
-                'total' => count($topics)
+                'data'    => $topics,
+                'total'   => count($topics),
             ]);
 
         } catch (\Exception $e) {
             Log::error('getTopicMap API error', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }

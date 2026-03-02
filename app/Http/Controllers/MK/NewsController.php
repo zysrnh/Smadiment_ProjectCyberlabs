@@ -379,90 +379,112 @@ class NewsController extends Controller
             return redirect()->route('mk.dashboard')->with('error', 'Failed to load Articles page');
         }
     }
+public function articlesData(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+        $media     = $request->query('media', 'doc');
+        $sentiment = $request->query('sentiment', 'all');
+        $rows      = (int) $request->query('rows', 1000);   // ✅ ambil dari query param
+        $start     = (int) $request->query('start', 0);     // ✅ offset untuk pagination
 
-    public function articlesData(Request $request)
-    {
-        try {
-            $projectId = $request->query('project_id');
-            $startDate = $request->query('start_date');
-            $endDate = $request->query('end_date');
-            $media = $request->query('media', 'doc');
-            $sentiment = $request->query('sentiment', 'all');
-
-            if (!$projectId) {
-                return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
-            }
-
-            $articles = $this->mkClient->articles($projectId, $media, $startDate, $endDate, 0, 23, 0, 1000, true);
-
-            $totalQuotesBeforeFilter = 0;
-            $totalQuotesAfterFilter = 0;
-            $articlesWithValidQuotes = 0;
-            $quotesFilteredOut = 0;
-
-            $articles = array_map(function($article) use (&$totalQuotesBeforeFilter, &$totalQuotesAfterFilter, &$articlesWithValidQuotes, &$quotesFilteredOut) {
-                $article['title']         = $article['title'] ?? 'Untitled';
-                $article['publisher']     = $article['publisher'] ?? 'Unknown Publisher';
-                $article['url']           = $article['url'] ?? '#';
-                $article['date_created']  = $article['date_created'] ?? now()->toDateTimeString();
-                $article['content']       = $article['content'] ?? '';
-                $article['sentiment']     = $article['sentiment'] ?? 'Neutral';
-                $article['sentiment_class'] = $article['sentiment_class'] ?? 'neutral';
-
-                $quotes = $article['quotes'] ?? [];
-                $totalQuotesBeforeFilter += is_array($quotes) ? count($quotes) : 0;
-
-                if (is_array($quotes) && count($quotes) > 0) {
-                    $validQuotes = array_filter($quotes, function($quote) use (&$quotesFilteredOut) {
-                        if (!is_array($quote)) { $quotesFilteredOut++; return false; }
-                        if (!isset($quote['Kutipan'])) { $quotesFilteredOut++; return false; }
-                        if (trim($quote['Kutipan']) === '') { $quotesFilteredOut++; return false; }
-                        return true;
-                    });
-                    $quotes = array_values($validQuotes);
-                } else {
-                    $quotes = [];
-                }
-
-                $totalQuotesAfterFilter += count($quotes);
-                if (count($quotes) > 0) $articlesWithValidQuotes++;
-
-                $article['quotes'] = $quotes;
-                $article['total_quotes'] = count($quotes);
-                return $article;
-            }, $articles);
-
-            if ($sentiment !== 'all') {
-                $articles = array_values(array_filter($articles, function($article) use ($sentiment) {
-                    $articleSentiment = $article['class_sentiment'] ?? $article['sentiment_class'] ?? '0';
-                    $sentimentLower = strtolower($article['sentiment'] ?? '');
-                    if ($sentimentLower === 'positive' || $sentimentLower === 'positif') $articleSentiment = '1';
-                    elseif ($sentimentLower === 'negative' || $sentimentLower === 'negatif') $articleSentiment = '-1';
-                    elseif ($sentimentLower === 'neutral' || $sentimentLower === 'netral') $articleSentiment = '0';
-                    return $articleSentiment == $sentiment;
-                }));
-            }
-
-            $totalQuotes = array_sum(array_column($articles, 'total_quotes'));
-
-            return response()->json([
-                'success' => true,
-                'data' => $articles,
-                'meta' => [
-                    'total_articles'          => count($articles),
-                    'articles_with_quotes'    => $articlesWithValidQuotes,
-                    'total_quotes'            => $totalQuotes,
-                    'avg_quotes_per_article'  => count($articles) > 0 ? round($totalQuotes / count($articles), 2) : 0,
-                    'sentiment_filter'        => $sentiment,
-                    'media_type'              => $media,
-                ],
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('❌ Articles API Error', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => 'Failed to fetch articles data'], 500);
+        if (!$projectId) {
+            return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
         }
+
+        // ✅ Pass $start dan $rows ke MK client
+        // Sesuaikan signature method mkClient->articles() dengan yang ada
+        $articles = $this->mkClient->articles(
+            $projectId,
+            $media,
+            $startDate,
+            $endDate,
+            0,      // sentiment_id (0 = all)
+            23,     // media_type parameter MK
+            $start, // ✅ offset
+            $rows,  // ✅ rows limit
+            true    // include content
+        );
+
+        $totalQuotesBeforeFilter = 0;
+        $totalQuotesAfterFilter  = 0;
+        $articlesWithValidQuotes = 0;
+        $quotesFilteredOut       = 0;
+
+        $articles = array_map(function ($article) use (
+            &$totalQuotesBeforeFilter, &$totalQuotesAfterFilter,
+            &$articlesWithValidQuotes, &$quotesFilteredOut
+        ) {
+            $article['title']           = $article['title']        ?? 'Untitled';
+            $article['publisher']       = $article['publisher']    ?? 'Unknown Publisher';
+            $article['url']             = $article['url']          ?? '#';
+            $article['date_created']    = $article['date_created'] ?? now()->toDateTimeString();
+            $article['content']         = $article['content']      ?? '';
+            $article['sentiment']       = $article['sentiment']    ?? 'Neutral';
+            $article['sentiment_class'] = $article['sentiment_class'] ?? 'neutral';
+
+            $quotes = $article['quotes'] ?? [];
+            $totalQuotesBeforeFilter += is_array($quotes) ? count($quotes) : 0;
+
+            if (is_array($quotes) && count($quotes) > 0) {
+                $validQuotes = array_filter($quotes, function ($quote) use (&$quotesFilteredOut) {
+                    if (!is_array($quote))               { $quotesFilteredOut++; return false; }
+                    if (!isset($quote['Kutipan']))        { $quotesFilteredOut++; return false; }
+                    if (trim($quote['Kutipan']) === '')   { $quotesFilteredOut++; return false; }
+                    return true;
+                });
+                $quotes = array_values($validQuotes);
+            } else {
+                $quotes = [];
+            }
+
+            $totalQuotesAfterFilter += count($quotes);
+            if (count($quotes) > 0) $articlesWithValidQuotes++;
+
+            $article['quotes']       = $quotes;
+            $article['total_quotes'] = count($quotes);
+            return $article;
+        }, $articles);
+
+        if ($sentiment !== 'all') {
+            $articles = array_values(array_filter($articles, function ($article) use ($sentiment) {
+                $articleSentiment = $article['class_sentiment'] ?? $article['sentiment_class'] ?? '0';
+                $sentimentLower   = strtolower($article['sentiment'] ?? '');
+                if ($sentimentLower === 'positive' || $sentimentLower === 'positif')  $articleSentiment = '1';
+                elseif ($sentimentLower === 'negative' || $sentimentLower === 'negatif') $articleSentiment = '-1';
+                elseif ($sentimentLower === 'neutral'  || $sentimentLower === 'netral')  $articleSentiment = '0';
+                return $articleSentiment == $sentiment;
+            }));
+        }
+
+        $totalQuotes = array_sum(array_column($articles, 'total_quotes'));
+
+        return response()->json([
+            'success' => true,
+            'data'    => $articles,
+            'meta'    => [
+                'total_articles'         => count($articles),
+                'articles_with_quotes'   => $articlesWithValidQuotes,
+                'total_quotes'           => $totalQuotes,
+                'avg_quotes_per_article' => count($articles) > 0
+                    ? round($totalQuotes / count($articles), 2)
+                    : 0,
+                'sentiment_filter'       => $sentiment,
+                'media_type'             => $media,
+                'start'                  => $start,   // ✅ untuk debug pagination
+                'rows'                   => $rows,
+            ],
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('❌ Articles API Error', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'error' => 'Failed to fetch articles data'], 500);
     }
+}
+
+
 
     public function newsTimelinePage(Request $request)
     {

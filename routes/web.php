@@ -15,6 +15,7 @@ use App\Http\Controllers\MK\YoutubeOverviewController;
 use App\Http\Controllers\MK\TiktokOverviewController;
 use App\Http\Controllers\MK\NewsController;
 use App\Http\Controllers\MK\CompareProjectController;
+use App\Http\Controllers\MK\MediaStatisticController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -152,6 +153,34 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
 
             Route::post('/ai-proxy', [NewsController::class, 'aiAnalysisProxy'])
                 ->name('ai-proxy');
+        });
+
+        // ─────────────────────────────────────────────────────
+        // Media Statistic APIs
+        // ─────────────────────────────────────────────────────
+        Route::prefix('media-statistic')->name('media-statistic.')->group(function () {
+
+            Route::get('/mention-by-platform', [MediaStatisticController::class, 'mentionByPlatform'])
+                ->name('mention-by-platform');
+
+            Route::get('/trend-by-media', [MediaStatisticController::class, 'trendByMedia'])
+                ->name('trend-by-media');
+
+            Route::get('/trend-mentions', [MediaStatisticController::class, 'trendMentions'])
+                ->name('trend-mentions');
+
+            Route::get('/sentiment-engagement', [MediaStatisticController::class, 'sentimentEngagement'])
+                ->name('sentiment-engagement');
+
+            Route::get('/locations', [MediaStatisticController::class, 'locations'])
+                ->name('locations');
+
+            Route::get('/mentions-by-weekday', [MediaStatisticController::class, 'mentionsByWeekday'])
+                ->name('mentions-by-weekday');
+
+            // ← TAMBAHAN BARU
+            Route::get('/mentions-by-hour', [MediaStatisticController::class, 'mentionsByHour'])
+                ->name('mentions-by-hour');
         });
 
         // ─────────────────────────────────────────────────────
@@ -402,6 +431,15 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     Route::get('/dashboard', [MkController::class, 'dashboard'])->name('dashboard');
     Route::get('/data-overview', [MkController::class, 'dataOverview'])->name('data-overview');
     Route::get('/projects', [MkController::class, 'projects'])->name('projects');
+
+    // ─────────────────────────────────────────────────────
+    // Media Statistic Pages
+    // ─────────────────────────────────────────────────────
+    Route::get('/media-statistic', [MediaStatisticController::class, 'index'])
+        ->name('media-statistic');
+
+    Route::get('/media-statistic/trend', [MediaStatisticController::class, 'trendPage'])
+        ->name('media-statistic.trend');
 
     // ─────────────────────────────────────────────────────
     // Compare Projects Page

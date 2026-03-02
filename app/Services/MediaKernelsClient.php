@@ -1923,6 +1923,127 @@ public function compareProjects(
     }
 }
 
+public function trendsHour(
+    string $projectId,
+    string $startDate,
+    string $endDate,
+    int $startTime = 0,
+    int $endTime = 23
+): array {
+    try {
+        $token = $this->getToken();
+
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/trends_total/',
+            [
+                'project_id' => $projectId,
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'start_time' => $startTime,
+                'end_time'   => $endTime,
+                'token'      => $token,
+            ]
+        );
+
+        $res->throw();
+
+        $json = $this->parseJson($res);
+
+        Log::info('trendsHour raw response keys sample', [
+            'sample_keys' => array_slice(array_keys($json), 0, 5),
+        ]);
+
+        // Kita perlu raw json SEBELUM di-transform ke per-hari
+        // Cek apakah key-nya mengandung jam (misal "2026-03-01 14:00:00")
+        $hourAcc = [];     // [mediaKey][0..23] = count
+        $hasHourData = false;
+
+        foreach ($json as $datetime => $mediaCounts) {
+            if (!is_array($mediaCounts)) continue;
+
+            // Coba extract jam dari datetime key
+            $hour = null;
+            if (strlen($datetime) > 10) {
+                // Format: "2026-03-01 14:00:00" atau "2026-03-01T14:00:00"
+                $ts = strtotime($datetime);
+                if ($ts !== false) {
+                    $hour = (int) date('H', $ts);
+                    $hasHourData = true;
+                }
+            }
+
+            // Kalau tidak ada jam info, skip (tidak bisa group by hour)
+            if ($hour === null) continue;
+
+            foreach ($mediaCounts as $mediaType => $count) {
+                $key = strtolower($mediaType);
+                if (!isset($hourAcc[$key])) {
+                    $hourAcc[$key] = array_fill(0, 24, 0);
+                }
+                $hourAcc[$key][$hour] += (int) $count;
+            }
+        }
+
+        Log::info('trendsHour processed', [
+            'has_hour_data' => $hasHourData,
+            'platforms'     => array_keys($hourAcc),
+        ]);
+
+        return [
+            'has_hour_data' => $hasHourData,
+            'data'          => $hourAcc,
+        ];
+
+    } catch (\Exception $e) {
+        Log::error('trendsHour API error', [
+            'error'      => $e->getMessage(),
+            'project_id' => $projectId,
+        ]);
+        return ['has_hour_data' => false, 'data' => []];
+    }
+}
+
+public function mentionKanalPeriodeHour(
+    string $projectId,
+    string $startDate,
+    string $endDate
+): array {
+    try {
+        $token = $this->getToken();
+
+        // URL pattern dari Drone Emprit:
+        // /widget/projectmentionkanalperiode/{project_id}/start_date/{start_date}/end_date/{end_date}/media//periode/hour
+        $url = $this->baseUrl()
+            . '/widget/projectmentionkanalperiode/' . $projectId
+            . '/start_date/' . $startDate
+            . '/end_date/' . $endDate
+            . '/media//periode/hour';
+
+        $res = Http::timeout(60)->acceptJson()->get($url, [
+            'token' => $token,
+        ]);
+
+        $res->throw();
+
+        $json = $this->parseJson($res);
+
+        Log::info('mentionKanalPeriodeHour response', [
+            'project_id' => $projectId,
+            'type'       => gettype($json),
+            'count'      => is_array($json) ? count($json) : 0,
+            'sample'     => is_array($json) ? array_slice($json, 0, 2) : $json,
+        ]);
+
+        return is_array($json) ? $json : [];
+
+    } catch (\Exception $e) {
+        Log::error('mentionKanalPeriodeHour API error', [
+            'error'      => $e->getMessage(),
+            'project_id' => $projectId,
+        ]);
+        return [];
+    }
+}
 
 
 
