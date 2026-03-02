@@ -6,7 +6,7 @@
 
 <!-- Top Bar -->
 <div class="top-bar">
-  <div class="page-title">
+  <div class="page-title"> 
     <h2>Projects Overview</h2>
     <div class="page-subtitle">Browse and manage all your social media monitoring projects</div>
   </div>
