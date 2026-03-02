@@ -7,7 +7,7 @@
 <!-- Top Bar -->
 <div class="top-bar">
   <div class="page-title">
-    <h2>Publisher Statistics</h2>
+    <h2>Publisher Statistics</h2> 
     <div class="page-subtitle">Analyze content distribution across publishers and news sources</div>
   </div>
 </div>
