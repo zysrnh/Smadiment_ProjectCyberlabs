@@ -106,7 +106,7 @@ class MkController extends Controller
     }
 
     /**
-     * 🔥 FIXED: Get FILTERED projects based on user assignment
+     * Helper: Get FILTERED projects based on user assignment
      */
     private function getProjects(MediaKernelsClient $mk): array
     {
@@ -138,7 +138,7 @@ class MkController extends Controller
     }
 
     /**
-     * 🔥 NEW HELPER: Verify user has access to project
+     * Helper: Verify user has access to project
      */
     private function userHasAccessToProject(int $projectId): bool
     {
@@ -146,7 +146,8 @@ class MkController extends Controller
     }
 
     /**
-     * 🔥 Helper: Extract Daily Timeline with Sentiment Breakdown (7 days INCLUDING TODAY)
+     * Helper: Extract Daily Timeline with Sentiment Breakdown (7 days INCLUDING TODAY)
+     * Dipakai oleh adminDashboard — hardcode 7 hari terakhir
      */
     private function extractDailyTimeline($projectId, MediaKernelsClient $mk): array
     {
@@ -175,14 +176,99 @@ class MkController extends Controller
                 $neg   = $normalized['negative'];
                 $total = $pos + $neu + $neg;
 
-                $timeline['dates'][]                  = $dateLabel;
-                $timeline['values'][]                 = $total;
-                $timeline['sentiment']['positive'][]  = $pos;
-                $timeline['sentiment']['neutral'][]   = $neu;
-                $timeline['sentiment']['negative'][]  = $neg;
+                $timeline['dates'][]                 = $dateLabel;
+                $timeline['values'][]                = $total;
+                $timeline['sentiment']['positive'][] = $pos;
+                $timeline['sentiment']['neutral'][]  = $neu;
+                $timeline['sentiment']['negative'][] = $neg;
             }
         } catch (\Exception $e) {
             Log::warning("Failed to fetch daily timeline for project {$projectId}", [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return $timeline;
+    }
+
+    /**
+     * Helper: Extract Timeline by date range (untuk user dashboard — sinkron dengan datepicker)
+     * - Range <= 60 hari: per hari
+     * - Range > 60 hari: per minggu (supaya tidak terlalu banyak API call)
+     */
+    private function extractTimelineByRange($projectId, string $startDate, string $endDate, MediaKernelsClient $mk): array
+    {
+        $timeline = [
+            'dates'     => [],
+            'values'    => [],
+            'sentiment' => [
+                'positive' => [],
+                'neutral'  => [],
+                'negative' => [],
+            ],
+        ];
+
+        try {
+            $start = new \DateTime($startDate);
+            $end   = new \DateTime($endDate);
+            $diff  = (int) $start->diff($end)->days;
+
+            if ($diff > 60) {
+                // Per minggu
+                $current = clone $start;
+                while ($current <= $end) {
+                    $weekEnd = clone $current;
+                    $weekEnd->modify('+6 days');
+                    if ($weekEnd > $end) {
+                        $weekEnd = clone $end;
+                    }
+
+                    $dateStr    = $current->format('Y-m-d');
+                    $weekEndStr = $weekEnd->format('Y-m-d');
+                    $dateLabel  = $current->format('d') . ' ' . $current->format('M');
+
+                    $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $weekEndStr, 0, 23);
+                    $normalized    = $this->normalizeSentimentTotal($sentimentData);
+
+                    $pos   = $normalized['positive'];
+                    $neu   = $normalized['neutral'];
+                    $neg   = $normalized['negative'];
+                    $total = $pos + $neu + $neg;
+
+                    $timeline['dates'][]                 = $dateLabel;
+                    $timeline['values'][]                = $total;
+                    $timeline['sentiment']['positive'][] = $pos;
+                    $timeline['sentiment']['neutral'][]  = $neu;
+                    $timeline['sentiment']['negative'][] = $neg;
+
+                    $current->modify('+7 days');
+                }
+            } else {
+                // Per hari
+                $current = clone $start;
+                while ($current <= $end) {
+                    $dateStr   = $current->format('Y-m-d');
+                    $dateLabel = $current->format('d') . ' ' . $current->format('M');
+
+                    $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $dateStr, 0, 23);
+                    $normalized    = $this->normalizeSentimentTotal($sentimentData);
+
+                    $pos   = $normalized['positive'];
+                    $neu   = $normalized['neutral'];
+                    $neg   = $normalized['negative'];
+                    $total = $pos + $neu + $neg;
+
+                    $timeline['dates'][]                 = $dateLabel;
+                    $timeline['values'][]                = $total;
+                    $timeline['sentiment']['positive'][] = $pos;
+                    $timeline['sentiment']['neutral'][]  = $neu;
+                    $timeline['sentiment']['negative'][] = $neg;
+
+                    $current->modify('+1 day');
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning("Failed to fetch timeline range for project {$projectId}", [
                 'error' => $e->getMessage(),
             ]);
         }
@@ -197,21 +283,60 @@ class MkController extends Controller
     {
         $projects = $this->getProjects($mk);
 
+        // Ambil date range dari datepicker (global layout), default bulan ini
+        $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
+        $endDate   = $request->query('end_date',   now()->toDateString());
+
+        foreach ($projects as &$project) {
+            try {
+                // Timeline per hari/minggu sesuai date range
+                $project['timeline'] = $this->extractTimelineByRange(
+                    $project['id'],
+                    $startDate,
+                    $endDate,
+                    $mk
+                );
+
+                // Total keseluruhan untuk summary card
+                $sentimentData = $mk->sentimentTotal($project['id'], $startDate, $endDate, 0, 23);
+                $norm = $this->normalizeSentimentTotal($sentimentData);
+
+                $project['total_mentions']    = $norm['positive'] + $norm['neutral'] + $norm['negative'];
+                $project['sentiment_summary'] = $norm;
+
+            } catch (\Exception $e) {
+                Log::warning("Dashboard: failed to fetch data for project {$project['id']}", [
+                    'error' => $e->getMessage(),
+                ]);
+
+                $project['timeline'] = [
+                    'dates'     => [],
+                    'values'    => [],
+                    'sentiment' => ['positive' => [], 'neutral' => [], 'negative' => []],
+                ];
+                $project['total_mentions']    = 0;
+                $project['sentiment_summary'] = ['positive' => 0, 'neutral' => 0, 'negative' => 0];
+            }
+        }
+        unset($project); // lepas reference
+
         Log::info('📊 Dashboard loaded', [
             'user_id'        => Auth::id(),
             'projects_count' => count($projects),
             'project_ids'    => array_column($projects, 'id'),
+            'start_date'     => $startDate,
+            'end_date'       => $endDate,
         ]);
 
         return view('mk.dashboard', [
-            'projects' => $projects,
+            'projects'  => $projects,
+            'startDate' => $startDate,
+            'endDate'   => $endDate,
         ]);
     }
 
     // ══════════════════════════════════════════════════════════════
     // 👨‍💼 ADMIN DASHBOARD
-    // FIX: pakai sentimentTotal() untuk all count (terbukti jalan),
-    //      projectStats() per-platform dengan fallback estimasi.
     // ══════════════════════════════════════════════════════════════
     public function adminDashboard(Request $request, MediaKernelsClient $mk)
     {
@@ -226,7 +351,7 @@ class MkController extends Controller
 
         foreach ($projects as &$project) {
             try {
-                // ── 1. ALL count: pakai sentimentTotal (TERBUKTI JALAN) ──────
+                // ── 1. ALL count: pakai sentimentTotal ──────────────────────
                 $sentimentData = $mk->sentimentTotal(
                     $project['id'],
                     $dateRange['start'],
@@ -287,7 +412,7 @@ class MkController extends Controller
 
                 $project['stats'] = array_merge(['all' => $allCount], $platformStats);
 
-                // ── 4. Timeline (sudah pakai sentimentTotal) ────────────────
+                // ── 4. Timeline 7 hari terakhir ─────────────────────────────
                 $project['timeline'] = $this->extractDailyTimeline($project['id'], $mk);
 
                 Log::info("✅ Stats loaded for project {$project['id']}", [
@@ -316,7 +441,7 @@ class MkController extends Controller
                 ];
             }
         }
-        unset($project); // penting! lepas reference foreach
+        unset($project);
 
         return view('admin.dashboard', [
             'projects'  => $projects,
@@ -903,25 +1028,11 @@ class MkController extends Controller
                     'volumetotal'
                 );
 
-                Log::info('🔍 projectStats (news) raw response', [
-                    'response_keys' => array_keys($newsStats),
-                    'has_data'      => isset($newsStats['data']),
-                    'data_content'  => $newsStats['data'] ?? null,
-                    'has_total'     => isset($newsStats['total']),
-                    'total_value'   => $newsStats['total'] ?? null,
-                ]);
-
                 $newsCount = $this->extractTotal($newsStats);
 
                 if ($newsCount > 0 && $newsCount <= $totalMentions) {
                     $counts['news']   = $newsCount;
                     $counts['social'] = $totalMentions - $newsCount;
-
-                    Log::info('✅ Successfully split mentions', [
-                        'method' => 'projectStats',
-                        'social' => $counts['social'],
-                        'news'   => $counts['news'],
-                    ]);
 
                     return $counts;
                 }
@@ -935,20 +1046,7 @@ class MkController extends Controller
 
                 $counts['news']   = (int) round($totalMentions * 0.20);
                 $counts['social'] = $totalMentions - $counts['news'];
-
-                Log::info('ℹ️ Using estimation for split', [
-                    'method' => 'estimation (20% news)',
-                    'social' => $counts['social'],
-                    'news'   => $counts['news'],
-                    'total'  => $totalMentions,
-                ]);
             }
-
-            Log::info('📊 Final mention counts', [
-                'social_media' => number_format($counts['social']),
-                'online_news'  => number_format($counts['news']),
-                'total'        => number_format($counts['social'] + $counts['news']),
-            ]);
 
         } catch (\Exception $e) {
             Log::error('❌ Failed to calculate mentions', [

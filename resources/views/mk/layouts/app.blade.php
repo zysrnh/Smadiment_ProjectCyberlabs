@@ -737,7 +737,7 @@
       </div>
 
       @php
-        $instagramRoutes   = ['mk.instagram.overview','mk.instagram.trending-topics','mk.instagram.most-viewed-posts','mk.instagram.authors.demographics','mk.instagram.geographic','mk.instagram.trending-word-cloud','mk.instagram.ai-analysis','mk.instagram.most-engagement'];
+$instagramRoutes = ['mk.instagram.overview','mk.instagram.trending-topics','mk.instagram.most-viewed-posts','mk.instagram.authors.demographics','mk.instagram.geographic','mk.instagram.trending-word-cloud','mk.instagram.ai-analysis','mk.instagram.most-engagement','mk.instagram.emotion-analysis'];
         $isInstagramActive = request()->routeIs($instagramRoutes);
       @endphp
 
@@ -761,11 +761,13 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
             <span>Top Hashtags</span>
           </a>
+          {{-- 
           <a href="{{ route('mk.instagram.most-viewed-posts') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.instagram.most-viewed-posts') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
             <span>Most Viewed Posts</span>
           </a>
+           --}}
           <a href="{{ route('mk.instagram.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.instagram.trending-word-cloud') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
@@ -781,6 +783,16 @@
             </span>
             <span>Most Engagement</span>
         </a>
+        <a href="{{ route('mk.instagram.emotion-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+   class="nav-item {{ request()->routeIs('mk.instagram.emotion-analysis') ? 'active' : '' }}">
+    <span class="menu-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/>
+            <circle cx="12" cy="19" r="1"/>
+        </svg>
+    </span>
+    <span>Emotion Analysis</span>
+</a>
         </div>
       </div>
 

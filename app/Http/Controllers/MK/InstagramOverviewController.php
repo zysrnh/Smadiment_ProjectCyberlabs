@@ -994,4 +994,44 @@ class InstagramOverviewController extends Controller
         }
         return strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
     }
+    public function emotionAnalysisPage(Request $request)
+    {
+        try {
+            $projects  = $this->getAllProjects();
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+                if ($projectId) {
+                    return redirect()->route('mk.instagram.emotion-analysis', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            return view('mk.instagram.emotion-analysis')->with([
+                'projectId' => $projectId,
+                'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Instagram Emotion Analysis Page Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return view('mk.instagram.emotion-analysis')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
+        }
+    }
+
 }

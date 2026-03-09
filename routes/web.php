@@ -124,7 +124,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/most-active-users', [FacebookOverviewController::class, 'mostActiveUsers'])->name('most-active-users');
             Route::get('/trending-topics', [FacebookOverviewController::class, 'trendingTopicsData'])->name('trending-topics');
             Route::get('/most-viewed-posts', [FacebookOverviewController::class, 'mostViewedPostsData'])->name('most-viewed-posts');
-            Route::get('/most-engagement', [FacebookOverviewController::class, 'mostEngagementData'])->name('most-engagement'); // ← BARU
+            Route::get('/most-engagement', [FacebookOverviewController::class, 'mostEngagementData'])->name('most-engagement');
             Route::get('/authors-age', [FacebookOverviewController::class, 'authorsAgeData'])->name('authors-age');
             Route::get('/authors-gender', [FacebookOverviewController::class, 'authorsGenderData'])->name('authors-gender');
             Route::get('/authors-type', [FacebookOverviewController::class, 'authorsTypeData'])->name('authors-type');
@@ -255,6 +255,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/geographic', [InstagramOverviewController::class, 'geographicPage'])->name('geographic');
         Route::get('/trending-word-cloud', [InstagramOverviewController::class, 'trendingWordCloudPage'])->name('trending-word-cloud');
         Route::get('/most-engagement', [InstagramOverviewController::class, 'mostEngagementPage'])->name('most-engagement');
+        Route::get('/emotion-analysis', [InstagramOverviewController::class, 'emotionAnalysisPage'])->name('emotion-analysis'); // ← BARU
         Route::get('/ai-analysis', [InstagramOverviewController::class, 'aiAnalysisPage'])->name('ai-analysis');
     });
 

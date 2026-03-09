@@ -95,7 +95,7 @@
 /* ══ Summary Strip ═══════════════════════════════ */
 .summary-strip {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   margin-bottom: 20px;
 }
@@ -119,6 +119,7 @@
 }
 .sum-icon--blue   { background:#EFF6FF; color:#3B82F6; }
 .sum-icon--green  { background:#ECFDF5; color:#059669; }
+.sum-icon--orange { background:#FFFBEB; color:#D97706; }
 .sum-icon--purple { background:#F5F3FF; color:#8B5CF6; }
 .sum-info { display: flex; flex-direction: column; gap: 2px; }
 .sum-lbl {
@@ -128,6 +129,14 @@
 .sum-val {
   font-family: var(--font); font-size: 20px; font-weight: 800;
   color: var(--dark); letter-spacing: -.5px; line-height: 1;
+}
+.sum-val.loading {
+  background: #E2E8F0;
+  border-radius: 4px;
+  color: transparent;
+  animation: shimmer 1.5s infinite;
+  background-size: 200% 100%;
+  background-image: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
 }
 
 /* ══ Two-column Main ═════════════════════════════ */
@@ -251,8 +260,63 @@
 /* Card Divider */
 .card-divider { height: 1px; background: var(--border); margin-bottom: 16px; }
 
+/* Mention stats row */
+.mention-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.mention-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mid);
+}
+.mention-stat-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.mention-stat-val {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--dark);
+}
+
+/* Date range badge */
+.date-range-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  background: #EFF6FF;
+  border-radius: 99px;
+  font-family: var(--font);
+  font-size: 10px;
+  font-weight: 700;
+  color: #3B82F6;
+  letter-spacing: .3px;
+  margin-bottom: 14px;
+}
+
 /* Chart Wrap */
 .chart-wrap { height: 230px; position: relative; }
+
+/* Chart empty state */
+.chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 8px;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+}
 
 /* ══ Empty state ═════════════════════════════════ */
 .empty-main {
@@ -265,7 +329,7 @@
 
 /* ══ Skeleton ════════════════════════════════════ */
 .skeleton-card {
-  height: 320px;
+  height: 380px;
   background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
@@ -284,6 +348,9 @@
 .fade-in { animation: fadeIn 0.4s ease-out; }
 
 /* ══ Responsive ══════════════════════════════════ */
+@media (max-width: 1200px) {
+  .summary-strip { grid-template-columns: repeat(2, 1fr); }
+}
 @media (max-width: 1024px) {
   .mk-main { grid-template-columns: 1fr; }
   .proj-sidebar { position: static; }
@@ -305,11 +372,43 @@
 
 @section('content')
 
+{{-- Pass PHP data ke JS --}}
+<script>
+  {{-- Timeline data per project dari controller --}}
+  const PROJECT_TIMELINES = @json(
+    collect($projects)->mapWithKeys(fn($p) => [
+      (string)($p['id'] ?? '') => $p['timeline'] ?? ['dates'=>[],'values'=>[],'sentiment'=>['positive'=>[],'neutral'=>[],'negative'=>[]]]
+    ])
+  );
+
+  const PROJECT_SENTIMENTS = @json(
+    collect($projects)->mapWithKeys(fn($p) => [
+      (string)($p['id'] ?? '') => $p['sentiment_summary'] ?? ['positive'=>0,'neutral'=>0,'negative'=>0]
+    ])
+  );
+
+  const PROJECT_TOTALS = @json(
+    collect($projects)->mapWithKeys(fn($p) => [
+      (string)($p['id'] ?? '') => $p['total_mentions'] ?? 0
+    ])
+  );
+
+  const DASHBOARD_DATE_RANGE = {
+    start: '{{ $startDate }}',
+    end:   '{{ $endDate }}'
+  };
+</script>
+
 {{-- ── Top Bar ── --}}
 <div class="mk-topbar">
   <div>
     <h1 class="mk-page-title">Welcome, {{ auth()->user()->name ?? 'User' }}!</h1>
-    <p class="mk-page-sub">Here are your assigned projects</p>
+    <p class="mk-page-sub">
+      Showing data for
+      <strong>{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}</strong>
+      –
+      <strong>{{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</strong>
+    </p>
   </div>
   <div class="mk-topbar-right">
     <div class="mk-date-pill">
@@ -334,6 +433,12 @@
 </div>
 
 {{-- ── Summary Strip ── --}}
+@php
+  $totalMentionsAll  = collect($projects)->sum('total_mentions');
+  $totalPositiveAll  = collect($projects)->sum(fn($p) => $p['sentiment_summary']['positive'] ?? 0);
+  $totalNegativeAll  = collect($projects)->sum(fn($p) => $p['sentiment_summary']['negative'] ?? 0);
+@endphp
+
 <div class="summary-strip">
   <div class="sum-card">
     <div class="sum-icon sum-icon--blue">
@@ -353,21 +458,36 @@
       </svg>
     </div>
     <div class="sum-info">
-      <span class="sum-lbl">Active Sources</span>
-      <span class="sum-val">6</span>
+      <span class="sum-lbl">Total Mentions</span>
+      <span class="sum-val">{{ number_format($totalMentionsAll) }}</span>
+    </div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-icon sum-icon--orange">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+        <line x1="9" y1="9" x2="9.01" y2="9"/>
+        <line x1="15" y1="9" x2="15.01" y2="9"/>
+      </svg>
+    </div>
+    <div class="sum-info">
+      <span class="sum-lbl">Positive</span>
+      <span class="sum-val" style="color:#059669;">{{ number_format($totalPositiveAll) }}</span>
     </div>
   </div>
   <div class="sum-card">
     <div class="sum-icon sum-icon--purple">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M16 16s-1.5-2-4-2-4 2-4 2"/>
+        <line x1="9" y1="9" x2="9.01" y2="9"/>
+        <line x1="15" y1="9" x2="15.01" y2="9"/>
       </svg>
     </div>
     <div class="sum-info">
-      <span class="sum-lbl">Your Account</span>
-      <span class="sum-val" style="font-size:14px;letter-spacing:0;">{{ auth()->user()->name ?? 'User' }}</span>
+      <span class="sum-lbl">Negative</span>
+      <span class="sum-val" style="color:#DC2626;">{{ number_format($totalNegativeAll) }}</span>
     </div>
   </div>
 </div>
@@ -386,12 +506,13 @@
       @php
         $pId    = $project['id'] ?? '-';
         $pTitle = $project['title'] ?? $project['name'] ?? $project['project_name'] ?? 'Untitled';
+        $pTotal = $project['total_mentions'] ?? 0;
       @endphp
       <div class="proj-item" data-id="{{ $pId }}">
         <div class="proj-dot"></div>
         <div class="proj-info">
           <span class="proj-name">{{ $pTitle }}</span>
-          <span class="proj-meta">#{{ $pId }}</span>
+          <span class="proj-meta">#{{ $pId }} · {{ number_format($pTotal) }} mentions</span>
         </div>
         <svg class="proj-arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11">
           <polyline points="9 18 15 12 9 6"/>
@@ -417,11 +538,16 @@
     <div id="actualCards" style="display:none;">
       @forelse($projects as $project)
       @php
-        $id    = $project['id'] ?? '-';
-        $title = $project['title'] ?? $project['name'] ?? $project['project_name'] ?? 'Untitled Project';
-        $group = $project['project_group_name'] ?? 'No Group';
-        $type  = $project['project_type'] ?? 'Unknown';
-        $media = $project['media_types'] ?? 'None';
+        $id     = $project['id'] ?? '-';
+        $title  = $project['title'] ?? $project['name'] ?? $project['project_name'] ?? 'Untitled Project';
+        $group  = $project['project_group_name'] ?? 'No Group';
+        $type   = $project['project_type'] ?? 'Unknown';
+        $media  = $project['media_types'] ?? 'None';
+        $total  = $project['total_mentions'] ?? 0;
+        $sent   = $project['sentiment_summary'] ?? ['positive'=>0,'neutral'=>0,'negative'=>0];
+        $pos    = $sent['positive'] ?? 0;
+        $neu    = $sent['neutral']  ?? 0;
+        $neg    = $sent['negative'] ?? 0;
       @endphp
 
       <div class="chart-card" id="card-{{ $id }}">
@@ -436,19 +562,19 @@
             </div>
           </div>
           <div class="card-actions">
-            <a href="{{ route('mk.data-overview') }}?project_id={{ $id }}" class="btn-primary">
+            <a href="{{ route('mk.data-overview') }}?project_id={{ $id }}&start_date={{ $startDate }}&end_date={{ $endDate }}" class="btn-primary">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13">
                 <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
               </svg>
               Data Overview
             </a>
-            <a href="{{ route('mk.sentiment') }}?project_id={{ $id }}" class="btn-icon" title="Sentiment">
+            <a href="{{ route('mk.sentiment') }}?project_id={{ $id }}&start_date={{ $startDate }}&end_date={{ $endDate }}" class="btn-icon" title="Sentiment">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
                 <circle cx="12" cy="12" r="10"/>
                 <path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>
               </svg>
             </a>
-            <a href="{{ route('mk.geographic') }}?project_id={{ $id }}" class="btn-icon" title="Geographic">
+            <a href="{{ route('mk.geographic') }}?project_id={{ $id }}&start_date={{ $startDate }}&end_date={{ $endDate }}" class="btn-icon" title="Geographic">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
                 <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
@@ -457,8 +583,15 @@
           </div>
         </div>
 
-        {{-- Meta Tags --}}
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+        {{-- Date range + Meta Tags --}}
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+          <span class="date-range-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} – {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+          </span>
           <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;background:#F1F5F9;border-radius:99px;font-family:var(--font);font-size:10px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.4px;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             {{ $type }}
@@ -469,10 +602,34 @@
           </span>
         </div>
 
+        {{-- Mention Stats Row --}}
+        <div class="mention-stats">
+          <div class="mention-stat">
+            <span class="mention-stat-dot" style="background:#5AB9EA;"></span>
+            <span>Total</span>
+            <span class="mention-stat-val">{{ number_format($total) }}</span>
+          </div>
+          <div class="mention-stat">
+            <span class="mention-stat-dot" style="background:#10B981;"></span>
+            <span>Positive</span>
+            <span class="mention-stat-val" style="color:#059669;">{{ number_format($pos) }}</span>
+          </div>
+          <div class="mention-stat">
+            <span class="mention-stat-dot" style="background:#94A3B8;"></span>
+            <span>Neutral</span>
+            <span class="mention-stat-val">{{ number_format($neu) }}</span>
+          </div>
+          <div class="mention-stat">
+            <span class="mention-stat-dot" style="background:#F87171;"></span>
+            <span>Negative</span>
+            <span class="mention-stat-val" style="color:#DC2626;">{{ number_format($neg) }}</span>
+          </div>
+        </div>
+
         <div class="card-divider"></div>
 
-        {{-- Placeholder chart area (no data without API call) --}}
-        <div class="chart-wrap">
+        {{-- Chart --}}
+        <div class="chart-wrap" id="wrap-{{ $id }}">
           <canvas id="chart-{{ $id }}"></canvas>
         </div>
 
@@ -535,7 +692,7 @@ function buildCharts() {
 
   const C = {
     blue:   '#5AB9EA',
-    orange: '#F59E0B',
+    green:  '#10B981',
     gray:   '#94A3B8',
     red:    '#F87171',
     white:  '#FFFFFF',
@@ -544,73 +701,121 @@ function buildCharts() {
     dark:   '#0F172A',
   };
 
-  // Placeholder data (7-day demo) — replace with real API data if available
-  const days = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    days.push(d.getDate() + ' ' + d.toLocaleString('default', { month: 'short' }));
-  }
-
   document.querySelectorAll('[id^="chart-"]').forEach(function (canvas) {
-    const allData = days.map(() => Math.floor(Math.random() * 300 + 200));
-    const posData = allData.map(v => Math.round(v * 0.42));
-    const neuData = allData.map(v => Math.round(v * 0.38));
-    const negData = allData.map(v => Math.round(v * 0.20));
+    const projectId = canvas.id.replace('chart-', '');
+    const tl        = PROJECT_TIMELINES[projectId] || null;
+    const wrapEl    = document.getElementById('wrap-' + projectId);
+
+    // Kalau tidak ada data, tampilkan empty state
+    if (!tl || !tl.dates || tl.dates.length === 0) {
+      if (wrapEl) {
+        wrapEl.innerHTML = `
+          <div class="chart-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5" width="36" height="36">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            <span>No mention data for this date range</span>
+          </div>`;
+      }
+      return;
+    }
+
+    const labels  = tl.dates;
+    const allData = tl.values;
+    const posData = tl.sentiment.positive;
+    const neuData = tl.sentiment.neutral;
+    const negData = tl.sentiment.negative;
 
     const ds = (label, data, color, dashed) => ({
-      label, data,
-      borderColor: color, backgroundColor: 'transparent',
-      borderWidth: dashed ? 1.8 : 2.2,
-      borderDash: dashed ? [4, 3] : [],
-      tension: 0.45,
-      pointRadius: 4, pointHoverRadius: 6,
-      pointBackgroundColor: color, pointBorderColor: C.white, pointBorderWidth: 2,
-      fill: false,
+      label,
+      data,
+      borderColor:         color,
+      backgroundColor:     'transparent',
+      borderWidth:         dashed ? 1.8 : 2.2,
+      borderDash:          dashed ? [4, 3] : [],
+      tension:             0.42,
+      pointRadius:         labels.length <= 14 ? 4 : 2,
+      pointHoverRadius:    6,
+      pointBackgroundColor: color,
+      pointBorderColor:    C.white,
+      pointBorderWidth:    2,
+      fill:                false,
     });
 
     new Chart(canvas, {
       type: 'line',
       data: {
-        labels: days,
+        labels,
         datasets: [
           ds('Mentions', allData, C.blue),
-          ds('Positive', posData, C.orange),
-          ds('Neutral',  neuData, C.gray,  true),
-          ds('Negative', negData, C.red,   true),
+          ds('Positive', posData, C.green),
+          ds('Neutral',  neuData, C.gray, true),
+          ds('Negative', negData, C.red,  true),
         ],
       },
       options: {
-        responsive: true, maintainAspectRatio: false,
+        responsive:          true,
+        maintainAspectRatio: false,
         layout: { padding: { top: 4, right: 8, bottom: 0, left: 4 } },
         plugins: {
           legend: {
-            position: 'bottom', align: 'start',
+            position: 'bottom',
+            align:    'start',
             labels: {
-              usePointStyle: true, pointStyle: 'circle', padding: 16,
+              usePointStyle: true,
+              pointStyle:    'circle',
+              padding:       16,
               font: { size: 11, weight: '600', family: "'Plus Jakarta Sans',sans-serif" },
-              color: C.light, boxWidth: 7, boxHeight: 7,
+              color:   C.light,
+              boxWidth:  7,
+              boxHeight: 7,
             },
           },
           tooltip: {
-            mode: 'index', intersect: false,
-            backgroundColor: '#fff', titleColor: C.dark, bodyColor: C.dark,
-            borderColor: C.border, borderWidth: 1, padding: 12, cornerRadius: 8,
+            mode:            'index',
+            intersect:       false,
+            backgroundColor: '#fff',
+            titleColor:      C.dark,
+            bodyColor:       C.dark,
+            borderColor:     C.border,
+            borderWidth:     1,
+            padding:         12,
+            cornerRadius:    8,
             titleFont: { size: 11, weight: '700', family: "'Plus Jakarta Sans',sans-serif" },
-            bodyFont: { size: 11, weight: '500', family: "'Plus Jakarta Sans',sans-serif" },
-            displayColors: true, boxWidth: 7, boxHeight: 7, boxPadding: 5,
-            callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}` },
+            bodyFont:  { size: 11, weight: '500', family: "'Plus Jakarta Sans',sans-serif" },
+            displayColors: true,
+            boxWidth:      7,
+            boxHeight:     7,
+            boxPadding:    5,
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}`,
+            },
           },
         },
         scales: {
           x: {
-            grid: { display: false }, border: { display: false },
-            ticks: { font: { size: 10, weight: '500', family: "'Plus Jakarta Sans',sans-serif" }, color: C.light, padding: 6, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 },
+            grid:   { display: false },
+            border: { display: false },
+            ticks: {
+              font:          { size: 10, weight: '500', family: "'Plus Jakarta Sans',sans-serif" },
+              color:         C.light,
+              padding:       6,
+              maxRotation:   0,
+              autoSkip:      true,
+              maxTicksLimit: labels.length > 30 ? 10 : 8,
+            },
           },
           y: {
             beginAtZero: true,
             grid: { color: 'rgba(226,232,240,.8)', drawBorder: false, lineWidth: 1 },
             border: { display: false },
-            ticks: { font: { size: 10, weight: '500', family: "'Plus Jakarta Sans',sans-serif" }, color: C.light, padding: 10, maxTicksLimit: 5, callback: v => v >= 1000 ? (v / 1000) + 'k' : v },
+            ticks: {
+              font:          { size: 10, weight: '500', family: "'Plus Jakarta Sans',sans-serif" },
+              color:         C.light,
+              padding:       10,
+              maxTicksLimit: 5,
+              callback:      v => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v,
+            },
           },
         },
         interaction: { intersect: false, mode: 'index' },

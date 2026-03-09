@@ -123,34 +123,24 @@
   .ms-stat-card::before { content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--stat-bar,linear-gradient(90deg,var(--primary-green),var(--primary-green-dark)));opacity:0;transition:opacity .25s; }
   .ms-stat-card:hover { box-shadow:var(--shadow-lg);border-color:var(--primary-green-border);transform:translateY(-2px); }
   .ms-stat-card:hover::before { opacity:1; }
-  .ms-stat-card--ig    { --stat-bar:linear-gradient(90deg,#e6683c,#c0392b); }
-  .ms-stat-card--amber { --stat-bar:linear-gradient(90deg,#f59e0b,#d97706); }
+  .ms-stat-card--ig     { --stat-bar:linear-gradient(90deg,#e6683c,#c0392b); }
+  .ms-stat-card--amber  { --stat-bar:linear-gradient(90deg,#f59e0b,#d97706); }
   .ms-stat-card--violet { --stat-bar:linear-gradient(90deg,#8b5cf6,#7c3aed); }
   .ms-stat-label { font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px; }
   .ms-stat-dot   { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
   .ms-stat-value { font-size:32px;font-weight:700;color:var(--text-primary);letter-spacing:-1px;line-height:1;min-height:40px;display:flex;align-items:center; }
   .ms-stat-sub   { font-size:11px;color:var(--text-muted);font-weight:500;margin-top:7px; }
-  .ms-stat-breakdown { display:flex;gap:12px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light); }
-  .ms-stat-bitem { display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--text-secondary); }
-  .ms-stat-bitem svg { width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0; }
 
   /* TABS */
   .ms-tabs { display:flex;gap:4px;background:var(--bg-white);border:1px solid var(--border-gray);border-radius:var(--radius);padding:6px;margin-bottom:24px;box-shadow:var(--shadow-sm);flex-wrap:wrap; }
   .ms-tab-btn { flex:1;min-width:160px;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;border-radius:var(--radius-sm);border:none;background:transparent;font-family:var(--font);font-size:13px;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:var(--transition); }
   .ms-tab-btn:hover { background:var(--bg-gray-50);color:var(--text-primary); }
   .ms-tab-btn.active { background:linear-gradient(135deg,var(--primary-green) 0%,var(--primary-green-dark) 100%);color:#fff;box-shadow:0 4px 12px rgba(3,128,71,.25); }
-  .ms-tab-btn.active--ig     { background:linear-gradient(135deg,#e6683c 0%,#c0392b 100%)!important;box-shadow:0 4px 12px rgba(230,104,60,.25)!important; }
-  .ms-tab-btn.active--amber  { background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%)!important;box-shadow:0 4px 12px rgba(245,158,11,.25)!important; }
-  .ms-tab-btn.active--violet { background:linear-gradient(135deg,#8b5cf6 0%,#7c3aed 100%)!important;box-shadow:0 4px 12px rgba(139,92,246,.25)!important; }
-  .ms-tab-btn.active--green  { background:linear-gradient(135deg,#10b981 0%,#059669 100%)!important;box-shadow:0 4px 12px rgba(16,185,129,.25)!important; }
+  .ms-tab-btn.active--ig    { background:linear-gradient(135deg,#e6683c 0%,#c0392b 100%)!important;box-shadow:0 4px 12px rgba(230,104,60,.25)!important; }
+  .ms-tab-btn.active--amber { background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%)!important;box-shadow:0 4px 12px rgba(245,158,11,.25)!important; }
   .ms-tab-btn svg { width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0; }
   .ms-tab-chip { display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:20px;padding:0 6px;border-radius:10px;font-size:10px;font-weight:800;background:rgba(255,255,255,.22);color:inherit; }
   .ms-tab-btn:not(.active) .ms-tab-chip { background:var(--bg-gray-100);color:var(--text-muted); }
-
-  /* TYPE BADGE next to tab label */
-  .ms-tab-type { font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;padding:2px 6px;border-radius:6px;background:rgba(255,255,255,.2);margin-left:2px; }
-  .ms-tab-btn:not(.active) .ms-tab-type { background:var(--bg-gray-100);color:var(--text-muted); }
-
   .ms-tab-panel { display:none; }
   .ms-tab-panel.active { display:block; }
 
@@ -159,23 +149,17 @@
   .do-card::before { content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary-green) 0%,var(--primary-green-dark) 100%);opacity:0;transition:opacity .3s; }
   .do-card--ig::before    { background:linear-gradient(90deg,#e6683c,#c0392b); }
   .do-card--amber::before { background:linear-gradient(90deg,#f59e0b,#d97706); }
-  .do-card--violet::before{ background:linear-gradient(90deg,#8b5cf6,#7c3aed); }
-  .do-card--green::before { background:linear-gradient(90deg,#10b981,#059669); }
   .do-card--ink::before   { background:linear-gradient(90deg,#1a202c,#334155); }
   .do-card:hover { box-shadow:var(--shadow-lg);border-color:var(--primary-green-border); }
   .do-card:hover::before { opacity:1; }
   .do-card-head { display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border-gray);flex-shrink:0;gap:12px;flex-wrap:wrap; }
   .do-card-head-left { display:flex;align-items:center;gap:12px;min-width:0; }
-  .do-head-icon { width:40px;height:40px;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--primary-green-light) 0%,rgba(3,128,71,.05) 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+  .do-head-icon { width:40px;height:40px;border-radius:var(--radius-sm);background:var(--primary-green-light);display:flex;align-items:center;justify-content:center;flex-shrink:0; }
   .do-head-icon svg { width:20px;height:20px;fill:none;stroke:var(--primary-green);stroke-width:2;stroke-linecap:round;stroke-linejoin:round; }
   .do-head-icon--ig     { background:var(--ig-light)!important; }
   .do-head-icon--ig svg { stroke:#e6683c!important; }
   .do-head-icon--amber     { background:var(--amber-light)!important; }
   .do-head-icon--amber svg { stroke:#f59e0b!important; }
-  .do-head-icon--violet     { background:var(--violet-light)!important; }
-  .do-head-icon--violet svg { stroke:#8b5cf6!important; }
-  .do-head-icon--green     { background:var(--green-light)!important; }
-  .do-head-icon--green svg { stroke:#10b981!important; }
   .do-head-icon--ink   { background:rgba(26,32,44,.06)!important; }
   .do-head-icon--ink svg { stroke:#1a202c!important; }
   .do-card-title    { font-size:15px;font-weight:700;color:var(--text-primary);line-height:1.3; }
@@ -183,8 +167,6 @@
   .do-badge { display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:var(--bg-gray-100);color:var(--text-secondary);white-space:nowrap;flex-shrink:0; }
   .do-badge--ig    { background:#fce8e1;color:#9e3318; }
   .do-badge--amber { background:#fef3c7;color:#92400e; }
-  .do-badge--violet{ background:#ede9fe;color:#5b21b6; }
-  .do-badge--green { background:#d1fae5;color:#065f46; }
   .do-card-body { padding:20px;flex:1; }
   .do-card-body--flush { padding:0; }
 
@@ -208,12 +190,6 @@
   .ms-export-btn { display:flex;align-items:center;gap:5px;padding:6px 14px;background:var(--bg-gray-100);border:1px solid var(--border-gray);border-radius:var(--radius-xs);font-family:var(--font);font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:var(--transition);white-space:nowrap; }
   .ms-export-btn:hover { background:var(--primary-green);border-color:var(--primary-green);color:#fff; }
   .ms-export-btn svg { width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.2; }
-
-  /* MENTION TYPE BADGE */
-  .fme-type-badge { display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;flex-shrink:0; }
-  .fme-type-badge--image { background:#ede9fe;color:#5b21b6; }
-  .fme-type-badge--video { background:#dbeafe;color:#1e40af; }
-  .fme-type-badge svg { width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0; }
 
   /* POST LIST */
   .fme-post-list { display:flex;flex-direction:column; }
@@ -245,73 +221,6 @@
   .fme-view-link:hover { background:#e6683c;color:#fff; }
   .fme-view-link svg { width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2.5; }
 
-  /* POST THUMBNAIL */
-  .fme-post-thumb {
-    width: 130px;
-    height: 130px;
-    min-width: 130px;
-    border-radius: 10px;
-    flex-shrink: 0;
-    overflow: hidden;
-    background: var(--bg-gray-100);
-    border: 1px solid var(--border-gray);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    align-self: flex-start;
-    margin-top: 2px;
-    position: relative;
-  }
-  .fme-post-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    display: block;
-  }
-  .fme-post-thumb-ph {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, rgba(230,104,60,.07), rgba(230,104,60,.02));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .fme-post-thumb-ph svg {
-    width: 24px;
-    height: 24px;
-    stroke: rgba(230,104,60,.3);
-    fill: none;
-    stroke-width: 1.5;
-  }
-  .fme-post-thumb-ph span {
-    font-size: 9px;
-    font-weight: 700;
-    color: rgba(230,104,60,.4);
-    text-transform: uppercase;
-    letter-spacing: .5px;
-  }
-  /* Video play overlay badge */
-  .fme-thumb-video-badge {
-    position: absolute;
-    bottom: 6px;
-    right: 6px;
-    background: rgba(0,0,0,.65);
-    color: #fff;
-    border-radius: 6px;
-    padding: 2px 6px;
-    font-size: 9px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .3px;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  }
-  .fme-thumb-video-badge svg { width:9px;height:9px;stroke:#fff;fill:none;stroke-width:2; }
-
   /* PAGINATION */
   .fme-pagination { display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid var(--border-light);flex-wrap:wrap;gap:10px; }
   .fme-pag-info { font-size:12px;color:var(--text-muted);font-weight:500; }
@@ -335,18 +244,7 @@
   .do-empty svg { width:40px;height:40px;stroke:var(--border-gray);fill:none;stroke-width:1.5; }
   .do-empty-text { font-size:13px;font-weight:600;color:var(--text-secondary); }
 
-  /* LAYOUT */
   .ms-mb20 { margin-bottom:20px; }
-
-  /* DONUT SECTION WRAP CARD */
-  .donut-section-wrap {
-    background: var(--bg-white);
-    border: 1px solid var(--border-gray);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-    margin-bottom: 20px;
-  }
 
   /* POPUP */
   @keyframes msPopIn { from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:none} }
@@ -426,7 +324,6 @@
     .date-picker-sidebar { width:100%;flex-direction:row;overflow-x:auto;border-right:none;border-bottom:1px solid var(--border-gray);border-radius:var(--radius) var(--radius) 0 0;flex-shrink:0; }
     .date-preset { white-space:nowrap; }
     .calendars-wrapper { flex-direction:column; }
-    .fme-post-thumb { width:90px;height:90px;min-width:90px; }
     .ms-tab-btn { min-width:140px;font-size:12px;padding:9px 10px; }
   }
 </style>
@@ -462,7 +359,7 @@
         </svg>
         Instagram Most Engagement
       </h1>
-      <p>Postingan dengan Most Liked dan Most Comments — dipisah berdasarkan tipe konten (Image / Video)</p>
+      <p>Postingan dengan Most Liked dan Most Comments</p>
     </div>
     <button class="ms-refresh-btn" onclick="FME.reload()">
       <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -545,7 +442,7 @@
     </div>
   </div>
 
-  {{-- SUMMARY STATS --}}
+  {{-- SUMMARY STATS (no image/video breakdown) --}}
   <div class="ms-section-header">
     <div class="ms-section-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
     <span class="ms-section-title">Ringkasan Engagement</span>
@@ -555,51 +452,24 @@
     <div class="ms-stat-card ms-stat-card--ig">
       <div class="ms-stat-label"><span class="ms-stat-dot" style="background:#e6683c;"></span>Total Likes</div>
       <div class="ms-stat-value" id="valTotalLikes"><div class="loading-skeleton" style="height:36px;width:120px;border-radius:6px;"></div></div>
-      <div class="ms-stat-breakdown">
-        <span class="ms-stat-bitem">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          Image: <strong id="valLikeImg">—</strong>
-        </span>
-        <span class="ms-stat-bitem">
-          <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Video: <strong id="valLikeVid">—</strong>
-        </span>
-      </div>
+      <div class="ms-stat-sub">Akumulasi likes semua postingan</div>
     </div>
     <div class="ms-stat-card ms-stat-card--amber">
       <div class="ms-stat-label"><span class="ms-stat-dot" style="background:#f59e0b;"></span>Total Comments</div>
       <div class="ms-stat-value" id="valTotalCmts"><div class="loading-skeleton" style="height:36px;width:120px;border-radius:6px;"></div></div>
-      <div class="ms-stat-breakdown">
-        <span class="ms-stat-bitem">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          Image: <strong id="valCmtImg">—</strong>
-        </span>
-        <span class="ms-stat-bitem">
-          <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Video: <strong id="valCmtVid">—</strong>
-        </span>
-      </div>
+      <div class="ms-stat-sub">Akumulasi komentar semua postingan</div>
     </div>
     <div class="ms-stat-card ms-stat-card--violet">
       <div class="ms-stat-label"><span class="ms-stat-dot" style="background:#8b5cf6;"></span>Total Posts</div>
       <div class="ms-stat-value" id="valTotalPosts"><div class="loading-skeleton" style="height:36px;width:120px;border-radius:6px;"></div></div>
-      <div class="ms-stat-breakdown">
-        <span class="ms-stat-bitem">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          Image: <strong id="valPostImg">—</strong>
-        </span>
-        <span class="ms-stat-bitem">
-          <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Video: <strong id="valPostVid">—</strong>
-        </span>
-      </div>
+      <div class="ms-stat-sub">Total postingan pada periode ini</div>
     </div>
   </div>
 
-  {{-- DONUT SECTION --}}
+  {{-- DONUT SECTION — 2 donuts only (like, comment) --}}
   <div class="ms-section-header">
     <div class="ms-section-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/></svg></div>
-    <span class="ms-section-title" id="donutSectionLabel">Distribusi Likes Image — Top 5</span>
+    <span class="ms-section-title" id="donutSectionLabel">Distribusi Likes — Top 5</span>
     <div class="ms-section-line"></div>
   </div>
   <div class="do-card do-card--ig ms-mb20" id="donutMasterCard">
@@ -609,17 +479,15 @@
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
         </div>
         <div>
-          <div class="do-card-title" id="donutMasterTitle">Top 5 Most Liked Image — Distribution</div>
+          <div class="do-card-title" id="donutMasterTitle">Top 5 Most Liked — Distribution</div>
           <div class="do-card-subtitle">Proporsi engagement per postingan — hover segmen untuk detail</div>
         </div>
       </div>
       <div id="donutMasterLegend" class="ms-donut-legend"></div>
     </div>
     <div class="do-card-body">
-      {{-- 4 donut wraps: like-image, like-video, comment-image, comment-video --}}
-      @foreach(['like-image','like-video','comment-image','comment-video'] as $dkey)
-      @php $dCap = str_replace(['-','i','v'], ['','I','V'], $dkey); $dCamel = lcfirst(implode('', array_map('ucfirst', explode('-', $dkey)))); @endphp
-      <div id="donutWrap-{{ $dkey }}" style="{{ $dkey === 'like-image' ? '' : 'display:none;' }}">
+      @foreach(['like','comment'] as $dkey)
+      <div id="donutWrap-{{ $dkey }}" style="{{ $dkey === 'like' ? '' : 'display:none;' }}">
         <div class="loading-skeleton" id="donutSkel-{{ $dkey }}" style="height:460px;border-radius:10px;"></div>
         <div id="donutChart-{{ $dkey }}" style="width:100%;height:460px;display:none;"></div>
         <div id="donutEmpty-{{ $dkey }}" style="display:none;"><div class="do-empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="do-empty-text">Tidak ada data</span></div></div>
@@ -628,54 +496,34 @@
     </div>
   </div>
 
-  {{-- TABS — 4 tabs --}}
+  {{-- TABS — 2 tabs only --}}
   <div class="ms-tabs">
-    <button class="ms-tab-btn active active--ig" id="tab-like-image" onclick="FMETab.show('like-image')">
+    <button class="ms-tab-btn active active--ig" id="tab-like" onclick="FMETab.show('like')">
       <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/></svg>
-      Liked Image
-      <span class="ms-tab-type">🖼</span>
-      <span class="ms-tab-chip" id="chip-like-image">—</span>
+      Most Liked
+      <span class="ms-tab-chip" id="chip-like">—</span>
     </button>
-    <button class="ms-tab-btn" id="tab-like-video" onclick="FMETab.show('like-video')">
-      <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/></svg>
-      Liked Video
-      <span class="ms-tab-type">▶</span>
-      <span class="ms-tab-chip" id="chip-like-video">—</span>
-    </button>
-    <button class="ms-tab-btn" id="tab-comment-image" onclick="FMETab.show('comment-image')">
+    <button class="ms-tab-btn" id="tab-comment" onclick="FMETab.show('comment')">
       <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      Comments Image
-      <span class="ms-tab-type">🖼</span>
-      <span class="ms-tab-chip" id="chip-comment-image">—</span>
-    </button>
-    <button class="ms-tab-btn" id="tab-comment-video" onclick="FMETab.show('comment-video')">
-      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      Comments Video
-      <span class="ms-tab-type">▶</span>
-      <span class="ms-tab-chip" id="chip-comment-video">—</span>
+      Most Comments
+      <span class="ms-tab-chip" id="chip-comment">—</span>
     </button>
   </div>
 
-  {{-- 4 PANELS --}}
+  {{-- 2 PANELS --}}
   @php
     $tabDefs = [
-      'like-image'    => ['color'=>'ig',    'metric'=>'like',    'type'=>'image',  'colorHex'=>'#e6683c', 'label'=>'Most Liked Image'],
-      'like-video'    => ['color'=>'ig',    'metric'=>'like',    'type'=>'video',  'colorHex'=>'#e6683c', 'label'=>'Most Liked Video'],
-      'comment-image' => ['color'=>'amber', 'metric'=>'comment', 'type'=>'image',  'colorHex'=>'#f59e0b', 'label'=>'Most Comments Image'],
-      'comment-video' => ['color'=>'amber', 'metric'=>'comment', 'type'=>'video',  'colorHex'=>'#f59e0b', 'label'=>'Most Comments Video'],
+      'like'    => ['color'=>'ig',    'metric'=>'like',    'colorHex'=>'#e6683c', 'label'=>'Most Liked'],
+      'comment' => ['color'=>'amber', 'metric'=>'comment', 'colorHex'=>'#f59e0b', 'label'=>'Most Comments'],
     ];
     $metricIcons = [
       'like'    => '<path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>',
       'comment' => '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
     ];
-    $typeIcons = [
-      'image' => '<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
-      'video' => '<polygon points="5 3 19 12 5 21 5 3"/>',
-    ];
   @endphp
 
   @foreach($tabDefs as $tabKey => $tabCfg)
-  <div class="ms-tab-panel {{ $tabKey === 'like-image' ? 'active' : '' }}" id="panel-{{ $tabKey }}">
+  <div class="ms-tab-panel {{ $tabKey === 'like' ? 'active' : '' }}" id="panel-{{ $tabKey }}">
     <div class="do-card do-card--{{ $tabCfg['color'] }} ms-mb20">
       <div class="do-card-head">
         <div class="do-card-head-left">
@@ -683,14 +531,8 @@
             <svg viewBox="0 0 24 24">{!! $metricIcons[$tabCfg['metric']] !!}</svg>
           </div>
           <div>
-            <div class="do-card-title">Top Posts by {{ ucfirst($tabCfg['metric']) === 'Like' ? 'Likes' : 'Comments' }} — {{ ucfirst($tabCfg['type']) }}</div>
-            <div class="do-card-subtitle">
-              Postingan
-              @if($tabCfg['type'] === 'image') <span class="fme-type-badge fme-type-badge--image"><svg viewBox="0 0 24 24">{!! $typeIcons['image'] !!}</svg>Image</span>
-              @else <span class="fme-type-badge fme-type-badge--video"><svg viewBox="0 0 24 24">{!! $typeIcons['video'] !!}</svg>Video</span>
-              @endif
-              dengan paling banyak {{ $tabCfg['metric'] === 'like' ? 'likes' : 'komentar' }} — klik untuk detail
-            </div>
+            <div class="do-card-title">Top Posts by {{ $tabCfg['metric'] === 'like' ? 'Likes' : 'Comments' }}</div>
+            <div class="do-card-subtitle">Postingan dengan paling banyak {{ $tabCfg['metric'] === 'like' ? 'likes' : 'komentar' }} — klik untuk detail</div>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;">
@@ -717,8 +559,8 @@
             <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
           </div>
           <div>
-            <div class="do-card-title">{{ $tabCfg['metric'] === 'like' ? 'Likes' : 'Comments' }} Chart — {{ ucfirst($tabCfg['type']) }}</div>
-            <div class="do-card-subtitle">Top 10 posts berdasarkan {{ $tabCfg['metric'] === 'like' ? 'likes' : 'komentar' }} ({{ $tabCfg['type'] }})</div>
+            <div class="do-card-title">{{ $tabCfg['metric'] === 'like' ? 'Likes' : 'Comments' }} Chart — Top 10</div>
+            <div class="do-card-subtitle">Top 10 posts berdasarkan {{ $tabCfg['metric'] === 'like' ? 'likes' : 'komentar' }}</div>
           </div>
         </div>
         <span class="do-badge do-badge--{{ $tabCfg['color'] }}">Top 10</span>
@@ -731,8 +573,8 @@
       </div>
     </div>
 
-    {{-- Engagement comparison only for like-image (main tab) --}}
-    @if($tabKey === 'like-image')
+    {{-- Engagement comparison only on like tab --}}
+    @if($tabKey === 'like')
     <div class="ms-section-header">
       <div class="ms-section-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
       <span class="ms-section-title">Perbandingan Likes vs Comments — Top 10</span>
@@ -744,7 +586,7 @@
           <div class="do-head-icon do-head-icon--ink">
             <svg viewBox="0 0 24 24"><rect x="2" y="3" width="6" height="18"/><rect x="10" y="8" width="6" height="13"/><rect x="18" y="5" width="4" height="16"/></svg>
           </div>
-          <div><div class="do-card-title">Like vs Comment — Top 10 Posts (Image)</div><div class="do-card-subtitle">Perbandingan engagement pada postingan image terpopuler</div></div>
+          <div><div class="do-card-title">Like vs Comment — Top 10 Posts</div><div class="do-card-subtitle">Perbandingan engagement postingan terpopuler</div></div>
         </div>
         <div class="ms-toggle-group" id="engTypeToggle">
           <button class="ms-toggle-btn active" data-type="stacked" onclick="FMEChart.setEngType('stacked')">Stacked</button>
@@ -802,7 +644,6 @@
 <script>
 'use strict';
 
-/* ── CONFIG ── */
 const FMECfg = {
   pid: {{ $projectId ? (int)$projectId : 'null' }},
   sd:  '{{ $startDate }}',
@@ -810,19 +651,15 @@ const FMECfg = {
   perPage: 10
 };
 
-// Tab definitions: key → { sub, mentionType, metric, color, colorHex, label }
+// 2 tabs only — no video separation
 const TAB_DEFS = {
-  'like-image':    { sub:'postbylike',    mentionType:'image', metric:'like',    color:'ig',    colorHex:'#e6683c', label:'Most Liked Image' },
-  'like-video':    { sub:'postbylike',    mentionType:'video', metric:'like',    color:'ig',    colorHex:'#e6683c', label:'Most Liked Video' },
-  'comment-image': { sub:'postbycomment', mentionType:'image', metric:'comment', color:'amber', colorHex:'#f59e0b', label:'Most Comments Image' },
-  'comment-video': { sub:'postbycomment', mentionType:'video', metric:'comment', color:'amber', colorHex:'#f59e0b', label:'Most Comments Video' },
+  'like':    { sub:'postbylike',    metric:'like',    color:'ig',    colorHex:'#e6683c', label:'Most Liked' },
+  'comment': { sub:'postbycomment', metric:'comment', color:'amber', colorHex:'#f59e0b', label:'Most Comments' },
 };
 
 const DONUT_TAB_META = {
-  'like-image':    { sectionLabel:'Distribusi Likes Image — Top 5', masterTitle:'Top 5 Most Liked Image — Distribution' },
-  'like-video':    { sectionLabel:'Distribusi Likes Video — Top 5', masterTitle:'Top 5 Most Liked Video — Distribution' },
-  'comment-image': { sectionLabel:'Distribusi Comments Image — Top 5', masterTitle:'Top 5 Most Comments Image — Distribution' },
-  'comment-video': { sectionLabel:'Distribusi Comments Video — Top 5', masterTitle:'Top 5 Most Comments Video — Distribution' },
+  'like':    { sectionLabel:'Distribusi Likes — Top 5',    masterTitle:'Top 5 Most Liked — Distribution' },
+  'comment': { sectionLabel:'Distribusi Comments — Top 5', masterTitle:'Top 5 Most Comments — Distribution' },
 };
 
 const DONUT_COLORS = ['#e6683c','#f59e0b','#10b981','#8b5cf6','#f43f5e'];
@@ -913,11 +750,9 @@ window.addEventListener('resize',()=>{Object.values(FMECharts._i).forEach(c=>{tr
 const EC_TT = {backgroundColor:'#1a202c',borderColor:'#334155',borderWidth:1,padding:[10,14],textStyle:{color:'#fff',fontFamily:"'Poppins',sans-serif",fontSize:13},extraCssText:'border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);'};
 
 /* ── STORE ── */
-// Store raw (unfiltered) data fetched per sub+metric, keyed by sub
-// 'postbylike' → all liked posts, 'postbycomment' → all comment posts
 const RawStore = { postbylike:[], postbycomment:[] };
-const Store    = {}; // keyed by tab key
-const Pag      = {}; // keyed by tab key
+const Store    = {};
+const Pag      = {};
 Object.keys(TAB_DEFS).forEach(k=>{ Store[k]=[]; Pag[k]=1; });
 
 /* ── TABS ── */
@@ -926,8 +761,6 @@ const FMETab = {
   show(tabKey){
     const def = TAB_DEFS[tabKey];
     if(!def) return;
-
-    // Update tab buttons
     Object.keys(TAB_DEFS).forEach(k=>{
       const btn=document.getElementById('tab-'+k);
       const panel=document.getElementById('panel-'+k);
@@ -935,14 +768,12 @@ const FMETab = {
       const isThis=k===tabKey;
       if(btn){
         btn.classList.toggle('active',isThis);
-        btn.classList.remove('active--ig','active--amber','active--violet','active--green');
+        btn.classList.remove('active--ig','active--amber');
         if(isThis) btn.classList.add('active--'+TAB_DEFS[k].color);
       }
       if(panel) panel.classList.toggle('active',isThis);
       if(dw) dw.style.display=isThis?'block':'none';
     });
-
-    // Update donut section header
     const meta=DONUT_TAB_META[tabKey]||{};
     const sl=document.getElementById('donutSectionLabel');if(sl)sl.textContent=meta.sectionLabel||'';
     const mt=document.getElementById('donutMasterTitle');if(mt)mt.textContent=meta.masterTitle||'';
@@ -950,19 +781,14 @@ const FMETab = {
     if(card)card.className='do-card do-card--'+def.color+' ms-mb20';
     const ico=document.getElementById('donutMasterIco');
     if(ico)ico.className='do-head-icon do-head-icon--'+def.color;
-
-    // Sync legend
     const srcLeg=document.getElementById('legendSrc-'+tabKey);
     const masterLeg=document.getElementById('donutMasterLegend');
     if(masterLeg)masterLeg.innerHTML=srcLeg?srcLeg.innerHTML:'';
-
     if(!this._loaded[tabKey]){
       this._loaded[tabKey]=true;
       FMEData.loadTab(tabKey);
     } else {
-      requestAnimationFrame(()=>{
-        Object.values(FMECharts._i).forEach(c=>{try{if(c&&!c.isDisposed())c.resize();}catch(e){}});
-      });
+      requestAnimationFrame(()=>{ Object.values(FMECharts._i).forEach(c=>{try{if(c&&!c.isDisposed())c.resize();}catch(e){}});});
     }
   },
   reset(){ Object.keys(TAB_DEFS).forEach(k=>this._loaded[k]=false); }
@@ -970,14 +796,10 @@ const FMETab = {
 
 /* ── DATA ── */
 const FMEData = {
-
   async loadAll(){
     if(!FMECfg.pid){
       ['valTotalLikes','valTotalCmts','valTotalPosts'].forEach(id=>{
         const e=document.getElementById(id);if(e)e.innerHTML='<span style="font-size:14px;color:#94a3b8;">—</span>';
-      });
-      ['valLikeImg','valLikeVid','valCmtImg','valCmtVid','valPostImg','valPostVid'].forEach(id=>{
-        const e=document.getElementById(id);if(e)e.textContent='—';
       });
       Object.keys(TAB_DEFS).forEach(k=>{
         const e=document.getElementById('list-'+k);if(e)e.innerHTML=emptyH('Pilih project terlebih dahulu');
@@ -986,9 +808,8 @@ const FMEData = {
       hideSk('sk-eng');
       return;
     }
-    // Load the first active tab
-    FMETab._loaded['like-image']=true;
-    await FMEData.loadTab('like-image');
+    FMETab._loaded['like']=true;
+    await FMEData.loadTab('like');
   },
 
   async _fetchRaw(sub){
@@ -1002,41 +823,23 @@ const FMEData = {
   },
 
   async loadTab(tabKey){
-    const def      = TAB_DEFS[tabKey];
-    const listEl   = document.getElementById('list-'+tabKey);
-    const chipEl   = document.getElementById('chip-'+tabKey);
-    const badgeEl  = document.getElementById('badge-'+tabKey+'-full');
-
+    const def     = TAB_DEFS[tabKey];
+    const listEl  = document.getElementById('list-'+tabKey);
+    const chipEl  = document.getElementById('chip-'+tabKey);
+    const badgeEl = document.getElementById('badge-'+tabKey+'-full');
     if(listEl) listEl.innerHTML=`<div class="fme-spinner-state"><div class="fme-spinner"></div>Memuat data…</div>`;
-
     try{
-      const raw  = await this._fetchRaw(def.sub);
-
-      // Filter by mention_type
-      const mtype = def.mentionType; // 'image' or 'video'
-      let filtered = raw.filter(it=>{
-        const mt=(it.mention_type||'').toLowerCase().trim();
-        if(!mt) return mtype==='image'; // default to image if unset
-        return mt===mtype || (mtype==='video'&&mt.includes('video')) || (mtype==='image'&&mt.includes('image'));
-      });
-
-      // Sort
-      filtered = this._sort(filtered, def.metric);
-      Store[tabKey] = filtered;
+      const raw = await this._fetchRaw(def.sub);
+      const sorted = this._sort(raw, def.metric);
+      Store[tabKey] = sorted;
       Pag[tabKey]   = 1;
-
-      if(chipEl)  chipEl.textContent  = filtered.length;
-      if(badgeEl) badgeEl.textContent = `${filtered.length} posts`;
-
-      // Stats (only compute once when like-image loads)
-      if(tabKey==='like-image') this._updateStats(raw);
-
+      if(chipEl)  chipEl.textContent  = sorted.length;
+      if(badgeEl) badgeEl.textContent = `${sorted.length} posts`;
+      if(tabKey==='like') this._updateStats(raw);
       this._renderList(tabKey);
-      this._renderBar(tabKey, filtered.slice(0,10));
-      this._renderDonut(tabKey, filtered);
-
-      if(tabKey==='like-image') this._renderEngChart(filtered);
-
+      this._renderBar(tabKey, sorted.slice(0,10));
+      this._renderDonut(tabKey, sorted);
+      if(tabKey==='like') this._renderEngChart(sorted);
     } catch(err){
       console.error(err);
       if(listEl) listEl.innerHTML=emptyH('Gagal memuat data: '+err.message);
@@ -1047,7 +850,6 @@ const FMEData = {
   },
 
   reloadTab(tabKey){
-    // Clear raw cache for this sub so fresh fetch
     const def=TAB_DEFS[tabKey];
     RawStore[def.sub]=[];
     Store[tabKey]=[];Pag[tabKey]=1;
@@ -1055,9 +857,7 @@ const FMEData = {
   },
 
   _sort(items, metric){
-    const keys = metric==='like'
-      ? ['num_likes','likes','like_count']
-      : ['num_comments','comment_count','comments'];
+    const keys = metric==='like' ? ['num_likes','likes','like_count'] : ['num_comments','comment_count','comments'];
     return [...items].sort((a,b)=>{
       const va=keys.reduce((v,k)=>v||parseInt(a[k]||0),0);
       const vb=keys.reduce((v,k)=>v||parseInt(b[k]||0),0);
@@ -1066,31 +866,16 @@ const FMEData = {
   },
 
   _metric(item, metric){
-    const keys = metric==='like'
-      ? ['num_likes','likes','like_count','freq']
-      : ['num_comments','comment_count','comments'];
+    const keys = metric==='like' ? ['num_likes','likes','like_count','freq'] : ['num_comments','comment_count','comments'];
     return keys.reduce((v,k)=>v||parseInt(item[k]||0),0);
   },
 
-  _updateStats(allItems){
-    // Separate image vs video
-    const img = allItems.filter(it=>{ const mt=(it.mention_type||'').toLowerCase(); return !mt||mt.includes('image'); });
-    const vid = allItems.filter(it=>{ const mt=(it.mention_type||'').toLowerCase(); return mt.includes('video'); });
+  _updateStats(items){
     const sumLike = arr => arr.reduce((s,it)=>s+parseInt(it.num_likes||it.likes||0),0);
     const sumCmt  = arr => arr.reduce((s,it)=>s+parseInt(it.num_comments||it.comments||0),0);
-
-    // Totals from ALL (like + comment raw might overlap — use only like raw for stats)
-    const likeImg=sumLike(img), likeVid=sumLike(vid);
-    const cmtImg=sumCmt(img),   cmtVid=sumCmt(vid);
-
-    const eL=document.getElementById('valTotalLikes');if(eL)eL.textContent=numFmt(likeImg+likeVid);
-    const eC=document.getElementById('valTotalCmts'); if(eC)eC.textContent=numFmt(cmtImg+cmtVid);
-    const eP=document.getElementById('valTotalPosts');if(eP)eP.textContent=numFmt(allItems.length);
-
-    const sv=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=numK(v);};
-    sv('valLikeImg',likeImg); sv('valLikeVid',likeVid);
-    sv('valCmtImg',cmtImg);   sv('valCmtVid',cmtVid);
-    sv('valPostImg',img.length); sv('valPostVid',vid.length);
+    const eL=document.getElementById('valTotalLikes');if(eL)eL.textContent=numFmt(sumLike(items));
+    const eC=document.getElementById('valTotalCmts'); if(eC)eC.textContent=numFmt(sumCmt(items));
+    const eP=document.getElementById('valTotalPosts');if(eP)eP.textContent=numFmt(items.length);
   },
 
   _renderList(tabKey){
@@ -1181,27 +966,9 @@ const FMEData = {
     const sentRaw=String(item.sentiment_str||item.class_sentiment||item.sentiment||'').toLowerCase();
     const sent=sentRaw.includes('pos')?'pos':sentRaw.includes('neg')?'neg':'neu';
     const sentLbl=sent==='pos'?'Positive':sent==='neg'?'Negative':'Neutral';
-    const mentionType=(item.mention_type||'image').toLowerCase();
-    const isVideo=mentionType.includes('video');
     const lActive=def.metric==='like';
     const cActive=def.metric==='comment';
     const itemEnc=encodeURIComponent(JSON.stringify(item));
-    const imgUrl=(item.image||item.image_url||item.thumbnail||item.media_url||item.picture||item.photo||'').trim();
-
-    // Thumb
-    const thumbVideoBadge=isVideo?`<div class="fme-thumb-video-badge"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>VIDEO</div>`:'';
-    const thumbHtml = imgUrl
-      ? `<div class="fme-post-thumb">
-           <img src="${esc(imgUrl)}" alt="img" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'fme-post-thumb-ph\\'><svg viewBox=\\'0 0 24 24\\'><rect x=\\'3\\' y=\\'3\\' width=\\'18\\' height=\\'18\\' rx=\\'3\\'/></svg><span>${isVideo?'VIDEO':'IMAGE'}</span></div>'">
-           ${thumbVideoBadge}
-         </div>`
-      : `<div class="fme-post-thumb">
-           <div class="fme-post-thumb-ph">
-             <svg viewBox="0 0 24 24">${isVideo?'<polygon points="5 3 19 12 5 21 5 3"/>':`<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>`}</svg>
-             <span>${isVideo?'VIDEO':'IMAGE'}</span>
-           </div>
-           ${isVideo?thumbVideoBadge:''}
-         </div>`;
 
     return `<div class="fme-post" data-item="${esc(itemEnc)}" data-name="${esc(name)}">
       <div class="fme-post-rank fme-post-rank${rkCls}">${rank}</div>
@@ -1220,11 +987,9 @@ const FMEData = {
             ${numFmt(cmts)}
           </span>
           <span class="fme-sent fme-sent--${sent}">${sentLbl}</span>
-          <span class="fme-type-badge fme-type-badge--${isVideo?'video':'image'}">${isVideo?'▶ Video':'🖼 Image'}</span>
           ${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="fme-view-link" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Lihat</a>`:''}
         </div>
       </div>
-      ${thumbHtml}
     </div>`;
   },
 
@@ -1278,7 +1043,7 @@ const FMEData = {
     let srcLeg=document.getElementById('legendSrc-'+tabKey);
     if(!srcLeg){ srcLeg=document.createElement('div');srcLeg.id='legendSrc-'+tabKey;srcLeg.style.display='none';document.body.appendChild(srcLeg); }
     srcLeg.innerHTML=legendHTML;
-    const activeTab=Object.keys(TAB_DEFS).find(k=>document.getElementById('tab-'+k)?.classList.contains('active'))||'like-image';
+    const activeTab=Object.keys(TAB_DEFS).find(k=>document.getElementById('tab-'+k)?.classList.contains('active'))||'like';
     if(activeTab===tabKey){ const ml=document.getElementById('donutMasterLegend');if(ml)ml.innerHTML=legendHTML; }
     if(skel)skel.style.display='none'; if(chartEl)chartEl.style.display='block';
     const chart=FMECharts.make('donutChart-'+tabKey); if(!chart)return;
@@ -1330,7 +1095,7 @@ const FMEData = {
   exportCsv(tabKey){
     const items=Store[tabKey];if(!items?.length){alert('Tidak ada data untuk diekspor.');return;}
     const def=TAB_DEFS[tabKey];
-    const header='index;nama;tipe;sentiment;likes;comments;tanggal;url;konten';
+    const header='index;nama;sentiment;likes;comments;tanggal;url;konten';
     const rows=items.map((it,i)=>{
       const name=this._getName(it);
       const sentRaw=String(it.sentiment_str||it.class_sentiment||it.sentiment||'').toLowerCase();
@@ -1339,8 +1104,7 @@ const FMEData = {
       const cmts=parseInt(it.num_comments||it.comments||0);
       const dt=(it.date_created||'').split('T')[0], url=it.url||it.link||'';
       const content=(it.content||it.caption||'').replace(/<[^>]*>/g,'').trim().slice(0,300).replace(/;/g,',').replace(/\n/g,' ');
-      const mtype=(it.mention_type||'image');
-      return `${i};${name.replace(/;/g,',')};${mtype};${sent};${likes};${cmts};${dt};${url};${content}`;
+      return `${i};${name.replace(/;/g,',')};${sent};${likes};${cmts};${dt};${url};${content}`;
     });
     const blob=new Blob(['\uFEFF'+[header,...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);
@@ -1417,7 +1181,7 @@ const FMEPopup = {
     this._render(document.getElementById('msPopList'),items,tabKey);
   },
   close(){document.getElementById('msPopup')?.classList.remove('visible');FMEDetail.close();},
-  exportCsv(){FMEData.exportCsv(this._curTabKey||'like-image');},
+  exportCsv(){FMEData.exportCsv(this._curTabKey||'like');},
   _render(list,items,tabKey){
     const def=TAB_DEFS[tabKey]||{};
     if(!items?.length){list.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;color:var(--text-secondary);font-size:13px;font-weight:600;">Tidak ada data</div>`;return;}
@@ -1436,8 +1200,6 @@ const FMEPopup = {
       const sent=sentRaw.includes('pos')?'pos':sentRaw.includes('neg')?'neg':'neu';
       const sentLbl=sent==='pos'?'Pos':sent==='neg'?'Neg':'Neu';
       const eng=def.metric==='like'?`Like ${numFmt(likes)}`:`Komen ${numFmt(cmts)}`;
-      const mtype=(item.mention_type||'image').toLowerCase();
-      const isVideo=mtype.includes('video');
       const itemEnc=encodeURIComponent(JSON.stringify(item));
       return `<div class="msp-item" data-item="${esc(itemEnc)}" data-tabkey="${tabKey}" onclick="FMEPopup._onItemClick(this)">
         <div class="msp-avatar" style="background:linear-gradient(135deg,${avColor},${avColor}99);">${avHtml}</div>
@@ -1447,7 +1209,6 @@ const FMEPopup = {
           <div class="msp-item-footer">
             <span class="msp-sent msp-sent--${sent}">${sentLbl}</span>
             <span>${esc(eng)}</span>
-            <span class="fme-type-badge fme-type-badge--${isVideo?'video':'image'}" style="font-size:9px;">${isVideo?'▶ Vid':'🖼 Img'}</span>
             ${dt?`<span style="margin-left:auto;">${dt}</span>`:''}
           </div>
         </div>
@@ -1460,7 +1221,7 @@ const FMEPopup = {
       const raw=el.getAttribute('data-item');
       const item=JSON.parse(decodeURIComponent(raw.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"')));
       const tabKey=el.dataset.tabkey||this._curTabKey;
-      const def=TAB_DEFS[tabKey]||TAB_DEFS['like-image'];
+      const def=TAB_DEFS[tabKey]||TAB_DEFS['like'];
       FMEDetail.open(item,def);
     }catch(e){console.warn('Detail parse:',e);}
   }
@@ -1484,8 +1245,6 @@ const FMEDetail = {
     const sentLbl=sent==='pos'?'Positive':sent==='neg'?'Negative':'Neutral';
     const likes=parseInt(item.num_likes||item.likes||0);
     const cmts=parseInt(item.num_comments||item.comments||0);
-    const mtype=(item.mention_type||'image').toLowerCase();
-    const isVideo=mtype.includes('video');
     const ini=FMEData._getInitials(name);
     const safeIni=ini.replace(/['"\\]/g,'');
     const avColor=FMEData._getAvatarColor(item);
@@ -1502,7 +1261,6 @@ const FMEDetail = {
           <div class="msdp-author-name">${esc(name)}</div>
           <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;">
             <span style="background:${color}22;color:${color};padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;">Instagram · ${label}</span>
-            <span class="fme-type-badge fme-type-badge--${isVideo?'video':'image'}">${isVideo?'▶ Video':'🖼 Image'}</span>
           </div>
         </div>
       </div>
