@@ -187,7 +187,34 @@
   .ms-ch-340 { position: relative; height: 340px; }
 
   /* GRID */
-  .ms-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .ms-grid-2        { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.ms-pola-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  margin-bottom: 20px;
+  align-items: start; /* ← THE CRITICAL FIX: top-aligns both cards */
+}
+.ms-pola-grid > .do-card {
+  display: flex;
+  flex-direction: column;
+}
+.ms-pola-grid > .do-card .do-card-body {
+  flex: 1;
+  padding: 20px;
+}
+.ms-pola-grid > .do-card .ms-ch-280 {
+  position: relative;
+  height: 280px; /* explicit height required for ECharts to render */
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .ms-pola-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .ms-pola-grid { grid-template-columns: 1fr; }
+}
   .ms-mb20 { margin-bottom: 20px; }
 
   /* SKELETON */
@@ -454,8 +481,8 @@
   </div>
 
   {{-- TAB PANEL: POLA WAKTU --}}
-  <div class="ms-tab-panel" id="panelPola">
-    <div class="ms-grid-2">
+<div class="ms-tab-panel" id="panelPola">
+    <div class="ms-pola-grid">
       <div class="do-card">
         <div class="do-card-head">
           <div class="do-card-head-left">
@@ -477,7 +504,7 @@
         </div>
       </div>
 
-      <div class="do-card">
+    <div class="do-card">
         <div class="do-card-head">
           <div class="do-card-head-left">
             <span class="do-head-icon">
@@ -488,8 +515,14 @@
               <div class="do-card-subtitle">Distribusi volume mention per jam (00–23)</div>
             </div>
           </div>
-          <span class="do-badge">24 Jam</span>
-        </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <button class="ms-csv-btn" onclick="MSCsvModal.showHour()" title="Copy CSV Data">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              CSV
+            </button>
+            <span class="do-badge">24 Jam</span>
+          </div>
+        </div>{{-- ← THIS closing tag was missing --}}
         <div class="do-card-body">
           <div class="ms-ch-280">
             <div id="chHour" style="width:100%;height:100%;"></div>
@@ -516,6 +549,9 @@ const TrCfg = {
 };
 
 const numFmt = n => parseInt(n||0).toLocaleString('id-ID');
+
+// Dual Y-axis: Twitter on left (0), all others on right (1)
+const Y_AXIS_IDX = { doc: 1, twitter: 0, facebook: 1, instagram: 1, youtube: 1, tiktok: 1 };
 const numK   = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':String(n); };
 const hideSk = id => { const e=document.getElementById(id); if(e) e.style.display='none'; };
 const emptyHtml = msg => `<div class="do-empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="do-empty-text">${msg}</span></div>`;
@@ -695,11 +731,11 @@ async function loadTrend() {
 
     const skipInterval = allDates.length > 21 ? Math.floor(allDates.length / 14) : 0;
 
-    const series = trendRaw.map(p => {
+const series = trendRaw.map(p => {
       const vals    = allDates.map(d => { const pt = p.data.find(x => x.date === d); return pt ? pt.count : 0; });
       const hasData = vals.some(v => v > 0);
       return {
-        name:      p.label, type: 'line', data: vals, smooth: 0.4,
+        name: p.label, type: 'line', yAxisIndex: Y_AXIS_IDX[p.key] ?? 1, data: vals, smooth: 0.4,
         symbol: 'circle', symbolSize: hasData && allDates.length <= 30 ? 6 : 0, showSymbol: allDates.length <= 30,
         itemStyle: { color: p.color, borderColor: '#fff', borderWidth: 2 },
         lineStyle:  { color: p.color, width: hasData ? 2.5 : 1, opacity: hasData ? 1 : 0.15 },
@@ -743,11 +779,15 @@ async function loadTrend() {
              </div>`
           ).join('');
           const total = params.reduce((s, p) => s + (p.value || 0), 0);
-          return `<div style="font-weight:700;font-size:12px;color:#1a202c;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f1f5f9;">${fullDt}</div>
+         return `<div style="font-weight:700;font-size:12px;color:#1a202c;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f1f5f9;">${fullDt}</div>
                   ${rows || '<div style="color:#94a3b8;font-size:12px;">Tidak ada data</div>'}
-                  <div style="border-top:1px solid #f1f5f9;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;">
+                  <div style="border-top:1px solid #f1f5f9;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;align-items:center;">
                     <span style="font-size:11px;color:#94a3b8;">Total</span>
                     <span style="font-size:12px;font-weight:700;color:#1a202c;">${numFmt(total)}</span>
+                  </div>
+                  <div style="margin-top:5px;font-size:10px;color:#cbd5e1;display:flex;gap:10px;">
+                    <span style="color:#1d9bf066;">▌ Left axis: Twitter</span>
+                    <span style="color:#94a3b8;">▌ Right axis: Others</span>
                   </div>`;
         }
       },
@@ -757,17 +797,34 @@ async function loadTrend() {
         textStyle: { fontFamily: "'Poppins', sans-serif", fontSize: 11, fontWeight: '600', color: '#64748b' },
         icon: 'circle', itemWidth: 10, itemHeight: 10, itemGap: 20,
       },
-      grid: { top: 24, right: 20, bottom: 50, left: 60 },
+      grid: { top: 32, right: 72, bottom: 50, left: 64 },
       xAxis: {
         type: 'category', data: xLabels, boundaryGap: false,
         axisLine: { lineStyle: { color: '#e2e8f0' } }, axisTick: { show: false },
         axisLabel: { fontFamily: "'Poppins', sans-serif", fontSize: 11, fontWeight: '600', color: '#64748b', interval: skipInterval }
       },
-      yAxis: {
-        type: 'value', axisLine: { show: false }, axisTick: { show: false },
-        splitLine: { lineStyle: { color: '#f1f5f9', type: 'solid', width: 1 } },
-        axisLabel: { fontFamily: "'Poppins', sans-serif", fontSize: 11, color: '#94a3b8', formatter: numK }
-      },
+      yAxis: [
+        {
+          // LEFT — Twitter scale
+          type: 'value', position: 'left',
+          name: 'Twitter', nameGap: 8,
+          nameTextStyle: { color: '#1d9bf066', fontSize: 10, fontWeight: '700', fontFamily: "'Poppins', sans-serif", align: 'right' },
+          axisLine: { show: true, lineStyle: { color: '#1d9bf018', width: 1 } },
+          axisTick: { show: false },
+          splitLine: { show: false },
+          axisLabel: { fontFamily: "'Poppins', sans-serif", fontSize: 10, color: '#1d9bf0bb', formatter: numK },
+        },
+        {
+          // RIGHT — All others scale
+          type: 'value', position: 'right',
+          name: 'Others', nameGap: 8,
+          nameTextStyle: { color: '#94a3b8', fontSize: 10, fontWeight: '700', fontFamily: "'Poppins', sans-serif", align: 'left' },
+          axisLine: { show: true, lineStyle: { color: '#e2e8f0', width: 1 } },
+          axisTick: { show: false },
+          splitLine: { lineStyle: { color: '#f1f5f9', type: 'solid', width: 1 } },
+          axisLabel: { fontFamily: "'Poppins', sans-serif", fontSize: 10, color: '#94a3b8', formatter: numK },
+        },
+      ],
       series,
     }, true);
 
@@ -793,7 +850,7 @@ function _renderTrendChart() {
     const vals    = _trendDates.map(d=>{ const pt=p.data.find(x=>x.date===d); return pt?pt.count:0; });
     const hasData = vals.some(v=>v>0);
     return {
-      name:      p.label, type:'line', data:vals, smooth:0.4,
+      name: p.label, type:'line', yAxisIndex: Y_AXIS_IDX[p.key] ?? 1, data:vals, smooth:0.4,
       symbol:'circle', symbolSize: hasData && _trendDates.length <= 30 ? 6 : 0, showSymbol: _trendDates.length <= 30,
       itemStyle:{ color:p.color, borderColor:'#fff', borderWidth:2 },
       lineStyle:{ color:p.color, width:hasData?2.5:1, opacity:hasData?1:0.15 },
@@ -822,9 +879,12 @@ function _renderTrendChart() {
       }
     },
     legend:{ bottom:0, type:'scroll', data:_trendRaw.filter(p=>_trendActive.has(p.key)).map(p=>p.label), textStyle:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'}, icon:'circle', itemWidth:10, itemHeight:10, itemGap:20 },
-    grid:{ top:24, right:20, bottom:50, left:60 },
+  grid:{ top:32, right:72, bottom:50, left:64 },
     xAxis:{ type:'category', data:lbls, boundaryGap:false, axisLine:{lineStyle:{color:'#e2e8f0'}}, axisTick:{show:false}, axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b', interval: skipInterval} },
-    yAxis:{ type:'value', axisLine:{show:false}, axisTick:{show:false}, splitLine:{lineStyle:{color:'#f1f5f9',type:'solid',width:1}}, axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#94a3b8',formatter:numK} },
+    yAxis:[
+      { type:'value', position:'left', name:'Twitter', nameGap:8, nameTextStyle:{color:'#1d9bf066',fontSize:10,fontWeight:'700',fontFamily:"'Poppins',sans-serif",align:'right'}, axisLine:{show:true,lineStyle:{color:'#1d9bf018',width:1}}, axisTick:{show:false}, splitLine:{show:false}, axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:10,color:'#1d9bf0bb',formatter:numK} },
+      { type:'value', position:'right', name:'Others', nameGap:8, nameTextStyle:{color:'#94a3b8',fontSize:10,fontWeight:'700',fontFamily:"'Poppins',sans-serif",align:'left'}, axisLine:{show:true,lineStyle:{color:'#e2e8f0',width:1}}, axisTick:{show:false}, splitLine:{lineStyle:{color:'#f1f5f9',type:'solid',width:1}}, axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:10,color:'#94a3b8',formatter:numK} },
+    ],
     series,
   }, true);
 }

@@ -979,5 +979,147 @@ class FacebookOverviewController extends Controller
             ]);
         }
     }
+    public function mostEngagementPage(Request $request)
+{
+    try {
+        $projects  = $this->getAllProjects();
+        $projectId = $request->query('project_id');
+
+        if (!$projectId && count($projects) > 0) {
+            $projectId = $projects[0]['id'] ?? null;
+            if ($projectId) {
+                return redirect()->route('mk.facebook.most-engagement', [
+                    'project_id' => $projectId,
+                    'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                    'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                ]);
+            }
+        }
+
+        $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+        return view('mk.facebook.most-engagement')->with([
+            'projectId' => $projectId,
+            'startDate' => $startDate,
+            'endDate'   => $endDate,
+            'projects'  => $projects,
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Facebook Most Engagement Page Error', ['error' => $e->getMessage()]);
+        return view('mk.facebook.most-engagement')->with([
+            'projectId' => null,
+            'startDate' => now()->subDays(6)->format('Y-m-d'),
+            'endDate'   => now()->format('Y-m-d'),
+            'projects'  => [],
+            'error'     => $e->getMessage(),
+        ]);
+    }
+}
+ public function emotionAnalysisPage(Request $request)
+    {
+        try {
+            $projects  = $this->getAllProjects();
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+                if ($projectId) {
+                    return redirect()->route('mk.facebook.emotion-analysis', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+
+            return view('mk.facebook.facebook-emotion-analysis')->with([
+                'projectId' => $projectId,
+                'startDate' => $startDate,
+                'endDate'   => $endDate,
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Facebook Emotion Analysis Page Error', ['error' => $e->getMessage()]);
+            return view('mk.facebook.facebook-emotion-analysis')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
+        }
+    }
+    public function mostEngagementData(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+        $sub       = $request->query('sub', 'fblike'); // fblike | fbshare | fbcomment
+        $rows      = (int) $request->query('rows', 100);
+
+        if (!$projectId || !$startDate || !$endDate) {
+            return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
+        }
+
+        $result = $this->client->fbTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
+
+        $posts = [];
+        $items = is_array($result) ? $result : ($result['data'] ?? []);
+
+        foreach ($items as $item) {
+            if (!is_array($item)) continue;
+
+            $authorName = $item['contentJson']['from']['name']
+                ?? $item['author_name']
+                ?? $item['name']
+                ?? 'Unknown';
+
+            // Bersihkan HTML dari nama
+            if (str_contains($authorName, '<b>')) {
+                preg_match('/<b>(.*?)<\/b>/', $authorName, $matches);
+                $authorName = trim(str_replace(':', '', $matches[1] ?? $authorName));
+            }
+
+            $profilePic = $item['contentJson']['from']['picture']['data']['url']
+                ?? $item['profile_url']
+                ?? $item['avatar_url']
+                ?? '';
+
+            $content = $item['content'] ?? $item['name'] ?? '';
+            if (str_contains($content, '<b>')) {
+                $content = trim(preg_replace('/<b>.*?<\/b>\s*/', '', $content));
+            }
+
+            $posts[] = [
+                'id'            => $item['id']           ?? '',
+                'sub_id'        => $item['sub_id']       ?? $item['docid'] ?? '',
+                'name'          => $authorName,
+                'content'       => $content,
+                'likes'         => (int) ($item['num_likes']    ?? $item['likes']    ?? $item['freq'] ?? 0),
+                'shares'        => (int) ($item['num_shares']   ?? $item['shares']   ?? 0),
+                'comments'      => (int) ($item['num_comments'] ?? $item['comments'] ?? 0),
+                'sentiment_str' => $item['sentiment_str'] ?? 'Neutral',
+                'date_created'  => $item['date_created']  ?? '',
+                'url'           => $item['url']           ?? $item['link'] ?? null,
+                'avatar_url'    => $profilePic,
+                'tcode'         => $item['tcode']         ?? 'fb-post',
+            ];
+        }
+
+        // JANGAN sort ulang — API sudah sort by sub yang diminta
+        return response()->json(['success' => true, 'data' => $posts]);
+
+    } catch (\Exception $e) {
+        Log::error('FB mostEngagementData error', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+    }
+}
 }
 //jjkllokij

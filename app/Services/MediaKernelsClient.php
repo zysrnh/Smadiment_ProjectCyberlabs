@@ -757,152 +757,73 @@ class MediaKernelsClient
         string $username,
         int $startTime = 0,
         int $endTime = 23,
-        int $rows = 50
+        int $start = 0,
+        int $batchSize = 200
     ): array {
         try {
             $token = $this->getToken();
-
-            $res = Http::timeout(60)->acceptJson()->get(
-                $this->baseUrl() . '/mentions/',
-                [
-                    'project_id'   => $projectId,
-                    'start_date'   => $startDate,
-                    'end_date'     => $endDate,
-                    'start_time'   => $startTime,
-                    'end_time'     => $endTime,
-                    'with_content' => 'true',
-                    'start'        => 0,
-                    'rows'         => 100,
-                    'token'        => $token,
-                ]
-            );
-
-            $res->throw();
-
-            $json = $this->parseJson($res);
-
-            Log::info('getUserMentions raw API response', [
-                'username'      => $username,
-                'total_results' => count($json),
-            ]);
-
             $userMentions = [];
-            foreach ($json as $mention) {
-                $authorScreenName = $mention['author_scr_name'] ?? '';
+            $apiStart = $start;
+            $maxResults = 50;
+            $maxScans   = 10;
+            $scanCount  = 0;
 
-                if (strtolower($authorScreenName) === strtolower($username)) {
-                    $userMentions[] = $mention;
-                    if (count($userMentions) >= $rows) break;
+            while (count($userMentions) < $maxResults && $scanCount < $maxScans) {
+                $res = Http::timeout(60)->acceptJson()->get(
+                    $this->baseUrl() . '/mentions/',
+                    [
+                        'project_id'   => $projectId,
+                        'start_date'   => $startDate,
+                        'end_date'     => $endDate,
+                        'start_time'   => 0,
+                        'end_time'     => 23,
+                        'with_content' => 'true',
+                        'start'        => $apiStart,
+                        'rows'         => $batchSize,
+                        'token'        => $token,
+                    ]
+                );
+
+                $res->throw();
+                $batch = $this->parseJson($res);
+
+                if (empty($batch) || !is_array($batch)) break;
+
+                foreach ($batch as $mention) {
+                    $scrName = strtolower($mention['author_scr_name'] ?? '');
+                    if ($scrName === strtolower($username)) {
+                        $userMentions[] = $mention;
+                    }
                 }
+
+                $scanCount++;
+                if (count($batch) < $batchSize) break;
+                $apiStart += $batchSize;
             }
 
-            Log::info('getUserMentions filtered results', [
+            usort($userMentions, function($a, $b) {
+                return strtotime($b['date_created'] ?? '0') - strtotime($a['date_created'] ?? '0');
+            });
+
+            $hasMore = count($userMentions) >= $maxResults && $scanCount >= $maxScans;
+
+            Log::info('getUserMentions', [
                 'username'       => $username,
-                'filtered_count' => count($userMentions),
+                'scans'          => $scanCount,
+                'total_found'    => count($userMentions),
+                'has_more'       => $hasMore,
+                'next_api_start' => $apiStart,
             ]);
 
-            return $userMentions;
+            return [
+                'mentions'       => array_slice($userMentions, 0, $maxResults),
+                'has_more'       => $hasMore,
+                'next_api_start' => $apiStart,
+            ];
 
         } catch (\Exception $e) {
-            Log::error('getUserMentions API error', [
-                'error'    => $e->getMessage(),
-                'username' => $username,
-            ]);
-            return [];
-        }
-    }
-
-    public function mostActiveUsers(
-        string $projectId,
-        string $startDate,
-        string $endDate,
-        int $startTime = 0,
-        int $endTime = 23
-    ): array {
-        try {
-            $token = $this->getToken();
-
-            $res = Http::timeout(60)->acceptJson()->get(
-                $this->baseUrl() . '/most_active_users/',
-                [
-                    'project_id' => $projectId,
-                    'start_date' => $startDate,
-                    'end_date'   => $endDate,
-                    'start_time' => $startTime,
-                    'end_time'   => $endTime,
-                    'token'      => $token,
-                ]
-            );
-
-            $res->throw();
-            return $this->parseJson($res);
-        } catch (\Exception $e) {
-            Log::warning('mostActiveUsers API timeout or error', ['error' => $e->getMessage()]);
-            return ['data' => []];
-        }
-    }
-
-    public function mostRetweets(
-        string $projectId,
-        string $startDate,
-        string $endDate,
-        int $startTime = 0,
-        int $endTime = 23
-    ): array {
-        try {
-            $token = $this->getToken();
-
-            $res = Http::timeout(60)->acceptJson()->get(
-                $this->baseUrl() . '/most_retweets/',
-                [
-                    'project_id' => $projectId,
-                    'start_date' => $startDate,
-                    'end_date'   => $endDate,
-                    'start_time' => $startTime,
-                    'end_time'   => $endTime,
-                    'token'      => $token,
-                ]
-            );
-
-            $res->throw();
-            return $this->parseJson($res);
-        } catch (\Exception $e) {
-            Log::warning('mostRetweets API timeout or error', ['error' => $e->getMessage()]);
-            return ['data' => []];
-        }
-    }
-
-    public function mostStatus(
-        string $projectId,
-        string $media,
-        string $startDate,
-        string $endDate,
-        int $startTime = 0,
-        int $endTime = 23,
-        string $mentionType = 'view_all'
-    ): array {
-        try {
-            $token = $this->getToken();
-
-            $res = Http::timeout(60)->acceptJson()->get(
-                $this->baseUrl() . '/twitter_most_status/',
-                [
-                    'project_id'   => $projectId,
-                    'media'        => $media,
-                    'start_date'   => $startDate,
-                    'end_date'     => $endDate,
-                    'start_time'   => $startTime,
-                    'end_time'     => $endTime,
-                    'mention_type' => $mentionType,
-                    'token'        => $token,
-                ]
-            );
-
-            $res->throw();
-            return $this->parseJson($res);
-        } catch (\Exception $e) {
-            Log::warning('mostStatus API error', ['error' => $e->getMessage()]);
-            return [];
+            Log::error('getUserMentions error', ['error' => $e->getMessage()]);
+            return ['mentions' => [], 'has_more' => false, 'next_api_start' => 0];
         }
     }
 
@@ -1172,46 +1093,7 @@ class MediaKernelsClient
         }
     }
 
-    public function topInfluencers(
-        string $projectId,
-        string $startDate,
-        string $endDate,
-        int $startTime = 0,
-        int $endTime = 23
-    ): array {
-        try {
-            $token = $this->getToken();
 
-            $res = Http::timeout(60)->acceptJson()->get(
-                $this->baseUrl() . '/top_influencers/',
-                [
-                    'project_id' => $projectId,
-                    'start_date' => $startDate,
-                    'end_date'   => $endDate,
-                    'start_time' => $startTime,
-                    'end_time'   => $endTime,
-                    'token'      => $token,
-                ]
-            );
-
-            $res->throw();
-            return $this->parseJson($res);
-        } catch (\Exception $e) {
-            Log::warning('topInfluencers API error', ['error' => $e->getMessage()]);
-            return ['data' => []];
-        }
-    }
-
-    // ─────────────────────────────────────────────────────
-    // SHARED URLS
-    // ─────────────────────────────────────────────────────
-
-    /**
-     * Get most frequently shared URLs.
-     *
-     * API: GET /get_shared_url_freq/
-     * Response: { "status": "success", "data": [ { "url": "...", "freq": "18", "hostname": "..." }, ... ] }
-     */
     public function sharedUrlFreq(
         string $projectId,
         string $startDate,
@@ -1709,7 +1591,7 @@ public function tiktokTopStatus(
     string $endDate,
     int $startTime = 0,
     int $endTime = 23,
-    int $rows = 100,
+    int $rows = 1000,
     string $sub = 'postbylike'
 ): array {
     try {
@@ -2045,10 +1927,353 @@ public function mentionKanalPeriodeHour(
     }
 }
 
+public function mostActiveUsers(
+    string $projectId,
+    string $startDate,
+    string $endDate,
+    int $startTime = 0,
+    int $endTime = 23
+): array {
+    try {
+        $token = $this->getToken();
+
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/most_active_users/',
+            [
+                'project_id' => $projectId,
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'start_time' => $startTime,
+                'end_time'   => $endTime,
+                'token'      => $token,
+            ]
+        );
+
+        $res->throw();
+
+        $json = $this->parseJson($res);
+
+        Log::info('mostActiveUsers API response', [
+            'project_id'  => $projectId,
+            'total_items' => is_array($json) ? count($json) : 0,
+            'keys'        => is_array($json) ? array_keys($json) : [],
+        ]);
+
+        return is_array($json) ? $json : [];
+
+    } catch (\Exception $e) {
+        Log::warning('mostActiveUsers API timeout or error', ['error' => $e->getMessage()]);
+        return ['data' => []];
+    }
+}
+
+/**
+ * Get all posts/activity by a specific Twitter user
+ * Scans /mentions/ endpoint with larger batch and more iterations
+ */
+public function getUserPosts(
+    string $projectId,
+    string $startDate,
+    string $endDate,
+    string $username,
+    int $maxResults = 200,
+    int $batchSize  = 500,
+    int $maxScans   = 20,
+    int $startFrom  = 0
+): array {
+    try {
+        $token      = $this->getToken();
+        $userPosts  = [];
+        $apiStart   = $startFrom;
+        $scanCount  = 0;
+        $totalScanned = 0;
+
+        while (count($userPosts) < $maxResults && $scanCount < $maxScans) {
+            $res = Http::timeout(90)->acceptJson()->get(
+                $this->baseUrl() . '/mentions/',
+                [
+                    'project_id'   => $projectId,
+                    'start_date'   => $startDate,
+                    'end_date'     => $endDate,
+                    'start_time'   => 0,
+                    'end_time'     => 23,
+                    'with_content' => 'true',
+                    'start'        => $apiStart,
+                    'rows'         => $batchSize,
+                    'token'        => $token,
+                ]
+            );
+
+            $res->throw();
+            $batch = $this->parseJson($res);
+
+            if (empty($batch) || !is_array($batch)) break;
+
+            $batchCount = count($batch);
+            $totalScanned += $batchCount;
+
+            foreach ($batch as $post) {
+                $scrName = strtolower(
+                    $post['author_scr_name'] ?? $post['name'] ?? ''
+                );
+
+                if ($scrName === strtolower($username)) {
+                    $userPosts[] = $post;
+                }
+            }
+
+            $scanCount++;
+
+            // Berhenti jika batch lebih kecil dari yang diminta (sudah habis)
+            if ($batchCount < $batchSize) break;
+
+            $apiStart += $batchSize;
+        }
+
+        // Sort by date terbaru
+        usort($userPosts, function ($a, $b) {
+            return strtotime($b['date_created'] ?? '0')
+                 - strtotime($a['date_created'] ?? '0');
+        });
+
+        $hasMore = (count($userPosts) >= $maxResults) || 
+                   ($scanCount >= $maxScans && count($userPosts) > 0);
+
+        Log::info('getUserPosts', [
+            'username'      => $username,
+            'scans'         => $scanCount,
+            'total_scanned' => $totalScanned,
+            'found'         => count($userPosts),
+            'has_more'      => $hasMore,
+            'next_start'    => $apiStart,
+        ]);
+
+        return [
+            'posts'          => array_slice($userPosts, 0, $maxResults),
+            'has_more'       => $hasMore,
+            'next_api_start' => $apiStart,
+            'total_scanned'  => $totalScanned,
+        ];
+
+    } catch (\Exception $e) {
+        Log::error('getUserPosts error', ['error' => $e->getMessage()]);
+        return [
+            'posts'          => [],
+            'has_more'       => false,
+            'next_api_start' => 0,
+            'total_scanned'  => 0,
+        ];
+    }
+}
+
+public function mostStatus(
+        string $projectId,
+        string $media,
+        string $startDate,
+        string $endDate,
+        int $startTime = 0,
+        int $endTime = 23,
+        int $rows = 100,
+        string $sub = 'postbyview'
+    ): array {
+        try {
+            $token = $this->getToken();
+
+            $res = Http::timeout(60)->acceptJson()->get(
+                $this->baseUrl() . '/most_status/',
+                [
+                    'project_id' => $projectId,
+                    'media'      => $media,
+                    'start_date' => $startDate,
+                    'end_date'   => $endDate,
+                    'start_time' => $startTime,
+                    'end_time'   => $endTime,
+                    'rows'       => $rows,
+                    'sub'        => $sub,
+                    'is_cache'   => 'true',
+                    'token'      => $token,
+                ]
+            );
+
+            $res->throw();
+
+            $json = $this->parseJson($res);
+
+            Log::info('mostStatus API response', [
+                'project_id'  => $projectId,
+                'media'       => $media,
+                'sub'         => $sub,
+                'total_items' => is_array($json) ? count($json) : 0,
+                'first_item'  => is_array($json) && count($json) > 0 ? array_slice($json[0], 0, 6) : null,
+            ]);
+
+            return is_array($json) ? $json : [];
+
+        } catch (\Exception $e) {
+            Log::error('mostStatus API error', [
+                'error'      => $e->getMessage(),
+                'project_id' => $projectId,
+                'media'      => $media,
+                'sub'        => $sub,
+            ]);
+            return [];
+        }
+    }
+
+    // ─────────────────────────────────────────────────────
+    // MOST RETWEETS
+    // API: GET /most_retweets/
+    // ─────────────────────────────────────────────────────
+
+    public function mostRetweets(
+        string $projectId,
+        string $startDate,
+        string $endDate,
+        int $startTime = 0,
+        int $endTime = 23,
+        int $rows = 100
+    ): array {
+        try {
+            $token = $this->getToken();
+
+            $res = Http::timeout(60)->acceptJson()->get(
+                $this->baseUrl() . '/most_retweets/',
+                [
+                    'project_id' => $projectId,
+                    'start_date' => $startDate,
+                    'end_date'   => $endDate,
+                    'start_time' => $startTime,
+                    'end_time'   => $endTime,
+                    'rows'       => $rows,
+                    'is_cache'   => 'true',
+                    'token'      => $token,
+                ]
+            );
+
+            $res->throw();
+
+            $json = $this->parseJson($res);
+
+            Log::info('mostRetweets API response', [
+                'project_id'  => $projectId,
+                'total_items' => is_array($json) ? count($json) : 0,
+            ]);
+
+            return is_array($json) ? $json : [];
+
+        } catch (\Exception $e) {
+            Log::error('mostRetweets API error', [
+                'error'      => $e->getMessage(),
+                'project_id' => $projectId,
+            ]);
+            return [];
+        }
+    }
+
+    public function userMostEngaged(
+        string $projectId,
+        string $startDate,
+        string $endDate,
+        int $startTime = 0,
+        int $endTime = 23,
+        int $rows = 200,
+        string $sub = 'rt'   // 'rt' = By Collected Mentions | 'rt_all' = By Total Retweets
+    ): array {
+        try {
+            $token = $this->getToken();
+
+            $res = Http::timeout(60)->acceptJson()->get(
+                $this->baseUrl() . '/user_most_engaged/',
+                [
+                    'project_id' => $projectId,
+                    'start_date' => $startDate,
+                    'end_date'   => $endDate,
+                    'start_time' => $startTime,
+                    'end_time'   => $endTime,
+                    'rows'       => $rows,
+                    'media'      => 'twitter',
+                    'sub'        => $sub,
+                    'token'      => $token,
+                ]
+            );
+
+            $res->throw();
+
+            $json = $this->parseJson($res);
+
+            Log::info('userMostEngaged API response', [
+                'project_id'  => $projectId,
+                'sub'         => $sub,
+                'type'        => gettype($json),
+                'count'       => is_array($json) ? count($json) : 0,
+                'sample_keys' => is_array($json) && count($json) > 0
+                    ? array_keys(is_array($json[0] ?? null) ? $json[0] : $json)
+                    : [],
+                'sample'      => is_array($json) && count($json) > 0
+                    ? array_slice(is_array($json[0] ?? null) ? $json[0] : $json, 0, 8)
+                    : [],
+            ]);
+
+            return is_array($json) ? $json : [];
+
+        } catch (\Exception $e) {
+            Log::error('userMostEngaged API error', [
+                'error'      => $e->getMessage(),
+                'project_id' => $projectId,
+                'sub'        => $sub,
+            ]);
+            return [];
+        }
+    }
 
 
+ public function topInfluencers(
+        string $projectId,
+        string $startDate,
+        string $endDate,
+        int $startTime = 0,
+        int $endTime = 23,
+        string $localities = '',
+        int $rows = 200
+    ): array {
+        try {
+            $token = $this->getToken();
 
+            $res = Http::timeout(60)->acceptJson()->get(
+                $this->baseUrl() . '/top_influencers/',
+                [
+                    'project_id' => $projectId,
+                    'start_date' => $startDate,
+                    'end_date'   => $endDate,
+                    'start_time' => $startTime,
+                    'end_time'   => $endTime,
+                    'localities' => $localities,
+                    'token'      => $token,
+                ]
+            );
 
+            $res->throw();
 
+            $json = $this->parseJson($res);
 
+            Log::info('topInfluencers API response', [
+                'project_id' => $projectId,
+                'count'      => is_array($json) ? count($json) : 0,
+                'sample'     => is_array($json) && count($json) > 0
+                    ? array_slice($json[0], 0, 4)
+                    : [],
+            ]);
+
+            return is_array($json) ? $json : [];
+
+        } catch (\Exception $e) {
+            Log::error('topInfluencers API error', [
+                'error'      => $e->getMessage(),
+                'project_id' => $projectId,
+            ]);
+            return [];
+        }
+    }
+
+    
 }

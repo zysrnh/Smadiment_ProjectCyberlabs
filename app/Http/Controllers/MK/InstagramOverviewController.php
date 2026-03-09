@@ -105,11 +105,6 @@ class InstagramOverviewController extends Controller
 
             $result = $this->client->totalAuthors($projectId, 'instagram', $startDate, $endDate);
 
-            Log::info('IG totalUsers raw', [
-                'all'     => $result['all'] ?? null,
-                'bymedia' => $result['bymedia'] ?? [],
-            ]);
-
             $total = 0;
             if (isset($result['bymedia']['ig'])) {
                 $total = (int) $result['bymedia']['ig'];
@@ -141,11 +136,6 @@ class InstagramOverviewController extends Controller
             }
 
             $result = $this->client->totalAuthors($projectId, 'instagram', $startDate, $endDate);
-
-            Log::info('IG totalAuthors raw', [
-                'all'     => $result['all'] ?? null,
-                'bymedia' => $result['bymedia'] ?? [],
-            ]);
 
             $total = 0;
             if (isset($result['bymedia']['ig'])) {
@@ -179,11 +169,6 @@ class InstagramOverviewController extends Controller
 
             $result = $this->client->volumeTotal($projectId, 'instagram', $startDate, $endDate);
 
-            Log::info('IG volumeTotal raw', [
-                'all'     => $result['all'] ?? null,
-                'bymedia' => $result['bymedia'] ?? [],
-            ]);
-
             $total = 0;
             if (isset($result['all']['total'])) {
                 $total = (int) $result['all']['total'];
@@ -199,14 +184,11 @@ class InstagramOverviewController extends Controller
             try {
                 $trendsResult = $this->client->trendsTotal($projectId, $startDate, $endDate);
 
-                Log::info('IG trendsTotal raw', ['result' => $trendsResult]);
-
                 foreach ($trendsResult as $datetime => $mediaData) {
                     if (!is_array($mediaData)) continue;
 
                     $dateKey = substr($datetime, 0, 10);
-
-                    $count = (int) (
+                    $count   = (int) (
                         $mediaData['instagram'] ??
                         $mediaData['ig']        ??
                         $mediaData['ig_post']   ??
@@ -242,8 +224,6 @@ class InstagramOverviewController extends Controller
             }
 
             $result = $this->client->getSentiment($projectId, 'instagram', $startDate, $endDate);
-
-            Log::info('IG sentimentTotal raw', ['result' => $result]);
 
             $positive = 0;
             $negative = 0;
@@ -290,14 +270,6 @@ class InstagramOverviewController extends Controller
 
             $result = $this->client->mostActiveUsers($projectId, $startDate, $endDate);
 
-            Log::info('IG mostActiveUsers raw', [
-                'type'   => gettype($result),
-                'keys'   => is_array($result) ? array_keys($result) : [],
-                'sample' => is_array($result['data']['data'] ?? null)
-                    ? array_slice($result['data']['data'], 0, 2)
-                    : ($result[0] ?? null),
-            ]);
-
             $users = [];
 
             if (isset($result['data']['data']) && is_array($result['data']['data'])) {
@@ -336,7 +308,217 @@ class InstagramOverviewController extends Controller
     }
 
     // ─────────────────────────────────────────────────────
-    // MOST VIEWED POSTS
+    // MOST ENGAGEMENT PAGE + DATA  ← DIUBAH
+    // ─────────────────────────────────────────────────────
+
+    public function mostEngagementPage(Request $request)
+    {
+        try {
+            $projects  = $this->getAllProjects();
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+
+                if ($projectId) {
+                    return redirect()->route('mk.instagram.most-engagement', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->startOfMonth()->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            return view('mk.instagram.most-engagement')->with([
+                'projectId' => $projectId,
+                'startDate' => $request->query('start_date', now()->startOfMonth()->format('Y-m-d')),
+                'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Instagram Most Engagement Page Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return view('mk.instagram.most-engagement')->with([
+                'projectId' => null,
+                'startDate' => now()->startOfMonth()->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * API endpoint untuk Most Engagement data.
+     *
+     * Query params:
+     *   - project_id
+     *   - start_date
+     *   - end_date
+     *   - sub         : 'postbylike' | 'postbycomment'
+     *   - rows        : jumlah data (default 1000 agar frontend bisa filter image/video)
+     *
+     * Frontend akan memfilter sendiri berdasarkan mention_type (image/video),
+     * jadi kita cukup return semua data mentah dengan mention_type yang benar.
+     */
+    public function mostViewedPostsData(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+            $sub       = $request->query('sub', 'postbylike');
+            $rows      = (int) $request->query('rows', 1000);
+
+            // Validasi sub yang diizinkan
+            if (!in_array($sub, ['postbylike', 'postbycomment'])) {
+                $sub = 'postbylike';
+            }
+
+            if (!$projectId || !$startDate || !$endDate) {
+                return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
+            }
+
+            $result = $this->client->igTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
+
+            Log::info('IG mostViewedPostsData raw result', [
+                'sub'    => $sub,
+                'type'   => gettype($result),
+                'count'  => is_array($result) ? count($result) : 0,
+                'sample' => is_array($result) ? array_slice($result, 0, 2, true) : $result,
+            ]);
+
+            $posts = [];
+            $items = is_array($result) ? $result : [];
+
+            foreach ($items as $item) {
+                if (!is_array($item)) continue;
+
+                // ── Author fields ──────────────────────────────────────
+                $rawName    = $item['name'] ?? '';
+                $authorId   = $item['author_id']      ?? $item['author_scr_name'] ?? '';
+                $authorName = $item['author_scr_name'] ?? $item['author_id']      ?? '';
+
+                // Fallback: parse dari field 'name' format "Username: content..."
+                if (!$authorName && $rawName) {
+                    $colonPos   = strpos($rawName, ':');
+                    $authorName = $colonPos !== false
+                        ? trim(substr($rawName, 0, $colonPos))
+                        : '';
+                }
+
+                if (!$authorName) $authorName = 'Instagram User';
+
+                // ── mention_type detection ────────────────────────────
+                // Priority 1: field mention_type dari API kalau eksplisit 'video'
+                // Priority 2: deteksi dari URL Instagram (paling reliable)
+                //   - Reels  → instagram.com/reel/xxx
+                //   - IGTV   → instagram.com/tv/xxx
+                // Priority 3: deteksi dari tcode / id
+                // Default  : 'image'
+                $mentionType = strtolower(trim($item['mention_type'] ?? ''));
+
+                if ($mentionType !== 'video') {
+                    $postUrl = $item['url']   ?? $item['link'] ?? '';
+                    $tcode   = strtolower($item['tcode'] ?? '');
+                    $itemId  = strtolower($item['id']    ?? '');
+
+                    $isVideo = (
+                        str_contains($postUrl, '/reel/') ||
+                        str_contains($postUrl, '/tv/')   ||
+                        str_contains($tcode,   'video')  ||
+                        str_contains($tcode,   'reel')   ||
+                        str_contains($itemId,  'reel')
+                    );
+
+                    $mentionType = $isVideo ? 'video' : 'image';
+                }
+
+                // ── Avatar ────────────────────────────────────────────
+                $profilePic = $item['profile_url'] ?? $item['avatar_url'] ?? '';
+                if (!$profilePic && $authorName && $authorName !== 'Instagram User') {
+                    $initials   = urlencode($this->getInitials($authorName));
+                    $profilePic = "https://ui-avatars.com/api/?name={$initials}&background=e6683c&color=fff&size=80&bold=true&format=png";
+                }
+
+                // ── Stats ──────────────────────────────────────────────
+                $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
+                $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
+                $postUrl  = $item['url']     ?? $item['link']    ?? null;
+                $content  = $item['content'] ?? $item['caption'] ?? '';
+
+                // Fallback content dari name field
+                if (!$content && $rawName) {
+                    $colonPos = strpos($rawName, ':');
+                    $content  = $colonPos !== false
+                        ? trim(substr($rawName, $colonPos + 1))
+                        : $rawName;
+                }
+
+                $posts[] = [
+                    'id'             => $item['id']             ?? '',
+                    'sub_id'         => $item['sub_id']         ?? $item['docid'] ?? $item['id'] ?? '',
+                    'author_id'      => $authorId,
+                    'author_scr_name'=> $item['author_scr_name'] ?? $authorId ?? '',
+                    'name'           => $authorName,
+                    'content'        => $content,
+                    'mention_type'   => $mentionType,           // ← KEY: 'image' or 'video'
+                    'num_likes'      => $likes,
+                    'likes'          => $likes,
+                    'num_comments'   => $comments,
+                    'comments'       => $comments,
+                    'engagement'     => $likes + $comments,
+                    'sentiment_str'  => $item['sentiment_str']  ?? 'Neutral',
+                    'sentiment_prec' => $item['sentiment_prec'] ?? 0,
+                    'date_created'   => $item['date_created']   ?? '',
+                    'url'            => $postUrl,
+                    'avatar_url'     => $profilePic,
+                    'image'          => $item['image']          ?? '',
+                    'tcode'          => $item['tcode']          ?? 'ig-post',
+                    'author'         => [
+                        'name'     => $authorName,
+                        'scr_name' => $item['author_scr_name'] ?? $authorId ?? $authorName,
+                        'image'    => $profilePic,
+                    ],
+                ];
+            }
+
+            // Sort sesuai sub di sisi server juga (sebagai fallback)
+            if ($sub === 'postbylike') {
+                usort($posts, fn($a, $b) => $b['likes'] - $a['likes']);
+            } elseif ($sub === 'postbycomment') {
+                usort($posts, fn($a, $b) => $b['comments'] - $a['comments']);
+            }
+
+            // Log breakdown image vs video untuk debugging
+            $imageCount = count(array_filter($posts, fn($p) => $p['mention_type'] === 'image'));
+            $videoCount = count(array_filter($posts, fn($p) => $p['mention_type'] === 'video'));
+
+            Log::info('IG mostViewedPostsData processed', [
+                'sub'          => $sub,
+                'total_posts'  => count($posts),
+                'image_count'  => $imageCount,
+                'video_count'  => $videoCount,
+            ]);
+
+            return response()->json(['success' => true, 'data' => $posts]);
+
+        } catch (\Exception $e) {
+            Log::error('IG mostViewedPostsData error', [
+                'error'      => $e->getMessage(),
+                'project_id' => $request->query('project_id'),
+                'sub'        => $request->query('sub'),
+            ]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────
+    // MOST VIEWED POSTS PAGE (legacy — kept for other routes)
     // ─────────────────────────────────────────────────────
 
     public function mostViewedPostsPage(Request $request)
@@ -375,131 +557,6 @@ class InstagramOverviewController extends Controller
                 'error'     => $e->getMessage(),
             ]);
         }
-    }
-
-    public function mostViewedPostsData(Request $request)
-    {
-        try {
-            $projectId = $request->query('project_id');
-            $startDate = $request->query('start_date');
-            $endDate   = $request->query('end_date');
-            $sub       = $request->query('sub', 'postbylike');
-
-            if (!$projectId || !$startDate || !$endDate) {
-                return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
-            }
-
-            $result = $this->client->igTopStatus($projectId, $startDate, $endDate, 0, 23, 1000, $sub);
-
-            Log::info('IG mostViewedPostsData raw result', [
-                'type'   => gettype($result),
-                'count'  => is_array($result) ? count($result) : 0,
-                'sample' => is_array($result) ? array_slice($result, 0, 1, true) : $result,
-            ]);
-
-            $posts = [];
-            $items = is_array($result) ? $result : [];
-
-            foreach ($items as $item) {
-                if (!is_array($item)) continue;
-
-                // ── Author fields ──────────────────────────────────────
-                // API response: author_id = "beritasatu", author_scr_name = "BeritaSatu"
-                // name field contains "Username: post content..." format
-                $rawName    = $item['name'] ?? '';
-                $authorId   = $item['author_id']      ?? $item['author_scr_name'] ?? '';
-                $authorName = $item['author_scr_name'] ?? $item['author_id']      ?? '';
-
-                // Fallback: kalau author_scr_name kosong, parse dari field 'name'
-                // Format name: "BeritaSatu: Menteri Pendidikan..."
-                if (!$authorName && $rawName) {
-                    $colonPos   = strpos($rawName, ':');
-                    $authorName = $colonPos !== false
-                        ? trim(substr($rawName, 0, $colonPos))
-                        : '';
-                }
-
-                // Final fallback
-                if (!$authorName) $authorName = 'Instagram User';
-
-                // ── Image: API returns empty string, tidak ada foto profil ──
-                // Gunakan UI Avatars sebagai generated avatar berdasarkan nama
-                $profilePic = $item['profile_url'] ?? $item['avatar_url'] ?? $item['image'] ?? '';
-                if (!$profilePic && $authorName && $authorName !== 'Instagram User') {
-                    $initials   = urlencode($this->getInitials($authorName));
-                    $profilePic = "https://ui-avatars.com/api/?name={$initials}&background=e6683c&color=fff&size=80&bold=true&format=png";
-                }
-
-                // ── Stats ──────────────────────────────────────────────
-                $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
-                $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
-                $views    = (int) ($item['view_cnt']     ?? $item['freq']     ?? $item['views'] ?? 0);
-                $postUrl  = $item['url']     ?? $item['link']    ?? null;
-                $content  = $item['content'] ?? $item['caption'] ?? '';
-
-                // ── Handle name field: "Username: content..." → ambil content saja ──
-                if (!$content && $rawName) {
-                    $colonPos = strpos($rawName, ':');
-                    $content  = $colonPos !== false
-                        ? trim(substr($rawName, $colonPos + 1))
-                        : $rawName;
-                }
-
-                $posts[] = [
-                    'id'             => $item['id']      ?? '',
-                    'sub_id'         => $item['sub_id']  ?? $item['docid'] ?? $item['id'] ?? '',
-                    'name'           => $authorName,
-                    'content'        => $content,
-                    'view_cnt'       => $views,
-                    'likes'          => $likes,
-                    'comments'       => $comments,
-                    'engagement'     => $likes + $comments,
-                    'sentiment_str'  => $item['sentiment_str']  ?? 'Neutral',
-                    'sentiment_prec' => $item['sentiment_prec'] ?? 0,
-                    'date_created'   => $item['date_created']   ?? '',
-                    'url'            => $postUrl,
-                    'avatar_url'     => $profilePic,
-                    'tcode'          => $item['tcode'] ?? 'ig-post',
-                    'author'         => [
-                        'name'     => $authorName,
-                        'scr_name' => $item['author_scr_name'] ?? $authorId ?? $authorName,
-                        'image'    => $profilePic,
-                    ],
-                ];
-            }
-
-            // Sort by sub type
-            if ($sub === 'postbylike') {
-                usort($posts, fn($a, $b) => $b['likes'] - $a['likes']);
-            } elseif ($sub === 'postbycomment') {
-                usort($posts, fn($a, $b) => $b['comments'] - $a['comments']);
-            } elseif ($sub === 'postbyview') {
-                usort($posts, fn($a, $b) => $b['view_cnt'] - $a['view_cnt']);
-            } else {
-                usort($posts, fn($a, $b) => $b['engagement'] - $a['engagement']);
-            }
-
-            Log::info('IG mostViewedPostsData processed', ['total_posts' => count($posts)]);
-
-            return response()->json(['success' => true, 'data' => $posts]);
-
-        } catch (\Exception $e) {
-            Log::error('IG mostViewedPostsData error', ['error' => $e->getMessage(), 'project_id' => $request->query('project_id')]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
-        }
-    }
-
-    /**
-     * Generate 1-2 letter initials from a name.
-     */
-    private function getInitials(string $name): string
-    {
-        $name  = trim($name);
-        $parts = preg_split('/[\s_\-]+/', $name);
-        if (count($parts) === 1) {
-            return strtoupper(substr($parts[0], 0, 2));
-        }
-        return strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
     }
 
     // ─────────────────────────────────────────────────────
@@ -545,85 +602,62 @@ class InstagramOverviewController extends Controller
     }
 
     public function trendingTopicsData(Request $request)
-{
-    try {
-        $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date');
-        $endDate   = $request->query('end_date');
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
 
-        if (!$projectId || !$startDate || !$endDate) {
-            return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
-        }
+            if (!$projectId || !$startDate || !$endDate) {
+                return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
+            }
 
-        // ── Ambil posts Instagram (pakai igTopStatus yang sudah terbukti jalan) ──
-        // Ambil banyak post supaya hashtag representatif
-        $posts = $this->client->igTopStatus($projectId, $startDate, $endDate, 0, 23, 500, 'postbylike');
+            $posts = $this->client->igTopStatus($projectId, $startDate, $endDate, 0, 23, 500, 'postbylike');
 
-        Log::info('IG trendingTopicsData via igTopStatus', [
-            'type'  => gettype($posts),
-            'count' => is_array($posts) ? count($posts) : 0,
-        ]);
+            $hashtagCount = [];
 
-        // ── Parse hashtag dari field content setiap post ──
-        $hashtagCount = [];
+            if (is_array($posts)) {
+                foreach ($posts as $post) {
+                    if (!is_array($post)) continue;
 
-        if (is_array($posts)) {
-            foreach ($posts as $post) {
-                if (!is_array($post)) continue;
+                    $content = $post['content'] ?? $post['caption'] ?? $post['text'] ?? $post['name'] ?? '';
+                    if (empty($content)) continue;
 
-                // Cari konten di berbagai kemungkinan key
-                $content = $post['content'] ?? $post['caption'] ?? $post['text'] ?? $post['name'] ?? '';
+                    preg_match_all('/#([a-zA-Z0-9_\x{00C0}-\x{024F}\x{0400}-\x{04FF}]+)/u', $content, $matches);
 
-                if (empty($content)) continue;
-
-                // Extract semua hashtag dengan regex
-                preg_match_all('/#([a-zA-Z0-9_\x{00C0}-\x{024F}\x{0400}-\x{04FF}]+)/u', $content, $matches);
-
-                foreach ($matches[1] as $tag) {
-                    $tag = strtolower(trim($tag));
-                    if (strlen($tag) < 2) continue; // skip hashtag terlalu pendek
-                    $hashtagCount[$tag] = ($hashtagCount[$tag] ?? 0) + 1;
+                    foreach ($matches[1] as $tag) {
+                        $tag = strtolower(trim($tag));
+                        if (strlen($tag) < 2) continue;
+                        $hashtagCount[$tag] = ($hashtagCount[$tag] ?? 0) + 1;
+                    }
                 }
             }
+
+            arsort($hashtagCount);
+
+            $hashtags      = [];
+            $totalMentions = 0;
+
+            foreach ($hashtagCount as $name => $size) {
+                $hashtags[]     = ['name' => $name, 'hashtag' => $name, 'size' => $size];
+                $totalMentions += $size;
+            }
+
+            return response()->json([
+                'success' => true,
+                'data'    => [
+                    'hashtags'       => $hashtags,
+                    'total_hashtags' => count($hashtags),
+                    'total_mentions' => $totalMentions,
+                    'top_hashtag'    => $hashtags[0] ?? null,
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('IG trendingTopicsData error', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
-
-        // ── Sort descending by count ──
-        arsort($hashtagCount);
-
-        // ── Format output ──
-        $hashtags      = [];
-        $totalMentions = 0;
-
-        foreach ($hashtagCount as $name => $size) {
-            $hashtags[]     = [
-                'name'    => $name,
-                'hashtag' => $name,
-                'size'    => $size,
-            ];
-            $totalMentions += $size;
-        }
-
-        Log::info('IG trendingTopicsData parsed from content', [
-            'total_hashtags' => count($hashtags),
-            'total_mentions' => $totalMentions,
-            'top5'           => array_slice($hashtags, 0, 5),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'data'    => [
-                'hashtags'       => $hashtags,
-                'total_hashtags' => count($hashtags),
-                'total_mentions' => $totalMentions,
-                'top_hashtag'    => $hashtags[0] ?? null,
-            ],
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('IG trendingTopicsData error', ['error' => $e->getMessage()]);
-        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
     }
-}
 
     // ─────────────────────────────────────────────────────
     // AUTHORS DEMOGRAPHICS
@@ -942,5 +976,22 @@ class InstagramOverviewController extends Controller
                 'error'     => $e->getMessage(),
             ]);
         }
+    }
+
+    // ─────────────────────────────────────────────────────
+    // HELPERS
+    // ─────────────────────────────────────────────────────
+
+    /**
+     * Generate 1-2 letter initials from a name.
+     */
+    private function getInitials(string $name): string
+    {
+        $name  = trim($name);
+        $parts = preg_split('/[\s_\-]+/', $name);
+        if (count($parts) === 1) {
+            return strtoupper(substr($parts[0], 0, 2));
+        }
+        return strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
     }
 }

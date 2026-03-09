@@ -172,104 +172,222 @@ class NewsController extends Controller
     /**
      * API: Get News Word Cloud Data (ENHANCED VERSION)
      */
-    public function newsWordCloudData(Request $request)
-    {
+public function newsWordCloudData(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+        $sentiment = $request->query('sentiment', '2');
+
+        if (!$projectId) {
+            return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
+        }
+
+        Log::info('🔍 News Word Cloud - Fetching from articles/doc', [
+            'project_id' => $projectId,
+            'start_date' => $startDate,
+            'end_date'   => $endDate,
+            'sentiment'  => $sentiment,
+        ]);
+
+        $phrases = [];
+
+        // ── 1. PRIMARY: WordCloud API dulu ───────────────────────────
         try {
-            $projectId = $request->query('project_id');
-            $startDate = $request->query('start_date');
-            $endDate = $request->query('end_date');
-            $sentiment = $request->query('sentiment', '2');
+            $wordCloudData = $this->mkClient->wordCloud(
+                $projectId, $startDate, 0, $endDate, 23, $sentiment
+            );
 
-            if (!$projectId) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Project ID is required',
-                ], 400);
+            $wcPhrases = $wordCloudData['data']['phrases']
+                      ?? $wordCloudData['phrases']
+                      ?? [];
+
+            foreach ($wcPhrases as $word => $count) {
+                $phrases[$word] = ($phrases[$word] ?? 0) + (int) $count;
             }
 
-            Log::info('🔍 News Word Cloud - Enhanced Data Fetch Started', [
-                'project_id' => $projectId,
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'sentiment' => $sentiment,
-            ]);
+            Log::info('✅ WordCloud API', ['count' => count($wcPhrases)]);
+        } catch (\Exception $e) {
+            Log::warning('⚠️ WordCloud API failed', ['error' => $e->getMessage()]);
+        }
 
-            $phrases = [];
+        // ── 2. PRIMARY: Ambil articles (doc = online news) ───────────
+        // Ini sumber utama DroneEmprit, ambil banyak artikel lalu
+        // text-mine title + content untuk dapat semua kata
+        try {
+            $articles = $this->mkClient->articles(
+                $projectId,
+                'doc',      // media type: doc = online news
+                $startDate,
+                $endDate,
+                0,          // sentiment_id (0=all)
+                23,         // end hour
+                0,          // offset
+                2000,       // rows - ambil banyak
+                true        // include content
+            );
 
-            try {
-                $wordCloudData = $this->mkClient->wordCloud($projectId, $startDate, 0, $endDate, 23, $sentiment);
-                $wcPhrases = $wordCloudData['data']['phrases'] ?? [];
-                foreach ($wcPhrases as $word => $count) {
-                    $phrases[$word] = ($phrases[$word] ?? 0) + (int)$count;
-                }
-                Log::info('✅ WordCloud API fetched', ['count' => count($wcPhrases)]);
-            } catch (\Exception $e) {
-                Log::warning('⚠️ WordCloud API failed', ['error' => $e->getMessage()]);
-            }
+            $articles = is_array($articles) ? $articles : [];
 
-            try {
-                $hashtagsData = $this->mkClient->topHashtags($projectId, 'all', $startDate, $endDate);
-                $hashtags = $hashtagsData['data'] ?? [];
-                foreach ($hashtags as $item) {
-                    $tag = ltrim($item['hashtag'] ?? '', '#');
-                    $count = $item['count'] ?? 1;
-                    if (strlen($tag) >= 3) {
-                        $phrases[$tag] = ($phrases[$tag] ?? 0) + (int)($count * 1.5);
+            Log::info('✅ Articles fetched for mining', ['count' => count($articles)]);
+
+            $stopwords = $this->getStopwords();
+
+            foreach ($articles as $article) {
+                // Filter sentiment kalau bukan "all"
+                if ($sentiment !== '2') {
+                    $articleSentiment = $article['class_sentiment']
+                                     ?? $article['sentiment_id']
+                                     ?? '0';
+                    $sentimentStr = strtolower($article['sentiment'] ?? '');
+                    if (str_contains($sentimentStr, 'positif') || str_contains($sentimentStr, 'positive')) {
+                        $articleSentiment = '0';
+                    } elseif (str_contains($sentimentStr, 'negatif') || str_contains($sentimentStr, 'negative')) {
+                        $articleSentiment = '-1';
+                    } elseif (str_contains($sentimentStr, 'netral') || str_contains($sentimentStr, 'neutral')) {
+                        $articleSentiment = '1';
                     }
+                    if ((string)$articleSentiment !== (string)$sentiment) continue;
                 }
-                Log::info('✅ Hashtags fetched', ['count' => count($hashtags)]);
-            } catch (\Exception $e) {
-                Log::warning('⚠️ Hashtags API failed', ['error' => $e->getMessage()]);
-            }
 
-            try {
-                $topicData = $this->mkClient->topicMap($projectId, 'all', $startDate, $endDate);
-                foreach ($topicData as $topic) {
-                    $name = $topic['name'] ?? '';
-                    $weight = $topic['weight'] ?? 1;
-                    if ($name && strlen($name) >= 3) {
-                        $phrases[$name] = ($phrases[$name] ?? 0) + (int)($weight * 2);
-                    }
+                // Mine dari title (bobot x3 karena judul lebih penting)
+                $title = strip_tags($article['title'] ?? '');
+                $titleWords = $this->extractWords($title, $stopwords);
+                foreach ($titleWords as $word => $count) {
+                    $phrases[$word] = ($phrases[$word] ?? 0) + ($count * 3);
                 }
-                Log::info('✅ Topics fetched', ['count' => count($topicData)]);
-            } catch (\Exception $e) {
-                Log::warning('⚠️ Topics API failed', ['error' => $e->getMessage()]);
-            }
 
-            if (count($phrases) < 30) {
-                try {
-                    $mentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, 0, 200);
-                    $extractedPhrases = $this->extractPhrasesFromMentions($mentions, $sentiment);
-                    foreach ($extractedPhrases as $word => $count) {
+                // Mine dari content
+                $content = strip_tags($article['content'] ?? '');
+                if (strlen($content) > 50) {
+                    $contentWords = $this->extractWords($content, $stopwords);
+                    foreach ($contentWords as $word => $count) {
                         $phrases[$word] = ($phrases[$word] ?? 0) + $count;
                     }
-                    Log::info('✅ Mentions text-mined', ['extracted' => count($extractedPhrases)]);
-                } catch (\Exception $e) {
-                    Log::warning('⚠️ Mentions mining failed', ['error' => $e->getMessage()]);
                 }
             }
 
-            $phrases = array_filter($phrases, function($word) {
-                $word = strtolower($word);
-                $banned = ['http', 'https', 'www', 'com', 'net', 'org', 'the', 'and', 'atau'];
-                return strlen($word) >= 3 && !in_array($word, $banned);
-            }, ARRAY_FILTER_USE_KEY);
-
-            arsort($phrases);
-            $phrases = array_slice($phrases, 0, 150, true);
-
-            return response()->json([
-                'success' => true,
-                'data' => ['data' => ['phrases' => $phrases]],
-                'meta' => ['total_words' => count($phrases)],
-            ]);
-
+            Log::info('✅ Articles text-mined', ['unique_words' => count($phrases)]);
         } catch (\Exception $e) {
-            Log::error('❌ News Word Cloud API Error', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => 'Failed to fetch word cloud data'], 500);
+            Log::warning('⚠️ Articles mining failed', ['error' => $e->getMessage()]);
         }
+
+        // ── 3. SUPPLEMENT: Hashtags ──────────────────────────────────
+        try {
+            $hashtagsData = $this->mkClient->topHashtags($projectId, 'all', $startDate, $endDate);
+            $hashtags = $hashtagsData['data'] ?? $hashtagsData ?? [];
+            if (is_array($hashtags)) {
+                foreach ($hashtags as $item) {
+                    if (!is_array($item)) continue;
+                    $tag   = ltrim($item['hashtag'] ?? '', '#');
+                    $count = (int)($item['count'] ?? 1);
+                    if (mb_strlen($tag) >= 3) {
+                        $phrases[$tag] = ($phrases[$tag] ?? 0) + (int)($count * 2);
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('⚠️ Hashtags failed', ['error' => $e->getMessage()]);
+        }
+
+        // ── 4. Cleanup & filter ──────────────────────────────────────
+        $banned = [
+            'http', 'https', 'www', 'com', 'net', 'org', 'co', 'id',
+            'quot', 'amp', 'nbsp', 'ndash', 'mdash', 'rsquo', 'ldquo',
+            'rdquo', 'lsquo', 'hellip', 'raquo', 'laquo',
+        ];
+
+        $phrases = array_filter($phrases, function ($word) use ($banned) {
+            $lower = mb_strtolower($word, 'UTF-8');
+            return mb_strlen($word, 'UTF-8') >= 3
+                && mb_strlen($word, 'UTF-8') <= 30
+                && !in_array($lower, $banned)
+                && !is_numeric($word)
+                && !str_starts_with($word, '&')
+                && !str_starts_with($word, '@')
+                && !preg_match('/^[^a-zA-Z\x{00C0}-\x{024F}\x{0370}-\x{03FF}]/u', $word);
+        }, ARRAY_FILTER_USE_KEY);
+
+        arsort($phrases);
+        $phrases = array_slice($phrases, 0, 200, true);
+
+        Log::info('✅ Word Cloud final', ['total' => count($phrases)]);
+
+        return response()->json([
+            'success' => true,
+            'data'    => ['data' => ['phrases' => $phrases]],
+            'meta'    => ['total_words' => count($phrases)],
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('❌ News Word Cloud Error', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'error' => 'Failed to fetch word cloud data'], 500);
+    }
+}
+
+// ── Helper: extract & count words dari text ──────────────────────────
+private function extractWords(string $text, array $stopwords): array
+{
+    // Bersihkan HTML entities
+    $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $text = preg_replace('/(https?:\/\/[^\s]+)/', ' ', $text);
+    $text = preg_replace('/[^\p{L}\s\-]/u', ' ', $text);
+    $text = preg_replace('/\s+/', ' ', trim($text));
+
+    $words = preg_split('/\s+/', $text, -1, PREG_SPLIT_NO_EMPTY);
+    $freq  = [];
+
+    foreach ($words as $word) {
+        $word  = trim($word, '-');
+        $lower = mb_strtolower($word, 'UTF-8');
+
+        if (mb_strlen($word, 'UTF-8') < 3)    continue;
+        if (mb_strlen($word, 'UTF-8') > 30)   continue;
+        if (is_numeric($word))                 continue;
+        if (in_array($lower, $stopwords))      continue;
+        if (str_starts_with($word, '&'))       continue;
+
+        // Title case supaya konsisten
+        $word = mb_convert_case($word, MB_CASE_TITLE, 'UTF-8');
+        $freq[$word] = ($freq[$word] ?? 0) + 1;
     }
 
+    return $freq;
+}
+
+// ── Helper: daftar stopwords ID + EN ────────────────────────────────
+private function getStopwords(): array
+{
+    return [
+        // Indonesia
+        'yang','dan','di','dari','untuk','pada','dengan','ini','itu',
+        'adalah','akan','ada','juga','atau','dalam','ke','tidak','sudah',
+        'dapat','telah','oleh','sebagai','saat','lebih','bisa','tersebut',
+        'bagi','antara','saja','melalui','hingga','nya','kami','kita',
+        'anda','mereka','dia','saya','kamu','apa','siapa','dimana','kapan',
+        'mengapa','bagaimana','hari','tahun','bulan','waktu','sangat',
+        'sebuah','setelah','sebelum','ketika','karena','namun','tetapi',
+        'jika','maka','bahwa','agar','supaya','pun','lagi','masih','hanya',
+        'atas','bawah','depan','belakang','sini','sana','situ','begitu',
+        'seperti','semua','setiap','beberapa','para','telah','sedang',
+        'pernah','belum','tidak','bukan','jangan','nih','deh','dong',
+        'sih','loh','kan','ya','yah','wah','oh','ah','eh',
+        // English
+        'the','a','an','and','or','but','in','on','at','to','for',
+        'of','with','by','from','as','is','was','are','were','be',
+        'been','being','have','has','had','do','does','did','will',
+        'would','could','should','may','might','must','can','this',
+        'that','these','those','i','you','he','she','it','we','they',
+        'my','your','his','her','its','our','their','what','which',
+        'who','when','where','why','how','all','each','every','both',
+        'few','more','most','other','some','such','than','then','too',
+        'very','just','about','into','after','before','between','through',
+        // HTML entities yang lolos
+        'quot','amp','nbsp','ndash','mdash','rsquo','ldquo','rdquo',
+        'lsquo','hellip','raquo','laquo','apos',
+    ];
+}
     private function extractPhrasesFromMentions($mentions, $sentiment): array
     {
         $wordFreq = [];
@@ -332,36 +450,144 @@ class NewsController extends Controller
         }
     }
 
-    public function topPublisherData(Request $request)
-    {
-        try {
-            $projectId = $request->query('project_id');
-            $startDate = $request->query('start_date');
-            $endDate = $request->query('end_date');
-            $newsType = $request->query('news_type', 'article');
+public function topPublisherData(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+        $newsType  = $request->query('news_type', 'article');
 
-            if (!$projectId) {
-                return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
-            }
-
-            $publishersData = $this->mkClient->topPublisher($projectId, $startDate, $endDate, 0, 23, 1000, $newsType);
-
-            $publishers = [];
-            $rank = 1;
-            foreach ($publishersData as $domain => $count) {
-                $publishers[] = ['rank' => $rank++, 'domain' => $domain, 'count' => (int)$count];
-            }
-
-            return response()->json([
-                'success' => true,
-                'data'    => $publishers,
-                'meta'    => ['total_publishers' => count($publishers), 'total_articles' => array_sum(array_column($publishers, 'count'))],
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => 'Failed to fetch top publisher data'], 500);
+        if (!$projectId) {
+            return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
         }
-    }
 
+        // ══════════════════════════════════════════════════════════
+        // 1. Fetch article COUNT per publisher (topPublisher API)
+        //    Returns: { "antaranews.com": 321, "liputan6.com": 161, ... }
+        // ══════════════════════════════════════════════════════════
+        $publishersData = $this->mkClient->topPublisher(
+            $projectId, $startDate, $endDate, 0, 23, 1000, $newsType
+        );
+
+        // Bangun lookup keyed by normalized domain
+        $publishers = [];
+        $rank = 1;
+        foreach ($publishersData as $domain => $count) {
+            $key = preg_replace('/^www\./', '', strtolower(trim($domain)));
+            $publishers[$key] = [
+                'rank'     => $rank++,
+                'domain'   => $domain,
+                'count'    => (int) $count,
+                'mentions' => 0,   // diisi di step 2
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // 2. Fetch articles detail → group by publisher → mentions
+        //    articles() sudah ada, gunakan doc + rows besar
+        //    include_content = false agar lebih cepat
+        // ══════════════════════════════════════════════════════════
+        try {
+            $articles = $this->mkClient->articles(
+                $projectId,
+                'doc',   // media type: online news
+                $startDate,
+                $endDate,
+                0,       // sentiment_id: 0 = all
+                23,      // end_hour
+                0,       // offset
+                5000,    // rows — ambil banyak untuk coverage akurat
+                false    // include_content = false, lebih cepat
+            );
+
+            $articles = is_array($articles) ? $articles : [];
+
+            // ── Hitung mentions per domain ──────────────────────────
+            $menMap = [];
+            foreach ($articles as $article) {
+                // Coba ambil publisher dari berbagai field
+                $pub = trim(
+                    $article['publisher']   ??
+                    $article['hostname']    ??
+                    $article['source_name'] ??
+                    $article['domain']      ?? ''
+                );
+
+                // Fallback: parse dari URL
+                if (!$pub) {
+                    $url = (string) ($article['url'] ?? $article['link'] ?? '');
+                    if ($url) {
+                        $parsed = parse_url($url);
+                        $pub    = $parsed['host'] ?? '';
+                    }
+                }
+
+                $pub = preg_replace('/^www\./', '', strtolower(trim($pub)));
+                if (!$pub) continue;
+
+                $menMap[$pub] = ($menMap[$pub] ?? 0) + 1;
+            }
+
+            Log::info('✅ topPublisherData — articles fetched for mentions', [
+                'articles_total'    => count($articles),
+                'unique_publishers' => count($menMap),
+                'sample'            => array_slice($menMap, 0, 5, true),
+            ]);
+
+            // ── Attach mentions ke setiap publisher ─────────────────
+            foreach ($publishers as $key => &$pub) {
+                $men = $menMap[$key] ?? 0;
+
+                // Partial fallback: "nasional.kompas.com" → check "kompas.com"
+                if (!$men && substr_count($key, '.') >= 2) {
+                    $parts   = explode('.', $key);
+                    $rootKey = implode('.', array_slice($parts, -2));
+                    foreach ($menMap as $mKey => $mVal) {
+                        if (str_ends_with($mKey, $rootKey)) {
+                            $men += $mVal;
+                        }
+                    }
+                }
+
+                $pub['mentions'] = $men;
+            }
+            unset($pub);
+
+            Log::info('✅ topPublisherData — merge done', [
+                'top5' => array_map(
+                    fn($p) => "{$p['domain']} art:{$p['count']} men:{$p['mentions']}",
+                    array_slice(array_values($publishers), 0, 5)
+                ),
+            ]);
+
+        } catch (\Exception $e) {
+            // Gagal fetch articles detail → lanjut dengan mentions = 0
+            Log::warning('⚠️ topPublisherData: articles detail fetch failed', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Re-index jadi plain array, sorted by count DESC (sudah dari API)
+        $publishers    = array_values($publishers);
+        $totalArticles = array_sum(array_column($publishers, 'count'));
+        $totalMentions = array_sum(array_column($publishers, 'mentions'));
+
+        return response()->json([
+            'success' => true,
+            'data'    => $publishers,
+            'meta'    => [
+                'total_publishers' => count($publishers),
+                'total_articles'   => $totalArticles,
+                'total_mentions'   => $totalMentions,
+            ],
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('❌ topPublisherData Error', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'error' => 'Failed to fetch top publisher data'], 500);
+    }
+}
     public function articlesPage(Request $request)
     {
         try {
@@ -387,26 +613,47 @@ public function articlesData(Request $request)
         $endDate   = $request->query('end_date');
         $media     = $request->query('media', 'doc');
         $sentiment = $request->query('sentiment', 'all');
-        $rows      = (int) $request->query('rows', 1000);   // ✅ ambil dari query param
-        $start     = (int) $request->query('start', 0);     // ✅ offset untuk pagination
+        $maxRows   = (int) $request->query('rows', 99999); // max total yang mau diambil
+        $start     = (int) $request->query('start', 0);
 
         if (!$projectId) {
             return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
         }
 
-        // ✅ Pass $start dan $rows ke MK client
-        // Sesuaikan signature method mkClient->articles() dengan yang ada
-        $articles = $this->mkClient->articles(
-            $projectId,
-            $media,
-            $startDate,
-            $endDate,
-            0,      // sentiment_id (0 = all)
-            23,     // media_type parameter MK
-            $start, // ✅ offset
-            $rows,  // ✅ rows limit
-            true    // include content
-        );
+        // ✅ Loop fetch sampai semua artikel terambil dari MK API
+        $allArticles = [];
+        $offset      = $start;
+        $batchSize   = 1000; // MK API max per request
+
+        do {
+            $batch = $this->mkClient->articles(
+                $projectId,
+                $media,
+                $startDate,
+                $endDate,
+                0,          // sentiment_id (0 = all)
+                23,         // end_hour
+                $offset,    // offset
+                $batchSize, // rows per batch
+                true        // include content
+            );
+
+            $batch = is_array($batch) ? array_values($batch) : [];
+
+            if (empty($batch)) break;
+
+            $allArticles = array_merge($allArticles, $batch);
+            $offset     += count($batch);
+
+            Log::info("📄 Articles batch fetched", [
+                'offset'      => $offset,
+                'batch_count' => count($batch),
+                'total_so_far' => count($allArticles),
+            ]);
+
+        } while (count($batch) === $batchSize && count($allArticles) < $maxRows);
+
+        Log::info("✅ Total articles fetched", ['total' => count($allArticles)]);
 
         $totalQuotesBeforeFilter = 0;
         $totalQuotesAfterFilter  = 0;
@@ -417,12 +664,12 @@ public function articlesData(Request $request)
             &$totalQuotesBeforeFilter, &$totalQuotesAfterFilter,
             &$articlesWithValidQuotes, &$quotesFilteredOut
         ) {
-            $article['title']           = $article['title']        ?? 'Untitled';
-            $article['publisher']       = $article['publisher']    ?? 'Unknown Publisher';
-            $article['url']             = $article['url']          ?? '#';
-            $article['date_created']    = $article['date_created'] ?? now()->toDateTimeString();
-            $article['content']         = $article['content']      ?? '';
-            $article['sentiment']       = $article['sentiment']    ?? 'Neutral';
+            $article['title']           = $article['title']           ?? 'Untitled';
+            $article['publisher']       = $article['publisher']       ?? 'Unknown Publisher';
+            $article['url']             = $article['url']             ?? '#';
+            $article['date_created']    = $article['date_created']    ?? now()->toDateTimeString();
+            $article['content']         = $article['content']         ?? '';
+            $article['sentiment']       = $article['sentiment']       ?? 'Neutral';
             $article['sentiment_class'] = $article['sentiment_class'] ?? 'neutral';
 
             $quotes = $article['quotes'] ?? [];
@@ -430,9 +677,9 @@ public function articlesData(Request $request)
 
             if (is_array($quotes) && count($quotes) > 0) {
                 $validQuotes = array_filter($quotes, function ($quote) use (&$quotesFilteredOut) {
-                    if (!is_array($quote))               { $quotesFilteredOut++; return false; }
-                    if (!isset($quote['Kutipan']))        { $quotesFilteredOut++; return false; }
-                    if (trim($quote['Kutipan']) === '')   { $quotesFilteredOut++; return false; }
+                    if (!is_array($quote))             { $quotesFilteredOut++; return false; }
+                    if (!isset($quote['Kutipan']))      { $quotesFilteredOut++; return false; }
+                    if (trim($quote['Kutipan']) === '') { $quotesFilteredOut++; return false; }
                     return true;
                 });
                 $quotes = array_values($validQuotes);
@@ -446,13 +693,15 @@ public function articlesData(Request $request)
             $article['quotes']       = $quotes;
             $article['total_quotes'] = count($quotes);
             return $article;
-        }, $articles);
 
+        }, $allArticles);
+
+        // ✅ Filter by sentiment jika bukan 'all'
         if ($sentiment !== 'all') {
             $articles = array_values(array_filter($articles, function ($article) use ($sentiment) {
                 $articleSentiment = $article['class_sentiment'] ?? $article['sentiment_class'] ?? '0';
                 $sentimentLower   = strtolower($article['sentiment'] ?? '');
-                if ($sentimentLower === 'positive' || $sentimentLower === 'positif')  $articleSentiment = '1';
+                if     ($sentimentLower === 'positive' || $sentimentLower === 'positif') $articleSentiment = '1';
                 elseif ($sentimentLower === 'negative' || $sentimentLower === 'negatif') $articleSentiment = '-1';
                 elseif ($sentimentLower === 'neutral'  || $sentimentLower === 'netral')  $articleSentiment = '0';
                 return $articleSentiment == $sentiment;
@@ -473,8 +722,8 @@ public function articlesData(Request $request)
                     : 0,
                 'sentiment_filter'       => $sentiment,
                 'media_type'             => $media,
-                'start'                  => $start,   // ✅ untuk debug pagination
-                'rows'                   => $rows,
+                'start'                  => $start,
+                'rows_fetched'           => count($articles), // ✅ total aktual
             ],
         ]);
 

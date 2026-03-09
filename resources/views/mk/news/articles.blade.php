@@ -1048,47 +1048,76 @@ if (projectId && startDate && endDate) {
   document.addEventListener('DOMContentLoaded', loadArticles);
 
   async function loadArticles() {
-    try {
-      const mediaType = document.getElementById('mediaType')?.value || 'doc';
-      const sentiment = document.getElementById('sentimentFilter')?.value || 'all';
+  try {
+    const mediaType = document.getElementById('mediaType')?.value || 'doc';
+    const sentiment = document.getElementById('sentimentFilter')?.value || 'all';
 
-      let url = `/mk/api/news/articles?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}&media=${mediaType}`;
+    // ✅ Tampilkan loading
+    document.getElementById('articlesLoading').style.display = 'block';
+    document.getElementById('articlesList').style.display    = 'none';
+
+    // ✅ Loop fetch semua artikel (batch per 1000)
+    allArticles = [];
+    let offset    = 0;
+    const batch   = 1000;
+    let hasMore   = true;
+
+    while (hasMore) {
+      let url = `/mk/api/news/articles?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}&media=${mediaType}&rows=${batch}&start=${offset}`;
       if (sentiment !== 'all') url += `&sentiment=${sentiment}`;
 
       const res    = await fetch(url);
       const result = await res.json();
 
-      if (result.success && result.data && result.data.length > 0) {
-        allArticles      = result.data;
-        filteredArticles = [...allArticles];
-
-        const counts     = { positive: 0, neutral: 0, negative: 0 };
-        allArticles.forEach(a => counts[getSentimentClass(a.sentiment)]++);
-
-        const publishers = [...new Set(allArticles.map(a => a.publisher))].length;
-
-        document.getElementById('statTotalArticles').innerHTML   = `<div class="stat-value">${formatNumber(allArticles.length)}</div>`;
-        document.getElementById('statTotalPublishers').innerHTML = `<div class="stat-value">${formatNumber(publishers)}</div>`;
-
-        createSentimentChart(counts);
-        animateProgress(document.querySelectorAll('.stat-card')[0], 90);
-        animateProgress(document.querySelectorAll('.stat-card')[1], 75);
-
-        // Hide loading, show list
-        document.getElementById('articlesLoading').style.display = 'none';
-        document.getElementById('articlesList').style.display    = 'block';
-
-        renderArticles();
-
-      } else {
-        showEmpty();
+      if (!result.success || !result.data || result.data.length === 0) {
+        hasMore = false;
+        break;
       }
-    } catch (err) {
-      console.error(err);
+
+      allArticles = allArticles.concat(result.data);
+      offset     += result.data.length;
+
+      // ✅ Update counter realtime saat fetch berlangsung
+      document.getElementById('statTotalArticles').innerHTML =
+        `<div class="stat-value">${formatNumber(allArticles.length)}<span style="font-size:14px;color:var(--text-secondary);margin-left:8px;">loading...</span></div>`;
+
+      // Stop jika batch kurang dari 1000 (artinya sudah habis)
+      if (result.data.length < batch) {
+        hasMore = false;
+      }
+    }
+
+    if (allArticles.length > 0) {
+      filteredArticles = [...allArticles];
+
+      const counts   = { positive: 0, neutral: 0, negative: 0 };
+      allArticles.forEach(a => counts[getSentimentClass(a.sentiment)]++);
+      const publishers = [...new Set(allArticles.map(a => a.publisher))].length;
+
+      // ✅ Tampilkan total REAL
+      document.getElementById('statTotalArticles').innerHTML   =
+        `<div class="stat-value">${formatNumber(allArticles.length)}</div>`;
+      document.getElementById('statTotalPublishers').innerHTML =
+        `<div class="stat-value">${formatNumber(publishers)}</div>`;
+
+      createSentimentChart(counts);
+      animateProgress(document.querySelectorAll('.stat-card')[0], 90);
+      animateProgress(document.querySelectorAll('.stat-card')[1], 75);
+
+      document.getElementById('articlesLoading').style.display = 'none';
+      document.getElementById('articlesList').style.display    = 'block';
+
+      renderArticles();
+
+    } else {
       showEmpty();
     }
-  }
 
+  } catch (err) {
+    console.error(err);
+    showEmpty();
+  }
+}
   function showEmpty() {
     ['statTotalArticles', 'statTotalPublishers'].forEach(id => {
       document.getElementById(id).innerHTML = '<div class="stat-value">0</div>';

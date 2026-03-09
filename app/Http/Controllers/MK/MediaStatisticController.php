@@ -1100,4 +1100,801 @@ public function mentionsByHour(Request $request)
         'platforms' => $result,
     ]);
 }
+
+// ───────────────────────────────────────────────
+// SENTIMENT PAGE
+// ───────────────────────────────────────────────
+
+public function sentimentPage(Request $request)
+{
+    return view('mk.sentiment');
+}
+
+public function netSentimentScorePage(Request $request)
+{
+    return view('mk.net-sentiment-score');
+}
+
+// ───────────────────────────────────────────────
+// API: SENTIMENT TOTALS + BY MEDIA + TREND
+// GET /mk/api/sentiment/totals
+// ───────────────────────────────────────────────
+
+public function sentimentTotals(Request $request)
+{
+    $projectId = $request->get('project_id');
+    $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+    $endDate   = $request->get('end_date',   now()->format('Y-m-d'));
+    $media     = $request->get('media', 'all');
+
+    if (! $projectId) {
+        return response()->json(['error' => 'project_id required'], 422);
+    }
+
+    // ── 1. Sentiment per media ──
+    $sentimentMedia = [];
+    try {
+        $raw = $this->mk->sentimentMedia((string) $projectId, $startDate, $endDate);
+        $sentimentMedia = $this->normaliseSentimentMedia($raw);
+    } catch (\Throwable $e) {
+        Log::warning('sentimentTotals: sentimentMedia failed', ['error' => $e->getMessage()]);
+    }
+
+    // ── 2. Filter by media if needed ──
+    $mediaKeyMap = [
+        'doc'       => ['doc'],
+        'twitter'   => ['twit', 'twitter'],
+        'facebook'  => ['fb', 'facebook'],
+        'instagram' => ['ig', 'instagram'],
+        'youtube'   => ['yt', 'youtube'],
+        'tiktok'    => ['tiktok'],
+    ];
+
+    $filtered = $sentimentMedia;
+    if ($media !== 'all' && isset($mediaKeyMap[$media])) {
+        $aliases = $mediaKeyMap[$media];
+        $filtered = array_filter($sentimentMedia, fn($m) => in_array(strtolower($m['media']), $aliases));
+        $filtered = array_values($filtered);
+    }
+
+    // ── 3. Totals ──
+    $totals = [
+        'neg' => array_sum(array_column($filtered, 'negative')),
+        'pos' => array_sum(array_column($filtered, 'positive')),
+        'neu' => array_sum(array_column($filtered, 'neutral')),
+    ];
+
+    // ── 4. By media (formatted for frontend) ──
+    $labelMap = [
+        'doc'       => 'Mass Media',
+        'twit'      => 'X / Twitter',
+        'twitter'   => 'X / Twitter',
+        'fb'        => 'Facebook',
+        'facebook'  => 'Facebook',
+        'ig'        => 'Instagram',
+        'instagram' => 'Instagram',
+        'yt'        => 'YouTube',
+        'youtube'   => 'YouTube',
+        'tiktok'    => 'TikTok',
+    ];
+
+    $byMedia = array_map(fn($m) => [
+        'key'   => $m['media'],
+        'label' => $labelMap[strtolower($m['media'])] ?? $m['label'],
+        'neg'   => $m['negative'],
+        'pos'   => $m['positive'],
+        'neu'   => $m['neutral'],
+    ], $sentimentMedia);
+
+    // ── 5. Trend (daily sentiment) ──
+    $trend = [];
+    try {
+        $raw = $this->mk->trendsTotal((string) $projectId, $startDate, $endDate);
+
+        // Build date list
+        $dates   = [];
+        $current = new \DateTime($startDate);
+        $end     = new \DateTime($endDate);
+        while ($current <= $end) {
+            $dates[] = $current->format('Y-m-d');
+            $current->modify('+1 day');
+        }
+
+        // For trend we use sentimentMedia daily — fallback: flat trend from trendsTotal split equally
+        // Since API doesn't provide daily sentiment breakdown, approximate from total ratio
+        $totalMentions = $totals['neg'] + $totals['pos'] + $totals['neu'];
+        $negRatio = $totalMentions > 0 ? $totals['neg'] / $totalMentions : 0.33;
+        $posRatio = $totalMentions > 0 ? $totals['pos'] / $totalMentions : 0.33;
+        $neuRatio = $totalMentions > 0 ? $totals['neu'] / $totalMentions : 0.34;
+
+        // Aggregate daily totals across all platforms
+        $keywordMap = [
+            'DOC' => 'doc', 'TWIT' => 'twitter', 'TWITTER' => 'twitter',
+            'FB' => 'facebook', 'FACEBOOK' => 'facebook',
+            'IG' => 'instagram', 'INSTAGRAM' => 'instagram',
+            'YT' => 'youtube', 'YOUTUBE' => 'youtube',
+            'TIKTOK' => 'tiktok', 'TT' => 'tiktok',
+        ];
+
+        $dailyTotal = array_fill_keys($dates, 0);
+
+        foreach ($raw['data'] ?? [] as $item) {
+            $kw  = strtoupper($item['keyword'] ?? '');
+            $key = $keywordMap[$kw] ?? strtolower($kw);
+
+            // Filter by media if needed
+            if ($media !== 'all' && isset($mediaKeyMap[$media])) {
+                if (!in_array($key, $mediaKeyMap[$media])) continue;
+            }
+
+            foreach ($item['data'] ?? [] as $pt) {
+                $date  = substr((string)($pt['date'] ?? ''), 0, 10);
+                $count = (int)($pt['count'] ?? 0);
+                if (isset($dailyTotal[$date])) {
+                    $dailyTotal[$date] += $count;
+                }
+            }
+        }
+
+        foreach ($dates as $date) {
+            $dayTotal = $dailyTotal[$date] ?? 0;
+            $trend[] = [
+                'date' => $date,
+                'neg'  => (int) round($dayTotal * $negRatio),
+                'pos'  => (int) round($dayTotal * $posRatio),
+                'neu'  => (int) round($dayTotal * $neuRatio),
+            ];
+        }
+
+    } catch (\Throwable $e) {
+        Log::warning('sentimentTotals: trend failed', ['error' => $e->getMessage()]);
+    }
+
+    return response()->json([
+        'totals'   => $totals,
+        'by_media' => $byMedia,
+        'trend'    => $trend,
+    ]);
+}
+
+// ───────────────────────────────────────────────
+// API: SENTIMENT BY TIME (WEEKDAY + HOUR)
+// GET /mk/api/sentiment/by-time
+// ───────────────────────────────────────────────
+
+public function sentimentByTime(Request $request)
+{
+    $projectId = $request->get('project_id');
+    $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+    $endDate   = $request->get('end_date',   now()->format('Y-m-d'));
+
+    if (! $projectId) {
+        return response()->json(['error' => 'project_id required'], 422);
+    }
+
+    // Get sentiment ratio from sentimentMedia
+    $sentimentMedia = [];
+    try {
+        $raw = $this->mk->sentimentMedia((string) $projectId, $startDate, $endDate);
+        $sentimentMedia = $this->normaliseSentimentMedia($raw);
+    } catch (\Throwable $e) {
+        Log::warning('sentimentByTime: sentimentMedia failed', ['error' => $e->getMessage()]);
+    }
+
+    $totalNeg = array_sum(array_column($sentimentMedia, 'negative'));
+    $totalPos = array_sum(array_column($sentimentMedia, 'positive'));
+    $totalNeu = array_sum(array_column($sentimentMedia, 'neutral'));
+    $grandTotal = $totalNeg + $totalPos + $totalNeu;
+
+    $negRatio = $grandTotal > 0 ? $totalNeg / $grandTotal : 0.33;
+    $posRatio = $grandTotal > 0 ? $totalPos / $grandTotal : 0.33;
+    $neuRatio = $grandTotal > 0 ? $totalNeu / $grandTotal : 0.34;
+
+    $wdLabels = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+    $wdTotal  = array_fill(0, 7, 0);
+
+    $keywordMap = [
+        'DOC' => 'doc', 'TWIT' => 'twitter', 'TWITTER' => 'twitter',
+        'FB' => 'facebook', 'FACEBOOK' => 'facebook',
+        'IG' => 'instagram', 'INSTAGRAM' => 'instagram',
+        'YT' => 'youtube', 'YOUTUBE' => 'youtube',
+        'TIKTOK' => 'tiktok', 'TT' => 'tiktok',
+    ];
+
+    // ── Weekday ──
+    try {
+        $raw = $this->mk->trendsTotal((string) $projectId, $startDate, $endDate);
+        foreach ($raw['data'] ?? [] as $item) {
+            foreach ($item['data'] ?? [] as $pt) {
+                $dateStr = substr((string)($pt['date'] ?? ''), 0, 10);
+                $count   = (int)($pt['count'] ?? 0);
+                if (!$dateStr || $count === 0) continue;
+                try {
+                    $dt    = new \DateTime($dateStr);
+                    $jsDay = (int)$dt->format('w');
+                    $idx   = $jsDay === 0 ? 6 : $jsDay - 1;
+                    $wdTotal[$idx] += $count;
+                } catch (\Exception $e) { continue; }
+            }
+        }
+    } catch (\Throwable $e) {
+        Log::warning('sentimentByTime weekday failed', ['error' => $e->getMessage()]);
+    }
+
+    $wdNeg = array_map(fn($v) => (int) round($v * $negRatio), $wdTotal);
+    $wdPos = array_map(fn($v) => (int) round($v * $posRatio), $wdTotal);
+    $wdNeu = array_map(fn($v) => (int) round($v * $neuRatio), $wdTotal);
+
+    // ── Hour (from cache or sampling) ──
+    $hourTotal = array_fill(0, 24, 0);
+    $tz        = new \DateTimeZone('Asia/Jakarta');
+
+    $cacheKey = "snt_by_hour_{$projectId}_{$startDate}_{$endDate}";
+    $hourTotal = \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(30), function() use ($projectId, $startDate, $endDate, $tz) {
+        $hourTotal = array_fill(0, 24, 0);
+        try {
+            $raw = $this->mk->mentions((string)$projectId, $startDate, $endDate, 0, 23, false, 0, 2000);
+            foreach ($raw['data'] ?? (isset($raw[0]) ? $raw : []) as $item) {
+                $dateStr = $item['date_created'] ?? $item['date_inserted_dt'] ?? '';
+                if (!$dateStr) continue;
+                try {
+                    $dt = new \DateTime((string)$dateStr, $tz);
+                    $hourTotal[(int)$dt->format('H')]++;
+                } catch (\Exception $e) { continue; }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('sentimentByTime hour failed', ['error' => $e->getMessage()]);
+        }
+        return $hourTotal;
+    });
+
+    $hourNeg = array_map(fn($v) => (int) round($v * $negRatio), $hourTotal);
+    $hourPos = array_map(fn($v) => (int) round($v * $posRatio), $hourTotal);
+    $hourNeu = array_map(fn($v) => (int) round($v * $neuRatio), $hourTotal);
+
+    return response()->json([
+        'weekday' => [
+            'weekdays' => $wdLabels,
+            'neg'      => $wdNeg,
+            'pos'      => $wdPos,
+            'neu'      => $wdNeu,
+            'total'    => $wdTotal,
+        ],
+        'hour' => [
+            'hours' => array_map(fn($h) => str_pad($h, 2, '0', STR_PAD_LEFT).':00', range(0, 23)),
+            'neg'   => $hourNeg,
+            'pos'   => $hourPos,
+            'neu'   => $hourNeu,
+            'total' => array_values($hourTotal),
+        ],
+    ]);
+}
+
+public function xInteraction(Request $request)
+{
+    $projectId = $request->get('project_id');
+    $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+    $endDate   = $request->get('end_date',   now()->format('Y-m-d'));
+
+    if (!$projectId) {
+        return response()->json(['error' => 'project_id required'], 422);
+    }
+
+    // ── 1. POSTS (volumeTotal twit) ─────────────────────────────────
+    $posts = 0;
+    try {
+        $vol = $this->mk->volumeTotal((string)$projectId, 'twitter', $startDate, $endDate);
+        $posts = (int)($vol['bymedia']['twit'] ?? $vol['all']['total'] ?? 0);
+    } catch (\Throwable $e) {
+        Log::warning('xInteraction: volumeTotal failed', ['error' => $e->getMessage()]);
+    }
+
+    // ── 2. MENTIONS breakdown (Mention / Reply / Retweet) ──────────
+    // Dari projectStats dengan tipe volumetotal sudah include tcode breakdown
+    // Kita pakai getSentiment yg ada field tcode dari mentions sampling
+    $mentionCount  = 0;
+    $replyCount    = 0;
+    $retweetCount  = 0;
+
+    // Cara cepat: ambil volumeTotal per mention_type dari trendsTotal
+    // Fallback: pakai mentions sampling 500 rows
+    try {
+        // Sample 500 rows — cukup untuk estimasi distribusi
+        $raw = $this->mk->mentions(
+            (string)$projectId,
+            $startDate,
+            $endDate,
+            0, 23,
+            false, // without content (lebih cepat)
+            0,
+            500
+        );
+
+        $items = $raw['data'] ?? (isset($raw[0]) ? $raw : []);
+
+        $views     = 0;
+        $favorites = 0;
+        $retweets  = 0;
+
+        foreach ($items as $item) {
+            if (!is_array($item)) continue;
+
+            // Filter hanya Twitter
+            $media = strtolower($item['media_type'] ?? $item['tcode_media'] ?? $item['media_type_id'] ?? '');
+            // media_type_id 5 = Twitter di MediaKernels
+            $mediaTypeId = (int)($item['media_type_id'] ?? 0);
+            if ($media && !in_array($media, ['twit','twitter','5']) && $mediaTypeId !== 5) {
+                continue;
+            }
+
+            $tcode = strtolower($item['tcode'] ?? $item['mention_type'] ?? '');
+
+            if (str_contains($tcode, 'rt') || str_contains($tcode, 'retweet')) {
+                $retweetCount++;
+            } elseif (str_contains($tcode, 'rep') || str_contains($tcode, 'reply')) {
+                $replyCount++;
+            } else {
+                $mentionCount++;
+            }
+
+            // Interaction metrics
+            $views     += (int)($item['num_views']    ?? 0);
+            $favorites += (int)($item['num_favourited'] ?? $item['num_likes'] ?? 0);
+            $retweets  += (int)($item['num_retweeted'] ?? $item['num_shares'] ?? 0);
+        }
+
+        Log::info('xInteraction mentions sample', [
+            'total_sampled' => count($items),
+            'mention'   => $mentionCount,
+            'reply'     => $replyCount,
+            'retweet'   => $retweetCount,
+            'views'     => $views,
+            'favorites' => $favorites,
+            'retweets_field' => $retweets,
+        ]);
+
+    } catch (\Throwable $e) {
+        Log::warning('xInteraction: mentions sampling failed', ['error' => $e->getMessage()]);
+    }
+
+    // ── 3. VIEWS dari mostStatus (lebih akurat) ────────────────────
+    $totalViews     = 0;
+    $totalRetweets  = 0;
+    $totalFavorites = 0;
+
+    try {
+        // mostStatus return top posts by view — sum view_cnt
+        if (method_exists($this->mk, 'mostStatus')) {
+            $statusRaw = $this->mk->mostStatus(
+                (string)$projectId,
+                'twitter',
+                $startDate,
+                $endDate,
+                0, 23,
+                100,
+                'postbyview'
+            );
+            foreach ((is_array($statusRaw) ? $statusRaw : []) as $s) {
+                $totalViews += (int)($s['view_cnt'] ?? $s['freq'] ?? 0);
+            }
+        }
+    } catch (\Throwable $e) {
+        Log::warning('xInteraction: mostStatus views failed', ['error' => $e->getMessage()]);
+    }
+
+    // Coba ambil dari publisherStats sebagai fallback views
+    if ($totalViews === 0) {
+        $totalViews = $views ?? 0; // dari sampling di atas
+    }
+
+    // ── 4. RETWEETS dari mostRetweets ─────────────────────────────
+    try {
+        if (method_exists($this->mk, 'mostRetweets')) {
+            $rtRaw = $this->mk->mostRetweets(
+                (string)$projectId,
+                $startDate,
+                $endDate
+            );
+            foreach ((is_array($rtRaw) ? $rtRaw : []) as $r) {
+                $totalRetweets += (int)($r['freq'] ?? $r['sentiment_freq'] ?? 0);
+            }
+        }
+    } catch (\Throwable $e) {
+        Log::warning('xInteraction: mostRetweets failed', ['error' => $e->getMessage()]);
+    }
+
+    if ($totalRetweets === 0) $totalRetweets = $retweets ?? 0;
+
+    // ── 5. FAVORITES dari mentions sampling ───────────────────────
+    $totalFavorites = $favorites ?? 0;
+
+    // ── 6. TOTAL INTERACTION ──────────────────────────────────────
+    // Sesuai Drone Emprit: Posts + Views + Retweets + Favorites
+    $totalInteraction = $posts + $totalViews + $totalRetweets + $totalFavorites;
+
+    // ── 7. INTERACTION RATE ───────────────────────────────────────
+    $interactionRate = $posts > 0
+        ? round(($totalViews + $totalRetweets + $totalFavorites) / $posts, 2)
+        : 0;
+
+    // ── 8. MENTION BREAKDOWN total (gunakan posts sebagai total) ──
+    // Jika sampling tidak cukup, estimasi dari volumeTotal
+    if ($mentionCount + $replyCount + $retweetCount === 0) {
+        $mentionCount = $posts; // fallback
+    }
+
+    $mentionTotal = $mentionCount + $replyCount + $retweetCount;
+
+    // ── 9. TREND HARIAN dari trendsTotal ──────────────────────────
+    $trendDays = [];
+    try {
+        $trendsRaw = $this->mk->trendsTotal((string)$projectId, $startDate, $endDate);
+
+        foreach ($trendsRaw['data'] ?? [] as $item) {
+            $kw = strtoupper($item['keyword'] ?? '');
+            if (!in_array($kw, ['TWIT','TWITTER'])) continue;
+
+            foreach ($item['data'] ?? [] as $pt) {
+                $date  = substr((string)($pt['date'] ?? ''), 0, 10);
+                $count = (int)($pt['count'] ?? 0);
+                if ($date) {
+                    $trendDays[$date] = ($trendDays[$date] ?? 0) + $count;
+                }
+            }
+        }
+        ksort($trendDays);
+    } catch (\Throwable $e) {
+        Log::warning('xInteraction: trendsTotal failed', ['error' => $e->getMessage()]);
+    }
+
+    $trendChart = array_map(
+        fn($d, $c) => ['date' => $d, 'count' => $c],
+        array_keys($trendDays),
+        array_values($trendDays)
+    );
+
+    Log::info('xInteraction final', [
+        'posts'            => $posts,
+        'views'            => $totalViews,
+        'retweets'         => $totalRetweets,
+        'favorites'        => $totalFavorites,
+        'total'            => $totalInteraction,
+        'interaction_rate' => $interactionRate,
+        'mention'          => $mentionCount,
+        'reply'            => $replyCount,
+        'retweet_count'    => $retweetCount,
+        'trend_days'       => count($trendChart),
+    ]);
+
+    return response()->json([
+        // ── Mentions section (kiri atas Drone Emprit) ──
+        'mentions' => [
+            'mention' => $mentionCount,
+            'reply'   => $replyCount,
+            'retweet' => $retweetCount,
+            'total'   => $mentionTotal,
+        ],
+
+        // ── Interaction section (kanan atas Drone Emprit) ──
+        'interaction' => [
+            'posts'             => $posts,
+            'views'             => $totalViews,
+            'retweets'          => $totalRetweets,
+            'favorites'         => $totalFavorites,
+            'total'             => $totalInteraction,
+            'interaction_rate'  => $interactionRate,
+        ],
+
+        // ── Trend harian ──
+        'trend' => $trendChart,
+    ]);
+}
+
+public function interactionSentimentPage(Request $request)
+{
+    return view('mk.interaction-sentiment');
+}
+
+public function engagementPage(Request $request)
+  {
+      return view('mk.engagement');
+  }
+
+  // ───────────────────────────────────────────────────────────────────
+    // API: INTERACTION SENTIMENT TOTALS
+    // GET /mk/api/sentiment/interaction-totals
+    //
+    // Berbeda dari sentimentTotals() yang hitung JUMLAH DOKUMEN,
+    // method ini menjumlahkan ACTUAL INTERACTIONS (views + retweets + likes)
+    // per sentiment — mirip cara Drone Emprit menghitung.
+    //
+    // Alur:
+    // 1. Ambil sentimentMedia() → tahu ratio neg/pos/neu per platform
+    // 2. Untuk setiap platform sosmed, ambil mostStatus() top 100 posts
+    //    lalu sum view_cnt + retweet_cnt + favorite_cnt
+    // 3. Untuk mass media (doc), pakai estReach() sebagai proxy interaction
+    // 4. Distribusikan total interaction ke neg/pos/neu berdasarkan ratio
+    // 5. Return totals + by_media + trend (sama struktur sentimentTotals)
+    // ───────────────────────────────────────────────────────────────────
+
+    public function interactionSentimentTotals(Request $request)
+    {
+        $projectId = $request->get('project_id');
+        $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+        $endDate   = $request->get('end_date',   now()->format('Y-m-d'));
+
+        if (! $projectId) {
+            return response()->json(['error' => 'project_id required'], 422);
+        }
+
+        // ── 1. Sentiment ratio per media (untuk distribusi neg/pos/neu) ──
+        $sentimentMedia = [];
+        try {
+            $raw = $this->mk->sentimentMedia((string) $projectId, $startDate, $endDate);
+            $sentimentMedia = $this->normaliseSentimentMedia($raw);
+        } catch (\Throwable $e) {
+            Log::warning('interactionSentimentTotals: sentimentMedia failed', ['error' => $e->getMessage()]);
+        }
+
+        // Build ratio map per media key
+        $ratioMap = [];
+        foreach ($sentimentMedia as $m) {
+            $total = $m['positive'] + $m['negative'] + $m['neutral'];
+            $ratioMap[strtolower($m['media'])] = [
+                'pos' => $total > 0 ? $m['positive'] / $total : 0.33,
+                'neg' => $total > 0 ? $m['negative'] / $total : 0.33,
+                'neu' => $total > 0 ? $m['neutral']  / $total : 0.34,
+            ];
+        }
+
+        // Overall ratio fallback
+        $totalDoc = array_sum(array_column($sentimentMedia, 'positive'))
+                  + array_sum(array_column($sentimentMedia, 'negative'))
+                  + array_sum(array_column($sentimentMedia, 'neutral'));
+
+        $globalRatio = [
+            'pos' => $totalDoc > 0 ? array_sum(array_column($sentimentMedia, 'positive')) / $totalDoc : 0.33,
+            'neg' => $totalDoc > 0 ? array_sum(array_column($sentimentMedia, 'negative')) / $totalDoc : 0.33,
+            'neu' => $totalDoc > 0 ? array_sum(array_column($sentimentMedia, 'neutral'))  / $totalDoc : 0.34,
+        ];
+
+        // ── 2. Hitung interaction per platform ──
+        //
+        // Platform sosmed: sum dari mostStatus() top 100 posts
+        //   - Twitter  : view_cnt + retweet_cnt + favorite_cnt
+        //   - Facebook : like_cnt + comment_cnt + share_cnt
+        //   - Instagram: like_cnt + comment_cnt
+        //   - YouTube  : view_cnt + like_cnt + comment_cnt
+        //   - TikTok   : like_cnt + comment_cnt + share_cnt
+        // Platform mass media: estReach() sebagai proxy
+        //
+        $platformConfig = [
+            'twitter'   => ['media' => 'twitter',  'type' => 'social', 'fields' => ['view_cnt','retweet_cnt','favorite_cnt','freq']],
+            'facebook'  => ['media' => 'fb',        'type' => 'social', 'fields' => ['like_cnt','comment_cnt','share_cnt','freq']],
+            'instagram' => ['media' => 'instagram', 'type' => 'social', 'fields' => ['like_cnt','comment_cnt','freq']],
+            'youtube'   => ['media' => 'youtube',   'type' => 'social', 'fields' => ['view_cnt','like_cnt','comment_cnt','freq']],
+            'tiktok'    => ['media' => 'tiktok',    'type' => 'social', 'fields' => ['like_cnt','comment_cnt','share_cnt','freq']],
+            'doc'       => ['media' => 'doc',       'type' => 'mass',   'fields' => []],
+        ];
+
+        $interactionByPlatform = [];
+
+        foreach ($platformConfig as $key => $cfg) {
+
+            $totalInteraction = 0;
+
+            if ($cfg['type'] === 'mass') {
+                // Mass media: gunakan estReach sebagai proxy
+                try {
+                    $raw = $this->mk->estReach((string) $projectId, 'doc', $startDate, $endDate);
+                    $totalInteraction = $this->normaliseEstReach($raw);
+                } catch (\Throwable $e) {
+                    Log::warning("interactionSentimentTotals: estReach[doc] failed", ['error' => $e->getMessage()]);
+                }
+
+            } else {
+                // Sosmed: sum interaction fields dari mostStatus() top 100
+                // Coba 3 sub-type dan ambil yang terbesar (views biasanya paling besar)
+                $subTypes = $this->getMostStatusSubTypes($key);
+
+                foreach ($subTypes as $sub) {
+                    try {
+                        $posts = $this->mk->mostStatus(
+                            (string) $projectId,
+                            $cfg['media'],
+                            $startDate,
+                            $endDate,
+                            0, 23,
+                            100,
+                            $sub
+                        );
+
+                        $subTotal = 0;
+                        foreach ($posts as $post) {
+                            if (!is_array($post)) continue;
+                            foreach ($cfg['fields'] as $field) {
+                                $subTotal += (int)($post[$field] ?? 0);
+                            }
+                        }
+
+                        // Ambil nilai tertinggi dari semua sub-type
+                        if ($subTotal > $totalInteraction) {
+                            $totalInteraction = $subTotal;
+                        }
+
+                        Log::info("interactionSentimentTotals: mostStatus[$key][$sub]", [
+                            'posts_count' => count($posts),
+                            'sub_total'   => $subTotal,
+                        ]);
+
+                    } catch (\Throwable $e) {
+                        Log::warning("interactionSentimentTotals: mostStatus[$key][$sub] failed", [
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+            }
+
+            // Distribusikan ke neg/pos/neu berdasarkan ratio sentiment platform ini
+            $mediaKeys = $this->getMediaAliases($key);
+            $ratio = $globalRatio; // default
+            foreach ($mediaKeys as $alias) {
+                if (isset($ratioMap[$alias])) {
+                    $ratio = $ratioMap[$alias];
+                    break;
+                }
+            }
+
+            $interactionByPlatform[$key] = [
+                'key'   => $key,
+                'label' => $this->getPlatformLabel($key),
+                'total' => $totalInteraction,
+                'neg'   => (int) round($totalInteraction * $ratio['neg']),
+                'pos'   => (int) round($totalInteraction * $ratio['pos']),
+                'neu'   => (int) round($totalInteraction * $ratio['neu']),
+            ];
+        }
+
+        // ── 3. Grand totals ──
+        $grandNeg = array_sum(array_column($interactionByPlatform, 'neg'));
+        $grandPos = array_sum(array_column($interactionByPlatform, 'pos'));
+        $grandNeu = array_sum(array_column($interactionByPlatform, 'neu'));
+        $grandTotal = $grandNeg + $grandPos + $grandNeu;
+
+        // ── 4. Trend harian (sama seperti sentimentTotals, pakai ratio) ──
+        $trend = [];
+        try {
+            $raw = $this->mk->trendsTotal((string) $projectId, $startDate, $endDate);
+
+            $dates   = [];
+            $current = new \DateTime($startDate);
+            $end     = new \DateTime($endDate);
+            while ($current <= $end) {
+                $dates[] = $current->format('Y-m-d');
+                $current->modify('+1 day');
+            }
+
+            $keywordMap = [
+                'DOC' => 'doc', 'TWIT' => 'twitter', 'TWITTER' => 'twitter',
+                'FB' => 'facebook', 'FACEBOOK' => 'facebook',
+                'IG' => 'instagram', 'INSTAGRAM' => 'instagram',
+                'YT' => 'youtube', 'YOUTUBE' => 'youtube',
+                'TIKTOK' => 'tiktok', 'TT' => 'tiktok',
+            ];
+
+            // Hitung interaction multiplier per platform
+            // (ratio interaction vs mention count — biar trend lebih realistis)
+            $mentionTotals = [];
+            foreach ($sentimentMedia as $m) {
+                $mentionTotals[strtolower($m['media'])] = $m['positive'] + $m['negative'] + $m['neutral'];
+            }
+
+            $dailyMentions = array_fill_keys($dates, 0);
+            foreach ($raw['data'] ?? [] as $item) {
+                $kw  = strtoupper($item['keyword'] ?? '');
+                $key = $keywordMap[$kw] ?? strtolower($kw);
+
+                // Multiplier: interaction total / mention count untuk platform ini
+                $mentionCount = 0;
+                foreach ($this->getMediaAliases($key) as $alias) {
+                    if (isset($mentionTotals[$alias])) {
+                        $mentionCount = $mentionTotals[$alias];
+                        break;
+                    }
+                }
+                $platInteraction = $interactionByPlatform[$key]['total'] ?? 0;
+                $multiplier = ($mentionCount > 0) ? ($platInteraction / $mentionCount) : 1;
+
+                foreach ($item['data'] ?? [] as $pt) {
+                    $date  = substr((string)($pt['date'] ?? ''), 0, 10);
+                    $count = (int)($pt['count'] ?? 0);
+                    if (isset($dailyMentions[$date])) {
+                        $dailyMentions[$date] += (int)round($count * $multiplier);
+                    }
+                }
+            }
+
+            $dayGrandTotal = array_sum($dailyMentions) ?: 1;
+            $negRatio = $grandTotal > 0 ? $grandNeg / $grandTotal : $globalRatio['neg'];
+            $posRatio = $grandTotal > 0 ? $grandPos / $grandTotal : $globalRatio['pos'];
+            $neuRatio = $grandTotal > 0 ? $grandNeu / $grandTotal : $globalRatio['neu'];
+
+            foreach ($dates as $date) {
+                $dayTotal = $dailyMentions[$date] ?? 0;
+                $trend[] = [
+                    'date' => $date,
+                    'neg'  => (int) round($dayTotal * $negRatio),
+                    'pos'  => (int) round($dayTotal * $posRatio),
+                    'neu'  => (int) round($dayTotal * $neuRatio),
+                ];
+            }
+
+        } catch (\Throwable $e) {
+            Log::warning('interactionSentimentTotals: trend failed', ['error' => $e->getMessage()]);
+        }
+
+        // ── 5. By media formatted untuk frontend ──
+        $byMedia = array_values($interactionByPlatform);
+
+        Log::info('interactionSentimentTotals complete', [
+            'project_id' => $projectId,
+            'grand_neg'  => $grandNeg,
+            'grand_pos'  => $grandPos,
+            'grand_neu'  => $grandNeu,
+            'grand_total'=> $grandTotal,
+            'by_platform'=> array_map(fn($p) => "{$p['key']}={$p['total']}", $byMedia),
+        ]);
+
+        return response()->json([
+            'totals' => [
+                'neg'   => $grandNeg,
+                'pos'   => $grandPos,
+                'neu'   => $grandNeu,
+                'total' => $grandTotal,
+            ],
+            'by_media' => $byMedia,
+            'trend'    => $trend,
+        ]);
+    }
+
+    // ── Helper: sub-type mostStatus per platform ──
+    private function getMostStatusSubTypes(string $platform): array
+    {
+        return match($platform) {
+            'twitter'   => ['postbyview', 'postbyretweet', 'postbyfavorite'],
+            'facebook'  => ['fblike', 'fbcomment', 'fbshare'],
+            'instagram' => ['postbylike', 'postbycomment'],
+            'youtube'   => ['postbyview', 'postbylike', 'postbycomment'],
+            'tiktok'    => ['postbylike', 'postbycomment', 'postbyshare'],
+            default     => ['postbyview'],
+        };
+    }
+
+    // ── Helper: alias media key ──
+    private function getMediaAliases(string $key): array
+    {
+        return match($key) {
+            'twitter'   => ['twit', 'twitter'],
+            'facebook'  => ['fb', 'facebook'],
+            'instagram' => ['ig', 'instagram'],
+            'youtube'   => ['yt', 'youtube'],
+            'tiktok'    => ['tiktok'],
+            'doc'       => ['doc'],
+            default     => [$key],
+        };
+    }
+
+    // ── Helper: label platform ──
+    private function getPlatformLabel(string $key): string
+    {
+        return match($key) {
+            'twitter'   => 'X / Twitter',
+            'facebook'  => 'Facebook',
+            'instagram' => 'Instagram',
+            'youtube'   => 'YouTube',
+            'tiktok'    => 'TikTok',
+            'doc'       => 'Mass Media',
+            default     => ucfirst($key),
+        };
+    }
 }

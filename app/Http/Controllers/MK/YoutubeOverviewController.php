@@ -377,106 +377,106 @@ class YoutubeOverviewController extends Controller
         }
     }
 
-    public function mostViewedPostsData(Request $request)
-    {
-        try {
-            $projectId = $request->query('project_id');
-            $startDate = $request->query('start_date');
-            $endDate   = $request->query('end_date');
-            $sub       = $request->query('sub', 'postbyview');
+  public function mostViewedPostsData(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+        $sub       = $request->query('sub', 'postbyview');
 
-            if (!$projectId || !$startDate || !$endDate) {
-                return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
-            }
-
-            $result = $this->client->ytbTopStatus($projectId, $startDate, $endDate, 0, 23, 1000, $sub);
-
-            Log::info('YT mostViewedPostsData raw result', [
-                'type'   => gettype($result),
-                'count'  => is_array($result) ? count($result) : 0,
-                'sample' => is_array($result) ? array_slice($result, 0, 1, true) : $result,
-            ]);
-
-            $posts = [];
-            $items = is_array($result) ? $result : [];
-
-            foreach ($items as $item) {
-                if (!is_array($item)) continue;
-
-                $rawName    = $item['name'] ?? '';
-                $authorId   = $item['author_id']      ?? $item['author_scr_name'] ?? '';
-                $authorName = $item['author_scr_name'] ?? $item['author_id']      ?? '';
-
-                if (!$authorName && $rawName) {
-                    $colonPos   = strpos($rawName, ':');
-                    $authorName = $colonPos !== false
-                        ? trim(substr($rawName, 0, $colonPos))
-                        : '';
-                }
-
-                if (!$authorName) $authorName = 'YouTube Channel';
-
-                $profilePic = $item['profile_url'] ?? $item['avatar_url'] ?? $item['image'] ?? '';
-                if (!$profilePic && $authorName && $authorName !== 'YouTube Channel') {
-                    $initials   = urlencode($this->getInitials($authorName));
-                    $profilePic = "https://ui-avatars.com/api/?name={$initials}&background=FF0000&color=fff&size=80&bold=true&format=png";
-                }
-
-                $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
-                $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
-                $views    = (int) ($item['view_cnt']     ?? $item['freq']     ?? $item['views'] ?? 0);
-                $postUrl  = $item['url']     ?? $item['link']    ?? null;
-                $content  = $item['content'] ?? $item['caption'] ?? '';
-
-                if (!$content && $rawName) {
-                    $colonPos = strpos($rawName, ':');
-                    $content  = $colonPos !== false
-                        ? trim(substr($rawName, $colonPos + 1))
-                        : $rawName;
-                }
-
-                $posts[] = [
-                    'id'             => $item['id']      ?? '',
-                    'sub_id'         => $item['sub_id']  ?? $item['docid'] ?? $item['id'] ?? '',
-                    'name'           => $authorName,
-                    'content'        => $content,
-                    'view_cnt'       => $views,
-                    'likes'          => $likes,
-                    'comments'       => $comments,
-                    'engagement'     => $likes + $comments,
-                    'sentiment_str'  => $item['sentiment_str']  ?? 'Neutral',
-                    'sentiment_prec' => $item['sentiment_prec'] ?? 0,
-                    'date_created'   => $item['date_created']   ?? '',
-                    'url'            => $postUrl,
-                    'avatar_url'     => $profilePic,
-                    'tcode'          => $item['tcode'] ?? 'youtube',
-                    'author'         => [
-                        'name'     => $authorName,
-                        'scr_name' => $item['author_scr_name'] ?? $authorId ?? $authorName,
-                        'image'    => $profilePic,
-                    ],
-                ];
-            }
-
-            if ($sub === 'postbylike') {
-                usort($posts, fn($a, $b) => $b['likes'] - $a['likes']);
-            } elseif ($sub === 'postbycomment') {
-                usort($posts, fn($a, $b) => $b['comments'] - $a['comments']);
-            } elseif ($sub === 'postbyview') {
-                usort($posts, fn($a, $b) => $b['view_cnt'] - $a['view_cnt']);
-            } else {
-                usort($posts, fn($a, $b) => $b['engagement'] - $a['engagement']);
-            }
-
-            Log::info('YT mostViewedPostsData processed', ['total_posts' => count($posts)]);
-
-            return response()->json(['success' => true, 'data' => $posts]);
-
-        } catch (\Exception $e) {
-            Log::error('YT mostViewedPostsData error', ['error' => $e->getMessage(), 'project_id' => $request->query('project_id')]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        if (!$projectId || !$startDate || !$endDate) {
+            return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
         }
+
+        $result = $this->client->ytbTopStatus($projectId, $startDate, $endDate, 0, 23, 1000, $sub);
+
+        Log::info('YT mostViewedPostsData raw result', [
+            'type'   => gettype($result),
+            'count'  => is_array($result) ? count($result) : 0,
+            'sample' => is_array($result) ? array_slice($result, 0, 1, true) : $result,
+        ]);
+
+        $posts = [];
+        $items = is_array($result) ? $result : [];
+
+        foreach ($items as $item) {
+            if (!is_array($item)) continue;
+
+            // Nama asli channel — prioritaskan author_name dari API
+            $authorName = $item['author_name'] ?? '';
+            if (!$authorName) $authorName = $item['author_scr_name'] ?? '';
+            if (!$authorName || preg_match('/^UC[A-Za-z0-9_-]{20,}$/', $authorName)) {
+                $authorName = 'YouTube Channel';
+            }
+
+            $authorId   = $item['author_id'] ?? $item['author_scr_name'] ?? '';
+            $videoTitle = $item['title'] ?? $item['name'] ?? '';
+            $content    = $item['content'] ?? $item['caption'] ?? $videoTitle;
+
+            $profilePic = $item['profile_url'] ?? $item['avatar_url'] ?? $item['image'] ?? '';
+            if (!$profilePic && $authorName !== 'YouTube Channel') {
+                $initials   = urlencode($this->getInitials($authorName));
+                $profilePic = "https://ui-avatars.com/api/?name={$initials}&background=FF0000&color=fff&size=80&bold=true&format=png";
+            }
+
+            $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
+            $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
+$views = (int) ($item['num_views'] ?? $item['view_cnt'] ?? $item['views'] ?? 0);
+            $postUrl  = $item['url'] ?? $item['link'] ?? null;
+
+            $posts[] = [
+    'id'              => $item['id']     ?? '',
+    'sub_id'          => $item['sub_id'] ?? $item['docid'] ?? $item['id'] ?? '',
+    'docid'           => $item['docid']  ?? $item['sub_id'] ?? '',   // ← tambah
+    'video_id'        => $item['docid']  ?? $item['sub_id'] ?? '',   // ← tambah untuk ytVideoId()
+    'author_name'     => $authorName,
+    'author_id'       => $authorId,
+    'author_scr_name' => $item['author_scr_name'] ?? '',
+    'name'            => $authorName,
+    'title'           => $videoTitle,
+    'content'         => $content,
+    'num_views'       => $views,          // ← tambah (JS pakai num_views juga)
+    'view_cnt'        => $views,
+    'num_likes'       => $likes,          // ← tambah
+    'likes'           => $likes,
+    'num_comments'    => $comments,       // ← tambah
+    'comments'        => $comments,
+    'engagement'      => $likes + $comments,
+    'sentiment_str'   => $item['sentiment_str']  ?? 'Neutral',
+    'sentiment_prec'  => $item['sentiment_prec'] ?? 0,
+    'date_created'    => $item['date_created']   ?? '',
+    'url'             => $postUrl,
+    'avatar_url'      => $profilePic,
+    'tcode'           => $item['tcode'] ?? 'youtube',
+    'author'          => [
+        'name'     => $authorName,
+        'scr_name' => $item['author_scr_name'] ?? $authorId,
+        'image'    => $profilePic,
+    ],
+];
+    
+        }
+
+        if ($sub === 'postbylike') {
+            usort($posts, fn($a, $b) => $b['likes'] - $a['likes']);
+        } elseif ($sub === 'postbycomment') {
+            usort($posts, fn($a, $b) => $b['comments'] - $a['comments']);
+        } elseif ($sub === 'postbyview') {
+            usort($posts, fn($a, $b) => $b['view_cnt'] - $a['view_cnt']);
+        } else {
+            usort($posts, fn($a, $b) => $b['engagement'] - $a['engagement']);
+        }
+
+        Log::info('YT mostViewedPostsData processed', ['total_posts' => count($posts)]);
+
+        return response()->json(['success' => true, 'data' => $posts]);
+
+    } catch (\Exception $e) {
+        Log::error('YT mostViewedPostsData error', ['error' => $e->getMessage(), 'project_id' => $request->query('project_id')]);
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
     }
+}
 
     /**
      * Generate 1-2 letter initials from a name.
@@ -925,4 +925,78 @@ class YoutubeOverviewController extends Controller
             ]);
         }
     }
+    public function mostEngagementPage(Request $request)
+    {
+        try {
+            $projects  = $this->getAllProjects();
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+
+                if ($projectId) {
+                    return redirect()->route('mk.youtube.most-engagement', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            return view('mk.youtube.youtube-most-engagement')->with([
+                'projectId' => $projectId,
+                'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('YouTube Most Engagement Page Error', ['error' => $e->getMessage()]);
+
+            return view('mk.youtube.youtube-most-engagement')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
+        }
+    }
+    public function emotionAnalysisPage(Request $request)
+{
+    try {
+        $projects  = $this->getAllProjects();
+        $projectId = $request->query('project_id');
+
+        if (!$projectId && count($projects) > 0) {
+            $projectId = $projects[0]['id'] ?? null;
+
+            if ($projectId) {
+                return redirect()->route('mk.youtube.emotion-analysis', [
+                    'project_id' => $projectId,
+                    'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                    'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                ]);
+            }
+        }
+
+        return view('mk.youtube.youtube-emotion-analysis')->with([
+            'projectId' => $projectId,
+            'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+            'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
+            'projects'  => $projects,
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('YouTube Emotion Analysis Page Error', ['error' => $e->getMessage()]);
+
+        return view('mk.youtube.youtube-emotion-analysis')->with([
+            'projectId' => null,
+            'startDate' => now()->subDays(6)->format('Y-m-d'),
+            'endDate'   => now()->format('Y-m-d'),
+            'projects'  => [],
+            'error'     => $e->getMessage(),
+        ]);
+    }
+}
 }

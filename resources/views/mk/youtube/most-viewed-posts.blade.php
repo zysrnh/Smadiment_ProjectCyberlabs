@@ -1381,7 +1381,7 @@ const YTPostsLoader = {
                     <div class="author-avatar">${avatarHtml}</div>
                     <div class="author-details">
                         <div class="author-name" title="${this.escapeHtml(authorName)}">${this.escapeHtml(authorName)}</div>
-                        <div class="author-handle">@${this.escapeHtml(authorHandle)}</div>
+                        
                     </div>
                 </div>
             </td>
@@ -1454,7 +1454,6 @@ const YTPostsLoader = {
                 <div class="modal-avatar">${avatarHtml}</div>
                 <div class="modal-author-info">
                     <h4 class="modal-author-name">${this.escapeHtml(authorName)}</h4>
-                    <div class="modal-author-handle">@${this.escapeHtml(authorHandle)}</div>
                     <span class="sentiment-badge ${sentimentRaw}" style="margin-top:4px;">${sentimentLbl}</span>
                 </div>
             </div>

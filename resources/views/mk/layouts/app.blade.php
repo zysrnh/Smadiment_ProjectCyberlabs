@@ -384,8 +384,13 @@
         <span>Data Overview</span>
       </a>
 
-      <a href="{{ route('mk.media-statistic') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-         class="nav-item {{ request()->routeIs('mk.media-statistic') ? 'active' : '' }}">
+      @php
+        $statisticRoutes  = ['mk.media-statistic', 'mk.sentiment', 'mk.net-sentiment-score', 'mk.engagement'];
+        $isStatisticActive = request()->routeIs($statisticRoutes);
+      @endphp
+
+      <div class="nav-item dropdown-trigger {{ $isStatisticActive ? 'has-active-child open' : '' }}"
+           onclick="toggleNav('statisticSub', this)">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -394,8 +399,69 @@
             <line x1="9" y1="9" x2="9" y2="21"/>
           </svg>
         </span>
-        <span>Media Statistic</span>
-      </a>
+        <span>Statistic</span>
+        <span class="dropdown-arrow">
+          <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </div>
+      <div class="nav-sub-wrapper {{ $isStatisticActive ? 'open' : '' }}" id="statisticSub">
+        <div class="nav-sub">
+          <a href="{{ route('mk.media-statistic') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.media-statistic') ? 'active' : '' }}">
+            <span class="menu-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="3" y1="9" x2="21" y2="9"/>
+                <line x1="3" y1="15" x2="21" y2="15"/>
+                <line x1="9" y1="9" x2="9" y2="21"/>
+              </svg>
+            </span>
+            <span>Media</span>
+          </a>
+          <a href="{{ route('mk.sentiment') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.sentiment') ? 'active' : '' }}">
+            <span class="menu-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </span>
+            <span>Sentiment</span>
+          </a>
+          <a href="{{ route('mk.net-sentiment-score') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.net-sentiment-score') ? 'active' : '' }}">
+            <span class="menu-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2a10 10 0 1 0 10 10"/><line x1="12" y1="12" x2="19" y2="5"/>
+              </svg>
+            </span>
+            <span>Net Sentiment Score</span>
+          </a>
+
+          
+{{--
+<a href="{{ route('mk.interaction-sentiment') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+   class="nav-item {{ request()->routeIs('mk.interaction-sentiment') ? 'active' : '' }}">
+  <span class="menu-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  </span>
+  <span>Interaction Sentiment</span>
+</a>
+
+<a href="{{ route('mk.engagement') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+   class="nav-item {{ request()->routeIs('mk.engagement') ? 'active' : '' }}">
+  <span class="menu-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+    </svg>
+  </span>
+  <span>Engagement</span>
+</a>
+--}}
+          
+        </div>
+      </div>
 
       <a href="{{ route('mk.compare.index') }}"
          class="nav-item {{ request()->routeIs('mk.compare.index') ? 'active' : '' }}">
@@ -415,6 +481,8 @@
         <span>World Map</span>
       </a>
 
+
+  {{--
       @php
         $dataSourceRoutes  = ['mk.data-source.users','mk.data-source.authors','mk.data-source.volume','mk.data-source.trends'];
         $isDataSourceActive = request()->routeIs($dataSourceRoutes);
@@ -440,6 +508,7 @@
              class="nav-item {{ request()->routeIs('mk.data-source.trends') ? 'active' : '' }}"><span>Trends Total</span></a>
         </div>
       </div>
+  --}}
 
       <!-- NEWS -->
       <div class="nav-label">News</div>
@@ -474,11 +543,13 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
             <span>Mention</span>
           </a>
+          {{--   
           <a href="{{ route('mk.news.articles') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.news.articles') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
             <span>Articles</span>
           </a>
+          --}}
           <a href="{{ route('mk.news.topic-map') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.news.topic-map') ? 'active' : '' }}">
             <span class="menu-icon">
@@ -495,11 +566,24 @@
       <!-- SOCIAL MEDIA -->
       <div class="nav-label">Social Media</div>
 
-      @php
-        $xRoutes = ['mk.x.overview','mk.x.most-status','mk.x.most-retweets','mk.x.authors.demographics','mk.x.geographic','mk.x.post-with-location','mk.x.trending-topics','mk.x.trending-word-cloud','mk.x.shared-urls','mk.x.most-active-users','mk.x.ai-analysis'];
-        $isXActive = request()->routeIs($xRoutes);
-      @endphp
-
+    @php
+  $xRoutes = [
+    'mk.x.overview',
+    'mk.x.most-status',
+    'mk.x.most-retweets',
+    'mk.x.authors.demographics',
+    'mk.x.geographic',
+    'mk.x.post-with-location',
+    'mk.x.trending-topics',
+    'mk.x.trending-word-cloud',
+    'mk.x.shared-urls',
+    'mk.x.most-active-users',
+    'mk.x.top-influencers',
+    'mk.x.emotion-analysis',   // ← TAMBAHKAN INI
+    'mk.x.ai-analysis',
+  ];
+  $isXActive = request()->routeIs($xRoutes);
+@endphp
       <div class="nav-item dropdown-trigger {{ $isXActive ? 'has-active-child open' : '' }}"
            onclick="toggleNav('xSub', this)">
         <span class="nav-icon">
@@ -560,11 +644,40 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
             <span>Most Active Users</span>
           </a>
+            <a href="{{ route('mk.x.top-influencers') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.x.top-influencers') ? 'active' : '' }}">
+            <span class="menu-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+              </svg>
+            </span>
+            <span>Top Influencers</span>
+          </a>
+          <a href="{{ route('mk.x.emotion-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.x.emotion-analysis') ? 'active' : '' }}">
+            <span class="menu-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/>
+                <circle cx="12" cy="19" r="1"/>
+              </svg>
+            </span>
+            <span>Emotion Analysis</span>
+          </a>
         </div>
       </div>
 
       @php
-        $facebookRoutes   = ['mk.facebook.overview','mk.facebook.trending-topics','mk.facebook.most-viewed-posts','mk.facebook.geographic','mk.facebook.trending-word-cloud'];
+        $facebookRoutes = [
+    'mk.facebook.overview',
+    'mk.facebook.trending-topics',
+    'mk.facebook.most-viewed-posts',
+    'mk.facebook.most-engagement',   // ← tambah ini
+    'mk.facebook.geographic',
+    'mk.facebook.trending-word-cloud',
+    'mk.facebook.ai-analysis',       // ← tambah ini juga kalau belum ada
+    'mk.facebook.emotion-analysis',
+
+];
         $isFacebookActive = request()->routeIs($facebookRoutes);
       @endphp
 
@@ -588,21 +701,43 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
             <span>Top Hashtags</span>
           </a>
+          {{--
           <a href="{{ route('mk.facebook.most-viewed-posts') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.facebook.most-viewed-posts') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
             <span>Most Viewed Posts</span>
           </a>
+            --}}
           <a href="{{ route('mk.facebook.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.facebook.trending-word-cloud') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
             <span>Word Cloud</span>
           </a>
+          <a href="{{ route('mk.facebook.most-engagement') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+   class="nav-item {{ request()->routeIs('mk.facebook.most-engagement') ? 'active' : '' }}">
+    <span class="menu-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+            <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+        </svg>
+    </span>
+    <span>Most Engagement</span>
+</a>
+<a href="{{ route('mk.facebook.emotion-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+   class="nav-item {{ request()->routeIs('mk.facebook.emotion-analysis') ? 'active' : '' }}">
+    <span class="menu-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/>
+            <circle cx="12" cy="19" r="1"/>
+        </svg>
+    </span>
+    <span>Emotion Analysis</span>
+</a>
         </div>
       </div>
 
       @php
-        $instagramRoutes   = ['mk.instagram.overview','mk.instagram.trending-topics','mk.instagram.most-viewed-posts','mk.instagram.authors.demographics','mk.instagram.geographic','mk.instagram.trending-word-cloud','mk.instagram.ai-analysis'];
+        $instagramRoutes   = ['mk.instagram.overview','mk.instagram.trending-topics','mk.instagram.most-viewed-posts','mk.instagram.authors.demographics','mk.instagram.geographic','mk.instagram.trending-word-cloud','mk.instagram.ai-analysis','mk.instagram.most-engagement'];
         $isInstagramActive = request()->routeIs($instagramRoutes);
       @endphp
 
@@ -636,11 +771,31 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
             <span>Word Cloud</span>
           </a>
+          <a href="{{ route('mk.instagram.most-engagement') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+           class="nav-item {{ request()->routeIs('mk.instagram.most-engagement') ? 'active' : '' }}">
+            <span class="menu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+                    <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                </svg>
+            </span>
+            <span>Most Engagement</span>
+        </a>
         </div>
       </div>
 
       @php
-        $youtubeRoutes   = ['mk.youtube.overview','mk.youtube.trending-topics','mk.youtube.most-viewed-posts','mk.youtube.authors.demographics','mk.youtube.geographic','mk.youtube.trending-word-cloud','mk.youtube.ai-analysis'];
+        $youtubeRoutes = [
+    'mk.youtube.overview',
+    'mk.youtube.trending-topics',
+    'mk.youtube.most-viewed-posts',
+    'mk.youtube.most-engagement',
+    'mk.youtube.emotion-analysis',   // ← TAMBAHKAN INI
+    'mk.youtube.authors.demographics',
+    'mk.youtube.geographic',
+    'mk.youtube.trending-word-cloud',
+    'mk.youtube.ai-analysis',
+];
         $isYoutubeActive = request()->routeIs($youtubeRoutes);
       @endphp
 
@@ -664,21 +819,51 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
             <span>Top Hashtags</span>
           </a>
+          {{--
           <a href="{{ route('mk.youtube.most-viewed-posts') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.youtube.most-viewed-posts') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
             <span>Most Viewed Posts</span>
           </a>
+           --}}
           <a href="{{ route('mk.youtube.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.youtube.trending-word-cloud') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
             <span>Word Cloud</span>
           </a>
+          <a href="{{ route('mk.youtube.most-engagement') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+   class="nav-item {{ request()->routeIs('mk.youtube.most-engagement') ? 'active' : '' }}">
+    <span class="menu-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+            <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+        </svg>
+    </span>
+    <span>Most Engagement</span>
+</a>
+<a href="{{ route('mk.youtube.emotion-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+   class="nav-item {{ request()->routeIs('mk.youtube.emotion-analysis') ? 'active' : '' }}">
+    <span class="menu-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/>
+            <circle cx="12" cy="19" r="1"/>
+        </svg>
+    </span>
+    <span>Emotion Analysis</span>
+</a>
         </div>
       </div>
 
       @php
-        $tiktokRoutes   = ['mk.tiktok.overview','mk.tiktok.trending-topics','mk.tiktok.most-viewed-posts','mk.tiktok.trending-word-cloud','mk.tiktok.ai-analysis'];
+        $tiktokRoutes = [
+    'mk.tiktok.overview',
+    'mk.tiktok.trending-topics',
+    'mk.tiktok.most-viewed-posts',
+    'mk.tiktok.trending-word-cloud',
+    'mk.tiktok.most-engagement',
+    'mk.tiktok.emotion-analysis',   // ← TAMBAHKAN INI
+    'mk.tiktok.ai-analysis',
+  ];
         $isTiktokActive = request()->routeIs($tiktokRoutes);
       @endphp
 
@@ -704,16 +889,38 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
             <span>Top Hashtags</span>
           </a>
+        {{-- 
           <a href="{{ route('mk.tiktok.most-viewed-posts') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.tiktok.most-viewed-posts') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
             <span>Most Viewed Posts</span>
           </a>
+           --}}
           <a href="{{ route('mk.tiktok.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.tiktok.trending-word-cloud') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
             <span>Word Cloud</span>
           </a>
+          <a href="{{ route('mk.tiktok.most-engagement') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+             class="nav-item {{ request()->routeIs('mk.tiktok.most-engagement') ? 'active' : '' }}">
+            <span class="menu-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+                <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+              </svg>
+            </span>
+            <span>Most Engagement</span>
+          </a>
+          <a href="{{ route('mk.tiktok.emotion-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+   class="nav-item {{ request()->routeIs('mk.tiktok.emotion-analysis') ? 'active' : '' }}">
+    <span class="menu-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/>
+            <circle cx="12" cy="19" r="1"/>
+        </svg>
+    </span>
+    <span>Emotion Analysis</span>
+</a>
         </div>
       </div>
 
@@ -794,13 +1001,29 @@
       }
     }
 
-    function changeProject(projectId, projectName) {
-      localStorage.setItem('selected_project_id', projectId);
-      const url = new URL(window.location.href);
-      url.searchParams.set('project_id', projectId);
-      window.location.href = url.toString();
-    }
+   function changeProject(projectId, projectName) {
+  localStorage.setItem('selected_project_id', projectId);
+  const url = new URL(window.location.href);
+  url.searchParams.set('project_id', projectId);
 
+  // Pertahankan start_date & end_date yang sudah ada
+  // Jika belum ada, set default ke bulan ini
+  if (!url.searchParams.get('start_date')) {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    url.searchParams.set('start_date', `${y}-${m}-01`);
+  }
+  if (!url.searchParams.get('end_date')) {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    url.searchParams.set('end_date', `${y}-${m}-${d}`);
+  }
+
+  window.location.href = url.toString();
+}
     document.addEventListener('DOMContentLoaded', function() {
       document.querySelectorAll('.nav-sub-wrapper.open').forEach(wrapper => {
         const trigger = document.querySelector(`[onclick*="${wrapper.id}"]`);

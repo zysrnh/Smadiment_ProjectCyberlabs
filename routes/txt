@@ -1,0 +1,443 @@
+import { useState, useRef, useCallback, useEffect } from "react";
+
+const C = {
+  bg: "#07070f",
+  surface: "#0f0f1a",
+  card: "#16162a",
+  border: "#252540",
+  accent: "#7c6fff",
+  accentHover: "#9d94ff",
+  accentGlow: "rgba(124,111,255,0.2)",
+  text: "#eeeef8",
+  muted: "#5a5a7a",
+  success: "#1ed9a0",
+  danger: "#ff4f6d",
+  warn: "#ffb547",
+};
+
+const loadPdfLib = () =>
+  new Promise((res, rej) => {
+    if (window.PDFLib) return res();
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js";
+    s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+
+const Btn = ({ children, onClick, disabled, variant = "primary", small, style = {} }) => {
+  const bg = variant === "primary" ? C.accent : variant === "danger" ? C.danger : variant === "success" ? C.success : C.card;
+  return (
+    <button onClick={onClick} disabled={disabled} style={{
+      background: bg, border: `1px solid ${variant === "ghost" ? C.border : "transparent"}`,
+      borderRadius: 9, padding: small ? "7px 14px" : "11px 22px",
+      color: "#fff", fontSize: small ? 12 : 14, fontWeight: 600,
+      cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1,
+      transition: "all 0.15s", whiteSpace: "nowrap", display: "inline-flex",
+      alignItems: "center", gap: 7,
+      boxShadow: variant === "primary" ? `0 4px 18px ${C.accentGlow}` : "none",
+      ...style
+    }}>{children}</button>
+  );
+};
+
+const Tab = ({ label, icon, active, onClick }) => (
+  <button onClick={onClick} style={{
+    background: active ? C.accent : "none", border: "none",
+    borderRadius: 10, padding: "9px 20px", color: active ? "#fff" : C.muted,
+    fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.15s",
+    display: "flex", alignItems: "center", gap: 7,
+    boxShadow: active ? `0 4px 18px ${C.accentGlow}` : "none",
+  }}>{icon} {label}</button>
+);
+
+function DropZone({ onFiles, multi = true, label = "Drag & drop PDF di sini" }) {
+  const [drag, setDrag] = useState(false);
+  const ref = useRef();
+  return (
+    <div onDrop={e => { e.preventDefault(); setDrag(false); onFiles(e.dataTransfer.files); }}
+      onDragOver={e => { e.preventDefault(); setDrag(true); }}
+      onDragLeave={() => setDrag(false)}
+      onClick={() => ref.current?.click()}
+      style={{
+        border: `2px dashed ${drag ? C.accent : C.border}`, borderRadius: 14,
+        padding: "32px 20px", textAlign: "center", cursor: "pointer",
+        background: drag ? "rgba(124,111,255,0.07)" : C.surface,
+        transition: "all 0.2s",
+        boxShadow: drag ? `0 0 28px ${C.accentGlow}` : "none",
+      }}>
+      <div style={{ fontSize: 32, marginBottom: 10 }}>📄</div>
+      <div style={{ fontSize: 14, fontWeight: 600, color: drag ? C.accent : C.text }}>{drag ? "Lepas di sini!" : label}</div>
+      <div style={{ fontSize: 12, color: C.muted, marginTop: 5 }}>Hanya file .pdf</div>
+      <input ref={ref} type="file" accept=".pdf" multiple={multi} onChange={e => onFiles(e.target.files)} style={{ display: "none" }} />
+    </div>
+  );
+}
+
+// ─── MERGE ───────────────────────────────────────────────────────────────────
+function MergeTab() {
+  const [files, setFiles] = useState([]);
+  const [name, setName] = useState("merged");
+  const [status, setStatus] = useState(null);
+
+  const add = f => {
+    const pdfs = Array.from(f).filter(x => x.name.endsWith(".pdf"));
+    setFiles(prev => {
+      const s = new Set(prev.map(x => x.name));
+      return [...prev, ...pdfs.filter(x => !s.has(x.name))];
+    });
+  };
+  const move = (i, dir) => setFiles(prev => {
+    const a = [...prev]; const j = i + dir;
+    if (j < 0 || j >= a.length) return a;
+    [a[i], a[j]] = [a[j], a[i]]; return a;
+  });
+
+  const merge = async () => {
+    setStatus("merging");
+    try {
+      await loadPdfLib();
+      const { PDFDocument } = window.PDFLib;
+      const out = await PDFDocument.create();
+      for (const f of files) {
+        const buf = await f.arrayBuffer();
+        const pdf = await PDFDocument.load(buf);
+        const pages = await out.copyPages(pdf, pdf.getPageIndices());
+        pages.forEach(p => out.addPage(p));
+      }
+      const bytes = await out.save();
+      const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+      const a = document.createElement("a"); a.href = url; a.download = `${name || "merged"}.pdf`; a.click();
+      URL.revokeObjectURL(url);
+      setStatus("done"); setTimeout(() => setStatus(null), 2500);
+    } catch { setStatus("error"); setTimeout(() => setStatus(null), 2500); }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <DropZone onFiles={add} label="Tambah PDF untuk digabung" />
+      {files.length > 0 && <>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 13, color: C.muted }}>{files.length} file dipilih</span>
+          <Btn small variant="danger" onClick={() => setFiles([])}>Hapus semua</Btn>
+        </div>
+        {files.map((f, i) => (
+          <div key={f.name + i} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ background: C.accentGlow, border: `1px solid ${C.accent}`, borderRadius: 6, width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: C.accent, fontWeight: 700, flexShrink: 0 }}>{i + 1}</span>
+            <span style={{ flex: 1, fontSize: 14, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</span>
+            <span style={{ fontSize: 12, color: C.muted, flexShrink: 0 }}>{(f.size / 1024).toFixed(0)} KB</span>
+            <button onClick={() => move(i, -1)} disabled={i === 0} style={{ background: "none", border: "none", color: C.muted, cursor: i === 0 ? "not-allowed" : "pointer", opacity: i === 0 ? 0.3 : 1, fontSize: 14 }}>▲</button>
+            <button onClick={() => move(i, 1)} disabled={i === files.length - 1} style={{ background: "none", border: "none", color: C.muted, cursor: i === files.length - 1 ? "not-allowed" : "pointer", opacity: i === files.length - 1 ? 0.3 : 1, fontSize: 14 }}>▼</button>
+            <button onClick={() => setFiles(p => p.filter((_, j) => j !== i))} style={{ background: "none", border: "none", color: C.danger, cursor: "pointer", fontSize: 16, lineHeight: 1 }}>✕</button>
+          </div>
+        ))}
+        {files.length >= 2 && (
+          <div style={{ display: "flex", gap: 10, alignItems: "center", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: 16 }}>
+            <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, background: C.card, borderRadius: 8, padding: "9px 14px", border: `1px solid ${C.border}` }}>
+              <span style={{ fontSize: 12, color: C.muted }}>nama:</span>
+              <input value={name} onChange={e => setName(e.target.value)} style={{ flex: 1, background: "none", border: "none", color: C.text, fontSize: 14, outline: "none" }} />
+              <span style={{ fontSize: 12, color: C.muted }}>.pdf</span>
+            </div>
+            <Btn onClick={merge} disabled={status === "merging"} variant={status === "done" ? "success" : status === "error" ? "danger" : "primary"}>
+              {status === "merging" ? "⏳ Merging..." : status === "done" ? "✓ Berhasil!" : status === "error" ? "✗ Gagal" : "🔗 Merge PDF"}
+            </Btn>
+          </div>
+        )}
+      </>}
+    </div>
+  );
+}
+
+// ─── SPLIT ────────────────────────────────────────────────────────────────────
+function SplitTab() {
+  const [file, setFile] = useState(null);
+  const [pages, setPages] = useState("");
+  const [mode, setMode] = useState("range"); // range | each
+  const [status, setStatus] = useState(null);
+  const [pageCount, setPageCount] = useState(0);
+
+  const loadFile = async fs => {
+    const f = Array.from(fs).find(x => x.name.endsWith(".pdf"));
+    if (!f) return;
+    setFile(f);
+    await loadPdfLib();
+    const { PDFDocument } = window.PDFLib;
+    const pdf = await PDFDocument.load(await f.arrayBuffer());
+    setPageCount(pdf.getPageCount());
+  };
+
+  const split = async () => {
+    setStatus("splitting");
+    try {
+      await loadPdfLib();
+      const { PDFDocument } = window.PDFLib;
+      const src = await PDFDocument.load(await file.arrayBuffer());
+      const total = src.getPageCount();
+
+      if (mode === "each") {
+        for (let i = 0; i < total; i++) {
+          const out = await PDFDocument.create();
+          const [p] = await out.copyPages(src, [i]);
+          out.addPage(p);
+          const bytes = await out.save();
+          const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+          const a = document.createElement("a"); a.href = url; a.download = `page_${i + 1}.pdf`; a.click();
+          URL.revokeObjectURL(url);
+          await new Promise(r => setTimeout(r, 120));
+        }
+      } else {
+        const ranges = pages.split(",").map(s => s.trim()).filter(Boolean);
+        for (const range of ranges) {
+          const [start, end] = range.includes("-") ? range.split("-").map(Number) : [Number(range), Number(range)];
+          const s = Math.max(1, start) - 1, e = Math.min(total, end) - 1;
+          const indices = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+          const out = await PDFDocument.create();
+          const copied = await out.copyPages(src, indices);
+          copied.forEach(p => out.addPage(p));
+          const bytes = await out.save();
+          const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+          const a = document.createElement("a"); a.href = url; a.download = `pages_${start}-${end}.pdf`; a.click();
+          URL.revokeObjectURL(url);
+          await new Promise(r => setTimeout(r, 120));
+        }
+      }
+      setStatus("done"); setTimeout(() => setStatus(null), 2500);
+    } catch { setStatus("error"); setTimeout(() => setStatus(null), 2500); }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <DropZone onFiles={loadFile} multi={false} label="Upload satu PDF untuk di-split" />
+      {file && (
+        <>
+          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 24 }}>📄</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, color: C.text, fontWeight: 500 }}>{file.name}</div>
+              <div style={{ fontSize: 12, color: C.muted }}>{pageCount} halaman · {(file.size / 1024).toFixed(0)} KB</div>
+            </div>
+            <button onClick={() => { setFile(null); setPageCount(0); }} style={{ background: "none", border: "none", color: C.danger, cursor: "pointer", fontSize: 18 }}>✕</button>
+          </div>
+
+          <div style={{ display: "flex", gap: 10 }}>
+            {["range", "each"].map(m => (
+              <button key={m} onClick={() => setMode(m)} style={{
+                flex: 1, background: mode === m ? C.accent : C.card, border: `1px solid ${mode === m ? C.accent : C.border}`,
+                borderRadius: 10, padding: "10px", color: mode === m ? "#fff" : C.muted, fontSize: 13, fontWeight: 600, cursor: "pointer"
+              }}>
+                {m === "range" ? "📐 Pilih Range Halaman" : "📋 Setiap Halaman"}
+              </button>
+            ))}
+          </div>
+
+          {mode === "range" && (
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 13, color: C.muted, marginBottom: 8 }}>Masukkan range halaman (contoh: 1-3, 5, 7-9)</div>
+              <input value={pages} onChange={e => setPages(e.target.value)} placeholder={`1-${pageCount}`} style={{
+                width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8,
+                padding: "10px 14px", color: C.text, fontSize: 14, outline: "none",
+              }} />
+            </div>
+          )}
+
+          <Btn onClick={split} disabled={status === "splitting" || (mode === "range" && !pages.trim())}
+            variant={status === "done" ? "success" : status === "error" ? "danger" : "primary"} style={{ alignSelf: "flex-start" }}>
+            {status === "splitting" ? "⏳ Splitting..." : status === "done" ? "✓ Selesai!" : "✂️ Split PDF"}
+          </Btn>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── EDIT / ROTATE / DELETE PAGES ─────────────────────────────────────────────
+function EditTab() {
+  const [file, setFile] = useState(null);
+  const [pageCount, setPageCount] = useState(0);
+  const [rotations, setRotations] = useState({});
+  const [deleted, setDeleted] = useState(new Set());
+  const [status, setStatus] = useState(null);
+  const [outName, setOutName] = useState("edited");
+
+  const loadFile = async fs => {
+    const f = Array.from(fs).find(x => x.name.endsWith(".pdf"));
+    if (!f) return;
+    setFile(f); setRotations({}); setDeleted(new Set());
+    await loadPdfLib();
+    const { PDFDocument } = window.PDFLib;
+    const pdf = await PDFDocument.load(await f.arrayBuffer());
+    setPageCount(pdf.getPageCount());
+    setOutName(f.name.replace(".pdf", "_edited"));
+  };
+
+  const rotate = (i, deg) => setRotations(prev => ({ ...prev, [i]: ((prev[i] || 0) + deg + 360) % 360 }));
+  const toggleDel = i => setDeleted(prev => { const s = new Set(prev); s.has(i) ? s.delete(i) : s.add(i); return s; });
+
+  const save = async () => {
+    setStatus("saving");
+    try {
+      await loadPdfLib();
+      const { PDFDocument, degrees } = window.PDFLib;
+      const src = await PDFDocument.load(await file.arrayBuffer());
+      const out = await PDFDocument.create();
+      const kept = Array.from({ length: pageCount }, (_, i) => i).filter(i => !deleted.has(i));
+      const copied = await out.copyPages(src, kept);
+      copied.forEach((p, idx) => {
+        const origIdx = kept[idx];
+        const rot = rotations[origIdx] || 0;
+        if (rot) p.setRotation(degrees(rot));
+        out.addPage(p);
+      });
+      const bytes = await out.save();
+      const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+      const a = document.createElement("a"); a.href = url; a.download = `${outName}.pdf`; a.click();
+      URL.revokeObjectURL(url);
+      setStatus("done"); setTimeout(() => setStatus(null), 2500);
+    } catch (e) { console.error(e); setStatus("error"); setTimeout(() => setStatus(null), 2500); }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <DropZone onFiles={loadFile} multi={false} label="Upload PDF untuk diedit" />
+      {file && (
+        <>
+          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 22 }}>📄</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, color: C.text, fontWeight: 500 }}>{file.name}</div>
+              <div style={{ fontSize: 12, color: C.muted }}>{pageCount} halaman · {deleted.size} dihapus · {Object.keys(rotations).length} dirotasi</div>
+            </div>
+          </div>
+
+          <div style={{ fontSize: 13, color: C.muted, padding: "0 2px" }}>Klik 🗑 untuk hapus halaman, ↺/↻ untuk rotasi:</div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 10, maxHeight: 400, overflowY: "auto", padding: "4px 2px" }}>
+            {Array.from({ length: pageCount }, (_, i) => (
+              <div key={i} style={{
+                background: deleted.has(i) ? "rgba(255,79,109,0.08)" : C.card,
+                border: `1px solid ${deleted.has(i) ? C.danger : C.border}`,
+                borderRadius: 10, padding: "12px 10px", textAlign: "center",
+                opacity: deleted.has(i) ? 0.5 : 1, transition: "all 0.15s",
+                display: "flex", flexDirection: "column", gap: 8,
+              }}>
+                <div style={{
+                  fontSize: 32, lineHeight: 1,
+                  transform: `rotate(${rotations[i] || 0}deg)`,
+                  transition: "transform 0.2s",
+                }}>📄</div>
+                <div style={{ fontSize: 12, color: C.muted }}>Hal. {i + 1}</div>
+                {rotations[i] ? <div style={{ fontSize: 10, color: C.accent }}>{rotations[i]}°</div> : null}
+                <div style={{ display: "flex", justifyContent: "center", gap: 4 }}>
+                  <button onClick={() => rotate(i, -90)} title="Putar kiri" style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 5, color: C.muted, cursor: "pointer", fontSize: 12, padding: "3px 6px" }}>↺</button>
+                  <button onClick={() => rotate(i, 90)} title="Putar kanan" style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 5, color: C.muted, cursor: "pointer", fontSize: 12, padding: "3px 6px" }}>↻</button>
+                  <button onClick={() => toggleDel(i)} title={deleted.has(i) ? "Batalkan" : "Hapus"} style={{ background: deleted.has(i) ? "rgba(255,79,109,0.15)" : "none", border: `1px solid ${deleted.has(i) ? C.danger : C.border}`, borderRadius: 5, color: deleted.has(i) ? C.danger : C.muted, cursor: "pointer", fontSize: 12, padding: "3px 6px" }}>🗑</button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: "flex", gap: 10, alignItems: "center", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: 14 }}>
+            <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, background: C.card, borderRadius: 8, padding: "9px 14px", border: `1px solid ${C.border}` }}>
+              <input value={outName} onChange={e => setOutName(e.target.value)} style={{ flex: 1, background: "none", border: "none", color: C.text, fontSize: 14, outline: "none" }} />
+              <span style={{ fontSize: 12, color: C.muted }}>.pdf</span>
+            </div>
+            <Btn onClick={save} disabled={status === "saving"} variant={status === "done" ? "success" : status === "error" ? "danger" : "primary"}>
+              {status === "saving" ? "⏳ Saving..." : status === "done" ? "✓ Saved!" : "💾 Simpan PDF"}
+            </Btn>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── COMPRESS ─────────────────────────────────────────────────────────────────
+function CompressTab() {
+  const [file, setFile] = useState(null);
+  const [status, setStatus] = useState(null);
+
+  const compress = async () => {
+    setStatus("compressing");
+    try {
+      await loadPdfLib();
+      const { PDFDocument } = window.PDFLib;
+      const src = await PDFDocument.load(await file.arrayBuffer(), { ignoreEncryption: true });
+      const out = await PDFDocument.create();
+      const pages = await out.copyPages(src, src.getPageIndices());
+      pages.forEach(p => out.addPage(p));
+      const bytes = await out.save({ useObjectStreams: true });
+      const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+      const a = document.createElement("a"); a.href = url; a.download = file.name.replace(".pdf", "_compressed.pdf"); a.click();
+      URL.revokeObjectURL(url);
+      setStatus("done"); setTimeout(() => setStatus(null), 2500);
+    } catch { setStatus("error"); setTimeout(() => setStatus(null), 2500); }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <DropZone onFiles={fs => { const f = Array.from(fs).find(x => x.name.endsWith(".pdf")); if (f) setFile(f); }} multi={false} label="Upload PDF untuk dikompres" />
+      {file && (
+        <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 24 }}>📄</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, color: C.text, fontWeight: 500 }}>{file.name}</div>
+              <div style={{ fontSize: 12, color: C.muted }}>Ukuran asli: {(file.size / 1024).toFixed(1)} KB</div>
+            </div>
+            <button onClick={() => setFile(null)} style={{ background: "none", border: "none", color: C.danger, cursor: "pointer", fontSize: 18 }}>✕</button>
+          </div>
+          <div style={{ background: C.surface, borderRadius: 8, padding: "10px 14px", fontSize: 13, color: C.muted, border: `1px solid ${C.border}` }}>
+            💡 Kompresi dilakukan dengan mengoptimalkan struktur internal PDF (object streams). Cocok untuk PDF berisi teks. Hasil bisa berbeda-beda tergantung konten.
+          </div>
+          <Btn onClick={compress} disabled={status === "compressing"} variant={status === "done" ? "success" : status === "error" ? "danger" : "primary"} style={{ alignSelf: "flex-start" }}>
+            {status === "compressing" ? "⏳ Compressing..." : status === "done" ? "✓ Selesai!" : "🗜 Kompres PDF"}
+          </Btn>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── ROOT ─────────────────────────────────────────────────────────────────────
+const TABS = [
+  { id: "merge", label: "Merge", icon: "🔗" },
+  { id: "split", label: "Split", icon: "✂️" },
+  { id: "edit",  label: "Edit Halaman", icon: "✏️" },
+  { id: "compress", label: "Kompres", icon: "🗜" },
+];
+
+export default function App() {
+  const [tab, setTab] = useState("merge");
+  return (
+    <div style={{ minHeight: "100vh", background: C.bg, padding: "40px 20px", fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+      <style>{`* { box-sizing: border-box; } ::-webkit-scrollbar { width: 5px } ::-webkit-scrollbar-thumb { background: ${C.border}; border-radius: 3px }`}</style>
+      <div style={{ maxWidth: 660, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
+
+        {/* Header */}
+        <div style={{ textAlign: "center" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.accentGlow, border: `1px solid ${C.accent}`, borderRadius: 20, padding: "5px 16px", fontSize: 11, color: C.accent, letterSpacing: 1.5, marginBottom: 16, textTransform: "uppercase" }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent, display: "inline-block" }}/> PDF Tools Pro
+          </div>
+          <h1 style={{ fontSize: 36, fontWeight: 700, color: C.text, margin: 0, letterSpacing: -1 }}>PDF Toolkit</h1>
+          <p style={{ color: C.muted, marginTop: 8, fontSize: 14 }}>Merge · Split · Edit · Kompres — semua di browser, 100% privat</p>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: 6, display: "flex", gap: 4, flexWrap: "wrap" }}>
+          {TABS.map(t => <Tab key={t.id} label={t.label} icon={t.icon} active={tab === t.id} onClick={() => setTab(t.id)} />)}
+        </div>
+
+        {/* Panel */}
+        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 24 }}>
+          {tab === "merge" && <MergeTab />}
+          {tab === "split" && <SplitTab />}
+          {tab === "edit" && <EditTab />}
+          {tab === "compress" && <CompressTab />}
+        </div>
+
+        <div style={{ textAlign: "center", fontSize: 12, color: C.muted }}>
+          🔒 Semua proses di browser kamu — tidak ada file yang dikirim ke server
+        </div>
+      </div>
+    </div>
+  );
+}

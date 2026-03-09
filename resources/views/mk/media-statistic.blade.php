@@ -1648,7 +1648,7 @@
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
-          <div class="ms-toggle-group" id="trendToggle">
+        <div class="ms-toggle-group" id="trendToggle">
             <button class="ms-toggle-btn active" data-mode="daily" onclick="MSTrendToggle.set('daily')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
               Harian
@@ -1656,6 +1656,15 @@
             <button class="ms-toggle-btn" data-mode="monthly" onclick="MSTrendToggle.set('monthly')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               Bulanan
+            </button>
+          </div>
+          <div class="ms-toggle-group" id="weekNavGroup" style="display:flex;">
+            <button class="ms-toggle-btn" id="weekNavPrev" onclick="MSTrendToggle.navWeek(1)" title="Minggu sebelumnya">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px;"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <span id="weekNavLabel" style="padding:6px 10px;font-size:11px;font-weight:700;color:var(--text-secondary);white-space:nowrap;line-height:1;display:flex;align-items:center;">Minggu Ini</span>
+            <button class="ms-toggle-btn" id="weekNavNext" onclick="MSTrendToggle.navWeek(-1)" title="Minggu berikutnya" disabled style="opacity:.35;cursor:not-allowed;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px;"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
           <button class="ms-csv-btn" onclick="MSTrendToggle.copyCSV()" title="Copy CSV Data">
@@ -1742,13 +1751,14 @@
               <div class="do-card-subtitle">Distribusi volume mention per jam (00–23)</div>
             </div>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
             <button class="ms-csv-btn" onclick="MSCsvModal.showHour()" title="Copy CSV Data">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               CSV
             </button>
             <span class="do-badge">24 Jam</span>
           </div>
+        </div>{{-- closes do-card-head --}}
         <div class="do-card-body">
           <div class="ms-ch-280">
             <div id="chHour" style="width:100%;height:100%;"></div>
@@ -1875,6 +1885,9 @@ const MSCfg = {
 ══════════════════════════════════════════════════════ */
 const numFmt    = n => parseInt(n || 0).toLocaleString('id-ID');
 const numK      = n => { n = parseInt(n || 0); return n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n); };
+
+// Dual Y-axis: Twitter → left axis (0), all others → right axis (1)
+const Y_AXIS_IDX = { doc: 1, twitter: 0, facebook: 1, instagram: 1, youtube: 1, tiktok: 1 };
 const esc       = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const hideSk    = id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; };
 const showSk    = id => { const e = document.getElementById(id); if (e) e.style.display = ''; };
@@ -2062,50 +2075,114 @@ const MSDp = (() => {
 /* ══════════════════════════════════════════════════════
    ECHARTS — DOUGHNUT
 ══════════════════════════════════════════════════════ */
-function makeEDoughnut(domId, labels, values, colors, onClickFns) {
+// SESUDAH — style mirip engagement share
+function makeEDoughnut(domId, labels, values, colors, onClickFns, subtitles) {
   const total = values.reduce((a, b) => a + b, 0);
   const chart = MSCharts.make(domId);
   if (!chart) return null;
 
+  const seriesData = labels.map((label, i) => ({
+    name:      label,
+    value:     values[i],
+    subtitle:  subtitles ? subtitles[i] : '',
+    itemStyle: { color: colors[i], borderColor: '#fff', borderWidth: 3 },
+  }));
+
   chart.setOption({
-    animation: true, animationDuration: 900, animationEasing: 'cubicInOut',
+    animation: true, animationDuration: 800, animationEasing: 'cubicOut',
+    backgroundColor: 'transparent',
     tooltip: {
-      ...EC_TOOLTIP, trigger: 'item',
+      trigger: 'item',
+      backgroundColor: '#1e293b', borderColor: '#334155', borderWidth: 1,
+      padding: [10, 14],
+      textStyle: { color: '#f8fafc', fontFamily: "'Poppins', sans-serif", fontSize: 12 },
+      extraCssText: 'border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.2);',
       formatter: params => {
-        const pct = total > 0 ? (params.value / total * 100).toFixed(1) : '0.0';
-        return `<div style="font-weight:700;font-size:13px;margin-bottom:4px;">${params.name}</div>
-                <div style="font-size:13px;">${numFmt(params.value)} mentions</div>
-                <div style="font-size:12px;opacity:.8;margin-top:2px;">${pct}% dari total</div>`;
+        const pct = total > 0 ? ((params.value / total) * 100).toFixed(1) : '0.0';
+        const sub = params.data.subtitle ? `<br><span style="color:#94a3b8;font-size:11px;">${params.data.subtitle}</span>` : '';
+        return `<div style="font-weight:700;margin-bottom:5px;font-size:13px;">${params.name}${sub}</div>
+                <div style="display:flex;justify-content:space-between;gap:20px;margin-top:4px;">
+                  <span style="color:#94a3b8;">Mentions</span>
+                  <span style="font-weight:700;">${numFmt(params.value)}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;gap:20px;margin-top:3px;">
+                  <span style="color:#94a3b8;">Share</span>
+                  <span style="font-weight:700;color:#4aab8c;">${pct}%</span>
+                </div>`;
       }
     },
-    legend: {
-      orient: 'horizontal', bottom: 4,
-      textStyle: { fontFamily: "'Poppins', sans-serif", fontSize: 12, fontWeight: '600', color: '#1a202c' },
-      icon: 'circle', itemGap: 16, itemWidth: 10, itemHeight: 10,
-    },
+    legend: { show: false },
     series: [{
-      type: 'pie', radius: ['52%', '78%'], center: ['50%', '44%'],
-      avoidLabelOverlap: true,
-      itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
-      label: { show: false },
-      emphasis: {
-        label: {
-          show: true, fontSize: 14, fontWeight: '700', fontFamily: "'Poppins', sans-serif",
-          formatter: params => {
-            const pct = total > 0 ? (params.value / total * 100).toFixed(1) : '0.0';
-            return `{name|${params.name}}\n{val|${numK(params.value)}}\n{pct|${pct}%}`;
-          },
-          rich: {
-            name: { fontSize: 11, color: '#64748b', fontWeight: '600', lineHeight: 18 },
-            val:  { fontSize: 18, color: '#1a202c', fontWeight: '700', lineHeight: 24 },
-            pct:  { fontSize: 12, color: '#038047', fontWeight: '700', lineHeight: 18 },
-          }
+  type: 'pie',
+  radius: ['46%', '64%'],
+  center: ['50%', '52%'],
+  avoidLabelOverlap: true,
+  minAngle: 5,
+  itemStyle: { borderRadius: 6 },
+  label: {
+    show: true,
+    alignTo: 'edge',      // ← ganti dari 'labelLine' ke 'edge'
+    edgeDistance: 10,     // ← jarak dari tepi chart
+    lineHeight: 18,
+    fontFamily: "'Poppins', sans-serif",
+    fontSize: 11,
+    color: '#374151',
+    formatter: params => {
+      // Hide label kalau slice terlalu kecil (< 2%)
+      const pct = total > 0 ? (params.value / total * 100) : 0;
+      if (pct < 2) return '';
+
+      const name = params.name.length > 11 ? params.name.slice(0, 10) + '…' : params.name;
+      const sub  = params.data.subtitle
+        ? (params.data.subtitle.length > 11 ? params.data.subtitle.slice(0, 10) + '…' : params.data.subtitle)
+        : '';
+      return sub
+        ? `{name|${name}}\n{sub|${sub}}\n{eng|${numK(params.value)}}`
+        : `{name|${name}}\n{eng|${numK(params.value)}}`;
+    },
+    rich: {
+      name: { fontWeight: '700', fontSize: 12,   color: '#1a202c', lineHeight: 20 },
+      sub:  { fontWeight: '400', fontSize: 10.5, color: '#64748b', lineHeight: 17 },
+      eng:  { fontWeight: '700', fontSize: 11,   color: '#038047', lineHeight: 17,
+              backgroundColor: '#edf7f3', borderRadius: 4, padding: [1, 5] },
+    },
+  },
+  labelLine: {
+    show: true,
+    length: 15,
+    length2: 20,
+    smooth: 0.4,
+    minTurnAngle: 135,    // ← angle lebih besar biar ga bentrok
+    lineStyle: { color: '#c4cdd8', width: 1.2, type: 'solid' },
+    showAbove: false,
+  },
+  emphasis: {
+    scale: true, scaleSize: 5,
+    itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,.12)' },
+  },
+  data: seriesData,
+}],
+    graphic: [
+      {
+        type: 'text', left: 'center', top: '47%', z: 100,
+        style: {
+          text: numK(total),
+          fill: '#0f172a',
+          font: "800 26px 'Poppins', sans-serif",
+          textAlign: 'center',
         },
-        scale: true, scaleSize: 6,
-        itemStyle: { shadowBlur: 16, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,.2)' }
       },
-      data: labels.map((label, i) => ({ name: label, value: values[i], itemStyle: { color: colors[i] } })),
-    }]
+      {
+        type: 'text', left: 'center', top: '55%', z: 100,
+        style: {
+          text: 'TOTAL',
+          fill: '#94a3b8',
+          font: "600 10px 'Poppins', sans-serif",
+          textAlign: 'center',
+          letterSpacing: 2,
+        },
+      },
+    ],
   });
 
   if (onClickFns) {
@@ -2117,10 +2194,11 @@ function makeEDoughnut(domId, labels, values, colors, onClickFns) {
       }
     });
   }
+  chart.on('mouseover', () => { if (onClickFns) chart.getDom().style.cursor = 'pointer'; });
+  chart.on('mouseout',  () => { chart.getDom().style.cursor = 'default'; });
 
   return chart;
 }
-
 /* ══════════════════════════════════════════════════════
    LOAD: MENTION BY PLATFORM
 ══════════════════════════════════════════════════════ */
@@ -2176,7 +2254,7 @@ async function loadMentionByPlatform() {
             axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(3,128,71,.06)' } },
             formatter: params => {
               const p = params[0];
-              return `<div style="font-weight:700;font-size:13px;margin-bottom:4px;">${p.name}</div><div style="font-size:13px;">${numFmt(p.value)} mentions</div>`;
+              return `<div style="font-weight:700;font-size:13px;margin-bottom:4px;">${p.name}</div><div style="font-size:13px;">${numFmt(p.value)} mentions</div><div style="margin-top:6px;font-size:10px;color:#94a3b8;text-align:center;">Klik untuk lihat mentions</div>`;
             }
           },
           grid: { top: 16, right: 16, bottom: 36, left: 56, containLabel: false },
@@ -2229,26 +2307,31 @@ async function loadMentionByPlatform() {
     /* ── SOV Mass vs Social ───── */
     hideSk('skSovMass');
     makeEDoughnut('chSovMass',
-      ['Mass Media', 'Social Media'],
-      [d.mass_total || 0, d.social_total || 0],
-      ['#0284c7', '#038047'],
-      [(x,y) => MSPopup.open('doc', x, y), (x,y) => MSPopup.showPlatPicker(x, y)]
-    );
+  ['Mass Media', 'Social Media'],
+  [d.mass_total || 0, d.social_total || 0],
+  ['#0284c7', '#038047'],
+  [(x,y) => MSPopup.open('doc', x, y), (x,y) => MSPopup.showPlatPicker(x, y)],
+  null  // ← tambah ini
+);
 
     /* ── SOV by Platform ──────── */
     hideSk('skSovPlat');
     const nz = platforms.filter(p => p.count > 0);
     const pList = nz.length ? nz : platforms;
     makeEDoughnut('chSovPlat',
-      pList.map(p => p.label),
-      pList.map(p => p.count || 0),
-      pList.map(p => MSCfg.platColors[p.label] || '#038047'),
-      pList.map(p => {
-        const k = labelToKey[p.label];
-        return k ? (x,y) => MSPopup.open(k, x, y) : null;
-      })
-    );
-
+  pList.map(p => p.label),
+  pList.map(p => p.count || 0),
+  pList.map(p => MSCfg.platColors[p.label] || '#038047'),
+  pList.map(p => {
+    const k = labelToKey[p.label];
+    return k ? (x,y) => MSPopup.open(k, x, y) : null;
+  }),
+  pList.map(p => {                          // ← tambah subtitles
+    const grandTotal = d.grand_total || 1;
+    const pct = ((p.count || 0) / grandTotal * 100).toFixed(1);
+    return pct + '%';
+  })
+);
     /* ══════════════════════════════════════════
        ★ BAR RACE CHART ★
     ══════════════════════════════════════════ */
@@ -2320,7 +2403,8 @@ async function loadMentionByPlatform() {
                       <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;">
                         <span style="font-size:12px;color:#94a3b8;">Total</span>
                         <span style="font-size:12px;color:#64748b;">${numFmt(grandTotal)}</span>
-                      </div>`;
+                      </div>
+                      <div style="margin-top:6px;font-size:10px;color:#94a3b8;text-align:center;">Klik untuk lihat mentions</div>`;
             }
           },
           grid: { top: 12, right: 110, bottom: 12, left: 16, containLabel: true },
@@ -2411,11 +2495,20 @@ async function loadMentionByPlatform() {
 async function loadTrend() {
   if (!MSCfg.pid) { hideSk('skTrend'); return; }
 
-  const now     = new Date();
-  const fmtDate = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  const trendED = fmtDate(now);
-  const sdDate  = new Date(now); sdDate.setDate(now.getDate() - 7);
-  const trendSD = fmtDate(sdDate);
+ // SESUDAH
+const fmtDate = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+let trendSD, trendED;
+if (MSTrendToggle._datePickerOverride) {
+  trendSD = MSCfg.sd;
+  trendED = MSCfg.ed;
+} else {
+  const now    = new Date();
+  const off    = MSTrendToggle._weekOffset;
+  const edDate = new Date(now); edDate.setDate(now.getDate() - (7 * off));
+  const sdDate = new Date(now); sdDate.setDate(now.getDate() - (7 * (off + 1)));
+  trendSD = fmtDate(sdDate);
+  trendED = fmtDate(edDate);
+}
 
   const platMeta = {
     doc:       { label: 'Online News (Ind)', color: '#038047' },
@@ -2460,6 +2553,24 @@ async function loadTrend() {
     };
     document.getElementById('trendBadge').textContent = `${fmtB(trendSD)} – ${fmtB(trendED)}`;
 
+    // Update week nav UI
+    // SESUDAH
+const weekNavGroup = document.getElementById('weekNavGroup');
+const weekNavLabel = document.getElementById('weekNavLabel');
+const weekNavNext  = document.getElementById('weekNavNext');
+if (weekNavGroup && MSTrendToggle._mode === 'daily' && !MSTrendToggle._datePickerOverride) {
+  weekNavGroup.style.display = 'flex';
+      if (weekNavLabel) weekNavLabel.textContent = MSTrendToggle._weekLabel();
+      if (weekNavNext) {
+        const isCurrentWeek = MSTrendToggle._weekOffset === 0;
+        weekNavNext.disabled = isCurrentWeek;
+        weekNavNext.style.opacity = isCurrentWeek ? '.35' : '1';
+        weekNavNext.style.cursor  = isCurrentWeek ? 'not-allowed' : 'pointer';
+      }
+    } else if (weekNavGroup) {
+      weekNavGroup.style.display = 'none'; // hide for monthly mode
+    }
+
     const trendChart = MSCharts.make('chTrend');
     if (!trendChart) return;
 
@@ -2467,7 +2578,7 @@ async function loadTrend() {
       const vals    = allDates.map(d => { const pt = p.data.find(x => x.date === d); return pt ? pt.count : 0; });
       const hasData = vals.some(v => v > 0);
       return {
-        name: p.label, type: 'line', data: vals, smooth: 0.4,
+       name: p.label, type: 'line', yAxisIndex: Y_AXIS_IDX[p.key] ?? 1, data: vals, smooth: 0.4,
         symbol: 'circle',
         symbolSize: hasData && allDates.length <= 30 ? 6 : 0,
         showSymbol: allDates.length <= 30,
@@ -2493,54 +2604,69 @@ async function loadTrend() {
     trendChart.setOption({
       animation: true, animationDuration: 900, animationEasing: 'cubicInOut',
       backgroundColor: '#ffffff',
-      tooltip: {
-        backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderWidth: 1,
-        padding: [12, 16],
-        textStyle: { color: '#1a202c', fontFamily: "'Poppins', sans-serif", fontSize: 12 },
-        extraCssText: 'border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.12);',
-        trigger: 'axis',
-        axisPointer: { type: 'line', lineStyle: { color: '#e2e8f0', type: 'dashed', width: 1.5 } },
-        formatter: params => {
-          const idx    = params[0]?.dataIndex ?? 0;
-          const fullDt = new Date(allDates[idx] + 'T00:00:00')
-            .toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-          const sorted = [...params].sort((a, b) => b.value - a.value);
-          const rows   = sorted.filter(p => p.value > 0).map(p =>
-            `<div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:2px 0;">
-               <div style="display:flex;align-items:center;gap:7px;">
-                 <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${p.color};flex-shrink:0;"></span>
-                 <span style="font-size:12px;color:#64748b;">${p.seriesName}</span>
-               </div>
-               <span style="font-size:12px;font-weight:700;color:#1a202c;">${numFmt(p.value)}</span>
-             </div>`
-          ).join('');
-          const total = params.reduce((s, p) => s + (p.value || 0), 0);
-          return `<div style="font-weight:700;font-size:12px;color:#1a202c;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f1f5f9;">${fullDt}</div>
-                  ${rows || '<div style="color:#94a3b8;font-size:12px;">Tidak ada data</div>'}
-                  <div style="border-top:1px solid #f1f5f9;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;">
-                    <span style="font-size:11px;color:#94a3b8;">Total</span>
-                    <span style="font-size:12px;font-weight:700;color:#1a202c;">${numFmt(total)}</span>
-                  </div>
-                  <div style="margin-top:6px;font-size:10px;color:#94a3b8;text-align:center;">Klik titik untuk lihat mentions</div>`;
-        }
-      },
+     // SESUDAH
+tooltip: {
+  backgroundColor: '#1a202c',
+  borderColor: '#334155',
+  borderWidth: 1,
+  padding: [12, 16],
+  textStyle: { color: '#ffffff', fontFamily: "'Poppins', sans-serif", fontSize: 13 },
+  extraCssText: 'border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.35);',
+  trigger: 'item',   // ← per series, bukan axis
+  formatter: params => {
+    if (params.componentType !== 'series') return '';
+    const date    = allDates[params.dataIndex] || '';
+    const fullDt  = date
+      ? new Date(date + 'T00:00:00').toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
+      : '';
+    const color   = params.color;
+    const name    = params.seriesName;
+    const value   = params.value || 0;
+    return `<div style="font-weight:800;font-size:14px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.12);">
+              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color};margin-right:7px;vertical-align:middle;"></span>${name}
+            </div>
+            ${fullDt ? `<div style="font-size:11px;color:#94a3b8;margin-bottom:8px;">${fullDt}</div>` : ''}
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;">
+              <span style="font-size:12px;color:#94a3b8;">Mentions</span>
+              <span style="font-size:15px;font-weight:700;">${numFmt(value)}</span>
+            </div>
+            <div style="margin-top:6px;font-size:10px;color:#94a3b8;text-align:center;">Klik untuk lihat mentions</div>`;
+  }
+},
       legend: {
         bottom: 0, type: 'scroll',
         data: trendRaw.map(p => p.label),
         textStyle: { fontFamily:"'Poppins', sans-serif", fontSize:11, fontWeight:'600', color:'#64748b' },
         icon: 'circle', itemWidth:10, itemHeight:10, itemGap:20,
       },
-      grid: { top:24, right:20, bottom:50, left:60 },
+     grid: { top:32, right:72, bottom:50, left:64 },
       xAxis: {
         type: 'category', data: xLabels, boundaryGap: false,
         axisLine: { lineStyle: { color:'#e2e8f0' } }, axisTick: { show:false },
         axisLabel: { fontFamily:"'Poppins', sans-serif", fontSize:11, fontWeight:'600', color:'#64748b' }
       },
-      yAxis: {
-        type: 'value', axisLine: { show:false }, axisTick: { show:false },
-        splitLine: { lineStyle: { color:'#f1f5f9', type:'solid', width:1 } },
-        axisLabel: { fontFamily:"'Poppins', sans-serif", fontSize:11, color:'#94a3b8', formatter:numK }
-      },
+      yAxis: [
+        {
+          // LEFT — Twitter scale
+          type: 'value', position: 'left',
+          name: 'Twitter', nameGap: 8,
+          nameTextStyle: { color:'#1d9bf044', fontSize:10, fontWeight:'700', fontFamily:"'Poppins', sans-serif", align:'right' },
+          axisLine: { show:true, lineStyle:{ color:'#1d9bf018', width:1 } },
+          axisTick: { show:false },
+          splitLine: { show:false },
+          axisLabel: { fontFamily:"'Poppins', sans-serif", fontSize:10, color:'#1d9bf0aa', formatter:numK },
+        },
+        {
+          // RIGHT — All others scale
+          type: 'value', position: 'right',
+          name: 'Others', nameGap: 8,
+          nameTextStyle: { color:'#94a3b8', fontSize:10, fontWeight:'700', fontFamily:"'Poppins', sans-serif", align:'left' },
+          axisLine: { show:true, lineStyle:{ color:'#e2e8f0', width:1 } },
+          axisTick: { show:false },
+          splitLine: { lineStyle:{ color:'#f1f5f9', type:'solid', width:1 } },
+          axisLabel: { fontFamily:"'Poppins', sans-serif", fontSize:10, color:'#94a3b8', formatter:numK },
+        },
+      ],
       series,
     }, true);
 
@@ -2583,11 +2709,9 @@ async function loadTrend() {
 async function loadArticleTrend() {
   if (!MSCfg.pid) { hideSk('skArticleTrend'); return; }
 
-  const now     = new Date();
   const fmtDate = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  const trendED = fmtDate(now);
-  const sdDate  = new Date(now); sdDate.setDate(now.getDate() - 7);
-  const trendSD = fmtDate(sdDate);
+const trendSD = MSCfg.sd;
+const trendED = MSCfg.ed;
 
   const fmtB = d => {
     const dt = new Date(d + 'T00:00:00');
@@ -2647,7 +2771,8 @@ async function loadArticleTrend() {
                       <span style="font-size:12px;color:#64748b;">Online News (Ind)</span>
                     </div>
                     <span style="font-size:12px;font-weight:700;color:#1a202c;">${numFmt(p.value)}</span>
-                  </div>`;
+                  </div>
+                  <div style="margin-top:6px;font-size:10px;color:#94a3b8;text-align:center;">Klik untuk lihat mentions</div>`;
         }
       },
       legend: {
@@ -3360,8 +3485,10 @@ const MSDetail = {
    TREND TOGGLE (DAILY ↔ MONTHLY)
 ══════════════════════════════════════════════════════ */
 const MSTrendToggle = {
-  _mode: 'daily',   // 'daily' | 'monthly'
-  _trendData: null, // cache raw API data
+  _mode: 'daily',
+  _trendData: null,
+  _weekOffset: 0,
+  _datePickerOverride: false,
 
   set(mode) {
     if (this._mode === mode) return;
@@ -3372,13 +3499,36 @@ const MSTrendToggle = {
     });
     // Update subtitle
     const sub = document.getElementById('trendSubtitle');
-    if (sub) sub.textContent = mode === 'monthly' ? 'Total mentions per bulan' : '8 hari terakhir dihitung mundur dari hari ini';
+    if (sub) sub.textContent = mode === 'monthly' 
+  ? 'Total mentions per bulan' 
+  : MSTrendToggle._datePickerOverride 
+    ? `${MSCfg.sd} – ${MSCfg.ed}` 
+    : '8 hari terakhir dihitung mundur dari hari ini';
+    // Show/hide week nav
+    const weekNavGroup = document.getElementById('weekNavGroup');
+    if (weekNavGroup) weekNavGroup.style.display = mode === 'daily' ? 'flex' : 'none';
+    // Reset week offset when switching to daily
+    if (mode === 'daily') { this._weekOffset = 0; this._trendData = null; }
     // Re-render chart
     if (this._trendData) this._render(this._trendData);
     else loadTrend();
   },
 
   setData(rawData) { this._trendData = rawData; },
+
+navWeek(dir) {
+  // dir: +1 = go further back, -1 = come forward
+  const next = this._weekOffset + dir;
+  if (next < 0) return; // can't go beyond current week
+  this._weekOffset = next;
+  this._trendData = null; // clear cache to force fresh fetch
+  loadTrend();
+},
+
+_weekLabel() {
+  if (this._weekOffset === 0) return 'Minggu Ini';
+  return `Week -${this._weekOffset}`;
+},
 
   copyCSV() {
     if (!this._trendData) { alert('Data belum tersedia'); return; }
@@ -3640,10 +3790,22 @@ const MSCsvModal = {
   }
 };
 
+// SESUDAH
 const MSPage = {
+  _syncDateFilter() {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const ed    = new Date(MSCfg.ed + 'T00:00:00');
+    const sd    = new Date(MSCfg.sd + 'T00:00:00');
+    const diff  = Math.round((ed - sd) / 86400000) + 1;
+    // Pakai week nav hanya kalau end date = hari ini dan range <= 8 hari
+    MSTrendToggle._datePickerOverride = !(ed.getTime() === today.getTime() && diff <= 8);
+    MSTrendToggle._weekOffset = 0;
+  },
+
   reload() {
     MSCharts.disposeAll();
     MSTab.reset();
+    this._syncDateFilter();
 
     ['skBar','skTrend','skWeekday','skHour','skBarRace'].forEach(showSk);
 
@@ -3663,6 +3825,7 @@ const MSPage = {
   init() {
     MSDp.init();
     MSPopup.init();
+    this._syncDateFilter();
     loadMentionByPlatform();
     MSTab._loaded.trend = true;
     loadTrend();
