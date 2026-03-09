@@ -373,25 +373,21 @@
 @section('content')
 
 {{-- Pass PHP data ke JS --}}
+@php
+  $jsTimelines  = collect($projects)->mapWithKeys(fn($p) => [
+    (string)($p['id'] ?? '') => $p['timeline'] ?? ['dates'=>[],'values'=>[],'sentiment'=>['positive'=>[],'neutral'=>[],'negative'=>[]]]
+  ]);
+  $jsSentiments = collect($projects)->mapWithKeys(fn($p) => [
+    (string)($p['id'] ?? '') => $p['sentiment_summary'] ?? ['positive'=>0,'neutral'=>0,'negative'=>0]
+  ]);
+  $jsTotals = collect($projects)->mapWithKeys(fn($p) => [
+    (string)($p['id'] ?? '') => $p['total_mentions'] ?? 0
+  ]);
+@endphp
 <script>
-  {{-- Timeline data per project dari controller --}}
-  const PROJECT_TIMELINES = @json(
-    collect($projects)->mapWithKeys(fn($p) => [
-      (string)($p['id'] ?? '') => $p['timeline'] ?? ['dates'=>[],'values'=>[],'sentiment'=>['positive'=>[],'neutral'=>[],'negative'=>[]]]
-    ])
-  );
-
-  const PROJECT_SENTIMENTS = @json(
-    collect($projects)->mapWithKeys(fn($p) => [
-      (string)($p['id'] ?? '') => $p['sentiment_summary'] ?? ['positive'=>0,'neutral'=>0,'negative'=>0]
-    ])
-  );
-
-  const PROJECT_TOTALS = @json(
-    collect($projects)->mapWithKeys(fn($p) => [
-      (string)($p['id'] ?? '') => $p['total_mentions'] ?? 0
-    ])
-  );
+  const PROJECT_TIMELINES  = {!! json_encode($jsTimelines) !!};
+  const PROJECT_SENTIMENTS = {!! json_encode($jsSentiments) !!};
+  const PROJECT_TOTALS     = {!! json_encode($jsTotals) !!};
 
   const DASHBOARD_DATE_RANGE = {
     start: '{{ $startDate }}',
