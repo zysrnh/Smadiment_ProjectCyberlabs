@@ -194,12 +194,114 @@
 
     .content-wrapper { padding: 0 28px 28px; }
 
+    /* ═══════════════════════════════════════════════════════
+       BREADCRUMB ROW (date picker + breadcrumb sejajar)
+    ═══════════════════════════════════════════════════════ */
+    .bc-date-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 28px 0;
+      gap: 12px;
+    }
+
+    /* Breadcrumb */
+    .bc-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex: 1;
+      min-width: 0;
+      position: relative;
+    }
+
+    .bc-seg {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: var(--transition);
+      position: relative;
+      user-select: none;
+      background: transparent;
+      border: none;
+    }
+    .bc-seg:hover { color: var(--primary-green); background: rgba(3,128,71,0.06); }
+    .bc-seg.bc-active { color: var(--text-primary); cursor: default; }
+    .bc-seg.bc-active:hover { background: transparent; color: var(--text-primary); }
+    .bc-seg .bc-chevron {
+      width: 12px; height: 12px;
+      stroke: currentColor; fill: none; stroke-width: 2.5;
+      opacity: 0.5; flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+    .bc-seg.bc-open .bc-chevron { transform: rotate(180deg); opacity: 1; }
+
+    .bc-sep {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin: 0 1px;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    /* Breadcrumb Dropdown */
+    .bc-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      min-width: 200px;
+      background: #fff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      z-index: 500;
+      padding: 6px;
+      display: none;
+      animation: bcDropIn 0.18s cubic-bezier(0.4,0,0.2,1);
+    }
+    .bc-dropdown.show { display: block; }
+    @keyframes bcDropIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .bc-dropdown-title {
+      font-size: 10px; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 1px;
+      padding: 6px 10px 4px;
+    }
+    .bc-dd-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px; border-radius: 8px;
+      font-size: 13px; font-weight: 500; color: var(--text-primary);
+      cursor: pointer; transition: all 0.15s;
+      text-decoration: none;
+    }
+    .bc-dd-item:hover { background: rgba(3,128,71,0.07); color: var(--primary-green); }
+    .bc-dd-item.bc-dd-active {
+      background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
+      color: #fff; font-weight: 600;
+    }
+    .bc-dd-item .bc-dd-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--primary-green); flex-shrink: 0;
+    }
+    .bc-dd-item.bc-dd-active .bc-dd-dot { background: rgba(255,255,255,0.7); }
+
     /* ── Global Date Filter ── */
     .global-date-trigger {
       display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px;
       background: #f8fafc; border: 1px solid var(--border-color); border-radius: 9px;
       font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 500;
       color: var(--text-primary); cursor: pointer; transition: var(--transition); white-space: nowrap;
+      flex-shrink: 0;
     }
     .global-date-trigger:hover { border-color: var(--primary-green); background: #fff; box-shadow: 0 0 0 3px rgba(3,128,71,0.08); }
     .global-date-trigger svg { width:15px; height:15px; stroke:currentColor; fill:none; flex-shrink:0; }
@@ -292,10 +394,11 @@
       .content-wrapper { padding: 0 16px 16px; }
       .top-actions { width: 100%; }
       .action-btn { flex: 1; justify-content: center; }
+      .bc-date-row { flex-direction: column; align-items: stretch; padding: 12px 16px 0; }
+      .bc-wrap { overflow-x: auto; }
     }
   </style>
 
-  {{-- ✅ Child views inject their <style> blocks here, inside <head> --}}
   @yield('styles')
 
 </head>
@@ -436,30 +539,6 @@
             </span>
             <span>Net Sentiment Score</span>
           </a>
-
-          
-{{--
-<a href="{{ route('mk.interaction-sentiment') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-   class="nav-item {{ request()->routeIs('mk.interaction-sentiment') ? 'active' : '' }}">
-  <span class="menu-icon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-    </svg>
-  </span>
-  <span>Interaction Sentiment</span>
-</a>
-
-<a href="{{ route('mk.engagement') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-   class="nav-item {{ request()->routeIs('mk.engagement') ? 'active' : '' }}">
-  <span class="menu-icon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-    </svg>
-  </span>
-  <span>Engagement</span>
-</a>
---}}
-          
         </div>
       </div>
 
@@ -480,35 +559,6 @@
         </span>
         <span>World Map</span>
       </a>
-
-
-  {{--
-      @php
-        $dataSourceRoutes  = ['mk.data-source.users','mk.data-source.authors','mk.data-source.volume','mk.data-source.trends'];
-        $isDataSourceActive = request()->routeIs($dataSourceRoutes);
-      @endphp
-
-      <div class="nav-item dropdown-trigger {{ $isDataSourceActive ? 'has-active-child open' : '' }}"
-           onclick="toggleNav('dataSourceSub', this)">
-        <span class="nav-icon">
-          <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
-        </span>
-        <span>Data Source</span>
-        <span class="dropdown-arrow"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
-      </div>
-      <div class="nav-sub-wrapper {{ $isDataSourceActive ? 'open' : '' }}" id="dataSourceSub">
-        <div class="nav-sub">
-          <a href="{{ route('mk.data-source.users') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.data-source.users') ? 'active' : '' }}"><span>Total Users</span></a>
-          <a href="{{ route('mk.data-source.authors') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.data-source.authors') ? 'active' : '' }}"><span>Total Authors</span></a>
-          <a href="{{ route('mk.data-source.volume') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.data-source.volume') ? 'active' : '' }}"><span>Volume Total</span></a>
-          <a href="{{ route('mk.data-source.trends') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.data-source.trends') ? 'active' : '' }}"><span>Trends Total</span></a>
-        </div>
-      </div>
-  --}}
 
       <!-- NEWS -->
       <div class="nav-label">News</div>
@@ -543,13 +593,6 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
             <span>Mention</span>
           </a>
-          {{--   
-          <a href="{{ route('mk.news.articles') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.news.articles') ? 'active' : '' }}">
-            <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
-            <span>Articles</span>
-          </a>
-          --}}
           <a href="{{ route('mk.news.topic-map') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
              class="nav-item {{ request()->routeIs('mk.news.topic-map') ? 'active' : '' }}">
             <span class="menu-icon">
@@ -566,24 +609,10 @@
       <!-- SOCIAL MEDIA -->
       <div class="nav-label">Social Media</div>
 
-    @php
-  $xRoutes = [
-    'mk.x.overview',
-    'mk.x.most-status',
-    'mk.x.most-retweets',
-    'mk.x.authors.demographics',
-    'mk.x.geographic',
-    'mk.x.post-with-location',
-    'mk.x.trending-topics',
-    'mk.x.trending-word-cloud',
-    'mk.x.shared-urls',
-    'mk.x.most-active-users',
-    'mk.x.top-influencers',
-    'mk.x.emotion-analysis',   // ← TAMBAHKAN INI
-    'mk.x.ai-analysis',
-  ];
-  $isXActive = request()->routeIs($xRoutes);
-@endphp
+      @php
+        $xRoutes = ['mk.x.overview','mk.x.most-status','mk.x.most-retweets','mk.x.authors.demographics','mk.x.geographic','mk.x.post-with-location','mk.x.trending-topics','mk.x.trending-word-cloud','mk.x.shared-urls','mk.x.most-active-users','mk.x.top-influencers','mk.x.emotion-analysis','mk.x.ai-analysis'];
+        $isXActive = request()->routeIs($xRoutes);
+      @endphp
       <div class="nav-item dropdown-trigger {{ $isXActive ? 'has-active-child open' : '' }}"
            onclick="toggleNav('xSub', this)">
         <span class="nav-icon">
@@ -594,93 +623,61 @@
       </div>
       <div class="nav-sub-wrapper {{ $isXActive ? 'open' : '' }}" id="xSub">
         <div class="nav-sub">
-          <a href="{{ route('mk.x.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.x.overview') ? 'active' : '' }}">
+          <a href="{{ route('mk.x.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.x.overview') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
             <span>Overview</span>
           </a>
-          <a href="{{ route('mk.x.trending-topics') }}"
-             class="nav-item {{ request()->routeIs('mk.x.trending-topics') ? 'active' : '' }}">
+          <a href="{{ route('mk.x.trending-topics') }}" class="nav-item {{ request()->routeIs('mk.x.trending-topics') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
             <span>Top Hashtags</span>
           </a>
-          <a href="{{ route('mk.x.most-status') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.x.most-status') ? 'active' : '' }}">
+          <a href="{{ route('mk.x.most-status') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.x.most-status') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
             <span>Most Viewed Posts</span>
           </a>
-          <a href="{{ route('mk.x.most-retweets') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.x.most-retweets') ? 'active' : '' }}">
+          <a href="{{ route('mk.x.most-retweets') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.x.most-retweets') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>
             <span>Most Retweets</span>
           </a>
-          <a href="{{ route('mk.x.authors.demographics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.x.authors.demographics') ? 'active' : '' }}">
+          <a href="{{ route('mk.x.authors.demographics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.x.authors.demographics') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
             <span>Author Profiles</span>
           </a>
-          <a href="{{ route('mk.x.geographic') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.x.geographic') ? 'active' : '' }}">
+          <a href="{{ route('mk.x.geographic') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.x.geographic') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
             <span>Location Map</span>
           </a>
-          <a href="{{ route('mk.x.post-with-location') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.x.post-with-location') ? 'active' : '' }}">
+          <a href="{{ route('mk.x.post-with-location') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.x.post-with-location') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
             <span>Posts with Location</span>
           </a>
-          <a href="{{ route('mk.x.trending-word-cloud') }}"
-             class="nav-item {{ request()->routeIs('mk.x.trending-word-cloud') ? 'active' : '' }}">
+          <a href="{{ route('mk.x.trending-word-cloud') }}" class="nav-item {{ request()->routeIs('mk.x.trending-word-cloud') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
             <span>Word Cloud</span>
           </a>
-          <a href="{{ route('mk.x.shared-urls') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.x.shared-urls') ? 'active' : '' }}">
+          <a href="{{ route('mk.x.shared-urls') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.x.shared-urls') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
             <span>Shared URLs</span>
           </a>
-          <a href="{{ route('mk.x.most-active-users') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.x.most-active-users') ? 'active' : '' }}">
+          <a href="{{ route('mk.x.most-active-users') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.x.most-active-users') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
             <span>Most Active Users</span>
           </a>
-            <a href="{{ route('mk.x.top-influencers') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.x.top-influencers') ? 'active' : '' }}">
-            <span class="menu-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
-              </svg>
-            </span>
+          <a href="{{ route('mk.x.top-influencers') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.x.top-influencers') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></span>
             <span>Top Influencers</span>
           </a>
-          <a href="{{ route('mk.x.emotion-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.x.emotion-analysis') ? 'active' : '' }}">
-            <span class="menu-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/>
-                <circle cx="12" cy="19" r="1"/>
-              </svg>
-            </span>
+          <a href="{{ route('mk.x.emotion-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.x.emotion-analysis') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/><circle cx="12" cy="19" r="1"/></svg></span>
             <span>Emotion Analysis</span>
           </a>
         </div>
       </div>
 
       @php
-        $facebookRoutes = [
-    'mk.facebook.overview',
-    'mk.facebook.trending-topics',
-    'mk.facebook.most-viewed-posts',
-    'mk.facebook.most-engagement',   // ← tambah ini
-    'mk.facebook.geographic',
-    'mk.facebook.trending-word-cloud',
-    'mk.facebook.ai-analysis',       // ← tambah ini juga kalau belum ada
-    'mk.facebook.emotion-analysis',
-
-];
+        $facebookRoutes = ['mk.facebook.overview','mk.facebook.trending-topics','mk.facebook.most-viewed-posts','mk.facebook.most-engagement','mk.facebook.geographic','mk.facebook.trending-word-cloud','mk.facebook.ai-analysis','mk.facebook.emotion-analysis'];
         $isFacebookActive = request()->routeIs($facebookRoutes);
       @endphp
-
       <div class="nav-item dropdown-trigger {{ $isFacebookActive ? 'has-active-child open' : '' }}"
            onclick="toggleNav('facebookSub', this)">
         <span class="nav-icon">
@@ -691,56 +688,33 @@
       </div>
       <div class="nav-sub-wrapper {{ $isFacebookActive ? 'open' : '' }}" id="facebookSub">
         <div class="nav-sub">
-          <a href="{{ route('mk.facebook.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.facebook.overview') ? 'active' : '' }}">
+          <a href="{{ route('mk.facebook.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.facebook.overview') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
             <span>Overview</span>
           </a>
-          <a href="{{ route('mk.facebook.trending-topics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.facebook.trending-topics') ? 'active' : '' }}">
+          <a href="{{ route('mk.facebook.trending-topics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.facebook.trending-topics') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
             <span>Top Hashtags</span>
           </a>
-          {{--
-          <a href="{{ route('mk.facebook.most-viewed-posts') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.facebook.most-viewed-posts') ? 'active' : '' }}">
-            <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
-            <span>Most Viewed Posts</span>
-          </a>
-            --}}
-          <a href="{{ route('mk.facebook.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.facebook.trending-word-cloud') ? 'active' : '' }}">
+          <a href="{{ route('mk.facebook.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.facebook.trending-word-cloud') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
             <span>Word Cloud</span>
           </a>
-          <a href="{{ route('mk.facebook.most-engagement') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-   class="nav-item {{ request()->routeIs('mk.facebook.most-engagement') ? 'active' : '' }}">
-    <span class="menu-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
-            <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-        </svg>
-    </span>
-    <span>Most Engagement</span>
-</a>
-<a href="{{ route('mk.facebook.emotion-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-   class="nav-item {{ request()->routeIs('mk.facebook.emotion-analysis') ? 'active' : '' }}">
-    <span class="menu-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/>
-            <circle cx="12" cy="19" r="1"/>
-        </svg>
-    </span>
-    <span>Emotion Analysis</span>
-</a>
+          <a href="{{ route('mk.facebook.most-engagement') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.facebook.most-engagement') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg></span>
+            <span>Most Engagement</span>
+          </a>
+          <a href="{{ route('mk.facebook.emotion-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.facebook.emotion-analysis') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/><circle cx="12" cy="19" r="1"/></svg></span>
+            <span>Emotion Analysis</span>
+          </a>
         </div>
       </div>
 
       @php
-$instagramRoutes = ['mk.instagram.overview','mk.instagram.trending-topics','mk.instagram.most-viewed-posts','mk.instagram.authors.demographics','mk.instagram.geographic','mk.instagram.trending-word-cloud','mk.instagram.ai-analysis','mk.instagram.most-engagement','mk.instagram.emotion-analysis'];
+        $instagramRoutes = ['mk.instagram.overview','mk.instagram.trending-topics','mk.instagram.most-viewed-posts','mk.instagram.authors.demographics','mk.instagram.geographic','mk.instagram.trending-word-cloud','mk.instagram.ai-analysis','mk.instagram.most-engagement','mk.instagram.emotion-analysis'];
         $isInstagramActive = request()->routeIs($instagramRoutes);
       @endphp
-
       <div class="nav-item dropdown-trigger {{ $isInstagramActive ? 'has-active-child open' : '' }}"
            onclick="toggleNav('instagramSub', this)">
         <span class="nav-icon">
@@ -751,66 +725,33 @@ $instagramRoutes = ['mk.instagram.overview','mk.instagram.trending-topics','mk.i
       </div>
       <div class="nav-sub-wrapper {{ $isInstagramActive ? 'open' : '' }}" id="instagramSub">
         <div class="nav-sub">
-          <a href="{{ route('mk.instagram.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.instagram.overview') ? 'active' : '' }}">
+          <a href="{{ route('mk.instagram.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.instagram.overview') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
             <span>Overview</span>
           </a>
-          <a href="{{ route('mk.instagram.trending-topics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.instagram.trending-topics') ? 'active' : '' }}">
+          <a href="{{ route('mk.instagram.trending-topics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.instagram.trending-topics') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
             <span>Top Hashtags</span>
           </a>
-          {{-- 
-          <a href="{{ route('mk.instagram.most-viewed-posts') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.instagram.most-viewed-posts') ? 'active' : '' }}">
-            <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
-            <span>Most Viewed Posts</span>
-          </a>
-           --}}
-          <a href="{{ route('mk.instagram.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.instagram.trending-word-cloud') ? 'active' : '' }}">
+          <a href="{{ route('mk.instagram.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.instagram.trending-word-cloud') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
             <span>Word Cloud</span>
           </a>
-          <a href="{{ route('mk.instagram.most-engagement') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-           class="nav-item {{ request()->routeIs('mk.instagram.most-engagement') ? 'active' : '' }}">
-            <span class="menu-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
-                    <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-                </svg>
-            </span>
+          <a href="{{ route('mk.instagram.most-engagement') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.instagram.most-engagement') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg></span>
             <span>Most Engagement</span>
-        </a>
-        <a href="{{ route('mk.instagram.emotion-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-   class="nav-item {{ request()->routeIs('mk.instagram.emotion-analysis') ? 'active' : '' }}">
-    <span class="menu-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/>
-            <circle cx="12" cy="19" r="1"/>
-        </svg>
-    </span>
-    <span>Emotion Analysis</span>
-</a>
+          </a>
+          <a href="{{ route('mk.instagram.emotion-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.instagram.emotion-analysis') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/><circle cx="12" cy="19" r="1"/></svg></span>
+            <span>Emotion Analysis</span>
+          </a>
         </div>
       </div>
 
       @php
-        $youtubeRoutes = [
-    'mk.youtube.overview',
-    'mk.youtube.trending-topics',
-    'mk.youtube.most-viewed-posts',
-    'mk.youtube.most-engagement',
-    'mk.youtube.emotion-analysis',   // ← TAMBAHKAN INI
-    'mk.youtube.authors.demographics',
-    'mk.youtube.geographic',
-    'mk.youtube.trending-word-cloud',
-    'mk.youtube.ai-analysis',
-];
+        $youtubeRoutes = ['mk.youtube.overview','mk.youtube.trending-topics','mk.youtube.most-viewed-posts','mk.youtube.most-engagement','mk.youtube.emotion-analysis','mk.youtube.authors.demographics','mk.youtube.geographic','mk.youtube.trending-word-cloud','mk.youtube.ai-analysis'];
         $isYoutubeActive = request()->routeIs($youtubeRoutes);
       @endphp
-
       <div class="nav-item dropdown-trigger {{ $isYoutubeActive ? 'has-active-child open' : '' }}"
            onclick="toggleNav('youtubeSub', this)">
         <span class="nav-icon">
@@ -821,64 +762,33 @@ $instagramRoutes = ['mk.instagram.overview','mk.instagram.trending-topics','mk.i
       </div>
       <div class="nav-sub-wrapper {{ $isYoutubeActive ? 'open' : '' }}" id="youtubeSub">
         <div class="nav-sub">
-          <a href="{{ route('mk.youtube.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.youtube.overview') ? 'active' : '' }}">
+          <a href="{{ route('mk.youtube.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.youtube.overview') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
             <span>Overview</span>
           </a>
-          <a href="{{ route('mk.youtube.trending-topics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.youtube.trending-topics') ? 'active' : '' }}">
+          <a href="{{ route('mk.youtube.trending-topics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.youtube.trending-topics') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
             <span>Top Hashtags</span>
           </a>
-          {{--
-          <a href="{{ route('mk.youtube.most-viewed-posts') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.youtube.most-viewed-posts') ? 'active' : '' }}">
-            <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
-            <span>Most Viewed Posts</span>
-          </a>
-           --}}
-          <a href="{{ route('mk.youtube.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.youtube.trending-word-cloud') ? 'active' : '' }}">
+          <a href="{{ route('mk.youtube.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.youtube.trending-word-cloud') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
             <span>Word Cloud</span>
           </a>
-          <a href="{{ route('mk.youtube.most-engagement') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-   class="nav-item {{ request()->routeIs('mk.youtube.most-engagement') ? 'active' : '' }}">
-    <span class="menu-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
-            <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-        </svg>
-    </span>
-    <span>Most Engagement</span>
-</a>
-<a href="{{ route('mk.youtube.emotion-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-   class="nav-item {{ request()->routeIs('mk.youtube.emotion-analysis') ? 'active' : '' }}">
-    <span class="menu-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/>
-            <circle cx="12" cy="19" r="1"/>
-        </svg>
-    </span>
-    <span>Emotion Analysis</span>
-</a>
+          <a href="{{ route('mk.youtube.most-engagement') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.youtube.most-engagement') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg></span>
+            <span>Most Engagement</span>
+          </a>
+          <a href="{{ route('mk.youtube.emotion-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.youtube.emotion-analysis') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/><circle cx="12" cy="19" r="1"/></svg></span>
+            <span>Emotion Analysis</span>
+          </a>
         </div>
       </div>
 
       @php
-        $tiktokRoutes = [
-    'mk.tiktok.overview',
-    'mk.tiktok.trending-topics',
-    'mk.tiktok.most-viewed-posts',
-    'mk.tiktok.trending-word-cloud',
-    'mk.tiktok.most-engagement',
-    'mk.tiktok.emotion-analysis',   // ← TAMBAHKAN INI
-    'mk.tiktok.ai-analysis',
-  ];
+        $tiktokRoutes = ['mk.tiktok.overview','mk.tiktok.trending-topics','mk.tiktok.most-viewed-posts','mk.tiktok.trending-word-cloud','mk.tiktok.most-engagement','mk.tiktok.emotion-analysis','mk.tiktok.ai-analysis'];
         $isTiktokActive = request()->routeIs($tiktokRoutes);
       @endphp
-
       <div class="nav-item dropdown-trigger {{ $isTiktokActive ? 'has-active-child open' : '' }}"
            onclick="toggleNav('tiktokSub', this)">
         <span class="nav-icon">
@@ -891,48 +801,26 @@ $instagramRoutes = ['mk.instagram.overview','mk.instagram.trending-topics','mk.i
       </div>
       <div class="nav-sub-wrapper {{ $isTiktokActive ? 'open' : '' }}" id="tiktokSub">
         <div class="nav-sub">
-          <a href="{{ route('mk.tiktok.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.tiktok.overview') ? 'active' : '' }}">
+          <a href="{{ route('mk.tiktok.overview') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.tiktok.overview') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
             <span>Overview</span>
           </a>
-          <a href="{{ route('mk.tiktok.trending-topics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.tiktok.trending-topics') ? 'active' : '' }}">
+          <a href="{{ route('mk.tiktok.trending-topics') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.tiktok.trending-topics') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
             <span>Top Hashtags</span>
           </a>
-        {{-- 
-          <a href="{{ route('mk.tiktok.most-viewed-posts') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.tiktok.most-viewed-posts') ? 'active' : '' }}">
-            <span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
-            <span>Most Viewed Posts</span>
-          </a>
-           --}}
-          <a href="{{ route('mk.tiktok.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.tiktok.trending-word-cloud') ? 'active' : '' }}">
+          <a href="{{ route('mk.tiktok.trending-word-cloud') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.tiktok.trending-word-cloud') ? 'active' : '' }}">
             <span class="menu-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><circle cx="5" cy="5" r="2"/><line x1="12" y1="9" x2="6.5" y2="6.5"/><line x1="12" y1="15" x2="6.5" y2="17.5"/><line x1="15" y1="12" x2="17" y2="6.5"/><line x1="15" y1="12" x2="17" y2="17.5"/></svg></span>
             <span>Word Cloud</span>
           </a>
-          <a href="{{ route('mk.tiktok.most-engagement') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-             class="nav-item {{ request()->routeIs('mk.tiktok.most-engagement') ? 'active' : '' }}">
-            <span class="menu-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
-                <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-              </svg>
-            </span>
+          <a href="{{ route('mk.tiktok.most-engagement') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.tiktok.most-engagement') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg></span>
             <span>Most Engagement</span>
           </a>
-          <a href="{{ route('mk.tiktok.emotion-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-   class="nav-item {{ request()->routeIs('mk.tiktok.emotion-analysis') ? 'active' : '' }}">
-    <span class="menu-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/>
-            <circle cx="12" cy="19" r="1"/>
-        </svg>
-    </span>
-    <span>Emotion Analysis</span>
-</a>
+          <a href="{{ route('mk.tiktok.emotion-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.tiktok.emotion-analysis') ? 'active' : '' }}">
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/><circle cx="12" cy="19" r="1"/></svg></span>
+            <span>Emotion Analysis</span>
+          </a>
         </div>
       </div>
 
@@ -947,7 +835,17 @@ $instagramRoutes = ['mk.instagram.overview','mk.instagram.trending-topics','mk.i
       $globalEndDate   = request()->get('end_date',   now()->format('Y-m-d'));
     @endphp
 
-    <div style="display:flex; justify-content:flex-end; align-items:center; padding: 14px 28px 0; gap:10px;">
+    {{-- ═══════════════════════════════════════════════════════
+         BREADCRUMB + DATE PICKER ROW
+    ═══════════════════════════════════════════════════════ --}}
+    <div class="bc-date-row">
+
+      {{-- Breadcrumb (kiri) --}}
+      <div class="bc-wrap" id="bcWrap">
+        {{-- Diisi oleh JS --}}
+      </div>
+
+      {{-- Date Picker (kanan) --}}
       <button type="button" class="global-date-trigger" id="gdpTrigger">
         <svg viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         <span class="date-label" id="gdpTriggerLabel">{{ $globalStartDate }} – {{ $globalEndDate }}</span>
@@ -955,6 +853,7 @@ $instagramRoutes = ['mk.instagram.overview','mk.instagram.trending-topics','mk.i
       </button>
     </div>
 
+    {{-- Date Picker Modal --}}
     <div class="gdp-modal" id="gdpModal">
       <div style="position:absolute;inset:0;cursor:pointer;" id="gdpOverlay"></div>
       <div class="gdp-container">
@@ -992,6 +891,9 @@ $instagramRoutes = ['mk.instagram.overview','mk.instagram.trending-topics','mk.i
     @yield('content')
   </div>
 
+  {{-- ═══════════════════════════════════════════════════════
+       SCRIPTS
+  ═══════════════════════════════════════════════════════ --}}
   <script>
     const colors = {
       primaryGreen: '#038047', primaryGreenDark: '#026738', primaryGreenLight: '#04995a',
@@ -1013,29 +915,26 @@ $instagramRoutes = ['mk.instagram.overview','mk.instagram.trending-topics','mk.i
       }
     }
 
-   function changeProject(projectId, projectName) {
-  localStorage.setItem('selected_project_id', projectId);
-  const url = new URL(window.location.href);
-  url.searchParams.set('project_id', projectId);
+    function changeProject(projectId, projectName) {
+      localStorage.setItem('selected_project_id', projectId);
+      const url = new URL(window.location.href);
+      url.searchParams.set('project_id', projectId);
+      if (!url.searchParams.get('start_date')) {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        url.searchParams.set('start_date', `${y}-${m}-01`);
+      }
+      if (!url.searchParams.get('end_date')) {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        url.searchParams.set('end_date', `${y}-${m}-${d}`);
+      }
+      window.location.href = url.toString();
+    }
 
-  // Pertahankan start_date & end_date yang sudah ada
-  // Jika belum ada, set default ke bulan ini
-  if (!url.searchParams.get('start_date')) {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    url.searchParams.set('start_date', `${y}-${m}-01`);
-  }
-  if (!url.searchParams.get('end_date')) {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
-    url.searchParams.set('end_date', `${y}-${m}-${d}`);
-  }
-
-  window.location.href = url.toString();
-}
     document.addEventListener('DOMContentLoaded', function() {
       document.querySelectorAll('.nav-sub-wrapper.open').forEach(wrapper => {
         const trigger = document.querySelector(`[onclick*="${wrapper.id}"]`);
@@ -1044,6 +943,271 @@ $instagramRoutes = ['mk.instagram.overview','mk.instagram.trending-topics','mk.i
     });
   </script>
 
+  {{-- ═══════════════════════════════════════════════════════
+       BREADCRUMB SYSTEM (URL-based, Drone Emprit style)
+  ═══════════════════════════════════════════════════════ --}}
+  <script>
+  (function() {
+    // Route map: regex → { section, page }
+    // section = null means it's a top-level page (no platform)
+    const ROUTE_MAP = [
+      { match: /\/dashboard$/, section: null, page: 'Dashboard' },
+      { match: /\/data-overview$/, section: null, page: 'Data Overview' },
+      { match: /\/compare/, section: null, page: 'Compare Projects' },
+      { match: /\/topic-map$/, section: null, page: 'World Map' },
+      { match: /\/media-statistic$/, section: 'Statistic', page: 'Media' },
+      { match: /\/sentiment$/, section: 'Statistic', page: 'Sentiment' },
+      { match: /\/net-sentiment-score$/, section: 'Statistic', page: 'Net Sentiment' },
+      { match: /\/news\/word-cloud$/, section: 'News', page: 'Word Cloud' },
+      { match: /\/news\/top-publishers$/, section: 'News', page: 'Top Publishers' },
+      { match: /\/news\/timeline$/, section: 'News', page: 'Mention' },
+      { match: /\/news\/topic-map$/, section: 'News', page: 'Topic Map' },
+      { match: /\/x\/overview$/, section: 'X', page: 'Overview' },
+      { match: /\/x\/trending-topics$/, section: 'X', page: 'Top Hashtags' },
+      { match: /\/x\/most-status$/, section: 'X', page: 'Most Viewed' },
+      { match: /\/x\/most-retweets$/, section: 'X', page: 'Most Retweets' },
+      { match: /\/x\/authors/, section: 'X', page: 'Author Profiles' },
+      { match: /\/x\/geographic$/, section: 'X', page: 'Location Map' },
+      { match: /\/x\/post-with-location$/, section: 'X', page: 'Posts w\/Location' },
+      { match: /\/x\/trending-word-cloud$/, section: 'X', page: 'Word Cloud' },
+      { match: /\/x\/shared-urls$/, section: 'X', page: 'Shared URLs' },
+      { match: /\/x\/most-active-users$/, section: 'X', page: 'Most Active Users' },
+      { match: /\/x\/top-influencers$/, section: 'X', page: 'Top Influencers' },
+      { match: /\/x\/emotion-analysis$/, section: 'X', page: 'Emotion Analysis' },
+      { match: /\/facebook\/overview$/, section: 'Facebook', page: 'Overview' },
+      { match: /\/facebook\/trending-topics$/, section: 'Facebook', page: 'Top Hashtags' },
+      { match: /\/facebook\/trending-word-cloud$/, section: 'Facebook', page: 'Word Cloud' },
+      { match: /\/facebook\/most-engagement$/, section: 'Facebook', page: 'Most Engagement' },
+      { match: /\/facebook\/emotion-analysis$/, section: 'Facebook', page: 'Emotion Analysis' },
+      { match: /\/instagram\/overview$/, section: 'Instagram', page: 'Overview' },
+      { match: /\/instagram\/trending-topics$/, section: 'Instagram', page: 'Top Hashtags' },
+      { match: /\/instagram\/trending-word-cloud$/, section: 'Instagram', page: 'Word Cloud' },
+      { match: /\/instagram\/most-engagement$/, section: 'Instagram', page: 'Most Engagement' },
+      { match: /\/instagram\/emotion-analysis$/, section: 'Instagram', page: 'Emotion Analysis' },
+      { match: /\/youtube\/overview$/, section: 'YouTube', page: 'Overview' },
+      { match: /\/youtube\/trending-topics$/, section: 'YouTube', page: 'Top Hashtags' },
+      { match: /\/youtube\/trending-word-cloud$/, section: 'YouTube', page: 'Word Cloud' },
+      { match: /\/youtube\/most-engagement$/, section: 'YouTube', page: 'Most Engagement' },
+      { match: /\/youtube\/emotion-analysis$/, section: 'YouTube', page: 'Emotion Analysis' },
+      { match: /\/tiktok\/overview$/, section: 'TikTok', page: 'Overview' },
+      { match: /\/tiktok\/trending-topics$/, section: 'TikTok', page: 'Top Hashtags' },
+      { match: /\/tiktok\/trending-word-cloud$/, section: 'TikTok', page: 'Word Cloud' },
+      { match: /\/tiktok\/most-engagement$/, section: 'TikTok', page: 'Most Engagement' },
+      { match: /\/tiktok\/emotion-analysis$/, section: 'TikTok', page: 'Emotion Analysis' },
+    ];
+
+    // Section → list of pages
+    const SECTION_PAGES = {
+      'Statistic': [
+        { label: 'Media',          path: '/mk/media-statistic' },
+        { label: 'Sentiment',      path: '/mk/sentiment' },
+        { label: 'Net Sentiment',  path: '/mk/net-sentiment-score' },
+      ],
+      'News': [
+        { label: 'Word Cloud',     path: '/mk/news/word-cloud' },
+        { label: 'Top Publishers', path: '/mk/news/top-publishers' },
+        { label: 'Mention',        path: '/mk/news/timeline' },
+        { label: 'Topic Map',      path: '/mk/news/topic-map' },
+      ],
+      'X': [
+        { label: 'Overview',          path: '/mk/x/overview' },
+        { label: 'Top Hashtags',      path: '/mk/x/trending-topics' },
+        { label: 'Most Viewed',       path: '/mk/x/most-status' },
+        { label: 'Most Retweets',     path: '/mk/x/most-retweets' },
+        { label: 'Author Profiles',   path: '/mk/x/authors/demographics' },
+        { label: 'Location Map',      path: '/mk/x/geographic' },
+        { label: 'Word Cloud',        path: '/mk/x/trending-word-cloud' },
+        { label: 'Shared URLs',       path: '/mk/x/shared-urls' },
+        { label: 'Most Active Users', path: '/mk/x/most-active-users' },
+        { label: 'Top Influencers',   path: '/mk/x/top-influencers' },
+        { label: 'Emotion Analysis',  path: '/mk/x/emotion-analysis' },
+      ],
+      'Facebook': [
+        { label: 'Overview',         path: '/mk/facebook/overview' },
+        { label: 'Top Hashtags',     path: '/mk/facebook/trending-topics' },
+        { label: 'Word Cloud',       path: '/mk/facebook/trending-word-cloud' },
+        { label: 'Most Engagement',  path: '/mk/facebook/most-engagement' },
+        { label: 'Emotion Analysis', path: '/mk/facebook/emotion-analysis' },
+      ],
+      'Instagram': [
+        { label: 'Overview',         path: '/mk/instagram/overview' },
+        { label: 'Top Hashtags',     path: '/mk/instagram/trending-topics' },
+        { label: 'Word Cloud',       path: '/mk/instagram/trending-word-cloud' },
+        { label: 'Most Engagement',  path: '/mk/instagram/most-engagement' },
+        { label: 'Emotion Analysis', path: '/mk/instagram/emotion-analysis' },
+      ],
+      'YouTube': [
+        { label: 'Overview',         path: '/mk/youtube/overview' },
+        { label: 'Top Hashtags',     path: '/mk/youtube/trending-topics' },
+        { label: 'Word Cloud',       path: '/mk/youtube/trending-word-cloud' },
+        { label: 'Most Engagement',  path: '/mk/youtube/most-engagement' },
+        { label: 'Emotion Analysis', path: '/mk/youtube/emotion-analysis' },
+      ],
+      'TikTok': [
+        { label: 'Overview',         path: '/mk/tiktok/overview' },
+        { label: 'Top Hashtags',     path: '/mk/tiktok/trending-topics' },
+        { label: 'Word Cloud',       path: '/mk/tiktok/trending-word-cloud' },
+        { label: 'Most Engagement',  path: '/mk/tiktok/most-engagement' },
+        { label: 'Emotion Analysis', path: '/mk/tiktok/emotion-analysis' },
+      ],
+    };
+
+    function esc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function getProjectName() {
+      const el = document.querySelector('.current-project-name');
+      return el ? el.textContent.trim() : '';
+    }
+
+    function buildQueryString(pid) {
+      const params = new URLSearchParams(window.location.search);
+      const start  = params.get('start_date') || '';
+      const end    = params.get('end_date')   || '';
+      const parts  = [];
+      if (pid)   parts.push('project_id=' + pid);
+      if (start) parts.push('start_date=' + start);
+      if (end)   parts.push('end_date='   + end);
+      return parts.length ? '?' + parts.join('&') : '';
+    }
+
+    function getCurrentRoute() {
+      const path = window.location.pathname;
+      return ROUTE_MAP.find(r => r.match.test(path)) || null;
+    }
+
+    let openDropdown = null;
+
+    function closeAll() {
+      document.querySelectorAll('.bc-dropdown').forEach(d => d.classList.remove('show'));
+      document.querySelectorAll('.bc-seg').forEach(s => s.classList.remove('bc-open'));
+      openDropdown = null;
+    }
+
+    function toggleDropdown(segEl, dropEl, id) {
+      if (openDropdown === id) {
+        closeAll();
+        return;
+      }
+      closeAll();
+      segEl.classList.add('bc-open');
+      dropEl.classList.add('show');
+      openDropdown = id;
+    }
+
+    function renderBreadcrumb() {
+      const wrap   = document.getElementById('bcWrap');
+      if (!wrap) return;
+
+      const route   = getCurrentRoute();
+      const project = getProjectName();
+      const params  = new URLSearchParams(window.location.search);
+      const pid     = params.get('project_id') || '';
+      const qs      = buildQueryString(pid);
+
+      if (!route) { wrap.innerHTML = ''; return; }
+
+      // Parts: [Monitoring] › [Project▾] › [Section▾] › [Page]
+      // Monitoring = link to dashboard
+      // Project = dropdown of projects (from sidebar)
+      // Section = dropdown of pages in that section (if has section)
+      // Page = current page (non-clickable active)
+
+      let html = '';
+
+      // Segment 1: "Monitoring" → navigates to dashboard
+      html += `<a href="/mk/dashboard${qs}" class="bc-seg" style="text-decoration:none">Monitoring</a>`;
+      html += `<span class="bc-sep">›</span>`;
+
+      // Segment 2: Project name (dropdown to switch project)
+      html += `
+        <div style="position:relative">
+          <button type="button" class="bc-seg" id="bcSegProject">
+            ${esc(project || 'Project')}
+            <svg class="bc-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="bc-dropdown" id="bcDdProject">
+            <div class="bc-dropdown-title">Projects</div>
+            <div id="bcProjectList"><!-- filled by JS --></div>
+          </div>
+        </div>`;
+
+      // Segment 3: Section (dropdown of pages) — only if has section
+      if (route.section) {
+        html += `<span class="bc-sep">›</span>`;
+        const pages = SECTION_PAGES[route.section] || [];
+        const pageItems = pages.map(p => {
+          const isActive = window.location.pathname === p.path || window.location.pathname.startsWith(p.path + '/');
+          return `<a href="${esc(p.path + qs)}" class="bc-dd-item${isActive ? ' bc-dd-active' : ''}">
+            <span class="bc-dd-dot"></span>${esc(p.label)}
+          </a>`;
+        }).join('');
+
+        html += `
+          <div style="position:relative">
+            <button type="button" class="bc-seg" id="bcSegSection">
+              ${esc(route.section)}
+              <svg class="bc-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="bc-dropdown" id="bcDdSection">
+              <div class="bc-dropdown-title">${esc(route.section)}</div>
+              ${pageItems}
+            </div>
+          </div>`;
+      }
+
+      // Segment 4: Current page (active, non-clickable)
+      html += `<span class="bc-sep">›</span>`;
+      html += `<span class="bc-seg bc-active">${esc(route.page)}</span>`;
+
+      wrap.innerHTML = html;
+
+      // Populate project list from sidebar
+      const projectLinks = document.querySelectorAll('#projectSub .nav-item');
+      const projectList  = document.getElementById('bcProjectList');
+      if (projectList && projectLinks.length) {
+        let pHtml = '';
+        projectLinks.forEach(link => {
+          const name     = link.textContent.trim();
+          const isActive = link.classList.contains('active');
+          if (name && name !== 'No Projects Available') {
+            pHtml += `<div class="bc-dd-item${isActive ? ' bc-dd-active' : ''}" onclick="(${link.getAttribute('onclick') || ''}); bcCloseAll()">
+              <span class="bc-dd-dot"></span>${esc(name)}
+            </div>`;
+          }
+        });
+        projectList.innerHTML = pHtml || '<div style="padding:8px 10px;font-size:12px;color:#94a3b8">No projects</div>';
+      }
+
+      // Attach toggle events
+      const segProject = document.getElementById('bcSegProject');
+      const ddProject  = document.getElementById('bcDdProject');
+      if (segProject && ddProject) {
+        segProject.addEventListener('click', function(e) {
+          e.stopPropagation();
+          toggleDropdown(segProject, ddProject, 'project');
+        });
+      }
+
+      const segSection = document.getElementById('bcSegSection');
+      const ddSection  = document.getElementById('bcDdSection');
+      if (segSection && ddSection) {
+        segSection.addEventListener('click', function(e) {
+          e.stopPropagation();
+          toggleDropdown(segSection, ddSection, 'section');
+        });
+      }
+    }
+
+    window.bcCloseAll = closeAll;
+
+    document.addEventListener('click', function() { closeAll(); });
+    document.addEventListener('DOMContentLoaded', renderBreadcrumb);
+  })();
+  </script>
+
+  {{-- ── Date Picker Script ─────────────────────────────────── --}}
   <script>
   (function() {
     const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
