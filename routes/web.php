@@ -131,6 +131,8 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/geo-user', [FacebookOverviewController::class, 'geoUser'])->name('geo-user');
             Route::get('/geo-sentiment', [FacebookOverviewController::class, 'geoSentiment'])->name('geo-sentiment');
             Route::get('/top-locations', [FacebookOverviewController::class, 'topLocations'])->name('top-locations');
+            Route::get('/ai-analysis-data', [FacebookOverviewController::class, 'aiAnalysisData'])->name('ai-analysis-data'); // ← ADDED
+            Route::post('/ai-proxy', [FacebookOverviewController::class, 'aiAnalysisProxy'])->name('ai-proxy');
         });
 
         Route::prefix('instagram')->name('instagram.')->group(function () {
@@ -255,7 +257,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         Route::get('/geographic', [InstagramOverviewController::class, 'geographicPage'])->name('geographic');
         Route::get('/trending-word-cloud', [InstagramOverviewController::class, 'trendingWordCloudPage'])->name('trending-word-cloud');
         Route::get('/most-engagement', [InstagramOverviewController::class, 'mostEngagementPage'])->name('most-engagement');
-        Route::get('/emotion-analysis', [InstagramOverviewController::class, 'emotionAnalysisPage'])->name('emotion-analysis'); // ← BARU
+        Route::get('/emotion-analysis', [InstagramOverviewController::class, 'emotionAnalysisPage'])->name('emotion-analysis');
         Route::get('/ai-analysis', [InstagramOverviewController::class, 'aiAnalysisPage'])->name('ai-analysis');
     });
 

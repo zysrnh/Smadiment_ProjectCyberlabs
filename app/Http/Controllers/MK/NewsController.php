@@ -1183,83 +1183,117 @@ public function articlesData(Request $request)
 public function aiAnalysisProxy(Request $request)
 {
     try {
-        $apiKey = env('GROQ_API_KEY');
+        $apiKey = env('GEMINI_API_KEY');
 
         if (!$apiKey) {
             return response()->json([
-                'error' => 'GROQ_API_KEY belum diset di .env — Daftar gratis di console.groq.com',
+                'error' => 'GEMINI_API_KEY belum diset di .env — Daftar di aistudio.google.com',
             ], 500);
         }
 
         $messages  = $request->input('messages', []);
         $system    = $request->input('system', '');
-        $maxTokens = (int) $request->input('max_tokens', 1500);
+        $maxTokens = (int) $request->input('max_tokens', 2000);
 
         if (empty($messages)) {
             return response()->json(['error' => 'Messages tidak boleh kosong'], 400);
         }
 
-        // ── Groq pakai format OpenAI-compatible ─────────────────────
-        // System prompt dimasukkan sebagai message pertama dengan role "system"
-        $groqMessages = [];
-
-        if (!empty($system)) {
-            $groqMessages[] = [
-                'role'    => 'system',
-                'content' => $system,
-            ];
-        }
+        // Bangun contents untuk Gemini
+        $contents   = [];
+        $firstAdded = false;
 
         foreach ($messages as $msg) {
-            $groqMessages[] = [
-                'role'    => $msg['role'],   // 'user' atau 'assistant'
-                'content' => $msg['content'],
+            $role    = $msg['role'] === 'assistant' ? 'model' : 'user';
+            $content = $msg['content'];
+
+            if (!$firstAdded && $role === 'user' && !empty($system)) {
+                $content    = $system . "\n\n---\n\n" . $content;
+                $firstAdded = true;
+            }
+
+            $contents[] = [
+                'role'  => $role,
+                'parts' => [['text' => $content]],
             ];
         }
 
-        // ── Kirim ke Groq API ────────────────────────────────────────
-        $response = \Illuminate\Support\Facades\Http::withHeaders([
-            'Authorization' => 'Bearer ' . $apiKey,
-            'Content-Type'  => 'application/json',
-        ])->timeout(60)->post('https://api.groq.com/openai/v1/chat/completions', [
-            'model'       => 'llama-3.3-70b-versatile',  // model terbaik Groq, gratis
-            'messages'    => $groqMessages,
-            'max_tokens'  => $maxTokens,
-            'temperature' => 0.7,
-        ]);
+        // Model terbaru berdasarkan API key yang tersedia
+        $models = [
+            'gemini-2.5-flash',       // terbaru & terbaik
+            'gemini-2.5-pro',         // paling powerful
+            'gemini-2.0-flash',       // stable
+            'gemini-2.0-flash-lite',  // paling ringan
+            'gemini-flash-latest',    // alias latest
+        ];
 
-        if ($response->failed()) {
-            Log::error('Groq API Error', [
-                'status' => $response->status(),
-                'body'   => $response->body(),
-            ]);
-            return response()->json([
-                'error' => 'Groq API error: ' . $response->status() . ' — ' . $response->body(),
-            ], $response->status());
+        $text      = '';
+        $usedModel = '';
+
+        foreach ($models as $model) {
+            $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+
+            try {
+                $response = \Illuminate\Support\Facades\Http::withHeaders([
+                    'Content-Type' => 'application/json',
+                ])->timeout(60)->post($endpoint, [
+                    'contents'         => $contents,
+                    'generationConfig' => [
+                        'maxOutputTokens' => $maxTokens,
+                        'temperature'     => 0.7,
+                    ],
+                ]);
+
+                if ($response->status() === 429) {
+                    Log::warning("Gemini model {$model} quota exceeded, trying next...");
+                    continue;
+                }
+
+                if ($response->status() === 404) {
+                    Log::warning("Gemini model {$model} not found, trying next...");
+                    continue;
+                }
+
+                if ($response->failed()) {
+                    Log::error('Gemini API Error', [
+                        'model'  => $model,
+                        'status' => $response->status(),
+                        'body'   => $response->body(),
+                    ]);
+                    continue;
+                }
+
+                $data = $response->json();
+                $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+
+                if (!empty($text)) {
+                    $usedModel = $model;
+                    Log::info("✅ Gemini response OK", ['model' => $model]);
+                    break;
+                }
+
+            } catch (\Exception $e) {
+                Log::warning("Gemini model {$model} error: " . $e->getMessage());
+                continue;
+            }
         }
-
-        $data = $response->json();
-
-        // ── Konversi respons Groq (OpenAI format) → format Anthropic ─
-        // Supaya frontend tidak perlu diubah sama sekali
-        $text = $data['choices'][0]['message']['content'] ?? '';
 
         if (empty($text)) {
-            Log::warning('Groq empty response', ['data' => $data]);
-            return response()->json(['error' => 'Groq tidak mengembalikan respons'], 500);
+            return response()->json([
+                'error' => 'Semua model Gemini sedang tidak tersedia atau quota habis. Coba lagi beberapa saat.',
+            ], 429);
         }
 
-        // Return dalam format yang sama dengan Anthropic
         return response()->json([
             'content' => [
                 ['type' => 'text', 'text' => $text]
             ],
-            'model' => 'llama-3.3-70b-versatile',
+            'model' => $usedModel,
         ]);
 
     } catch (\Illuminate\Http\Client\ConnectionException $e) {
-        Log::error('Groq Connection Error', ['error' => $e->getMessage()]);
-        return response()->json(['error' => 'Tidak bisa terhubung ke Groq API'], 503);
+        Log::error('Gemini Connection Error', ['error' => $e->getMessage()]);
+        return response()->json(['error' => 'Tidak bisa terhubung ke Gemini API'], 503);
     } catch (\Exception $e) {
         Log::error('AI Proxy Error', ['error' => $e->getMessage()]);
         return response()->json(['error' => 'Internal server error: ' . $e->getMessage()], 500);

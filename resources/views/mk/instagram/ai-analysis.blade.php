@@ -371,10 +371,7 @@
         </div>
     </div>
 
-    {{-- Context Bar --}}
-    <div id="ctxBar">
-        <span id="ctxText">Fetching Instagram data…</span>
-    </div>
+   
 
     {{-- Messages --}}
     <div class="ai-messages" id="aiMessages">

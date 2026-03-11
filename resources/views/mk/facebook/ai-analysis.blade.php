@@ -347,10 +347,7 @@
         </div>
     </div>
 
-    {{-- Context Bar --}}
-    <div id="ctxBar">
-        <span id="ctxText" style="color:#374151 !important;">Fetching Facebook data…</span>
-    </div>
+    
 
     {{-- Messages --}}
     <div class="ai-messages" id="aiMessages">
@@ -422,7 +419,7 @@ const ROUTES = {
     mostActive      : '{{ route("mk.api.facebook.most-active-users") }}',
     volumeTotal     : '{{ route("mk.api.facebook.volume-total") }}',
     sentimentTotal  : '{{ route("mk.api.facebook.sentiment-total") }}',
-    aiProxy         : '{{ route("mk.api.news.ai-proxy") }}',
+aiProxy : '{{ route("mk.api.facebook.ai-proxy") }}',
 };
 
 // ═══════════════════════════════════════════════════════════════════
@@ -731,43 +728,35 @@ async function preloadProjectData() {
             end_date   : END_DATE,
         });
 
-        const [postsRes, hashtagsRes, activeRes, sentimentRes, volumeRes] = await Promise.allSettled([
-            fetch(`${ROUTES.mostViewedPosts}?${qs}`).then(r => r.json()),
-            fetch(`${ROUTES.topHashtags}?${qs}`).then(r => r.json()),
-            fetch(`${ROUTES.mostActive}?${qs}`).then(r => r.json()),
-            fetch(`${ROUTES.sentimentTotal}?${qs}`).then(r => r.json()),
-            fetch(`${ROUTES.volumeTotal}?${qs}`).then(r => r.json()),
-        ]);
+        // ✅ 1 request saja, semua data sudah diparse di controller
+        const res  = await fetch(`{{ route("mk.api.facebook.ai-analysis-data") }}?${qs}`);
+        const json = await res.json();
 
-        const posts      = (postsRes.status     === 'fulfilled' && postsRes.value.success)     ? (postsRes.value.data         ?? []) : [];
-        const hashtags   = (hashtagsRes.status  === 'fulfilled' && hashtagsRes.value.success)  ? (hashtagsRes.value.data?.hashtags ?? []) : [];
-        const activeUsers= (activeRes.status    === 'fulfilled' && activeRes.value.success)    ? (activeRes.value.data?.data  ?? []) : [];
-        const sentiment  = (sentimentRes.status === 'fulfilled' && sentimentRes.value.success) ? (sentimentRes.value.data     ?? {}) : {};
-        const volume     = (volumeRes.status    === 'fulfilled' && volumeRes.value.success)    ? (volumeRes.value.data?.total ?? 0) : 0;
+        if (!json.success) throw new Error(json.error);
 
-        cachedDataset = buildDataset(posts, hashtags, activeUsers, sentiment, volume);
-        dataReady = true;
+        const summary  = json.data.summary;
+        cachedDataset  = json.data.dataset;
+        dataReady      = true;
 
-        const pos   = sentiment.positive || 0;
-        const neg   = sentiment.negative || 0;
-        const neu   = sentiment.neutral  || 0;
+        const pos   = summary.sentiment?.positive ?? 0;
+        const neg   = summary.sentiment?.negative ?? 0;
+        const neu   = summary.sentiment?.neutral  ?? 0;
         const total = pos + neg + neu || 1;
         const pctPos = Math.round(pos / total * 100);
         const pctNeg = Math.round(neg / total * 100);
 
         setReady(
-            `${posts.length} posts loaded &middot; Positive ${pctPos}% &middot; Negative ${pctNeg}% &middot; ` +
-            `${hashtags.length} hashtags &middot; ${activeUsers.length} active users &middot; ${START_DATE} → ${END_DATE}`
+            `${summary.total_posts} posts loaded &middot; Positive ${pctPos}% &middot; Negative ${pctNeg}% &middot; ` +
+            `${summary.total_hashtags} hashtags &middot; ${START_DATE} → ${END_DATE}`
         );
 
     } catch (err) {
         console.error('[AI] preload failed:', err);
-        cachedDataset = `=== DATA TIDAK TERSEDIA ===\nProject ID: ${PROJECT_ID}\nPlatform: Facebook\nPeriode: ${START_DATE} s/d ${END_DATE}\nGunakan pengetahuan umum social media monitoring.`;
+        cachedDataset = `Project ID: ${PROJECT_ID}, Platform: Facebook, Periode: ${START_DATE} s/d ${END_DATE}`;
         dataReady = true;
-        setReady('Data load failed — AI will answer without live project data', true);
+        setReady('Data load failed — AI akan jawab tanpa data live', true);
     }
 }
-
 // ═══════════════════════════════════════════════════════════════════
 // BUILD DATASET FROM FACEBOOK DATA
 // ═══════════════════════════════════════════════════════════════════
@@ -1017,7 +1006,7 @@ async function sendMessage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
             credentials: 'same-origin',
-            body: JSON.stringify({ max_tokens: 2000, system: buildSystemPrompt(), messages: chatHistory }),
+body: JSON.stringify({ max_tokens: 8192, system: buildSystemPrompt(), messages: chatHistory }),
         });
 
         const data = await res.json();

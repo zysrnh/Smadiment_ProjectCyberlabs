@@ -523,11 +523,7 @@
         </div>
     </div>
 
-    {{-- Context Bar --}}
-    <div id="ctxBar">
-        <span id="ctxText" style="color:#374151 !important;">Fetching X (Twitter) data…</span>
-    </div>
-
+    
     {{-- Messages --}}
     <div class="ai-messages" id="aiMessages">
         <div class="welcome-state" id="welcomeState">

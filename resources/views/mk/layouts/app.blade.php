@@ -603,6 +603,17 @@
             </span>
             <span>Topic Map</span>
           </a>
+          <a href="{{ route('mk.news.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
+   class="nav-item {{ request()->routeIs('mk.news.ai-analysis') ? 'active' : '' }}">
+  <span class="menu-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 2a10 10 0 1 0 10 10H12V2z"/>
+      <path d="M12 2a10 10 0 0 1 10 10"/>
+      <path d="M12 12l4-4"/>
+    </svg>
+  </span>
+  <span>AI Analysis</span>
+</a>
         </div>
       </div>
 
@@ -671,6 +682,10 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/><circle cx="12" cy="19" r="1"/></svg></span>
             <span>Emotion Analysis</span>
           </a>
+          <a href="{{ route('mk.x.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.x.ai-analysis') ? 'active' : '' }}">
+  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></span>
+  <span>AI Analysis</span>
+</a>
         </div>
       </div>
 
@@ -708,6 +723,10 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/><circle cx="12" cy="19" r="1"/></svg></span>
             <span>Emotion Analysis</span>
           </a>
+          <a href="{{ route('mk.facebook.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.facebook.ai-analysis') ? 'active' : '' }}">
+  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></span>
+  <span>AI Analysis</span>
+</a>
         </div>
       </div>
 
@@ -745,6 +764,10 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/><circle cx="12" cy="19" r="1"/></svg></span>
             <span>Emotion Analysis</span>
           </a>
+          <a href="{{ route('mk.instagram.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.instagram.ai-analysis') ? 'active' : '' }}">
+  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></span>
+  <span>AI Analysis</span>
+</a>
         </div>
       </div>
 
@@ -782,6 +805,10 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/><circle cx="12" cy="19" r="1"/></svg></span>
             <span>Emotion Analysis</span>
           </a>
+          <a href="{{ route('mk.youtube.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.youtube.ai-analysis') ? 'active' : '' }}">
+  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></span>
+  <span>AI Analysis</span>
+</a>
         </div>
       </div>
 
@@ -821,6 +848,10 @@
             <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 9a3 3 0 1 1 6 0c0 2-3 3-3 5"/><circle cx="12" cy="19" r="1"/></svg></span>
             <span>Emotion Analysis</span>
           </a>
+          <a href="{{ route('mk.tiktok.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.tiktok.ai-analysis') ? 'active' : '' }}">
+  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></span>
+  <span>AI Analysis</span>
+</a>
         </div>
       </div>
 

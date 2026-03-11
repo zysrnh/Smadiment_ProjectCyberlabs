@@ -979,6 +979,241 @@ class FacebookOverviewController extends Controller
             ]);
         }
     }
+
+    // ─────────────────────────────────────────────────────
+// AI ANALYSIS DATA + PROXY
+// ─────────────────────────────────────────────────────
+
+public function aiAnalysisData(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+
+        if (!$projectId) {
+            return response()->json(['success' => false, 'error' => 'Project ID required'], 400);
+        }
+
+        // ✅ Panggil client langsung, bukan lewat HTTP pool
+        $postsRaw    = $this->client->fbTopStatus($projectId, $startDate, $endDate, 0, 23, 50, 'fblike');
+        $hashtagsRaw = $this->client->topHashtags($projectId, 'fb', $startDate, $endDate);
+        $sentimentRaw = $this->client->getSentiment($projectId, 'facebook', $startDate, $endDate);
+        $volumeRaw   = $this->client->volumeTotal($projectId, 'facebook', $startDate, $endDate);
+
+        // ── Parse sentiment (sama persis seperti sentimentTotal()) ──
+        $positive = 0; $negative = 0; $neutral = 0;
+        if (isset($sentimentRaw['pos'], $sentimentRaw['neg'], $sentimentRaw['net'])) {
+            $positive = (int) $sentimentRaw['pos'];
+            $negative = (int) $sentimentRaw['neg'];
+            $neutral  = (int) $sentimentRaw['net'];
+        } elseif (isset($sentimentRaw['bymedia']['fb'])) {
+            $d = $sentimentRaw['bymedia']['fb'];
+            $positive = (int) ($d['pos'] ?? 0);
+            $negative = (int) ($d['neg'] ?? 0);
+            $neutral  = (int) ($d['net'] ?? 0);
+        } elseif (isset($sentimentRaw['bymedia']['facebook'])) {
+            $d = $sentimentRaw['bymedia']['facebook'];
+            $positive = (int) ($d['pos'] ?? 0);
+            $negative = (int) ($d['neg'] ?? 0);
+            $neutral  = (int) ($d['net'] ?? 0);
+        }
+
+        // ── Parse volume ──
+        $volume = 0;
+        if (isset($volumeRaw['all']['total'])) {
+            $volume = (int) $volumeRaw['all']['total'];
+        } elseif (isset($volumeRaw['bymedia']['fb'])) {
+            $volume = (int) $volumeRaw['bymedia']['fb'];
+        } elseif (isset($volumeRaw['bymedia']['facebook'])) {
+            $volume = (int) $volumeRaw['bymedia']['facebook'];
+        }
+
+        // ── Parse hashtags ──
+        $hashtags = [];
+        $rawItems = $hashtagsRaw['data']['hashtags'] ?? $hashtagsRaw['data'] ?? $hashtagsRaw['fb'] ?? $hashtagsRaw ?? [];
+        foreach ($rawItems as $item) {
+            if (!is_array($item)) continue;
+            $name = $item['name'] ?? $item['hashtag'] ?? '';
+            $size = (int) ($item['size'] ?? $item['count'] ?? 0);
+            if ($name && $size > 0) {
+                $hashtags[] = ['name' => ltrim($name, '#'), 'size' => $size];
+            }
+        }
+        usort($hashtags, fn($a, $b) => $b['size'] - $a['size']);
+
+        // ── Parse posts ──
+        $posts = [];
+        $items = is_array($postsRaw) ? $postsRaw : ($postsRaw['data'] ?? []);
+        foreach ($items as $item) {
+            if (!is_array($item)) continue;
+            $authorName = $item['contentJson']['from']['name'] ?? $item['author_name'] ?? $item['name'] ?? 'Unknown';
+            if (str_contains($authorName, '<b>')) {
+                preg_match('/<b>(.*?)<\/b>/', $authorName, $matches);
+                $authorName = trim(str_replace(':', '', $matches[1] ?? $authorName));
+            }
+            $content = $item['content'] ?? $item['name'] ?? '';
+            if (str_contains($content, '<b>')) {
+                $content = trim(preg_replace('/<b>.*?<\/b>\s*/', '', $content));
+            }
+            $posts[] = [
+                'name'          => $authorName,
+                'content'       => substr(strip_tags($content), 0, 150),
+                'likes'         => (int) ($item['num_likes']    ?? $item['likes']    ?? 0),
+                'shares'        => (int) ($item['num_shares']   ?? $item['shares']   ?? 0),
+                'comments'      => (int) ($item['num_comments'] ?? $item['comments'] ?? 0),
+                'sentiment_str' => $item['sentiment_str'] ?? 'Neutral',
+                'date_created'  => substr($item['date_created'] ?? '', 0, 10),
+            ];
+        }
+
+        // ── Build dataset string untuk AI ──
+        $total = $positive + $negative + $neutral ?: 1;
+        $lines = [];
+        $lines[] = "=== DATA FACEBOOK PROJECT {$projectId} ===";
+        $lines[] = "Periode: {$startDate} s/d {$endDate}";
+        $lines[] = "Total Volume: {$volume} posts";
+        $lines[] = "Sentimen: Positif " . round($positive/$total*100) . "% ({$positive}) | Negatif " . round($negative/$total*100) . "% ({$negative}) | Netral " . round($neutral/$total*100) . "% ({$neutral})";
+
+        if (!empty($hashtags)) {
+            $lines[] = "\n--- TOP HASHTAGS ---";
+            foreach (array_slice($hashtags, 0, 20) as $i => $h) {
+                $lines[] = ($i+1) . ". #{$h['name']} ({$h['size']} mentions)";
+            }
+        }
+
+        if (!empty($posts)) {
+            $lines[] = "\n--- TOP POSTS BY ENGAGEMENT (" . count($posts) . " posts) ---";
+            foreach (array_slice($posts, 0, 30) as $i => $post) {
+                $lines[] = "[" . ($i+1) . "] \"{$post['content']}\" | {$post['name']} | {$post['date_created']} | Likes:{$post['likes']} Shares:{$post['shares']} Comments:{$post['comments']} | {$post['sentiment_str']}";
+            }
+        }
+
+        $lines[] = "=== AKHIR DATASET ===";
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'dataset' => implode("\n", $lines),
+                'summary' => [
+                    'total_posts'    => count($posts),
+                    'total_hashtags' => count($hashtags),
+                    'sentiment'      => ['positive' => $positive, 'negative' => $negative, 'neutral' => $neutral],
+                    'volume'         => $volume,
+                ],
+            ],
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('FB aiAnalysisData error', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+    }
+}
+
+public function aiAnalysisProxy(Request $request)
+{
+    try {
+        $apiKey = env('GEMINI_API_KEY');
+
+        if (!$apiKey) {
+            return response()->json(['error' => 'GEMINI_API_KEY belum diset di .env'], 500);
+        }
+
+        $messages  = $request->input('messages', []);
+        $system    = $request->input('system', '');
+        $maxTokens = (int) $request->input('max_tokens', 2000);
+
+        if (empty($messages)) {
+            return response()->json(['error' => 'Messages tidak boleh kosong'], 400);
+        }
+
+        $contents   = [];
+        $firstAdded = false;
+
+        foreach ($messages as $msg) {
+            $role    = $msg['role'] === 'assistant' ? 'model' : 'user';
+            $content = $msg['content'];
+
+            if (!$firstAdded && $role === 'user' && !empty($system)) {
+                $content    = $system . "\n\n---\n\n" . $content;
+                $firstAdded = true;
+            }
+
+            $contents[] = [
+                'role'  => $role,
+                'parts' => [['text' => $content]],
+            ];
+        }
+
+        $models = [
+            'gemini-2.5-flash',
+            'gemini-2.5-pro',
+            'gemini-2.0-flash',
+            'gemini-2.0-flash-lite',
+            'gemini-flash-latest',
+        ];
+
+        $text      = '';
+        $usedModel = '';
+
+        foreach ($models as $model) {
+            $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+
+            try {
+                $response = \Illuminate\Support\Facades\Http::withHeaders([
+                    'Content-Type' => 'application/json',
+                ])->timeout(60)->post($endpoint, [
+                    'contents'         => $contents,
+                    'generationConfig' => [
+'maxOutputTokens' => 8192,
+                        'temperature'     => 0.7,
+                    ],
+                ]);
+
+                if ($response->status() === 429) {
+                    Log::warning("Gemini {$model} quota exceeded");
+                    continue;
+                }
+
+                if ($response->status() === 404) {
+                    Log::warning("Gemini {$model} not found");
+                    continue;
+                }
+
+                if ($response->failed()) {
+                    Log::error('Gemini Error', ['model' => $model, 'status' => $response->status()]);
+                    continue;
+                }
+
+                $data = $response->json();
+                $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+
+                if (!empty($text)) {
+                    $usedModel = $model;
+                    Log::info("✅ Gemini OK", ['model' => $model]);
+                    break;
+                }
+
+            } catch (\Exception $e) {
+                Log::warning("Gemini {$model} error: " . $e->getMessage());
+                continue;
+            }
+        }
+
+        if (empty($text)) {
+            return response()->json(['error' => 'Semua model Gemini tidak tersedia. Coba lagi.'], 429);
+        }
+
+        return response()->json([
+            'content' => [['type' => 'text', 'text' => $text]],
+            'model'   => $usedModel,
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('FB AI Proxy Error', ['error' => $e->getMessage()]);
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
     public function mostEngagementPage(Request $request)
 {
     try {

@@ -536,10 +536,6 @@
         </div>
     </div>
 
-    {{-- Context Bar --}}
-    <div id="ctxBar">
-        <span id="ctxText" style="color:#374151 !important;">Fetching news data…</span>
-    </div>
 
     {{-- Messages --}}
     <div class="ai-messages" id="aiMessages">

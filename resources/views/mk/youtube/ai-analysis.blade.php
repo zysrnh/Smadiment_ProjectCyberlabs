@@ -359,10 +359,7 @@
         </div>
     </div>
 
-    {{-- Context Bar --}}
-    <div id="ctxBar">
-        <span id="ctxText">Fetching YouTube data…</span>
-    </div>
+     
 
     {{-- Messages --}}
     <div class="ai-messages" id="aiMessages">
