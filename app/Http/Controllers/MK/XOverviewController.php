@@ -1983,5 +1983,297 @@ public function mostEngagementData(Request $request)
         return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
     }
 }
+ public function aiAnalysisData(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
 
+        if (!$projectId) {
+            return response()->json(['success' => false, 'error' => 'Project ID required'], 400);
+        }
+
+        // ── Panggil semua data dengan filter Twitter ──
+        $postsRaw     = $this->client->mostStatus($projectId, 'twitter', $startDate, $endDate, 0, 23, 50, 'postbyview');
+        $retweetsRaw  = $this->client->mostRetweets($projectId, $startDate, $endDate);
+        $hashtagsRaw  = $this->client->topHashtags($projectId, 'twit', $startDate, $endDate);
+        $sentimentRaw = $this->client->sentimentTotal($projectId, $startDate, $endDate);
+        $activeRaw    = $this->client->mostActiveUsers($projectId, $startDate, $endDate);
+        $volumeRaw    = $this->client->volumeTotal($projectId, 'twitter', $startDate, $endDate);
+
+        // ── Parse volume ──
+        $volume = 0;
+        if (isset($volumeRaw['all']['total'])) {
+            $volume = (int) $volumeRaw['all']['total'];
+        } elseif (isset($volumeRaw['bymedia']['twit'])) {
+            $volume = (int) $volumeRaw['bymedia']['twit'];
+        }
+
+        // ── Parse sentiment ──
+        $positive = 0; $negative = 0; $neutral = 0;
+        if (isset($sentimentRaw['pos'], $sentimentRaw['neg'], $sentimentRaw['net'])) {
+            $positive = (int) $sentimentRaw['pos'];
+            $negative = (int) $sentimentRaw['neg'];
+            $neutral  = (int) $sentimentRaw['net'];
+        } elseif (isset($sentimentRaw['bymedia']['twit'])) {
+            $d        = $sentimentRaw['bymedia']['twit'];
+            $positive = (int) ($d['pos'] ?? 0);
+            $negative = (int) ($d['neg'] ?? 0);
+            $neutral  = (int) ($d['net'] ?? 0);
+        }
+
+        // ── Parse hashtags (filter twit only) ──
+        $hashtags = [];
+        $rawItems = $hashtagsRaw['data']['hashtags'] ?? $hashtagsRaw['data'] ?? $hashtagsRaw['twit'] ?? $hashtagsRaw ?? [];
+        foreach ($rawItems as $item) {
+            if (!is_array($item)) continue;
+            $name  = $item['name'] ?? $item['hashtag'] ?? '';
+            $size  = (int) ($item['size'] ?? $item['count'] ?? 0);
+            $media = strtolower($item['media'] ?? $item['source'] ?? '');
+            if ($media && !in_array($media, ['twit', 'twitter', 'x', ''])) continue;
+            if ($name && $size > 0) {
+                $hashtags[] = ['name' => ltrim($name, '#'), 'size' => $size];
+            }
+        }
+        usort($hashtags, fn($a, $b) => $b['size'] - $a['size']);
+
+        // ── Parse most active users (filter Twitter only) ──
+        $activeUsers = [];
+        if (isset($activeRaw['data']['data']) && is_array($activeRaw['data']['data'])) {
+            foreach ($activeRaw['data']['data'] as $user) {
+                // Filter Twitter only
+                $tcode = strtolower($user['tcode'] ?? $user['media'] ?? '');
+                if ($tcode && !str_starts_with($tcode, 'tw-') && !in_array($tcode, ['twit', 'twitter'])) {
+                    continue;
+                }
+
+                $screenName = $user['contentJson']['screen_name'] ?? '';
+                if (!$screenName) {
+                    preg_match('/@(\w+)/', $user['name'] ?? '', $m);
+                    $screenName = $m[1] ?? '';
+                }
+
+                if ($screenName) {
+                    $activeUsers[] = [
+                        'username'  => $screenName,
+                        'mentions'  => (int) ($user['mentions']  ?? 0),
+                        'replies'   => (int) ($user['replies']   ?? 0),
+                        'retweets'  => (int) ($user['retweets']  ?? 0),
+                        'followers' => (int) ($user['followers'] ?? $user['contentJson']['followers_count'] ?? 0),
+                    ];
+                }
+            }
+        }
+
+        // ── Parse most viewed posts (filter Twitter only) ──
+        $posts    = [];
+        $rawPosts = is_array($postsRaw) ? $postsRaw : ($postsRaw['data'] ?? []);
+        foreach ($rawPosts as $item) {
+            if (!is_array($item)) continue;
+            $tcode = strtolower($item['tcode'] ?? $item['media'] ?? '');
+            if ($tcode && !str_starts_with($tcode, 'tw-') && !in_array($tcode, ['twit', 'twitter'])) {
+                continue;
+            }
+            $author  = $item['author']['scr_name'] ?? $item['name'] ?? 'unknown';
+            $content = $item['content'] ?? '';
+            $posts[] = [
+                'name'          => $author,
+                'content'       => substr(strip_tags($content), 0, 150),
+                'view_cnt'      => (int) ($item['view_cnt'] ?? $item['freq'] ?? 0),
+                'rt'            => (int) ($item['rt'] ?? 0),
+                'sentiment_str' => $item['sentiment_str'] ?? 'Neutral',
+                'date_created'  => substr($item['date_created'] ?? '', 0, 10),
+            ];
+        }
+
+        // ── Parse most retweeted (filter Twitter only) ──
+        $retweets = [];
+        $rawRt    = is_array($retweetsRaw) ? $retweetsRaw : ($retweetsRaw['data'] ?? []);
+        foreach ($rawRt as $item) {
+            if (!is_array($item)) continue;
+            $tcode = strtolower($item['tcode'] ?? $item['media'] ?? '');
+            if ($tcode && !str_starts_with($tcode, 'tw-') && !in_array($tcode, ['twit', 'twitter'])) {
+                continue;
+            }
+            $author     = $item['author']['scr_name'] ?? $item['name'] ?? 'unknown';
+            $content    = $item['content'] ?? '';
+            $retweets[] = [
+                'name'          => $author,
+                'content'       => substr(strip_tags($content), 0, 150),
+                'freq'          => (int) ($item['freq'] ?? $item['rt'] ?? 0),
+                'sentiment_str' => $item['sentiment_str'] ?? 'Neutral',
+                'date_created'  => substr($item['date_created'] ?? '', 0, 10),
+            ];
+        }
+
+        // ── Build dataset string untuk AI ──
+        $total = $positive + $negative + $neutral ?: 1;
+        $lines = [];
+        $lines[] = "=== DATA X (TWITTER) PROJECT {$projectId} ===";
+        $lines[] = "Periode: {$startDate} s/d {$endDate}";
+        $lines[] = "Total Volume: {$volume} posts";
+        $lines[] = "Sentimen: Positif " . round($positive / $total * 100) . "% ({$positive}) | Negatif " . round($negative / $total * 100) . "% ({$negative}) | Netral " . round($neutral / $total * 100) . "% ({$neutral})";
+
+        if (!empty($hashtags)) {
+            $lines[] = "\n--- TOP HASHTAGS ---";
+            foreach (array_slice($hashtags, 0, 20) as $i => $h) {
+                $lines[] = ($i + 1) . ". #{$h['name']} ({$h['size']} mentions)";
+            }
+        }
+
+        if (!empty($activeUsers)) {
+            $lines[] = "\n--- MOST ACTIVE USERS ---";
+            foreach (array_slice($activeUsers, 0, 10) as $i => $u) {
+                $lines[] = ($i + 1) . ". @{$u['username']} | Mentions:{$u['mentions']} Replies:{$u['replies']} RT:{$u['retweets']} Followers:{$u['followers']}";
+            }
+        }
+
+        if (!empty($retweets)) {
+            $lines[] = "\n--- MOST RETWEETED POSTS (" . count($retweets) . " posts) ---";
+            foreach (array_slice($retweets, 0, 20) as $i => $post) {
+                $lines[] = "[RT" . ($i + 1) . "] @{$post['name']} ({$post['freq']} RT) | {$post['date_created']} | {$post['sentiment_str']}";
+                if ($post['content']) $lines[] = "   \"{$post['content']}\"";
+            }
+        }
+
+        if (!empty($posts)) {
+            $lines[] = "\n--- MOST VIEWED POSTS (" . count($posts) . " posts) ---";
+            foreach (array_slice($posts, 0, 20) as $i => $post) {
+                $lines[] = "[P" . ($i + 1) . "] @{$post['name']} ({$post['view_cnt']} views, {$post['rt']} RT) | {$post['date_created']} | {$post['sentiment_str']}";
+                if ($post['content']) $lines[] = "   \"{$post['content']}\"";
+            }
+        }
+
+        $lines[] = "=== AKHIR DATASET ===";
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'dataset' => implode("\n", $lines),
+                'summary' => [
+                    'total_posts'    => count($posts),
+                    'total_retweets' => count($retweets),
+                    'total_hashtags' => count($hashtags),
+                    'total_users'    => count($activeUsers),
+                    'volume'         => $volume,
+                    'sentiment'      => ['positive' => $positive, 'negative' => $negative, 'neutral' => $neutral],
+                ],
+            ],
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('X aiAnalysisData error', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+    }
+}
+
+    // ==========================================
+    // AI ANALYSIS PROXY (Gemini)
+    // ==========================================
+
+    public function aiAnalysisProxy(Request $request)
+    {
+        try {
+            $apiKey = env('GEMINI_API_KEY');
+
+            if (!$apiKey) {
+                return response()->json(['error' => 'GEMINI_API_KEY belum diset di .env'], 500);
+            }
+
+            $messages  = $request->input('messages', []);
+            $system    = $request->input('system', '');
+            $maxTokens = (int) $request->input('max_tokens', 2000);
+
+            if (empty($messages)) {
+                return response()->json(['error' => 'Messages tidak boleh kosong'], 400);
+            }
+
+            $contents   = [];
+            $firstAdded = false;
+
+            foreach ($messages as $msg) {
+                $role    = $msg['role'] === 'assistant' ? 'model' : 'user';
+                $content = $msg['content'];
+
+                if (!$firstAdded && $role === 'user' && !empty($system)) {
+                    $content    = $system . "\n\n---\n\n" . $content;
+                    $firstAdded = true;
+                }
+
+                $contents[] = [
+                    'role'  => $role,
+                    'parts' => [['text' => $content]],
+                ];
+            }
+
+            $models = [
+                'gemini-2.5-flash',
+                'gemini-2.5-pro',
+                'gemini-2.0-flash',
+                'gemini-2.0-flash-lite',
+                'gemini-flash-latest',
+            ];
+
+            $text      = '';
+            $usedModel = '';
+
+            foreach ($models as $model) {
+                $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+
+                try {
+                    $response = \Illuminate\Support\Facades\Http::withHeaders([
+                        'Content-Type' => 'application/json',
+                    ])->timeout(60)->post($endpoint, [
+                        'contents'         => $contents,
+                        'generationConfig' => [
+                            'maxOutputTokens' => 8192,
+                            'temperature'     => 0.7,
+                        ],
+                    ]);
+
+                    if ($response->status() === 429) {
+                        Log::warning("Gemini {$model} quota exceeded");
+                        continue;
+                    }
+
+                    if ($response->status() === 404) {
+                        Log::warning("Gemini {$model} not found");
+                        continue;
+                    }
+
+                    if ($response->failed()) {
+                        Log::error('Gemini Error', ['model' => $model, 'status' => $response->status()]);
+                        continue;
+                    }
+
+                    $data = $response->json();
+                    $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+
+                    if (!empty($text)) {
+                        $usedModel = $model;
+                        Log::info("✅ Gemini OK (X AI)", ['model' => $model]);
+                        break;
+                    }
+
+                } catch (\Exception $e) {
+                    Log::warning("Gemini {$model} error: " . $e->getMessage());
+                    continue;
+                }
+            }
+
+            if (empty($text)) {
+                return response()->json(['error' => 'Semua model Gemini tidak tersedia. Coba lagi.'], 429);
+            }
+
+            return response()->json([
+                'content' => [['type' => 'text', 'text' => $text]],
+                'model'   => $usedModel,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('X AI Proxy Error', ['error' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
     }

@@ -604,16 +604,15 @@
             <span>Topic Map</span>
           </a>
           <a href="{{ route('mk.news.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}"
-   class="nav-item {{ request()->routeIs('mk.news.ai-analysis') ? 'active' : '' }}">
-  <span class="menu-icon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 2a10 10 0 1 0 10 10H12V2z"/>
-      <path d="M12 2a10 10 0 0 1 10 10"/>
-      <path d="M12 12l4-4"/>
-    </svg>
-  </span>
-  <span>AI Analysis</span>
-</a>
+             class="nav-item {{ request()->routeIs('mk.news.ai-analysis') ? 'active' : '' }}">
+            <span class="menu-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/>
+              </svg>
+            </span>
+            <span>AI Analysis</span>
+          </a>
         </div>
       </div>
 
@@ -683,9 +682,9 @@
             <span>Emotion Analysis</span>
           </a>
           <a href="{{ route('mk.x.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.x.ai-analysis') ? 'active' : '' }}">
-  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></span>
-  <span>AI Analysis</span>
-</a>
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></span>
+            <span>AI Analysis</span>
+          </a>
         </div>
       </div>
 
@@ -724,9 +723,9 @@
             <span>Emotion Analysis</span>
           </a>
           <a href="{{ route('mk.facebook.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.facebook.ai-analysis') ? 'active' : '' }}">
-  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></span>
-  <span>AI Analysis</span>
-</a>
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></span>
+            <span>AI Analysis</span>
+          </a>
         </div>
       </div>
 
@@ -765,9 +764,9 @@
             <span>Emotion Analysis</span>
           </a>
           <a href="{{ route('mk.instagram.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.instagram.ai-analysis') ? 'active' : '' }}">
-  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></span>
-  <span>AI Analysis</span>
-</a>
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></span>
+            <span>AI Analysis</span>
+          </a>
         </div>
       </div>
 
@@ -806,9 +805,9 @@
             <span>Emotion Analysis</span>
           </a>
           <a href="{{ route('mk.youtube.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.youtube.ai-analysis') ? 'active' : '' }}">
-  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></span>
-  <span>AI Analysis</span>
-</a>
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></span>
+            <span>AI Analysis</span>
+          </a>
         </div>
       </div>
 
@@ -849,9 +848,9 @@
             <span>Emotion Analysis</span>
           </a>
           <a href="{{ route('mk.tiktok.ai-analysis') }}{{ !empty($currentProjectId) ? '?project_id='.$currentProjectId : '' }}" class="nav-item {{ request()->routeIs('mk.tiktok.ai-analysis') ? 'active' : '' }}">
-  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></span>
-  <span>AI Analysis</span>
-</a>
+            <span class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></span>
+            <span>AI Analysis</span>
+          </a>
         </div>
       </div>
 
@@ -979,66 +978,86 @@
   ═══════════════════════════════════════════════════════ --}}
   <script>
   (function() {
-    // Route map: regex → { section, page }
-    // section = null means it's a top-level page (no platform)
+    // ─── ROUTE MAP ───────────────────────────────────────────────
     const ROUTE_MAP = [
-      { match: /\/dashboard$/, section: null, page: 'Dashboard' },
-      { match: /\/data-overview$/, section: null, page: 'Data Overview' },
-      { match: /\/compare/, section: null, page: 'Compare Projects' },
-      { match: /\/topic-map$/, section: null, page: 'World Map' },
-      { match: /\/media-statistic$/, section: 'Statistic', page: 'Media' },
-      { match: /\/sentiment$/, section: 'Statistic', page: 'Sentiment' },
+      { match: /\/dashboard$/,           section: null,        page: 'Dashboard' },
+      { match: /\/data-overview$/,       section: null,        page: 'Data Overview' },
+      { match: /\/compare/,              section: null,        page: 'Compare Projects' },
+      { match: /\/topic-map$/,           section: null,        page: 'World Map' },
+
+      // Statistic
+      { match: /\/media-statistic$/,     section: 'Statistic', page: 'Media' },
+      { match: /\/sentiment$/,           section: 'Statistic', page: 'Sentiment' },
       { match: /\/net-sentiment-score$/, section: 'Statistic', page: 'Net Sentiment' },
-      { match: /\/news\/word-cloud$/, section: 'News', page: 'Word Cloud' },
-      { match: /\/news\/top-publishers$/, section: 'News', page: 'Top Publishers' },
-      { match: /\/news\/timeline$/, section: 'News', page: 'Mention' },
-      { match: /\/news\/topic-map$/, section: 'News', page: 'Topic Map' },
-      { match: /\/x\/overview$/, section: 'X', page: 'Overview' },
-      { match: /\/x\/trending-topics$/, section: 'X', page: 'Top Hashtags' },
-      { match: /\/x\/most-status$/, section: 'X', page: 'Most Viewed' },
-      { match: /\/x\/most-retweets$/, section: 'X', page: 'Most Retweets' },
-      { match: /\/x\/authors/, section: 'X', page: 'Author Profiles' },
-      { match: /\/x\/geographic$/, section: 'X', page: 'Location Map' },
-      { match: /\/x\/post-with-location$/, section: 'X', page: 'Posts w\/Location' },
-      { match: /\/x\/trending-word-cloud$/, section: 'X', page: 'Word Cloud' },
-      { match: /\/x\/shared-urls$/, section: 'X', page: 'Shared URLs' },
-      { match: /\/x\/most-active-users$/, section: 'X', page: 'Most Active Users' },
-      { match: /\/x\/top-influencers$/, section: 'X', page: 'Top Influencers' },
-      { match: /\/x\/emotion-analysis$/, section: 'X', page: 'Emotion Analysis' },
-      { match: /\/facebook\/overview$/, section: 'Facebook', page: 'Overview' },
-      { match: /\/facebook\/trending-topics$/, section: 'Facebook', page: 'Top Hashtags' },
-      { match: /\/facebook\/trending-word-cloud$/, section: 'Facebook', page: 'Word Cloud' },
-      { match: /\/facebook\/most-engagement$/, section: 'Facebook', page: 'Most Engagement' },
-      { match: /\/facebook\/emotion-analysis$/, section: 'Facebook', page: 'Emotion Analysis' },
-      { match: /\/instagram\/overview$/, section: 'Instagram', page: 'Overview' },
-      { match: /\/instagram\/trending-topics$/, section: 'Instagram', page: 'Top Hashtags' },
-      { match: /\/instagram\/trending-word-cloud$/, section: 'Instagram', page: 'Word Cloud' },
-      { match: /\/instagram\/most-engagement$/, section: 'Instagram', page: 'Most Engagement' },
-      { match: /\/instagram\/emotion-analysis$/, section: 'Instagram', page: 'Emotion Analysis' },
-      { match: /\/youtube\/overview$/, section: 'YouTube', page: 'Overview' },
-      { match: /\/youtube\/trending-topics$/, section: 'YouTube', page: 'Top Hashtags' },
+
+      // News
+      { match: /\/news\/word-cloud$/,    section: 'News',      page: 'Word Cloud' },
+      { match: /\/news\/top-publishers$/,section: 'News',      page: 'Top Publishers' },
+      { match: /\/news\/timeline$/,      section: 'News',      page: 'Mention' },
+      { match: /\/news\/topic-map$/,     section: 'News',      page: 'Topic Map' },
+      { match: /\/news\/ai-analysis$/,   section: 'News',      page: 'AI Analysis' },
+
+      // X (Twitter)
+      { match: /\/x\/overview$/,             section: 'X', page: 'Overview' },
+      { match: /\/x\/trending-topics$/,      section: 'X', page: 'Top Hashtags' },
+      { match: /\/x\/most-status$/,          section: 'X', page: 'Most Viewed' },
+      { match: /\/x\/most-retweets$/,        section: 'X', page: 'Most Retweets' },
+      { match: /\/x\/authors/,               section: 'X', page: 'Author Profiles' },
+      { match: /\/x\/geographic$/,           section: 'X', page: 'Location Map' },
+      { match: /\/x\/post-with-location$/,   section: 'X', page: 'Posts w\/Location' },
+      { match: /\/x\/trending-word-cloud$/,  section: 'X', page: 'Word Cloud' },
+      { match: /\/x\/shared-urls$/,          section: 'X', page: 'Shared URLs' },
+      { match: /\/x\/most-active-users$/,    section: 'X', page: 'Most Active Users' },
+      { match: /\/x\/top-influencers$/,      section: 'X', page: 'Top Influencers' },
+      { match: /\/x\/emotion-analysis$/,     section: 'X', page: 'Emotion Analysis' },
+      { match: /\/x\/ai-analysis$/,          section: 'X', page: 'AI Analysis' },
+
+      // Facebook
+      { match: /\/facebook\/overview$/,           section: 'Facebook', page: 'Overview' },
+      { match: /\/facebook\/trending-topics$/,    section: 'Facebook', page: 'Top Hashtags' },
+      { match: /\/facebook\/trending-word-cloud$/,section: 'Facebook', page: 'Word Cloud' },
+      { match: /\/facebook\/most-engagement$/,    section: 'Facebook', page: 'Most Engagement' },
+      { match: /\/facebook\/emotion-analysis$/,   section: 'Facebook', page: 'Emotion Analysis' },
+      { match: /\/facebook\/ai-analysis$/,        section: 'Facebook', page: 'AI Analysis' },
+
+      // Instagram
+      { match: /\/instagram\/overview$/,           section: 'Instagram', page: 'Overview' },
+      { match: /\/instagram\/trending-topics$/,    section: 'Instagram', page: 'Top Hashtags' },
+      { match: /\/instagram\/trending-word-cloud$/,section: 'Instagram', page: 'Word Cloud' },
+      { match: /\/instagram\/most-engagement$/,    section: 'Instagram', page: 'Most Engagement' },
+      { match: /\/instagram\/emotion-analysis$/,   section: 'Instagram', page: 'Emotion Analysis' },
+      { match: /\/instagram\/ai-analysis$/,        section: 'Instagram', page: 'AI Analysis' },
+
+      // YouTube
+      { match: /\/youtube\/overview$/,            section: 'YouTube', page: 'Overview' },
+      { match: /\/youtube\/trending-topics$/,     section: 'YouTube', page: 'Top Hashtags' },
       { match: /\/youtube\/trending-word-cloud$/, section: 'YouTube', page: 'Word Cloud' },
-      { match: /\/youtube\/most-engagement$/, section: 'YouTube', page: 'Most Engagement' },
-      { match: /\/youtube\/emotion-analysis$/, section: 'YouTube', page: 'Emotion Analysis' },
-      { match: /\/tiktok\/overview$/, section: 'TikTok', page: 'Overview' },
-      { match: /\/tiktok\/trending-topics$/, section: 'TikTok', page: 'Top Hashtags' },
+      { match: /\/youtube\/most-engagement$/,     section: 'YouTube', page: 'Most Engagement' },
+      { match: /\/youtube\/emotion-analysis$/,    section: 'YouTube', page: 'Emotion Analysis' },
+      { match: /\/youtube\/ai-analysis$/,         section: 'YouTube', page: 'AI Analysis' },
+
+      // TikTok
+      { match: /\/tiktok\/overview$/,            section: 'TikTok', page: 'Overview' },
+      { match: /\/tiktok\/trending-topics$/,     section: 'TikTok', page: 'Top Hashtags' },
       { match: /\/tiktok\/trending-word-cloud$/, section: 'TikTok', page: 'Word Cloud' },
-      { match: /\/tiktok\/most-engagement$/, section: 'TikTok', page: 'Most Engagement' },
-      { match: /\/tiktok\/emotion-analysis$/, section: 'TikTok', page: 'Emotion Analysis' },
+      { match: /\/tiktok\/most-engagement$/,     section: 'TikTok', page: 'Most Engagement' },
+      { match: /\/tiktok\/emotion-analysis$/,    section: 'TikTok', page: 'Emotion Analysis' },
+      { match: /\/tiktok\/ai-analysis$/,         section: 'TikTok', page: 'AI Analysis' },
     ];
 
-    // Section → list of pages
+    // ─── SECTION PAGES ───────────────────────────────────────────
     const SECTION_PAGES = {
       'Statistic': [
-        { label: 'Media',          path: '/mk/media-statistic' },
-        { label: 'Sentiment',      path: '/mk/sentiment' },
-        { label: 'Net Sentiment',  path: '/mk/net-sentiment-score' },
+        { label: 'Media',         path: '/mk/media-statistic' },
+        { label: 'Sentiment',     path: '/mk/sentiment' },
+        { label: 'Net Sentiment', path: '/mk/net-sentiment-score' },
       ],
       'News': [
         { label: 'Word Cloud',     path: '/mk/news/word-cloud' },
         { label: 'Top Publishers', path: '/mk/news/top-publishers' },
         { label: 'Mention',        path: '/mk/news/timeline' },
         { label: 'Topic Map',      path: '/mk/news/topic-map' },
+        { label: 'AI Analysis',    path: '/mk/news/ai-analysis' },
       ],
       'X': [
         { label: 'Overview',          path: '/mk/x/overview' },
@@ -1052,6 +1071,7 @@
         { label: 'Most Active Users', path: '/mk/x/most-active-users' },
         { label: 'Top Influencers',   path: '/mk/x/top-influencers' },
         { label: 'Emotion Analysis',  path: '/mk/x/emotion-analysis' },
+        { label: 'AI Analysis',       path: '/mk/x/ai-analysis' },
       ],
       'Facebook': [
         { label: 'Overview',         path: '/mk/facebook/overview' },
@@ -1059,6 +1079,7 @@
         { label: 'Word Cloud',       path: '/mk/facebook/trending-word-cloud' },
         { label: 'Most Engagement',  path: '/mk/facebook/most-engagement' },
         { label: 'Emotion Analysis', path: '/mk/facebook/emotion-analysis' },
+        { label: 'AI Analysis',      path: '/mk/facebook/ai-analysis' },
       ],
       'Instagram': [
         { label: 'Overview',         path: '/mk/instagram/overview' },
@@ -1066,6 +1087,7 @@
         { label: 'Word Cloud',       path: '/mk/instagram/trending-word-cloud' },
         { label: 'Most Engagement',  path: '/mk/instagram/most-engagement' },
         { label: 'Emotion Analysis', path: '/mk/instagram/emotion-analysis' },
+        { label: 'AI Analysis',      path: '/mk/instagram/ai-analysis' },
       ],
       'YouTube': [
         { label: 'Overview',         path: '/mk/youtube/overview' },
@@ -1073,6 +1095,7 @@
         { label: 'Word Cloud',       path: '/mk/youtube/trending-word-cloud' },
         { label: 'Most Engagement',  path: '/mk/youtube/most-engagement' },
         { label: 'Emotion Analysis', path: '/mk/youtube/emotion-analysis' },
+        { label: 'AI Analysis',      path: '/mk/youtube/ai-analysis' },
       ],
       'TikTok': [
         { label: 'Overview',         path: '/mk/tiktok/overview' },
@@ -1080,6 +1103,7 @@
         { label: 'Word Cloud',       path: '/mk/tiktok/trending-word-cloud' },
         { label: 'Most Engagement',  path: '/mk/tiktok/most-engagement' },
         { label: 'Emotion Analysis', path: '/mk/tiktok/emotion-analysis' },
+        { label: 'AI Analysis',      path: '/mk/tiktok/ai-analysis' },
       ],
     };
 
@@ -1139,19 +1163,13 @@
 
       if (!route) { wrap.innerHTML = ''; return; }
 
-      // Parts: [Monitoring] › [Project▾] › [Section▾] › [Page]
-      // Monitoring = link to dashboard
-      // Project = dropdown of projects (from sidebar)
-      // Section = dropdown of pages in that section (if has section)
-      // Page = current page (non-clickable active)
-
       let html = '';
 
-      // Segment 1: "Monitoring" → navigates to dashboard
+      // Segment 1: Monitoring → link to dashboard
       html += `<a href="/mk/dashboard${qs}" class="bc-seg" style="text-decoration:none">Monitoring</a>`;
       html += `<span class="bc-sep">›</span>`;
 
-      // Segment 2: Project name (dropdown to switch project)
+      // Segment 2: Project name (dropdown)
       html += `
         <div style="position:relative">
           <button type="button" class="bc-seg" id="bcSegProject">

@@ -1390,4 +1390,193 @@ public function updateSentiment(Request $request)
             ], 500);
         }
     }
+    // Di NewsController.php — tambah method ini
+
+public function aiAnalysisData(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+
+        if (!$projectId) {
+            return response()->json(['success' => false, 'error' => 'Project ID required'], 400);
+        }
+
+        // ── 1. Fetch semua data paralel ──
+        $articlesRaw    = $this->mkClient->articles($projectId, 'doc', $startDate, $endDate, 0, 23, 0, 100, true);
+        $publishersRaw  = $this->mkClient->topPublisher($projectId, $startDate, $endDate, 0, 23, 20, 'article');
+        $sentimentRaw   = $this->mkClient->sentimentTotal($projectId, $startDate, $endDate);
+        $wordCloudRaw   = $this->mkClient->wordCloud($projectId, $startDate, 0, $endDate, 23, '2');
+
+        // ── 2. Parse articles ──
+        $articles = is_array($articlesRaw) ? $articlesRaw : ($articlesRaw['data'] ?? []);
+
+        $sentCounts = ['positive' => 0, 'negative' => 0, 'neutral' => 0];
+        $parsedArticles = [];
+
+        foreach ($articles as $article) {
+            if (!is_array($article)) continue;
+
+            // Normalize sentiment
+            $sentStr = strtolower($article['sentiment'] ?? '');
+            if (str_contains($sentStr, 'pos')) {
+                $bucket = 'positive';
+            } elseif (str_contains($sentStr, 'neg')) {
+                $bucket = 'negative';
+            } else {
+                $bucket = 'neutral';
+            }
+            $sentCounts[$bucket]++;
+
+            // Parse quotes
+            $quotes = [];
+            if (!empty($article['quotes']) && is_array($article['quotes'])) {
+                foreach ($article['quotes'] as $q) {
+                    $kutipan    = trim($q['Kutipan']    ?? $q['kutipan']    ?? '');
+                    $narasumber = trim($q['Narasumber'] ?? $q['narasumber'] ?? '');
+                    if ($kutipan) {
+                        $quotes[] = [
+                            'text'   => substr($kutipan, 0, 200),
+                            'source' => $narasumber,
+                        ];
+                    }
+                }
+            }
+
+            $parsedArticles[] = [
+                'title'     => substr(strip_tags($article['title']     ?? 'Untitled'), 0, 120),
+                'publisher' => substr($article['publisher'] ?? $article['hostname'] ?? 'Unknown', 0, 40),
+                'date'      => substr($article['date_created'] ?? '', 0, 10),
+                'sentiment' => $bucket,
+                'content'   => substr(strip_tags($article['content'] ?? ''), 0, 200),
+                'quotes'    => $quotes,
+                'url'       => $article['url'] ?? '',
+            ];
+        }
+
+        // ── 3. Parse publishers ──
+        $publishers = [];
+        if (is_array($publishersRaw)) {
+            $rank = 1;
+            foreach ($publishersRaw as $domain => $count) {
+                if (!is_string($domain)) continue;
+                $publishers[] = [
+                    'domain' => $domain,
+                    'count'  => (int) $count,
+                    'rank'   => $rank++,
+                ];
+                if ($rank > 20) break;
+            }
+        }
+
+        // ── 4. Parse sentiment total ──
+        $positive = 0; $negative = 0; $neutral = 0;
+        if (isset($sentimentRaw['pos'], $sentimentRaw['neg'], $sentimentRaw['net'])) {
+            $positive = (int) $sentimentRaw['pos'];
+            $negative = (int) $sentimentRaw['neg'];
+            $neutral  = (int) $sentimentRaw['net'];
+        } elseif (isset($sentimentRaw['bymedia']['doc'])) {
+            $d        = $sentimentRaw['bymedia']['doc'];
+            $positive = (int) ($d['pos'] ?? 0);
+            $negative = (int) ($d['neg'] ?? 0);
+            $neutral  = (int) ($d['net'] ?? 0);
+        }
+
+        // Fallback ke hitungan dari articles kalau sentiment API kosong
+        if ($positive === 0 && $negative === 0 && $neutral === 0) {
+            $positive = $sentCounts['positive'];
+            $negative = $sentCounts['negative'];
+            $neutral  = $sentCounts['neutral'];
+        }
+
+        // ── 5. Parse word cloud — ambil top 30 ──
+        $phrases = [];
+        $wcRaw   = $wordCloudRaw['data']['phrases'] ?? $wordCloudRaw['phrases'] ?? [];
+        arsort($wcRaw);
+        $i = 0;
+        foreach ($wcRaw as $word => $count) {
+            $phrases[] = "{$word}({$count})";
+            if (++$i >= 30) break;
+        }
+
+        // ── 6. Build dataset string untuk AI ──
+        $total  = $positive + $negative + $neutral ?: 1;
+        $pctPos = round($positive / $total * 100);
+        $pctNeg = round($negative / $total * 100);
+        $pctNeu = round($neutral  / $total * 100);
+
+        $lines   = [];
+        $lines[] = "=== DATA BERITA (ONLINE NEWS) PROJECT {$projectId} ===";
+        $lines[] = "Periode: {$startDate} s/d {$endDate}";
+        $lines[] = "Total Artikel: " . count($articles);
+        $lines[] = "Sentimen: Positif {$pctPos}% ({$positive}) | Negatif {$pctNeg}% ({$negative}) | Netral {$pctNeu}% ({$neutral})";
+
+        // Top Publishers
+        if (!empty($publishers)) {
+            $lines[] = "\n--- TOP PUBLISHERS ---";
+            foreach (array_slice($publishers, 0, 15) as $i => $pub) {
+                $lines[] = ($i + 1) . ". {$pub['domain']} ({$pub['count']} artikel)";
+            }
+        }
+
+        // Word Cloud keywords
+        if (!empty($phrases)) {
+            $lines[] = "\n--- TOP KEYWORDS ---";
+            $lines[] = implode(', ', $phrases);
+        }
+
+        // Separate articles by sentiment
+        $negArticles = array_filter($parsedArticles, fn($a) => $a['sentiment'] === 'negative');
+        $posArticles = array_filter($parsedArticles, fn($a) => $a['sentiment'] === 'positive');
+        $neuArticles = array_filter($parsedArticles, fn($a) => $a['sentiment'] === 'neutral');
+
+        // Prioritaskan negatif dulu karena biasanya lebih actionable
+        $sample = array_values(array_merge(
+            array_slice(array_values($negArticles), 0, 20),
+            array_slice(array_values($posArticles), 0, 10),
+            array_slice(array_values($neuArticles), 0,  5),
+        ));
+
+        $lines[] = "\n--- SAMPEL ARTIKEL (" . count($sample) . " dari " . count($parsedArticles) . ") ---";
+        foreach ($sample as $i => $art) {
+            $lines[] = "[" . ($i + 1) . "] \"{$art['title']}\" | {$art['publisher']} | {$art['date']} | {$art['sentiment']}";
+
+            // Sertakan kutipan narasumber kalau ada
+            foreach (array_slice($art['quotes'], 0, 2) as $q) {
+                if ($q['text']) {
+                    $src = $q['source'] ? " — {$q['source']}" : '';
+                    $lines[] = "   → \"{$q['text']}\"{$src}";
+                }
+            }
+        }
+
+        $lines[] = "=== AKHIR DATASET ===";
+
+        Log::info('News aiAnalysisData', [
+            'project_id'      => $projectId,
+            'total_articles'  => count($parsedArticles),
+            'total_publishers'=> count($publishers),
+            'total_keywords'  => count($phrases),
+            'sentiment'       => compact('positive', 'negative', 'neutral'),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'dataset' => implode("\n", $lines),
+                'summary' => [
+                    'total_articles'   => count($parsedArticles),
+                    'total_publishers' => count($publishers),
+                    'total_keywords'   => count($phrases),
+                    'sentiment'        => compact('positive', 'negative', 'neutral'),
+                ],
+            ],
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('News aiAnalysisData error', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+    }
+}
 }
