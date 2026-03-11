@@ -41,7 +41,7 @@ class TiktokOverviewController extends Controller
     {
         return redirect()->route($routeName, [
             'project_id' => $projectId,
-'start_date' => $request->query('start_date', now()->startOfMonth()->format('Y-m-d')),
+            'start_date' => $request->query('start_date', now()->startOfMonth()->format('Y-m-d')),
             'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
         ]);
     }
@@ -50,7 +50,7 @@ class TiktokOverviewController extends Controller
     {
         return [
             'projectId' => null,
-'startDate' => $request->query('start_date', now()->startOfMonth()->format('Y-m-d')),
+            'startDate' => $request->query('start_date', now()->startOfMonth()->format('Y-m-d')),
             'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
             'projects'  => [],
         ];
@@ -262,9 +262,8 @@ class TiktokOverviewController extends Controller
             $startDate = $request->query('start_date');
             $endDate   = $request->query('end_date');
             $sub       = $request->query('sub', 'postbylike');
+            $limit     = (int) $request->query('limit', 1000);
 
-            // ✅ FIX: limit dinamis, max 1000, default 100
-            $limit = (int) $request->query('limit', 1000);
             if (!$projectId || !$startDate || !$endDate) {
                 return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
             }
@@ -303,7 +302,7 @@ class TiktokOverviewController extends Controller
 
                 $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
                 $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
-$views = (int) ($item['views'] ?? $item['view_cnt'] ?? 0);
+                $views    = (int) ($item['views']        ?? $item['view_cnt'] ?? 0);
                 $shares   = (int) ($item['num_shares']   ?? $item['shares']   ?? 0);
                 $postUrl  = $item['url']     ?? $item['link']  ?? null;
                 $content  = $item['content'] ?? $item['caption'] ?? '';
@@ -331,7 +330,7 @@ $views = (int) ($item['views'] ?? $item['view_cnt'] ?? 0);
                     'url'            => $postUrl,
                     'avatar_url'     => $profilePic,
                     'tcode'          => $item['tcode'] ?? 'tiktok',
-                    'num_followers' => (int) ($item['num_followers'] ?? 0),
+                    'num_followers'  => (int) ($item['num_followers'] ?? 0),
                     'author'         => [
                         'name'     => $authorName,
                         'scr_name' => $item['author_scr_name'] ?? $authorName,
@@ -340,7 +339,6 @@ $views = (int) ($item['views'] ?? $item['view_cnt'] ?? 0);
                 ];
             }
 
-            // Sort
             if ($sub === 'postbylike') {
                 usort($posts, fn($a, $b) => $b['likes'] - $a['likes']);
             } elseif ($sub === 'postbycomment') {
@@ -376,7 +374,7 @@ $views = (int) ($item['views'] ?? $item['view_cnt'] ?? 0);
 
             return view('mk.tiktok.tiktok-trending-topics')->with([
                 'projectId' => $projectId,
-'startDate' => $request->query('start_date', now()->startOfMonth()->format('Y-m-d')),
+                'startDate' => $request->query('start_date', now()->startOfMonth()->format('Y-m-d')),
                 'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
                 'projects'  => $projects,
             ]);
@@ -397,7 +395,7 @@ $views = (int) ($item['views'] ?? $item['view_cnt'] ?? 0);
             if (!$projectId || !$startDate || !$endDate) {
                 return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
             }
-            // ✅ FIX: limit dinamis untuk hashtag, max 1000, default 500
+
             $limit = (int) $request->query('limit', 1000);
 
             $posts = $this->client->tiktokTopStatus($projectId, $startDate, $endDate, 0, 23, $limit, 'postbylike');
@@ -430,11 +428,6 @@ $views = (int) ($item['views'] ?? $item['view_cnt'] ?? 0);
                 $hashtags[]     = ['name' => $name, 'hashtag' => $name, 'size' => $size];
                 $totalMentions += $size;
             }
-
-            Log::info('TikTok trendingTopicsData parsed', [
-                'total_hashtags' => count($hashtags),
-                'top5'           => array_slice($hashtags, 0, 5),
-            ]);
 
             return response()->json([
                 'success' => true,
@@ -469,7 +462,7 @@ $views = (int) ($item['views'] ?? $item['view_cnt'] ?? 0);
 
             return view('mk.tiktok.tiktok-trending-word-cloud')->with([
                 'projectId' => $projectId,
-'startDate' => $request->query('start_date', now()->startOfMonth()->format('Y-m-d')),
+                'startDate' => $request->query('start_date', now()->startOfMonth()->format('Y-m-d')),
                 'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
                 'projects'  => $projects,
             ]);
@@ -481,46 +474,9 @@ $views = (int) ($item['views'] ?? $item['view_cnt'] ?? 0);
     }
 
     // ─────────────────────────────────────────────────────
-    // AI ANALYSIS
+    // MOST ENGAGEMENT
     // ─────────────────────────────────────────────────────
 
-    public function aiAnalysisPage(Request $request)
-    {
-        try {
-            $projects  = $this->getAllProjects();
-            $projectId = $request->query('project_id');
-
-            if (!$projectId && count($projects) > 0) {
-                $projectId = $projects[0]['id'] ?? null;
-                if ($projectId) return $this->redirectWithDates($request, 'mk.tiktok.ai-analysis', $projectId);
-            }
-
-            return view('mk.tiktok.ai-analysis')->with([
-                'projectId' => $projectId,
-                'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
-                'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
-                'projects'  => $projects,
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('TikTok AI Analysis Page Error', ['error' => $e->getMessage()]);
-            return view('mk.tiktok.ai-analysis')->with(array_merge($this->defaultViewData($request), ['error' => $e->getMessage()]));
-        }
-    }
-
-    // ─────────────────────────────────────────────────────
-    // HELPERS
-    // ─────────────────────────────────────────────────────
-
-    private function getInitials(string $name): string
-    {
-        $name  = trim($name);
-        $parts = preg_split('/[\s_\-]+/', $name);
-        if (count($parts) === 1) {
-            return strtoupper(substr($parts[0], 0, 2));
-        }
-        return strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
-    }
     public function mostEngagementPage(Request $request)
     {
         try {
@@ -548,10 +504,6 @@ $views = (int) ($item['views'] ?? $item['view_cnt'] ?? 0);
         }
     }
 
-    /**
-     * API: most-engagement data — supports sub=postbyview|postbylike|postbycomment|postbyshare
-     * Endpoint: GET /mk/api/tiktok/most-engagement
-     */
     public function mostEngagementData(Request $request)
     {
         try {
@@ -565,22 +517,15 @@ $views = (int) ($item['views'] ?? $item['view_cnt'] ?? 0);
                 return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
             }
 
-            // Map sub ke tiktokTopStatus sub parameter
-            // postbyshare tidak selalu ada — fallback ke postbylike lalu sort manual
             $apiSub = match($sub) {
                 'postbyview'    => 'postbyview',
                 'postbylike'    => 'postbylike',
                 'postbycomment' => 'postbycomment',
-                'postbyshare'   => 'postbylike',   // API TikTok tidak punya postbyshare, ambil semua lalu sort shares
+                'postbyshare'   => 'postbylike',
                 default         => 'postbyview',
             };
 
             $result = $this->client->tiktokTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $apiSub);
-
-            Log::info('TikTok mostEngagementData raw', [
-                'sub'    => $sub,
-                'count'  => is_array($result) ? count($result) : 0,
-            ]);
 
             $posts = [];
             $items = is_array($result) ? $result : [];
@@ -588,70 +533,61 @@ $views = (int) ($item['views'] ?? $item['view_cnt'] ?? 0);
             foreach ($items as $item) {
                 if (!is_array($item)) continue;
 
-                // Parse author name
                 $rawName    = $item['name'] ?? '';
                 $authorName = $item['author_scr_name'] ?? $item['author_id'] ?? '';
 
                 if (!$authorName && $rawName) {
                     $colonPos   = strpos($rawName, ':');
-                    $authorName = $colonPos !== false
-                        ? trim(substr($rawName, 0, $colonPos))
-                        : '';
+                    $authorName = $colonPos !== false ? trim(substr($rawName, 0, $colonPos)) : '';
                 }
                 if (!$authorName) $authorName = 'TikTok Creator';
 
-                // Profile picture
                 $profilePic = $item['profile_url'] ?? $item['avatar_url'] ?? $item['image'] ?? '';
                 if (!$profilePic && $authorName && $authorName !== 'TikTok Creator') {
                     $initials   = urlencode($this->getInitials($authorName));
                     $profilePic = "https://ui-avatars.com/api/?name={$initials}&background=EE1D52&color=fff&size=80&bold=true&format=png";
                 }
 
-                // Metrics
                 $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
                 $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
-                $views = (int) ($item['views'] ?? $item['view_cnt'] ?? 0);
+                $views    = (int) ($item['views']        ?? $item['view_cnt'] ?? 0);
                 $shares   = (int) ($item['num_shares']   ?? $item['shares']   ?? 0);
 
-                // Content
                 $content = $item['content'] ?? $item['caption'] ?? '';
                 if (!$content && $rawName) {
                     $colonPos = strpos($rawName, ':');
-                    $content  = $colonPos !== false
-                        ? trim(substr($rawName, $colonPos + 1))
-                        : $rawName;
+                    $content  = $colonPos !== false ? trim(substr($rawName, $colonPos + 1)) : $rawName;
                 }
 
                 $posts[] = [
-                    'id'            => $item['id']     ?? '',
-                    'sub_id'        => $item['sub_id'] ?? $item['docid'] ?? $item['id'] ?? '',
-                    'name'          => $authorName,
+                    'id'              => $item['id']     ?? '',
+                    'sub_id'          => $item['sub_id'] ?? $item['docid'] ?? $item['id'] ?? '',
+                    'name'            => $authorName,
                     'author_scr_name' => $item['author_scr_name'] ?? $authorName,
-                    'author_id'     => $item['author_id'] ?? '',
-                    'content'       => $content,
-                    'caption'       => $content,
-                    'view_cnt'      => $views,
-                    'views'         => $views,
-                    'freq'          => $views,
-                    'likes'         => $likes,
-                    'num_likes'     => $likes,
-                    'comments'      => $comments,
-                    'num_comments'  => $comments,
-                    'shares'        => $shares,
-                    'num_shares'    => $shares,
-                    'engagement'    => $likes + $comments + $shares,
-                    'sentiment_str' => $item['sentiment_str']  ?? 'Neutral',
-                    'sentiment'     => $item['sentiment']      ?? '0',
-                    'date_created'  => $item['date_created']   ?? '',
-                    'url'           => $item['url']  ?? $item['link'] ?? null,
-                    'avatar_url'    => $profilePic,
-                    'profile_url'   => $profilePic,
-                    'tcode'         => $item['tcode'] ?? 'tiktok',
-                    'num_followers' => (int) ($item['num_followers'] ?? 0),
+                    'author_id'       => $item['author_id'] ?? '',
+                    'content'         => $content,
+                    'caption'         => $content,
+                    'view_cnt'        => $views,
+                    'views'           => $views,
+                    'freq'            => $views,
+                    'likes'           => $likes,
+                    'num_likes'       => $likes,
+                    'comments'        => $comments,
+                    'num_comments'    => $comments,
+                    'shares'          => $shares,
+                    'num_shares'      => $shares,
+                    'engagement'      => $likes + $comments + $shares,
+                    'sentiment_str'   => $item['sentiment_str']  ?? 'Neutral',
+                    'sentiment'       => $item['sentiment']      ?? '0',
+                    'date_created'    => $item['date_created']   ?? '',
+                    'url'             => $item['url']  ?? $item['link'] ?? null,
+                    'avatar_url'      => $profilePic,
+                    'profile_url'     => $profilePic,
+                    'tcode'           => $item['tcode'] ?? 'tiktok',
+                    'num_followers'   => (int) ($item['num_followers'] ?? 0),
                 ];
             }
 
-            // Sort sesuai sub
             usort($posts, match($sub) {
                 'postbyview'    => fn($a,$b) => $b['view_cnt']  - $a['view_cnt'],
                 'postbylike'    => fn($a,$b) => $b['likes']     - $a['likes'],
@@ -667,32 +603,351 @@ $views = (int) ($item['views'] ?? $item['view_cnt'] ?? 0);
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
+
+    // ─────────────────────────────────────────────────────
+    // EMOTION ANALYSIS
+    // ─────────────────────────────────────────────────────
+
     public function emotionAnalysisPage(Request $request)
-{
-    try {
-        $projects  = $this->getAllProjects();
-        $projectId = $request->query('project_id');
+    {
+        try {
+            $projects  = $this->getAllProjects();
+            $projectId = $request->query('project_id');
 
-        if (!$projectId && count($projects) > 0) {
-            $projectId = $projects[0]['id'] ?? null;
-            if ($projectId) return $this->redirectWithDates($request, 'mk.tiktok.emotion-analysis', $projectId);
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+                if ($projectId) return $this->redirectWithDates($request, 'mk.tiktok.emotion-analysis', $projectId);
+            }
+
+            return view('mk.tiktok.tiktok-emotion-analysis')->with([
+                'projectId' => $projectId,
+                'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('TikTok Emotion Analysis Page Error', ['error' => $e->getMessage()]);
+            return view('mk.tiktok.tiktok-emotion-analysis')->with(array_merge(
+                $this->defaultViewData($request),
+                ['error' => $e->getMessage()]
+            ));
         }
-
-        return view('mk.tiktok.tiktok-emotion-analysis')->with([
-            'projectId' => $projectId,
-            'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
-            'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
-            'projects'  => $projects,
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('TikTok Emotion Analysis Page Error', ['error' => $e->getMessage()]);
-        return view('mk.tiktok.tiktok-emotion-analysis')->with(array_merge(
-            $this->defaultViewData($request),
-            ['error' => $e->getMessage()]
-        ));
     }
-}
 
+    // ─────────────────────────────────────────────────────
+    // AI ANALYSIS PAGE
+    // ─────────────────────────────────────────────────────
 
+    public function aiAnalysisPage(Request $request)
+    {
+        try {
+            $projects  = $this->getAllProjects();
+            $projectId = $request->query('project_id');
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+                if ($projectId) return $this->redirectWithDates($request, 'mk.tiktok.ai-analysis', $projectId);
+            }
+
+            return view('mk.tiktok.ai-analysis')->with([
+                'projectId' => $projectId,
+                'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('TikTok AI Analysis Page Error', ['error' => $e->getMessage()]);
+            return view('mk.tiktok.ai-analysis')->with(array_merge($this->defaultViewData($request), ['error' => $e->getMessage()]));
+        }
+    }
+
+    // ─────────────────────────────────────────────────────
+    // AI ANALYSIS DATA (endpoint untuk preload dataset)
+    // ─────────────────────────────────────────────────────
+
+    public function aiAnalysisData(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+
+            if (!$projectId) {
+                return response()->json(['success' => false, 'error' => 'Project ID required'], 400);
+            }
+
+            // Ambil data posts, sentiment, volume dari client langsung
+            $postsRaw     = $this->client->tiktokTopStatus($projectId, $startDate, $endDate, 0, 23, 50, 'postbylike');
+            $sentimentRaw = $this->client->getSentiment($projectId, 'tiktok', $startDate, $endDate);
+            $volumeRaw    = $this->client->volumeTotal($projectId, 'tiktok', $startDate, $endDate);
+
+            // ── Parse sentiment ──
+            $positive = 0; $negative = 0; $neutral = 0;
+            if (isset($sentimentRaw['data']['pos'], $sentimentRaw['data']['neg'], $sentimentRaw['data']['net'])) {
+                $positive = (int) $sentimentRaw['data']['pos'];
+                $negative = (int) $sentimentRaw['data']['neg'];
+                $neutral  = (int) $sentimentRaw['data']['net'];
+            } elseif (isset($sentimentRaw['pos'], $sentimentRaw['neg'], $sentimentRaw['net'])) {
+                $positive = (int) $sentimentRaw['pos'];
+                $negative = (int) $sentimentRaw['neg'];
+                $neutral  = (int) $sentimentRaw['net'];
+            } elseif (isset($sentimentRaw['bymedia']['tiktok'])) {
+                $d        = $sentimentRaw['bymedia']['tiktok'];
+                $positive = (int) ($d['pos'] ?? 0);
+                $negative = (int) ($d['neg'] ?? 0);
+                $neutral  = (int) ($d['net'] ?? 0);
+            }
+
+            // ── Parse volume ──
+            $volume = 0;
+            if (isset($volumeRaw['all']['total'])) {
+                $volume = (int) $volumeRaw['all']['total'];
+            } elseif (isset($volumeRaw['bymedia']['tiktok'])) {
+                $volume = (int) $volumeRaw['bymedia']['tiktok'];
+            } elseif (isset($volumeRaw['bymedia']['tt'])) {
+                $volume = (int) $volumeRaw['bymedia']['tt'];
+            }
+
+            // ── Parse posts + derive hashtags & active creators ──
+            $items       = is_array($postsRaw) ? $postsRaw : [];
+            $posts       = [];
+            $hashtagMap  = [];
+            $creatorMap  = [];
+
+            foreach ($items as $item) {
+                if (!is_array($item)) continue;
+
+                $rawName    = $item['name'] ?? '';
+                $authorName = $item['author_scr_name'] ?? $item['author_id'] ?? '';
+                if (!$authorName && $rawName) {
+                    $colonPos   = strpos($rawName, ':');
+                    $authorName = $colonPos !== false ? trim(substr($rawName, 0, $colonPos)) : '';
+                }
+                if (!$authorName) $authorName = 'TikTok Creator';
+
+                $content = $item['content'] ?? $item['caption'] ?? '';
+                if (!$content && $rawName) {
+                    $colonPos = strpos($rawName, ':');
+                    $content  = $colonPos !== false ? trim(substr($rawName, $colonPos + 1)) : $rawName;
+                }
+
+                $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
+                $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
+                $views    = (int) ($item['views']        ?? $item['view_cnt'] ?? 0);
+                $shares   = (int) ($item['num_shares']   ?? $item['shares']   ?? 0);
+
+                // Ekstrak hashtag dari konten
+                preg_match_all('/#([a-zA-Z0-9_\x{00C0}-\x{024F}\x{0400}-\x{04FF}]+)/u', $content, $matches);
+                foreach ($matches[1] as $tag) {
+                    $tag = strtolower(trim($tag));
+                    if (strlen($tag) >= 2) $hashtagMap[$tag] = ($hashtagMap[$tag] ?? 0) + 1;
+                }
+
+                // Hitung creator aktif
+                if ($authorName && $authorName !== 'TikTok Creator') {
+                    $creatorMap[$authorName] = ($creatorMap[$authorName] ?? 0) + 1;
+                }
+
+                $posts[] = [
+                    'name'          => $authorName,
+                    'content'       => substr(strip_tags($content), 0, 150),
+                    'views'         => $views,
+                    'likes'         => $likes,
+                    'comments'      => $comments,
+                    'shares'        => $shares,
+                    'sentiment_str' => $item['sentiment_str'] ?? 'Neutral',
+                    'date_created'  => substr($item['date_created'] ?? '', 0, 10),
+                ];
+            }
+
+            // Susun hashtag sorted
+            arsort($hashtagMap);
+            $hashtags = [];
+            foreach ($hashtagMap as $name => $size) {
+                $hashtags[] = ['name' => $name, 'size' => $size];
+            }
+
+            // Susun active creators sorted
+            arsort($creatorMap);
+            $activeCreators = [];
+            foreach (array_slice($creatorMap, 0, 10, true) as $name => $count) {
+                $activeCreators[] = ['username' => $name, 'posts' => $count];
+            }
+
+            // ── Build dataset string untuk AI ──
+            $total = $positive + $negative + $neutral ?: 1;
+            $lines = [];
+            $lines[] = "=== DATA TIKTOK PROJECT {$projectId} ===";
+            $lines[] = "Periode: {$startDate} s/d {$endDate}";
+            $lines[] = "Total Volume: {$volume} video/komentar";
+            $lines[] = "Sentimen: Positif " . round($positive / $total * 100) . "% ({$positive}) | Negatif " . round($negative / $total * 100) . "% ({$negative}) | Netral " . round($neutral / $total * 100) . "% ({$neutral})";
+
+            if (!empty($hashtags)) {
+                $lines[] = "\n--- TOP HASHTAGS TIKTOK (" . min(count($hashtags), 20) . ") ---";
+                foreach (array_slice($hashtags, 0, 20) as $i => $h) {
+                    $lines[] = ($i + 1) . ". #{$h['name']} ({$h['size']} mentions)";
+                }
+            }
+
+            if (!empty($activeCreators)) {
+                $lines[] = "\n--- MOST ACTIVE TIKTOK CREATORS (" . count($activeCreators) . ") ---";
+                foreach ($activeCreators as $i => $c) {
+                    $lines[] = ($i + 1) . ". @{$c['username']} — {$c['posts']} videos";
+                }
+            }
+
+            if (!empty($posts)) {
+                $lines[] = "\n--- TOP TIKTOK VIDEOS BY LIKES (" . count($posts) . " dari {$volume}) ---";
+                foreach (array_slice($posts, 0, 30) as $i => $post) {
+                    $lines[] = "[" . ($i + 1) . "] @{$post['name']} | {$post['date_created']} | {$post['sentiment_str']}";
+                    $lines[] = "   Views:{$post['views']} Likes:{$post['likes']} Comments:{$post['comments']} Shares:{$post['shares']}";
+                    if ($post['content']) $lines[] = "   \"{$post['content']}\"";
+                }
+            }
+
+            $lines[] = "=== AKHIR DATASET ===";
+
+            return response()->json([
+                'success' => true,
+                'data'    => [
+                    'dataset' => implode("\n", $lines),
+                    'summary' => [
+                        'total_posts'    => count($posts),
+                        'total_hashtags' => count($hashtags),
+                        'sentiment'      => ['positive' => $positive, 'negative' => $negative, 'neutral' => $neutral],
+                        'volume'         => $volume,
+                    ],
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('TikTok aiAnalysisData error', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────
+    // AI ANALYSIS PROXY (Gemini)
+    // ─────────────────────────────────────────────────────
+
+    public function aiAnalysisProxy(Request $request)
+    {
+        try {
+            $apiKey = env('GEMINI_API_KEY');
+
+            if (!$apiKey) {
+                return response()->json(['error' => 'GEMINI_API_KEY belum diset di .env'], 500);
+            }
+
+            $messages  = $request->input('messages', []);
+            $system    = $request->input('system', '');
+            $maxTokens = (int) $request->input('max_tokens', 2000);
+
+            if (empty($messages)) {
+                return response()->json(['error' => 'Messages tidak boleh kosong'], 400);
+            }
+
+            $contents   = [];
+            $firstAdded = false;
+
+            foreach ($messages as $msg) {
+                $role    = $msg['role'] === 'assistant' ? 'model' : 'user';
+                $content = $msg['content'];
+
+                if (!$firstAdded && $role === 'user' && !empty($system)) {
+                    $content    = $system . "\n\n---\n\n" . $content;
+                    $firstAdded = true;
+                }
+
+                $contents[] = [
+                    'role'  => $role,
+                    'parts' => [['text' => $content]],
+                ];
+            }
+
+            $models = [
+                'gemini-2.5-flash',
+                'gemini-2.5-pro',
+                'gemini-2.0-flash',
+                'gemini-2.0-flash-lite',
+                'gemini-flash-latest',
+            ];
+
+            $text      = '';
+            $usedModel = '';
+
+            foreach ($models as $model) {
+                $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+
+                try {
+                    $response = \Illuminate\Support\Facades\Http::withHeaders([
+                        'Content-Type' => 'application/json',
+                    ])->timeout(60)->post($endpoint, [
+                        'contents'         => $contents,
+                        'generationConfig' => [
+                            'maxOutputTokens' => 8192,
+                            'temperature'     => 0.7,
+                        ],
+                    ]);
+
+                    if ($response->status() === 429) {
+                        Log::warning("Gemini {$model} quota exceeded");
+                        continue;
+                    }
+
+                    if ($response->status() === 404) {
+                        Log::warning("Gemini {$model} not found");
+                        continue;
+                    }
+
+                    if ($response->failed()) {
+                        Log::error('Gemini Error', ['model' => $model, 'status' => $response->status()]);
+                        continue;
+                    }
+
+                    $data = $response->json();
+                    $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+
+                    if (!empty($text)) {
+                        $usedModel = $model;
+                        Log::info("✅ Gemini OK", ['model' => $model]);
+                        break;
+                    }
+
+                } catch (\Exception $e) {
+                    Log::warning("Gemini {$model} error: " . $e->getMessage());
+                    continue;
+                }
+            }
+
+            if (empty($text)) {
+                return response()->json(['error' => 'Semua model Gemini tidak tersedia. Coba lagi.'], 429);
+            }
+
+            return response()->json([
+                'content' => [['type' => 'text', 'text' => $text]],
+                'model'   => $usedModel,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('TikTok AI Proxy Error', ['error' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────
+    // HELPERS
+    // ─────────────────────────────────────────────────────
+
+    private function getInitials(string $name): string
+    {
+        $name  = trim($name);
+        $parts = preg_split('/[\s_\-]+/', $name);
+        if (count($parts) === 1) {
+            return strtoupper(substr($parts[0], 0, 2));
+        }
+        return strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
+    }
 }

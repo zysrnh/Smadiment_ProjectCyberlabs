@@ -49,34 +49,34 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     // ═══════════════════════════════════════════════════════
     Route::prefix('api')->name('api.')->group(function () {
 
-        Route::get('/trending-topics', [DataOverviewApiController::class, 'trendingTopics'])->name('trending-topics');
+        Route::get('/trending-topics',       [DataOverviewApiController::class, 'trendingTopics'])->name('trending-topics');
         Route::get('/top-hashtags-overview', [DataOverviewApiController::class, 'topHashtags'])->name('top-hashtags-overview');
-        Route::get('/mention-counts', [DataOverviewApiController::class, 'mentionCounts'])->name('mention-counts');
-        Route::get('/sentiment-by-media', [DataOverviewApiController::class, 'sentimentByMedia'])->name('sentiment-by-media');
-        Route::get('/active-users', [DataOverviewApiController::class, 'activeUsers'])->name('active-users');
-        Route::get('/sentiment-timeline', [DataOverviewApiController::class, 'sentimentTimeline'])->name('sentiment-timeline');
-        Route::get('/geo-users', [DataOverviewApiController::class, 'geoUsers'])->name('geo-users');
+        Route::get('/mention-counts',        [DataOverviewApiController::class, 'mentionCounts'])->name('mention-counts');
+        Route::get('/sentiment-by-media',    [DataOverviewApiController::class, 'sentimentByMedia'])->name('sentiment-by-media');
+        Route::get('/active-users',          [DataOverviewApiController::class, 'activeUsers'])->name('active-users');
+        Route::get('/sentiment-timeline',    [DataOverviewApiController::class, 'sentimentTimeline'])->name('sentiment-timeline');
+        Route::get('/geo-users',             [DataOverviewApiController::class, 'geoUsers'])->name('geo-users');
 
         Route::get('/topic-map', [TopicMapController::class, 'getTopicMap'])->name('topic-map');
 
-        Route::get('/top-hashtags', [TopAnalyticsController::class, 'getHashtagsData'])->name('top-hashtags');
-        Route::get('/top-locations', [TopAnalyticsController::class, 'getLocationsData'])->name('top-locations');
-        Route::get('/top-influencers', [TopAnalyticsController::class, 'getInfluencersData'])->name('top-influencers');
+        Route::get('/top-hashtags',   [TopAnalyticsController::class, 'getHashtagsData'])->name('top-hashtags');
+        Route::get('/top-locations',  [TopAnalyticsController::class, 'getLocationsData'])->name('top-locations');
+        Route::get('/top-influencers',[TopAnalyticsController::class, 'getInfluencersData'])->name('top-influencers');
 
         // ─────────────────────────────────────────────────────
         // NEWS API ROUTES
         // ─────────────────────────────────────────────────────
         Route::prefix('news')->name('news.')->group(function () {
-            Route::get('/word-cloud',       [NewsController::class, 'newsWordCloudData'])->name('word-cloud-api');
-            Route::get('/top-publisher',    [NewsController::class, 'topPublisherData'])->name('top-publisher-api');
-            Route::get('/mentions',         [NewsController::class, 'newsMentionsData'])->name('mentions-api');
-            Route::get('/articles',         [NewsController::class, 'articlesData'])->name('articles-api');
-            Route::get('/tiktok-top-status',[NewsController::class, 'tiktokTopStatus'])->name('tiktok-top-status');
-            Route::get('/ig-top-status',    [NewsController::class, 'igTopStatus'])->name('ig-top-status');
-            Route::get('/fb-top-status',    [NewsController::class, 'fbTopStatusApi'])->name('fb-top-status');
-            Route::get('/ytb-top-status',   [NewsController::class, 'ytbTopStatus'])->name('ytb-top-status');
-            Route::get('/ai-analysis-data', [NewsController::class, 'aiAnalysisData'])->name('ai-analysis-data'); // ← ADDED
-            Route::post('/ai-proxy',        [NewsController::class, 'aiAnalysisProxy'])->name('ai-proxy');
+            Route::get('/word-cloud',        [NewsController::class, 'newsWordCloudData'])->name('word-cloud-api');
+            Route::get('/top-publisher',     [NewsController::class, 'topPublisherData'])->name('top-publisher-api');
+            Route::get('/mentions',          [NewsController::class, 'newsMentionsData'])->name('mentions-api');
+            Route::get('/articles',          [NewsController::class, 'articlesData'])->name('articles-api');
+            Route::get('/tiktok-top-status', [NewsController::class, 'tiktokTopStatus'])->name('tiktok-top-status');
+            Route::get('/ig-top-status',     [NewsController::class, 'igTopStatus'])->name('ig-top-status');
+            Route::get('/fb-top-status',     [NewsController::class, 'fbTopStatusApi'])->name('fb-top-status');
+            Route::get('/ytb-top-status',    [NewsController::class, 'ytbTopStatus'])->name('ytb-top-status');
+            Route::get('/ai-analysis-data',  [NewsController::class, 'aiAnalysisData'])->name('ai-analysis-data');
+            Route::post('/ai-proxy',         [NewsController::class, 'aiAnalysisProxy'])->name('ai-proxy');
         });
 
         // ─────────────────────────────────────────────────────
@@ -94,39 +94,39 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
         });
 
         Route::prefix('sentiment')->name('sentiment.')->group(function () {
-            Route::get('/totals',              [MediaStatisticController::class, 'sentimentTotals'])->name('totals');
-            Route::get('/by-time',             [MediaStatisticController::class, 'sentimentByTime'])->name('by-time');
-            Route::get('/interaction-totals',  [MediaStatisticController::class, 'interactionSentimentTotals'])->name('interaction-totals');
+            Route::get('/totals',             [MediaStatisticController::class, 'sentimentTotals'])->name('totals');
+            Route::get('/by-time',            [MediaStatisticController::class, 'sentimentByTime'])->name('by-time');
+            Route::get('/interaction-totals', [MediaStatisticController::class, 'interactionSentimentTotals'])->name('interaction-totals');
         });
 
         // ─────────────────────────────────────────────────────
         // X (TWITTER) API ROUTES
         // ─────────────────────────────────────────────────────
         Route::prefix('x')->name('x.')->group(function () {
-            Route::get('/total-users',           [XOverviewController::class, 'totalUsers'])->name('total-users');
-            Route::get('/total-authors',         [XOverviewController::class, 'totalAuthors'])->name('total-authors');
-            Route::get('/volume-total',          [XOverviewController::class, 'volumeTotal'])->name('volume-total');
-            Route::get('/sentiment-total',       [XOverviewController::class, 'sentimentTotal'])->name('sentiment-total');
-            Route::get('/most-active-users',     [XOverviewController::class, 'mostActiveUsers'])->name('most-active-users');
-            Route::get('/most-retweets',         [XOverviewController::class, 'mostRetweets'])->name('most-retweets');
-            Route::get('/most-status',           [XOverviewController::class, 'mostStatus'])->name('most-status');
-            Route::get('/user-mentions',         [XOverviewController::class, 'userMentions'])->name('user-mentions');
-            Route::get('/top-hashtags-data',     [XOverviewController::class, 'topHashtagsData'])->name('top-hashtags-data');
-            Route::get('/trending-topics',       [XOverviewController::class, 'trendingTopicsData'])->name('trending-topics');
-            Route::get('/shared-urls',           [XOverviewController::class, 'sharedUrls'])->name('shared-urls');
-            Route::get('/post-with-location',    [XOverviewController::class, 'postWithLocation'])->name('post-with-location');
-            Route::get('/geo-user',              [XOverviewController::class, 'geoUser'])->name('geo-user');
-            Route::get('/geo-sentiment',         [XOverviewController::class, 'geoSentiment'])->name('geo-sentiment');
-            Route::get('/top-locations',         [XOverviewController::class, 'topLocations'])->name('top-locations');
-            Route::get('/authors-age',           [XOverviewController::class, 'authorsAgeData'])->name('authors-age');
-            Route::get('/authors-gender',        [XOverviewController::class, 'authorsGenderData'])->name('authors-gender');
-            Route::get('/authors-type',          [XOverviewController::class, 'authorsTypeData'])->name('authors-type');
-            Route::get('/user-detailed-mentions',[XOverviewController::class, 'userDetailedMentions'])->name('user-detailed-mentions');
-            Route::get('/top-influencers',       [XOverviewController::class, 'topInfluencersData'])->name('top-influencers');
-            Route::get('/emotion-analysis',      [XOverviewController::class, 'emotionAnalysisData'])->name('emotion-analysis');
-            Route::get('/most-engagement',       [XOverviewController::class, 'mostEngagementData'])->name('most-engagement');
-            Route::get('/ai-analysis-data',      [XOverviewController::class, 'aiAnalysisData'])->name('ai-analysis-data');
-            Route::post('/ai-proxy',             [XOverviewController::class, 'aiAnalysisProxy'])->name('ai-proxy');
+            Route::get('/total-users',            [XOverviewController::class, 'totalUsers'])->name('total-users');
+            Route::get('/total-authors',          [XOverviewController::class, 'totalAuthors'])->name('total-authors');
+            Route::get('/volume-total',           [XOverviewController::class, 'volumeTotal'])->name('volume-total');
+            Route::get('/sentiment-total',        [XOverviewController::class, 'sentimentTotal'])->name('sentiment-total');
+            Route::get('/most-active-users',      [XOverviewController::class, 'mostActiveUsers'])->name('most-active-users');
+            Route::get('/most-retweets',          [XOverviewController::class, 'mostRetweets'])->name('most-retweets');
+            Route::get('/most-status',            [XOverviewController::class, 'mostStatus'])->name('most-status');
+            Route::get('/user-mentions',          [XOverviewController::class, 'userMentions'])->name('user-mentions');
+            Route::get('/top-hashtags-data',      [XOverviewController::class, 'topHashtagsData'])->name('top-hashtags-data');
+            Route::get('/trending-topics',        [XOverviewController::class, 'trendingTopicsData'])->name('trending-topics');
+            Route::get('/shared-urls',            [XOverviewController::class, 'sharedUrls'])->name('shared-urls');
+            Route::get('/post-with-location',     [XOverviewController::class, 'postWithLocation'])->name('post-with-location');
+            Route::get('/geo-user',               [XOverviewController::class, 'geoUser'])->name('geo-user');
+            Route::get('/geo-sentiment',          [XOverviewController::class, 'geoSentiment'])->name('geo-sentiment');
+            Route::get('/top-locations',          [XOverviewController::class, 'topLocations'])->name('top-locations');
+            Route::get('/authors-age',            [XOverviewController::class, 'authorsAgeData'])->name('authors-age');
+            Route::get('/authors-gender',         [XOverviewController::class, 'authorsGenderData'])->name('authors-gender');
+            Route::get('/authors-type',           [XOverviewController::class, 'authorsTypeData'])->name('authors-type');
+            Route::get('/user-detailed-mentions', [XOverviewController::class, 'userDetailedMentions'])->name('user-detailed-mentions');
+            Route::get('/top-influencers',        [XOverviewController::class, 'topInfluencersData'])->name('top-influencers');
+            Route::get('/emotion-analysis',       [XOverviewController::class, 'emotionAnalysisData'])->name('emotion-analysis');
+            Route::get('/most-engagement',        [XOverviewController::class, 'mostEngagementData'])->name('most-engagement');
+            Route::get('/ai-analysis-data',       [XOverviewController::class, 'aiAnalysisData'])->name('ai-analysis-data');
+            Route::post('/ai-proxy',              [XOverviewController::class, 'aiAnalysisProxy'])->name('ai-proxy');
         });
 
         // ─────────────────────────────────────────────────────
@@ -168,6 +168,8 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/geo-user',         [InstagramOverviewController::class, 'geoUser'])->name('geo-user');
             Route::get('/geo-sentiment',    [InstagramOverviewController::class, 'geoSentiment'])->name('geo-sentiment');
             Route::get('/top-locations',    [InstagramOverviewController::class, 'topLocations'])->name('top-locations');
+            Route::get('/ai-analysis-data', [InstagramOverviewController::class, 'aiAnalysisData'])->name('ai-analysis-data');
+            Route::post('/ai-proxy',        [InstagramOverviewController::class, 'aiAnalysisProxy'])->name('ai-proxy');
         });
 
         // ─────────────────────────────────────────────────────
@@ -186,6 +188,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/authors-type',     [YoutubeOverviewController::class, 'authorsTypeData'])->name('authors-type');
             Route::get('/geo-user',         [YoutubeOverviewController::class, 'geoUser'])->name('geo-user');
             Route::get('/geo-sentiment',    [YoutubeOverviewController::class, 'geoSentiment'])->name('geo-sentiment');
+        Route::get('/ai-analysis-data', [YoutubeOverviewController::class, 'aiAnalysisData'])->name('ai-analysis-data');
+Route::post('/ai-proxy',        [YoutubeOverviewController::class, 'aiAnalysisProxy'])->name('ai-proxy');
+
+           
             Route::get('/top-locations',    [YoutubeOverviewController::class, 'topLocations'])->name('top-locations');
         });
 
@@ -199,6 +205,10 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/trending-topics',  [TiktokOverviewController::class, 'trendingTopicsData'])->name('trending-topics');
             Route::get('/most-viewed-posts',[TiktokOverviewController::class, 'mostViewedPostsData'])->name('most-viewed-posts');
             Route::get('/most-engagement',  [TiktokOverviewController::class, 'mostEngagementData'])->name('most-engagement');
+            Route::get('/ai-analysis-data', [TiktokOverviewController::class, 'aiAnalysisData'])->name('ai-analysis-data');
+Route::post('/ai-proxy',        [TiktokOverviewController::class, 'aiAnalysisProxy'])->name('ai-proxy');
+
+            
             Route::get('/emotion-analysis', [TiktokOverviewController::class, 'emotionAnalysisData'])->name('emotion-analysis');
         });
 
@@ -241,12 +251,12 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     // NEWS PAGE ROUTES
     // ─────────────────────────────────────────────────────
     Route::prefix('news')->name('news.')->group(function () {
-        Route::get('/word-cloud',   [NewsController::class, 'newsWordCloudPage'])->name('word-cloud');
+        Route::get('/word-cloud',    [NewsController::class, 'newsWordCloudPage'])->name('word-cloud');
         Route::get('/top-publishers',[NewsController::class, 'topPublisherPage'])->name('top-publishers');
-        Route::get('/timeline',     [NewsController::class, 'newsTimelinePage'])->name('timeline');
-        Route::get('/articles',     [NewsController::class, 'articlesPage'])->name('articles');
-        Route::get('/topic-map',    [NewsController::class, 'newsTopicMapPage'])->name('topic-map');
-        Route::get('/ai-analysis',  [NewsController::class, 'aiAnalysisPage'])->name('ai-analysis');
+        Route::get('/timeline',      [NewsController::class, 'newsTimelinePage'])->name('timeline');
+        Route::get('/articles',      [NewsController::class, 'articlesPage'])->name('articles');
+        Route::get('/topic-map',     [NewsController::class, 'newsTopicMapPage'])->name('topic-map');
+        Route::get('/ai-analysis',   [NewsController::class, 'aiAnalysisPage'])->name('ai-analysis');
     });
 
     // ─────────────────────────────────────────────────────

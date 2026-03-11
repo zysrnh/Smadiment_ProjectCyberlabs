@@ -1033,5 +1033,264 @@ class InstagramOverviewController extends Controller
             ]);
         }
     }
+    public function aiAnalysisData(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+
+            if (!$projectId) {
+                return response()->json(['success' => false, 'error' => 'Project ID required'], 400);
+            }
+
+            // Fetch posts (by likes) + hashtags dari post content + sentiment + volume
+            $postsRaw     = $this->client->igTopStatus($projectId, $startDate, $endDate, 0, 23, 50, 'postbylike');
+            $sentimentRaw = $this->client->getSentiment($projectId, 'instagram', $startDate, $endDate);
+            $volumeRaw    = $this->client->volumeTotal($projectId, 'instagram', $startDate, $endDate);
+
+            // ── Parse sentiment ──
+            $positive = 0; $negative = 0; $neutral = 0;
+            if (isset($sentimentRaw['data']['pos'])) {
+                $positive = (int) $sentimentRaw['data']['pos'];
+                $negative = (int) ($sentimentRaw['data']['neg'] ?? 0);
+                $neutral  = (int) ($sentimentRaw['data']['net'] ?? 0);
+            } elseif (isset($sentimentRaw['pos'])) {
+                $positive = (int) $sentimentRaw['pos'];
+                $negative = (int) ($sentimentRaw['neg'] ?? 0);
+                $neutral  = (int) ($sentimentRaw['net'] ?? 0);
+            } elseif (isset($sentimentRaw['bymedia']['ig'])) {
+                $d = $sentimentRaw['bymedia']['ig'];
+                $positive = (int) ($d['pos'] ?? 0);
+                $negative = (int) ($d['neg'] ?? 0);
+                $neutral  = (int) ($d['net'] ?? 0);
+            } elseif (isset($sentimentRaw['bymedia']['instagram'])) {
+                $d = $sentimentRaw['bymedia']['instagram'];
+                $positive = (int) ($d['pos'] ?? 0);
+                $negative = (int) ($d['neg'] ?? 0);
+                $neutral  = (int) ($d['net'] ?? 0);
+            }
+
+            // ── Parse volume ──
+            $volume = 0;
+            if (isset($volumeRaw['all']['total'])) {
+                $volume = (int) $volumeRaw['all']['total'];
+            } elseif (isset($volumeRaw['bymedia']['ig'])) {
+                $volume = (int) $volumeRaw['bymedia']['ig'];
+            } elseif (isset($volumeRaw['bymedia']['instagram'])) {
+                $volume = (int) $volumeRaw['bymedia']['instagram'];
+            } elseif (isset($volumeRaw['bymedia']['ig_post'])) {
+                $volume = (int) $volumeRaw['bymedia']['ig_post'];
+            }
+
+            // ── Parse posts & extract hashtags dari content ──
+            $posts        = [];
+            $hashtagCount = [];
+            $items        = is_array($postsRaw) ? $postsRaw : ($postsRaw['data'] ?? []);
+
+            foreach ($items as $item) {
+                if (!is_array($item)) continue;
+
+                // Author name
+                $rawName    = $item['name'] ?? '';
+                $authorName = $item['author_scr_name'] ?? $item['author_id'] ?? '';
+                if (!$authorName && $rawName) {
+                    $colonPos   = strpos($rawName, ':');
+                    $authorName = $colonPos !== false ? trim(substr($rawName, 0, $colonPos)) : $rawName;
+                }
+                if (!$authorName) $authorName = 'Instagram User';
+
+                // Content / caption
+                $content = $item['content'] ?? $item['caption'] ?? '';
+                if (!$content && $rawName) {
+                    $colonPos = strpos($rawName, ':');
+                    $content  = $colonPos !== false ? trim(substr($rawName, $colonPos + 1)) : $rawName;
+                }
+
+                // Extract hashtags from caption
+                if ($content) {
+                    preg_match_all('/#([a-zA-Z0-9_\x{00C0}-\x{024F}\x{0400}-\x{04FF}]+)/u', $content, $matches);
+                    foreach ($matches[1] as $tag) {
+                        $tag = strtolower(trim($tag));
+                        if (strlen($tag) >= 2) {
+                            $hashtagCount[$tag] = ($hashtagCount[$tag] ?? 0) + 1;
+                        }
+                    }
+                }
+
+                $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
+                $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
+
+                $posts[] = [
+                    'name'          => $authorName,
+                    'content'       => substr(strip_tags($content), 0, 150),
+                    'likes'         => $likes,
+                    'comments'      => $comments,
+                    'sentiment_str' => $item['sentiment_str'] ?? 'Neutral',
+                    'date_created'  => substr($item['date_created'] ?? '', 0, 10),
+                    'mention_type'  => $item['mention_type'] ?? 'image',
+                ];
+            }
+
+            arsort($hashtagCount);
+            $hashtags = [];
+            foreach ($hashtagCount as $name => $size) {
+                $hashtags[] = ['name' => $name, 'size' => $size];
+            }
+
+            // ── Build dataset string untuk AI ──
+            $total = $positive + $negative + $neutral ?: 1;
+            $lines = [];
+            $lines[] = "=== DATA INSTAGRAM PROJECT {$projectId} ===";
+            $lines[] = "Periode: {$startDate} s/d {$endDate}";
+            $lines[] = "Total Volume: {$volume} posts";
+            $lines[] = "Sentimen: Positif " . round($positive / $total * 100) . "% ({$positive}) | Negatif " . round($negative / $total * 100) . "% ({$negative}) | Netral " . round($neutral / $total * 100) . "% ({$neutral})";
+
+            if (!empty($hashtags)) {
+                $lines[] = "\n--- TOP HASHTAGS INSTAGRAM (" . count($hashtags) . ") ---";
+                foreach (array_slice($hashtags, 0, 25) as $i => $h) {
+                    $lines[] = ($i + 1) . ". #{$h['name']} ({$h['size']} mentions)";
+                }
+            }
+
+            if (!empty($posts)) {
+                $lines[] = "\n--- TOP POSTS BY LIKES (" . count($posts) . " posts) ---";
+                foreach (array_slice($posts, 0, 30) as $i => $post) {
+                    $type = $post['mention_type'] === 'video' ? 'Reel/Video' : 'Image/Carousel';
+                    $lines[] = "[" . ($i + 1) . "] @{$post['name']} | {$post['date_created']} | {$post['sentiment_str']} | {$type}";
+                    $lines[] = "   Likes: {$post['likes']} | Comments: {$post['comments']}";
+                    if ($post['content']) $lines[] = "   \"{$post['content']}\"";
+                }
+            }
+
+            $lines[] = "=== AKHIR DATASET ===";
+
+            return response()->json([
+                'success' => true,
+                'data'    => [
+                    'dataset' => implode("\n", $lines),
+                    'summary' => [
+                        'total_posts'    => count($posts),
+                        'total_hashtags' => count($hashtags),
+                        'sentiment'      => ['positive' => $positive, 'negative' => $negative, 'neutral' => $neutral],
+                        'volume'         => $volume,
+                    ],
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('IG aiAnalysisData error', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────
+    // AI PROXY (Gemini — sama persis dengan FB)
+    // ─────────────────────────────────────────────────────
+
+    public function aiAnalysisProxy(Request $request)
+    {
+        try {
+            $apiKey = env('GEMINI_API_KEY');
+
+            if (!$apiKey) {
+                return response()->json(['error' => 'GEMINI_API_KEY belum diset di .env'], 500);
+            }
+
+            $messages  = $request->input('messages', []);
+            $system    = $request->input('system', '');
+            $maxTokens = (int) $request->input('max_tokens', 8192);
+
+            if (empty($messages)) {
+                return response()->json(['error' => 'Messages tidak boleh kosong'], 400);
+            }
+
+            $contents   = [];
+            $firstAdded = false;
+
+            foreach ($messages as $msg) {
+                $role    = $msg['role'] === 'assistant' ? 'model' : 'user';
+                $content = $msg['content'];
+
+                if (!$firstAdded && $role === 'user' && !empty($system)) {
+                    $content    = $system . "\n\n---\n\n" . $content;
+                    $firstAdded = true;
+                }
+
+                $contents[] = [
+                    'role'  => $role,
+                    'parts' => [['text' => $content]],
+                ];
+            }
+
+            $models = [
+                'gemini-2.5-flash',
+                'gemini-2.5-pro',
+                'gemini-2.0-flash',
+                'gemini-2.0-flash-lite',
+                'gemini-flash-latest',
+            ];
+
+            $text      = '';
+            $usedModel = '';
+
+            foreach ($models as $model) {
+                $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+
+                try {
+                    $response = \Illuminate\Support\Facades\Http::withHeaders([
+                        'Content-Type' => 'application/json',
+                    ])->timeout(60)->post($endpoint, [
+                        'contents'         => $contents,
+                        'generationConfig' => [
+                            'maxOutputTokens' => 8192,
+                            'temperature'     => 0.7,
+                        ],
+                    ]);
+
+                    if ($response->status() === 429) {
+                        Log::warning("Gemini {$model} quota exceeded");
+                        continue;
+                    }
+
+                    if ($response->status() === 404) {
+                        Log::warning("Gemini {$model} not found");
+                        continue;
+                    }
+
+                    if ($response->failed()) {
+                        Log::error('Gemini Error', ['model' => $model, 'status' => $response->status()]);
+                        continue;
+                    }
+
+                    $data = $response->json();
+                    $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+
+                    if (!empty($text)) {
+                        $usedModel = $model;
+                        Log::info("✅ Gemini OK (Instagram)", ['model' => $model]);
+                        break;
+                    }
+
+                } catch (\Exception $e) {
+                    Log::warning("Gemini {$model} error: " . $e->getMessage());
+                    continue;
+                }
+            }
+
+            if (empty($text)) {
+                return response()->json(['error' => 'Semua model Gemini tidak tersedia. Coba lagi.'], 429);
+            }
+
+            return response()->json([
+                'content' => [['type' => 'text', 'text' => $text]],
+                'model'   => $usedModel,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('IG AI Proxy Error', ['error' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 
 }

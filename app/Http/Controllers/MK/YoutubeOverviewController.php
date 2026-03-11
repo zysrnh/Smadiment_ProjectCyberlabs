@@ -999,4 +999,284 @@ $views = (int) ($item['num_views'] ?? $item['view_cnt'] ?? $item['views'] ?? 0);
         ]);
     }
 }
+
+public function aiAnalysisData(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+
+        if (!$projectId || !$startDate || !$endDate) {
+            return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
+        }
+
+        // ── Fetch top videos by view ──
+        $rawPosts = [];
+        try {
+            $rawPosts = $this->client->ytbTopStatus($projectId, $startDate, $endDate, 0, 23, 500, 'postbyview') ?? [];
+        } catch (\Exception $e) {
+            Log::warning('YT aiAnalysisData: ytbTopStatus failed', ['error' => $e->getMessage()]);
+        }
+
+        // ── Fetch sentiment ──
+        $sentimentData = [];
+        try {
+            $sentimentData = $this->client->getSentiment($projectId, 'youtube', $startDate, $endDate) ?? [];
+        } catch (\Exception $e) {
+            Log::warning('YT aiAnalysisData: getSentiment failed', ['error' => $e->getMessage()]);
+        }
+
+        // ── Fetch volume ──
+        $volumeData = [];
+        try {
+            $volumeData = $this->client->volumeTotal($projectId, 'youtube', $startDate, $endDate) ?? [];
+        } catch (\Exception $e) {
+            Log::warning('YT aiAnalysisData: volumeTotal failed', ['error' => $e->getMessage()]);
+        }
+
+        // ── Parse sentiment ──
+        $positive = 0; $negative = 0; $neutral = 0;
+
+        if (isset($sentimentData['data']['pos'])) {
+            $positive = (int) $sentimentData['data']['pos'];
+            $negative = (int) ($sentimentData['data']['neg'] ?? 0);
+            $neutral  = (int) ($sentimentData['data']['net'] ?? 0);
+        } elseif (isset($sentimentData['pos'])) {
+            $positive = (int) $sentimentData['pos'];
+            $negative = (int) ($sentimentData['neg'] ?? 0);
+            $neutral  = (int) ($sentimentData['net'] ?? 0);
+        } elseif (isset($sentimentData['bymedia']['youtube'])) {
+            $d = $sentimentData['bymedia']['youtube'];
+            $positive = (int) ($d['pos'] ?? 0);
+            $negative = (int) ($d['neg'] ?? 0);
+            $neutral  = (int) ($d['net'] ?? 0);
+        } elseif (isset($sentimentData['bymedia']['ytb'])) {
+            $d = $sentimentData['bymedia']['ytb'];
+            $positive = (int) ($d['pos'] ?? 0);
+            $negative = (int) ($d['neg'] ?? 0);
+            $neutral  = (int) ($d['net'] ?? 0);
+        }
+
+        // ── Parse volume ──
+        $totalVolume = 0;
+        if (isset($volumeData['all']['total'])) {
+            $totalVolume = (int) $volumeData['all']['total'];
+        } elseif (isset($volumeData['bymedia']['youtube'])) {
+            $totalVolume = (int) $volumeData['bymedia']['youtube'];
+        } elseif (isset($volumeData['bymedia']['ytb'])) {
+            $totalVolume = (int) $volumeData['bymedia']['ytb'];
+        } elseif (isset($volumeData['bymedia']['yt'])) {
+            $totalVolume = (int) $volumeData['bymedia']['yt'];
+        }
+
+        // ── Extract hashtags from video content/titles ──
+        $hashtagCount = [];
+        $items = is_array($rawPosts) ? $rawPosts : [];
+
+        foreach ($items as $post) {
+            if (!is_array($post)) continue;
+            $text = ($post['content'] ?? '') . ' ' . ($post['title'] ?? '') . ' ' . ($post['name'] ?? '');
+            preg_match_all('/#([a-zA-Z0-9_\x{00C0}-\x{024F}\x{0400}-\x{04FF}]+)/u', $text, $matches);
+            foreach ($matches[1] as $tag) {
+                $tag = strtolower(trim($tag));
+                if (strlen($tag) < 2) continue;
+                $hashtagCount[$tag] = ($hashtagCount[$tag] ?? 0) + 1;
+            }
+        }
+        arsort($hashtagCount);
+
+        // ── Build dataset string ──
+        $lines = [];
+        $tot   = $positive + $negative + $neutral ?: 1;
+
+        $lines[] = "=== DATA YOUTUBE PROJECT {$projectId} ===";
+        $lines[] = "Periode: {$startDate} s/d {$endDate}";
+        $lines[] = "Total Volume: {$totalVolume} video/komentar";
+        $lines[] = "Sentimen: Positif " . round($positive / $tot * 100) . "% ({$positive}) | Negatif " . round($negative / $tot * 100) . "% ({$negative}) | Netral " . round($neutral / $tot * 100) . "% ({$neutral})";
+        $lines[] = '';
+
+        // Top hashtags
+        if (!empty($hashtagCount)) {
+            $topHashtags = array_slice($hashtagCount, 0, 20, true);
+            $lines[] = '--- TOP HASHTAGS/KEYWORDS YOUTUBE (' . count($topHashtags) . ') ---';
+            $i = 1;
+            foreach ($topHashtags as $tag => $count) {
+                $lines[] = "{$i}. #{$tag} ({$count} mentions)";
+                $i++;
+            }
+            $lines[] = '';
+        }
+
+        // Top videos
+        if (!empty($items)) {
+            $negPosts = array_filter($items, fn($p) => stripos($p['sentiment_str'] ?? '', 'neg') !== false);
+            $posPosts = array_filter($items, fn($p) => stripos($p['sentiment_str'] ?? '', 'pos') !== false);
+            $neuPosts = array_filter($items, fn($p) =>
+                stripos($p['sentiment_str'] ?? '', 'neg') === false &&
+                stripos($p['sentiment_str'] ?? '', 'pos') === false
+            );
+
+            $sample = array_merge(
+                array_slice(array_values($negPosts), 0, 10),
+                array_slice(array_values($posPosts), 0, 8),
+                array_slice(array_values($neuPosts), 0, 5)
+            );
+
+            $lines[] = '--- TOP YOUTUBE VIDEOS (' . count($sample) . ' dari ' . count($items) . ') ---';
+            foreach ($sample as $idx => $post) {
+                $date      = substr($post['date_created'] ?? '', 0, 10);
+                $channel   = $post['author_name'] ?? $post['name'] ?? 'Unknown Channel';
+                // Sanitize channel ID-only names
+                if (!$channel || preg_match('/^UC[A-Za-z0-9_-]{20,}$/', $channel)) {
+                    $channel = 'YouTube Channel';
+                }
+                $title     = $post['title'] ?? '';
+                $content   = substr(trim(($post['content'] ?? '') ?: $title), 0, 180);
+                $content   = str_replace("\n", ' ', $content);
+                $views     = $post['num_views']    ?? $post['view_cnt'] ?? 0;
+                $likes     = $post['num_likes']    ?? $post['likes']    ?? 0;
+                $comments  = $post['num_comments'] ?? $post['comments'] ?? 0;
+                $sentiment = $post['sentiment_str'] ?? 'Neutral';
+                $n         = $idx + 1;
+
+                $lines[] = "[V{$n}] {$channel} | {$date} | {$sentiment}";
+                $lines[] = "   Views: {$views} | Likes: {$likes} | Comments: {$comments}";
+                if ($title)   $lines[] = "   Judul: \"{$title}\"";
+                if ($content) $lines[] = "   \"{$content}\"";
+            }
+        }
+
+        $lines[] = '=== AKHIR DATASET ===';
+        $dataset = implode("\n", $lines);
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'dataset' => $dataset,
+                'summary' => [
+                    'total_videos'  => count($items),
+                    'total_hashtags'=> count($hashtagCount),
+                    'sentiment'     => [
+                        'positive' => $positive,
+                        'negative' => $negative,
+                        'neutral'  => $neutral,
+                    ],
+                    'volume' => $totalVolume,
+                ],
+            ],
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('YT aiAnalysisData error', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+    }
+}
+
+public function aiAnalysisProxy(Request $request)
+{
+    try {
+        $apiKey = env('GEMINI_API_KEY');
+        if (!$apiKey) {
+            return response()->json(['error' => 'GEMINI_API_KEY not configured'], 500);
+        }
+
+        $messages  = $request->input('messages', []);
+        $system    = $request->input('system', '');
+        $maxTokens = (int) $request->input('max_tokens', 8192);
+
+        // Gemini model fallback chain
+        $models = [
+            'gemini-2.5-flash',
+            'gemini-2.5-pro',
+            'gemini-2.0-flash',
+            'gemini-2.0-flash-lite',
+            'gemini-flash-latest',
+        ];
+
+        $lastError = null;
+
+        foreach ($models as $model) {
+            try {
+                $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+
+                // Convert messages to Gemini format
+                $contents = [];
+
+                if ($system) {
+                    $contents[] = [
+                        'role'  => 'user',
+                        'parts' => [['text' => $system]],
+                    ];
+                    $contents[] = [
+                        'role'  => 'model',
+                        'parts' => [['text' => 'Understood. I will act as SMADIMENT AI Analyst and follow all instructions provided.']],
+                    ];
+                }
+
+                foreach ($messages as $msg) {
+                    $role = $msg['role'] === 'assistant' ? 'model' : 'user';
+                    $contents[] = [
+                        'role'  => $role,
+                        'parts' => [['text' => $msg['content'] ?? '']],
+                    ];
+                }
+
+                $payload = [
+                    'contents'         => $contents,
+                    'generationConfig' => [
+                        'maxOutputTokens' => $maxTokens,
+                        'temperature'     => 0.7,
+                    ],
+                ];
+
+                $ch = curl_init($url);
+                curl_setopt_array($ch, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_POST           => true,
+                    CURLOPT_POSTFIELDS     => json_encode($payload),
+                    CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+                    CURLOPT_TIMEOUT        => 120,
+                ]);
+
+                $response = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+
+                if ($httpCode !== 200) {
+                    $lastError = "Model {$model} returned HTTP {$httpCode}";
+                    Log::warning("YT aiProxy: {$lastError}");
+                    continue;
+                }
+
+                $decoded = json_decode($response, true);
+                $text    = $decoded['candidates'][0]['content']['parts'][0]['text'] ?? null;
+
+                if (!$text) {
+                    $lastError = "Model {$model} returned empty text";
+                    Log::warning("YT aiProxy: {$lastError}");
+                    continue;
+                }
+
+                Log::info("YT aiProxy: success with model {$model}");
+
+                return response()->json([
+                    'content' => [['type' => 'text', 'text' => $text]],
+                    'model'   => $model,
+                ]);
+
+            } catch (\Exception $e) {
+                $lastError = $e->getMessage();
+                Log::warning("YT aiProxy: model {$model} exception — {$lastError}");
+                continue;
+            }
+        }
+
+        return response()->json(['error' => 'All Gemini models failed. Last error: ' . $lastError], 500);
+
+    } catch (\Exception $e) {
+        Log::error('YT aiAnalysisProxy error', ['error' => $e->getMessage()]);
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
 }
