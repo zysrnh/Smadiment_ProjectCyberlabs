@@ -797,6 +797,7 @@ const FMEDp = (() => {
     document.getElementById('hED').value = fmt(de);
     document.getElementById('fmeDpDisplay').textContent = fmt(ds)+' – '+fmt(de);
     close();
+    document.getElementById('fmeForm').submit();
   }
 
   function nav(dir) { m1.setMonth(m1.getMonth()+dir); m2.setMonth(m2.getMonth()+dir); render(); }

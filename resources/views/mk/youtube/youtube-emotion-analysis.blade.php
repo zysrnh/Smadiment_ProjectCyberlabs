@@ -623,6 +623,7 @@ const EmoDP = (() => {
   function apply() {
     document.getElementById('hSD').value=fmt(ds); document.getElementById('hED').value=fmt(de);
     document.getElementById('dpDisplay').textContent=fmt(ds)+' – '+fmt(de); close();
+    document.getElementById('filterForm').submit();
   }
   function nav(dir) { m1.setMonth(m1.getMonth()+dir); m2.setMonth(m2.getMonth()+dir); render(); }
   function onPreset(e) {

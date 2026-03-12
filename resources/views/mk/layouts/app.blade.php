@@ -151,6 +151,22 @@
         layout_theme_sidebar_change('false');
     </script>
 
+    {{-- Re-apply sidebar active state after script.js wipes pc-trigger --}}
+    <script>
+    (function(){
+        var activeItem = document.querySelector('.pc-navbar > li.pc-hasmenu > .pc-submenu .pc-item.active');
+        if (activeItem) {
+            var parent = activeItem.closest('li.pc-hasmenu');
+            if (parent) {
+                parent.classList.add('pc-trigger');
+                parent.classList.add('active');
+                var sub = parent.querySelector('.pc-submenu');
+                if (sub) sub.style.display = 'block';
+            }
+        }
+    })();
+    </script>
+
     <script>
     (function () {
         // ── ROUTE MAP: { match, group, section, page }

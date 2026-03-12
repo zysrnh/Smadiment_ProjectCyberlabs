@@ -25,10 +25,10 @@
                     }
                 }
 
-                $statisticRoutes   = ['mk.media-statistic', 'mk.sentiment', 'mk.net-sentiment-score'];
+                $statisticRoutes   = ['mk.media-statistic', 'mk.media-statistic.trend', 'mk.sentiment', 'mk.net-sentiment-score', 'mk.engagement', 'mk.interaction-sentiment'];
                 $newsRoutes        = ['mk.news.word-cloud','mk.news.top-publishers','mk.news.timeline','mk.news.articles','mk.news.ai-analysis','mk.news.topic-map'];
-                $xRoutes           = ['mk.x.overview','mk.x.most-status','mk.x.most-retweets','mk.x.authors.demographics','mk.x.geographic','mk.x.post-with-location','mk.x.trending-topics','mk.x.trending-word-cloud','mk.x.shared-urls','mk.x.most-active-users','mk.x.top-influencers','mk.x.emotion-analysis','mk.x.ai-analysis'];
-                $facebookRoutes    = ['mk.facebook.overview','mk.facebook.trending-topics','mk.facebook.most-viewed-posts','mk.facebook.most-engagement','mk.facebook.geographic','mk.facebook.trending-word-cloud','mk.facebook.ai-analysis','mk.facebook.emotion-analysis'];
+                $xRoutes           = ['mk.x.overview','mk.x.most-status','mk.x.most-retweets','mk.x.most-engagement','mk.x.authors.demographics','mk.x.geographic','mk.x.post-with-location','mk.x.trending-topics','mk.x.top-hashtags','mk.x.trending-word-cloud','mk.x.shared-urls','mk.x.most-active-users','mk.x.top-influencers','mk.x.emotion-analysis','mk.x.ai-analysis'];
+                $facebookRoutes    = ['mk.facebook.overview','mk.facebook.trending-topics','mk.facebook.most-viewed-posts','mk.facebook.most-engagement','mk.facebook.geographic','mk.facebook.trending-word-cloud','mk.facebook.ai-analysis','mk.facebook.emotion-analysis','mk.facebook.top-hashtags','mk.facebook.authors.demographics'];
                 $instagramRoutes   = ['mk.instagram.overview','mk.instagram.trending-topics','mk.instagram.most-viewed-posts','mk.instagram.authors.demographics','mk.instagram.geographic','mk.instagram.trending-word-cloud','mk.instagram.ai-analysis','mk.instagram.most-engagement','mk.instagram.emotion-analysis'];
                 $youtubeRoutes     = ['mk.youtube.overview','mk.youtube.trending-topics','mk.youtube.most-viewed-posts','mk.youtube.most-engagement','mk.youtube.emotion-analysis','mk.youtube.authors.demographics','mk.youtube.geographic','mk.youtube.trending-word-cloud','mk.youtube.ai-analysis'];
                 $tiktokRoutes      = ['mk.tiktok.overview','mk.tiktok.trending-topics','mk.tiktok.most-viewed-posts','mk.tiktok.trending-word-cloud','mk.tiktok.most-engagement','mk.tiktok.emotion-analysis','mk.tiktok.ai-analysis'];

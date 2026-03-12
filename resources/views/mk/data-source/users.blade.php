@@ -1110,25 +1110,26 @@
     renderCalendars();
   }
 
-  function preset (e) {
-    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+  function onPreset(e){
+    document.querySelectorAll('.do-dp-preset').forEach(b=>b.classList.remove('active'));
     e.target.classList.add('active');
-    const today = new Date(); today.setHours(0,0,0,0);
-    switch (e.target.dataset.preset) {
-      case 'today':      selectedStartDate = new Date(today); selectedEndDate = new Date(today); break;
-      case 'yesterday':  selectedStartDate = new Date(today); selectedStartDate.setDate(today.getDate()-1); selectedEndDate = new Date(selectedStartDate); break;
-      case 'last7days':  selectedEndDate = new Date(today); selectedStartDate = new Date(today); selectedStartDate.setDate(today.getDate()-6); break;
-      case 'last30days': selectedEndDate = new Date(today); selectedStartDate = new Date(today); selectedStartDate.setDate(today.getDate()-29); break;
-      case 'thismonth':  selectedStartDate = new Date(today.getFullYear(), today.getMonth(), 1); selectedEndDate = new Date(today); break;
-      case 'lastmonth':  selectedStartDate = new Date(today.getFullYear(), today.getMonth()-1, 1); selectedEndDate = new Date(today.getFullYear(), today.getMonth(), 0); break;
+    const today=new Date();today.setHours(0,0,0,0);
+    switch(e.target.dataset.p){
+        case 'today':    ds=new Date(today);de=new Date(today);break;
+        case 'yesterday':ds=new Date(today);ds.setDate(today.getDate()-1);de=new Date(ds);break;
+        case 'last7':    de=new Date(today);ds=new Date(today);ds.setDate(today.getDate()-6);break;
+        case 'last30':   de=new Date(today);ds=new Date(today);ds.setDate(today.getDate()-29);break;
+        case 'thismonth':ds=new Date(today.getFullYear(),today.getMonth(),1);de=new Date(today);break;
+        case 'lastmonth':ds=new Date(today.getFullYear(),today.getMonth()-1,1);de=new Date(today.getFullYear(),today.getMonth(),0);break;
     }
-    if (e.target.dataset.preset !== 'custom') {
-      currentMonth1 = new Date(selectedStartDate);
-      currentMonth2 = new Date(selectedStartDate);
-      currentMonth2.setMonth(currentMonth2.getMonth() + 1);
-      renderCalendars();
+    if(e.target.dataset.p!=='custom'){
+        m1=new Date(ds);m2=new Date(ds);m2.setMonth(m2.getMonth()+1);
+        // Auto apply & submit untuk preset (bukan custom)
+        apply();
+    } else {
+        updDisp();render();
     }
-  }
+}
 
   function apply () {
     const start = fmt(selectedStartDate);

@@ -300,22 +300,24 @@ public function topHashtags(Request $request, MediaKernelsClient $mk)
                 $mediaNames = ['doc' => 'Online News', 'twit' => 'X (Twitter)', 'fb' => 'Facebook', 'ig' => 'Instagram', 'yt' => 'YouTube', 'tiktok' => 'TikTok'];
                 
                 foreach ($byMedia as $mediaKey => $sentiments) {
-                    $pos = (int)($sentiments['pos'] ?? 0);
-                    $neg = (int)($sentiments['neg'] ?? 0);
-                    $total = $pos + $neg;
-                    if ($total === 0) continue;
-                    
-                    $mediaData[] = [
-                        'media' => $mediaNames[$mediaKey] ?? ucfirst($mediaKey),
-                        'media_key' => $mediaKey,
-                        'positive' => $pos,
-                        'negative' => $neg,
-                        'net_sentiment' => (int)($sentiments['net'] ?? ($pos - $neg)),
-                        'total' => $total,
-                        'positive_percentage' => round(($pos / $total) * 100, 1),
-                        'negative_percentage' => round(($neg / $total) * 100, 1),
-                    ];
-                }
+    $pos = (int)($sentiments['pos'] ?? 0);
+    $neg = (int)($sentiments['neg'] ?? 0);
+    $neu = (int)($sentiments['net'] ?? $sentiments['neu'] ?? $sentiments['neutral'] ?? 0);
+    $total = $pos + $neg + $neu;  // ← ikut hitung netral
+    if ($total === 0) continue;
+
+    $mediaData[] = [
+        'media'               => $mediaNames[$mediaKey] ?? ucfirst($mediaKey),
+        'media_key'           => $mediaKey,
+        'positive'            => $pos,
+        'neutral'             => $neu,
+        'negative'            => $neg,
+        'total'               => $total,
+        'positive_percentage' => round(($pos / $total) * 100, 1),
+        'neutral_percentage'  => round(($neu / $total) * 100, 1),
+        'negative_percentage' => round(($neg / $total) * 100, 1),
+    ];
+}
                 
                 usort($mediaData, fn($a, $b) => $b['total'] <=> $a['total']);
                 
@@ -451,15 +453,16 @@ public function topHashtags(Request $request, MediaKernelsClient $mk)
         });
     }
 
-    private function normalizeSentimentTotal(array $raw): array
-    {
-        $src = $raw['data'] ?? $raw;
-        return [
-            'positive' => (int) ($src['positive'] ?? $src['pos'] ?? $src['1'] ?? 0),
-            'neutral'  => (int) ($src['neutral']  ?? $src['neu'] ?? $src['0'] ?? 0),
-            'negative' => (int) ($src['negative'] ?? $src['neg'] ?? $src['-1'] ?? 0),
-        ];
-    }
+   private function normalizeSentimentTotal(array $raw): array
+{
+    $src = $raw['data'] ?? $raw;
+
+    return [
+        'positive' => (int) ($src['positive'] ?? $src['pos'] ?? $src['1'] ?? 0),
+        'neutral'  => (int) ($src['neutral']  ?? $src['neu'] ?? $src['net'] ?? $src['0'] ?? 0), // ← tambah 'net'
+        'negative' => (int) ($src['negative'] ?? $src['neg'] ?? $src['-1'] ?? 0),
+    ];
+}
 
     private function extractTotal(array $stats): int
     {

@@ -12,16 +12,16 @@ class MkController extends Controller
     /**
      * Helper: Normalize sentiment data
      */
-    private function normalizeSentimentTotal(array $raw): array
-    {
-        $src = $raw['data'] ?? $raw;
+   private function normalizeSentimentTotal(array $raw): array
+{
+    $src = $raw['data'] ?? $raw;
 
-        return [
-            'positive' => (int) ($src['positive'] ?? $src['pos'] ?? $src['1'] ?? 0),
-            'neutral'  => (int) ($src['neutral']  ?? $src['neu'] ?? $src['0'] ?? 0),
-            'negative' => (int) ($src['negative'] ?? $src['neg'] ?? $src['-1'] ?? 0),
-        ];
-    }
+    return [
+        'positive' => (int) ($src['positive'] ?? $src['pos'] ?? $src['1'] ?? 0),
+        'neutral'  => (int) ($src['neutral']  ?? $src['neu'] ?? $src['net'] ?? $src['0'] ?? 0), // ← tambah 'net'
+        'negative' => (int) ($src['negative'] ?? $src['neg'] ?? $src['-1'] ?? 0),
+    ];
+}
 
     /**
      * Helper: Normalize chart data (Age/Gender/Type)
@@ -1041,34 +1041,37 @@ class MkController extends Controller
 
         return $counts;
     }
-  public function chartData(Request $request, MediaKernelsClient $mk)
+public function chartData(Request $request, MediaKernelsClient $mk)
 {
     $projectId = (int) $request->query('project_id');
     $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
     $endDate   = $request->query('end_date',   now()->toDateString());
- 
-    // Cek akses
+
     if (!$this->userHasAccessToProject($projectId)) {
         return response()->json(['error' => 'Unauthorized'], 403);
     }
- 
+
+    $cacheKey = "chart_timeline_{$projectId}_{$startDate}_{$endDate}";
+
     try {
-        $timeline = $this->extractTimelineByRange($projectId, $startDate, $endDate, $mk);
- 
+        $timeline = \Illuminate\Support\Facades\Cache::remember($cacheKey, 600, function () use ($projectId, $startDate, $endDate, $mk) {
+            return $this->extractTimelineByRange($projectId, $startDate, $endDate, $mk);
+        });
+
         return response()->json(['timeline' => $timeline]);
- 
+
     } catch (\Exception $e) {
         Log::warning("chartData: failed for project {$projectId}", [
             'error' => $e->getMessage(),
         ]);
- 
+
         return response()->json([
             'timeline' => [
                 'dates'     => [],
                 'values'    => [],
                 'sentiment' => ['positive'=>[],'neutral'=>[],'negative'=>[]],
             ],
-        ], 200); // tetap 200 supaya JS tidak throw error
+        ], 200);
     }
 }
 }

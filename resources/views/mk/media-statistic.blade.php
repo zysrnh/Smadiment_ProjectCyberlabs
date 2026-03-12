@@ -1996,25 +1996,31 @@ const MSDp = (() => {
     document.getElementById('hED').value = fmt(de);
     document.getElementById('msDpDisplay').textContent = fmt(ds) + ' – ' + fmt(de);
     close();
+    document.getElementById('msFilterForm').submit();
   }
 
   function nav(dir) { m1.setMonth(m1.getMonth()+dir); m2.setMonth(m2.getMonth()+dir); render(); }
 
-  function onPreset(e) {
-    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+function onPreset(e){
+    document.querySelectorAll('.do-dp-preset').forEach(b=>b.classList.remove('active'));
     e.target.classList.add('active');
-    const today = new Date(); today.setHours(0,0,0,0);
-    switch (e.target.dataset.p) {
-      case 'today':     ds = new Date(today); de = new Date(today); break;
-      case 'yesterday': ds = new Date(today); ds.setDate(today.getDate()-1); de = new Date(ds); break;
-      case 'last7':     de = new Date(today); ds = new Date(today); ds.setDate(today.getDate()-6); break;
-      case 'last30':    de = new Date(today); ds = new Date(today); ds.setDate(today.getDate()-29); break;
-      case 'thismonth': ds = new Date(today.getFullYear(), today.getMonth(), 1); de = new Date(today); break;
-      case 'lastmonth': ds = new Date(today.getFullYear(), today.getMonth()-1, 1); de = new Date(today.getFullYear(), today.getMonth(), 0); break;
+    const today=new Date();today.setHours(0,0,0,0);
+    switch(e.target.dataset.p){
+        case 'today':    ds=new Date(today);de=new Date(today);break;
+        case 'yesterday':ds=new Date(today);ds.setDate(today.getDate()-1);de=new Date(ds);break;
+        case 'last7':    de=new Date(today);ds=new Date(today);ds.setDate(today.getDate()-6);break;
+        case 'last30':   de=new Date(today);ds=new Date(today);ds.setDate(today.getDate()-29);break;
+        case 'thismonth':ds=new Date(today.getFullYear(),today.getMonth(),1);de=new Date(today);break;
+        case 'lastmonth':ds=new Date(today.getFullYear(),today.getMonth()-1,1);de=new Date(today.getFullYear(),today.getMonth(),0);break;
     }
-    if (e.target.dataset.p !== 'custom') { m1 = new Date(ds); m2 = new Date(ds); m2.setMonth(m2.getMonth()+1); }
-    updDisp(); render();
-  }
+    if(e.target.dataset.p!=='custom'){
+        m1=new Date(ds);m2=new Date(ds);m2.setMonth(m2.getMonth()+1);
+        // Auto apply & submit untuk preset (bukan custom)
+        apply();
+    } else {
+        updDisp();render();
+    }
+}
 
   function render() { renderCal('msDpCal1', m1); renderCal('msDpCal2', m2); updDisp(); }
 
