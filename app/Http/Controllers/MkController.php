@@ -279,62 +279,46 @@ class MkController extends Controller
     // ══════════════════════════════════════════════════════════════
     // 📊 DASHBOARD (User - Filtered by assigned projects)
     // ══════════════════════════════════════════════════════════════
-    public function dashboard(Request $request, MediaKernelsClient $mk)
-    {
-        $projects = $this->getProjects($mk);
-
-        // Ambil date range dari datepicker (global layout), default bulan ini
-        $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
-        $endDate   = $request->query('end_date',   now()->toDateString());
-
-        foreach ($projects as &$project) {
-            try {
-                // Timeline per hari/minggu sesuai date range
-                $project['timeline'] = $this->extractTimelineByRange(
-                    $project['id'],
-                    $startDate,
-                    $endDate,
-                    $mk
-                );
-
-                // Total keseluruhan untuk summary card
-                $sentimentData = $mk->sentimentTotal($project['id'], $startDate, $endDate, 0, 23);
-                $norm = $this->normalizeSentimentTotal($sentimentData);
-
-                $project['total_mentions']    = $norm['positive'] + $norm['neutral'] + $norm['negative'];
-                $project['sentiment_summary'] = $norm;
-
-            } catch (\Exception $e) {
-                Log::warning("Dashboard: failed to fetch data for project {$project['id']}", [
-                    'error' => $e->getMessage(),
-                ]);
-
-                $project['timeline'] = [
-                    'dates'     => [],
-                    'values'    => [],
-                    'sentiment' => ['positive' => [], 'neutral' => [], 'negative' => []],
-                ];
-                $project['total_mentions']    = 0;
-                $project['sentiment_summary'] = ['positive' => 0, 'neutral' => 0, 'negative' => 0];
-            }
+ public function dashboard(Request $request, MediaKernelsClient $mk)
+{
+    $projects  = $this->getProjects($mk);
+    $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
+    $endDate   = $request->query('end_date',   now()->toDateString());
+ 
+    foreach ($projects as &$project) {
+        try {
+            $sentimentData = $mk->sentimentTotal(
+                $project['id'], $startDate, $endDate, 0, 23
+            );
+            $norm = $this->normalizeSentimentTotal($sentimentData);
+ 
+            $project['total_mentions']    = $norm['positive'] + $norm['neutral'] + $norm['negative'];
+            $project['sentiment_summary'] = $norm;
+ 
+        } catch (\Exception $e) {
+            Log::warning("Dashboard: failed sentiment for project {$project['id']}", [
+                'error' => $e->getMessage(),
+            ]);
+            $project['total_mentions']    = 0;
+            $project['sentiment_summary'] = ['positive'=>0,'neutral'=>0,'negative'=>0];
         }
-        unset($project); // lepas reference
-
-        Log::info('📊 Dashboard loaded', [
-            'user_id'        => Auth::id(),
-            'projects_count' => count($projects),
-            'project_ids'    => array_column($projects, 'id'),
-            'start_date'     => $startDate,
-            'end_date'       => $endDate,
-        ]);
-
-        return view('mk.dashboard', [
-            'projects'  => $projects,
-            'startDate' => $startDate,
-            'endDate'   => $endDate,
-        ]);
     }
-
+    unset($project);
+ 
+    Log::info('📊 Dashboard (fast) loaded', [
+        'user_id'        => Auth::id(),
+        'projects_count' => count($projects),
+        'start_date'     => $startDate,
+        'end_date'       => $endDate,
+    ]);
+ 
+    return view('mk.dashboard', [
+        'projects'  => $projects,
+        'startDate' => $startDate,
+        'endDate'   => $endDate,
+    ]);
+}
+ 
     // ══════════════════════════════════════════════════════════════
     // 👨‍💼 ADMIN DASHBOARD
     // ══════════════════════════════════════════════════════════════
@@ -1057,4 +1041,34 @@ class MkController extends Controller
 
         return $counts;
     }
+  public function chartData(Request $request, MediaKernelsClient $mk)
+{
+    $projectId = (int) $request->query('project_id');
+    $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
+    $endDate   = $request->query('end_date',   now()->toDateString());
+ 
+    // Cek akses
+    if (!$this->userHasAccessToProject($projectId)) {
+        return response()->json(['error' => 'Unauthorized'], 403);
+    }
+ 
+    try {
+        $timeline = $this->extractTimelineByRange($projectId, $startDate, $endDate, $mk);
+ 
+        return response()->json(['timeline' => $timeline]);
+ 
+    } catch (\Exception $e) {
+        Log::warning("chartData: failed for project {$projectId}", [
+            'error' => $e->getMessage(),
+        ]);
+ 
+        return response()->json([
+            'timeline' => [
+                'dates'     => [],
+                'values'    => [],
+                'sentiment' => ['positive'=>[],'neutral'=>[],'negative'=>[]],
+            ],
+        ], 200); // tetap 200 supaya JS tidak throw error
+    }
+}
 }

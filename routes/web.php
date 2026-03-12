@@ -183,15 +183,13 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/most-active-users',[YoutubeOverviewController::class, 'mostActiveUsers'])->name('most-active-users');
             Route::get('/trending-topics',  [YoutubeOverviewController::class, 'trendingTopicsData'])->name('trending-topics');
             Route::get('/most-viewed-posts',[YoutubeOverviewController::class, 'mostViewedPostsData'])->name('most-viewed-posts');
-            Route::get('/authors-age',      [YoutubeOverviewController::class, 'authorsAgeData'])->name('authors-age');
-            Route::get('/authors-gender',   [YoutubeOverviewController::class, 'authorsGenderData'])->name('authors-gender');
-            Route::get('/authors-type',     [YoutubeOverviewController::class, 'authorsTypeData'])->name('authors-type');
-            Route::get('/geo-user',         [YoutubeOverviewController::class, 'geoUser'])->name('geo-user');
-            Route::get('/geo-sentiment',    [YoutubeOverviewController::class, 'geoSentiment'])->name('geo-sentiment');
-        Route::get('/ai-analysis-data', [YoutubeOverviewController::class, 'aiAnalysisData'])->name('ai-analysis-data');
-Route::post('/ai-proxy',        [YoutubeOverviewController::class, 'aiAnalysisProxy'])->name('ai-proxy');
-
-           
+            Route::get('/most-engagement',  [YoutubeOverviewController::class, 'mostEngagementData'])->name('most-engagement');
+            Route::get('/emotion-analysis', [YoutubeOverviewController::class, 'emotionAnalysisData'])->name('emotion-analysis');
+            Route::get('/authors-demographics', [YoutubeOverviewController::class, 'authorsDemographicsPage'])->name('authors.demographics');
+            Route::get('/geographic',       [YoutubeOverviewController::class, 'geographicPage'])->name('geographic');
+            Route::get('/trending-word-cloud', [YoutubeOverviewController::class, 'trendingWordCloudPage'])->name('trending-word-cloud');
+            Route::get('/ai-analysis-data', [YoutubeOverviewController::class, 'aiAnalysisData'])->name('ai-analysis-data');
+            Route::post('/ai-proxy',        [YoutubeOverviewController::class, 'aiAnalysisProxy'])->name('ai-proxy');
             Route::get('/top-locations',    [YoutubeOverviewController::class, 'topLocations'])->name('top-locations');
         });
 
@@ -206,9 +204,7 @@ Route::post('/ai-proxy',        [YoutubeOverviewController::class, 'aiAnalysisPr
             Route::get('/most-viewed-posts',[TiktokOverviewController::class, 'mostViewedPostsData'])->name('most-viewed-posts');
             Route::get('/most-engagement',  [TiktokOverviewController::class, 'mostEngagementData'])->name('most-engagement');
             Route::get('/ai-analysis-data', [TiktokOverviewController::class, 'aiAnalysisData'])->name('ai-analysis-data');
-Route::post('/ai-proxy',        [TiktokOverviewController::class, 'aiAnalysisProxy'])->name('ai-proxy');
-
-            
+            Route::post('/ai-proxy',        [TiktokOverviewController::class, 'aiAnalysisProxy'])->name('ai-proxy');
             Route::get('/emotion-analysis', [TiktokOverviewController::class, 'emotionAnalysisData'])->name('emotion-analysis');
         });
 
@@ -227,10 +223,10 @@ Route::post('/ai-proxy',        [TiktokOverviewController::class, 'aiAnalysisPro
     // ═══════════════════════════════════════════════════════
     // PAGE ROUTES
     // ═══════════════════════════════════════════════════════
-    Route::get('/dashboard',    [MkController::class, 'dashboard'])->name('dashboard');
-    Route::get('/data-overview',[MkController::class, 'dataOverview'])->name('data-overview');
-    Route::get('/projects',     [MkController::class, 'projects'])->name('projects');
-
+    Route::get('/dashboard',        [MkController::class, 'dashboard'])->name('dashboard');
+    Route::get('/dashboard/chart-data', [MkController::class, 'chartData'])->name('dashboard.chart-data'); // ← ADDED
+    Route::get('/data-overview',    [MkController::class, 'dataOverview'])->name('data-overview');
+    Route::get('/projects',         [MkController::class, 'projects'])->name('projects');
     Route::get('/media-statistic',       [MediaStatisticController::class, 'index'])->name('media-statistic');
     Route::get('/media-statistic/trend', [MediaStatisticController::class, 'trendPage'])->name('media-statistic.trend');
 
