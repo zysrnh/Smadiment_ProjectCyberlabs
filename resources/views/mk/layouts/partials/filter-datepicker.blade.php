@@ -232,10 +232,16 @@ const DPicker = (()=>{
     let ds=null,de=null,m1=new Date(),m2=new Date(),pickStart=true;
     const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
     const WD=['Su','Mo','Tu','We','Th','Fr','Sa'];
+    function parseLocal(s){
+        if(!s)return null;
+        const p=String(s).split('-');
+        if(p.length===3) return new Date(+p[0],+p[1]-1,+p[2]);
+        return new Date(s);
+    }
     function init(){
         const si=_dpEl('hiddenStartDate'),ei=_dpEl('hiddenEndDate');
-        ds=si?.value?new Date(si.value):(()=>{const d=new Date();d.setDate(d.getDate()-6);return d;})();
-        de=ei?.value?new Date(ei.value):new Date();
+        ds=si?.value?parseLocal(si.value):(()=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-6);return d;})();
+        de=ei?.value?parseLocal(ei.value):(()=>{const d=new Date();d.setHours(0,0,0,0);return d;})();
         m1=new Date(ds);m2=new Date(ds);m2.setMonth(m2.getMonth()+1);
         render();
         _dpEl('doDateTrigger')?.addEventListener('click',open);
@@ -294,7 +300,7 @@ const DPicker = (()=>{
         h+='</div>';el.innerHTML=h;
         el.querySelectorAll('.do-cal-day:not(.dim):not(:disabled)').forEach(btn=>{
             btn.addEventListener('click',function(){
-                const d=new Date(this.dataset.date);d.setHours(0,0,0,0);
+                const d=parseLocal(this.dataset.date);
                 document.querySelectorAll('.do-dp-preset').forEach(b=>b.classList.remove('active'));
                 document.querySelector('[data-p="custom"]').classList.add('active');
                 if(pickStart||d<ds){ds=d;de=d;pickStart=false;}
