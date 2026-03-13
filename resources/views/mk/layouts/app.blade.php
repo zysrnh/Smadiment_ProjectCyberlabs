@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
     <link rel="stylesheet" href="/assets/css/style.css" id="main-style-link" />
     <link rel="stylesheet" href="/assets/css/style-preset.css" />
+    <link rel="stylesheet" href="/assets/css/custom-theme.css" />
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -113,7 +114,7 @@
     <div class="pc-container">
         <div class="pc-content">
 
-            <div class="page-header">
+            <div class="page-header" style="margin-bottom: 24px;">
                 <div class="page-block">
                     <div class="row align-items-center">
                         <div class="col-md-12">
@@ -182,6 +183,9 @@
             { match: /\/net-sentiment-score$/,     group: 'Main', section: 'Statistic',    page: 'Net Sentiment Score' },
             { match: /\/compare/,                  group: 'Main', section: null,           page: 'Compare Projects' },
             { match: /\/topic-map$/,               group: 'Main', section: null,           page: 'World Map' },
+            { match: /\/x\/geographic$/,           group: 'Main', section: null,           page: 'Location Map' },
+            { match: /\/trending-topic$/,          group: 'Main', section: null,           page: 'Trending Topics' },
+            { match: /\/x\/post-with-location$/,   group: 'Main', section: null,           page: 'Posts with Location' },
             // News
             { match: /\/news\/word-cloud$/,        group: 'News', section: null,           page: 'Word Cloud' },
             { match: /\/news\/top-publishers$/,    group: 'News', section: null,           page: 'Top Publishers' },
@@ -195,8 +199,6 @@
             { match: /\/x\/most-retweets$/,        group: 'Social Media', section: 'X (Twitter)', page: 'Most Retweets' },
             { match: /\/x\/most-engagement$/,      group: 'Social Media', section: 'X (Twitter)', page: 'Most Engagement' },
             { match: /\/x\/authors/,               group: 'Social Media', section: 'X (Twitter)', page: 'Author Profiles' },
-            { match: /\/x\/geographic$/,           group: 'Social Media', section: 'X (Twitter)', page: 'Location Map' },
-            { match: /\/x\/post-with-location$/,   group: 'Social Media', section: 'X (Twitter)', page: 'Posts with Location' },
             { match: /\/x\/trending-word-cloud$/,  group: 'Social Media', section: 'X (Twitter)', page: 'Word Cloud' },
             { match: /\/x\/shared-urls$/,          group: 'Social Media', section: 'X (Twitter)', page: 'Shared URLs' },
             { match: /\/x\/most-active-users$/,    group: 'Social Media', section: 'X (Twitter)', page: 'Most Active Users' },
@@ -241,6 +243,9 @@
                 { label: 'Statistic',        path: '/mk/media-statistic' },
                 { label: 'Compare Projects', path: '/mk/compare-projects' },
                 { label: 'World Map',        path: '/mk/topic-map' },
+                { label: 'Location Map',     path: '/mk/x/geographic' },
+                { label: 'Trending Topics', path: '/mk/trending-topic' },
+                { label: 'Posts with Location', path: '/mk/x/post-with-location' },
             ],
             'News': [
                 { label: 'Word Cloud',     path: '/mk/news/word-cloud' },
@@ -271,8 +276,6 @@
                 { label: 'Most Retweets',     path: '/mk/x/most-retweets' },
                 { label: 'Most Engagement',   path: '/mk/x/most-engagement' },
                 { label: 'Author Profiles',   path: '/mk/x/authors/demographics' },
-                { label: 'Location Map',      path: '/mk/x/geographic' },
-                { label: 'Posts with Location',path: '/mk/x/post-with-location' },
                 { label: 'Word Cloud',        path: '/mk/x/trending-word-cloud' },
                 { label: 'Shared URLs',       path: '/mk/x/shared-urls' },
                 { label: 'Most Active Users', path: '/mk/x/most-active-users' },

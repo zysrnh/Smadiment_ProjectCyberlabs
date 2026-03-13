@@ -38,6 +38,7 @@ class CompareProjectController extends Controller
             return view('mk.compare.index', [
                 'projects'    => $projects,
                 'selectedIds' => $selectedIds,
+                'projectId'   => $selectedIds[0] ?? ($projects[0]['id'] ?? null),
                 'startDate'   => $startDate,
                 'endDate'     => $endDate,
             ]);
@@ -51,6 +52,7 @@ class CompareProjectController extends Controller
             return view('mk.compare.index', [
                 'projects'    => [],
                 'selectedIds' => [],
+                'projectId'   => null,
                 'startDate'   => now()->subDays(29)->format('Y-m-d'),
                 'endDate'     => now()->format('Y-m-d'),
                 'error'       => 'Failed to load projects: ' . $e->getMessage(),

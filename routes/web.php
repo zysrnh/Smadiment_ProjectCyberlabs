@@ -15,6 +15,7 @@ use App\Http\Controllers\MK\YoutubeOverviewController;
 use App\Http\Controllers\MK\TiktokOverviewController;
 use App\Http\Controllers\MK\NewsController;
 use App\Http\Controllers\MK\CompareProjectController;
+use App\Http\Controllers\MK\TrendingTopicController;
 use App\Http\Controllers\MK\MediaStatisticController;
 use Illuminate\Support\Facades\Route;
 
@@ -218,6 +219,9 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/authors',  [CompareProjectController::class, 'compareAuthors'])->name('authors');
             Route::get('/all',      [CompareProjectController::class, 'compareAll'])->name('all');
         });
+
+        // Trending Topic API
+        Route::get('/trending-topics-twitter', [TrendingTopicController::class, 'getData'])->name('trending-topics-twitter');
     });
 
     // ═══════════════════════════════════════════════════════
@@ -236,6 +240,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     Route::get('/interaction-sentiment', [MediaStatisticController::class, 'interactionSentimentPage'])->name('interaction-sentiment');
     Route::get('/compare',               [CompareProjectController::class, 'index'])->name('compare.index');
     Route::get('/topic-map',             [TopicMapController::class, 'index'])->name('topic-map');
+    Route::get('/trending-topic',          [TrendingTopicController::class, 'index'])->name('trending-topic');
 
     Route::prefix('top-analytics')->name('top-analytics.')->group(function () {
         Route::get('/hashtags',    [TopAnalyticsController::class, 'hashtags'])->name('hashtags');

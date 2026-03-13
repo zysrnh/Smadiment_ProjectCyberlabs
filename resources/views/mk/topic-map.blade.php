@@ -580,6 +580,8 @@
     <p>Visual representation of trending topics and discussion themes</p>
   </div>
 
+  @include('mk.layouts.partials.filter-datepicker')
+
   <!-- Stats Cards -->
   <div class="stats-grid">
     <div class="stat-card">
@@ -732,7 +734,8 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
 
 <script>
-  const projectId = new URLSearchParams(window.location.search).get('project_id');
+  const _urlP = new URLSearchParams(window.location.search);
+  const projectId = _urlP.get('project_id');
   let topicsData = [];
   let barChartInstance = null;
   let pieChartInstance = null;
@@ -754,8 +757,8 @@
 
   async function loadTopicMap() {
     const media = 'all';
-    const startDate = '{{ now()->subDays(7)->format("Y-m-d") }}';
-    const endDate = '{{ now()->format("Y-m-d") }}';
+    const startDate = _urlP.get('start_date') || '{{ $startDate }}';
+    const endDate   = _urlP.get('end_date')   || '{{ $endDate }}';
 
     try {
       const response = await fetch(`/mk/api/topic-map?project_id=${projectId}&media=${media}&start_date=${startDate}&end_date=${endDate}`);

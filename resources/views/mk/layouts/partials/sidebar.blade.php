@@ -27,7 +27,7 @@
 
                 $statisticRoutes   = ['mk.media-statistic', 'mk.media-statistic.trend', 'mk.sentiment', 'mk.net-sentiment-score', 'mk.engagement', 'mk.interaction-sentiment'];
                 $newsRoutes        = ['mk.news.word-cloud','mk.news.top-publishers','mk.news.timeline','mk.news.articles','mk.news.ai-analysis','mk.news.topic-map'];
-                $xRoutes           = ['mk.x.overview','mk.x.most-status','mk.x.most-retweets','mk.x.most-engagement','mk.x.authors.demographics','mk.x.geographic','mk.x.post-with-location','mk.x.trending-topics','mk.x.top-hashtags','mk.x.trending-word-cloud','mk.x.shared-urls','mk.x.most-active-users','mk.x.top-influencers','mk.x.emotion-analysis','mk.x.ai-analysis'];
+                $xRoutes           = ['mk.x.overview','mk.x.most-status','mk.x.most-retweets','mk.x.most-engagement','mk.x.authors.demographics','mk.x.trending-topics','mk.x.top-hashtags','mk.x.trending-word-cloud','mk.x.shared-urls','mk.x.most-active-users','mk.x.top-influencers','mk.x.emotion-analysis','mk.x.ai-analysis'];
                 $facebookRoutes    = ['mk.facebook.overview','mk.facebook.trending-topics','mk.facebook.most-viewed-posts','mk.facebook.most-engagement','mk.facebook.geographic','mk.facebook.trending-word-cloud','mk.facebook.ai-analysis','mk.facebook.emotion-analysis','mk.facebook.top-hashtags','mk.facebook.authors.demographics'];
                 $instagramRoutes   = ['mk.instagram.overview','mk.instagram.trending-topics','mk.instagram.most-viewed-posts','mk.instagram.authors.demographics','mk.instagram.geographic','mk.instagram.trending-word-cloud','mk.instagram.ai-analysis','mk.instagram.most-engagement','mk.instagram.emotion-analysis'];
                 $youtubeRoutes     = ['mk.youtube.overview','mk.youtube.trending-topics','mk.youtube.most-viewed-posts','mk.youtube.most-engagement','mk.youtube.emotion-analysis','mk.youtube.authors.demographics','mk.youtube.geographic','mk.youtube.trending-word-cloud','mk.youtube.ai-analysis'];
@@ -130,6 +130,22 @@
                     </a>
                 </li>
 
+                <li class="pc-item {{ request()->routeIs('mk.x.geographic') ? 'active' : '' }}">
+                    <a href="{{ route('mk.x.geographic') }}{{ $qs }}" class="pc-link">
+                        <span class="pc-micon"><i class="ph ph-map-pin"></i></span>
+                        <span class="pc-mtext">Location Map</span>
+                    </a>
+                </li>
+
+                <li class="pc-item {{ request()->routeIs('mk.trending-topic') ? 'active' : '' }}">
+                    <a href="{{ route('mk.trending-topic') }}" class="pc-link">
+                        <span class="pc-micon"><i class="ph ph-trend-up"></i></span>
+                        <span class="pc-mtext">Trending Topics</span>
+                    </a>
+                </li>
+
+                {{-- Posts with Location hidden from sidebar --}}
+
                 {{-- ── NEWS ── --}}
                 <li class="pc-item pc-caption">
                     <label>News</label>
@@ -178,32 +194,16 @@
                         <li class="pc-item {{ request()->routeIs('mk.x.overview') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.x.overview') }}{{ $qs }}">Overview</a>
                         </li>
-                        <li class="pc-item {{ request()->routeIs('mk.x.trending-topics') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('mk.x.trending-topics') }}{{ $qs }}">Top Hashtags</a>
-                        </li>
-                        <li class="pc-item {{ request()->routeIs('mk.x.most-status') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('mk.x.most-status') }}{{ $qs }}">Most Viewed Posts</a>
-                        </li>
+                        {{-- Top Hashtags, Author Profiles, Location Map, Posts with Location, Shared URLs — now in Overview --}}
+                        {{-- Most Viewed Posts hidden — covered by Most Engagement --}}
                         <li class="pc-item {{ request()->routeIs('mk.x.most-retweets') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.x.most-retweets') }}{{ $qs }}">Most Retweets</a>
                         </li>
                         <li class="pc-item {{ request()->routeIs('mk.x.most-engagement') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.x.most-engagement') }}{{ $qs }}">Most Engagement</a>
                         </li>
-                        <li class="pc-item {{ request()->routeIs('mk.x.authors.demographics') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('mk.x.authors.demographics') }}{{ $qs }}">Author Profiles</a>
-                        </li>
-                        <li class="pc-item {{ request()->routeIs('mk.x.geographic') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('mk.x.geographic') }}{{ $qs }}">Location Map</a>
-                        </li>
-                        <li class="pc-item {{ request()->routeIs('mk.x.post-with-location') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('mk.x.post-with-location') }}{{ $qs }}">Posts with Location</a>
-                        </li>
                         <li class="pc-item {{ request()->routeIs('mk.x.trending-word-cloud') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.x.trending-word-cloud') }}{{ $qs }}">Word Cloud</a>
-                        </li>
-                        <li class="pc-item {{ request()->routeIs('mk.x.shared-urls') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('mk.x.shared-urls') }}{{ $qs }}">Shared URLs</a>
                         </li>
                         <li class="pc-item {{ request()->routeIs('mk.x.most-active-users') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.x.most-active-users') }}{{ $qs }}">Most Active Users</a>

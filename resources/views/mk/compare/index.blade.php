@@ -384,6 +384,15 @@ const CMP_PLAT_META    = {
 };
 </script>
 
+{{-- ══ Filter Datepicker (project selector hidden for compare) ══ --}}
+<style>
+    .cmp-page .do-filter-card .do-filter-group:first-child { display: none !important; }
+    .cmp-page .do-filter-card .do-filter-row { justify-content: flex-start; }
+</style>
+<div class="cmp-page">
+@include('mk.layouts.partials.filter-datepicker')
+</div>
+
 {{-- ══ Config Card — uses .card identical to dashboard ══ --}}
 <div class="row fade-up">
     <div class="col-12">
@@ -394,7 +403,7 @@ const CMP_PLAT_META    = {
             <div class="card-body">
                 <div class="row g-3 align-items-end">
                     {{-- Project Selector --}}
-                    <div class="col-lg-5">
+                    <div class="col-lg-10">
                         <label class="text-muted fw-bold text-uppercase d-block mb-2" style="font-size:11px;letter-spacing:.5px;">
                             <i class="ph ph-folder-open me-1"></i>Select Projects (min 2)
                         </label>
@@ -404,22 +413,6 @@ const CMP_PLAT_META    = {
                         </div>
                         <div class="cmp-tags" id="cmpSelectedTags">
                             <span style="font-size:12px;color:var(--slate-400);align-self:center;">No projects selected</span>
-                        </div>
-                    </div>
-                    {{-- Date Range --}}
-                    <div class="col-lg-5">
-                        <label class="text-muted fw-bold text-uppercase d-block mb-2" style="font-size:11px;letter-spacing:.5px;">
-                            <i class="ph ph-calendar-blank me-1"></i>Date Range
-                        </label>
-                        <div class="cmp-date-row">
-                            <input type="date" class="cmp-date-input" id="cmpStartDate" value="{{ $startDate }}">
-                            <span class="cmp-date-sep">to</span>
-                            <input type="date" class="cmp-date-input" id="cmpEndDate" value="{{ $endDate }}">
-                        </div>
-                        <div class="d-flex gap-2 mt-2 flex-wrap">
-                            <button onclick="cmpApplyPreset('7d')"  class="btn btn-light btn-sm" style="font-size:11px;font-weight:600;">Last 7 Days</button>
-                            <button onclick="cmpApplyPreset('30d')" class="btn btn-light btn-sm" style="font-size:11px;font-weight:600;">Last 30 Days</button>
-                            <button onclick="cmpApplyPreset('1m')"  class="btn btn-light btn-sm" style="font-size:11px;font-weight:600;">This Month</button>
                         </div>
                     </div>
                     {{-- Action --}}
@@ -699,25 +692,15 @@ function cmpUpdateTags() {
 function cmpUpdateBtn() { _$c('cmpCompareBtn').disabled = _cmpSelectedIds.size < 2; }
 
 /* ════════════════════════════════════
-   DATE PRESETS
-════════════════════════════════════ */
-function cmpApplyPreset(key) {
-    const t = new Date();
-    let s;
-    if (key==='7d')  s = new Date(t-6*86400000);
-    if (key==='30d') s = new Date(t-29*86400000);
-    if (key==='1m')  s = new Date(t.getFullYear(),t.getMonth(),1);
-    _$c('cmpStartDate').value = _fmtDate(s);
-    _$c('cmpEndDate').value   = _fmtDate(t);
-}
-
-/* ════════════════════════════════════
    RUN COMPARE
 ════════════════════════════════════ */
 async function cmpRunCompare() {
     if (_cmpSelectedIds.size < 2) return;
-    _cmpStartDate = _$c('cmpStartDate').value;
-    _cmpEndDate   = _$c('cmpEndDate').value;
+    // Read dates from DPicker hidden inputs
+    const si = _$c('hiddenStartDate');
+    const ei = _$c('hiddenEndDate');
+    if (si) _cmpStartDate = si.value;
+    if (ei) _cmpEndDate   = ei.value;
     if (!_cmpStartDate||!_cmpEndDate) { alert('Please select a date range.'); return; }
     CmpPanel._cache = {};
 
@@ -1358,5 +1341,39 @@ const CmpDetail = {
 window.CmpPanel          = CmpPanel;
 window.CmpDetail         = CmpDetail;
 window.cmpShowPlatPicker = cmpShowPlatPicker;
+</script>
+
+{{-- Override DPicker for Compare: don't submit form, feed dates to compare flow --}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.DPicker) {
+        const origApply = DPicker.apply;
+        DPicker.apply = function() {
+            // Let DPicker set hidden inputs normally but don't submit form
+            const si = document.getElementById('hiddenStartDate');
+            const ei = document.getElementById('hiddenEndDate');
+            const dpModal = document.getElementById('doDpModal');
+            const dpDisp  = document.getElementById('doDateDisplay');
+            const rangeT  = document.getElementById('doDpRangeText');
+
+            if (si && ei) {
+                _cmpStartDate = si.value;
+                _cmpEndDate   = ei.value;
+                if (dpDisp) dpDisp.textContent = si.value + ' – ' + ei.value;
+            }
+            if (dpModal) dpModal.classList.remove('show');
+        };
+    }
+    // Prevent doFilterForm from submitting (DPicker project change listener)
+    const form = document.getElementById('doFilterForm');
+    if (form) {
+        form.addEventListener('submit', function(e) { e.preventDefault(); e.stopImmediatePropagation(); }, true);
+    }
+    // Prevent doProject change from submitting
+    const proj = document.getElementById('doProject');
+    if (proj) {
+        proj.addEventListener('change', function(e) { e.stopImmediatePropagation(); }, true);
+    }
+});
 </script>
 @endsection
