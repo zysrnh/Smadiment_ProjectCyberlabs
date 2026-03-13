@@ -16,6 +16,7 @@ use App\Http\Controllers\MK\TiktokOverviewController;
 use App\Http\Controllers\MK\NewsController;
 use App\Http\Controllers\MK\CompareProjectController;
 use App\Http\Controllers\MK\TrendingTopicController;
+use App\Http\Controllers\MK\SearchTopicController;
 use App\Http\Controllers\MK\MediaStatisticController;
 use Illuminate\Support\Facades\Route;
 
@@ -241,6 +242,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     Route::get('/compare',               [CompareProjectController::class, 'index'])->name('compare.index');
     Route::get('/topic-map',             [TopicMapController::class, 'index'])->name('topic-map');
     Route::get('/trending-topic',          [TrendingTopicController::class, 'index'])->name('trending-topic');
+    Route::get('/search-topic',            [SearchTopicController::class, 'index'])->name('search-topic');
 
     Route::prefix('top-analytics')->name('top-analytics.')->group(function () {
         Route::get('/hashtags',    [TopAnalyticsController::class, 'hashtags'])->name('hashtags');

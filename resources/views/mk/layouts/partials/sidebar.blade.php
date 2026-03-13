@@ -32,6 +32,7 @@
                 $instagramRoutes   = ['mk.instagram.overview','mk.instagram.trending-topics','mk.instagram.most-viewed-posts','mk.instagram.authors.demographics','mk.instagram.geographic','mk.instagram.trending-word-cloud','mk.instagram.ai-analysis','mk.instagram.most-engagement','mk.instagram.emotion-analysis'];
                 $youtubeRoutes     = ['mk.youtube.overview','mk.youtube.trending-topics','mk.youtube.most-viewed-posts','mk.youtube.most-engagement','mk.youtube.emotion-analysis','mk.youtube.authors.demographics','mk.youtube.geographic','mk.youtube.trending-word-cloud','mk.youtube.ai-analysis'];
                 $tiktokRoutes      = ['mk.tiktok.overview','mk.tiktok.trending-topics','mk.tiktok.most-viewed-posts','mk.tiktok.trending-word-cloud','mk.tiktok.most-engagement','mk.tiktok.emotion-analysis','mk.tiktok.ai-analysis'];
+                $topicRoutes       = ['mk.trending-topic','mk.search-topic'];
 
                 $isStatisticActive = request()->routeIs($statisticRoutes);
                 $isNewsActive      = request()->routeIs($newsRoutes);
@@ -40,6 +41,7 @@
                 $isInstagramActive = request()->routeIs($instagramRoutes);
                 $isYoutubeActive   = request()->routeIs($youtubeRoutes);
                 $isTiktokActive    = request()->routeIs($tiktokRoutes);
+                $isTopicActive     = request()->routeIs($topicRoutes);
 
                 $qs = !empty($currentProjectId) ? '?project_id=' . $currentProjectId : '';
             @endphp
@@ -75,6 +77,20 @@
                         @else
                             <li class="pc-item"><a class="pc-link" href="#">No Projects Available</a></li>
                         @endif
+                    </ul>
+                </li>
+
+                <li class="pc-item pc-hasmenu {{ $isTopicActive ? 'pc-trigger active' : '' }}">
+                    <a href="#!" class="pc-link">
+                        <span class="pc-micon"><i class="ph ph-fire"></i></span>
+                        <span class="pc-mtext">Hot Topic</span>
+                        <span class="pc-arrow"><i class="ti ti-chevron-right"></i></span>
+                    </a>
+                    <ul class="pc-submenu">
+                        <li class="pc-item {{ request()->routeIs('mk.trending-topic') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('mk.trending-topic') }}">Trending Topics</a>
+                        </li>
+                        {{-- Search Topic hidden for now --}}
                     </ul>
                 </li>
 
@@ -134,13 +150,6 @@
                     <a href="{{ route('mk.x.geographic') }}{{ $qs }}" class="pc-link">
                         <span class="pc-micon"><i class="ph ph-map-pin"></i></span>
                         <span class="pc-mtext">Location Map</span>
-                    </a>
-                </li>
-
-                <li class="pc-item {{ request()->routeIs('mk.trending-topic') ? 'active' : '' }}">
-                    <a href="{{ route('mk.trending-topic') }}" class="pc-link">
-                        <span class="pc-micon"><i class="ph ph-trend-up"></i></span>
-                        <span class="pc-mtext">Trending Topics</span>
                     </a>
                 </li>
 

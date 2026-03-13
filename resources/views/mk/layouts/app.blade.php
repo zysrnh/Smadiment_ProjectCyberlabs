@@ -184,7 +184,8 @@
             { match: /\/compare/,                  group: 'Main', section: null,           page: 'Compare Projects' },
             { match: /\/topic-map$/,               group: 'Main', section: null,           page: 'World Map' },
             { match: /\/x\/geographic$/,           group: 'Main', section: null,           page: 'Location Map' },
-            { match: /\/trending-topic$/,          group: 'Main', section: null,           page: 'Trending Topics' },
+            { match: /\/trending-topic$/,          group: 'Project', section: 'Hot Topic', page: 'Trending Topics' },
+            { match: /\/search-topic$/,            group: 'Project', section: 'Hot Topic', page: 'Search Topic' },
             { match: /\/x\/post-with-location$/,   group: 'Main', section: null,           page: 'Posts with Location' },
             // News
             { match: /\/news\/word-cloud$/,        group: 'News', section: null,           page: 'Word Cloud' },
@@ -244,8 +245,11 @@
                 { label: 'Compare Projects', path: '/mk/compare-projects' },
                 { label: 'World Map',        path: '/mk/topic-map' },
                 { label: 'Location Map',     path: '/mk/x/geographic' },
-                { label: 'Trending Topics', path: '/mk/trending-topic' },
                 { label: 'Posts with Location', path: '/mk/x/post-with-location' },
+            ],
+            'Project': [
+                { label: 'Trending Topics', path: '/mk/trending-topic' },
+                { label: 'Search Topic',    path: '/mk/search-topic' },
             ],
             'News': [
                 { label: 'Word Cloud',     path: '/mk/news/word-cloud' },
