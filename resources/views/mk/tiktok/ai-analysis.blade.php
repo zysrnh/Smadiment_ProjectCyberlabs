@@ -277,130 +277,23 @@
     @keyframes typing  { 0%,80%,100% { transform:scale(0.8); opacity:.5; } 40% { transform:scale(1.1); opacity:1; } }
     @keyframes msgIn   { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 
-    /* ══ DATE PICKER MODAL ══ */
-    .date-picker-modal {
-        position: fixed; inset: 0; z-index: 9999;
-        display: none; align-items: center; justify-content: center;
-    }
-    .date-picker-modal.show { display: flex; }
-    .date-picker-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.35); backdrop-filter: blur(2px); }
-
-    .date-picker-container {
-        position: relative; z-index: 1; background: #fff; border-radius: 16px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-        display: flex; overflow: hidden; max-width: 680px; width: 95%;
-    }
-    .date-picker-sidebar {
-        width: 140px; background: #f8fafc; border-right: 1px solid #e2e8f0;
-        padding: 16px 10px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;
-    }
-    .date-preset {
-        padding: 8px 12px; border-radius: 8px; border: none; background: transparent;
-        font-family: inherit; font-size: 12px; font-weight: 600; color: #475569;
-        cursor: pointer; text-align: left; transition: all 0.15s;
-    }
-    .date-preset:hover { background: #e2e8f0; }
-    .date-preset.active { background: var(--primary); color: #fff; }
-
-    .date-picker-content { flex: 1; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
-    .date-picker-nav { display: flex; align-items: flex-start; gap: 10px; }
-
-    .dp-nav-btn {
-        width: 34px; height: 34px; border-radius: 9px; background: #f8fafc;
-        border: 1px solid #e2e8f0; display: flex; align-items: center;
-        justify-content: center; cursor: pointer; transition: all 0.2s; flex-shrink: 0; color: #374151;
-    }
-    .dp-nav-btn:hover { background: var(--primary); border-color: var(--primary); color: #fff; }
-    .dp-nav-btn svg { width: 18px; height: 18px; }
-
-    .calendars-wrapper { display: flex; gap: 20px; flex: 1; }
-    .calendar { flex: 1; display: flex; flex-direction: column; }
-    .calendar-month { font-size: 14px; font-weight: 700; color: #1a202c; text-align: center; margin-bottom: 12px; }
-    .calendar-weekdays { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; margin-bottom: 6px; }
-    .weekday { text-align: center; font-size: 10px; font-weight: 700; color: #94a3b8; padding: 6px 0; text-transform: uppercase; }
-    .calendar-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
-
-    .calendar-day {
-        aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-        font-size: 12px; font-weight: 500; border-radius: 8px; cursor: pointer;
-        transition: all 0.15s; color: #1a202c; background: transparent;
-        border: none; padding: 0; font-family: inherit;
-    }
-    .calendar-day:hover:not(:disabled):not(.other-month) { background: #f1f5f9; }
-    .calendar-day.other-month { color: #e2e8f0; cursor: default; }
-    .calendar-day:disabled { color: #e2e8f0; cursor: not-allowed; }
-    .calendar-day.today { border: 2px solid var(--primary); font-weight: 700; }
-    .calendar-day.selected,
-    .calendar-day.range-start,
-    .calendar-day.range-end { background: var(--primary); color: #fff !important; }
-    .calendar-day.in-range { background: rgba(238,29,82,0.1); color: var(--primary); }
-
-    .dp-display {
-        padding: 10px 16px; background: #f8fafc; border-radius: 10px;
-        text-align: center; margin: 14px 0 10px; border: 1px solid #e2e8f0;
-        font-size: 13px; font-weight: 600; color: #1a202c;
-    }
-    .dp-footer { display: flex; gap: 10px; justify-content: flex-end; }
-    .dp-cancel {
-        padding: 9px 20px; border-radius: 9px; border: 1px solid #e2e8f0;
-        background: #f8fafc; color: #374151; font-family: inherit;
-        font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
-    }
-    .dp-cancel:hover { background: #f1f5f9; }
-    .dp-apply {
-        padding: 9px 20px; border-radius: 9px; border: none;
-        background: var(--tt-btn); color: #fff; font-family: inherit;
-        font-size: 13px; font-weight: 600; cursor: pointer;
-        box-shadow: 0 3px 12px rgba(238,29,82,0.3); transition: all 0.15s;
-    }
-    .dp-apply:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(238,29,82,0.4); }
-
     @media (max-width: 768px) {
         .prompt-sidebar { display: none; }
-        .date-picker-sidebar { display: none; }
-        .calendars-wrapper { flex-direction: column; }
         .ai-header-right { gap: 5px; }
-        .date-picker-trigger span { display: none; }
     }
 </style>
 @endsection
 
+@php
+    $projectId = $projectId ?? request('project_id', '');
+    $startDate = $startDate ?? request('start_date', now()->subDays(30)->format('Y-m-d'));
+    $endDate   = $endDate   ?? request('end_date',   now()->format('Y-m-d'));
+    $projects  = $projects  ?? [];
+@endphp
+
 @section('content')
 
-{{-- ── Date Picker Modal ── --}}
-<div class="date-picker-modal" id="datePickerModal">
-    <div class="date-picker-overlay" onclick="closeDatePicker()"></div>
-    <div class="date-picker-container">
-        <div class="date-picker-sidebar">
-            <button class="date-preset" data-preset="today">Today</button>
-            <button class="date-preset" data-preset="yesterday">Yesterday</button>
-            <button class="date-preset" data-preset="last7days">Last 7 Days</button>
-            <button class="date-preset" data-preset="last30days">Last 30 Days</button>
-            <button class="date-preset" data-preset="thismonth">This Month</button>
-            <button class="date-preset" data-preset="lastmonth">Last Month</button>
-            <button class="date-preset active" data-preset="custom">Custom Range</button>
-        </div>
-        <div class="date-picker-content">
-            <div class="date-picker-nav">
-                <button class="dp-nav-btn" id="dpPrev">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-                </button>
-                <div class="calendars-wrapper">
-                    <div class="calendar" id="dpCal1"></div>
-                    <div class="calendar" id="dpCal2"></div>
-                </div>
-                <button class="dp-nav-btn" id="dpNext">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-            </div>
-            <div class="dp-display" id="dpDisplay">Select date range</div>
-            <div class="dp-footer">
-                <button class="dp-cancel" onclick="closeDatePicker()">Cancel</button>
-                <button class="dp-apply" id="dpApply">Apply</button>
-            </div>
-        </div>
-    </div>
-</div>
+@include('mk.layouts.partials.filter-datepicker')
 
 {{-- ── Main Shell ── --}}
 <div class="ai-shell">
@@ -449,11 +342,6 @@
                 </div>
             </div>
             <div class="ai-header-right">
-                <button class="date-picker-trigger" id="datePickerTrigger">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    <span id="dpTriggerLabel">{{ $startDate ?? '-' }} to {{ $endDate ?? '-' }}</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
                 <div class="status-pill" id="statusPill">
                     <div class="status-dot"></div>
                     <span id="statusText">Loading…</span>
