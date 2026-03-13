@@ -4,26 +4,55 @@
 
 @section('styles')
 <style>
-/* ══ Design Tokens ══ */
+/* ══════════════════════════════════════════════════════
+   DESIGN TOKENS — 100% konsisten dengan Most Engagement
+══════════════════════════════════════════════════════ */
 :root {
     --primary        : #038047;
     --primary-rgb    : 3, 128, 71;
     --primary-lt     : rgba(3,128,71,.10);
+    --dark           : #273B4A;
+    --white          : #FFFFFF;
+    --bg             : #F1F5F8;
+
+    --green          : #038047;
+    --green-light    : #E8F5EE;
+    --red            : #EF4444;
+    --red-light      : #FEF2F2;
+    --amber          : #F59E0B;
+    --amber-light    : #FFFBEB;
+    --cyan           : #06B6D4;
+    --cyan-light     : #ECFEFF;
+
     --slate-50       : #F8FAFC;
     --slate-100      : #F1F5F9;
     --slate-200      : #E2E8F0;
+    --slate-300      : #CBD5E1;
     --slate-400      : #94A3B8;
     --slate-500      : #64748B;
+    --slate-600      : #475569;
+    --slate-700      : #334155;
     --slate-800      : #1E293B;
+    --slate-900      : #0F172A;
+
     --radius         : 8px;
     --radius-sm      : 5px;
+    --shadow-sm      : 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+    --shadow-md      : 0 4px 14px rgba(15,23,42,.08);
+    --shadow-lg      : 0 10px 30px rgba(15,23,42,.12);
 }
 
 /* ══ Animations ══ */
-@keyframes fadeUp   { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-@keyframes shimmer  { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes fadeUp        { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes shimmer       { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes spin          { to{transform:rotate(360deg)} }
+@keyframes slideInRight  { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes slideOutRight { from{transform:translateX(0);opacity:1} to{transform:translateX(100%);opacity:0} }
+@keyframes overlayIn     { from{opacity:0} to{opacity:1} }
+@keyframes overlayOut    { from{opacity:1} to{opacity:0} }
 @keyframes kpiIconBounce { 0%,100%{transform:scale(1) rotate(0)} 30%{transform:scale(1.25) rotate(-10deg)} 60%{transform:scale(1.1) rotate(6deg)} }
-@keyframes kpiShimmer { 0%{left:-100%} 100%{left:150%} }
+@keyframes kpiShimmer    { 0%{left:-100%} 100%{left:150%} }
+@keyframes ttDotPulse    { 0%,100%{box-shadow:0 0 0 3px rgba(3,128,71,.3)} 50%{box-shadow:0 0 0 6px transparent} }
 
 /* ══ KPI Icon bg ══ */
 .kpi-icon-bg {
@@ -38,54 +67,356 @@
     background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);
     background-size:200% 100%; animation:shimmer 1.4s infinite;
 }
-.loading-skeleton {
-    background:linear-gradient(90deg,var(--slate-50) 25%,#e2e8f0 50%,var(--slate-50) 75%);
-    background-size:200% 100%; animation:shimmer 1.5s ease-in-out infinite; border-radius:8px;
+
+/* ══ Spinner ══ */
+.spin-ring {
+    width:26px; height:26px;
+    border:2.5px solid var(--slate-100); border-top-color:var(--primary);
+    border-radius:50%; animation:spin .65s linear infinite;
+}
+.spinner-state {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:48px 20px; gap:12px; color:var(--slate-400); font-size:12px; font-weight:600;
 }
 
 /* ══ KPI Card Hover ══ */
 .kpi-card-hover {
-    will-change:transform,box-shadow; cursor:default; position:relative!important; overflow:hidden!important;
-    transition:transform .25s cubic-bezier(.34,1.56,.64,1)!important, box-shadow .25s ease!important, filter .25s ease!important;
+    will-change:transform,box-shadow; cursor:default;
+    position:relative!important; overflow:hidden!important;
+    transition:transform .25s cubic-bezier(.34,1.56,.64,1)!important,
+               box-shadow .25s ease!important, filter .25s ease!important;
 }
 .kpi-card-hover::before {
-    content:''; position:absolute; top:0;bottom:0; left:-100%; width:60%;
+    content:''; position:absolute; top:0; bottom:0; left:-100%; width:60%;
     background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
     pointer-events:none; z-index:1;
 }
-.kpi-card-hover:hover { transform:translateY(-6px) scale(1.025)!important; box-shadow:0 20px 40px rgba(0,0,0,.25)!important; filter:brightness(1.07)!important; }
+.kpi-card-hover:hover {
+    transform:translateY(-6px) scale(1.025)!important;
+    box-shadow:0 20px 40px rgba(0,0,0,.25)!important;
+    filter:brightness(1.07)!important;
+}
 .kpi-card-hover:hover::before { animation:kpiShimmer .6s ease forwards; }
 .kpi-card-hover:hover .kpi-icon-bg { background:rgba(255,255,255,.35)!important; }
 .kpi-card-hover:hover .kpi-icon-bg i { animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both!important; display:inline-block!important; }
+.kpi-card-hover:active { transform:translateY(-2px) scale(1.01)!important; transition-duration:.08s!important; }
 
-/* ══ Chart container ══ */
+/* ══ Chart container / loading ══ */
 .chart-container { position:relative; }
-
-/* ══ All Users Modal ══ */
-.all-users-modal {
-    position:fixed; inset:0; z-index:9999; display:none;
+.chart-loading {
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px; background:#fff; z-index:2; transition:opacity .3s;
+}
+.chart-loading.hidden { opacity:0; pointer-events:none; }
+.chart-loading span { font-size:11px; font-weight:600; color:var(--slate-400); }
+.chart-empty {
+    height:100%; display:flex; flex-direction:column;
     align-items:center; justify-content:center;
-    background:rgba(0,0,0,.6); backdrop-filter:blur(8px);
-    opacity:0; transition:opacity .3s ease;
+    gap:6px; color:var(--slate-400); font-size:12px; font-weight:600;
 }
-.all-users-modal.show { display:flex; opacity:1; }
-.all-users-modal .modal-overlay { position:absolute; inset:0; }
-.all-users-modal .modal-content {
-    position:relative; background:#fff; border-radius:16px;
-    box-shadow:0 20px 60px rgba(0,0,0,.3); width:95%; max-width:1000px;
-    max-height:90vh; display:flex; flex-direction:column; z-index:10000;
+.chart-empty i { font-size:34px; color:var(--slate-300); display:block; }
+
+/* ══ Toggle group (same as Most Engagement) ══ */
+.tme-toggle-group {
+    display:flex; background:var(--slate-50); border-radius:var(--radius-sm);
+    padding:2px; gap:2px; border:1px solid var(--slate-200);
 }
-.all-users-modal .modal-header {
-    display:flex; justify-content:space-between; align-items:center;
-    padding:16px 20px; border-bottom:1px solid var(--slate-200);
+.tme-toggle-btn {
+    display:flex; align-items:center; gap:4px;
+    padding:4px 10px; border-radius:3px; border:none; background:transparent;
+    font-size:11px; font-weight:600; color:var(--slate-500);
+    cursor:pointer; transition:background .12s, color .12s;
 }
-.all-users-modal .modal-header h3 { font-size:16px; font-weight:700; margin:0; }
-.all-users-modal .modal-body { padding:0; overflow-y:auto; }
-.modal-close {
-    width:32px; height:32px; border-radius:8px; background:var(--slate-50); border:none;
-    cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s;
+.tme-toggle-btn:hover  { background:#fff; color:var(--slate-800); }
+.tme-toggle-btn.active { background:#fff; color:var(--primary); box-shadow:0 1px 3px rgba(0,0,0,.07); }
+
+/* ══ Tabs ══ */
+.tme-tabs {
+    display:flex; gap:2px;
+    background:var(--slate-100); border:1px solid var(--slate-200);
+    border-radius:var(--radius-sm); padding:2px; margin-bottom:16px;
 }
-.modal-close:hover { background:#ef4444; color:#fff; }
+.tme-tab-btn {
+    flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
+    padding:7px 14px; border-radius:4px; border:none; background:transparent;
+    font-size:12px; font-weight:600; color:var(--slate-500);
+    cursor:pointer; transition:background .13s, color .13s; white-space:nowrap;
+}
+.tme-tab-btn:hover { background:#fff; color:var(--slate-800); }
+.tme-tab-btn.active { background:#fff; color:var(--primary); box-shadow:0 1px 4px rgba(0,0,0,.08); }
+.tme-tab-chip {
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:20px; height:16px; padding:0 5px;
+    border-radius:3px; font-size:9px; font-weight:800;
+    background:var(--primary-lt); color:var(--primary);
+}
+.tme-tab-btn:not(.active) .tme-tab-chip { background:var(--slate-100); color:var(--slate-400); }
+.tme-tab-panel { display:none; }
+.tme-tab-panel.active { display:block; }
+
+/* ══ Hashtag cloud ══ */
+.ov-hashtag-badge {
+    display:inline-flex; align-items:center; padding:6px 14px; border-radius:20px;
+    font-size:11.5px; font-weight:700; cursor:pointer;
+    transition:transform .12s, box-shadow .12s, filter .12s;
+}
+.ov-hashtag-badge:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); filter:brightness(1.08); }
+
+/* ══ Post list (identical to Most Engagement) ══ */
+.tme-post-list { display:flex; flex-direction:column; }
+.tme-post {
+    display:flex; align-items:flex-start; gap:12px;
+    padding:12px 16px; border-bottom:1px solid var(--slate-100);
+    transition:background .12s; cursor:pointer;
+}
+.tme-post:last-child { border-bottom:none; }
+.tme-post:hover { background:var(--slate-50); }
+.tme-post-rank {
+    width:22px; height:22px; border-radius:50%;
+    background:var(--slate-100); border:1px solid var(--slate-200);
+    display:flex; align-items:center; justify-content:center;
+    font-size:9px; font-weight:800; color:var(--slate-400);
+    flex-shrink:0; margin-top:8px;
+}
+.tme-post-rank--1 { background:linear-gradient(135deg,#ffd700,#F59E0B); color:#7c5900; border-color:#ffd700; }
+.tme-post-rank--2 { background:linear-gradient(135deg,#c0c0c0,#9ca3af); color:#3d3d3d; border-color:#c0c0c0; }
+.tme-post-rank--3 { background:linear-gradient(135deg,#cd7f32,#b06820); color:#fff; border-color:#cd7f32; }
+.tme-post-av {
+    width:36px; height:36px; border-radius:50%; flex-shrink:0;
+    color:#fff; font-weight:700; font-size:12px;
+    display:flex; align-items:center; justify-content:center;
+    border:1.5px solid var(--slate-200); overflow:hidden;
+}
+.tme-post-av img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.tme-post-body { flex:1; min-width:0; }
+.tme-post-author { font-size:12.5px; font-weight:700; color:var(--slate-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tme-post-date   { font-size:10px; color:var(--slate-400); margin-top:1px; margin-bottom:4px; }
+.tme-post-text   { font-size:11.5px; color:var(--slate-500); line-height:1.55; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:6px; word-break:break-word; }
+.tme-post-stats  { display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+.tme-metric {
+    display:inline-flex; align-items:center; gap:3px;
+    padding:2px 6px; border-radius:3px;
+    font-size:10px; font-weight:700;
+    background:var(--slate-100); color:var(--slate-500); white-space:nowrap;
+}
+.tme-metric--primary { background:var(--primary-lt); color:var(--primary); }
+.tme-metric--amber   { background:rgba(245,158,11,.1); color:#92400e; }
+.tme-metric--cyan    { background:rgba(6,182,212,.1);  color:#164e63; }
+.tme-metric--red     { background:rgba(239,68,68,.1);  color:#991b1b; }
+.tme-sent { display:inline-flex; align-items:center; padding:2px 6px; border-radius:3px; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.3px; }
+.tme-sent--pos { background:#d1fae5; color:#065f46; }
+.tme-sent--neg { background:#fee2e2; color:#991b1b; }
+.tme-sent--neu { background:var(--slate-100); color:var(--slate-500); }
+.tme-view-link {
+    display:inline-flex; align-items:center; gap:3px;
+    font-size:9.5px; font-weight:700; color:var(--primary);
+    text-decoration:none; padding:2px 6px; border-radius:3px;
+    background:var(--primary-lt); border:1px solid rgba(3,128,71,.2);
+    transition:background .12s, color .12s; margin-left:auto;
+}
+.tme-view-link:hover { background:var(--primary); color:#fff; }
+.tme-post-thumb {
+    width:80px; height:120px; border-radius:var(--radius-sm);
+    flex-shrink:0; overflow:hidden; border:1.5px solid var(--slate-200);
+    background:var(--slate-800); position:relative; align-self:center;
+    box-shadow:var(--shadow-sm);
+}
+.tme-post-thumb img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .2s; }
+.tme-post:hover .tme-post-thumb img { transform:scale(1.06); }
+.tme-post-thumb-ph { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:24px; background:linear-gradient(135deg,#273B4A,#374151); }
+.tme-post-thumb-play {
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.28); opacity:0; transition:opacity .2s; border-radius:inherit;
+}
+.tme-post-thumb-play i { font-size:20px; color:#fff; }
+.tme-post:hover .tme-post-thumb-play { opacity:1; }
+
+/* ══ Pagination ══ */
+.tme-pagination {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 16px; border-top:1px solid var(--slate-100); flex-wrap:wrap; gap:8px;
+}
+.tme-pag-info { font-size:11px; color:var(--slate-400); font-weight:500; }
+.tme-pag-controls { display:flex; align-items:center; gap:3px; }
+.tme-pag-btn {
+    min-width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center;
+    padding:0 6px; border-radius:var(--radius-sm); border:1px solid var(--slate-200);
+    background:#fff; font-size:11px; font-weight:600; color:var(--slate-500);
+    cursor:pointer; transition:all .12s; user-select:none;
+}
+.tme-pag-btn:hover:not(:disabled):not(.is-active) { border-color:var(--primary); color:var(--primary); background:var(--primary-lt); }
+.tme-pag-btn.is-active { background:var(--primary); border-color:var(--primary); color:#fff; }
+.tme-pag-btn:disabled { opacity:.35; cursor:not-allowed; }
+
+/* ══ Rows select ══ */
+.tme-rows-sel {
+    padding:4px 9px; border:1px solid var(--slate-200); border-radius:var(--radius-sm);
+    font-size:11px; font-weight:600; color:var(--slate-600);
+    background:var(--slate-50); outline:none; cursor:pointer; transition:border-color .14s;
+}
+.tme-rows-sel:focus { border-color:var(--primary); }
+
+/* ══ Donut legend ══ */
+.donut-legend { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:10px; }
+.donut-leg-item {
+    display:flex; align-items:center; gap:5px;
+    font-size:11px; font-weight:600; color:var(--slate-500);
+    padding:3px 8px; background:var(--slate-50);
+    border-radius:3px; border:1px solid var(--slate-200);
+    cursor:pointer; transition:border-color .12s, background .12s, color .12s;
+}
+.donut-leg-item:hover { border-color:var(--primary); background:var(--primary-lt); color:var(--primary); }
+.donut-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+/* ══ Slide Panel (identical to Most Engagement) ══ */
+.do-panel-overlay {
+    position:fixed; inset:0; z-index:9000;
+    background:rgba(15,23,42,.45); backdrop-filter:blur(4px); display:none;
+}
+.do-panel-overlay.show   { display:block; animation:overlayIn .22s ease-out; }
+.do-panel-overlay.hiding { animation:overlayOut .22s ease-out forwards; }
+.do-panel {
+    position:fixed; top:0; right:0; bottom:0; z-index:9001;
+    width:480px; max-width:100vw; background:#fff;
+    display:none; flex-direction:column;
+    border-left:1px solid var(--slate-200);
+    box-shadow:-8px 0 40px rgba(15,23,42,.16);
+}
+.do-panel.show   { display:flex; animation:slideInRight .28s cubic-bezier(.4,0,.2,1); }
+.do-panel.hiding { animation:slideOutRight .24s cubic-bezier(.4,0,.2,1) forwards; }
+.do-panel-header {
+    display:flex; align-items:center; gap:10px;
+    padding:14px 16px; border-bottom:1px solid var(--slate-200);
+    background:var(--slate-50); flex-shrink:0;
+}
+.do-panel-dot   { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.do-panel-title { font-size:13px; font-weight:700; color:var(--slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.do-panel-close {
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    border:1px solid var(--slate-200); background:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--slate-500); font-size:16px; transition:all .14s; flex-shrink:0;
+}
+.do-panel-close:hover { background:var(--red); border-color:var(--red); color:#fff; }
+.do-panel-actions {
+    display:flex; align-items:center; gap:7px; padding:7px 12px;
+    border-bottom:1px solid var(--slate-200); background:#fff; flex-shrink:0;
+}
+.do-panel-meta {
+    flex:1; font-size:10px; font-weight:700; color:var(--slate-400);
+    text-transform:uppercase; letter-spacing:.5px;
+    display:flex; align-items:center; gap:5px;
+}
+.do-panel-export {
+    display:flex; align-items:center; gap:4px; padding:4px 10px;
+    background:var(--primary); color:#fff; border:none;
+    border-radius:var(--radius-sm); font-size:10px; font-weight:700;
+    cursor:pointer; transition:filter .13s;
+}
+.do-panel-export:hover { filter:brightness(1.1); }
+.do-panel-list { overflow-y:auto; flex:1; padding:2px 0; min-height:0; }
+.do-panel-list::-webkit-scrollbar { width:4px; }
+.do-panel-list::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
+.do-panel-item {
+    display:flex; gap:10px; padding:10px 14px;
+    border-bottom:1px solid var(--slate-50); cursor:pointer;
+    transition:background .1s; align-items:flex-start;
+}
+.do-panel-item:hover { background:#f0f9ff; }
+.do-panel-item:last-child { border-bottom:none; }
+.do-panel-avatar {
+    width:36px; height:36px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:12px; color:#fff;
+    border:1.5px solid var(--slate-200); overflow:hidden;
+}
+.do-panel-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.do-panel-item-body { flex:1; min-width:0; }
+.do-panel-author { font-size:12px; font-weight:700; color:var(--slate-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.do-panel-text   { font-size:11px; color:var(--slate-600); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px; }
+.do-panel-footer { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--slate-400); flex-wrap:wrap; }
+.do-sent-badge { padding:1px 6px; border-radius:3px; font-size:9px; font-weight:800; text-transform:uppercase; }
+.do-sent-badge--pos { background:#dbeafe; color:#1d4ed8; }
+.do-sent-badge--neg { background:#fee2e2; color:#991b1b; }
+.do-sent-badge--neu { background:var(--slate-100); color:var(--slate-500); }
+.do-panel-loading {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    height:100%; gap:12px; color:var(--slate-400); font-size:13px; font-weight:600;
+}
+.do-panel-spinner {
+    width:28px; height:28px; border:2.5px solid var(--slate-100);
+    border-top-color:var(--primary); border-radius:50%; animation:spin .65s linear infinite;
+}
+
+/* Detail sub-panel */
+.do-detail-panel {
+    position:absolute; inset:0; background:#fff; z-index:5;
+    display:none; flex-direction:column;
+    animation:slideInRight .2s cubic-bezier(.4,0,.2,1);
+}
+.do-detail-panel.show { display:flex; }
+.do-dp2-header {
+    display:flex; align-items:center; gap:8px; padding:12px 14px;
+    background:var(--slate-50); border-bottom:1px solid var(--slate-200); flex-shrink:0;
+}
+.do-dp2-back {
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    border:1px solid var(--slate-200); background:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--slate-500); transition:all .13s; font-size:14px;
+}
+.do-dp2-back:hover { background:var(--primary-lt); color:var(--primary); border-color:var(--primary); }
+.do-dp2-title  { font-size:13px; font-weight:700; color:var(--slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.do-dp2-body   { overflow-y:auto; flex:1; padding:16px; }
+.do-dp2-body::-webkit-scrollbar { width:4px; }
+.do-dp2-body::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
+.do-dp2-avatar-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.do-dp2-avatar-lg  {
+    width:46px; height:46px; border-radius:50%; color:#fff; font-weight:700;
+    font-size:16px; display:flex; align-items:center; justify-content:center;
+    border:2px solid var(--slate-200); overflow:hidden; flex-shrink:0;
+}
+.do-dp2-avatar-lg img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.do-dp2-name       { font-size:14px; font-weight:700; color:var(--slate-900); }
+.do-dp2-handle     { font-size:11px; color:var(--slate-400); font-weight:500; }
+.do-dp2-plat-badge { display:inline-block; padding:2px 8px; border-radius:3px; font-size:10px; font-weight:700; margin-top:3px; }
+.do-dp2-meta       { font-size:11px; color:var(--slate-400); font-weight:500; margin-bottom:10px; }
+.do-dp2-sent       { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:3px; font-size:11px; font-weight:700; margin-bottom:10px; }
+.do-dp2-sent--pos  { background:#dbeafe; color:#1d4ed8; }
+.do-dp2-sent--neg  { background:#fee2e2; color:#991b1b; }
+.do-dp2-sent--neu  { background:var(--slate-100); color:var(--slate-500); }
+.do-dp2-content    { font-size:12px; color:var(--slate-700); line-height:1.7; margin-bottom:12px; background:var(--slate-50); border-radius:var(--radius-sm); padding:10px 12px; border:1px solid var(--slate-200); word-break:break-word; }
+.do-dp2-media      { border-radius:var(--radius-sm); overflow:hidden; margin-bottom:10px; }
+.do-dp2-media iframe { width:100%; height:480px; border:none; display:block; }
+.do-dp2-stats      { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:10px; }
+.do-dp2-stat       { background:var(--slate-50); border-radius:var(--radius-sm); padding:8px 10px; border:1px solid var(--slate-200); text-align:center; }
+.do-dp2-stat-val   { font-size:14px; font-weight:700; color:var(--slate-900); }
+.do-dp2-stat-lbl   { font-size:9px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.4px; margin-top:1px; }
+.do-dp2-link {
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    padding:9px 14px; background:var(--primary); color:#fff;
+    border-radius:var(--radius-sm); font-size:12px; font-weight:700;
+    text-decoration:none; transition:filter .14s; margin-top:4px;
+}
+.do-dp2-link:hover { filter:brightness(1.1); color:#fff; }
+
+/* ══ Chart clickable overlay hint ══ */
+.chart-clickable-hint {
+    position:absolute; bottom:8px; right:10px; z-index:3;
+    display:inline-flex; align-items:center; gap:4px;
+    padding:3px 8px; border-radius:3px;
+    background:rgba(3,128,71,.1); color:var(--primary);
+    font-size:10px; font-weight:700; pointer-events:none;
+    opacity:.7;
+}
+
+@media(max-width:640px) {
+    .do-panel { width:100vw; }
+    .tme-tabs { flex-wrap:wrap; }
+    .tme-tab-btn { flex:unset; min-width:calc(50% - 4px); }
+    .tme-post-thumb { display:none; }
+}
 </style>
 @endsection
 
@@ -108,446 +439,871 @@
 {{-- Filter --}}
 @include('mk.layouts.partials.filter-datepicker')
 
-{{-- ══ KPI Cards ══ --}}
-<div class="row">
-    <div class="col-md-6 col-xl-3">
-        <div class="card bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out both;">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Volume Total</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiVolume">
-                            <div class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></div>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                            <i class="ph ph-chart-bar me-1"></i>Total mentions
-                        </p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiPositive">
-                            <div class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></div>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                            <i class="ph ph-smiley me-1"></i>Sentimen positif
-                        </p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card bg-warning text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiNeutral">
-                            <div class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></div>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                            <i class="ph ph-smiley-meh me-1"></i>Sentimen netral
-                        </p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph ph-smiley-meh"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card bg-danger text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .15s both;">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiNegative">
-                            <div class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></div>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                            <i class="ph ph-smiley-sad me-1"></i>Sentimen negatif
-                        </p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+{{-- ══ TABS: Trending Topics | Most Engagement ══ --}}
+<div class="tme-tabs">
+    <button class="tme-tab-btn active" id="tab-hashtag" onclick="OVTab.show('hashtag')">
+        <i class="ph ph-hash"></i> Top Hashtags <span class="tme-tab-chip" id="chip-hashtag">—</span>
+    </button>
+    <button class="tme-tab-btn" id="tab-view"    onclick="OVTab.show('view')">
+        <i class="ph ph-eye"></i> Most Viewed <span class="tme-tab-chip" id="chip-view">—</span>
+    </button>
+    <button class="tme-tab-btn" id="tab-like"    onclick="OVTab.show('like')">
+        <i class="ph ph-thumbs-up"></i> Most Liked <span class="tme-tab-chip" id="chip-like">—</span>
+    </button>
+    <button class="tme-tab-btn" id="tab-comment" onclick="OVTab.show('comment')">
+        <i class="ph ph-chat-circle"></i> Most Comments <span class="tme-tab-chip" id="chip-comment">—</span>
+    </button>
+    <button class="tme-tab-btn" id="tab-share"   onclick="OVTab.show('share')">
+        <i class="ph ph-share-network"></i> Most Shares <span class="tme-tab-chip" id="chip-share">—</span>
+    </button>
 </div>
 
-{{-- ══ Top Hashtags Card ══ --}}
-<div class="row">
-    <div class="col-12">
-        <div class="card" style="animation:fadeUp .38s ease-out .18s both;">
-            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="avtar avtar-xs bg-light-primary rounded">
-                        <i class="ph ph-hash f-18 text-primary"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-0">Top Hashtags</h6>
-                        <small class="text-muted">Hashtag paling sering digunakan</small>
-                    </div>
-                </div>
-                <span class="badge bg-light-primary text-primary" id="badgeHashtag">Loading…</span>
-            </div>
-            <div class="card-body">
-                <div id="hashtagLoading" class="text-center py-4">
-                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                    <span class="ms-2 text-muted f-12">Memuat hashtag…</span>
-                </div>
-                <div id="hashtagContent" style="display:none;">
-                    <div id="hashtagList" class="d-flex flex-wrap gap-2"></div>
-                </div>
-                <div id="hashtagEmpty" style="display:none;" class="text-center py-4">
-                    <i class="ph ph-hash f-32 text-muted d-block mb-2"></i>
-                    <span class="text-muted f-12">Tidak ada data hashtag</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{{-- ══ TAB PANEL: Hashtag ══ --}}
+<div class="tme-tab-panel active" id="panel-hashtag">
 
-{{-- ══ Charts Row ══ --}}
-<div class="row">
-    {{-- Volume Trend --}}
-    <div class="col-xl-7 col-12">
-        <div class="card" style="animation:fadeUp .38s ease-out .22s both;">
-            <div class="card-header d-flex align-items-center gap-2">
+    {{-- Hashtag Cloud Card ══ --}}
+    <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
                 <div class="avtar avtar-xs bg-light-primary rounded">
-                    <i class="ph ph-chart-line f-18 text-primary"></i>
+                    <i class="ph ph-hash f-18 text-primary"></i>
                 </div>
                 <div>
-                    <h6 class="mb-0">Volume Trend</h6>
-                    <small class="text-muted">Daily posting volume over time</small>
+                    <h6 class="mb-0">Top Hashtags</h6>
+                    <small class="text-muted">Hashtag paling sering digunakan — klik untuk lihat video</small>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="chart-container" style="height:320px;">
-                    <div id="volumeTrendLoading" class="loading-skeleton" style="height:100%;"></div>
-                    <canvas id="volumeTrendChart" style="display:none;"></canvas>
-                </div>
+            <span class="badge bg-light-primary text-primary" id="badgeHashtag">Loading…</span>
+        </div>
+        <div class="card-body">
+            <div id="hashtagLoading" class="spinner-state">
+                <div class="spin-ring"></div><span>Memuat hashtag…</span>
+            </div>
+            <div id="hashtagContent" style="display:none;">
+                <div id="hashtagList" class="d-flex flex-wrap gap-2"></div>
+            </div>
+            <div id="hashtagEmpty" style="display:none;" class="chart-empty" style="padding:40px 0;">
+                <i class="ph ph-hash"></i><span>Tidak ada data hashtag</span>
             </div>
         </div>
     </div>
 
-    {{-- Sentiment Distribution --}}
-    <div class="col-xl-5 col-12">
-        <div class="card" style="animation:fadeUp .38s ease-out .26s both;">
-            <div class="card-header d-flex align-items-center gap-2">
+    {{-- Hashtag Bar Chart Card ══ --}}
+    <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <div class="avtar avtar-xs bg-light-primary rounded">
+                    <i class="ph ph-chart-bar f-18 text-primary"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0">Hashtag Frequency Chart</h6>
+                    <small class="text-muted">Top 15 — klik bar untuk lihat video terkait</small>
+                </div>
+            </div>
+            <span class="badge bg-light-secondary text-muted">Top 15</span>
+        </div>
+        <div class="card-body">
+            <div class="chart-container" style="height:320px;" id="wrapHashtagBar">
+                <div class="chart-loading" id="loadingHashtagBar">
+                    <div class="spin-ring"></div><span>Loading chart…</span>
+                </div>
+                <div id="hashtagBarChart" style="width:100%;height:320px;display:none;"></div>
+                <span class="chart-clickable-hint"><i class="ph ph-cursor-click me-1"></i>Klik bar untuk detail</span>
+            </div>
+        </div>
+    </div>
+
+    {{-- Donut: Hashtag Proportion Top 5 ══ --}}
+    <div class="card mb-3" style="animation:fadeUp .38s ease-out .26s both;">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
                 <div class="avtar avtar-xs bg-light-primary rounded">
                     <i class="ph ph-chart-donut f-18 text-primary"></i>
                 </div>
                 <div>
-                    <h6 class="mb-0">Sentiment Distribution</h6>
-                    <small class="text-muted">Positive, neutral, and negative breakdown</small>
+                    <h6 class="mb-0">Distribusi Hashtag — Top 5</h6>
+                    <small class="text-muted">Proporsi penggunaan hashtag teratas</small>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="chart-container" style="height:320px;">
-                    <div id="sentimentLoading" class="loading-skeleton" style="height:100%;"></div>
-                    <canvas id="sentimentChart" style="display:none;"></canvas>
+            <div id="donutHashtagLegend" class="donut-legend"></div>
+        </div>
+        <div class="card-body">
+            <div class="chart-container" style="height:420px;">
+                <div class="chart-loading" id="loadingDonutHashtag">
+                    <div class="spin-ring"></div><span>Loading…</span>
                 </div>
+                <div id="donutHashtagChart" style="width:100%;height:420px;display:none;"></div>
             </div>
         </div>
     </div>
+
 </div>
 
-{{-- ══ Most Active Users ══ --}}
-<div class="row">
-    <div class="col-12">
-        <div class="card" style="animation:fadeUp .38s ease-out .30s both;">
-            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="avtar avtar-xs bg-light-primary rounded">
-                        <i class="ph ph-users f-18 text-primary"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-0">Most Active Users</h6>
-                        <small class="text-muted">Top users with highest posting frequency</small>
-                    </div>
+{{-- ══ TAB PANELS: Most Engagement Types ══ --}}
+@foreach(['view','like','comment','share'] as $tp)
+@php
+    $panelLabels = ['view'=>'Most Viewed','like'=>'Most Liked','comment'=>'Most Comments','share'=>'Most Shares'];
+    $panelIcons  = ['view'=>'ph-eye','like'=>'ph-thumbs-up','comment'=>'ph-chat-circle','share'=>'ph-share-network'];
+@endphp
+<div class="tme-tab-panel" id="panel-{{ $tp }}">
+
+    {{-- Donut Distribution Card ══ --}}
+    <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <div class="avtar avtar-xs bg-light-primary rounded">
+                    <i class="ph ph-chart-donut f-18 text-primary"></i>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <div class="table-search" style="width:220px;">
-                        <div style="position:relative;">
-                            <i class="ph ph-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--do-slate-400);font-size:14px;"></i>
-                            <input type="text" id="userSearchInput" placeholder="Search users..." onkeyup="filterUsers()" style="width:100%;padding:6px 10px 6px 30px;border:1px solid var(--do-slate-200);border-radius:var(--do-radius-sm);font-size:12px;outline:none;">
-                        </div>
-                    </div>
-                    <span class="badge bg-light-primary text-primary" id="badgeUsers">Loading…</span>
+                <div>
+                    <h6 class="mb-0" id="donutTitle-{{ $tp }}">Distribusi {{ $panelLabels[$tp] }} — Top 5</h6>
+                    <small class="text-muted">Proporsi engagement per video — klik untuk detail</small>
                 </div>
             </div>
-            <div class="card-body p-0">
-                <div id="activeUsersLoading" class="text-center py-5">
-                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                    <span class="ms-2 text-muted f-12">Memuat data users…</span>
+            <div id="donutLegend-{{ $tp }}" class="donut-legend"></div>
+        </div>
+        <div class="card-body">
+            <div class="chart-container" style="height:420px;">
+                <div class="chart-loading" id="loadingDonut-{{ $tp }}">
+                    <div class="spin-ring"></div><span>Loading chart…</span>
                 </div>
-                <div id="activeUsersTable" style="display:none;overflow-x:auto;"></div>
+                <div id="donutChart-{{ $tp }}" style="width:100%;height:420px;display:none;"></div>
+                <div id="donutEmpty-{{ $tp }}" style="display:none;" class="chart-empty"><i class="ph ph-chart-donut"></i><span>No data</span></div>
             </div>
-            <div id="viewAllContainer" class="card-footer text-center" style="display:none;">
-                <button class="btn btn-outline-primary btn-sm" onclick="showAllUsersModal()">
-                    <i class="ph ph-users me-1"></i> View All Users (<span id="remainingCount">0</span> more)
+        </div>
+    </div>
+
+    {{-- Post List Card ══ --}}
+    <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <div class="avtar avtar-xs bg-light-primary rounded">
+                    <i class="ph {{ $panelIcons[$tp] }} f-18 text-primary"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0">Top Videos by {{ $panelLabels[$tp] }}</h6>
+                    <small class="text-muted">Klik video untuk lihat detail</small>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <select class="tme-rows-sel" id="rows-{{ $tp }}" onchange="OVData.reloadTab('{{ $tp }}')">
+                    <option value="10">Top 10</option>
+                    <option value="20">Top 20</option>
+                    <option value="50">Top 50</option>
+                    <option value="100" selected>Top 100</option>
+                </select>
+                <button class="btn btn-outline-secondary btn-sm" onclick="OVData.exportCsv('{{ $tp }}')" title="Export CSV">
+                    <i class="ph ph-download-simple me-1"></i>CSV
                 </button>
+                <span class="badge bg-light-primary text-primary" id="badge-{{ $tp }}">Loading…</span>
+            </div>
+        </div>
+        <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
+        <div id="pag-{{ $tp }}"></div>
+    </div>
+
+    {{-- Bar Chart Card ══ --}}
+    <div class="card mb-3" style="animation:fadeUp .38s ease-out .26s both;">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <div class="avtar avtar-xs bg-light-primary rounded">
+                    <i class="ph ph-chart-bar f-18 text-primary"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0">{{ $panelLabels[$tp] }} Chart</h6>
+                    <small class="text-muted">Top 10 — klik bar untuk detail</small>
+                </div>
+            </div>
+            <span class="badge bg-light-secondary text-muted">Top 10</span>
+        </div>
+        <div class="card-body">
+            <div class="chart-container" style="height:280px;" id="wrapBar-{{ $tp }}">
+                <div class="chart-loading" id="loadingBar-{{ $tp }}">
+                    <div class="spin-ring"></div><span>Loading…</span>
+                </div>
+                <div id="bar-{{ $tp }}" style="width:100%;height:280px;display:none;"></div>
+                <span class="chart-clickable-hint"><i class="ph ph-cursor-click me-1"></i>Klik bar untuk detail</span>
             </div>
         </div>
     </div>
-</div>
 
-{{-- All Users Modal --}}
-<div class="all-users-modal" id="allUsersModal">
-    <div class="modal-overlay" onclick="document.getElementById('allUsersModal').classList.remove('show')"></div>
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>All Active Users</h3>
-            <button class="modal-close" onclick="document.getElementById('allUsersModal').classList.remove('show')">
-                <i class="ph ph-x"></i>
-            </button>
+    {{-- Engagement comparison on view tab only ══ --}}
+    @if($tp === 'view')
+    <div class="card mb-3" style="animation:fadeUp .38s ease-out .30s both;">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <div class="avtar avtar-xs bg-light-secondary rounded">
+                    <i class="ph ph-chart-bar-horizontal f-18 text-muted"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0">View vs Like vs Comment vs Share — Top 10</h6>
+                    <small class="text-muted">Perbandingan engagement keseluruhan</small>
+                </div>
+            </div>
+            <div class="tme-toggle-group" id="engTypeToggle">
+                <button class="tme-toggle-btn active" data-type="stacked" onclick="OVChart.setEngType('stacked')">Stacked</button>
+                <button class="tme-toggle-btn" data-type="grouped"  onclick="OVChart.setEngType('grouped')">Grouped</button>
+            </div>
         </div>
-        <div class="modal-body">
-            <div id="allUsersTableContent" style="overflow-x:auto;"></div>
+        <div class="card-body">
+            <div class="chart-container" style="height:280px;" id="wrapEng">
+                <div class="chart-loading" id="loadingEng">
+                    <div class="spin-ring"></div><span>Loading…</span>
+                </div>
+                <div id="barEng" style="width:100%;height:280px;display:none;"></div>
+            </div>
         </div>
+    </div>
+    @endif
+
+</div>
+@endforeach
+
+{{-- ══ Slide Panel (drawer) — identical to Most Engagement ══ --}}
+<div class="do-panel-overlay" id="ovPanelOverlay" onclick="OVPanel.close()"></div>
+<div class="do-panel" id="ovSntPanel">
+    <div class="do-panel-header">
+        <div class="do-panel-dot" id="ovPanelDot" style="background:var(--primary);"></div>
+        <span class="do-panel-title" id="ovPanelTitle">TikTok Videos</span>
+        <button class="do-panel-close" onclick="OVPanel.close()"><i class="ph ph-x"></i></button>
+    </div>
+    <div class="do-panel-actions">
+        <div class="do-panel-meta">
+            <i class="ph ph-magnifying-glass" style="font-size:11px;"></i>
+            <span id="ovPanelMeta">—</span>
+        </div>
+        <button class="do-panel-export" onclick="OVPanel.exportCsv()">
+            <i class="ph ph-download-simple"></i> CSV
+        </button>
+    </div>
+    <div class="do-panel-list" id="ovPanelList"></div>
+
+    {{-- Detail sub-panel --}}
+    <div class="do-detail-panel" id="ovDetailPanel">
+        <div class="do-dp2-header">
+            <button class="do-dp2-back" onclick="OVDetail.close()"><i class="ph ph-caret-left"></i></button>
+            <span class="do-dp2-title" id="ovDetailTitle">Detail</span>
+            <button class="do-panel-close" onclick="OVPanel.close()"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="do-dp2-body" id="ovDetailBody"></div>
     </div>
 </div>
 
 @endsection
 
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
 <script>
-(function(){
-  'use strict';
+'use strict';
 
-  const projectId = OV_PID;
-  const startDate = OV_SD;
-  const endDate   = OV_ED;
+/* ══ CONFIG ══ */
+const OVCfg = {
+    pid    : OV_PID,
+    sd     : OV_SD,
+    ed     : OV_ED,
+    primary: '#038047',
+    colors : { view:'#038047', like:'#10B981', comment:'#F59E0B', share:'#06B6D4', hashtag:'#038047' },
+    perPage: 10,
+};
+const DONUT_COLORS = ['#038047','#273B4A','#F59E0B','#06B6D4','#EF4444'];
 
-  if (!projectId || !startDate || !endDate) return;
+/* ══ UTILS ══ */
+const _$   = id => document.getElementById(id);
+const numF = n  => parseInt(n||0).toLocaleString('id-ID');
+const numK = n  => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':String(n); };
+const esc  = s  => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const dec  = s  => { if(!s) return ''; try{ const f=decodeURIComponent(escape(s)); if(!f.includes('\uFFFD')&&f!==s)return f; }catch(e){} return s; };
+const hideLd = id => { const e=_$(id); if(e&&e.classList.contains('chart-loading')) e.classList.add('hidden'); };
 
-  let allUsers = [];
-  let displayedCount = 10;
+/* ══ STORES ══ */
+const Store   = { view:[], like:[], comment:[], share:[], hashtag:[] };
+const Pag     = { view:1, like:1, comment:1, share:1 };
+let allPostsRaw = []; // raw posts from API, used for hashtag → post filter
 
-  function fmtNum(n){ return new Intl.NumberFormat('en-US').format(n); }
+/* ══ ApexCharts instances ══ */
+const Charts = {};
+function makeChart(id, opts) {
+    if(Charts[id]) { try{ Charts[id].destroy(); }catch(e){} }
+    const el = _$(id); if(!el) return null;
+    Charts[id] = new ApexCharts(el, opts);
+    Charts[id].render();
+    el.style.display = 'block';
+    return Charts[id];
+}
+window.addEventListener('resize', () => Object.values(Charts).forEach(c=>{ try{ c.updateOptions({}); }catch(e){} }));
 
-  document.addEventListener('DOMContentLoaded', function(){
-    loadVolumeTotal();
-    loadSentimentTotal();
-    loadTopHashtags();
-    loadMostActiveUsers();
-  });
-
-  // ── Volume Total ──
-  async function loadVolumeTotal(){
-    try {
-      const r = await fetch(`/mk/api/tiktok/volume-total?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
-      const j = await r.json();
-      if(j.success && j.data){
-        document.getElementById('kpiVolume').textContent = fmtNum(j.data.total||0);
-        renderVolumeTrendChart(j.data.chart||[]);
-      }
-    } catch(e){ console.error('Volume error:',e); document.getElementById('kpiVolume').textContent = '—'; }
-  }
-
-  // ── Sentiment Total ──
-  async function loadSentimentTotal(){
-    try {
-      const r = await fetch(`/mk/api/tiktok/sentiment-total?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
-      const j = await r.json();
-      if(j.success && j.data){
-        const pos = j.data.positive||0, neu = j.data.neutral||0, neg = j.data.negative||0;
-        document.getElementById('kpiPositive').textContent = fmtNum(pos);
-        document.getElementById('kpiNeutral').textContent  = fmtNum(neu);
-        document.getElementById('kpiNegative').textContent = fmtNum(neg);
-        renderSentimentChart({positive:pos, neutral:neu, negative:neg});
-      }
-    } catch(e){ console.error('Sentiment error:',e); }
-  }
-
-  // ── Top Hashtags ──
-  async function loadTopHashtags(){
-    const loading = document.getElementById('hashtagLoading');
-    const content = document.getElementById('hashtagContent');
-    const empty   = document.getElementById('hashtagEmpty');
-    const badge   = document.getElementById('badgeHashtag');
-    try {
-      const r = await fetch(`/mk/api/tiktok/trending-topics?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
-      const j = await r.json();
-      if(j.success && j.data && j.data.hashtags && j.data.hashtags.length > 0){
-        const hashtags = j.data.hashtags.slice(0, 30);
-        badge.textContent = j.data.total_hashtags + ' hashtags';
-        const list = document.getElementById('hashtagList');
-        list.innerHTML = '';
-        const maxSize = hashtags[0].size;
-        hashtags.forEach((h, i)=>{
-          const ratio = h.size / maxSize;
-          let bg, color;
-          if(i === 0){ bg = 'var(--bs-primary, #038047)'; color = '#fff'; }
-          else if(ratio > 0.6){ bg = 'rgba(3,128,71,.15)'; color = '#038047'; }
-          else if(ratio > 0.3){ bg = 'rgba(245,158,11,.12)'; color = '#92400e'; }
-          else { bg = '#f1f5f9'; color = '#475569'; }
-          const el = document.createElement('span');
-          el.className = 'badge';
-          el.style.cssText = `padding:6px 14px;border-radius:20px;font-size:${Math.max(11, 11 + ratio * 5)}px;font-weight:600;background:${bg};color:${color};cursor:default;transition:transform .12s;`;
-          el.textContent = '#' + h.name + ' (' + h.size + ')';
-          el.onmouseenter = function(){ this.style.transform='translateY(-2px)'; };
-          el.onmouseleave = function(){ this.style.transform=''; };
-          list.appendChild(el);
+/* ══ TABS ══ */
+const OVTab = {
+    _loaded:{ hashtag:false, view:false, like:false, comment:false, share:false },
+    show(type) {
+        ['hashtag','view','like','comment','share'].forEach(t => {
+            _$('tab-'+t)?.classList.toggle('active', t===type);
+            _$('panel-'+t)?.classList.toggle('active', t===type);
         });
-        loading.style.display = 'none';
-        content.style.display = 'block';
-      } else {
-        loading.style.display = 'none';
-        empty.style.display = 'block';
-        badge.textContent = '0';
-      }
-    } catch(e){
-      console.error('Hashtag error:',e);
-      loading.style.display = 'none';
-      empty.style.display = 'block';
-      badge.textContent = 'Error';
+        if(!this._loaded[type]) { this._loaded[type]=true; OVData.loadTab(type); }
+        else if(type !== 'hashtag' && Store[type].length) {
+            OVData._renderDonut(type, Store[type]);
+        }
+    },
+    reset() { this._loaded = {hashtag:false,view:false,like:false,comment:false,share:false}; }
+};
+
+/* ══ DATA ══ */
+const OVData = {
+    async loadTab(type) {
+        if(!OVCfg.pid) { this._noProject(type); return; }
+        if(type === 'hashtag') { await this.loadHashtags(); return; }
+        await this.loadEngagement(type);
+    },
+
+    async loadHashtags() {
+        const loadEl = _$('hashtagLoading'), contentEl = _$('hashtagContent'), emptyEl = _$('hashtagEmpty');
+        const badge  = _$('badgeHashtag');
+        try {
+            const r = await fetch(`/mk/api/tiktok/trending-topics?project_id=${OVCfg.pid}&start_date=${OVCfg.sd}&end_date=${OVCfg.ed}`);
+            const j = await r.json();
+            if(j.success && j.data?.hashtags?.length) {
+                Store.hashtag = j.data.hashtags;
+                if(badge) badge.textContent = j.data.total_hashtags + ' hashtags';
+                const chip = _$('chip-hashtag'); if(chip) chip.textContent = j.data.total_hashtags;
+                this._renderHashtagCloud(j.data.hashtags);
+                this._renderHashtagBar(j.data.hashtags.slice(0,15));
+                this._renderDonutHashtag(j.data.hashtags);
+            } else {
+                if(loadEl) loadEl.style.display='none';
+                if(emptyEl) emptyEl.style.display='flex';
+                if(badge) badge.textContent='0';
+            }
+        } catch(e) {
+            console.error('[OV hashtag]', e);
+            if(loadEl) loadEl.style.display='none';
+            if(emptyEl) emptyEl.style.display='flex';
+            if(badge) badge.textContent='Error';
+        }
+    },
+
+    _renderHashtagCloud(hashtags) {
+        const loadEl=_$('hashtagLoading'), contentEl=_$('hashtagContent');
+        const list=_$('hashtagList'); if(!list) return;
+        const maxSize = hashtags[0]?.size || 1;
+        list.innerHTML = '';
+        hashtags.slice(0,40).forEach((h,i)=>{
+            const ratio = h.size / maxSize;
+            let bg, color;
+            if(i===0){ bg='var(--primary)'; color='#fff'; }
+            else if(ratio>.6){ bg='rgba(3,128,71,.15)'; color='#038047'; }
+            else if(ratio>.3){ bg='rgba(245,158,11,.12)'; color='#92400e'; }
+            else { bg='#f1f5f9'; color='#475569'; }
+            const el = document.createElement('span');
+            el.className='ov-hashtag-badge';
+            el.style.cssText=`background:${bg};color:${color};font-size:${Math.max(11,11+ratio*5)}px;`;
+            el.textContent='#'+h.name+' ('+h.size+')';
+            el.onclick = () => this._openHashtagPanel(h);
+            list.appendChild(el);
+        });
+        if(loadEl) loadEl.style.display='none';
+        if(contentEl) contentEl.style.display='block';
+    },
+
+    _renderHashtagBar(hashtags) {
+        const barEl=_$('hashtagBarChart');
+        if(!barEl||!hashtags.length||typeof ApexCharts==='undefined') { hideLd('loadingHashtagBar'); return; }
+        const labels = hashtags.map(h=>{ const n='#'+h.name; return n.length>18?n.slice(0,17)+'…':n; });
+        const values = hashtags.map(h=>h.size);
+        const opts = {
+            chart:{ type:'bar', height:320, fontFamily:'inherit', background:'transparent', toolbar:{show:false}, zoom:{enabled:false},
+                events:{
+                    dataPointSelection: (_,ctx,cfg)=>{ const h=hashtags[cfg.dataPointIndex]; if(h) this._openHashtagPanel(h); },
+                    mounted: ()=>hideLd('loadingHashtagBar'),
+                }
+            },
+            series:[{ name:'Mentions', data:values }],
+            colors:['#038047'],
+            plotOptions:{ bar:{ borderRadius:5, columnWidth:'58%', dataLabels:{position:'top'} } },
+            dataLabels:{ enabled:true, formatter:v=>numK(v), offsetY:-16, style:{fontSize:'10px',fontWeight:'800',colors:['#038047']}, background:{enabled:false} },
+            xaxis:{ categories:labels, axisBorder:{show:false}, axisTicks:{show:false}, labels:{style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'},rotate:-30,hideOverlappingLabels:true} },
+            yaxis:{ labels:{ formatter:v=>numK(v), style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'} }, axisBorder:{show:false}, axisTicks:{show:false} },
+            grid:{ borderColor:'rgba(226,232,240,.55)', strokeDashArray:3, xaxis:{lines:{show:false}}, padding:{top:20,right:8,bottom:0,left:4} },
+            fill:{ type:'gradient', gradient:{type:'vertical',shadeIntensity:0.2,opacityFrom:1,opacityTo:.7,stops:[0,100]} },
+            tooltip:{ shared:false, intersect:true, style:{fontFamily:'inherit',fontSize:'12px'}, y:{formatter:v=>numF(v)+' mentions'} },
+        };
+        barEl.style.display='block';
+        makeChart('hashtagBarChart', opts);
+    },
+
+    _renderDonutHashtag(hashtags) {
+        const loadEl=_$('loadingDonutHashtag'), chartEl=_$('donutHashtagChart');
+        if(!loadEl||!chartEl||!hashtags.length) { hideLd('loadingDonutHashtag'); return; }
+        this._renderDonutEcharts(chartEl, loadEl, _$('donutHashtagLegend'), hashtags.slice(0,5), 'mentions', h=>h.name, h=>h.size, (h)=>this._openHashtagPanel(h), 'Hashtag');
+    },
+
+    async loadEngagement(type) {
+        const subMap = { view:'postbyview', like:'postbylike', comment:'postbycomment', share:'postbyshare' };
+        const rows   = parseInt(_$('rows-'+type)?.value||'100');
+        const listEl = _$('list-'+type);
+        if(listEl) listEl.innerHTML=`<div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div>`;
+        try {
+            const r    = await fetch(`/mk/api/tiktok/most-engagement?project_id=${OVCfg.pid}&start_date=${OVCfg.sd}&end_date=${OVCfg.ed}&sub=${subMap[type]}&rows=${rows}`);
+            const json = await r.json();
+            let items  = json.data||json||[]; if(!Array.isArray(items)) items=[];
+            Store[type]=items; Pag[type]=1;
+            const chip=_$('chip-'+type); if(chip) chip.textContent=items.length;
+            const badge=_$('badge-'+type); if(badge) badge.textContent=items.length+' videos';
+            if(type==='view' && !allPostsRaw.length) allPostsRaw=items;
+            if(type==='view') OVChart._renderEng(items);
+            this._renderList(type);
+            this._renderBar(type, items.slice(0,10));
+            this._renderDonut(type, items);
+        } catch(err) {
+            console.error('[OV engagement]', err);
+            if(listEl) listEl.innerHTML=`<div class="chart-empty" style="padding:40px;"><i class="ph ph-warning"></i><span>Gagal memuat: ${esc(err.message)}</span></div>`;
+            hideLd('loadingBar-'+type); hideLd('loadingDonut-'+type);
+        }
+    },
+
+    reloadTab(type) { Store[type]=[]; Pag[type]=1; this.loadEngagement(type); },
+
+    _noProject(type) {
+        const listEl=_$('list-'+type);
+        if(listEl) listEl.innerHTML=`<div class="chart-empty" style="padding:40px;"><i class="ph ph-folder-open"></i><span>Pilih project terlebih dahulu</span></div>`;
+        hideLd('loadingBar-'+type); hideLd('loadingDonut-'+type);
+    },
+
+    /* ─ helpers (identical to Most Engagement) ─ */
+    _metric(item,type) {
+        const keys={view:['view_cnt','views','freq'],like:['likes','num_likes'],comment:['comments','num_comments'],share:['shares','num_shares']};
+        return (keys[type]||['view_cnt']).reduce((v,k)=>v||parseInt(item[k]||0),0);
+    },
+    _getName(item) {
+        const n=(item.name||item.author_scr_name||item.author_name||'').replace(/<[^>]*>/g,'').trim();
+        if(n&&n!=='TikTok Creator') return n;
+        return item.author_id?'@'+item.author_id:'TikTok Creator';
+    },
+    _getAvatar(item) { return (item.avatar_url||item.author_avatar||item.profile_image||item.author_image||'').trim(); },
+    _getThumb(item)  { return (item.avatar_url||item.profile_url||item.thumbnail_url||item.cover_url||item.video_cover||item.thumbnail||item.image||'').trim(); },
+    _getColor(item) {
+        const seed=item.author_id||item.id||this._getName(item)||'tt';
+        const palette=['#038047','#273B4A','#F59E0B','#06B6D4','#8b5cf6','#ec4899','#f97316','#14b8a6'];
+        let h=0; for(let i=0;i<seed.length;i++) h=(h*31+seed.charCodeAt(i))&0xffffffff;
+        return palette[Math.abs(h)%palette.length];
+    },
+    _avHtml(item) {
+        const av=this._getAvatar(item), dummy='/assets/images/user/dummy.jpg';
+        return (av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.src='${dummy}'">`:`<img src="${dummy}">`;
+    },
+    _normSent(item) {
+        const r=String(item.sentiment_str||item.sentiment||'').toLowerCase();
+        return r.includes('pos')?'pos':r.includes('neg')?'neg':'neu';
+    },
+
+    /* ─ render list ─ */
+    _renderList(type) {
+        const items=Store[type], listEl=_$('list-'+type), pagEl=_$('pag-'+type);
+        if(!listEl) return;
+        if(!items.length){ listEl.innerHTML=`<div class="chart-empty" style="padding:40px;"><i class="ph ph-folder-open"></i><span>Tidak ada data untuk periode ini</span></div>`; if(pagEl)pagEl.innerHTML=''; return; }
+        const page=Pag[type]||1, total=items.length, pp=OVCfg.perPage;
+        const pages=Math.ceil(total/pp), start=(page-1)*pp;
+        listEl.innerHTML=`<div class="tme-post-list">${items.slice(start,start+pp).map((item,i)=>this._postHtml(item,start+i,type)).join('')}</div>`;
+        if(pagEl) pagEl.innerHTML=this._pagHtml(type,page,pages,total,start+1,Math.min(start+pp,total));
+        listEl.querySelectorAll('.tme-post').forEach(el=>{
+            el.addEventListener('click',()=>{
+                try {
+                    const item=JSON.parse(decodeURIComponent(el.dataset.item));
+                    const lm={view:'Most Viewed',like:'Most Liked',comment:'Most Comments',share:'Most Shares'};
+                    OVPanel.open(items, type, 'TikTok — '+lm[type]);
+                    OVDetail.open(item, type);
+                } catch(e){ console.warn(e); }
+            });
+        });
+    },
+
+    _pagHtml(type,page,pages,total,from,to) {
+        if(pages<=1) return '';
+        let btns='', r=2;
+        btns+=`<button class="tme-pag-btn" ${page<=1?'disabled':''} onclick="OVData.goPage('${type}',${page-1})"><i class="ph ph-caret-left"></i></button>`;
+        for(let i=1;i<=pages;i++){
+            if(i===1||i===pages||(i>=page-r&&i<=page+r)) btns+=`<button class="tme-pag-btn${i===page?' is-active':''}" onclick="OVData.goPage('${type}',${i})">${i}</button>`;
+            else if(i===page-r-1||i===page+r+1) btns+=`<span class="tme-pag-btn" style="cursor:default;opacity:.4;">…</span>`;
+        }
+        btns+=`<button class="tme-pag-btn" ${page>=pages?'disabled':''} onclick="OVData.goPage('${type}',${page+1})"><i class="ph ph-caret-right"></i></button>`;
+        return `<div class="tme-pagination"><span class="tme-pag-info">Menampilkan ${from}–${to} dari ${total} videos</span><div class="tme-pag-controls">${btns}</div></div>`;
+    },
+
+    goPage(type,page) {
+        Pag[type]=page; this._renderList(type);
+        const el=_$('list-'+type); if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'});
+    },
+
+    _postHtml(item,gi,type) {
+        const rank=gi+1, rkCls=rank<=3?'--'+rank:'';
+        const name=this._getName(item), color=this._getColor(item);
+        const avHtml=this._avHtml(item), sent=this._normSent(item);
+        const content=dec((item.content||item.caption||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim()).slice(0,200);
+        const dt=(item.date_created||'').split('T')[0], url=item.url||item.link||'';
+        const thumb=this._getThumb(item);
+        const v=parseInt(item.view_cnt||item.views||item.freq||0);
+        const l=parseInt(item.likes||item.num_likes||0);
+        const c=parseInt(item.comments||item.num_comments||0);
+        const s=parseInt(item.shares||item.num_shares||0);
+        const total=v+l+c+s;
+        const sentLbl={pos:'Positive',neg:'Negative',neu:'Neutral'}[sent];
+        const enc=encodeURIComponent(JSON.stringify(item));
+        const vCls=type==='view'?' tme-metric--primary':'';
+        const lCls=type==='like'?' tme-metric--primary':'';
+        const cCls=type==='comment'?' tme-metric--amber':'';
+        const sCls=type==='share'?' tme-metric--cyan':'';
+        const thumbHtml=(thumb&&thumb.startsWith('http'))
+            ?`<div class="tme-post-thumb"><img src="${esc(thumb)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'tme-post-thumb-ph\\'>🎵</div>'"><div class="tme-post-thumb-play"><i class="ph ph-play-fill"></i></div></div>`
+            :`<div class="tme-post-thumb"><div class="tme-post-thumb-ph">🎵</div></div>`;
+        return `<div class="tme-post" data-item="${esc(enc)}">
+            <div class="tme-post-rank tme-post-rank${rkCls}">${rank}</div>
+            <div class="tme-post-av" style="background:linear-gradient(135deg,${color},${color}99);">${avHtml}</div>
+            <div class="tme-post-body">
+                <div class="tme-post-author">${esc(name)}</div>
+                ${dt?`<div class="tme-post-date">${dt}</div>`:''}
+                ${content?`<div class="tme-post-text">${esc(content)}</div>`:''}
+                <div class="tme-post-stats">
+                    <span class="tme-metric${vCls}"><i class="ph ph-eye me-1"></i>${numF(v)}</span>
+                    <span class="tme-metric${lCls}"><i class="ph ph-thumbs-up me-1"></i>${numF(l)}</span>
+                    <span class="tme-metric${cCls}"><i class="ph ph-chat-circle me-1"></i>${numF(c)}</span>
+                    <span class="tme-metric${sCls}"><i class="ph ph-share-network me-1"></i>${numF(s)}</span>
+                    <span class="tme-metric" style="font-weight:800;">∑ ${numF(total)}</span>
+                    <span class="tme-sent tme-sent--${sent}">${sentLbl}</span>
+                    ${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="tme-view-link" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out me-1"></i>Lihat</a>`:''}
+                </div>
+            </div>
+            ${thumbHtml}
+        </div>`;
+    },
+
+    /* ─ render bar chart ─ */
+    _renderBar(type, items) {
+        const barEl=_$('bar-'+type), loadEl=_$('loadingBar-'+type);
+        if(!barEl||!items.length||typeof ApexCharts==='undefined'){ hideLd('loadingBar-'+type); return; }
+        const color=OVCfg.colors[type];
+        const labels=items.map(it=>{ const n=this._getName(it); return n.length>14?n.slice(0,13)+'…':n; });
+        const values=items.map(it=>this._metric(it,type));
+        const opts={
+            chart:{ type:'bar', height:280, fontFamily:'inherit', background:'transparent', toolbar:{show:false}, zoom:{enabled:false},
+                events:{
+                    mounted:()=>hideLd('loadingBar-'+type),
+                    click:(_,ctx,cfg)=>{ const item=items[cfg.dataPointIndex]; if(item){ OVPanel.open(Store[type],type,'TikTok'); OVDetail.open(item,type); } }
+                }
+            },
+            series:[{ name:{view:'Views',like:'Likes',comment:'Comments',share:'Shares'}[type], data:values }],
+            colors:[color],
+            plotOptions:{ bar:{ borderRadius:5, columnWidth:'58%', dataLabels:{position:'top'} } },
+            dataLabels:{ enabled:true, formatter:v=>numK(v), offsetY:-16, style:{fontSize:'10px',fontWeight:'800',colors:[color]}, background:{enabled:false} },
+            xaxis:{ categories:labels, axisBorder:{show:false}, axisTicks:{show:false}, labels:{style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'},rotate:labels.length>6?-28:0,hideOverlappingLabels:true} },
+            yaxis:{ labels:{formatter:v=>numK(v),style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'}}, axisBorder:{show:false}, axisTicks:{show:false} },
+            grid:{ borderColor:'rgba(226,232,240,.55)', strokeDashArray:3, xaxis:{lines:{show:false}}, padding:{top:20,right:8,bottom:0,left:4} },
+            fill:{ type:'gradient', gradient:{type:'vertical',shadeIntensity:0.2,opacityFrom:1,opacityTo:.7,stops:[0,100]} },
+            tooltip:{ shared:false, intersect:true, style:{fontFamily:'inherit',fontSize:'12px'}, y:{formatter:v=>numF(v)} },
+        };
+        barEl.style.display='block'; makeChart('bar-'+type, opts);
+    },
+
+    /* ─ render donut for engagement tabs ─ */
+    _renderDonut(type, items) {
+        const loadEl=_$('loadingDonut-'+type), chartEl=_$('donutChart-'+type), emptyEl=_$('donutEmpty-'+type);
+        const legEl=_$('donutLegend-'+type);
+        if(!loadEl||!chartEl) return;
+        if(!items.length){ loadEl.style.display='none'; if(emptyEl) emptyEl.style.display='flex'; return; }
+        const top5=items.slice(0,5);
+        const metLbl={view:'Views',like:'Likes',comment:'Comments',share:'Shares'}[type];
+        this._renderDonutEcharts(chartEl, loadEl, legEl, top5, metLbl,
+            it=>this._getName(it), it=>this._metric(it,type),
+            (it)=>{ OVPanel.open(Store[type],type,'TikTok'); OVDetail.open(it,type); },
+            metLbl, (it)=>dec((it.content||it.caption||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim())
+        );
+    },
+
+    /* ─ generic donut renderer (ECharts) ─ */
+    _renderDonutEcharts(chartEl, loadEl, legEl, data, metricLabel, getNameFn, getValFn, onClickFn, titleLabel, getDescFn) {
+        if(!chartEl||!data.length) { if(loadEl) loadEl.style.display='none'; return; }
+        const total=data.reduce((s,d)=>s+getValFn(d),0);
+        /* legend */
+        if(legEl) legEl.innerHTML=data.map((d,i)=>{
+            const n=getNameFn(d), sn=n.length>22?n.slice(0,21)+'…':n;
+            return `<div class="donut-leg-item"><span class="donut-dot" style="background:${DONUT_COLORS[i]};"></span>${sn} · ${numF(getValFn(d))}</div>`;
+        }).join('');
+        if(loadEl) loadEl.style.display='none';
+        chartEl.style.display='block';
+        /* destroy previous */
+        const ecKey='__echart_'+chartEl.id;
+        if(window[ecKey]) { try{ window[ecKey].dispose(); }catch(e){} }
+        if(typeof echarts==='undefined') { chartEl.innerHTML='<div class="chart-empty"><i class="ph ph-chart-donut"></i><span>ECharts not loaded</span></div>'; return; }
+        const chart=echarts.init(chartEl,null,{renderer:'canvas'});
+        window[ecKey]=chart;
+        window.addEventListener('resize',()=>{ try{ chart.resize(); }catch(e){} });
+        const pieData=data.map((d,i)=>({
+            name:getNameFn(d), value:getValFn(d), _desc:getDescFn?getDescFn(d):'',
+            itemStyle:{color:DONUT_COLORS[i]},
+        }));
+        chart.setOption({
+            backgroundColor:'transparent', animation:true, animationDuration:1000, animationEasing:'cubicOut', animationDelay:idx=>idx*80,
+            tooltip:{show:false},
+            series:[{
+                type:'pie', radius:['38%','62%'], center:['50%','50%'],
+                avoidLabelOverlap:true, selectedMode:false, minAngle:8,
+                itemStyle:{borderColor:'#fff',borderWidth:3},
+                label:{
+                    show:true, position:'outside', alignTo:'edge', edgeDistance:20,
+                    lineHeight:18, fontSize:11, fontFamily:'inherit', color:'#334155', fontWeight:'500',
+                    formatter:p=>{
+                        const d=data[p.dataIndex];
+                        const desc=getDescFn?getDescFn(d).slice(0,80):'';
+                        const words=desc?desc.split(' '):[];
+                        const lines=[]; let cur='';
+                        words.forEach(w=>{ if((cur+' '+w).trim().length>40){lines.push(cur.trim());cur=w;}else{cur=(cur+' '+w).trim();} });
+                        if(cur) lines.push(cur);
+                        const body=lines.join('\n');
+                        return `{title|${p.name}}\n${body?body+'\n':''}({val|${numF(p.value)}} ${metricLabel}, {pct|${p.percent.toFixed(1)}%})`;
+                    },
+                    rich:{
+                        title:{fontSize:11,fontWeight:'700',color:'#1e293b',lineHeight:18},
+                        val:{fontSize:11,fontWeight:'700',color:'#038047'},
+                        pct:{fontSize:11,fontWeight:'600',color:'#64748b'},
+                    }
+                },
+                labelLine:{show:true,length:18,length2:24,smooth:0.3,lineStyle:{width:1.5,color:'#94A3B8'}},
+                emphasis:{
+                    scale:false,
+                    itemStyle:{shadowBlur:0,shadowColor:'transparent',borderWidth:3,borderColor:'#fff',opacity:1},
+                    labelLine:{lineStyle:{width:2.5,color:'#273B4A'}},
+                    label:{show:true}
+                },
+                select:{disabled:true},
+                data:pieData,
+            }],
+            graphic:[
+                {type:'text',left:'center',top:'46%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 28px inherit",textAlign:'center'}},
+                {type:'text',left:'center',top:'54%',z:100,style:{text:'TOTAL '+titleLabel.toUpperCase(),fill:'#94a3b8',font:"600 9px inherit",textAlign:'center'}}
+            ]
+        });
+        chart.on('click',p=>{ const d=data[p.dataIndex]; if(d&&onClickFn) onClickFn(d); });
+
+        /* custom tooltip */
+        let _ttEl=document.getElementById('ovCustomTT');
+        if(!_ttEl){
+            _ttEl=document.createElement('div'); _ttEl.id='ovCustomTT';
+            _ttEl.style.cssText=`position:fixed;z-index:9999;pointer-events:none;background:#1e293b;color:#fff;border:1px solid #334155;border-radius:6px;padding:10px 14px;max-width:280px;font-size:12px;line-height:1.5;display:none;box-shadow:0 8px 24px rgba(0,0,0,.32);font-family:inherit;opacity:0;transform:translateY(6px) scale(.97);transition:opacity .18s ease,transform .18s ease;`;
+            document.body.appendChild(_ttEl);
+        }
+        let _ttTimer=null;
+        chart.on('mouseover',p=>{
+            if(p.componentType!=='series') return;
+            const d=data[p.dataIndex], color=DONUT_COLORS[p.dataIndex];
+            const desc=(getDescFn?getDescFn(d):'').slice(0,160);
+            clearTimeout(_ttTimer);
+            _ttEl.innerHTML=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;"><span style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span><b style="font-size:12.5px;">${esc(p.name)}</b></div>${desc?`<div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">${esc(desc)}</div>`:''}<div style="display:flex;align-items:center;gap:8px;"><b style="font-size:13px;">${numF(p.value)} ${metricLabel}</b><span style="color:${color};font-weight:700;">${p.percent.toFixed(1)}%</span></div>`;
+            _ttEl.style.display='block';
+            requestAnimationFrame(()=>{ _ttEl.style.opacity='1'; _ttEl.style.transform='translateY(0) scale(1)'; });
+        });
+        chart.on('mouseout',()=>{
+            _ttEl.style.opacity='0'; _ttEl.style.transform='translateY(6px) scale(.97)';
+            _ttTimer=setTimeout(()=>{ _ttEl.style.display='none'; },180);
+        });
+        chartEl.addEventListener('mousemove',e=>{
+            if(_ttEl.style.display==='none') return;
+            const vw=window.innerWidth,vh=window.innerHeight,tw=_ttEl.offsetWidth+16,th=_ttEl.offsetHeight+16;
+            let x=e.clientX+18,y=e.clientY-10;
+            if(x+tw>vw) x=e.clientX-tw; if(y+th>vh) y=e.clientY-th;
+            _ttEl.style.left=x+'px'; _ttEl.style.top=y+'px';
+        });
+    },
+
+    /* ─ open hashtag panel: show all posts containing the hashtag ─ */
+    _openHashtagPanel(h) {
+        /* filter posts from raw data that contain this hashtag */
+        const tag='#'+h.name.toLowerCase();
+        const filtered = allPostsRaw.filter(p=>{
+            const txt=(p.content||p.caption||'').toLowerCase();
+            return txt.includes(tag);
+        });
+        const items = filtered.length ? filtered : allPostsRaw.slice(0,20);
+        OVPanel.open(items, 'view', `TikTok — #${h.name} (${h.size} mentions)`);
+    },
+
+    exportCsv(type) {
+        const items=Store[type]; if(!items?.length){ alert('Tidak ada data.'); return; }
+        const hdr='index;nama;sentiment;views;likes;comments;shares;total_engagement;tanggal;url;konten';
+        const rows=items.map((it,i)=>{
+            const name=this._getName(it), sent=this._normSent(it);
+            const sentLbl={pos:'Positif',neg:'Negatif',neu:'Netral'}[sent];
+            const v=parseInt(it.view_cnt||it.views||it.freq||0),l=parseInt(it.likes||0),c=parseInt(it.comments||0),s=parseInt(it.shares||0);
+            const content=(it.content||it.caption||'').replace(/<[^>]*>/g,'').trim().slice(0,300).replace(/;/g,',').replace(/\n/g,' ');
+            return `${i};${name.replace(/;/g,',')};${sentLbl};${v};${l};${c};${s};${v+l+c+s};${(it.date_created||'').split('T')[0]};${it.url||''};${content}`;
+        });
+        const blob=new Blob(['\uFEFF'+[hdr,...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});
+        const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`TikTok_${type}_${OVCfg.sd}_${OVCfg.ed}.csv`});
+        a.click();
+    },
+};
+
+/* ══ Engagement stacked/grouped chart (view tab) ══ */
+const OVChart = {
+    _type:'stacked', _items:[],
+    setEngType(t) {
+        this._type=t;
+        document.querySelectorAll('#engTypeToggle .tme-toggle-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===t));
+        if(this._items.length) this._render(this._items,t);
+    },
+    _renderEng(items) {
+        hideLd('loadingEng');
+        if(!items.length) return;
+        const top10=[...items].map(it=>({...it,_total:parseInt(it.view_cnt||it.views||it.freq||0)+parseInt(it.likes||0)+parseInt(it.comments||0)+parseInt(it.shares||0)})).sort((a,b)=>b._total-a._total).slice(0,10);
+        this._items=top10; this._render(top10, this._type);
+    },
+    _render(items, stackType) {
+        const barEl=_$('barEng'); if(!barEl) return;
+        barEl.style.display='block';
+        const isStack=stackType==='stacked';
+        const labels=items.map(it=>{ const n=OVData._getName(it); return n.length>14?n.slice(0,13)+'…':n; });
+        const seriesData=[
+            { name:'Views',    data:items.map(it=>parseInt(it.view_cnt||it.views||it.freq||0)), color:'#038047' },
+            { name:'Likes',    data:items.map(it=>parseInt(it.likes||0)),                       color:'#10B981' },
+            { name:'Comments', data:items.map(it=>parseInt(it.comments||0)),                    color:'#F59E0B' },
+            { name:'Shares',   data:items.map(it=>parseInt(it.shares||0)),                      color:'#06B6D4' },
+        ];
+        const opts={
+            chart:{ type:'bar', height:280, fontFamily:'inherit', background:'transparent', toolbar:{show:false}, zoom:{enabled:false}, stacked:isStack,
+                events:{ click:(_,ctx,cfg)=>{ const item=items[cfg.dataPointIndex]; if(item){ OVPanel.open(Store.view,'view','TikTok'); OVDetail.open(item,'view'); } } }
+            },
+            series:seriesData.map(s=>({name:s.name,data:s.data})),
+            colors:seriesData.map(s=>s.color),
+            plotOptions:{ bar:{ borderRadius:isStack?2:4, columnWidth:isStack?'60%':'75%', dataLabels:{position:isStack?'center':'top'} } },
+            dataLabels:{ enabled:isStack, formatter:v=>v>0?numK(v):'', style:{fontSize:'9px',fontWeight:'700',colors:['#fff']}, background:{enabled:false} },
+            xaxis:{ categories:labels, axisBorder:{show:false}, axisTicks:{show:false}, labels:{style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'},rotate:labels.length>7?-28:0} },
+            yaxis:{ labels:{formatter:v=>numK(v),style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'}}, axisBorder:{show:false}, axisTicks:{show:false} },
+            grid:{ borderColor:'rgba(226,232,240,.55)', strokeDashArray:3, xaxis:{lines:{show:false}}, padding:{top:10,right:8,bottom:0,left:4} },
+            legend:{ position:'bottom', horizontalAlign:'left', fontSize:'11px', fontFamily:'inherit', fontWeight:600, markers:{width:8,height:8,radius:4}, itemMargin:{horizontal:12,vertical:4}, offsetY:4 },
+            tooltip:{ shared:true, intersect:false, style:{fontFamily:'inherit',fontSize:'12px'}, y:{formatter:v=>numF(v)} },
+        };
+        makeChart('barEng', opts);
     }
-  }
+};
 
-  // ── Most Active Users ──
-  async function loadMostActiveUsers(){
-    const badge = document.getElementById('badgeUsers');
-    try {
-      const r = await fetch(`/mk/api/tiktok/most-active-users?project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`);
-      const j = await r.json();
-      if(j.success && j.data && j.data.data){
-        allUsers = j.data.data;
-        badge.textContent = allUsers.length + ' users';
-        displayUsersTable(10);
-        if(allUsers.length > 10){
-          document.getElementById('viewAllContainer').style.display = '';
-          document.getElementById('remainingCount').textContent = allUsers.length - 10;
-        }
-        document.getElementById('activeUsersLoading').style.display = 'none';
-        document.getElementById('activeUsersTable').style.display = 'block';
-      } else { badge.textContent = '0'; }
-    } catch(e){ console.error('Users error:',e); badge.textContent = 'Error'; }
-  }
+/* ══ PANEL DRAWER ══ */
+const OVPanel = {
+    _items:[], _type:null,
+    open(items, type, title) {
+        this._items=items||[]; this._type=type;
+        OVDetail.close();
+        _$('ovPanelDot').style.background=OVCfg.colors[type]||OVCfg.primary;
+        _$('ovPanelTitle').textContent=title||'TikTok Videos';
+        _$('ovPanelMeta').textContent=OVCfg.sd+' – '+OVCfg.ed;
+        const ov=_$('ovPanelOverlay'), pn=_$('ovSntPanel');
+        ov.classList.remove('hiding'); pn.classList.remove('hiding');
+        ov.classList.add('show'); pn.classList.add('show');
+        this._render(items, type);
+    },
+    close() {
+        OVDetail.killIframe(); OVDetail.close();
+        const ov=_$('ovPanelOverlay'), pn=_$('ovSntPanel');
+        pn.classList.add('hiding'); ov.classList.add('hiding');
+        setTimeout(()=>{ pn.classList.remove('show','hiding'); ov.classList.remove('show','hiding'); },240);
+    },
+    exportCsv() { OVData.exportCsv(this._type||'view'); },
+    _render(items, type) {
+        const list=_$('ovPanelList'); if(!list) return;
+        if(!items?.length){ list.innerHTML='<div class="do-panel-loading"><div class="do-panel-spinner"></div>Tidak ada data</div>'; return; }
+        const metLbl={view:'Views',like:'Likes',comment:'Komentar',share:'Shares'}[type]||'Views';
+        list.innerHTML=items.slice(0,100).map(item=>{
+            const name=OVData._getName(item), av=OVData._getAvatar(item);
+            const color2=OVData._getColor(item), dummy='/assets/images/user/dummy.jpg';
+            const avHtml=(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.src='${dummy}'">`:`<img src="${dummy}">`;
+            const text=(item.content||item.caption||'').replace(/<[^>]*>/g,'').trim();
+            const metVal=OVData._metric(item,type);
+            const dt=(item.date_created||'').split('T')[0];
+            const sent=OVData._normSent(item);
+            const sentLbl={pos:'Pos',neg:'Neg',neu:'Neu'}[sent];
+            const total=parseInt(item.view_cnt||item.views||item.freq||0)+parseInt(item.likes||0)+parseInt(item.comments||0)+parseInt(item.shares||0);
+            const enc=encodeURIComponent(JSON.stringify(item));
+            return `<div class="do-panel-item" data-item="${esc(enc)}" data-type="${type}" onclick="OVPanel._click(this)">
+                <div class="do-panel-avatar" style="background:linear-gradient(135deg,${color2},${color2}99);">${avHtml}</div>
+                <div class="do-panel-item-body">
+                    <div class="do-panel-author">${esc(name)}</div>
+                    <div class="do-panel-text">${esc(dec(text).slice(0,130)||'(tidak ada konten)')}</div>
+                    <div class="do-panel-footer">
+                        <span class="do-sent-badge do-sent-badge--${sent}">${sentLbl}</span>
+                        <span>${metLbl} ${numF(metVal)}</span>
+                        <span>∑ ${numF(total)}</span>
+                        ${dt?`<span style="margin-left:auto;">${dt}</span>`:''}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+        if(items.length>100) list.insertAdjacentHTML('beforeend',`<div style="padding:8px;text-align:center;font-size:10px;font-weight:600;color:#94A3B8;background:var(--slate-50);border-top:1px dashed var(--slate-200);">+${(items.length-100).toLocaleString()} lainnya</div>`);
+    },
+    _click(el) {
+        try {
+            const item=JSON.parse(decodeURIComponent(el.dataset.item.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"')));
+            OVDetail.open(item, el.dataset.type||this._type);
+        } catch(e){ console.warn(e); }
+    }
+};
 
-  function buildUsersTableHTML(users){
-    let h = `<table class="table table-hover mb-0" style="font-size:12px;">
-      <thead><tr>
-        <th style="font-size:10px;font-weight:700;color:var(--do-slate-500);text-transform:uppercase;letter-spacing:.3px;">NO.</th>
-        <th style="font-size:10px;font-weight:700;color:var(--do-slate-500);text-transform:uppercase;">AVATAR</th>
-        <th style="font-size:10px;font-weight:700;color:var(--do-slate-500);text-transform:uppercase;">USERNAME</th>
-        <th style="font-size:10px;font-weight:700;color:var(--do-slate-500);text-transform:uppercase;">DISPLAY NAME</th>
-        <th style="font-size:10px;font-weight:700;color:var(--do-slate-500);text-transform:uppercase;">ENGAGEMENT</th>
-        <th style="font-size:10px;font-weight:700;color:var(--do-slate-500);text-transform:uppercase;">POSTS</th>
-        <th style="font-size:10px;font-weight:700;color:var(--do-slate-500);text-transform:uppercase;">LIKES</th>
-        <th style="font-size:10px;font-weight:700;color:var(--do-slate-500);text-transform:uppercase;">COMMENTS</th>
-      </tr></thead><tbody>`;
-    users.forEach((item,i)=>{
-      const username   = item.username||item.author||item.name||'Unknown';
-      const profileUrl = item.profile_url||item.profile_image_url||'';
-      const dispName   = item.contentJson?.nickname||item.display_name||item.name||username;
-      const likes      = item.likes||item.contentJson?.heart_count||0;
-      const comments   = item.comments||0;
-      const posts      = item.posts||item.y||0;
-      const engagement = posts + likes + comments;
-      h += `<tr>
-        <td><strong>${i+1}</strong></td>
-        <td>${profileUrl
-          ? `<img src="${profileUrl}" alt="${username}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.outerHTML='<div style=\\'width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#038047,#026738);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;\\'>${username.charAt(0).toUpperCase()}</div>'">`
-          : `<div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#038047,#026738);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;">${username.charAt(0).toUpperCase()}</div>`
-        }</td>
-        <td><a href="https://www.tiktok.com/@${encodeURIComponent(username)}" target="_blank" rel="noopener noreferrer" style="color:#ea580c;font-weight:500;text-decoration:none;">@${username}</a></td>
-        <td style="font-weight:600;">${dispName}</td>
-        <td><strong>${fmtNum(engagement)}</strong></td>
-        <td>${fmtNum(posts)}</td>
-        <td>${fmtNum(likes)}</td>
-        <td>${fmtNum(comments)}</td>
-      </tr>`;
+/* ══ DETAIL SUB-PANEL ══ */
+const OVDetail = {
+    open(item, type) {
+        const panel=_$('ovDetailPanel'), body=_$('ovDetailBody'), title=_$('ovDetailTitle');
+        if(!panel||!body) return;
+        const color=OVCfg.colors[type]||OVCfg.primary;
+        const name=OVData._getName(item), av=OVData._getAvatar(item);
+        const avColor=OVData._getColor(item), dummy='/assets/images/user/dummy.jpg';
+        const avHtml=(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.src='${dummy}'">`:`<img src="${dummy}">`;
+        const handle=item.author_scr_name||item.author_id||'';
+        const rawContent=(item.content||item.caption||'').replace(/<[^>]*>/g,'').trim();
+        const content=rawContent?dec(rawContent):'';
+        const url=item.url||item.link||'';
+        const dt=item.date_created||'';
+        const v=parseInt(item.view_cnt||item.views||item.freq||0);
+        const l=parseInt(item.likes||item.num_likes||0);
+        const c=parseInt(item.comments||item.num_comments||0);
+        const s=parseInt(item.shares||item.num_shares||0);
+        const sent=OVData._normSent(item);
+        const sentLbl={pos:'Positif',neg:'Negatif',neu:'Netral'}[sent];
+        let dtFmt=''; if(dt){ try{ dtFmt=new Date(dt).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ dtFmt=dt.split('T')[0]; } }
+        let videoId=''; if(url){ const m=url.match(/\/video\/(\d+)/); if(m) videoId=m[1]; } if(!videoId&&item.id){ const m=String(item.id).match(/(\d{10,})/); if(m) videoId=m[1]; }
+        const mediaHtml=videoId?`<div class="do-dp2-media"><iframe id="ov_iframe_${videoId}" src="https://www.tiktok.com/embed/v2/${videoId}" allow="autoplay" allowfullscreen></iframe></div>`:'';
+        title.textContent=name;
+        body.innerHTML=`
+            <div class="do-dp2-avatar-row">
+                <div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${avColor},${avColor}99);">${avHtml}</div>
+                <div>
+                    <div class="do-dp2-name">${esc(name)}</div>
+                    ${handle?`<div class="do-dp2-handle">@${esc(handle)}</div>`:''}
+                    <span class="do-dp2-plat-badge" style="background:${color}18;color:${color};">TikTok</span>
+                </div>
+            </div>
+            ${dtFmt?`<div class="do-dp2-meta">${dtFmt}</div>`:''}
+            <div class="do-dp2-sent do-dp2-sent--${sent}">${sentLbl}</div>
+            ${mediaHtml}
+            ${content?`<div class="do-dp2-content">${esc(content)}</div>`:''}
+            <div class="do-dp2-stats">
+                <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(v)}</div><div class="do-dp2-stat-lbl">Views</div></div>
+                <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(l)}</div><div class="do-dp2-stat-lbl">Likes</div></div>
+                <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(c)}</div><div class="do-dp2-stat-lbl">Comments</div></div>
+                <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(s)}</div><div class="do-dp2-stat-lbl">Shares</div></div>
+            </div>
+            ${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out me-1"></i>Buka di TikTok</a>`:''}`;
+        panel.classList.add('show');
+    },
+    close() { _$('ovDetailPanel')?.classList.remove('show'); },
+    killIframe() { const b=_$('ovDetailBody'); if(b) b.querySelectorAll('iframe').forEach(f=>{ f.src=''; f.remove(); }); }
+};
+
+/* ══ INIT ══ */
+document.addEventListener('DOMContentLoaded', () => {
+    if(!OVCfg.pid) return;
+    OVTab._loaded.hashtag = true;
+    OVData.loadHashtags();
+    /* also pre-fetch view data (used for hashtag filtering) */
+    OVData.loadEngagement('view').then(()=>{
+        OVTab._loaded.view = true;
     });
-    h += '</tbody></table>';
-    return h;
-  }
-
-  function displayUsersTable(count){
-    const c = document.getElementById('activeUsersTable');
-    c.innerHTML = buildUsersTableHTML(allUsers.slice(0, count));
-    displayedCount = count;
-  }
-
-  window.showAllUsersModal = function(){
-    const modal = document.getElementById('allUsersModal');
-    document.getElementById('allUsersTableContent').innerHTML = buildUsersTableHTML(allUsers);
-    modal.classList.add('show');
-  };
-
-  window.filterUsers = function(){
-    const s = document.getElementById('userSearchInput').value.toLowerCase();
-    if(!s){ displayUsersTable(displayedCount); return; }
-    const f = allUsers.filter(u => {
-      const un = (u.username||u.author||u.name||'').toLowerCase();
-      const dn = (u.contentJson?.nickname||u.display_name||u.name||'').toLowerCase();
-      return un.includes(s)||dn.includes(s);
-    });
-    const c = document.getElementById('activeUsersTable');
-    c.innerHTML = f.length ? buildUsersTableHTML(f) : '<div class="text-center py-4 text-muted f-12">No users found</div>';
-  };
-
-  // ── Charts ──
-  function renderVolumeTrendChart(data){
-    const canvas = document.getElementById('volumeTrendChart');
-    const loading = document.getElementById('volumeTrendLoading');
-    if(!data||!data.length){ loading.innerHTML='<div class="text-center py-4 text-muted f-12">No data available</div>'; return; }
-    new Chart(canvas.getContext('2d'),{
-      type:'line',
-      data:{ labels:data.map(d=>d.date), datasets:[{
-        label:'Volume', data:data.map(d=>d.count||d.value||0),
-        borderColor:'#038047', backgroundColor:'rgba(3,128,71,.1)',
-        borderWidth:3, tension:.4, fill:true, pointRadius:4, pointHoverRadius:6,
-        pointBackgroundColor:'#038047', pointBorderColor:'#fff', pointBorderWidth:2
-      }]},
-      options:{ responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1a202c', padding:12, titleColor:'#fff', bodyColor:'#fff', cornerRadius:8, displayColors:false }},
-        scales:{ y:{ beginAtZero:true, grid:{color:'#f1f5f9',drawBorder:false}, ticks:{color:'#64748b',font:{family:'Poppins',size:11},padding:8}},
-                 x:{ grid:{display:false,drawBorder:false}, ticks:{color:'#64748b',font:{family:'Poppins',size:11},padding:8}}}
-      }
-    });
-    loading.style.display='none'; canvas.style.display='block';
-  }
-
-  function renderSentimentChart(s){
-    const canvas = document.getElementById('sentimentChart');
-    const loading = document.getElementById('sentimentLoading');
-    new Chart(canvas.getContext('2d'),{
-      type:'doughnut',
-      data:{ labels:['Positive','Neutral','Negative'], datasets:[{
-        data:[s.positive,s.neutral,s.negative],
-        backgroundColor:['#10b981','#64748b','#ef4444'], borderWidth:0, hoverOffset:15
-      }]},
-      options:{ responsive:true, maintainAspectRatio:false, cutout:'70%',
-        plugins:{ legend:{ position:'bottom', labels:{ color:'#1a202c', font:{family:'Poppins',size:12,weight:'600'}, padding:16, usePointStyle:true, pointStyle:'circle' }},
-          tooltip:{ backgroundColor:'#1a202c', padding:12, titleColor:'#fff', bodyColor:'#fff', cornerRadius:8, displayColors:false,
-            callbacks:{ label:function(ctx){ const t=ctx.dataset.data.reduce((a,b)=>a+b,0); return ctx.label+': '+fmtNum(ctx.parsed)+' ('+(t?(ctx.parsed*100/t).toFixed(1):0)+'%)'; }}
-          }
-        }
-      }
-    });
-    loading.style.display='none'; canvas.style.display='block';
-  }
-
-})();
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape') OVPanel.close(); });
+});
 </script>
 @endsection
