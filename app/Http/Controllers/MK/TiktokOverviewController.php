@@ -5,6 +5,7 @@ namespace App\Http\Controllers\MK;
 use App\Http\Controllers\Controller;
 use App\Services\MediaKernelsClient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class TiktokOverviewController extends Controller
@@ -21,20 +22,17 @@ class TiktokOverviewController extends Controller
      */
     private function getAllProjects(): array
     {
-        $allProjects = [];
-        $offset      = 0;
-        $limit       = 1000;
+        $user = Auth::user();
+        $assignedProjectIds = $user->assignedProjectIds();
 
-        do {
-            $projectsData = $this->client->listProjects($offset, $limit);
-            $data         = $projectsData['data'] ?? [];
-            $allProjects  = array_merge($allProjects, $data);
-            $offset      += $limit;
+        $rawProjects = $this->client->listProjects(0, 100);
+        $allProjects = array_values($rawProjects);
 
-            $total = $projectsData['total'] ?? $projectsData['meta']['total'] ?? null;
-        } while (count($data) === $limit && ($total === null || $offset < $total));
+        $userProjects = array_filter($allProjects, function ($project) use ($assignedProjectIds) {
+            return in_array($project['id'] ?? null, $assignedProjectIds);
+        });
 
-        return $allProjects;
+        return array_values($userProjects);
     }
 
     private function redirectWithDates(Request $request, string $routeName, string $projectId): \Illuminate\Http\RedirectResponse
