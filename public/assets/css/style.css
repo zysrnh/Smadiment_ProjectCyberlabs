@@ -103,7 +103,7 @@ body {
     --bs-dark-border-subtle: #8996a4;
     --bs-white-rgb: 255, 255, 255;
     --bs-black-rgb: 0, 0, 0;
-    --bs-font-sans-serif: "Open Sans", sans-serif;
+    --bs-font-sans-serif: "Poppins", sans-serif;
     --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, .15), rgba(255, 255, 255, 0));
     --bs-body-font-family: var(--bs-font-sans-serif);
@@ -33377,7 +33377,7 @@ div:where(.swal2-container) button:where(.swal2-close):focus {
 
 .notifier-container {
     z-index: 1051;
-    font-family: Open Sans, sans-serif;
+    font-family: Poppins, sans-serif;
     width: 400px;
     max-width: 98%;
     top: 15px
@@ -33963,7 +33963,7 @@ body.anim-slip-from-top.modal-open .pc-header {
 }
 
 .daterangepicker {
-    font-family: Open Sans, sans-serif;
+    font-family: Poppins, sans-serif;
     border: 1px solid rgba(0, 0, 0, .15);
     box-shadow: 0 0 25px rgba(26, 188, 156, .15);
     background-color: #fff

@@ -187,6 +187,9 @@
                         <li class="pc-item {{ request()->routeIs('mk.x.most-retweets') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.x.most-retweets') }}{{ $qs }}">Most Retweets</a>
                         </li>
+                        <li class="pc-item {{ request()->routeIs('mk.x.most-engagement') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('mk.x.most-engagement') }}{{ $qs }}">Most Engagement</a>
+                        </li>
                         <li class="pc-item {{ request()->routeIs('mk.x.authors.demographics') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.x.authors.demographics') }}{{ $qs }}">Author Profiles</a>
                         </li>

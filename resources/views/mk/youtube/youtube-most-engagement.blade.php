@@ -403,7 +403,7 @@
         </svg>
         YouTube Most Engagement
       </h1>
-      <p>Postingan dengan Most Views, Most Liked, dan Most Comments dari YouTube</p>
+      <p>Postingan dengan Most Views, Most Liked dan Most Comments dari YouTube</p>
     </div>
     <button class="ms-refresh-btn" onclick="FME.reload()">
       <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -583,7 +583,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;">
           <select class="ms-rows-sel" id="rows-view" onchange="FMEData.reloadTab('view')">
-            <option value="10">Top 10</option><option value="20" selected>Top 20</option><option value="50">Top 50</option>
+            <option value="10">Top 10</option><option value="20">Top 20</option><option value="50">Top 50</option><option value="100" selected>Top 100</option>
           </select>
           <button class="ms-export-btn" onclick="FMEData.exportCsv('view')">
             <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>CSV
@@ -656,7 +656,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;">
           <select class="ms-rows-sel" id="rows-like" onchange="FMEData.reloadTab('like')">
-            <option value="10">Top 10</option><option value="20" selected>Top 20</option><option value="50">Top 50</option>
+            <option value="10">Top 10</option><option value="20">Top 20</option><option value="50">Top 50</option><option value="100" selected>Top 100</option>
           </select>
           <button class="ms-export-btn" onclick="FMEData.exportCsv('like')">
             <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>CSV
@@ -698,7 +698,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;">
           <select class="ms-rows-sel" id="rows-comment" onchange="FMEData.reloadTab('comment')">
-            <option value="10">Top 10</option><option value="20" selected>Top 20</option><option value="50">Top 50</option>
+            <option value="10">Top 10</option><option value="20">Top 20</option><option value="50">Top 50</option><option value="100" selected>Top 100</option>
           </select>
           <button class="ms-export-btn" onclick="FMEData.exportCsv('comment')">
             <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>CSV
@@ -1051,16 +1051,16 @@ const FMEData = {
 
   async loadTab(type) {
     const subMap={ view:'postbyview', like:'postbylike', comment:'postbycomment' };
-    const rows=parseInt(document.getElementById('rows-'+type)?.value||'20');
+    const rows=parseInt(document.getElementById('rows-'+type)?.value||'100');
     const listEl=document.getElementById('list-'+type);
     const chipEl=document.getElementById('chip-'+type);
     const badgeEl=document.getElementById('badge-'+type+'-full');
     if(listEl) listEl.innerHTML=`<div class="fme-spinner-state"><div class="fme-spinner"></div>Memuat data ${type}…</div>`;
     try {
-      const res=await fetch(`/mk/api/youtube/most-viewed-posts?project_id=${FMECfg.pid}&start_date=${FMECfg.sd}&end_date=${FMECfg.ed}&sub=${subMap[type]}&rows=${rows}`);
+      const res=await fetch(`/mk/api/youtube/most-engagement?project_id=${FMECfg.pid}&start_date=${FMECfg.sd}&end_date=${FMECfg.ed}&sub=${subMap[type]}&rows=${rows}`);
       const json=await res.json();
       let items=json.data||json||[]; if(!Array.isArray(items)) items=[];
-      items=this._sort(items,type); Store[type]=items; Pag[type]=1;
+      Store[type]=items; Pag[type]=1;
       if(chipEl) chipEl.textContent=items.length;
       if(badgeEl) badgeEl.textContent=`${items.length} videos`;
       if(type==='view') { this._updateStats(items); this._renderEngChart(items); }

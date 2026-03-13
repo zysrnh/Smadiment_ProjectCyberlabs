@@ -2275,5 +2275,45 @@ public function mostStatus(
         }
     }
 
-    
+public function tiktokTopStatusAll(
+    string $projectId,
+    string $startDate,
+    string $endDate,
+    int $startTime = 0,
+    int $endTime = 23,
+    int $maxRows = 100,
+    string $sub = 'postbylike'
+): array {
+    try {
+        $token = $this->getToken();
+
+        $res = Http::timeout(60)->acceptJson()->get(
+            $this->baseUrl() . '/tiktok_top_status/',
+            [
+                'project_id' => $projectId,
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'start_time' => $startTime,
+                'end_time'   => $endTime,
+                'rows'       => $maxRows,
+                'sub'        => $sub,
+                'is_cache'   => 'false',
+                'token'      => $token,
+            ]
+        );
+
+        $res->throw();
+        $json = $this->parseJson($res);
+
+        Log::info('tiktokTopStatusAll result', [
+            'total' => is_array($json) ? count($json) : 0,
+        ]);
+
+        return is_array($json) ? $json : [];
+
+    } catch (\Exception $e) {
+        Log::error('tiktokTopStatusAll error', ['error' => $e->getMessage()]);
+        return [];
+    }
+}
 }

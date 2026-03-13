@@ -574,7 +574,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;">
           <select class="ms-rows-sel" id="rows-like" onchange="FMEData.reloadTab('like')">
-            <option value="10">Top 10</option><option value="20" selected>Top 20</option><option value="50">Top 50</option>
+            <option value="10">Top 10</option><option value="20">Top 20</option><option value="50">Top 50</option><option value="100" selected>Top 100</option>
           </select>
           <button class="ms-export-btn" onclick="FMEData.exportCsv('like')">
             <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>CSV
@@ -644,7 +644,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;">
           <select class="ms-rows-sel" id="rows-share" onchange="FMEData.reloadTab('share')">
-            <option value="10">Top 10</option><option value="20" selected>Top 20</option><option value="50">Top 50</option>
+            <option value="10">Top 10</option><option value="20">Top 20</option><option value="50">Top 50</option><option value="100" selected>Top 100</option>
           </select>
           <button class="ms-export-btn" onclick="FMEData.exportCsv('share')">
             <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>CSV
@@ -686,7 +686,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;">
           <select class="ms-rows-sel" id="rows-comment" onchange="FMEData.reloadTab('comment')">
-            <option value="10">Top 10</option><option value="20" selected>Top 20</option><option value="50">Top 50</option>
+            <option value="10">Top 10</option><option value="20">Top 20</option><option value="50">Top 50</option><option value="100" selected>Top 100</option>
           </select>
           <button class="ms-export-btn" onclick="FMEData.exportCsv('comment')">
             <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>CSV
@@ -967,7 +967,7 @@ const FMEData = {
 
   async loadTab(type) {
     const subMap={like:'fblike',share:'fbshare',comment:'fbcomment'};
-    const rows=parseInt(document.getElementById('rows-'+type)?.value||'20');
+    const rows=parseInt(document.getElementById('rows-'+type)?.value||'100');
     const listEl=document.getElementById('list-'+type);
     const chipEl=document.getElementById('chip-'+type);
     const badgeEl=document.getElementById('badge-'+type+'-full');

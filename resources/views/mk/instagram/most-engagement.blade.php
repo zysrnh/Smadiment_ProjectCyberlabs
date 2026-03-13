@@ -339,33 +339,7 @@
 
 <div class="fme-page">
 
-  {{-- PAGE HEADER --}}
-  <div class="page-header">
-    <div class="page-header-left">
-      <h1>
-        <svg viewBox="0 0 24 24" style="width:28px;height:28px;display:inline-block;vertical-align:middle;margin-right:10px;margin-top:-3px;">
-          <defs>
-            <linearGradient id="igGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-              <stop offset="0%" style="stop-color:#f09433"/>
-              <stop offset="25%" style="stop-color:#e6683c"/>
-              <stop offset="50%" style="stop-color:#dc2743"/>
-              <stop offset="75%" style="stop-color:#cc2366"/>
-              <stop offset="100%" style="stop-color:#bc1888"/>
-            </linearGradient>
-          </defs>
-          <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="url(#igGrad)"/>
-          <circle cx="12" cy="12" r="4.5" fill="none" stroke="#fff" stroke-width="1.8"/>
-          <circle cx="17.5" cy="6.5" r="1.2" fill="#fff"/>
-        </svg>
-        Instagram Most Engagement
-      </h1>
-      <p>Postingan dengan Most Liked dan Most Comments</p>
-    </div>
-    <button class="ms-refresh-btn" onclick="FME.reload()">
-      <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-      Refresh
-    </button>
-  </div>
+  
 
   {{-- FILTER CARD --}}
   <div class="filter-card">
@@ -537,7 +511,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;">
           <select class="ms-rows-sel" id="rows-{{ $tabKey }}" onchange="FMEData.reloadTab('{{ $tabKey }}')">
-            <option value="10">Top 10</option><option value="20" selected>Top 20</option><option value="50">Top 50</option>
+            <option value="10">Top 10</option><option value="20">Top 20</option><option value="50">Top 50</option><option value="100" selected>Top 100</option>
           </select>
           <button class="ms-export-btn" onclick="FMEData.exportCsv('{{ $tabKey }}')">
             <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>CSV
@@ -830,7 +804,8 @@ const FMEData = {
     if(listEl) listEl.innerHTML=`<div class="fme-spinner-state"><div class="fme-spinner"></div>Memuat data…</div>`;
     try{
       const raw = await this._fetchRaw(def.sub);
-      const sorted = this._sort(raw, def.metric);
+      const rows = parseInt(document.getElementById('rows-'+tabKey)?.value||'100');
+      const sorted = this._sort(raw, def.metric).slice(0, rows);
       Store[tabKey] = sorted;
       Pag[tabKey]   = 1;
       if(chipEl)  chipEl.textContent  = sorted.length;

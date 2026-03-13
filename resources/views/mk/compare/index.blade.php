@@ -4,1699 +4,1359 @@
 
 @section('styles')
 <style>
-  :root {
-    --green: #038047;
-    --green-dark: #026738;
-    --green-light: #e6f5ee;
-    --text: #1a202c;
-    --text-muted: #64748b;
-    --border: #e2e8f0;
-    --bg: #f8fafc;
-    --white: #ffffff;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08);
-    --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
-  }
+/* ══ Design Tokens — 100% match dashboard ══ */
+:root {
+    --dash-primary     : var(--bs-primary, #4361EE);
+    --dash-primary-rgb : var(--bs-primary-rgb, 67, 97, 238);
+    --dash-primary-lt  : rgba(var(--dash-primary-rgb, 67,97,238), .10);
+    --green            : #10B981;
+    --green-light      : #ECFDF5;
+    --red              : #EF4444;
+    --red-light        : #FEF2F2;
+    --slate-50         : #F8FAFC;
+    --slate-100        : #F1F5F9;
+    --slate-200        : #E2E8F0;
+    --slate-300        : #CBD5E1;
+    --slate-400        : #94A3B8;
+    --slate-500        : #64748B;
+    --slate-600        : #475569;
+    --slate-700        : #334155;
+    --slate-800        : #1E293B;
+    --slate-900        : #0F172A;
+    --radius           : 8px;
+    --radius-sm        : 5px;
+    --shadow-sm        : 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+    --shadow-md        : 0 4px 14px rgba(15,23,42,.08);
+    --shadow-lg        : 0 10px 30px rgba(15,23,42,.12);
+}
 
-  .cmp-container {
-    padding: 24px;
-    background: var(--bg);
-    min-height: 100vh;
-    max-width: 1600px;
-    margin: 0 auto;
-  }
+/* ══ Animations (identical to dashboard) ══ */
+@keyframes fadeUp        { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeIn        { from{opacity:0} to{opacity:1} }
+@keyframes slideInRight  { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes slideOutRight { from{transform:translateX(0);opacity:1}    to{transform:translateX(100%);opacity:0} }
+@keyframes overlayIn     { from{opacity:0} to{opacity:1} }
+@keyframes overlayOut    { from{opacity:1} to{opacity:0} }
+@keyframes spin          { to{transform:rotate(360deg)} }
+@keyframes shimmer       { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes tagIn         { from{transform:scale(.8);opacity:0} to{transform:scale(1);opacity:1} }
+@keyframes pulseP        { 0%,100%{box-shadow:0 0 0 3px var(--dash-primary-lt)} 50%{box-shadow:0 0 0 6px transparent} }
 
-  /* ── Page Header ── */
-  .cmp-header { margin-bottom: 28px; }
-  .cmp-header h1 { font-size: 26px; font-weight: 700; color: var(--text); margin: 0 0 6px; }
-  .cmp-header p  { font-size: 13px; color: var(--text-muted); margin: 0; }
+.fade-up    { animation:fadeUp .38s ease-out both; }
+.fade-up-d1 { animation-delay:.05s }
+.fade-up-d2 { animation-delay:.10s }
+.fade-up-d3 { animation-delay:.15s }
+.fade-up-d4 { animation-delay:.20s }
 
-  /* ── Config Card ── */
-  .config-card {
-    background: var(--white);
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-    margin-bottom: 24px;
-  }
+/* ══ Config inputs ══ */
+.cmp-search-input {
+    width:100%; padding:9px 14px;
+    border:1px solid var(--slate-200); border-radius:var(--radius-sm);
+    font-family:inherit; font-size:13px; background:var(--slate-50);
+    color:var(--slate-800); outline:none; transition:all .2s; margin-bottom:7px;
+}
+.cmp-search-input:focus {
+    border-color:var(--dash-primary); background:#fff;
+    box-shadow:0 0 0 3px var(--dash-primary-lt);
+}
+.cmp-dropdown {
+    border:1px solid var(--slate-200); border-radius:var(--radius-sm);
+    max-height:200px; overflow-y:auto; background:#fff; box-shadow:var(--shadow-md);
+}
+.cmp-dropdown::-webkit-scrollbar { width:4px; }
+.cmp-dropdown::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
+.cmp-proj-opt {
+    display:flex; align-items:center; gap:10px; padding:9px 13px;
+    cursor:pointer; border-bottom:1px solid var(--slate-50);
+    transition:background .15s; font-size:13px; color:var(--slate-800);
+}
+.cmp-proj-opt:last-child { border-bottom:none; }
+.cmp-proj-opt:hover { background:var(--slate-50); }
+.cmp-proj-opt input[type="checkbox"] { width:15px;height:15px;accent-color:var(--dash-primary);cursor:pointer;flex-shrink:0; }
+.cmp-proj-opt-info { flex:1; min-width:0; }
+.cmp-proj-opt-name { font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cmp-proj-opt-meta { font-size:11px; color:var(--slate-400); margin-top:2px; }
+.cmp-proj-opt-badge { font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; background:var(--dash-primary-lt); color:var(--dash-primary); flex-shrink:0; }
 
-  .config-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto;
-    gap: 16px;
-    align-items: end;
-  }
+.cmp-tags { display:flex; flex-wrap:wrap; gap:7px; margin-top:9px; min-height:30px; }
+.cmp-tag {
+    display:inline-flex; align-items:center; gap:5px; padding:4px 11px;
+    background:var(--dash-primary); color:#fff; border-radius:20px;
+    font-size:12px; font-weight:600; animation:tagIn .2s ease-out;
+}
+.cmp-tag button { background:none; border:none; color:rgba(255,255,255,.75); cursor:pointer; font-size:14px; line-height:1; padding:0; display:flex; align-items:center; transition:color .15s; }
+.cmp-tag button:hover { color:#fff; }
 
-  @media (max-width: 900px) { .config-grid { grid-template-columns: 1fr; } }
+.cmp-date-row { display:flex; align-items:center; gap:9px; }
+.cmp-date-input {
+    flex:1; padding:9px 13px; border:1px solid var(--slate-200); border-radius:var(--radius-sm);
+    font-family:inherit; font-size:13px; color:var(--slate-800); outline:none;
+    transition:all .2s; background:var(--slate-50);
+}
+.cmp-date-input:focus { border-color:var(--dash-primary); background:#fff; box-shadow:0 0 0 3px var(--dash-primary-lt); }
+.cmp-date-sep { font-size:12px; color:var(--slate-400); font-weight:600; white-space:nowrap; }
 
-  .form-label {
-    font-size: 12px; font-weight: 700; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block;
-  }
+/* ══ Stat Chips — identical to dashboard ══ */
+.stat-chip.clickable { cursor:pointer; transition:transform .13s, box-shadow .13s; user-select:none; }
+.stat-chip.clickable:hover  { transform:translateY(-2px); box-shadow:var(--shadow-sm); }
+.stat-chip.clickable:active { transform:translateY(0); }
 
-  /* ── Project Selector ── */
-  .project-search-input {
-    width: 100%; padding: 11px 16px; border: 1px solid var(--border);
-    border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 13px;
-    background: var(--bg); color: var(--text); outline: none; transition: all 0.2s; margin-bottom: 8px;
-  }
-  .project-search-input:focus {
-    border-color: var(--green); background: var(--white);
-    box-shadow: 0 0 0 3px rgba(3,128,71,0.1);
-  }
+/* ══ Chart loading — identical to dashboard ══ */
+.chart-container { position:relative; }
+.chart-loading {
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px; background:#fff; z-index:2; transition:opacity .3s;
+}
+.chart-loading.hidden { opacity:0; pointer-events:none; }
+.spin-ring {
+    width:26px; height:26px;
+    border:2.5px solid var(--slate-100); border-top-color:var(--dash-primary);
+    border-radius:50%; animation:spin .65s linear infinite;
+}
+.chart-loading span { font-size:11px; font-weight:600; color:var(--slate-400); }
+.chart-empty {
+    min-height:200px; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:6px; color:var(--slate-400); font-size:12px; font-weight:600;
+}
+.chart-empty i { font-size:34px; color:var(--slate-300); display:block; }
 
-  .project-dropdown {
-    border: 1px solid var(--border); border-radius: 10px; max-height: 220px;
-    overflow-y: auto; background: var(--white); box-shadow: var(--shadow-md); scrollbar-width: thin;
-  }
-  .project-dropdown::-webkit-scrollbar { width: 4px; }
-  .project-dropdown::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 2px; }
+/* ══ Skeleton ══ */
+.sk-block {
+    border-radius:4px;
+    background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);
+    background-size:200% 100%; animation:shimmer 1.4s infinite;
+}
 
-  .project-option {
-    display: flex; align-items: center; gap: 10px; padding: 10px 14px;
-    cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.15s;
-    font-size: 13px; color: var(--text);
-  }
-  .project-option:last-child { border-bottom: none; }
-  .project-option:hover { background: var(--bg); }
-  .project-option input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
-  .project-option-info { flex: 1; min-width: 0; }
-  .project-option-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .project-option-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .project-option-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: var(--green-light); color: var(--green); flex-shrink: 0; }
+/* ══ Loading overlay ══ */
+.cmp-loading-overlay {
+    position:fixed; inset:0; background:rgba(255,255,255,.85);
+    backdrop-filter:blur(4px); z-index:9999; display:none;
+    flex-direction:column; align-items:center; justify-content:center; gap:16px;
+}
+.cmp-loading-overlay.show { display:flex; }
+.cmp-spin-lg { width:44px; height:44px; border:3px solid var(--dash-primary-lt); border-top-color:var(--dash-primary); border-radius:50%; animation:spin .8s linear infinite; }
 
-  .selected-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; min-height: 32px; }
-  .selected-tag {
-    display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
-    background: var(--green); color: white; border-radius: 20px;
-    font-size: 12px; font-weight: 600; animation: tagIn 0.2s ease-out;
-  }
-  @keyframes tagIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .selected-tag button { background: none; border: none; color: rgba(255,255,255,0.8); cursor: pointer; font-size: 14px; line-height: 1; padding: 0; display: flex; align-items: center; transition: color 0.15s; }
-  .selected-tag button:hover { color: white; }
+/* ══ Mini sentiment bars ══ */
+.sent-mini { display:flex; flex-direction:column; gap:5px; margin-top:12px; }
+.sent-mini-row { display:grid; grid-template-columns:32px 1fr 36px; align-items:center; gap:6px; font-size:10px; font-weight:700; }
+.sent-mini-track { height:5px; border-radius:3px; background:var(--slate-100); overflow:hidden; }
+.sent-mini-fill  { height:100%; border-radius:3px; transition:width 1s ease-out; }
 
-  .date-row { display: flex; align-items: center; gap: 10px; }
-  .date-input {
-    flex: 1; padding: 11px 14px; border: 1px solid var(--border); border-radius: 10px;
-    font-family: 'Poppins', sans-serif; font-size: 13px; color: var(--text);
-    outline: none; transition: all 0.2s; background: var(--bg);
-  }
-  .date-input:focus { border-color: var(--green); background: var(--white); box-shadow: 0 0 0 3px rgba(3,128,71,0.1); }
-  .date-sep { font-size: 12px; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+/* ══ Ranking table ══ */
+.cmp-rank-table { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
+.cmp-rank-table th { padding:9px 13px; text-align:left; font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.4px; border-bottom:2px solid var(--slate-100); }
+.cmp-rank-table td { padding:11px 13px; border-bottom:1px solid var(--slate-50); vertical-align:middle; }
+.cmp-rank-table tbody tr:last-child td { border-bottom:none; }
+.cmp-rank-table tbody tr { cursor:pointer; transition:background .15s; }
+.cmp-rank-table tbody tr:hover td { background:var(--slate-50); }
+.rank-num { width:26px; height:26px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; background:var(--slate-100); color:var(--slate-500); }
+.rank-num.gold   { background:#fef3c7; color:#b45309; }
+.rank-num.silver { background:#f1f5f9; color:#475569; }
+.rank-num.bronze { background:#fef0e7; color:#c2410c; }
+.bar-track { height:7px; background:var(--slate-100); border-radius:4px; overflow:hidden; }
+.bar-fill  { height:100%; border-radius:4px; transition:width 1.2s cubic-bezier(.4,0,.2,1); }
 
-  .compare-btn {
-    padding: 12px 28px;
-    background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
-    color: white; border: none; border-radius: 12px; font-family: 'Poppins', sans-serif;
-    font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.25s;
-    display: flex; align-items: center; gap: 8px; white-space: nowrap;
-    box-shadow: 0 4px 12px rgba(3,128,71,0.25);
-  }
-  .compare-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(3,128,71,0.35); }
-  .compare-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .compare-btn svg { width: 18px; height: 18px; }
+/* ══ Media table ══ */
+.cmp-media-table { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
+.cmp-media-table th { padding:9px 13px; text-align:right; font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.4px; border-bottom:2px solid var(--slate-100); white-space:nowrap; }
+.cmp-media-table th:first-child,.cmp-media-table th:nth-child(2) { text-align:left; }
+.cmp-media-table td { padding:10px 13px; border-bottom:1px solid var(--slate-50); text-align:right; color:var(--slate-700); }
+.cmp-media-table td:first-child { text-align:left; }
+.cmp-media-table td:nth-child(2) { text-align:left; font-weight:700; }
+.cmp-media-table tbody tr { transition:background .15s; cursor:pointer; }
+.cmp-media-table tbody tr:last-child td { border-bottom:none; }
+.cmp-media-table tbody tr:hover td { background:var(--slate-50); }
 
-  /* ── Results ── */
-  #resultsSection { display: none; animation: fadeUp 0.4s ease-out; }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+/* ══ Sentiment stacked bars ══ */
+.sent-stack-row { display:grid; grid-template-columns:170px 1fr; gap:14px; align-items:center; }
+@media(max-width:640px) { .sent-stack-row { grid-template-columns:1fr; } }
+.sent-stack-bars { display:flex; height:26px; border-radius:var(--radius-sm); overflow:hidden; }
+.sent-seg { display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff; transition:width 1.2s ease-out; white-space:nowrap; overflow:hidden; }
 
-  .projects-row { display: grid; gap: 16px; margin-bottom: 24px; }
+/* ══ Tab nav — identical to dashboard ══ */
+.cmp-tab-nav { display:flex; gap:2px; background:var(--slate-100); border:1px solid var(--slate-200); border-radius:var(--radius-sm); padding:3px; }
+.cmp-tab-btn { padding:5px 13px; border:none; border-radius:3px; font-family:inherit; font-size:11px; font-weight:700; cursor:pointer; color:var(--slate-500); background:transparent; transition:all .15s; }
+.cmp-tab-btn.active { background:#fff; color:var(--dash-primary); box-shadow:0 1px 4px rgba(0,0,0,.08); }
 
-  .project-summary-card {
-    background: var(--white); border-radius: 14px; padding: 20px;
-    border: 2px solid var(--border); transition: border-color 0.2s;
-    position: relative; overflow: hidden;
-  }
-  .project-summary-card .card-title { font-size: 15px; font-weight: 700; color: var(--text); margin: 0 0 4px; line-height: 1.3; }
-  .project-summary-card .card-meta  { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
+/* ══════════════════════════════════════════════
+   SLIDE PANEL — 100% IDENTICAL to dashboard.blade.php
+══════════════════════════════════════════════ */
+.do-panel-overlay {
+    position:fixed; inset:0; z-index:9000;
+    background:rgba(15,23,42,.45); backdrop-filter:blur(4px); display:none;
+}
+.do-panel-overlay.show   { display:block; animation:overlayIn .22s ease-out; }
+.do-panel-overlay.hiding { animation:overlayOut .22s ease-out forwards; }
 
-  .project-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .pstat { text-align: center; }
-  .pstat-value { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; }
-  .pstat-label { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 4px; }
+.do-panel {
+    position:fixed; top:0; right:0; bottom:0; z-index:9001;
+    width:480px; max-width:100vw; background:#fff;
+    display:none; flex-direction:column;
+    border-left:1px solid var(--slate-200);
+    box-shadow:-8px 0 40px rgba(15,23,42,.16);
+}
+.do-panel.show   { display:flex; animation:slideInRight .28s cubic-bezier(.4,0,.2,1); }
+.do-panel.hiding { animation:slideOutRight .24s cubic-bezier(.4,0,.2,1) forwards; }
 
-  .sentiment-mini { display: flex; gap: 6px; margin-top: 12px; }
-  .sent-bar-wrap { flex: 1; }
-  .sent-bar-label { display: flex; justify-content: space-between; font-size: 10px; font-weight: 600; margin-bottom: 4px; }
-  .sent-bar { height: 5px; border-radius: 3px; background: #e2e8f0; overflow: hidden; }
-  .sent-bar-fill { height: 100%; border-radius: 3px; transition: width 1s ease-out; }
+.do-panel-header {
+    display:flex; align-items:center; gap:10px;
+    padding:14px 16px; border-bottom:1px solid var(--slate-200);
+    background:var(--slate-50); flex-shrink:0;
+}
+.do-panel-dot   { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.do-panel-title { font-size:13px; font-weight:700; color:var(--slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.do-panel-close {
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    border:1px solid var(--slate-200); background:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--slate-500); font-size:16px; transition:all .14s; flex-shrink:0;
+}
+.do-panel-close:hover { background:var(--red); border-color:var(--red); color:#fff; }
 
-  .section-card { background: var(--white); border-radius: 16px; padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 24px; }
-  .section-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid var(--bg); }
-  .section-head h3 { font-size: 16px; font-weight: 700; color: var(--text); margin: 0 0 4px; }
-  .section-sub { font-size: 12px; color: var(--text-muted); }
-  .chart-wrap { position: relative; height: 300px; }
+.do-panel-actions {
+    display:flex; align-items:center; gap:7px; padding:7px 12px;
+    border-bottom:1px solid var(--slate-200); background:#fff; flex-shrink:0;
+}
+.do-panel-meta {
+    flex:1; font-size:10px; font-weight:700; color:var(--slate-400);
+    text-transform:uppercase; letter-spacing:.5px;
+    display:flex; align-items:center; gap:5px;
+}
+.do-panel-tabs {
+    display:flex; background:var(--slate-100); border:1px solid var(--slate-200);
+    border-radius:var(--radius-sm); padding:2px; gap:2px;
+}
+.do-panel-tab {
+    padding:3px 9px; border-radius:3px; border:none; background:transparent;
+    font-size:11px; font-weight:700; cursor:pointer; transition:all .13s;
+    color:var(--slate-500); font-family:inherit;
+}
+.do-panel-tab:hover { background:#fff; }
+.do-panel-tab.active { background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+.do-panel-tab.active[data-s="all"] { color:var(--dash-primary); }
+.do-panel-tab.neg.active { color:#EF4444; }
+.do-panel-tab.pos.active { color:#10B981; }
+.do-panel-tab.neu.active { color:var(--slate-500); }
 
-  .rank-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
-  .rank-table th { padding: 10px 14px; text-align: left; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 2px solid var(--bg); }
-  .rank-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; color: var(--text); }
-  .rank-table tbody tr:last-child td { border-bottom: none; }
+.do-panel-export {
+    display:flex; align-items:center; gap:4px; padding:4px 10px;
+    background:var(--dash-primary); color:#fff; border:none;
+    border-radius:var(--radius-sm); font-size:10px; font-weight:700;
+    cursor:pointer; transition:filter .13s; font-family:inherit;
+}
+.do-panel-export:hover { filter:brightness(1.1); }
+.do-panel-export i { font-size:12px; }
 
-  .rank-num { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; background: var(--bg); color: var(--text-muted); }
-  .rank-num.gold   { background: #fef3c7; color: #b45309; }
-  .rank-num.silver { background: #f1f5f9; color: #475569; }
-  .rank-num.bronze { background: #fef0e7; color: #c2410c; }
+.do-panel-list { overflow-y:auto; flex:1; padding:2px 0; min-height:0; }
+.do-panel-list::-webkit-scrollbar { width:4px; }
+.do-panel-list::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
 
-  .bar-cell { min-width: 120px; }
-  .bar-track { height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 4px; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+.do-panel-item {
+    display:flex; gap:10px; padding:10px 14px;
+    border-bottom:1px solid var(--slate-50); cursor:pointer;
+    transition:background .1s; align-items:flex-start;
+}
+.do-panel-item:hover { background:#f0f9ff; }
+.do-panel-item:last-child { border-bottom:none; }
 
-  .sentiment-grid { display: grid; gap: 16px; margin-top: 4px; }
-  .sentiment-project-row { display: grid; grid-template-columns: 180px 1fr; gap: 16px; align-items: center; }
-  @media (max-width: 640px) { .sentiment-project-row { grid-template-columns: 1fr; } }
-  .sentiment-project-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sentiment-bars { display: flex; height: 28px; border-radius: 8px; overflow: hidden; }
-  .sentiment-seg { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; transition: width 1.2s ease-out; white-space: nowrap; overflow: hidden; }
+.do-panel-avatar {
+    width:36px; height:36px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:12px; color:#fff;
+    border:1.5px solid var(--slate-200); overflow:hidden;
+}
+.do-panel-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.do-panel-item-body { flex:1; min-width:0; }
+.do-panel-author { font-size:12px; font-weight:700; color:var(--slate-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.do-panel-handle { font-size:10px; color:var(--slate-400); font-weight:500; margin-bottom:2px; }
+.do-panel-text   { font-size:11px; color:var(--slate-600); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px; }
+.do-panel-footer { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--slate-400); flex-wrap:wrap; }
 
-  .chart-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
-  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--text-muted); }
-  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.do-sent-badge { padding:1px 6px; border-radius:3px; font-size:9px; font-weight:800; text-transform:uppercase; }
+.do-sent-badge--pos { background:#dbeafe; color:#1d4ed8; }
+.do-sent-badge--neg { background:#fee2e2; color:#991b1b; }
+.do-sent-badge--neu { background:var(--slate-100); color:var(--slate-500); }
 
-  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
-  .empty-state svg { width: 48px; height: 48px; opacity: 0.3; margin-bottom: 16px; }
-  .empty-state h3 { font-size: 16px; font-weight: 600; margin: 0 0 8px; }
-  .empty-state p  { font-size: 13px; margin: 0; }
+.do-panel-loading {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    height:100%; gap:12px; color:var(--slate-400); font-size:13px; font-weight:600;
+}
+.do-panel-spinner {
+    width:28px; height:28px; border:2.5px solid var(--slate-100);
+    border-top-color:var(--dash-primary); border-radius:50%;
+    animation:spin .65s linear infinite;
+}
 
-  .loading-overlay {
-    position: fixed; inset: 0; background: rgba(255,255,255,0.8);
-    backdrop-filter: blur(4px); z-index: 9999; display: none;
-    flex-direction: column; align-items: center; justify-content: center; gap: 16px;
-  }
-  .loading-overlay.show { display: flex; }
-  .loading-spinner { width: 48px; height: 48px; border: 4px solid rgba(3,128,71,0.2); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 14px; font-weight: 600; color: var(--text-muted); }
+/* ── Detail sub-panel — identical to dashboard ── */
+.do-detail-panel {
+    position:absolute; inset:0; background:#fff; z-index:5;
+    display:none; flex-direction:column;
+    animation:slideInRight .2s cubic-bezier(.4,0,.2,1);
+}
+.do-detail-panel.show { display:flex; }
+.do-dp2-header {
+    display:flex; align-items:center; gap:8px; padding:12px 14px;
+    background:var(--slate-50); border-bottom:1px solid var(--slate-200); flex-shrink:0;
+}
+.do-dp2-back {
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    border:1px solid var(--slate-200); background:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--slate-500); transition:all .13s; font-size:14px;
+}
+.do-dp2-back:hover { background:var(--dash-primary-lt); color:var(--dash-primary); border-color:var(--dash-primary); }
+.do-dp2-title  { font-size:13px; font-weight:700; color:var(--slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.do-dp2-body   { overflow-y:auto; flex:1; padding:16px; }
+.do-dp2-body::-webkit-scrollbar { width:4px; }
+.do-dp2-body::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
+.do-dp2-avatar-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.do-dp2-avatar-lg  {
+    width:46px; height:46px; border-radius:50%; color:#fff; font-weight:700;
+    font-size:16px; display:flex; align-items:center; justify-content:center;
+    border:2px solid var(--slate-200); overflow:hidden; flex-shrink:0;
+}
+.do-dp2-avatar-lg img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.do-dp2-name   { font-size:14px; font-weight:700; color:var(--slate-900); }
+.do-dp2-handle { font-size:11px; color:var(--slate-400); font-weight:500; }
+.do-dp2-plat-badge { display:inline-block; padding:2px 8px; border-radius:3px; font-size:10px; font-weight:700; margin-top:3px; }
+.do-dp2-meta   { font-size:11px; color:var(--slate-400); font-weight:500; margin-bottom:10px; }
+.do-dp2-sent   { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:3px; font-size:11px; font-weight:700; margin-bottom:10px; }
+.do-dp2-sent--pos { background:#dbeafe; color:#1d4ed8; }
+.do-dp2-sent--neg { background:#fee2e2; color:#991b1b; }
+.do-dp2-sent--neu { background:var(--slate-100); color:var(--slate-500); }
+.do-dp2-content { font-size:12px; color:var(--slate-700); line-height:1.7; margin-bottom:12px; background:var(--slate-50); border-radius:var(--radius-sm); padding:10px 12px; border:1px solid var(--slate-200); word-break:break-word; }
+.do-dp2-media   { border-radius:var(--radius-sm); overflow:hidden; margin-bottom:10px; }
+.do-dp2-media img { width:100%; max-height:220px; object-fit:cover; display:block; }
+.do-dp2-stats  { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:10px; }
+.do-dp2-stat   { background:var(--slate-50); border-radius:var(--radius-sm); padding:8px 10px; border:1px solid var(--slate-200); text-align:center; }
+.do-dp2-stat-val { font-size:14px; font-weight:700; color:var(--slate-900); }
+.do-dp2-stat-lbl { font-size:9px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.4px; margin-top:1px; }
+.do-dp2-link {
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    padding:9px 14px; background:var(--dash-primary); color:#fff;
+    border-radius:var(--radius-sm); font-size:12px; font-weight:700;
+    text-decoration:none; transition:filter .14s; margin-top:4px;
+}
+.do-dp2-link:hover { filter:brightness(1.1); color:#fff; }
+.do-dp2-link i { font-size:13px; }
 
-  .tab-nav { display: flex; gap: 4px; background: var(--bg); border-radius: 10px; padding: 4px; }
-  .tab-btn { padding: 7px 16px; border: none; border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--text-muted); background: transparent; transition: all 0.2s; }
-  .tab-btn.active { background: var(--white); color: var(--green); box-shadow: var(--shadow); }
+/* ── Platform picker — identical to dashboard ── */
+.do-plat-picker {
+    position:fixed; z-index:20000; background:#fff;
+    border:1px solid var(--slate-200); border-radius:var(--radius);
+    box-shadow:var(--shadow-lg); padding:5px; min-width:175px;
+    font-family:inherit; display:none; animation:fadeUp .14s ease-out;
+}
+.do-plat-picker.show { display:block; }
+.do-plat-picker-head { padding:4px 9px 6px; font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--slate-100); margin-bottom:3px; }
+.do-plat-btn {
+    display:flex; align-items:center; gap:7px; padding:7px 10px;
+    border-radius:var(--radius-sm); font-size:12px; font-weight:600;
+    cursor:pointer; background:transparent; border:none;
+    font-family:inherit; width:100%; text-align:left; color:var(--slate-700); transition:background .12s;
+}
+.do-plat-btn:hover { background:var(--dash-primary-lt); color:var(--dash-primary); }
+.do-plat-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-left:auto; }
 
-  .media-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
-  .media-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
-
-  /* ── Mentions Popup ── */
-  @keyframes cmpPopIn { from{opacity:0;transform:translateY(10px) scale(.95)} to{opacity:1;transform:none} }
-  #cmpMentionPopup .cph { display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e2e8f0;background:#f8fafc;flex-shrink:0; }
-  #cmpMentionPopup .cpt { font-size:13px;font-weight:700;color:#1a202c;display:flex;align-items:center;gap:8px; }
-  #cmpMentionPopup .cpd { width:10px;height:10px;border-radius:50%;flex-shrink:0; }
-  #cmpMentionPopup .cpc { width:26px;height:26px;border-radius:6px;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:18px;line-height:1;transition:all .15s; }
-  #cmpMentionPopup .cpc:hover { background:#fee2e2;color:#991b1b; }
-  #cmpMentionPopup .cpm { padding:7px 16px;border-bottom:1px solid #e2e8f0;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:8px;flex-shrink:0; }
-  #cmpMentionPopup .cpb { background:#038047;color:#fff;border-radius:10px;padding:1px 9px;font-size:11px;font-weight:800; }
-  #cmpMentionPopup .cpl { overflow-y:auto;flex:1;padding:4px 0;min-height:0; }
-  #cmpMentionPopup .cpl::-webkit-scrollbar { width:5px; }
-  #cmpMentionPopup .cpl::-webkit-scrollbar-thumb { background:#e2e8f0;border-radius:4px; }
-  #cmpMentionPopup .cpi { display:flex;gap:10px;padding:10px 16px;border-bottom:1px solid #f8fafc;transition:background .1s;cursor:pointer; }
-  #cmpMentionPopup .cpi:last-child { border-bottom:none; }
-  #cmpMentionPopup .cpi:hover { background:#f0fdf4; }
-  #cmpMentionPopup .cpa { width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#038047,#026738);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;border:1.5px solid #e2e8f0; }
-  #cmpMentionPopup .cpa img { width:100%;height:100%;object-fit:cover;border-radius:50%; }
-  #cmpMentionPopup .cpbd { flex:1;min-width:0; }
-  #cmpMentionPopup .cpan { font-size:12px;font-weight:700;color:#1a202c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px; }
-  #cmpMentionPopup .cpusn { font-size:10px;color:#94a3b8;font-weight:500;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-  #cmpMentionPopup .cptx { font-size:12px;color:#374151;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:4px; }
-  #cmpMentionPopup .cprw { display:flex;align-items:center;gap:6px;font-size:10px;color:#94a3b8; }
-  #cmpMentionPopup .css  { padding:1px 7px;border-radius:10px;font-size:9px;font-weight:800; }
-  #cmpMentionPopup .css-p { background:#d1fae5;color:#065f46; }
-  #cmpMentionPopup .css-n { background:#fee2e2;color:#991b1b; }
-  #cmpMentionPopup .css-u { background:#f1f5f9;color:#374151; }
-  #cmpMentionPopup .cploading { padding:40px 20px;text-align:center;color:#64748b;font-size:13px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:12px; }
-  #cmpMentionPopup .cpspin { width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:#038047;border-radius:50%;animation:spin .7s linear infinite; }
-  #cmpMentionPopup .cpempty { padding:40px 20px;text-align:center;color:#94a3b8;font-size:13px;font-weight:600; }
-  /* thumbnail di list untuk youtube */
-  #cmpMentionPopup .cpthumb { width:60px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0;background:#000; }
-
-  /* ── Mention Detail Modal ── */
-  .cmp-modal-backdrop {
-    position:fixed;inset:0;z-index:200000;
-    background:rgba(10,15,25,.78);backdrop-filter:blur(10px);
-    display:none;align-items:center;justify-content:center;padding:20px;
-  }
-  .cmp-modal-backdrop.open { display:flex; }
-  @keyframes cmpModalUp { from{opacity:0;transform:translateY(22px) scale(.97)} to{opacity:1;transform:none} }
-  .cmp-modal-shell {
-    position:relative;width:100%;max-width:820px;max-height:calc(100vh - 40px);
-    background:#fff;border-radius:20px;
-    box-shadow:0 32px 80px rgba(0,0,0,.35);
-    display:flex;flex-direction:column;
-    animation:cmpModalUp .22s cubic-bezier(.34,1.3,.64,1);
-    overflow:hidden;font-family:'Poppins',sans-serif;
-  }
-  .cmp-modal-head {
-    display:flex;align-items:center;gap:10px;padding:12px 18px;
-    border-bottom:1px solid #e2e8f0;background:#f8fafc;flex-shrink:0;
-  }
-  .cmp-modal-plat-pill {
-    display:inline-flex;align-items:center;padding:3px 11px;border-radius:20px;
-    font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;
-  }
-  .cmp-modal-title { flex:1;font-size:13px;font-weight:700;color:#1a202c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0; }
-  .cmp-modal-ext {
-    display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;
-    font-size:11px;font-weight:700;color:#038047;background:rgba(3,128,71,.08);
-    border:1px solid rgba(3,128,71,.2);cursor:pointer;text-decoration:none;
-    flex-shrink:0;transition:all .15s;white-space:nowrap;
-  }
-  .cmp-modal-ext:hover { background:rgba(3,128,71,.15); }
-  .cmp-modal-close {
-    width:30px;height:30px;border-radius:8px;border:none;background:transparent;
-    cursor:pointer;display:flex;align-items:center;justify-content:center;
-    color:#64748b;font-size:22px;line-height:1;transition:all .15s;flex-shrink:0;
-  }
-  .cmp-modal-close:hover { background:#fee2e2;color:#991b1b; }
-  .cmp-modal-author {
-    display:flex;align-items:center;gap:12px;padding:10px 18px;
-    border-bottom:1px solid #f1f5f9;background:#fff;flex-shrink:0;
-  }
-  .cmp-modal-ava {
-    width:42px;height:42px;border-radius:50%;border:2px solid #e2e8f0;flex-shrink:0;
-    background:linear-gradient(135deg,#038047,#026738);
-    display:flex;align-items:center;justify-content:center;
-    color:#fff;font-weight:700;font-size:14px;overflow:hidden;
-  }
-  .cmp-modal-ava img { width:100%;height:100%;object-fit:cover;border-radius:50%; }
-  .cmp-modal-aname { font-size:13px;font-weight:700;color:#1a202c; }
-  .cmp-modal-ausn  { font-size:11px;color:#94a3b8;margin-top:1px; }
-  .cmp-modal-body  { flex:1;min-height:0;overflow-y:auto; }
-  .cmp-modal-body::-webkit-scrollbar { width:5px; }
-  .cmp-modal-body::-webkit-scrollbar-thumb { background:#e2e8f0;border-radius:4px; }
-  /* embed area */
-  .cmp-embed-wrap { position:relative;width:100%;background:#000; }
-  .cmp-embed-wrap iframe { width:100%;border:none;display:block; }
-  .cmp-embed-loader {
-    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;gap:10px;background:#f8fafc;color:#64748b;
-    font-size:13px;font-weight:600;pointer-events:none;
-  }
-  .cmp-embed-loader.hidden { display:none; }
-  .cmp-embed-spin { width:28px;height:28px;border:3px solid #e2e8f0;border-top-color:#038047;border-radius:50%;animation:spin .7s linear infinite; }
-  /* thumbnail hero */
-  .cmp-thumb-hero { width:100%;max-height:280px;object-fit:cover;display:block;background:#000; }
-  /* content text */
-  .cmp-modal-content { padding:18px 20px;font-size:14px;line-height:1.75;color:#1a202c;word-break:break-word;border-bottom:1px solid #f1f5f9; }
-  /* stats row */
-  .cmp-stats-row { display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid #f1f5f9;flex-shrink:0; }
-  .cmp-stat { flex:1;min-width:80px;padding:12px 16px;text-align:center;border-right:1px solid #f1f5f9; }
-  .cmp-stat:last-child { border-right:none; }
-  .cmp-stat-val { font-size:17px;font-weight:800;color:#1a202c;line-height:1; }
-  .cmp-stat-lbl { font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-top:3px; }
-  /* sent badge in modal */
-  .cmp-modal-sent { padding:3px 12px;border-radius:20px;font-size:11px;font-weight:800; }
-  .cmp-modal-sent-p { background:#d1fae5;color:#065f46; }
-  .cmp-modal-sent-n { background:#fee2e2;color:#991b1b; }
-  .cmp-modal-sent-u { background:#f1f5f9;color:#374151; }
-  /* url bar */
-  .cmp-url-bar {
-    display:flex;align-items:center;gap:10px;margin:14px 20px;padding:10px 14px;
-    background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;
-    text-decoration:none;transition:all .15s;
-  }
-  .cmp-url-bar:hover { border-color:#038047; }
-  .cmp-url-fav { width:16px;height:16px;border-radius:3px;flex-shrink:0; }
-  .cmp-url-text { font-size:12px;font-weight:600;color:#038047;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-  /* tiktok */
-  .cmp-tiktok-wrap { display:flex;justify-content:center;background:#f8fafc;padding:16px;min-height:400px;align-items:flex-start;overflow-y:auto; }
+@media(max-width:640px){ .do-panel { width:100vw; } }
 </style>
 @endsection
 
+@section('page-title', 'Compare Projects')
+
 @section('content')
-<div class="cmp-container">
 
-  <!-- Page Header -->
-  <div class="cmp-header">
-    <h1>
-      <svg viewBox="0 0 24 24" style="width:26px;height:26px;display:inline;vertical-align:-4px;margin-right:8px;stroke:var(--green);fill:none;stroke-width:2">
-        <rect x="2" y="3" width="6" height="18"/><rect x="10" y="8" width="6" height="13"/><rect x="18" y="5" width="4" height="16"/>
-      </svg>
-      Compare Projects
-    </h1>
-    <p>Select 2–10 projects and a date range to compare volume, sentiment, and author metrics side-by-side</p>
-  </div>
+<script>
+const CMP_PALETTE      = ['#4361EE','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#10b981','#ec4899','#0ea5e9','#f97316','#6366f1'];
+const CMP_SENT_COLORS  = { pos:'#10b981', net:'#64748b', neg:'#ef4444' };
+const CMP_MEDIA_LABELS = { doc:'Online News', twit:'Twitter', fb:'Facebook', instagram:'Instagram', youtube:'YouTube', tiktok:'TikTok' };
+const CMP_MEDIA_COLORS = { doc:'#0284c7', twit:'#1d9bf0', fb:'#1877f2', instagram:'#e1306c', youtube:'#ff0000', tiktok:'#111827' };
+const CMP_PLAT_META    = {
+    doc      :{ label:'Online News', color:'#0284c7' },
+    twit     :{ label:'X / Twitter', color:'#1d9bf0' },
+    fb       :{ label:'Facebook',    color:'#1877f2' },
+    instagram:{ label:'Instagram',   color:'#e1306c' },
+    youtube  :{ label:'YouTube',     color:'#ff0000' },
+    tiktok   :{ label:'TikTok',      color:'#111827' },
+    all      :{ label:'All Media',   color:'#4361EE' },
+};
+</script>
 
-  <!-- Config Card -->
-  <div class="config-card">
-    <div class="config-grid">
-
-      <!-- Project Selector -->
-      <div>
-        <label class="form-label">Select Projects (min 2)</label>
-        <div class="project-selector">
-          <input type="text" class="project-search-input" id="projectSearch" placeholder="🔍 Search projects…" autocomplete="off">
-          <div class="project-dropdown" id="projectDropdown">
-            <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">Loading projects…</div>
-          </div>
+{{-- ══ Config Card — uses .card identical to dashboard ══ --}}
+<div class="row fade-up">
+    <div class="col-12">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="ph ph-chart-bar me-2 text-muted"></i>Compare Projects</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    {{-- Project Selector --}}
+                    <div class="col-lg-5">
+                        <label class="text-muted fw-bold text-uppercase d-block mb-2" style="font-size:11px;letter-spacing:.5px;">
+                            <i class="ph ph-folder-open me-1"></i>Select Projects (min 2)
+                        </label>
+                        <input type="text" class="cmp-search-input" id="cmpProjectSearch" placeholder="Search projects…" autocomplete="off">
+                        <div class="cmp-dropdown" id="cmpProjectDropdown">
+                            <div style="padding:16px;text-align:center;color:var(--slate-400);font-size:13px;">Loading projects…</div>
+                        </div>
+                        <div class="cmp-tags" id="cmpSelectedTags">
+                            <span style="font-size:12px;color:var(--slate-400);align-self:center;">No projects selected</span>
+                        </div>
+                    </div>
+                    {{-- Date Range --}}
+                    <div class="col-lg-5">
+                        <label class="text-muted fw-bold text-uppercase d-block mb-2" style="font-size:11px;letter-spacing:.5px;">
+                            <i class="ph ph-calendar-blank me-1"></i>Date Range
+                        </label>
+                        <div class="cmp-date-row">
+                            <input type="date" class="cmp-date-input" id="cmpStartDate" value="{{ $startDate }}">
+                            <span class="cmp-date-sep">to</span>
+                            <input type="date" class="cmp-date-input" id="cmpEndDate" value="{{ $endDate }}">
+                        </div>
+                        <div class="d-flex gap-2 mt-2 flex-wrap">
+                            <button onclick="cmpApplyPreset('7d')"  class="btn btn-light btn-sm" style="font-size:11px;font-weight:600;">Last 7 Days</button>
+                            <button onclick="cmpApplyPreset('30d')" class="btn btn-light btn-sm" style="font-size:11px;font-weight:600;">Last 30 Days</button>
+                            <button onclick="cmpApplyPreset('1m')"  class="btn btn-light btn-sm" style="font-size:11px;font-weight:600;">This Month</button>
+                        </div>
+                    </div>
+                    {{-- Action --}}
+                    <div class="col-lg-2">
+                        <button class="btn btn-primary w-100" id="cmpCompareBtn" onclick="cmpRunCompare()" disabled style="font-weight:700;">
+                            <i class="ph ph-chart-bar me-1"></i>Compare Now
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="selected-tags" id="selectedTags">
-          <span style="font-size:12px;color:var(--text-muted);align-self:center;">No projects selected</span>
-        </div>
-      </div>
-
-      <!-- Date Range -->
-      <div>
-        <label class="form-label">Date Range</label>
-        <div class="date-row">
-          <input type="date" class="date-input" id="startDate" value="{{ $startDate }}">
-          <span class="date-sep">to</span>
-          <input type="date" class="date-input" id="endDate" value="{{ $endDate }}">
-        </div>
-        <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
-          @foreach([['7d','Last 7 Days'],['30d','Last 30 Days'],['1m','This Month']] as [$key,$label])
-          <button onclick="applyPreset('{{ $key }}')"
-            style="padding:4px 10px;font-size:11px;font-weight:600;border:1px solid var(--border);border-radius:6px;background:var(--bg);cursor:pointer;color:var(--text-muted);font-family:'Poppins',sans-serif;transition:all 0.15s"
-            onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'"
-            onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">{{ $label }}</button>
-          @endforeach
-        </div>
-      </div>
-
-      <!-- Action -->
-      <div>
-        <label class="form-label" style="opacity:0">Action</label>
-        <button class="compare-btn" id="compareBtn" onclick="runCompare()" disabled>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="3" width="6" height="18"/><rect x="10" y="8" width="6" height="13"/><rect x="18" y="5" width="4" height="16"/>
-          </svg>
-          Compare Now
-        </button>
-      </div>
     </div>
-  </div>
+</div>
 
-  <!-- Results -->
-  <div id="resultsSection">
+{{-- ══ Results ══ --}}
+<div id="cmpResultsSection" style="display:none;">
 
-    <!-- Project Summary Cards -->
-    <div class="projects-row" id="projectsRow"></div>
+    {{-- Project Summary Cards --}}
+    <div class="row g-3 mb-3" id="cmpProjectsRow"></div>
 
-    <!-- Charts Grid -->
-    <div style="display:grid;grid-template-columns:1.4fr 0.6fr;gap:24px;margin-bottom:24px;">
-
-      <!-- Volume Trend -->
-      <div class="section-card">
-        <div class="section-head">
-          <div>
-            <h3>Volume Trend</h3>
-            <div class="section-sub">Daily posting volume across selected projects</div>
-          </div>
-          <div class="tab-nav">
-            <button class="tab-btn active" onclick="switchVolumeView('line', this)">Line</button>
-            <button class="tab-btn" onclick="switchVolumeView('bar', this)">Bar</button>
-          </div>
+    {{-- Volume Trend + Ranking --}}
+    <div class="row g-3 mb-3">
+        <div class="col-xl-8">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="mb-0"><i class="ph ph-chart-line me-2 text-muted"></i>Volume Trend</h5>
+                        <small class="text-muted">Click bar/point to see mentions</small>
+                    </div>
+                    <div class="cmp-tab-nav" id="cmpVolTabNav">
+                        <button class="cmp-tab-btn active" onclick="cmpSwitchVolume('bar',this)">Bar</button>
+                        <button class="cmp-tab-btn" onclick="cmpSwitchVolume('line',this)">Line</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="min-height:300px;">
+                        <div class="chart-loading" id="cmpVolLoading"><div class="spin-ring"></div><span>Loading…</span></div>
+                        <div id="cmpVolumeChart" style="min-height:300px;cursor:pointer;"></div>
+                    </div>
+                    <div id="cmpVolumeLegend" class="d-flex flex-wrap gap-3 mt-2"></div>
+                </div>
+            </div>
         </div>
-        <div class="chart-wrap"><canvas id="volumeChart"></canvas></div>
-        <div class="chart-legend" id="volumeLegend"></div>
-      </div>
-
-      <!-- Total Volume Ranking -->
-      <div class="section-card">
-        <div class="section-head">
-          <div>
-            <h3>Total Volume</h3>
-            <div class="section-sub">Ranked by total posts</div>
-          </div>
+        <div class="col-xl-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="ph ph-ranking me-2 text-muted"></i>Total Volume</h5>
+                    <small class="text-muted">Click row to view mentions per platform</small>
+                </div>
+                <div class="card-body p-0">
+                    <div id="cmpVolumeRanking"></div>
+                </div>
+            </div>
         </div>
-        <div id="volumeRanking"></div>
-      </div>
-    </div>
-
-    <!-- Media Breakdown -->
-    <div class="section-card">
-      <div class="section-head">
-        <div>
-          <h3>Volume by Media</h3>
-          <div class="section-sub">Breakdown per platform per project — klik bar untuk lihat mentions</div>
-        </div>
-      </div>
-      <div id="mediaBreakdown"></div>
-    </div>
-
-    <!-- Sentiment Section -->
-    <div class="section-card">
-      <div class="section-head">
-        <div>
-          <h3>Sentiment Comparison</h3>
-          <div class="section-sub">Positive · Neutral · Negative breakdown per project</div>
-        </div>
-        <div class="tab-nav">
-          <button class="tab-btn active" onclick="switchSentView('bar', this)">Bar</button>
-          <button class="tab-btn" onclick="switchSentView('pie', this)">Donut</button>
-        </div>
-      </div>
-      <div id="sentimentBars" style="display:block;">
-        <div class="sentiment-grid" id="sentimentGrid"></div>
-      </div>
-      <div id="sentimentDonut" style="display:none;">
-        <div style="display:grid;gap:16px;" id="sentimentDonutGrid"></div>
-      </div>
     </div>
 
-  </div>
+    {{-- Volume by Media --}}
+    <div class="row g-3 mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="mb-0"><i class="ph ph-table me-2 text-muted"></i>Volume by Media Types</h5>
+                        <small class="text-muted">Click any cell to see mentions for that platform</small>
+                    </div>
+                    <span class="badge bg-light-secondary text-muted f-12" id="cmpMediaDateBadge"></span>
+                </div>
+                <div class="card-body p-0">
+                    <div style="overflow-x:auto;" id="cmpMediaTableWrap"></div>
+                </div>
+                <div class="card-body border-top" style="padding-top:16px;">
+                    <p class="text-muted mb-2" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Volume Distribution by Platform</p>
+                    <div class="chart-container" style="min-height:260px;">
+                        <div class="chart-loading" id="cmpMediaLoading"><div class="spin-ring"></div><span>Loading…</span></div>
+                        <div id="cmpMediaChart" style="min-height:260px;cursor:pointer;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  <!-- Empty State -->
-  <div id="emptyState" class="empty-state">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-      <rect x="2" y="3" width="6" height="18"/><rect x="10" y="8" width="6" height="13"/><rect x="18" y="5" width="4" height="16"/>
-    </svg>
-    <h3>Select projects to compare</h3>
-    <p>Pick at least 2 projects from the dropdown above, set a date range, and click <strong>Compare Now</strong></p>
-  </div>
+    {{-- Share of Voice Pies --}}
+    <div class="row g-3 mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="ph ph-pie-chart me-2 text-muted"></i>Share of Voice</h5>
+                    <small class="text-muted">% share per project per media type — click slice to see mentions</small>
+                </div>
+                <div class="card-body" id="cmpSovGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Sentiment Comparison --}}
+    <div class="row g-3 mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="mb-0"><i class="ph ph-smiley me-2 text-muted"></i>Sentiment Comparison</h5>
+                        <small class="text-muted">Click bar or label to see mentions filtered by sentiment</small>
+                    </div>
+                    <div class="cmp-tab-nav">
+                        <button class="cmp-tab-btn active" onclick="cmpSwitchSent('bar',this)">Bar</button>
+                        <button class="cmp-tab-btn" onclick="cmpSwitchSent('donut',this)">Donut</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="cmpSentBars"><div id="cmpSentGrid" style="display:flex;flex-direction:column;gap:14px;"></div></div>
+                    <div id="cmpSentDonut" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>
 
-<!-- Mention Detail Modal (built dynamically by JS, but backdrop declared here for SSR fallback) -->
-<div id="cmpModalMount"></div>
-
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-spinner"></div>
-  <div class="loading-text">Fetching comparison data…</div>
+{{-- ══ Empty State ══ --}}
+<div id="cmpEmptyState">
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="ph ph-chart-bar d-block mb-3" style="font-size:48px;color:var(--slate-300);"></i>
+            <h5 class="text-muted">Select projects to compare</h5>
+            <p class="text-muted mb-0 f-12">Pick at least 2 projects, set a date range, and click <strong>Compare Now</strong></p>
+        </div>
+    </div>
 </div>
+
+{{-- ══ Loading Overlay ══ --}}
+<div class="cmp-loading-overlay" id="cmpLoadingOverlay">
+    <div class="cmp-spin-lg"></div>
+    <div style="font-size:13px;font-weight:600;color:var(--slate-500);">Fetching comparison data…</div>
+</div>
+
+{{-- ══ SLIDE PANEL — copy-exact from dashboard.blade.php ══ --}}
+<div class="do-panel-overlay" id="cmpPanelOverlay" onclick="CmpPanel.close()"></div>
+<div class="do-panel" id="cmpSntPanel">
+    <div class="do-panel-header">
+        <div class="do-panel-dot" id="cmpPanelDot"></div>
+        <span class="do-panel-title" id="cmpPanelTitle">Mentions</span>
+        <button class="do-panel-close" onclick="CmpPanel.close()"><i class="ph ph-x"></i></button>
+    </div>
+    <div class="do-panel-actions">
+        <div class="do-panel-meta"><i class="ph ph-magnifying-glass" style="font-size:11px;"></i><span id="cmpPanelMeta">—</span></div>
+        <div class="do-panel-tabs">
+            <button class="do-panel-tab active" data-s="all" onclick="CmpPanel.filterSent('all')">Semua</button>
+            <button class="do-panel-tab neg"    data-s="neg" onclick="CmpPanel.filterSent('neg')">Neg</button>
+            <button class="do-panel-tab pos"    data-s="pos" onclick="CmpPanel.filterSent('pos')">Pos</button>
+            <button class="do-panel-tab neu"    data-s="neu" onclick="CmpPanel.filterSent('neu')">Neu</button>
+        </div>
+        <button class="do-panel-export" onclick="CmpPanel.exportCsv()"><i class="ph ph-download-simple"></i> CSV</button>
+    </div>
+    <div class="do-panel-list" id="cmpPanelList"></div>
+    {{-- Detail sub-panel --}}
+    <div class="do-detail-panel" id="cmpDetailPanel">
+        <div class="do-dp2-header">
+            <button class="do-dp2-back" onclick="CmpDetail.close()"><i class="ph ph-caret-left"></i></button>
+            <span class="do-dp2-title" id="cmpDetailTitle">Detail</span>
+            <button class="do-panel-close" onclick="CmpPanel.close()"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="do-dp2-body" id="cmpDetailBody"></div>
+    </div>
+</div>
+
+{{-- Platform Picker — identical to dashboard --}}
+<div class="do-plat-picker" id="cmpPlatPicker">
+    <div class="do-plat-picker-head">Pilih Platform</div>
+    <button class="do-plat-btn" onclick="CmpPanel.openPlatform('doc','all')">Online News  <span class="do-plat-dot" style="background:#0284c7;"></span></button>
+    <button class="do-plat-btn" onclick="CmpPanel.openPlatform('twit','all')">X / Twitter  <span class="do-plat-dot" style="background:#1d9bf0;"></span></button>
+    <button class="do-plat-btn" onclick="CmpPanel.openPlatform('fb','all')">Facebook      <span class="do-plat-dot" style="background:#1877f2;"></span></button>
+    <button class="do-plat-btn" onclick="CmpPanel.openPlatform('instagram','all')">Instagram<span class="do-plat-dot" style="background:#e1306c;"></span></button>
+    <button class="do-plat-btn" onclick="CmpPanel.openPlatform('youtube','all')">YouTube   <span class="do-plat-dot" style="background:#ff0000;"></span></button>
+    <button class="do-plat-btn" onclick="CmpPanel.openPlatform('tiktok','all')">TikTok     <span class="do-plat-dot" style="background:#111827;"></span></button>
+</div>
+
 @endsection
 
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
 <script>
-// ═══════════════════════════════════════════════
-// CONSTANTS
-// ═══════════════════════════════════════════════
-const PALETTE = [
-  '#038047','#3b82f6','#f59e0b','#ef4444',
-  '#8b5cf6','#10b981','#ec4899','#0ea5e9','#f97316','#6366f1',
-];
-const SENT_COLORS = { pos: '#10b981', net: '#64748b', neg: '#ef4444' };
-const MEDIA_LABELS = { doc:'Online News', twit:'X (Twitter)', fb:'Facebook', instagram:'Instagram', youtube:'YouTube', tiktok:'TikTok' };
+/* ════════════════════════════════════
+   GLOBALS
+════════════════════════════════════ */
+let _cmpAllProjects = [];
+let _cmpSelectedIds = new Set();
+let _cmpData        = null;
+let _cmpStartDate   = '{{ $startDate }}';
+let _cmpEndDate     = '{{ $endDate }}';
+let _cmpVolType     = 'bar';
+let _cmpPickerPid   = null;
 
-// Map warna per platform (untuk popup & bar)
-const MEDIA_COLORS = {
-  doc: '#3b82f6', twit: '#0ea5e9', fb: '#6366f1',
-  instagram: '#ec4899', youtube: '#ef4444', tiktok: '#6b7280'
-};
+let _apexVol   = null;
+let _apexMedia = null;
+const _apexSov  = {};
+const _apexSent = {};
 
-// ═══════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════
-let allProjects       = [];
-let selectedIds       = new Set();
-let compareData       = null;
-let volumeChart       = null;
-let currentVolumeType = 'line';
+const _$c  = id => document.getElementById(id);
+const _esc = s  => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const _trunc = (s,n) => s&&s.length>n?s.slice(0,n)+'…':(s||'');
+const _fmtN  = n => new Intl.NumberFormat('id-ID').format(n||0);
+const _int   = v => parseInt(v,10)||0;
+const _fmtDate = d => d.toISOString().split('T')[0];
+const numK   = n => { n=_int(n); return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':String(n); };
 
-// Popup state
-let _cmpPopup      = null;
-let _cmpPopupCache = {};
-let _platPicker    = null;
-
-// ═══════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════
+/* ════════════════════════════════════
+   INIT
+════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
-  loadProjects();
-  @foreach($selectedIds ?? [] as $sid)
-    selectedIds.add('{{ $sid }}');
-  @endforeach
-  document.getElementById('projectSearch').addEventListener('input', filterDropdown);
+    cmpLoadProjects();
+    @foreach($selectedIds ?? [] as $sid)
+        _cmpSelectedIds.add('{{ $sid }}');
+    @endforeach
+    _$c('cmpProjectSearch').addEventListener('input', cmpFilterDropdown);
+    document.addEventListener('mousedown', e => {
+        const pp = _$c('cmpPlatPicker');
+        if (pp?.classList.contains('show') && !pp.contains(e.target)) pp.classList.remove('show');
+    });
 });
 
-// ═══════════════════════════════════════════════
-// PROJECTS LOADER
-// ═══════════════════════════════════════════════
-async function loadProjects() {
-  try {
-    const res  = await fetch('/mk/api/compare/projects');
-    const data = await res.json();
-    allProjects = data.data || [];
-    renderDropdown(allProjects);
-    if (selectedIds.size > 0) { updateSelectedTags(); updateCompareBtn(); }
-  } catch (e) {
-    document.getElementById('projectDropdown').innerHTML =
-      '<div style="padding:20px;text-align:center;color:#ef4444;font-size:13px;">Failed to load projects</div>';
-  }
-}
-
-function renderDropdown(list) {
-  const dd = document.getElementById('projectDropdown');
-  if (!list.length) {
-    dd.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">No projects found</div>';
-    return;
-  }
-  dd.innerHTML = list.map(p => `
-    <label class="project-option">
-      <input type="checkbox" value="${p.id}" ${selectedIds.has(String(p.id)) ? 'checked' : ''}
-             onchange="toggleProject('${p.id}', '${escHtml(p.title)}')">
-      <div class="project-option-info">
-        <div class="project-option-name">${escHtml(p.title)}</div>
-        <div class="project-option-meta">${escHtml(p.group_name || p.project_type)}</div>
-      </div>
-      ${selectedIds.has(String(p.id)) ? '<span class="project-option-badge">✓</span>' : ''}
-    </label>
-  `).join('');
-}
-
-function filterDropdown() {
-  const q = document.getElementById('projectSearch').value.toLowerCase();
-  const filtered = q
-    ? allProjects.filter(p => p.title.toLowerCase().includes(q) || (p.group_name||'').toLowerCase().includes(q))
-    : allProjects;
-  renderDropdown(filtered);
-}
-
-function toggleProject(id, title) {
-  id = String(id);
-  if (selectedIds.has(id)) {
-    selectedIds.delete(id);
-  } else {
-    if (selectedIds.size >= 10) {
-      alert('Maximum 10 projects can be compared at once.');
-      const cb = document.querySelector(`input[value="${id}"]`);
-      if (cb) cb.checked = false;
-      return;
+/* ════════════════════════════════════
+   PROJECT LOADER
+════════════════════════════════════ */
+async function cmpLoadProjects() {
+    try {
+        const res  = await fetch('/mk/api/compare/projects');
+        const data = await res.json();
+        _cmpAllProjects = data.data || [];
+        cmpRenderDropdown(_cmpAllProjects);
+        if (_cmpSelectedIds.size > 0) { cmpUpdateTags(); cmpUpdateBtn(); }
+    } catch(e) {
+        _$c('cmpProjectDropdown').innerHTML = '<div style="padding:16px;text-align:center;color:#ef4444;font-size:13px;">Failed to load</div>';
     }
-    selectedIds.add(id);
-  }
-  updateSelectedTags(); updateCompareBtn(); filterDropdown();
 }
 
-function removeProject(id) {
-  selectedIds.delete(id);
-  updateSelectedTags(); updateCompareBtn(); filterDropdown();
-}
-
-function updateSelectedTags() {
-  const container = document.getElementById('selectedTags');
-  if (!selectedIds.size) {
-    container.innerHTML = '<span style="font-size:12px;color:var(--text-muted);align-self:center;">No projects selected</span>';
-    return;
-  }
-  container.innerHTML = [...selectedIds].map(id => {
-    const p = allProjects.find(x => String(x.id) === id);
-    const title = p ? truncate(p.title, 28) : 'Project #' + id;
-    return `<span class="selected-tag">${escHtml(title)}<button onclick="removeProject('${id}')" title="Remove">✕</button></span>`;
-  }).join('');
-}
-
-function updateCompareBtn() {
-  document.getElementById('compareBtn').disabled = selectedIds.size < 2;
-}
-
-// ═══════════════════════════════════════════════
-// DATE PRESETS
-// ═══════════════════════════════════════════════
-function applyPreset(key) {
-  const today = new Date();
-  let start;
-  if (key === '7d')  start = new Date(today - 6 * 86400000);
-  if (key === '30d') start = new Date(today - 29 * 86400000);
-  if (key === '1m')  start = new Date(today.getFullYear(), today.getMonth(), 1);
-  document.getElementById('startDate').value = fmtDate(start);
-  document.getElementById('endDate').value   = fmtDate(today);
-}
-
-// ═══════════════════════════════════════════════
-// COMPARE
-// ═══════════════════════════════════════════════
-async function runCompare() {
-  if (selectedIds.size < 2) return;
-  const startDate = document.getElementById('startDate').value;
-  const endDate   = document.getElementById('endDate').value;
-  if (!startDate || !endDate) { alert('Please select a date range.'); return; }
-
-  // Reset popup cache saat compare baru dijalankan
-  _cmpPopupCache = {};
-
-  showLoading(true);
-  try {
-    const ids = [...selectedIds].join(',');
-    const url = `/mk/api/compare/all?project_ids=${ids}&start_date=${startDate}&end_date=${endDate}`;
-    const res = await fetch(url);
-    compareData = await res.json();
-    if (!compareData.success) throw new Error(compareData.error || 'API error');
-    renderResults(compareData);
-    document.getElementById('resultsSection').style.display = 'block';
-    document.getElementById('emptyState').style.display = 'none';
-  } catch (e) {
-    alert('Compare failed: ' + e.message);
-    console.error(e);
-  } finally {
-    showLoading(false);
-  }
-}
-
-// ═══════════════════════════════════════════════
-// RENDER RESULTS
-// ═══════════════════════════════════════════════
-function renderResults(data) {
-  const details   = data.project_details || {};
-  const volume    = data.data?.volumetotal    || {};
-  const sentiment = data.data?.sentimenttotal || {};
-  const ids       = data.project_ids || [];
-
-  renderProjectCards(ids, details, volume, sentiment);
-  renderVolumeChart(ids, details, volume);
-  renderVolumeRanking(ids, details, volume);
-  renderMediaBreakdown(ids, details, volume);
-  renderSentimentBars(ids, details, sentiment);
-}
-
-// ── Project Summary Cards ──────────────────────
-function renderProjectCards(ids, details, volume, sentiment) {
-  const row = document.getElementById('projectsRow');
-  const cols = Math.min(ids.length <= 3 ? ids.length : Math.ceil(ids.length / 2), 4);
-  row.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-
-  row.innerHTML = ids.map((id, i) => {
-    const p     = details[id] || details[String(id)] || {};
-    const color = PALETTE[i % PALETTE.length];
-    const vol   = extractVolumeTotal(volume, id);
-    const sent  = extractSentiment(sentiment, id);
-    const { pos, neg, net } = sent;
-    const total = pos + neg + net || 1;
-
-    const byMedia = extractByMedia(volume, id);
-    const mediaBadges = Object.entries(byMedia)
-      .filter(([,v]) => v > 0)
-      .sort((a,b) => b[1]-a[1])
-      .map(([k,v]) => `<span class="media-badge">${MEDIA_LABELS[k]||k}: ${fmtNum(v)}</span>`)
-      .join('');
-
-    return `
-      <div class="project-summary-card" style="border-color:${color}33">
-        <div style="position:absolute;top:0;left:0;right:0;height:4px;background:${color};border-radius:14px 14px 0 0"></div>
-        <div class="card-title">${escHtml(p.title || 'Project #' + id)}</div>
-        <div class="card-meta">${escHtml(p.group_name || p.project_type || '')}</div>
-        <div class="project-stats-grid">
-          <div class="pstat">
-            <div class="pstat-value" style="color:${color}">${fmtNum(vol)}</div>
-            <div class="pstat-label">Volume</div>
-          </div>
-          <div class="pstat">
-            <div class="pstat-value" style="color:#10b981">${((pos/total)*100).toFixed(1)}%</div>
-            <div class="pstat-label">Positive</div>
-          </div>
-          <div class="pstat">
-            <div class="pstat-value" style="color:#ef4444">${((neg/total)*100).toFixed(1)}%</div>
-            <div class="pstat-label">Negative</div>
-          </div>
-        </div>
-        <div class="sentiment-mini">
-          ${['pos','net','neg'].map(k => {
-            const val = k==='pos' ? pos : k==='net' ? net : neg;
-            const pct = ((val/total)*100).toFixed(0);
-            const lbl = k==='pos' ? 'Pos' : k==='net' ? 'Neu' : 'Neg';
-            return `<div class="sent-bar-wrap">
-              <div class="sent-bar-label">
-                <span style="color:${SENT_COLORS[k]}">${lbl}</span>
-                <span>${pct}%</span>
-              </div>
-              <div class="sent-bar">
-                <div class="sent-bar-fill" style="width:0%;background:${SENT_COLORS[k]}" data-pct="${pct}"></div>
-              </div>
-            </div>`;
-          }).join('')}
-        </div>
-        ${mediaBadges ? `<div class="media-badges">${mediaBadges}</div>` : ''}
-      </div>
-    `;
-  }).join('');
-
-  setTimeout(() => {
-    document.querySelectorAll('.sent-bar-fill').forEach(el => { el.style.width = el.dataset.pct + '%'; });
-  }, 100);
-}
-
-// ── Volume Chart ───────────────────────────────
-function renderVolumeChart(ids, details, volume) {
-  if (volumeChart) { volumeChart.destroy(); volumeChart = null; }
-  const canvas = document.getElementById('volumeChart');
-  const legend = document.getElementById('volumeLegend');
-
-  const totals = ids.map(id => extractVolumeTotal(volume, id));
-  const labels = ids.map(id => {
-    const p = details[id] || details[String(id)] || {};
-    return truncate(p.title || 'Project #' + id, 25);
-  });
-
-  if (totals.every(t => t === 0)) {
-    canvas.parentElement.innerHTML = '<div class="empty-state" style="padding:40px"><p>No volume data available</p></div>';
-    return;
-  }
-
-  volumeChart = new Chart(canvas.getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Total Volume',
-        data: totals,
-        backgroundColor: ids.map((_, i) => PALETTE[i % PALETTE.length] + 'cc'),
-        borderColor:     ids.map((_, i) => PALETTE[i % PALETTE.length]),
-        borderWidth: 2,
-        borderRadius: 6,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#1a202c', padding: 12, cornerRadius: 8,
-          titleColor: '#fff', bodyColor: '#fff',
-          titleFont: { size: 12, weight: '700', family: 'Poppins' },
-          bodyFont: { size: 12, family: 'Poppins' },
-          callbacks: { label: ctx => ' ' + fmtNum(ctx.raw) + ' posts' }
-        }
-      },
-      scales: {
-        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { color: '#64748b', font: { family: 'Poppins', size: 11 }, callback: v => fmtNum(v) } },
-        x: { grid: { display: false }, ticks: { color: '#64748b', font: { family: 'Poppins', size: 11 } } }
-      }
-    }
-  });
-
-  legend.innerHTML = ids.map((id, i) => {
-    const p = details[id] || details[String(id)] || {};
-    return `<div class="legend-item"><div class="legend-dot" style="background:${PALETTE[i%PALETTE.length]}"></div><span>${escHtml(truncate(p.title||'Project #'+id, 30))}</span></div>`;
-  }).join('');
-}
-
-// ── Volume Ranking — baris bisa diklik ────────
-function renderVolumeRanking(ids, details, volume) {
-  const container = document.getElementById('volumeRanking');
-  const startDate = document.getElementById('startDate').value;
-  const endDate   = document.getElementById('endDate').value;
-
-  const ranked = ids.map((id, i) => ({
-    id, i,
-    title: (details[id] || details[String(id)] || {}).title || 'Project #' + id,
-    total: extractVolumeTotal(volume, id),
-  })).sort((a, b) => b.total - a.total);
-
-  const max = ranked[0]?.total || 1;
-  const rankClasses = ['gold','silver','bronze'];
-
-  container.innerHTML = `
-    <div style="overflow-x:auto">
-      <table class="rank-table">
-        <thead><tr><th>#</th><th>Project</th><th>Total</th><th>Bar</th></tr></thead>
-        <tbody>
-          ${ranked.map((item, rank) => {
-            const pct   = ((item.total / max) * 100).toFixed(0);
-            const color = PALETTE[item.i % PALETTE.length];
-            const jsTitle = item.title.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-            return `
-              <tr
-                style="cursor:pointer;transition:background .15s"
-                onmouseover="this.style.background='#f8fafc'"
-                onmouseout="this.style.background=''"
-                onclick="_openPlatPicker(event,'${item.id}','${jsTitle}','${startDate}','${endDate}')"
-                title="Klik untuk lihat mentions per platform"
-              >
-                <td><div class="rank-num ${rankClasses[rank]||''}">${rank+1}</div></td>
-                <td>
-                  <div style="font-weight:600;font-size:13px">${escHtml(truncate(item.title,35))}</div>
-                  <div style="font-size:10px;color:${color};font-weight:700;margin-top:2px">●</div>
-                </td>
-                <td style="font-weight:700;font-size:15px">${fmtNum(item.total)}</td>
-                <td class="bar-cell">
-                  <div class="bar-track">
-                    <div class="bar-fill" style="width:0%;background:${color}" data-pct="${pct}"></div>
-                  </div>
-                </td>
-              </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>
-    <div style="padding:8px 14px;font-size:11px;color:var(--text-muted);text-align:center;border-top:1px solid #f1f5f9;font-weight:500">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;vertical-align:-1px;margin-right:3px"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
-      Klik baris untuk lihat mentions per platform
-    </div>`;
-
-  setTimeout(() => {
-    container.querySelectorAll('.bar-fill').forEach(el => { el.style.width = el.dataset.pct + '%'; });
-  }, 100);
-}
-
-// ── Media Breakdown — bar bisa diklik ─────────
-function renderMediaBreakdown(ids, details, volume) {
-  const container = document.getElementById('mediaBreakdown');
-  const mediaKeys = ['doc','twit','fb','instagram','youtube','tiktok'];
-  const startDate = document.getElementById('startDate').value;
-  const endDate   = document.getElementById('endDate').value;
-
-  container.innerHTML = ids.map((id, i) => {
-    const p       = details[id] || details[String(id)] || {};
-    const color   = PALETTE[i % PALETTE.length];
-    const byMedia = extractByMedia(volume, id);
-    const total   = extractVolumeTotal(volume, id) || 1;
-    const jsTitle = (p.title || 'Project #' + id).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-
-    const bars = mediaKeys.map(k => {
-      const val = byMedia[k] || 0;
-      if (!val) return '';
-      const pct       = ((val / total) * 100).toFixed(1);
-      const platColor = MEDIA_COLORS[k] || color;
-
-      return `
-        <div style="margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:600;margin-bottom:4px">
-            <span style="color:var(--text-muted)">${MEDIA_LABELS[k]||k}</span>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="color:var(--text)">${fmtNum(val)} <span style="color:var(--text-muted);font-weight:500">(${pct}%)</span></span>
-              <button
-                type="button"
-                onclick="openCmpMentionPopup('${id}','${jsTitle}','${k}','${startDate}','${endDate}',event.clientX,event.clientY);event.stopPropagation()"
-                style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;border:1px solid ${platColor}40;background:${platColor}12;color:${platColor};font-size:10px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;transition:all .15s"
-                onmouseover="this.style.background='${platColor}28';this.style.borderColor='${platColor}'"
-                onmouseout="this.style.background='${platColor}12';this.style.borderColor='${platColor}40'"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:10px;height:10px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                Lihat
-              </button>
+function cmpRenderDropdown(list) {
+    const dd = _$c('cmpProjectDropdown');
+    if (!list.length) { dd.innerHTML = '<div style="padding:16px;text-align:center;color:var(--slate-400);font-size:13px;">No projects found</div>'; return; }
+    dd.innerHTML = list.map(p => `
+        <label class="cmp-proj-opt">
+            <input type="checkbox" value="${p.id}" ${_cmpSelectedIds.has(String(p.id))?'checked':''} onchange="cmpToggleProject('${p.id}')">
+            <div class="cmp-proj-opt-info">
+                <div class="cmp-proj-opt-name">${_esc(p.title)}</div>
+                <div class="cmp-proj-opt-meta">${_esc(p.group_name||p.project_type||'')}</div>
             </div>
-          </div>
-          <div
-            class="bar-track"
-            style="height:8px;cursor:pointer"
-            title="Klik untuk lihat mentions ${MEDIA_LABELS[k]||k}"
-            onclick="openCmpMentionPopup('${id}','${jsTitle}','${k}','${startDate}','${endDate}',event.clientX,event.clientY)"
-          >
-            <div class="bar-fill" style="width:0%;background:${platColor}" data-pct="${pct}"></div>
-          </div>
+            ${_cmpSelectedIds.has(String(p.id))?'<span class="cmp-proj-opt-badge">✓</span>':''}
+        </label>`).join('');
+}
+
+function cmpFilterDropdown() {
+    const q = _$c('cmpProjectSearch').value.toLowerCase();
+    cmpRenderDropdown(q ? _cmpAllProjects.filter(p=>p.title.toLowerCase().includes(q)||(p.group_name||'').toLowerCase().includes(q)) : _cmpAllProjects);
+}
+
+function cmpToggleProject(id) {
+    id = String(id);
+    if (_cmpSelectedIds.has(id)) { _cmpSelectedIds.delete(id); }
+    else {
+        if (_cmpSelectedIds.size >= 10) { alert('Maximum 10 projects.'); const cb=document.querySelector(`input[value="${id}"]`); if(cb) cb.checked=false; return; }
+        _cmpSelectedIds.add(id);
+    }
+    cmpUpdateTags(); cmpUpdateBtn(); cmpFilterDropdown();
+}
+
+function cmpRemoveProject(id) { _cmpSelectedIds.delete(id); cmpUpdateTags(); cmpUpdateBtn(); cmpFilterDropdown(); }
+
+function cmpUpdateTags() {
+    const c = _$c('cmpSelectedTags');
+    if (!_cmpSelectedIds.size) { c.innerHTML = '<span style="font-size:12px;color:var(--slate-400);align-self:center;">No projects selected</span>'; return; }
+    c.innerHTML = [..._cmpSelectedIds].map(id => {
+        const p = _cmpAllProjects.find(x=>String(x.id)===id);
+        const t = p ? _trunc(p.title,28) : 'Project #'+id;
+        return `<span class="cmp-tag">${_esc(t)}<button onclick="cmpRemoveProject('${id}')" title="Remove">✕</button></span>`;
+    }).join('');
+}
+
+function cmpUpdateBtn() { _$c('cmpCompareBtn').disabled = _cmpSelectedIds.size < 2; }
+
+/* ════════════════════════════════════
+   DATE PRESETS
+════════════════════════════════════ */
+function cmpApplyPreset(key) {
+    const t = new Date();
+    let s;
+    if (key==='7d')  s = new Date(t-6*86400000);
+    if (key==='30d') s = new Date(t-29*86400000);
+    if (key==='1m')  s = new Date(t.getFullYear(),t.getMonth(),1);
+    _$c('cmpStartDate').value = _fmtDate(s);
+    _$c('cmpEndDate').value   = _fmtDate(t);
+}
+
+/* ════════════════════════════════════
+   RUN COMPARE
+════════════════════════════════════ */
+async function cmpRunCompare() {
+    if (_cmpSelectedIds.size < 2) return;
+    _cmpStartDate = _$c('cmpStartDate').value;
+    _cmpEndDate   = _$c('cmpEndDate').value;
+    if (!_cmpStartDate||!_cmpEndDate) { alert('Please select a date range.'); return; }
+    CmpPanel._cache = {};
+
+    _$c('cmpLoadingOverlay').classList.add('show');
+    try {
+        const ids = [..._cmpSelectedIds].join(',');
+        const res = await fetch(`/mk/api/compare/all?project_ids=${ids}&start_date=${_cmpStartDate}&end_date=${_cmpEndDate}`);
+        _cmpData  = await res.json();
+        if (!_cmpData.success) throw new Error(_cmpData.error||'API error');
+        _cmpRenderAll(_cmpData);
+        _$c('cmpResultsSection').style.display = 'block';
+        _$c('cmpEmptyState').style.display     = 'none';
+    } catch(e) { alert('Compare failed: '+e.message); }
+    finally    { _$c('cmpLoadingOverlay').classList.remove('show'); }
+}
+
+/* ════════════════════════════════════
+   DATA HELPERS
+════════════════════════════════════ */
+function _cmpNode(data, pid) {
+    if (!data||typeof data!=='object') return null;
+    return data[String(pid)]??data[parseInt(pid)]??null;
+}
+function _cmpVolTotal(volume, pid) {
+    const n=_cmpNode(volume,pid); if(!n) return 0;
+    if (n.volume_total?.all?.total!==undefined) return _int(n.volume_total.all.total);
+    if (typeof n==='number') return n; return 0;
+}
+function _cmpByMedia(volume, pid) {
+    const n=_cmpNode(volume,pid); if(!n?.volume_total?.bymedia) return {};
+    const r={}; for(const [k,v] of Object.entries(n.volume_total.bymedia)) r[k]=_int(v); return r;
+}
+function _cmpSent(sentiment, pid) {
+    const n=_cmpNode(sentiment,pid); if(!n) return {pos:0,neg:0,net:0};
+    const s=n.sentiment_total||n;
+    return {pos:_int(s.pos??s.positive??0),neg:_int(s.neg??s.negative??0),net:_int(s.net??s.neutral??0)};
+}
+
+/* ════════════════════════════════════
+   RENDER ALL
+════════════════════════════════════ */
+function _cmpRenderAll(data) {
+    const details   = data.project_details||{};
+    const volume    = data.data?.volumetotal||{};
+    const sentiment = data.data?.sentimenttotal||{};
+    const ids       = data.project_ids||[];
+    _$c('cmpMediaDateBadge').textContent = `${_cmpStartDate} → ${_cmpEndDate}`;
+    _cmpRenderCards(ids, details, volume, sentiment);
+    _cmpRenderVolChart(ids, details, volume);
+    _cmpRenderRanking(ids, details, volume);
+    _cmpRenderMediaTable(ids, details, volume);
+    _cmpRenderMediaChart(ids, details, volume);
+    _cmpRenderSovPies(ids, details, volume);
+    _cmpRenderSentBars(ids, details, sentiment);
+}
+
+/* ── Project Summary Cards ── */
+function _cmpRenderCards(ids, details, volume, sentiment) {
+    const row = _$c('cmpProjectsRow');
+    row.innerHTML = ids.map((id,i) => {
+        const p     = details[id]||details[String(id)]||{};
+        const color = CMP_PALETTE[i%CMP_PALETTE.length];
+        const vol   = _cmpVolTotal(volume,id);
+        const s     = _cmpSent(sentiment,id);
+        const total = s.pos+s.neg+s.net||1;
+        const bm    = _cmpByMedia(volume,id);
+        const badges = Object.entries(bm).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1])
+            .map(([k,v])=>`<span class="badge bg-light-secondary text-muted" style="font-size:10px;font-weight:600;">${CMP_MEDIA_LABELS[k]||k}: ${_fmtN(v)}</span>`).join('');
+        return `<div class="col-xl-3 col-md-4 col-sm-6">
+            <div class="card h-100" style="border-top:3px solid ${color};">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0;box-shadow:0 0 0 3px ${color}22;animation:pulseP 2.5s infinite;"></div>
+                        <h6 class="mb-0 f-14 text-truncate">${_esc(p.title||'Project #'+id)}</h6>
+                    </div>
+                    <small class="text-muted d-block mb-3">${_esc(p.group_name||p.project_type||'')}</small>
+                    <div class="row g-2 mb-3">
+                        <div class="col-4 text-center">
+                            <div class="f-w-700 cursor-pointer" style="font-size:18px;color:${color};" onclick="CmpPanel.open('all','all','${id}')">${numK(vol)}</div>
+                            <small class="text-muted text-uppercase fw-semibold" style="font-size:9px;letter-spacing:.4px;">Volume</small>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="f-w-700 text-success cursor-pointer" style="font-size:18px;" onclick="CmpPanel.open('all','pos','${id}')">${((s.pos/total)*100).toFixed(1)}%</div>
+                            <small class="text-muted text-uppercase fw-semibold" style="font-size:9px;letter-spacing:.4px;">Positive</small>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="f-w-700 text-danger cursor-pointer" style="font-size:18px;" onclick="CmpPanel.open('all','neg','${id}')">${((s.neg/total)*100).toFixed(1)}%</div>
+                            <small class="text-muted text-uppercase fw-semibold" style="font-size:9px;letter-spacing:.4px;">Negative</small>
+                        </div>
+                    </div>
+                    <div class="sent-mini">
+                        ${[['pos','Pos',s.pos],['net','Neu',s.net],['neg','Neg',s.neg]].map(([k,lbl,val])=>{
+                            const pct=((val/total)*100).toFixed(0);
+                            return `<div class="sent-mini-row">
+                                <span style="color:${CMP_SENT_COLORS[k]}">${lbl}</span>
+                                <div class="sent-mini-track"><div class="sent-mini-fill" style="width:0%;background:${CMP_SENT_COLORS[k]}" data-pct="${pct}"></div></div>
+                                <span class="text-muted text-end">${pct}%</span>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                    ${badges?`<div class="d-flex flex-wrap gap-1 mt-2">${badges}</div>`:''}
+                </div>
+            </div>
         </div>`;
     }).join('');
-
-    return `
-      <div style="padding:16px;border:1px solid var(--border);border-radius:12px;border-top:3px solid ${color}">
-        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">${escHtml(truncate(p.title||'Project #'+id,35))}</div>
-        ${bars || '<p style="font-size:12px;color:var(--text-muted)">No media data</p>'}
-      </div>`;
-  }).join('');
-
-  container.style.display = 'grid';
-  container.style.gridTemplateColumns = `repeat(${Math.min(ids.length, 3)}, 1fr)`;
-  container.style.gap = '16px';
-
-  setTimeout(() => {
-    container.querySelectorAll('.bar-fill').forEach(el => { el.style.width = el.dataset.pct + '%'; });
-  }, 100);
+    setTimeout(()=>document.querySelectorAll('.sent-mini-fill').forEach(el=>{el.style.width=el.dataset.pct+'%';}),150);
 }
 
-// ── Sentiment Bars ─────────────────────────────
-function renderSentimentBars(ids, details, sentiment) {
-  const grid = document.getElementById('sentimentGrid');
+/* ── Volume Chart (ApexCharts) — identical event style to dashboard ── */
+function _cmpRenderVolChart(ids, details, volume) {
+    if (_apexVol){try{_apexVol.destroy();}catch(e){}} _apexVol=null;
+    const el=_$c('cmpVolumeChart'), ld=_$c('cmpVolLoading');
+    const cats   = ids.map(id=>{const p=details[id]||details[String(id)]||{};return _trunc(p.title||'Project #'+id,22);});
+    const totals = ids.map(id=>_cmpVolTotal(volume,id));
+    const colors = ids.map((_,i)=>CMP_PALETTE[i%CMP_PALETTE.length]);
 
-  grid.innerHTML = ids.map(id => {
-    const p    = details[id] || details[String(id)] || {};
-    const sent = extractSentiment(sentiment, id);
-    const { pos, neg, net } = sent;
-    const total = pos + neg + net || 1;
-    const pp  = ((pos/total)*100).toFixed(1);
-    const np  = ((net/total)*100).toFixed(1);
-    const ngp = ((neg/total)*100).toFixed(1);
-
-    return `
-      <div class="sentiment-project-row">
-        <div class="sentiment-project-name" title="${escHtml(p.title||'Project #'+id)}">
-          ${escHtml(truncate(p.title||'Project #'+id, 22))}
-          <div style="font-size:10px;color:var(--text-muted);font-weight:500;margin-top:2px">${fmtNum(pos+neg+net)} total</div>
-        </div>
-        <div>
-          <div class="sentiment-bars">
-            <div class="sentiment-seg" style="width:0%;background:${SENT_COLORS.pos}" data-pct="${pp}" title="Positive: ${pp}%">${pp > 10 ? pp+'%' : ''}</div>
-            <div class="sentiment-seg" style="width:0%;background:${SENT_COLORS.net}" data-pct="${np}" title="Neutral: ${np}%">${np > 10 ? np+'%' : ''}</div>
-            <div class="sentiment-seg" style="width:0%;background:${SENT_COLORS.neg}" data-pct="${ngp}" title="Negative: ${ngp}%">${ngp > 10 ? ngp+'%' : ''}</div>
-          </div>
-          <div style="display:flex;gap:16px;margin-top:4px">
-            <span style="font-size:10px;color:${SENT_COLORS.pos};font-weight:700">● Pos ${pp}%</span>
-            <span style="font-size:10px;color:${SENT_COLORS.net};font-weight:700">● Neu ${np}%</span>
-            <span style="font-size:10px;color:${SENT_COLORS.neg};font-weight:700">● Neg ${ngp}%</span>
-          </div>
-        </div>
-      </div>`;
-  }).join('');
-
-  setTimeout(() => {
-    document.querySelectorAll('.sentiment-seg').forEach(el => { el.style.width = el.dataset.pct + '%'; });
-  }, 100);
-}
-
-// ═══════════════════════════════════════════════
-// VIEW SWITCHES
-// ═══════════════════════════════════════════════
-function switchVolumeView(type, btn) {
-  currentVolumeType = type;
-  btn.closest('.tab-nav').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  if (compareData) {
-    const { project_ids: ids, project_details: details, data } = compareData;
-    renderVolumeChart(ids, details, data.volumetotal || {});
-  }
-}
-
-function switchSentView(type, btn) {
-  document.getElementById('sentimentBars').style.display  = type === 'bar' ? 'block' : 'none';
-  document.getElementById('sentimentDonut').style.display = type === 'pie' ? 'block' : 'none';
-  btn.closest('.tab-nav').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-// ═══════════════════════════════════════════════
-// DATA EXTRACTION
-// ═══════════════════════════════════════════════
-function getProjectNode(data, projectId) {
-  if (!data || typeof data !== 'object') return null;
-  return data[String(projectId)] ?? data[parseInt(projectId)] ?? null;
-}
-
-function extractVolumeTotal(data, projectId) {
-  const node = getProjectNode(data, projectId);
-  if (!node) return 0;
-  if (node.volume_total?.all?.total !== undefined) return int(node.volume_total.all.total);
-  if (typeof node === 'number') return node;
-  return 0;
-}
-
-function extractByMedia(data, projectId) {
-  const node = getProjectNode(data, projectId);
-  if (!node?.volume_total?.bymedia) return {};
-  const bm = node.volume_total.bymedia;
-  const result = {};
-  for (const [k, v] of Object.entries(bm)) result[k] = int(v);
-  return result;
-}
-
-function extractSentiment(data, projectId) {
-  const node = getProjectNode(data, projectId);
-  if (!node) return { pos: 0, neg: 0, net: 0 };
-  const s = node.sentiment_total || node;
-  return {
-    pos: int(s.pos ?? s.positive ?? 0),
-    neg: int(s.neg ?? s.negative ?? 0),
-    net: int(s.net ?? s.neutral  ?? 0),
-  };
-}
-
-// ═══════════════════════════════════════════════
-// UTIL
-// ═══════════════════════════════════════════════
-function showLoading(show) { document.getElementById('loadingOverlay').classList.toggle('show', show); }
-function fmtNum(n) { return new Intl.NumberFormat('en-US').format(n || 0); }
-function fmtDate(d) { return d.toISOString().split('T')[0]; }
-function int(v) { return parseInt(v, 10) || 0; }
-function truncate(s, n) { return s && s.length > n ? s.slice(0, n) + '…' : (s || ''); }
-function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-// ═══════════════════════════════════════════════
-// ════════════════════════════════════════════════
-// MENTIONS POPUP
-// ════════════════════════════════════════════════
-// ═══════════════════════════════════════════════
-
-// ── Build popup DOM (sekali saja) ─────────────
-function _buildCmpPopup() {
-  if (_cmpPopup) return;
-  _cmpPopup = document.createElement('div');
-  _cmpPopup.id = 'cmpMentionPopup';
-  _cmpPopup.style.cssText = `
-    position:fixed;z-index:99999;
-    background:#fff;border:1px solid #e2e8f0;border-radius:14px;
-    box-shadow:0 24px 64px rgba(0,0,0,.2),0 4px 16px rgba(0,0,0,.08);
-    width:400px;height:540px;display:none;flex-direction:column;
-    overflow:hidden;pointer-events:auto;
-    animation:cmpPopIn .18s cubic-bezier(.34,1.56,.64,1);
-    font-family:'Poppins',sans-serif;
-  `;
-  _cmpPopup.innerHTML = `
-    <div class="cph">
-      <div class="cpt"><div class="cpd" id="cmpPopDot"></div><span id="cmpPopTitle">Mentions</span></div>
-      <button class="cpc" onclick="closeCmpPopup()">×</button>
-    </div>
-    <div class="cpm">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;flex-shrink:0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <span id="cmpPopMeta">—</span>
-      <span class="cpb" id="cmpPopCount">…</span>
-      <span>mentions</span>
-    </div>
-    <div class="cpl" id="cmpPopList"></div>
-  `;
-  document.body.appendChild(_cmpPopup);
-
-  // Tutup kalau klik di luar
-  document.addEventListener('mousedown', function(e) {
-    if (_cmpPopup && _cmpPopup.style.display === 'flex' && !_cmpPopup.contains(e.target)) {
-      closeCmpPopup();
-    }
-  }, false);
-}
-
-// ── Posisi popup ──────────────────────────────
-function _positionCmpPopup(x, y) {
-  const pw = 400, ph = 540, vw = window.innerWidth, vh = window.innerHeight;
-  let left = x + 16, top = y - 40;
-  if (left + pw > vw - 12) left = x - pw - 16;
-  if (top + ph > vh - 12) top = vh - ph - 12;
-  if (top < 8) top = 8;
-  if (left < 8) left = 8;
-  _cmpPopup.style.left = left + 'px';
-  _cmpPopup.style.top  = top + 'px';
-}
-
-// ── Buka popup ────────────────────────────────
-async function openCmpMentionPopup(projectId, projectTitle, platform, startDate, endDate, x, y) {
-  _buildCmpPopup();
-
-  const color     = MEDIA_COLORS[platform] || '#038047';
-  const platLabel = MEDIA_LABELS[platform] || platform;
-
-  document.getElementById('cmpPopDot').style.background = color;
-  document.getElementById('cmpPopTitle').textContent    = truncate(projectTitle, 28) + ' · ' + platLabel;
-  document.getElementById('cmpPopMeta').textContent     = startDate + ' – ' + endDate;
-  document.getElementById('cmpPopCount').textContent    = '…';
-
-  const list = document.getElementById('cmpPopList');
-  list.innerHTML = `<div class="cploading"><div class="cpspin"></div>Memuat mentions…</div>`;
-
-  _cmpPopup.style.display = 'flex';
-  _positionCmpPopup(x, y);
-
-  const cacheKey = `${projectId}_${platform}_${startDate}_${endDate}`;
-
-  try {
-    let items = _cmpPopupCache[cacheKey];
-    if (!items) {
-      items = await _fetchCmpMentions(projectId, platform, startDate, endDate);
-      _cmpPopupCache[cacheKey] = items;
-    }
-    document.getElementById('cmpPopCount').textContent = fmtNum(items.length);
-    _renderCmpList(list, items, platform);
-  } catch (e) {
-    list.innerHTML = `<div class="cpempty">❌ Gagal memuat data<br><small style="font-size:11px;color:#94a3b8;margin-top:4px;display:block">${escHtml(e.message)}</small></div>`;
-    document.getElementById('cmpPopCount').textContent = '0';
-  }
-}
-
-function closeCmpPopup() {
-  if (_cmpPopup) _cmpPopup.style.display = 'none';
-}
-
-// ── Fetch mentions dari API ───────────────────
-async function _fetchCmpMentions(projectId, platform, startDate, endDate) {
-  const base = '/mk/api/news';
-  const q    = `project_id=${projectId}&start_date=${startDate}&end_date=${endDate}&rows=500&start=0`;
-
-  const endpointMap = {
-    doc:       `${base}/mentions?${q}`,
-    twit:      `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,
-    fb:        `${base}/fb-top-status?${q}&sub=fblike`,
-    instagram: `${base}/ig-top-status?${q}&sub=postbylike`,
-    youtube:   `${base}/ytb-top-status?${q}`,
-    tiktok:    `${base}/tiktok-top-status?${q}&sub=postbylike`,
-  };
-
-  const url = endpointMap[platform];
-  if (!url) throw new Error('Platform tidak dikenali: ' + platform);
-
-  const ctrl = new AbortController();
-  const tid  = setTimeout(() => ctrl.abort(), 30000);
-  const res  = await fetch(url, { signal: ctrl.signal });
-  clearTimeout(tid);
-
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const data = await res.json();
-
-  let items = [];
-  if (data.success === true && Array.isArray(data.data)) items = data.data;
-  else if (Array.isArray(data.data)) items = data.data;
-  else if (Array.isArray(data)) items = data;
-
-  // Filter doc-only dari mentions campuran
-  if (platform === 'doc') {
-    items = items.filter(m => {
-      const tc = String(m.tcode || '').toLowerCase();
-      const mt = String(m.media_type || '').toLowerCase();
-      return tc === 'berita' || mt === 'berita' || mt === 'doc' || mt === 'news' || mt === 'online' || mt === 'article';
+    _apexVol = new ApexCharts(el, {
+        chart:{
+            type:_cmpVolType==='line'?'area':'bar', height:300,
+            fontFamily:'inherit', background:'transparent', toolbar:{show:false},
+            animations:{enabled:true,easing:'easeInOutQuad',speed:600},
+            events:{
+                dataPointSelection:function(e,ctx,cfg){ CmpPanel.open('all','all',ids[cfg.dataPointIndex]); },
+                markerClick:function(e,ctx,cfg){ CmpPanel.open('all','all',ids[cfg.dataPointIndex]); },
+            }
+        },
+        series:[{name:'Total Volume',data:totals}],
+        colors,
+        plotOptions:{bar:{borderRadius:4,distributed:true,columnWidth:'55%',borderRadiusApplication:'end'}},
+        stroke:{curve:'smooth',width:_cmpVolType==='line'?2.5:0},
+        markers:{size:_cmpVolType==='line'?5:0,strokeWidth:2,strokeColors:'#fff'},
+        fill:{
+            type:_cmpVolType==='line'?'gradient':'solid',
+            gradient:{type:'vertical',shadeIntensity:0,opacityFrom:.35,opacityTo:.05,stops:[0,80,100]},
+            opacity:.9,
+        },
+        dataLabels:{enabled:totals.length<=8,formatter:v=>numK(v),style:{fontFamily:'inherit',fontWeight:'700',fontSize:'11px'},background:{enabled:false}},
+        legend:{show:false},
+        xaxis:{
+            categories:cats, axisBorder:{show:false}, axisTicks:{show:false},
+            labels:{style:{fontFamily:'inherit',fontSize:'11px',fontWeight:600,colors:'#94A3B8'}},
+        },
+        yaxis:{
+            labels:{formatter:v=>numK(v),style:{fontFamily:'inherit',fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},
+            axisBorder:{show:false},axisTicks:{show:false},
+        },
+        grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}}},
+        tooltip:{shared:false,y:{formatter:v=>_fmtN(v)+' posts'},style:{fontFamily:'inherit',fontSize:'12px'}},
     });
-  }
+    _apexVol.render().then(()=>{if(ld)ld.classList.add('hidden');});
 
-  return items;
+    // click whole area → panel
+    el.addEventListener('click', e=>{
+        if (!e.target.closest('.apexcharts-datalabels')&&!e.target.closest('.apexcharts-legend'))
+            CmpPanel.open('all','all',ids[0]||null);
+    });
+
+    // legend
+    const leg=_$c('cmpVolumeLegend');
+    leg.innerHTML=ids.map((id,i)=>{const p=details[id]||details[String(id)]||{};return `<span class="d-flex align-items-center gap-1" style="font-size:11px;font-weight:600;color:var(--slate-500);cursor:pointer;" onclick="CmpPanel.open('all','all','${id}')"><span style="width:9px;height:9px;border-radius:3px;background:${CMP_PALETTE[i%CMP_PALETTE.length]};display:inline-block;flex-shrink:0;"></span>${_esc(_trunc(p.title||'Project #'+id,30))}</span>`;}).join('');
 }
 
-// ════════════════════════════════════════════════
-// ITEM DATA HELPERS
-// ════════════════════════════════════════════════
-
-function _cmpName(item, platform) {
-  const h = item.author_scr_name || item.screen_name || item.author_id || item.username || '';
-  return platform === 'doc'
-    ? (item.author_name || item.publisher || item.source_name || item.hostname || h || 'Unknown')
-    : (item.author_name || item.channel_name || h || 'Unknown');
+/* ── Volume Ranking ── */
+function _cmpRenderRanking(ids, details, volume) {
+    const c = _$c('cmpVolumeRanking');
+    const ranked = ids.map((id,i)=>({id,i,title:(details[id]||details[String(id)]||{}).title||'Project #'+id,total:_cmpVolTotal(volume,id)})).sort((a,b)=>b.total-a.total);
+    const max=ranked[0]?.total||1;
+    const rk=['gold','silver','bronze'];
+    c.innerHTML=`<div style="overflow-x:auto"><table class="cmp-rank-table">
+        <thead><tr><th>#</th><th>Project</th><th>Total</th><th style="min-width:90px;">Bar</th></tr></thead>
+        <tbody>${ranked.map((item,rank)=>{
+            const pct=((item.total/max)*100).toFixed(0);
+            const color=CMP_PALETTE[item.i%CMP_PALETTE.length];
+            return `<tr onclick="cmpShowPlatPicker(event,'${item.id}','${item.title.replace(/'/g,"\\'")}')">
+                <td><div class="rank-num ${rk[rank]||''}">${rank+1}</div></td>
+                <td><div class="fw-bold f-13 text-truncate" style="max-width:140px;">${_esc(item.title)}</div><div style="width:8px;height:8px;border-radius:50%;background:${color};margin-top:3px;display:inline-block;"></div></td>
+                <td class="fw-bold f-14">${_fmtN(item.total)}</td>
+                <td><div class="bar-track"><div class="bar-fill" style="width:0%;background:${color}" data-pct="${pct}"></div></div></td>
+            </tr>`;
+        }).join('')}</tbody>
+    </table></div>
+    <div class="p-2 text-center" style="font-size:11px;color:var(--slate-400);border-top:1px solid var(--slate-50);"><i class="ph ph-cursor-click me-1"></i>Click row to see mentions per platform</div>`;
+    setTimeout(()=>c.querySelectorAll('.bar-fill').forEach(el=>{el.style.width=el.dataset.pct+'%';}),150);
 }
 
-function _cmpUsername(item, platform) {
-  // return @handle or channel ID depending on platform
-  const raw =
-    item.author_scr_name || item.screen_name || item.username ||
-    item.author_id       || item.channel_id  || '';
-  if (!raw) return '';
-  if (platform === 'twit') return raw.startsWith('@') ? raw : '@' + raw;
-  if (platform === 'youtube') return item.channel_name ? '' : raw; // don't show if already in name
-  if (platform === 'instagram') return raw.startsWith('@') ? raw : '@' + raw;
-  if (platform === 'tiktok') return raw.startsWith('@') ? raw : '@' + raw;
-  return '';
+/* ── Media Table ── */
+function _cmpRenderMediaTable(ids, details, volume) {
+    const wrap=_$c('cmpMediaTableWrap');
+    const MK=['doc','twit','fb','instagram','youtube','tiktok'];
+    const rows=ids.map(id=>{const p=details[id]||details[String(id)]||{};return {id,title:p.title||'Project #'+id,bm:_cmpByMedia(volume,id),total:_cmpVolTotal(volume,id)};});
+    wrap.innerHTML=`<table class="cmp-media-table">
+        <thead><tr>
+            <th style="width:30px;">No</th><th>Project</th>
+            ${MK.map(k=>`<th>${CMP_MEDIA_LABELS[k]}</th>`).join('')}
+            <th>Total</th>
+        </tr></thead>
+        <tbody>${rows.map((item,i)=>{
+            const color=CMP_PALETTE[i%CMP_PALETTE.length];
+            return `<tr onclick="cmpShowPlatPicker(event,'${item.id}','${item.title.replace(/'/g,"\\'")}')">
+                <td class="text-muted fw-bold">${i+1}</td>
+                <td><div class="d-flex align-items-center gap-2"><div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></div><span style="color:${color};font-weight:700;">${_esc(_trunc(item.title,32))}</span></div></td>
+                ${MK.map(k=>{const v=item.bm[k]||0;return `<td onclick="event.stopPropagation();CmpPanel.open('${k}','all','${item.id}')"
+                    style="cursor:pointer;color:${v>0?'var(--slate-700)':'var(--slate-300)'};"
+                    onmouseover="this.style.background='${CMP_MEDIA_COLORS[k]}18'" onmouseout="this.style.background=''"
+                    title="View ${CMP_MEDIA_LABELS[k]} mentions">${_fmtN(v)}</td>`;}).join('')}
+                <td class="fw-bold">${_fmtN(item.total)}</td>
+            </tr>`;
+        }).join('')}</tbody>
+    </table>`;
 }
 
-function _cmpAvatar(item, platform) {
-  // returns best available avatar URL
-  return item.avatar_url   || item.profile_image_url ||
-         item.profile_img  || item.author_image      ||
-         item.channel_image|| item.thumbnail_url     || '';
+/* ── Media Stacked Bar Chart ── */
+function _cmpRenderMediaChart(ids, details, volume) {
+    if (_apexMedia){try{_apexMedia.destroy();}catch(e){}} _apexMedia=null;
+    const el=_$c('cmpMediaChart'), ld=_$c('cmpMediaLoading');
+    const MK=['doc','twit','fb','instagram','youtube','tiktok'];
+    const cats=ids.map(id=>{const p=details[id]||details[String(id)]||{};return _trunc(p.title||'Project #'+id,22);});
+    const series=MK.map(k=>({name:CMP_MEDIA_LABELS[k],data:ids.map(id=>_cmpByMedia(volume,id)[k]||0)})).filter(s=>s.data.some(v=>v>0));
+    if (!series.length){if(ld)ld.classList.add('hidden');return;}
+    const colors=series.map(s=>CMP_MEDIA_COLORS[MK.find(k=>CMP_MEDIA_LABELS[k]===s.name)]);
+    _apexMedia=new ApexCharts(el,{
+        chart:{type:'bar',height:260,fontFamily:'inherit',background:'transparent',toolbar:{show:false},stacked:true,animations:{enabled:true,easing:'easeInOutQuad',speed:600},
+            events:{
+                dataPointSelection:function(e,ctx,cfg){
+                    const platKey=MK.find(k=>CMP_MEDIA_LABELS[k]===series[cfg.seriesIndex]?.name)||'all';
+                    CmpPanel.open(platKey,'all',ids[cfg.dataPointIndex]);
+                }
+            }
+        },
+        series,colors,
+        plotOptions:{bar:{borderRadius:3,columnWidth:'55%',borderRadiusApplication:'end'}},
+        dataLabels:{enabled:false},
+        xaxis:{categories:cats,axisBorder:{show:false},axisTicks:{show:false},labels:{style:{fontFamily:'inherit',fontSize:'11px',fontWeight:600,colors:'#94A3B8'}}},
+        yaxis:{labels:{formatter:v=>numK(v),style:{fontFamily:'inherit',fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},axisBorder:{show:false},axisTicks:{show:false}},
+        grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}}},
+        legend:{position:'bottom',horizontalAlign:'left',fontFamily:'inherit',fontSize:'11px',fontWeight:600,labels:{colors:'#94A3B8'},markers:{width:9,height:9,radius:3},itemMargin:{horizontal:12,vertical:4}},
+        tooltip:{shared:true,intersect:false,y:{formatter:v=>_fmtN(v)+' posts'},style:{fontFamily:'inherit',fontSize:'12px'}},
+    });
+    _apexMedia.render().then(()=>{if(ld)ld.classList.add('hidden');});
+    el.addEventListener('click',()=>CmpPanel.open('all','all',ids[0]||null));
 }
 
-function _cmpThumbnail(item, platform) {
-  // video thumbnail (YouTube, TikTok)
-  if (platform === 'youtube') {
-    const vid = _ytbVideoId(item);
-    if (vid) return `https://img.youtube.com/vi/${vid}/mqdefault.jpg`;
-    return item.thumbnail || item.thumbnail_url || '';
-  }
-  if (platform === 'tiktok') return item.video_cover || item.thumbnail_url || item.cover || '';
-  return '';
+/* ── SOV Pies ── */
+function _cmpRenderSovPies(ids, details, volume) {
+    const grid=_$c('cmpSovGrid');
+    Object.values(_apexSov).forEach(c=>{try{c.destroy();}catch(e){}});
+    const MK=['doc','twit','fb','instagram','youtube','tiktok'];
+    const labels=ids.map(id=>{const p=details[id]||details[String(id)]||{};return _trunc(p.title||'Project #'+id,22);});
+    const colors=ids.map((_,i)=>CMP_PALETTE[i%CMP_PALETTE.length]);
+    const allKeys=[null,...MK];
+    const datasets=allKeys.map(k=>({
+        key:k,label:k?'Share of Voice — '+CMP_MEDIA_LABELS[k]:'Share of Voice — All Media Types',
+        vals:ids.map(id=>k?(_cmpByMedia(volume,id)[k]||0):_cmpVolTotal(volume,id)),
+    })).filter(d=>d.vals.some(v=>v>0));
+
+    const cols=Math.min(datasets.length,3);
+    grid.style.cssText=`display:grid;grid-template-columns:repeat(${cols},1fr);gap:24px;`;
+    grid.innerHTML=datasets.map((_,i)=>`<div id="cmpSovChart_${i}" style="min-height:260px;"></div>`).join('');
+
+    datasets.forEach((d,i)=>{
+        const total=d.vals.reduce((a,b)=>a+b,0)||1;
+        const pcts=d.vals.map(v=>parseFloat(((v/total)*100).toFixed(1)));
+        const el=_$c(`cmpSovChart_${i}`); if(!el) return;
+        const ap=new ApexCharts(el,{
+            chart:{type:'pie',height:260,fontFamily:'inherit',background:'transparent',toolbar:{show:false},animations:{enabled:true,easing:'easeInOutQuad',speed:600},
+                events:{dataPointSelection:function(e,ctx,cfg){
+                    CmpPanel.open(d.key||'all','all',ids[cfg.dataPointIndex]);
+                }}
+            },
+            series:pcts, labels, colors,
+            title:{text:d.label,align:'center',style:{fontFamily:'inherit',fontSize:'12px',fontWeight:'700',color:'var(--slate-700)'}},
+            subtitle:{text:`${_cmpStartDate} to ${_cmpEndDate}`,align:'center',style:{fontFamily:'inherit',fontSize:'11px',color:'var(--slate-400)'}},
+            dataLabels:{enabled:true,formatter:(val)=>val<2?'':val.toFixed(0)+'%',style:{fontFamily:'inherit',fontSize:'12px',fontWeight:'700'},dropShadow:{enabled:false}},
+            legend:{position:'bottom',fontFamily:'inherit',fontSize:'11px',fontWeight:600,labels:{colors:'#94A3B8'},markers:{width:9,height:9,radius:50},itemMargin:{horizontal:10,vertical:4}},
+            stroke:{width:2,colors:['#fff']},
+            tooltip:{y:{formatter:(v,opts)=>`${d.vals[opts.seriesIndex].toLocaleString('id-ID')} (${v}%)`},style:{fontFamily:'inherit',fontSize:'12px'}},
+            plotOptions:{pie:{dataLabels:{offset:25,minAngleToShowLabel:5}}},
+        });
+        ap.render();
+        _apexSov[i]=ap;
+    });
 }
 
-function _cmpUrl(item, platform) {
-  const raw = item.url || item.link || item.post_url || item.video_url || item.permalink || '';
-  if (raw) return raw;
-  if (platform === 'twit') {
-    const usn = item.author_scr_name || item.screen_name || '';
-    const id  = item.post_id || item.tweet_id || item.id_str || item.id || '';
-    if (usn && id) return `https://x.com/${usn}/status/${id}`;
-  }
-  if (platform === 'youtube') {
-    const vid = _ytbVideoId(item);
-    if (vid) return `https://www.youtube.com/watch?v=${vid}`;
-  }
-  if (platform === 'instagram') {
-    const sc = item.shortcode || item.post_shortcode || '';
-    if (sc) return `https://www.instagram.com/p/${sc}/`;
-  }
-  if (platform === 'tiktok') {
-    const uid = item.author_id || item.user_id || '';
-    const vid = item.video_id  || item.post_id || '';
-    if (uid && vid) return `https://www.tiktok.com/@${uid}/video/${vid}`;
-  }
-  if (platform === 'fb') {
-    const pid = item.post_id || item.id || '';
-    if (pid) return `https://www.facebook.com/${pid}`;
-  }
-  return '';
+/* ── Sentiment Stacked Bars ── */
+function _cmpRenderSentBars(ids, details, sentiment) {
+    const grid=_$c('cmpSentGrid');
+    grid.innerHTML=ids.map((id,i)=>{
+        const p=details[id]||details[String(id)]||{};
+        const s=_cmpSent(sentiment,id);
+        const total=s.pos+s.neg+s.net||1;
+        const pp=((s.pos/total)*100).toFixed(1), np=((s.net/total)*100).toFixed(1), ng=((s.neg/total)*100).toFixed(1);
+        return `<div class="sent-stack-row">
+            <div>
+                <div class="fw-bold f-12 text-truncate" style="color:var(--slate-700);" title="${_esc(p.title||'Project #'+id)}">${_esc(_trunc(p.title||'Project #'+id,22))}</div>
+                <div style="font-size:10px;color:var(--slate-400);margin-top:2px;">${_fmtN(s.pos+s.neg+s.net)} total</div>
+            </div>
+            <div>
+                <div class="sent-stack-bars" style="cursor:pointer;" onclick="CmpPanel.open('all','all','${id}')">
+                    <div class="sent-seg" style="width:0%;background:#10b981" data-pct="${pp}" title="Pos: ${pp}%">${pp>10?pp+'%':''}</div>
+                    <div class="sent-seg" style="width:0%;background:#64748b" data-pct="${np}" title="Neu: ${np}%">${np>10?np+'%':''}</div>
+                    <div class="sent-seg" style="width:0%;background:#ef4444" data-pct="${ng}" title="Neg: ${ng}%">${ng>10?ng+'%':''}</div>
+                </div>
+                <div class="d-flex gap-3 mt-1">
+                    <span onclick="CmpPanel.open('all','pos','${id}')" style="font-size:10px;color:#10b981;font-weight:700;cursor:pointer;">● Pos ${pp}%</span>
+                    <span onclick="CmpPanel.open('all','neu','${id}')" style="font-size:10px;color:#64748b;font-weight:700;cursor:pointer;">● Neu ${np}%</span>
+                    <span onclick="CmpPanel.open('all','neg','${id}')" style="font-size:10px;color:#ef4444;font-weight:700;cursor:pointer;">● Neg ${ng}%</span>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+    setTimeout(()=>document.querySelectorAll('.sent-seg').forEach(el=>{el.style.width=el.dataset.pct+'%';}),150);
 }
 
-function _ytbVideoId(item) {
-  const u = item.url || item.link || item.video_url || '';
-  const m = u.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-  if (m) return m[1];
-  return item.video_id || item.youtube_id || '';
+/* ── Sentiment Donut ── */
+function _cmpRenderSentDonut(ids, details, sentiment) {
+    const grid=_$c('cmpSentDonut');
+    Object.values(_apexSent).forEach(c=>{try{c.destroy();}catch(e){}});
+    const cols=Math.min(ids.length,3);
+    grid.style.cssText=`display:grid;grid-template-columns:repeat(${cols},1fr);gap:20px;`;
+    grid.innerHTML=ids.map((_,i)=>`<div id="cmpSentDnt_${i}" style="min-height:220px;"></div>`).join('');
+    ids.forEach((id,i)=>{
+        const p=details[id]||details[String(id)]||{};
+        const s=_cmpSent(sentiment,id);
+        const el=_$c(`cmpSentDnt_${i}`); if(!el) return;
+        const ap=new ApexCharts(el,{
+            chart:{type:'donut',height:220,fontFamily:'inherit',background:'transparent',toolbar:{show:false},animations:{enabled:true,speed:600},
+                events:{dataPointSelection:function(e,ctx,cfg){
+                    const sm=['pos','neu','neg'];
+                    CmpPanel.open('all',sm[cfg.dataPointIndex]||'all',id);
+                }}
+            },
+            series:[s.pos,s.net,s.neg],labels:['Positive','Neutral','Negative'],colors:['#10b981','#64748b','#ef4444'],
+            title:{text:_trunc(p.title||'Project #'+id,22),align:'center',style:{fontFamily:'inherit',fontSize:'12px',fontWeight:'700',color:'var(--slate-700)'}},
+            dataLabels:{enabled:true,formatter:v=>v.toFixed(0)+'%',style:{fontFamily:'inherit',fontSize:'11px',fontWeight:'700'},dropShadow:{enabled:false}},
+            legend:{position:'bottom',fontFamily:'inherit',fontSize:'11px',fontWeight:600,labels:{colors:'#94A3B8'}},
+            stroke:{width:2,colors:['#fff']},
+            plotOptions:{pie:{donut:{size:'55%'}}},
+            tooltip:{y:{formatter:v=>_fmtN(v)},style:{fontFamily:'inherit',fontSize:'12px'}},
+        });
+        ap.render();
+        _apexSent[i]=ap;
+    });
 }
 
-function _cmpContent(item) {
-  return ((item.content || item.caption || item.description || item.name || item.title || item.text || '')
-    .replace(/<[^>]*>/g, '').trim());
+/* ── View switches ── */
+function cmpSwitchVolume(type, btn) {
+    _cmpVolType=type;
+    btn.closest('.cmp-tab-nav').querySelectorAll('.cmp-tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    if (_cmpData){const {project_ids:ids,project_details:details,data}=_cmpData;_cmpRenderVolChart(ids,details,data.volumetotal||{});}
+}
+function cmpSwitchSent(type, btn) {
+    btn.closest('.cmp-tab-nav').querySelectorAll('.cmp-tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    _$c('cmpSentBars').style.display  = type==='bar'  ?'block':'none';
+    _$c('cmpSentDonut').style.display = type==='donut'?'block':'none';
+    if (type==='donut'&&_cmpData){const {project_ids:ids,project_details:details,data}=_cmpData;_cmpRenderSentDonut(ids,details,data.sentimenttotal||{});}
 }
 
-function _cmpIni(name) {
-  if (!name || name === 'Unknown') return '?';
-  const p = name.trim().split(/\s+/);
-  return p.length === 1 ? p[0].slice(0,2).toUpperCase() : (p[0][0]+p[p.length-1][0]).toUpperCase();
+/* ── Platform Picker ── */
+function cmpShowPlatPicker(event, projectId, projectTitle) {
+    event.stopPropagation();
+    _cmpPickerPid = String(projectId);
+    const pp=_$c('cmpPlatPicker');
+    pp.querySelectorAll('.do-plat-btn').forEach(btn=>{
+        const m=btn.getAttribute('onclick')||'';
+        const pm=m.match(/openPlatform\('([^']+)'/);
+        if (pm) btn.setAttribute('onclick',`CmpPanel.openPlatform('${pm[1]}','all')`);
+    });
+    const pw=175,ph=270,vw=window.innerWidth,vh=window.innerHeight;
+    let left=event.clientX+10,top=event.clientY-10;
+    if(left+pw>vw-8)left=event.clientX-pw-10;
+    if(top+ph>vh-8)top=vh-ph-8; if(top<8)top=8;
+    pp.style.left=left+'px'; pp.style.top=top+'px';
+    pp.classList.add('show');
 }
 
-function _cmpSent(v) {
-  const s = String(v).toLowerCase().trim();
-  if (s==='1'||s==='positive'||s==='positif') return '1';
-  if (s==='-1'||s==='2'||s==='negative'||s==='negatif') return '-1';
-  return '0';
-}
+/* ════════════════════════════════════
+   CmpPanel — 100% identical to DashPanel
+════════════════════════════════════ */
+const CmpPanel = (() => {
+    let _cache={}, _allItems=[], _filtered=[], _curSent='all', _curPlat=null, _curPid=null;
+    const SENT_MAP={'1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg'};
+    const _ns=item=>SENT_MAP[String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim()]||'neu';
 
-function _cmpDate(str) {
-  if (!str) return '';
-  try { return new Date(str).toLocaleDateString('id-ID', {day:'2-digit',month:'short',year:'numeric'}); }
-  catch(e) { return str.split('T')[0]; }
-}
-
-function _cmpEng(item, platform) {
-  const fmt = n => (n > 0) ? fmtNum(n) : null;
-  const parts = [];
-  if (platform === 'twit') {
-    const rt  = fmt(item.num_retweeted || item.retweet_count || 0);
-    const lk  = fmt(item.num_likes || item.likes || item.favorite_count || 0);
-    const rep = fmt(item.reply_count || item.num_replies || 0);
-    if (rt)  parts.push('🔁 ' + rt);
-    if (lk)  parts.push('❤ ' + lk);
-    if (rep) parts.push('💬 ' + rep);
-  } else if (platform === 'youtube') {
-    const v   = fmt(item.num_views || item.views || item.view_count || 0);
-    const lk  = fmt(item.num_likes || item.likes || item.like_count || 0);
-    const com = fmt(item.num_comments || item.comment_count || 0);
-    if (v)   parts.push('👁 ' + v);
-    if (lk)  parts.push('👍 ' + lk);
-    if (com) parts.push('💬 ' + com);
-  } else if (platform === 'tiktok') {
-    const v   = fmt(item.views || item.num_views || item.play_count || 0);
-    const lk  = fmt(item.likes || item.num_likes || item.digg_count || 0);
-    const sh  = fmt(item.shares || item.share_count || 0);
-    const com = fmt(item.num_comments || item.comment_count || 0);
-    if (v)   parts.push('👁 ' + v);
-    if (lk)  parts.push('❤ ' + lk);
-    if (sh)  parts.push('📤 ' + sh);
-    if (com) parts.push('💬 ' + com);
-  } else if (platform === 'instagram') {
-    const lk  = fmt(item.num_likes || item.likes || item.like_count || 0);
-    const com = fmt(item.num_comments || item.comment_count || 0);
-    if (lk)  parts.push('❤ ' + lk);
-    if (com) parts.push('💬 ' + com);
-  } else if (platform === 'fb') {
-    const lk  = fmt(item.likes || item.num_likes || item.like_count || 0);
-    const sh  = fmt(item.shares || item.share_count || 0);
-    const com = fmt(item.num_comments || item.comment_count || 0);
-    if (lk)  parts.push('👍 ' + lk);
-    if (sh)  parts.push('📤 ' + sh);
-    if (com) parts.push('💬 ' + com);
-  }
-  return parts.join('  ');
-}
-
-// ════════════════════════════════════════════════
-// RENDER LIST (popup compact)
-// ════════════════════════════════════════════════
-// Store current platform for modal access
-let _cmpCurrentPlatform = '';
-let _cmpCurrentItems    = [];
-
-function _renderCmpList(list, items, platform) {
-  _cmpCurrentPlatform = platform;
-  _cmpCurrentItems    = items;
-
-  if (!items.length) {
-    list.innerHTML = `<div class="cpempty">📭 Tidak ada mentions untuk periode ini.</div>`;
-    return;
-  }
-
-  const SHOW = 60;
-
-  let html = items.slice(0, SHOW).map((item, idx) => {
-    const name    = _cmpName(item, platform);
-    const usn     = _cmpUsername(item, platform);
-    const text    = _cmpContent(item).slice(0, 180);
-    const ini     = _cmpIni(name);
-    const sent    = _cmpSent(item.class_sentiment || item.sentiment || '0');
-    const sntCls  = sent === '1' ? 'css-p' : sent === '-1' ? 'css-n' : 'css-u';
-    const sntLbl  = sent === '1' ? 'Pos'   : sent === '-1' ? 'Neg'   : 'Neu';
-    const dt      = _cmpDate(item.date_created || '');
-    const eng     = _cmpEng(item, platform);
-    const safeIni = ini.replace(/['"]/g, '');
-
-    // Avatar
-    const av = _cmpAvatar(item, platform);
-    let avaHtml = ini;
-    if (av && av.startsWith('http')) {
-      avaHtml = `<img src="${escHtml(av)}" onerror="this.parentElement.textContent='${safeIni}'">`;
+    function openPlatform(platform, sentiment) {
+        _$c('cmpPlatPicker')?.classList.remove('show');
+        open(platform, sentiment||'all', _cmpPickerPid||_curPid);
     }
 
-    // YouTube thumbnail in list
-    const thumb = _cmpThumbnail(item, platform);
-    const thumbHtml = (platform === 'youtube' && thumb)
-      ? `<div class="cpthumb" style="width:60px;height:40px;border-radius:6px;overflow:hidden;flex-shrink:0;border:1px solid #e2e8f0;background:#000">
-           <img src="${escHtml(thumb)}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display='none'">
-         </div>`
-      : '';
+    async function open(platform, sentiment, projectId) {
+        _curPlat=platform; _curSent=sentiment||'all';
+        if (projectId) _curPid=String(projectId);
+        const meta=CMP_PLAT_META[platform]||{label:platform,color:'#4361EE'};
+        CmpDetail.close();
+        _$c('cmpPanelDot').style.background=meta.color;
+        _$c('cmpPanelTitle').textContent=meta.label+(platform==='all'?' — All Platforms':'');
+        _$c('cmpPanelMeta').textContent=_cmpStartDate+' – '+_cmpEndDate;
+        document.querySelectorAll('#cmpSntPanel .do-panel-tab').forEach(t=>t.classList.toggle('active',t.dataset.s===_curSent));
+        const list=_$c('cmpPanelList');
+        list.innerHTML=`<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat mentions…</span></div>`;
+        const overlay=_$c('cmpPanelOverlay'),panel=_$c('cmpSntPanel');
+        overlay.classList.remove('hiding'); panel.classList.remove('hiding');
+        overlay.classList.add('show'); panel.classList.add('show');
+        try {
+            const key=`${_curPid}_${platform}_${_cmpStartDate}_${_cmpEndDate}`;
+            if (!_cache[key]) _cache[key]=await _fetchAll(platform,_curPid);
+            _allItems=_cache[key];
+            _filtered=_curSent==='all'?_allItems:_allItems.filter(i=>_ns(i)===_curSent);
+            _render(list,_filtered,platform,meta.color);
+        } catch(err) {
+            list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:13px;">Gagal memuat data<br><small>${_esc(err.message)}</small></div>`;
+        }
+    }
 
-    return `<div class="cpi" onclick="_openCmpModal(${idx})" style="align-items:${platform==='youtube'?'flex-start':'center'}">
-      <div class="cpa">${avaHtml}</div>
-      ${thumbHtml}
-      <div class="cpbd">
-        <div class="cpan">${escHtml(name)}</div>
-        ${usn ? `<div class="cpusn">${escHtml(usn)}</div>` : ''}
-        <div class="cptx">${escHtml(text || '(tidak ada konten)')}</div>
-        <div class="cprw">
-          <span class="css ${sntCls}">${sntLbl}</span>
-          ${eng ? `<span style="color:#64748b">${eng}</span>` : ''}
-          ${dt ? `<span style="margin-left:auto">${dt}</span>` : ''}
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+    function close() {
+        const overlay=_$c('cmpPanelOverlay'),panel=_$c('cmpSntPanel');
+        panel.classList.add('hiding'); overlay.classList.add('hiding');
+        setTimeout(()=>{panel.classList.remove('show','hiding');overlay.classList.remove('show','hiding');CmpDetail.close();},240);
+    }
 
-  if (items.length > SHOW) {
-    html += `<div style="padding:9px 16px;text-align:center;font-size:11px;font-weight:600;color:#64748b;background:#f8fafc;border-top:1px dashed #e2e8f0;">
-      +${fmtNum(items.length - SHOW)} mentions lainnya
-    </div>`;
-  }
+    function filterSent(sent) {
+        _curSent=sent;
+        document.querySelectorAll('#cmpSntPanel .do-panel-tab').forEach(t=>t.classList.toggle('active',t.dataset.s===sent));
+        _filtered=sent==='all'?_allItems:_allItems.filter(i=>_ns(i)===sent);
+        _render(_$c('cmpPanelList'),_filtered,_curPlat,(CMP_PLAT_META[_curPlat]||{color:'#4361EE'}).color);
+    }
 
-  list.innerHTML = html;
-}
+    function exportCsv() {
+        if (!_filtered.length){alert('Tidak ada data.');return;}
+        const rows=_filtered.map(item=>({
+            nama:(item.author_name||item.channel_name||item.from_name||item.publisher||item.source_name||'').trim(),
+            sentimen:{pos:'Positif',neg:'Negatif',neu:'Netral'}[_ns(item)],
+            tanggal:item.date_created||'',
+            url:item.url||item.link||'',
+            konten:(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,500),
+        }));
+        const meta=CMP_PLAT_META[_curPlat]||{label:_curPlat||'all'};
+        const fn=`mentions_${meta.label.replace(/\s+/g,'_')}_${_curSent}_${_cmpStartDate}_${_cmpEndDate}`;
+        const headers=Object.keys(rows[0]);
+        const lines=[headers.join(';'),...rows.map(r=>headers.map(h=>{let v=String(r[h]||'').replace(/"/g,'""');return v.includes(';')||v.includes('"')||v.includes('\n')?`"${v}"`:v;}).join(';'))];
+        const blob=new Blob(['\uFEFF'+lines.join('\n')],{type:'text/csv;charset=utf-8;'});
+        const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:fn+'.csv'});
+        document.body.appendChild(a);a.click();document.body.removeChild(a);
+    }
 
-// ════════════════════════════════════════════════
-// MENTION DETAIL MODAL
-// ════════════════════════════════════════════════
-let _cmpModalEl = null;
+    async function _fetchAll(platform, pid) {
+        if (platform==='all'){
+            const res=await Promise.allSettled(['doc','twit','fb','instagram','youtube','tiktok'].map(p=>_fetchOne(p,pid)));
+            return res.flatMap(r=>r.status==='fulfilled'?r.value:[]);
+        }
+        return _fetchOne(platform,pid);
+    }
 
-function _buildCmpModal() {
-  if (_cmpModalEl) return;
-  _cmpModalEl = document.createElement('div');
-  _cmpModalEl.className = 'cmp-modal-backdrop';
-  _cmpModalEl.innerHTML = `
-    <div class="cmp-modal-shell" onclick="event.stopPropagation()">
-      <!-- Header -->
-      <div class="cmp-modal-head">
-        <span class="cmp-modal-plat-pill" id="cmpMdPill"></span>
-        <span class="cmp-modal-title" id="cmpMdTitle"></span>
-        <a class="cmp-modal-ext" id="cmpMdExt" href="#" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Buka Link
-        </a>
-        <button class="cmp-modal-close" onclick="_closeCmpModal()">×</button>
-      </div>
-      <!-- Author row -->
-      <div class="cmp-modal-author">
-        <div class="cmp-modal-ava" id="cmpMdAva"></div>
-        <div>
-          <div class="cmp-modal-aname" id="cmpMdAname"></div>
-          <div class="cmp-modal-ausn"  id="cmpMdAusn"></div>
-        </div>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-          <span class="cmp-modal-sent" id="cmpMdSent"></span>
-          <span style="font-size:11px;color:#94a3b8" id="cmpMdDate"></span>
-        </div>
-      </div>
-      <!-- Scrollable body -->
-      <div class="cmp-modal-body">
-        <!-- Embed / thumbnail / content injected here -->
-        <div id="cmpMdEmbed"></div>
-        <!-- Stats -->
-        <div class="cmp-stats-row" id="cmpMdStats"></div>
-        <!-- Text -->
-        <div class="cmp-modal-content" id="cmpMdText"></div>
-      </div>
-    </div>`;
-  document.body.appendChild(_cmpModalEl);
-  // Close on backdrop click
-  _cmpModalEl.addEventListener('click', _closeCmpModal);
-  // ESC key
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') _closeCmpModal(); });
-}
+    async function _fetchOne(platform, pid) {
+        const q=`project_id=${pid}&start_date=${_cmpStartDate}&end_date=${_cmpEndDate}&rows=500&start=0`;
+        if (platform==='instagram'){
+            for(const sub of ['postbylike','postbycomment','postbydate','']){
+                try{const r=await fetch(`/mk/api/news/ig-top-status?${q}${sub?'&sub='+sub:''}`);const d=await r.json();const items=Array.isArray(d.data)?d.data:(Array.isArray(d)?d:[]);if(items.length>0)return items.map(i=>({...i,_platform:platform}));}catch(e){continue;}
+            }
+            return [];
+        }
+        const eps={
+            doc    :`/mk/api/news/mentions?${q}`,
+            twit   :`/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,
+            fb     :`/mk/api/news/fb-top-status?${q}&sub=fblike`,
+            youtube:`/mk/api/news/ytb-top-status?${q}`,
+            tiktok :`/mk/api/news/tiktok-top-status?${q}&sub=postbylike`,
+        };
+        const url=eps[platform]; if(!url) return [];
+        const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),30000);
+        try{
+            const r=await fetch(url,{signal:ctrl.signal}); clearTimeout(tid);
+            if(!r.ok) return [];
+            const d=await r.json();
+            let items=[];
+            if(Array.isArray(d?.data?.data))    items=d.data.data;
+            else if(Array.isArray(d?.data))      items=d.data;
+            else if(Array.isArray(d?.statuses))  items=d.statuses;
+            else if(Array.isArray(d?.results))   items=d.results;
+            else if(Array.isArray(d?.posts))     items=d.posts;
+            else if(Array.isArray(d))            items=d;
+            if(platform==='doc') items=items.filter(m=>{const tc=String(m.tcode||'').toLowerCase();const mt=String(m.media_type||'').toLowerCase();return tc==='berita'||mt==='berita'||mt==='doc'||mt==='news'||mt==='online'||mt==='article';});
+            return items.map(i=>({...i,_platform:platform}));
+        }catch(e){clearTimeout(tid);return [];}
+    }
 
-function _closeCmpModal() {
-  if (_cmpModalEl) {
-    _cmpModalEl.classList.remove('open');
-    // Destroy any iframe to stop video
-    const emb = document.getElementById('cmpMdEmbed');
-    if (emb) emb.innerHTML = '';
-  }
-}
+    function _render(list, items, platform, accentColor) {
+        if (!items.length){list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`;return;}
+        const SHOW=60;
+        list.innerHTML=items.slice(0,SHOW).map(item=>{
+            const plat=item._platform||platform;
+            const meta=CMP_PLAT_META[plat]||{label:plat,color:accentColor};
+            const rawName=(()=>{
+                if(plat==='fb')         return item.from_name||item.page_name||null;
+                if(plat==='instagram')  return item.username||item.user_name||null;
+                if(plat==='tiktok')     return item.author_nickname||item.nickname||item.author?.nickname||null;
+                if(plat==='youtube')    return item.channel_title||item.channel_name||item.snippet?.channelTitle||null;
+                if(plat==='twit'){const ao=typeof item.author==='object'?item.author:(()=>{try{return JSON.parse(item.author||'{}');}catch(e){return {};}})();return item.name||ao?.name||ao?.scr_name||item.author_name||null;}
+                return null;
+            })();
+            const name=(rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'Unknown').trim();
+            const isNum=/^\d{10,}$/.test(name);
+            const dName=isNum?`User ${name.slice(-4)}`:name;
+            const rawH=(()=>{
+                if(plat==='instagram') return item.username||'';
+                if(plat==='twit'){const ao=typeof item.author==='object'?item.author:(()=>{try{return JSON.parse(item.author||'{}');}catch(e){return {};}})();return item.screen_name||item.author_scr_name||ao?.scr_name||ao?.username||'';}
+                return item.author_scr_name||item.screen_name||item.username||'';
+            })().trim();
+            const handle=(()=>{if(!rawH)return '';const w=['twit','instagram','tiktok'].includes(plat)?(rawH.startsWith('@')?rawH:'@'+rawH):rawH;return w.replace(/^@/,'').toLowerCase()===dName.toLowerCase()?'':w;})();
+            const text=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,150);
+            const ao=(()=>{if(typeof item.author==='object'&&item.author)return item.author;try{return JSON.parse(item.author||'{}');}catch(e){return {};}})();
+            const av=(item.avatar_url||item.profile_image_url||ao?.image||item.author_image||item.profile_image||item.thumbnail||'').trim();
+            const dt=(item.date_created||item.created_at||'').split('T')[0];
+            const sent=_ns(item);
+            const words=dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
+            const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||dName[0]||'?')).toUpperCase().replace(/['"]/g,'');
+            const avHtml=(av&&av.startsWith('http'))?`<img src="${_esc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">`:ini;
+            const enc=encodeURIComponent(JSON.stringify(item));
+            return `<div class="do-panel-item" onclick="CmpDetail.openEncoded('${enc}','${plat}')">
+                <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
+                <div class="do-panel-item-body">
+                    <div class="do-panel-author">${_esc(dName)}</div>
+                    ${handle?`<div class="do-panel-handle">${_esc(handle)}</div>`:''}
+                    <div class="do-panel-text">${_esc(text||'(tidak ada konten)')}</div>
+                    <div class="do-panel-footer">
+                        <span class="do-sent-badge do-sent-badge--${sent}">${sent==='pos'?'Pos':sent==='neg'?'Neg':'Neu'}</span>
+                        <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
+                        <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
+                        ${dt?`<span style="margin-left:auto;">${dt}</span>`:''}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+        if(items.length>SHOW) list.insertAdjacentHTML('beforeend',`<div style="padding:9px;text-align:center;font-size:11px;font-weight:600;color:#94A3B8;background:#F8FAFC;border-top:1px dashed #E2E8F0;">+${(items.length-SHOW).toLocaleString()} lainnya · Export CSV untuk lihat semua</div>`);
+    }
 
-const PLAT_PILL_STYLE = {
-  doc:       'background:#dbeafe;color:#1d4ed8',
-  twit:      'background:#e0f2fe;color:#0369a1',
-  fb:        'background:#ede9fe;color:#5b21b6',
-  instagram: 'background:#fce7f3;color:#9d174d',
-  youtube:   'background:#fee2e2;color:#b91c1c',
-  tiktok:    'background:#f1f5f9;color:#334155',
+    return {open, close, filterSent, exportCsv, openPlatform,
+        get _cache(){return _cache;}, set _cache(v){_cache=v;}};
+})();
+
+/* ════════════════════════════════════
+   CmpDetail — identical to DashDetail
+════════════════════════════════════ */
+const CmpDetail = {
+    openEncoded(enc, plat){ try{this.open(JSON.parse(decodeURIComponent(enc)),plat);}catch(e){} },
+
+    open(item, platform) {
+        const panel=_$c('cmpDetailPanel'),body=_$c('cmpDetailBody'),title=_$c('cmpDetailTitle');
+        if(!panel||!body) return;
+        const meta=CMP_PLAT_META[platform]||{label:platform,color:'#4361EE'};
+        const SM2={'1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg'};
+        const sent=SM2[String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim()]||'neu';
+        const SLBL={pos:'Positif',neg:'Negatif',neu:'Netral'};
+        const SBGS={pos:'do-dp2-sent--pos',neg:'do-dp2-sent--neg',neu:'do-dp2-sent--neu'};
+
+        const rawName=(()=>{
+            if(platform==='fb')        return item.from_name||item.page_name||null;
+            if(platform==='instagram') return item.username||null;
+            if(platform==='tiktok')    return item.author_nickname||item.nickname||item.author?.nickname||null;
+            if(platform==='youtube')   return item.channel_title||item.channel_name||item.snippet?.channelTitle||null;
+            if(platform==='twit'){const ao=typeof item.author==='object'?item.author:(()=>{try{return JSON.parse(item.author||'{}');}catch(e){return {};}})();return item.name||ao?.name||ao?.scr_name||item.author_name||null;}
+            return null;
+        })();
+        const name=(rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'Unknown').trim();
+        const handle=((platform==='instagram'?item.username:'')||item.author_scr_name||item.screen_name||item.username||'').trim();
+        const content=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
+        const av=(item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||item.thumbnail||'').trim();
+        const url=item.url||item.link||'';
+        const dt=item.date_created||item.created_at||'';
+        title.textContent=name;
+        const words=name.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
+        const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||name[0]||'?')).toUpperCase().replace(/['"]/g,'');
+        const avHtml=(av&&av.startsWith('http'))?`<img src="${_esc(av)}" onerror="this.parentElement.textContent='${ini}';">`:ini;
+        let dtFmt='';
+        if(dt){try{dtFmt=new Date(dt).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){dtFmt=dt.split('T')[0];}}
+
+        let mediaHtml='';
+        if(platform==='youtube'){
+            const ytId=(url.match(/[?&]v=([a-zA-Z0-9_-]{11})/)||url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)||url.match(/shorts\/([a-zA-Z0-9_-]{11})/)||[])[1]||(item.video_id||item.youtube_id||'');
+            const thumb=item.thumbnail||item.thumbnail_url||item.image_url||(ytId?`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`:'');
+            if(ytId){const eid=`yt_${ytId}_${Date.now()}`;mediaHtml=`<div id="${eid}" style="position:relative;cursor:pointer;border-radius:6px;overflow:hidden;background:#000;margin-bottom:10px;" onclick="document.getElementById('${eid}').innerHTML='<iframe width=\\"100%\\" height=\\"260\\" src=\\"https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1\\" frameborder=\\"0\\" allowfullscreen></iframe>'"><img src="${thumb||`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}" style="width:100%;height:200px;object-fit:cover;display:block;" onerror="this.src='https://img.youtube.com/vi/${ytId}/mqdefault.jpg'"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25);"><div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.4);"><i class="ph ph-play-fill" style="font-size:22px;color:#fff;margin-left:3px;"></i></div></div></div>`;}
+            else if(thumb){mediaHtml=`<div class="do-dp2-media"><img src="${_esc(thumb)}" onerror="this.parentElement.style.display='none'" style="border-radius:6px;"></div>`;}
+        } else if(platform==='tiktok'){
+            const tid=(url.match(/\/video\/(\d+)/)||url.match(/\/v\/(\d+)/)||[])[1]||(item.video_id||item.aweme_id||'');
+            const thumb=item.thumbnail||item.cover||item.image_url||item.video_cover||'';
+            if(tid){const eid=`tt_${tid}_${Date.now()}`;mediaHtml=`<div id="${eid}" style="position:relative;cursor:pointer;background:#111827;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;height:240px;margin-bottom:10px;" onclick="CmpDetail.loadTikTok('${eid}','${tid}')">${thumb?`<img src="${_esc(thumb)}" style="position:absolute;width:100%;height:100%;object-fit:cover;opacity:.65;pointer-events:none;">`:''}<div style="position:relative;z-index:2;width:56px;height:56px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.6);"><i class="ph ph-play-fill" style="font-size:24px;color:#111827;margin-left:3px;"></i></div><div style="position:absolute;bottom:8px;right:8px;background:#111827;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.5px;">TIKTOK</div></div>`;}
+            else if(thumb){mediaHtml=`<div class="do-dp2-media"><img src="${_esc(thumb)}" onerror="this.parentElement.style.display='none'" style="max-height:280px;object-fit:cover;width:100%;display:block;border-radius:6px;"></div>`;}
+        } else {
+            const thumb=item.image_url||item.thumbnail||item.media_url||item.picture||item.display_url||item.featured_image||'';
+            const isVideo=(item.media_type||item.type||'').toLowerCase().includes('video');
+            if(thumb){mediaHtml=`<div class="do-dp2-media" style="position:relative;border-radius:6px;overflow:hidden;background:#f3f4f6;margin-bottom:10px;"><img src="${_esc(thumb)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:280px;object-fit:cover;display:block;">${isVideo?`<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);"><div style="width:44px;height:44px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:20px;color:${meta.color};margin-left:3px;"></i></div></div>`:''}</div>`;}
+        }
+
+        const statsMap={
+            twit    :[['Retweet',item.num_retweeted||item.retweet_count||0],['Like',item.num_likes||item.favorite_count||0],['Quote',item.num_quote||0]],
+            fb      :[['Like',item.likes||item.num_likes||0],['Share',item.shares||item.share_count||0],['Comment',item.num_comments||0]],
+            instagram:[['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||item.comment_count||0],['View',item.num_views||item.views||0]],
+            youtube :[['View',item.num_views||item.views||0],['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||0]],
+            tiktok  :[['Play',item.views||item.play_count||0],['Like',item.likes||item.digg_count||0],['Share',item.shares||item.share_count||0]],
+            doc     :[['Read',item.num_views||0],['Share',item.num_share||0],['Comment',item.num_comments||0]],
+        };
+        const stats=statsMap[platform]||[];
+        const statsHtml=stats.some(s=>parseInt(s[1])>0)?`<div class="do-dp2-stats">${stats.map(([l,v])=>`<div class="do-dp2-stat"><div class="do-dp2-stat-val">${parseInt(v||0).toLocaleString()}</div><div class="do-dp2-stat-lbl">${l}</div></div>`).join('')}</div>`:'';
+        const handleDisp=handle&&!handle.replace('@','').toLowerCase().startsWith(name.toLowerCase().slice(0,4))?(handle.startsWith('@')?handle:'@'+handle):'';
+
+        body.innerHTML=`
+            <div class="do-dp2-avatar-row">
+                <div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
+                <div>
+                    <div class="do-dp2-name">${_esc(name)}</div>
+                    ${handleDisp?`<div class="do-dp2-handle">${_esc(handleDisp)}</div>`:''}
+                    <span class="do-dp2-plat-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span>
+                </div>
+            </div>
+            ${dtFmt?`<div class="do-dp2-meta">${dtFmt}</div>`:''}
+            <div class="do-dp2-sent ${SBGS[sent]}">${SLBL[sent]}</div>
+            ${mediaHtml}
+            ${content?`<div class="do-dp2-content">${_esc(content)}</div>`:''}
+            ${statsHtml}
+            ${url?`<a href="${_esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out"></i> Lihat ${meta.label} Asli</a>`:''}`;
+        panel.classList.add('show');
+    },
+
+    close(){
+        const p=_$c('cmpDetailPanel'); if(!p) return;
+        p.classList.remove('show');
+        p.querySelectorAll('iframe').forEach(f=>{try{f.src=f.src;}catch(e){}});
+    },
+
+    loadTikTok(eid,tid){
+        const el=_$c(eid); if(!el) return;
+        el.style.cssText='cursor:default;min-height:560px;height:auto;background:#111827;border-radius:6px;overflow:hidden;margin-bottom:10px;';
+        el.innerHTML=`<iframe src="https://www.tiktok.com/embed/v2/${tid}" width="100%" height="560" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="display:block;border:none;border-radius:6px;background:#111827;"></iframe>`;
+    },
 };
 
-function _openCmpModal(idx) {
-  _buildCmpModal();
-  const item     = _cmpCurrentItems[idx];
-  const platform = _cmpCurrentPlatform;
-  if (!item) return;
-
-  const name    = _cmpName(item, platform);
-  const usn     = _cmpUsername(item, platform);
-  const av      = _cmpAvatar(item, platform);
-  const ini     = _cmpIni(name);
-  const safeIni = ini.replace(/['"]/g, '');
-  const text    = _cmpContent(item);
-  const sent    = _cmpSent(item.class_sentiment || item.sentiment || '0');
-  const url     = _cmpUrl(item, platform);
-  const dt      = _cmpDate(item.date_created || '');
-  const platLabel = MEDIA_LABELS[platform] || platform;
-
-  // ── Pill ──
-  const pill = document.getElementById('cmpMdPill');
-  pill.textContent = platLabel;
-  pill.style.cssText = `display:inline-flex;align-items:center;padding:3px 11px;border-radius:20px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;${PLAT_PILL_STYLE[platform]||'background:#f1f5f9;color:#374151'}`;
-
-  // ── Title = first 60 chars of content ──
-  document.getElementById('cmpMdTitle').textContent = truncate(text || name, 60);
-
-  // ── Ext link ──
-  const extBtn = document.getElementById('cmpMdExt');
-  if (url) { extBtn.href = url; extBtn.style.display = 'inline-flex'; }
-  else     { extBtn.style.display = 'none'; }
-
-  // ── Author ──
-  const avaEl = document.getElementById('cmpMdAva');
-  if (av && av.startsWith('http')) {
-    avaEl.innerHTML = `<img src="${escHtml(av)}" onerror="this.parentElement.textContent='${safeIni}'">`;
-  } else {
-    avaEl.textContent = ini;
-  }
-  document.getElementById('cmpMdAname').textContent = name;
-  document.getElementById('cmpMdAusn').textContent  = usn || '';
-
-  // ── Sentiment ──
-  const sentEl = document.getElementById('cmpMdSent');
-  const sentMap = { '1': ['Positive ●','cmp-modal-sent-p'], '-1': ['Negative ●','cmp-modal-sent-n'], '0': ['Neutral ●','cmp-modal-sent-u'] };
-  const [sentTxt, sentCls] = sentMap[sent] || sentMap['0'];
-  sentEl.textContent  = sentTxt;
-  sentEl.className    = 'cmp-modal-sent ' + sentCls;
-
-  // ── Date ──
-  document.getElementById('cmpMdDate').textContent = dt;
-
-  // ── Embed / thumbnail ──
-  const embedEl = document.getElementById('cmpMdEmbed');
-  embedEl.innerHTML = _buildEmbed(item, platform, url);
-
-  // ── Stats ──
-  document.getElementById('cmpMdStats').innerHTML = _buildStats(item, platform);
-
-  // ── Text ──
-  document.getElementById('cmpMdText').textContent = text || '(tidak ada konten)';
-
-  // Show modal
-  _cmpModalEl.classList.add('open');
-}
-
-function _buildEmbed(item, platform, url) {
-  // ── YouTube — embed video ──
-  if (platform === 'youtube') {
-    const vid = _ytbVideoId(item);
-    if (vid) {
-      return `<div style="position:relative;padding-bottom:56.25%;height:0;background:#000">
-        <iframe src="https://www.youtube.com/embed/${vid}?autoplay=0&rel=0"
-          style="position:absolute;inset:0;width:100%;height:100%;border:none"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen loading="lazy"></iframe>
-      </div>`;
-    }
-    // fallback thumbnail
-    const th = _cmpThumbnail(item, platform);
-    if (th) return `<img src="${escHtml(th)}" class="cmp-thumb-hero" onerror="this.style.display='none'">`;
-  }
-
-  // ── Twitter/X — embed tweet ──
-  if (platform === 'twit' && url && url.includes('x.com')) {
-    const tweetUrl = url.replace('x.com','twitter.com');
-    return `<div class="cmp-embed-wrap" style="min-height:200px;background:#f8fafc;padding:16px;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;max-height:420px">
-      <div class="cmp-embed-loader" id="twitterLoader">
-        <div class="cmp-embed-spin"></div><span>Memuat tweet…</span>
-      </div>
-      <div id="twitterEmbedTarget" style="width:100%;max-width:550px"></div>
-    </div>
-    <script>
-    (function(){
-      var t = document.getElementById('twitterEmbedTarget');
-      var l = document.getElementById('twitterLoader');
-      function doEmbed(){
-        if(window.twttr && window.twttr.widgets){
-          window.twttr.widgets.createTweet('${url.split('/status/')[1]?.split('?')[0]||''}','${item.author_scr_name||item.screen_name||''}',t,{theme:'light',dnt:true})
-            .then(function(){ if(l) l.style.display='none'; })
-            .catch(function(){ if(l) l.innerHTML='<span style="font-size:12px;color:#94a3b8">Embed tidak tersedia</span>'; });
-        }
-      }
-      if(!window.twttr){ var s=document.createElement('script'); s.src='https://platform.twitter.com/widgets.js'; s.onload=doEmbed; document.head.appendChild(s); }
-      else doEmbed();
-    })();
-    <\/script>`;
-  }
-
-  // ── TikTok — embed ──
-  if (platform === 'tiktok') {
-    const vid = item.video_id || item.post_id || '';
-    const th  = _cmpThumbnail(item, platform);
-    if (vid) {
-      return `<div style="display:flex;justify-content:center;background:#f8fafc;padding:12px;max-height:500px;overflow-y:auto">
-        <blockquote class="tiktok-embed" cite="${escHtml(url)}"
-          data-video-id="${escHtml(vid)}" style="max-width:325px;min-width:280px">
-          <section></section>
-        </blockquote>
-        <script async src="https://www.tiktok.com/embed.js"><\/script>
-      </div>`;
-    }
-    if (th) return `<img src="${escHtml(th)}" class="cmp-thumb-hero" onerror="this.style.display='none'">`;
-  }
-
-  // ── Instagram — thumbnail (embed blocked by Meta) ──
-  if (platform === 'instagram') {
-    const img = item.image_url || item.media_url || item.thumbnail_url || '';
-    if (img && img.startsWith('http')) {
-      return `<img src="${escHtml(img)}" class="cmp-thumb-hero" onerror="this.style.display='none'">`;
-    }
-    return `<div style="padding:20px 18px;background:#fdf4ff;border-bottom:1px solid #e2e8f0">
-      <div style="font-size:12px;font-weight:600;color:#6b21a8">📸 Instagram — preview tidak tersedia karena pembatasan Meta. Klik "Buka Link" untuk lihat postingan asli.</div>
-    </div>`;
-  }
-
-  // ── Facebook — thumbnail ──
-  if (platform === 'fb') {
-    const img = item.image_url || item.full_picture || item.thumbnail_url || '';
-    if (img && img.startsWith('http')) {
-      return `<img src="${escHtml(img)}" class="cmp-thumb-hero" onerror="this.style.display='none'">`;
-    }
-  }
-
-  // ── Online News — gambar artikel ──
-  if (platform === 'doc') {
-    const img = item.image_url || item.image || item.thumbnail || '';
-    if (img && img.startsWith('http')) {
-      return `<img src="${escHtml(img)}" class="cmp-thumb-hero" onerror="this.style.display='none'">`;
-    }
-  }
-
-  return '';
-}
-
-function _buildStats(item, platform) {
-  const stat = (lbl, val) => {
-    const n = parseInt(val, 10) || 0;
-    if (!n) return '';
-    return `<div class="cmp-stat"><div class="cmp-stat-val">${fmtNum(n)}</div><div class="cmp-stat-lbl">${lbl}</div></div>`;
-  };
-
-  if (platform === 'twit') return [
-    stat('Retweet',  item.num_retweeted || item.retweet_count),
-    stat('Likes',    item.num_likes     || item.likes || item.favorite_count),
-    stat('Replies',  item.reply_count   || item.num_replies),
-    stat('Impressi', item.impressions   || item.impression_count),
-  ].join('');
-
-  if (platform === 'youtube') return [
-    stat('Views',    item.num_views  || item.views   || item.view_count),
-    stat('Likes',    item.num_likes  || item.likes   || item.like_count),
-    stat('Komentar', item.num_comments|| item.comment_count),
-    stat('Subscriber', item.subscriber_count || item.subscribers),
-  ].join('');
-
-  if (platform === 'tiktok') return [
-    stat('Views',    item.views     || item.num_views || item.play_count),
-    stat('Likes',    item.likes     || item.num_likes || item.digg_count),
-    stat('Share',    item.shares    || item.share_count),
-    stat('Komentar', item.num_comments || item.comment_count),
-  ].join('');
-
-  if (platform === 'instagram') return [
-    stat('Likes',    item.num_likes  || item.likes  || item.like_count),
-    stat('Komentar', item.num_comments || item.comment_count),
-    stat('Views',    item.num_views  || item.views),
-    stat('Followers', item.followers || item.follower_count),
-  ].join('');
-
-  if (platform === 'fb') return [
-    stat('Likes',    item.likes    || item.num_likes || item.like_count),
-    stat('Shares',   item.shares   || item.share_count),
-    stat('Komentar', item.num_comments || item.comment_count),
-    stat('Views',    item.num_views || item.views),
-  ].join('');
-
-  if (platform === 'doc') return [
-    stat('Est. Reach', item.est_reach || item.reach),
-    stat('Followers',  item.followers),
-    stat('AdValue',    item.ad_value  || item.advalue),
-  ].join('');
-
-  return '';
-}
-
-// ── Platform Picker (klik row ranking) ────────
-function _openPlatPicker(event, projectId, projectTitle, startDate, endDate) {
-  event.stopPropagation();
-  if (_platPicker) { _platPicker.remove(); _platPicker = null; }
-
-  const PLATS = [
-    { key:'doc',       label:'Online News', icon:'📰' },
-    { key:'twit',      label:'Twitter/X',   icon:'🐦' },
-    { key:'fb',        label:'Facebook',    icon:'📘' },
-    { key:'instagram', label:'Instagram',   icon:'📸' },
-    { key:'youtube',   label:'YouTube',     icon:'▶️' },
-    { key:'tiktok',    label:'TikTok',      icon:'🎵' },
-  ];
-
-  _platPicker = document.createElement('div');
-  _platPicker.style.cssText = `
-    position:fixed;z-index:999999;
-    background:#fff;border:1px solid #e2e8f0;border-radius:12px;
-    box-shadow:0 16px 40px rgba(0,0,0,.18),0 4px 12px rgba(0,0,0,.08);
-    padding:6px;min-width:168px;
-    animation:cmpPopIn .15s ease-out;font-family:'Poppins',sans-serif;
-  `;
-
-  const hdr = document.createElement('div');
-  hdr.style.cssText = 'padding:5px 10px 8px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #f1f5f9;margin-bottom:4px;';
-  hdr.textContent = 'Pilih Platform';
-  _platPicker.appendChild(hdr);
-
-  PLATS.forEach(p => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.style.cssText = "display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;border:none;font-family:'Poppins',sans-serif;width:100%;text-align:left;color:#374151;transition:background .12s;";
-    btn.innerHTML = `<span style="font-size:14px">${p.icon}</span><span>${p.label}</span><span style="margin-left:auto;width:9px;height:9px;border-radius:50%;background:${MEDIA_COLORS[p.key]||'#94a3b8'};flex-shrink:0;display:inline-block"></span>`;
-    btn.onmouseover = () => btn.style.background = '#f8fafc';
-    btn.onmouseout  = () => btn.style.background = 'transparent';
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      if (_platPicker) { _platPicker.remove(); _platPicker = null; }
-      openCmpMentionPopup(projectId, projectTitle, p.key, startDate, endDate, event.clientX, event.clientY);
-    };
-    _platPicker.appendChild(btn);
-  });
-
-  document.body.appendChild(_platPicker);
-
-  // Posisi picker
-  const pw = 168, ph = PLATS.length * 34 + 50;
-  const vw = window.innerWidth, vh = window.innerHeight;
-  let left = event.clientX + 10, top = event.clientY - 10;
-  if (left + pw > vw - 8) left = event.clientX - pw - 10;
-  if (top + ph > vh - 8) top = vh - ph - 8;
-  if (top < 8) top = 8;
-  _platPicker.style.left = left + 'px';
-  _platPicker.style.top  = top + 'px';
-
-  // Tutup kalau klik di luar
-  setTimeout(() => {
-    document.addEventListener('mousedown', function _close(e) {
-      if (_platPicker && !_platPicker.contains(e.target)) {
-        _platPicker.remove(); _platPicker = null;
-        document.removeEventListener('mousedown', _close);
-      }
-    });
-  }, 50);
-}
-
-// ── Global expose ─────────────────────────────
-window._openCmpModal    = _openCmpModal;
-window._closeCmpModal   = _closeCmpModal;
-window._openPlatPicker  = _openPlatPicker;
-window.openCmpMentionPopup = openCmpMentionPopup;
-window.closeCmpPopup       = closeCmpPopup;
+window.CmpPanel          = CmpPanel;
+window.CmpDetail         = CmpDetail;
+window.cmpShowPlatPicker = cmpShowPlatPicker;
 </script>
 @endsection

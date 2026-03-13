@@ -478,6 +478,110 @@ $views = (int) ($item['num_views'] ?? $item['view_cnt'] ?? $item['views'] ?? 0);
     }
 }
 
+    public function mostEngagementData(Request $request)
+    {
+        try {
+            $projectId = $request->query('project_id');
+            $startDate = $request->query('start_date');
+            $endDate   = $request->query('end_date');
+            $sub       = $request->query('sub', 'postbyview');
+            $rows      = (int) ($request->query('rows', 100));
+
+            if (!$projectId || !$startDate || !$endDate) {
+                return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
+            }
+
+            $apiSub = match ($sub) {
+                'postbyview'    => 'postbyview',
+                'postbylike'    => 'postbylike',
+                'postbycomment' => 'postbycomment',
+                default         => 'postbyview',
+            };
+
+            $result = $this->client->ytbTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $apiSub);
+
+            Log::info('YT mostEngagementData raw', [
+                'sub'   => $sub,
+                'rows'  => $rows,
+                'count' => is_array($result) ? count($result) : 0,
+            ]);
+
+            $posts = [];
+            $items = is_array($result) ? $result : [];
+
+            foreach ($items as $item) {
+                if (!is_array($item)) continue;
+
+                $authorName = $item['author_name'] ?? '';
+                if (!$authorName) $authorName = $item['author_scr_name'] ?? '';
+                if (!$authorName || preg_match('/^UC[A-Za-z0-9_-]{20,}$/', $authorName)) {
+                    $authorName = 'YouTube Channel';
+                }
+
+                $authorId   = $item['author_id'] ?? $item['author_scr_name'] ?? '';
+                $videoTitle = $item['title'] ?? $item['name'] ?? '';
+                $content    = $item['content'] ?? $item['caption'] ?? $videoTitle;
+
+                $profilePic = $item['profile_url'] ?? $item['avatar_url'] ?? $item['image'] ?? '';
+                if (!$profilePic && $authorName !== 'YouTube Channel') {
+                    $initials   = urlencode($this->getInitials($authorName));
+                    $profilePic = "https://ui-avatars.com/api/?name={$initials}&background=FF0000&color=fff&size=80&bold=true&format=png";
+                }
+
+                $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
+                $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
+                $views    = (int) ($item['num_views']    ?? $item['view_cnt'] ?? $item['views'] ?? 0);
+                $postUrl  = $item['url'] ?? $item['link'] ?? null;
+
+                $posts[] = [
+                    'id'              => $item['id']     ?? '',
+                    'sub_id'          => $item['sub_id'] ?? $item['docid'] ?? $item['id'] ?? '',
+                    'docid'           => $item['docid']  ?? $item['sub_id'] ?? '',
+                    'video_id'        => $item['docid']  ?? $item['sub_id'] ?? '',
+                    'author_name'     => $authorName,
+                    'author_id'       => $authorId,
+                    'author_scr_name' => $item['author_scr_name'] ?? '',
+                    'name'            => $authorName,
+                    'title'           => $videoTitle,
+                    'content'         => $content,
+                    'num_views'       => $views,
+                    'view_cnt'        => $views,
+                    'num_likes'       => $likes,
+                    'likes'           => $likes,
+                    'num_comments'    => $comments,
+                    'comments'        => $comments,
+                    'engagement'      => $likes + $comments,
+                    'sentiment_str'   => $item['sentiment_str']  ?? 'Neutral',
+                    'sentiment_prec'  => $item['sentiment_prec'] ?? 0,
+                    'date_created'    => $item['date_created']   ?? '',
+                    'url'             => $postUrl,
+                    'avatar_url'      => $profilePic,
+                    'tcode'           => $item['tcode'] ?? 'youtube',
+                    'author'          => [
+                        'name'     => $authorName,
+                        'scr_name' => $item['author_scr_name'] ?? $authorId,
+                        'image'    => $profilePic,
+                    ],
+                ];
+            }
+
+            usort($posts, match ($sub) {
+                'postbyview'    => fn($a, $b) => $b['view_cnt']  - $a['view_cnt'],
+                'postbylike'    => fn($a, $b) => $b['likes']     - $a['likes'],
+                'postbycomment' => fn($a, $b) => $b['comments']  - $a['comments'],
+                default         => fn($a, $b) => $b['view_cnt']  - $a['view_cnt'],
+            });
+
+            Log::info('YT mostEngagementData processed', ['total_posts' => count($posts)]);
+
+            return response()->json(['success' => true, 'data' => $posts]);
+
+        } catch (\Exception $e) {
+            Log::error('YT mostEngagementData error', ['error' => $e->getMessage(), 'project_id' => $request->query('project_id')]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
     /**
      * Generate 1-2 letter initials from a name.
      */

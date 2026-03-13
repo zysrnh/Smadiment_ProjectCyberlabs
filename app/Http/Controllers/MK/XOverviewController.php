@@ -1899,8 +1899,22 @@ public function mostEngagementData(Request $request)
                                 ?? md5(($item['content'] ?? '') . ($item['name'] ?? ''));
 
                             if (!isset($seenIds[$uid])) {
-                                $seenIds[$uid] = true;
+                                $seenIds[$uid] = count($allPosts);
                                 $allPosts[]    = $item;
+                            } else {
+                                // Merge metric dari sub type lain agar tidak hilang
+                                $idx = $seenIds[$uid];
+                                $metricKeys = [
+                                    'view_cnt', 'views', 'freq',
+                                    'rt', 'retweets', 'rt_count',
+                                    'fav_count', 'likes', 'fav',
+                                    'reply_cnt', 'replies', 'reply_count',
+                                ];
+                                foreach ($metricKeys as $mk) {
+                                    if (isset($item[$mk]) && (int) $item[$mk] > (int) ($allPosts[$idx][$mk] ?? 0)) {
+                                        $allPosts[$idx][$mk] = $item[$mk];
+                                    }
+                                }
                             }
                         }
                         $gotData = true;

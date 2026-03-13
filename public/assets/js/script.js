@@ -439,7 +439,7 @@ function setActiveMenuItem() {
   // Find the matching menu item
   for (var l = 0; l < menuLinks.length; l++) {
     var link = menuLinks[l];
-    var linkUrl = link.href;
+    var linkUrl = link.href.split(/[?#]/)[0];
     
     if (linkUrl === currentUrl && link.getAttribute('href') !== '' && link.getAttribute('href') !== '#!') {
       // Add active class to the immediate parent (li)

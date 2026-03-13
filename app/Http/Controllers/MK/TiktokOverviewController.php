@@ -255,107 +255,95 @@ class TiktokOverviewController extends Controller
         }
     }
 
-    public function mostViewedPostsData(Request $request)
-    {
-        try {
-            $projectId = $request->query('project_id');
-            $startDate = $request->query('start_date');
-            $endDate   = $request->query('end_date');
-            $sub       = $request->query('sub', 'postbylike');
-            $limit     = (int) $request->query('limit', 1000);
+public function mostViewedPostsData(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+        $sub       = $request->query('sub', 'postbylike');
 
-            if (!$projectId || !$startDate || !$endDate) {
-                return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
-            }
-
-            $result = $this->client->tiktokTopStatus($projectId, $startDate, $endDate, 0, 23, $limit, $sub);
-
-            Log::info('TikTok mostViewedPostsData raw', [
-                'count'  => is_array($result) ? count($result) : 0,
-                'limit'  => $limit,
-                'sample' => is_array($result) ? array_slice($result, 0, 1) : [],
-            ]);
-
-            $posts = [];
-            $items = is_array($result) ? $result : [];
-
-            foreach ($items as $item) {
-                if (!is_array($item)) continue;
-
-                $rawName    = $item['name'] ?? '';
-                $authorName = $item['author_scr_name'] ?? $item['author_id'] ?? '';
-
-                if (!$authorName && $rawName) {
-                    $colonPos   = strpos($rawName, ':');
-                    $authorName = $colonPos !== false
-                        ? trim(substr($rawName, 0, $colonPos))
-                        : '';
-                }
-
-                if (!$authorName) $authorName = 'TikTok Creator';
-
-                $profilePic = $item['profile_url'] ?? $item['avatar_url'] ?? $item['image'] ?? '';
-                if (!$profilePic && $authorName && $authorName !== 'TikTok Creator') {
-                    $initials   = urlencode($this->getInitials($authorName));
-                    $profilePic = "https://ui-avatars.com/api/?name={$initials}&background=EE1D52&color=fff&size=80&bold=true&format=png";
-                }
-
-                $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
-                $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
-                $views    = (int) ($item['views']        ?? $item['view_cnt'] ?? 0);
-                $shares   = (int) ($item['num_shares']   ?? $item['shares']   ?? 0);
-                $postUrl  = $item['url']     ?? $item['link']  ?? null;
-                $content  = $item['content'] ?? $item['caption'] ?? '';
-
-                if (!$content && $rawName) {
-                    $colonPos = strpos($rawName, ':');
-                    $content  = $colonPos !== false
-                        ? trim(substr($rawName, $colonPos + 1))
-                        : $rawName;
-                }
-
-                $posts[] = [
-                    'id'             => $item['id']     ?? '',
-                    'sub_id'         => $item['sub_id'] ?? $item['docid'] ?? $item['id'] ?? '',
-                    'name'           => $authorName,
-                    'content'        => $content,
-                    'view_cnt'       => $views,
-                    'likes'          => $likes,
-                    'comments'       => $comments,
-                    'shares'         => $shares,
-                    'engagement'     => $likes + $comments + $shares,
-                    'sentiment_str'  => $item['sentiment_str']  ?? 'Neutral',
-                    'sentiment_prec' => $item['sentiment_prec'] ?? 0,
-                    'date_created'   => $item['date_created']   ?? '',
-                    'url'            => $postUrl,
-                    'avatar_url'     => $profilePic,
-                    'tcode'          => $item['tcode'] ?? 'tiktok',
-                    'num_followers'  => (int) ($item['num_followers'] ?? 0),
-                    'author'         => [
-                        'name'     => $authorName,
-                        'scr_name' => $item['author_scr_name'] ?? $authorName,
-                        'image'    => $profilePic,
-                    ],
-                ];
-            }
-
-            if ($sub === 'postbylike') {
-                usort($posts, fn($a, $b) => $b['likes'] - $a['likes']);
-            } elseif ($sub === 'postbycomment') {
-                usort($posts, fn($a, $b) => $b['comments'] - $a['comments']);
-            } elseif ($sub === 'postbyview') {
-                usort($posts, fn($a, $b) => $b['view_cnt'] - $a['view_cnt']);
-            } else {
-                usort($posts, fn($a, $b) => $b['engagement'] - $a['engagement']);
-            }
-
-            return response()->json(['success' => true, 'data' => $posts]);
-
-        } catch (\Exception $e) {
-            Log::error('TikTok mostViewedPostsData error', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        if (!in_array($sub, ['postbylike', 'postbycomment', 'postbyview'])) {
+            $sub = 'postbylike';
         }
+
+        if (!$projectId || !$startDate || !$endDate) {
+            return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
+        }
+
+        $items = $this->client->tiktokTopStatusAll(
+            $projectId, $startDate, $endDate, 0, 23, 100, $sub
+        );
+        $items = is_array($items) ? $items : [];
+
+        $posts = [];
+        foreach ($items as $item) {
+            if (!is_array($item)) continue;
+
+            $rawName    = $item['name'] ?? '';
+            $authorName = $item['author_scr_name'] ?? $item['author_id'] ?? '';
+            if (!$authorName && $rawName) {
+                $colonPos   = strpos($rawName, ':');
+                $authorName = $colonPos !== false ? trim(substr($rawName, 0, $colonPos)) : '';
+            }
+            if (!$authorName) $authorName = 'TikTok Creator';
+
+            $profilePic = $item['profile_url'] ?? $item['avatar_url'] ?? $item['image'] ?? '';
+            if (!$profilePic && $authorName && $authorName !== 'TikTok Creator') {
+                $initials   = urlencode($this->getInitials($authorName));
+                $profilePic = "https://ui-avatars.com/api/?name={$initials}&background=EE1D52&color=fff&size=80&bold=true&format=png";
+            }
+
+            $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
+            $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
+            $views    = (int) ($item['views']        ?? $item['view_cnt'] ?? 0);
+            $shares   = (int) ($item['num_shares']   ?? $item['shares']   ?? 0);
+            $content  = $item['content'] ?? $item['caption'] ?? '';
+
+            if (!$content && $rawName) {
+                $colonPos = strpos($rawName, ':');
+                $content  = $colonPos !== false ? trim(substr($rawName, $colonPos + 1)) : $rawName;
+            }
+
+            $posts[] = [
+                'id'             => $item['id']     ?? '',
+                'sub_id'         => $item['sub_id'] ?? $item['docid'] ?? $item['id'] ?? '',
+                'name'           => $authorName,
+                'content'        => $content,
+                'view_cnt'       => $views,
+                'likes'          => $likes,
+                'comments'       => $comments,
+                'shares'         => $shares,
+                'engagement'     => $likes + $comments + $shares,
+                'sentiment_str'  => $item['sentiment_str']  ?? 'Neutral',
+                'sentiment_prec' => $item['sentiment_prec'] ?? 0,
+                'date_created'   => $item['date_created']   ?? '',
+                'url'            => $item['url'] ?? $item['link'] ?? null,
+                'avatar_url'     => $profilePic,
+                'image'          => $item['image'] ?? $profilePic,
+                'tcode'          => $item['tcode'] ?? 'tiktok',
+                'num_followers'  => (int) ($item['num_followers'] ?? 0),
+                'author'         => [
+                    'name'     => $authorName,
+                    'scr_name' => $item['author_scr_name'] ?? $authorName,
+                    'image'    => $profilePic,
+                ],
+            ];
+        }
+
+         usort($posts, match($sub) {
+            'postbyview'    => fn($a,$b) => $b['view_cnt']  - $a['view_cnt'],
+            'postbycomment' => fn($a,$b) => $b['comments']  - $a['comments'],
+            default         => fn($a,$b) => $b['likes']     - $a['likes'],
+        });
+       
+        return response()->json(['success' => true, 'data' => $posts]);
+
+    } catch (\Exception $e) {
+        Log::error('TikTok mostViewedPostsData error', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
     }
+}
 
     // ─────────────────────────────────────────────────────
     // TRENDING TOPICS (TOP HASHTAGS)
@@ -385,65 +373,60 @@ class TiktokOverviewController extends Controller
         }
     }
 
-    public function trendingTopicsData(Request $request)
-    {
-        try {
-            $projectId = $request->query('project_id');
-            $startDate = $request->query('start_date');
-            $endDate   = $request->query('end_date');
+public function trendingTopicsData(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
 
-            if (!$projectId || !$startDate || !$endDate) {
-                return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
-            }
-
-            $limit = (int) $request->query('limit', 1000);
-
-            $posts = $this->client->tiktokTopStatus($projectId, $startDate, $endDate, 0, 23, $limit, 'postbylike');
-
-            $hashtagCount = [];
-
-            if (is_array($posts)) {
-                foreach ($posts as $post) {
-                    if (!is_array($post)) continue;
-
-                    $content = $post['content'] ?? $post['caption'] ?? $post['text'] ?? $post['name'] ?? '';
-                    if (empty($content)) continue;
-
-                    preg_match_all('/#([a-zA-Z0-9_\x{00C0}-\x{024F}\x{0400}-\x{04FF}]+)/u', $content, $matches);
-
-                    foreach ($matches[1] as $tag) {
-                        $tag = strtolower(trim($tag));
-                        if (strlen($tag) < 2) continue;
-                        $hashtagCount[$tag] = ($hashtagCount[$tag] ?? 0) + 1;
-                    }
-                }
-            }
-
-            arsort($hashtagCount);
-
-            $hashtags      = [];
-            $totalMentions = 0;
-
-            foreach ($hashtagCount as $name => $size) {
-                $hashtags[]     = ['name' => $name, 'hashtag' => $name, 'size' => $size];
-                $totalMentions += $size;
-            }
-
-            return response()->json([
-                'success' => true,
-                'data'    => [
-                    'hashtags'       => $hashtags,
-                    'total_hashtags' => count($hashtags),
-                    'total_mentions' => $totalMentions,
-                    'top_hashtag'    => $hashtags[0] ?? null,
-                ],
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('TikTok trendingTopicsData error', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        if (!$projectId || !$startDate || !$endDate) {
+            return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
         }
+
+        $posts = $this->client->tiktokTopStatusAll(
+            $projectId, $startDate, $endDate, 0, 23, 100, 'postbylike'
+        );
+        $posts = is_array($posts) ? $posts : [];
+
+        $hashtagCount = [];
+        foreach ($posts as $post) {
+            if (!is_array($post)) continue;
+            $content = $post['content'] ?? $post['caption'] ?? $post['text'] ?? $post['name'] ?? '';
+            if (empty($content)) continue;
+
+            preg_match_all('/#([a-zA-Z0-9_\x{00C0}-\x{024F}\x{0400}-\x{04FF}]+)/u', $content, $matches);
+            foreach ($matches[1] as $tag) {
+                $tag = strtolower(trim($tag));
+                if (strlen($tag) < 2) continue;
+                $hashtagCount[$tag] = ($hashtagCount[$tag] ?? 0) + 1;
+            }
+        }
+
+        arsort($hashtagCount);
+
+        $hashtags      = [];
+        $totalMentions = 0;
+        foreach ($hashtagCount as $name => $size) {
+            $hashtags[]     = ['name' => $name, 'hashtag' => $name, 'size' => $size];
+            $totalMentions += $size;
+        }
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'hashtags'       => $hashtags,
+                'total_hashtags' => count($hashtags),
+                'total_mentions' => $totalMentions,
+                'top_hashtag'    => $hashtags[0] ?? null,
+            ],
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('TikTok trendingTopicsData error', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
     }
+}
 
     // ─────────────────────────────────────────────────────
     // TRENDING WORD CLOUD
@@ -504,106 +487,106 @@ class TiktokOverviewController extends Controller
         }
     }
 
-    public function mostEngagementData(Request $request)
-    {
-        try {
-            $projectId = $request->query('project_id');
-            $startDate = $request->query('start_date');
-            $endDate   = $request->query('end_date');
-            $sub       = $request->query('sub', 'postbyview');
-            $rows      = (int) $request->query('rows', 1000);
+public function mostEngagementData(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+        $sub       = $request->query('sub', 'postbyview');
 
-            if (!$projectId || !$startDate || !$endDate) {
-                return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
-            }
-
-            $apiSub = match($sub) {
-                'postbyview'    => 'postbyview',
-                'postbylike'    => 'postbylike',
-                'postbycomment' => 'postbycomment',
-                'postbyshare'   => 'postbylike',
-                default         => 'postbyview',
-            };
-
-            $result = $this->client->tiktokTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $apiSub);
-
-            $posts = [];
-            $items = is_array($result) ? $result : [];
-
-            foreach ($items as $item) {
-                if (!is_array($item)) continue;
-
-                $rawName    = $item['name'] ?? '';
-                $authorName = $item['author_scr_name'] ?? $item['author_id'] ?? '';
-
-                if (!$authorName && $rawName) {
-                    $colonPos   = strpos($rawName, ':');
-                    $authorName = $colonPos !== false ? trim(substr($rawName, 0, $colonPos)) : '';
-                }
-                if (!$authorName) $authorName = 'TikTok Creator';
-
-                $profilePic = $item['profile_url'] ?? $item['avatar_url'] ?? $item['image'] ?? '';
-                if (!$profilePic && $authorName && $authorName !== 'TikTok Creator') {
-                    $initials   = urlencode($this->getInitials($authorName));
-                    $profilePic = "https://ui-avatars.com/api/?name={$initials}&background=EE1D52&color=fff&size=80&bold=true&format=png";
-                }
-
-                $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
-                $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
-                $views    = (int) ($item['views']        ?? $item['view_cnt'] ?? 0);
-                $shares   = (int) ($item['num_shares']   ?? $item['shares']   ?? 0);
-
-                $content = $item['content'] ?? $item['caption'] ?? '';
-                if (!$content && $rawName) {
-                    $colonPos = strpos($rawName, ':');
-                    $content  = $colonPos !== false ? trim(substr($rawName, $colonPos + 1)) : $rawName;
-                }
-
-                $posts[] = [
-                    'id'              => $item['id']     ?? '',
-                    'sub_id'          => $item['sub_id'] ?? $item['docid'] ?? $item['id'] ?? '',
-                    'name'            => $authorName,
-                    'author_scr_name' => $item['author_scr_name'] ?? $authorName,
-                    'author_id'       => $item['author_id'] ?? '',
-                    'content'         => $content,
-                    'caption'         => $content,
-                    'view_cnt'        => $views,
-                    'views'           => $views,
-                    'freq'            => $views,
-                    'likes'           => $likes,
-                    'num_likes'       => $likes,
-                    'comments'        => $comments,
-                    'num_comments'    => $comments,
-                    'shares'          => $shares,
-                    'num_shares'      => $shares,
-                    'engagement'      => $likes + $comments + $shares,
-                    'sentiment_str'   => $item['sentiment_str']  ?? 'Neutral',
-                    'sentiment'       => $item['sentiment']      ?? '0',
-                    'date_created'    => $item['date_created']   ?? '',
-                    'url'             => $item['url']  ?? $item['link'] ?? null,
-                    'avatar_url'      => $profilePic,
-                    'profile_url'     => $profilePic,
-                    'tcode'           => $item['tcode'] ?? 'tiktok',
-                    'num_followers'   => (int) ($item['num_followers'] ?? 0),
-                ];
-            }
-
-            usort($posts, match($sub) {
-                'postbyview'    => fn($a,$b) => $b['view_cnt']  - $a['view_cnt'],
-                'postbylike'    => fn($a,$b) => $b['likes']     - $a['likes'],
-                'postbycomment' => fn($a,$b) => $b['comments']  - $a['comments'],
-                'postbyshare'   => fn($a,$b) => $b['shares']    - $a['shares'],
-                default         => fn($a,$b) => $b['view_cnt']  - $a['view_cnt'],
-            });
-
-            return response()->json(['success' => true, 'data' => $posts]);
-
-        } catch (\Exception $e) {
-            Log::error('TikTok mostEngagementData error', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        if (!$projectId || !$startDate || !$endDate) {
+            return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
         }
-    }
 
+        $apiSub = match($sub) {
+            'postbyview'    => 'postbyview',
+            'postbylike'    => 'postbylike',
+            'postbycomment' => 'postbycomment',
+            'postbyshare'   => 'postbylike',
+            default         => 'postbyview',
+        };
+
+        $items = $this->client->tiktokTopStatusAll(
+            $projectId, $startDate, $endDate, 0, 23, 100, $apiSub
+        );
+        $items = is_array($items) ? $items : [];
+
+        $posts = [];
+        foreach ($items as $item) {
+            if (!is_array($item)) continue;
+
+            $rawName    = $item['name'] ?? '';
+            $authorName = $item['author_scr_name'] ?? $item['author_id'] ?? '';
+            if (!$authorName && $rawName) {
+                $colonPos   = strpos($rawName, ':');
+                $authorName = $colonPos !== false ? trim(substr($rawName, 0, $colonPos)) : '';
+            }
+            if (!$authorName) $authorName = 'TikTok Creator';
+
+            $profilePic = $item['profile_url'] ?? $item['avatar_url'] ?? $item['image'] ?? '';
+            if (!$profilePic && $authorName && $authorName !== 'TikTok Creator') {
+                $initials   = urlencode($this->getInitials($authorName));
+                $profilePic = "https://ui-avatars.com/api/?name={$initials}&background=EE1D52&color=fff&size=80&bold=true&format=png";
+            }
+
+            $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
+            $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
+            $views    = (int) ($item['views']        ?? $item['view_cnt'] ?? 0);
+            $shares   = (int) ($item['num_shares']   ?? $item['shares']   ?? 0);
+            $content  = $item['content'] ?? $item['caption'] ?? '';
+
+            if (!$content && $rawName) {
+                $colonPos = strpos($rawName, ':');
+                $content  = $colonPos !== false ? trim(substr($rawName, $colonPos + 1)) : $rawName;
+            }
+
+            $posts[] = [
+                'id'              => $item['id']     ?? '',
+                'sub_id'          => $item['sub_id'] ?? $item['docid'] ?? $item['id'] ?? '',
+                'name'            => $authorName,
+                'author_scr_name' => $item['author_scr_name'] ?? $authorName,
+                'author_id'       => $item['author_id'] ?? '',
+                'content'         => $content,
+                'caption'         => $content,
+                'view_cnt'        => $views,
+                'views'           => $views,
+                'freq'            => $views,
+                'likes'           => $likes,
+                'num_likes'       => $likes,
+                'comments'        => $comments,
+                'num_comments'    => $comments,
+                'shares'          => $shares,
+                'num_shares'      => $shares,
+                'engagement'      => $likes + $comments + $shares,
+                'sentiment_str'   => $item['sentiment_str']  ?? 'Neutral',
+                'sentiment'       => $item['sentiment']      ?? '0',
+                'date_created'    => $item['date_created']   ?? '',
+                'url'             => $item['url'] ?? $item['link'] ?? null,
+                'avatar_url'      => $profilePic,
+                'profile_url'     => $profilePic,
+                'image'           => $item['image'] ?? $profilePic,
+                'tcode'           => $item['tcode'] ?? 'tiktok',
+                'num_followers'   => (int) ($item['num_followers'] ?? 0),
+            ];
+        }
+
+        usort($posts, match($sub) {
+            'postbyview'    => fn($a,$b) => $b['view_cnt']  - $a['view_cnt'],
+            'postbylike'    => fn($a,$b) => $b['likes']     - $a['likes'],
+            'postbycomment' => fn($a,$b) => $b['comments']  - $a['comments'],
+            'postbyshare'   => fn($a,$b) => $b['shares']    - $a['shares'],
+            default         => fn($a,$b) => $b['view_cnt']  - $a['view_cnt'],
+        });
+
+
+        return response()->json(['success' => true, 'data' => $posts]);
+
+    } catch (\Exception $e) {
+        Log::error('TikTok mostEngagementData error', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+    }
+}
     // ─────────────────────────────────────────────────────
     // EMOTION ANALYSIS
     // ─────────────────────────────────────────────────────
@@ -667,166 +650,157 @@ class TiktokOverviewController extends Controller
     // AI ANALYSIS DATA (endpoint untuk preload dataset)
     // ─────────────────────────────────────────────────────
 
-    public function aiAnalysisData(Request $request)
-    {
-        try {
-            $projectId = $request->query('project_id');
-            $startDate = $request->query('start_date');
-            $endDate   = $request->query('end_date');
+   public function aiAnalysisData(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
 
-            if (!$projectId) {
-                return response()->json(['success' => false, 'error' => 'Project ID required'], 400);
-            }
-
-            // Ambil data posts, sentiment, volume dari client langsung
-            $postsRaw     = $this->client->tiktokTopStatus($projectId, $startDate, $endDate, 0, 23, 50, 'postbylike');
-            $sentimentRaw = $this->client->getSentiment($projectId, 'tiktok', $startDate, $endDate);
-            $volumeRaw    = $this->client->volumeTotal($projectId, 'tiktok', $startDate, $endDate);
-
-            // ── Parse sentiment ──
-            $positive = 0; $negative = 0; $neutral = 0;
-            if (isset($sentimentRaw['data']['pos'], $sentimentRaw['data']['neg'], $sentimentRaw['data']['net'])) {
-                $positive = (int) $sentimentRaw['data']['pos'];
-                $negative = (int) $sentimentRaw['data']['neg'];
-                $neutral  = (int) $sentimentRaw['data']['net'];
-            } elseif (isset($sentimentRaw['pos'], $sentimentRaw['neg'], $sentimentRaw['net'])) {
-                $positive = (int) $sentimentRaw['pos'];
-                $negative = (int) $sentimentRaw['neg'];
-                $neutral  = (int) $sentimentRaw['net'];
-            } elseif (isset($sentimentRaw['bymedia']['tiktok'])) {
-                $d        = $sentimentRaw['bymedia']['tiktok'];
-                $positive = (int) ($d['pos'] ?? 0);
-                $negative = (int) ($d['neg'] ?? 0);
-                $neutral  = (int) ($d['net'] ?? 0);
-            }
-
-            // ── Parse volume ──
-            $volume = 0;
-            if (isset($volumeRaw['all']['total'])) {
-                $volume = (int) $volumeRaw['all']['total'];
-            } elseif (isset($volumeRaw['bymedia']['tiktok'])) {
-                $volume = (int) $volumeRaw['bymedia']['tiktok'];
-            } elseif (isset($volumeRaw['bymedia']['tt'])) {
-                $volume = (int) $volumeRaw['bymedia']['tt'];
-            }
-
-            // ── Parse posts + derive hashtags & active creators ──
-            $items       = is_array($postsRaw) ? $postsRaw : [];
-            $posts       = [];
-            $hashtagMap  = [];
-            $creatorMap  = [];
-
-            foreach ($items as $item) {
-                if (!is_array($item)) continue;
-
-                $rawName    = $item['name'] ?? '';
-                $authorName = $item['author_scr_name'] ?? $item['author_id'] ?? '';
-                if (!$authorName && $rawName) {
-                    $colonPos   = strpos($rawName, ':');
-                    $authorName = $colonPos !== false ? trim(substr($rawName, 0, $colonPos)) : '';
-                }
-                if (!$authorName) $authorName = 'TikTok Creator';
-
-                $content = $item['content'] ?? $item['caption'] ?? '';
-                if (!$content && $rawName) {
-                    $colonPos = strpos($rawName, ':');
-                    $content  = $colonPos !== false ? trim(substr($rawName, $colonPos + 1)) : $rawName;
-                }
-
-                $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
-                $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
-                $views    = (int) ($item['views']        ?? $item['view_cnt'] ?? 0);
-                $shares   = (int) ($item['num_shares']   ?? $item['shares']   ?? 0);
-
-                // Ekstrak hashtag dari konten
-                preg_match_all('/#([a-zA-Z0-9_\x{00C0}-\x{024F}\x{0400}-\x{04FF}]+)/u', $content, $matches);
-                foreach ($matches[1] as $tag) {
-                    $tag = strtolower(trim($tag));
-                    if (strlen($tag) >= 2) $hashtagMap[$tag] = ($hashtagMap[$tag] ?? 0) + 1;
-                }
-
-                // Hitung creator aktif
-                if ($authorName && $authorName !== 'TikTok Creator') {
-                    $creatorMap[$authorName] = ($creatorMap[$authorName] ?? 0) + 1;
-                }
-
-                $posts[] = [
-                    'name'          => $authorName,
-                    'content'       => substr(strip_tags($content), 0, 150),
-                    'views'         => $views,
-                    'likes'         => $likes,
-                    'comments'      => $comments,
-                    'shares'        => $shares,
-                    'sentiment_str' => $item['sentiment_str'] ?? 'Neutral',
-                    'date_created'  => substr($item['date_created'] ?? '', 0, 10),
-                ];
-            }
-
-            // Susun hashtag sorted
-            arsort($hashtagMap);
-            $hashtags = [];
-            foreach ($hashtagMap as $name => $size) {
-                $hashtags[] = ['name' => $name, 'size' => $size];
-            }
-
-            // Susun active creators sorted
-            arsort($creatorMap);
-            $activeCreators = [];
-            foreach (array_slice($creatorMap, 0, 10, true) as $name => $count) {
-                $activeCreators[] = ['username' => $name, 'posts' => $count];
-            }
-
-            // ── Build dataset string untuk AI ──
-            $total = $positive + $negative + $neutral ?: 1;
-            $lines = [];
-            $lines[] = "=== DATA TIKTOK PROJECT {$projectId} ===";
-            $lines[] = "Periode: {$startDate} s/d {$endDate}";
-            $lines[] = "Total Volume: {$volume} video/komentar";
-            $lines[] = "Sentimen: Positif " . round($positive / $total * 100) . "% ({$positive}) | Negatif " . round($negative / $total * 100) . "% ({$negative}) | Netral " . round($neutral / $total * 100) . "% ({$neutral})";
-
-            if (!empty($hashtags)) {
-                $lines[] = "\n--- TOP HASHTAGS TIKTOK (" . min(count($hashtags), 20) . ") ---";
-                foreach (array_slice($hashtags, 0, 20) as $i => $h) {
-                    $lines[] = ($i + 1) . ". #{$h['name']} ({$h['size']} mentions)";
-                }
-            }
-
-            if (!empty($activeCreators)) {
-                $lines[] = "\n--- MOST ACTIVE TIKTOK CREATORS (" . count($activeCreators) . ") ---";
-                foreach ($activeCreators as $i => $c) {
-                    $lines[] = ($i + 1) . ". @{$c['username']} — {$c['posts']} videos";
-                }
-            }
-
-            if (!empty($posts)) {
-                $lines[] = "\n--- TOP TIKTOK VIDEOS BY LIKES (" . count($posts) . " dari {$volume}) ---";
-                foreach (array_slice($posts, 0, 30) as $i => $post) {
-                    $lines[] = "[" . ($i + 1) . "] @{$post['name']} | {$post['date_created']} | {$post['sentiment_str']}";
-                    $lines[] = "   Views:{$post['views']} Likes:{$post['likes']} Comments:{$post['comments']} Shares:{$post['shares']}";
-                    if ($post['content']) $lines[] = "   \"{$post['content']}\"";
-                }
-            }
-
-            $lines[] = "=== AKHIR DATASET ===";
-
-            return response()->json([
-                'success' => true,
-                'data'    => [
-                    'dataset' => implode("\n", $lines),
-                    'summary' => [
-                        'total_posts'    => count($posts),
-                        'total_hashtags' => count($hashtags),
-                        'sentiment'      => ['positive' => $positive, 'negative' => $negative, 'neutral' => $neutral],
-                        'volume'         => $volume,
-                    ],
-                ],
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('TikTok aiAnalysisData error', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        if (!$projectId) {
+            return response()->json(['success' => false, 'error' => 'Project ID required'], 400);
         }
+
+        $postsRaw     = $this->client->tiktokTopStatusAll($projectId, $startDate, $endDate, 0, 23, 100, 'postbylike');
+        $sentimentRaw = $this->client->getSentiment($projectId, 'tiktok', $startDate, $endDate);
+        $volumeRaw    = $this->client->volumeTotal($projectId, 'tiktok', $startDate, $endDate);
+
+        $positive = 0; $negative = 0; $neutral = 0;
+        if (isset($sentimentRaw['data']['pos'], $sentimentRaw['data']['neg'], $sentimentRaw['data']['net'])) {
+            $positive = (int) $sentimentRaw['data']['pos'];
+            $negative = (int) $sentimentRaw['data']['neg'];
+            $neutral  = (int) $sentimentRaw['data']['net'];
+        } elseif (isset($sentimentRaw['pos'], $sentimentRaw['neg'], $sentimentRaw['net'])) {
+            $positive = (int) $sentimentRaw['pos'];
+            $negative = (int) $sentimentRaw['neg'];
+            $neutral  = (int) $sentimentRaw['net'];
+        } elseif (isset($sentimentRaw['bymedia']['tiktok'])) {
+            $d        = $sentimentRaw['bymedia']['tiktok'];
+            $positive = (int) ($d['pos'] ?? 0);
+            $negative = (int) ($d['neg'] ?? 0);
+            $neutral  = (int) ($d['net'] ?? 0);
+        }
+
+        $volume = 0;
+        if (isset($volumeRaw['all']['total'])) {
+            $volume = (int) $volumeRaw['all']['total'];
+        } elseif (isset($volumeRaw['bymedia']['tiktok'])) {
+            $volume = (int) $volumeRaw['bymedia']['tiktok'];
+        } elseif (isset($volumeRaw['bymedia']['tt'])) {
+            $volume = (int) $volumeRaw['bymedia']['tt'];
+        }
+
+        $items      = is_array($postsRaw) ? $postsRaw : [];
+        $posts      = [];
+        $hashtagMap = [];
+        $creatorMap = [];
+
+        foreach ($items as $item) {
+            if (!is_array($item)) continue;
+
+            $rawName    = $item['name'] ?? '';
+            $authorName = $item['author_scr_name'] ?? $item['author_id'] ?? '';
+            if (!$authorName && $rawName) {
+                $colonPos   = strpos($rawName, ':');
+                $authorName = $colonPos !== false ? trim(substr($rawName, 0, $colonPos)) : '';
+            }
+            if (!$authorName) $authorName = 'TikTok Creator';
+
+            $content = $item['content'] ?? $item['caption'] ?? '';
+            if (!$content && $rawName) {
+                $colonPos = strpos($rawName, ':');
+                $content  = $colonPos !== false ? trim(substr($rawName, $colonPos + 1)) : $rawName;
+            }
+
+            $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
+            $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
+            $views    = (int) ($item['views']        ?? $item['view_cnt'] ?? 0);
+            $shares   = (int) ($item['num_shares']   ?? $item['shares']   ?? 0);
+
+            preg_match_all('/#([a-zA-Z0-9_\x{00C0}-\x{024F}\x{0400}-\x{04FF}]+)/u', $content, $matches);
+            foreach ($matches[1] as $tag) {
+                $tag = strtolower(trim($tag));
+                if (strlen($tag) >= 2) $hashtagMap[$tag] = ($hashtagMap[$tag] ?? 0) + 1;
+            }
+
+            if ($authorName && $authorName !== 'TikTok Creator') {
+                $creatorMap[$authorName] = ($creatorMap[$authorName] ?? 0) + 1;
+            }
+
+            $posts[] = [
+                'name'          => $authorName,
+                'content'       => substr(strip_tags($content), 0, 150),
+                'views'         => $views,
+                'likes'         => $likes,
+                'comments'      => $comments,
+                'shares'        => $shares,
+                'sentiment_str' => $item['sentiment_str'] ?? 'Neutral',
+                'date_created'  => substr($item['date_created'] ?? '', 0, 10),
+            ];
+        }
+
+        arsort($hashtagMap);
+        $hashtags = [];
+        foreach ($hashtagMap as $name => $size) {
+            $hashtags[] = ['name' => $name, 'size' => $size];
+        }
+
+        arsort($creatorMap);
+        $activeCreators = [];
+        foreach (array_slice($creatorMap, 0, 10, true) as $name => $count) {
+            $activeCreators[] = ['username' => $name, 'posts' => $count];
+        }
+
+        $total   = $positive + $negative + $neutral ?: 1;
+        $lines   = [];
+        $lines[] = "=== DATA TIKTOK PROJECT {$projectId} ===";
+        $lines[] = "Periode: {$startDate} s/d {$endDate}";
+        $lines[] = "Total Volume: {$volume} video/komentar";
+        $lines[] = "Sentimen: Positif " . round($positive / $total * 100) . "% ({$positive}) | Negatif " . round($negative / $total * 100) . "% ({$negative}) | Netral " . round($neutral / $total * 100) . "% ({$neutral})";
+
+        if (!empty($hashtags)) {
+            $lines[] = "\n--- TOP HASHTAGS TIKTOK (" . min(count($hashtags), 20) . ") ---";
+            foreach (array_slice($hashtags, 0, 20) as $i => $h) {
+                $lines[] = ($i + 1) . ". #{$h['name']} ({$h['size']} mentions)";
+            }
+        }
+
+        if (!empty($activeCreators)) {
+            $lines[] = "\n--- MOST ACTIVE TIKTOK CREATORS (" . count($activeCreators) . ") ---";
+            foreach ($activeCreators as $i => $c) {
+                $lines[] = ($i + 1) . ". @{$c['username']} — {$c['posts']} videos";
+            }
+        }
+
+        if (!empty($posts)) {
+            $lines[] = "\n--- TOP TIKTOK VIDEOS BY LIKES (" . count($posts) . " dari {$volume}) ---";
+            foreach (array_slice($posts, 0, 30) as $i => $post) {
+                $lines[] = "[" . ($i + 1) . "] @{$post['name']} | {$post['date_created']} | {$post['sentiment_str']}";
+                $lines[] = "   Views:{$post['views']} Likes:{$post['likes']} Comments:{$post['comments']} Shares:{$post['shares']}";
+                if ($post['content']) $lines[] = "   \"{$post['content']}\"";
+            }
+        }
+
+        $lines[] = "=== AKHIR DATASET ===";
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'dataset' => implode("\n", $lines),
+                'summary' => [
+                    'total_posts'    => count($posts),
+                    'total_hashtags' => count($hashtags),
+                    'sentiment'      => ['positive' => $positive, 'negative' => $negative, 'neutral' => $neutral],
+                    'volume'         => $volume,
+                ],
+            ],
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('TikTok aiAnalysisData error', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
     }
+}
 
     // ─────────────────────────────────────────────────────
     // AI ANALYSIS PROXY (Gemini)

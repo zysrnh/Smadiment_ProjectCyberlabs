@@ -212,10 +212,14 @@
 
 @section('content')
 @php
-  $projectId = request()->get('project_id');
-  $startDate = request()->get('start_date', now()->startOfMonth()->format('Y-m-d'));
-  $endDate   = request()->get('end_date', now()->format('Y-m-d'));
+  $projects  = $projects  ?? [];
+  $projectId = $projectId ?? request()->get('project_id');
+  $startDate = $startDate ?? request()->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+  $endDate   = $endDate   ?? request()->get('end_date', now()->format('Y-m-d'));
 @endphp
+
+
+@include('mk.layouts.partials.filter-datepicker')
 
 {{-- ══ Sub-header ══ --}}
 <div class="do-page-header fade-up">

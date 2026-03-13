@@ -78,33 +78,6 @@
   .snt-refresh-btn:hover { filter:brightness(1.15); }
   .snt-refresh-btn svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
 
-  /* ── FILTER CARD ── */
-  .filter-card {
-    background:#fff; border-radius:var(--radius);
-    padding:14px 18px; margin-bottom:20px;
-    box-shadow:var(--shadow-sm); border:1px solid var(--border-gray);
-  }
-  .filter-content { display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap; }
-  .filter-group   { display:flex; flex-direction:column; gap:5px; }
-  .filter-label   { font-size:10px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.5px; }
-  .filter-select  {
-    padding:7px 12px; border:1px solid var(--border-gray);
-    border-radius:var(--radius-sm); font-family:var(--font);
-    font-size:13px; font-weight:500; color:var(--text-primary);
-    background:var(--bg-gray-50); outline:none; transition:border-color .14s, box-shadow .14s; min-width:180px; cursor:pointer;
-  }
-  .filter-select:focus { border-color:var(--primary-green); background:#fff; box-shadow:0 0 0 3px var(--primary-green-light); }
-
-  .apply-btn {
-    display:inline-flex; align-items:center; gap:6px; padding:7px 18px;
-    background:var(--primary-green); color:#fff; border:none;
-    border-radius:var(--radius-sm); font-family:var(--font);
-    font-size:13px; font-weight:700; cursor:pointer;
-    transition:filter .14s, box-shadow .14s; white-space:nowrap; margin-left:auto;
-  }
-  .apply-btn:hover { filter:brightness(1.1); box-shadow:0 4px 12px var(--primary-green-light); }
-  .apply-btn svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.5; stroke-linecap:round; }
-
   /* ── SECTION HEADER ── */
   .snt-section-header { display:flex; align-items:center; gap:8px; margin-bottom:14px; margin-top:4px; }
   .snt-section-icon {
@@ -525,56 +498,48 @@
 
 @section('content')
 @php
-  $projectId = request()->get('project_id');
-  $startDate = request()->get('start_date', now()->startOfMonth()->format('Y-m-d'));
-  $endDate   = request()->get('end_date',   now()->format('Y-m-d'));
+  $projectId = $projectId ?? request()->get('project_id');
+  $startDate = $startDate ?? request()->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+  $endDate   = $endDate ?? request()->get('end_date',   now()->format('Y-m-d'));
   $media     = request()->get('media', 'all');
   $projects  = $projects ?? [];
 @endphp
 
 <div class="snt-page">
 
-  {{-- FILTER --}}
-  <div class="filter-card">
-    <form id="sntFilterForm" method="GET">
-      <input type="hidden" name="project_id" id="hPid" value="{{ $projectId }}">
-      <input type="hidden" name="start_date"  id="hSD"  value="{{ $startDate }}">
-      <input type="hidden" name="end_date"    id="hED"  value="{{ $endDate }}">
+  {{-- FILTER + DATE PICKER --}}
+  @include('mk.layouts.partials.filter-datepicker')
 
-      <div class="filter-content">
-        @if(count($projects))
-        <div class="filter-group">
-          <label class="filter-label">Project</label>
-          <select class="filter-select" onchange="document.getElementById('hPid').value=this.value">
-            @foreach($projects as $p)
-            <option value="{{ $p['id'] }}" {{ ($p['id'] == $projectId) ? 'selected' : '' }}>
-              {{ $p['name'] ?? $p['title'] ?? 'Project #' . $p['id'] }}
-            </option>
-            @endforeach
-          </select>
-        </div>
-        @endif
-
-        <div class="filter-group">
-          <label class="filter-label">Media</label>
-          <select class="filter-select" name="media" id="mediaFilter">
-            <option value="all"       {{ $media === 'all'       ? 'selected' : '' }}>All Media</option>
-            <option value="doc"       {{ $media === 'doc'       ? 'selected' : '' }}>Mass Media (Online News)</option>
-            <option value="twitter"   {{ $media === 'twitter'   ? 'selected' : '' }}>X / Twitter</option>
-            <option value="facebook"  {{ $media === 'facebook'  ? 'selected' : '' }}>Facebook</option>
-            <option value="instagram" {{ $media === 'instagram' ? 'selected' : '' }}>Instagram</option>
-            <option value="youtube"   {{ $media === 'youtube'   ? 'selected' : '' }}>YouTube</option>
-            <option value="tiktok"    {{ $media === 'tiktok'    ? 'selected' : '' }}>TikTok</option>
-          </select>
-        </div>
-
-        <button type="submit" class="apply-btn">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          Filter
-        </button>
-      </div>
-    </form>
+  {{-- MEDIA FILTER --}}
+  <div class="snt-media-filter" style="margin-top:-12px;margin-bottom:20px;">
+    <div class="filter-group" style="display:flex;flex-direction:column;gap:5px;">
+      <label class="do-filter-label" style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.5px;">Media</label>
+      <select class="do-filter-select" id="sntMediaFilter" style="min-width:180px;">
+        <option value="all"       {{ $media === 'all'       ? 'selected' : '' }}>All Media</option>
+        <option value="doc"       {{ $media === 'doc'       ? 'selected' : '' }}>Mass Media (Online News)</option>
+        <option value="twitter"   {{ $media === 'twitter'   ? 'selected' : '' }}>X / Twitter</option>
+        <option value="facebook"  {{ $media === 'facebook'  ? 'selected' : '' }}>Facebook</option>
+        <option value="instagram" {{ $media === 'instagram' ? 'selected' : '' }}>Instagram</option>
+        <option value="youtube"   {{ $media === 'youtube'   ? 'selected' : '' }}>YouTube</option>
+        <option value="tiktok"    {{ $media === 'tiktok'    ? 'selected' : '' }}>TikTok</option>
+      </select>
+    </div>
   </div>
+  <script>
+  document.addEventListener('DOMContentLoaded',function(){
+    var mf=document.getElementById('sntMediaFilter');
+    if(mf){
+      mf.addEventListener('change',function(){
+        var form=document.getElementById('doFilterForm');
+        if(!form) return;
+        var existing=form.querySelector('input[name="media"]');
+        if(!existing){ existing=document.createElement('input');existing.type='hidden';existing.name='media';form.appendChild(existing); }
+        existing.value=this.value;
+        form.submit();
+      });
+    }
+  });
+  </script>
 
   {{-- ═══════════════════════════════════════════════════════
        SECTION 1 — TOTAL MENTIONS BY SENTIMENTS
@@ -833,32 +798,7 @@
   </div>
 
   {{-- Detail per platform (bar list) --}}
-  <div class="snt-card snt-mb20">
-    <div class="snt-card-head">
-      <div class="snt-card-head-left">
-        <span class="snt-head-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
-        <div>
-          <div class="snt-card-title">Breakdown Sentimen per Platform</div>
-          <div class="snt-card-subtitle">Negative / Positive / Neutral untuk setiap media</div>
-        </div>
-      </div>
-      <span class="snt-badge">All Platforms</span>
-    </div>
-    <div class="snt-card-body">
-      <div id="platBreakdownList" class="snt-media-list">
-        @foreach(['Mass Media','X / Twitter','Facebook','Instagram','YouTube','TikTok'] as $pl)
-        <div class="snt-media-row">
-          <div class="snt-media-name">{{ $pl }}</div>
-          <div class="snt-media-bars">
-            <div class="snt-media-bar-row"><div class="snt-skel" style="height:6px;width:100%;border-radius:3px;"></div></div>
-            <div class="snt-media-bar-row"><div class="snt-skel" style="height:6px;width:100%;border-radius:3px;margin-top:4px;"></div></div>
-          </div>
-          <div class="snt-skel" style="height:18px;width:50px;border-radius:4px;margin-left:10px;"></div>
-        </div>
-        @endforeach
-      </div>
-    </div>
-  </div>
+  
 
   {{-- ═══════════════════════════════════════════════════════
        SECTION 3 — SENTIMENT TRENDS

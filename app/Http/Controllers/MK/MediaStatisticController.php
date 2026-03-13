@@ -5,11 +5,20 @@ namespace App\Http\Controllers\MK;
 use App\Http\Controllers\Controller;
 use App\Services\MediaKernelsClient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class MediaStatisticController extends Controller
 {
     public function __construct(private MediaKernelsClient $mk) {}
+
+    private function getProjects(): array
+    {
+        $user = Auth::user();
+        $assignedIds = $user->assignedProjectIds();
+        $all = array_values($this->mk->listProjects(0, 100));
+        return array_values(array_filter($all, fn($p) => in_array($p['id'] ?? null, $assignedIds)));
+    }
 
     // ───────────────────────────────────────────────
     // PAGE
@@ -17,7 +26,11 @@ class MediaStatisticController extends Controller
 
     public function index(Request $request)
     {
-        return view('mk.media-statistic');
+        $projects  = $this->getProjects();
+        $projectId = $request->get('project_id') ?? ($projects[0]['id'] ?? null);
+        $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+        $endDate   = $request->get('end_date', now()->format('Y-m-d'));
+        return view('mk.media-statistic', compact('projects', 'projectId', 'startDate', 'endDate'));
     }
 
     // ───────────────────────────────────────────────
@@ -1107,12 +1120,20 @@ public function mentionsByHour(Request $request)
 
 public function sentimentPage(Request $request)
 {
-    return view('mk.sentiment');
+    $projects  = $this->getProjects();
+    $projectId = $request->get('project_id') ?? ($projects[0]['id'] ?? null);
+    $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+    $endDate   = $request->get('end_date', now()->format('Y-m-d'));
+    return view('mk.sentiment', compact('projects', 'projectId', 'startDate', 'endDate'));
 }
 
 public function netSentimentScorePage(Request $request)
 {
-    return view('mk.net-sentiment-score');
+    $projects  = $this->getProjects();
+    $projectId = $request->get('project_id') ?? ($projects[0]['id'] ?? null);
+    $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+    $endDate   = $request->get('end_date', now()->format('Y-m-d'));
+    return view('mk.net-sentiment-score', compact('projects', 'projectId', 'startDate', 'endDate'));
 }
 
 // ───────────────────────────────────────────────

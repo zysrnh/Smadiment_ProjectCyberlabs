@@ -31,17 +31,17 @@
 }
 
 /* ══ Animations ══ */
-@keyframes fadeUp   { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-@keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
-@keyframes slideInRight  { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
-@keyframes slideOutRight { from { transform:translateX(0); opacity:1; } to { transform:translateX(100%); opacity:0; } }
-@keyframes overlayIn  { from{opacity:0} to{opacity:1} }
-@keyframes overlayOut { from{opacity:1} to{opacity:0} }
-@keyframes spin    { to { transform:rotate(360deg); } }
-@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
-@keyframes pulseP  { 0%,100%{box-shadow:0 0 0 3px var(--dash-primary-lt);} 50%{box-shadow:0 0 0 6px transparent;} }
+@keyframes fadeUp        { from{opacity:0;transform:translateY(12px)}  to{opacity:1;transform:translateY(0)} }
+@keyframes fadeIn        { from{opacity:0}                             to{opacity:1} }
+@keyframes slideInRight  { from{transform:translateX(100%);opacity:0}  to{transform:translateX(0);opacity:1} }
+@keyframes slideOutRight { from{transform:translateX(0);opacity:1}     to{transform:translateX(100%);opacity:0} }
+@keyframes overlayIn     { from{opacity:0} to{opacity:1} }
+@keyframes overlayOut    { from{opacity:1} to{opacity:0} }
+@keyframes spin          { to{transform:rotate(360deg)} }
+@keyframes shimmer       { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes pulseP        { 0%,100%{box-shadow:0 0 0 3px var(--dash-primary-lt)} 50%{box-shadow:0 0 0 6px transparent} }
 
-.fade-up    { animation: fadeUp .38s ease-out both; }
+.fade-up    { animation:fadeUp .38s ease-out both; }
 .fade-up-d1 { animation-delay:.05s }
 .fade-up-d2 { animation-delay:.10s }
 .fade-up-d3 { animation-delay:.15s }
@@ -49,106 +49,103 @@
 
 /* ══ KPI Card Icons ══ */
 .kpi-icon-bg {
-    width: 48px; height: 48px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(255,255,255,.2); font-size: 24px; color: #fff;
-    flex-shrink: 0;
+    width:48px; height:48px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,.2); font-size:24px; color:#fff; flex-shrink:0;
 }
 
 /* ══ Project Sidebar ══ */
-.proj-sidebar-card { position: sticky; top: 80px; }
-.proj-list-scroll { max-height: 600px; overflow-y: auto; }
-.proj-list-scroll::-webkit-scrollbar { width: 4px; }
-.proj-list-scroll::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 99px; }
+.proj-sidebar-card { position:sticky; top:80px; }
+.proj-list-scroll  { max-height:600px; overflow-y:auto; }
+.proj-list-scroll::-webkit-scrollbar { width:4px; }
+.proj-list-scroll::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
 
-.proj-item { transition: all .15s ease; cursor: pointer; }
-.proj-item:hover { background: var(--slate-50) !important; }
+.proj-item { transition:all .15s ease; cursor:pointer; }
+.proj-item:hover { background:var(--slate-50) !important; }
 .proj-item.active-sidebar {
-    background: var(--dash-primary-lt) !important;
-    border-left: 3px solid var(--dash-primary) !important;
+    background:var(--dash-primary-lt) !important;
+    border-left:3px solid var(--dash-primary) !important;
 }
 .proj-item .proj-status-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--dash-primary); flex-shrink: 0;
-    box-shadow: 0 0 0 3px var(--dash-primary-lt);
-    animation: pulseP 2.5s infinite;
+    width:8px; height:8px; border-radius:50%;
+    background:var(--dash-primary); flex-shrink:0;
+    box-shadow:0 0 0 3px var(--dash-primary-lt);
+    animation:pulseP 2.5s infinite;
 }
 
 /* ══ Lazy Card Transitions ══ */
 .lazy-card {
-    opacity: 0; transform: translateY(14px);
-    transition: opacity .4s ease, transform .4s ease, border-color .2s, box-shadow .2s;
+    opacity:0; transform:translateY(14px);
+    transition:opacity .4s ease, transform .4s ease, border-color .2s, box-shadow .2s;
 }
-.lazy-card.card-visible { opacity: 1; transform: translateY(0); }
-.lazy-card.highlighted  { border-color: var(--dash-primary) !important; box-shadow: 0 0 0 3px var(--dash-primary-lt), var(--shadow-md) !important; }
+.lazy-card.card-visible { opacity:1; transform:translateY(0); }
+.lazy-card.highlighted  {
+    border-color:var(--dash-primary) !important;
+    box-shadow:0 0 0 3px var(--dash-primary-lt), var(--shadow-md) !important;
+}
 
 /* ══ Stat Chips ══ */
 .stat-chip.clickable {
-    cursor: pointer; transition: transform .13s, box-shadow .13s;
-    user-select: none;
+    cursor:pointer; transition:transform .13s, box-shadow .13s; user-select:none;
 }
-.stat-chip.clickable:hover  { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-.stat-chip.clickable:active { transform: translateY(0); }
+.stat-chip.clickable:hover  { transform:translateY(-2px); box-shadow:var(--shadow-sm); }
+.stat-chip.clickable:active { transform:translateY(0); }
 
 /* ══ Chart Area ══ */
-.chart-container { height: 250px; position: relative; }
+.chart-container { height:280px; position:relative; }
 .chart-loading {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 8px; background: #fff; z-index: 2; transition: opacity .3s;
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px; background:#fff; z-index:2; transition:opacity .3s;
 }
-.chart-loading.hidden { opacity: 0; pointer-events: none; }
+.chart-loading.hidden { opacity:0; pointer-events:none; }
 .spin-ring {
-    width: 26px; height: 26px;
-    border: 2.5px solid var(--slate-100);
-    border-top-color: var(--dash-primary);
-    border-radius: 50%; animation: spin .65s linear infinite;
+    width:26px; height:26px;
+    border:2.5px solid var(--slate-100); border-top-color:var(--dash-primary);
+    border-radius:50%; animation:spin .65s linear infinite;
 }
-.chart-loading span { font-size: 11px; font-weight: 600; color: var(--slate-400); }
+.chart-loading span { font-size:11px; font-weight:600; color:var(--slate-400); }
 .chart-empty {
-    height: 100%; display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 6px; color: var(--slate-400); font-size: 12px; font-weight: 600;
+    height:100%; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:6px; color:var(--slate-400); font-size:12px; font-weight:600;
 }
-.chart-empty i { font-size: 34px; color: var(--slate-300); display: block; }
+.chart-empty i { font-size:34px; color:var(--slate-300); display:block; }
 
 /* ══ Skeleton ══ */
 .sk-block {
-    border-radius: 4px;
-    background: linear-gradient(90deg, var(--slate-100) 25%, var(--slate-200) 50%, var(--slate-100) 75%);
-    background-size: 200% 100%; animation: shimmer 1.4s infinite;
+    border-radius:4px;
+    background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);
+    background-size:200% 100%; animation:shimmer 1.4s infinite;
 }
+.lazy-sentinel { height:1px; }
 
-/* ══ Misc ══ */
-.lazy-sentinel { height: 1px; }
-
+/* ══ Scroll-to-top ══ */
 .scroll-top-btn {
-    position: fixed; bottom: 20px; right: 70px;
-    width: 36px; height: 36px;
-    background: var(--dash-primary); border-radius: var(--radius);
-    display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 15px; box-shadow: var(--shadow-md);
-    cursor: pointer; opacity: 0; pointer-events: none;
-    transition: opacity .2s, transform .2s; z-index: 998; border: none;
+    position:fixed; bottom:20px; right:70px;
+    width:36px; height:36px; background:var(--dash-primary); border-radius:var(--radius);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:15px; box-shadow:var(--shadow-md);
+    cursor:pointer; opacity:0; pointer-events:none;
+    transition:opacity .2s, transform .2s; z-index:998; border:none;
 }
-.scroll-top-btn.visible { opacity: 1; pointer-events: all; }
-.scroll-top-btn:hover   { transform: translateY(-2px); }
+.scroll-top-btn.visible { opacity:1; pointer-events:all; }
+.scroll-top-btn:hover   { transform:translateY(-2px); }
 
 /* ══════════════════════════════════════════════════════
-   SLIDE PANEL
+   SLIDE PANEL  (ported 1-to-1 from data-overview)
 ══════════════════════════════════════════════════════ */
 .do-panel-overlay {
     position:fixed; inset:0; z-index:9000;
-    background:rgba(15,23,42,.45); backdrop-filter:blur(4px);
-    display:none;
+    background:rgba(15,23,42,.45); backdrop-filter:blur(4px); display:none;
 }
 .do-panel-overlay.show   { display:block; animation:overlayIn .22s ease-out; }
 .do-panel-overlay.hiding { animation:overlayOut .22s ease-out forwards; }
 
 .do-panel {
     position:fixed; top:0; right:0; bottom:0; z-index:9001;
-    width:480px; max-width:100vw;
-    background:#fff; display:none; flex-direction:column;
+    width:480px; max-width:100vw; background:#fff;
+    display:none; flex-direction:column;
     border-left:1px solid var(--slate-200);
     box-shadow:-8px 0 40px rgba(15,23,42,.16);
 }
@@ -176,7 +173,8 @@
 }
 .do-panel-meta {
     flex:1; font-size:10px; font-weight:700; color:var(--slate-400);
-    text-transform:uppercase; letter-spacing:.5px; display:flex; align-items:center; gap:5px;
+    text-transform:uppercase; letter-spacing:.5px;
+    display:flex; align-items:center; gap:5px;
 }
 .do-panel-tabs {
     display:flex; background:var(--slate-100); border:1px solid var(--slate-200);
@@ -187,16 +185,18 @@
     font-size:11px; font-weight:700; cursor:pointer; transition:all .13s;
     color:var(--slate-500); font-family:inherit;
 }
-.do-panel-tab:hover { background:#fff; }
+.do-panel-tab:hover  { background:#fff; }
 .do-panel-tab.active { background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.08); }
 .do-panel-tab.active[data-s="all"] { color:var(--dash-primary); }
 .do-panel-tab.neg.active { color:#EF4444; }
 .do-panel-tab.pos.active { color:#10B981; }
 .do-panel-tab.neu.active { color:var(--slate-500); }
+
 .do-panel-export {
     display:flex; align-items:center; gap:4px; padding:4px 10px;
-    background:var(--dash-primary); color:#fff; border:none; border-radius:var(--radius-sm);
-    font-size:10px; font-weight:700; cursor:pointer; transition:filter .13s; font-family:inherit;
+    background:var(--dash-primary); color:#fff; border:none;
+    border-radius:var(--radius-sm); font-size:10px; font-weight:700;
+    cursor:pointer; transition:filter .13s; font-family:inherit;
 }
 .do-panel-export:hover { filter:brightness(1.1); }
 .do-panel-export i { font-size:12px; }
@@ -220,10 +220,11 @@
     border:1.5px solid var(--slate-200); overflow:hidden;
 }
 .do-panel-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+
 .do-panel-item-body { flex:1; min-width:0; }
 .do-panel-author { font-size:12px; font-weight:700; color:var(--slate-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .do-panel-handle { font-size:10px; color:var(--slate-400); font-weight:500; margin-bottom:2px; }
-.do-panel-text   { font-size:11px; color:var(--slate-600); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px; }
+.do-panel-text   { font-size:11px; color:var(--slate-600); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px; }
 .do-panel-footer { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--slate-400); flex-wrap:wrap; }
 
 .do-sent-badge { padding:1px 6px; border-radius:3px; font-size:9px; font-weight:800; text-transform:uppercase; }
@@ -231,39 +232,67 @@
 .do-sent-badge--neg { background:#fee2e2; color:#991b1b; }
 .do-sent-badge--neu { background:var(--slate-100); color:var(--slate-500); }
 
-.do-panel-loading { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:12px; color:var(--slate-400); font-size:13px; font-weight:600; }
-.do-panel-spinner { width:28px; height:28px; border:2.5px solid var(--slate-100); border-top-color:var(--dash-primary); border-radius:50%; animation:spin .65s linear infinite; }
+.do-panel-loading {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    height:100%; gap:12px; color:var(--slate-400); font-size:13px; font-weight:600;
+}
+.do-panel-spinner {
+    width:28px; height:28px; border:2.5px solid var(--slate-100);
+    border-top-color:var(--dash-primary); border-radius:50%;
+    animation:spin .65s linear infinite;
+}
 
 /* ── Detail sub-panel ── */
-.do-detail-panel { position:absolute; inset:0; background:#fff; z-index:5; display:none; flex-direction:column; animation:slideInRight .2s cubic-bezier(.4,0,.2,1); }
+.do-detail-panel {
+    position:absolute; inset:0; background:#fff; z-index:5;
+    display:none; flex-direction:column;
+    animation:slideInRight .2s cubic-bezier(.4,0,.2,1);
+}
 .do-detail-panel.show { display:flex; }
 
-.do-dp2-header { display:flex; align-items:center; gap:8px; padding:12px 14px; background:var(--slate-50); border-bottom:1px solid var(--slate-200); flex-shrink:0; }
-.do-dp2-back { width:28px; height:28px; border-radius:var(--radius-sm); border:1px solid var(--slate-200); background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--slate-500); transition:all .13s; font-size:14px; }
+.do-dp2-header {
+    display:flex; align-items:center; gap:8px; padding:12px 14px;
+    background:var(--slate-50); border-bottom:1px solid var(--slate-200); flex-shrink:0;
+}
+.do-dp2-back {
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    border:1px solid var(--slate-200); background:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--slate-500); transition:all .13s; font-size:14px;
+}
 .do-dp2-back:hover { background:var(--dash-primary-lt); color:var(--dash-primary); border-color:var(--dash-primary); }
-.do-dp2-title { font-size:13px; font-weight:700; color:var(--slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.do-dp2-body { overflow-y:auto; flex:1; padding:16px; }
+.do-dp2-title  { font-size:13px; font-weight:700; color:var(--slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.do-dp2-body   { overflow-y:auto; flex:1; padding:16px; }
 .do-dp2-body::-webkit-scrollbar { width:4px; }
 .do-dp2-body::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
 .do-dp2-avatar-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
-.do-dp2-avatar-lg { width:46px; height:46px; border-radius:50%; color:#fff; font-weight:700; font-size:16px; display:flex; align-items:center; justify-content:center; border:2px solid var(--slate-200); overflow:hidden; flex-shrink:0; }
+.do-dp2-avatar-lg  {
+    width:46px; height:46px; border-radius:50%; color:#fff; font-weight:700;
+    font-size:16px; display:flex; align-items:center; justify-content:center;
+    border:2px solid var(--slate-200); overflow:hidden; flex-shrink:0;
+}
 .do-dp2-avatar-lg img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-.do-dp2-name { font-size:14px; font-weight:700; color:var(--slate-900); }
-.do-dp2-handle { font-size:11px; color:var(--slate-400); font-weight:500; }
+.do-dp2-name       { font-size:14px; font-weight:700; color:var(--slate-900); }
+.do-dp2-handle     { font-size:11px; color:var(--slate-400); font-weight:500; }
 .do-dp2-plat-badge { display:inline-block; padding:2px 8px; border-radius:3px; font-size:10px; font-weight:700; margin-top:3px; }
-.do-dp2-meta { font-size:11px; color:var(--slate-400); font-weight:500; margin-bottom:10px; }
-.do-dp2-sent { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:3px; font-size:11px; font-weight:700; margin-bottom:10px; }
-.do-dp2-sent--pos { background:#dbeafe; color:#1d4ed8; }
-.do-dp2-sent--neg { background:#fee2e2; color:#991b1b; }
-.do-dp2-sent--neu { background:var(--slate-100); color:var(--slate-500); }
-.do-dp2-content { font-size:12px; color:var(--slate-700); line-height:1.7; margin-bottom:12px; background:var(--slate-50); border-radius:var(--radius-sm); padding:10px 12px; border:1px solid var(--slate-200); word-break:break-word; }
-.do-dp2-media { border-radius:var(--radius-sm); overflow:hidden; margin-bottom:10px; }
-.do-dp2-media img { width:100%; max-height:220px; object-fit:cover; display:block; }
-.do-dp2-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:10px; }
-.do-dp2-stat { background:var(--slate-50); border-radius:var(--radius-sm); padding:8px 10px; border:1px solid var(--slate-200); text-align:center; }
-.do-dp2-stat-val { font-size:14px; font-weight:700; color:var(--slate-900); }
-.do-dp2-stat-lbl { font-size:9px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.4px; margin-top:1px; }
-.do-dp2-link { display:flex; align-items:center; justify-content:center; gap:6px; padding:9px 14px; background:var(--dash-primary); color:#fff; border-radius:var(--radius-sm); font-size:12px; font-weight:700; text-decoration:none; transition:filter .14s; margin-top:4px; }
+.do-dp2-meta       { font-size:11px; color:var(--slate-400); font-weight:500; margin-bottom:10px; }
+.do-dp2-sent       { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:3px; font-size:11px; font-weight:700; margin-bottom:10px; }
+.do-dp2-sent--pos  { background:#dbeafe; color:#1d4ed8; }
+.do-dp2-sent--neg  { background:#fee2e2; color:#991b1b; }
+.do-dp2-sent--neu  { background:var(--slate-100); color:var(--slate-500); }
+.do-dp2-content    { font-size:12px; color:var(--slate-700); line-height:1.7; margin-bottom:12px; background:var(--slate-50); border-radius:var(--radius-sm); padding:10px 12px; border:1px solid var(--slate-200); word-break:break-word; }
+.do-dp2-media      { border-radius:var(--radius-sm); overflow:hidden; margin-bottom:10px; }
+.do-dp2-media img  { width:100%; max-height:220px; object-fit:cover; display:block; }
+.do-dp2-stats      { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:10px; }
+.do-dp2-stat       { background:var(--slate-50); border-radius:var(--radius-sm); padding:8px 10px; border:1px solid var(--slate-200); text-align:center; }
+.do-dp2-stat-val   { font-size:14px; font-weight:700; color:var(--slate-900); }
+.do-dp2-stat-lbl   { font-size:9px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.4px; margin-top:1px; }
+.do-dp2-link {
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    padding:9px 14px; background:var(--dash-primary); color:#fff;
+    border-radius:var(--radius-sm); font-size:12px; font-weight:700;
+    text-decoration:none; transition:filter .14s; margin-top:4px;
+}
 .do-dp2-link:hover { filter:brightness(1.1); color:#fff; }
 .do-dp2-link i { font-size:13px; }
 
@@ -276,11 +305,16 @@
 }
 .do-plat-picker.show { display:block; }
 .do-plat-picker-head { padding:4px 9px 6px; font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--slate-100); margin-bottom:3px; }
-.do-plat-btn { display:flex; align-items:center; gap:7px; padding:7px 10px; border-radius:var(--radius-sm); font-size:12px; font-weight:600; cursor:pointer; background:transparent; border:none; font-family:inherit; width:100%; text-align:left; color:var(--slate-700); transition:background .12s; }
-.do-plat-btn:hover { background:var(--dash-primary-lt); color:var(--dash-primary); }
+.do-plat-btn {
+    display:flex; align-items:center; gap:7px; padding:7px 10px;
+    border-radius:var(--radius-sm); font-size:12px; font-weight:600;
+    cursor:pointer; background:transparent; border:none;
+    font-family:inherit; width:100%; text-align:left; color:var(--slate-700); transition:background .12s;
+}
+.do-plat-btn:hover  { background:var(--dash-primary-lt); color:var(--dash-primary); }
 .do-plat-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-left:auto; }
 
-@media (max-width: 640px) { .do-panel { width: 100vw; } }
+@media(max-width:640px) { .do-panel { width:100vw; } }
 </style>
 @endsection
 
@@ -342,7 +376,6 @@
 
 {{-- ══ KPI Cards ══ --}}
 <div class="row">
-    {{-- My Projects --}}
     <div class="col-md-6 col-xl-3">
         <div class="card bg-primary text-white fade-up fade-up-d1">
             <div class="card-body">
@@ -361,8 +394,6 @@
             </div>
         </div>
     </div>
-
-    {{-- Total Mentions --}}
     <div class="col-md-6 col-xl-3">
         <div class="card bg-success text-white fade-up fade-up-d2">
             <div class="card-body">
@@ -381,8 +412,6 @@
             </div>
         </div>
     </div>
-
-    {{-- Positive --}}
     <div class="col-md-6 col-xl-3">
         <div class="card bg-warning text-white fade-up fade-up-d3">
             <div class="card-body">
@@ -403,8 +432,6 @@
             </div>
         </div>
     </div>
-
-    {{-- Negative --}}
     <div class="col-md-6 col-xl-3">
         <div class="card bg-danger text-white fade-up fade-up-d4">
             <div class="card-body">
@@ -427,6 +454,8 @@
     </div>
 </div>
 
+
+
 {{-- ══ Main Layout ══ --}}
 <div class="row">
 
@@ -440,7 +469,9 @@
             <div class="card-body p-0">
                 <div class="p-3 border-bottom">
                     <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-transparent border-end-0"><i class="ph ph-magnifying-glass text-muted"></i></span>
+                        <span class="input-group-text bg-transparent border-end-0">
+                            <i class="ph ph-magnifying-glass text-muted"></i>
+                        </span>
                         <input type="text" class="form-control border-start-0" id="sidebarSearch" placeholder="Search project...">
                     </div>
                 </div>
@@ -491,7 +522,7 @@
                     <div class="card-body">
                         <div class="sk-block mb-2" style="width:220px;height:10px;"></div>
                         <div class="sk-block mb-4" style="width:150px;height:10px;"></div>
-                        <div class="sk-block" style="width:100%;height:180px;border-radius:5px;"></div>
+                        <div class="sk-block" style="width:100%;height:200px;border-radius:5px;"></div>
                     </div>
                 </div>
                 @endfor
@@ -560,7 +591,6 @@
                             <div class="col-6 col-lg-3">
                                 <div class="stat-chip clickable p-2 rounded-2 text-center"
                                      style="background:var(--dash-primary-lt);"
-                                     title="Lihat semua mentions"
                                      onclick="DashPanel.open('all','all','{{ $id }}')">
                                     <small class="text-muted d-block mb-1 f-10 fw-semibold text-uppercase">Total</small>
                                     <h6 class="mb-0" style="color:var(--dash-primary);">{{ number_format($total) }}</h6>
@@ -569,7 +599,6 @@
                             <div class="col-6 col-lg-3">
                                 <div class="stat-chip clickable p-2 rounded-2 text-center"
                                      style="background:var(--green-light);"
-                                     title="Lihat mentions positif"
                                      onclick="DashPanel.open('all','pos','{{ $id }}')">
                                     <small class="text-muted d-block mb-1 f-10 fw-semibold text-uppercase">Positive</small>
                                     <h6 class="mb-0 text-success">{{ number_format($pos) }}</h6>
@@ -578,7 +607,6 @@
                             <div class="col-6 col-lg-3">
                                 <div class="stat-chip clickable p-2 rounded-2 text-center"
                                      style="background:var(--slate-50);"
-                                     title="Lihat mentions netral"
                                      onclick="DashPanel.open('all','neu','{{ $id }}')">
                                     <small class="text-muted d-block mb-1 f-10 fw-semibold text-uppercase">Neutral</small>
                                     <h6 class="mb-0 text-muted">{{ number_format($neu) }}</h6>
@@ -587,7 +615,6 @@
                             <div class="col-6 col-lg-3">
                                 <div class="stat-chip clickable p-2 rounded-2 text-center"
                                      style="background:var(--red-light);"
-                                     title="Lihat mentions negatif"
                                      onclick="DashPanel.open('all','neg','{{ $id }}')">
                                     <small class="text-muted d-block mb-1 f-10 fw-semibold text-uppercase">Negative</small>
                                     <h6 class="mb-0 text-danger">{{ number_format($neg) }}</h6>
@@ -597,7 +624,9 @@
 
                         {{-- Chart Header --}}
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <small class="text-muted fw-semibold text-uppercase" style="letter-spacing:.5px;font-size:11px;">Mention Trend</small>
+                            <small class="text-muted fw-semibold text-uppercase" style="letter-spacing:.5px;font-size:11px;">
+                                Mention Trend
+                            </small>
                             <small class="text-muted f-12">
                                 {{ \Carbon\Carbon::parse($startDate)->format('d M') }} &ndash; {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
                             </small>
@@ -609,7 +638,7 @@
                                 <div class="spin-ring"></div>
                                 <span>Loading chart...</span>
                             </div>
-                            <div id="chart-{{ $id }}" style="display:none;"></div>
+                            <div id="chart-{{ $id }}" style="width:100%;height:280px;display:none;cursor:pointer;"></div>
                         </div>
                     </div>
                 </div>
@@ -626,6 +655,7 @@
                 </div>
                 @endforelse
             </div>
+
         </div>
     </div>
 </div>
@@ -634,7 +664,7 @@
     <i class="ph ph-arrow-up"></i>
 </button>
 
-{{-- ══ Slide Panel (mentions drawer) ══ --}}
+{{-- ══ Slide Panel (mentions drawer) — same structure as data-overview ══ --}}
 <div class="do-panel-overlay" id="dashPanelOverlay" onclick="DashPanel.closeByOverlay()"></div>
 <div class="do-panel" id="dashSntPanel">
     <div class="do-panel-header">
@@ -685,222 +715,8 @@
 @section('scripts')
 <script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-
-    // Date label
-    const el = document.getElementById('mkDateLabel');
-    if (el) el.textContent = new Date().toLocaleDateString('en-US', {
-        weekday:'short', day:'numeric', month:'short', year:'numeric'
-    });
-
-    // Scroll-to-top
-    const scrollBtn = document.getElementById('scrollTopBtn');
-    window.addEventListener('scroll', () => scrollBtn.classList.toggle('visible', window.scrollY > 300), { passive:true });
-
-    // Sidebar search
-    const searchInput = document.getElementById('sidebarSearch');
-    if (searchInput) {
-        searchInput.addEventListener('input', function () {
-            const q = this.value.toLowerCase().trim();
-            document.querySelectorAll('.proj-item').forEach(item => {
-                item.style.display = (!q || item.dataset.name.includes(q)) ? '' : 'none';
-            });
-        });
-    }
-
-    // Sidebar click
-    document.querySelectorAll('.proj-item').forEach(function (item) {
-        item.addEventListener('click', function () {
-            const card = document.getElementById('proj-card-' + item.dataset.id);
-            document.querySelectorAll('.proj-item').forEach(el => el.classList.remove('active-sidebar'));
-            item.classList.add('active-sidebar');
-            if (!card) return;
-            card.scrollIntoView({ behavior:'smooth', block:'start' });
-            card.classList.add('highlighted');
-            setTimeout(() => card.classList.remove('highlighted'), 2000);
-        });
-    });
-
-    // Swap skeleton → cards (instant)
-    const skel  = document.getElementById('skeletonWrap');
-    const cards = document.getElementById('actualCards');
-    if (skel)  skel.style.display = 'none';
-    if (cards) cards.style.display = 'block';
-
-    initLazyCharts();
-});
-
-/* ── Lazy Chart Init ── */
-function initLazyCharts() {
-    if (typeof IntersectionObserver === 'undefined') {
-        document.querySelectorAll('.lazy-card').forEach(function (c, i) {
-            c.classList.add('card-visible');
-            setTimeout(() => fetchAndRenderChart(c.dataset.projectId), i * 400);
-        });
-        return;
-    }
-
-    const obs = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-            if (!entry.isIntersecting) return;
-            const sentinel = entry.target;
-            const card     = document.getElementById(sentinel.dataset.target);
-            if (!card || card.dataset.loaded === 'true') { obs.unobserve(sentinel); return; }
-            card.dataset.loaded = 'true';
-            card.classList.add('card-visible');
-            obs.unobserve(sentinel);
-            setTimeout(() => fetchAndRenderChart(card.dataset.projectId), 120);
-        });
-    }, { rootMargin:'150px 0px', threshold:0.01 });
-
-    document.querySelectorAll('.lazy-sentinel').forEach(s => obs.observe(s));
-}
-
-/* ── AJAX fetch per project ── */
-function fetchAndRenderChart(projectId) {
-    if (PROJECT_TIMELINES[String(projectId)]) {
-        renderProjectChart(projectId);
-        return;
-    }
-
-    const loadEl = document.getElementById('chart-loading-' + projectId);
-    if (loadEl) loadEl.querySelector('span').textContent = 'Fetching data...';
-
-    const url = CHART_DATA_URL
-        + '?project_id=' + encodeURIComponent(projectId)
-        + '&start_date=' + encodeURIComponent(START_DATE)
-        + '&end_date='   + encodeURIComponent(END_DATE);
-
-    fetch(url, {
-        method  : 'GET',
-        headers : {
-            'Accept'          : 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRF-TOKEN'    : CSRF_TOKEN,
-        },
-        credentials: 'same-origin',
-    })
-    .then(function (res) {
-        if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + res.statusText);
-        return res.json();
-    })
-    .then(function (json) {
-        PROJECT_TIMELINES[String(projectId)] = json.timeline || {};
-        renderProjectChart(projectId);
-    })
-    .catch(function (err) {
-        console.error('[Chart] Fetch failed for project', projectId, err);
-        const wrapEl = document.getElementById('chart-wrap-' + projectId);
-        if (loadEl)  loadEl.remove();
-        if (wrapEl)  wrapEl.innerHTML =
-            '<div class="chart-empty"><i class="ph ph-wifi-slash"></i><span>Failed to load chart data</span></div>';
-    });
-}
-
-/* ── Render chart from cache ── */
-function renderProjectChart(projectId) {
-    const chartEl = document.getElementById('chart-' + projectId);
-    const wrapEl  = document.getElementById('chart-wrap-' + projectId);
-    const loadEl  = document.getElementById('chart-loading-' + projectId);
-    const tl      = PROJECT_TIMELINES[String(projectId)] || null;
-
-    if (!chartEl || !wrapEl || typeof ApexCharts === 'undefined') return;
-
-    if (!tl || !tl.dates || tl.dates.length === 0) {
-        if (loadEl) loadEl.remove();
-        wrapEl.innerHTML = '<div class="chart-empty"><i class="ph ph-chart-line"></i><span>No data for selected range</span></div>';
-        return;
-    }
-
-    chartEl.style.display = 'block';
-
-    const style   = getComputedStyle(document.documentElement);
-    const primary = style.getPropertyValue('--bs-primary').trim() || '#4361EE';
-    const C = { primary, green:'#10B981', gray:'#94A3B8', red:'#EF4444' };
-    const labels  = tl.dates;
-
-    var options = {
-        chart: {
-            type: 'line',
-            height: 250,
-            fontFamily: 'inherit',
-            toolbar: { show: false },
-            zoom: { enabled: false },
-            events: {
-                mounted: function () {
-                    if (loadEl) { loadEl.classList.add('hidden'); setTimeout(function(){ loadEl.remove(); }, 260); }
-                },
-            },
-        },
-        series: [
-            { name: 'Mentions', data: tl.values },
-            { name: 'Positive', data: tl.sentiment.positive },
-            { name: 'Neutral',  data: tl.sentiment.neutral },
-            { name: 'Negative', data: tl.sentiment.negative },
-        ],
-        colors: [C.primary, C.green, C.gray, C.red],
-        stroke: {
-            width: [2, 2, 1.6, 1.6],
-            curve: 'smooth',
-            dashArray: [0, 0, 5, 5],
-        },
-        markers: {
-            size: labels.length <= 14 ? 3 : 2,
-            hover: { sizeOffset: 3 },
-            strokeWidth: 2,
-            strokeColors: '#fff',
-        },
-        xaxis: {
-            categories: labels,
-            labels: {
-                style: { fontSize: '10px', fontWeight: 600, colors: C.gray },
-                rotate: 0,
-                hideOverlappingLabels: true,
-            },
-            axisBorder: { show: false },
-            axisTicks: { show: false },
-            tickAmount: labels.length > 30 ? 10 : 8,
-        },
-        yaxis: {
-            labels: {
-                style: { fontSize: '10px', fontWeight: 600, colors: C.gray },
-                formatter: function (v) { return v >= 1000 ? (v/1000).toFixed(1)+'k' : v; },
-            },
-            tickAmount: 5,
-        },
-        grid: {
-            borderColor: 'rgba(226,232,240,.5)',
-            strokeDashArray: 0,
-            xaxis: { lines: { show: false } },
-            yaxis: { lines: { show: true } },
-            padding: { top: 4, right: 6, bottom: 0, left: 4 },
-        },
-        legend: {
-            position: 'bottom',
-            horizontalAlign: 'left',
-            fontSize: '11px',
-            fontWeight: 600,
-            labels: { colors: C.gray },
-            markers: { width: 7, height: 7, radius: 12 },
-            itemMargin: { horizontal: 16 },
-        },
-        tooltip: {
-            shared: true,
-            intersect: false,
-            theme: 'light',
-            style: { fontSize: '12px' },
-            y: {
-                formatter: function (v) { return v !== undefined ? v.toLocaleString() : ''; },
-            },
-        },
-        fill: { opacity: 1 },
-    };
-
-    new ApexCharts(chartEl, options).render();
-}
-
 /* ══════════════════════════════════════════════════════
-   DASH PANEL — config
+   GLOBALS / CONFIG
 ══════════════════════════════════════════════════════ */
 const DashCfg = {
     sd: START_DATE,
@@ -919,375 +735,832 @@ const DashCfg = {
 
 const _$  = id => document.getElementById(id);
 const _es = s  => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const numK = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':String(n); };
+
+function getPrimary(){
+    return getComputedStyle(document.documentElement).getPropertyValue('--bs-primary').trim() || '#4361EE';
+}
 
 /* ══════════════════════════════════════════════════════
-   DASH PANEL (slide-in drawer)
+   DOM READY
 ══════════════════════════════════════════════════════ */
-const DashPanel = (()=>{
-    let _cache={}, _allItems=[], _filtered=[], _curSent='all', _curPlat=null, _curPid=null, _curPlatForSent='all';
-    const SM = {'1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg'};
-    const normSent = item => SM[String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim()]||'neu';
+document.addEventListener('DOMContentLoaded', function () {
 
-    function showPlatPicker(x,y,sent,pid){
-        _curPlatForSent=sent||'all'; if(pid)_curPid=pid;
-        const pp=_$('dashPlatPicker'); if(!pp) return;
-        pp.querySelectorAll('.do-plat-btn').forEach(btn=>{
-            const m=btn.getAttribute('onclick')||'';
-            const pm=m.match(/openPlatform\('([^']+)'/);
-            if(pm) btn.setAttribute('onclick',`DashPanel.openPlatform('${pm[1]}','${_curPlatForSent}')`);
+    // Date label
+    const el = _$('mkDateLabel');
+    if (el) el.textContent = new Date().toLocaleDateString('en-US', {
+        weekday:'short', day:'numeric', month:'short', year:'numeric'
+    });
+
+    // Scroll-to-top
+    const scrollBtn = _$('scrollTopBtn');
+    window.addEventListener('scroll', () => scrollBtn.classList.toggle('visible', window.scrollY > 300), { passive:true });
+
+    // Sidebar search
+    const searchInput = _$('sidebarSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            const q = this.value.toLowerCase().trim();
+            document.querySelectorAll('.proj-item').forEach(item => {
+                item.style.display = (!q || item.dataset.name.includes(q)) ? '' : 'none';
+            });
+        });
+    }
+
+    // Sidebar click → scroll + highlight card
+    document.querySelectorAll('.proj-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+            const card = _$('proj-card-' + item.dataset.id);
+            document.querySelectorAll('.proj-item').forEach(el => el.classList.remove('active-sidebar'));
+            item.classList.add('active-sidebar');
+            if (!card) return;
+            card.scrollIntoView({ behavior:'smooth', block:'start' });
+            card.classList.add('highlighted');
+            setTimeout(() => card.classList.remove('highlighted'), 2000);
+        });
+    });
+
+    // Swap skeleton → cards
+    const skel  = _$('skeletonWrap');
+    const cards = _$('actualCards');
+    if (skel)  skel.style.display = 'none';
+    if (cards) cards.style.display = 'block';
+
+    initLazyCharts();
+});
+
+/* ══════════════════════════════════════════════════════
+   LAZY CHART INIT
+══════════════════════════════════════════════════════ */
+function initLazyCharts() {
+    if (typeof IntersectionObserver === 'undefined') {
+        document.querySelectorAll('.lazy-card').forEach(function (c, i) {
+            c.classList.add('card-visible');
+            setTimeout(() => fetchAndRenderChart(c.dataset.projectId), i * 400);
+        });
+        return;
+    }
+
+    const obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            const sentinel = entry.target;
+            const card     = _$('proj-card-' + sentinel.dataset.target.replace('proj-card-',''));
+            // re-use target attr which already holds the full id
+            const cardEl   = document.getElementById(sentinel.dataset.target);
+            if (!cardEl || cardEl.dataset.loaded === 'true') { obs.unobserve(sentinel); return; }
+            cardEl.dataset.loaded = 'true';
+            cardEl.classList.add('card-visible');
+            obs.unobserve(sentinel);
+            setTimeout(() => fetchAndRenderChart(cardEl.dataset.projectId), 120);
+        });
+    }, { rootMargin:'150px 0px', threshold:0.01 });
+
+    document.querySelectorAll('.lazy-sentinel').forEach(s => obs.observe(s));
+}
+
+/* ══════════════════════════════════════════════════════
+   FETCH CHART DATA
+══════════════════════════════════════════════════════ */
+function fetchAndRenderChart(projectId) {
+    if (PROJECT_TIMELINES[String(projectId)]) {
+        renderProjectChart(projectId);
+        return;
+    }
+
+    const loadEl = _$('chart-loading-' + projectId);
+    if (loadEl) { const sp = loadEl.querySelector('span'); if(sp) sp.textContent = 'Fetching data...'; }
+
+    const url = CHART_DATA_URL
+        + '?project_id=' + encodeURIComponent(projectId)
+        + '&start_date=' + encodeURIComponent(START_DATE)
+        + '&end_date='   + encodeURIComponent(END_DATE);
+
+    fetch(url, {
+        method  : 'GET',
+        headers : {
+            'Accept'          : 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN'    : CSRF_TOKEN,
+        },
+        credentials: 'same-origin',
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+    })
+    .then(json => {
+        PROJECT_TIMELINES[String(projectId)] = json.timeline || {};
+        renderProjectChart(projectId);
+    })
+    .catch(err => {
+        console.error('[Chart] Fetch failed for project', projectId, err);
+        const wrapEl = _$('chart-wrap-' + projectId);
+        if (loadEl)  loadEl.remove();
+        if (wrapEl)  wrapEl.innerHTML =
+            '<div class="chart-empty"><i class="ph ph-wifi-slash"></i><span>Failed to load chart data</span></div>';
+    });
+}
+
+/* ══════════════════════════════════════════════════════
+   RENDER CHART
+   - Basic area, smooth spline (like image 2)
+   - Floating num-badge data labels on Total + Positive
+     (clean text, no box bg — like image 1 label style)
+══════════════════════════════════════════════════════ */
+function renderProjectChart(projectId) {
+    const chartEl = _$('chart-' + projectId);
+    const wrapEl  = _$('chart-wrap-' + projectId);
+    const loadEl  = _$('chart-loading-' + projectId);
+    const tl      = PROJECT_TIMELINES[String(projectId)] || null;
+
+    if (!chartEl || !wrapEl || typeof ApexCharts === 'undefined') return;
+
+    if (!tl || !tl.dates || tl.dates.length === 0) {
+        if (loadEl) loadEl.remove();
+        wrapEl.innerHTML = '<div class="chart-empty"><i class="ph ph-chart-line"></i><span>No data for selected range</span></div>';
+        return;
+    }
+
+    chartEl.style.display = 'block';
+
+    const primary = getPrimary();
+    const C = {
+        primary,
+        green : '#10B981',
+        gray  : '#94A3B8',
+        red   : '#EF4444',
+    };
+
+    /* x-axis short labels */
+    const labels = tl.dates.map(dt => {
+        try {
+            const d = new Date(dt + 'T00:00:00');
+            return `${d.getDate()}/${d.getMonth() + 1}`;
+        } catch(e) { return dt; }
+    });
+
+    /* skip data-labels when there are too many points (gets crowded) */
+    const showLabels = labels.length <= 20;
+
+    const options = {
+        /* ── Chart core ── */
+        chart: {
+            type      : 'area',
+            height    : 280,
+            fontFamily: 'inherit',
+            background: 'transparent',
+            toolbar   : { show: false },
+            zoom      : { enabled: false },
+            sparkline : { enabled: false },
+            animations: {
+                enabled  : true,
+                easing   : 'easeInOutQuad',
+                speed    : 700,
+                animateGradually: { enabled: true, delay: 100 },
+            },
+            events: {
+                mounted: function () {
+                    if (loadEl) {
+                        loadEl.classList.add('hidden');
+                        setTimeout(() => { try { loadEl.remove(); } catch(e){} }, 260);
+                    }
+                },
+                markerClick: function(e, ctx, cfg) {
+                    const sentMap = ['all', 'pos', 'neu', 'neg'];
+                    DashPanel.open('all', sentMap[cfg.seriesIndex] || 'all', projectId);
+                },
+            },
+        },
+
+        /* ── Series ── */
+        series: [
+            { name: 'Total',    data: tl.values                    },
+            { name: 'Positive', data: tl.sentiment?.positive || [] },
+            { name: 'Neutral',  data: tl.sentiment?.neutral  || [] },
+            { name: 'Negative', data: tl.sentiment?.negative || [] },
+        ],
+
+        colors: [C.primary, C.green, C.gray, C.red],
+
+        /* ── Stroke: smooth spline ── */
+        stroke: {
+            curve  : 'smooth',
+            width  : [2.5, 2, 1.5, 1.5],
+            lineCap: 'round',
+        },
+
+        /* ── Fill: per-series gradient opacity → layered spline area look ── */
+        fill: {
+            type    : ['gradient', 'gradient', 'gradient', 'gradient'],
+            gradient: {
+                type           : 'vertical',
+                shadeIntensity : 0,
+                inverseColors  : false,
+                opacityFrom    : [0.35, 0.30, 0.10, 0.10],
+                opacityTo      : [0.05, 0.05, 0.01, 0.01],
+                stops          : [0, 80, 100],
+            },
+        },
+
+        /* ── Markers: small circles visible at every point ── */
+        markers: {
+            size        : showLabels ? 3.5 : (labels.length <= 45 ? 2.5 : 0),
+            strokeWidth : 2,
+            strokeColors: '#fff',
+            colors      : [C.primary, C.green, C.gray, C.red],
+            hover       : { sizeOffset: 2 },
+            shape       : 'circle',
+            discrete    : [],
+        },
+
+        /* ── Data Labels: floating text badge (no box background) ──
+           Style matches image 1: coloured bold number above the point,
+           small pill-shaped text — no rectangle background frame.      */
+        dataLabels: {
+            enabled        : showLabels,
+            enabledOnSeries: [0, 1],      // Total (primary) + Positive (green) only
+            formatter      : v => numK(v),
+            offsetY        : -7,
+            style: {
+                fontSize  : '10px',
+                fontFamily: 'inherit',
+                fontWeight: '800',
+                /* Series 0 = primary colour, Series 1 = green */
+                colors    : [C.primary, C.green],
+            },
+            /* No background box — pure floating text like image 1 */
+            background: {
+                enabled: false,
+            },
+            dropShadow: { enabled: false },
+        },
+
+        /* ── X-axis ── */
+        xaxis: {
+            categories: labels,
+            axisBorder: { show: false },
+            axisTicks : { show: false },
+            labels: {
+                style: {
+                    fontFamily: 'inherit',
+                    fontSize  : '10px',
+                    fontWeight: 600,
+                    colors    : C.gray,
+                },
+                hideOverlappingLabels: true,
+                rotate  : 0,
+                offsetY : 2,
+            },
+            crosshairs: {
+                show    : true,
+                position: 'back',
+                stroke  : { color: '#CBD5E1', width: 1, dashArray: 3 },
+            },
+            tickAmount: labels.length > 30 ? 10 : (labels.length > 14 ? 7 : labels.length),
+        },
+
+        /* ── Y-axis ── */
+        yaxis: {
+            labels: {
+                style    : { fontFamily:'inherit', fontSize:'10px', fontWeight:600, colors:C.gray },
+                formatter: v => numK(v),
+                offsetX  : -4,
+            },
+            axisBorder: { show: false },
+            axisTicks : { show: false },
+            tickAmount: 4,
+        },
+
+        /* ── Grid: subtle horizontal lines only ── */
+        grid: {
+            borderColor    : 'rgba(226,232,240,.55)',
+            strokeDashArray: 3,
+            padding        : { top: showLabels ? 22 : 10, right: 8, bottom: 0, left: 4 },
+            xaxis: { lines: { show: false } },
+            yaxis: { lines: { show: true  } },
+        },
+
+        /* ── Legend ── */
+        legend: {
+            position       : 'bottom',
+            horizontalAlign: 'left',
+            fontSize       : '11px',
+            fontFamily     : 'inherit',
+            fontWeight     : 600,
+            labels         : { colors: C.gray },
+            markers        : { width: 7, height: 7, radius: 12, offsetX: -2 },
+            itemMargin     : { horizontal: 14, vertical: 4 },
+            offsetY        : 4,
+            onItemClick    : { toggleDataSeries: true },
+        },
+
+        /* ── Tooltip: shared crosshair (image 1 style) ── */
+        tooltip: {
+            shared   : true,
+            intersect: false,
+            style    : { fontFamily: 'inherit', fontSize: '12px' },
+            y: {
+                formatter: v => (v !== undefined ? parseInt(v || 0).toLocaleString('id-ID') : ''),
+            },
+            x: {
+                formatter: (val, opts) => {
+                    const idx = opts?.dataPointIndex;
+                    const raw = tl.dates?.[idx];
+                    if (!raw) return val;
+                    try {
+                        return new Date(raw + 'T00:00:00').toLocaleDateString('id-ID', {
+                            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+                        });
+                    } catch(e) { return raw; }
+                },
+            },
+            marker: { show: true },
+        },
+    };
+
+    /* destroy previous instance */
+    const prevKey = '__apexInst_' + projectId;
+    if (window[prevKey]) { try { window[prevKey].destroy(); } catch(e){} }
+
+    chartEl.innerHTML = '';
+    const inst = new ApexCharts(chartEl, options);
+    window[prevKey] = inst;
+    inst.render();
+
+    /* whole-chart area click → open mentions panel */
+    chartEl.addEventListener('click', e => {
+        const t = e.target;
+        const skip = t.classList.contains('apexcharts-marker')
+            || t.closest('.apexcharts-datalabels')
+            || t.closest('.apexcharts-legend');
+        if (!skip) DashPanel.open('all', 'all', projectId);
+    });
+}
+
+/* ══════════════════════════════════════════════════════
+   DASH PANEL — slide-in drawer (full data-overview parity)
+══════════════════════════════════════════════════════ */
+const DashPanel = (() => {
+    let _cache = {}, _allItems = [], _filtered = [], _curSent = 'all',
+        _curPlat = null, _curPid = null, _curPlatForSent = 'all';
+
+    const SENT_MAP = {
+        '1':'pos','positive':'pos','positif':'pos',
+        '-1':'neg','2':'neg','negative':'neg','negatif':'neg',
+    };
+    const _normSent = item => SENT_MAP[String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim()] || 'neu';
+
+    /* ── Platform picker ── */
+    function showPlatPicker(x, y, sent, pid) {
+        _curPlatForSent = sent || 'all';
+        if (pid) _curPid = pid;
+        const pp = _$('dashPlatPicker');
+        if (!pp) return;
+        pp.querySelectorAll('.do-plat-btn').forEach(btn => {
+            const m  = btn.getAttribute('onclick') || '';
+            const pm = m.match(/openPlatform\('([^']+)'/);
+            if (pm) btn.setAttribute('onclick', `DashPanel.openPlatform('${pm[1]}','${_curPlatForSent}')`);
         });
         const pw=180,ph=250,vw=window.innerWidth,vh=window.innerHeight;
-        let left=x+10,top=y-10;
-        if(left+pw>vw-8)left=x-pw-10; if(top+ph>vh-8)top=vh-ph-8; if(top<8)top=8;
-        pp.style.left=left+'px'; pp.style.top=top+'px'; pp.classList.add('show');
+        let left=x+10, top=y-10;
+        if (left+pw>vw-8) left=x-pw-10;
+        if (top+ph>vh-8)  top=vh-ph-8;
+        if (top<8) top=8;
+        pp.style.left = left+'px'; pp.style.top = top+'px';
+        pp.classList.add('show');
     }
 
-    function openPlatform(platform,sentiment){
+    function openPlatform(platform, sentiment) {
         _$('dashPlatPicker')?.classList.remove('show');
-        open(platform, sentiment||_curPlatForSent||'all', _curPid);
+        open(platform, sentiment || _curPlatForSent || 'all', _curPid);
     }
 
-    async function open(platform, sentiment, projectId){
-        _curPlat=platform; _curSent=sentiment||'all'; if(projectId)_curPid=projectId;
-        const meta=DashCfg.platMeta[platform]||{label:platform,color:'#4361EE'};
+    /* ── Open panel ── */
+    async function open(platform, sentiment, projectId) {
+        _curPlat = platform;
+        _curSent = sentiment || 'all';
+        if (projectId) _curPid = projectId;
+
+        const meta = DashCfg.platMeta[platform] || { label: platform, color: '#4361EE' };
 
         DashDetail.close();
 
         _$('dashPanelDot').style.background = meta.color;
-        _$('dashPanelTitle').textContent    = meta.label + (platform==='all'?' — All Platforms':'');
-        _$('dashPanelMeta').textContent     = DashCfg.sd+' – '+DashCfg.ed;
+        _$('dashPanelTitle').textContent    = meta.label + (platform === 'all' ? ' — All Platforms' : '');
+        _$('dashPanelMeta').textContent     = DashCfg.sd + ' – ' + DashCfg.ed;
 
-        document.querySelectorAll('#dashSntPanel .do-panel-tab').forEach(t=>t.classList.toggle('active',t.dataset.s===_curSent));
+        document.querySelectorAll('#dashSntPanel .do-panel-tab').forEach(t =>
+            t.classList.toggle('active', t.dataset.s === _curSent)
+        );
 
-        const list=_$('dashPanelList');
-        list.innerHTML=`<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat mentions…</span></div>`;
+        const list = _$('dashPanelList');
+        list.innerHTML = `<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat mentions…</span></div>`;
 
-        const overlay=_$('dashPanelOverlay'), panel=_$('dashSntPanel');
+        const overlay = _$('dashPanelOverlay'), panel = _$('dashSntPanel');
         overlay.classList.remove('hiding'); panel.classList.remove('hiding');
-        overlay.classList.add('show'); panel.classList.add('show');
+        overlay.classList.add('show');     panel.classList.add('show');
 
-        try{
-            const key=`${_curPid}_${platform}_${DashCfg.sd}_${DashCfg.ed}`;
-            if(!_cache[key]) _cache[key]=await _fetchAll(platform,_curPid);
-            _allItems=_cache[key];
-            _filtered=_filterBySent(_allItems,_curSent);
-            _render(list,_filtered,platform,meta.color);
-        }catch(err){
-            list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:13px;">Gagal memuat data<br><small>${_es(err.message)}</small></div>`;
+        try {
+            const key = `${_curPid}_${platform}_${DashCfg.sd}_${DashCfg.ed}`;
+            if (!_cache[key]) _cache[key] = await _fetchAll(platform, _curPid);
+            _allItems = _cache[key];
+            _filtered = _filterBySent(_allItems, _curSent);
+            _render(list, _filtered, platform, meta.color);
+        } catch (err) {
+            list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:13px;">Gagal memuat data<br><small>${_es(err.message)}</small></div>`;
         }
     }
 
-    function close(){
-        const overlay=_$('dashPanelOverlay'), panel=_$('dashSntPanel');
+    /* ── Close ── */
+    function close() {
+        const overlay = _$('dashPanelOverlay'), panel = _$('dashSntPanel');
         panel.classList.add('hiding'); overlay.classList.add('hiding');
-        setTimeout(()=>{
+        setTimeout(() => {
             panel.classList.remove('show','hiding');
             overlay.classList.remove('show','hiding');
             DashDetail.close();
-        },240);
+        }, 240);
     }
-    function closeByOverlay(){ close(); }
+    function closeByOverlay() { close(); }
 
-    function filterSent(sent){
-        _curSent=sent;
-        document.querySelectorAll('#dashSntPanel .do-panel-tab').forEach(t=>t.classList.toggle('active',t.dataset.s===sent));
-        _filtered=_filterBySent(_allItems,sent);
-        const meta=DashCfg.platMeta[_curPlat]||{color:'#4361EE'};
-        _render(_$('dashPanelList'),_filtered,_curPlat,meta.color);
+    /* ── Filter by sentiment ── */
+    function filterSent(sent) {
+        _curSent = sent;
+        document.querySelectorAll('#dashSntPanel .do-panel-tab').forEach(t =>
+            t.classList.toggle('active', t.dataset.s === sent)
+        );
+        _filtered = _filterBySent(_allItems, sent);
+        const meta = DashCfg.platMeta[_curPlat] || { color:'#4361EE' };
+        _render(_$('dashPanelList'), _filtered, _curPlat, meta.color);
     }
 
-    function _filterBySent(items,sent){ return sent==='all'?items:items.filter(i=>normSent(i)===sent); }
+    function _filterBySent(items, sent) {
+        return sent === 'all' ? items : items.filter(i => _normSent(i) === sent);
+    }
 
-    function exportCsv(){
-        if(!_filtered.length){alert('Tidak ada data.');return;}
-        const rows=_filtered.map(item=>({
-            nama:(item.author_name||item.channel_name||item.from_name||item.publisher||item.source_name||'').trim(),
-            sentimen:{pos:'Positif',neg:'Negatif',neu:'Netral'}[normSent(item)],
-            tanggal:item.date_created||'',
-            url:item.url||item.link||'',
-            konten:(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,500),
+    /* ── Export CSV ── */
+    function exportCsv() {
+        if (!_filtered.length) { alert('Tidak ada data.'); return; }
+        const rows = _filtered.map(item => ({
+            nama    : (item.author_name||item.channel_name||item.from_name||item.publisher||item.source_name||'').trim(),
+            sentimen: { pos:'Positif', neg:'Negatif', neu:'Netral' }[_normSent(item)],
+            tanggal : item.date_created || '',
+            url     : item.url || item.link || '',
+            konten  : (item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,500),
         }));
-        const meta=DashCfg.platMeta[_curPlat]||{label:_curPlat||'all'};
-        const fn=`mentions_${meta.label.replace(/\s+/g,'_')}_${_curSent}_${DashCfg.sd}_${DashCfg.ed}`;
-        const headers=Object.keys(rows[0]);
-        const lines=[headers.join(';'),...rows.map(r=>headers.map(h=>{let v=String(r[h]||'').replace(/"/g,'""');return v.includes(';')||v.includes('"')||v.includes('\n')?`"${v}"`:v;}).join(';'))];
-        const blob=new Blob(['\uFEFF'+lines.join('\n')],{type:'text/csv;charset=utf-8;'});
-        const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:fn+'.csv'});
-        document.body.appendChild(a);a.click();document.body.removeChild(a);
+        const meta = DashCfg.platMeta[_curPlat] || { label: _curPlat || 'all' };
+        const fn   = `mentions_${meta.label.replace(/\s+/g,'_')}_${_curSent}_${DashCfg.sd}_${DashCfg.ed}`;
+        const headers = Object.keys(rows[0]);
+        const lines   = [
+            headers.join(';'),
+            ...rows.map(r => headers.map(h => {
+                let v = String(r[h]||'').replace(/"/g,'""');
+                return v.includes(';')||v.includes('"')||v.includes('\n') ? `"${v}"` : v;
+            }).join(';'))
+        ];
+        const blob = new Blob(['\uFEFF' + lines.join('\n')], { type:'text/csv;charset=utf-8;' });
+        const a    = Object.assign(document.createElement('a'), {
+            href    : URL.createObjectURL(blob),
+            download: fn + '.csv',
+        });
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
 
-    async function _fetchAll(platform,pid){
-        if(platform==='all'){
-            const all=['doc','twit','fb','instagram','youtube','tiktok'];
-            const res=await Promise.allSettled(all.map(p=>_fetchOne(p,pid)));
-            return res.flatMap(r=>r.status==='fulfilled'?r.value:[]);
+    /* ── Fetch all platforms ── */
+    async function _fetchAll(platform, pid) {
+        if (platform === 'all') {
+            const all = ['doc','twit','fb','instagram','youtube','tiktok'];
+            const res = await Promise.allSettled(all.map(p => _fetchOne(p, pid)));
+            return res.flatMap(r => r.status === 'fulfilled' ? r.value : []);
         }
-        if(platform==='social'){
-            const socials=['twit','fb','instagram','youtube','tiktok'];
-            const res=await Promise.allSettled(socials.map(p=>_fetchOne(p,pid)));
-            return res.flatMap(r=>r.status==='fulfilled'?r.value:[]);
+        if (platform === 'social') {
+            const s = ['twit','fb','instagram','youtube','tiktok'];
+            const res = await Promise.allSettled(s.map(p => _fetchOne(p, pid)));
+            return res.flatMap(r => r.status === 'fulfilled' ? r.value : []);
         }
-        return _fetchOne(platform,pid);
+        return _fetchOne(platform, pid);
     }
 
-    async function _fetchOne(platform,pid){
-        const q=`project_id=${pid}&start_date=${DashCfg.sd}&end_date=${DashCfg.ed}&rows=500&start=0`;
-        if(platform==='instagram'){
-            for(const sub of['postbylike','postbycomment','postbydate','']){
-                try{
-                    const r=await fetch(`/mk/api/news/ig-top-status?${q}${sub?'&sub='+sub:''}`);
-                    const d=await r.json();
-                    const items=Array.isArray(d.data)?d.data:(Array.isArray(d)?d:[]);
-                    if(items.length>0)return items.map(i=>({...i,_platform:platform}));
-                }catch(e){continue;}
+    async function _fetchOne(platform, pid) {
+        const q = `project_id=${pid}&start_date=${DashCfg.sd}&end_date=${DashCfg.ed}&rows=500&start=0`;
+
+        if (platform === 'instagram') {
+            for (const sub of ['postbylike','postbycomment','postbydate','']) {
+                try {
+                    const r = await fetch(`/mk/api/news/ig-top-status?${q}${sub ? '&sub='+sub : ''}`);
+                    const d = await r.json();
+                    const items = Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []);
+                    if (items.length > 0) return items.map(i => ({ ...i, _platform: platform }));
+                } catch(e) { continue; }
             }
-            return[];
+            return [];
         }
-        const eps={
-            doc     :`/mk/api/news/mentions?${q}`,
-            twit    :`/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,
-            fb      :`/mk/api/news/fb-top-status?${q}&sub=fblike`,
-            youtube :`/mk/api/news/ytb-top-status?${q}`,
-            tiktok  :`/mk/api/news/tiktok-top-status?${q}&sub=postbylike`,
+
+        const eps = {
+            doc    : `/mk/api/news/mentions?${q}`,
+            twit   : `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,
+            fb     : `/mk/api/news/fb-top-status?${q}&sub=fblike`,
+            youtube: `/mk/api/news/ytb-top-status?${q}`,
+            tiktok : `/mk/api/news/tiktok-top-status?${q}&sub=postbylike`,
         };
-        const twitFallback=`/mk/api/news/mentions?${q}&media_type=twit`;
-        const url=eps[platform]; if(!url)return[];
-        const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),30000);
-        try{
-            const r=await fetch(url,{signal:ctrl.signal}); clearTimeout(tid);
-            if(!r.ok)return[];
-            const d=await r.json();
-            let items=[];
-            if(Array.isArray(d?.data?.data))        items=d.data.data;
-            else if(Array.isArray(d?.data))          items=d.data;
-            else if(Array.isArray(d?.statuses))      items=d.statuses;
-            else if(Array.isArray(d?.tweets))        items=d.tweets;
-            else if(Array.isArray(d?.results))       items=d.results;
-            else if(Array.isArray(d?.posts))         items=d.posts;
-            else if(Array.isArray(d))                items=d;
-            else if(d?.data&&typeof d.data==='object'&&!Array.isArray(d.data)){
-                const vals=Object.values(d.data);
-                if(vals.length&&typeof vals[0]==='object')items=vals;
+        const twitFallback = `/mk/api/news/mentions?${q}&media_type=twit`;
+        const url = eps[platform]; if (!url) return [];
+
+        const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 30000);
+        try {
+            const r = await fetch(url, { signal: ctrl.signal }); clearTimeout(tid);
+            if (!r.ok) return [];
+            const d = await r.json();
+
+            let items = [];
+            if (Array.isArray(d?.data?.data))   items = d.data.data;
+            else if (Array.isArray(d?.data))     items = d.data;
+            else if (Array.isArray(d?.statuses)) items = d.statuses;
+            else if (Array.isArray(d?.tweets))   items = d.tweets;
+            else if (Array.isArray(d?.results))  items = d.results;
+            else if (Array.isArray(d?.posts))    items = d.posts;
+            else if (Array.isArray(d))           items = d;
+            else if (d?.data && typeof d.data === 'object' && !Array.isArray(d.data)) {
+                const vals = Object.values(d.data);
+                if (vals.length && typeof vals[0] === 'object') items = vals;
             }
-            // twitter fallback
-            if(platform==='twit'&&items.length===0){
-                try{
-                    const r2=await fetch(twitFallback);
-                    const d2=await r2.json();
-                    let fb=Array.isArray(d2?.data?.data)?d2.data.data:Array.isArray(d2?.data)?d2.data:Array.isArray(d2)?d2:[];
-                    items=fb.filter(m=>String(m.media_type||'').toLowerCase()==='twit'||String(m.tcode||'').toLowerCase()==='rt'||String(m.tcode||'').toLowerCase()==='twit');
-                }catch(e2){}
+
+            // Twitter fallback
+            if (platform === 'twit' && items.length === 0) {
+                try {
+                    const r2 = await fetch(twitFallback);
+                    const d2 = await r2.json();
+                    let fb = Array.isArray(d2?.data?.data) ? d2.data.data
+                           : Array.isArray(d2?.data)       ? d2.data
+                           : Array.isArray(d2)             ? d2 : [];
+                    items = fb.filter(m => {
+                        const tc = String(m.tcode||'').toLowerCase();
+                        const mt = String(m.media_type||'').toLowerCase();
+                        return tc === 'twit' || tc === 'rt' || mt === 'twit';
+                    });
+                } catch(e2) {}
             }
-            if(platform==='doc') items=items.filter(m=>{const tc=String(m.tcode||'').toLowerCase(),mt=String(m.media_type||'').toLowerCase();return tc==='berita'||mt==='berita'||mt==='doc'||mt==='news'||mt==='online'||mt==='article';});
-            return items.map(i=>({...i,_platform:platform}));
-        }catch(e){clearTimeout(tid);return[];}
+
+            if (platform === 'doc') items = items.filter(m => {
+                const tc = String(m.tcode||'').toLowerCase();
+                const mt = String(m.media_type||'').toLowerCase();
+                return tc==='berita'||mt==='berita'||mt==='doc'||mt==='news'||mt==='online'||mt==='article';
+            });
+
+            return items.map(i => ({ ...i, _platform: platform }));
+        } catch(e) { clearTimeout(tid); return []; }
     }
 
-    function _render(list,items,platform,accentColor){
-        if(!items.length){
-            list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`;
+    /* ── Render list ── */
+    function _render(list, items, platform, accentColor) {
+        if (!items.length) {
+            list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`;
             return;
         }
-        const SHOW=60;
-        list.innerHTML=items.slice(0,SHOW).map(item=>{
-            const plat=item._platform||platform;
-            const meta=DashCfg.platMeta[plat]||{label:plat,color:accentColor};
-            const rawName=(()=>{
-                if(plat==='fb')       return item.from_name||item.page_name||null;
-                if(plat==='instagram')return item.username||item.user_name||null;
-                if(plat==='tiktok')   return item.author_nickname||item.nickname||item.author?.nickname||null;
-                if(plat==='youtube')  return item.channel_title||item.channel_name||item.snippet?.channelTitle||null;
-                if(plat==='twit'){
-                    const ao=typeof item.author==='object'?item.author:(()=>{try{return JSON.parse(item.author||'{}');}catch(e){return{};}})();
-                    return item.name||ao?.name||ao?.scr_name||item.author_name||null;
+        const SHOW = 60;
+        list.innerHTML = items.slice(0, SHOW).map(item => {
+            const plat = item._platform || platform;
+            const meta = DashCfg.platMeta[plat] || { label: plat, color: accentColor };
+
+            const rawName = (() => {
+                if (plat === 'fb')        return item.from_name || item.page_name || null;
+                if (plat === 'instagram') return item.username  || item.user_name || null;
+                if (plat === 'tiktok')    return item.author_nickname || item.nickname || item.author?.nickname || null;
+                if (plat === 'youtube')   return item.channel_title   || item.channel_name || item.snippet?.channelTitle || null;
+                if (plat === 'twit') {
+                    const ao = typeof item.author === 'object' ? item.author
+                             : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; } })();
+                    return item.name || ao?.name || ao?.scr_name || item.author_name || null;
                 }
                 return null;
             })();
-            const name=(rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'Unknown').trim();
-            const isNum=/^\d{10,}$/.test(name);
-            const dName=isNum?`User ${name.slice(-4)}`:name;
-            const rawH=(()=>{
-                if(plat==='instagram')return item.username||'';
-                if(plat==='twit'){
-                    const ao=typeof item.author==='object'?item.author:(()=>{try{return JSON.parse(item.author||'{}');}catch(e){return{};}})();
-                    return item.screen_name||item.author_scr_name||ao?.scr_name||ao?.username||'';
+
+            const name  = (rawName || item.author_name || item.channel_name || item.publisher || item.source_name || 'Unknown').trim();
+            const isNum = /^\d{10,}$/.test(name);
+            const dName = isNum ? `User ${name.slice(-4)}` : name;
+
+            const rawH = (() => {
+                if (plat === 'instagram') return item.username || '';
+                if (plat === 'twit') {
+                    const ao = typeof item.author === 'object' ? item.author
+                             : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; } })();
+                    return item.screen_name || item.author_scr_name || ao?.scr_name || ao?.username || '';
                 }
-                return item.author_scr_name||item.screen_name||item.username||'';
+                return item.author_scr_name || item.screen_name || item.username || '';
             })().trim();
-            const handle=(()=>{
-                if(!rawH)return '';
-                const w=['twit','instagram','tiktok'].includes(plat)?(rawH.startsWith('@')?rawH:'@'+rawH):rawH;
-                return w.replace(/^@/,'').toLowerCase()===dName.toLowerCase()?'':w;
+
+            const handle = (() => {
+                if (!rawH) return '';
+                const w = ['twit','instagram','tiktok'].includes(plat)
+                        ? (rawH.startsWith('@') ? rawH : '@' + rawH) : rawH;
+                return w.replace(/^@/,'').toLowerCase() === dName.toLowerCase() ? '' : w;
             })();
-            const text=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,150);
-            const ao=(()=>{if(typeof item.author==='object'&&item.author)return item.author;try{return JSON.parse(item.author||'{}');}catch(e){return{};}})();
-            const av=(item.avatar_url||item.profile_image_url||ao?.image||item.author_image||item.profile_image||item.thumbnail||'').trim();
-            const dt=(item.date_created||item.created_at||'').split('T')[0];
-            const sent=normSent(item);
-            const sentLbl=sent==='pos'?'Pos':sent==='neg'?'Neg':'Neu';
-            const words=dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
-            const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||dName[0]||'?')).toUpperCase().replace(/['"]/g,'');
-            const avHtml=(av&&av.startsWith('http'))?`<img src="${_es(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">`:ini;
-            const sentBadge=`do-sent-badge--${sent}`;
-            const enc=encodeURIComponent(JSON.stringify(item));
+
+            const text = (item.content||item.caption||item.description||item.title||item.text||'')
+                .replace(/<[^>]*>/g,'').trim().slice(0,150);
+
+            const ao  = (() => { if (typeof item.author==='object'&&item.author) return item.author; try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; } })();
+            const av  = (item.avatar_url||item.profile_image_url||ao?.image||item.author_image||item.profile_image||item.thumbnail||'').trim();
+            const dt  = (item.date_created||item.created_at||'').split('T')[0];
+            const sent= _normSent(item);
+            const sentLbl = sent==='pos'?'Pos':sent==='neg'?'Neg':'Neu';
+
+            const words  = dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
+            const ini    = (words.length>=2 ? (words[0][0]+words[words.length-1][0]) : (words[0]?.[0]||dName[0]||'?')).toUpperCase().replace(/['"]/g,'');
+            const avHtml = (av && av.startsWith('http'))
+                ? `<img src="${_es(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">`
+                : ini;
+            const sentBadge = `do-sent-badge--${sent}`;
+            const enc = encodeURIComponent(JSON.stringify(item));
+
             return `<div class="do-panel-item" onclick="DashDetail.openEncoded('${enc}','${plat}')">
                 <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
                 <div class="do-panel-item-body">
                     <div class="do-panel-author">${_es(dName)}</div>
-                    ${handle?`<div class="do-panel-handle">${_es(handle)}</div>`:''}
+                    ${handle ? `<div class="do-panel-handle">${_es(handle)}</div>` : ''}
                     <div class="do-panel-text">${_es(text||'(tidak ada konten)')}</div>
                     <div class="do-panel-footer">
                         <span class="do-sent-badge ${sentBadge}">${sentLbl}</span>
                         <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
                         <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
-                        ${dt?`<span style="margin-left:auto;">${dt}</span>`:''}
+                        ${dt ? `<span style="margin-left:auto;">${dt}</span>` : ''}
                     </div>
                 </div>
             </div>`;
         }).join('');
-        if(items.length>SHOW) list.insertAdjacentHTML('beforeend',`<div style="padding:9px;text-align:center;font-size:11px;font-weight:600;color:#94A3B8;background:#F8FAFC;border-top:1px dashed #E2E8F0;">+${(items.length-SHOW).toLocaleString()} lainnya · Export CSV untuk lihat semua</div>`);
+
+        if (items.length > SHOW) {
+            list.insertAdjacentHTML('beforeend',
+                `<div style="padding:9px;text-align:center;font-size:11px;font-weight:600;color:#94A3B8;background:#F8FAFC;border-top:1px dashed #E2E8F0;">` +
+                `+${(items.length - SHOW).toLocaleString()} lainnya · Export CSV untuk lihat semua</div>`
+            );
+        }
     }
 
-    return{open,close,closeByOverlay,showPlatPicker,openPlatform,filterSent,exportCsv};
+    return { open, close, closeByOverlay, showPlatPicker, openPlatform, filterSent, exportCsv };
 })();
 
 /* ══════════════════════════════════════════════════════
-   DASH DETAIL (sub-panel dalam drawer)
+   DASH DETAIL — sub-panel (full data-overview parity)
 ══════════════════════════════════════════════════════ */
 const DashDetail = {
-    openEncoded(enc,plat){
-        try{ this.open(JSON.parse(decodeURIComponent(enc)),plat); }catch(e){}
+    openEncoded(enc, plat) {
+        try { this.open(JSON.parse(decodeURIComponent(enc)), plat); } catch(e) {}
     },
-    open(item,platform){
-        const panel=_$('dashDetailPanel'),body=_$('dashDetailBody'),title=_$('dashDetailTitle');
-        if(!panel||!body)return;
-        const meta=DashCfg.platMeta[platform]||{label:platform,color:'#4361EE'};
-        const SM2={'1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg'};
-        const raw=String(item.class_sentiment||item.sentiment||'0').toLowerCase();
-        const sent=SM2[raw]||'neu';
-        const SLBL={pos:'Positif',neg:'Negatif',neu:'Netral'};
-        const SBGS={pos:'do-dp2-sent--pos',neg:'do-dp2-sent--neg',neu:'do-dp2-sent--neu'};
 
-        const rawName=(()=>{
-            if(platform==='fb')       return item.from_name||item.page_name||null;
-            if(platform==='instagram')return item.username||null;
-            if(platform==='tiktok')   return item.author_nickname||item.nickname||item.author?.nickname||null;
-            if(platform==='youtube')  return item.channel_title||item.channel_name||item.snippet?.channelTitle||null;
-            if(platform==='twit'){
-                const ao=typeof item.author==='object'?item.author:(()=>{try{return JSON.parse(item.author||'{}');}catch(e){return{};}})();
-                return item.name||ao?.name||ao?.scr_name||item.author_name||null;
+    open(item, platform) {
+        const panel = _$('dashDetailPanel'), body = _$('dashDetailBody'), title = _$('dashDetailTitle');
+        if (!panel || !body) return;
+
+        const meta = DashCfg.platMeta[platform] || { label: platform, color: '#4361EE' };
+        const SM2  = { '1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg' };
+        const raw  = String(item.class_sentiment||item.sentiment||'0').toLowerCase();
+        const sent = SM2[raw] || 'neu';
+        const SLBL = { pos:'Positif', neg:'Negatif', neu:'Netral' };
+        const SBGS = { pos:'do-dp2-sent--pos', neg:'do-dp2-sent--neg', neu:'do-dp2-sent--neu' };
+
+        const rawName = (() => {
+            if (platform==='fb')        return item.from_name || item.page_name || null;
+            if (platform==='instagram') return item.username || null;
+            if (platform==='tiktok')    return item.author_nickname || item.nickname || item.author?.nickname || null;
+            if (platform==='youtube')   return item.channel_title   || item.channel_name || item.snippet?.channelTitle || null;
+            if (platform==='twit') {
+                const ao = typeof item.author==='object' ? item.author
+                         : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; } })();
+                return item.name || ao?.name || ao?.scr_name || item.author_name || null;
             }
             return null;
         })();
-        const name=(rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'Unknown').trim();
-        const handle=((platform==='instagram'?item.username:'')||item.author_scr_name||item.screen_name||item.username||'').trim();
-        const content=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
-        const av=(item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||item.thumbnail||'').trim();
-        const url=item.url||item.link||'';
-        const dt=item.date_created||item.created_at||'';
-        let dtFmt='';
-        if(dt){try{dtFmt=new Date(dt).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){dtFmt=dt.split('T')[0];}}
 
-        title.textContent=name;
-        const words=name.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
-        const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||name[0]||'?')).toUpperCase().replace(/['"]/g,'');
-        const avHtml=(av&&av.startsWith('http'))?`<img src="${_es(av)}" onerror="this.parentElement.textContent='${ini}';">`:ini;
+        const name    = (rawName || item.author_name || item.channel_name || item.publisher || item.source_name || 'Unknown').trim();
+        const handle  = ((platform==='instagram' ? item.username : '') || item.author_scr_name || item.screen_name || item.username || '').trim();
+        const content = (item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
+        const av      = (item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||item.thumbnail||'').trim();
+        const url     = item.url || item.link || '';
+        const dt      = item.date_created || item.created_at || '';
 
-        // ── Media per platform ────────────────────────────────────────
-        let mediaHtml='';
-        if(platform==='youtube'){
-            const ytId=(url.match(/[?&]v=([a-zA-Z0-9_-]{11})/)||url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)||url.match(/shorts\/([a-zA-Z0-9_-]{11})/)||[])[1]||(item.video_id||item.youtube_id||'');
-            const thumb=item.thumbnail||item.thumbnail_url||item.image_url||(ytId?`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`:'');
-            if(ytId){
-                const eid=`yt_${ytId}_${Date.now()}`;
-                mediaHtml=`<div id="${eid}" style="position:relative;cursor:pointer;border-radius:6px;overflow:hidden;background:#000;margin-bottom:10px;" onclick="document.getElementById('${eid}').innerHTML='<iframe width=\\\"100%\\\" height=\\\"260\\\" src=\\\"https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1\\\" frameborder=\\\"0\\\" allowfullscreen></iframe>'">
-                    <img src="${thumb||`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}" style="width:100%;height:200px;object-fit:cover;display:block;" onerror="this.src='https://img.youtube.com/vi/${ytId}/mqdefault.jpg'">
+        title.textContent = name;
+
+        const words  = name.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
+        const ini    = (words.length>=2 ? (words[0][0]+words[words.length-1][0]) : (words[0]?.[0]||name[0]||'?')).toUpperCase().replace(/['"]/g,'');
+        const avHtml = (av && av.startsWith('http'))
+            ? `<img src="${_es(av)}" onerror="this.parentElement.textContent='${ini}';">`
+            : ini;
+
+        let dtFmt = '';
+        if (dt) {
+            try {
+                dtFmt = new Date(dt).toLocaleDateString('id-ID', {
+                    weekday:'long', day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'
+                });
+            } catch(e) { dtFmt = dt.split('T')[0]; }
+        }
+
+        /* ── Media embed per platform ── */
+        let mediaHtml = '';
+        if (platform === 'youtube') {
+            const ytId = (url.match(/[?&]v=([a-zA-Z0-9_-]{11})/) || url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/) || url.match(/shorts\/([a-zA-Z0-9_-]{11})/) || [])[1]
+                       || (item.video_id || item.youtube_id || '');
+            const thumb = item.thumbnail || item.thumbnail_url || item.image_url || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
+            if (ytId) {
+                const eid = `yt_${ytId}_${Date.now()}`;
+                mediaHtml = `<div id="${eid}" style="position:relative;cursor:pointer;border-radius:6px;overflow:hidden;background:#000;margin-bottom:10px;" onclick="document.getElementById('${eid}').innerHTML='<iframe width=\\\"100%\\\" height=\\\"260\\\" src=\\\"https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1\\\" frameborder=\\\"0\\\" allowfullscreen></iframe>'">
+                    <img src="${thumb || `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}" style="width:100%;height:200px;object-fit:cover;display:block;" onerror="this.src='https://img.youtube.com/vi/${ytId}/mqdefault.jpg'">
                     <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25);">
                         <div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.4);">
                             <i class="ph ph-play-fill" style="font-size:22px;color:#fff;margin-left:3px;"></i>
                         </div>
                     </div>
                 </div>`;
-            } else if(thumb){
-                mediaHtml=`<div class="do-dp2-media"><img src="${_es(thumb)}" onerror="this.parentElement.style.display='none'" style="border-radius:6px;"></div>`;
+            } else if (thumb) {
+                mediaHtml = `<div class="do-dp2-media"><img src="${_es(thumb)}" onerror="this.parentElement.style.display='none'" style="border-radius:6px;"></div>`;
             }
-        }
-        else if(platform==='tiktok'){
-            const tid=(url.match(/\/video\/(\d+)/)||url.match(/\/v\/(\d+)/)||[])[1]||(item.video_id||item.aweme_id||'');
-            const thumb=item.thumbnail||item.cover||item.image_url||item.video_cover||'';
-            if(tid){
-                const eid=`tt_${tid}_${Date.now()}`;
-                mediaHtml=`<div id="${eid}" style="position:relative;cursor:pointer;background:#111827;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;height:240px;margin-bottom:10px;" onclick="DashDetail.loadTikTok('${eid}','${tid}')">
-                    ${thumb?`<img src="${_es(thumb)}" style="position:absolute;width:100%;height:100%;object-fit:cover;opacity:.65;pointer-events:none;">`:''}
+        } else if (platform === 'tiktok') {
+            const tid = (url.match(/\/video\/(\d+)/) || url.match(/\/v\/(\d+)/) || [])[1] || (item.video_id || item.aweme_id || '');
+            const thumb = item.thumbnail || item.cover || item.image_url || item.video_cover || '';
+            if (tid) {
+                const eid = `tt_${tid}_${Date.now()}`;
+                mediaHtml = `<div id="${eid}" style="position:relative;cursor:pointer;background:#111827;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;height:240px;margin-bottom:10px;" onclick="DashDetail.loadTikTok('${eid}','${tid}')">
+                    ${thumb ? `<img src="${_es(thumb)}" style="position:absolute;width:100%;height:100%;object-fit:cover;opacity:.65;pointer-events:none;">` : ''}
                     <div style="position:relative;z-index:2;width:56px;height:56px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.6);">
                         <i class="ph ph-play-fill" style="font-size:24px;color:#111827;margin-left:3px;"></i>
                     </div>
                     <div style="position:absolute;bottom:8px;right:8px;background:#111827;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.5px;">TIKTOK</div>
                 </div>`;
-            } else if(thumb){
-                mediaHtml=`<div class="do-dp2-media"><img src="${_es(thumb)}" onerror="this.parentElement.style.display='none'" style="max-height:280px;object-fit:cover;width:100%;display:block;border-radius:6px;"></div>`;
+            } else if (thumb) {
+                mediaHtml = `<div class="do-dp2-media"><img src="${_es(thumb)}" onerror="this.parentElement.style.display='none'" style="max-height:280px;object-fit:cover;width:100%;display:block;border-radius:6px;"></div>`;
             }
-        }
-        else {
-            const thumb=item.image_url||item.thumbnail||item.media_url||item.picture||item.display_url||item.featured_image||'';
-            const isVideo=(item.media_type||item.type||'').toLowerCase().includes('video');
-            if(thumb){
-                mediaHtml=`<div class="do-dp2-media" style="position:relative;border-radius:6px;overflow:hidden;background:#f3f4f6;margin-bottom:10px;">
+        } else {
+            const thumb = item.image_url || item.thumbnail || item.media_url || item.picture || item.display_url || item.featured_image || '';
+            const isVideo = (item.media_type || item.type || '').toLowerCase().includes('video');
+            if (thumb) {
+                mediaHtml = `<div class="do-dp2-media" style="position:relative;border-radius:6px;overflow:hidden;background:#f3f4f6;margin-bottom:10px;">
                     <img src="${_es(thumb)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:280px;object-fit:cover;display:block;">
-                    ${isVideo?`<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);">
+                    ${isVideo ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);">
                         <div style="width:44px;height:44px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;">
                             <i class="ph ph-play-fill" style="font-size:20px;color:${meta.color};margin-left:3px;"></i>
-                        </div></div>`:''}
+                        </div></div>` : ''}
                 </div>`;
             }
         }
 
-        const statsMap={
-            twit     :[['Retweet',item.num_retweeted||item.retweet_count||0],['Like',item.num_likes||item.favorite_count||0],['Quote',item.num_quote||0]],
-            fb       :[['Like',item.likes||item.num_likes||0],['Share',item.shares||item.share_count||0],['Comment',item.num_comments||0]],
-            instagram:[['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||item.comment_count||0],['View',item.num_views||item.views||0]],
-            youtube  :[['View',item.num_views||item.views||0],['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||0]],
-            tiktok   :[['Play',item.views||item.play_count||0],['Like',item.likes||item.digg_count||0],['Share',item.shares||item.share_count||0]],
-            doc      :[['Read',item.num_views||0],['Share',item.num_share||0],['Comment',item.num_comments||0]],
+        const statsMap = {
+            twit     : [['Retweet', item.num_retweeted||item.retweet_count||0], ['Like', item.num_likes||item.favorite_count||0], ['Quote', item.num_quote||0]],
+            fb       : [['Like', item.likes||item.num_likes||0], ['Share', item.shares||item.share_count||0], ['Comment', item.num_comments||0]],
+            instagram: [['Like', item.num_likes||item.likes||0], ['Comment', item.num_comments||item.comment_count||0], ['View', item.num_views||item.views||0]],
+            youtube  : [['View', item.num_views||item.views||0], ['Like', item.num_likes||item.likes||0], ['Comment', item.num_comments||0]],
+            tiktok   : [['Play', item.views||item.play_count||0], ['Like', item.likes||item.digg_count||0], ['Share', item.shares||item.share_count||0]],
+            doc      : [['Read', item.num_views||0], ['Share', item.num_share||0], ['Comment', item.num_comments||0]],
         };
-        const stats=statsMap[platform]||[];
-        const statsHtml=stats.some(s=>parseInt(s[1])>0)?`<div class="do-dp2-stats">${stats.map(([l,v])=>`<div class="do-dp2-stat"><div class="do-dp2-stat-val">${parseInt(v||0).toLocaleString()}</div><div class="do-dp2-stat-lbl">${l}</div></div>`).join('')}</div>`:'';
+        const stats = statsMap[platform] || [];
+        const statsHtml = stats.some(s => parseInt(s[1]) > 0)
+            ? `<div class="do-dp2-stats">${stats.map(([l,v]) =>
+                `<div class="do-dp2-stat"><div class="do-dp2-stat-val">${parseInt(v||0).toLocaleString()}</div><div class="do-dp2-stat-lbl">${l}</div></div>`
+              ).join('')}</div>` : '';
 
-        const handleDisp=handle&&!handle.replace('@','').toLowerCase().startsWith(name.toLowerCase().slice(0,4))?(handle.startsWith('@')?handle:'@'+handle):'';
+        const handleDisp = handle && !handle.replace('@','').toLowerCase().startsWith(name.toLowerCase().slice(0,4))
+            ? (handle.startsWith('@') ? handle : '@' + handle) : '';
 
-        body.innerHTML=`
+        body.innerHTML = `
             <div class="do-dp2-avatar-row">
                 <div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
                 <div>
                     <div class="do-dp2-name">${_es(name)}</div>
-                    ${handleDisp?`<div class="do-dp2-handle">${_es(handleDisp)}</div>`:''}
+                    ${handleDisp ? `<div class="do-dp2-handle">${_es(handleDisp)}</div>` : ''}
                     <span class="do-dp2-plat-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span>
                 </div>
             </div>
-            ${dtFmt?`<div class="do-dp2-meta">${dtFmt}</div>`:''}
+            ${dtFmt ? `<div class="do-dp2-meta">${dtFmt}</div>` : ''}
             <div class="do-dp2-sent ${SBGS[sent]}">${SLBL[sent]}</div>
             ${mediaHtml}
-            ${content?`<div class="do-dp2-content">${_es(content)}</div>`:''}
+            ${content ? `<div class="do-dp2-content">${_es(content)}</div>` : ''}
             ${statsHtml}
-            ${url?`<a href="${_es(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out"></i> Lihat ${meta.label} Asli</a>`:''}`;
+            ${url ? `<a href="${_es(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out"></i> Lihat ${meta.label} Asli</a>` : ''}`;
 
         panel.classList.add('show');
     },
-    close(){
-        _$('dashDetailPanel')?.classList.remove('show');
-        document.querySelectorAll('#dashDetailPanel iframe').forEach(f=>{ f.src=f.src; });
+
+    close() {
+        const panel = _$('dashDetailPanel');
+        if (!panel) return;
+        panel.classList.remove('show');
+        panel.querySelectorAll('iframe').forEach(f => { try { f.src = f.src; } catch(e){} });
     },
-    loadTikTok(eid,tid){
-        const el=_$(eid); if(!el)return;
-        el.style.cssText='cursor:default;min-height:560px;height:auto;background:#111827;border-radius:6px;overflow:hidden;margin-bottom:10px;';
-        el.innerHTML=`<iframe src="https://www.tiktok.com/embed/v2/${tid}" width="100%" height="560" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="display:block;border:none;border-radius:6px;background:#111827;"></iframe>`;
-    }
+
+    loadTikTok(eid, tid) {
+        const el = _$(eid); if (!el) return;
+        el.style.cssText = 'cursor:default;min-height:560px;height:auto;background:#111827;border-radius:6px;overflow:hidden;margin-bottom:10px;';
+        el.innerHTML = `<iframe src="https://www.tiktok.com/embed/v2/${tid}" width="100%" height="560"
+            frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"
+            allowfullscreen style="display:block;border:none;border-radius:6px;background:#111827;"></iframe>`;
+    },
 };
 
-/* ── Platform picker dismiss ── */
+/* ── Platform picker dismiss on outside click ── */
 document.addEventListener('mousedown', e => {
-    const pp=_$('dashPlatPicker');
-    if(pp?.classList.contains('show')&&!pp.contains(e.target)) pp.classList.remove('show');
+    const pp = _$('dashPlatPicker');
+    if (pp?.classList.contains('show') && !pp.contains(e.target)) pp.classList.remove('show');
 });
 </script>
 @endsection
