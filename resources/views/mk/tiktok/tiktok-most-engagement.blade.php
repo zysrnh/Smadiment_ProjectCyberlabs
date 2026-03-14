@@ -487,21 +487,18 @@
 @include('mk.layouts.partials.filter-datepicker')
 
 {{-- ══ KPI Cards — same pattern as dashboard ══ --}}
-<div class="row">
+<div class="row mb-3">
     <div class="col-md-6 col-xl-3">
-        <div class="card bg-primary text-white kpi-card-hover"
-             onmouseenter="this.style.transform='translateY(-6px) scale(1.025)';this.style.boxShadow='0 20px 40px rgba(0,0,0,.25)';this.style.filter='brightness(1.07)';this.style.transition='transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s ease,filter .25s ease';"
-             onmouseleave="this.style.transform='';this.style.boxShadow='';this.style.filter='';"
-             style="animation:fadeUp .38s ease-out both;">
+        <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Views</p>
                         <h3 class="mb-0 text-white f-w-300" id="kpiViews">
-                            <div class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></div>
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
                         </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                            <i class="ph ph-eye me-1"></i>Dari semua video
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiViewsSub">
+                            <i class="ph ph-chart-line-up me-1"></i>Loading…
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -512,19 +509,16 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card bg-success text-white kpi-card-hover"
-             onmouseenter="this.style.transform='translateY(-6px) scale(1.025)';this.style.boxShadow='0 20px 40px rgba(0,0,0,.25)';this.style.filter='brightness(1.07)';this.style.transition='transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s ease,filter .25s ease';"
-             onmouseleave="this.style.transform='';this.style.boxShadow='';this.style.filter='';"
-             style="animation:fadeUp .38s ease-out .05s both;">
+        <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Likes</p>
                         <h3 class="mb-0 text-white f-w-300" id="kpiLikes">
-                            <div class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></div>
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
                         </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                            <i class="ph ph-thumbs-up me-1"></i>Apresiasi konten
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub">
+                            <i class="ph ph-chart-line-up me-1"></i>Loading…
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -535,19 +529,16 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card bg-warning text-white kpi-card-hover"
-             onmouseenter="this.style.transform='translateY(-6px) scale(1.025)';this.style.boxShadow='0 20px 40px rgba(0,0,0,.25)';this.style.filter='brightness(1.07)';this.style.transition='transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s ease,filter .25s ease';"
-             onmouseleave="this.style.transform='';this.style.boxShadow='';this.style.filter='';"
-             style="animation:fadeUp .38s ease-out .10s both;">
+        <div class="card h-100 bg-warning text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Comments</p>
                         <h3 class="mb-0 text-white f-w-300" id="kpiCmts">
-                            <div class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></div>
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
                         </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                            <i class="ph ph-chat-circle me-1"></i>Interaksi komentar
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCmtsSub">
+                            <i class="ph ph-chart-line-up me-1"></i>Loading…
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -558,19 +549,16 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card bg-danger text-white kpi-card-hover"
-             onmouseenter="this.style.transform='translateY(-6px) scale(1.025)';this.style.boxShadow='0 20px 40px rgba(0,0,0,.25)';this.style.filter='brightness(1.07)';this.style.transition='transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s ease,filter .25s ease';"
-             onmouseleave="this.style.transform='';this.style.boxShadow='';this.style.filter='';"
-             style="animation:fadeUp .38s ease-out .15s both;">
+        <div class="card h-100 bg-danger text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .15s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Shares</p>
                         <h3 class="mb-0 text-white f-w-300" id="kpiShares">
-                            <div class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></div>
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
                         </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                            <i class="ph ph-share-network me-1"></i>Video dibagikan
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiSharesSub">
+                            <i class="ph ph-chart-line-up me-1"></i>Loading…
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -862,10 +850,14 @@ const TMEData = {
     _updateKPIs(items) {
         let v=0,l=0,c=0,s=0;
         items.forEach(i=>{ v+=parseInt(i.view_cnt||i.views||i.freq||0); l+=parseInt(i.likes||i.num_likes||0); c+=parseInt(i.comments||i.num_comments||0); s+=parseInt(i.shares||i.num_shares||0); });
-        const kv=_$('kpiViews'); if(kv) kv.textContent=numF(v);
-        const kl=_$('kpiLikes'); if(kl) kl.textContent=numF(l);
-        const kc=_$('kpiCmts');  if(kc) kc.textContent=numF(c);
-        const ks=_$('kpiShares');if(ks) ks.textContent=numF(s);
+        const n = items.length;
+        const avg = val => n ? Math.round(val/n) : 0;
+        const el = (id,val) => { const e=_$(id); if(e) e.textContent=numF(val); };
+        const sub = (id,val) => { const e=_$(id); if(e) e.innerHTML=`<i class="ph ph-chart-line-up me-1"></i>Avg ${numF(avg(val))} / video &middot; ${n} videos`; };
+        el('kpiViews', v);    sub('kpiViewsSub', v);
+        el('kpiLikes', l);    sub('kpiLikesSub', l);
+        el('kpiCmts', c);     sub('kpiCmtsSub', c);
+        el('kpiShares', s);   sub('kpiSharesSub', s);
     },
 
     _getName(item) {

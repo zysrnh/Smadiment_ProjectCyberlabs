@@ -445,6 +445,9 @@
     opacity:.7;
 }
 
+/* ══ KPI Summary Cards ══ */
+.kpi-card-hover h3 { font-size:1.5rem; }
+
 @media(max-width:640px) {
     .do-panel { width:100vw; }
     .tme-tabs { flex-wrap:wrap; }
@@ -473,8 +476,84 @@
 {{-- Filter --}}
 @include('mk.layouts.partials.filter-datepicker')
 
+{{-- ══ KPI Summary Cards ══ --}}
+<div class="row mb-3">
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100 bg-primary text-white kpi-card-hover fade-up fade-up-d1">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Total Views</p>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiViews"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiViewsSub">
+                            <i class="ph ph-chart-line-up me-1"></i>Loading…
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-eye"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100 bg-success text-white kpi-card-hover fade-up fade-up-d2">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Total Likes</p>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub">
+                            <i class="ph ph-heart me-1"></i>Loading…
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-thumbs-up"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d3">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Total Comments</p>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiComments"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCommentsSub">
+                            <i class="ph ph-chat-circle me-1"></i>Loading…
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-chat-circle"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d4">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Total Shares</p>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiShares"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiSharesSub">
+                            <i class="ph ph-share-network me-1"></i>Loading…
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-share-network"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- ══ TABS: Trending Topics | Most Engagement ══ --}}
-<div class="tme-tabs">
+<div class="tme-tabs" id="ovTabsBar">
     <button class="tme-tab-btn active" id="tab-hashtag" onclick="OVTab.show('hashtag')">
         <i class="ph ph-hash"></i> Top Hashtags <span class="tme-tab-chip" id="chip-hashtag">—</span>
     </button>
@@ -498,7 +577,7 @@
     <div class="row">
 
         {{-- ── Left: Ranked List ── --}}
-        <div class="col-xl-6 col-12">
+        <div class="col-lg-7 col-12">
             <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
                 <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div class="d-flex align-items-center gap-2">
@@ -517,6 +596,7 @@
                 </div>
                 <div id="hashtagContent" style="display:none;">
                     <div id="hashtagList" class="ht-list"></div>
+                    <div id="pag-hashtag"></div>
                 </div>
                 <div id="hashtagEmpty" style="display:none;" class="chart-empty" style="padding:40px 0;">
                     <i class="ph ph-hash"></i><span>Tidak ada data hashtag</span>
@@ -525,7 +605,7 @@
         </div>
 
         {{-- ── Right: Donut Top 5 ── --}}
-        <div class="col-xl-6 col-12">
+        <div class="col-lg-5 col-12">
             <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
                 <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div class="d-flex align-items-center gap-2">
@@ -616,8 +696,8 @@
         <div id="pag-{{ $tp }}"></div>
     </div>
 
-    {{-- Bar Chart Card ══ --}}
-    <div class="card mb-3" style="animation:fadeUp .38s ease-out .26s both;">
+    {{-- Bar Chart Card ══ (hidden) --}}
+    <div class="card mb-3" style="display:none;">
         <div class="card-header d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2">
                 <div class="avtar avtar-xs bg-light-primary rounded">
@@ -641,9 +721,9 @@
         </div>
     </div>
 
-    {{-- Engagement comparison on view tab only ══ --}}
+    {{-- Engagement comparison on view tab only ══ (hidden) --}}
     @if($tp === 'view')
-    <div class="card mb-3" style="animation:fadeUp .38s ease-out .30s both;">
+    <div class="card mb-3" style="display:none;">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
                 <div class="avtar avtar-xs bg-light-secondary rounded">
@@ -732,7 +812,7 @@ const hideLd = id => { const e=_$(id); if(e&&e.classList.contains('chart-loading
 
 /* ══ STORES ══ */
 const Store   = { view:[], like:[], comment:[], share:[], hashtag:[] };
-const Pag     = { view:1, like:1, comment:1, share:1 };
+const Pag     = { view:1, like:1, comment:1, share:1, hashtag:1 };
 let allPostsRaw = []; // raw posts from API, used for hashtag → post filter
 
 /* ══ ApexCharts instances ══ */
@@ -759,6 +839,12 @@ const OVTab = {
         else if(type !== 'hashtag' && Store[type].length) {
             OVData._renderDonut(type, Store[type]);
         }
+        if(type !== 'hashtag') {
+            setTimeout(() => {
+                const bar = _$('ovTabsBar');
+                if(bar) bar.scrollIntoView({behavior:'smooth',block:'nearest'});
+            }, 80);
+        }
     },
     reset() { this._loaded = {hashtag:false,view:false,like:false,comment:false,share:false}; }
 };
@@ -779,6 +865,7 @@ const OVData = {
             const j = await r.json();
             if(j.success && j.data?.hashtags?.length) {
                 Store.hashtag = j.data.hashtags;
+                Pag.hashtag = 1;
                 if(badge) badge.textContent = j.data.total_hashtags + ' hashtags';
                 const chip = _$('chip-hashtag'); if(chip) chip.textContent = j.data.total_hashtags;
                 this._renderHashtagCloud(j.data.hashtags);
@@ -798,11 +885,17 @@ const OVData = {
 
     _renderHashtagCloud(hashtags) {
         const loadEl=_$('hashtagLoading'), contentEl=_$('hashtagContent');
-        const list=_$('hashtagList'); if(!list) return;
-        const maxSize = hashtags[0]?.size || 1;
+        const list=_$('hashtagList'), pagEl=_$('pag-hashtag');
+        if(!list) return;
+        const all = hashtags.slice(0,50);
+        Store.hashtag = all;
+        const page=Pag.hashtag||1, pp=OVCfg.perPage, total=all.length;
+        const pages=Math.ceil(total/pp), start=(page-1)*pp;
+        const pageItems = all.slice(start, start+pp);
+        const maxSize = all[0]?.size || 1;
         list.innerHTML = '';
-        hashtags.slice(0,30).forEach((h, i) => {
-            const rank   = i + 1;
+        pageItems.forEach((h, i) => {
+            const rank   = start + i + 1;
             const rkCls  = rank <= 3 ? ` ht-rank--${rank}` : '';
             const pct    = Math.round((h.size / maxSize) * 100);
             const el     = document.createElement('div');
@@ -817,8 +910,28 @@ const OVData = {
             el.onclick = () => this._openHashtagPanel(h);
             list.appendChild(el);
         });
+        if(pagEl) {
+            if(pages<=1) { pagEl.innerHTML=''; }
+            else {
+                const from=start+1, to=Math.min(start+pp,total);
+                let btns='', r=2;
+                btns+=`<button class="tme-pag-btn" ${page<=1?'disabled':''} onclick="OVData.goHashtagPage(${page-1})"><i class="ph ph-caret-left"></i></button>`;
+                for(let i=1;i<=pages;i++){
+                    if(i===1||i===pages||(i>=page-r&&i<=page+r)) btns+=`<button class="tme-pag-btn${i===page?' is-active':''}" onclick="OVData.goHashtagPage(${i})">${i}</button>`;
+                    else if(i===page-r-1||i===page+r+1) btns+=`<span class="tme-pag-btn" style="cursor:default;opacity:.4;">…</span>`;
+                }
+                btns+=`<button class="tme-pag-btn" ${page>=pages?'disabled':''} onclick="OVData.goHashtagPage(${page+1})"><i class="ph ph-caret-right"></i></button>`;
+                pagEl.innerHTML=`<div class="tme-pagination"><span class="tme-pag-info">Menampilkan ${from}–${to} dari ${total} hashtags</span><div class="tme-pag-controls">${btns}</div></div>`;
+            }
+        }
         if(loadEl) loadEl.style.display='none';
         if(contentEl) contentEl.style.display='block';
+    },
+
+    goHashtagPage(page) {
+        Pag.hashtag=page;
+        this._renderHashtagCloud(Store.hashtag);
+        const el=_$('hashtagList'); if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'});
     },
 
     _renderHashtagBar(hashtags) {
@@ -866,7 +979,7 @@ const OVData = {
             const chip=_$('chip-'+type); if(chip) chip.textContent=items.length;
             const badge=_$('badge-'+type); if(badge) badge.textContent=items.length+' videos';
             if(type==='view' && !allPostsRaw.length) allPostsRaw=items;
-            if(type==='view') OVChart._renderEng(items);
+            if(type==='view') { OVChart._renderEng(items); this._updateKpi(items); }
             this._renderList(type);
             this._renderBar(type, items.slice(0,10));
             this._renderDonut(type, items);
@@ -875,6 +988,24 @@ const OVData = {
             if(listEl) listEl.innerHTML=`<div class="chart-empty" style="padding:40px;"><i class="ph ph-warning"></i><span>Gagal memuat: ${esc(err.message)}</span></div>`;
             hideLd('loadingBar-'+type); hideLd('loadingDonut-'+type);
         }
+    },
+
+    _updateKpi(items) {
+        let tv=0,tl=0,tc=0,ts=0;
+        items.forEach(i => {
+            tv += parseInt(i.view_cnt||i.views||i.freq||0);
+            tl += parseInt(i.likes||i.num_likes||0);
+            tc += parseInt(i.comments||i.num_comments||0);
+            ts += parseInt(i.shares||i.num_shares||0);
+        });
+        const n = items.length;
+        const avg = v => n ? Math.round(v/n) : 0;
+        const el = (id,v) => { const e=_$(id); if(e) e.textContent = numF(v); };
+        const sub = (id,v) => { const e=_$(id); if(e) e.innerHTML = `<i class="ph ph-chart-line-up me-1"></i>Avg ${numF(avg(v))} / video &middot; ${n} videos`; };
+        el('kpiViews', tv);    sub('kpiViewsSub', tv);
+        el('kpiLikes', tl);    sub('kpiLikesSub', tl);
+        el('kpiComments', tc); sub('kpiCommentsSub', tc);
+        el('kpiShares', ts);   sub('kpiSharesSub', ts);
     },
 
     reloadTab(type) { Store[type]=[]; Pag[type]=1; this.loadEngagement(type); },

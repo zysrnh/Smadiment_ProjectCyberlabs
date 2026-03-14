@@ -158,11 +158,11 @@
     }
 
     @keyframes slideUpModal {
-        from { 
+        from {
             opacity: 0;
             transform: translateY(20px) scale(0.95);
         }
-        to { 
+        to {
             opacity: 1;
             transform: translateY(0) scale(1);
         }
@@ -395,27 +395,6 @@
         box-shadow: 0 6px 20px rgba(3, 128, 71, 0.3);
     }
 
-    .location-select {
-        padding: 10px 16px;
-        background: var(--bg-gray-50);
-        border: 1px solid var(--border-gray);
-        border-radius: 12px;
-        font-family: 'Poppins', sans-serif;
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--text-primary);
-        outline: none;
-        cursor: pointer;
-        transition: all 0.2s;
-        min-width: 180px;
-    }
-
-    .location-select:focus {
-        border-color: var(--primary-green);
-        background: var(--bg-white);
-        box-shadow: 0 0 0 3px rgba(3, 128, 71, 0.1);
-    }
-
     .apply-btn {
         padding: 12px 28px;
         background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
@@ -431,6 +410,7 @@
         align-items: center;
         gap: 8px;
         box-shadow: 0 4px 12px rgba(3, 128, 71, 0.2);
+        white-space: nowrap;
     }
 
     .apply-btn:hover {
@@ -513,7 +493,6 @@
         pointer-events: none;
     }
 
-    /* Hint shown after cloud is rendered */
     .wordcloud-hint {
         position: absolute;
         bottom: 16px;
@@ -601,7 +580,6 @@
         .dashboard-container { padding: 16px; }
         .filter-content { flex-direction: column; align-items: stretch; }
         .date-range-wrapper { flex-direction: column; }
-        .location-select { width: 100%; }
         .apply-btn { width: 100%; justify-content: center; }
         .sentiment-filters { width: 100%; }
         .sentiment-btn { flex: 1; justify-content: center; }
@@ -663,109 +641,16 @@
 @endsection
 
 @section('content')
-<div class="dashboard-container">
+@php
+    $projectId = $projectId ?? request()->get('project_id');
+    $startDate = $startDate ?? request()->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+    $endDate   = $endDate ?? request()->get('end_date', now()->format('Y-m-d'));
+    $location  = $location ?? request()->get('location', 'Indonesia');
+    $projects  = $projects ?? [];
+@endphp
 
-    <div class="page-header">
-        <h1>X Trending Topics Word Cloud</h1>
-        <p>Visual representation of trending topics on X (Twitter) in {{ $location }}</p>
-    </div>
-
-    <!-- Filter Card -->
-    <div class="filter-card">
-        <form id="filterForm" method="GET" action="{{ route('mk.x.trending-word-cloud') }}">
-            <input type="hidden" name="start_date" id="hiddenStartDate" value="{{ $startDate }}">
-            <input type="hidden" name="end_date" id="hiddenEndDate" value="{{ $endDate }}">
-            
-            <div class="filter-content">
-                <div class="filter-label">
-                    <svg viewBox="0 0 24 24" style="width:18px;height:18px;display:inline;vertical-align:middle;margin-right:6px;stroke:currentColor;fill:none;">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
-                    Date Range
-                </div>
-                <div class="date-range-wrapper">
-                    <button type="button" class="date-picker-trigger" id="datePickerTrigger">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                            <line x1="16" y1="2" x2="16" y2="6"/>
-                            <line x1="8" y1="2" x2="8" y2="6"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
-                        </svg>
-                        <span id="dateRangeDisplay">{{ $startDate }} to {{ $endDate }}</span>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="6 9 12 15 18 9"/>
-                        </svg>
-                    </button>
-                </div>
-                <select name="location" class="location-select">
-                    <option value="Indonesia"     {{ $location === 'Indonesia'     ? 'selected' : '' }}>Indonesia</option>
-                    <option value="Worldwide"     {{ $location === 'Worldwide'     ? 'selected' : '' }}>Worldwide</option>
-                    <option value="United States" {{ $location === 'United States' ? 'selected' : '' }}>United States</option>
-                    <option value="United Kingdom"{{ $location === 'United Kingdom'? 'selected' : '' }}>United Kingdom</option>
-                </select>
-                <button type="submit" class="apply-btn">
-                    <svg viewBox="0 0 24 24">
-                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                    </svg>
-                    Apply Filter
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Date Range Picker Modal -->
-    <div class="date-picker-modal" id="datePickerModal">
-        <div class="date-picker-overlay-inner"></div>
-        <div class="date-picker-container">
-            <!-- Sidebar with Presets -->
-            <div class="date-picker-sidebar">
-                <button type="button" class="date-preset" data-preset="today">Today</button>
-                <button type="button" class="date-preset" data-preset="yesterday">Yesterday</button>
-                <button type="button" class="date-preset" data-preset="last7days">Last 7 Days</button>
-                <button type="button" class="date-preset" data-preset="last30days">Last 30 Days</button>
-                <button type="button" class="date-preset" data-preset="thismonth">This Month</button>
-                <button type="button" class="date-preset" data-preset="lastmonth">Last Month</button>
-                <button type="button" class="date-preset active" data-preset="custom">Custom Range</button>
-            </div>
-            
-            <!-- Calendar Content -->
-            <div class="date-picker-content">
-                <!-- Navigation Header -->
-                <div class="date-picker-header">
-                    <button type="button" class="nav-btn" id="prevMonth">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="15 18 9 12 15 6"/>
-                        </svg>
-                    </button>
-                    
-                    <div class="calendars-wrapper">
-                        <div class="calendar" id="calendar1"></div>
-                        <div class="calendar" id="calendar2"></div>
-                    </div>
-                    
-                    <button type="button" class="nav-btn" id="nextMonth">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="9 18 15 12 9 6"/>
-                        </svg>
-                    </button>
-                </div>
-                
-                <!-- Selected Date Display -->
-                <div class="date-picker-display">
-                    <span id="selectedRangeText">{{ $startDate }} to {{ $endDate }}</span>
-                </div>
-                
-                <!-- Footer Buttons -->
-                <div class="date-picker-footer">
-                    <button type="button" class="cancel-btn">Cancel</button>
-                    <button type="button" class="apply-date-btn" id="applyDatePicker">Apply</button>
-                </div>
-            </div>
-        </div>
-    </div>
+{{-- Filter --}}
+@include('mk.layouts.partials.filter-datepicker')
 
     <!-- Sentiment Filter Card -->
     <div class="filter-card">
@@ -774,8 +659,8 @@
                 <svg viewBox="0 0 24 24" style="width:18px;height:18px;display:inline;vertical-align:middle;margin-right:6px;stroke:currentColor;fill:none;">
                     <circle cx="12" cy="12" r="10"/>
                     <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-                    <line x1="9" y1="9" x2="9.01" y2="9"/>
-                    <line x1="15" y1="9" x2="15.01" y2="9"/>
+                    <line x1="9"  y1="9"  x2="9.01"  y2="9"/>
+                    <line x1="15" y1="9"  x2="15.01" y2="9"/>
                 </svg>
                 Sentiment Filter
             </div>
@@ -805,7 +690,7 @@
 
         <div id="loadingState" class="loading-state">
             <div class="loading-spinner"></div>
-            <div class="loading-text" id="loadingText">Loading trending topics data...</div>
+            <div class="loading-text" id="loadingText">Loading X trending topics data...</div>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 8px;" id="loadingProgress"></div>
         </div>
 
@@ -823,7 +708,7 @@
         <div id="emptyState" class="empty-state" style="display: none;">
             <svg viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="8"  x2="12"    y2="12"/>
                 <line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
             <h3>No Trending Topics Found</h3>
@@ -841,305 +726,7 @@
 
 <script>
 // ========================================
-// DATE PICKER JAVASCRIPT (Same as Geographic)
-// ========================================
-(function() {
-  'use strict';
-  
-  let selectedStartDate = null;
-  let selectedEndDate = null;
-  let currentMonth1 = new Date();
-  let currentMonth2 = new Date();
-  let selectingStart = true;
-
-  document.addEventListener('DOMContentLoaded', function() {
-    const startDateInput = document.getElementById('hiddenStartDate');
-    const endDateInput = document.getElementById('hiddenEndDate');
-    
-    if (startDateInput && startDateInput.value) {
-      selectedStartDate = new Date(startDateInput.value);
-    } else {
-      selectedEndDate = new Date();
-      selectedStartDate = new Date();
-      selectedStartDate.setDate(selectedStartDate.getDate() - 6);
-    }
-    
-    if (endDateInput && endDateInput.value) {
-      selectedEndDate = new Date(endDateInput.value);
-    }
-    
-    currentMonth1 = new Date(selectedStartDate);
-    currentMonth2 = new Date(selectedStartDate);
-    currentMonth2.setMonth(currentMonth2.getMonth() + 1);
-    
-    renderCalendars();
-    setupEventListeners();
-  });
-
-  function setupEventListeners() {
-    const trigger = document.getElementById('datePickerTrigger');
-    if (trigger) {
-      trigger.addEventListener('click', openDatePicker);
-    }
-
-    const overlay = document.querySelector('.date-picker-overlay-inner');
-    if (overlay) {
-      overlay.addEventListener('click', closeDatePicker);
-    }
-
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        const modal = document.getElementById('datePickerModal');
-        if (modal && modal.classList.contains('show')) {
-          closeDatePicker();
-        }
-      }
-    });
-
-    document.querySelectorAll('.date-preset').forEach(btn => {
-      btn.addEventListener('click', handlePresetClick);
-    });
-
-    const prevBtn = document.getElementById('prevMonth');
-    const nextBtn = document.getElementById('nextMonth');
-    
-    if (prevBtn) {
-      prevBtn.addEventListener('click', function() {
-        currentMonth1.setMonth(currentMonth1.getMonth() - 1);
-        currentMonth2.setMonth(currentMonth2.getMonth() - 1);
-        renderCalendars();
-      });
-    }
-
-    if (nextBtn) {
-      nextBtn.addEventListener('click', function() {
-        currentMonth1.setMonth(currentMonth1.getMonth() + 1);
-        currentMonth2.setMonth(currentMonth2.getMonth() + 1);
-        renderCalendars();
-      });
-    }
-
-    const applyBtn = document.getElementById('applyDatePicker');
-    if (applyBtn) {
-      applyBtn.addEventListener('click', applyDateSelection);
-    }
-
-    const cancelBtn = document.querySelector('.cancel-btn');
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', closeDatePicker);
-    }
-  }
-
-  function openDatePicker() {
-    document.getElementById('datePickerModal').classList.add('show');
-    renderCalendars();
-  }
-
-  function closeDatePicker() {
-    document.getElementById('datePickerModal').classList.remove('show');
-  }
-
-  function handlePresetClick(e) {
-    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
-    e.target.classList.add('active');
-
-    const preset = e.target.dataset.preset;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    switch(preset) {
-      case 'today':
-        selectedStartDate = new Date(today);
-        selectedEndDate = new Date(today);
-        break;
-      case 'yesterday':
-        selectedStartDate = new Date(today);
-        selectedStartDate.setDate(today.getDate() - 1);
-        selectedEndDate = new Date(selectedStartDate);
-        break;
-      case 'last7days':
-        selectedEndDate = new Date(today);
-        selectedStartDate = new Date(today);
-        selectedStartDate.setDate(today.getDate() - 6);
-        break;
-      case 'last30days':
-        selectedEndDate = new Date(today);
-        selectedStartDate = new Date(today);
-        selectedStartDate.setDate(today.getDate() - 29);
-        break;
-      case 'thismonth':
-        selectedStartDate = new Date(today.getFullYear(), today.getMonth(), 1);
-        selectedEndDate = new Date(today);
-        break;
-      case 'lastmonth':
-        selectedStartDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        selectedEndDate = new Date(today.getFullYear(), today.getMonth(), 0);
-        break;
-    }
-    
-    if (preset !== 'custom') {
-      currentMonth1 = new Date(selectedStartDate);
-      currentMonth2 = new Date(selectedStartDate);
-      currentMonth2.setMonth(currentMonth2.getMonth() + 1);
-      
-      updateDateDisplay();
-      renderCalendars();
-    }
-  }
-
-  function applyDateSelection() {
-    const start = formatDate(selectedStartDate);
-    const end = formatDate(selectedEndDate);
-    
-    document.getElementById('hiddenStartDate').value = start;
-    document.getElementById('hiddenEndDate').value = end;
-    
-    const displayElement = document.getElementById('dateRangeDisplay');
-    if (displayElement) {
-      displayElement.textContent = `${start} to ${end}`;
-    }
-    
-    closeDatePicker();
-  }
-
-  function renderCalendars() {
-    renderCalendar('calendar1', currentMonth1);
-    renderCalendar('calendar2', currentMonth2);
-    updateDateDisplay();
-  }
-
-  function renderCalendar(elementId, month) {
-    const calendar = document.getElementById(elementId);
-    if (!calendar) return;
-
-    const year = month.getFullYear();
-    const monthNum = month.getMonth();
-    const firstDay = new Date(year, monthNum, 1);
-    const lastDay = new Date(year, monthNum + 1, 0);
-    const prevLastDay = new Date(year, monthNum, 0);
-    
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                       'July', 'August', 'September', 'October', 'November', 'December'];
-    const weekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-    
-    let html = `
-      <div class="calendar-month">${monthNames[monthNum]} ${year}</div>
-      <div class="calendar-weekdays">
-        ${weekdays.map(day => `<div class="weekday">${day}</div>`).join('')}
-      </div>
-      <div class="calendar-days">
-    `;
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Add empty cells for days before the first day of the month
-    const firstDayOfWeek = firstDay.getDay();
-    for (let i = 0; i < firstDayOfWeek; i++) {
-      const prevMonthDay = prevLastDay.getDate() - (firstDayOfWeek - 1 - i);
-      html += `<button type="button" class="calendar-day other-month" disabled>${prevMonthDay}</button>`;
-    }
-    
-    // Add all days of the current month
-    for (let day = 1; day <= lastDay.getDate(); day++) {
-      const date = new Date(year, monthNum, day);
-      date.setHours(0, 0, 0, 0);
-      
-      const dateStr = formatDate(date);
-      let classes = 'calendar-day';
-      
-      if (isSameDay(date, today)) classes += ' today';
-      if (date > today) classes += ' disabled';
-      
-      if (selectedStartDate && selectedEndDate) {
-        if (isSameDay(date, selectedStartDate)) {
-          classes += ' selected range-start';
-        } else if (isSameDay(date, selectedEndDate)) {
-          classes += ' selected range-end';
-        } else if (date > selectedStartDate && date < selectedEndDate) {
-          classes += ' in-range';
-        }
-      }
-      
-      const disabled = date > today ? 'disabled' : '';
-      html += `<button type="button" class="${classes}" data-date="${dateStr}" ${disabled}>${day}</button>`;
-    }
-    
-    // Add empty cells for days after the last day of the month
-    const lastDayOfWeek = lastDay.getDay();
-    const remainingCells = lastDayOfWeek === 6 ? 0 : 6 - lastDayOfWeek;
-    for (let i = 1; i <= remainingCells; i++) {
-      html += `<button type="button" class="calendar-day other-month" disabled>${i}</button>`;
-    }
-    
-    html += '</div>';
-    calendar.innerHTML = html;
-    
-    // Add click listeners to enabled date buttons
-    calendar.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)').forEach(btn => {
-      btn.addEventListener('click', handleDateClick);
-    });
-  }
-
-  function handleDateClick(e) {
-    const dateStr = e.target.dataset.date;
-    const date = new Date(dateStr);
-    date.setHours(0, 0, 0, 0);
-    
-    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
-    const customPreset = document.querySelector('[data-preset="custom"]');
-    if (customPreset) customPreset.classList.add('active');
-    
-    if (selectingStart || date < selectedStartDate) {
-      selectedStartDate = date;
-      selectedEndDate = date;
-      selectingStart = false;
-    } else {
-      if (date >= selectedStartDate) {
-        selectedEndDate = date;
-      } else {
-        selectedEndDate = selectedStartDate;
-        selectedStartDate = date;
-      }
-      selectingStart = true;
-    }
-    
-    updateDateDisplay();
-    renderCalendars();
-  }
-
-  function updateDateDisplay() {
-    if (!selectedStartDate || !selectedEndDate) return;
-    
-    const start = formatDate(selectedStartDate);
-    const end = formatDate(selectedEndDate);
-    
-    const displayElement = document.getElementById('selectedRangeText');
-    if (displayElement) {
-      displayElement.textContent = `${start} to ${end}`;
-    }
-  }
-
-  function formatDate(date) {
-    if (!date) return '';
-    
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  function isSameDay(date1, date2) {
-    if (!date1 || !date2) return false;
-    
-    return date1.getFullYear() === date2.getFullYear() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getDate() === date2.getDate();
-  }
-})();
-
-// ========================================
-// WORD CLOUD GENERATOR
+// X WORD CLOUD GENERATOR
 // ========================================
 const WordCloudGenerator = {
     startDate: '{{ $startDate ?? "" }}',
@@ -1147,16 +734,9 @@ const WordCloudGenerator = {
     location:  '{{ $location ?? "Indonesia" }}',
     trendingData:     null,
     currentSentiment: 'all',
-    chart: null,
+    chart:            null,
 
-    // ---------------------------------------------------------------
-    // Keyword lists — checked as EXACT TOKENS (whole-word matching)
-    // to avoid false positives like "protest" matching inside "pro".
-    // Multi-word phrases (e.g. "tidak adil") use substring matching
-    // on the full topic string instead.
-    // ---------------------------------------------------------------
     NEGATIVE_KEYWORDS: [
-        // English — single words
         'bad','worst','hate','hated','sad','fail','failed','failure',
         'lose','lost','loss','angry','anger','terrible','awful',
         'poor','dead','death','die','died','dies','kill','killed','killing',
@@ -1172,7 +752,6 @@ const WordCloudGenerator = {
         'victim','bankrupt','poverty','hunger','famine',
         'shooting','murdered','murder','arrested','arrest',
         'fired','layoff','layoffs','resign','resignation',
-        // Indonesian — single words
         'buruk','terburuk','benci','sedih','gagal','kalah',
         'marah','parah','miskin','mati','maut','bunuh','tewas',
         'korupsi','korup','kejahatan','kriminal','penipuan','tipu',
@@ -1187,7 +766,6 @@ const WordCloudGenerator = {
         'kebakaran','banjir','gempa','longsor','kecelakaan',
     ],
 
-    // Multi-word phrases (Indonesian) — substring matched
     NEGATIVE_PHRASES: [
         'tidak adil','tidak beres','tidak bisa','tidak mampu',
         'tidak aman','unjuk rasa','demo besar','huru hara',
@@ -1196,7 +774,6 @@ const WordCloudGenerator = {
     ],
 
     POSITIVE_KEYWORDS: [
-        // English
         'win','won','winner','best','good','great','love',
         'happy','success','successful','amazing','excellent',
         'awesome','celebrate','celebration','proud','pride',
@@ -1204,7 +781,6 @@ const WordCloudGenerator = {
         'congratulations','congrats','hope','inspire','inspiration',
         'wonderful','beautiful','brilliant','fantastic','superb',
         'legend','hero','heroic','progress','growth','improve',
-        // Indonesian
         'menang','juara','terbaik','baik','bagus','cinta',
         'senang','sukses','berhasil','hebat','keren',
         'rayakan','bangga','kemenangan','prestasi','selamat',
@@ -1213,26 +789,19 @@ const WordCloudGenerator = {
         'damai','harmonis','aman','sejahtera',
     ],
 
-    // ---------------------------------------------------------------
-    // Classify sentiment with whole-word token matching
-    // ---------------------------------------------------------------
     getSentimentFromTopic(topicName) {
         const lower  = topicName.toLowerCase().replace(/^#/, '').trim();
         const tokens = lower.split(/[^a-z0-9]+/).filter(t => t.length > 0);
 
-        // Check negative single-word keywords
         for (const kw of this.NEGATIVE_KEYWORDS) {
             if (tokens.includes(kw)) return 'negative';
         }
-        // Check negative phrases (substring)
         for (const phrase of this.NEGATIVE_PHRASES) {
             if (lower.includes(phrase)) return 'negative';
         }
-        // Check positive single-word keywords
         for (const kw of this.POSITIVE_KEYWORDS) {
             if (tokens.includes(kw)) return 'positive';
         }
-
         return 'neutral';
     },
 
@@ -1242,27 +811,21 @@ const WordCloudGenerator = {
             negative: ['#ef4444','#dc2626','#b91c1c','#f87171','#c53030'],
             neutral:  ['#f59e0b','#d97706','#fbbf24','#b45309','#fcd34d'],
             all:      ['#038047','#04995a','#2FC6F6','#06b6d4','#8b5cf6',
-                    '#a78bfa','#f59e0b','#fbbf24','#10b981','#34d399',
-                    '#ef4444','#f87171'],
+                       '#a78bfa','#f59e0b','#fbbf24','#10b981','#34d399',
+                       '#ef4444','#f87171'],
         };
         return colorSchemes[this.currentSentiment] || colorSchemes.all;
     },
 
-    // ---------------------------------------------------------------
-    // Open X search in a new tab
-    // ---------------------------------------------------------------
     openXSearch(topicName) {
-        const query = encodeURIComponent(topicName);
+        const query = encodeURIComponent(topicName.replace(/^#/, ''));
         window.open(
-            `https://x.com/search?q=${query}&src=trend_click`,
+            `https://www.x.com/search?q=${query}`,
             '_blank',
             'noopener,noreferrer'
         );
     },
 
-    // ---------------------------------------------------------------
-    // Init
-    // ---------------------------------------------------------------
     async init() {
         if (typeof echarts === 'undefined') {
             this.showError('ECharts library failed to load');
@@ -1272,7 +835,7 @@ const WordCloudGenerator = {
         try {
             await this.loadData();
         } catch (error) {
-            console.error('Failed to load trending data:', error);
+            console.error('Failed to load X trending data:', error);
             this.showError('Failed to load data');
         }
     },
@@ -1291,16 +854,20 @@ const WordCloudGenerator = {
     },
 
     async loadData() {
-        const url = `/mk/api/x/trending-topics?start_date=${this.startDate}&end_date=${this.endDate}&location=${this.location}`;
         const loadingText     = document.getElementById('loadingText');
         const loadingProgress = document.getElementById('loadingProgress');
 
+        if (!this.location) {
+            this.showError('No location selected.');
+            return;
+        }
+
+        const url = `/mk/api/x/trending-topics?start_date=${this.startDate}&end_date=${this.endDate}&location=${this.location}`;
         loadingText.textContent = 'Fetching data from server...';
 
         const startTime = Date.now();
         const response  = await fetch(url);
-
-        loadingText.textContent = 'Processing trending topics...';
+        loadingText.textContent = 'Processing X trending topics...';
 
         const result = await response.json();
         if (!result.success) {
@@ -1308,27 +875,24 @@ const WordCloudGenerator = {
         }
 
         this.trendingData = result.data;
-        const loadTime    = ((Date.now() - startTime) / 1000).toFixed(1);
+        const topTopics = this.trendingData.top_topics || [];
 
+        const loadTime = ((Date.now() - startTime) / 1000).toFixed(1);
         loadingText.textContent     = 'Generating word cloud...';
-        loadingProgress.textContent = `Loaded ${this.trendingData.top_topics?.length || 0} topics in ${loadTime}s`;
+        loadingProgress.textContent = `Loaded ${topTopics.length} topics in ${loadTime}s`;
 
         await new Promise(resolve => setTimeout(resolve, 200));
         this.generateWordCloud();
     },
 
-    // ---------------------------------------------------------------
-    // Render
-    // ---------------------------------------------------------------
     generateWordCloud() {
         const loadingState = document.getElementById('loadingState');
         const chartDiv     = document.getElementById('wordCloudChart');
         const emptyState   = document.getElementById('emptyState');
         const hintEl       = document.getElementById('wordCloudHint');
 
-        let topics = this.trendingData.top_topics || [];
+        let topics = (this.trendingData && this.trendingData.top_topics) ? [...this.trendingData.top_topics] : [];
 
-        // Apply sentiment filter
         if (this.currentSentiment !== 'all') {
             topics = topics.filter(t => this.getSentimentFromTopic(t.name) === this.currentSentiment);
         }
@@ -1346,7 +910,7 @@ const WordCloudGenerator = {
             emptyState.innerHTML = `
                 <svg viewBox="0 0 24 24" style="width:64px;height:64px;stroke:currentColor;fill:none;margin-bottom:16px;">
                     <circle cx="12" cy="12" r="10"/>
-                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="8"  x2="12"    y2="12"/>
                     <line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
                 <h3>No ${label}Topics Found</h3>
@@ -1355,12 +919,11 @@ const WordCloudGenerator = {
             return;
         }
 
-        // Limit to top 100
         if (topics.length > 100) topics = topics.slice(0, 100);
 
         const wordData = topics.map(topic => ({
-            name:  topic.name.replace(/^#/, ''),
-            value: topic.total_volume || (topic.appearances * 100) || 100,
+            name:          topic.name.replace(/^#/, ''),
+            value:         topic.total_volume || 100,
             originalTopic: topic,
         }));
 
@@ -1398,12 +961,17 @@ const WordCloudGenerator = {
                         negative: '#ef4444',
                         neutral:  '#94a3b8',
                     };
-                    const color = sentimentColors[sentiment];
-                    const label = sentiment.charAt(0).toUpperCase() + sentiment.slice(1);
+                    const color  = sentimentColors[sentiment];
+                    const label  = sentiment.charAt(0).toUpperCase() + sentiment.slice(1);
+                    const volume = (topic.total_volume || 0).toLocaleString('id-ID');
                     return `
                         <div style="font-family:Poppins,sans-serif;min-width:200px;">
                             <div style="font-weight:700;font-size:15px;color:#1a202c;margin-bottom:8px;text-align:center;">
-                                ${params.name}
+                                #${params.name}
+                            </div>
+                            <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;">
+                                <span style="font-size:12px;color:#64748b;">Mentions:</span>
+                                <span style="font-size:13px;font-weight:700;color:#1a202c;">${volume}</span>
                             </div>
                             <div style="padding:4px 12px;background:${color}20;border-radius:12px;margin-bottom:10px;text-align:center;">
                                 <span style="font-size:10px;font-weight:700;color:${color};text-transform:uppercase;">
@@ -1452,7 +1020,6 @@ const WordCloudGenerator = {
         setTimeout(() => {
             this.chart.setOption(option, true);
 
-            // Click -> open X search
             this.chart.on('click', (params) => {
                 if (params && params.data && params.data.originalTopic) {
                     this.openXSearch(params.data.originalTopic.name);
@@ -1460,7 +1027,6 @@ const WordCloudGenerator = {
             });
         }, 10);
 
-        // Resize with debounce
         let resizeTimer;
         const handleResize = () => {
             clearTimeout(resizeTimer);
@@ -1477,8 +1043,8 @@ const WordCloudGenerator = {
             <div class="empty-state">
                 <svg viewBox="0 0 24 24" style="color:#ef4444;width:64px;height:64px;stroke:currentColor;fill:none;margin-bottom:16px;">
                     <circle cx="12" cy="12" r="10"/>
-                    <line x1="15" y1="9" x2="9" y2="15"/>
-                    <line x1="9" y1="9" x2="15" y2="15"/>
+                    <line x1="15" y1="9" x2="9"  y2="15"/>
+                    <line x1="9"  y1="9" x2="15" y2="15"/>
                 </svg>
                 <h3>Failed to Load Data</h3>
                 <p>${message}. Please try again later.</p>

@@ -327,9 +327,11 @@
                         <li class="pc-item {{ request()->routeIs('mk.tiktok.overview') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.tiktok.overview') }}{{ $qs }}">Overview</a>
                         </li>
+                        {{-- 
                         <li class="pc-item {{ request()->routeIs('mk.tiktok.trending-topics') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.tiktok.trending-topics') }}{{ $qs }}">Top Hashtags</a>
                         </li>
+                         --}}
                         <li class="pc-item {{ request()->routeIs('mk.tiktok.trending-word-cloud') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.tiktok.trending-word-cloud') }}{{ $qs }}">Word Cloud</a>
                         </li>

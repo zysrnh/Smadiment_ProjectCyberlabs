@@ -5,6 +5,7 @@
     use App\Http\Controllers\Controller;
     use App\Services\MediaKernelsClient;
     use Illuminate\Http\Request;
+    use Illuminate\Support\Facades\Auth;
     use Illuminate\Support\Facades\Log;
     use Carbon\Carbon;
 
@@ -15,6 +16,21 @@
         public function __construct(MediaKernelsClient $client)
         {
             $this->client = $client;
+        }
+
+        private function getAllProjects(): array
+        {
+            $user = Auth::user();
+            $assignedProjectIds = $user->assignedProjectIds();
+
+            $rawProjects = $this->client->listProjects(0, 100);
+            $allProjects = $rawProjects['data'] ?? [];
+
+            $userProjects = array_filter($allProjects, function ($project) use ($assignedProjectIds) {
+                return in_array($project['id'] ?? null, $assignedProjectIds);
+            });
+
+            return array_values($userProjects);
         }
 
         /**
@@ -1141,13 +1157,33 @@ Log::info('mostStatus raw result', [
         public function trendingWordCloudPage(Request $request)
         {
             try {
+                $projects  = $this->getAllProjects();
+                $projectId = $request->query('project_id');
                 $endDate   = $request->query('end_date', now()->format('Y-m-d'));
                 $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
                 $location  = $request->query('location', 'Indonesia');
-                return view('mk.x.trending-word-cloud')->with(['startDate' => $startDate, 'endDate' => $endDate, 'location' => $location]);
+
+                if (!$projectId && count($projects) > 0) {
+                    $projectId = $projects[0]['id'] ?? null;
+                }
+
+                return view('mk.x.trending-word-cloud')->with([
+                    'startDate' => $startDate,
+                    'endDate'   => $endDate,
+                    'location'  => $location,
+                    'projects'  => $projects,
+                    'projectId' => $projectId,
+                ]);
             } catch (\Exception $e) {
                 Log::error('X Trending Word Cloud Page Error', ['error' => $e->getMessage()]);
-                return view('mk.x.trending-word-cloud')->with(['startDate' => now()->subDays(6)->format('Y-m-d'), 'endDate' => now()->format('Y-m-d'), 'location' => 'Indonesia', 'error' => $e->getMessage()]);
+                return view('mk.x.trending-word-cloud')->with([
+                    'startDate' => now()->subDays(6)->format('Y-m-d'),
+                    'endDate'   => now()->format('Y-m-d'),
+                    'location'  => 'Indonesia',
+                    'projects'  => [],
+                    'projectId' => null,
+                    'error'     => $e->getMessage(),
+                ]);
             }
         }
 

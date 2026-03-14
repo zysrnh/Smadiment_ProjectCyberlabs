@@ -5,6 +5,7 @@ namespace App\Http\Controllers\MK;
 use App\Http\Controllers\Controller;
 use App\Services\MediaKernelsClient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class NewsController extends Controller
@@ -14,6 +15,21 @@ class NewsController extends Controller
     public function __construct(MediaKernelsClient $mkClient)
     {
         $this->mkClient = $mkClient;
+    }
+
+    private function getAllProjects(): array
+    {
+        $user = Auth::user();
+        $assignedProjectIds = $user->assignedProjectIds();
+
+        $rawProjects = $this->mkClient->listProjects(0, 100);
+        $allProjects = $rawProjects['data'] ?? [];
+
+        $userProjects = array_filter($allProjects, function ($project) use ($assignedProjectIds) {
+            return in_array($project['id'] ?? null, $assignedProjectIds);
+        });
+
+        return array_values($userProjects);
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -133,8 +149,13 @@ class NewsController extends Controller
     public function newsWordCloudPage(Request $request)
     {
         try {
+            $projects  = $this->getAllProjects();
             $projectId = $request->query('project_id', session('selected_project_id'));
             
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+            }
+
             if (!$projectId) {
                 Log::warning('News Word Cloud: No project selected');
                 return redirect()->route('mk.dashboard')
@@ -146,16 +167,11 @@ class NewsController extends Controller
             $endDate = $request->query('end_date', now()->format('Y-m-d'));
             $startDate = $request->query('start_date', now()->subDays(29)->format('Y-m-d'));
 
-            Log::info('News Word Cloud Page Loaded', [
-                'project_id' => $projectId,
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-            ]);
-
             return view('mk.news.word-cloud', [
                 'projectId' => $projectId,
                 'startDate' => $startDate,
                 'endDate' => $endDate,
+                'projects' => $projects,
             ]);
 
         } catch (\Exception $e) {

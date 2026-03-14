@@ -26,7 +26,7 @@ class TiktokOverviewController extends Controller
         $assignedProjectIds = $user->assignedProjectIds();
 
         $rawProjects = $this->client->listProjects(0, 100);
-        $allProjects = array_values($rawProjects);
+        $allProjects = $rawProjects['data'] ?? [];
 
         $userProjects = array_filter($allProjects, function ($project) use ($assignedProjectIds) {
             return in_array($project['id'] ?? null, $assignedProjectIds);
