@@ -819,12 +819,12 @@ const OVData = {
             },
             series:[{ name:'Mentions', data:values }],
             colors:['#038047'],
-            plotOptions:{ bar:{ borderRadius:5, columnWidth:'58%', dataLabels:{position:'top'} } },
+            plotOptions:{ bar:{ borderRadius:2, columnWidth:'58%', dataLabels:{position:'top'} } },
             dataLabels:{ enabled:true, formatter:v=>numK(v), offsetY:-16, style:{fontSize:'10px',fontWeight:'800',colors:['#038047']}, background:{enabled:false} },
             xaxis:{ categories:labels, axisBorder:{show:false}, axisTicks:{show:false}, labels:{style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'},rotate:-30,hideOverlappingLabels:true} },
             yaxis:{ labels:{ formatter:v=>numK(v), style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'} }, axisBorder:{show:false}, axisTicks:{show:false} },
             grid:{ borderColor:'rgba(226,232,240,.55)', strokeDashArray:3, xaxis:{lines:{show:false}}, padding:{top:20,right:8,bottom:0,left:4} },
-            fill:{ type:'gradient', gradient:{type:'vertical',shadeIntensity:0.2,opacityFrom:1,opacityTo:.7,stops:[0,100]} },
+            fill:{ type:'solid' },
             tooltip:{ shared:false, intersect:true, style:{fontFamily:'inherit',fontSize:'12px'}, y:{formatter:v=>numF(v)+' mentions'} },
         };
         barEl.style.display='block';
