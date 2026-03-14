@@ -155,13 +155,47 @@
 .tme-tab-panel { display:none; }
 .tme-tab-panel.active { display:block; }
 
-/* ══ Hashtag cloud ══ */
-.ov-hashtag-badge {
-    display:inline-flex; align-items:center; padding:6px 14px; border-radius:20px;
-    font-size:11.5px; font-weight:700; cursor:pointer;
-    transition:transform .12s, box-shadow .12s, filter .12s;
+/* ══ Hashtag ranked list — Trending Topics style ══ */
+.ht-list { display:flex; flex-direction:column; }
+
+.ht-item {
+    display:flex; align-items:center; gap:12px;
+    padding:10px 16px; border-bottom:1px solid var(--slate-100);
+    cursor:pointer; transition:background .12s;
 }
-.ov-hashtag-badge:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); filter:brightness(1.08); }
+.ht-item:last-child { border-bottom:none; }
+.ht-item:hover { background:var(--slate-50); }
+
+.ht-rank {
+    width:24px; height:24px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:10px; font-weight:800; color:var(--slate-400);
+    background:var(--slate-100); border:1px solid var(--slate-200);
+}
+.ht-rank--1 { background:linear-gradient(135deg,#ffd700,#F59E0B); color:#7c5900; border-color:#ffd700; }
+.ht-rank--2 { background:linear-gradient(135deg,#c0c0c0,#9ca3af); color:#3d3d3d; border-color:#c0c0c0; }
+.ht-rank--3 { background:linear-gradient(135deg,#cd7f32,#b06820); color:#fff; border-color:#cd7f32; }
+
+.ht-name {
+    flex:1; min-width:0;
+    font-size:13px; font-weight:700; color:var(--primary);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+.ht-bar-wrap {
+    flex:0 0 100px; height:6px; background:var(--slate-100);
+    border-radius:99px; overflow:hidden;
+}
+.ht-bar-fill {
+    height:100%; border-radius:99px;
+    background:linear-gradient(90deg, var(--primary), rgba(3,128,71,.5));
+    transition:width .4s cubic-bezier(.4,0,.2,1);
+}
+
+.ht-count {
+    font-size:11px; font-weight:700; color:var(--slate-500);
+    white-space:nowrap; flex-shrink:0; min-width:36px; text-align:right;
+}
 
 /* ══ Post list (identical to Most Engagement) ══ */
 .tme-post-list { display:flex; flex-direction:column; }
@@ -461,80 +495,61 @@
 {{-- ══ TAB PANEL: Hashtag ══ --}}
 <div class="tme-tab-panel active" id="panel-hashtag">
 
-    {{-- Hashtag Cloud Card ══ --}}
-    <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
-        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div class="d-flex align-items-center gap-2">
-                <div class="avtar avtar-xs bg-light-primary rounded">
-                    <i class="ph ph-hash f-18 text-primary"></i>
-                </div>
-                <div>
-                    <h6 class="mb-0">Top Hashtags</h6>
-                    <small class="text-muted">Hashtag paling sering digunakan — klik untuk lihat video</small>
-                </div>
-            </div>
-            <span class="badge bg-light-primary text-primary" id="badgeHashtag">Loading…</span>
-        </div>
-        <div class="card-body">
-            <div id="hashtagLoading" class="spinner-state">
-                <div class="spin-ring"></div><span>Memuat hashtag…</span>
-            </div>
-            <div id="hashtagContent" style="display:none;">
-                <div id="hashtagList" class="d-flex flex-wrap gap-2"></div>
-            </div>
-            <div id="hashtagEmpty" style="display:none;" class="chart-empty" style="padding:40px 0;">
-                <i class="ph ph-hash"></i><span>Tidak ada data hashtag</span>
-            </div>
-        </div>
-    </div>
+    <div class="row">
 
-    {{-- Hashtag Bar Chart Card ══ --}}
-    <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
-        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div class="d-flex align-items-center gap-2">
-                <div class="avtar avtar-xs bg-light-primary rounded">
-                    <i class="ph ph-chart-bar f-18 text-primary"></i>
+        {{-- ── Left: Ranked List ── --}}
+        <div class="col-xl-6 col-12">
+            <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avtar avtar-xs bg-light-primary rounded">
+                            <i class="ph ph-hash f-18 text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Top Hashtags</h6>
+                            <small class="text-muted">Klik untuk lihat video terkait</small>
+                        </div>
+                    </div>
+                    <span class="badge bg-light-primary text-primary" id="badgeHashtag">Loading…</span>
                 </div>
-                <div>
-                    <h6 class="mb-0">Hashtag Frequency Chart</h6>
-                    <small class="text-muted">Top 15 — klik bar untuk lihat video terkait</small>
+                <div id="hashtagLoading" class="spinner-state">
+                    <div class="spin-ring"></div><span>Memuat hashtag…</span>
+                </div>
+                <div id="hashtagContent" style="display:none;">
+                    <div id="hashtagList" class="ht-list"></div>
+                </div>
+                <div id="hashtagEmpty" style="display:none;" class="chart-empty" style="padding:40px 0;">
+                    <i class="ph ph-hash"></i><span>Tidak ada data hashtag</span>
                 </div>
             </div>
-            <span class="badge bg-light-secondary text-muted">Top 15</span>
         </div>
-        <div class="card-body">
-            <div class="chart-container" style="height:320px;" id="wrapHashtagBar">
-                <div class="chart-loading" id="loadingHashtagBar">
-                    <div class="spin-ring"></div><span>Loading chart…</span>
-                </div>
-                <div id="hashtagBarChart" style="width:100%;height:320px;display:none;"></div>
-                <span class="chart-clickable-hint"><i class="ph ph-cursor-click me-1"></i>Klik bar untuk detail</span>
-            </div>
-        </div>
-    </div>
 
-    {{-- Donut: Hashtag Proportion Top 5 ══ --}}
-    <div class="card mb-3" style="animation:fadeUp .38s ease-out .26s both;">
-        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div class="d-flex align-items-center gap-2">
-                <div class="avtar avtar-xs bg-light-primary rounded">
-                    <i class="ph ph-chart-donut f-18 text-primary"></i>
+        {{-- ── Right: Donut Top 5 ── --}}
+        <div class="col-xl-6 col-12">
+            <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avtar avtar-xs bg-light-primary rounded">
+                            <i class="ph ph-chart-donut f-18 text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Distribusi — Top 5</h6>
+                            <small class="text-muted">Proporsi penggunaan hashtag teratas</small>
+                        </div>
+                    </div>
+                    <div id="donutHashtagLegend" class="donut-legend"></div>
                 </div>
-                <div>
-                    <h6 class="mb-0">Distribusi Hashtag — Top 5</h6>
-                    <small class="text-muted">Proporsi penggunaan hashtag teratas</small>
+                <div class="card-body">
+                    <div class="chart-container" style="height:380px;">
+                        <div class="chart-loading" id="loadingDonutHashtag">
+                            <div class="spin-ring"></div><span>Loading…</span>
+                        </div>
+                        <div id="donutHashtagChart" style="width:100%;height:380px;display:none;"></div>
+                    </div>
                 </div>
             </div>
-            <div id="donutHashtagLegend" class="donut-legend"></div>
         </div>
-        <div class="card-body">
-            <div class="chart-container" style="height:420px;">
-                <div class="chart-loading" id="loadingDonutHashtag">
-                    <div class="spin-ring"></div><span>Loading…</span>
-                </div>
-                <div id="donutHashtagChart" style="width:100%;height:420px;display:none;"></div>
-            </div>
-        </div>
+
     </div>
 
 </div>
@@ -767,7 +782,6 @@ const OVData = {
                 if(badge) badge.textContent = j.data.total_hashtags + ' hashtags';
                 const chip = _$('chip-hashtag'); if(chip) chip.textContent = j.data.total_hashtags;
                 this._renderHashtagCloud(j.data.hashtags);
-                this._renderHashtagBar(j.data.hashtags.slice(0,15));
                 this._renderDonutHashtag(j.data.hashtags);
             } else {
                 if(loadEl) loadEl.style.display='none';
@@ -787,48 +801,24 @@ const OVData = {
         const list=_$('hashtagList'); if(!list) return;
         const maxSize = hashtags[0]?.size || 1;
         list.innerHTML = '';
-        hashtags.slice(0,40).forEach((h,i)=>{
-            const ratio = h.size / maxSize;
-            let bg, color;
-            if(i===0){ bg='var(--primary)'; color='#fff'; }
-            else if(ratio>.6){ bg='rgba(3,128,71,.15)'; color='#038047'; }
-            else if(ratio>.3){ bg='rgba(245,158,11,.12)'; color='#92400e'; }
-            else { bg='#f1f5f9'; color='#475569'; }
-            const el = document.createElement('span');
-            el.className='ov-hashtag-badge';
-            el.style.cssText=`background:${bg};color:${color};font-size:${Math.max(11,11+ratio*5)}px;`;
-            el.textContent='#'+h.name+' ('+h.size+')';
+        hashtags.slice(0,30).forEach((h, i) => {
+            const rank   = i + 1;
+            const rkCls  = rank <= 3 ? ` ht-rank--${rank}` : '';
+            const pct    = Math.round((h.size / maxSize) * 100);
+            const el     = document.createElement('div');
+            el.className = 'ht-item';
+            el.innerHTML = `
+                <div class="ht-rank${rkCls}">${rank}</div>
+                <div class="ht-name">#${esc(h.name)}</div>
+                <div class="ht-bar-wrap">
+                    <div class="ht-bar-fill" style="width:${pct}%;"></div>
+                </div>
+                <div class="ht-count">${numF(h.size)}</div>`;
             el.onclick = () => this._openHashtagPanel(h);
             list.appendChild(el);
         });
-        if(loadEl) loadEl.style.display='none';
-        if(contentEl) contentEl.style.display='block';
-    },
-
-    _renderHashtagBar(hashtags) {
-        const barEl=_$('hashtagBarChart');
-        if(!barEl||!hashtags.length||typeof ApexCharts==='undefined') { hideLd('loadingHashtagBar'); return; }
-        const labels = hashtags.map(h=>{ const n='#'+h.name; return n.length>18?n.slice(0,17)+'…':n; });
-        const values = hashtags.map(h=>h.size);
-        const opts = {
-            chart:{ type:'bar', height:320, fontFamily:'inherit', background:'transparent', toolbar:{show:false}, zoom:{enabled:false},
-                events:{
-                    dataPointSelection: (_,ctx,cfg)=>{ const h=hashtags[cfg.dataPointIndex]; if(h) this._openHashtagPanel(h); },
-                    mounted: ()=>hideLd('loadingHashtagBar'),
-                }
-            },
-            series:[{ name:'Mentions', data:values }],
-            colors:['#038047'],
-            plotOptions:{ bar:{ borderRadius:5, columnWidth:'58%', dataLabels:{position:'top'} } },
-            dataLabels:{ enabled:true, formatter:v=>numK(v), offsetY:-16, style:{fontSize:'10px',fontWeight:'800',colors:['#038047']}, background:{enabled:false} },
-            xaxis:{ categories:labels, axisBorder:{show:false}, axisTicks:{show:false}, labels:{style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'},rotate:-30,hideOverlappingLabels:true} },
-            yaxis:{ labels:{ formatter:v=>numK(v), style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'} }, axisBorder:{show:false}, axisTicks:{show:false} },
-            grid:{ borderColor:'rgba(226,232,240,.55)', strokeDashArray:3, xaxis:{lines:{show:false}}, padding:{top:20,right:8,bottom:0,left:4} },
-            fill:{ type:'gradient', gradient:{type:'vertical',shadeIntensity:0.2,opacityFrom:1,opacityTo:.7,stops:[0,100]} },
-            tooltip:{ shared:false, intersect:true, style:{fontFamily:'inherit',fontSize:'12px'}, y:{formatter:v=>numF(v)+' mentions'} },
-        };
-        barEl.style.display='block';
-        makeChart('hashtagBarChart', opts);
+        if(loadEl)   loadEl.style.display   = 'none';
+        if(contentEl) contentEl.style.display = 'block';
     },
 
     _renderDonutHashtag(hashtags) {
