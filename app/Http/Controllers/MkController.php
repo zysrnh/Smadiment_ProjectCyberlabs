@@ -168,8 +168,11 @@ class MkController extends Controller
 
                 $dateLabel = $date->format('d') . '. ' . $date->format('M');
 
-                $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $dateStr, 0, 23);
-                $normalized    = $this->normalizeSentimentTotal($sentimentData);
+                $ck = "sent_{$projectId}_{$dateStr}_{$dateStr}";
+                $normalized = \Illuminate\Support\Facades\Cache::remember($ck, 600, function () use ($mk, $projectId, $dateStr) {
+                    $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $dateStr, 0, 23);
+                    return $this->normalizeSentimentTotal($sentimentData);
+                });
 
                 $pos   = $normalized['positive'];
                 $neu   = $normalized['neutral'];
@@ -227,8 +230,11 @@ class MkController extends Controller
                     $weekEndStr = $weekEnd->format('Y-m-d');
                     $dateLabel  = $current->format('d') . ' ' . $current->format('M');
 
-                    $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $weekEndStr, 0, 23);
-                    $normalized    = $this->normalizeSentimentTotal($sentimentData);
+                    $ck = "sent_{$projectId}_{$dateStr}_{$weekEndStr}";
+                    $normalized = \Illuminate\Support\Facades\Cache::remember($ck, 600, function () use ($mk, $projectId, $dateStr, $weekEndStr) {
+                        $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $weekEndStr, 0, 23);
+                        return $this->normalizeSentimentTotal($sentimentData);
+                    });
 
                     $pos   = $normalized['positive'];
                     $neu   = $normalized['neutral'];
@@ -250,8 +256,11 @@ class MkController extends Controller
                     $dateStr   = $current->format('Y-m-d');
                     $dateLabel = $current->format('d') . ' ' . $current->format('M');
 
-                    $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $dateStr, 0, 23);
-                    $normalized    = $this->normalizeSentimentTotal($sentimentData);
+                    $ck = "sent_{$projectId}_{$dateStr}_{$dateStr}";
+                    $normalized = \Illuminate\Support\Facades\Cache::remember($ck, 600, function () use ($mk, $projectId, $dateStr) {
+                        $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $dateStr, 0, 23);
+                        return $this->normalizeSentimentTotal($sentimentData);
+                    });
 
                     $pos   = $normalized['positive'];
                     $neu   = $normalized['neutral'];
@@ -287,10 +296,13 @@ class MkController extends Controller
  
     foreach ($projects as &$project) {
         try {
-            $sentimentData = $mk->sentimentTotal(
-                $project['id'], $startDate, $endDate, 0, 23
-            );
-            $norm = $this->normalizeSentimentTotal($sentimentData);
+            $cacheKey = "dash_sent_{$project['id']}_{$startDate}_{$endDate}";
+            $norm = \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($mk, $project, $startDate, $endDate) {
+                $sentimentData = $mk->sentimentTotal(
+                    $project['id'], $startDate, $endDate, 0, 23
+                );
+                return $this->normalizeSentimentTotal($sentimentData);
+            });
  
             $project['total_mentions']    = $norm['positive'] + $norm['neutral'] + $norm['negative'];
             $project['sentiment_summary'] = $norm;

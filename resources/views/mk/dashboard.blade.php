@@ -1103,13 +1103,15 @@ const DashPanel = (() => {
         const q = `project_id=${pid}&start_date=${DashCfg.sd}&end_date=${DashCfg.ed}&rows=500&start=0`;
 
         if (platform === 'instagram') {
-            for (const sub of ['postbylike','postbycomment','postbydate','']) {
+            for (const sub of ['postbylike','postbydate']) {
+                const ic = new AbortController(), it = setTimeout(() => ic.abort(), 12000);
                 try {
-                    const r = await fetch(`/mk/api/news/ig-top-status?${q}${sub ? '&sub='+sub : ''}`);
+                    const r = await fetch(`/mk/api/news/ig-top-status?${q}${sub ? '&sub='+sub : ''}`, { signal: ic.signal });
+                    clearTimeout(it);
                     const d = await r.json();
                     const items = Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []);
                     if (items.length > 0) return items.map(i => ({ ...i, _platform: platform }));
-                } catch(e) { continue; }
+                } catch(e) { clearTimeout(it); continue; }
             }
             return [];
         }
@@ -1124,7 +1126,7 @@ const DashPanel = (() => {
         const twitFallback = `/mk/api/news/mentions?${q}&media_type=twit`;
         const url = eps[platform]; if (!url) return [];
 
-        const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 30000);
+        const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 15000);
         try {
             const r = await fetch(url, { signal: ctrl.signal }); clearTimeout(tid);
             if (!r.ok) return [];
