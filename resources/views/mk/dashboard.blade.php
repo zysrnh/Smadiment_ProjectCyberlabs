@@ -904,21 +904,15 @@ function renderProjectChart(projectId) {
     const showLabels = labels.length <= 20;
 
     const options = {
-        /* ── Chart core ── */
         chart: {
-            type      : 'area',
-            height    : 280,
-            fontFamily: 'inherit',
-            background: 'transparent',
-            toolbar   : { show: false },
-            zoom      : { enabled: false },
-            sparkline : { enabled: false },
+            type: 'area',
+            height: 280,
             animations: {
-                enabled  : true,
-                easing   : 'easeInOutQuad',
-                speed    : 700,
-                animateGradually: { enabled: true, delay: 100 },
+                enabled: true,
+                easing: 'linear',
+                dynamicAnimation: { speed: 1000 }
             },
+            toolbar: { show: false },
             events: {
                 mounted: function () {
                     if (loadEl) {
@@ -926,157 +920,20 @@ function renderProjectChart(projectId) {
                         setTimeout(() => { try { loadEl.remove(); } catch(e){} }, 260);
                     }
                 },
-                markerClick: function(e, ctx, cfg) {
-                    const sentMap = ['all', 'pos', 'neu', 'neg'];
-                    DashPanel.open('all', sentMap[cfg.seriesIndex] || 'all', projectId);
-                },
             },
         },
-
-        /* ── Series ── */
         series: [
-            { name: 'Total',    data: tl.values                    },
-            { name: 'Positive', data: tl.sentiment?.positive || [] },
-            { name: 'Neutral',  data: tl.sentiment?.neutral  || [] },
-            { name: 'Negative', data: tl.sentiment?.negative || [] },
+            { name: 'Total',    data: tl.values                    || [] },
+            { name: 'Positive', data: tl.sentiment?.positive       || [] },
+            { name: 'Neutral',  data: tl.sentiment?.neutral        || [] },
+            { name: 'Negative', data: tl.sentiment?.negative       || [] },
         ],
-
-        colors: [C.primary, C.green, C.gray, C.red],
-
-        /* ── Stroke: smooth spline ── */
-        stroke: {
-            curve  : 'smooth',
-            width  : [2.5, 2, 1.5, 1.5],
-            lineCap: 'round',
-        },
-
-        /* ── Fill: per-series gradient opacity → layered spline area look ── */
-        fill: {
-            type    : ['gradient', 'gradient', 'gradient', 'gradient'],
-            gradient: {
-                type           : 'vertical',
-                shadeIntensity : 0,
-                inverseColors  : false,
-                opacityFrom    : [0.35, 0.30, 0.10, 0.10],
-                opacityTo      : [0.05, 0.05, 0.01, 0.01],
-                stops          : [0, 80, 100],
-            },
-        },
-
-        /* ── Markers: small circles visible at every point ── */
-        markers: {
-            size        : showLabels ? 3.5 : (labels.length <= 45 ? 2.5 : 0),
-            strokeWidth : 2,
-            strokeColors: '#fff',
-            colors      : [C.primary, C.green, C.gray, C.red],
-            hover       : { sizeOffset: 2 },
-            shape       : 'circle',
-            discrete    : [],
-        },
-
-        /* ── Data Labels: floating text badge (no box background) ──
-           Style matches image 1: coloured bold number above the point,
-           small pill-shaped text — no rectangle background frame.      */
-        dataLabels: {
-            enabled        : showLabels,
-            enabledOnSeries: [0, 1],      // Total (primary) + Positive (green) only
-            formatter      : v => numK(v),
-            offsetY        : -7,
-            style: {
-                fontSize  : '10px',
-                fontFamily: 'inherit',
-                fontWeight: '800',
-                /* Series 0 = primary colour, Series 1 = green */
-                colors    : [C.primary, C.green],
-            },
-            /* No background box — pure floating text like image 1 */
-            background: {
-                enabled: false,
-            },
-            dropShadow: { enabled: false },
-        },
-
-        /* ── X-axis ── */
         xaxis: {
             categories: labels,
-            axisBorder: { show: false },
-            axisTicks : { show: false },
-            labels: {
-                style: {
-                    fontFamily: 'inherit',
-                    fontSize  : '10px',
-                    fontWeight: 600,
-                    colors    : C.gray,
-                },
-                hideOverlappingLabels: true,
-                rotate  : 0,
-                offsetY : 2,
-            },
-            crosshairs: {
-                show    : true,
-                position: 'back',
-                stroke  : { color: '#CBD5E1', width: 1, dashArray: 3 },
-            },
-            tickAmount: labels.length > 30 ? 10 : (labels.length > 14 ? 7 : labels.length),
         },
-
-        /* ── Y-axis ── */
-        yaxis: {
-            labels: {
-                style    : { fontFamily:'inherit', fontSize:'10px', fontWeight:600, colors:C.gray },
-                formatter: v => numK(v),
-                offsetX  : -4,
-            },
-            axisBorder: { show: false },
-            axisTicks : { show: false },
-            tickAmount: 4,
-        },
-
-        /* ── Grid: subtle horizontal lines only ── */
-        grid: {
-            borderColor    : 'rgba(226,232,240,.55)',
-            strokeDashArray: 3,
-            padding        : { top: showLabels ? 22 : 10, right: 8, bottom: 0, left: 4 },
-            xaxis: { lines: { show: false } },
-            yaxis: { lines: { show: true  } },
-        },
-
-        /* ── Legend ── */
-        legend: {
-            position       : 'bottom',
-            horizontalAlign: 'left',
-            fontSize       : '11px',
-            fontFamily     : 'inherit',
-            fontWeight     : 600,
-            labels         : { colors: C.gray },
-            markers        : { width: 7, height: 7, radius: 12, offsetX: -2 },
-            itemMargin     : { horizontal: 14, vertical: 4 },
-            offsetY        : 4,
-            onItemClick    : { toggleDataSeries: true },
-        },
-
-        /* ── Tooltip: shared crosshair (image 1 style) ── */
-        tooltip: {
-            shared   : true,
-            intersect: false,
-            style    : { fontFamily: 'inherit', fontSize: '12px' },
-            y: {
-                formatter: v => (v !== undefined ? parseInt(v || 0).toLocaleString('id-ID') : ''),
-            },
-            x: {
-                formatter: (val, opts) => {
-                    const idx = opts?.dataPointIndex;
-                    const raw = tl.dates?.[idx];
-                    if (!raw) return val;
-                    try {
-                        return new Date(raw + 'T00:00:00').toLocaleDateString('id-ID', {
-                            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-                        });
-                    } catch(e) { return raw; }
-                },
-            },
-            marker: { show: true },
-        },
+        colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
+        fill: { opacity: 0.3 },
+        stroke: { curve: 'smooth' },
     };
 
     /* destroy previous instance */

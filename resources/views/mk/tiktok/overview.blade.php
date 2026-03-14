@@ -817,8 +817,34 @@ const OVData = {
             el.onclick = () => this._openHashtagPanel(h);
             list.appendChild(el);
         });
-        if(loadEl)   loadEl.style.display   = 'none';
-        if(contentEl) contentEl.style.display = 'block';
+        if(loadEl) loadEl.style.display='none';
+        if(contentEl) contentEl.style.display='block';
+    },
+
+    _renderHashtagBar(hashtags) {
+        const barEl=_$('hashtagBarChart');
+        if(!barEl||!hashtags.length||typeof ApexCharts==='undefined') { hideLd('loadingHashtagBar'); return; }
+        const labels = hashtags.map(h=>{ const n='#'+h.name; return n.length>18?n.slice(0,17)+'…':n; });
+        const values = hashtags.map(h=>h.size);
+        const opts = {
+            chart:{ type:'bar', height:320, fontFamily:'inherit', background:'transparent', toolbar:{show:false}, zoom:{enabled:false},
+                events:{
+                    dataPointSelection: (_,ctx,cfg)=>{ const h=hashtags[cfg.dataPointIndex]; if(h) this._openHashtagPanel(h); },
+                    mounted: ()=>hideLd('loadingHashtagBar'),
+                }
+            },
+            series:[{ name:'Mentions', data:values }],
+            colors:['#038047'],
+            plotOptions:{ bar:{ borderRadius:2, columnWidth:'58%', dataLabels:{position:'top'} } },
+            dataLabels:{ enabled:true, formatter:v=>numK(v), offsetY:-16, style:{fontSize:'10px',fontWeight:'800',colors:['#038047']}, background:{enabled:false} },
+            xaxis:{ categories:labels, axisBorder:{show:false}, axisTicks:{show:false}, labels:{style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'},rotate:-30,hideOverlappingLabels:true} },
+            yaxis:{ labels:{ formatter:v=>numK(v), style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'} }, axisBorder:{show:false}, axisTicks:{show:false} },
+            grid:{ borderColor:'rgba(226,232,240,.55)', strokeDashArray:3, xaxis:{lines:{show:false}}, padding:{top:20,right:8,bottom:0,left:4} },
+            fill:{ type:'solid' },
+            tooltip:{ shared:false, intersect:true, style:{fontFamily:'inherit',fontSize:'12px'}, y:{formatter:v=>numF(v)+' mentions'} },
+        };
+        barEl.style.display='block';
+        makeChart('hashtagBarChart', opts);
     },
 
     _renderDonutHashtag(hashtags) {
