@@ -21,20 +21,8 @@ class YoutubeOverviewController extends Controller
      */
     private function getAllProjects(): array
     {
-        $allProjects = [];
-        $offset      = 0;
-        $limit       = 1000;
-
-        do {
-            $projectsData = $this->client->listProjects($offset, $limit);
-            $data         = $projectsData['data'] ?? [];
-            $allProjects  = array_merge($allProjects, $data);
-            $offset      += $limit;
-
-            $total = $projectsData['total'] ?? $projectsData['meta']['total'] ?? null;
-        } while (count($data) === $limit && ($total === null || $offset < $total));
-
-        return $allProjects;
+        $projectsData = $this->client->listProjects(0, 100);
+        return array_values($projectsData);
     }
 
     // ─────────────────────────────────────────────────────

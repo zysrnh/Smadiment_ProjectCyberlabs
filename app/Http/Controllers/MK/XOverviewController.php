@@ -24,7 +24,7 @@
             $assignedProjectIds = $user->assignedProjectIds();
 
             $rawProjects = $this->client->listProjects(0, 100);
-            $allProjects = $rawProjects['data'] ?? [];
+            $allProjects = array_values($rawProjects);
 
             $userProjects = array_filter($allProjects, function ($project) use ($assignedProjectIds) {
                 return in_array($project['id'] ?? null, $assignedProjectIds);
