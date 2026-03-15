@@ -28,8 +28,6 @@
     --shadow-md        : 0 4px 14px rgba(15,23,42,.08);
     --shadow-lg        : 0 10px 30px rgba(15,23,42,.12);
     --font             : inherit;
-
-    /* aliases for JS compatibility */
     --dash-primary     : var(--primary);
     --dash-primary-rgb : var(--primary-rgb);
     --dash-primary-lt  : var(--primary-lt);
@@ -54,65 +52,37 @@
 .fade-up-d3 { animation-delay:.15s }
 .fade-up-d4 { animation-delay:.20s }
 
-/* ══ KPI Card Icons — same as dashboard ══ */
+/* ══ KPI Card Icons ══ */
 .kpi-icon-bg {
     width:48px; height:48px; border-radius:12px;
     display:flex; align-items:center; justify-content:center;
     background:rgba(255,255,255,.2); font-size:24px; color:#fff; flex-shrink:0;
 }
 
-/* ══ KPI Card Hover — same as most-engagement ══ */
+/* ══ KPI Card Hover ══ */
 .kpi-card-hover {
     will-change: transform, box-shadow;
     transition: transform .25s cubic-bezier(.34,1.56,.64,1) !important,
-                box-shadow .25s ease !important,
-                filter .25s ease !important;
-    position: relative !important;
-    overflow: hidden !important;
+                box-shadow .25s ease !important, filter .25s ease !important;
+    position: relative !important; overflow: hidden !important;
 }
 .kpi-card-hover::before {
-    content: '';
-    position: absolute;
-    top: 0; bottom: 0;
-    left: -100%;
-    width: 60%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
-    pointer-events: none;
-    z-index: 1;
-    transition: none;
+    content: ''; position: absolute; top: 0; bottom: 0; left: -100%;
+    width: 60%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
+    pointer-events: none; z-index: 1;
 }
-.kpi-card-hover:hover {
-    transform: translateY(-6px) scale(1.025) !important;
-    box-shadow: 0 20px 40px rgba(0,0,0,.25) !important;
-    filter: brightness(1.07) !important;
-}
-.kpi-card-hover:hover::before {
-    animation: kpiShimmer .6s ease forwards;
-}
-.kpi-card-hover:hover .kpi-icon-bg {
-    background: rgba(255,255,255,.35) !important;
-    transition: background .2s ease !important;
-}
-.kpi-card-hover:hover .kpi-icon-bg i {
-    animation: kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both !important;
-    display: inline-block !important;
-}
-.kpi-card-hover:active {
-    transform: translateY(-2px) scale(1.01) !important;
-    transition-duration: .08s !important;
-}
+.kpi-card-hover:hover { transform: translateY(-6px) scale(1.025) !important; box-shadow: 0 20px 40px rgba(0,0,0,.25) !important; filter: brightness(1.07) !important; }
+.kpi-card-hover:hover::before { animation: kpiShimmer .6s ease forwards; }
+.kpi-card-hover:hover .kpi-icon-bg { background: rgba(255,255,255,.35) !important; }
+.kpi-card-hover:hover .kpi-icon-bg i { animation: kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both !important; display: inline-block !important; }
+.kpi-card-hover:active { transform: translateY(-2px) scale(1.01) !important; transition-duration: .08s !important; }
 .kpi-card-hover.clickable { cursor: pointer; }
 
 /* ══ KPI Stat Cards ══ */
 .ms-stat-card {
-    border-radius: 0;
-    padding:18px 20px;
-    box-shadow:var(--shadow-sm);
-    transition:transform .18s, box-shadow .18s;
-    position:relative; overflow:hidden;
-    color:#fff; border:none;
-    display:flex; align-items:center; gap:14px;
-    margin-bottom:0;
+    border-radius:0; padding:18px 20px; box-shadow:var(--shadow-sm);
+    transition:transform .18s, box-shadow .18s; position:relative; overflow:hidden;
+    color:#fff; border:none; display:flex; align-items:center; gap:14px; margin-bottom:0;
 }
 .ms-stat-card.clickable { cursor:pointer; }
 .ms-stat-card.clickable:hover { box-shadow:var(--shadow-lg); transform:translateY(-2px); }
@@ -130,17 +100,14 @@
 
 /* ══ Platform Mini Cards ══ */
 .ms-plat-card {
-    background:#fff; border:1px solid var(--slate-200);
-    border-radius:var(--radius); padding:12px 14px;
-    box-shadow:var(--shadow-sm);
-    display:flex; align-items:center; gap:10px;
-    transition:all .18s; cursor:pointer;
+    background:#fff; border:1px solid var(--slate-200); border-radius:var(--radius);
+    padding:12px 14px; box-shadow:var(--shadow-sm); display:flex; align-items:center; gap:10px;
+    transition:transform .2s cubic-bezier(.4,0,.2,1), box-shadow .2s cubic-bezier(.4,0,.2,1), border-color .2s;
+    cursor:pointer; user-select:none;
 }
-.ms-plat-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); border-color:rgba(var(--primary-rgb),.25); }
-.ms-plat-icon {
-    width:38px; height:38px; border-radius:var(--radius);
-    display:flex; align-items:center; justify-content:center; flex-shrink:0;
-}
+.ms-plat-card:hover { transform:translateY(-4px); box-shadow:0 8px 20px rgba(15,23,42,.12); border-color:rgba(var(--primary-rgb),.3); }
+.ms-plat-card:active { transform:translateY(-1px); }
+.ms-plat-icon { width:38px; height:38px; border-radius:var(--radius); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .ms-plat-name  { font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .ms-plat-count { font-size:17px; font-weight:700; color:var(--slate-900); letter-spacing:-.4px; min-height:24px; display:flex; align-items:center; }
 
@@ -159,18 +126,9 @@
 /* ══ SOV body ══ */
 .ms-sov-body { padding:16px 18px; display:flex; flex-direction:column; align-items:center; }
 
-/* ══ Tabs — same style as dashboard toggle ══ */
-.ms-tabs {
-    display:flex; gap:2px;
-    background:var(--slate-100); border:1px solid var(--slate-200);
-    border-radius:var(--radius-sm); padding:3px; margin-bottom:14px;
-}
-.ms-tab-btn {
-    flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
-    padding:7px 16px; border-radius:3px; border:none; background:transparent;
-    font-family:inherit; font-size:12px; font-weight:600;
-    color:var(--slate-500); cursor:pointer; transition:all .13s;
-}
+/* ══ Tabs ══ */
+.ms-tabs { display:flex; gap:2px; background:var(--slate-100); border:1px solid var(--slate-200); border-radius:var(--radius-sm); padding:3px; margin-bottom:14px; }
+.ms-tab-btn { flex:1; display:flex; align-items:center; justify-content:center; gap:7px; padding:7px 16px; border-radius:3px; border:none; background:transparent; font-family:inherit; font-size:12px; font-weight:600; color:var(--slate-500); cursor:pointer; transition:all .13s; }
 .ms-tab-btn:hover { background:#fff; color:var(--slate-800); }
 .ms-tab-btn.active { background:#fff; color:var(--primary); box-shadow:0 1px 4px rgba(0,0,0,.08); }
 .ms-tab-btn i { font-size:14px; }
@@ -178,51 +136,26 @@
 .ms-tab-panel.active { display:block; }
 
 /* ══ Toggle Group ══ */
-.ms-toggle-group {
-    display:flex; background:var(--slate-100); border-radius:var(--radius-sm);
-    padding:2px; gap:2px; border:1px solid var(--slate-200);
-}
-.ms-toggle-btn {
-    display:flex; align-items:center; gap:5px;
-    padding:4px 10px; border-radius:3px; border:none; background:transparent;
-    font-family:inherit; font-size:11px; font-weight:600;
-    color:var(--slate-500); cursor:pointer; transition:all .13s; white-space:nowrap;
-}
+.ms-toggle-group { display:flex; background:var(--slate-100); border-radius:var(--radius-sm); padding:2px; gap:2px; border:1px solid var(--slate-200); }
+.ms-toggle-btn { display:flex; align-items:center; gap:5px; padding:4px 10px; border-radius:3px; border:none; background:transparent; font-family:inherit; font-size:11px; font-weight:600; color:var(--slate-500); cursor:pointer; transition:all .13s; white-space:nowrap; }
 .ms-toggle-btn:hover { background:#fff; color:var(--slate-800); }
 .ms-toggle-btn.active { background:#fff; color:var(--primary); box-shadow:0 1px 4px rgba(0,0,0,.08); }
 
 /* ══ CSV Button ══ */
-.ms-csv-btn {
-    display:flex; align-items:center; gap:5px; padding:4px 10px;
-    background:var(--slate-100); border:1px solid var(--slate-200);
-    border-radius:var(--radius-sm); font-family:inherit;
-    font-size:11px; font-weight:600; color:var(--slate-500);
-    cursor:pointer; transition:all .13s; white-space:nowrap;
-}
+.ms-csv-btn { display:flex; align-items:center; gap:5px; padding:4px 10px; background:var(--slate-100); border:1px solid var(--slate-200); border-radius:var(--radius-sm); font-family:inherit; font-size:11px; font-weight:600; color:var(--slate-500); cursor:pointer; transition:all .13s; white-space:nowrap; }
 .ms-csv-btn:hover { background:var(--primary); border-color:var(--primary); color:#fff; }
 
 /* ══ Skeleton ══ */
-.sk-block {
-    border-radius:4px;
-    background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);
-    background-size:200% 100%; animation:shimmer 1.4s infinite;
-}
+.sk-block { border-radius:4px; background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
 .sk-overlay { position:absolute; inset:0; z-index:3; border-radius:inherit; }
 
 /* ══ Empty State ══ */
-.ms-empty {
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    padding:44px 20px; gap:8px;
-}
+.ms-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:44px 20px; gap:8px; }
 .ms-empty i { font-size:38px; color:var(--slate-300); }
 .ms-empty span { font-size:12px; font-weight:600; color:var(--slate-400); }
 
 /* ══ CSV Modal ══ */
-.ms-csv-modal {
-    position:fixed; inset:0; z-index:99998;
-    background:rgba(15,23,42,.5); backdrop-filter:blur(5px);
-    display:none; align-items:center; justify-content:center;
-}
+.ms-csv-modal { position:fixed; inset:0; z-index:99998; background:rgba(15,23,42,.5); backdrop-filter:blur(5px); display:none; align-items:center; justify-content:center; }
 .ms-csv-modal.show { display:flex; }
 .ms-csv-modal__box { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-lg); width:520px; max-width:92vw; overflow:hidden; animation:dpUp .22s cubic-bezier(.34,1.3,.64,1); }
 .ms-csv-modal__head { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:var(--slate-50); border-bottom:1px solid var(--slate-200); }
@@ -328,7 +261,7 @@
 {{-- ══ Filter ══ --}}
 @include('mk.layouts.partials.filter-datepicker')
 
-{{-- ══ KPI Cards — same as Most Engagement ══ --}}
+{{-- ══ KPI Cards ══ --}}
 <div class="row g-3 mb-3">
     <div class="col-md-6 col-xl-3">
         <div class="card h-100 text-white kpi-card-hover clickable" style="background:#0284c7;animation:fadeUp .38s ease-out both;"
@@ -417,8 +350,8 @@
 {{-- ══ Platform Mini Cards ══ --}}
 <div class="row g-2 mb-3 fade-up">
     @foreach([
-        ['doc',    'pcDoc',  '#0284c7', 'rgba(2,132,199,.1)',    'ph-newspaper',   'Mass Media'],
-        ['twit',   'pcTwit', '#1d9bf0', 'rgba(29,155,240,.1)',   'ph-x-logo',      'X / Twitter'],
+        ['doc',    'pcDoc',  '#0284c7', 'rgba(2,132,199,.1)',    'ph-newspaper',    'Mass Media'],
+        ['twit',   'pcTwit', '#1d9bf0', 'rgba(29,155,240,.1)',   'ph-x-logo',       'X / Twitter'],
         ['fb',     'pcFb',   '#1877f2', 'rgba(24,119,242,.1)',   'ph-facebook-logo','Facebook'],
         ['ig',     'pcIg',   '#e1306c', 'rgba(225,48,108,.1)',   'ph-instagram-logo','Instagram'],
         ['yt',     'pcYt',   '#ff0000', 'rgba(255,0,0,.07)',     'ph-youtube-logo', 'YouTube'],
@@ -543,6 +476,7 @@
 {{-- ══ TAB: TREND ══ --}}
 <div class="ms-tab-panel active" id="panelTrend">
 
+    {{-- Trend Mentions — ApexCharts area --}}
     <div class="card mb-3">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
@@ -551,7 +485,7 @@
                 </div>
                 <div>
                     <h6 class="mb-0">The Trends of Total Mentions by Media Types</h6>
-                    <small class="text-muted" id="trendSubtitle">8 hari terakhir</small>
+                    <small class="text-muted" id="trendSubtitle">Loading…</small>
                 </div>
             </div>
             <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -567,7 +501,7 @@
                     <button class="ms-toggle-btn" id="weekNavPrev" onclick="MSTrendToggle.navWeek(1)">
                         <i class="ph ph-caret-left" style="font-size:11px;"></i>
                     </button>
-                    <span id="weekNavLabel" style="padding:4px 9px;font-size:10px;font-weight:700;color:var(--slate-500);white-space:nowrap;line-height:1;display:flex;align-items:center;">Minggu Ini</span>
+                    <span id="weekNavLabel" style="padding:4px 9px;font-size:10px;font-weight:700;color:var(--slate-500);white-space:nowrap;display:flex;align-items:center;">Minggu Ini</span>
                     <button class="ms-toggle-btn" id="weekNavNext" onclick="MSTrendToggle.navWeek(-1)" disabled style="opacity:.35;cursor:not-allowed;">
                         <i class="ph ph-caret-right" style="font-size:11px;"></i>
                     </button>
@@ -579,13 +513,14 @@
             </div>
         </div>
         <div class="card-body">
-            <div class="ms-ch ms-ch-340">
-                <div id="chTrend"></div>
+            <div class="ms-ch ms-ch-340" style="position:relative;">
                 <div class="sk-block sk-overlay" id="skTrend"></div>
+                <div id="chTrend" style="width:100%;height:340px;"></div>
             </div>
         </div>
     </div>
 
+    {{-- Article Trend — ApexCharts area --}}
     <div class="card mb-3">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
@@ -605,9 +540,9 @@
             </div>
         </div>
         <div class="card-body">
-            <div class="ms-ch ms-ch-340">
-                <div id="chArticleTrend"></div>
+            <div class="ms-ch ms-ch-340" style="position:relative;">
                 <div class="sk-block sk-overlay" id="skArticleTrend"></div>
+                <div id="chArticleTrend" style="width:100%;height:340px;"></div>
             </div>
         </div>
     </div>
@@ -738,20 +673,19 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
 <script>
 'use strict';
 
-/* ══════════════════════════════════════════════════════
-   CONFIG
-══════════════════════════════════════════════════════ */
+/* ══ CONFIG ══ */
 const MSCfg = {
   pid : {{ $projectId ? (int)$projectId : 'null' }},
   sd  : '{{ $startDate }}',
   ed  : '{{ $endDate }}',
   platColors: {
-    'Mass Media' :'#0284c7','X (Twitter)':'#1d9bf0','Facebook':'#1877f2',
-    'Instagram'  :'#e1306c','YouTube':'#ff0000','TikTok':'#111827',
+    'Mass Media':'#0284c7','X (Twitter)':'#1d9bf0','Facebook':'#1877f2',
+    'Instagram':'#e1306c','YouTube':'#ff0000','TikTok':'#111827',
     doc:'#0284c7',twit:'#1d9bf0',twitter:'#1d9bf0',
     fb:'#1877f2',facebook:'#1877f2',
     ig:'#e1306c',instagram:'#e1306c',
@@ -778,7 +712,7 @@ const emptyHtml = msg => `<div class="ms-empty"><i class="ph ph-warning-circle">
 const labelToKey= { 'Mass Media':'doc','X (Twitter)':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok' };
 const Y_AXIS_IDX= { doc:1, twitter:0, facebook:1, instagram:1, youtube:1, tiktok:1 };
 
-/* ══ ECHARTS REGISTRY ══ */
+/* ══ ECharts registry (for bar, sov, bar-race, weekday, hour) ══ */
 const MSCharts = {
   _i: {},
   make(id) {
@@ -789,7 +723,14 @@ const MSCharts = {
   },
   disposeAll() { Object.values(this._i).forEach(c=>{try{c.dispose();}catch(e){}});this._i={}; }
 };
-window.addEventListener('resize',()=>{
+
+/* ══ ApexCharts instances (for trend charts) ══ */
+const APX = { trend: null, article: null };
+function _destroyApx(key) {
+  if(APX[key]) { try{ APX[key].destroy(); }catch(e){} APX[key]=null; }
+}
+
+window.addEventListener('resize', () => {
   Object.values(MSCharts._i).forEach(c=>{try{if(!c.isDisposed())c.resize();}catch(e){}});
 });
 
@@ -798,6 +739,86 @@ const EC_TT = {
   padding:[10,14], textStyle:{ color:'#fff', fontFamily:"'Poppins',sans-serif", fontSize:12 },
   extraCssText:'border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.28);'
 };
+
+/* ══ ApexCharts base options — matches realTimeOptions ══ */
+function apxBase(colors, series, categories, height=340) {
+  return {
+    chart: {
+      type: 'area',
+      height: height,
+      fontFamily: 'inherit',
+      background: 'transparent',
+      toolbar: { show: false },
+      animations: {
+        enabled: true,
+        easing: 'linear',
+        dynamicAnimation: { speed: 1000 }
+      }
+    },
+    series,
+    colors,
+    xaxis: {
+      categories,
+      axisBorder: { show: false },
+      axisTicks:  { show: false },
+      labels: { style: { fontFamily: 'inherit', fontSize: '11px', fontWeight: 600, colors: '#94A3B8' } }
+    },
+    yaxis: {
+      labels: {
+        formatter: v => numK(v),
+        style: { fontFamily: 'inherit', fontSize: '10px', fontWeight: 600, colors: '#94A3B8' }
+      },
+      axisBorder: { show: false },
+      axisTicks:  { show: false }
+    },
+    fill:   { opacity: 0.3 },
+    stroke: { curve: 'smooth', width: 2.5 },
+    grid: {
+      borderColor: 'rgba(226,232,240,.55)',
+      strokeDashArray: 3,
+      xaxis: { lines: { show: false } }
+    },
+    legend: {
+      position: 'bottom',
+      horizontalAlign: 'left',
+      fontFamily: 'inherit',
+      fontSize: '11px',
+      fontWeight: '600',
+      labels: { colors: '#94A3B8' },
+      markers: { width: 9, height: 9, radius: 50 },
+      itemMargin: { horizontal: 14, vertical: 4 }
+    },
+    tooltip: {
+      shared: true,
+      intersect: false,
+      style: { fontFamily: 'inherit', fontSize: '12px' },
+      y: { formatter: v => numFmt(v) + ' mentions' }
+    },
+    dataLabels: {
+    enabled: true,
+    formatter: v => v > 0 ? numFmt(v) : '',
+    style: {
+        fontSize: '10px',
+        fontFamily: 'inherit',
+        fontWeight: '700',
+    },
+    background: {
+        enabled: true,
+        borderRadius: 3,
+        borderWidth: 0,
+        padding: 3,
+        opacity: 0.9,
+    },
+    offsetY: -6,
+},
+markers: {
+    size: 5,
+    strokeWidth: 2,
+    strokeColors: '#fff',
+    hover: { size: 7 }
+},
+  };
+}
 
 /* ══ TAB SYSTEM ══ */
 const MSTab = {
@@ -812,12 +833,17 @@ const MSTab = {
       if(!this._loaded.pola){ this._loaded.pola=true; loadWeekHour(); }
       else setTimeout(()=>['chWeekday','chHour'].forEach(id=>{const c=MSCharts._i[id];try{if(c&&!c.isDisposed())c.resize();}catch(e){}},60));
     }
-    if(tab==='trend') setTimeout(()=>['chTrend','chArticleTrend'].forEach(id=>{const c=MSCharts._i[id];try{if(c&&!c.isDisposed())c.resize();}catch(e){}},60));
+    if(tab==='trend'){
+      setTimeout(()=>{
+        if(APX.trend)  try{ APX.trend.updateOptions({}); }catch(e){}
+        if(APX.article)try{ APX.article.updateOptions({}); }catch(e){}
+      },60);
+    }
   },
   reset(){ this._loaded={trend:false,pola:false}; }
 };
 
-/* ══ ECHARTS DOUGHNUT ══ */
+/* ══ ECharts Doughnut ══ */
 function makeEDoughnut(domId,labels,values,colors,onClickFns,subtitles){
   const total=values.reduce((a,b)=>a+b,0);
   const chart=MSCharts.make(domId);if(!chart)return null;
@@ -878,7 +904,7 @@ async function loadMentionByPlatform(){
           grid:{top:14,right:14,bottom:34,left:54,containLabel:false},
           xAxis:{type:'category',data:bLabels,axisLine:{show:false},axisTick:{show:false},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#64748b',interval:0}},
           yAxis:{type:'value',axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:10,color:'#94a3b8',formatter:numK}},
-          series:[{type:'bar',data:bValues.map((v,i)=>({value:v,itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:bColors[i]},{offset:1,color:bColors[i]+'55'}]},borderRadius:[7,7,0,0]},emphasis:{itemStyle:{color:bColors[i],shadowBlur:12,shadowColor:bColors[i]+'66'}}})),barMaxWidth:52,label:{show:true,position:'top',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b',formatter:p=>numK(p.value)}}]
+          series:[{type:'bar',data:bValues.map((v,i)=>({value:v,itemStyle:{color:bColors[i],borderRadius:[7,7,0,0]},emphasis:{itemStyle:{color:bColors[i],shadowBlur:12,shadowColor:bColors[i]+'66'}}})),barMaxWidth:52,label:{show:true,position:'top',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b',formatter:p=>numK(p.value)}}]
         });
         barChart.on('click',params=>{const k=labelToKey[bLabels[params.dataIndex]];if(k){const rect=barChart.getDom().getBoundingClientRect();MSPanel.open(k,rect.left+rect.width/2,rect.top+100);}});
         barChart.on('mouseover',()=>{barChart.getDom().style.cursor='pointer';});
@@ -903,7 +929,7 @@ async function loadMentionByPlatform(){
       const brMax=Math.max(...brData.map(p=>p.value),1);
       const brChart=MSCharts.make('chBarRace');
       if(brChart){
-        const buildSD=items=>items.map(item=>({value:item.value,itemStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:item.color+'33'},{offset:.6,color:item.color+'bb'},{offset:1,color:item.color}]},borderRadius:[0,9,9,0]},emphasis:{itemStyle:{shadowBlur:18,shadowColor:item.color+'55'}}}));
+        const buildSD=items=>items.map(item=>({value:item.value,itemStyle:{color:item.color,borderRadius:[0,9,9,0]},emphasis:{itemStyle:{shadowBlur:18,shadowColor:item.color+'55'}}}));
         brChart.setOption({animation:true,animationDuration:1400,animationDurationUpdate:1100,animationEasing:'elasticOut',animationEasingUpdate:'cubicInOut',backgroundColor:'transparent',
           tooltip:{...EC_TT,trigger:'axis',axisPointer:{type:'shadow'},formatter:params=>{const p=params[0];const item=brData.find(x=>x.label===p.name)||{};const pct=((p.value/grandTotal)*100).toFixed(1);const clr=item.color||'#4361EE';
             return`<div style="font-weight:800;font-size:13px;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.12);"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clr};margin-right:6px;vertical-align:middle;"></span>${p.name}</div><div style="display:flex;justify-content:space-between;gap:22px;margin-bottom:5px;"><span style="font-size:11px;color:#94a3b8;">Mentions</span><span style="font-size:14px;font-weight:700;">${numFmt(p.value)}</span></div><div style="display:flex;justify-content:space-between;gap:22px;"><span style="font-size:11px;color:#94a3b8;">Share of Voice</span><span style="font-size:12px;font-weight:700;color:#34d399;">${pct}%</span></div>`;}},
@@ -926,49 +952,76 @@ async function loadMentionByPlatform(){
   }
 }
 
-/* ══ LOAD TREND ══ */
+/* ══════════════════════════════════════════════════════
+   LOAD TREND — ApexCharts area (matches realTimeOptions)
+══════════════════════════════════════════════════════ */
 async function loadTrend(){
   if(!MSCfg.pid){ hideSk('skTrend'); return; }
   const fmtDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   let trendSD,trendED;
   if(MSTrendToggle._datePickerOverride){ trendSD=MSCfg.sd; trendED=MSCfg.ed; }
-  else{ const now=new Date(),off=MSTrendToggle._weekOffset;const edDate=new Date(now);edDate.setDate(now.getDate()-(7*off));const sdDate=new Date(now);sdDate.setDate(now.getDate()-(7*(off+1)));trendSD=fmtDate(sdDate);trendED=fmtDate(edDate); }
-  const platMeta={doc:{label:'Online News (Ind)',color:'#0284c7'},twitter:{label:'Twitter',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
+  else{
+    const now=new Date(),off=MSTrendToggle._weekOffset;
+    const edDate=new Date(now);edDate.setDate(now.getDate()-(7*off));
+    const sdDate=new Date(now);sdDate.setDate(now.getDate()-(7*(off+1)));
+    trendSD=fmtDate(sdDate); trendED=fmtDate(edDate);
+  }
+  const platMeta={doc:{label:'Online News',color:'#0284c7'},twitter:{label:'Twitter',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
   const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];
   try{
     const res=await fetch(`/mk/api/media-statistic/trend-mentions?project_id=${MSCfg.pid}&start_date=${trendSD}&end_date=${trendED}`);
     const json=await res.json();if(json.error)throw new Error(json.error);
     hideSk('skTrend');
-    const raw=json.data||[];const dSet=new Set();raw.forEach(p=>(p.data||[]).forEach(d=>dSet.add(d.date)));const allDates=Array.from(dSet).sort();
+    const raw=json.data||[];
+    const dSet=new Set();raw.forEach(p=>(p.data||[]).forEach(d=>dSet.add(d.date)));
+    const allDates=Array.from(dSet).sort();
     MSTrendToggle.setData(raw);
-    if(MSTrendToggle._mode==='monthly'){ hideSk('skTrend'); MSTrendToggle._render(raw); return; }
-    const trendRaw=platOrder.map(key=>{const found=raw.find(p=>p.key===key);return found||{key,label:platMeta[key]?.label||key,color:platMeta[key]?.color||'#94a3b8',data:[]};});
+
+    /* Monthly mode → delegate */
+    if(MSTrendToggle._mode==='monthly'){ MSTrendToggle._render(raw); return; }
+
     const fmtB=d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()} ${dt.toLocaleString('id-ID',{month:'short'})}`;};
     document.getElementById('trendBadge').textContent=`${fmtB(trendSD)} – ${fmtB(trendED)}`;
+    const sub=document.getElementById('trendSubtitle');if(sub)sub.textContent=`${fmtB(trendSD)} – ${fmtB(trendED)}`;
+
+    /* week nav */
     const weekNavGroup=document.getElementById('weekNavGroup'),weekNavLabel=document.getElementById('weekNavLabel'),weekNavNext=document.getElementById('weekNavNext');
-    if(weekNavGroup&&MSTrendToggle._mode==='daily'&&!MSTrendToggle._datePickerOverride){ weekNavGroup.style.display='flex';if(weekNavLabel)weekNavLabel.textContent=MSTrendToggle._weekLabel();if(weekNavNext){const ic=MSTrendToggle._weekOffset===0;weekNavNext.disabled=ic;weekNavNext.style.opacity=ic?'.35':'1';weekNavNext.style.cursor=ic?'not-allowed':'pointer';} } else if(weekNavGroup) weekNavGroup.style.display='none';
-    const trendChart=MSCharts.make('chTrend');if(!trendChart)return;
-    const series=trendRaw.map(p=>{const vals=allDates.map(d=>{const pt=p.data.find(x=>x.date===d);return pt?pt.count:0;});const hasData=vals.some(v=>v>0);
-      return{name:p.label,type:'line',yAxisIndex:Y_AXIS_IDX[p.key]??1,data:vals,smooth:.4,symbol:'circle',symbolSize:hasData?8:0,showSymbol:true,itemStyle:{color:p.color,borderColor:'#fff',borderWidth:2},lineStyle:{color:p.color,width:hasData?2.5:1,opacity:hasData?1:.15},areaStyle:hasData?{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:p.color+'33'},{offset:1,color:p.color+'05'}]}}:undefined,label:{show:hasData&&allDates.length<=14,position:'top',formatter:params=>params.value>0?numFmt(params.value):'',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b',backgroundColor:'rgba(255,255,255,.85)',borderRadius:3,padding:[2,5]},emphasis:{focus:'series',lineStyle:{width:3.5},itemStyle:{symbolSize:12,borderColor:'#fff',borderWidth:2.5,shadowBlur:10,shadowColor:p.color+'88'}}};});
-    const xLabels=allDates.map(d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()}. ${dt.toLocaleString('id-ID',{month:'short'})}`;});
-    trendChart.setOption({animation:true,animationDuration:900,animationEasing:'cubicInOut',backgroundColor:'transparent',
-      tooltip:{...EC_TT,trigger:'item',formatter:params=>{if(params.componentType!=='series')return'';const date=allDates[params.dataIndex]||'';const fullDt=date?new Date(date+'T00:00:00').toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'';
-        return`<div style="font-weight:800;font-size:13px;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.12);"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${params.color};margin-right:6px;vertical-align:middle;"></span>${params.seriesName}</div>${fullDt?`<div style="font-size:11px;color:#94a3b8;margin-bottom:7px;">${fullDt}</div>`:''}<div style="display:flex;justify-content:space-between;gap:22px;"><span style="font-size:11px;color:#94a3b8;">Mentions</span><span style="font-size:14px;font-weight:700;">${numFmt(params.value)}</span></div>`;}},
-      legend:{bottom:0,type:'scroll',data:trendRaw.map(p=>p.label),textStyle:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'},icon:'circle',itemWidth:9,itemHeight:9,itemGap:18},
-      grid:{top:30,right:70,bottom:48,left:62},
-      xAxis:{type:'category',data:xLabels,boundaryGap:false,axisLine:{lineStyle:{color:'#e2e8f0'}},axisTick:{show:false},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'}},
-      yAxis:[
-        {type:'value',position:'left',name:'Twitter',nameGap:8,nameTextStyle:{color:'#1d9bf044',fontSize:9,fontWeight:'700',fontFamily:"'Poppins',sans-serif",align:'right'},axisLine:{show:true,lineStyle:{color:'#1d9bf018',width:1}},axisTick:{show:false},splitLine:{show:false},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:10,color:'#1d9bf0aa',formatter:numK}},
-        {type:'value',position:'right',name:'Others',nameGap:8,nameTextStyle:{color:'#94a3b8',fontSize:9,fontWeight:'700',fontFamily:"'Poppins',sans-serif",align:'left'},axisLine:{show:true,lineStyle:{color:'#e2e8f0',width:1}},axisTick:{show:false},splitLine:{lineStyle:{color:'#f1f5f9',type:'solid',width:1}},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:10,color:'#94a3b8',formatter:numK}},
-      ],series,},true);
-    const keyMap={'Online News (Ind)':'doc','Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
-    trendChart.on('click',params=>{ if(params.componentType!=='series')return;const k=keyMap[params.seriesName];if(!k)return;const rect=trendChart.getDom().getBoundingClientRect();MSPanel.open(k,rect.left+params.event.offsetX,rect.top+params.event.offsetY); });
-    trendChart.on('mouseover',params=>{if(params.componentType==='series')trendChart.getDom().style.cursor='pointer';});
-    trendChart.on('mouseout', ()=>{trendChart.getDom().style.cursor='default';});
-  }catch(err){ hideSk('skTrend');document.getElementById('trendBadge').textContent='Error';document.getElementById('chTrend').innerHTML=emptyHtml('Data trend tidak tersedia'); }
+    if(weekNavGroup&&!MSTrendToggle._datePickerOverride){ weekNavGroup.style.display='flex';if(weekNavLabel)weekNavLabel.textContent=MSTrendToggle._weekLabel();if(weekNavNext){const ic=MSTrendToggle._weekOffset===0;weekNavNext.disabled=ic;weekNavNext.style.opacity=ic?'.35':'1';weekNavNext.style.cursor=ic?'not-allowed':'pointer';} }
+    else if(weekNavGroup) weekNavGroup.style.display='none';
+
+    /* Build series */
+    const xLabels=allDates.map(d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()} ${dt.toLocaleString('id-ID',{month:'short'})}`;});
+    const seriesArr=platOrder.map(key=>{
+      const meta=platMeta[key];
+      const found=raw.find(p=>p.key===key);
+      const vals=allDates.map(date=>{ const pt=(found?.data||[]).find(x=>x.date===date);return pt?pt.count:0; });
+      return { name:meta.label, data:vals };
+    }).filter(s=>s.data.some(v=>v>0));
+    const colorsArr=seriesArr.map(s=>{ const key=Object.keys(platMeta).find(k=>platMeta[k].label===s.name);return platMeta[key]?.color||'#94a3b8'; });
+
+    _destroyApx('trend');
+    const el=document.getElementById('chTrend'); if(!el) return;
+    APX.trend = new ApexCharts(el, apxBase(colorsArr, seriesArr, xLabels, 340));
+    APX.trend.render();
+
+    /* click → open panel */
+    el.addEventListener('click', e => {
+      const seriesName=e.target.closest('[seriesName]')?.getAttribute('seriesName');
+      const keyMap={'Online News':'doc','Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
+      const k=keyMap[seriesName];
+      if(k){ const rect=el.getBoundingClientRect();MSPanel.open(k,rect.left+e.offsetX,rect.top+e.offsetY); }
+    });
+
+  }catch(err){
+    hideSk('skTrend');
+    document.getElementById('trendBadge').textContent='Error';
+    document.getElementById('chTrend').innerHTML=emptyHtml('Data trend tidak tersedia');
+  }
 }
 
-/* ══ LOAD ARTICLE TREND ══ */
+/* ══════════════════════════════════════════════════════
+   LOAD ARTICLE TREND — ApexCharts area (matches realTimeOptions)
+══════════════════════════════════════════════════════ */
 async function loadArticleTrend(){
   if(!MSCfg.pid){ hideSk('skArticleTrend'); return; }
   const fmtB=d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()} ${dt.toLocaleString('id-ID',{month:'short'})}`;};
@@ -976,27 +1029,42 @@ async function loadArticleTrend(){
     const res=await fetch(`/mk/api/media-statistic/trend-mentions?project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}`);
     const json=await res.json();if(json.error)throw new Error(json.error);
     hideSk('skArticleTrend');
-    const raw=json.data||[];const docData=raw.find(p=>p.key==='doc');
-    if(!docData||!docData.data?.length){ document.getElementById('articleTrendBadge').textContent='No Data';document.getElementById('chArticleTrend').innerHTML=emptyHtml('Data artikel tidak tersedia untuk periode ini');return; }
+    const raw=json.data||[];
+    const docData=raw.find(p=>p.key==='doc');
+    if(!docData||!docData.data?.length){
+      document.getElementById('articleTrendBadge').textContent='No Data';
+      document.getElementById('chArticleTrend').innerHTML=emptyHtml('Data artikel tidak tersedia untuk periode ini');
+      return;
+    }
     document.getElementById('articleTrendBadge').textContent=`${fmtB(MSCfg.sd)} – ${fmtB(MSCfg.ed)}`;
-    const dates=docData.data.map(d=>d.date),values=docData.data.map(d=>d.count);
+    const dates =docData.data.map(d=>d.date);
+    const values=docData.data.map(d=>d.count);
     MSCsvModal.setArticleData(dates,values);
-    const xLabels=dates.map(d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()}. ${dt.toLocaleString('id-ID',{month:'short'})}`;});
-    const artChart=MSCharts.make('chArticleTrend');if(!artChart)return;
-    artChart.setOption({animation:true,animationDuration:900,animationEasing:'cubicInOut',backgroundColor:'transparent',
-      tooltip:{backgroundColor:'#ffffff',borderColor:'#e2e8f0',borderWidth:1,padding:[12,16],textStyle:{color:'#1a202c',fontFamily:"'Poppins',sans-serif",fontSize:12},extraCssText:'border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.10);',trigger:'axis',axisPointer:{type:'line',lineStyle:{color:'#e2e8f0',type:'dashed',width:1.5}},
-        formatter:params=>{const p=params[0];const fullDt=new Date(dates[p.dataIndex]+'T00:00:00').toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-          return`<div style="font-weight:700;font-size:12px;color:#1a202c;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid #f1f5f9;">${fullDt}</div><div style="display:flex;align-items:center;justify-content:space-between;gap:18px;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#0284c7;"></span><span style="font-size:11px;color:#64748b;">Online News</span></div><span style="font-size:12px;font-weight:700;color:#1a202c;">${numFmt(p.value)}</span></div>`;}},
-      legend:{bottom:0,data:['Online News (Ind)'],textStyle:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'},icon:'circle',itemWidth:9,itemHeight:9},
-      grid:{top:22,right:18,bottom:48,left:58},
-      xAxis:{type:'category',data:xLabels,boundaryGap:false,axisLine:{lineStyle:{color:'#e2e8f0'}},axisTick:{show:false},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'}},
-      yAxis:{type:'value',axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#f1f5f9',type:'solid',width:1}},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#94a3b8',formatter:numK}},
-      series:[{name:'Online News (Ind)',type:'line',data:values,smooth:.4,symbol:'circle',symbolSize:xLabels.length<=30?6:0,showSymbol:xLabels.length<=30,itemStyle:{color:'#0284c7',borderColor:'#fff',borderWidth:2},lineStyle:{color:'#0284c7',width:2.5},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(2,132,199,.18)'},{offset:1,color:'rgba(2,132,199,.02)'}]}},label:{show:xLabels.length<=14,position:'top',formatter:params=>params.value>0?numFmt(params.value):'',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b'},emphasis:{focus:'series',lineStyle:{width:3.5},itemStyle:{symbolSize:11,borderColor:'#fff',borderWidth:2.5,shadowBlur:12,shadowColor:'#0284c788'}}}]
+    const xLabels=dates.map(d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()} ${dt.toLocaleString('id-ID',{month:'short'})}`;});
+
+    _destroyApx('article');
+    const el=document.getElementById('chArticleTrend'); if(!el) return;
+    const opts = apxBase(
+      ['#0284c7'],
+      [{ name:'Online News', data:values }],
+      xLabels,
+      340
+    );
+    /* Override tooltip for article chart */
+    opts.tooltip.y = { formatter: v => numFmt(v) + ' articles' };
+    APX.article = new ApexCharts(el, opts);
+    APX.article.render();
+
+    el.addEventListener('click', () => {
+      const rect=el.getBoundingClientRect();
+      MSPanel.open('doc', rect.left+rect.width/2, rect.top+100);
     });
-    artChart.on('click',params=>{ if(params.componentType!=='series')return;const rect=artChart.getDom().getBoundingClientRect();MSPanel.open('doc',rect.left+params.event.offsetX,rect.top+params.event.offsetY); });
-    artChart.on('mouseover',params=>{if(params.componentType==='series')artChart.getDom().style.cursor='pointer';});
-    artChart.on('mouseout', ()=>{artChart.getDom().style.cursor='default';});
-  }catch(err){ hideSk('skArticleTrend');document.getElementById('articleTrendBadge').textContent='Error';document.getElementById('chArticleTrend').innerHTML=emptyHtml('Data artikel tidak tersedia'); }
+
+  }catch(err){
+    hideSk('skArticleTrend');
+    document.getElementById('articleTrendBadge').textContent='Error';
+    document.getElementById('chArticleTrend').innerHTML=emptyHtml('Data artikel tidak tersedia');
+  }
 }
 
 /* ══ LOAD WEEKDAY & HOUR ══ */
@@ -1006,7 +1074,7 @@ async function loadWeekHour(){
     fetch(`/mk/api/media-statistic/mentions-by-weekday?project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}`).then(r=>r.json()),
     fetch(`/mk/api/media-statistic/mentions-by-hour?project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}`).then(r=>r.json()),
   ]);
-  const ltk={'Online News (Ind)':'doc','Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok','Online News':'doc'};
+  const ltk={'Online News (Ind)':'doc','Online News':'doc','Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
   try{
     if(wdRes.status==='rejected')throw wdRes.reason;
     const json=wdRes.value;const wdNames=json.weekdays||['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];const wdTotal=json.total||Array(7).fill(0);const platItems=json.platforms||[];
@@ -1194,7 +1262,7 @@ const MSTrendToggle = {
     if(this._mode===mode)return;this._mode=mode;
     document.querySelectorAll('#trendToggle .ms-toggle-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
     const sub=document.getElementById('trendSubtitle');if(sub)sub.textContent=mode==='monthly'?'Total mentions per bulan':this._datePickerOverride?`${MSCfg.sd} – ${MSCfg.ed}`:'8 hari terakhir';
-    const wng=document.getElementById('weekNavGroup');if(wng)wng.style.display=mode==='daily'?'flex':'none';
+    const wng=document.getElementById('weekNavGroup');if(wng)wng.style.display=mode==='daily'&&!this._datePickerOverride?'flex':'none';
     if(mode==='daily'){this._weekOffset=0;this._trendData=null;}
     if(this._trendData)this._render(this._trendData);else loadTrend();
   },
@@ -1204,31 +1272,47 @@ const MSTrendToggle = {
   copyCSV(){if(!this._trendData){alert('Data belum tersedia');return;}const lines=this._buildCSV(this._trendData,this._mode);MSCsvModal.show('Trend Mentions — '+(this._mode==='monthly'?'Bulanan':'Harian'),lines);},
   _buildCSV(raw,mode){
     const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];
-    const platMeta={doc:'Online News (Ind)',twitter:'Twitter',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok'};
+    const platMeta={doc:'Online News',twitter:'Twitter',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok'};
     if(mode==='monthly'){const monthMap={};raw.forEach(p=>(p.data||[]).forEach(d=>{const m=d.date.slice(0,7);if(!monthMap[m])monthMap[m]={};monthMap[m][p.key]=(monthMap[m][p.key]||0)+d.count;}));const months=Object.keys(monthMap).sort();const lines=[];months.forEach(m=>platOrder.forEach(k=>{const val=monthMap[m][k]||0;if(val>0)lines.push(`${lines.length};${platMeta[k]||k};${val};${m}`);}));return lines;}
     else{const dSet=new Set();raw.forEach(p=>(p.data||[]).forEach(d=>dSet.add(d.date)));const allDates=Array.from(dSet).sort();const lines=[];allDates.forEach(date=>raw.forEach(p=>{const pt=(p.data||[]).find(x=>x.date===date);if(pt&&pt.count>0)lines.push(`${lines.length};${platMeta[p.key]||p.key};${pt.count};${date}`);}));return lines;}
   },
+  /* Monthly mode render — ApexCharts stacked bar */
   _render(raw){
-    const platMetaFull={doc:{label:'Online News (Ind)',color:'#0284c7'},twitter:{label:'Twitter',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
+    const platMetaFull={doc:{label:'Online News',color:'#0284c7'},twitter:{label:'Twitter',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
     const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];
     if(this._mode==='monthly'){
       const monthMap={};raw.forEach(p=>(p.data||[]).forEach(d=>{const m=d.date.slice(0,7);if(!monthMap[m])monthMap[m]={};monthMap[m][p.key]=(monthMap[m][p.key]||0)+d.count;}));
-      const months=Object.keys(monthMap).sort();const xLabels=months.map(m=>{const dt=new Date(m+'-01T00:00:00');return dt.toLocaleString('id-ID',{month:'short',year:'numeric'});});
-      document.getElementById('trendBadge').textContent=xLabels[0]+' – '+xLabels[xLabels.length-1];
-      const series=platOrder.map(key=>{const meta=platMetaFull[key];const vals=months.map(m=>monthMap[m]?.[key]||0);const hasData=vals.some(v=>v>0);return{name:meta.label,type:'bar',stack:'total',data:vals,itemStyle:{color:meta.color,borderRadius:[4,4,0,0]},label:{show:false},emphasis:{focus:'series'}};}).filter(s=>s.data.some(v=>v>0));
-      if(series.length>0)series[series.length-1].label={show:months.length<=18,position:'top',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b',formatter:p=>{const total=platOrder.reduce((s,k)=>s+(monthMap[months[p.dataIndex]]?.[k]||0),0);return total>0?numK(total):'';}};
-      const trendChart=MSCharts.make('chTrend');if(!trendChart)return;
-      trendChart.setOption({animation:true,animationDuration:800,animationEasing:'elasticOut',backgroundColor:'transparent',
-        tooltip:{backgroundColor:'#ffffff',borderColor:'#e2e8f0',borderWidth:1,padding:[12,16],textStyle:{color:'#1a202c',fontFamily:"'Poppins',sans-serif",fontSize:12},extraCssText:'border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.10);',trigger:'axis',axisPointer:{type:'shadow'},
-          formatter:params=>{const sorted=[...params].sort((a,b)=>b.value-a.value);const rows=sorted.filter(p=>p.value>0).map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:18px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color};"></span><span style="font-size:11px;color:#64748b;">${p.seriesName}</span></div><span style="font-size:11px;font-weight:700;color:#1a202c;">${numFmt(p.value)}</span></div>`).join('');const total=params.reduce((s,p)=>s+(p.value||0),0);return`<div style="font-weight:700;font-size:12px;color:#1a202c;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid #f1f5f9;">${xLabels[params[0]?.dataIndex??0]}</div>${rows}<div style="border-top:1px solid #f1f5f9;margin-top:5px;padding-top:5px;display:flex;justify-content:space-between;"><span style="font-size:10px;color:#94a3b8;">Total</span><span style="font-size:11px;font-weight:700;color:#1a202c;">${numFmt(total)}</span></div>`;}},
-        legend:{bottom:0,type:'scroll',data:series.map(s=>s.name),textStyle:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'},icon:'circle',itemWidth:9,itemHeight:9,itemGap:18},
-        grid:{top:22,right:18,bottom:48,left:58},
-        xAxis:{type:'category',data:xLabels,axisLine:{lineStyle:{color:'#e2e8f0'}},axisTick:{show:false},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'}},
-        yAxis:{type:'value',axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#f1f5f9',type:'solid',width:1}},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#94a3b8',formatter:numK}},series},true);
-      const keyMap={'Online News (Ind)':'doc','Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
-      trendChart.on('click',params=>{ if(params.componentType!=='series')return;const k=keyMap[params.seriesName];if(k){const rect=trendChart.getDom().getBoundingClientRect();MSPanel.open(k,rect.left+params.event.offsetX,rect.top+params.event.offsetY);} });
-      trendChart.on('mouseover',p=>{if(p.componentType==='series')trendChart.getDom().style.cursor='pointer';});
-      trendChart.on('mouseout', ()=>{trendChart.getDom().style.cursor='default';});
+      const months=Object.keys(monthMap).sort();
+      const xLabels=months.map(m=>{const dt=new Date(m+'-01T00:00:00');return dt.toLocaleString('id-ID',{month:'short',year:'numeric'});});
+      document.getElementById('trendBadge').textContent=xLabels[0]+'…'+xLabels[xLabels.length-1];
+      const sub=document.getElementById('trendSubtitle');if(sub)sub.textContent='Total mentions per bulan';
+
+      const seriesArr=platOrder.map(key=>{
+        const meta=platMetaFull[key];
+        const vals=months.map(m=>monthMap[m]?.[key]||0);
+        if(!vals.some(v=>v>0))return null;
+        return { name:meta.label, data:vals };
+      }).filter(Boolean);
+      const colorsArr=seriesArr.map(s=>{ const k=Object.keys(platMetaFull).find(k=>platMetaFull[k].label===s.name);return platMetaFull[k]?.color||'#94a3b8'; });
+
+      _destroyApx('trend');
+      const el=document.getElementById('chTrend'); if(!el) return;
+      /* Monthly uses stacked bar style, still ApexCharts */
+      APX.trend = new ApexCharts(el, {
+        chart:{ type:'bar', height:340, fontFamily:'inherit', background:'transparent', toolbar:{show:false}, stacked:true, animations:{enabled:true,easing:'linear',dynamicAnimation:{speed:1000}} },
+        series: seriesArr,
+        colors: colorsArr,
+        plotOptions:{ bar:{ columnWidth:'60%', borderRadius:3, borderRadiusApplication:'end' } },
+        fill:{ opacity:1 },
+        stroke:{ show:false },
+        xaxis:{ categories:xLabels, axisBorder:{show:false}, axisTicks:{show:false}, labels:{style:{fontFamily:'inherit',fontSize:'11px',fontWeight:600,colors:'#94A3B8'}} },
+        yaxis:{ labels:{formatter:v=>numK(v),style:{fontFamily:'inherit',fontSize:'10px',fontWeight:600,colors:'#94A3B8'}}, axisBorder:{show:false}, axisTicks:{show:false} },
+        grid:{ borderColor:'rgba(226,232,240,.55)', strokeDashArray:3, xaxis:{lines:{show:false}} },
+        legend:{ position:'bottom', horizontalAlign:'left', fontFamily:'inherit', fontSize:'11px', fontWeight:'600', labels:{colors:'#94A3B8'}, markers:{width:9,height:9,radius:50}, itemMargin:{horizontal:14,vertical:4} },
+        tooltip:{ shared:true, intersect:false, style:{fontFamily:'inherit',fontSize:'12px'}, y:{formatter:v=>numFmt(v)+' mentions'} },
+        dataLabels:{ enabled:false },
+      });
+      APX.trend.render();
     } else { loadTrend(); }
   }
 };
@@ -1239,7 +1323,7 @@ const MSCsvModal = {
   show(title,lines){ this._content=lines.join('\n');document.querySelector('.ms-csv-modal__title').textContent=title||'CSV Data';document.getElementById('msCsvContent').textContent=this._content;const btn=document.getElementById('msCsvCopyBtn');btn.innerHTML='<i class="ph ph-copy" style="font-size:12px;"></i> Copy CSV data';btn.classList.remove('copied');document.getElementById('msCsvModal').classList.add('show'); },
   close(){ document.getElementById('msCsvModal').classList.remove('show'); },
   setArticleData(dates,values){ this._articleData={dates,values}; },
-  showArticleTrend(){ if(!this._articleData){alert('Data belum tersedia');return;}const{dates,values}=this._articleData;const lines=dates.map((d,i)=>`${i};Online News (Ind);${values[i]};${d}`).filter((_,i)=>values[i]>0);this.show('Trend Articles — Online News',lines); },
+  showArticleTrend(){ if(!this._articleData){alert('Data belum tersedia');return;}const{dates,values}=this._articleData;const lines=dates.map((d,i)=>`${i};Online News;${values[i]};${d}`).filter((_,i)=>values[i]>0);this.show('Trend Articles — Online News',lines); },
   setWeekdayData(wdNames,platItems){ this._weekdayData={wdNames,platItems}; },
   showWeekday(){ if(!this._weekdayData){alert('Data belum tersedia');return;}const{wdNames,platItems}=this._weekdayData;const lines=[];wdNames.forEach((day,di)=>platItems.forEach(plat=>{const v=plat.data[di]||0;if(v>0)lines.push(`${lines.length};${plat.label};${v};${day}`);}));this.show('Mentions by Weekday',lines); },
   setHourData(hrLabels,platItems){ this._hourData={hrLabels,platItems}; },
@@ -1256,7 +1340,16 @@ const MSPage = {
     const today=new Date();today.setHours(0,0,0,0);const ed=new Date(MSCfg.ed+'T00:00:00');const sd=new Date(MSCfg.sd+'T00:00:00');const diff=Math.round((ed-sd)/86400000)+1;
     MSTrendToggle._datePickerOverride=!(ed.getTime()===today.getTime()&&diff<=8);MSTrendToggle._weekOffset=0;
   },
-  reload(){ MSCharts.disposeAll();MSTab.reset();this._syncDateFilter();['skBar','skTrend','skWeekday','skHour','skBarRace'].forEach(showSk);loadMentionByPlatform();const activeTab=document.querySelector('.ms-tab-panel.active')?.id;if(activeTab==='panelTrend'){MSTab._loaded.trend=true;loadTrend();loadArticleTrend();}else if(activeTab==='panelPola'){MSTab._loaded.pola=true;loadWeekHour();} },
+  reload(){
+    MSCharts.disposeAll();
+    _destroyApx('trend'); _destroyApx('article');
+    MSTab.reset();this._syncDateFilter();
+    ['skBar','skTrend','skArticleTrend','skWeekday','skHour','skBarRace'].forEach(showSk);
+    loadMentionByPlatform();
+    const activeTab=document.querySelector('.ms-tab-panel.active')?.id;
+    if(activeTab==='panelTrend'){MSTab._loaded.trend=true;loadTrend();loadArticleTrend();}
+    else if(activeTab==='panelPola'){MSTab._loaded.pola=true;loadWeekHour();}
+  },
   init(){ this._syncDateFilter();loadMentionByPlatform();MSTab._loaded.trend=true;loadTrend();loadArticleTrend(); }
 };
 
