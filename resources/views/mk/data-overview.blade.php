@@ -5,8 +5,8 @@
 @section('styles')
     <style>
         /* ══════════════════════════════════════════════════════
-       DESIGN TOKENS
-    ══════════════════════════════════════════════════════ */
+               DESIGN TOKENS
+            ══════════════════════════════════════════════════════ */
         :root {
             --do-primary: var(--bs-primary, #4361EE);
             --do-primary-rgb: var(--bs-primary-rgb, 67, 97, 238);
@@ -147,7 +147,7 @@
             grid-template-columns: 380px 1fr;
             gap: 14px;
             margin-bottom: 14px;
-            align-items: start;
+            align-items: stretch;
         }
 
         .do-mb14 {
@@ -1534,24 +1534,24 @@
 
     {{-- ══ Export Dropdown (standalone, no header wrapping) ══ --}}
     <!-- <div class="do-export-wrap mb-3 d-flex justify-content-end fade-up">
-        <button class="do-export-btn" id="doExportMasterBtn">
-            <i class="ph ph-download-simple"></i> Export Data <i class="ph ph-caret-down"></i>
-        </button>
-        <div class="do-export-dd" id="doExportDd">
-            <div class="do-export-dd-section">Semua Data</div>
-            <button class="do-export-dd-btn" onclick="DataExporter.exportAll('xlsx')">
-                <i class="ph ph-file-xls"></i> Export ke Excel (.xlsx)
-            </button>
-            <button class="do-export-dd-btn" onclick="DataExporter.exportAll('csv')">
-                <i class="ph ph-file-csv"></i> Export ke CSV
-            </button>
-            <div class="do-export-dd-divider"></div>
-            <div class="do-export-dd-section">Per Platform</div>
-            <button class="do-export-dd-btn" onclick="DataExporter.exportPlatform('doc')">Online News</button>
-            <button class="do-export-dd-btn" onclick="DataExporter.exportPlatform('twit')">X / Twitter</button>
-            <button class="do-export-dd-btn" onclick="DataExporter.exportPlatform('instagram')">Instagram</button>
-        </div>
-    </div> -->
+                <button class="do-export-btn" id="doExportMasterBtn">
+                    <i class="ph ph-download-simple"></i> Export Data <i class="ph ph-caret-down"></i>
+                </button>
+                <div class="do-export-dd" id="doExportDd">
+                    <div class="do-export-dd-section">Semua Data</div>
+                    <button class="do-export-dd-btn" onclick="DataExporter.exportAll('xlsx')">
+                        <i class="ph ph-file-xls"></i> Export ke Excel (.xlsx)
+                    </button>
+                    <button class="do-export-dd-btn" onclick="DataExporter.exportAll('csv')">
+                        <i class="ph ph-file-csv"></i> Export ke CSV
+                    </button>
+                    <div class="do-export-dd-divider"></div>
+                    <div class="do-export-dd-section">Per Platform</div>
+                    <button class="do-export-dd-btn" onclick="DataExporter.exportPlatform('doc')">Online News</button>
+                    <button class="do-export-dd-btn" onclick="DataExporter.exportPlatform('twit')">X / Twitter</button>
+                    <button class="do-export-dd-btn" onclick="DataExporter.exportPlatform('instagram')">Instagram</button>
+                </div>
+            </div> -->
 
     {{-- ══ Filter Card ══ --}}
     @include('mk.layouts.partials.filter-datepicker')
@@ -2101,19 +2101,19 @@
                     const sentBadge = `do-sent-badge--${sent === 'pos' ? 'pos' : sent === 'neg' ? 'neg' : 'neu'}`;
                     const enc = encodeURIComponent(JSON.stringify(item));
                     return `<div class="do-panel-item" onclick="DODetail.openEncoded('${enc}','${plat}')">
-                    <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
-                    <div class="do-panel-item-body">
-                        <div class="do-panel-author">${esc(dName)}</div>
-                        ${handle ? `<div class="do-panel-handle">${esc(handle)}</div>` : ''}
-                        <div class="do-panel-text">${esc(text || '(tidak ada konten)')}</div>
-                        <div class="do-panel-footer">
-                            <span class="do-sent-badge ${sentBadge}">${sentLbl}</span>
-                            <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
-                            <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
-                            ${dt ? `<span style="margin-left:auto;">${dt}</span>` : ''}
-                        </div>
-                    </div>
-                </div>`;
+                            <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
+                            <div class="do-panel-item-body">
+                                <div class="do-panel-author">${esc(dName)}</div>
+                                ${handle ? `<div class="do-panel-handle">${esc(handle)}</div>` : ''}
+                                <div class="do-panel-text">${esc(text || '(tidak ada konten)')}</div>
+                                <div class="do-panel-footer">
+                                    <span class="do-sent-badge ${sentBadge}">${sentLbl}</span>
+                                    <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
+                                    <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
+                                    ${dt ? `<span style="margin-left:auto;">${dt}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>`;
                 }).join('');
                 if (items.length > SHOW) list.insertAdjacentHTML('beforeend', `<div style="padding:9px;text-align:center;font-size:11px;font-weight:600;color:var(--do-slate-400);background:var(--do-slate-50);border-top:1px dashed var(--do-slate-200);">+${(items.length - SHOW).toLocaleString()} mentions lainnya · Export CSV untuk lihat semua</div>`);
             }
@@ -2152,13 +2152,13 @@
                     if (ytId) {
                         const embedId = `yt_${ytId}_${Date.now()}`;
                         mediaHtml = `<div class="do-dp2-media do-dp2-media--video" id="${embedId}" style="position:relative;cursor:pointer;border-radius:6px;overflow:hidden;background:#000;" onclick="document.getElementById('${embedId}').innerHTML='<iframe width=\\\"100%\\\" height=\\\"280\\\" src=\\\"https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1\\\" frameborder=\\\"0\\\" allow=\\\"accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture\\\" allowfullscreen></iframe>'">
-                        <img src="${thumb || `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}" style="width:100%;height:220px;object-fit:cover;display:block;" onerror="this.src='https://img.youtube.com/vi/${ytId}/mqdefault.jpg'">
-                        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25);">
-                            <div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.4);">
-                                <i class="ph ph-play-fill" style="font-size:22px;color:#fff;margin-left:3px;"></i>
-                            </div>
-                        </div>
-                    </div>`;
+                                <img src="${thumb || `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}" style="width:100%;height:220px;object-fit:cover;display:block;" onerror="this.src='https://img.youtube.com/vi/${ytId}/mqdefault.jpg'">
+                                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25);">
+                                    <div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.4);">
+                                        <i class="ph ph-play-fill" style="font-size:22px;color:#fff;margin-left:3px;"></i>
+                                    </div>
+                                </div>
+                            </div>`;
                     } else if (thumb) {
                         mediaHtml = `<div class="do-dp2-media"><img src="${esc(thumb)}" onerror="this.parentElement.style.display='none'" style="border-radius:6px;width:100%;max-height:220px;object-fit:cover;"></div>`;
                     }
@@ -2168,12 +2168,12 @@
                     if (tid) {
                         const embedId = `tt_${tid}_${Date.now()}`;
                         mediaHtml = `<div id="${embedId}" style="position:relative;cursor:pointer;background:#111827;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;height:260px;" onclick="DODetail.loadTikTokEmbed('${embedId}','${tid}')">
-                        ${thumb ? `<img src="${esc(thumb)}" style="position:absolute;width:100%;height:100%;object-fit:cover;opacity:.65;pointer-events:none;">` : ''}
-                        <div style="position:relative;z-index:2;width:56px;height:56px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.6);">
-                            <i class="ph ph-play-fill" style="font-size:24px;color:#111827;margin-left:3px;"></i>
-                        </div>
-                        <div style="position:absolute;bottom:8px;right:8px;background:#111827;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.5px;">TIKTOK</div>
-                    </div>`;
+                                ${thumb ? `<img src="${esc(thumb)}" style="position:absolute;width:100%;height:100%;object-fit:cover;opacity:.65;pointer-events:none;">` : ''}
+                                <div style="position:relative;z-index:2;width:56px;height:56px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.6);">
+                                    <i class="ph ph-play-fill" style="font-size:24px;color:#111827;margin-left:3px;"></i>
+                                </div>
+                                <div style="position:absolute;bottom:8px;right:8px;background:#111827;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.5px;">TIKTOK</div>
+                            </div>`;
                     } else if (thumb) {
                         mediaHtml = `<div class="do-dp2-media"><img src="${esc(thumb)}" onerror="this.parentElement.style.display='none'" style="border-radius:6px;max-height:320px;object-fit:cover;width:100%;display:block;"></div>`;
                     }
@@ -2182,27 +2182,27 @@
                     const isVideo = (item.media_type || '').toLowerCase() === 'video' || (item.product_type || '').toLowerCase() === 'igtv' || (item.product_type || '').toLowerCase() === 'reels';
                     if (thumb) {
                         mediaHtml = `<div class="do-dp2-media" style="position:relative;border-radius:6px;overflow:hidden;background:#f3f4f6;">
-                        <img src="${esc(thumb)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:320px;object-fit:cover;display:block;">
-                        ${isVideo ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);border-radius:6px;"><div style="width:44px;height:44px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:20px;color:#e1306c;margin-left:3px;"></i></div></div>` : ''}
-                    </div>`;
+                                <img src="${esc(thumb)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:320px;object-fit:cover;display:block;">
+                                ${isVideo ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);border-radius:6px;"><div style="width:44px;height:44px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:20px;color:#e1306c;margin-left:3px;"></i></div></div>` : ''}
+                            </div>`;
                     }
                 } else if (platform === 'fb') {
                     const imgUrl = item.image_url || item.thumbnail || item.media_url || item.picture || item.display_url || item.story_img || '';
                     const isVideo = (item.type || '').includes('video') || (item.video_id) ? true : false;
                     if (imgUrl) {
                         mediaHtml = `<div class="do-dp2-media" style="position:relative;border-radius:6px;overflow:hidden;background:#f3f4f6;">
-                        <img src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:320px;object-fit:cover;display:block;">
-                        ${isVideo ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);border-radius:6px;"><div style="width:44px;height:44px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:20px;color:#1877f2;margin-left:3px;"></i></div></div>` : ''}
-                    </div>`;
+                                <img src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:320px;object-fit:cover;display:block;">
+                                ${isVideo ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);border-radius:6px;"><div style="width:44px;height:44px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:20px;color:#1877f2;margin-left:3px;"></i></div></div>` : ''}
+                            </div>`;
                     }
                 } else if (platform === 'twit') {
                     const imgUrl = item.image_url || item.media_url || item.thumbnail || item.display_url || item.media?.media_url || '';
                     const isVideo = String(item.media_type || '').toLowerCase() === 'video' || String(item.type || '').toLowerCase() === 'video';
                     if (imgUrl) {
                         mediaHtml = `<div class="do-dp2-media" style="position:relative;border-radius:6px;overflow:hidden;background:#f3f4f6;">
-                        <img src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:320px;object-fit:cover;display:block;">
-                        ${isVideo ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);border-radius:6px;"><div style="width:44px;height:44px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:20px;color:#1d9bf0;margin-left:3px;"></i></div></div>` : ''}
-                    </div>`;
+                                <img src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:320px;object-fit:cover;display:block;">
+                                ${isVideo ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);border-radius:6px;"><div style="width:44px;height:44px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:20px;color:#1d9bf0;margin-left:3px;"></i></div></div>` : ''}
+                            </div>`;
                     }
                 } else {
                     const imgUrl = item.image_url || item.thumbnail || item.featured_image || item.banner_image || item.media_url || item.picture || '';
@@ -2214,20 +2214,20 @@
                 const statsHtml = stats.some(s => parseInt(s[1]) > 0) ? `<div class="do-dp2-stats">${stats.map(([l, v]) => `<div class="do-dp2-stat"><div class="do-dp2-stat-val">${parseInt(v || 0).toLocaleString()}</div><div class="do-dp2-stat-lbl">${l}</div></div>`).join('')}</div>` : '';
                 const handleDisp = handle && !handle.replace('@', '').toLowerCase().startsWith(name.toLowerCase().slice(0, 4)) ? (handle.startsWith('@') ? handle : '@' + handle) : '';
                 body.innerHTML = `
-                <div class="do-dp2-avatar-row">
-                    <div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
-                    <div>
-                        <div class="do-dp2-name">${esc(name)}</div>
-                        ${handleDisp ? `<div class="do-dp2-handle">${esc(handleDisp)}</div>` : ''}
-                        <span class="do-dp2-plat-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span>
-                    </div>
-                </div>
-                ${dtFmt ? `<div class="do-dp2-meta"><span>${dtFmt}</span></div>` : ''}
-                <div class="do-dp2-sent ${SENT_BGS[sent]}">${SENT_MAP[sent]}</div>
-                ${mediaHtml}
-                ${content ? `<div class="do-dp2-content">${esc(content)}</div>` : ''}
-                ${statsHtml}
-                ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out"></i> Lihat ${meta.label} Asli</a>` : ''}`;
+                        <div class="do-dp2-avatar-row">
+                            <div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
+                            <div>
+                                <div class="do-dp2-name">${esc(name)}</div>
+                                ${handleDisp ? `<div class="do-dp2-handle">${esc(handleDisp)}</div>` : ''}
+                                <span class="do-dp2-plat-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span>
+                            </div>
+                        </div>
+                        ${dtFmt ? `<div class="do-dp2-meta"><span>${dtFmt}</span></div>` : ''}
+                        <div class="do-dp2-sent ${SENT_BGS[sent]}">${SENT_MAP[sent]}</div>
+                        ${mediaHtml}
+                        ${content ? `<div class="do-dp2-content">${esc(content)}</div>` : ''}
+                        ${statsHtml}
+                        ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out"></i> Lihat ${meta.label} Asli</a>` : ''}`;
                 panel.classList.add('show');
             },
             close() {
@@ -2377,12 +2377,14 @@
                     chart: {
                         type: 'area',
                         height: 360,
+                        fontFamily: 'inherit',
+                        background: 'transparent',
+                        toolbar: { show: false },
                         animations: {
                             enabled: true,
                             easing: 'linear',
                             dynamicAnimation: { speed: 1000 }
                         },
-                        toolbar: { show: false },
                         events: {
                             markerClick: (e, ctx, cfg) => {
                                 DOPanel.open('all', sentMap[sentNames[cfg.seriesIndex]] || 'all');
@@ -2395,12 +2397,67 @@
                         { name: 'Neutral', data: d.sentiment?.neutral || [] },
                         { name: 'Negative', data: d.sentiment?.negative || [] },
                     ],
+                    colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
                     xaxis: {
                         categories: xLabels,
+                        axisBorder: { show: false },
+                        axisTicks: { show: false },
+                        labels: { style: { fontFamily: 'inherit', fontSize: '11px', fontWeight: 600, colors: '#94A3B8' } }
                     },
-                    colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
+                    yaxis: {
+                        labels: {
+                            formatter: v => numK(v),
+                            style: { fontFamily: 'inherit', fontSize: '10px', fontWeight: 600, colors: '#94A3B8' }
+                        },
+                        axisBorder: { show: false },
+                        axisTicks: { show: false }
+                    },
                     fill: { opacity: 0.3 },
-                    stroke: { curve: 'smooth' },
+                    stroke: { curve: 'smooth', width: 2.5 },
+                    markers: {
+                        size: xLabels.length <= 20 ? 5 : 0,
+                        strokeWidth: 2,
+                        strokeColors: '#fff',
+                        hover: { size: 7 }
+                    },
+                    dataLabels: {
+                        enabled: xLabels.length <= 20,
+                        formatter: v => v > 0 ? numK(v) : '',
+                        style: {
+                            fontSize: '10px',
+                            fontFamily: 'inherit',
+                            fontWeight: '700',
+                        },
+                        background: {
+                            enabled: true,
+                            borderRadius: 3,
+                            borderWidth: 0,
+                            padding: 3,
+                            opacity: 0.9,
+                        },
+                        offsetY: -6,
+                    },
+                    grid: {
+                        borderColor: 'rgba(226,232,240,.55)',
+                        strokeDashArray: 3,
+                        xaxis: { lines: { show: false } }
+                    },
+                    legend: {
+                        position: 'bottom',
+                        horizontalAlign: 'left',
+                        fontFamily: 'inherit',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        labels: { colors: '#94A3B8' },
+                        markers: { width: 9, height: 9, radius: 50 },
+                        itemMargin: { horizontal: 14, vertical: 4 }
+                    },
+                    tooltip: {
+                        shared: true,
+                        intersect: false,
+                        style: { fontFamily: 'inherit', fontSize: '12px' },
+                        y: { formatter: v => numFmt(v) + ' mentions' }
+                    },
                 };
 
                 if (this._apexSentiment) { try { this._apexSentiment.destroy(); } catch (e) { } }

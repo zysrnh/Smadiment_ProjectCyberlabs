@@ -3,1472 +3,2357 @@
 @section('title', 'TikTok Emotion Analysis - SMADIMENT')
 
 @section('styles')
-<style>
-/* ══════════════════════════════════════════════════════
-   DESIGN TOKENS
-══════════════════════════════════════════════════════ */
-:root {
-    --primary        : #038047;
-    --primary-rgb    : 3, 128, 71;
-    --primary-lt     : rgba(3,128,71,.10);
-    --dark           : #273B4A;
-    --white          : #FFFFFF;
-    --bg             : #F1F5F8;
+    <style>
+        /* ══════════════════════════════════════════════════════
+       DESIGN TOKENS
+    ══════════════════════════════════════════════════════ */
+        :root {
+            --primary: #038047;
+            --primary-rgb: 3, 128, 71;
+            --primary-lt: rgba(3, 128, 71, .10);
+            --dark: #273B4A;
+            --white: #FFFFFF;
+            --bg: #F1F5F8;
 
-    --green          : #038047;
-    --green-light    : #E8F5EE;
-    --red            : #EF4444;
-    --red-light      : #FEF2F2;
-    --amber          : #F59E0B;
-    --amber-light    : #FFFBEB;
-    --cyan           : #06B6D4;
-    --cyan-light     : #ECFEFF;
-    --violet         : #8B5CF6;
-    --orange         : #F97316;
-    --indigo         : #6366F1;
-    --blue           : #3B82F6;
-    --purple         : #A855F7;
-    --emerald        : #10B981;
+            --green: #038047;
+            --green-light: #E8F5EE;
+            --red: #EF4444;
+            --red-light: #FEF2F2;
+            --amber: #F59E0B;
+            --amber-light: #FFFBEB;
+            --cyan: #06B6D4;
+            --cyan-light: #ECFEFF;
+            --violet: #8B5CF6;
+            --orange: #F97316;
+            --indigo: #6366F1;
+            --blue: #3B82F6;
+            --purple: #A855F7;
+            --emerald: #10B981;
 
-    --slate-50       : #F8FAFC;
-    --slate-100      : #F1F5F9;
-    --slate-200      : #E2E8F0;
-    --slate-300      : #CBD5E1;
-    --slate-400      : #94A3B8;
-    --slate-500      : #64748B;
-    --slate-600      : #475569;
-    --slate-700      : #334155;
-    --slate-800      : #1E293B;
-    --slate-900      : #0F172A;
+            --slate-50: #F8FAFC;
+            --slate-100: #F1F5F9;
+            --slate-200: #E2E8F0;
+            --slate-300: #CBD5E1;
+            --slate-400: #94A3B8;
+            --slate-500: #64748B;
+            --slate-600: #475569;
+            --slate-700: #334155;
+            --slate-800: #1E293B;
+            --slate-900: #0F172A;
 
-    --radius         : 8px;
-    --radius-sm      : 5px;
-    --shadow-sm      : 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
-    --shadow-md      : 0 4px 14px rgba(15,23,42,.08);
-    --shadow-lg      : 0 10px 30px rgba(15,23,42,.12);
+            --radius: 8px;
+            --radius-sm: 5px;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, .06), 0 1px 2px rgba(15, 23, 42, .04);
+            --shadow-md: 0 4px 14px rgba(15, 23, 42, .08);
+            --shadow-lg: 0 10px 30px rgba(15, 23, 42, .12);
 
-    --e-joy          : #F59E0B;
-    --e-trust        : #10B981;
-    --e-fear         : #6366F1;
-    --e-surprise     : #3B82F6;
-    --e-sadness      : #8B5CF6;
-    --e-disgust      : #A855F7;
-    --e-anger        : #EF4444;
-    --e-anticipation : #F97316;
-}
+            --e-joy: #F59E0B;
+            --e-trust: #10B981;
+            --e-fear: #6366F1;
+            --e-surprise: #3B82F6;
+            --e-sadness: #8B5CF6;
+            --e-disgust: #A855F7;
+            --e-anger: #EF4444;
+            --e-anticipation: #F97316;
+        }
 
-/* ══ Animations ══ */
-@keyframes fadeUp        { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-@keyframes shimmer       { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
-@keyframes spin          { to{transform:rotate(360deg)} }
-@keyframes slideInRight  { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
-@keyframes slideOutRight { from{transform:translateX(0);opacity:1} to{transform:translateX(100%);opacity:0} }
-@keyframes overlayIn     { from{opacity:0} to{opacity:1} }
-@keyframes overlayOut    { from{opacity:1} to{opacity:0} }
-@keyframes kpiShimmer    { 0%{left:-100%} 100%{left:150%} }
-@keyframes kpiIconBounce { 0%,100%{transform:scale(1) rotate(0)} 30%{transform:scale(1.25) rotate(-10deg)} 60%{transform:scale(1.1) rotate(6deg)} }
+        /* ══ Animations ══ */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px)
+            }
 
-/* ══ KPI Icon bg ══ */
-.kpi-icon-bg {
-    width:48px; height:48px; border-radius:12px;
-    display:flex; align-items:center; justify-content:center;
-    background:rgba(255,255,255,.2); font-size:24px; color:#fff; flex-shrink:0;
-}
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
 
-/* ══ Skeleton ══ */
-.sk-block {
-    border-radius:4px;
-    background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);
-    background-size:200% 100%;
-    animation:shimmer 1.4s infinite;
-}
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0
+            }
 
-/* ══ Spinner ══ */
-.spin-ring {
-    width:26px; height:26px;
-    border:2.5px solid var(--slate-100); border-top-color:var(--primary);
-    border-radius:50%; animation:spin .65s linear infinite;
-}
-.spinner-state {
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    padding:48px 20px; gap:12px; color:var(--slate-400); font-size:12px; font-weight:600;
-}
+            100% {
+                background-position: 200% 0
+            }
+        }
 
-/* ══ Tabs ══ */
-.fea-tabs {
-    display:flex; gap:2px;
-    background:var(--slate-100); border:1px solid var(--slate-200);
-    border-radius:var(--radius-sm); padding:2px; margin-bottom:16px;
-    overflow-x:auto; scrollbar-width:none;
-}
-.fea-tabs::-webkit-scrollbar { display:none; }
-.fea-tab-btn {
-    flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
-    padding:7px 12px; border-radius:4px; border:none; background:transparent;
-    font-size:12px; font-weight:600; color:var(--slate-500);
-    cursor:pointer; transition:background .13s, color .13s; white-space:nowrap; min-width:fit-content;
-}
-.fea-tab-btn:hover { background:#fff; color:var(--slate-800); }
-.fea-tab-btn.active {
-    background:#fff; color:var(--primary);
-    box-shadow:0 1px 4px rgba(0,0,0,.08);
-}
-.fea-tab-chip {
-    display:inline-flex; align-items:center; justify-content:center;
-    min-width:20px; height:16px; padding:0 5px;
-    border-radius:3px; font-size:9px; font-weight:800;
-    background:var(--primary-lt); color:var(--primary);
-}
-.fea-tab-btn:not(.active) .fea-tab-chip { background:var(--slate-100); color:var(--slate-400); }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
 
-/* ══ Toggle group ══ */
-.fea-toggle-group {
-    display:flex; background:var(--slate-50); border-radius:var(--radius-sm);
-    padding:2px; gap:2px; border:1px solid var(--slate-200);
-}
-.fea-toggle-btn {
-    display:flex; align-items:center; gap:4px;
-    padding:4px 10px; border-radius:3px; border:none; background:transparent;
-    font-size:11px; font-weight:600; color:var(--slate-500);
-    cursor:pointer; transition:background .12s, color .12s;
-}
-.fea-toggle-btn:hover  { background:#fff; color:var(--slate-800); }
-.fea-toggle-btn.active { background:#fff; color:var(--primary); box-shadow:0 1px 3px rgba(0,0,0,.07); }
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0
+            }
 
-/* ══ Post list ══ */
-.fea-post-list { display:flex; flex-direction:column; }
-.fea-post {
-    display:flex; align-items:flex-start; gap:12px;
-    padding:12px 16px; border-bottom:1px solid var(--slate-100);
-    transition:background .12s; cursor:pointer;
-}
-.fea-post:last-child { border-bottom:none; }
-.fea-post:hover { background:var(--slate-50); }
+            to {
+                transform: translateX(0);
+                opacity: 1
+            }
+        }
 
-.fea-post-rank {
-    width:22px; height:22px; border-radius:50%;
-    background:var(--slate-100); border:1px solid var(--slate-200);
-    display:flex; align-items:center; justify-content:center;
-    font-size:9px; font-weight:800; color:var(--slate-400);
-    flex-shrink:0; margin-top:8px;
-}
-.fea-post-rank--1 { background:linear-gradient(135deg,#ffd700,#F59E0B); color:#7c5900; border-color:#ffd700; }
-.fea-post-rank--2 { background:linear-gradient(135deg,#c0c0c0,#9ca3af); color:#3d3d3d; border-color:#c0c0c0; }
-.fea-post-rank--3 { background:linear-gradient(135deg,#cd7f32,#b06820); color:#fff;    border-color:#cd7f32; }
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1
+            }
 
-.fea-post-av {
-    width:36px; height:36px; border-radius:50%; flex-shrink:0;
-    color:#fff; font-weight:700; font-size:12px;
-    display:flex; align-items:center; justify-content:center;
-    border:1.5px solid var(--slate-200); overflow:hidden;
-}
-.fea-post-av img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+            to {
+                transform: translateX(100%);
+                opacity: 0
+            }
+        }
 
-.fea-post-body  { flex:1; min-width:0; }
-.fea-post-author { font-size:12.5px; font-weight:700; color:var(--slate-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.fea-post-date   { font-size:10px; color:var(--slate-400); margin-top:1px; margin-bottom:4px; }
-.fea-post-text   { font-size:11.5px; color:var(--slate-500); line-height:1.55; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:6px; word-break:break-word; }
-.fea-post-stats  { display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+        @keyframes overlayIn {
+            from {
+                opacity: 0
+            }
 
-.fea-metric {
-    display:inline-flex; align-items:center; gap:3px;
-    padding:2px 6px; border-radius:3px;
-    font-size:10px; font-weight:700;
-    background:var(--slate-100); color:var(--slate-500);
-    white-space:nowrap;
-}
-.fea-metric--primary { background:var(--primary-lt); color:var(--primary); }
-.fea-metric--amber   { background:rgba(245,158,11,.1); color:#92400e; }
-.fea-metric--cyan    { background:rgba(6,182,212,.1);  color:#164e63; }
-.fea-metric--red     { background:rgba(239,68,68,.1);  color:#991b1b; }
+            to {
+                opacity: 1
+            }
+        }
 
-.fea-sent { display:inline-flex; align-items:center; padding:2px 6px; border-radius:3px; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.3px; }
-.fea-sent--pos { background:#d1fae5; color:#065f46; }
-.fea-sent--neg { background:#fee2e2; color:#991b1b; }
-.fea-sent--neu { background:var(--slate-100); color:var(--slate-500); }
+        @keyframes overlayOut {
+            from {
+                opacity: 1
+            }
 
-.fea-emo-badge {
-    display:inline-flex; align-items:center; gap:4px;
-    padding:2px 7px; border-radius:3px; font-size:9px; font-weight:800;
-    text-transform:capitalize; border:1px solid transparent;
-}
-.fea-emo-badge .emo-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+            to {
+                opacity: 0
+            }
+        }
 
-.fea-view-link {
-    display:inline-flex; align-items:center; gap:3px;
-    font-size:9.5px; font-weight:700; color:var(--primary);
-    text-decoration:none; padding:2px 6px; border-radius:3px;
-    background:var(--primary-lt); border:1px solid rgba(3,128,71,.2);
-    transition:background .12s, color .12s; margin-left:auto;
-}
-.fea-view-link:hover { background:var(--primary); color:#fff; }
+        @keyframes kpiShimmer {
+            0% {
+                left: -100%
+            }
 
-.fea-post-thumb {
-    width:80px; height:120px; border-radius:var(--radius-sm);
-    flex-shrink:0; overflow:hidden;
-    border:1.5px solid var(--slate-200);
-    background:var(--slate-800);
-    position:relative; align-self:center;
-    box-shadow:var(--shadow-sm);
-}
-.fea-post-thumb img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .2s; }
-.fea-post:hover .fea-post-thumb img { transform:scale(1.06); }
-.fea-post-thumb-ph { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:24px; background:linear-gradient(135deg,#273B4A,#374151); }
-.fea-post-thumb-play {
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    background:rgba(0,0,0,.28); opacity:0; transition:opacity .2s; border-radius:inherit;
-}
-.fea-post:hover .fea-post-thumb-play { opacity:1; }
+            100% {
+                left: 150%
+            }
+        }
 
-/* ══ Pagination ══ */
-.fea-pagination {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:10px 16px; border-top:1px solid var(--slate-100); flex-wrap:wrap; gap:8px;
-}
-.fea-pag-info { font-size:11px; color:var(--slate-400); font-weight:500; }
-.fea-pag-controls { display:flex; align-items:center; gap:3px; }
-.fea-pag-btn {
-    min-width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center;
-    padding:0 6px; border-radius:var(--radius-sm); border:1px solid var(--slate-200);
-    background:#fff; font-size:11px; font-weight:600; color:var(--slate-500);
-    cursor:pointer; transition:all .12s; user-select:none;
-}
-.fea-pag-btn:hover:not(:disabled):not(.is-active) { border-color:var(--primary); color:var(--primary); background:var(--primary-lt); }
-.fea-pag-btn.is-active { background:var(--primary); border-color:var(--primary); color:#fff; }
-.fea-pag-btn:disabled { opacity:.35; cursor:not-allowed; }
+        @keyframes kpiIconBounce {
 
-/* ══ Chart container ══ */
-.chart-container { height:280px; position:relative; }
-.chart-loading {
-    position:absolute; inset:0;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:8px; background:#fff; z-index:2; transition:opacity .3s;
-}
-.chart-loading.hidden { opacity:0; pointer-events:none; }
-.chart-loading span { font-size:11px; font-weight:600; color:var(--slate-400); }
-.chart-empty {
-    height:100%; display:flex; flex-direction:column;
-    align-items:center; justify-content:center;
-    gap:6px; color:var(--slate-400); font-size:12px; font-weight:600;
-}
-.chart-empty i { font-size:34px; color:var(--slate-300); display:block; }
+            0%,
+            100% {
+                transform: scale(1) rotate(0)
+            }
 
-/* ══ Rows select ══ */
-.fea-rows-sel {
-    padding:4px 9px;
-    border:1px solid var(--slate-200); border-radius:var(--radius-sm);
-    font-size:11px; font-weight:600; color:var(--slate-600);
-    background:var(--slate-50); outline:none; cursor:pointer;
-    transition:border-color .14s;
-}
-.fea-rows-sel:focus { border-color:var(--primary); }
+            30% {
+                transform: scale(1.25) rotate(-10deg)
+            }
 
-/* ══ Donut legend ══ */
-.donut-legend { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:4px; }
-.donut-leg-item {
-    display:flex; align-items:center; gap:5px;
-    font-size:11px; font-weight:600; color:var(--slate-500);
-    padding:3px 8px; background:var(--slate-50);
-    border-radius:3px; border:1px solid var(--slate-200);
-    cursor:pointer; transition:border-color .12s, background .12s, color .12s;
-}
-.donut-leg-item:hover { border-color:var(--primary); background:var(--primary-lt); color:var(--primary); }
-.donut-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+            60% {
+                transform: scale(1.1) rotate(6deg)
+            }
+        }
 
-/* ══ KPI Card Hover ══ */
-.kpi-card-hover {
-    will-change:transform, box-shadow;
-    cursor:default; position:relative !important; overflow:hidden !important;
-    transition:transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s ease, filter .25s ease;
-}
-.kpi-card-hover::before {
-    content:''; position:absolute; top:0; bottom:0;
-    left:-100%; width:60%;
-    background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
-    pointer-events:none; z-index:1;
-}
-.kpi-card-hover:hover {
-    transform:translateY(-6px) scale(1.025);
-    box-shadow:0 20px 40px rgba(0,0,0,.25);
-    filter:brightness(1.07);
-}
-.kpi-card-hover:hover::before { animation:kpiShimmer .6s ease forwards; }
-.kpi-card-hover:hover .kpi-icon-bg { background:rgba(255,255,255,.35) !important; }
-.kpi-card-hover:hover .kpi-icon-bg i { animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both; display:inline-block; }
-.kpi-card-hover:active { transform:translateY(-2px) scale(1.01); }
+        /* ══ KPI Icon bg ══ */
+        .kpi-icon-bg {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, .2);
+            font-size: 24px;
+            color: #fff;
+            flex-shrink: 0;
+        }
 
-/* ══ Slide Panel ══ */
-.do-panel-overlay {
-    position:fixed; inset:0; z-index:9000;
-    background:rgba(15,23,42,.45); backdrop-filter:blur(4px); display:none;
-}
-.do-panel-overlay.show   { display:block; animation:overlayIn .22s ease-out; }
-.do-panel-overlay.hiding { animation:overlayOut .22s ease-out forwards; }
+        /* ══ Skeleton ══ */
+        .sk-block {
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--slate-100) 25%, var(--slate-200) 50%, var(--slate-100) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+        }
 
-.do-panel {
-    position:fixed; top:0; right:0; bottom:0; z-index:9001;
-    width:480px; max-width:100vw; background:#fff;
-    display:none; flex-direction:column;
-    border-left:1px solid var(--slate-200);
-    box-shadow:-8px 0 40px rgba(15,23,42,.16);
-}
-.do-panel.show   { display:flex; animation:slideInRight .28s cubic-bezier(.4,0,.2,1); }
-.do-panel.hiding { animation:slideOutRight .24s cubic-bezier(.4,0,.2,1) forwards; }
+        /* ══ Spinner ══ */
+        .spin-ring {
+            width: 26px;
+            height: 26px;
+            border: 2.5px solid var(--slate-100);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin .65s linear infinite;
+        }
 
-.do-panel-header {
-    display:flex; align-items:center; gap:10px;
-    padding:14px 16px; border-bottom:1px solid var(--slate-200);
-    background:var(--slate-50); flex-shrink:0;
-}
-.do-panel-dot   { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
-.do-panel-title { font-size:13px; font-weight:700; color:var(--slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.do-panel-close {
-    width:28px; height:28px; border-radius:var(--radius-sm);
-    border:1px solid var(--slate-200); background:#fff; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    color:var(--slate-500); font-size:16px; transition:all .14s; flex-shrink:0;
-}
-.do-panel-close:hover { background:var(--red); border-color:var(--red); color:#fff; }
+        .spinner-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 20px;
+            gap: 12px;
+            color: var(--slate-400);
+            font-size: 12px;
+            font-weight: 600;
+        }
 
-.do-panel-actions {
-    display:flex; align-items:center; gap:7px; padding:7px 12px;
-    border-bottom:1px solid var(--slate-200); background:#fff; flex-shrink:0;
-}
-.do-panel-meta {
-    flex:1; font-size:10px; font-weight:700; color:var(--slate-400);
-    text-transform:uppercase; letter-spacing:.5px;
-    display:flex; align-items:center; gap:5px;
-}
-.do-panel-export {
-    display:flex; align-items:center; gap:4px; padding:4px 10px;
-    background:var(--primary); color:#fff; border:none;
-    border-radius:var(--radius-sm); font-size:10px; font-weight:700;
-    cursor:pointer; transition:filter .13s;
-}
-.do-panel-export:hover { filter:brightness(1.1); }
+        /* ══ Tabs ══ */
+        .fea-tabs {
+            display: flex;
+            gap: 2px;
+            background: var(--slate-100);
+            border: 1px solid var(--slate-200);
+            border-radius: var(--radius-sm);
+            padding: 2px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
 
-.do-panel-list { overflow-y:auto; flex:1; padding:2px 0; min-height:0; }
-.do-panel-list::-webkit-scrollbar { width:4px; }
-.do-panel-list::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
+        .fea-tabs::-webkit-scrollbar {
+            display: none;
+        }
 
-.do-panel-item {
-    display:flex; gap:10px; padding:10px 14px;
-    border-bottom:1px solid var(--slate-50); cursor:pointer;
-    transition:background .1s; align-items:flex-start;
-}
-.do-panel-item:hover { background:#f0f9ff; }
-.do-panel-item:last-child { border-bottom:none; }
+        .fea-tab-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 7px 12px;
+            border-radius: 4px;
+            border: none;
+            background: transparent;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--slate-500);
+            cursor: pointer;
+            transition: background .13s, color .13s;
+            white-space: nowrap;
+            min-width: fit-content;
+        }
 
-.do-panel-avatar {
-    width:36px; height:36px; border-radius:50%; flex-shrink:0;
-    display:flex; align-items:center; justify-content:center;
-    font-weight:700; font-size:12px; color:#fff;
-    border:1.5px solid var(--slate-200); overflow:hidden;
-}
-.do-panel-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-.do-panel-item-body { flex:1; min-width:0; }
-.do-panel-author { font-size:12px; font-weight:700; color:var(--slate-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.do-panel-text   { font-size:11px; color:var(--slate-600); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px; }
-.do-panel-footer { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--slate-400); flex-wrap:wrap; }
+        .fea-tab-btn:hover {
+            background: #fff;
+            color: var(--slate-800);
+        }
 
-.do-sent-badge { padding:1px 6px; border-radius:3px; font-size:9px; font-weight:800; text-transform:uppercase; }
-.do-sent-badge--pos { background:#dbeafe; color:#1d4ed8; }
-.do-sent-badge--neg { background:#fee2e2; color:#991b1b; }
-.do-sent-badge--neu { background:var(--slate-100); color:var(--slate-500); }
+        .fea-tab-btn.active {
+            background: #fff;
+            color: var(--primary);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
+        }
 
-/* ══ Detail sub-panel ══ */
-.do-detail-panel {
-    position:absolute; inset:0; background:#fff; z-index:5;
-    display:none; flex-direction:column;
-    animation:slideInRight .2s cubic-bezier(.4,0,.2,1);
-}
-.do-detail-panel.show { display:flex; }
+        .fea-tab-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 16px;
+            padding: 0 5px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 800;
+            background: var(--primary-lt);
+            color: var(--primary);
+        }
 
-.do-dp2-header {
-    display:flex; align-items:center; gap:8px; padding:12px 14px;
-    background:var(--slate-50); border-bottom:1px solid var(--slate-200); flex-shrink:0;
-}
-.do-dp2-back {
-    width:28px; height:28px; border-radius:var(--radius-sm);
-    border:1px solid var(--slate-200); background:#fff; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    color:var(--slate-500); transition:all .13s; font-size:14px;
-}
-.do-dp2-back:hover { background:var(--primary-lt); color:var(--primary); border-color:var(--primary); }
-.do-dp2-title  { font-size:13px; font-weight:700; color:var(--slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.do-dp2-body   { overflow-y:auto; flex:1; padding:16px; }
-.do-dp2-body::-webkit-scrollbar { width:4px; }
-.do-dp2-body::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
+        .fea-tab-btn:not(.active) .fea-tab-chip {
+            background: var(--slate-100);
+            color: var(--slate-400);
+        }
 
-.do-dp2-avatar-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
-.do-dp2-avatar-lg  {
-    width:46px; height:46px; border-radius:50%; color:#fff; font-weight:700;
-    font-size:16px; display:flex; align-items:center; justify-content:center;
-    border:2px solid var(--slate-200); overflow:hidden; flex-shrink:0;
-}
-.do-dp2-avatar-lg img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-.do-dp2-name       { font-size:14px; font-weight:700; color:var(--slate-900); }
-.do-dp2-handle     { font-size:11px; color:var(--slate-400); font-weight:500; }
-.do-dp2-plat-badge { display:inline-block; padding:2px 8px; border-radius:3px; font-size:10px; font-weight:700; margin-top:3px; }
-.do-dp2-meta       { font-size:11px; color:var(--slate-400); font-weight:500; margin-bottom:10px; }
-.do-dp2-sent       { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:3px; font-size:11px; font-weight:700; margin-bottom:10px; }
-.do-dp2-sent--pos  { background:#dbeafe; color:#1d4ed8; }
-.do-dp2-sent--neg  { background:#fee2e2; color:#991b1b; }
-.do-dp2-sent--neu  { background:var(--slate-100); color:var(--slate-500); }
-.do-dp2-content    { font-size:12px; color:var(--slate-700); line-height:1.7; margin-bottom:12px; background:var(--slate-50); border-radius:var(--radius-sm); padding:10px 12px; border:1px solid var(--slate-200); word-break:break-word; }
-.do-dp2-media      { border-radius:var(--radius-sm); overflow:hidden; margin-bottom:10px; }
-.do-dp2-media iframe { width:100%; height:480px; border:none; display:block; }
-.do-dp2-stats      { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:10px; }
-.do-dp2-stat       { background:var(--slate-50); border-radius:var(--radius-sm); padding:8px 10px; border:1px solid var(--slate-200); text-align:center; }
-.do-dp2-stat-val   { font-size:14px; font-weight:700; color:var(--slate-900); }
-.do-dp2-stat-lbl   { font-size:9px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.4px; margin-top:1px; }
-.do-dp2-link {
-    display:flex; align-items:center; justify-content:center; gap:6px;
-    padding:9px 14px; background:var(--primary); color:#fff;
-    border-radius:var(--radius-sm); font-size:12px; font-weight:700;
-    text-decoration:none; transition:filter .14s; margin-top:4px;
-}
-.do-dp2-link:hover { filter:brightness(1.1); color:#fff; }
+        /* ══ Toggle group ══ */
+        .fea-toggle-group {
+            display: flex;
+            background: var(--slate-50);
+            border-radius: var(--radius-sm);
+            padding: 2px;
+            gap: 2px;
+            border: 1px solid var(--slate-200);
+        }
 
-/* ══ Emotion bar (detail panel) ══ */
-.emo-dist-bar   { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
-.emo-dist-label { font-size:11px; font-weight:600; color:var(--slate-800); width:90px; text-transform:capitalize; display:flex; align-items:center; gap:5px; }
-.emo-dist-dot   { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-.emo-dist-track { flex:1; height:8px; background:var(--slate-100); border-radius:4px; overflow:hidden; }
-.emo-dist-fill  { height:100%; border-radius:4px; transition:width .5s ease; }
-.emo-dist-count { font-size:11px; font-weight:700; color:var(--slate-700); width:32px; text-align:right; }
+        .fea-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 3px;
+            border: none;
+            background: transparent;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--slate-500);
+            cursor: pointer;
+            transition: background .12s, color .12s;
+        }
 
-@media(max-width:640px) {
-    .do-panel { width:100vw; }
-    .fea-tabs { flex-wrap:wrap; }
-    .fea-post-thumb { display:none; }
-}
-</style>
+        .fea-toggle-btn:hover {
+            background: #fff;
+            color: var(--slate-800);
+        }
+
+        .fea-toggle-btn.active {
+            background: #fff;
+            color: var(--primary);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .07);
+        }
+
+        /* ══ Post list ══ */
+        .fea-post-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .fea-post {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--slate-100);
+            transition: background .12s;
+            cursor: pointer;
+        }
+
+        .fea-post:last-child {
+            border-bottom: none;
+        }
+
+        .fea-post:hover {
+            background: var(--slate-50);
+        }
+
+        .fea-post-rank {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--slate-100);
+            border: 1px solid var(--slate-200);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 800;
+            color: var(--slate-400);
+            flex-shrink: 0;
+            margin-top: 8px;
+        }
+
+        .fea-post-rank--1 {
+            background: linear-gradient(135deg, #ffd700, #F59E0B);
+            color: #7c5900;
+            border-color: #ffd700;
+        }
+
+        .fea-post-rank--2 {
+            background: linear-gradient(135deg, #c0c0c0, #9ca3af);
+            color: #3d3d3d;
+            border-color: #c0c0c0;
+        }
+
+        .fea-post-rank--3 {
+            background: linear-gradient(135deg, #cd7f32, #b06820);
+            color: #fff;
+            border-color: #cd7f32;
+        }
+
+        .fea-post-av {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            color: #fff;
+            font-weight: 700;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid var(--slate-200);
+            overflow: hidden;
+        }
+
+        .fea-post-av img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .fea-post-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .fea-post-author {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--slate-900);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .fea-post-date {
+            font-size: 10px;
+            color: var(--slate-400);
+            margin-top: 1px;
+            margin-bottom: 4px;
+        }
+
+        .fea-post-text {
+            font-size: 11.5px;
+            color: var(--slate-500);
+            line-height: 1.55;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 6px;
+            word-break: break-word;
+        }
+
+        .fea-post-stats {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .fea-metric {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 700;
+            background: var(--slate-100);
+            color: var(--slate-500);
+            white-space: nowrap;
+        }
+
+        .fea-metric--primary {
+            background: var(--primary-lt);
+            color: var(--primary);
+        }
+
+        .fea-metric--amber {
+            background: rgba(245, 158, 11, .1);
+            color: #92400e;
+        }
+
+        .fea-metric--cyan {
+            background: rgba(6, 182, 212, .1);
+            color: #164e63;
+        }
+
+        .fea-metric--red {
+            background: rgba(239, 68, 68, .1);
+            color: #991b1b;
+        }
+
+        .fea-sent {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+        }
+
+        .fea-sent--pos {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .fea-sent--neg {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .fea-sent--neu {
+            background: var(--slate-100);
+            color: var(--slate-500);
+        }
+
+        .fea-emo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 7px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: capitalize;
+            border: 1px solid transparent;
+        }
+
+        .fea-emo-badge .emo-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .fea-view-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 9.5px;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background: var(--primary-lt);
+            border: 1px solid rgba(3, 128, 71, .2);
+            transition: background .12s, color .12s;
+            margin-left: auto;
+        }
+
+        .fea-view-link:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .fea-post-thumb {
+            width: 80px;
+            height: 120px;
+            border-radius: var(--radius-sm);
+            flex-shrink: 0;
+            overflow: hidden;
+            border: 1.5px solid var(--slate-200);
+            background: var(--slate-800);
+            position: relative;
+            align-self: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .fea-post-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform .2s;
+        }
+
+        .fea-post:hover .fea-post-thumb img {
+            transform: scale(1.06);
+        }
+
+        .fea-post-thumb-ph {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: linear-gradient(135deg, #273B4A, #374151);
+        }
+
+        .fea-post-thumb-play {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, .28);
+            opacity: 0;
+            transition: opacity .2s;
+            border-radius: inherit;
+        }
+
+        .fea-post:hover .fea-post-thumb-play {
+            opacity: 1;
+        }
+
+        /* ══ Pagination ══ */
+        .fea-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            border-top: 1px solid var(--slate-100);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .fea-pag-info {
+            font-size: 11px;
+            color: var(--slate-400);
+            font-weight: 500;
+        }
+
+        .fea-pag-controls {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .fea-pag-btn {
+            min-width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--slate-200);
+            background: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--slate-500);
+            cursor: pointer;
+            transition: all .12s;
+            user-select: none;
+        }
+
+        .fea-pag-btn:hover:not(:disabled):not(.is-active) {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-lt);
+        }
+
+        .fea-pag-btn.is-active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .fea-pag-btn:disabled {
+            opacity: .35;
+            cursor: not-allowed;
+        }
+
+        /* ══ Chart container ══ */
+        .chart-container {
+            height: 280px;
+            position: relative;
+        }
+
+        .chart-loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #fff;
+            z-index: 2;
+            transition: opacity .3s;
+        }
+
+        .chart-loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .chart-loading span {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--slate-400);
+        }
+
+        .chart-empty {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: var(--slate-400);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .chart-empty i {
+            font-size: 34px;
+            color: var(--slate-300);
+            display: block;
+        }
+
+        /* ══ Rows select ══ */
+        .fea-rows-sel {
+            padding: 4px 9px;
+            border: 1px solid var(--slate-200);
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--slate-600);
+            background: var(--slate-50);
+            outline: none;
+            cursor: pointer;
+            transition: border-color .14s;
+        }
+
+        .fea-rows-sel:focus {
+            border-color: var(--primary);
+        }
+
+        /* ══ Donut legend ══ */
+        .donut-legend {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .donut-leg-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--slate-500);
+            padding: 3px 8px;
+            background: var(--slate-50);
+            border-radius: 3px;
+            border: 1px solid var(--slate-200);
+            cursor: pointer;
+            transition: border-color .12s, background .12s, color .12s;
+        }
+
+        .donut-leg-item:hover {
+            border-color: var(--primary);
+            background: var(--primary-lt);
+            color: var(--primary);
+        }
+
+        .donut-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ══ KPI Card Hover ══ */
+        .kpi-card-hover {
+            will-change: transform, box-shadow;
+            cursor: default;
+            position: relative !important;
+            overflow: hidden !important;
+            transition: transform .25s cubic-bezier(.34, 1.56, .64, 1), box-shadow .25s ease, filter .25s ease;
+        }
+
+        .kpi-card-hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: -100%;
+            width: 60%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .22), transparent);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .kpi-card-hover:hover {
+            transform: translateY(-6px) scale(1.025);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, .25);
+            filter: brightness(1.07);
+        }
+
+        .kpi-card-hover:hover::before {
+            animation: kpiShimmer .6s ease forwards;
+        }
+
+        .kpi-card-hover:hover .kpi-icon-bg {
+            background: rgba(255, 255, 255, .35) !important;
+        }
+
+        .kpi-card-hover:hover .kpi-icon-bg i {
+            animation: kpiIconBounce .5s cubic-bezier(.34, 1.56, .64, 1) both;
+            display: inline-block;
+        }
+
+        .kpi-card-hover:active {
+            transform: translateY(-2px) scale(1.01);
+        }
+
+        /* ══ Slide Panel ══ */
+        .do-panel-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9000;
+            background: rgba(15, 23, 42, .45);
+            backdrop-filter: blur(4px);
+            display: none;
+        }
+
+        .do-panel-overlay.show {
+            display: block;
+            animation: overlayIn .22s ease-out;
+        }
+
+        .do-panel-overlay.hiding {
+            animation: overlayOut .22s ease-out forwards;
+        }
+
+        .do-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9001;
+            width: 480px;
+            max-width: 100vw;
+            background: #fff;
+            display: none;
+            flex-direction: column;
+            border-left: 1px solid var(--slate-200);
+            box-shadow: -8px 0 40px rgba(15, 23, 42, .16);
+        }
+
+        .do-panel.show {
+            display: flex;
+            animation: slideInRight .28s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .do-panel.hiding {
+            animation: slideOutRight .24s cubic-bezier(.4, 0, .2, 1) forwards;
+        }
+
+        .do-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--slate-200);
+            background: var(--slate-50);
+            flex-shrink: 0;
+        }
+
+        .do-panel-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .do-panel-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--slate-900);
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .do-panel-close {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--slate-200);
+            background: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--slate-500);
+            font-size: 16px;
+            transition: all .14s;
+            flex-shrink: 0;
+        }
+
+        .do-panel-close:hover {
+            background: var(--red);
+            border-color: var(--red);
+            color: #fff;
+        }
+
+        .do-panel-actions {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 12px;
+            border-bottom: 1px solid var(--slate-200);
+            background: #fff;
+            flex-shrink: 0;
+        }
+
+        .do-panel-meta {
+            flex: 1;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--slate-400);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .do-panel-export {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: filter .13s;
+        }
+
+        .do-panel-export:hover {
+            filter: brightness(1.1);
+        }
+
+        .do-panel-list {
+            overflow-y: auto;
+            flex: 1;
+            padding: 2px 0;
+            min-height: 0;
+        }
+
+        .do-panel-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .do-panel-list::-webkit-scrollbar-thumb {
+            background: var(--slate-200);
+            border-radius: 99px;
+        }
+
+        .do-panel-item {
+            display: flex;
+            gap: 10px;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--slate-50);
+            cursor: pointer;
+            transition: background .1s;
+            align-items: flex-start;
+        }
+
+        .do-panel-item:hover {
+            background: #f0f9ff;
+        }
+
+        .do-panel-item:last-child {
+            border-bottom: none;
+        }
+
+        .do-panel-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+            color: #fff;
+            border: 1.5px solid var(--slate-200);
+            overflow: hidden;
+        }
+
+        .do-panel-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .do-panel-item-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .do-panel-author {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--slate-900);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .do-panel-text {
+            font-size: 11px;
+            color: var(--slate-600);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        .do-panel-footer {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10px;
+            color: var(--slate-400);
+            flex-wrap: wrap;
+        }
+
+        .do-sent-badge {
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .do-sent-badge--pos {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .do-sent-badge--neg {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .do-sent-badge--neu {
+            background: var(--slate-100);
+            color: var(--slate-500);
+        }
+
+        /* ══ Detail sub-panel ══ */
+        .do-detail-panel {
+            position: absolute;
+            inset: 0;
+            background: #fff;
+            z-index: 5;
+            display: none;
+            flex-direction: column;
+            animation: slideInRight .2s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .do-detail-panel.show {
+            display: flex;
+        }
+
+        .do-dp2-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 14px;
+            background: var(--slate-50);
+            border-bottom: 1px solid var(--slate-200);
+            flex-shrink: 0;
+        }
+
+        .do-dp2-back {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--slate-200);
+            background: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--slate-500);
+            transition: all .13s;
+            font-size: 14px;
+        }
+
+        .do-dp2-back:hover {
+            background: var(--primary-lt);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .do-dp2-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--slate-900);
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .do-dp2-body {
+            overflow-y: auto;
+            flex: 1;
+            padding: 16px;
+        }
+
+        .do-dp2-body::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .do-dp2-body::-webkit-scrollbar-thumb {
+            background: var(--slate-200);
+            border-radius: 99px;
+        }
+
+        .do-dp2-avatar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .do-dp2-avatar-lg {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--slate-200);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .do-dp2-avatar-lg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .do-dp2-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--slate-900);
+        }
+
+        .do-dp2-handle {
+            font-size: 11px;
+            color: var(--slate-400);
+            font-weight: 500;
+        }
+
+        .do-dp2-plat-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-top: 3px;
+        }
+
+        .do-dp2-meta {
+            font-size: 11px;
+            color: var(--slate-400);
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .do-dp2-sent {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .do-dp2-sent--pos {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .do-dp2-sent--neg {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .do-dp2-sent--neu {
+            background: var(--slate-100);
+            color: var(--slate-500);
+        }
+
+        .do-dp2-content {
+            font-size: 12px;
+            color: var(--slate-700);
+            line-height: 1.7;
+            margin-bottom: 12px;
+            background: var(--slate-50);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            border: 1px solid var(--slate-200);
+            word-break: break-word;
+        }
+
+        .do-dp2-media {
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .do-dp2-media iframe {
+            width: 100%;
+            height: 480px;
+            border: none;
+            display: block;
+        }
+
+        .do-dp2-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .do-dp2-stat {
+            background: var(--slate-50);
+            border-radius: var(--radius-sm);
+            padding: 8px 10px;
+            border: 1px solid var(--slate-200);
+            text-align: center;
+        }
+
+        .do-dp2-stat-val {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--slate-900);
+        }
+
+        .do-dp2-stat-lbl {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--slate-400);
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            margin-top: 1px;
+        }
+
+        .do-dp2-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 14px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: filter .14s;
+            margin-top: 4px;
+        }
+
+        .do-dp2-link:hover {
+            filter: brightness(1.1);
+            color: #fff;
+        }
+
+        /* ══ Emotion bar (detail panel) ══ */
+        .emo-dist-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .emo-dist-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--slate-800);
+            width: 90px;
+            text-transform: capitalize;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .emo-dist-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .emo-dist-track {
+            flex: 1;
+            height: 8px;
+            background: var(--slate-100);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .emo-dist-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width .5s ease;
+        }
+
+        .emo-dist-count {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--slate-700);
+            width: 32px;
+            text-align: right;
+        }
+
+        @media(max-width:640px) {
+            .do-panel {
+                width: 100vw;
+            }
+
+            .fea-tabs {
+                flex-wrap: wrap;
+            }
+
+            .fea-post-thumb {
+                display: none;
+            }
+        }
+    </style>
 @endsection
 
 @section('page-title', 'TikTok Emotion Analysis')
 
 @section('content')
-@php
-    $projectId = $projectId ?? request()->get('project_id');
-    $startDate = $startDate ?? request()->get('start_date', now()->subDays(6)->format('Y-m-d'));
-    $endDate   = $endDate ?? request()->get('end_date', now()->format('Y-m-d'));
-    $projects  = $projects ?? [];
-@endphp
-
-<script>
-    const FEA_PID = {{ $projectId ? (int)$projectId : 'null' }};
-    const FEA_SD  = '{{ $startDate }}';
-    const FEA_ED  = '{{ $endDate }}';
-</script>
-
-{{-- Filter --}}
-@include('mk.layouts.partials.filter-datepicker')
-
-@if(!$projectId)
-<div class="alert alert-warning d-flex align-items-center gap-2">
-    <i class="ph ph-warning-circle f-20"></i>
-    <span>Tidak ada project yang dipilih. Pilih project dari sidebar untuk melihat emotion analysis.</span>
-</div>
-@else
-
-{{-- ══ KPI Cards ══ --}}
-<div class="row">
     @php
-        $kpiCards = [
-            ['id'=>'kpiJoy',   'label'=>'Joy',   'icon'=>'ph-smiley',        'bg'=>'bg-warning', 'sub'=>'Emosi paling positif'],
-            ['id'=>'kpiTrust', 'label'=>'Trust',  'icon'=>'ph-handshake',     'bg'=>'bg-success', 'sub'=>'Kepercayaan & rasa aman'],
-            ['id'=>'kpiAnger', 'label'=>'Anger',  'icon'=>'ph-fire',          'bg'=>'bg-danger',  'sub'=>'Ekspresi amarah'],
-            ['id'=>'kpiTotal', 'label'=>'Total',  'icon'=>'ph-chart-line-up', 'bg'=>'bg-primary', 'sub'=>'Total post dianalisis'],
-        ];
-        $delays = ['.00s','.05s','.10s','.15s'];
+        $projectId = $projectId ?? request()->get('project_id');
+        $startDate = $startDate ?? request()->get('start_date', now()->subDays(6)->format('Y-m-d'));
+        $endDate = $endDate ?? request()->get('end_date', now()->format('Y-m-d'));
+        $projects = $projects ?? [];
     @endphp
-    @foreach($kpiCards as $ki => $kc)
-    <div class="col-md-6 col-xl-3">
-        <div class="card {{ $kc['bg'] }} text-white kpi-card-hover"
-             onmouseenter="this.style.transform='translateY(-6px) scale(1.025)';this.style.boxShadow='0 20px 40px rgba(0,0,0,.25)';this.style.filter='brightness(1.07)';this.style.transition='transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s ease,filter .25s ease';"
-             onmouseleave="this.style.transform='';this.style.boxShadow='';this.style.filter='';"
-             style="animation:fadeUp .38s ease-out {{ $delays[$ki] }} both;">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">{{ $kc['label'] }}</p>
-                        <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">
-                            <div class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></div>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                            <i class="ph {{ $kc['icon'] }} me-1"></i>{{ $kc['sub'] }}
-                        </p>
+
+    <script>
+        const FEA_PID = {{ $projectId ? (int) $projectId : 'null' }};
+        const FEA_SD = '{{ $startDate }}';
+        const FEA_ED = '{{ $endDate }}';
+    </script>
+
+    {{-- Filter --}}
+    @include('mk.layouts.partials.filter-datepicker')
+
+    @if(!$projectId)
+        <div class="alert alert-warning d-flex align-items-center gap-2">
+            <i class="ph ph-warning-circle f-20"></i>
+            <span>Tidak ada project yang dipilih. Pilih project dari sidebar untuk melihat emotion analysis.</span>
+        </div>
+    @else
+
+        {{-- ══ KPI Cards ══ --}}
+        <div class="row">
+            @php
+                $kpiCards = [
+                    ['id' => 'kpiJoy', 'label' => 'Joy', 'icon' => 'ph-smiley', 'bg' => 'bg-warning', 'sub' => 'Emosi paling positif'],
+                    ['id' => 'kpiTrust', 'label' => 'Trust', 'icon' => 'ph-handshake', 'bg' => 'bg-success', 'sub' => 'Kepercayaan & rasa aman'],
+                    ['id' => 'kpiAnger', 'label' => 'Anger', 'icon' => 'ph-fire', 'bg' => 'bg-danger', 'sub' => 'Ekspresi amarah'],
+                    ['id' => 'kpiTotal', 'label' => 'Total', 'icon' => 'ph-chart-line-up', 'bg' => 'bg-primary', 'sub' => 'Total post dianalisis'],
+                ];
+                $delays = ['.00s', '.05s', '.10s', '.15s'];
+            @endphp
+            @foreach($kpiCards as $ki => $kc)
+                <div class="col-md-6 col-xl-3">
+                    <div class="card {{ $kc['bg'] }} text-white kpi-card-hover"
+                        onmouseenter="this.style.transform='translateY(-6px) scale(1.025)';this.style.boxShadow='0 20px 40px rgba(0,0,0,.25)';this.style.filter='brightness(1.07)';this.style.transition='transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s ease,filter .25s ease';"
+                        onmouseleave="this.style.transform='';this.style.boxShadow='';this.style.filter='';"
+                        style="animation:fadeUp .38s ease-out {{ $delays[$ki] }} both;">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <p class="mb-1 text-white text-opacity-75 f-12">{{ $kc['label'] }}</p>
+                                    <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">
+                                        <div class="sk-block"
+                                            style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></div>
+                                    </h3>
+                                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
+                                        <i class="ph {{ $kc['icon'] }} me-1"></i>{{ $kc['sub'] }}
+                                    </p>
+                                </div>
+                                <div class="flex-shrink-0 ms-3">
+                                    <div class="kpi-icon-bg"><i class="ph {{ $kc['icon'] }}"></i></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph {{ $kc['icon'] }}"></i></div>
+                </div>
+            @endforeach
+        </div>
+
+        {{-- ══ Donut Distribution ══ --}}
+        <div class="row">
+            <div class="col-12">
+                <div class="card" style="animation:fadeUp .38s ease-out .18s both;">
+                    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avtar avtar-xs bg-light-primary rounded">
+                                <i class="ph ph-chart-donut f-18 text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Distribusi Emosi — Top 5</h6>
+                                <small class="text-muted">Proporsi Plutchik wheel dari semua post</small>
+                            </div>
+                        </div>
+                        <div id="donutLegend" class="donut-legend"></div>
+                    </div>
+                    <div class="card-body">
+                        <div style="height:420px;position:relative;">
+                            <div class="chart-loading" id="donutLoading">
+                                <div class="spin-ring"></div>
+                                <span>Loading chart…</span>
+                            </div>
+                            <div id="donutChart" style="width:100%;height:420px;display:none;"></div>
+                            <div id="donutEmpty" style="display:none;" class="chart-empty">
+                                <i class="ph ph-chart-donut"></i><span>No data</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    @endforeach
-</div>
 
-{{-- ══ Donut Distribution ══ --}}
-<div class="row">
-    <div class="col-12">
-        <div class="card" style="animation:fadeUp .38s ease-out .18s both;">
+        {{-- ══ Radar + Bar row ══ --}}
+        <div class="row">
+            <div class="col-xl-5">
+                <div class="card" style="animation:fadeUp .38s ease-out .20s both;">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avtar avtar-xs bg-light-primary rounded">
+                                <i class="ph ph-polygon f-18 text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Emotion Radar</h6>
+                                <small class="text-muted">Plutchik wheel distribution</small>
+                            </div>
+                        </div>
+                        <span class="badge bg-light-secondary text-muted">Radar</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" id="radarWrap" style="height:300px;">
+                            <div class="chart-loading" id="radarLoading">
+                                <div class="spin-ring"></div><span>Loading…</span>
+                            </div>
+                            <div id="radarChart" style="width:100%;height:300px;display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-7">
+                <div class="card" style="animation:fadeUp .38s ease-out .22s both;">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avtar avtar-xs bg-light-primary rounded">
+                                <i class="ph ph-chart-bar f-18 text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Distribusi Emosi</h6>
+                                <small class="text-muted">Jumlah post per emosi Plutchik</small>
+                            </div>
+                        </div>
+                        <span class="badge bg-light-primary text-primary" id="barBadge">—</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" id="barWrap" style="height:300px;">
+                            <div class="chart-loading" id="barLoading">
+                                <div class="spin-ring"></div><span>Loading…</span>
+                            </div>
+                            <div id="barChart" style="width:100%;height:300px;display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ══ Trends Chart ══ --}}
+        <div class="row">
+            <div class="col-12">
+                <div class="card" style="animation:fadeUp .38s ease-out .24s both;">
+                    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avtar avtar-xs bg-light-primary rounded">
+                                <i class="ph ph-trend-up f-18 text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Tren Emosi Harian</h6>
+                                <small class="text-muted">Aktivitas emosi per hari pada periode yang dipilih</small>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-light-primary text-primary" id="trendsBadge">—</span>
+                            <div class="fea-toggle-group" id="trendsTypeToggle">
+                                <button class="fea-toggle-btn active" data-type="line"
+                                    onclick="FEAChart.setTrendsType('line')">Line</button>
+                                <button class="fea-toggle-btn" data-type="area"
+                                    onclick="FEAChart.setTrendsType('area')">Area</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" id="trendsWrap" style="height:300px;">
+                            <div class="chart-loading" id="trendsLoading">
+                                <div class="spin-ring"></div><span>Loading…</span>
+                            </div>
+                            <div id="trendsChart" style="width:100%;height:300px;display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ══ Emotion Tabs + Post List ══ --}}
+        <div class="d-flex align-items-center justify-content-between gap-2 mb-2" style="flex-wrap:wrap;">
+            <div class="fea-tabs flex-grow-1 mb-0" style="min-width:0;">
+                <button class="fea-tab-btn active" id="tab-all" onclick="FEATab.show('all',this)">
+                    <i class="ph ph-squares-four"></i>Semua <span class="fea-tab-chip" id="chip-all">—</span>
+                </button>
+                <button class="fea-tab-btn" id="tab-joy" onclick="FEATab.show('joy',this)">Joy <span class="fea-tab-chip"
+                        id="chip-joy">—</span></button>
+                <button class="fea-tab-btn" id="tab-trust" onclick="FEATab.show('trust',this)">Trust <span class="fea-tab-chip"
+                        id="chip-trust">—</span></button>
+                <button class="fea-tab-btn" id="tab-fear" onclick="FEATab.show('fear',this)">Fear <span class="fea-tab-chip"
+                        id="chip-fear">—</span></button>
+                <button class="fea-tab-btn" id="tab-surprise" onclick="FEATab.show('surprise',this)">Surprise <span
+                        class="fea-tab-chip" id="chip-surprise">—</span></button>
+                <button class="fea-tab-btn" id="tab-sadness" onclick="FEATab.show('sadness',this)">Sadness <span
+                        class="fea-tab-chip" id="chip-sadness">—</span></button>
+                <button class="fea-tab-btn" id="tab-disgust" onclick="FEATab.show('disgust',this)">Disgust <span
+                        class="fea-tab-chip" id="chip-disgust">—</span></button>
+                <button class="fea-tab-btn" id="tab-anger" onclick="FEATab.show('anger',this)">Anger <span class="fea-tab-chip"
+                        id="chip-anger">—</span></button>
+                <button class="fea-tab-btn" id="tab-anticipation" onclick="FEATab.show('anticipation',this)">Anticipation <span
+                        class="fea-tab-chip" id="chip-anticipation">—</span></button>
+            </div>
+        </div>
+
+        <div class="card" style="animation:fadeUp .38s ease-out .26s both;">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
                     <div class="avtar avtar-xs bg-light-primary rounded">
-                        <i class="ph ph-chart-donut f-18 text-primary"></i>
+                        <i class="ph ph-brain f-18 text-primary"></i>
                     </div>
                     <div>
-                        <h6 class="mb-0">Distribusi Emosi — Top 5</h6>
-                        <small class="text-muted">Proporsi Plutchik wheel dari semua post</small>
-                    </div>
-                </div>
-                <div id="donutLegend" class="donut-legend"></div>
-            </div>
-            <div class="card-body">
-                <div style="height:420px;position:relative;">
-                    <div class="chart-loading" id="donutLoading">
-                        <div class="spin-ring"></div>
-                        <span>Loading chart…</span>
-                    </div>
-                    <div id="donutChart" style="width:100%;height:420px;display:none;"></div>
-                    <div id="donutEmpty" style="display:none;" class="chart-empty">
-                        <i class="ph ph-chart-donut"></i><span>No data</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- ══ Radar + Bar row ══ --}}
-<div class="row">
-    <div class="col-xl-5">
-        <div class="card" style="animation:fadeUp .38s ease-out .20s both;">
-            <div class="card-header d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="avtar avtar-xs bg-light-primary rounded">
-                        <i class="ph ph-polygon f-18 text-primary"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-0">Emotion Radar</h6>
-                        <small class="text-muted">Plutchik wheel distribution</small>
-                    </div>
-                </div>
-                <span class="badge bg-light-secondary text-muted">Radar</span>
-            </div>
-            <div class="card-body">
-                <div class="chart-container" id="radarWrap" style="height:300px;">
-                    <div class="chart-loading" id="radarLoading">
-                        <div class="spin-ring"></div><span>Loading…</span>
-                    </div>
-                    <div id="radarChart" style="width:100%;height:300px;display:none;"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-7">
-        <div class="card" style="animation:fadeUp .38s ease-out .22s both;">
-            <div class="card-header d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="avtar avtar-xs bg-light-primary rounded">
-                        <i class="ph ph-chart-bar f-18 text-primary"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-0">Distribusi Emosi</h6>
-                        <small class="text-muted">Jumlah post per emosi Plutchik</small>
-                    </div>
-                </div>
-                <span class="badge bg-light-primary text-primary" id="barBadge">—</span>
-            </div>
-            <div class="card-body">
-                <div class="chart-container" id="barWrap" style="height:300px;">
-                    <div class="chart-loading" id="barLoading">
-                        <div class="spin-ring"></div><span>Loading…</span>
-                    </div>
-                    <div id="barChart" style="width:100%;height:300px;display:none;"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- ══ Trends Chart ══ --}}
-<div class="row">
-    <div class="col-12">
-        <div class="card" style="animation:fadeUp .38s ease-out .24s both;">
-            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="avtar avtar-xs bg-light-primary rounded">
-                        <i class="ph ph-trend-up f-18 text-primary"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-0">Tren Emosi Harian</h6>
-                        <small class="text-muted">Aktivitas emosi per hari pada periode yang dipilih</small>
+                        <h6 class="mb-0">Data Postingan</h6>
+                        <small class="text-muted">Klik post untuk lihat detail &amp; video</small>
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-light-primary text-primary" id="trendsBadge">—</span>
-                    <div class="fea-toggle-group" id="trendsTypeToggle">
-                        <button class="fea-toggle-btn active" data-type="line" onclick="FEAChart.setTrendsType('line')">Line</button>
-                        <button class="fea-toggle-btn" data-type="area" onclick="FEAChart.setTrendsType('area')">Area</button>
-                    </div>
+                    <select class="fea-rows-sel" id="rowsSel" onchange="FEAData.reload()">
+                        <option value="50">Top 50</option>
+                        <option value="100" selected>Top 100</option>
+                        <option value="200">Top 200</option>
+                    </select>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="FEAData.exportCsv()" title="Export CSV">
+                        <i class="ph ph-download-simple me-1"></i>CSV
+                    </button>
+                    <span class="badge bg-light-primary text-primary" id="listBadge">Loading…</span>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="chart-container" id="trendsWrap" style="height:300px;">
-                    <div class="chart-loading" id="trendsLoading">
-                        <div class="spin-ring"></div><span>Loading…</span>
-                    </div>
-                    <div id="trendsChart" style="width:100%;height:300px;display:none;"></div>
+            <div id="listEl" class="p-0">
+                <div class="spinner-state">
+                    <div class="spin-ring"></div>Memuat data…
                 </div>
             </div>
+            <div id="pagEl"></div>
         </div>
-    </div>
-</div>
 
-{{-- ══ Emotion Tabs + Post List ══ --}}
-<div class="d-flex align-items-center justify-content-between gap-2 mb-2" style="flex-wrap:wrap;">
-    <div class="fea-tabs flex-grow-1 mb-0" style="min-width:0;">
-        <button class="fea-tab-btn active" id="tab-all" onclick="FEATab.show('all',this)">
-            <i class="ph ph-squares-four"></i>Semua <span class="fea-tab-chip" id="chip-all">—</span>
-        </button>
-        <button class="fea-tab-btn" id="tab-joy"          onclick="FEATab.show('joy',this)">Joy <span class="fea-tab-chip" id="chip-joy">—</span></button>
-        <button class="fea-tab-btn" id="tab-trust"        onclick="FEATab.show('trust',this)">Trust <span class="fea-tab-chip" id="chip-trust">—</span></button>
-        <button class="fea-tab-btn" id="tab-fear"         onclick="FEATab.show('fear',this)">Fear <span class="fea-tab-chip" id="chip-fear">—</span></button>
-        <button class="fea-tab-btn" id="tab-surprise"     onclick="FEATab.show('surprise',this)">Surprise <span class="fea-tab-chip" id="chip-surprise">—</span></button>
-        <button class="fea-tab-btn" id="tab-sadness"      onclick="FEATab.show('sadness',this)">Sadness <span class="fea-tab-chip" id="chip-sadness">—</span></button>
-        <button class="fea-tab-btn" id="tab-disgust"      onclick="FEATab.show('disgust',this)">Disgust <span class="fea-tab-chip" id="chip-disgust">—</span></button>
-        <button class="fea-tab-btn" id="tab-anger"        onclick="FEATab.show('anger',this)">Anger <span class="fea-tab-chip" id="chip-anger">—</span></button>
-        <button class="fea-tab-btn" id="tab-anticipation" onclick="FEATab.show('anticipation',this)">Anticipation <span class="fea-tab-chip" id="chip-anticipation">—</span></button>
-    </div>
-</div>
-
-<div class="card" style="animation:fadeUp .38s ease-out .26s both;">
-    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <div class="d-flex align-items-center gap-2">
-            <div class="avtar avtar-xs bg-light-primary rounded">
-                <i class="ph ph-brain f-18 text-primary"></i>
+        {{-- ══ Slide Panel ══ --}}
+        <div class="do-panel-overlay" id="feaPanelOverlay" onclick="FEAPanel.close()"></div>
+        <div class="do-panel" id="feaSntPanel">
+            <div class="do-panel-header">
+                <div class="do-panel-dot" id="feaPanelDot" style="background:var(--primary);"></div>
+                <span class="do-panel-title" id="feaPanelTitle">Emotion Posts</span>
+                <button class="do-panel-close" onclick="FEAPanel.close()"><i class="ph ph-x"></i></button>
             </div>
-            <div>
-                <h6 class="mb-0">Data Postingan</h6>
-                <small class="text-muted">Klik post untuk lihat detail &amp; video</small>
+            <div class="do-panel-actions">
+                <div class="do-panel-meta">
+                    <i class="ph ph-brain" style="font-size:11px;"></i>
+                    <span id="feaPanelMeta">—</span>
+                </div>
+                <button class="do-panel-export" onclick="FEAPanel.exportCsv()">
+                    <i class="ph ph-download-simple"></i> CSV
+                </button>
+            </div>
+            <div class="do-panel-list" id="feaPanelList"></div>
+
+            <div class="do-detail-panel" id="feaDetailPanel">
+                <div class="do-dp2-header">
+                    <button class="do-dp2-back" onclick="FEADetail.close()"><i class="ph ph-caret-left"></i></button>
+                    <span class="do-dp2-title" id="feaDetailTitle">Detail</span>
+                    <button class="do-panel-close" onclick="FEAPanel.close()"><i class="ph ph-x"></i></button>
+                </div>
+                <div class="do-dp2-body" id="feaDetailBody"></div>
             </div>
         </div>
-        <div class="d-flex align-items-center gap-2">
-            <select class="fea-rows-sel" id="rowsSel" onchange="FEAData.reload()">
-                <option value="50">Top 50</option>
-                <option value="100" selected>Top 100</option>
-                <option value="200">Top 200</option>
-            </select>
-            <button class="btn btn-outline-secondary btn-sm" onclick="FEAData.exportCsv()" title="Export CSV">
-                <i class="ph ph-download-simple me-1"></i>CSV
-            </button>
-            <span class="badge bg-light-primary text-primary" id="listBadge">Loading…</span>
-        </div>
-    </div>
-    <div id="listEl" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
-    <div id="pagEl"></div>
-</div>
 
-{{-- ══ Slide Panel ══ --}}
-<div class="do-panel-overlay" id="feaPanelOverlay" onclick="FEAPanel.close()"></div>
-<div class="do-panel" id="feaSntPanel">
-    <div class="do-panel-header">
-        <div class="do-panel-dot" id="feaPanelDot" style="background:var(--primary);"></div>
-        <span class="do-panel-title" id="feaPanelTitle">Emotion Posts</span>
-        <button class="do-panel-close" onclick="FEAPanel.close()"><i class="ph ph-x"></i></button>
-    </div>
-    <div class="do-panel-actions">
-        <div class="do-panel-meta">
-            <i class="ph ph-brain" style="font-size:11px;"></i>
-            <span id="feaPanelMeta">—</span>
-        </div>
-        <button class="do-panel-export" onclick="FEAPanel.exportCsv()">
-            <i class="ph ph-download-simple"></i> CSV
-        </button>
-    </div>
-    <div class="do-panel-list" id="feaPanelList"></div>
-
-    <div class="do-detail-panel" id="feaDetailPanel">
-        <div class="do-dp2-header">
-            <button class="do-dp2-back" onclick="FEADetail.close()"><i class="ph ph-caret-left"></i></button>
-            <span class="do-dp2-title" id="feaDetailTitle">Detail</span>
-            <button class="do-panel-close" onclick="FEAPanel.close()"><i class="ph ph-x"></i></button>
-        </div>
-        <div class="do-dp2-body" id="feaDetailBody"></div>
-    </div>
-</div>
-
-@endif
+    @endif
 @endsection
 
 @section('scripts')
-<script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
-<script>
-'use strict';
+    <script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script>
+        'use strict';
 
-/* ══ CONFIG ══ */
-const EMOTIONS       = ['joy','trust','fear','surprise','sadness','disgust','anger','anticipation'];
-const EMO_COLORS     = {
-    joy:'#F59E0B', trust:'#10B981', fear:'#6366F1', surprise:'#3B82F6',
-    sadness:'#8B5CF6', disgust:'#A855F7', anger:'#EF4444', anticipation:'#F97316'
-};
-const EMO_COLORS_ARR = EMOTIONS.map(e => EMO_COLORS[e]);
-const DONUT_COLORS   = ['#038047','#273B4A','#F59E0B','#06B6D4','#EF4444','#10B981','#8B5CF6','#F97316'];
-const EMO_KW = {
-    joy          : ['senang','bahagia','happy','joy','gembira','suka','mantap','keren','bagus','luar biasa','amazing','great','love','indah','seru','enjoy'],
-    trust        : ['percaya','trust','yakin','terpercaya','aman','reliable','professional','solid','terbaik','amanah','andalan'],
-    fear         : ['takut','khawatir','was-was','bahaya','danger','fear','ancaman','waspada','ngeri','serem','merinding'],
-    surprise     : ['terkejut','kaget','wow','surprise','tidak menyangka','unexpected','gila','ternyata','nggak nyangka'],
-    sadness      : ['sedih','sad','kecewa','duka','menangis','galau','patah hati','sorrow','grief','nelangsa','hancur'],
-    disgust      : ['jijik','muak','mual','benci','tidak suka','menjijikkan','awful','jelek','buruk','payah'],
-    anger        : ['marah','anger','kesal','geram','frustasi','angry','kemarahan','emosi','sebel'],
-    anticipation : ['menunggu','nantikan','cannot wait','excited','antisipasi','harapan','soon','upcoming','segera','penasaran','catat'],
-};
+        /* ══ CONFIG ══ */
+        const EMOTIONS = ['joy', 'trust', 'fear', 'surprise', 'sadness', 'disgust', 'anger', 'anticipation'];
+        const EMO_COLORS = {
+            joy: '#F59E0B', trust: '#10B981', fear: '#6366F1', surprise: '#3B82F6',
+            sadness: '#8B5CF6', disgust: '#A855F7', anger: '#EF4444', anticipation: '#F97316'
+        };
+        const EMO_COLORS_ARR = EMOTIONS.map(e => EMO_COLORS[e]);
+        const DONUT_COLORS = ['#038047', '#273B4A', '#F59E0B', '#06B6D4', '#EF4444', '#10B981', '#8B5CF6', '#F97316'];
+        const EMO_KW = {
+            joy: ['senang', 'bahagia', 'happy', 'joy', 'gembira', 'suka', 'mantap', 'keren', 'bagus', 'luar biasa', 'amazing', 'great', 'love', 'indah', 'seru', 'enjoy'],
+            trust: ['percaya', 'trust', 'yakin', 'terpercaya', 'aman', 'reliable', 'professional', 'solid', 'terbaik', 'amanah', 'andalan'],
+            fear: ['takut', 'khawatir', 'was-was', 'bahaya', 'danger', 'fear', 'ancaman', 'waspada', 'ngeri', 'serem', 'merinding'],
+            surprise: ['terkejut', 'kaget', 'wow', 'surprise', 'tidak menyangka', 'unexpected', 'gila', 'ternyata', 'nggak nyangka'],
+            sadness: ['sedih', 'sad', 'kecewa', 'duka', 'menangis', 'galau', 'patah hati', 'sorrow', 'grief', 'nelangsa', 'hancur'],
+            disgust: ['jijik', 'muak', 'mual', 'benci', 'tidak suka', 'menjijikkan', 'awful', 'jelek', 'buruk', 'payah'],
+            anger: ['marah', 'anger', 'kesal', 'geram', 'frustasi', 'angry', 'kemarahan', 'emosi', 'sebel'],
+            anticipation: ['menunggu', 'nantikan', 'cannot wait', 'excited', 'antisipasi', 'harapan', 'soon', 'upcoming', 'segera', 'penasaran', 'catat'],
+        };
 
-const FEACfg = { pid: FEA_PID, sd: FEA_SD, ed: FEA_ED, perPage: 15 };
+        const FEACfg = { pid: FEA_PID, sd: FEA_SD, ed: FEA_ED, perPage: 15 };
 
-/* ══ UTILS ══ */
-const _$   = id => document.getElementById(id);
-const numF = n  => parseInt(n || 0).toLocaleString('id-ID');
-const numK = n  => { n = parseInt(n || 0); return n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n); };
-const esc  = s  => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const dec  = s  => {
-    if (!s) return '';
-    try { const f = decodeURIComponent(escape(s)); if (!f.includes('\uFFFD') && f !== s) return f; } catch(e) {}
-    return s;
-};
-const hideLd = id => { const e = _$(id); if (e) e.classList.add('hidden'); };
+        /* ══ UTILS ══ */
+        const _$ = id => document.getElementById(id);
+        const numF = n => parseInt(n || 0).toLocaleString('id-ID');
+        const numK = n => { n = parseInt(n || 0); return n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n); };
+        const esc = s => (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const dec = s => {
+            if (!s) return '';
+            try { const f = decodeURIComponent(escape(s)); if (!f.includes('\uFFFD') && f !== s) return f; } catch (e) { }
+            return s;
+        };
+        const hideLd = id => { const e = _$(id); if (e) e.classList.add('hidden'); };
 
-/* ══ APEX CHART REGISTRY ══ */
-const Charts = {};
-function makeApex(id, opts) {
-    if (Charts[id]) { try { Charts[id].destroy(); } catch(e) {} }
-    const el = _$(id); if (!el) return null;
-    el.style.display = 'block';
-    Charts[id] = new ApexCharts(el, opts);
-    Charts[id].render();
-    return Charts[id];
-}
-window.addEventListener('resize', () => Object.values(Charts).forEach(c => { try { c.updateOptions({}); } catch(e) {} }));
-
-/* ══ ECHARTS REGISTRY ══ */
-const ECharts = {};
-function makeEChart(id) {
-    if (ECharts[id]) { try { ECharts[id].dispose(); } catch(e) {} }
-    const el = _$(id); if (!el) return null;
-    el.style.display = 'block';
-    const c = echarts.init(el, null, { renderer: 'canvas' });
-    ECharts[id] = c;
-    window.addEventListener('resize', () => { try { c.resize(); } catch(e) {} });
-    return c;
-}
-
-/* ══ STATE ══ */
-let allPosts = [], filteredPosts = [], currentFilter = 'all', currentPage = 1;
-
-/* ══ EMOTION DETECTION ══ */
-function detectEmotion(post) {
-    const raw = (post.emotion || post.emotion_str || '').toLowerCase().trim();
-    if (raw && EMOTIONS.includes(raw)) return raw;
-    const content = (post.content || '').toLowerCase();
-    const sent    = (post.sentiment_str || '').toLowerCase();
-    for (const [emo, kws] of Object.entries(EMO_KW)) {
-        if (kws.some(k => content.includes(k))) return emo;
-    }
-    if (sent.includes('pos')) return 'joy';
-    if (sent.includes('neg')) return 'anger';
-    return 'trust';
-}
-
-function getEmoCounts(posts) {
-    const c = {};
-    EMOTIONS.forEach(e => c[e] = 0);
-    (posts || allPosts).forEach(p => c[p.emotion] = (c[p.emotion] || 0) + 1);
-    return c;
-}
-
-/* ══ FIELD HELPERS ══ */
-function getName(item) {
-    const n = (item.name || item.author?.name || item.author_scr_name || item.author_name || '')
-        .replace(/<[^>]*>/g, '').trim();
-    return n && n !== 'TikTok Creator' ? n : (item.author_id ? '@' + item.author_id : 'TikTok Creator');
-}
-function getAvatar(item)   { return (item.avatar_url   || item.profile_url   || item.author?.image   || item.author_avatar   || item.profile_image  || '').trim(); }
-function getThumb(item)    { return (item.avatar_url   || item.profile_url   || item.author_avatar   || item.profile_image   || item.thumbnail_url  || item.cover_url || item.thumbnail || '').trim(); }
-function getViews(item)    { return parseInt(item.view_cnt   || item.views    || item.freq         || 0); }
-function getLikes(item)    { return parseInt(item.likes      || item.num_likes || item.digg_count   || item.like_count || 0); }
-function getComments(item) { return parseInt(item.comments   || item.num_comments || item.comment_count || 0); }
-function normSent(item) {
-    const r = String(item.sentiment_str || item.sentiment || '').toLowerCase();
-    return r.includes('pos') ? 'pos' : r.includes('neg') ? 'neg' : 'neu';
-}
-function getColor(item) {
-    const seed    = item.author_id || item.id || getName(item) || 'tt';
-    const palette = ['#038047','#273B4A','#F59E0B','#06B6D4','#8b5cf6','#ec4899','#f97316','#14b8a6'];
-    let h = 0;
-    for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) & 0xffffffff;
-    return palette[Math.abs(h) % palette.length];
-}
-function avHtml(item) {
-    const av    = getAvatar(item);
-    const dummy = '/assets/images/user/dummy.jpg';
-    return (av && av.startsWith('http'))
-        ? `<img src="${esc(av)}" onerror="this.src='${dummy}'">`
-        : `<img src="${dummy}">`;
-}
-function emptyHtml(msg) {
-    return `<div class="chart-empty" style="padding:40px 20px;"><i class="ph ph-folder-open"></i><span>${esc(msg)}</span></div>`;
-}
-
-/* ══ TABS ══ */
-const FEATab = {
-    show(filter, btn) {
-        currentFilter = filter;
-        currentPage   = 1;
-        document.querySelectorAll('.fea-tab-btn').forEach(b => b.classList.remove('active'));
-        if (btn) btn.classList.add('active');
-        filteredPosts = filter === 'all' ? [...allPosts] : allPosts.filter(p => p.emotion === filter);
-        FEAData.renderList();
-        const lb = _$('listBadge');
-        if (lb) lb.textContent = numK(filteredPosts.length) + ' posts';
-    }
-};
-
-/* ══ DATA ══ */
-const FEAData = {
-    _abort: null,
-
-    async loadAll() {
-        if (!FEACfg.pid) {
-            ['kpiJoy','kpiTrust','kpiAnger','kpiTotal'].forEach(id => {
-                const el = _$(id); if (el) el.textContent = '—';
-            });
-            if (_$('listEl')) _$('listEl').innerHTML = emptyHtml('Pilih project terlebih dahulu');
-            return;
+        /* ══ APEX CHART REGISTRY ══ */
+        const Charts = {};
+        function makeApex(id, opts) {
+            if (Charts[id]) { try { Charts[id].destroy(); } catch (e) { } }
+            const el = _$(id); if (!el) return null;
+            el.style.display = 'block';
+            Charts[id] = new ApexCharts(el, opts);
+            Charts[id].render();
+            return Charts[id];
         }
-        if (this._abort) this._abort.abort();
-        this._abort = new AbortController();
+        window.addEventListener('resize', () => Object.values(Charts).forEach(c => { try { c.updateOptions({}); } catch (e) { } }));
 
-        const rows = parseInt(_$('rowsSel')?.value || '100');
-        const url  = `/mk/api/tiktok/most-engagement?project_id=${FEACfg.pid}&start_date=${FEACfg.sd}&end_date=${FEACfg.ed}&sub=postbyview&rows=${rows}`;
+        /* ══ ECHARTS REGISTRY ══ */
+        const ECharts = {};
+        function makeEChart(id) {
+            if (ECharts[id]) { try { ECharts[id].dispose(); } catch (e) { } }
+            const el = _$(id); if (!el) return null;
+            el.style.display = 'block';
+            const c = echarts.init(el, null, { renderer: 'canvas' });
+            ECharts[id] = c;
+            window.addEventListener('resize', () => { try { c.resize(); } catch (e) { } });
+            return c;
+        }
 
-        try {
-            const res  = await fetch(url, { signal: this._abort.signal });
-            const json = await res.json();
-            if (!json.success) throw new Error(json.error || 'Failed');
+        /* ══ STATE ══ */
+        let allPosts = [], filteredPosts = [], currentFilter = 'all', currentPage = 1;
 
-            allPosts      = (json.data || []).map(p => ({ ...p, emotion: detectEmotion(p) }));
-            filteredPosts = [...allPosts];
-            currentPage   = 1;
+        /* ══ EMOTION DETECTION ══ */
+        function detectEmotion(post) {
+            const raw = (post.emotion || post.emotion_str || '').toLowerCase().trim();
+            if (raw && EMOTIONS.includes(raw)) return raw;
+            const content = (post.content || '').toLowerCase();
+            const sent = (post.sentiment_str || '').toLowerCase();
+            for (const [emo, kws] of Object.entries(EMO_KW)) {
+                if (kws.some(k => content.includes(k))) return emo;
+            }
+            if (sent.includes('pos')) return 'joy';
+            if (sent.includes('neg')) return 'anger';
+            return 'trust';
+        }
 
-            this._updateKPIs();
-            this._updateChips();
-            this.renderList();
+        function getEmoCounts(posts) {
+            const c = {};
+            EMOTIONS.forEach(e => c[e] = 0);
+            (posts || allPosts).forEach(p => c[p.emotion] = (c[p.emotion] || 0) + 1);
+            return c;
+        }
 
-            requestAnimationFrame(() => {
-                FEAChart.renderBar();
-                requestAnimationFrame(() => {
-                    FEAChart.renderRadar();
+        /* ══ FIELD HELPERS ══ */
+        function getName(item) {
+            const n = (item.name || item.author?.name || item.author_scr_name || item.author_name || '')
+                .replace(/<[^>]*>/g, '').trim();
+            return n && n !== 'TikTok Creator' ? n : (item.author_id ? '@' + item.author_id : 'TikTok Creator');
+        }
+        function getAvatar(item) { return (item.avatar_url || item.profile_url || item.author?.image || item.author_avatar || item.profile_image || '').trim(); }
+        function getThumb(item) { return (item.avatar_url || item.profile_url || item.author_avatar || item.profile_image || item.thumbnail_url || item.cover_url || item.thumbnail || '').trim(); }
+        function getViews(item) { return parseInt(item.view_cnt || item.views || item.freq || 0); }
+        function getLikes(item) { return parseInt(item.likes || item.num_likes || item.digg_count || item.like_count || 0); }
+        function getComments(item) { return parseInt(item.comments || item.num_comments || item.comment_count || 0); }
+        function normSent(item) {
+            const r = String(item.sentiment_str || item.sentiment || '').toLowerCase();
+            return r.includes('pos') ? 'pos' : r.includes('neg') ? 'neg' : 'neu';
+        }
+        function getColor(item) {
+            const seed = item.author_id || item.id || getName(item) || 'tt';
+            const palette = ['#038047', '#273B4A', '#F59E0B', '#06B6D4', '#8b5cf6', '#ec4899', '#f97316', '#14b8a6'];
+            let h = 0;
+            for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) & 0xffffffff;
+            return palette[Math.abs(h) % palette.length];
+        }
+        function avHtml(item) {
+            const av = getAvatar(item);
+            const dummy = '/assets/images/user/dummy.jpg';
+            return (av && av.startsWith('http'))
+                ? `<img src="${esc(av)}" onerror="this.src='${dummy}'">`
+                : `<img src="${dummy}">`;
+        }
+        function emptyHtml(msg) {
+            return `<div class="chart-empty" style="padding:40px 20px;"><i class="ph ph-folder-open"></i><span>${esc(msg)}</span></div>`;
+        }
+
+        /* ══ TABS ══ */
+        const FEATab = {
+            show(filter, btn) {
+                currentFilter = filter;
+                currentPage = 1;
+                document.querySelectorAll('.fea-tab-btn').forEach(b => b.classList.remove('active'));
+                if (btn) btn.classList.add('active');
+                filteredPosts = filter === 'all' ? [...allPosts] : allPosts.filter(p => p.emotion === filter);
+                FEAData.renderList();
+                const lb = _$('listBadge');
+                if (lb) lb.textContent = numK(filteredPosts.length) + ' posts';
+            }
+        };
+
+        /* ══ DATA ══ */
+        const FEAData = {
+            _abort: null,
+
+            async loadAll() {
+                if (!FEACfg.pid) {
+                    ['kpiJoy', 'kpiTrust', 'kpiAnger', 'kpiTotal'].forEach(id => {
+                        const el = _$(id); if (el) el.textContent = '—';
+                    });
+                    if (_$('listEl')) _$('listEl').innerHTML = emptyHtml('Pilih project terlebih dahulu');
+                    return;
+                }
+                if (this._abort) this._abort.abort();
+                this._abort = new AbortController();
+
+                const rows = parseInt(_$('rowsSel')?.value || '100');
+                const url = `/mk/api/tiktok/most-engagement?project_id=${FEACfg.pid}&start_date=${FEACfg.sd}&end_date=${FEACfg.ed}&sub=postbyview&rows=${rows}`;
+
+                try {
+                    const res = await fetch(url, { signal: this._abort.signal });
+                    const json = await res.json();
+                    if (!json.success) throw new Error(json.error || 'Failed');
+
+                    allPosts = (json.data || []).map(p => ({ ...p, emotion: detectEmotion(p) }));
+                    filteredPosts = [...allPosts];
+                    currentPage = 1;
+
+                    this._updateKPIs();
+                    this._updateChips();
+                    this.renderList();
+
                     requestAnimationFrame(() => {
-                        FEAChart.renderDonut();
-                        requestAnimationFrame(() => FEAChart.renderTrends());
+                        FEAChart.renderBar();
+                        requestAnimationFrame(() => {
+                            FEAChart.renderRadar();
+                            requestAnimationFrame(() => {
+                                FEAChart.renderDonut();
+                                requestAnimationFrame(() => FEAChart.renderTrends());
+                            });
+                        });
+                    });
+                } catch (err) {
+                    if (err.name === 'AbortError') return;
+                    console.error('[FEA]', err);
+                    if (_$('listEl')) _$('listEl').innerHTML = emptyHtml('Gagal memuat: ' + err.message);
+                    ['barLoading', 'radarLoading', 'donutLoading', 'trendsLoading'].forEach(hideLd);
+                }
+            },
+
+            reload() {
+                allPosts = []; filteredPosts = []; currentFilter = 'all'; currentPage = 1;
+                document.querySelectorAll('.fea-tab-btn').forEach(b => b.classList.remove('active'));
+                _$('tab-all')?.classList.add('active');
+                this.loadAll();
+            },
+
+            _updateKPIs() {
+                const counts = getEmoCounts();
+                const kv = _$('kpiJoy'); if (kv) kv.textContent = numF(counts.joy || 0);
+                const kt = _$('kpiTrust'); if (kt) kt.textContent = numF(counts.trust || 0);
+                const ka = _$('kpiAnger'); if (ka) ka.textContent = numF(counts.anger || 0);
+                const kto = _$('kpiTotal'); if (kto) kto.textContent = numF(allPosts.length);
+            },
+
+            _updateChips() {
+                const counts = getEmoCounts();
+                const el = _$('chip-all'); if (el) el.textContent = numK(allPosts.length);
+                EMOTIONS.forEach(e => {
+                    const chip = _$('chip-' + e); if (chip) chip.textContent = numK(counts[e] || 0);
+                });
+            },
+
+            /* ── POST LIST ── */
+            renderList() {
+                const listEl = _$('listEl'), pagEl = _$('pagEl');
+                if (!listEl) return;
+                if (!filteredPosts.length) {
+                    listEl.innerHTML = emptyHtml('Tidak ada postingan untuk filter ini');
+                    if (pagEl) pagEl.innerHTML = '';
+                    return;
+                }
+                const pp = FEACfg.perPage;
+                const total = filteredPosts.length;
+                const pages = Math.ceil(total / pp);
+                const start = (currentPage - 1) * pp;
+                const page = filteredPosts.slice(start, start + pp);
+
+                listEl.innerHTML = `<div class="fea-post-list">${page.map((p, i) => this._postHtml(p, start + i)).join('')}</div>`;
+                if (pagEl) pagEl.innerHTML = pages > 1 ? this._pagHtml(currentPage, pages, total, start + 1, Math.min(start + pp, total)) : '';
+
+                listEl.querySelectorAll('.fea-post').forEach(el => {
+                    el.addEventListener('click', () => {
+                        try {
+                            const item = JSON.parse(decodeURIComponent(el.dataset.item));
+                            const emo = item.emotion || 'trust';
+                            FEAPanel.open(filteredPosts, emo);
+                            FEADetail.open(item);
+                        } catch (e) { console.warn(e); }
                     });
                 });
-            });
-        } catch(err) {
-            if (err.name === 'AbortError') return;
-            console.error('[FEA]', err);
-            if (_$('listEl')) _$('listEl').innerHTML = emptyHtml('Gagal memuat: ' + err.message);
-            ['barLoading','radarLoading','donutLoading','trendsLoading'].forEach(hideLd);
-        }
-    },
-
-    reload() {
-        allPosts = []; filteredPosts = []; currentFilter = 'all'; currentPage = 1;
-        document.querySelectorAll('.fea-tab-btn').forEach(b => b.classList.remove('active'));
-        _$('tab-all')?.classList.add('active');
-        this.loadAll();
-    },
-
-    _updateKPIs() {
-        const counts = getEmoCounts();
-        const kv = _$('kpiJoy');   if (kv) kv.textContent  = numF(counts.joy   || 0);
-        const kt = _$('kpiTrust'); if (kt) kt.textContent  = numF(counts.trust  || 0);
-        const ka = _$('kpiAnger'); if (ka) ka.textContent  = numF(counts.anger  || 0);
-        const kto= _$('kpiTotal'); if (kto) kto.textContent = numF(allPosts.length);
-    },
-
-    _updateChips() {
-        const counts = getEmoCounts();
-        const el = _$('chip-all'); if (el) el.textContent = numK(allPosts.length);
-        EMOTIONS.forEach(e => {
-            const chip = _$('chip-' + e); if (chip) chip.textContent = numK(counts[e] || 0);
-        });
-    },
-
-    /* ── POST LIST ── */
-    renderList() {
-        const listEl = _$('listEl'), pagEl = _$('pagEl');
-        if (!listEl) return;
-        if (!filteredPosts.length) {
-            listEl.innerHTML = emptyHtml('Tidak ada postingan untuk filter ini');
-            if (pagEl) pagEl.innerHTML = '';
-            return;
-        }
-        const pp    = FEACfg.perPage;
-        const total = filteredPosts.length;
-        const pages = Math.ceil(total / pp);
-        const start = (currentPage - 1) * pp;
-        const page  = filteredPosts.slice(start, start + pp);
-
-        listEl.innerHTML = `<div class="fea-post-list">${page.map((p, i) => this._postHtml(p, start + i)).join('')}</div>`;
-        if (pagEl) pagEl.innerHTML = pages > 1 ? this._pagHtml(currentPage, pages, total, start + 1, Math.min(start + pp, total)) : '';
-
-        listEl.querySelectorAll('.fea-post').forEach(el => {
-            el.addEventListener('click', () => {
-                try {
-                    const item = JSON.parse(decodeURIComponent(el.dataset.item));
-                    const emo  = item.emotion || 'trust';
-                    FEAPanel.open(filteredPosts, emo);
-                    FEADetail.open(item);
-                } catch(e) { console.warn(e); }
-            });
-        });
-    },
-
-    _postHtml(post, gi) {
-        const rank    = gi + 1;
-        const rkCls   = rank <= 3 ? '--' + rank : '';
-        const name    = getName(post);
-        const color   = getColor(post);
-        const thumb   = getThumb(post);
-        const sent    = normSent(post);
-        const content = dec((post.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()).slice(0, 200);
-        const dt      = (post.date_created || '').split('T')[0];
-        const url     = post.url || post.link || '';
-        const v = getViews(post), l = getLikes(post), c = getComments(post);
-        const total   = v + l + c;
-        const emo     = post.emotion || 'trust';
-        const ec      = EMO_COLORS[emo] || '#64748b';
-        const sentLbl = { pos: 'Positive', neg: 'Negative', neu: 'Neutral' }[sent];
-        const enc     = encodeURIComponent(JSON.stringify(post));
-
-        const thumbHtml = (thumb && thumb.startsWith('http'))
-            ? `<div class="fea-post-thumb"><img src="${esc(thumb)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'fea-post-thumb-ph\\'>🎵</div>'"><div class="fea-post-thumb-play"><i class="ph ph-play-fill"></i></div></div>`
-            : `<div class="fea-post-thumb"><div class="fea-post-thumb-ph">🎵</div></div>`;
-
-        return `<div class="fea-post" data-item="${esc(enc)}">
-            <div class="fea-post-rank fea-post-rank${rkCls}">${rank}</div>
-            <div class="fea-post-av" style="background:linear-gradient(135deg,${color},${color}99);">${avHtml(post)}</div>
-            <div class="fea-post-body">
-                <div class="fea-post-author">${esc(name)}</div>
-                ${dt ? `<div class="fea-post-date">${dt}</div>` : ''}
-                ${content
-                    ? `<div class="fea-post-text">${esc(content)}</div>`
-                    : `<div class="fea-post-text" style="color:var(--slate-400);font-style:italic;">(Tidak ada caption)</div>`}
-                <div class="fea-post-stats">
-                    <span class="fea-emo-badge" style="background:${ec}18;color:${ec};border-color:${ec}40;">
-                        <span class="emo-dot" style="background:${ec};"></span>${emo.charAt(0).toUpperCase() + emo.slice(1)}
-                    </span>
-                    <span class="fea-metric fea-metric--primary"><i class="ph ph-eye me-1"></i>${numF(v)}</span>
-                    <span class="fea-metric fea-metric--amber"><i class="ph ph-thumbs-up me-1"></i>${numF(l)}</span>
-                    <span class="fea-metric fea-metric--cyan"><i class="ph ph-chat-circle me-1"></i>${numF(c)}</span>
-                    <span class="fea-metric" style="font-weight:800;">∑ ${numF(total)}</span>
-                    <span class="fea-sent fea-sent--${sent}">${sentLbl}</span>
-                    ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener" class="fea-view-link" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out me-1"></i>TikTok</a>` : ''}
-                </div>
-            </div>
-            ${thumbHtml}
-        </div>`;
-    },
-
-    _pagHtml(page, pages, total, from, to) {
-        let btns = '', r = 2;
-        btns += `<button class="fea-pag-btn" ${page <= 1 ? 'disabled' : ''} onclick="FEAData.goPage(${page - 1})"><i class="ph ph-caret-left"></i></button>`;
-        for (let i = 1; i <= pages; i++) {
-            if (i === 1 || i === pages || (i >= page - r && i <= page + r)) {
-                btns += `<button class="fea-pag-btn${i === page ? ' is-active' : ''}" onclick="FEAData.goPage(${i})">${i}</button>`;
-            } else if (i === page - r - 1 || i === page + r + 1) {
-                btns += `<span class="fea-pag-btn" style="cursor:default;opacity:.4;">…</span>`;
-            }
-        }
-        btns += `<button class="fea-pag-btn" ${page >= pages ? 'disabled' : ''} onclick="FEAData.goPage(${page + 1})"><i class="ph ph-caret-right"></i></button>`;
-        return `<div class="fea-pagination"><span class="fea-pag-info">Menampilkan ${from}–${to} dari ${total} post</span><div class="fea-pag-controls">${btns}</div></div>`;
-    },
-
-    goPage(p) {
-        const pages = Math.ceil(filteredPosts.length / FEACfg.perPage);
-        if (p < 1 || p > pages) return;
-        currentPage = p;
-        this.renderList();
-        _$('listEl')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    },
-
-    exportCsv() {
-        const posts = filteredPosts.length ? filteredPosts : allPosts;
-        if (!posts.length) { alert('Tidak ada data.'); return; }
-        const hdr  = 'index;nama;emosi;sentimen;views;likes;comments;tanggal;url;konten';
-        const rows = posts.map((p, i) => {
-            const name    = getName(p);
-            const sent    = { pos: 'Positif', neg: 'Negatif', neu: 'Netral' }[normSent(p)];
-            const content = (p.content || '').replace(/<[^>]*>/g, '').trim().replace(/;/g, ',').replace(/\n/g, ' ').slice(0, 300);
-            return `${i+1};${name.replace(/;/g,',')};${p.emotion||''};${sent};${getViews(p)};${getLikes(p)};${getComments(p)};${(p.date_created||'').split('T')[0]};${p.url||''};${content}`;
-        });
-        const blob = new Blob(['\uFEFF' + [hdr, ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8;' });
-        const a    = Object.assign(document.createElement('a'), {
-            href: URL.createObjectURL(blob),
-            download: `TikTok_EmotionAnalysis_${FEACfg.sd}_${FEACfg.ed}.csv`
-        });
-        a.click();
-    }
-};
-
-/* ══ CHARTS ══ */
-const FEAChart = {
-    _trendsType : 'line',
-    _trendsItems: [],
-
-    setTrendsType(t) {
-        this._trendsType = t;
-        document.querySelectorAll('#trendsTypeToggle .fea-toggle-btn')
-            .forEach(b => b.classList.toggle('active', b.dataset.type === t));
-        if (this._trendsItems.length) this._doRenderTrends(this._trendsItems, t);
-    },
-
-    renderBar() {
-        hideLd('barLoading');
-        if (!allPosts.length) return;
-        const counts = getEmoCounts();
-        const labels = EMOTIONS.map(e => e.charAt(0).toUpperCase() + e.slice(1));
-        const data   = EMOTIONS.map(e => counts[e] || 0);
-        const colors = EMOTIONS.map(e => EMO_COLORS[e]);
-        const total  = allPosts.length || 1;
-        const el = _$('barBadge'); if (el) el.textContent = numK(total) + ' posts';
-
-        makeApex('barChart', {
-            chart: {
-                type: 'bar', height: 300, fontFamily: 'inherit', background: 'transparent',
-                toolbar: { show: false }, zoom: { enabled: false },
-                events: {
-                    mounted: () => hideLd('barLoading'),
-                    dataPointSelection: (e, ctx, cfg) => {
-                        const emo = EMOTIONS[cfg.dataPointIndex];
-                        if (!emo) return;
-                        const emoPosts = allPosts.filter(p => p.emotion === emo);
-                        FEAPanel.open(emoPosts, emo);
-                    },
-                    click  : (_, ctx, cfg) => {
-                        const emo = EMOTIONS[cfg.dataPointIndex];
-                        if (!emo) return;
-                        const emoPosts = allPosts.filter(p => p.emotion === emo);
-                        FEAPanel.open(emoPosts, emo);
-                    }
-                }
             },
-            series      : [{ name: 'Posts', data }],
-            colors,
-            plotOptions : { bar: { borderRadius: 5, columnWidth: '58%', distributed: true, dataLabels: { position: 'top' } } },
-            dataLabels  : { enabled: true, formatter: v => numK(v), offsetY: -16, style: { fontSize: '10px', fontWeight: '800', colors: EMOTIONS.map(e => EMO_COLORS[e]) }, background: { enabled: false } },
-            xaxis       : { categories: labels, axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' }, rotate: -20 } },
-            yaxis       : { labels: { formatter: v => numK(v), style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } }, axisBorder: { show: false }, axisTicks: { show: false } },
-            grid        : { borderColor: 'rgba(226,232,240,.55)', strokeDashArray: 3, xaxis: { lines: { show: false } }, padding: { top: 20, right: 8, bottom: 0, left: 4 } },
-            fill        : { type: 'gradient', gradient: { type: 'vertical', shadeIntensity: .2, opacityFrom: 1, opacityTo: .7, stops: [0, 100] } },
-            tooltip     : {
-                shared: false, intersect: true, style: { fontFamily: 'inherit', fontSize: '12px' },
-                y: { formatter: (v, { dataPointIndex }) => `${numF(v)} posts (${Math.round((v / total) * 100)}%)` }
-            },
-            legend: { show: false }
-        });
-    },
 
-    renderRadar() {
-        hideLd('radarLoading');
-        if (!allPosts.length) return;
-        const counts = getEmoCounts();
-        const max    = Math.max(...Object.values(counts), 1);
-        const chart  = makeEChart('radarChart');
-        if (!chart) { hideLd('radarLoading'); return; }
-        hideLd('radarLoading');
-        chart.setOption({
-            animation: true, animationDuration: 800, backgroundColor: 'transparent',
-            tooltip: {
-                show: true,
-                backgroundColor: '#1e293b', borderColor: '#334155', borderWidth: 1, padding: [10, 14],
-                textStyle: { color: '#fff', fontFamily: 'inherit', fontSize: 12 },
-                formatter: params => {
-                    if (!params.data) return '';
-                    const vals = params.data.value || [];
-                    const rows = EMOTIONS.map((e, i) =>
-                        `<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;">
-                            <div style="display:flex;align-items:center;gap:6px;">
-                                <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${EMO_COLORS[e]};flex-shrink:0;"></span>
-                                <span style="font-size:12px;color:#94a3b8;">${e.charAt(0).toUpperCase() + e.slice(1)}</span>
-                            </div>
-                            <span style="font-size:12px;font-weight:700;">${numF(vals[i] || 0)}</span>
-                        </div>`
-                    ).join('');
-                    return `<div style="min-width:180px;"><div style="font-weight:700;font-size:12px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.12);">Emotion Distribution</div>${rows}</div>`;
-                }
-            },
-            radar: {
-                indicator : EMOTIONS.map(e => ({ name: e.charAt(0).toUpperCase() + e.slice(1), max })),
-                shape     : 'polygon', radius: '62%', center: ['50%', '50%'],
-                axisName  : { fontFamily: 'inherit', fontSize: 11, fontWeight: '700', color: '#475569' },
-                splitLine : { lineStyle: { color: '#e2e8f0' } },
-                axisLine  : { lineStyle: { color: '#e2e8f0' } },
-                splitArea : { show: true, areaStyle: { color: ['rgba(248,250,252,0.8)', '#fff'] } }
-            },
-            series: [{
-                type: 'radar',
-                data: [{
-                    value     : EMOTIONS.map(e => counts[e] || 0),
-                    name      : 'Emotion',
-                    areaStyle : { color: { type: 'linear', x: 0, y: 0, x2: 1, y2: 1, colorStops: [{ offset: 0, color: 'rgba(3,128,71,0.2)' }, { offset: 1, color: 'rgba(3,128,71,0.05)' }] } },
-                    lineStyle : { color: '#038047', width: 2.5 },
-                    symbol    : 'circle', symbolSize: 6,
-                    itemStyle : { color: EMOTIONS.map(e => EMO_COLORS[e]), borderColor: '#fff', borderWidth: 2 }
-                }]
-            }]
-        });
-        chart.on('click', params => {
-            if (!params.name) return;
-            const emo = params.name.toLowerCase();
-            if (EMOTIONS.includes(emo)) {
-                const emoPosts = allPosts.filter(p => p.emotion === emo);
-                FEAPanel.open(emoPosts, emo);
-            }
-        });
-    },
+            _postHtml(post, gi) {
+                const rank = gi + 1;
+                const rkCls = rank <= 3 ? '--' + rank : '';
+                const name = getName(post);
+                const color = getColor(post);
+                const thumb = getThumb(post);
+                const sent = normSent(post);
+                const content = dec((post.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()).slice(0, 200);
+                const dt = (post.date_created || '').split('T')[0];
+                const url = post.url || post.link || '';
+                const v = getViews(post), l = getLikes(post), c = getComments(post);
+                const total = v + l + c;
+                const emo = post.emotion || 'trust';
+                const ec = EMO_COLORS[emo] || '#64748b';
+                const sentLbl = { pos: 'Positive', neg: 'Negative', neu: 'Neutral' }[sent];
+                const enc = encodeURIComponent(JSON.stringify(post));
 
-    renderDonut() {
-        const loadEl = _$('donutLoading'), chartEl = _$('donutChart'), emptyEl = _$('donutEmpty');
-        if (!loadEl || !chartEl) return;
-        const counts = getEmoCounts();
-        const sorted = EMOTIONS.map(e => ({ emo: e, count: counts[e] || 0 })).sort((a, b) => b.count - a.count);
-        const top5   = sorted.slice(0, 5).filter(x => x.count > 0);
+                const thumbHtml = (thumb && thumb.startsWith('http'))
+                    ? `<div class="fea-post-thumb"><img src="${esc(thumb)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'fea-post-thumb-ph\\'>🎵</div>'"><div class="fea-post-thumb-play"><i class="ph ph-play-fill"></i></div></div>`
+                    : `<div class="fea-post-thumb"><div class="fea-post-thumb-ph">🎵</div></div>`;
 
-        if (!top5.length) {
-            loadEl.style.display = 'none';
-            if (emptyEl) emptyEl.style.display = 'flex';
-            return;
-        }
-        const total = top5.reduce((s, x) => s + x.count, 0);
-
-        /* legend */
-        const legEl = _$('donutLegend');
-        if (legEl) legEl.innerHTML = top5.map((x, i) =>
-            `<div class="donut-leg-item"><span class="donut-dot" style="background:${DONUT_COLORS[i]};"></span>${x.emo.charAt(0).toUpperCase() + x.emo.slice(1)} · ${numF(x.count)}</div>`
-        ).join('');
-
-        loadEl.style.display = 'none';
-        if (emptyEl) emptyEl.style.display = 'none';
-
-        if (window.__feaDonut) { try { window.__feaDonut.dispose(); } catch(e) {} }
-        if (typeof echarts === 'undefined') { chartEl.innerHTML = emptyHtml('ECharts not loaded'); return; }
-
-        chartEl.style.display = 'block';
-        const chart = echarts.init(chartEl, null, { renderer: 'canvas' });
-        window.__feaDonut = chart;
-        window.addEventListener('resize', () => { try { chart.resize(); } catch(e) {} });
-
-        const pieData = top5.map((x, i) => ({
-            name      : x.emo.charAt(0).toUpperCase() + x.emo.slice(1),
-            value     : x.count,
-            _emo      : x.emo,
-            itemStyle : { color: DONUT_COLORS[i] },
-        }));
-
-        chart.setOption({
-            backgroundColor : 'transparent', animation: true, animationDuration: 1000,
-            series: [{
-                type              : 'pie',
-                radius            : ['38%', '62%'],
-                center            : ['50%', '50%'],
-                avoidLabelOverlap : true,
-                minAngle          : 8,
-                itemStyle         : { borderColor: '#fff', borderWidth: 3 },
-                label: {
-                    show         : true, position: 'outside', alignTo: 'edge', edgeDistance: 20,
-                    lineHeight   : 18, fontSize: 11, fontFamily: 'inherit', color: '#334155', fontWeight: '500',
-                    formatter    : p => `{title|${p.name}}\n({val|${numF(p.value)}} posts, {pct|${p.percent.toFixed(1)}%})`,
-                    rich         : {
-                        title : { fontSize: 11, fontWeight: '700', color: '#1e293b', lineHeight: 18 },
-                        val   : { fontSize: 11, fontWeight: '700', color: '#038047' },
-                        pct   : { fontSize: 11, fontWeight: '600', color: '#64748b' }
-                    }
-                },
-                labelLine : { show: true, length: 18, length2: 24, smooth: .3, lineStyle: { width: 1.5, color: '#94A3B8' } },
-                emphasis  : { scale: false, itemStyle: { borderWidth: 3, borderColor: '#fff' }, label: { show: true } },
-                data      : pieData,
-            }],
-            graphic: [
-                { type: 'text', left: 'center', top: '46%', z: 100, style: { text: numK(total), fill: '#0f172a', font: '800 28px inherit', textAlign: 'center' } },
-                { type: 'text', left: 'center', top: '54%', z: 100, style: { text: 'TOTAL POSTS', fill: '#94a3b8', font: '600 9px inherit', textAlign: 'center' } }
-            ]
-        });
-
-        /* custom hover tooltip */
-        let _tt = document.getElementById('feaDonutTT');
-        if (!_tt) {
-            _tt = document.createElement('div');
-            _tt.id = 'feaDonutTT';
-            _tt.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;background:#1e293b;color:#fff;border:1px solid #334155;border-radius:6px;padding:10px 14px;max-width:240px;font-size:12px;line-height:1.5;display:none;box-shadow:0 8px 24px rgba(0,0,0,.32);font-family:inherit;opacity:0;transform:translateY(6px) scale(.97);transition:opacity .18s ease,transform .18s ease;';
-            document.body.appendChild(_tt);
-        }
-        let _ttTimer = null;
-
-        chart.on('mouseover', p => {
-            if (p.componentType !== 'series') return;
-            const x     = top5[p.dataIndex];
-            const color = DONUT_COLORS[p.dataIndex];
-            clearTimeout(_ttTimer);
-            _tt.innerHTML = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;"><span style="width:9px;height:9px;border-radius:50%;background:${color};display:inline-block;"></span><b>${esc(p.name)}</b></div><div style="display:flex;align-items:center;gap:8px;"><b style="font-size:13px;">${numF(p.value)} posts</b><span style="color:${color};font-weight:700;">${p.percent.toFixed(1)}%</span></div>`;
-            _tt.style.display = 'block';
-            requestAnimationFrame(() => { _tt.style.opacity = '1'; _tt.style.transform = 'translateY(0) scale(1)'; });
-        });
-        chart.on('mouseout', () => {
-            _tt.style.opacity = '0'; _tt.style.transform = 'translateY(6px) scale(.97)';
-            _ttTimer = setTimeout(() => { _tt.style.display = 'none'; }, 180);
-        });
-        chartEl.addEventListener('mousemove', e => {
-            if (_tt.style.display === 'none') return;
-            const vw = window.innerWidth, vh = window.innerHeight;
-            const tw = _tt.offsetWidth + 16, th = _tt.offsetHeight + 16;
-            let x = e.clientX + 18, y = e.clientY - 10;
-            if (x + tw > vw) x = e.clientX - tw;
-            if (y + th > vh) y = e.clientY - th;
-            _tt.style.left = x + 'px'; _tt.style.top = y + 'px';
-        });
-        chart.on('click', p => {
-            const x = top5[p.dataIndex];
-            if (x) {
-                const emoPosts = allPosts.filter(post => post.emotion === x.emo);
-                FEAPanel.open(emoPosts, x.emo);
-            }
-        });
-    },
-
-    renderTrends() {
-        hideLd('trendsLoading');
-        if (!allPosts.length) return;
-        this._trendsItems = allPosts;
-        const tb = _$('trendsBadge'); if (tb) tb.textContent = numK(allPosts.length) + ' posts';
-        this._doRenderTrends(allPosts, this._trendsType);
-    },
-
-    _doRenderTrends(posts, type) {
-        const dateMap = {};
-        posts.forEach(p => {
-            const d = (p.date_created || '').substring(0, 10); if (!d) return;
-            if (!dateMap[d]) { dateMap[d] = {}; EMOTIONS.forEach(e => dateMap[d][e] = 0); }
-            dateMap[d][p.emotion] = (dateMap[d][p.emotion] || 0) + 1;
-        });
-        const dates = Object.keys(dateMap).sort();
-        if (!dates.length) return;
-
-        const seriesData = EMOTIONS.map(e => ({
-            name: e.charAt(0).toUpperCase() + e.slice(1),
-            data: dates.map(d => dateMap[d][e] || 0)
-        }));
-
-        makeApex('trendsChart', {
-            chart: {
-                type       : type === 'area' ? 'area' : 'line',
-                height     : 300, fontFamily: 'inherit', background: 'transparent',
-                toolbar    : { show: false }, zoom: { enabled: false },
-                events     : {
-                    mounted: () => hideLd('trendsLoading'),
-                    markerClick: (e, ctx, { seriesIndex, dataPointIndex }) => {
-                        const emo = EMOTIONS[seriesIndex];
-                        const date = dates[dataPointIndex];
-                        if (!emo) return;
-                        const emoPosts = allPosts.filter(p => p.emotion === emo && (p.date_created || '').substring(0,10) === date);
-                        if (emoPosts.length) FEAPanel.open(emoPosts, emo);
-                        else { const all = allPosts.filter(p => p.emotion === emo); FEAPanel.open(all, emo); }
-                    },
-                    legendClick: (ctx, seriesIndex) => {
-                        const emo = EMOTIONS[seriesIndex];
-                        if (!emo) return;
-                        const emoPosts = allPosts.filter(p => p.emotion === emo);
-                        FEAPanel.open(emoPosts, emo);
-                    }
-                }
-            },
-            series  : seriesData,
-            colors  : EMO_COLORS_ARR,
-            xaxis   : { categories: dates, axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } } },
-            yaxis   : { labels: { formatter: v => numK(v), style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } }, axisBorder: { show: false }, axisTicks: { show: false } },
-            stroke  : { curve: 'smooth', width: 2 },
-            fill    : type === 'area'
-                ? { type: 'gradient', gradient: { opacityFrom: .35, opacityTo: .05, shadeIntensity: .1 } }
-                : { type: 'solid', opacity: 1 },
-            markers : { size: 0, hover: { size: 5 } },
-            grid    : { borderColor: 'rgba(226,232,240,.55)', strokeDashArray: 3, xaxis: { lines: { show: false } }, padding: { top: 10, right: 8, bottom: 0, left: 4 } },
-            legend  : { position: 'bottom', horizontalAlign: 'left', fontSize: '11px', fontFamily: 'inherit', fontWeight: 600, markers: { width: 8, height: 8, radius: 4 }, itemMargin: { horizontal: 12, vertical: 4 }, offsetY: 4 },
-            tooltip : { shared: true, intersect: false, style: { fontFamily: 'inherit', fontSize: '12px' }, y: { formatter: v => numF(v) + ' posts' } },
-        });
-    }
-};
-
-/* ══ PANEL DRAWER ══ */
-const FEAPanel = {
-    _posts: [], _emo: null,
-
-    open(posts, emo) {
-        this._posts = posts || []; this._emo = emo;
-        FEADetail.close();
-        const color = EMO_COLORS[emo] || '#038047';
-        _$('feaPanelDot').style.background   = color;
-        _$('feaPanelTitle').textContent       = emo ? 'Emotion: ' + emo.charAt(0).toUpperCase() + emo.slice(1) : 'All Emotions';
-        _$('feaPanelMeta').textContent        = FEACfg.sd + ' – ' + FEACfg.ed;
-        const ov = _$('feaPanelOverlay'), pn = _$('feaSntPanel');
-        ov.classList.remove('hiding'); pn.classList.remove('hiding');
-        ov.classList.add('show');     pn.classList.add('show');
-        this._render();
-    },
-
-    close() {
-        FEADetail.killIframe(); FEADetail.close();
-        const ov = _$('feaPanelOverlay'), pn = _$('feaSntPanel');
-        pn.classList.add('hiding'); ov.classList.add('hiding');
-        setTimeout(() => {
-            pn.classList.remove('show', 'hiding');
-            ov.classList.remove('show', 'hiding');
-        }, 240);
-    },
-
-    exportCsv() { FEAData.exportCsv(); },
-
-    _render() {
-        const list  = _$('feaPanelList'); if (!list) return;
-        const posts = this._posts;
-        if (!posts.length) { list.innerHTML = emptyHtml('Tidak ada data'); return; }
-        const dummy = '/assets/images/user/dummy.jpg';
-        list.innerHTML = posts.slice(0, 100).map(item => {
-            const name   = getName(item), color2 = getColor(item);
-            const av     = getAvatar(item);
-            const avH    = (av && av.startsWith('http')) ? `<img src="${esc(av)}" onerror="this.src='${dummy}'">` : `<img src="${dummy}">`;
-            const text   = dec((item.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()).slice(0, 130);
-            const dt     = (item.date_created || '').split('T')[0];
-            const sent   = normSent(item);
-            const sentLbl= { pos: 'Pos', neg: 'Neg', neu: 'Neu' }[sent];
-            const emo    = item.emotion || 'trust';
-            const ec     = EMO_COLORS[emo] || '#64748b';
-            const v = getViews(item), l = getLikes(item);
-            const enc    = encodeURIComponent(JSON.stringify(item));
-            return `<div class="do-panel-item" data-item="${esc(enc)}" onclick="FEAPanel._click(this)">
-                <div class="do-panel-avatar" style="background:linear-gradient(135deg,${color2},${color2}99);">${avH}</div>
-                <div class="do-panel-item-body">
-                    <div class="do-panel-author">${esc(name)}</div>
-                    <div class="do-panel-text">${esc(text || '(tidak ada konten)')}</div>
-                    <div class="do-panel-footer">
-                        <span style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:800;background:${ec}18;color:${ec};border:1px solid ${ec}40;">${emo.charAt(0).toUpperCase() + emo.slice(1)}</span>
-                        <span class="do-sent-badge do-sent-badge--${sent}">${sentLbl}</span>
-                        <span><i class="ph ph-eye" style="font-size:9px;"></i> ${numK(v)}</span>
-                        <span><i class="ph ph-thumbs-up" style="font-size:9px;"></i> ${numK(l)}</span>
-                        ${dt ? `<span style="margin-left:auto;">${dt}</span>` : ''}
+                return `<div class="fea-post" data-item="${esc(enc)}">
+                <div class="fea-post-rank fea-post-rank${rkCls}">${rank}</div>
+                <div class="fea-post-av" style="background:linear-gradient(135deg,${color},${color}99);">${avHtml(post)}</div>
+                <div class="fea-post-body">
+                    <div class="fea-post-author">${esc(name)}</div>
+                    ${dt ? `<div class="fea-post-date">${dt}</div>` : ''}
+                    ${content
+                        ? `<div class="fea-post-text">${esc(content)}</div>`
+                        : `<div class="fea-post-text" style="color:var(--slate-400);font-style:italic;">(Tidak ada caption)</div>`}
+                    <div class="fea-post-stats">
+                        <span class="fea-emo-badge" style="background:${ec}18;color:${ec};border-color:${ec}40;">
+                            <span class="emo-dot" style="background:${ec};"></span>${emo.charAt(0).toUpperCase() + emo.slice(1)}
+                        </span>
+                        <span class="fea-metric fea-metric--primary"><i class="ph ph-eye me-1"></i>${numF(v)}</span>
+                        <span class="fea-metric fea-metric--amber"><i class="ph ph-thumbs-up me-1"></i>${numF(l)}</span>
+                        <span class="fea-metric fea-metric--cyan"><i class="ph ph-chat-circle me-1"></i>${numF(c)}</span>
+                        <span class="fea-metric" style="font-weight:800;">∑ ${numF(total)}</span>
+                        <span class="fea-sent fea-sent--${sent}">${sentLbl}</span>
+                        ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener" class="fea-view-link" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out me-1"></i>TikTok</a>` : ''}
                     </div>
                 </div>
+                ${thumbHtml}
             </div>`;
-        }).join('');
-        if (posts.length > 100) list.insertAdjacentHTML('beforeend', `<div style="padding:8px;text-align:center;font-size:10px;font-weight:600;color:#94A3B8;background:var(--slate-50);border-top:1px dashed var(--slate-200);">+${(posts.length - 100).toLocaleString()} lainnya</div>`);
-    },
+            },
 
-    _click(el) {
-        try {
-            const raw  = el.dataset.item.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"');
-            const item = JSON.parse(decodeURIComponent(raw));
-            FEADetail.open(item);
-        } catch(e) { console.warn(e); }
-    }
-};
+            _pagHtml(page, pages, total, from, to) {
+                let btns = '', r = 2;
+                btns += `<button class="fea-pag-btn" ${page <= 1 ? 'disabled' : ''} onclick="FEAData.goPage(${page - 1})"><i class="ph ph-caret-left"></i></button>`;
+                for (let i = 1; i <= pages; i++) {
+                    if (i === 1 || i === pages || (i >= page - r && i <= page + r)) {
+                        btns += `<button class="fea-pag-btn${i === page ? ' is-active' : ''}" onclick="FEAData.goPage(${i})">${i}</button>`;
+                    } else if (i === page - r - 1 || i === page + r + 1) {
+                        btns += `<span class="fea-pag-btn" style="cursor:default;opacity:.4;">…</span>`;
+                    }
+                }
+                btns += `<button class="fea-pag-btn" ${page >= pages ? 'disabled' : ''} onclick="FEAData.goPage(${page + 1})"><i class="ph ph-caret-right"></i></button>`;
+                return `<div class="fea-pagination"><span class="fea-pag-info">Menampilkan ${from}–${to} dari ${total} post</span><div class="fea-pag-controls">${btns}</div></div>`;
+            },
 
-/* ══ DETAIL SUB-PANEL ══ */
-const FEADetail = {
-    open(item) {
-        const panel = _$('feaDetailPanel'), body = _$('feaDetailBody'), title = _$('feaDetailTitle');
-        if (!panel || !body) return;
-        const emo    = item.emotion || 'trust';
-        const ec     = EMO_COLORS[emo] || '#038047';
-        const name   = getName(item), color2 = getColor(item);
-        const av     = getAvatar(item);
-        const dummy  = '/assets/images/user/dummy.jpg';
-        const avH    = (av && av.startsWith('http')) ? `<img src="${esc(av)}" onerror="this.src='${dummy}'">` : `<img src="${dummy}">`;
-        const handle = item.author?.scr_name || item.author_scr_name || item.author_id || '';
-        const raw    = (item.content || '').replace(/<[^>]*>/g, '').trim();
-        const content= raw ? dec(raw) : '';
-        const url    = item.url || item.link || '';
-        const dt     = item.date_created || '';
-        const v = getViews(item), l = getLikes(item), c = getComments(item);
-        const sent   = normSent(item);
-        const sentLbl= { pos: 'Positif', neg: 'Negatif', neu: 'Netral' }[sent];
+            goPage(p) {
+                const pages = Math.ceil(filteredPosts.length / FEACfg.perPage);
+                if (p < 1 || p > pages) return;
+                currentPage = p;
+                this.renderList();
+                _$('listEl')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            },
 
-        let dtFmt = '';
-        if (dt) {
-            try { dtFmt = new Date(dt).toLocaleDateString('id-ID', { weekday:'long', day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' }); }
-            catch(e) { dtFmt = dt.split('T')[0]; }
-        }
+            exportCsv() {
+                const posts = filteredPosts.length ? filteredPosts : allPosts;
+                if (!posts.length) { alert('Tidak ada data.'); return; }
+                const hdr = 'index;nama;emosi;sentimen;views;likes;comments;tanggal;url;konten';
+                const rows = posts.map((p, i) => {
+                    const name = getName(p);
+                    const sent = { pos: 'Positif', neg: 'Negatif', neu: 'Netral' }[normSent(p)];
+                    const content = (p.content || '').replace(/<[^>]*>/g, '').trim().replace(/;/g, ',').replace(/\n/g, ' ').slice(0, 300);
+                    return `${i + 1};${name.replace(/;/g, ',')};${p.emotion || ''};${sent};${getViews(p)};${getLikes(p)};${getComments(p)};${(p.date_created || '').split('T')[0]};${p.url || ''};${content}`;
+                });
+                const blob = new Blob(['\uFEFF' + [hdr, ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+                const a = Object.assign(document.createElement('a'), {
+                    href: URL.createObjectURL(blob),
+                    download: `TikTok_EmotionAnalysis_${FEACfg.sd}_${FEACfg.ed}.csv`
+                });
+                a.click();
+            }
+        };
 
-        let videoId = '';
-        if (url) { const m = url.match(/\/video\/(\d+)/); if (m) videoId = m[1]; }
-        if (!videoId && item.id) { const m = String(item.id).match(/(\d{10,})/); if (m) videoId = m[1]; }
-        const mediaHtml = videoId
-            ? `<div class="do-dp2-media"><iframe src="https://www.tiktok.com/embed/v2/${videoId}" allow="autoplay" allowfullscreen></iframe></div>`
-            : '';
+        /* ══ CHARTS ══ */
+        const FEAChart = {
+            _trendsType: 'line',
+            _trendsItems: [],
 
-        /* emotion distribution bars */
-        const counts = getEmoCounts();
-        const maxC   = Math.max(...Object.values(counts), 1);
-        const emoBars = EMOTIONS.map(e => {
-            const cc = counts[e] || 0;
-            const w  = Math.round((cc / maxC) * 100);
-            const ecc= EMO_COLORS[e];
-            return `<div class="emo-dist-bar">
-                <div class="emo-dist-label"><span class="emo-dist-dot" style="background:${ecc};"></span>${e.charAt(0).toUpperCase() + e.slice(1)}</div>
-                <div class="emo-dist-track"><div class="emo-dist-fill" style="width:${w}%;background:${ecc};"></div></div>
-                <div class="emo-dist-count">${numK(cc)}</div>
-            </div>`;
-        }).join('');
+            setTrendsType(t) {
+                this._trendsType = t;
+                document.querySelectorAll('#trendsTypeToggle .fea-toggle-btn')
+                    .forEach(b => b.classList.toggle('active', b.dataset.type === t));
+                if (this._trendsItems.length) this._doRenderTrends(this._trendsItems, t);
+            },
 
-        title.textContent = name;
-        body.innerHTML = `
-            <div class="do-dp2-avatar-row">
-                <div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${color2},${color2}99);">${avH}</div>
-                <div>
-                    <div class="do-dp2-name">${esc(name)}</div>
-                    ${handle ? `<div class="do-dp2-handle">@${esc(handle)}</div>` : ''}
-                    <span class="do-dp2-plat-badge" style="background:${ec}18;color:${ec};">${emo.charAt(0).toUpperCase() + emo.slice(1)}</span>
+            renderBar() {
+                hideLd('barLoading');
+                if (!allPosts.length) return;
+                const counts = getEmoCounts();
+                const labels = EMOTIONS.map(e => e.charAt(0).toUpperCase() + e.slice(1));
+                const data = EMOTIONS.map(e => counts[e] || 0);
+                const colors = EMOTIONS.map(e => EMO_COLORS[e]);
+                const total = allPosts.length || 1;
+                const el = _$('barBadge'); if (el) el.textContent = numK(total) + ' posts';
+
+                makeApex('barChart', {
+                    chart: {
+                        type: 'bar', height: 300, fontFamily: 'inherit', background: 'transparent',
+                        toolbar: { show: false }, zoom: { enabled: false },
+                        events: {
+                            mounted: () => hideLd('barLoading'),
+                            dataPointSelection: (e, ctx, cfg) => {
+                                const emo = EMOTIONS[cfg.dataPointIndex];
+                                if (!emo) return;
+                                const emoPosts = allPosts.filter(p => p.emotion === emo);
+                                FEAPanel.open(emoPosts, emo);
+                            },
+                            click: (_, ctx, cfg) => {
+                                const emo = EMOTIONS[cfg.dataPointIndex];
+                                if (!emo) return;
+                                const emoPosts = allPosts.filter(p => p.emotion === emo);
+                                FEAPanel.open(emoPosts, emo);
+                            }
+                        }
+                    },
+                    series: [{ name: 'Posts', data }],
+                    colors,
+                    plotOptions: { bar: { borderRadius: 5, columnWidth: '58%', distributed: true, dataLabels: { position: 'top' } } },
+                    dataLabels: { enabled: true, formatter: v => numK(v), offsetY: -16, style: { fontSize: '10px', fontWeight: '800', colors: EMOTIONS.map(e => EMO_COLORS[e]) }, background: { enabled: false } },
+                    xaxis: { categories: labels, axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' }, rotate: -20 } },
+                    yaxis: { labels: { formatter: v => numK(v), style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } }, axisBorder: { show: false }, axisTicks: { show: false } },
+                    grid: { borderColor: 'rgba(226,232,240,.55)', strokeDashArray: 3, xaxis: { lines: { show: false } }, padding: { top: 20, right: 8, bottom: 0, left: 4 } },
+                    fill: { type: 'solid', opacity: 1 }, tooltip: {
+                        shared: false, intersect: true, style: { fontFamily: 'inherit', fontSize: '12px' },
+                        y: { formatter: (v, { dataPointIndex }) => `${numF(v)} posts (${Math.round((v / total) * 100)}%)` }
+                    },
+                    legend: { show: false }
+                });
+            },
+
+            renderRadar() {
+                hideLd('radarLoading');
+                if (!allPosts.length) return;
+                const counts = getEmoCounts();
+                const max = Math.max(...Object.values(counts), 1);
+                const chart = makeEChart('radarChart');
+                if (!chart) { hideLd('radarLoading'); return; }
+                hideLd('radarLoading');
+                chart.setOption({
+                    animation: true, animationDuration: 800, backgroundColor: 'transparent',
+                    tooltip: {
+                        show: true,
+                        backgroundColor: '#1e293b', borderColor: '#334155', borderWidth: 1, padding: [10, 14],
+                        textStyle: { color: '#fff', fontFamily: 'inherit', fontSize: 12 },
+                        formatter: params => {
+                            if (!params.data) return '';
+                            const vals = params.data.value || [];
+                            const rows = EMOTIONS.map((e, i) =>
+                                `<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;">
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${EMO_COLORS[e]};flex-shrink:0;"></span>
+                                    <span style="font-size:12px;color:#94a3b8;">${e.charAt(0).toUpperCase() + e.slice(1)}</span>
+                                </div>
+                                <span style="font-size:12px;font-weight:700;">${numF(vals[i] || 0)}</span>
+                            </div>`
+                            ).join('');
+                            return `<div style="min-width:180px;"><div style="font-weight:700;font-size:12px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.12);">Emotion Distribution</div>${rows}</div>`;
+                        }
+                    },
+                    radar: {
+                        indicator: EMOTIONS.map(e => ({ name: e.charAt(0).toUpperCase() + e.slice(1), max })),
+                        shape: 'polygon', radius: '62%', center: ['50%', '50%'],
+                        axisName: { fontFamily: 'inherit', fontSize: 11, fontWeight: '700', color: '#475569' },
+                        splitLine: { lineStyle: { color: '#e2e8f0' } },
+                        axisLine: { lineStyle: { color: '#e2e8f0' } },
+                        splitArea: { show: true, areaStyle: { color: ['rgba(248,250,252,0.8)', '#fff'] } }
+                    },
+                    series: [{
+                        type: 'radar',
+                        data: [{
+                            value: EMOTIONS.map(e => counts[e] || 0),
+                            name: 'Emotion',
+                            areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 1, y2: 1, colorStops: [{ offset: 0, color: 'rgba(3,128,71,0.2)' }, { offset: 1, color: 'rgba(3,128,71,0.05)' }] } },
+                            lineStyle: { color: '#038047', width: 2.5 },
+                            symbol: 'circle', symbolSize: 6,
+                            itemStyle: { color: EMOTIONS.map(e => EMO_COLORS[e]), borderColor: '#fff', borderWidth: 2 }
+                        }]
+                    }]
+                });
+                chart.on('click', params => {
+                    if (!params.name) return;
+                    const emo = params.name.toLowerCase();
+                    if (EMOTIONS.includes(emo)) {
+                        const emoPosts = allPosts.filter(p => p.emotion === emo);
+                        FEAPanel.open(emoPosts, emo);
+                    }
+                });
+            },
+
+            renderDonut() {
+                const loadEl = _$('donutLoading'), chartEl = _$('donutChart'), emptyEl = _$('donutEmpty');
+                if (!loadEl || !chartEl) return;
+                const counts = getEmoCounts();
+                const sorted = EMOTIONS.map(e => ({ emo: e, count: counts[e] || 0 })).sort((a, b) => b.count - a.count);
+                const top5 = sorted.slice(0, 5).filter(x => x.count > 0);
+
+                if (!top5.length) {
+                    loadEl.style.display = 'none';
+                    if (emptyEl) emptyEl.style.display = 'flex';
+                    return;
+                }
+                const total = top5.reduce((s, x) => s + x.count, 0);
+
+                /* legend */
+                const legEl = _$('donutLegend');
+                if (legEl) legEl.innerHTML = top5.map((x, i) =>
+                    `<div class="donut-leg-item"><span class="donut-dot" style="background:${DONUT_COLORS[i]};"></span>${x.emo.charAt(0).toUpperCase() + x.emo.slice(1)} · ${numF(x.count)}</div>`
+                ).join('');
+
+                loadEl.style.display = 'none';
+                if (emptyEl) emptyEl.style.display = 'none';
+
+                if (window.__feaDonut) { try { window.__feaDonut.dispose(); } catch (e) { } }
+                if (typeof echarts === 'undefined') { chartEl.innerHTML = emptyHtml('ECharts not loaded'); return; }
+
+                chartEl.style.display = 'block';
+                const chart = echarts.init(chartEl, null, { renderer: 'canvas' });
+                window.__feaDonut = chart;
+                window.addEventListener('resize', () => { try { chart.resize(); } catch (e) { } });
+
+                const pieData = top5.map((x, i) => ({
+                    name: x.emo.charAt(0).toUpperCase() + x.emo.slice(1),
+                    value: x.count,
+                    _emo: x.emo,
+                    itemStyle: { color: DONUT_COLORS[i] },
+                }));
+
+                chart.setOption({
+                    backgroundColor: 'transparent', animation: true, animationDuration: 1000,
+                    series: [{
+                        type: 'pie',
+                        radius: ['38%', '62%'],
+                        center: ['50%', '50%'],
+                        avoidLabelOverlap: true,
+                        minAngle: 8,
+                        itemStyle: { borderColor: '#fff', borderWidth: 3 },
+                        label: {
+                            show: true, position: 'outside', alignTo: 'edge', edgeDistance: 20,
+                            lineHeight: 18, fontSize: 11, fontFamily: 'inherit', color: '#334155', fontWeight: '500',
+                            formatter: p => `{title|${p.name}}\n({val|${numF(p.value)}} posts, {pct|${p.percent.toFixed(1)}%})`,
+                            rich: {
+                                title: { fontSize: 11, fontWeight: '700', color: '#1e293b', lineHeight: 18 },
+                                val: { fontSize: 11, fontWeight: '700', color: '#038047' },
+                                pct: { fontSize: 11, fontWeight: '600', color: '#64748b' }
+                            }
+                        },
+                        labelLine: { show: true, length: 18, length2: 24, smooth: .3, lineStyle: { width: 1.5, color: '#94A3B8' } },
+                        emphasis: { scale: false, itemStyle: { borderWidth: 3, borderColor: '#fff' }, label: { show: true } },
+                        data: pieData,
+                    }],
+                    graphic: [
+                        { type: 'text', left: 'center', top: '46%', z: 100, style: { text: numK(total), fill: '#0f172a', font: '800 28px inherit', textAlign: 'center' } },
+                        { type: 'text', left: 'center', top: '54%', z: 100, style: { text: 'TOTAL POSTS', fill: '#94a3b8', font: '600 9px inherit', textAlign: 'center' } }
+                    ]
+                });
+
+                /* custom hover tooltip */
+                let _tt = document.getElementById('feaDonutTT');
+                if (!_tt) {
+                    _tt = document.createElement('div');
+                    _tt.id = 'feaDonutTT';
+                    _tt.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;background:#1e293b;color:#fff;border:1px solid #334155;border-radius:6px;padding:10px 14px;max-width:240px;font-size:12px;line-height:1.5;display:none;box-shadow:0 8px 24px rgba(0,0,0,.32);font-family:inherit;opacity:0;transform:translateY(6px) scale(.97);transition:opacity .18s ease,transform .18s ease;';
+                    document.body.appendChild(_tt);
+                }
+                let _ttTimer = null;
+
+                chart.on('mouseover', p => {
+                    if (p.componentType !== 'series') return;
+                    const x = top5[p.dataIndex];
+                    const color = DONUT_COLORS[p.dataIndex];
+                    clearTimeout(_ttTimer);
+                    _tt.innerHTML = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;"><span style="width:9px;height:9px;border-radius:50%;background:${color};display:inline-block;"></span><b>${esc(p.name)}</b></div><div style="display:flex;align-items:center;gap:8px;"><b style="font-size:13px;">${numF(p.value)} posts</b><span style="color:${color};font-weight:700;">${p.percent.toFixed(1)}%</span></div>`;
+                    _tt.style.display = 'block';
+                    requestAnimationFrame(() => { _tt.style.opacity = '1'; _tt.style.transform = 'translateY(0) scale(1)'; });
+                });
+                chart.on('mouseout', () => {
+                    _tt.style.opacity = '0'; _tt.style.transform = 'translateY(6px) scale(.97)';
+                    _ttTimer = setTimeout(() => { _tt.style.display = 'none'; }, 180);
+                });
+                chartEl.addEventListener('mousemove', e => {
+                    if (_tt.style.display === 'none') return;
+                    const vw = window.innerWidth, vh = window.innerHeight;
+                    const tw = _tt.offsetWidth + 16, th = _tt.offsetHeight + 16;
+                    let x = e.clientX + 18, y = e.clientY - 10;
+                    if (x + tw > vw) x = e.clientX - tw;
+                    if (y + th > vh) y = e.clientY - th;
+                    _tt.style.left = x + 'px'; _tt.style.top = y + 'px';
+                });
+                chart.on('click', p => {
+                    const x = top5[p.dataIndex];
+                    if (x) {
+                        const emoPosts = allPosts.filter(post => post.emotion === x.emo);
+                        FEAPanel.open(emoPosts, x.emo);
+                    }
+                });
+            },
+
+            renderTrends() {
+                hideLd('trendsLoading');
+                if (!allPosts.length) return;
+                this._trendsItems = allPosts;
+                const tb = _$('trendsBadge'); if (tb) tb.textContent = numK(allPosts.length) + ' posts';
+                this._doRenderTrends(allPosts, this._trendsType);
+            },
+
+            _doRenderTrends(posts, type) {
+                const dateMap = {};
+                posts.forEach(p => {
+                    const d = (p.date_created || '').substring(0, 10); if (!d) return;
+                    if (!dateMap[d]) { dateMap[d] = {}; EMOTIONS.forEach(e => dateMap[d][e] = 0); }
+                    dateMap[d][p.emotion] = (dateMap[d][p.emotion] || 0) + 1;
+                });
+                const dates = Object.keys(dateMap).sort();
+                if (!dates.length) return;
+
+                const seriesData = EMOTIONS.map(e => ({
+                    name: e.charAt(0).toUpperCase() + e.slice(1),
+                    data: dates.map(d => dateMap[d][e] || 0)
+                }));
+
+                makeApex('trendsChart', {
+                    chart: {
+                        type: type === 'area' ? 'area' : 'line',
+                        height: 300, fontFamily: 'inherit', background: 'transparent',
+                        toolbar: { show: false }, zoom: { enabled: false },
+                        events: {
+                            mounted: () => hideLd('trendsLoading'),
+                            markerClick: (e, ctx, { seriesIndex, dataPointIndex }) => {
+                                const emo = EMOTIONS[seriesIndex];
+                                const date = dates[dataPointIndex];
+                                if (!emo) return;
+                                const emoPosts = allPosts.filter(p => p.emotion === emo && (p.date_created || '').substring(0, 10) === date);
+                                if (emoPosts.length) FEAPanel.open(emoPosts, emo);
+                                else { const all = allPosts.filter(p => p.emotion === emo); FEAPanel.open(all, emo); }
+                            },
+                            legendClick: (ctx, seriesIndex) => {
+                                const emo = EMOTIONS[seriesIndex];
+                                if (!emo) return;
+                                const emoPosts = allPosts.filter(p => p.emotion === emo);
+                                FEAPanel.open(emoPosts, emo);
+                            }
+                        }
+                    },
+                    series: seriesData,
+                    colors: EMO_COLORS_ARR,
+                    xaxis: { categories: dates, axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } } },
+                    yaxis: { labels: { formatter: v => numK(v), style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } }, axisBorder: { show: false }, axisTicks: { show: false } },
+                    stroke: { curve: 'smooth', width: 2 },
+                    fill: type === 'area'
+                        ? { type: 'gradient', gradient: { opacityFrom: .35, opacityTo: .05, shadeIntensity: .1 } }
+                        : { type: 'solid', opacity: 1 },
+                    markers: { size: 0, hover: { size: 5 } },
+                    grid: { borderColor: 'rgba(226,232,240,.55)', strokeDashArray: 3, xaxis: { lines: { show: false } }, padding: { top: 10, right: 8, bottom: 0, left: 4 } },
+                    legend: { position: 'bottom', horizontalAlign: 'left', fontSize: '11px', fontFamily: 'inherit', fontWeight: 600, markers: { width: 8, height: 8, radius: 4 }, itemMargin: { horizontal: 12, vertical: 4 }, offsetY: 4 },
+                    tooltip: { shared: true, intersect: false, style: { fontFamily: 'inherit', fontSize: '12px' }, y: { formatter: v => numF(v) + ' posts' } },
+                });
+            }
+        };
+
+        /* ══ PANEL DRAWER ══ */
+        const FEAPanel = {
+            _posts: [], _emo: null,
+
+            open(posts, emo) {
+                this._posts = posts || []; this._emo = emo;
+                FEADetail.close();
+                const color = EMO_COLORS[emo] || '#038047';
+                _$('feaPanelDot').style.background = color;
+                _$('feaPanelTitle').textContent = emo ? 'Emotion: ' + emo.charAt(0).toUpperCase() + emo.slice(1) : 'All Emotions';
+                _$('feaPanelMeta').textContent = FEACfg.sd + ' – ' + FEACfg.ed;
+                const ov = _$('feaPanelOverlay'), pn = _$('feaSntPanel');
+                ov.classList.remove('hiding'); pn.classList.remove('hiding');
+                ov.classList.add('show'); pn.classList.add('show');
+                this._render();
+            },
+
+            close() {
+                FEADetail.killIframe(); FEADetail.close();
+                const ov = _$('feaPanelOverlay'), pn = _$('feaSntPanel');
+                pn.classList.add('hiding'); ov.classList.add('hiding');
+                setTimeout(() => {
+                    pn.classList.remove('show', 'hiding');
+                    ov.classList.remove('show', 'hiding');
+                }, 240);
+            },
+
+            exportCsv() { FEAData.exportCsv(); },
+
+            _render() {
+                const list = _$('feaPanelList'); if (!list) return;
+                const posts = this._posts;
+                if (!posts.length) { list.innerHTML = emptyHtml('Tidak ada data'); return; }
+                const dummy = '/assets/images/user/dummy.jpg';
+                list.innerHTML = posts.slice(0, 100).map(item => {
+                    const name = getName(item), color2 = getColor(item);
+                    const av = getAvatar(item);
+                    const avH = (av && av.startsWith('http')) ? `<img src="${esc(av)}" onerror="this.src='${dummy}'">` : `<img src="${dummy}">`;
+                    const text = dec((item.content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()).slice(0, 130);
+                    const dt = (item.date_created || '').split('T')[0];
+                    const sent = normSent(item);
+                    const sentLbl = { pos: 'Pos', neg: 'Neg', neu: 'Neu' }[sent];
+                    const emo = item.emotion || 'trust';
+                    const ec = EMO_COLORS[emo] || '#64748b';
+                    const v = getViews(item), l = getLikes(item);
+                    const enc = encodeURIComponent(JSON.stringify(item));
+                    return `<div class="do-panel-item" data-item="${esc(enc)}" onclick="FEAPanel._click(this)">
+                    <div class="do-panel-avatar" style="background:linear-gradient(135deg,${color2},${color2}99);">${avH}</div>
+                    <div class="do-panel-item-body">
+                        <div class="do-panel-author">${esc(name)}</div>
+                        <div class="do-panel-text">${esc(text || '(tidak ada konten)')}</div>
+                        <div class="do-panel-footer">
+                            <span style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:800;background:${ec}18;color:${ec};border:1px solid ${ec}40;">${emo.charAt(0).toUpperCase() + emo.slice(1)}</span>
+                            <span class="do-sent-badge do-sent-badge--${sent}">${sentLbl}</span>
+                            <span><i class="ph ph-eye" style="font-size:9px;"></i> ${numK(v)}</span>
+                            <span><i class="ph ph-thumbs-up" style="font-size:9px;"></i> ${numK(l)}</span>
+                            ${dt ? `<span style="margin-left:auto;">${dt}</span>` : ''}
+                        </div>
+                    </div>
+                </div>`;
+                }).join('');
+                if (posts.length > 100) list.insertAdjacentHTML('beforeend', `<div style="padding:8px;text-align:center;font-size:10px;font-weight:600;color:#94A3B8;background:var(--slate-50);border-top:1px dashed var(--slate-200);">+${(posts.length - 100).toLocaleString()} lainnya</div>`);
+            },
+
+            _click(el) {
+                try {
+                    const raw = el.dataset.item.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
+                    const item = JSON.parse(decodeURIComponent(raw));
+                    FEADetail.open(item);
+                } catch (e) { console.warn(e); }
+            }
+        };
+
+        /* ══ DETAIL SUB-PANEL ══ */
+        const FEADetail = {
+            open(item) {
+                const panel = _$('feaDetailPanel'), body = _$('feaDetailBody'), title = _$('feaDetailTitle');
+                if (!panel || !body) return;
+                const emo = item.emotion || 'trust';
+                const ec = EMO_COLORS[emo] || '#038047';
+                const name = getName(item), color2 = getColor(item);
+                const av = getAvatar(item);
+                const dummy = '/assets/images/user/dummy.jpg';
+                const avH = (av && av.startsWith('http')) ? `<img src="${esc(av)}" onerror="this.src='${dummy}'">` : `<img src="${dummy}">`;
+                const handle = item.author?.scr_name || item.author_scr_name || item.author_id || '';
+                const raw = (item.content || '').replace(/<[^>]*>/g, '').trim();
+                const content = raw ? dec(raw) : '';
+                const url = item.url || item.link || '';
+                const dt = item.date_created || '';
+                const v = getViews(item), l = getLikes(item), c = getComments(item);
+                const sent = normSent(item);
+                const sentLbl = { pos: 'Positif', neg: 'Negatif', neu: 'Netral' }[sent];
+
+                let dtFmt = '';
+                if (dt) {
+                    try { dtFmt = new Date(dt).toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+                    catch (e) { dtFmt = dt.split('T')[0]; }
+                }
+
+                let videoId = '';
+                if (url) { const m = url.match(/\/video\/(\d+)/); if (m) videoId = m[1]; }
+                if (!videoId && item.id) { const m = String(item.id).match(/(\d{10,})/); if (m) videoId = m[1]; }
+                const mediaHtml = videoId
+                    ? `<div class="do-dp2-media"><iframe src="https://www.tiktok.com/embed/v2/${videoId}" allow="autoplay" allowfullscreen></iframe></div>`
+                    : '';
+
+                /* emotion distribution bars */
+                const counts = getEmoCounts();
+                const maxC = Math.max(...Object.values(counts), 1);
+                const emoBars = EMOTIONS.map(e => {
+                    const cc = counts[e] || 0;
+                    const w = Math.round((cc / maxC) * 100);
+                    const ecc = EMO_COLORS[e];
+                    return `<div class="emo-dist-bar">
+                    <div class="emo-dist-label"><span class="emo-dist-dot" style="background:${ecc};"></span>${e.charAt(0).toUpperCase() + e.slice(1)}</div>
+                    <div class="emo-dist-track"><div class="emo-dist-fill" style="width:${w}%;background:${ecc};"></div></div>
+                    <div class="emo-dist-count">${numK(cc)}</div>
+                </div>`;
+                }).join('');
+
+                title.textContent = name;
+                body.innerHTML = `
+                <div class="do-dp2-avatar-row">
+                    <div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${color2},${color2}99);">${avH}</div>
+                    <div>
+                        <div class="do-dp2-name">${esc(name)}</div>
+                        ${handle ? `<div class="do-dp2-handle">@${esc(handle)}</div>` : ''}
+                        <span class="do-dp2-plat-badge" style="background:${ec}18;color:${ec};">${emo.charAt(0).toUpperCase() + emo.slice(1)}</span>
+                    </div>
                 </div>
-            </div>
-            ${dtFmt ? `<div class="do-dp2-meta"><i class="ph ph-calendar me-1"></i>${dtFmt}</div>` : ''}
-            <div class="do-dp2-sent do-dp2-sent--${sent}">${sentLbl}</div>
-            ${mediaHtml}
-            ${content ? `<div class="do-dp2-content">${esc(content)}</div>` : ''}
-            <div class="do-dp2-stats">
-                <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(v)}</div><div class="do-dp2-stat-lbl">Views</div></div>
-                <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(l)}</div><div class="do-dp2-stat-lbl">Likes</div></div>
-                <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(c)}</div><div class="do-dp2-stat-lbl">Comments</div></div>
-            </div>
-            <div style="margin-bottom:12px;">
-                <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--slate-400);margin-bottom:8px;">Distribusi Emosi (semua post)</div>
-                ${emoBars}
-            </div>
-            ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out me-1"></i>Buka di TikTok</a>` : ''}`;
-        panel.classList.add('show');
-    },
+                ${dtFmt ? `<div class="do-dp2-meta"><i class="ph ph-calendar me-1"></i>${dtFmt}</div>` : ''}
+                <div class="do-dp2-sent do-dp2-sent--${sent}">${sentLbl}</div>
+                ${mediaHtml}
+                ${content ? `<div class="do-dp2-content">${esc(content)}</div>` : ''}
+                <div class="do-dp2-stats">
+                    <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(v)}</div><div class="do-dp2-stat-lbl">Views</div></div>
+                    <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(l)}</div><div class="do-dp2-stat-lbl">Likes</div></div>
+                    <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(c)}</div><div class="do-dp2-stat-lbl">Comments</div></div>
+                </div>
+                <div style="margin-bottom:12px;">
+                    <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--slate-400);margin-bottom:8px;">Distribusi Emosi (semua post)</div>
+                    ${emoBars}
+                </div>
+                ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out me-1"></i>Buka di TikTok</a>` : ''}`;
+                panel.classList.add('show');
+            },
 
-    close()     { _$('feaDetailPanel')?.classList.remove('show'); },
-    killIframe(){ const b = _$('feaDetailBody'); if (b) b.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); }); }
-};
+            close() { _$('feaDetailPanel')?.classList.remove('show'); },
+            killIframe() { const b = _$('feaDetailBody'); if (b) b.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); }); }
+        };
 
-/* ══ INIT ══ */
-document.addEventListener('DOMContentLoaded', () => {
-    FEAData.loadAll();
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') FEAPanel.close(); });
-});
-</script>
+        /* ══ INIT ══ */
+        document.addEventListener('DOMContentLoaded', () => {
+            FEAData.loadAll();
+            document.addEventListener('keydown', e => { if (e.key === 'Escape') FEAPanel.close(); });
+        });
+    </script>
 @endsection

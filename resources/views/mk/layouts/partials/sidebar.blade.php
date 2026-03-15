@@ -6,8 +6,8 @@
 </style>
 <nav class="pc-sidebar">
     <div class="navbar-wrapper">
-        <div class="m-header" style="padding: 0; background: #ffffff;">
-            <a href="{{ route('mk.dashboard') }}" class="b-brand text-primary" style="display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px 24px; background: #ffffff; border-radius: 0; border-bottom: 1px solid #f0f0f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); text-decoration: none;">
+        <div class="m-header">
+            <a href="{{ route('mk.dashboard') }}" class="b-brand text-primary"">
                 <img src="{{ asset('images/SMADIMENT 2025 _ Logo-03.png') }}" class="img-fluid logo-lg" alt="SMADIMENT" style="height: 52px; width: auto; display: block;" />
             </a>
         </div>

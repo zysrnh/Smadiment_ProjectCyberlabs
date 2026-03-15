@@ -1383,6 +1383,7 @@
         </div>
 
         {{-- Share of Voice ══ --}}
+        {{-- Share of Voice ══ --}}
         <div class="card mb-3">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
@@ -1394,8 +1395,12 @@
                         <small class="text-muted">% share per project per media — klik slice untuk lihat mentions</small>
                     </div>
                 </div>
+                {{-- Tab nav will be injected by JS --}}
+                <div id="cmpSovTabNav" class="cmp-tab-nav" style="flex-wrap:wrap;gap:2px;"></div>
             </div>
-            <div class="card-body" id="cmpSovGrid"></div>
+            <div class="card-body">
+                <div id="cmpSovGrid"></div>
+            </div>
         </div>
 
         {{-- Sentiment Comparison ══ --}}
@@ -1537,14 +1542,14 @@
             const dd = _$c('cmpProjectDropdown');
             if (!list.length) { dd.innerHTML = '<div style="padding:16px;text-align:center;color:var(--slate-400);font-size:13px;">No projects found</div>'; return; }
             dd.innerHTML = list.map(p => `
-                                <label class="cmp-proj-opt">
-                                    <input type="checkbox" value="${p.id}" ${_cmpSelectedIds.has(String(p.id)) ? 'checked' : ''} onchange="cmpToggleProject('${p.id}')">
-                                    <div class="cmp-proj-opt-info">
-                                        <div class="cmp-proj-opt-name">${_esc(p.title)}</div>
-                                        <div class="cmp-proj-opt-meta">${_esc(p.group_name || p.project_type || '')}</div>
-                                    </div>
-                                    ${_cmpSelectedIds.has(String(p.id)) ? '<span class="cmp-proj-opt-badge">✓</span>' : ''}
-                                </label>`).join('');
+                                        <label class="cmp-proj-opt">
+                                            <input type="checkbox" value="${p.id}" ${_cmpSelectedIds.has(String(p.id)) ? 'checked' : ''} onchange="cmpToggleProject('${p.id}')">
+                                            <div class="cmp-proj-opt-info">
+                                                <div class="cmp-proj-opt-name">${_esc(p.title)}</div>
+                                                <div class="cmp-proj-opt-meta">${_esc(p.group_name || p.project_type || '')}</div>
+                                            </div>
+                                            ${_cmpSelectedIds.has(String(p.id)) ? '<span class="cmp-proj-opt-badge">✓</span>' : ''}
+                                        </label>`).join('');
         }
 
         function cmpFilterDropdown() {
@@ -1652,65 +1657,65 @@
                 const badges = Object.entries(bm).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1])
                     .map(([k, v]) => `<span class="badge bg-light-secondary text-muted" style="font-size:10px;font-weight:600;">${CMP_MEDIA_LABELS[k] || k}: ${_fmtN(v)}</span>`).join('');
                 return `<div class="col-xl-${Math.max(3, Math.floor(12 / ids.length))} col-md-6 col-sm-6">
-                    <div class="card h-100">
-                        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"
-                             style="border-top:0px solid ${color};">
-                            <div class="d-flex align-items-center gap-2">
-                                <div style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0;
-                                     box-shadow:0 0 0 3px ${color}22;animation:pulseP 2.5s infinite;"></div>
-                                <div>
-                                    <h6 class="mb-0 f-14" title="${_esc(p.title || 'Project #' + id)}">${_esc(_trunc(p.title || 'Project #' + id, 30))}</h6>
-                                    <small class="text-muted">${_esc(p.group_name || p.project_type || '—')}</small>
-                                </div>
-                            </div>
-                            <span class="badge bg-light-secondary text-muted rounded-pill"
-                                  style="font-size:10px;font-weight:700;">${numK(vol)} mentions</span>
-                        </div>
-                        <div class="card-body">
-                            {{-- Stats Row --}}
-                            <div class="row g-2 mb-3">
-                                <div class="col-4 text-center">
-                                    <div class="p-2 rounded-2" style="background:${color}14;">
-                                        <h6 class="mb-0 fw-bold cursor-pointer" style="color:${color};font-size:16px;"
-                                            onclick="CmpPanel.open('all','all','${id}')">${numK(vol)}</h6>
-                                        <small class="text-muted text-uppercase fw-semibold" style="font-size:9px;letter-spacing:.4px;">Volume</small>
+                            <div class="card h-100">
+                                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"
+                                     style="border-top:0px solid ${color};">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0;
+                                             box-shadow:0 0 0 3px ${color}22;animation:pulseP 2.5s infinite;"></div>
+                                        <div>
+                                            <h6 class="mb-0 f-14" title="${_esc(p.title || 'Project #' + id)}">${_esc(_trunc(p.title || 'Project #' + id, 30))}</h6>
+                                            <small class="text-muted">${_esc(p.group_name || p.project_type || '—')}</small>
+                                        </div>
                                     </div>
+                                    <span class="badge bg-light-secondary text-muted rounded-pill"
+                                          style="font-size:10px;font-weight:700;">${numK(vol)} mentions</span>
                                 </div>
-                                <div class="col-4 text-center">
-                                    <div class="p-2 rounded-2" style="background:#ECFDF5;">
-                                        <h6 class="mb-0 fw-bold text-success cursor-pointer" style="font-size:16px;"
-                                            onclick="CmpPanel.open('all','pos','${id}')">${((s.pos / total) * 100).toFixed(1)}%</h6>
-                                        <small class="text-muted text-uppercase fw-semibold" style="font-size:9px;letter-spacing:.4px;">Positive</small>
+                                <div class="card-body">
+                                    {{-- Stats Row --}}
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-4 text-center">
+                                            <div class="p-2 rounded-2" style="background:${color}14;">
+                                                <h6 class="mb-0 fw-bold cursor-pointer" style="color:${color};font-size:16px;"
+                                                    onclick="CmpPanel.open('all','all','${id}')">${numK(vol)}</h6>
+                                                <small class="text-muted text-uppercase fw-semibold" style="font-size:9px;letter-spacing:.4px;">Volume</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 text-center">
+                                            <div class="p-2 rounded-2" style="background:#ECFDF5;">
+                                                <h6 class="mb-0 fw-bold text-success cursor-pointer" style="font-size:16px;"
+                                                    onclick="CmpPanel.open('all','pos','${id}')">${((s.pos / total) * 100).toFixed(1)}%</h6>
+                                                <small class="text-muted text-uppercase fw-semibold" style="font-size:9px;letter-spacing:.4px;">Positive</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 text-center">
+                                            <div class="p-2 rounded-2" style="background:#FEF2F2;">
+                                                <h6 class="mb-0 fw-bold text-danger cursor-pointer" style="font-size:16px;"
+                                                    onclick="CmpPanel.open('all','neg','${id}')">${((s.neg / total) * 100).toFixed(1)}%</h6>
+                                                <small class="text-muted text-uppercase fw-semibold" style="font-size:9px;letter-spacing:.4px;">Negative</small>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-4 text-center">
-                                    <div class="p-2 rounded-2" style="background:#FEF2F2;">
-                                        <h6 class="mb-0 fw-bold text-danger cursor-pointer" style="font-size:16px;"
-                                            onclick="CmpPanel.open('all','neg','${id}')">${((s.neg / total) * 100).toFixed(1)}%</h6>
-                                        <small class="text-muted text-uppercase fw-semibold" style="font-size:9px;letter-spacing:.4px;">Negative</small>
-                                    </div>
-                                </div>
-                            </div>
 
-                            {{-- Sentiment mini bars --}}
-                            <div class="sent-mini mb-3">
-                                ${[['pos', 'Pos', s.pos], ['net', 'Neu', s.net], ['neg', 'Neg', s.neg]].map(([k, lbl, val]) => {
+                                    {{-- Sentiment mini bars --}}
+                                    <div class="sent-mini mb-3">
+                                        ${[['pos', 'Pos', s.pos], ['net', 'Neu', s.net], ['neg', 'Neg', s.neg]].map(([k, lbl, val]) => {
                     const pct = ((val / total) * 100).toFixed(0);
                     return `<div class="sent-mini-row">
-                                        <span style="color:${CMP_SENT_COLORS[k]};font-size:10px;font-weight:700;">${lbl}</span>
-                                        <div class="sent-mini-track">
-                                            <div class="sent-mini-fill" style="width:0%;background:${CMP_SENT_COLORS[k]}" data-pct="${pct}"></div>
-                                        </div>
-                                        <span class="text-muted text-end" style="font-size:10px;font-weight:700;">${pct}%</span>
-                                    </div>`;
+                                                <span style="color:${CMP_SENT_COLORS[k]};font-size:10px;font-weight:700;">${lbl}</span>
+                                                <div class="sent-mini-track">
+                                                    <div class="sent-mini-fill" style="width:0%;background:${CMP_SENT_COLORS[k]}" data-pct="${pct}"></div>
+                                                </div>
+                                                <span class="text-muted text-end" style="font-size:10px;font-weight:700;">${pct}%</span>
+                                            </div>`;
                 }).join('')}
-                            </div>
+                                    </div>
 
-                            {{-- Media badges --}}
-                            ${badges ? `<div class="d-flex flex-wrap gap-1 pt-2 border-top">${badges}</div>` : ''}
-                        </div>
-                    </div>
-                </div>`;
+                                    {{-- Media badges --}}
+                                    ${badges ? `<div class="d-flex flex-wrap gap-1 pt-2 border-top">${badges}</div>` : ''}
+                                </div>
+                            </div>
+                        </div>`;
             }).join('');
             setTimeout(() => document.querySelectorAll('.sent-mini-fill').forEach(el => { el.style.width = el.dataset.pct + '%'; }), 150);
         }
@@ -1762,19 +1767,19 @@
             const max = ranked[0]?.total || 1;
             const rk = ['gold', 'silver', 'bronze'];
             c.innerHTML = `<div style="overflow-x:auto"><table class="cmp-rank-table">
-                                <thead><tr><th>#</th><th>Project</th><th>Total</th><th style="min-width:90px;">Bar</th></tr></thead>
-                                <tbody>${ranked.map((item, rank) => {
+                                        <thead><tr><th>#</th><th>Project</th><th>Total</th><th style="min-width:90px;">Bar</th></tr></thead>
+                                        <tbody>${ranked.map((item, rank) => {
                 const pct = ((item.total / max) * 100).toFixed(0);
                 const color = CMP_PALETTE[item.i % CMP_PALETTE.length];
                 return `<tr onclick="cmpShowPlatPicker(event,'${item.id}','${item.title.replace(/'/g, "\\'")}')">
-                                        <td><div class="rank-num ${rk[rank] || ''}">${rank + 1}</div></td>
-                                        <td><div class="fw-bold f-13 text-truncate" style="max-width:140px;">${_esc(item.title)}</div><div style="width:8px;height:8px;border-radius:50%;background:${color};margin-top:3px;display:inline-block;"></div></td>
-                                        <td class="fw-bold f-14">${_fmtN(item.total)}</td>
-                                        <td><div class="bar-track"><div class="bar-fill" style="width:0%;background:${color}" data-pct="${pct}"></div></div></td>
-                                    </tr>`;
+                                                <td><div class="rank-num ${rk[rank] || ''}">${rank + 1}</div></td>
+                                                <td><div class="fw-bold f-13 text-truncate" style="max-width:140px;">${_esc(item.title)}</div><div style="width:8px;height:8px;border-radius:50%;background:${color};margin-top:3px;display:inline-block;"></div></td>
+                                                <td class="fw-bold f-14">${_fmtN(item.total)}</td>
+                                                <td><div class="bar-track"><div class="bar-fill" style="width:0%;background:${color}" data-pct="${pct}"></div></div></td>
+                                            </tr>`;
             }).join('')}</tbody>
-                            </table></div>
-                            <div class="p-2 text-center" style="font-size:11px;color:var(--slate-400);border-top:1px solid var(--slate-50);"><i class="ph ph-cursor-click me-1"></i>Click row to see mentions per platform</div>`;
+                                    </table></div>
+                                    <div class="p-2 text-center" style="font-size:11px;color:var(--slate-400);border-top:1px solid var(--slate-50);"><i class="ph ph-cursor-click me-1"></i>Click row to see mentions per platform</div>`;
             setTimeout(() => c.querySelectorAll('.bar-fill').forEach(el => { el.style.width = el.dataset.pct + '%'; }), 150);
         }
 
@@ -1784,25 +1789,25 @@
             const MK = ['doc', 'twit', 'fb', 'instagram', 'youtube', 'tiktok'];
             const rows = ids.map(id => { const p = details[id] || details[String(id)] || {}; return { id, title: p.title || 'Project #' + id, bm: _cmpByMedia(volume, id), total: _cmpVolTotal(volume, id) }; });
             wrap.innerHTML = `<table class="cmp-media-table">
-                                <thead><tr>
-                                    <th style="width:30px;">No</th><th>Project</th>
-                                    ${MK.map(k => `<th>${CMP_MEDIA_LABELS[k]}</th>`).join('')}
-                                    <th>Total</th>
-                                </tr></thead>
-                                <tbody>${rows.map((item, i) => {
+                                        <thead><tr>
+                                            <th style="width:30px;">No</th><th>Project</th>
+                                            ${MK.map(k => `<th>${CMP_MEDIA_LABELS[k]}</th>`).join('')}
+                                            <th>Total</th>
+                                        </tr></thead>
+                                        <tbody>${rows.map((item, i) => {
                 const color = CMP_PALETTE[i % CMP_PALETTE.length];
                 return `<tr onclick="cmpShowPlatPicker(event,'${item.id}','${item.title.replace(/'/g, "\\'")}')">
-                                        <td class="text-muted fw-bold">${i + 1}</td>
-                                        <td><div class="d-flex align-items-center gap-2"><div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></div><span style="color:${color};font-weight:700;">${_esc(_trunc(item.title, 32))}</span></div></td>
-                                        ${MK.map(k => {
+                                                <td class="text-muted fw-bold">${i + 1}</td>
+                                                <td><div class="d-flex align-items-center gap-2"><div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></div><span style="color:${color};font-weight:700;">${_esc(_trunc(item.title, 32))}</span></div></td>
+                                                ${MK.map(k => {
                     const v = item.bm[k] || 0; return `<td onclick="event.stopPropagation();CmpPanel.open('${k}','all','${item.id}')"
-                                            style="cursor:pointer;color:${v > 0 ? 'var(--slate-700)' : 'var(--slate-300)'};"
-                                            onmouseover="this.style.background='${CMP_MEDIA_COLORS[k]}18'" onmouseout="this.style.background=''">${_fmtN(v)}</td>`;
+                                                    style="cursor:pointer;color:${v > 0 ? 'var(--slate-700)' : 'var(--slate-300)'};"
+                                                    onmouseover="this.style.background='${CMP_MEDIA_COLORS[k]}18'" onmouseout="this.style.background=''">${_fmtN(v)}</td>`;
                 }).join('')}
-                                        <td class="fw-bold">${_fmtN(item.total)}</td>
-                                    </tr>`;
+                                                <td class="fw-bold">${_fmtN(item.total)}</td>
+                                            </tr>`;
             }).join('')}</tbody>
-                            </table>`;
+                                    </table>`;
         }
 
         /* ── Media Stacked Bar ── */
@@ -1840,42 +1845,124 @@
 
         /* ── SOV Pies ── */
         function _cmpRenderSovPies(ids, details, volume) {
-            const grid = _$c('cmpSovGrid');
             Object.values(_apexSov).forEach(c => { try { c.destroy(); } catch (e) { } });
+            Object.keys(_apexSov).forEach(k => delete _apexSov[k]);
+
             const MK = ['doc', 'twit', 'fb', 'instagram', 'youtube', 'tiktok'];
             const labels = ids.map(id => { const p = details[id] || details[String(id)] || {}; return _trunc(p.title || 'Project #' + id, 22); });
             const colors = ids.map((_, i) => CMP_PALETTE[i % CMP_PALETTE.length]);
+
+            /* Build datasets — only include tabs that have data */
             const allKeys = [null, ...MK];
             const datasets = allKeys.map(k => ({
-                key: k, label: k ? 'SOV — ' + CMP_MEDIA_LABELS[k] : 'SOV — All Media',
+                key: k,
+                label: k ? (CMP_MEDIA_LABELS[k] || k) : 'All Media',
                 vals: ids.map(id => k ? (_cmpByMedia(volume, id)[k] || 0) : _cmpVolTotal(volume, id)),
             })).filter(d => d.vals.some(v => v > 0));
 
-            const cols = Math.min(datasets.length, 3);
-            grid.style.cssText = `display:grid;grid-template-columns:repeat(${cols},1fr);gap:24px;`;
-            grid.innerHTML = datasets.map((_, i) => `<div id="cmpSovChart_${i}" style="min-height:260px;"></div>`).join('');
+            if (!datasets.length) {
+                _$c('cmpSovGrid').innerHTML = '<div class="chart-empty"><i class="ph ph-pie-chart"></i><span>No data</span></div>';
+                _$c('cmpSovTabNav').innerHTML = '';
+                return;
+            }
 
-            datasets.forEach((d, i) => {
-                const total = d.vals.reduce((a, b) => a + b, 0) || 1;
-                const pcts = d.vals.map(v => parseFloat(((v / total) * 100).toFixed(1)));
-                const el = _$c(`cmpSovChart_${i}`); if (!el) return;
-                const ap = new ApexCharts(el, {
-                    chart: {
-                        type: 'pie', height: 260, fontFamily: 'inherit', background: 'transparent', toolbar: { show: false },
-                        animations: { enabled: true, easing: 'linear', speed: 800 },
-                        events: { dataPointSelection: (_, ctx, cfg) => { CmpPanel.open(d.key || 'all', 'all', ids[cfg.dataPointIndex]); } }
-                    },
-                    series: pcts, labels, colors,
-                    title: { text: d.label, align: 'center', style: { fontFamily: 'inherit', fontSize: '12px', fontWeight: '700', color: 'var(--slate-700)' } },
-                    dataLabels: { enabled: true, formatter: v => v < 2 ? '' : v.toFixed(0) + '%', style: { fontFamily: 'inherit', fontSize: '12px', fontWeight: '700' }, dropShadow: { enabled: false } },
-                    legend: { position: 'bottom', fontFamily: 'inherit', fontSize: '11px', fontWeight: 600, labels: { colors: '#94A3B8' }, markers: { width: 9, height: 9, radius: 50 }, itemMargin: { horizontal: 10, vertical: 4 } },
-                    stroke: { width: 2, colors: ['#fff'] },
-                    tooltip: { y: { formatter: (v, opts) => `${d.vals[opts.seriesIndex].toLocaleString('id-ID')} (${v}%)` }, style: { fontFamily: 'inherit', fontSize: '12px' } },
-                    plotOptions: { pie: { dataLabels: { offset: 25, minAngleToShowLabel: 5 } } },
-                });
-                ap.render();
-                _apexSov[i] = ap;
+            /* Render tab buttons */
+            const tabNav = _$c('cmpSovTabNav');
+            tabNav.innerHTML = datasets.map((d, i) =>
+                `<button class="cmp-tab-btn${i === 0 ? ' active' : ''}"
+                     onclick="_cmpSovShowTab(${i}, this)"
+                     data-sov-idx="${i}">${d.label}</button>`
+            ).join('');
+
+            /* Render all chart containers (hidden except first) */
+            const grid = _$c('cmpSovGrid');
+            grid.innerHTML = datasets.map((d, i) =>
+                `<div id="cmpSovPanel_${i}" style="${i === 0 ? '' : 'display:none;'}">
+                <div id="cmpSovChart_${i}" style="min-height:280px;"></div>
+             </div>`
+            ).join('');
+
+            /* Render only the first chart immediately, lazy-render others on tab click */
+            _cmpSovRenderOne(0, datasets, ids, labels, colors);
+        }
+
+        function _cmpSovShowTab(idx, btn) {
+            /* Switch active button */
+            btn.closest('.cmp-tab-nav').querySelectorAll('.cmp-tab-btn')
+                .forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            /* Show/hide panels */
+            document.querySelectorAll('[id^="cmpSovPanel_"]').forEach((el, i) => {
+                el.style.display = i === idx ? '' : 'none';
             });
+
+            /* Lazy-render: only create chart if not yet created */
+            if (!_apexSov[idx]) {
+                const datasets = window._cmpSovDatasets;
+                const ids = window._cmpSovIds;
+                const labels = window._cmpSovLabels;
+                const colors = window._cmpSovColors;
+                if (datasets) _cmpSovRenderOne(idx, datasets, ids, labels, colors);
+            } else {
+                /* Already rendered — just trigger a resize in case panel was hidden */
+                try { _apexSov[idx].updateOptions({}); } catch (e) { }
+            }
+        }
+
+        function _cmpSovRenderOne(idx, datasets, ids, labels, colors) {
+            /* Store refs for lazy rendering */
+            window._cmpSovDatasets = datasets;
+            window._cmpSovIds = ids;
+            window._cmpSovLabels = labels;
+            window._cmpSovColors = colors;
+
+            const d = datasets[idx];
+            const el = _$c(`cmpSovChart_${idx}`);
+            if (!el || !d) return;
+
+            const total = d.vals.reduce((a, b) => a + b, 0) || 1;
+            const pcts = d.vals.map(v => parseFloat(((v / total) * 100).toFixed(1)));
+
+            const ap = new ApexCharts(el, {
+                chart: {
+                    type: 'pie', height: 300,
+                    fontFamily: 'inherit', background: 'transparent',
+                    toolbar: { show: false },
+                    animations: { enabled: true, easing: 'linear', speed: 800 },
+                    events: {
+                        dataPointSelection: (_, ctx, cfg) => {
+                            CmpPanel.open(d.key || 'all', 'all', ids[cfg.dataPointIndex]);
+                        }
+                    }
+                },
+                series: pcts, labels, colors,
+                dataLabels: {
+                    enabled: false,
+                    formatter: v => v < 3 ? '' : v.toFixed(0) + '%',
+                    style: { fontFamily: 'inherit', fontSize: '12px', fontWeight: '700' },
+                    dropShadow: { enabled: false }
+                },
+                legend: {
+                    position: 'bottom', fontFamily: 'inherit',
+                    fontSize: '11px', fontWeight: 600,
+                    labels: { colors: '#94A3B8' },
+                    markers: { width: 9, height: 9, radius: 50 },
+                    itemMargin: { horizontal: 10, vertical: 4 },
+                    formatter: (seriesName, opts) => {
+                        const val = d.vals[opts.seriesIndex];
+                        return `${seriesName} — ${_fmtN(val)}`;
+                    }
+                },
+                stroke: { width: 2, colors: ['#fff'] },
+                tooltip: {
+                    y: { formatter: (v, opts) => `${_fmtN(d.vals[opts.seriesIndex])} (${v}%)` },
+                    style: { fontFamily: 'inherit', fontSize: '12px' }
+                },
+                plotOptions: { pie: { dataLabels: { offset: 25, minAngleToShowLabel: 5 } } },
+            });
+            ap.render();
+            _apexSov[idx] = ap;
         }
 
         /* ── Sentiment Stacked Bars ── */
@@ -1887,23 +1974,23 @@
                 const total = s.pos + s.neg + s.net || 1;
                 const pp = ((s.pos / total) * 100).toFixed(1), np = ((s.net / total) * 100).toFixed(1), ng = ((s.neg / total) * 100).toFixed(1);
                 return `<div class="sent-stack-row">
-                                    <div>
-                                        <div class="fw-bold f-12 text-truncate" style="color:var(--slate-700);" title="${_esc(p.title || 'Project #' + id)}">${_esc(_trunc(p.title || 'Project #' + id, 22))}</div>
-                                        <div style="font-size:10px;color:var(--slate-400);margin-top:2px;">${_fmtN(s.pos + s.neg + s.net)} total</div>
-                                    </div>
-                                    <div>
-                                        <div class="sent-stack-bars cursor-pointer" onclick="CmpPanel.open('all','all','${id}')">
-                                            <div class="sent-seg" style="width:0%;background:#10b981" data-pct="${pp}" title="Pos: ${pp}%">${pp > 10 ? pp + '%' : ''}</div>
-                                            <div class="sent-seg" style="width:0%;background:#64748b" data-pct="${np}" title="Neu: ${np}%">${np > 10 ? np + '%' : ''}</div>
-                                            <div class="sent-seg" style="width:0%;background:#ef4444" data-pct="${ng}" title="Neg: ${ng}%">${ng > 10 ? ng + '%' : ''}</div>
-                                        </div>
-                                        <div class="d-flex gap-3 mt-1">
-                                            <span onclick="CmpPanel.open('all','pos','${id}')" class="cursor-pointer" style="font-size:10px;color:#10b981;font-weight:700;">● Pos ${pp}%</span>
-                                            <span onclick="CmpPanel.open('all','neu','${id}')" class="cursor-pointer" style="font-size:10px;color:#64748b;font-weight:700;">● Neu ${np}%</span>
-                                            <span onclick="CmpPanel.open('all','neg','${id}')" class="cursor-pointer" style="font-size:10px;color:#ef4444;font-weight:700;">● Neg ${ng}%</span>
-                                        </div>
-                                    </div>
-                                </div>`;
+                                            <div>
+                                                <div class="fw-bold f-12 text-truncate" style="color:var(--slate-700);" title="${_esc(p.title || 'Project #' + id)}">${_esc(_trunc(p.title || 'Project #' + id, 22))}</div>
+                                                <div style="font-size:10px;color:var(--slate-400);margin-top:2px;">${_fmtN(s.pos + s.neg + s.net)} total</div>
+                                            </div>
+                                            <div>
+                                                <div class="sent-stack-bars cursor-pointer" onclick="CmpPanel.open('all','all','${id}')">
+                                                    <div class="sent-seg" style="width:0%;background:#10b981" data-pct="${pp}" title="Pos: ${pp}%">${pp > 10 ? pp + '%' : ''}</div>
+                                                    <div class="sent-seg" style="width:0%;background:#64748b" data-pct="${np}" title="Neu: ${np}%">${np > 10 ? np + '%' : ''}</div>
+                                                    <div class="sent-seg" style="width:0%;background:#ef4444" data-pct="${ng}" title="Neg: ${ng}%">${ng > 10 ? ng + '%' : ''}</div>
+                                                </div>
+                                                <div class="d-flex gap-3 mt-1">
+                                                    <span onclick="CmpPanel.open('all','pos','${id}')" class="cursor-pointer" style="font-size:10px;color:#10b981;font-weight:700;">● Pos ${pp}%</span>
+                                                    <span onclick="CmpPanel.open('all','neu','${id}')" class="cursor-pointer" style="font-size:10px;color:#64748b;font-weight:700;">● Neu ${np}%</span>
+                                                    <span onclick="CmpPanel.open('all','neg','${id}')" class="cursor-pointer" style="font-size:10px;color:#ef4444;font-weight:700;">● Neg ${ng}%</span>
+                                                </div>
+                                            </div>
+                                        </div>`;
             }).join('');
             setTimeout(() => document.querySelectorAll('.sent-seg').forEach(el => { el.style.width = el.dataset.pct + '%'; }), 150);
         }
@@ -2104,19 +2191,19 @@
                     const avHtml = (av && av.startsWith('http')) ? `<img src="${_esc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">` : ini;
                     const enc = encodeURIComponent(JSON.stringify(item));
                     return `<div class="do-panel-item" onclick="CmpDetail.openEncoded('${enc}','${plat}')">
-                                        <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
-                                        <div class="do-panel-item-body">
-                                            <div class="do-panel-author">${_esc(dName)}</div>
-                                            ${handle ? `<div class="do-panel-handle">${_esc(handle)}</div>` : ''}
-                                            <div class="do-panel-text">${_esc(text || '(tidak ada konten)')}</div>
-                                            <div class="do-panel-footer">
-                                                <span class="do-sent-badge do-sent-badge--${sent}">${sent === 'pos' ? 'Pos' : sent === 'neg' ? 'Neg' : 'Neu'}</span>
-                                                <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
-                                                <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
-                                                ${dt ? `<span style="margin-left:auto;">${dt}</span>` : ''}
-                                            </div>
-                                        </div>
-                                    </div>`;
+                                                <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
+                                                <div class="do-panel-item-body">
+                                                    <div class="do-panel-author">${_esc(dName)}</div>
+                                                    ${handle ? `<div class="do-panel-handle">${_esc(handle)}</div>` : ''}
+                                                    <div class="do-panel-text">${_esc(text || '(tidak ada konten)')}</div>
+                                                    <div class="do-panel-footer">
+                                                        <span class="do-sent-badge do-sent-badge--${sent}">${sent === 'pos' ? 'Pos' : sent === 'neg' ? 'Neg' : 'Neu'}</span>
+                                                        <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
+                                                        <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
+                                                        ${dt ? `<span style="margin-left:auto;">${dt}</span>` : ''}
+                                                    </div>
+                                                </div>
+                                            </div>`;
                 }).join('');
                 if (items.length > SHOW) list.insertAdjacentHTML('beforeend', `<div style="padding:9px;text-align:center;font-size:11px;font-weight:600;color:#94A3B8;background:#F8FAFC;border-top:1px dashed #E2E8F0;">+${(items.length - SHOW).toLocaleString()} lainnya · Export CSV untuk lihat semua</div>`);
             }
@@ -2182,20 +2269,20 @@
                 const handleDisp = handle && !handle.replace('@', '').toLowerCase().startsWith(name.toLowerCase().slice(0, 4)) ? (handle.startsWith('@') ? handle : '@' + handle) : '';
 
                 body.innerHTML = `
-                                    <div class="do-dp2-avatar-row">
-                                        <div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
-                                        <div>
-                                            <div class="do-dp2-name">${_esc(name)}</div>
-                                            ${handleDisp ? `<div class="do-dp2-handle">${_esc(handleDisp)}</div>` : ''}
-                                            <span class="do-dp2-plat-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span>
-                                        </div>
-                                    </div>
-                                    ${dtFmt ? `<div class="do-dp2-meta">${dtFmt}</div>` : ''}
-                                    <div class="do-dp2-sent ${SBGS[sent]}">${SLBL[sent]}</div>
-                                    ${mediaHtml}
-                                    ${content ? `<div class="do-dp2-content">${_esc(content)}</div>` : ''}
-                                    ${statsHtml}
-                                    ${url ? `<a href="${_esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out"></i> Lihat ${meta.label} Asli</a>` : ''}`;
+                                            <div class="do-dp2-avatar-row">
+                                                <div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
+                                                <div>
+                                                    <div class="do-dp2-name">${_esc(name)}</div>
+                                                    ${handleDisp ? `<div class="do-dp2-handle">${_esc(handleDisp)}</div>` : ''}
+                                                    <span class="do-dp2-plat-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span>
+                                                </div>
+                                            </div>
+                                            ${dtFmt ? `<div class="do-dp2-meta">${dtFmt}</div>` : ''}
+                                            <div class="do-dp2-sent ${SBGS[sent]}">${SLBL[sent]}</div>
+                                            ${mediaHtml}
+                                            ${content ? `<div class="do-dp2-content">${_esc(content)}</div>` : ''}
+                                            ${statsHtml}
+                                            ${url ? `<a href="${_esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out"></i> Lihat ${meta.label} Asli</a>` : ''}`;
                 panel.classList.add('show');
             },
             close() {
