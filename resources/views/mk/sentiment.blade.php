@@ -98,13 +98,9 @@ document.addEventListener('DOMContentLoaded',function(){
     <div class="col-lg-6 col-12"><div class="card mb-3" style="animation:fadeUp .38s ease-out .42s both;"><div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"><div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-newspaper f-18 text-primary"></i></div><div><h6 class="mb-0">Mass Media SOV</h6><small class="text-muted">Share of Voice — Online News</small></div></div><span class="badge bg-light-primary text-primary">Mass</span></div><div class="card-body" style="display:flex;flex-direction:column;align-items:center;"><div style="position:relative;height:260px;width:100%;"><div id="chMassPie" style="width:100%;height:100%;"></div><div class="snt-skel" style="position:absolute;inset:0;border-radius:8px;" id="skMassPie"></div></div></div></div></div>
     <div class="col-lg-6 col-12"><div class="card mb-3" style="animation:fadeUp .38s ease-out .46s both;"><div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"><div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-share-network f-18 text-primary"></i></div><div><h6 class="mb-0">Social Media SOV</h6><small class="text-muted">Share of Voice — Social platforms</small></div></div><span class="badge bg-light-primary text-primary">Social</span></div><div class="card-body" style="display:flex;flex-direction:column;align-items:center;"><div style="position:relative;height:260px;width:100%;"><div id="chSocialPie" style="width:100%;height:100%;"></div><div class="snt-skel" style="position:absolute;inset:0;border-radius:8px;" id="skSocialPie"></div></div></div></div></div>
 </div>
-{{-- Platform Breakdown --}}
-<div class="row mb-3">
-    <div class="col-12"><div class="card mb-3" style="animation:fadeUp .38s ease-out .50s both;"><div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"><div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-list-dashes f-18 text-primary"></i></div><div><h6 class="mb-0">Sentiment per Platform</h6><small class="text-muted">Detail breakdown per media</small></div></div></div><div class="card-body"><div id="platBreakdownList" class="snt-media-list"></div></div></div></div>
-</div>
 {{-- Trend Line --}}
 <div class="row mb-3">
-    <div class="col-12"><div class="card mb-3" style="animation:fadeUp .38s ease-out .54s both;"><div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"><div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-trend-up f-18 text-primary"></i></div><div><h6 class="mb-0">Sentiment Trends in All Media</h6><small class="text-muted">Tren harian Negative / Positive / Neutral</small></div></div><div class="d-flex align-items-center gap-2"><button class="btn btn-outline-secondary btn-sm" onclick="SNTCsv.copyTrend()" title="Copy CSV"><i class="ph ph-copy me-1"></i>CSV</button><span class="badge bg-light-primary text-primary" id="trendBadge">Loading…</span></div></div><div class="card-body"><div style="position:relative;height:380px;" id="chTrendWrap"><div id="chTrend" style="width:100%;height:100%;"></div><div class="snt-skel snt-skel-overlay" id="skTrend"></div></div></div></div></div>
+    <div class="col-12"><div class="card mb-3" style="animation:fadeUp .38s ease-out .54s both;"><div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"><div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-trend-up f-18 text-primary"></i></div><div><h6 class="mb-0">Sentiment Trends in All Media</h6><small class="text-muted">Tren harian Total / Positive / Neutral / Negative</small></div></div><div class="d-flex align-items-center gap-2"><button class="btn btn-outline-secondary btn-sm" onclick="SNTCsv.copyTrend()" title="Copy CSV"><i class="ph ph-copy me-1"></i>CSV</button><span class="badge bg-light-primary text-primary" id="trendBadge">Loading…</span></div></div><div class="card-body"><div style="position:relative;height:380px;" id="chTrendWrap"><div id="chTrend" style="width:100%;height:100%;"></div><div class="snt-skel snt-skel-overlay" id="skTrend"></div></div></div></div></div>
 </div>
 {{-- Weekday + Hour --}}
 <div class="row mb-3">
@@ -250,7 +246,6 @@ function renderAll() {
   renderByTypePct();
   renderByPlatGrouped();
   renderMassSocialPies();
-  renderPlatBreakdown();
   renderTrend();
 }
 
@@ -604,51 +599,6 @@ function renderMassSocialPies() {
   else document.getElementById('chSocialPie').parentElement.innerHTML = emptyHtml('Tidak ada data Social Media');
 }
 
-/* ─── Platform Breakdown List ─── */
-function renderPlatBreakdown() {
-  const list = document.getElementById('platBreakdownList');
-  const bm   = SNTData.byMedia;
-  if (!bm.length) { list.innerHTML = emptyHtml('Tidak ada data per platform'); return; }
-
-  const platIcons = {
-    doc:       `<svg viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
-    twitter:   `<svg viewBox="0 0 24 24" fill="#1d9bf0" stroke="none" style="width:18px;height:18px;"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
-    facebook:  `<svg viewBox="0 0 24 24" fill="none" stroke="#1877f2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>`,
-    instagram: `<svg viewBox="0 0 24 24" fill="none" stroke="#e1306c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>`,
-    youtube:   `<svg viewBox="0 0 24 24" fill="none" stroke="#ff0000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>`,
-    tiktok:    `<svg viewBox="0 0 24 24" fill="#111827" stroke="none" style="width:18px;height:18px;"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.16 8.16 0 0 0 4.77 1.52V6.74a4.85 4.85 0 0 1-1-.05z"/></svg>`,
-  };
-  const platBg = {doc:'rgba(2,132,199,.1)',twitter:'rgba(29,155,240,.1)',facebook:'rgba(24,119,242,.1)',instagram:'rgba(225,48,108,.1)',youtube:'rgba(255,0,0,.08)',tiktok:'rgba(17,24,39,.07)'};
-  const keyToPlat = {doc:'doc',twitter:'twit',facebook:'fb',instagram:'ig',youtube:'yt',tiktok:'tiktok'};
-
-  list.innerHTML = bm.map(m => {
-    const tot = m.neg+m.pos+m.neu;
-    const np  = tot>0?((m.neg/tot)*100):0;
-    const pp  = tot>0?((m.pos/tot)*100):0;
-    const nep = tot>0?((m.neu/tot)*100):0;
-    const popupKey = keyToPlat[m.key]||'doc';
-    return `<div class="snt-media-row" style="cursor:pointer;" onclick="SNTPopup.open('${popupKey}','all')"
-      <div class="snt-media-icon" style="background:${platBg[m.key]||'#f1f5f9'};">${platIcons[m.key]||''}</div>
-      <div class="snt-media-name">${m.label}</div>
-      <div class="snt-media-bars">
-        <div class="snt-media-bar-row">
-          <div class="snt-media-bar-track"><div class="snt-media-bar-fill" style="width:${np.toFixed(1)}%;background:#ef4444;"></div></div>
-          <div class="snt-media-bar-val" style="color:#ef4444;">${numK(m.neg)}</div>
-        </div>
-        <div class="snt-media-bar-row">
-          <div class="snt-media-bar-track"><div class="snt-media-bar-fill" style="width:${pp.toFixed(1)}%;background:#2FC6F6;"></div></div>
-          <div class="snt-media-bar-val" style="color:#2FC6F6;">${numK(m.pos)}</div>
-        </div>
-        <div class="snt-media-bar-row">
-          <div class="snt-media-bar-track"><div class="snt-media-bar-fill" style="width:${nep.toFixed(1)}%;background:#94a3b8;"></div></div>
-          <div class="snt-media-bar-val" style="color:#94a3b8;">${numK(m.neu)}</div>
-        </div>
-      </div>
-      <div class="snt-media-total">${numFmt(tot)}</div>
-    </div>`;
-  }).join('');
-}
-
 /* ─── Trend Line ─── */
 function renderTrend() {
   hideSk('skTrend');
@@ -660,10 +610,11 @@ function renderTrend() {
   }
 
   const dates   = trend.map(d=>d.date);
-  const xLabels = dates.map(d=>{ const dt=new Date(d+'T00:00:00'); return `${dt.getDate()}.${dt.toLocaleString('id-ID',{month:'short'})}`; });
+  const xLabels = dates.map(d=>{ const dt=new Date(d+'T00:00:00'); return `${dt.getDate()}/${dt.getMonth()+1}`; });
   const negVals = trend.map(d=>d.neg||0);
   const posVals = trend.map(d=>d.pos||0);
   const neuVals = trend.map(d=>d.neu||0);
+  const totVals = trend.map(d=>(d.neg||0)+(d.pos||0)+(d.neu||0));
 
   const fmtB = d=>{ const dt=new Date(d+'T00:00:00'); return `${dt.getDate()} ${dt.toLocaleString('id-ID',{month:'short'})}`; };
   document.getElementById('trendBadge').textContent = `${fmtB(dates[0])} – ${fmtB(dates[dates.length-1])}`;
@@ -672,13 +623,12 @@ function renderTrend() {
   if (!chart) return;
 
   const makeSeries = (name, data, color) => ({
-    name, type:'line', data, smooth:.4,
-    symbol:'circle', symbolSize:dates.length<=30?6:0, showSymbol:dates.length<=30,
+    name, type:'line', data, smooth:true,
+    symbol:'circle', symbolSize:6, showSymbol:dates.length<=30,
     itemStyle:{color,borderColor:'#fff',borderWidth:2},
     lineStyle:{color,width:2.5},
-    areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:color+'22'},{offset:1,color:color+'02'}]}},
-    emphasis:{focus:'series',lineStyle:{width:3.5},itemStyle:{symbolSize:10,shadowBlur:10,shadowColor:color+'88'}},
-    label:{show:dates.length<=14,position:'top',formatter:p=>p.value>0?numFmt(p.value):'',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b'}
+    areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:color+'4D'},{offset:1,color:color+'05'}]}},
+    emphasis:{focus:'series',lineStyle:{width:3.5},itemStyle:{symbolSize:10,shadowBlur:10,shadowColor:color+'88'}}
   });
 
   chart.setOption({
@@ -691,7 +641,6 @@ function renderTrend() {
         const di   = params[0]?.dataIndex ?? 0;
         const date = dates[di]||'';
         const fullDt = date ? new Date(date+'T00:00:00').toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '';
-        const tot  = (params[0]?.value||0)+(params[1]?.value||0)+(params[2]?.value||0);
         const rows = params.map(p=>
           `<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;">
             <div style="display:flex;align-items:center;gap:6px;">
@@ -702,14 +651,11 @@ function renderTrend() {
           </div>`).join('');
         return `<div style="font-weight:700;font-size:13px;margin-bottom:4px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.1);">
                   ${fullDt||date}
-                </div>${rows}
-                <div style="border-top:1px solid rgba(255,255,255,.1);margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;">
-                  <span style="font-size:11px;color:#94a3b8;">Total</span><span style="font-weight:700;">${numFmt(tot)}</span>
-                </div>`;
+                </div>${rows}`;
       }
     },
     legend:{
-      bottom:0, data:['Negative','Positive','Neutral'],
+      bottom:0, data:['Total','Positive','Neutral','Negative'],
       textStyle:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'},
       icon:'circle', itemWidth:10, itemHeight:10, itemGap:24,
     },
@@ -725,9 +671,10 @@ function renderTrend() {
       axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#94a3b8',formatter:numK}
     },
     series:[
-      makeSeries('Negative',negVals,'#ef4444'),
-      makeSeries('Positive',posVals,'#2FC6F6'),
-      makeSeries('Neutral', neuVals,'#94a3b8'),
+      makeSeries('Total',   totVals,'#4680ff'),
+      makeSeries('Positive',posVals,'#10B981'),
+      makeSeries('Neutral', neuVals,'#94A3B8'),
+      makeSeries('Negative',negVals,'#EF4444'),
     ]
   });
 }
@@ -880,7 +827,7 @@ const SNTPlatMeta = {
 };
 
 /* ── ESC helper ── */
-const sntEsc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const sntEsc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
 /* ══════════════════════════════════════════════════════
    SENTIMENT POPUP
@@ -1079,7 +1026,7 @@ const SNTPopup = {
           if (!res.ok) continue;
           const data  = await res.json();
           const items = Array.isArray(data.data)?data.data:(Array.isArray(data)?data:[]);
-          if (items.length>0) return items;
+          if (items.length>0) { items.forEach(it => { if(!it._type) it._type = 'ig'; }); return items; }
         } catch(e){ continue; }
       }
       return [];
@@ -1098,6 +1045,7 @@ const SNTPopup = {
     if (!res.ok) return [];
     const data = await res.json();
     let items  = Array.isArray(data.data)?data.data:(Array.isArray(data)?data:[]);
+    items.forEach(it => { if(!it._type) it._type = platform; });
 
     if (platform==='doc') {
       items = items.filter(m => {
@@ -1143,6 +1091,7 @@ const SNTPopup = {
 
     const SHOW = 60;
     const getPlat = item => {
+      if (item._type) return item._type;
       const mt = String(item.media_type||item.type||item.tcode||'').toLowerCase();
       if (mt.includes('doc')||mt.includes('news')||mt.includes('berita')) return 'doc';
       if (mt.includes('twit')||mt.includes('twitter')||mt.includes('x')) return 'twit';
@@ -1342,7 +1291,7 @@ const SNTDetail = {
       ${content?`<div class="sntdp-content-text">${sntEsc(content)}</div>`:''}
       ${statsHtml}
       ${url?`<a href="${sntEsc(url)}" target="_blank" rel="noopener noreferrer" class="sntdp-link-btn">
-        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         Lihat Sumber Asli
       </a>`:''}`;
 

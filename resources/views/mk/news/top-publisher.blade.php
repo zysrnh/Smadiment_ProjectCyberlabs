@@ -3,396 +3,363 @@
 @section('title', 'Top News Publishers - SMADIMENT')
 
 @section('styles')
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+/* ══════════════════════════════════════════════════════
+   DESIGN TOKENS — identical to TikTok Most Engagement
+══════════════════════════════════════════════════════ */
 :root {
-  --green:        #038047;
-  --green-dark:   #026738;
-  --green-dim:    rgba(3,128,71,.08);
-  --green-border: rgba(3,128,71,.2);
-  --red:          #e02020;
-  --red-dim:      rgba(224,32,32,.08);
-  --blue:         #2563eb;
-  --text-hi:      #0f172a;
-  --text-md:      #475569;
-  --text-lo:      #94a3b8;
-  --bg:           #f1f5f9;
-  --surface:      #ffffff;
-  --border:       #e2e8f0;
-  --radius:       14px;
-  --radius-sm:    10px;
-  --shadow:       0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
-  --shadow-md:    0 4px 16px rgba(0,0,0,.09);
-  --font:         'Plus Jakarta Sans', sans-serif;
+    --primary        : #038047;
+    --primary-rgb    : 3, 128, 71;
+    --primary-lt     : rgba(3,128,71,.10);
+    --dark           : #273B4A;
+    --white          : #FFFFFF;
+    --bg             : #F1F5F8;
+
+    --green          : #038047;
+    --green-light    : #E8F5EE;
+    --red            : #EF4444;
+    --red-light      : #FEF2F2;
+    --amber          : #F59E0B;
+    --amber-light    : #FFFBEB;
+    --cyan           : #06B6D4;
+    --cyan-light     : #ECFEFF;
+
+    --slate-50       : #F8FAFC;
+    --slate-100      : #F1F5F9;
+    --slate-200      : #E2E8F0;
+    --slate-300      : #CBD5E1;
+    --slate-400      : #94A3B8;
+    --slate-500      : #64748B;
+    --slate-600      : #475569;
+    --slate-700      : #334155;
+    --slate-800      : #1E293B;
+    --slate-900      : #0F172A;
+
+    --radius         : 8px;
+    --radius-sm      : 5px;
+    --shadow-sm      : 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+    --shadow-md      : 0 4px 14px rgba(15,23,42,.08);
+    --shadow-lg      : 0 10px 30px rgba(15,23,42,.12);
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font); background: var(--bg); color: var(--text-hi); }
+/* ══ Animations ══ */
+@keyframes fadeUp        { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes shimmer       { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes spin          { to{transform:rotate(360deg)} }
+@keyframes slideInRight  { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes slideOutRight { from{transform:translateX(0);opacity:1}    to{transform:translateX(100%);opacity:0} }
+@keyframes overlayIn     { from{opacity:0} to{opacity:1} }
+@keyframes overlayOut    { from{opacity:1} to{opacity:0} }
 
-.tp-page {
-  padding: 24px;
-  max-width: 1600px;
-  margin: 0 auto;
-  min-height: 100vh;
-}
-
-.tp-header { margin-bottom: 22px; }
-.tp-header h1 { font-size: 24px; font-weight: 800; color: var(--text-hi); letter-spacing: -.4px; margin-bottom: 4px; }
-.tp-header p  { font-size: 13px; color: var(--text-md); font-weight: 500; }
-
-/* ── FILTER BAR ── */
-.tp-filter {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 14px 20px; margin-bottom: 22px;
-  box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-}
-.tp-date-pill {
-  display: flex; align-items: center; gap: 8px; padding: 8px 14px;
-  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  font-size: 13px; font-weight: 600; color: var(--text-hi); cursor: pointer;
-  transition: border-color .2s, box-shadow .2s; white-space: nowrap;
-}
-.tp-date-pill:hover { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-dim); }
-.tp-date-pill svg { width: 15px; height: 15px; stroke: var(--text-md); fill: none; flex-shrink: 0; }
-.tp-filter-div { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; }
-.tp-filter-btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
-.tp-filter-btn {
-  display: flex; align-items: center; gap: 6px; padding: 7px 14px;
-  background: var(--bg); border: 1px solid var(--border); border-radius: 20px;
-  font-family: var(--font); font-size: 12px; font-weight: 700; color: var(--text-md);
-  cursor: pointer; transition: all .2s; white-space: nowrap;
-}
-.tp-filter-btn:hover { background: var(--surface); border-color: var(--green); color: var(--green); }
-.tp-filter-btn.active { background: var(--green); border-color: var(--green); color: #fff; }
-.tp-filter-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; flex-shrink: 0; }
-.tp-apply {
-  margin-left: auto; display: flex; align-items: center; gap: 7px;
-  padding: 8px 18px; background: linear-gradient(135deg, var(--green), var(--green-dark));
-  color: #fff; border: none; border-radius: var(--radius-sm);
-  font-family: var(--font); font-size: 13px; font-weight: 700;
-  cursor: pointer; transition: box-shadow .2s, transform .2s;
-  box-shadow: 0 4px 12px rgba(3,128,71,.25);
-}
-.tp-apply:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(3,128,71,.35); }
-.tp-apply svg { width: 14px; height: 14px; stroke: #fff; fill: none; }
-
-/* ── TOTALS ── */
-.tp-totals { display: flex; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; }
-.tp-total-pill {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 14px 20px; box-shadow: var(--shadow); flex: 1; min-width: 160px;
-  position: relative; overflow: hidden; transition: box-shadow .2s;
-}
-.tp-total-pill:hover { box-shadow: var(--shadow-md); }
-.tp-total-pill::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
-.tp-total-pill--articles::before  { background: linear-gradient(90deg, var(--blue), #60a5fa); }
-.tp-total-pill--publishers::before{ background: linear-gradient(90deg, var(--green), #34d399); }
-.tp-total-pill--period::before    { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
-.tp-total-label { font-size: 10px; font-weight: 800; color: var(--text-lo); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 8px; }
-.tp-total-value { font-size: 28px; font-weight: 800; color: var(--text-hi); letter-spacing: -1px; line-height: 1; }
-.tp-total-value--articles   { color: var(--blue); }
-.tp-total-value--publishers { color: var(--green); }
-.tp-total-sub { font-size: 11px; color: var(--text-lo); font-weight: 600; margin-top: 6px; }
-
-/* ── TAB BAR ── */
-.tp-tab-bar {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 12px 16px; margin-bottom: 20px;
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; box-shadow: var(--shadow);
-}
-.tp-tab-sep { flex: 1; }
-.tp-csv-btn {
-  display: flex; align-items: center; gap: 6px; padding: 7px 14px;
-  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  font-family: var(--font); font-size: 12px; font-weight: 600; color: var(--text-md);
-  cursor: pointer; transition: all .2s;
-}
-.tp-csv-btn:hover { background: var(--green); color: #fff; border-color: var(--green); }
-.tp-csv-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; }
-
-/* ── CHART GRID ── */
-.tp-chart-row1 {
-  display: grid;
-  grid-template-columns: 3fr 2fr;
-  gap: 18px;
-  margin-bottom: 18px;
+/* ══ KPI Icon bg ══ */
+.kpi-icon-bg {
+    width:48px; height:48px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,.2); font-size:24px; color:#fff; flex-shrink:0;
 }
 
-.tp-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-  box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column;
-}
-.tp-card-head {
-  padding: 14px 18px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-  flex-shrink: 0; gap: 12px;
-}
-.tp-card-title { font-size: 14px; font-weight: 800; color: var(--text-hi); letter-spacing: -.2px; }
-.tp-card-body  { flex: 1; padding: 14px 8px 14px 4px; position: relative; }
-.tp-ch         { width: 100%; }
-.tp-ch--bar    { height: 560px; }
-.tp-ch--donut  { height: 560px; }
-
-/* Legend dot */
-.tp-legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-
-/* Skeleton */
-.tp-skel {
-  position: absolute; inset: 0;
-  background: linear-gradient(90deg, #f8fafc 25%, #e2e8f0 50%, #f8fafc 75%);
-  background-size: 200% 100%; animation: shimmer 1.4s ease-in-out infinite;
-  border-radius: 8px; z-index: 3;
-}
-@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
-/* ── DATE PICKER MODAL ── */
-.tp-dp-modal {
-  position: fixed; inset: 0; z-index: 9999;
-  background: rgba(0,0,0,.45); backdrop-filter: blur(6px);
-  display: none; align-items: center; justify-content: center;
-}
-.tp-dp-modal.show { display: flex; }
-.tp-dp-overlay { position: absolute; inset: 0; cursor: pointer; }
-.tp-dp-box {
-  position: relative; z-index: 1;
-  background: #fff; border-radius: var(--radius);
-  box-shadow: 0 24px 60px rgba(0,0,0,.25);
-  display: flex; max-width: 880px; width: 92%;
-  animation: popIn .25s cubic-bezier(.34,1.3,.64,1);
-}
-@keyframes popIn { from{opacity:0;transform:scale(.94) translateY(12px)} to{opacity:1;transform:none} }
-.tp-dp-sidebar {
-  width: 168px; background: var(--bg); border-right: 1px solid var(--border);
-  padding: 14px 10px; border-radius: var(--radius) 0 0 var(--radius);
-  display: flex; flex-direction: column; gap: 3px;
-}
-.tp-dp-preset {
-  padding: 9px 14px; border: none; border-radius: 8px;
-  font-family: var(--font); font-size: 12px; font-weight: 600;
-  color: var(--text-hi); text-align: left; cursor: pointer;
-  background: transparent; transition: all .15s;
-}
-.tp-dp-preset:hover { background: #fff; color: var(--green); }
-.tp-dp-preset.active { background: var(--green); color: #fff; }
-.tp-dp-content { flex: 1; padding: 20px; display: flex; flex-direction: column; }
-.tp-dp-nav { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 18px; }
-.tp-dp-nav-btn {
-  width: 34px; height: 34px; border-radius: 8px;
-  background: var(--bg); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: all .15s; flex-shrink: 0;
-}
-.tp-dp-nav-btn:hover { background: var(--green); border-color: var(--green); color: #fff; }
-.tp-dp-nav-btn svg { width: 18px; height: 18px; }
-.tp-dp-cals { display: flex; gap: 20px; flex: 1; }
-.tp-dp-cal { flex: 1; }
-.tp-dp-month-title { font-size: 15px; font-weight: 800; text-align: center; margin-bottom: 14px; color: var(--text-hi); }
-.tp-dp-weekdays { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; margin-bottom: 6px; }
-.tp-dp-wd { text-align: center; font-size: 10px; font-weight: 800; color: var(--text-lo); padding: 6px 0; }
-.tp-dp-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
-.tp-dp-day {
-  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 600; border-radius: 7px;
-  cursor: pointer; transition: all .12s; color: var(--text-hi);
-  background: transparent; border: none; font-family: var(--font);
-}
-.tp-dp-day:hover:not(.other):not(.dis) { background: var(--bg); }
-.tp-dp-day.other { color: #cbd5e1; cursor: default; }
-.tp-dp-day.dis   { color: #e2e8f0; cursor: not-allowed; }
-.tp-dp-day.today { border: 2px solid var(--green); }
-.tp-dp-day.sel   { background: var(--green); color: #fff; }
-.tp-dp-day.rng   { background: var(--green-dim); color: var(--green); }
-.tp-dp-display {
-  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 13px 16px; text-align: center; margin-bottom: 16px;
-  font-size: 13px; font-weight: 700; color: var(--text-hi);
-}
-.tp-dp-footer { display: flex; gap: 10px; justify-content: flex-end; }
-.tp-dp-cancel {
-  padding: 9px 20px; background: var(--bg); border: 1px solid var(--border);
-  border-radius: 8px; font-family: var(--font); font-size: 13px; font-weight: 700;
-  color: var(--text-md); cursor: pointer; transition: background .15s;
-}
-.tp-dp-cancel:hover { background: var(--border); }
-.tp-dp-apply {
-  padding: 9px 20px; background: linear-gradient(135deg, var(--green), var(--green-dark));
-  color: #fff; border: none; border-radius: 8px;
-  font-family: var(--font); font-size: 13px; font-weight: 700;
-  cursor: pointer; transition: box-shadow .2s; box-shadow: 0 3px 10px rgba(3,128,71,.25);
-}
-.tp-dp-apply:hover { box-shadow: 0 6px 18px rgba(3,128,71,.35); }
-
-/* ════════════════════════════════════════
-   ARTICLE POPUP
-════════════════════════════════════════ */
-@keyframes tpPopIn {
-  from { opacity:0; transform:translateY(14px) scale(.94); }
-  to   { opacity:1; transform:translateY(0) scale(1); }
+/* ══ Skeleton ══ */
+.sk-block {
+    border-radius:4px;
+    background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);
+    background-size:200% 100%; animation:shimmer 1.4s infinite;
 }
 
-#tpPopup {
-  position: fixed; z-index: 99999;
-  background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
-  box-shadow: 0 20px 60px rgba(0,0,0,.22);
-  width: 480px; height: 600px;
-  display: none; flex-direction: column; overflow: hidden;
-  font-family: var(--font);
-  animation: tpPopIn .22s cubic-bezier(.34,1.3,.64,1);
-  user-select: none;
+/* ══ Spinner ══ */
+.spin-ring {
+    width:26px; height:26px;
+    border:2.5px solid var(--slate-100); border-top-color:var(--primary);
+    border-radius:50%; animation:spin .65s linear infinite;
 }
-#tpPopup.visible { display: flex; }
+.spinner-state {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:48px 20px; gap:12px; color:var(--slate-400); font-size:12px; font-weight:600;
+}
 
-.tpp-header {
-  display: flex; align-items: center; gap: 8px; padding: 12px 16px;
-  background: var(--bg); border-bottom: 1px solid var(--border);
-  cursor: grab; flex-shrink: 0;
+/* ══ Chart helpers ══ */
+.chart-container { position:relative; }
+.chart-loading {
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px; background:#fff; z-index:2; transition:opacity .3s;
 }
-.tpp-header:active { cursor: grabbing; }
-.tpp-drag { display:flex; flex-direction:column; gap:3px; margin-right:4px; opacity:.4; flex-shrink:0; }
-.tpp-drag span { display:block; width:18px; height:2px; background:var(--text-md); border-radius:1px; }
-.tpp-dot   { width:10px; height:10px; border-radius:50%; flex-shrink:0; background:var(--red); }
-.tpp-title { font-size:13px; font-weight:700; color:var(--text-hi); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.tpp-count { background:var(--green); color:#fff; border-radius:10px; padding:1px 9px; font-size:11px; font-weight:800; flex-shrink:0; }
-.tpp-close {
-  width:28px; height:28px; border-radius:8px; border:none;
-  background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center;
-  color:var(--text-md); font-size:20px; line-height:1; transition:all .15s; flex-shrink:0;
+.chart-loading.hidden { opacity:0; pointer-events:none; }
+.chart-loading span { font-size:11px; font-weight:600; color:var(--slate-400); }
+.chart-empty {
+    height:100%; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:6px; color:var(--slate-400); font-size:12px; font-weight:600;
 }
-.tpp-close:hover { background:#fee2e2; color:#991b1b; }
+.chart-empty i { font-size:34px; color:var(--slate-300); display:block; }
 
-.tpp-actions {
-  display:flex; align-items:center; gap:8px; padding:7px 13px;
-  border-bottom:1px solid var(--border); background:#fafbfc; flex-shrink:0;
+/* ══ Publisher list items ══ */
+.tp-pub-list { display:flex; flex-direction:column; }
+.tp-pub-item {
+    display:flex; align-items:center; gap:12px;
+    padding:10px 16px; border-bottom:1px solid var(--slate-100);
+    transition:background .12s; cursor:pointer;
 }
-.tpp-meta {
-  flex:1; font-size:10px; font-weight:700; color:var(--text-lo);
-  text-transform:uppercase; letter-spacing:.5px;
-  display:flex; align-items:center; gap:8px; overflow:hidden;
-}
-.tpp-meta svg { width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:2; flex-shrink:0; }
-.tpp-meta__label { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.tpp-export-btn {
-  display:flex; align-items:center; gap:5px; padding:5px 11px;
-  background:var(--green); color:#fff; border:none; border-radius:8px;
-  font-family:var(--font); font-size:10px; font-weight:700;
-  cursor:pointer; transition:all .15s; white-space:nowrap;
-}
-.tpp-export-btn:hover { background:var(--green-dark); transform:translateY(-1px); }
-.tpp-export-btn svg { width:11px; height:11px; stroke:#fff; fill:none; stroke-width:2.5; }
+.tp-pub-item:last-child { border-bottom:none; }
+.tp-pub-item:hover { background:var(--slate-50); }
 
-.tpp-list { overflow-y:auto; flex:1; padding:4px 0; min-height:0; }
-.tpp-list::-webkit-scrollbar { width:5px; }
-.tpp-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
-.tpp-list::-webkit-scrollbar-thumb:hover { background:var(--text-lo); }
+.tp-pub-rank {
+    width:22px; height:22px; border-radius:50%;
+    background:var(--slate-100); border:1px solid var(--slate-200);
+    display:flex; align-items:center; justify-content:center;
+    font-size:9px; font-weight:800; color:var(--slate-400); flex-shrink:0;
+}
+.tp-pub-rank--1 { background:linear-gradient(135deg,#ffd700,#F59E0B); color:#7c5900; border-color:#ffd700; }
+.tp-pub-rank--2 { background:linear-gradient(135deg,#c0c0c0,#9ca3af); color:#3d3d3d; border-color:#c0c0c0; }
+.tp-pub-rank--3 { background:linear-gradient(135deg,#cd7f32,#b06820); color:#fff;    border-color:#cd7f32; }
 
-.tpp-item {
-  display:flex; gap:10px; padding:10px 14px; border-bottom:1px solid #f1f5f9;
-  transition:background .1s; cursor:pointer; align-items:flex-start;
+.tp-pub-av {
+    width:36px; height:36px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:12px; color:#fff;
+    border:1.5px solid var(--slate-200); overflow:hidden; background:#EF4444;
 }
-.tpp-item:last-child { border-bottom:none; }
-.tpp-item:hover { background:#f0fdf4; }
-.tpp-avatar {
-  width:38px; height:38px; border-radius:50%; flex-shrink:0;
-  background:linear-gradient(135deg,var(--red),#f87171);
-  color:#fff; font-weight:700; font-size:13px;
-  display:flex; align-items:center; justify-content:center;
-  border:1.5px solid var(--border); overflow:hidden;
-}
-.tpp-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-.tpp-item-body { flex:1; min-width:0; }
-.tpp-item-pub  { font-size:12px; font-weight:700; color:var(--text-hi); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.tpp-item-url  { font-size:10px; color:var(--text-lo); font-weight:500; margin-bottom:3px; }
-.tpp-item-text {
-  font-size:12px; color:var(--text-md); line-height:1.5;
-  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
-  overflow:hidden; margin-bottom:5px;
-}
-.tpp-item-foot { display:flex; align-items:center; gap:6px; font-size:10px; color:var(--text-lo); flex-wrap:wrap; }
-.tpp-sent { padding:1px 7px; border-radius:10px; font-size:9px; font-weight:800; text-transform:uppercase; }
-.tpp-sent--pos { background:#d1fae5; color:#065f46; }
-.tpp-sent--neg { background:#fee2e2; color:#991b1b; }
-.tpp-sent--neu { background:var(--bg); color:var(--text-md); }
+.tp-pub-av img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
 
-.tpp-loading {
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  height:100%; gap:14px; color:var(--text-md); font-size:13px; font-weight:600;
-}
-.tpp-spinner {
-  width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--green);
-  border-radius:50%; animation:tpSpin .7s linear infinite;
-}
-@keyframes tpSpin { to { transform:rotate(360deg); } }
+.tp-pub-body { flex:1; min-width:0; }
+.tp-pub-name { font-size:12.5px; font-weight:700; color:var(--slate-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tp-pub-stats { display:flex; align-items:center; gap:4px; flex-wrap:wrap; margin-top:3px; }
 
-/* Detail Panel */
-@keyframes tpDetailIn { from{transform:translateX(100%)} to{transform:translateX(0)} }
-#tpDetailPanel {
-  position:absolute; inset:0; background:#fff; z-index:10;
-  display:none; flex-direction:column;
-  animation:tpDetailIn .22s cubic-bezier(.4,0,.2,1);
+.tp-metric {
+    display:inline-flex; align-items:center; gap:3px;
+    padding:2px 6px; border-radius:3px;
+    font-size:10px; font-weight:700;
+    background:var(--slate-100); color:var(--slate-500); white-space:nowrap;
 }
-#tpDetailPanel.visible { display:flex; }
-.tpdp-header {
-  display:flex; align-items:center; gap:10px; padding:12px 16px;
-  background:var(--bg); border-bottom:1px solid var(--border); flex-shrink:0;
-}
-.tpdp-back {
-  width:30px; height:30px; border-radius:8px; border:1px solid var(--border);
-  background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center;
-  color:var(--text-md); transition:all .15s; flex-shrink:0;
-}
-.tpdp-back:hover { background:var(--green-dim); color:var(--green); border-color:var(--green-border); }
-.tpdp-back svg { width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2.5; }
-.tpdp-title { font-size:13px; font-weight:700; color:var(--text-hi); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.tpdp-close { width:28px; height:28px; border-radius:8px; border:none; background:transparent; cursor:pointer; font-size:20px; color:var(--text-md); display:flex; align-items:center; justify-content:center; transition:all .15s; }
-.tpdp-close:hover { background:#fee2e2; color:#991b1b; }
-.tpdp-body { overflow-y:auto; flex:1; padding:16px; }
-.tpdp-body::-webkit-scrollbar { width:5px; }
-.tpdp-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
-.tpdp-avatar-row { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
-.tpdp-avatar-lg {
-  width:52px; height:52px; border-radius:50%;
-  background:linear-gradient(135deg,var(--red),#f87171);
-  color:#fff; font-weight:700; font-size:18px;
-  display:flex; align-items:center; justify-content:center;
-  border:2px solid var(--border); overflow:hidden; flex-shrink:0;
-}
-.tpdp-avatar-lg img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-.tpdp-pub-name { font-size:15px; font-weight:700; color:var(--text-hi); }
-.tpdp-pub-url  { font-size:11px; color:var(--text-lo); font-weight:500; }
-.tpdp-ttl { font-size:14px; font-weight:800; color:var(--text-hi); line-height:1.45; margin-bottom:10px; }
-.tpdp-content {
-  font-size:12px; color:var(--text-md); line-height:1.7; margin-bottom:12px;
-  background:var(--bg); border-radius:10px; padding:12px 14px;
-  border:1px solid var(--border); word-break:break-word;
-  display:-webkit-box; -webkit-line-clamp:6; -webkit-box-orient:vertical; overflow:hidden;
-}
-.tpdp-meta-row { display:flex; align-items:center; justify-content:space-between; font-size:11px; color:var(--text-lo); font-weight:500; margin-bottom:12px; }
-.tpdp-sent-badge { display:inline-flex; align-items:center; gap:5px; padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; margin-bottom:12px; }
-.tpdp-sent-badge--pos { background:#d1fae5; color:#065f46; }
-.tpdp-sent-badge--neg { background:#fee2e2; color:#991b1b; }
-.tpdp-sent-badge--neu { background:var(--bg); color:var(--text-md); }
-.tpdp-stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
-.tpdp-stat-box { background:var(--bg); border-radius:10px; padding:10px 12px; border:1px solid var(--border); text-align:center; }
-.tpdp-stat-val { font-size:16px; font-weight:700; color:var(--text-hi); }
-.tpdp-stat-lbl { font-size:9px; font-weight:700; color:var(--text-lo); text-transform:uppercase; letter-spacing:.4px; margin-top:2px; }
-.tpdp-link-btn {
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  padding:10px 14px; background:var(--green); color:#fff;
-  border-radius:10px; font-size:12px; font-weight:700;
-  text-decoration:none; transition:all .15s; width:100%; margin-top:4px;
-}
-.tpdp-link-btn:hover { background:var(--green-dark); }
-.tpdp-link-btn svg { width:13px; height:13px; stroke:#fff; fill:none; stroke-width:2.5; }
+.tp-metric--red     { background:rgba(239,68,68,.10); color:#991b1b; }
+.tp-metric--primary { background:var(--primary-lt);  color:var(--primary); }
 
-@media (max-width: 900px) { .tp-chart-row1 { grid-template-columns: 1fr; } }
-@media (max-width: 700px) {
-  .tp-page { padding: 14px; }
-  .tp-dp-box { flex-direction: column; }
-  .tp-dp-sidebar { width: 100%; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; }
-  .tp-dp-cals { flex-direction: column; }
+.tp-pub-bar-wrap { display:flex; align-items:center; gap:8px; width:140px; flex-shrink:0; }
+.tp-pub-bar-track { flex:1; height:5px; background:var(--slate-100); border-radius:3px; overflow:hidden; }
+.tp-pub-bar-fill  { height:100%; border-radius:3px; background:#EF4444; transition:width .4s ease; }
+.tp-pub-bar-val   { font-size:10px; font-weight:800; color:var(--slate-500); white-space:nowrap; min-width:34px; text-align:right; }
+
+/* ══ Search ══ */
+.tp-search {
+    padding:5px 12px; border:1px solid var(--slate-200);
+    border-radius:var(--radius-sm); font-size:12px; font-weight:600;
+    background:var(--slate-50); outline:none; width:200px;
+    transition:border-color .15s; color:var(--slate-700);
+}
+.tp-search:focus { border-color:var(--primary); }
+
+/* ══ Rows select ══ */
+.tp-rows-sel {
+    padding:4px 9px; border:1px solid var(--slate-200); border-radius:var(--radius-sm);
+    font-size:11px; font-weight:600; color:var(--slate-600);
+    background:var(--slate-50); outline:none; cursor:pointer;
+}
+.tp-rows-sel:focus { border-color:var(--primary); }
+
+/* ══ Donut legend ══ */
+.donut-legend { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:10px; }
+.donut-leg-item {
+    display:flex; align-items:center; gap:5px;
+    font-size:11px; font-weight:600; color:var(--slate-500);
+    padding:3px 8px; background:var(--slate-50);
+    border-radius:3px; border:1px solid var(--slate-200);
+}
+.donut-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+/* ══ Pagination ══ */
+.tp-pagination {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 16px; border-top:1px solid var(--slate-100); flex-wrap:wrap; gap:8px;
+}
+.tp-pag-info { font-size:11px; color:var(--slate-400); font-weight:500; }
+.tp-pag-controls { display:flex; align-items:center; gap:3px; }
+.tp-pag-btn {
+    min-width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center;
+    padding:0 6px; border-radius:var(--radius-sm); border:1px solid var(--slate-200);
+    background:#fff; font-size:11px; font-weight:600; color:var(--slate-500);
+    cursor:pointer; transition:all .12s; user-select:none;
+}
+.tp-pag-btn:hover:not(:disabled):not(.is-active) { border-color:var(--primary); color:var(--primary); background:var(--primary-lt); }
+.tp-pag-btn.is-active { background:var(--primary); border-color:var(--primary); color:#fff; }
+.tp-pag-btn:disabled { opacity:.35; cursor:not-allowed; }
+
+/* ══════════════════════════════════════
+   SLIDE PANEL — 1-to-1 from TikTok page
+══════════════════════════════════════ */
+.do-panel-overlay {
+    position:fixed; inset:0; z-index:9000;
+    background:rgba(15,23,42,.45); backdrop-filter:blur(4px); display:none;
+}
+.do-panel-overlay.show   { display:block; animation:overlayIn .22s ease-out; }
+.do-panel-overlay.hiding { animation:overlayOut .22s ease-out forwards; }
+
+.do-panel {
+    position:fixed; top:0; right:0; bottom:0; z-index:9001;
+    width:480px; max-width:100vw; background:#fff;
+    display:none; flex-direction:column;
+    border-left:1px solid var(--slate-200);
+    box-shadow:-8px 0 40px rgba(15,23,42,.16);
+}
+.do-panel.show   { display:flex; animation:slideInRight .28s cubic-bezier(.4,0,.2,1); }
+.do-panel.hiding { animation:slideOutRight .24s cubic-bezier(.4,0,.2,1) forwards; }
+
+.do-panel-header {
+    display:flex; align-items:center; gap:10px;
+    padding:14px 16px; border-bottom:1px solid var(--slate-200);
+    background:var(--slate-50); flex-shrink:0;
+}
+.do-panel-dot   { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.do-panel-title { font-size:13px; font-weight:700; color:var(--slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.do-panel-close {
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    border:1px solid var(--slate-200); background:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--slate-500); font-size:16px; transition:all .14s; flex-shrink:0;
+}
+.do-panel-close:hover { background:var(--red); border-color:var(--red); color:#fff; }
+
+.do-panel-actions {
+    display:flex; align-items:center; gap:7px; padding:7px 12px;
+    border-bottom:1px solid var(--slate-200); background:#fff; flex-shrink:0;
+}
+.do-panel-meta {
+    flex:1; font-size:10px; font-weight:700; color:var(--slate-400);
+    text-transform:uppercase; letter-spacing:.5px;
+    display:flex; align-items:center; gap:5px;
+}
+.do-panel-export {
+    display:flex; align-items:center; gap:4px; padding:4px 10px;
+    background:var(--primary); color:#fff; border:none;
+    border-radius:var(--radius-sm); font-size:10px; font-weight:700;
+    cursor:pointer; transition:filter .13s;
+}
+.do-panel-export:hover { filter:brightness(1.1); }
+
+.do-panel-list { overflow-y:auto; flex:1; padding:2px 0; min-height:0; }
+.do-panel-list::-webkit-scrollbar { width:4px; }
+.do-panel-list::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
+
+.do-panel-item {
+    display:flex; gap:10px; padding:10px 14px;
+    border-bottom:1px solid var(--slate-50); cursor:pointer;
+    transition:background .1s; align-items:flex-start;
+}
+.do-panel-item:hover { background:#f0f9ff; }
+.do-panel-item:last-child { border-bottom:none; }
+
+.do-panel-avatar {
+    width:36px; height:36px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:12px; color:#fff;
+    border:1.5px solid var(--slate-200); overflow:hidden;
+}
+.do-panel-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.do-panel-item-body { flex:1; min-width:0; }
+.do-panel-author { font-size:12px; font-weight:700; color:var(--slate-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.do-panel-text   { font-size:11px; color:var(--slate-600); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px; }
+.do-panel-footer { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--slate-400); flex-wrap:wrap; }
+
+.do-sent-badge { padding:1px 6px; border-radius:3px; font-size:9px; font-weight:800; text-transform:uppercase; }
+.do-sent-badge--pos { background:#dbeafe; color:#1d4ed8; }
+.do-sent-badge--neg { background:#fee2e2; color:#991b1b; }
+.do-sent-badge--neu { background:var(--slate-100); color:var(--slate-500); }
+
+.do-panel-loading {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    height:100%; gap:12px; color:var(--slate-400); font-size:13px; font-weight:600;
+}
+.do-panel-spinner {
+    width:28px; height:28px; border:2.5px solid var(--slate-100);
+    border-top-color:var(--primary); border-radius:50%; animation:spin .65s linear infinite;
+}
+
+/* Detail sub-panel — same as TikTok */
+.do-detail-panel {
+    position:absolute; inset:0; background:#fff; z-index:5;
+    display:none; flex-direction:column;
+    animation:slideInRight .2s cubic-bezier(.4,0,.2,1);
+}
+.do-detail-panel.show { display:flex; }
+
+.do-dp2-header {
+    display:flex; align-items:center; gap:8px; padding:12px 14px;
+    background:var(--slate-50); border-bottom:1px solid var(--slate-200); flex-shrink:0;
+}
+.do-dp2-back {
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    border:1px solid var(--slate-200); background:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--slate-500); transition:all .13s;
+}
+.do-dp2-back:hover { background:var(--primary-lt); color:var(--primary); border-color:var(--primary); }
+.do-dp2-title { font-size:13px; font-weight:700; color:var(--slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.do-dp2-body  { overflow-y:auto; flex:1; padding:16px; }
+.do-dp2-body::-webkit-scrollbar { width:4px; }
+.do-dp2-body::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
+
+.do-dp2-avatar-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.do-dp2-avatar-lg  {
+    width:46px; height:46px; border-radius:50%; color:#fff; font-weight:700;
+    font-size:16px; display:flex; align-items:center; justify-content:center;
+    border:2px solid var(--slate-200); overflow:hidden; flex-shrink:0; background:#EF4444;
+}
+.do-dp2-avatar-lg img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.do-dp2-name       { font-size:14px; font-weight:700; color:var(--slate-900); }
+.do-dp2-handle     { font-size:11px; color:var(--slate-400); font-weight:500; }
+.do-dp2-plat-badge { display:inline-block; padding:2px 8px; border-radius:3px; font-size:10px; font-weight:700; margin-top:3px; }
+.do-dp2-meta       { font-size:11px; color:var(--slate-400); font-weight:500; margin-bottom:10px; }
+.do-dp2-sent       { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:3px; font-size:11px; font-weight:700; margin-bottom:10px; }
+.do-dp2-sent--pos  { background:#dbeafe; color:#1d4ed8; }
+.do-dp2-sent--neg  { background:#fee2e2; color:#991b1b; }
+.do-dp2-sent--neu  { background:var(--slate-100); color:var(--slate-500); }
+.do-dp2-content    { font-size:12px; color:var(--slate-700); line-height:1.7; margin-bottom:12px; background:var(--slate-50); border-radius:var(--radius-sm); padding:10px 12px; border:1px solid var(--slate-200); word-break:break-word; }
+.do-dp2-stats      { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:10px; }
+.do-dp2-stat       { background:var(--slate-50); border-radius:var(--radius-sm); padding:8px 10px; border:1px solid var(--slate-200); text-align:center; }
+.do-dp2-stat-val   { font-size:14px; font-weight:700; color:var(--slate-900); }
+.do-dp2-stat-lbl   { font-size:9px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.4px; margin-top:1px; }
+.do-dp2-link {
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    padding:9px 14px; background:var(--primary); color:#fff;
+    border-radius:var(--radius-sm); font-size:12px; font-weight:700;
+    text-decoration:none; transition:filter .14s; margin-top:4px;
+}
+.do-dp2-link:hover { filter:brightness(1.1); color:#fff; }
+
+/* ══ KPI Card Hover — identical to TikTok ══ */
+@keyframes kpiIconBounce {
+    0%,100% { transform:scale(1) rotate(0deg); }
+    30%      { transform:scale(1.25) rotate(-10deg); }
+    60%      { transform:scale(1.1) rotate(6deg); }
+}
+@keyframes kpiShimmer {
+    0%   { left:-100%; }
+    100% { left:150%; }
+}
+.kpi-card-hover {
+    will-change:transform,box-shadow;
+    transition:transform .25s cubic-bezier(.34,1.56,.64,1) !important,
+               box-shadow .25s ease !important, filter .25s ease !important;
+    cursor:default; position:relative !important; overflow:hidden !important;
+}
+.kpi-card-hover::before {
+    content:''; position:absolute; top:0; bottom:0; left:-100%;
+    width:60%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
+    pointer-events:none; z-index:1;
+}
+.kpi-card-hover:hover { transform:translateY(-6px) scale(1.025) !important; box-shadow:0 20px 40px rgba(0,0,0,.25) !important; filter:brightness(1.07) !important; }
+.kpi-card-hover:hover::before { animation:kpiShimmer .6s ease forwards; }
+.kpi-card-hover:hover .kpi-icon-bg { background:rgba(255,255,255,.35) !important; }
+.kpi-card-hover:hover .kpi-icon-bg i { animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both !important; display:inline-block !important; }
+.kpi-card-hover:active { transform:translateY(-2px) scale(1.01) !important; transition-duration:.08s !important; }
+
+@media(max-width:640px) {
+    .do-panel { width:100vw; }
+    .tp-pub-bar-wrap { display:none; }
+    .tp-search { width:140px; }
 }
 </style>
 @endsection
+
+@section('page-title', 'Top News Publishers')
 
 @section('content')
 @php
@@ -402,183 +369,214 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-hi); }
   $newsType  = request()->get('news_type', 'article');
 @endphp
 
-<div class="tp-page">
+<script>
+    const TpCfg = {
+        pid      : {{ $projectId ? (int)$projectId : 'null' }},
+        sd       : '{{ $startDate }}',
+        ed       : '{{ $endDate }}',
+        newsType : '{{ $newsType }}',
+    };
+    const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
+</script>
 
-  <div class="tp-header">
-    <h1>Sites</h1>
-    <p>Distribution by Online News — Top publishers by article volume and total mentions</p>
-  </div>
+{{-- ══ Shared filter datepicker (same as TikTok page) ══ --}}
+@include('mk.layouts.partials.filter-datepicker')
 
-  <div class="tp-filter">
-    <form id="tpForm" method="GET" action="{{ route('mk.news.top-publishers') }}" style="display:contents;">
-      <input type="hidden" name="project_id" value="{{ $projectId }}">
-      <input type="hidden" name="start_date" id="hSD" value="{{ $startDate }}">
-      <input type="hidden" name="end_date"   id="hED" value="{{ $endDate }}">
-      <input type="hidden" name="news_type"  id="hNT" value="{{ $newsType }}">
-
-      <button type="button" class="tp-date-pill" id="tpDpTrigger">
-        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        <span id="tpDpLabel">{{ $startDate }} to {{ $endDate }}</span>
-      </button>
-
-      <div class="tp-filter-div"></div>
-
-      <div class="tp-filter-btn-group">
-        <button type="button" class="tp-filter-btn active" id="btnNewsType" onclick="tpToggleType(this)">
-          <svg viewBox="0 0 24 24" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          Online News (Ind)
-          <span style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid currentColor;margin-left:3px;"></span>
-        </button>
-        <button type="button" class="tp-filter-btn">Filter by Page Rank <span style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid currentColor;margin-left:3px;"></span></button>
-        <button type="button" class="tp-filter-btn">Filter Tier <span style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid currentColor;margin-left:3px;"></span></button>
-      </div>
-
-      <button type="submit" class="tp-apply">
-        <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        Apply
-      </button>
-    </form>
-  </div>
-
-  @if(!$projectId)
-    <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:var(--radius);padding:16px 20px;font-size:13px;font-weight:600;color:#92400e;margin-bottom:20px;">
-      ⚠️ No project selected. Please select a project from the sidebar.
-    </div>
-  @else
-
-  <div class="tp-totals">
-    <div class="tp-total-pill tp-total-pill--articles">
-      <div class="tp-total-label">Total Articles</div>
-      <div class="tp-total-value tp-total-value--articles" id="valArticles">—</div>
-      <div class="tp-total-sub">unique published articles</div>
-    </div>
-    <div class="tp-total-pill tp-total-pill--publishers">
-      <div class="tp-total-label">Total Publishers</div>
-      <div class="tp-total-value tp-total-value--publishers" id="valPublishers">—</div>
-      <div class="tp-total-sub">active news sites</div>
-    </div>
-    <div class="tp-total-pill tp-total-pill--period">
-      <div class="tp-total-label">Period</div>
-      <div class="tp-total-value" style="color:#7c3aed;font-size:16px;letter-spacing:0;padding-top:4px;">{{ \Carbon\Carbon::parse($startDate)->format('d M') }} – {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-      <div class="tp-total-sub">selected date range</div>
-    </div>
-  </div>
-
-  <div class="tp-tab-bar">
-    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-      <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text-md);">
-        <span class="tp-legend-dot" style="background:var(--red);"></span> Articles
-      </div>
-    </div>
-    <div class="tp-tab-sep"></div>
-    <input type="text" id="tpSearch" placeholder="🔍  Search publisher…"
-      style="padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:12px;font-weight:600;background:var(--bg);outline:none;width:220px;transition:border-color .2s;"
-      oninput="tpFilter(this.value)"
-      onfocus="this.style.borderColor='var(--green)'"
-      onblur="this.style.borderColor='var(--border)'">
-    <button class="tp-csv-btn" onclick="tpExportCSV()">
-      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-      Copy CSV data
-    </button>
-  </div>
-
-  <div class="tp-chart-row1">
-
-    {{-- Bar Chart --}}
-    <div class="tp-card">
-      <div class="tp-card-head">
-        <span class="tp-card-title">Total articles by publisher</span>
-        <span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--text-lo);background:var(--bg);padding:3px 10px;border-radius:20px;border:1px solid var(--border);">
-          <span class="tp-legend-dot" style="background:var(--red);"></span>Total Articles
-        </span>
-      </div>
-      <div class="tp-card-body">
-        <div class="tp-ch tp-ch--bar" id="chArticles"></div>
-        <div class="tp-skel" id="skArticles"></div>
-      </div>
-    </div>
-
-    {{-- Donut Chart --}}
-    <div class="tp-card">
-      <div class="tp-card-head">
-        <span class="tp-card-title">Publisher's shares</span>
-        <span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--text-lo);background:var(--bg);padding:3px 10px;border-radius:20px;border:1px solid var(--border);">
-          Top 9 + others
-        </span>
-      </div>
-      <div class="tp-card-body" style="padding:10px;">
-        <div class="tp-ch tp-ch--donut" id="chDonut"></div>
-        <div class="tp-skel" id="skDonut"></div>
-      </div>
-    </div>
-
-  </div>
-
-  @endif
-
+@if(!$projectId)
+<div class="alert alert-warning d-flex align-items-center gap-2 mb-3">
+    <i class="ph ph-warning-circle f-18"></i>
+    <div>No project selected. Please select a project from the sidebar.</div>
 </div>
+@else
 
-{{-- DATE PICKER MODAL --}}
-<div class="tp-dp-modal" id="tpDpModal">
-  <div class="tp-dp-overlay" onclick="TpDp.close()"></div>
-  <div class="tp-dp-box">
-    <div class="tp-dp-sidebar">
-      <button class="tp-dp-preset" data-p="today">Today</button>
-      <button class="tp-dp-preset" data-p="yesterday">Yesterday</button>
-      <button class="tp-dp-preset" data-p="last7">Last 7 Days</button>
-      <button class="tp-dp-preset" data-p="last30">Last 30 Days</button>
-      <button class="tp-dp-preset" data-p="thismonth">This Month</button>
-      <button class="tp-dp-preset" data-p="lastmonth">Last Month</button>
-      <button class="tp-dp-preset active" data-p="custom">Custom Range</button>
-    </div>
-    <div class="tp-dp-content">
-      <div class="tp-dp-nav">
-        <button class="tp-dp-nav-btn" onclick="TpDp.nav(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
-        <div class="tp-dp-cals">
-          <div class="tp-dp-cal" id="tpCal1"></div>
-          <div class="tp-dp-cal" id="tpCal2"></div>
+{{-- ══ KPI Cards ══ --}}
+<div class="row mb-3">
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out both;">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Total Articles</p>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiArticles">
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                        </h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiArticlesSub">
+                            <i class="ph ph-chart-line-up me-1"></i>Loading…
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-newspaper"></i></div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <button class="tp-dp-nav-btn" onclick="TpDp.nav(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
-      </div>
-      <div class="tp-dp-display" id="tpDpRange">{{ $startDate }} – {{ $endDate }}</div>
-      <div class="tp-dp-footer">
-        <button class="tp-dp-cancel" onclick="TpDp.close()">Cancel</button>
-        <button class="tp-dp-apply" onclick="TpDp.apply()">Apply</button>
-      </div>
     </div>
-  </div>
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Total Publishers</p>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiPublishers">
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                        </h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPublishersSub">
+                            <i class="ph ph-globe me-1"></i>Loading…
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-globe"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100 text-white kpi-card-hover" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);animation:fadeUp .38s ease-out .10s both;">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Period</p>
+                        <h3 class="mb-0 text-white f-w-300" style="font-size:16px;letter-spacing:0;padding-top:4px;">
+                            {{ \Carbon\Carbon::parse($startDate)->format('d M') }} – {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+                        </h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
+                            <i class="ph ph-calendar me-1"></i>Selected date range
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-calendar-blank"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-{{-- ARTICLE POPUP --}}
-<div id="tpPopup">
-  <div class="tpp-header" id="tppHeader">
-    <div class="tpp-drag"><span></span><span></span><span></span></div>
-    <div class="tpp-dot" id="tppDot"></div>
-    <span class="tpp-title" id="tppTitle">Articles</span>
-    <span class="tpp-count" id="tppCount">…</span>
-    <button class="tpp-close" onclick="TpPopup.close()">×</button>
-  </div>
-  <div class="tpp-actions">
-    <div class="tpp-meta">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <span class="tpp-meta__label" id="tppMeta">—</span>
+{{-- ══ Charts Row ══ --}}
+<div class="row mb-3">
+
+    {{-- Publisher List Card (left / larger) --}}
+    <div class="col-xl-7 mb-3 mb-xl-0">
+        <div class="card h-100" style="animation:fadeUp .38s ease-out .15s both;">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avtar avtar-xs bg-light-danger rounded">
+                        <i class="ph ph-chart-bar f-18 text-danger"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">Total articles by publisher</h6>
+                        <small class="text-muted">Click a publisher to view its articles</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <input type="text" class="tp-search" id="tpSearch"
+                        placeholder="🔍 Search publisher…"
+                        oninput="TpData.filter(this.value)">
+                    <select class="tp-rows-sel" id="tpRowsSel" onchange="TpData.changeRows()">
+                        <option value="10">Top 10</option>
+                        <option value="20" selected>Top 20</option>
+                        <option value="50">Top 50</option>
+                        <option value="100">Top 100</option>
+                    </select>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="TpData.exportCsv()" title="Export CSV">
+                        <i class="ph ph-download-simple me-1"></i>CSV
+                    </button>
+                    <span class="badge bg-light-danger text-danger" id="badgePublishers">Loading…</span>
+                </div>
+            </div>
+            <div id="tpPubList" class="p-0">
+                <div class="spinner-state"><div class="spin-ring"></div>Loading publishers…</div>
+            </div>
+            <div id="tpPubPag"></div>
+        </div>
     </div>
-    <button class="tpp-export-btn" onclick="TpPopup.exportCsv()">
-      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Export CSV
-    </button>
-  </div>
-  <div class="tpp-list" id="tppList"></div>
-  <div id="tpDetailPanel">
-    <div class="tpdp-header">
-      <button class="tpdp-back" onclick="TpDetail.close()">
-        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <span class="tpdp-title" id="tpdpTitle">Detail Artikel</span>
-      <button class="tpdp-close" onclick="TpPopup.close()">×</button>
+
+    {{-- Donut Chart (right / smaller) --}}
+    <div class="col-xl-5">
+        <div class="card h-100" style="animation:fadeUp .38s ease-out .20s both;">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avtar avtar-xs bg-light-primary rounded">
+                        <i class="ph ph-chart-donut f-18 text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">Publisher's shares</h6>
+                        <small class="text-muted">Top 9 + others</small>
+                    </div>
+                </div>
+                <span class="badge bg-light-secondary text-muted">Top 9</span>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height:460px;">
+                    <div class="chart-loading" id="donutLoading">
+                        <div class="spin-ring"></div><span>Loading chart…</span>
+                    </div>
+                    <div id="donutChart" style="width:100%;height:460px;display:none;"></div>
+                </div>
+                <div id="donutLegend" class="donut-legend"></div>
+            </div>
+        </div>
     </div>
-    <div class="tpdp-body" id="tpdpBody"></div>
-  </div>
+
+</div>
+
+{{-- ══ Horizontal Bar Chart Card ══ --}}
+<div class="card mb-3" style="animation:fadeUp .38s ease-out .25s both;">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <div class="avtar avtar-xs bg-light-danger rounded">
+                <i class="ph ph-chart-bar-horizontal f-18 text-danger"></i>
+            </div>
+            <div>
+                <h6 class="mb-0">Article Volume Chart</h6>
+                <small class="text-muted">Top 20 publishers — click a bar to view articles</small>
+            </div>
+        </div>
+        <span class="badge bg-light-danger text-danger">Top 20</span>
+    </div>
+    <div class="card-body">
+        <div class="chart-container">
+            <div class="chart-loading" id="barLoading">
+                <div class="spin-ring"></div><span>Loading…</span>
+            </div>
+            <div id="barChart" style="width:100%;height:620px;display:none;"></div>
+        </div>
+    </div>
+</div>
+
+@endif
+
+{{-- ══ Slide Panel (drawer) — same structure as TikTok page ══ --}}
+<div class="do-panel-overlay" id="tpPanelOverlay" onclick="TpPanel.close()"></div>
+<div class="do-panel" id="tpSntPanel">
+    <div class="do-panel-header">
+        <div class="do-panel-dot" id="tpPanelDot" style="background:#EF4444;"></div>
+        <span class="do-panel-title" id="tpPanelTitle">Articles</span>
+        <button class="do-panel-close" onclick="TpPanel.close()"><i class="ph ph-x"></i></button>
+    </div>
+    <div class="do-panel-actions">
+        <div class="do-panel-meta">
+            <i class="ph ph-magnifying-glass" style="font-size:11px;"></i>
+            <span id="tpPanelMeta">—</span>
+        </div>
+        <button class="do-panel-export" onclick="TpPanel.exportCsv()">
+            <i class="ph ph-download-simple"></i> CSV
+        </button>
+    </div>
+    <div class="do-panel-list" id="tpPanelList"></div>
+
+    {{-- Article detail sub-panel --}}
+    <div class="do-detail-panel" id="tpDetailPanel">
+        <div class="do-dp2-header">
+            <button class="do-dp2-back" onclick="TpDetail.close()">
+                <i class="ph ph-caret-left"></i>
+            </button>
+            <span class="do-dp2-title" id="tpDetailTitle">Article Detail</span>
+            <button class="do-panel-close" onclick="TpPanel.close()"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="do-dp2-body" id="tpDetailBody"></div>
+    </div>
 </div>
 
 @endsection
@@ -588,732 +586,626 @@ body { font-family: var(--font); background: var(--bg); color: var(--text-hi); }
 <script>
 'use strict';
 
-const TpCfg = {
-  pid:      {{ $projectId ? (int)$projectId : 'null' }},
-  sd:       '{{ $startDate }}',
-  ed:       '{{ $endDate }}',
-  newsType: '{{ $newsType }}',
-};
+/* ══ UTILS ══ */
+const _$   = id => document.getElementById(id);
+const numF = n  => parseInt(n||0).toLocaleString('id-ID');
+const numK = n  => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':String(n); };
+const esc  = s  => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const hideLd = id => { const e=_$(id); if(e){ e.style.transition='opacity .3s'; e.style.opacity='0'; setTimeout(()=>e.classList.add('hidden'),300); } };
+const shortDomain = d => (d||'').replace(/^www\./,'');
 
-const numFmt = n => parseInt(n||0).toLocaleString('en-US');
-const numK   = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':String(n); };
+const DONUT_COLORS = ['#2563eb','#e02020','#f97316','#a21caf','#0891b2','#15803d','#b45309','#0f766e','#7c3aed','#be185d'];
+const RED = '#EF4444';
 
-const Charts = {};
-window.addEventListener('resize', () => Object.values(Charts).forEach(c => { try{ c.resize(); }catch(e){} }));
-
-const hideSk = id => { const e=document.getElementById(id); if(e) e.style.display='none'; };
-
-const RED  = '#e02020';
-const BLUE = '#2563eb';
-const PIE_COLORS = ['#2563eb','#e02020','#f97316','#a21caf','#0891b2','#15803d','#b45309','#0f766e','#7c3aed','#be185d','#94a3b8','#64748b'];
-
-const TT = {
-  backgroundColor: '#1e293b', borderColor: '#334155', borderWidth: 1,
-  padding: [10, 14],
-  textStyle: { color: '#f8fafc', fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 12 },
-  extraCssText: 'border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);',
-};
-
+/* ══ STATE ══ */
 let _allData  = [];
 let _filtered = [];
+let _pubPage  = 1;
+const PUB_PER_PAGE = 20;
+const _artCache = {};
+let _panelItems = [];
+let _panelDomain = null;
 
-function hostnameOf(url) {
-  try {
-    const h = new URL(url.startsWith('http') ? url : 'https://' + url).hostname;
-    return h.replace(/^www\./, '');
-  } catch { return url.replace(/^www\./, '').split('/')[0]; }
-}
+/* ══ ECharts instances ══ */
+const EC = {};
+window.addEventListener('resize', () => Object.values(EC).forEach(c=>{ try{ c.resize(); }catch(e){} }));
 
-/* ════════════════════════════════════════
+/* ══════════════════════════════════════
    MAIN DATA LOAD
-════════════════════════════════════════ */
+══════════════════════════════════════ */
 async function loadData() {
-  if (!TpCfg.pid) return;
-  try {
-    const res    = await fetch(`/mk/api/news/top-publisher?project_id=${TpCfg.pid}&start_date=${TpCfg.sd}&end_date=${TpCfg.ed}&news_type=${TpCfg.newsType}`);
-    const result = await res.json();
-    if (!result.success || !result.data) return;
-
-    _allData  = result.data;
-    _filtered = _allData;
-
-    const totalArt = result.meta?.total_articles  || _allData.reduce((s,p) => s+(p.count||0), 0);
-    const totalPub = result.meta?.total_publishers || _allData.length;
-
-    document.getElementById('valArticles').textContent   = numFmt(totalArt);
-    document.getElementById('valPublishers').textContent = numFmt(totalPub);
-
-    renderCharts(_filtered);
-  } catch(err) {
-    console.error('Load error:', err);
-  }
-}
-
-/* ════════════════════════════════════════
-   RENDER CHARTS
-════════════════════════════════════════ */
-function renderCharts(data) {
-  renderArticlesBar(data.slice(0, 20));
-  renderDonut(data);
-}
-
-/* ── Bar Chart ── */
-function renderArticlesBar(items) {
-  hideSk('skArticles');
-  const domains = items.map(p => shortDomain(p.domain)).reverse();
-  const values  = items.map(p => p.count || 0).reverse();
-
-  if (Charts.art) Charts.art.dispose();
-  const dom = document.getElementById('chArticles');
-  if (!dom) return;
-  Charts.art = echarts.init(dom, null, { renderer: 'canvas' });
-
-  Charts.art.setOption({
-    animation: true, animationDuration: 700, animationEasing: 'cubicOut',
-    backgroundColor: '#fff',
-    tooltip: {
-      ...TT, trigger: 'axis',
-      axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(37,99,235,.05)' } },
-      formatter: p => `<b style="font-size:13px;">${p[0].name}</b><br>${numFmt(p[0].value)} articles`,
-    },
-    grid: { top: 10, right: 70, bottom: 10, left: 10, containLabel: true },
-    xAxis: { type: 'value', axisLine:{show:false}, axisTick:{show:false}, splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}}, axisLabel:{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:10,color:'#94a3b8',formatter:numK} },
-    yAxis: { type: 'category', data: domains, axisLine:{show:false}, axisTick:{show:false}, axisLabel:{fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:11,fontWeight:'700',color:'#475569'} },
-    series: [{
-      type: 'bar',
-      data: values.map((v,i) => ({
-        value: v,
-        itemStyle: { color: RED, borderRadius: [0, 5, 5, 0], opacity: i === values.length-1 ? 1 : 0.8 }
-      })),
-      barMaxWidth: 22,
-      label: { show: true, position: 'right', fontFamily:"'Plus Jakarta Sans',sans-serif", fontWeight:'700', fontSize:11, color:'#475569', formatter: p => numFmt(p.value) },
-    }]
-  });
-
-  Charts.art.on('click', params => {
-    if (params.componentType !== 'series') return;
-    const domain = items[items.length - 1 - params.dataIndex]?.domain;
-    if (!domain) return;
-    TpPopup.open(domain, params.event.event.clientX, params.event.event.clientY);
-  });
-  Charts.art.on('mouseover', () => { Charts.art.getDom().style.cursor = 'pointer'; });
-  Charts.art.on('mouseout',  () => { Charts.art.getDom().style.cursor = 'default'; });
-}
-
-/* ── Donut Chart ── */
-function renderDonut(data) {
-  hideSk('skDonut');
-
-  const top9  = data.slice(0, 9);
-  const rest  = data.slice(9);   // "others"
-  const total = data.reduce((s,p) => s+(p.count||0), 0);
-
-  const items = top9.map((p,i) => ({
-    name:   shortDomain(p.domain),
-    value:  p.count || 0,
-    color:  PIE_COLORS[i],
-    domain: p.domain,
-    isOthers: false,
-  }));
-
-  if (rest.length) {
-    const othersVal = rest.reduce((s,p) => s+(p.count||0), 0);
-    items.push({
-      name:     `others (${rest.length})`,
-      value:    othersVal,
-      color:    '#94a3b8',
-      domain:   null,
-      isOthers: true,
-      restData: rest,
-    });
-  }
-
-  if (Charts.donut) Charts.donut.dispose();
-  const dom = document.getElementById('chDonut');
-  if (!dom) return;
-  Charts.donut = echarts.init(dom, null, { renderer: 'canvas' });
-
-  Charts.donut.setOption({
-    animation: true, animationDuration: 900, animationEasing: 'cubicOut',
-    backgroundColor: '#fff',
-    tooltip: {
-      ...TT, trigger: 'item',
-      formatter: p => {
-        const pct = total > 0 ? ((p.value/total)*100).toFixed(1) : '0';
-        const hint = p.data?.isOthers ? '<br><small style="opacity:.7">Klik untuk lihat semua</small>' : '';
-        return `<b>${p.name}</b><br>${numFmt(p.value)} articles (${pct}%)${hint}`;
-      }
-    },
-    legend: {
-      bottom: 0, type: 'scroll',
-      data: items.map(d => d.name),
-      textStyle: { fontFamily:"'Plus Jakarta Sans',sans-serif", fontSize:11, fontWeight:'700', color:'#475569' },
-      icon: 'circle', itemWidth:9, itemHeight:9, itemGap:12,
-    },
-    graphic: [{
-      type: 'text', left: 'center', top: '38%',
-      style: { text: numK(total), textAlign: 'center', fill: '#0f172a', fontSize: 22, fontWeight: '800', fontFamily: "'Plus Jakarta Sans', sans-serif" }
-    },{
-      type: 'text', left: 'center', top: '46%',
-      style: { text: 'articles', textAlign: 'center', fill: '#94a3b8', fontSize: 11, fontWeight: '700', fontFamily: "'Plus Jakarta Sans', sans-serif" }
-    }],
-    series: [{
-      type: 'pie',
-      radius: ['42%', '72%'],
-      center: ['50%', '44%'],
-      avoidLabelOverlap: true,
-      minAngle: 2,
-      itemStyle: { borderColor: '#fff', borderWidth: 3 },
-      label: {
-        show: true,
-        formatter: p => {
-          const pct = total > 0 ? Math.round((p.value/total)*100) : 0;
-          return pct >= 3 ? `${pct}%` : '';
-        },
-        fontFamily:"'Plus Jakarta Sans',sans-serif", fontWeight:'800', fontSize:11, color:'#fff',
-        position: 'inside',
-      },
-      labelLine: { show: false },
-      emphasis: {
-        scale: true, scaleSize: 8,
-        itemStyle: { shadowBlur: 20, shadowColor: 'rgba(0,0,0,.25)' },
-        label: { show: true, fontSize: 13, fontWeight: '800', color: '#fff' }
-      },
-      data: items.map((d,i) => ({
-        name:      d.name,
-        value:     d.value,
-        domain:    d.domain,
-        isOthers:  d.isOthers,
-        restData:  d.restData || null,
-        itemStyle: { color: d.color || PIE_COLORS[i % PIE_COLORS.length] },
-      })),
-    }]
-  });
-
-  /* Click donut slice */
-  Charts.donut.on('click', params => {
-    const rect = Charts.donut.getDom().getBoundingClientRect();
-    const cx   = rect.left + rect.width / 2;
-    const cy   = rect.top  + rect.height / 3;
-
-    if (params.data?.isOthers) {
-      /* ── "others" → open mini-list of all remaining publishers ── */
-      OthersPopup.open(params.data.restData || [], cx, cy);
-      return;
-    }
-    if (params.data?.domain) {
-      TpPopup.open(params.data.domain, cx, cy);
-    }
-  });
-  Charts.donut.on('mouseover', () => { Charts.donut.getDom().style.cursor = 'pointer'; });
-  Charts.donut.on('mouseout',  () => { Charts.donut.getDom().style.cursor = 'default'; });
-}
-
-/* ════════════════════════════════════════
-   ARTICLE POPUP
-   FIX: fetch ALL mentions & filter loosely
-════════════════════════════════════════ */
-const TpPopup = {
-  _drag: false, _ox: 0, _oy: 0,
-  _cache: {}, _items: [], _curDomain: null,
-
-  init() {
-    const popup  = document.getElementById('tpPopup');
-    const header = document.getElementById('tppHeader');
-    header.addEventListener('mousedown', e => {
-      this._drag = true;
-      const r = popup.getBoundingClientRect();
-      this._ox = e.clientX - r.left; this._oy = e.clientY - r.top;
-      document.body.style.userSelect = 'none';
-    });
-    document.addEventListener('mousemove', e => {
-      if (!this._drag) return;
-      const vw = window.innerWidth, vh = window.innerHeight;
-      popup.style.left = Math.max(0, Math.min(e.clientX - this._ox, vw - popup.offsetWidth)) + 'px';
-      popup.style.top  = Math.max(0, Math.min(e.clientY - this._oy, vh - popup.offsetHeight)) + 'px';
-    });
-    document.addEventListener('mouseup', () => { this._drag = false; document.body.style.userSelect = ''; });
-  },
-
-  _pos(popup, x, y) {
-    const pw = 480, ph = 600, vw = window.innerWidth, vh = window.innerHeight;
-    let left = x + 18, top = y - 40;
-    if (left + pw > vw - 12) left = x - pw - 18;
-    if (top  + ph > vh - 12) top  = vh - ph - 12;
-    if (top < 8) top = 8; if (left < 8) left = 8;
-    popup.style.left = left + 'px'; popup.style.top = top + 'px';
-  },
-
-  async open(domain, x, y) {
-    const popup = document.getElementById('tpPopup');
-    this._curDomain = domain;
-    TpDetail.close();
-
-    document.getElementById('tppDot').style.background = '#e02020';
-    document.getElementById('tppTitle').textContent    = domain;
-    document.getElementById('tppMeta').textContent     = TpCfg.sd + ' – ' + TpCfg.ed;
-    document.getElementById('tppCount').textContent    = '…';
-
-    const list = document.getElementById('tppList');
-    list.innerHTML = '<div class="tpp-loading"><div class="tpp-spinner"></div><span id="tppLoadMsg">Memuat articles…</span></div>';
-    popup.classList.add('visible');
-    this._pos(popup, x, y);
-
-    const key = `${TpCfg.pid}_${domain}_${TpCfg.sd}_${TpCfg.ed}`;
+    if (!TpCfg.pid) return;
     try {
-      if (!this._cache[key]) {
-        // Show live progress updates during batch fetch
-        const msgEl = document.getElementById('tppLoadMsg');
-        const progressCb = (fetched, matched) => {
-          if (msgEl) msgEl.textContent = `Mencari articles… (${fetched} diperiksa, ${matched} cocok)`;
-        };
-        this._cache[key] = await this._fetch(domain, progressCb);
-      }
-      this._items = this._cache[key];
-      document.getElementById('tppCount').textContent = this._items.length.toLocaleString();
-      this._render(list, this._items);
+        const res    = await fetch(`/mk/api/news/top-publisher?project_id=${TpCfg.pid}&start_date=${TpCfg.sd}&end_date=${TpCfg.ed}&news_type=${TpCfg.newsType}`);
+        const result = await res.json();
+        if (!result.success || !result.data) return;
+
+        _allData  = result.data;
+        _filtered = _allData;
+
+        const totalArt = result.meta?.total_articles  || _allData.reduce((s,p)=>s+(p.count||0),0);
+        const totalPub = result.meta?.total_publishers || _allData.length;
+
+        /* KPIs */
+        const ka = _$('kpiArticles');   if(ka) ka.textContent = numF(totalArt);
+        const kp = _$('kpiPublishers'); if(kp) kp.textContent = numF(totalPub);
+        const ks = _$('kpiArticlesSub');
+        const kps= _$('kpiPublishersSub');
+        if(ks)  ks.innerHTML  = `<i class="ph ph-newspaper me-1"></i>Unique published articles`;
+        if(kps) kps.innerHTML = `<i class="ph ph-globe me-1"></i>Active news sites`;
+        const b = _$('badgePublishers'); if(b) b.textContent = `${totalPub} publishers`;
+
+        renderAll(_filtered);
     } catch(err) {
-      console.error('Popup fetch error:', err);
-      list.innerHTML = `<div class="tpp-loading" style="color:#94a3b8;">
-        <svg style="width:32px;height:32px;stroke:#e2e8f0;fill:none;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
-        Gagal memuat articles<br><small style="font-size:10px;margin-top:4px;display:block;">${err.message}</small></div>`;
-      document.getElementById('tppCount').textContent = '0';
+        console.error('[TpData] load error:', err);
     }
-  },
+}
 
-  close() {
-    document.getElementById('tpPopup')?.classList.remove('visible');
-    TpDetail.close();
-  },
+function renderAll(data) {
+    _pubPage = 1;
+    renderPubList(data);
+    renderBarChart(data.slice(0, 20));
+    renderDonut(data);
+}
 
-  /* ── FETCH: articles for a given domain ── */
-  async _fetch(domain, progressCb) {
-    const cleanDomain = domain.replace(/^www\./, '').toLowerCase();
-    const parts       = cleanDomain.split('.');
-    const baseDomain  = parts.slice(-2).join('.');  // "jambi.antaranews.com" → "antaranews.com"
-    const isBase      = (cleanDomain === baseDomain);
+/* ══════════════════════════════════════
+   PUBLISHER LIST
+══════════════════════════════════════ */
+function renderPubList(data) {
+    const listEl = _$('tpPubList'), pagEl = _$('tpPubPag');
+    if (!listEl) return;
 
-    /* helper: get normalized hostname of an item */
-    const getHost = a => {
-      const raw = (a.publisher || a.source_name || a.hostname || '').replace(/^www\./,'').toLowerCase().trim();
-      if (raw) return raw;
-      const url = a.url || a.link || '';
-      try { return new URL(url.startsWith('http') ? url : 'https://'+url).hostname.replace(/^www\./,'').toLowerCase(); }
-      catch { return ''; }
-    };
-
-    /* ── Fetch in batches until we get enough domain matches ── */
-    const BATCH = 500;
-    let allItems   = [];
-    let start      = 0;
-    let maxBatches = 6;   // max 6 × 500 = 3000 items fetched
-
-    while (maxBatches-- > 0) {
-      const q    = `project_id=${TpCfg.pid}&start_date=${TpCfg.sd}&end_date=${TpCfg.ed}&rows=${BATCH}&start=${start}`;
-      const ctrl = new AbortController();
-      const tid  = setTimeout(() => ctrl.abort(), 30000);
-
-      let batch = [];
-      try {
-        const res = await fetch(`/mk/api/news/mentions?${q}`, { signal: ctrl.signal });
-        clearTimeout(tid);
-        if (!res.ok) break;
-        const data = await res.json();
-        batch = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
-      } catch(e) { clearTimeout(tid); break; }
-
-      if (!batch.length) break;   // no more data
-
-      /* filter: online news / doc ONLY — sama seperti cara MK membedakan media */
-      batch = batch.filter(m => {
-        const tc  = String(m.tcode        || '').toLowerCase();
-        const mt  = String(m.media_type   || '').toLowerCase();
-        const mtid= String(m.media_type_id|| '').toLowerCase();
-        const id  = String(m.id || m.docid || '');
-        const url = String(m.url || m.link || '').toLowerCase();
-
-        // Positif: flag sebagai doc/online news
-        if (tc   === 'berita')       return true;
-        if (mt   === 'berita')       return true;
-        if (mt   === 'doc')          return true;
-        if (mt   === 'news')         return true;
-        if (mt   === 'online')       return true;
-        if (mt   === 'article')      return true;
-        if (mt   === 'onlinenews')   return true;
-        if (mtid === '1')            return true;   // MK: 1 = online news
-        if (id.startsWith('doc-'))   return true;
-        if (id.startsWith('nw-'))    return true;
-        if (id.startsWith('news-'))  return true;
-
-        // Negatif: jelas bukan online news
-        if (mt === 'twit' || mt === 'twitter') return false;
-        if (mt === 'fb'   || mt === 'facebook')return false;
-        if (mt === 'ig'   || mt === 'instagram')return false;
-        if (mt === 'yt'   || mt === 'youtube') return false;
-        if (mt === 'tiktok')                   return false;
-        if (mtid === '2' || mtid === '3' || mtid === '4' || mtid === '5' || mtid === '6') return false;
-        if (id.startsWith('tw-') || id.startsWith('fb-') || id.startsWith('in-') || id.startsWith('yt-')) return false;
-        if (url.includes('twitter.com') || url.includes('x.com') || url.includes('facebook.com') ||
-            url.includes('instagram.com') || url.includes('youtube.com') || url.includes('tiktok.com')) return false;
-
-        // Default: anggap doc jika tidak ada info media_type sama sekali
-        return !mt || mt === '';
-      });
-
-      allItems = allItems.concat(batch);
-      start   += BATCH;
-
-      /* report progress */
-      const exactSoFar = allItems.filter(a => getHost(a) === cleanDomain);
-      if (progressCb) progressCb(allItems.length, exactSoFar.length);
-
-      /* stop early if we have plenty */
-      if (exactSoFar.length >= 100) break;
-
-      if (batch.length < BATCH) break;   // last page
+    if (!data.length) {
+        listEl.innerHTML = `<div class="chart-empty" style="padding:48px 20px;"><i class="ph ph-folder-open"></i><span>No publisher data</span></div>`;
+        if(pagEl) pagEl.innerHTML = '';
+        return;
     }
 
-    /* ── Step 1: EXACT match ── */
-    const exactMatches = allItems.filter(a => getHost(a) === cleanDomain);
-    if (exactMatches.length > 0) {
-      exactMatches.forEach(a => a._matchType = 'exact');
-      return exactMatches;
-    }
+    const pp = PUB_PER_PAGE, total = data.length, pages = Math.ceil(total/pp);
+    const start = (_pubPage-1)*pp;
+    const slice = data.slice(start, start+pp);
+    const maxCount = data[0]?.count || 1;
 
-    /* ── Step 2: subdomain fallback (only when clicking base domain) ── */
-    if (isBase) {
-      const subMatches = allItems.filter(a => {
-        const h = getHost(a);
-        return h === baseDomain || h.endsWith('.' + baseDomain);
-      });
-      if (subMatches.length > 0) {
-        subMatches.forEach(a => a._matchType = 'subdomain');
-        return subMatches;
-      }
-    }
+    listEl.innerHTML = `<div class="tp-pub-list">${slice.map((p,i) => {
+        const rank = start+i+1, rkCls = rank<=3 ? '--'+rank : '';
+        const domain = shortDomain(p.domain||'');
+        const color  = DONUT_COLORS[(start+i) % DONUT_COLORS.length];
+        const fav    = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+        const ini    = (domain[0]||'N').toUpperCase();
+        const pct    = Math.max(4, Math.round((p.count/maxCount)*100));
+        const enc    = esc(encodeURIComponent(JSON.stringify({domain:p.domain,count:p.count,mentions:p.mentions})));
+        return `<div class="tp-pub-item" data-enc="${enc}" data-domain="${esc(p.domain)}">
+            <div class="tp-pub-rank tp-pub-rank${rkCls}">${rank}</div>
+            <div class="tp-pub-av">
+                <img src="${fav}"
+                    onerror="this.style.display='none';this.parentElement.style.background='${color}';this.parentElement.insertAdjacentHTML('beforeend','${ini}');">
+            </div>
+            <div class="tp-pub-body">
+                <div class="tp-pub-name">${esc(domain)}</div>
+                <div class="tp-pub-stats">
+                    <span class="tp-metric tp-metric--red">
+                        <i class="ph ph-newspaper"></i>${numF(p.count||0)} articles
+                    </span>
+                    ${p.mentions ? `<span class="tp-metric"><i class="ph ph-at"></i>${numF(p.mentions)} mentions</span>` : ''}
+                </div>
+            </div>
+            <div class="tp-pub-bar-wrap">
+                <div class="tp-pub-bar-track">
+                    <div class="tp-pub-bar-fill" style="width:${pct}%;"></div>
+                </div>
+                <span class="tp-pub-bar-val">${numK(p.count||0)}</span>
+            </div>
+        </div>`;
+    }).join('')}</div>`;
 
-    /* ── Step 3: URL keyword fallback ── */
-    const urlMatches = allItems.filter(a =>
-      (a.url || a.link || '').toLowerCase().includes(baseDomain)
-    );
-    urlMatches.forEach(a => a._matchType = 'url');
-    return urlMatches;
-  },
+    /* Pagination */
+    if(pagEl) pagEl.innerHTML = _pubPagHtml(_pubPage, pages, total, start+1, Math.min(start+pp, total));
 
-  exportCsv() {
-    if (!this._items?.length) { alert('Tidak ada data untuk diekspor.'); return; }
-    const rows = this._items.map((a, i) => {
-      const e2 = s => String(s||'').replace(/;/g,',').replace(/\n/g,' ').replace(/\r/g,'');
-      const sentRaw = String(a.class_sentiment||a.sentiment||'0').toLowerCase();
-      const sent = sentRaw==='1'||sentRaw==='positive'||sentRaw==='positif' ? 'Positif'
-                 : sentRaw==='-1'||sentRaw==='negative'||sentRaw==='negatif' ? 'Negatif' : 'Netral';
-      return `${i};${e2(a.publisher||this._curDomain)};${e2(a.title||'')};${sent};${parseInt(a.num_views||a.views||0)||0};${parseInt(a.num_share||a.shares||0)||0};${parseInt(a.num_comments||0)||0};${e2((a.date_created||'').split('T')[0])};${e2(a.url||'')}`;
+    /* Click handlers */
+    listEl.querySelectorAll('.tp-pub-item').forEach(el => {
+        el.addEventListener('click', () => TpPanel.open(el.dataset.domain));
     });
-    const csv  = ['index;publisher;judul;sentimen;views;share;komentar;tanggal;url', ...rows].join('\r\n');
-    const blob = new Blob(['\uFEFF'+csv], { type:'text/csv;charset=utf-8;' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url; a.download = `articles_${this._curDomain}_${TpCfg.sd}_${TpCfg.ed}.csv`;
-    a.click(); URL.revokeObjectURL(url);
-  },
+}
 
-  _render(list, items) {
-    if (!items.length) {
-      list.innerHTML = `<div class="tpp-loading" style="color:#94a3b8;gap:8px;">
-        <svg style="width:28px;height:28px;stroke:#cbd5e1;fill:none;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
-        <span>Tidak ada artikel untuk <b>${esc(this._curDomain)}</b></span>
-        <small style="font-size:10px;color:#cbd5e1;">Domain tidak ditemukan di hasil API periode ini</small>
-      </div>`;
-      return;
+function _pubPagHtml(page, pages, total, from, to) {
+    if(pages <= 1) return '';
+    let btns = '', r = 2;
+    btns += `<button class="tp-pag-btn" ${page<=1?'disabled':''} onclick="TpPub.goPage(${page-1})"><i class="ph ph-caret-left"></i></button>`;
+    for(let i=1;i<=pages;i++){
+        if(i===1||i===pages||(i>=page-r&&i<=page+r))
+            btns += `<button class="tp-pag-btn${i===page?' is-active':''}" onclick="TpPub.goPage(${i})">${i}</button>`;
+        else if(i===page-r-1||i===page+r+1)
+            btns += `<span class="tp-pag-btn" style="cursor:default;opacity:.4;">…</span>`;
+    }
+    btns += `<button class="tp-pag-btn" ${page>=pages?'disabled':''} onclick="TpPub.goPage(${page+1})"><i class="ph ph-caret-right"></i></button>`;
+    return `<div class="tp-pagination">
+        <span class="tp-pag-info">Showing ${from}–${to} of ${total} publishers</span>
+        <div class="tp-pag-controls">${btns}</div>
+    </div>`;
+}
+
+const TpPub = {
+    goPage(page) {
+        _pubPage = page;
+        renderPubList(_filtered);
+        _$('tpPubList')?.scrollIntoView({behavior:'smooth', block:'nearest'});
+    }
+};
+
+/* ══════════════════════════════════════
+   BAR CHART (ECharts horizontal)
+══════════════════════════════════════ */
+function renderBarChart(items) {
+    const barEl = _$('barChart');
+    if (!barEl || !items.length) { hideLd('barLoading'); return; }
+
+    const domains = items.map(p => shortDomain(p.domain)).reverse();
+    const values  = items.map(p => p.count||0).reverse();
+
+    if(EC.bar) EC.bar.dispose();
+    EC.bar = echarts.init(barEl, null, {renderer:'canvas'});
+
+    EC.bar.setOption({
+        animation:true, animationDuration:700, animationEasing:'cubicOut',
+        backgroundColor:'#fff',
+        tooltip:{
+            trigger:'axis',
+            backgroundColor:'#1e293b', borderColor:'#334155', borderWidth:1,
+            padding:[10,14],
+            textStyle:{color:'#f8fafc', fontFamily:'inherit', fontSize:12},
+            extraCssText:'border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);',
+            axisPointer:{type:'shadow', shadowStyle:{color:'rgba(239,68,68,.05)'}},
+            formatter: p => `<b style="font-size:13px;">${p[0].name}</b><br>${numF(p[0].value)} articles`,
+        },
+        grid:{top:8, right:72, bottom:8, left:8, containLabel:true},
+        xAxis:{
+            type:'value', axisLine:{show:false}, axisTick:{show:false},
+            splitLine:{lineStyle:{color:'#f1f5f9', type:'dashed'}},
+            axisLabel:{fontFamily:'inherit', fontSize:10, color:'#94a3b8', formatter:numK},
+            max: v => Math.ceil(v.max * 1.18),
+        },
+        yAxis:{
+            type:'category', data:domains, axisLine:{show:false}, axisTick:{show:false},
+            axisLabel:{
+                fontFamily:'inherit', fontSize:11, fontWeight:'700', color:'#475569',
+                width:180, overflow:'truncate', ellipsis:'…',
+            },
+        },
+        series:[{
+            type:'bar',
+            data: values.map((v,i)=>({
+                value:v,
+                itemStyle:{color:RED, borderRadius:[0,5,5,0], opacity: i===values.length-1?1:0.78+i*0.01}
+            })),
+            barMaxWidth:20,
+            label:{
+                show:true, position:'right',
+                fontFamily:'inherit', fontWeight:'700', fontSize:11, color:'#475569',
+                formatter: p => numK(p.value),
+            },
+        }]
+    });
+
+    barEl.style.display = 'block';
+    hideLd('barLoading');
+
+    EC.bar.on('click', params => {
+        if(params.componentType !== 'series') return;
+        const domain = items[items.length-1-params.dataIndex]?.domain;
+        if(domain) TpPanel.open(domain);
+    });
+    EC.bar.on('mouseover', ()=>{ EC.bar.getDom().style.cursor='pointer'; });
+    EC.bar.on('mouseout',  ()=>{ EC.bar.getDom().style.cursor='default'; });
+}
+
+/* ══════════════════════════════════════
+   DONUT CHART (ECharts) — same style as TikTok
+══════════════════════════════════════ */
+function renderDonut(data) {
+    const chartEl=_$('donutChart'), loadEl=_$('donutLoading'), legEl=_$('donutLegend');
+    if (!chartEl || !data.length) { if(loadEl) loadEl.classList.add('hidden'); return; }
+
+    const top9  = data.slice(0,9);
+    const rest  = data.slice(9);
+    const total = data.reduce((s,p)=>s+(p.count||0), 0);
+
+    const pieData = top9.map((p,i)=>({
+        name      : shortDomain(p.domain),
+        value     : p.count||0,
+        domain    : p.domain,
+        isOthers  : false,
+        itemStyle : {color:DONUT_COLORS[i], borderColor:'#fff', borderWidth:3},
+    }));
+    if(rest.length) {
+        pieData.push({
+            name      : `Others (${rest.length})`,
+            value     : rest.reduce((s,p)=>s+(p.count||0),0),
+            domain    : null,
+            isOthers  : true,
+            restData  : rest,
+            itemStyle : {color:'#94a3b8', borderColor:'#fff', borderWidth:3},
+        });
     }
 
-    const SHOW      = 60;
-    const domain    = this._curDomain;
-    const fav       = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
-    const isSubdom  = items[0]?._matchType === 'subdomain';
-
-    // Show info banner if results are from subdomains
-    let bannerHtml = '';
-    if (isSubdom) {
-      const uniqueSubs = [...new Set(items.map(a => {
-        const raw = (a.publisher || a.source_name || a.hostname || '').replace(/^www\./,'').toLowerCase().trim();
-        return raw || domain;
-      }))].slice(0,5);
-      bannerHtml = `<div style="padding:8px 14px;background:#fffbeb;border-bottom:1px solid #fde68a;font-size:11px;font-weight:600;color:#92400e;display:flex;align-items:center;gap:6px;">
-        <svg style="width:12px;height:12px;stroke:currentColor;fill:none;flex-shrink:0;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        Menampilkan artikel dari seluruh subdomain ${esc(domain)} (${uniqueSubs.map(s=>`<b>${esc(s)}</b>`).join(', ')}${uniqueSubs.length < items.length ? ', …' : ''})
-      </div>`;
-    }
-
-    list.insertAdjacentHTML('afterbegin', bannerHtml);
-
-    list.innerHTML = bannerHtml + items.slice(0, SHOW).map(a => {
-      // Show actual subdomain as publisher, not the clicked domain
-      const pub     = (a.publisher || a.source_name || a.hostname || domain).replace(/^www\./,'').trim();
-      const ini     = (pub[0]||'N').toUpperCase();
-      const favHost = pub.includes('.') ? pub : domain;
-      const title   = (a.title || '').trim();
-      const content = (a.content || a.description || a.summary || '').replace(/<[^>]*>/g,'').trim().slice(0,140);
-      const text    = content || title.slice(0,140);
-      const sentRaw = String(a.class_sentiment||a.sentiment||'0').toLowerCase();
-      const sent    = sentRaw==='1'||sentRaw==='positive'||sentRaw==='positif' ? 'pos'
-                    : sentRaw==='-1'||sentRaw==='negative'||sentRaw==='negatif' ? 'neg' : 'neu';
-      const sentLbl = sent==='pos' ? 'Pos' : sent==='neg' ? 'Neg' : 'Neu';
-      const dt      = (a.date_created || a.publish_date || '').split('T')[0];
-      const views   = parseInt(a.num_views||a.views||0)||0;
-      const share   = parseInt(a.num_share||a.shares||0)||0;
-      const comm    = parseInt(a.num_comments||0)||0;
-      const engParts= [];
-      if (views>0) engParts.push('Views '+views.toLocaleString('id-ID'));
-      if (share>0) engParts.push('Share '+share.toLocaleString('id-ID'));
-      if (comm >0) engParts.push('Komentar '+comm.toLocaleString('id-ID'));
-      const eng  = engParts.join(' · ');
-      const url  = a.url || a.link || '';
-      const safeItem = esc(JSON.stringify(a));
-
-      return `<div class="tpp-item" data-item='${safeItem}' onclick="TpPopup._onItemClick(this)">
-        <div class="tpp-avatar">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=${favHost}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">
-        </div>
-        <div class="tpp-item-body">
-          <div class="tpp-item-pub">${esc(pub)}</div>
-          <div class="tpp-item-url">${esc(domain)}</div>
-          <div class="tpp-item-text">${esc(title || '(no title)')}</div>
-          <div class="tpp-item-foot">
-            <span class="tpp-sent tpp-sent--${sent}">${sentLbl}</span>
-            ${eng  ? `<span>${esc(eng)}</span>` : ''}
-            ${dt   ? `<span style="margin-left:auto;">${dt}</span>` : ''}
-            ${url  ? `<a href="${esc(url)}" target="_blank" rel="noopener" style="color:var(--green);font-weight:700;font-size:10px;text-decoration:none;" onclick="event.stopPropagation()">Buka ↗</a>` : ''}
-          </div>
-        </div>
-      </div>`;
+    /* Legend */
+    if(legEl) legEl.innerHTML = pieData.map(d=>{
+        const sn = d.name.length>24 ? d.name.slice(0,23)+'…' : d.name;
+        return `<div class="donut-leg-item">
+            <span class="donut-dot" style="background:${d.itemStyle.color};"></span>${esc(sn)}
+        </div>`;
     }).join('');
 
-    if (items.length > SHOW) {
-      list.insertAdjacentHTML('beforeend',
-        `<div style="padding:9px 14px;text-align:center;font-size:11px;font-weight:600;color:var(--text-lo);background:var(--bg);border-top:1px dashed var(--border);">+${(items.length-SHOW).toLocaleString()} artikel lainnya</div>`);
-    }
-  },
+    if(EC.donut) EC.donut.dispose();
+    EC.donut = echarts.init(chartEl, null, {renderer:'canvas'});
+    chartEl.style.display = 'block';
+    if(loadEl) loadEl.classList.add('hidden');
 
-  _onItemClick(el) {
-    try {
-      const raw  = el.getAttribute('data-item');
-      const item = JSON.parse(raw.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"'));
-      TpDetail.open(item, this._curDomain);
-    } catch(e) { console.warn('Detail parse error:', e); }
-  }
-};
-
-/* ════════════════════════════════════════
-   ARTICLE DETAIL PANEL
-════════════════════════════════════════ */
-const TpDetail = {
-  open(item, domain) {
-    const panel = document.getElementById('tpDetailPanel');
-    const body  = document.getElementById('tpdpBody');
-    const title = document.getElementById('tpdpTitle');
-
-    const pub      = (item.publisher || item.source_name || item.hostname || domain).trim();
-    const artTitle = (item.title || 'Article').trim();
-    const content  = (item.content || item.description || item.summary || '').replace(/<[^>]*>/g,'').trim();
-    const url      = item.url || item.link || '';
-    const date     = item.date_created || item.publish_date || '';
-    const fav      = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
-    const ini      = (domain[0]||'N').toUpperCase();
-
-    title.textContent = artTitle;
-
-    let dtFmt = '';
-    if (date) {
-      try { dtFmt = new Date(date).toLocaleDateString('id-ID', { weekday:'long', day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' }); }
-      catch(e) { dtFmt = date.split('T')[0]; }
-    }
-
-    const sentRaw = String(item.class_sentiment||item.sentiment||'0').toLowerCase();
-    const sent    = sentRaw==='1'||sentRaw==='positive'||sentRaw==='positif' ? 'pos'
-                  : sentRaw==='-1'||sentRaw==='negative'||sentRaw==='negatif' ? 'neg' : 'neu';
-    const sentLbl = sent==='pos' ? 'Positive' : sent==='neg' ? 'Negative' : 'Neutral';
-
-    const views = parseInt(item.num_views||item.views||0)||0;
-    const share = parseInt(item.num_share||item.shares||0)||0;
-    const comm  = parseInt(item.num_comments||0)||0;
-    const statsHtml = (views > 0 || share > 0 || comm > 0)
-      ? `<div class="tpdp-stats-grid">
-           <div class="tpdp-stat-box"><div class="tpdp-stat-val">${views.toLocaleString('id-ID')}</div><div class="tpdp-stat-lbl">Views</div></div>
-           <div class="tpdp-stat-box"><div class="tpdp-stat-val">${share.toLocaleString('id-ID')}</div><div class="tpdp-stat-lbl">Share</div></div>
-           <div class="tpdp-stat-box"><div class="tpdp-stat-val">${comm.toLocaleString('id-ID')}</div><div class="tpdp-stat-lbl">Komentar</div></div>
-         </div>` : '';
-
-    const imgUrl  = item.image_url || item.thumbnail || item.media_url || '';
-    const imgHtml = imgUrl ? `<div style="border-radius:10px;overflow:hidden;margin-bottom:12px;background:#000;"><img style="width:100%;max-height:200px;object-fit:cover;display:block;" src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'"></div>` : '';
-
-    body.innerHTML = `
-      <div class="tpdp-avatar-row">
-        <div class="tpdp-avatar-lg">
-          <img src="${fav}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">
-        </div>
-        <div>
-          <div class="tpdp-pub-name">${esc(pub)}</div>
-          <div class="tpdp-pub-url">${esc(domain)}</div>
-          <span style="background:rgba(224,32,32,.1);color:#e02020;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;display:inline-block;margin-top:4px;">Online News</span>
-        </div>
-      </div>
-      ${dtFmt ? `<div class="tpdp-meta-row"><span>${dtFmt}</span></div>` : ''}
-      <span class="tpdp-sent-badge tpdp-sent-badge--${sent}">${sentLbl}</span>
-      ${imgHtml}
-      <div class="tpdp-ttl">${esc(artTitle)}</div>
-      ${content ? `<div class="tpdp-content">${esc(content)}</div>` : ''}
-      ${statsHtml}
-      ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="tpdp-link-btn">
-        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        Buka Artikel Asli
-      </a>` : ''}
-    `;
-    panel.classList.add('visible');
-  },
-  close() { document.getElementById('tpDetailPanel')?.classList.remove('visible'); }
-};
-
-/* ════════════════════════════════════════
-   FILTER SEARCH
-════════════════════════════════════════ */
-function tpFilter(term) {
-  _filtered = term.trim()
-    ? _allData.filter(p => (p.domain||'').toLowerCase().includes(term.toLowerCase()))
-    : _allData;
-  renderCharts(_filtered);
-}
-
-/* ════════════════════════════════════════
-   EXPORT CSV
-════════════════════════════════════════ */
-function tpExportCSV() {
-  if (!_filtered.length) { alert('No data to export'); return; }
-  const rows = ['index;domain;articles;mentions', ..._filtered.map((p,i) => `${i+1};${p.domain||''};${p.count||0};${p.mentions||0}`)];
-  const csv  = rows.join('\r\n');
-  navigator.clipboard.writeText(csv).then(() => alert('CSV copied!')).catch(() => {
-    const ta = document.createElement('textarea'); ta.value = csv;
-    ta.style.cssText = 'position:fixed;opacity:0;'; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert('CSV copied!');
-  });
-}
-
-/* ════════════════════════════════════════
-   MISC UTILS
-════════════════════════════════════════ */
-function shortDomain(d) { return (d||'').replace(/^www\./, ''); }
-function tpToggleType(btn) {
-  document.querySelectorAll('.tp-filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-
-/* ════════════════════════════════════════
-   DATE PICKER
-════════════════════════════════════════ */
-const TpDp = (() => {
-  let ds=null, de=null, m1=new Date(), m2=new Date(), pickStart=true;
-  const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const WD=['Su','Mo','Tu','We','Th','Fr','Sa'];
-
-  function init() {
-    const si=document.getElementById('hSD'), ei=document.getElementById('hED');
-    ds = si?.value ? new Date(si.value) : (() => { const d=new Date(); d.setDate(d.getDate()-6); return d; })();
-    de = ei?.value ? new Date(ei.value) : new Date();
-    m1=new Date(ds); m2=new Date(ds); m2.setMonth(m2.getMonth()+1);
-    render();
-    document.getElementById('tpDpTrigger')?.addEventListener('click', open);
-    document.querySelectorAll('.tp-dp-preset').forEach(b => b.addEventListener('click', onPreset));
-    document.addEventListener('keydown', e => { if(e.key==='Escape') close(); });
-  }
-
-  function open()  { document.getElementById('tpDpModal').classList.add('show'); render(); }
-  function close() { document.getElementById('tpDpModal').classList.remove('show'); }
-
-  function apply() {
-    const s=fmt(ds), e=fmt(de);
-    document.getElementById('hSD').value = s;
-    document.getElementById('hED').value = e;
-    document.getElementById('tpDpLabel').textContent = s + ' to ' + e;
-    close();
-  }
-
-  function nav(dir) { m1.setMonth(m1.getMonth()+dir); m2.setMonth(m2.getMonth()+dir); render(); }
-
-  function onPreset(e) {
-    document.querySelectorAll('.tp-dp-preset').forEach(b => b.classList.remove('active'));
-    e.target.classList.add('active');
-    const today=new Date(); today.setHours(0,0,0,0);
-    switch(e.target.dataset.p) {
-      case 'today':     ds=new Date(today); de=new Date(today); break;
-      case 'yesterday': ds=new Date(today); ds.setDate(today.getDate()-1); de=new Date(ds); break;
-      case 'last7':     de=new Date(today); ds=new Date(today); ds.setDate(today.getDate()-6); break;
-      case 'last30':    de=new Date(today); ds=new Date(today); ds.setDate(today.getDate()-29); break;
-      case 'thismonth': ds=new Date(today.getFullYear(),today.getMonth(),1); de=new Date(today); break;
-      case 'lastmonth': ds=new Date(today.getFullYear(),today.getMonth()-1,1); de=new Date(today.getFullYear(),today.getMonth(),0); break;
-    }
-    if(e.target.dataset.p!=='custom') { m1=new Date(ds); m2=new Date(ds); m2.setMonth(m2.getMonth()+1); }
-    updDisp(); render();
-  }
-
-  function render() { renderCal('tpCal1',m1); renderCal('tpCal2',m2); updDisp(); }
-
-  function renderCal(id,month) {
-    const el=document.getElementById(id); if(!el) return;
-    const y=month.getFullYear(), mn=month.getMonth();
-    const first=new Date(y,mn,1), last=new Date(y,mn+1,0), prevL=new Date(y,mn,0);
-    const today=new Date(); today.setHours(0,0,0,0);
-    let h=`<div class="tp-dp-month-title">${MN[mn]} ${y}</div>
-      <div class="tp-dp-weekdays">${WD.map(d=>`<div class="tp-dp-wd">${d}</div>`).join('')}</div>
-      <div class="tp-dp-days">`;
-    for(let i=0;i<first.getDay();i++)
-      h+=`<button class="tp-dp-day other" disabled>${prevL.getDate()-(first.getDay()-1-i)}</button>`;
-    for(let d=1;d<=last.getDate();d++) {
-      const date=new Date(y,mn,d); date.setHours(0,0,0,0);
-      let cls='tp-dp-day';
-      if(sameD(date,today)) cls+=' today';
-      if(date>today) cls+=' dis';
-      if(ds&&de) {
-        if(sameD(date,ds)||sameD(date,de)) cls+=' sel';
-        else if(date>ds&&date<de) cls+=' rng';
-      }
-      h+=`<button class="${cls}" data-date="${fmt(date)}" ${date>today?'disabled':''}>${d}</button>`;
-    }
-    const rem=last.getDay()===6?0:6-last.getDay();
-    for(let i=1;i<=rem;i++) h+=`<button class="tp-dp-day other" disabled>${i}</button>`;
-    h+='</div>';
-    el.innerHTML=h;
-    el.querySelectorAll('.tp-dp-day:not(.other):not(.dis)').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const d=new Date(this.dataset.date); d.setHours(0,0,0,0);
-        document.querySelectorAll('.tp-dp-preset').forEach(b=>b.classList.remove('active'));
-        document.querySelector('[data-p="custom"]')?.classList.add('active');
-        if(pickStart||d<ds) { ds=d; de=d; pickStart=false; }
-        else { if(d>=ds) de=d; else { de=ds; ds=d; } pickStart=true; }
-        updDisp(); render();
-      });
+    EC.donut.setOption({
+        animation:true, animationDuration:900, animationEasing:'cubicOut',
+        backgroundColor:'#fff',
+        tooltip:{show:false},
+        series:[{
+            type:'pie',
+            radius:['38%','64%'],
+            center:['50%','46%'],
+            avoidLabelOverlap:true,
+            minAngle:3,
+            itemStyle:{borderColor:'#fff', borderWidth:3},
+            label:{
+                show:true,
+                position:'outside',
+                lineHeight:16,
+                fontSize:10,
+                fontFamily:'inherit',
+                color:'#475569',
+                fontWeight:'600',
+                distanceToLabelLine: 4,
+                formatter: p => {
+                    /* hide label for tiny slices — they clutter */
+                    if (p.percent < 2.5) return '';
+                    const n   = p.name.length > 16 ? p.name.slice(0,15)+'…' : p.name;
+                    const pct = p.percent.toFixed(1);
+                    return `{nm|${n}}\n{pc|${pct}%}`;
+                },
+                rich:{
+                    nm:{ fontSize:10, fontWeight:'700', color:'#1e293b', lineHeight:15 },
+                    pc:{ fontSize:10, fontWeight:'600', color:'#EF4444',  lineHeight:14 },
+                }
+            },
+            labelLine:{
+                show:true,
+                showAbove:false,
+                length:8,
+                length2:12,
+                smooth:0.4,
+                minTurnAngle:80,
+                lineStyle:{width:1.2, color:'#cbd5e1'},
+            },
+            labelLayout:{
+                hideOverlap: true,
+            },
+            emphasis:{
+                scale:true, scaleSize:6,
+                itemStyle:{shadowBlur:12, shadowColor:'rgba(0,0,0,.18)', borderWidth:3, borderColor:'#fff'},
+                label:{show:true, fontSize:11, fontWeight:'800'},
+            },
+            data: pieData,
+        }],
+        graphic:[
+            {type:'text',left:'center',top:'41%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 26px inherit",textAlign:'center'}},
+            {type:'text',left:'center',top:'49%',z:100,style:{text:'TOTAL ARTICLES',fill:'#94a3b8',font:"600 9px inherit",textAlign:'center'}},
+        ]
     });
-  }
 
-  function updDisp() {
-    const el=document.getElementById('tpDpRange');
-    if(el&&ds&&de) el.textContent=fmt(ds)+' – '+fmt(de);
-  }
-  function fmt(d) { return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`:''; }
-  function sameD(a,b) { return a&&b&&a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+    /* Custom tooltip — same pattern as TikTok */
+    let _ttEl = document.getElementById('tpDonutTT');
+    if(!_ttEl){
+        _ttEl = document.createElement('div');
+        _ttEl.id = 'tpDonutTT';
+        _ttEl.style.cssText = `position:fixed;z-index:9999;pointer-events:none;
+            background:#1e293b;color:#fff;border:1px solid #334155;border-radius:6px;
+            padding:10px 14px;max-width:260px;font-size:12px;line-height:1.5;display:none;
+            box-shadow:0 8px 24px rgba(0,0,0,.32);font-family:inherit;
+            opacity:0;transform:translateY(6px) scale(.97);
+            transition:opacity .18s ease,transform .18s ease;`;
+        document.body.appendChild(_ttEl);
+    }
+    let _ttTimer = null;
 
-  return { init, open, close, apply, nav };
-})();
+    EC.donut.on('mouseover', p => {
+        if(p.componentType !== 'series') return;
+        const d = pieData[p.dataIndex], color = d.itemStyle.color;
+        clearTimeout(_ttTimer);
+        _ttEl.innerHTML = `
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+                <span style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span>
+                <b style="font-size:12.5px;">${esc(p.name)}</b>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <b style="font-size:13px;color:${color};">${numF(p.value)} articles</b>
+                <span style="color:#94a3b8;">${p.percent.toFixed(1)}%</span>
+            </div>`;
+        _ttEl.style.display='block';
+        requestAnimationFrame(()=>{ _ttEl.style.opacity='1'; _ttEl.style.transform='translateY(0) scale(1)'; });
+    });
+    EC.donut.on('mouseout', ()=>{
+        _ttEl.style.opacity='0'; _ttEl.style.transform='translateY(6px) scale(.97)';
+        _ttTimer=setTimeout(()=>{ _ttEl.style.display='none'; }, 180);
+    });
+    chartEl.addEventListener('mousemove', e=>{
+        if(_ttEl.style.display==='none') return;
+        const vw=window.innerWidth, vh=window.innerHeight, tw=_ttEl.offsetWidth+16, th=_ttEl.offsetHeight+16;
+        let x=e.clientX+18, y=e.clientY-10;
+        if(x+tw>vw) x=e.clientX-tw; if(y+th>vh) y=e.clientY-th;
+        _ttEl.style.left=x+'px'; _ttEl.style.top=y+'px';
+    });
 
-/* ════════════════════════════════════════
-   INIT
-════════════════════════════════════════ */
+    EC.donut.on('click', p=>{
+        const d=pieData[p.dataIndex];
+        if(d?.domain) TpPanel.open(d.domain);
+    });
+    EC.donut.on('mouseover', ()=>{ EC.donut.getDom().style.cursor='pointer'; });
+    EC.donut.on('mouseout',  ()=>{ EC.donut.getDom().style.cursor='default'; });
+}
+
+/* ══════════════════════════════════════
+   FILTER + EXPORT
+══════════════════════════════════════ */
+const TpData = {
+    filter(term) {
+        _filtered = term.trim()
+            ? _allData.filter(p=>(p.domain||'').toLowerCase().includes(term.toLowerCase()))
+            : _allData;
+        _pubPage = 1;
+        const rows = parseInt(_$('tpRowsSel')?.value||'20');
+        renderPubList(_filtered);
+        renderBarChart(_filtered.slice(0, rows));
+        renderDonut(_filtered);
+        const b=_$('badgePublishers'); if(b) b.textContent=`${_filtered.length} publishers`;
+    },
+    changeRows() {
+        const rows = parseInt(_$('tpRowsSel')?.value||'20');
+        renderBarChart(_filtered.slice(0, rows));
+    },
+    exportCsv() {
+        if(!_filtered.length){ alert('No data to export.'); return; }
+        const rows=['index;domain;articles;mentions',..._filtered.map((p,i)=>`${i+1};${p.domain||''};${p.count||0};${p.mentions||0}`)];
+        const blob=new Blob(['\uFEFF'+rows.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+        const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`TopPublishers_${TpCfg.sd}_${TpCfg.ed}.csv`});
+        a.click();
+    }
+};
+
+/* ══════════════════════════════════════
+   ARTICLE FETCH (batched, same logic)
+══════════════════════════════════════ */
+async function fetchArticles(domain) {
+    const cleanDomain = domain.replace(/^www\./,'').toLowerCase();
+    const parts = cleanDomain.split('.');
+    const baseDomain = parts.slice(-2).join('.');
+    const isBase = (cleanDomain === baseDomain);
+
+    const getHost = a => {
+        const raw=(a.publisher||a.source_name||a.hostname||'').replace(/^www\./,'').toLowerCase().trim();
+        if(raw) return raw;
+        try { return new URL((a.url||a.link||'').startsWith('http')?(a.url||a.link||''):'https://'+(a.url||a.link||'')).hostname.replace(/^www\./,'').toLowerCase(); }
+        catch { return ''; }
+    };
+
+    const BATCH=500; let allItems=[], start=0, maxBatches=6;
+    while(maxBatches-->0){
+        let batch=[];
+        try {
+            const res=await fetch(`/mk/api/news/mentions?project_id=${TpCfg.pid}&start_date=${TpCfg.sd}&end_date=${TpCfg.ed}&rows=${BATCH}&start=${start}`);
+            if(!res.ok) break;
+            const data=await res.json();
+            batch=Array.isArray(data.data)?data.data:(Array.isArray(data)?data:[]);
+        } catch(e){ break; }
+        if(!batch.length) break;
+
+        /* Filter to online news only */
+        batch=batch.filter(m=>{
+            const mt  =String(m.media_type   ||'').toLowerCase();
+            const mtid=String(m.media_type_id||'').toLowerCase();
+            const id  =String(m.id||'');
+            const url =String(m.url||m.link||'').toLowerCase();
+            if(['twit','twitter','fb','facebook','ig','instagram','yt','youtube','tiktok'].includes(mt)) return false;
+            if(['2','3','4','5','6'].includes(mtid)) return false;
+            if(/^(tw|fb|in|yt)-/.test(id)) return false;
+            if(/twitter\.com|x\.com|facebook\.com|instagram\.com|youtube\.com|tiktok\.com/.test(url)) return false;
+            return true;
+        });
+
+        allItems=allItems.concat(batch);
+        start+=BATCH;
+        const exact=allItems.filter(a=>getHost(a)===cleanDomain);
+        if(exact.length>=100) break;
+        if(batch.length<BATCH) break;
+    }
+
+    const exact=allItems.filter(a=>getHost(a)===cleanDomain);
+    if(exact.length) return exact;
+    if(isBase){
+        const sub=allItems.filter(a=>{ const h=getHost(a); return h===baseDomain||h.endsWith('.'+baseDomain); });
+        if(sub.length) return sub;
+    }
+    return allItems.filter(a=>(a.url||a.link||'').toLowerCase().includes(baseDomain));
+}
+
+/* ══════════════════════════════════════
+   SLIDE PANEL — same structure as TikTok
+══════════════════════════════════════ */
+const TpPanel = {
+    async open(domain) {
+        _panelDomain = domain;
+        TpDetail.close();
+
+        _$('tpPanelDot').style.background   = RED;
+        _$('tpPanelTitle').textContent       = shortDomain(domain);
+        _$('tpPanelMeta').textContent        = TpCfg.sd + ' – ' + TpCfg.ed;
+
+        const ov=_$('tpPanelOverlay'), pn=_$('tpSntPanel');
+        ov.classList.remove('hiding'); pn.classList.remove('hiding');
+        ov.classList.add('show');      pn.classList.add('show');
+
+        const list=_$('tpPanelList');
+        list.innerHTML='<div class="do-panel-loading"><div class="do-panel-spinner"></div>Loading articles…</div>';
+
+        try {
+            const key=`${TpCfg.pid}_${domain}_${TpCfg.sd}_${TpCfg.ed}`;
+            if(!_artCache[key]) _artCache[key]=await fetchArticles(domain);
+            _panelItems=_artCache[key]||[];
+            this._render(list, _panelItems, domain);
+        } catch(err){
+            list.innerHTML=`<div class="do-panel-loading" style="color:var(--slate-400);">
+                <i class="ph ph-warning-circle" style="font-size:28px;"></i>
+                Failed to load: ${esc(err.message)}
+            </div>`;
+        }
+    },
+
+    close() {
+        TpDetail.close();
+        const ov=_$('tpPanelOverlay'), pn=_$('tpSntPanel');
+        pn.classList.add('hiding'); ov.classList.add('hiding');
+        setTimeout(()=>{ pn.classList.remove('show','hiding'); ov.classList.remove('show','hiding'); }, 240);
+    },
+
+    exportCsv() {
+        if(!_panelItems?.length){ alert('No data to export.'); return; }
+        const hdr='index;publisher;title;sentiment;views;shares;comments;date;url';
+        const rows=_panelItems.map((a,i)=>{
+            const sentRaw=String(a.class_sentiment||a.sentiment||'0').toLowerCase();
+            const sent=sentRaw==='1'||sentRaw==='positive'||sentRaw==='positif'?'Positif':sentRaw==='-1'||sentRaw==='negative'||sentRaw==='negatif'?'Negatif':'Netral';
+            const e2=s=>String(s||'').replace(/;/g,',').replace(/\n/g,' ').replace(/\r/g,'');
+            return `${i};${e2(a.publisher||_panelDomain)};${e2(a.title||'')};${sent};${parseInt(a.num_views||0)||0};${parseInt(a.num_share||0)||0};${parseInt(a.num_comments||0)||0};${e2((a.date_created||'').split('T')[0])};${e2(a.url||'')}`;
+        });
+        const blob=new Blob(['\uFEFF'+[hdr,...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});
+        const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`articles_${shortDomain(_panelDomain)}_${TpCfg.sd}_${TpCfg.ed}.csv`});
+        a.click();
+    },
+
+    _render(list, items, domain) {
+        if(!items.length){
+            list.innerHTML=`<div class="do-panel-loading" style="color:var(--slate-400);">
+                <i class="ph ph-folder-open" style="font-size:32px;"></i>
+                <span>No articles found for <b>${esc(shortDomain(domain))}</b></span>
+                <small style="font-size:10px;">Domain not found in API results for this period</small>
+            </div>`;
+            return;
+        }
+
+        const SHOW=60, fav=`https://www.google.com/s2/favicons?sz=64&domain=${shortDomain(domain)}`;
+        list.innerHTML=items.slice(0,SHOW).map(a=>{
+            const pub =(a.publisher||a.source_name||a.hostname||domain).replace(/^www\./,'').trim();
+            const title=(a.title||'').trim();
+            const text =(a.content||a.description||a.summary||'').replace(/<[^>]*>/g,'').trim().slice(0,130);
+            const dt   =(a.date_created||a.publish_date||'').split('T')[0];
+            const url  =a.url||a.link||'';
+            const views=parseInt(a.num_views||a.views||0)||0;
+            const sentRaw=String(a.class_sentiment||a.sentiment||'0').toLowerCase();
+            const sent=sentRaw==='1'||sentRaw==='positive'||sentRaw==='positif'?'pos':sentRaw==='-1'||sentRaw==='negative'||sentRaw==='negatif'?'neg':'neu';
+            const sentLbl={pos:'Pos',neg:'Neg',neu:'Neu'}[sent];
+            const enc=esc(encodeURIComponent(JSON.stringify(a)));
+            const ini=(shortDomain(domain)[0]||'N').toUpperCase();
+            return `<div class="do-panel-item" data-item="${enc}" data-domain="${esc(domain)}" onclick="TpPanel._click(this)">
+                <div class="do-panel-avatar" style="background:#EF4444;">
+                    <img src="${fav}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">
+                </div>
+                <div class="do-panel-item-body">
+                    <div class="do-panel-author">${esc(pub)}</div>
+                    <div class="do-panel-text">${esc(title||text||'(no title)')}</div>
+                    <div class="do-panel-footer">
+                        <span class="do-sent-badge do-sent-badge--${sent}">${sentLbl}</span>
+                        ${views>0?`<span>Views ${numF(views)}</span>`:''}
+                        ${dt?`<span style="margin-left:auto;">${dt}</span>`:''}
+                        ${url?`<a href="${esc(url)}" target="_blank" rel="noopener"
+                            style="color:var(--primary);font-weight:700;font-size:10px;text-decoration:none;"
+                            onclick="event.stopPropagation()">Open ↗</a>`:''}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+
+        if(items.length>SHOW)
+            list.insertAdjacentHTML('beforeend',`<div style="padding:9px;text-align:center;font-size:11px;font-weight:600;color:var(--slate-400);background:var(--slate-50);border-top:1px dashed var(--slate-200);">+${(items.length-SHOW).toLocaleString()} more articles</div>`);
+    },
+
+    _click(el){
+        try {
+            const raw  = el.dataset.item.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"');
+            const item = JSON.parse(decodeURIComponent(raw));
+            TpDetail.open(item, el.dataset.domain||_panelDomain);
+        } catch(e){ console.warn('[TpPanel._click]', e); }
+    }
+};
+
+/* ══════════════════════════════════════
+   ARTICLE DETAIL SUB-PANEL — same as TikTok
+══════════════════════════════════════ */
+const TpDetail = {
+    open(item, domain) {
+        const panel=_$('tpDetailPanel'), body=_$('tpDetailBody'), title=_$('tpDetailTitle');
+        if(!panel||!body) return;
+
+        const pub      =(item.publisher||item.source_name||item.hostname||domain).trim();
+        const artTitle =(item.title||'Article').trim();
+        const content  =(item.content||item.description||item.summary||'').replace(/<[^>]*>/g,'').trim();
+        const url      = item.url||item.link||'';
+        const date     = item.date_created||item.publish_date||'';
+        const fav      = `https://www.google.com/s2/favicons?sz=64&domain=${shortDomain(domain)}`;
+        const ini      = (shortDomain(domain)[0]||'N').toUpperCase();
+        const views    = parseInt(item.num_views||item.views||0)||0;
+        const share    = parseInt(item.num_share||item.shares||0)||0;
+        const comm     = parseInt(item.num_comments||0)||0;
+        const imgUrl   = item.image_url||item.thumbnail||item.media_url||'';
+
+        let dtFmt='';
+        if(date){ try{ dtFmt=new Date(date).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ dtFmt=date.split('T')[0]; } }
+
+        const sentRaw=String(item.class_sentiment||item.sentiment||'0').toLowerCase();
+        const sent=sentRaw==='1'||sentRaw==='positive'||sentRaw==='positif'?'pos':sentRaw==='-1'||sentRaw==='negative'||sentRaw==='negatif'?'neg':'neu';
+        const sentLbl={pos:'Positive',neg:'Negative',neu:'Neutral'}[sent];
+
+        title.textContent = artTitle;
+        body.innerHTML = `
+            <div class="do-dp2-avatar-row">
+                <div class="do-dp2-avatar-lg">
+                    <img src="${fav}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">
+                </div>
+                <div>
+                    <div class="do-dp2-name">${esc(pub)}</div>
+                    <div class="do-dp2-handle">${esc(shortDomain(domain))}</div>
+                    <span class="do-dp2-plat-badge" style="background:rgba(239,68,68,.1);color:#EF4444;">Online News</span>
+                </div>
+            </div>
+            ${dtFmt?`<div class="do-dp2-meta">${dtFmt}</div>`:''}
+            <div class="do-dp2-sent do-dp2-sent--${sent}">${sentLbl}</div>
+            ${imgUrl?`<div style="border-radius:var(--radius-sm);overflow:hidden;margin-bottom:10px;">
+                <img style="width:100%;max-height:200px;object-fit:cover;display:block;" src="${esc(imgUrl)}"
+                    onerror="this.parentElement.style.display='none'">
+            </div>`:''}
+            <div style="font-size:14px;font-weight:700;color:var(--slate-900);line-height:1.45;margin-bottom:10px;">${esc(artTitle)}</div>
+            ${content?`<div class="do-dp2-content">${esc(content)}</div>`:''}
+            ${(views>0||share>0||comm>0)?`
+            <div class="do-dp2-stats">
+                <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(views)}</div><div class="do-dp2-stat-lbl">Views</div></div>
+                <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(share)}</div><div class="do-dp2-stat-lbl">Shares</div></div>
+                <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(comm)}</div><div class="do-dp2-stat-lbl">Comments</div></div>
+            </div>`:''}
+            ${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link">
+                <i class="ph ph-arrow-square-out me-1"></i>Open Original Article
+            </a>`:''}`;
+
+        panel.classList.add('show');
+    },
+    close() { _$('tpDetailPanel')?.classList.remove('show'); }
+};
+
+/* ══ INIT ══ */
 document.addEventListener('DOMContentLoaded', () => {
-  TpDp.init();
-  TpPopup.init();
-  if (TpCfg.pid) loadData();
+    if(TpCfg.pid) loadData();
+    document.addEventListener('keydown', e => { if(e.key==='Escape') TpPanel.close(); });
 });
 </script>
 @endsection

@@ -448,24 +448,33 @@ private function getStopwords(): array
         return array_slice($wordFreq, 0, 80, true);
     }
 
-    public function topPublisherPage(Request $request)
-    {
-        try {
-            $projectId = $request->query('project_id', session('selected_project_id'));
-            if (!$projectId) {
-                return redirect()->route('mk.dashboard')->with('error', 'Please select a project first');
-            }
-            session(['selected_project_id' => $projectId]);
-            return view('mk.news.top-publisher', [
-                'projectId' => $projectId,
-                'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
-                'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->route('mk.dashboard')->with('error', 'Failed to load Top Publisher page');
-        }
-    }
+public function topPublisherPage(Request $request)
+{
+    try {
+        $projects  = $this->getAllProjects();           // ← tambah ini
+        $projectId = $request->query('project_id', session('selected_project_id'));
 
+        if (!$projectId && count($projects) > 0) {     // ← auto-select first project
+            $projectId = $projects[0]['id'] ?? null;
+        }
+
+        if (!$projectId) {
+            return redirect()->route('mk.dashboard')->with('error', 'Please select a project first');
+        }
+
+        session(['selected_project_id' => $projectId]);
+
+        return view('mk.news.top-publisher', [
+            'projectId' => $projectId,
+            'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+            'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
+            'projects'  => $projects,   // ← ini yang kurang, penyebab error
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Top Publisher Page Error', ['error' => $e->getMessage()]);
+        return redirect()->route('mk.dashboard')->with('error', 'Failed to load Top Publisher page');
+    }
+}
 public function topPublisherData(Request $request)
 {
     try {
