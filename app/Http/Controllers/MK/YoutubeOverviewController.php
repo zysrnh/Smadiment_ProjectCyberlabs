@@ -5,6 +5,7 @@ namespace App\Http\Controllers\MK;
 use App\Http\Controllers\Controller;
 use App\Services\MediaKernelsClient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class YoutubeOverviewController extends Controller
@@ -21,8 +22,17 @@ class YoutubeOverviewController extends Controller
      */
     private function getAllProjects(): array
     {
-        $projectsData = $this->client->listProjects(0, 100);
-        return array_values($projectsData);
+        $user = Auth::user();
+        $assignedProjectIds = $user->assignedProjectIds();
+
+        $rawProjects = $this->client->listProjects(0, 100);
+        $allProjects = array_values($rawProjects);
+
+        $userProjects = array_filter($allProjects, function ($project) use ($assignedProjectIds) {
+            return in_array($project['id'] ?? null, $assignedProjectIds);
+        });
+
+        return array_values($userProjects);
     }
 
     // ─────────────────────────────────────────────────────
@@ -372,12 +382,13 @@ class YoutubeOverviewController extends Controller
         $startDate = $request->query('start_date');
         $endDate   = $request->query('end_date');
         $sub       = $request->query('sub', 'postbyview');
+        $rows      = (int) $request->query('rows', 100);
 
         if (!$projectId || !$startDate || !$endDate) {
             return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
         }
 
-        $result = $this->client->ytbTopStatus($projectId, $startDate, $endDate, 0, 23, 1000, $sub);
+        $result = $this->client->ytbTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
 
         Log::info('YT mostViewedPostsData raw result', [
             'type'   => gettype($result),

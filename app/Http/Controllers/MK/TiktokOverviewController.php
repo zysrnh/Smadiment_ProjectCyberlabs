@@ -497,6 +497,8 @@ public function mostEngagementData(Request $request)
             return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
         }
 
+        $rows = (int) $request->query('rows', 100);
+
         $apiSub = match($sub) {
             'postbyview'    => 'postbyview',
             'postbylike'    => 'postbylike',
@@ -506,7 +508,7 @@ public function mostEngagementData(Request $request)
         };
 
         $items = $this->client->tiktokTopStatusAll(
-            $projectId, $startDate, $endDate, 0, 23, 100, $apiSub
+            $projectId, $startDate, $endDate, 0, 23, $rows, $apiSub
         );
         $items = is_array($items) ? $items : [];
 

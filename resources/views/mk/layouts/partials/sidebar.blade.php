@@ -83,12 +83,12 @@
                 <li class="pc-item pc-hasmenu {{ $isTopicActive ? 'pc-trigger active' : '' }}">
                     <a href="#!" class="pc-link">
                         <span class="pc-micon"><i class="ph ph-fire"></i></span>
-                        <span class="pc-mtext">Hot Topic</span>
+                        <span class="pc-mtext">Trending Topic</span>
                         <span class="pc-arrow"><i class="ti ti-chevron-right"></i></span>
                     </a>
                     <ul class="pc-submenu">
                         <li class="pc-item {{ request()->routeIs('mk.trending-topic') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('mk.trending-topic') }}">Trending Topics</a>
+                            <a class="pc-link" href="{{ route('mk.trending-topic') }}">Hot Topic</a>
                         </li>
                         {{-- Search Topic hidden for now --}}
                     </ul>
@@ -240,9 +240,9 @@
                         <li class="pc-item {{ request()->routeIs('mk.facebook.overview') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.facebook.overview') }}{{ $qs }}">Overview</a>
                         </li>
-                        <li class="pc-item {{ request()->routeIs('mk.facebook.trending-topics') ? 'active' : '' }}">
+                        {{-- <li class="pc-item {{ request()->routeIs('mk.facebook.trending-topics') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.facebook.trending-topics') }}{{ $qs }}">Top Hashtags</a>
-                        </li>
+                        </li> --}}
                         <li class="pc-item {{ request()->routeIs('mk.facebook.trending-word-cloud') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.facebook.trending-word-cloud') }}{{ $qs }}">Word Cloud</a>
                         </li>
@@ -269,9 +269,9 @@
                         <li class="pc-item {{ request()->routeIs('mk.instagram.overview') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.instagram.overview') }}{{ $qs }}">Overview</a>
                         </li>
-                        <li class="pc-item {{ request()->routeIs('mk.instagram.trending-topics') ? 'active' : '' }}">
+                        {{-- <li class="pc-item {{ request()->routeIs('mk.instagram.trending-topics') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.instagram.trending-topics') }}{{ $qs }}">Top Hashtags</a>
-                        </li>
+                        </li> --}}
                         <li class="pc-item {{ request()->routeIs('mk.instagram.trending-word-cloud') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.instagram.trending-word-cloud') }}{{ $qs }}">Word Cloud</a>
                         </li>
@@ -298,9 +298,9 @@
                         <li class="pc-item {{ request()->routeIs('mk.youtube.overview') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.youtube.overview') }}{{ $qs }}">Overview</a>
                         </li>
-                        <li class="pc-item {{ request()->routeIs('mk.youtube.trending-topics') ? 'active' : '' }}">
+                        {{-- <li class="pc-item {{ request()->routeIs('mk.youtube.trending-topics') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.youtube.trending-topics') }}{{ $qs }}">Top Hashtags</a>
-                        </li>
+                        </li> --}}
                         <li class="pc-item {{ request()->routeIs('mk.youtube.trending-word-cloud') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.youtube.trending-word-cloud') }}{{ $qs }}">Word Cloud</a>
                         </li>
@@ -349,6 +349,24 @@
 
             </ul>
         </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function(){
+                var container = document.querySelector('.pc-sidebar .navbar-content');
+                if (!container) return;
+                // Find the active submenu item first, fallback to active parent menu
+                var el = container.querySelector('.pc-submenu > .pc-item.active') 
+                      || container.querySelector('.pc-hasmenu.pc-trigger.active');
+                if (!el) return;
+                setTimeout(function(){
+                    var cTop = container.getBoundingClientRect().top;
+                    var cH   = container.clientHeight;
+                    var eTop = el.getBoundingClientRect().top;
+                    var eH   = el.offsetHeight;
+                    // Scroll so the element is centered in the sidebar
+                    container.scrollTop += (eTop - cTop) - (cH / 2) + (eH / 2);
+                }, 200);
+            });
+        </script>
     </div>
 </nav>
 <!-- [ Sidebar Menu ] end -->

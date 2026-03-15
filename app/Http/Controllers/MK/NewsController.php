@@ -1172,29 +1172,40 @@ public function articlesData(Request $request)
         }
     }
     public function aiAnalysisPage(Request $request)
-{
-    try {
-        $projectId = $request->query('project_id', session('selected_project_id'));
+    {
+        try {
+            $projects  = $this->getAllProjects();
+            $projectId = $request->query('project_id');
 
-        if (!$projectId) {
-            return redirect()->route('mk.dashboard')
-                ->with('error', 'Please select a project first');
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+                if ($projectId) {
+                    return redirect()->route('mk.news.ai-analysis', [
+                        'project_id' => $projectId,
+                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                    ]);
+                }
+            }
+
+            return view('mk.news.ai-analysis')->with([
+                'projectId' => $projectId,
+                'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
+                'projects'  => $projects,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('News AI Analysis Page Error', ['error' => $e->getMessage()]);
+            return view('mk.news.ai-analysis')->with([
+                'projectId' => null,
+                'startDate' => now()->subDays(6)->format('Y-m-d'),
+                'endDate'   => now()->format('Y-m-d'),
+                'projects'  => [],
+                'error'     => $e->getMessage(),
+            ]);
         }
-
-        session(['selected_project_id' => $projectId]);
-
-        return view('mk.news.ai-analysis', [
-            'projectId' => $projectId,
-            'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
-            'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('AI Analysis Page Error', ['error' => $e->getMessage()]);
-        return redirect()->route('mk.dashboard')
-            ->with('error', 'Failed to load AI Analysis page');
     }
-}
 
 public function aiAnalysisProxy(Request $request)
 {

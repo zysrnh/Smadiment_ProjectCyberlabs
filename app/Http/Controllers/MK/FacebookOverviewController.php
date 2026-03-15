@@ -5,6 +5,7 @@ namespace App\Http\Controllers\MK;
 use App\Http\Controllers\Controller;
 use App\Services\MediaKernelsClient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
@@ -22,8 +23,17 @@ class FacebookOverviewController extends Controller
      */
     private function getAllProjects(): array
     {
-        $projectsData = $this->client->listProjects(0, 100);
-        return array_values($projectsData);
+        $user = Auth::user();
+        $assignedProjectIds = $user->assignedProjectIds();
+
+        $rawProjects = $this->client->listProjects(0, 100);
+        $allProjects = array_values($rawProjects);
+
+        $userProjects = array_filter($allProjects, function ($project) use ($assignedProjectIds) {
+            return in_array($project['id'] ?? null, $assignedProjectIds);
+        });
+
+        return array_values($userProjects);
     }
 
     /**
@@ -258,6 +268,9 @@ class FacebookOverviewController extends Controller
             $startDate = $request->query('start_date');
             $endDate   = $request->query('end_date');
 
+            $rows   = (int) ($request->query('rows', 100));
+            $sub    = $request->query('sub', 'fblike');
+
             if (!$projectId || !$startDate || !$endDate) {
                 return response()->json([
                     'success' => false,
@@ -265,7 +278,7 @@ class FacebookOverviewController extends Controller
                 ], 400);
             }
 
-            $result = $this->client->fbTopStatus($projectId, $startDate, $endDate);
+            $result = $this->client->fbTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
 
             Log::info('FB mostViewedPostsData raw result', [
                 'type'   => gettype($result),

@@ -1246,8 +1246,8 @@ const FEAChart = {
         chart.on('click', p => {
             const x = top5[p.dataIndex];
             if (x) {
-                const emoPosts = allPosts.filter(post => post.emotion === x._emo);
-                FEAPanel.open(emoPosts, x._emo);
+                const emoPosts = allPosts.filter(post => post.emotion === x.emo);
+                FEAPanel.open(emoPosts, x.emo);
             }
         });
     },

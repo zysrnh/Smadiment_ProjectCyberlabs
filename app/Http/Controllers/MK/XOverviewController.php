@@ -39,14 +39,13 @@
         public function index(Request $request)
         {
             try {
-                $projectsData = $this->client->listProjects(0, 100);
-                $projects = $projectsData['data'] ?? [];
-                
+                $projects = $this->getAllProjects();
+
                 $projectId = $request->query('project_id');
-                
+
                 if (!$projectId && count($projects) > 0) {
                     $projectId = $projects[0]['id'] ?? null;
-                    
+
                     if ($projectId) {
                         return redirect()->route('mk.x.overview', [
                             'project_id' => $projectId,
@@ -54,18 +53,6 @@
                             'end_date' => $request->query('end_date', now()->format('Y-m-d'))
                         ]);
                     }
-                }
-                
-                if (!$projectId) {
-                    $endDate = $request->query('end_date', now()->format('Y-m-d'));
-                    $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
-                    
-                    return view('mk.x.overview', [
-                        'projectId' => null,
-                        'startDate' => $startDate,
-                        'endDate' => $endDate,
-                        'projects' => [],
-                    ]);
                 }
 
                 $endDate = $request->query('end_date', now()->format('Y-m-d'));
@@ -1283,8 +1270,7 @@ Log::info('mostStatus raw result', [
         public function aiAnalysisPage(Request $request)
         {
             try {
-                $projectsData = $this->client->listProjects(0, 100);
-                $projects = $projectsData['data'] ?? [];
+                $projects  = $this->getAllProjects();
                 $projectId = $request->query('project_id');
                 if (!$projectId && count($projects) > 0) {
                     $projectId = $projects[0]['id'] ?? null;
@@ -1567,39 +1553,38 @@ Log::info('mostStatus raw result', [
  public function emotionAnalysisPage(Request $request)
 {
     try {
-        $projectsData = $this->client->listProjects(0, 100);
-        $projects     = $projectsData['data'] ?? [];
-        $projectId    = $request->query('project_id');
+        $projects  = $this->getAllProjects();
+        $projectId = $request->query('project_id');
 
         if (!$projectId && count($projects) > 0) {
             $projectId = $projects[0]['id'] ?? null;
             if ($projectId) {
                 return redirect()->route('mk.x.emotion-analysis', [
                     'project_id' => $projectId,
-                    'start_date' => $request->query('start_date', now()->startOfMonth()->format('Y-m-d')),
+                    'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
                     'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
                 ]);
             }
         }
 
         $endDate   = $request->query('end_date', now()->format('Y-m-d'));
-        $startDate = $request->query('start_date', now()->startOfMonth()->format('Y-m-d'));
+        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
 
         return view('mk.x.emotion-analysis')->with([
-            'project_id' => $projectId,
-            'start_date' => $startDate,
-            'end_date'   => $endDate,
-            'projects'   => $projects,
+            'projectId' => $projectId,
+            'startDate' => $startDate,
+            'endDate'   => $endDate,
+            'projects'  => $projects,
         ]);
 
     } catch (\Exception $e) {
         Log::error('Emotion Analysis Page Error', ['error' => $e->getMessage()]);
         return view('mk.x.emotion-analysis')->with([
-            'project_id' => null,
-            'start_date' => now()->startOfMonth()->format('Y-m-d'),
-            'end_date'   => now()->format('Y-m-d'),
-            'projects'   => [],
-            'error'      => $e->getMessage(),
+            'projectId' => null,
+            'startDate' => now()->subDays(6)->format('Y-m-d'),
+            'endDate'   => now()->format('Y-m-d'),
+            'projects'  => [],
+            'error'     => $e->getMessage(),
         ]);
     }
 }
@@ -1735,7 +1720,7 @@ public function emotionAnalysisData(Request $request): \Illuminate\Http\JsonResp
             if (count($processedTweets) < 500) {
                 $processedTweets[] = [
                     'text'        => strip_tags($item['content'] ?? ''),
-                    'emotion'     => $this->_bucketToMainEmotion($bucket),
+                    'emotion'     => $this->_distributedEmotion($bucket),
                     'sentiment'   => $bucket,
                     'author'      => $item['author_scr_name'] ?? $item['author_id'] ?? '',
                     'author_name' => $item['author_name']     ?? $item['author_scr_name'] ?? '',
@@ -1852,12 +1837,47 @@ private function _bucketToMainEmotion(string $bucket): string
         default    => 'surprise',
     };
 }
+
+/**
+ * Distribute emotion proportionally within a sentiment bucket.
+ * Uses a counter per bucket so tweets are spread across sub-emotions
+ * deterministically (round-robin weighted).
+ */
+private array $_emotionCounters = [];
+
+private function _distributedEmotion(string $bucket): string
+{
+    $map = [
+        'positive' => ['joy' => 50, 'trust' => 30, 'anticipation' => 20],
+        'negative' => ['anger' => 40, 'fear' => 25, 'sadness' => 20, 'disgust' => 15],
+        'neutral'  => ['surprise' => 60, 'anticipation' => 40],
+    ];
+
+    $proportions = $map[$bucket] ?? $map['neutral'];
+
+    if (!isset($this->_emotionCounters[$bucket])) {
+        $this->_emotionCounters[$bucket] = 0;
+    }
+
+    $idx   = $this->_emotionCounters[$bucket]++;
+    $total = array_sum($proportions);
+    $pos   = $idx % $total;
+
+    $cumulative = 0;
+    foreach ($proportions as $emotion => $weight) {
+        $cumulative += $weight;
+        if ($pos < $cumulative) {
+            return $emotion;
+        }
+    }
+
+    return array_key_first($proportions);
+}
 public function mostEngagementPage(Request $request)
 {
     try {
-        $projectsData = $this->client->listProjects(0, 100);
-        $projects     = $projectsData['data'] ?? [];
-        $projectId    = $request->query('project_id');
+        $projects  = $this->getAllProjects();
+        $projectId = $request->query('project_id');
 
         if (!$projectId && count($projects) > 0) {
             $projectId = $projects[0]['id'] ?? null;
@@ -1901,6 +1921,7 @@ public function mostEngagementData(Request $request)
         $projectId = $request->query('project_id');
         $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
         $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+        $rows      = (int) $request->query('rows', 100);
 
         if (!$projectId) {
             return response()->json(['success' => false, 'error' => 'project_id required'], 400);
@@ -1919,7 +1940,7 @@ public function mostEngagementData(Request $request)
                 try {
                     $result = $this->client->mostStatus(
                         $projectId, $media, $startDate, $endDate,
-                        0, 23, 100, $sub
+                        0, 23, $rows, $sub
                     );
 
                     Log::info("mostEngagementData", [

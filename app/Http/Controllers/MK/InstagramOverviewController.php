@@ -5,6 +5,7 @@ namespace App\Http\Controllers\MK;
 use App\Http\Controllers\Controller;
 use App\Services\MediaKernelsClient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class InstagramOverviewController extends Controller
@@ -21,8 +22,17 @@ class InstagramOverviewController extends Controller
      */
     private function getAllProjects(): array
     {
-        $projectsData = $this->client->listProjects(0, 100);
-        return array_values($projectsData);
+        $user = Auth::user();
+        $assignedProjectIds = $user->assignedProjectIds();
+
+        $rawProjects = $this->client->listProjects(0, 100);
+        $allProjects = array_values($rawProjects);
+
+        $userProjects = array_filter($allProjects, function ($project) use ($assignedProjectIds) {
+            return in_array($project['id'] ?? null, $assignedProjectIds);
+        });
+
+        return array_values($userProjects);
     }
 
     // ─────────────────────────────────────────────────────
