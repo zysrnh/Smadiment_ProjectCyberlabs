@@ -578,10 +578,10 @@
     <button class="tme-tab-btn" id="tab-rt" onclick="XMETab.show('rt')">
         <i class="ph ph-repeat"></i> Most Retweeted <span class="tme-tab-chip" id="chip-rt">—</span>
     </button>
-    <button class="tme-tab-btn" id="tab-like" onclick="XMETab.show('like')">
+    <button class="tme-tab-btn" id="tab-like" onclick="XMETab.show('like')" style="display:none;">
         <i class="ph ph-heart"></i> Most Liked <span class="tme-tab-chip" id="chip-like">—</span>
     </button>
-    <button class="tme-tab-btn" id="tab-reply" onclick="XMETab.show('reply')">
+    <button class="tme-tab-btn" id="tab-reply" onclick="XMETab.show('reply')" style="display:none;">
         <i class="ph ph-chat-circle"></i> Most Replies <span class="tme-tab-chip" id="chip-reply">—</span>
     </button>
 </div>
@@ -813,6 +813,11 @@ const XMEData = {
             let items  = json.data || json || []; if(!Array.isArray(items)) items=[];
 
             Store.view=[...items]; Store.rt=[...items]; Store.like=[...items]; Store.reply=[...items];
+            // Auto-show like/reply tabs if data has those fields
+            const hasLikes   = items.some(i => parseInt(i.fav_count||0) > 0);
+            const hasReplies = items.some(i => parseInt(i.reply_cnt||0) > 0);
+            const tabLike  = _$('tab-like');  if(tabLike)  tabLike.style.display  = hasLikes   ? '' : 'none';
+            const tabReply = _$('tab-reply'); if(tabReply) tabReply.style.display = hasReplies ? '' : 'none';
             ['view','rt','like','reply'].forEach(t => {
                 const chip  = _$('chip-'+t);  if(chip)  chip.textContent  = items.length;
                 const badge = _$('badge-'+t); if(badge) badge.textContent = `${items.length} tweets`;

@@ -2104,9 +2104,11 @@ public function mostStatus(
             if (isset($json['data']) && is_array($json['data'])) {
                 $items = $json['data'];
             }
-            if (!is_array($items) || (count($items) > 0 && !isset($items[0]))) {
-                $items = array_values($items);
+            if (!is_array($items)) {
+                $items = [];
             }
+            // Re-index and filter out non-array entries (e.g. "Welcome to Drone Emprit API")
+            $items = array_values(array_filter($items, 'is_array'));
 
             Log::info('mostStatus API response', [
                 'project_id'  => $projectId,
@@ -2165,6 +2167,8 @@ public function mostStatus(
             Log::info('mostRetweets API response', [
                 'project_id'  => $projectId,
                 'total_items' => is_array($json) ? count($json) : 0,
+                'sample_keys' => is_array($json) && count($json) > 0 ? array_keys(is_array($json[0] ?? null) ? $json[0] : []) : [],
+                'sample_item' => is_array($json) && count($json) > 0 ? array_slice(is_array($json[0] ?? null) ? $json[0] : [], 0, 20) : [],
             ]);
 
             return is_array($json) ? $json : [];

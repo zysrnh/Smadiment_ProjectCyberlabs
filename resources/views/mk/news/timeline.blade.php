@@ -317,7 +317,7 @@
 </div>
 
 <div class="row">
-    <div class="col-12">
+    <div class="col-lg-8 col-12">
         <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
@@ -327,9 +327,25 @@
                 <span class="badge bg-light-primary text-primary" id="trendBadge">Loading...</span>
             </div>
             <div class="card-body">
-                <div class="chart-container" style="height:320px;">
+                <div class="chart-container" style="height:340px;">
                     <div class="chart-loading" id="trendLoading"><div class="spin-ring"></div><span>Loading chart...</span></div>
-                    <div id="trendChart" style="width:100%;height:320px;display:none;"></div>
+                    <div id="trendChart" style="width:100%;height:340px;display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-12">
+        <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avtar avtar-xs bg-light-success rounded"><i class="ph ph-chart-bar f-18 text-success"></i></div>
+                    <div><h6 class="mb-0">Platform Distribution</h6><small class="text-muted">Total mentions per platform</small></div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height:340px;">
+                    <div class="chart-loading" id="barLoading"><div class="spin-ring"></div><span>Loading chart...</span></div>
+                    <div id="barChart" style="width:100%;height:340px;display:none;"></div>
                 </div>
             </div>
         </div>
@@ -353,12 +369,7 @@
             <div><h6 class="mb-0">Mentions List</h6><small class="text-muted">Klik mention untuk lihat detail</small></div>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <select class="mt-rows-sel" id="rowsSel" onchange="MTData.reload()">
-                <option value="50">Top 50</option>
-                <option value="100" selected>Top 100</option>
-                <option value="200">Top 200</option>
-                <option value="500">Top 500</option>
-            </select>
+            <button class="btn btn-outline-primary btn-sm" onclick="Object.keys(_mtCache).forEach(function(k){delete _mtCache[k];}); MTData.reload();" title="Refresh data"><i class="ph ph-arrows-clockwise me-1"></i>Refresh</button>
             <button class="btn btn-outline-secondary btn-sm" onclick="MTData.exportCsv()" title="Export CSV"><i class="ph ph-download-simple me-1"></i>CSV</button>
             <span class="badge bg-light-primary text-primary" id="listBadge">Loading...</span>
         </div>
@@ -413,7 +424,7 @@ const numK = n  => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1
 const esc  = s  => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
 const Store = { all:[], doc:[], twit:[], fb:[], ig:[], ytb:[], tiktok:[] };
-let _activeTab = 'all', _page = 1, _trendChart = null;
+let _activeTab = 'all', _page = 1, _trendChart = null, _barChart = null;
 
 function _normSent(item) {
     const code = String(item.class_sentiment_code||'').toLowerCase().trim();
@@ -482,36 +493,73 @@ const MTTab = {
     }
 };
 
+const _mtCache = {};
+
+async function _mtFetchOne(platform, pid, sd, ed) {
+    const cKey = pid+'_'+platform+'_'+sd+'_'+ed;
+    if(_mtCache[cKey]) return _mtCache[cKey];
+
+    const q = 'project_id='+pid+'&start_date='+sd+'&end_date='+ed+'&rows=500&start=0';
+
+    // Instagram: try multiple sub values until data found
+    if(platform === 'ig') {
+        for(const sub of ['postbylike','postbycomment','postbydate','']) {
+            try {
+                const r = await fetch('/mk/api/news/ig-top-status?'+q+(sub?'&sub='+sub:''));
+                const d = await r.json();
+                const items = Array.isArray(d&&d.data)?d.data:(Array.isArray(d)?d:[]);
+                if(items.length>0) { _mtCache[cKey]=items.map(function(i){i._platform=platform;return i;}); return _mtCache[cKey]; }
+            } catch(e) { continue; }
+        }
+        return [];
+    }
+
+    const eps = {
+        doc:    '/mk/api/news/mentions?'+q,
+        twit:   '/mk/api/x/most-status?'+q+'&media=all&mention_type=view_all',
+        fb:     '/mk/api/news/fb-top-status?'+q+'&sub=fblike',
+        ytb:    '/mk/api/news/ytb-top-status?'+q,
+        tiktok: '/mk/api/news/tiktok-top-status?'+q+'&sub=postbylike'
+    };
+    const url = eps[platform]; if(!url) return [];
+
+    const ctrl = new AbortController(), tid = setTimeout(function(){ctrl.abort();}, 30000);
+    try {
+        const r = await fetch(url, {signal:ctrl.signal}); clearTimeout(tid);
+        if(!r.ok) return [];
+        const d = await r.json();
+        let items = [];
+        if(Array.isArray(d&&d.data&&d.data.data)) items = d.data.data;
+        else if(Array.isArray(d&&d.data)) items = d.data;
+        else if(Array.isArray(d&&d.statuses)) items = d.statuses;
+        else if(Array.isArray(d&&d.results)) items = d.results;
+        else if(Array.isArray(d&&d.posts)) items = d.posts;
+        else if(Array.isArray(d)) items = d;
+
+        // doc: filter to news items only
+        if(platform === 'doc') items = items.filter(function(m){
+            const tc = String(m.tcode||'').toLowerCase(), mt = String(m.media_type||'').toLowerCase();
+            return tc==='berita'||mt==='berita'||mt==='doc'||mt==='news'||mt==='online'||mt==='article';
+        });
+
+        items = items.map(function(i){i._platform=platform;return i;});
+        _mtCache[cKey] = items;
+        return items;
+    } catch(e) { clearTimeout(tid); return []; }
+}
+
 const MTData = {
     async loadAll() {
         if(!MTCfg.pid) { _$('listContainer').innerHTML='<div class="chart-empty" style="padding:40px"><i class="ph ph-folder-open"></i><span>Pilih project terlebih dahulu</span></div>'; return; }
-        const rows = parseInt((_$('rowsSel')||{}).value||'100');
-        const q = 'project_id='+MTCfg.pid+'&start_date='+MTCfg.sd+'&end_date='+MTCfg.ed+'&rows='+rows+'&start=0';
 
-        const mentionsP = fetch('/mk/api/news/mentions?'+q).then(r=>r.json()).catch(function(){return null;});
-        const twitP   = fetch('/mk/api/x/most-status?'+q+'&media=all&mention_type=view_all').then(r=>r.json()).catch(function(){return null;});
-        const fbP     = fetch('/mk/api/news/fb-top-status?'+q+'&sub=fblike').then(r=>r.json()).catch(function(){return null;});
-        const igP     = fetch('/mk/api/news/ig-top-status?'+q+'&sub=postbylike').then(r=>r.json()).catch(function(){return null;});
-        const ytbP    = fetch('/mk/api/news/ytb-top-status?'+q).then(r=>r.json()).catch(function(){return null;});
-        const tiktokP = fetch('/mk/api/news/tiktok-top-status?'+q+'&sub=postbylike').then(r=>r.json()).catch(function(){return null;});
+        const results = await Promise.allSettled(
+            PLAT_KEYS.map(function(k){ return _mtFetchOne(k, MTCfg.pid, MTCfg.sd, MTCfg.ed); })
+        );
 
-        const mentionsR = await mentionsP;
-        const mentionsItems = Array.isArray(mentionsR&&mentionsR.data)?mentionsR.data:(Array.isArray(mentionsR)?mentionsR:[]);
-        const buckets = {doc:[],twit:[],fb:[],ig:[],ytb:[],tiktok:[]};
-        mentionsItems.forEach(function(item) {
-            var p = _detectPlatform(item);
-            buckets[p].push(_normItem(item, p));
-        });
-        Store.doc = buckets.doc;
-        this._updateChip('doc', Store.doc.length);
-
-        var extract = function(r){ return Array.isArray(r&&r.data)?r.data:(Array.isArray(r)?r:[]); };
-        var results = await Promise.allSettled([twitP, fbP, igP, ytbP, tiktokP]);
-        var platMap = ['twit','fb','ig','ytb','tiktok'];
-        platMap.forEach(function(p, i) {
-            var raw = results[i].status==='fulfilled' ? extract(results[i].value) : [];
-            Store[p] = raw.length > 0 ? raw.map(function(it){ return _normItem(it, p); }) : buckets[p];
-            MTData._updateChip(p, Store[p].length);
+        PLAT_KEYS.forEach(function(k, i) {
+            var raw = results[i].status==='fulfilled' ? results[i].value : [];
+            Store[k] = raw.map(function(it){ return _normItem(it, k); });
+            MTData._updateChip(k, Store[k].length);
         });
 
         Store.all = PLAT_KEYS.reduce(function(acc,k){ return acc.concat(Store[k]); },[]).sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
@@ -519,6 +567,7 @@ const MTData = {
 
         this._updateKPIs();
         this._renderTrend();
+        this._renderBar();
         this._renderList();
         _$('listBadge').textContent = Store.all.length+' mentions';
     },
@@ -570,23 +619,42 @@ const MTData = {
         var series = PLAT_KEYS.map(function(k) {
             var hasData = datasets[k].some(function(v){return v>0;});
             return {
-                name: PLAT[k].label, type:'line', data:datasets[k], smooth:true,
-                symbol:'circle', symbolSize:hasData?7:0, showSymbol:true,
-                itemStyle:{color:PLAT[k].color, borderColor:'#fff', borderWidth:2},
-                lineStyle:{color:PLAT[k].color, width:hasData?2.5:1, opacity:hasData?1:.15},
-                areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:PLAT[k].color+'33'},{offset:1,color:PLAT[k].color+'05'}]}},
-                label:{show:hasData&&dates.length<=14,position:'top',formatter:function(p){return p.value>0?numK(p.value):'';},fontSize:10,fontWeight:700,color:'#64748b',backgroundColor:'rgba(255,255,255,.85)',borderRadius:3,padding:[2,5]},
-                emphasis:{focus:'series',lineStyle:{width:3.5},itemStyle:{borderWidth:2.5,shadowBlur:10,shadowColor:PLAT[k].color+'88'}}
+                name: PLAT[k].label, type:'line', data:datasets[k], smooth:.4,
+                symbol:'circle', symbolSize:0, showSymbol:false,
+                itemStyle:{color:PLAT[k].color},
+                lineStyle:{color:PLAT[k].color, width:hasData?2:1, opacity:hasData?1:.12},
+                areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:PLAT[k].color+'58'},{offset:1,color:PLAT[k].color+'08'}]}},
+                emphasis:{focus:'series',lineStyle:{width:3},itemStyle:{borderColor:'#fff',borderWidth:2,shadowBlur:8,shadowColor:PLAT[k].color+'66'}}
             };
         });
 
         _trendChart.setOption({
-            animation:true, animationDuration:800, backgroundColor:'transparent',
-            tooltip:{ trigger:'axis', backgroundColor:'#1e293b', borderColor:'#334155', textStyle:{color:'#e2e8f0',fontFamily:'inherit',fontSize:12} },
-            legend:{ top:10, left:'center', data:PLAT_KEYS.map(function(k){return PLAT[k].label;}), textStyle:{fontFamily:'inherit',fontSize:11,fontWeight:600,color:'#64748b'}, icon:'circle', itemWidth:10, itemHeight:10, itemGap:16 },
-            grid:{top:50,right:20,bottom:24,left:50},
-            xAxis:{ type:'category', data:xLabels, boundaryGap:false, axisLine:{lineStyle:{color:'#e2e8f0'}}, axisTick:{show:false}, axisLabel:{fontSize:11,fontWeight:600,color:'#64748b'} },
-            yAxis:{ type:'value', axisLine:{show:false}, axisTick:{show:false}, splitLine:{lineStyle:{color:'#f1f5f9'}}, axisLabel:{fontSize:11,color:'#94a3b8',formatter:numK} },
+            animation:true, animationDuration:600, animationEasing:'cubicOut', backgroundColor:'transparent',
+            tooltip:{ trigger:'axis', backgroundColor:'rgba(15,23,42,.92)', borderColor:'transparent', borderRadius:8, padding:[10,14],
+                textStyle:{color:'#e2e8f0',fontFamily:'inherit',fontSize:12},
+                axisPointer:{lineStyle:{color:'#cbd5e1',type:'dashed'}},
+                formatter: function(params) {
+                    if(!params||!params.length) return '';
+                    var total=0;
+                    var rows=params.map(function(p){
+                        total+=p.value||0;
+                        return '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 0;">'
+                            +'<span style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+p.color+';"></span>'+esc(p.seriesName)+'</span>'
+                            +'<span style="display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:18px;padding:0 6px;border-radius:4px;background:rgba(255,255,255,.15);font-size:11px;font-weight:800;">'+numF(p.value||0)+'</span>'
+                            +'</div>';
+                    }).join('');
+                    return '<div style="font-size:12px;font-weight:700;margin-bottom:6px;color:#f8fafc;">'+params[0].axisValue+'</div>'
+                        +rows
+                        +'<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 0 0;margin-top:4px;border-top:1px solid rgba(255,255,255,.15);font-weight:800;color:#f8fafc;">'
+                        +'<span>Total</span>'
+                        +'<span style="display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:18px;padding:0 6px;border-radius:4px;background:rgba(99,179,237,.25);font-size:11px;font-weight:800;">'+numF(total)+'</span>'
+                        +'</div>';
+                }
+            },
+            legend:{ bottom:0, left:'center', data:PLAT_KEYS.map(function(k){return PLAT[k].label;}), textStyle:{fontFamily:'inherit',fontSize:11,fontWeight:600,color:'#64748b'}, icon:'circle', itemWidth:8, itemHeight:8, itemGap:16 },
+            grid:{top:20,right:16,bottom:40,left:46},
+            xAxis:{ type:'category', data:xLabels, boundaryGap:false, axisLine:{show:false}, axisTick:{show:false}, axisLabel:{fontSize:10,fontWeight:600,color:'#94a3b8'} },
+            yAxis:{ type:'value', axisLine:{show:false}, axisTick:{show:false}, splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}}, axisLabel:{fontSize:10,color:'#94a3b8',formatter:numK} },
             series:series
         });
 
@@ -609,6 +677,47 @@ const MTData = {
         requestAnimationFrame(function(){ _trendChart.resize(); });
         var fmtB = function(d){ var dt=new Date(d+'T00:00:00'); return dt.getDate()+' '+dt.toLocaleString('id-ID',{month:'short'}); };
         _$('trendBadge').textContent = fmtB(dates[0])+' - '+fmtB(dates[dates.length-1]);
+    },
+
+    _renderBar() {
+        var el = _$('barChart'), ld = _$('barLoading');
+        if(!el) return;
+        var platData = PLAT_KEYS.map(function(k){ return {name:PLAT[k].label, value:Store[k].length, color:PLAT[k].color}; })
+            .sort(function(a,b){return b.value-a.value;});
+        var total = platData.reduce(function(s,d){return s+d.value;},0);
+        if(!total) { if(ld) ld.classList.add('hidden'); return; }
+
+        if(_barChart) { try{_barChart.dispose();}catch(e){} }
+        el.style.display='block';
+        _barChart = echarts.init(el, null, {renderer:'canvas'});
+        window.addEventListener('resize', function(){ try{_barChart.resize();}catch(e){} });
+
+        _barChart.setOption({
+            animation:true, animationDuration:500, animationEasing:'cubicOut', backgroundColor:'transparent',
+            tooltip:{ trigger:'item', backgroundColor:'rgba(15,23,42,.92)', borderColor:'transparent', borderRadius:8, padding:[8,12],
+                textStyle:{color:'#e2e8f0',fontFamily:'inherit',fontSize:12},
+                formatter:function(p){return '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+p.color+';margin-right:6px;"></span>'+esc(p.name)+' <b style="margin-left:8px;">'+numF(p.value)+'</b> <span style="color:#94a3b8;font-size:10px;">('+((p.value/total)*100).toFixed(1)+'%)</span>';}
+            },
+            grid:{top:10,right:16,bottom:28,left:80},
+            xAxis:{type:'value', axisLine:{show:false}, axisTick:{show:false}, splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}}, axisLabel:{fontSize:10,color:'#94a3b8',formatter:numK}},
+            yAxis:{type:'category', data:platData.map(function(d){return d.name;}).reverse(), axisLine:{show:false}, axisTick:{show:false}, axisLabel:{fontSize:11,fontWeight:600,color:'#64748b'}},
+            series:[{
+                type:'bar', data:platData.map(function(d){return {value:d.value,itemStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:d.color},{offset:1,color:d.color+'99'}]}}};}).reverse(),
+                barWidth:18, borderRadius:[0,6,6,0],
+                label:{show:true,position:'right',formatter:function(p){return numF(p.value);},fontSize:10,fontWeight:800,color:'#64748b'}
+            }],
+            graphic:[{type:'text',left:'center',bottom:4,z:100,style:{text:'Total: '+numF(total),fill:'#94a3b8',font:'600 10px inherit',textAlign:'center'}}]
+        });
+
+        _barChart.on('click',function(p){
+            var platKey=PLAT_KEYS.find(function(k){return PLAT[k].label===p.name;});
+            if(platKey) MTTab.show(platKey);
+        });
+        _barChart.on('mouseover',function(){el.style.cursor='pointer';});
+        _barChart.on('mouseout',function(){el.style.cursor='default';});
+
+        if(ld) ld.classList.add('hidden');
+        requestAnimationFrame(function(){_barChart.resize();});
     },
 
     _getItems() {

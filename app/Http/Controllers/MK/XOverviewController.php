@@ -919,41 +919,97 @@
                 $endDate   = $request->query('end_date');
                 if (!$projectId || !$startDate || !$endDate) return response()->json(['success' => false, 'error' => 'Missing required parameters: project_id, start_date, end_date'], 400);
 
-$result = $this->client->mostStatus($projectId, 'all', $startDate, $endDate);
+                $result = $this->client->mostStatus($projectId, 'all', $startDate, $endDate);
 
-Log::info('mostStatus raw result', [
-    'type'        => gettype($result),
-    'keys'        => is_array($result) ? array_keys($result) : 'not_array',
-    'sample_key0' => is_array($result) ? ($result[0] ?? 'NO_KEY_0') : 'not_array',
-    'sample'      => is_array($result) ? array_slice($result, 0, 2, true) : $result,
-]);                $posts  = [];
+                Log::info('mostStatus raw result', [
+                    'type'        => gettype($result),
+                    'keys'        => is_array($result) ? array_keys(array_slice($result, 0, 3, true)) : 'not_array',
+                    'count'       => is_array($result) ? count($result) : 0,
+                ]);
+
+                $posts  = [];
 
                 if (is_array($result)) {
                     foreach ($result as $item) {
-                        $avatar = $item['avatar_url'] ?? $item['author']['image'] ?? '';
+                        if (!is_array($item)) continue;
+
+                        // Parse author if JSON string
+                        $authorObj = $item['author'] ?? [];
+                        if (is_string($authorObj) && str_starts_with(trim($authorObj), '{')) {
+                            try { $authorObj = json_decode($authorObj, true) ?? []; } catch (\Exception $e) { $authorObj = []; }
+                        }
+                        if (!is_array($authorObj)) $authorObj = [];
+
+                        $avatar = $item['avatar_url'] ?? $authorObj['image'] ?? '';
                         $avatar = str_replace('_normal.', '.', $avatar);
                         $posts[] = [
                             'id'             => $item['id']             ?? '',
                             'sub_id'         => $item['sub_id']         ?? '',
-                            'name'           => $item['name']           ?? $item['author']['scr_name'] ?? '',
+                            'name'           => $item['name']           ?? $authorObj['scr_name'] ?? '',
                             'content'        => $item['content']        ?? '',
                             'view_cnt'       => (int) ($item['view_cnt'] ?? $item['freq'] ?? 0),
                             'rt'             => (int) ($item['rt']      ?? 0),
+                            'fav_count'      => (int) ($item['fav_count'] ?? $item['likes'] ?? 0),
+                            'reply_cnt'      => (int) ($item['reply_cnt'] ?? $item['replies'] ?? 0),
                             'sentiment_str'  => $item['sentiment_str']  ?? 'Neutral',
                             'sentiment_freq' => $item['sentiment_freq'] ?? 0,
                             'sentiment_prec' => $item['sentiment_prec'] ?? 0,
                             'date_created'   => $item['date_created']   ?? '',
                             'avatar_url'     => $avatar,
                             'author'         => [
-                                'name'     => $item['author']['name']     ?? $item['name'] ?? '',
-                                'scr_name' => $item['author']['scr_name'] ?? $item['name'] ?? '',
-                                'image'    => $item['author']['image']    ?? $avatar,
-                                'flw_cnt'  => $item['author']['flw_cnt']  ?? 0,
+                                'name'     => $authorObj['name']     ?? $item['author_name'] ?? ($item['name'] ?? ''),
+                                'scr_name' => $authorObj['scr_name'] ?? $item['author_scr_name'] ?? ($item['name'] ?? ''),
+                                'image'    => $authorObj['image']    ?? $avatar,
+                                'flw_cnt'  => (int) ($authorObj['flw_cnt'] ?? 0),
                             ],
                         ];
                     }
-                    usort($posts, fn($a, $b) => $b['view_cnt'] - $a['view_cnt']);
                 }
+
+                // Fallback: use mostRetweets if mostStatus returned no valid posts
+                if (empty($posts)) {
+                    try {
+                        $rtResult = $this->client->mostRetweets($projectId, $startDate, $endDate, 0, 23, 200);
+                        Log::info('mostStatus fallback to mostRetweets', ['count' => is_array($rtResult) ? count($rtResult) : 0]);
+                        if (is_array($rtResult)) {
+                            foreach ($rtResult as $item) {
+                                if (!is_array($item)) continue;
+                                $authorObj = $item['author'] ?? [];
+                                if (is_string($authorObj) && str_starts_with(trim($authorObj), '{')) {
+                                    try { $authorObj = json_decode($authorObj, true) ?? []; } catch (\Exception $e) { $authorObj = []; }
+                                }
+                                if (!is_array($authorObj)) $authorObj = [];
+                                $avatar = $item['avatar_url'] ?? $authorObj['image'] ?? '';
+                                $avatar = str_replace('_normal.', '.', $avatar);
+                                $posts[] = [
+                                    'id'             => $item['id']             ?? '',
+                                    'sub_id'         => $item['sub_id']         ?? '',
+                                    'name'           => $item['name']           ?? $authorObj['scr_name'] ?? '',
+                                    'content'        => $item['content']        ?? '',
+                                    'view_cnt'       => (int) ($item['view_cnt'] ?? $item['freq'] ?? 0),
+                                    'rt'             => (int) ($item['rt']      ?? 0),
+                                    'fav_count'      => (int) ($item['fav_count'] ?? $item['likes'] ?? 0),
+                                    'reply_cnt'      => (int) ($item['reply_cnt'] ?? $item['replies'] ?? 0),
+                                    'sentiment_str'  => $item['sentiment_str']  ?? 'Neutral',
+                                    'sentiment_freq' => $item['sentiment_freq'] ?? 0,
+                                    'sentiment_prec' => $item['sentiment_prec'] ?? 0,
+                                    'date_created'   => $item['date_created']   ?? '',
+                                    'avatar_url'     => $avatar,
+                                    'author'         => [
+                                        'name'     => $authorObj['name']     ?? $item['author_name'] ?? ($item['name'] ?? ''),
+                                        'scr_name' => $authorObj['scr_name'] ?? $item['author_scr_name'] ?? ($item['name'] ?? ''),
+                                        'image'    => $authorObj['image']    ?? $avatar,
+                                        'flw_cnt'  => (int) ($authorObj['flw_cnt'] ?? 0),
+                                    ],
+                                ];
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        Log::warning('mostStatus mostRetweets fallback failed', ['error' => $e->getMessage()]);
+                    }
+                }
+
+                usort($posts, fn($a, $b) => $b['view_cnt'] - $a['view_cnt']);
 
                 return response()->json(['success' => true, 'data' => $posts]);
 
@@ -1978,13 +2034,21 @@ public function mostEngagementData(Request $request)
             }
         }
 
-        // Fallback: pakai mostRetweets kalau masih kosong
-        if (empty($allPosts)) {
+        // Fallback: pakai mostRetweets kalau masih kosong atau terlalu sedikit
+        if (count($allPosts) < 5) {
             try {
                 $rtResult = $this->client->mostRetweets($projectId, $startDate, $endDate);
                 Log::info("mostEngagementData fallback mostRetweets", ['count' => count($rtResult ?? [])]);
                 if (!empty($rtResult) && is_array($rtResult)) {
-                    $allPosts = $rtResult;
+                    // Merge with existing, dedup by id
+                    foreach ($rtResult as $item) {
+                        if (!is_array($item)) continue;
+                        $uid = $item['sub_id'] ?? $item['id'] ?? md5(($item['content'] ?? '') . ($item['name'] ?? ''));
+                        if (!isset($seenIds[$uid])) {
+                            $seenIds[$uid] = count($allPosts);
+                            $allPosts[] = $item;
+                        }
+                    }
                 }
             } catch (\Exception $e) {
                 Log::warning("mostEngagementData fallback failed", ['error' => $e->getMessage()]);
@@ -1993,8 +2057,15 @@ public function mostEngagementData(Request $request)
 
         // Normalize semua field supaya konsisten di frontend
         $posts = array_map(function ($item) {
+            // Parse author if it's a JSON string
+            $authorObj = $item['author'] ?? [];
+            if (is_string($authorObj) && str_starts_with(trim($authorObj), '{')) {
+                try { $authorObj = json_decode($authorObj, true) ?? []; } catch (\Exception $e) { $authorObj = []; }
+            }
+            if (!is_array($authorObj)) $authorObj = [];
+
             $authorImg = $item['avatar_url']
-                ?? ($item['author']['image'] ?? '');
+                ?? ($authorObj['image'] ?? '');
 
             // Hapus _normal. di URL avatar supaya dapat foto full size
             $authorImg = str_replace('_normal.', '.', $authorImg ?? '');
@@ -2015,10 +2086,10 @@ public function mostEngagementData(Request $request)
                 // Author info
                 'avatar_url' => $authorImg,
                 'author'     => [
-                    'name'     => $item['author']['name']     ?? ($item['name'] ?? ''),
-                    'scr_name' => $item['author']['scr_name'] ?? ($item['name'] ?? ''),
-                    'image'    => $item['author']['image']    ?? $authorImg,
-                    'flw_cnt'  => (int) ($item['author']['flw_cnt'] ?? 0),
+                    'name'     => $authorObj['name']     ?? ($item['author_name'] ?? ($item['name'] ?? '')),
+                    'scr_name' => $authorObj['scr_name'] ?? ($item['author_scr_name'] ?? ($item['name'] ?? '')),
+                    'image'    => $authorObj['image']    ?? $authorImg,
+                    'flw_cnt'  => (int) ($authorObj['flw_cnt'] ?? 0),
                 ],
             ];
         }, $allPosts);
@@ -2026,6 +2097,9 @@ public function mostEngagementData(Request $request)
         Log::info('mostEngagementData final', [
             'project_id' => $projectId,
             'total'      => count($posts),
+            'sample_raw_keys' => count($allPosts) > 0 ? array_keys($allPosts[0]) : [],
+            'sample_raw' => count($allPosts) > 0 ? array_intersect_key($allPosts[0], array_flip(['rt','retweets','rt_count','fav_count','likes','fav','reply_cnt','replies','reply_count','view_cnt','views','freq','num_likes','num_views','num_comments','contentJson'])) : [],
+            'sample_out' => count($posts) > 0 ? ['rt' => $posts[0]['rt'], 'fav_count' => $posts[0]['fav_count'], 'reply_cnt' => $posts[0]['reply_cnt'], 'view_cnt' => $posts[0]['view_cnt']] : [],
         ]);
 
         return response()->json([
