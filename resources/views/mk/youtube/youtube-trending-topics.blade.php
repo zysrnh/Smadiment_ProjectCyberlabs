@@ -512,6 +512,7 @@
 })();
 
 // ── HASHTAG APP ───────────────────────────────────────────────────────────────
+const PRELOADED_RESULT = {!! $hashtagsJson ?? '{"success":false}' !!};
 const HashtagApp = {
     projectId   : '{{ $projectId ?? "" }}',
     startDate   : '{{ $startDate ?? "" }}',
@@ -528,9 +529,12 @@ const HashtagApp = {
     },
 
     async loadData() {
-        const url    = '/mk/api/youtube/trending-topics?project_id='+this.projectId+'&start_date='+this.startDate+'&end_date='+this.endDate;
-        const res    = await fetch(url);
-        const result = await res.json();
+        let result = PRELOADED_RESULT;
+        if (!result || !result.success) {
+            const url    = '/mk/api/youtube/trending-topics?project_id='+this.projectId+'&start_date='+this.startDate+'&end_date='+this.endDate;
+            const res    = await fetch(url);
+            result       = await res.json();
+        }
         if (!result.success) throw new Error(result.error || 'API Error');
 
         const data       = result.data;

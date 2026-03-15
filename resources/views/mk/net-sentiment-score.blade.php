@@ -95,23 +95,12 @@
 .do-badge--neg { background:#fee2e2; color:#991b1b; }
 .do-card-body { padding:16px; flex:1; }
 
-/* ══ Stat Cards ══ */
-.nss-stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:14px; }
-.nss-stat-card {
-    background:#fff; border:1px solid var(--do-slate-200); border-radius:var(--do-radius); padding:14px 16px;
-    box-shadow:var(--do-shadow-sm); cursor:pointer; transition:border-color .2s,box-shadow .2s,transform .15s; position:relative; overflow:hidden;
-}
-.nss-stat-card::after { content:''; position:absolute; top:0; left:0; right:0; height:2.5px; background:var(--accent,var(--do-primary)); opacity:0; transition:opacity .2s; }
-.nss-stat-card:hover { box-shadow:var(--do-shadow-md); border-color:var(--do-slate-300); transform:translateY(-1px); }
-.nss-stat-card:hover::after { opacity:1; }
-.nss-stat-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
-.nss-stat-label { font-size:10px; font-weight:700; color:var(--do-slate-400); text-transform:uppercase; letter-spacing:.5px; display:flex; align-items:center; gap:5px; }
-.nss-stat-dot   { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-.nss-stat-icon  { font-size:13px; color:var(--do-slate-300); }
-.nss-stat-value { font-size:26px; font-weight:800; color:var(--do-slate-900); letter-spacing:-1px; line-height:1; min-height:32px; display:flex; align-items:center; }
-.nss-stat-footer { display:flex; align-items:center; justify-content:space-between; margin-top:6px; }
-.nss-stat-sub { font-size:10px; color:var(--do-slate-400); font-weight:500; }
-.nss-stat-pct { font-size:11px; font-weight:700; }
+/* ══ KPI Card Hover ══ */
+@keyframes kpiIconBounce{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.25) rotate(-10deg)}60%{transform:scale(1.1) rotate(6deg)}}
+@keyframes kpiShimmer{0%{left:-100%}100%{left:150%}}
+.kpi-icon-bg{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.2);font-size:24px;color:#fff;flex-shrink:0}
+.kpi-card-hover{will-change:transform,box-shadow;cursor:pointer;position:relative!important;overflow:hidden!important;transition:transform .25s cubic-bezier(.34,1.56,.64,1)!important,box-shadow .25s ease!important,filter .25s ease!important}.kpi-card-hover::before{content:'';position:absolute;top:0;bottom:0;left:-100%;width:60%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);pointer-events:none;z-index:1}.kpi-card-hover:hover{transform:translateY(-6px) scale(1.025)!important;box-shadow:0 20px 40px rgba(0,0,0,.25)!important;filter:brightness(1.07)!important}.kpi-card-hover:hover::before{animation:kpiShimmer .6s ease forwards}.kpi-card-hover:hover .kpi-icon-bg{background:rgba(255,255,255,.35)!important}.kpi-card-hover:hover .kpi-icon-bg i{animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both!important;display:inline-block!important}.kpi-card-hover:active{transform:translateY(-2px) scale(1.01)!important;transition-duration:.08s!important}
+.kpi-card-hover h3{font-size:1.5rem}
 
 /* ══ Main Layout ══ */
 .nss-main-grid { display:grid; grid-template-columns:1fr 340px; gap:14px; align-items:start; }
@@ -204,7 +193,7 @@
 
 /* ══ Responsive ══ */
 @media(max-width:1100px) { .nss-main-grid { grid-template-columns:1fr; } }
-@media(max-width:768px)  { .nss-stat-grid { grid-template-columns:1fr; } .do-page-header { flex-direction:column; align-items:flex-start; } .do-panel { width:100vw; } }
+@media(max-width:768px)  { .do-page-header { flex-direction:column; align-items:flex-start; } .do-panel { width:100vw; } }
 </style>
 @endsection
 
@@ -239,39 +228,54 @@
     </div>
 </div>
 
-{{-- ══ STAT CARDS ══ --}}
-<div class="nss-stat-grid">
-    <div class="nss-stat-card fade-up fade-up-d1" style="--accent:var(--c-pos);" onclick="NSSPanel.open('pos')">
-        <div class="nss-stat-top">
-            <span class="nss-stat-label"><span class="nss-stat-dot" style="background:var(--c-pos);"></span>Positive</span>
-            <i class="ph ph-thumbs-up nss-stat-icon" style="color:var(--c-pos);"></i>
-        </div>
-        <div class="nss-stat-value" id="statPos"><div class="sk-block" style="height:28px;width:100px;border-radius:4px;"></div></div>
-        <div class="nss-stat-footer">
-            <span class="nss-stat-sub">Total mention positif</span>
-            <span class="nss-stat-pct" style="color:var(--c-pos);" id="pctPos">—</span>
-        </div>
-    </div>
-    <div class="nss-stat-card fade-up fade-up-d2" style="--accent:var(--c-neu);" onclick="NSSPanel.open('neu')">
-        <div class="nss-stat-top">
-            <span class="nss-stat-label"><span class="nss-stat-dot" style="background:var(--c-neu);"></span>Neutral</span>
-            <i class="ph ph-minus-circle nss-stat-icon"></i>
-        </div>
-        <div class="nss-stat-value" id="statNeu"><div class="sk-block" style="height:28px;width:100px;border-radius:4px;"></div></div>
-        <div class="nss-stat-footer">
-            <span class="nss-stat-sub">Total mention netral</span>
-            <span class="nss-stat-pct" style="color:var(--c-neu);" id="pctNeu">—</span>
+{{-- ══ KPI Cards — same pattern as engagement ══ --}}
+<div class="row mb-3">
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100 bg-success text-white kpi-card-hover fade-up fade-up-d1" onclick="NSSPanel.open('pos')">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
+                        <h3 class="mb-0 text-white f-w-300" id="statPos"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctPos">—</p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-thumbs-up"></i></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="nss-stat-card fade-up fade-up-d3" style="--accent:var(--c-neg);" onclick="NSSPanel.open('neg')">
-        <div class="nss-stat-top">
-            <span class="nss-stat-label"><span class="nss-stat-dot" style="background:var(--c-neg);"></span>Negative</span>
-            <i class="ph ph-thumbs-down nss-stat-icon" style="color:var(--c-neg);"></i>
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d2" onclick="NSSPanel.open('neu')">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
+                        <h3 class="mb-0 text-white f-w-300" id="statNeu"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu">—</p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-minus-circle"></i></div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="nss-stat-value" id="statNeg"><div class="sk-block" style="height:28px;width:100px;border-radius:4px;"></div></div>
-        <div class="nss-stat-footer">
-            <span class="nss-stat-sub">Total mention negatif</span>
-            <span class="nss-stat-pct" style="color:var(--c-neg);" id="pctNeg">—</span>
+    </div>
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d3" onclick="NSSPanel.open('neg')">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
+                        <h3 class="mb-0 text-white f-w-300" id="statNeg"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg">—</p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-thumbs-down"></i></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -550,7 +554,7 @@ const NSSPanel=(()=>{
         tiktok:   {label:'TikTok',      color:'#111827'},
     };
 
-    function _normSent(item){const r=String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim();return SENT_MAP[r]||'neu';}
+    function _normSent(item){const r=String(item.class_sentiment||item.sentiment||item.sentiment_str||'0').toLowerCase().trim();return SENT_MAP[r]||'neu';}
 
     async function open(sentiment){
         _curSent=sentiment||'all';
@@ -665,7 +669,7 @@ const NSSPanel=(()=>{
             const name=(rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'Unknown').trim();
             const isNum=/^\d{10,}$/.test(name),dName=isNum?`User ${name.slice(-4)}`:name;
             const text=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,150);
-            const av=(item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||'').trim();
+            const av=(item.avatar_url||item.profile_image_url||item.author_image||item.author?.image||item.profile_image||'').trim();
             const dt=(item.date_created||item.created_at||'').split('T')[0];
             const words=dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
             const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||'?')).toUpperCase();

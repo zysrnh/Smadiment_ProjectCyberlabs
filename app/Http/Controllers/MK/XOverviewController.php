@@ -371,8 +371,7 @@
         public function mostRetweetsPage(Request $request)
         {
             try {
-                $projectsData = $this->client->listProjects(0, 100);
-                $projects = $projectsData['data'] ?? [];
+                $projects = $this->getAllProjects();
                 $projectId = $request->query('project_id');
 
                 if (!$projectId && count($projects) > 0) {
@@ -545,8 +544,7 @@
         public function topHashtagsPage(Request $request)
         {
             try {
-                $projectsData = $this->client->listProjects(0, 100);
-                $projects = $projectsData['data'] ?? [];
+                $projects = $this->getAllProjects();
                 $projectId = $request->query('project_id');
 
                 if (!$projectId && count($projects) > 0) {
@@ -664,8 +662,7 @@
         public function authorsAgePage(Request $request)
         {
             try {
-                $projectsData = $this->client->listProjects(0, 100);
-                $projects = $projectsData['data'] ?? [];
+                $projects = $this->getAllProjects();
                 $projectId = $request->query('project_id');
                 if (!$projectId && count($projects) > 0) {
                     $projectId = $projects[0]['id'] ?? null;
@@ -704,8 +701,7 @@
         public function authorsGenderPage(Request $request)
         {
             try {
-                $projectsData = $this->client->listProjects(0, 100);
-                $projects = $projectsData['data'] ?? [];
+                $projects = $this->getAllProjects();
                 $projectId = $request->query('project_id');
                 if (!$projectId && count($projects) > 0) {
                     $projectId = $projects[0]['id'] ?? null;
@@ -744,8 +740,7 @@
         public function authorsTypePage(Request $request)
         {
             try {
-                $projectsData = $this->client->listProjects(0, 100);
-                $projects = $projectsData['data'] ?? [];
+                $projects = $this->getAllProjects();
                 $projectId = $request->query('project_id');
                 if (!$projectId && count($projects) > 0) {
                     $projectId = $projects[0]['id'] ?? null;
@@ -784,8 +779,7 @@
         public function authorsDemographicsPage(Request $request)
         {
             try {
-                $projectsData = $this->client->listProjects(0, 100);
-                $projects = $projectsData['data'] ?? [];
+                $projects = $this->getAllProjects();
                 $projectId = $request->query('project_id');
                 if (!$projectId && count($projects) > 0) {
                     $projectId = $projects[0]['id'] ?? null;
@@ -813,8 +807,7 @@
         public function geographicPage(Request $request)
         {
             try {
-                $projectsData = $this->client->listProjects(0, 100);
-                $projects = $projectsData['data'] ?? [];
+                $projects = $this->getAllProjects();
                 $projectId = $request->query('project_id');
                 if (!$projectId && count($projects) > 0) {
                     $projectId = $projects[0]['id'] ?? null;
@@ -897,8 +890,7 @@
         public function mostStatusPage(Request $request)
         {
             try {
-                $projectsData = $this->client->listProjects(0, 100);
-                $projects = $projectsData['data'] ?? [];
+                $projects = $this->getAllProjects();
                 $projectId = $request->query('project_id');
                 if (!$projectId && count($projects) > 0) {
                     $projectId = $projects[0]['id'] ?? null;
@@ -978,8 +970,7 @@ Log::info('mostStatus raw result', [
         public function postWithLocationPage(Request $request)
         {
             try {
-                $projectsData = $this->client->listProjects(0, 100);
-                $projects = $projectsData['data'] ?? [];
+                $projects = $this->getAllProjects();
                 $projectId = $request->query('project_id');
                 if (!$projectId && count($projects) > 0) {
                     $projectId = $projects[0]['id'] ?? null;
@@ -1181,9 +1172,8 @@ Log::info('mostStatus raw result', [
         public function sharedUrlsPage(Request $request)
         {
             try {
-                $projectsData = $this->client->listProjects(0, 100);
-                $projects     = $projectsData['data'] ?? [];
-                $projectId    = $request->query('project_id');
+                $projects  = $this->getAllProjects();
+                $projectId = $request->query('project_id');
                 if (!$projectId && count($projects) > 0) {
                     $projectId = $projects[0]['id'] ?? null;
                     if ($projectId) {

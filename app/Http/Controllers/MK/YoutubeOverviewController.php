@@ -616,22 +616,67 @@ $views = (int) ($item['num_views'] ?? $item['view_cnt'] ?? $item['views'] ?? 0);
                 }
             }
 
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+
+            // Pre-load trending topics data server-side
+            $hashtagsJson = '{"success":false}';
+            if ($projectId) {
+                try {
+                    $posts = $this->client->ytbTopStatus($projectId, $startDate, $endDate, 0, 23, 500, 'postbyview');
+                    $hashtagCount = [];
+                    if (is_array($posts)) {
+                        foreach ($posts as $post) {
+                            if (!is_array($post)) continue;
+                            $content = $post['content'] ?? $post['caption'] ?? $post['text'] ?? $post['name'] ?? '';
+                            if (empty($content)) continue;
+                            preg_match_all('/#([a-zA-Z0-9_\x{00C0}-\x{024F}\x{0400}-\x{04FF}]+)/u', $content, $matches);
+                            foreach ($matches[1] as $tag) {
+                                $tag = strtolower(trim($tag));
+                                if (strlen($tag) < 2) continue;
+                                $hashtagCount[$tag] = ($hashtagCount[$tag] ?? 0) + 1;
+                            }
+                        }
+                    }
+                    arsort($hashtagCount);
+                    $hashtags = [];
+                    $totalMentions = 0;
+                    foreach ($hashtagCount as $name => $size) {
+                        $hashtags[] = ['name' => $name, 'hashtag' => $name, 'size' => $size];
+                        $totalMentions += $size;
+                    }
+                    $hashtagsJson = json_encode([
+                        'success' => true,
+                        'data' => [
+                            'hashtags' => $hashtags,
+                            'total_hashtags' => count($hashtags),
+                            'total_mentions' => $totalMentions,
+                            'top_hashtag' => $hashtags[0] ?? null,
+                        ],
+                    ]);
+                } catch (\Exception $e) {
+                    Log::warning('YT trending topics pre-load failed', ['error' => $e->getMessage()]);
+                }
+            }
+
             return view('mk.youtube.youtube-trending-topics')->with([
-                'projectId' => $projectId,
-                'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
-                'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
-                'projects'  => $projects,
+                'projectId'    => $projectId,
+                'startDate'    => $startDate,
+                'endDate'      => $endDate,
+                'projects'     => $projects,
+                'hashtagsJson' => $hashtagsJson,
             ]);
 
         } catch (\Exception $e) {
             Log::error('YouTube Trending Topics Page Error', ['error' => $e->getMessage()]);
 
             return view('mk.youtube.youtube-trending-topics')->with([
-                'projectId' => null,
-                'startDate' => now()->subDays(6)->format('Y-m-d'),
-                'endDate'   => now()->format('Y-m-d'),
-                'projects'  => [],
-                'error'     => $e->getMessage(),
+                'projectId'    => null,
+                'startDate'    => now()->subDays(6)->format('Y-m-d'),
+                'endDate'      => now()->format('Y-m-d'),
+                'projects'     => [],
+                'hashtagsJson' => '{"success":false}',
+                'error'        => $e->getMessage(),
             ]);
         }
     }
