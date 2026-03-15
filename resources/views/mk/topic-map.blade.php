@@ -1,6 +1,6 @@
 @extends('mk.layouts.app')
 
-@section('title', 'Topic Map - SMADIMENT')
+@section('title', 'Word Cloud - SMADIMENT')
 
 @section('styles')
   <style>
@@ -407,7 +407,7 @@
   </style>
 @endsection
 
-@section('page-title', 'Topic Map')
+@section('page-title', 'World Map')
 
 @section('content')
 

@@ -416,6 +416,10 @@ const Store = { all:[], doc:[], twit:[], fb:[], ig:[], ytb:[], tiktok:[] };
 let _activeTab = 'all', _page = 1, _trendChart = null;
 
 function _normSent(item) {
+    const code = String(item.class_sentiment_code||'').toLowerCase().trim();
+    if(code==='pos'||code==='positive'||code==='positif') return 'pos';
+    if(code==='neg'||code==='negative'||code==='negatif') return 'neg';
+    if(code) return 'neu';
     const raw = String(item.class_sentiment||item.sentiment||item.sentiment_str||'0').toLowerCase().trim();
     if(raw==='1'||raw==='positive'||raw==='positif') return 'pos';
     if(raw==='-1'||raw==='2'||raw==='negative'||raw==='negatif') return 'neg';
@@ -424,12 +428,13 @@ function _normSent(item) {
 function _detectPlatform(item) {
     if(item._platform) return item._platform;
     const tc=String(item.tcode||'').toLowerCase(),mt=String(item.media_type||'').toLowerCase();
-    if(tc==='berita'||mt==='doc'||mt==='news'||mt==='berita'||mt==='online'||mt==='article') return 'doc';
-    if(tc==='rt'||tc==='mention'||tc==='reply'||tc==='tweet'||mt==='twit'||mt==='twitter'||mt==='x') return 'twit';
-    if(tc.startsWith('fb')||mt==='fb'||mt==='facebook') return 'fb';
-    if(tc.startsWith('ig')||mt==='ig'||mt==='instagram') return 'ig';
-    if(tc==='youtube'||mt==='ytb'||mt==='youtube') return 'ytb';
-    if(mt==='tiktok'||mt==='tt') return 'tiktok';
+    const mid=String(item.media_type_id||'');
+    if(tc==='berita'||mt==='doc'||mt==='news'||mt==='berita'||mt==='online'||mt==='article'||mid==='1') return 'doc';
+    if(tc==='rt'||tc==='mention'||tc==='reply'||tc==='tweet'||mt==='twit'||mt==='twitter'||mt==='x'||mid==='5') return 'twit';
+    if(tc.startsWith('fb')||mt==='fb'||mt==='facebook'||mid==='4') return 'fb';
+    if(tc.startsWith('ig')||tc==='image'||mt==='ig'||mt==='instagram'||mid==='16') return 'ig';
+    if(tc==='youtube'||mt==='ytb'||mt==='youtube'||mid==='13') return 'ytb';
+    if(tc==='video'||mt==='tiktok'||mt==='tt'||mid==='20') return 'tiktok';
     const url=String(item.url||'').toLowerCase();
     if(url.includes('tiktok.com')) return 'tiktok';
     if(url.includes('instagram.com')) return 'ig';
@@ -439,15 +444,23 @@ function _detectPlatform(item) {
     return 'doc';
 }
 function _normItem(item, platform) {
-    const ao = (typeof item.author==='object'&&item.author) ? item.author : {};
+    let ao = {};
+    if(typeof item.author==='object'&&item.author) { ao=item.author; }
+    else if(typeof item.author==='string'&&item.author.startsWith('{')) { try{ao=JSON.parse(item.author);}catch(e){} }
+    let cj = {};
+    if(typeof item.contentJson==='string'&&item.contentJson.startsWith('{')) { try{cj=JSON.parse(item.contentJson);}catch(e){} }
+    else if(typeof item.contentJson==='object'&&item.contentJson) { cj=item.contentJson; }
     const name = (ao.name||item.author_name||item.name||item.from_name||item.page_name||item.channel_title||item.author_nickname||item.publisher||item.source_name||'').replace(/<[^>]*>/g,'').trim() || 'Unknown';
     const handle = (item.author_scr_name||item.screen_name||ao.scr_name||item.username||'').trim();
-    const av = (item.avatar_url||item.profile_image_url||item.author_image||ao.image||item.profile_image||'').trim();
+    const av = (item.avatar_url||item.profile_image_url||item.author_image||ao.image||(cj.user&&cj.user.image?cj.user.image:'')||item.profile_image||'').trim();
     const content = (item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
     let url = item.url||item.link||'';
-    if(!url && platform==='twit' && (item.sub_id||handle)) {
-        const scr = handle.replace(/^@/,'');
-        url = item.sub_id ? 'https://twitter.com/'+scr+'/status/'+item.sub_id : (scr?'https://twitter.com/'+scr:'');
+    if(!url && platform==='twit') {
+        const scr = (handle||ao.scr_name||'').replace(/^@/,'');
+        let tweetId = item.sub_id || '';
+        if(!tweetId && item.docid) { const m=String(item.docid).match(/^tw-(.+)$/); if(m) tweetId=m[1]; }
+        if(!tweetId && cj.rt_status && cj.rt_status.id) tweetId=String(cj.rt_status.id);
+        url = (scr && tweetId) ? 'https://twitter.com/'+scr+'/status/'+tweetId : (scr?'https://twitter.com/'+scr:'');
     }
     const sent = _normSent(item);
     const nL=parseInt(item.num_likes||item.likes||item.favorite_count||item.like_count||0);
@@ -555,13 +568,15 @@ const MTData = {
         window.addEventListener('resize', function(){ try{_trendChart.resize();}catch(e){} });
 
         var series = PLAT_KEYS.map(function(k) {
+            var hasData = datasets[k].some(function(v){return v>0;});
             return {
                 name: PLAT[k].label, type:'line', data:datasets[k], smooth:true,
-                symbol:'circle', symbolSize:5, showSymbol:dates.length<=30,
+                symbol:'circle', symbolSize:hasData?7:0, showSymbol:true,
                 itemStyle:{color:PLAT[k].color, borderColor:'#fff', borderWidth:2},
-                lineStyle:{color:PLAT[k].color, width:2},
+                lineStyle:{color:PLAT[k].color, width:hasData?2.5:1, opacity:hasData?1:.15},
                 areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:PLAT[k].color+'33'},{offset:1,color:PLAT[k].color+'05'}]}},
-                emphasis:{focus:'series'}
+                label:{show:hasData&&dates.length<=14,position:'top',formatter:function(p){return p.value>0?numK(p.value):'';},fontSize:10,fontWeight:700,color:'#64748b',backgroundColor:'rgba(255,255,255,.85)',borderRadius:3,padding:[2,5]},
+                emphasis:{focus:'series',lineStyle:{width:3.5},itemStyle:{borderWidth:2.5,shadowBlur:10,shadowColor:PLAT[k].color+'88'}}
             };
         });
 
@@ -578,8 +593,17 @@ const MTData = {
         _trendChart.on('click', function(p) {
             if(p.componentType!=='series') return;
             var platKey = PLAT_KEYS.find(function(k){return PLAT[k].label===p.seriesName;});
-            if(platKey) MTTab.show(platKey);
+            if(platKey) {
+                var items = Store[platKey]||[];
+                if(items.length) {
+                    MTPanel.open(items, items[0]);
+                } else {
+                    MTTab.show(platKey);
+                }
+            }
         });
+        _trendChart.on('mouseover', function(p){ if(p.componentType==='series') el.style.cursor='pointer'; });
+        _trendChart.on('mouseout', function(){ el.style.cursor='default'; });
 
         if(ld) ld.classList.add('hidden');
         requestAnimationFrame(function(){ _trendChart.resize(); });

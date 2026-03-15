@@ -1,9 +1,16 @@
 <!-- [ Sidebar Menu ] start -->
+<style>
+.pc-sidebar .pc-micon { width:32px; height:32px; }
+.pc-sidebar .pc-micon i { font-size:26px; }
+.pc-sidebar .pc-micon > svg { width:26px; height:26px; }
+.pc-sidebar .m-header { padding: 12px 16px; padding-left: 24px; }
+.pc-sidebar .m-header .b-brand { background: #ffffff; border-radius: 10px; padding: 10px 14px; display: inline-block; }
+</style>
 <nav class="pc-sidebar">
     <div class="navbar-wrapper">
         <div class="m-header">
             <a href="{{ route('mk.dashboard') }}" class="b-brand text-primary">
-                <img src="{{ asset('images/SMADIMENT 2025 _ Logo-03.png') }}" class="img-fluid logo-lg" alt="SMADIMENT" style="height: 36px; width: auto;" />
+                <img src="{{ asset('images/SMADIMENT 2025 _ Logo-03.png') }}" class="img-fluid logo-lg" alt="SMADIMENT" style="height: 52px; width: auto;" />
             </a>
         </div>
         <div class="navbar-content">
@@ -140,9 +147,9 @@
                 </li>
 
                 <li class="pc-item {{ request()->routeIs('mk.topic-map') ? 'active' : '' }}">
-                    <a href="{{ route('mk.topic-map') }}{{ $qs }}" class="pc-link">
+                    <a href="{{ route('mk.topic-map') }}{{ $sideqs }}" class="pc-link">
                         <span class="pc-micon"><i class="ph ph-globe-hemisphere-west"></i></span>
-                        <span class="pc-mtext">World Map</span>
+                        <span class="pc-mtext">Word Cloud   </span>
                     </a>
                 </li>
 

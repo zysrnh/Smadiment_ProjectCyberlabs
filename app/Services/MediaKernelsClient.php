@@ -2099,15 +2099,23 @@ public function mostStatus(
 
             $json = $this->parseJson($res);
 
+            // Extract array — MK API may return raw [] or {data:[]}
+            $items = $json;
+            if (isset($json['data']) && is_array($json['data'])) {
+                $items = $json['data'];
+            }
+            if (!is_array($items) || (count($items) > 0 && !isset($items[0]))) {
+                $items = array_values($items);
+            }
+
             Log::info('mostStatus API response', [
                 'project_id'  => $projectId,
                 'media'       => $media,
                 'sub'         => $sub,
-                'total_items' => is_array($json) ? count($json) : 0,
-                'first_item'  => is_array($json) && count($json) > 0 ? array_slice($json[0], 0, 6) : null,
+                'total_items' => count($items),
             ]);
 
-            return is_array($json) ? $json : [];
+            return $items;
 
         } catch (\Exception $e) {
             Log::error('mostStatus API error', [
