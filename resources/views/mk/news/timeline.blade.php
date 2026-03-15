@@ -661,13 +661,18 @@ const MTData = {
         _trendChart.on('click', function(p) {
             if(p.componentType!=='series') return;
             var platKey = PLAT_KEYS.find(function(k){return PLAT[k].label===p.seriesName;});
-            if(platKey) {
-                var items = Store[platKey]||[];
-                if(items.length) {
-                    MTPanel.open(items, items[0]);
-                } else {
-                    MTTab.show(platKey);
-                }
+            if(!platKey) return;
+            var clickedDate = dates[p.dataIndex]||'';
+            var items = (Store[platKey]||[]).filter(function(m){
+                if(!clickedDate) return true;
+                var day = (m.date||'').split('T')[0].split(' ')[0];
+                return day === clickedDate;
+            });
+            if(!items.length) items = Store[platKey]||[];
+            if(items.length) {
+                MTPanel.open(items, items[0], clickedDate);
+            } else {
+                MTTab.show(platKey);
             }
         });
         _trendChart.on('mouseover', function(p){ if(p.componentType==='series') el.style.cursor='pointer'; });
@@ -711,7 +716,13 @@ const MTData = {
 
         _barChart.on('click',function(p){
             var platKey=PLAT_KEYS.find(function(k){return PLAT[k].label===p.name;});
-            if(platKey) MTTab.show(platKey);
+            if(!platKey) return;
+            var items = Store[platKey]||[];
+            if(items.length) {
+                MTPanel.open(items, items[0]);
+            } else {
+                MTTab.show(platKey);
+            }
         });
         _barChart.on('mouseover',function(){el.style.cursor='pointer';});
         _barChart.on('mouseout',function(){el.style.cursor='default';});
@@ -817,13 +828,18 @@ const MTData = {
 
 const MTPanel = {
     _items:[], _current:null,
-    open(items, current) {
+    open(items, current, dateLabel) {
         this._items=items; this._current=current;
         MTDetail.close();
         var plat = PLAT[current._platform]||PLAT.doc;
         _$('mtPanelDot').style.background = plat.color;
         _$('mtPanelTitle').textContent = plat.label+' Mentions';
-        _$('mtPanelMeta').textContent = MTCfg.sd+' - '+MTCfg.ed;
+        var metaText = MTCfg.sd+' - '+MTCfg.ed;
+        if(dateLabel) {
+            var dl=new Date(dateLabel+'T00:00:00');
+            metaText = dl.getDate()+'/'+(dl.getMonth()+1)+'/'+dl.getFullYear()+' • '+items.length+' mentions';
+        }
+        _$('mtPanelMeta').textContent = metaText;
         var ov=_$('mtPanelOverlay'), pn=_$('mtPanel');
         ov.classList.remove('hiding'); pn.classList.remove('hiding');
         ov.classList.add('show'); pn.classList.add('show');
