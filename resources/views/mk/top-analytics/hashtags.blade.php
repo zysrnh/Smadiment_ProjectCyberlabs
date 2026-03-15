@@ -85,14 +85,7 @@
   <div class="data-table-card" id="tableContainer" style="display: none;">
     <div class="table-header">
       <h3>📋 All Hashtags</h3>
-      <button onclick="exportTableToCSV('hashtags-data.csv')" class="action-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        Export CSV
-      </button>
+
     </div>
     <div class="table-responsive">
       <table class="data-table" id="dataTable">
@@ -616,28 +609,6 @@
     };
     
     initChart(type, chartData);
-  }
-
-  function exportTableToCSV(filename) {
-    const table = document.getElementById('dataTable');
-    let csv = [];
-    
-    for (let row of table.rows) {
-      let rowData = [];
-      for (let cell of row.cells) {
-        rowData.push('"' + cell.textContent.trim().replace(/"/g, '""') + '"');
-      }
-      csv.push(rowData.join(','));
-    }
-    
-    const csvContent = csv.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
   }
 
   document.addEventListener('DOMContentLoaded', loadHashtagsData);

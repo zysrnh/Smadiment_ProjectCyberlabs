@@ -36,7 +36,9 @@
                         </button>
                     </li>
 
-                    {{-- Theme Toggle --}}
+
+                    
+                    {{-- 
                     <li class="dropdown pc-h-item">
                         <a class="pc-head-link dropdown-toggle arrow-none me-0"
                         data-bs-toggle="dropdown" href="#" role="button"
@@ -58,7 +60,8 @@
                             </a>
                         </div>
                     </li>
-
+  --}}
+                     
                     {{-- Notifications dihapus --}}
 
                     {{-- User Profile --}}

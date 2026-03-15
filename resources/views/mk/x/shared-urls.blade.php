@@ -661,42 +661,6 @@
         opacity: 0;
     }
 
-    /* Export Button */
-    .export-btn-wrapper {
-        display: flex;
-        justify-content: flex-end;
-        margin-bottom: 24px;
-    }
-
-    .export-btn {
-        padding: 10px 20px;
-        background: var(--bg-white);
-        border: 1px solid var(--border-gray);
-        border-radius: 10px;
-        font-family: 'Poppins', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-primary);
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .export-btn:hover {
-        border-color: var(--primary-green);
-        color: var(--primary-green);
-        box-shadow: var(--shadow-md);
-    }
-
-    .export-btn svg {
-        width: 16px;
-        height: 16px;
-        stroke: currentColor;
-        fill: none;
-    }
 
     /* Table Section - MATCHING MOST RETWEETS */
     .table-section {
@@ -1414,17 +1378,6 @@
         </div>
     </div>
 
-    <!-- Export Button -->
-    <div class="export-btn-wrapper">
-        <button class="export-btn" onclick="SharedUrlsLoader.exportCSV()">
-            <svg viewBox="0 0 24 24">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            Export to CSV
-        </button>
-    </div>
 
     <!-- Top URLs Chart -->
     <div class="charts-section">
@@ -2235,31 +2188,6 @@ updatePagination() {
         }
     },
 
-    exportCSV() {
-        if (!this.allUrls.length) { alert('No data to export'); return; }
-
-        const headers = ['Rank', 'URL', 'Hostname', 'Type', 'Frequency'];
-        const rows = this.allUrls.map((u, i) => {
-            const host = this.extractHostname(u.url || '');
-            return [
-                i + 1,
-                `"${(u.url || '').replace(/"/g, '""')}"`,
-                `"${host.replace(/"/g, '""')}"`,
-                this.detectType(u.url, host),
-                u.freq || 0,
-            ];
-        });
-
-        const csv  = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.setAttribute('href', URL.createObjectURL(blob));
-        link.setAttribute('download', `shared_urls_${this.startDate}_to_${this.endDate}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    },
 
     extractHostname(url) {
         try {

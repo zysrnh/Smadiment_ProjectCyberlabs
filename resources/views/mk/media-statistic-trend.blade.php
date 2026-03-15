@@ -239,10 +239,7 @@
   .tr-sum-val.skel { width: 90px; height: 28px; border-radius: 6px; background: linear-gradient(90deg, var(--bg-gray-50) 25%, var(--border-gray) 50%, var(--bg-gray-50) 75%); background-size: 200% 100%; animation: shimmer 1.5s ease-in-out infinite; }
   .tr-sum-sub { font-size: 11px; color: var(--text-muted); font-weight: 500; }
 
-  /* CSV BUTTON */
-  .tr-csv-btn { display: flex; align-items: center; gap: 6px; padding: 7px 16px; background: var(--bg-gray-50); border: 1px solid var(--border-gray); border-radius: var(--radius-xs); font-family: var(--font); font-size: 12px; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: var(--transition); }
-  .tr-csv-btn:hover { border-color: var(--primary-green); color: var(--primary-green); }
-  .tr-csv-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
 
   /* PLATFORM PILLS */
   .tr-pills { display: flex; gap: 7px; flex-wrap: wrap; padding: 12px 20px; border-bottom: 1px solid var(--border-light); background: var(--bg-gray-50); }
@@ -446,10 +443,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
           <span class="do-badge" id="trendBadge">Loading…</span>
-          <button class="tr-csv-btn" onclick="TrPage.exportCsv()">
-            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Export CSV
-          </button>
+
         </div>
       </div>
 
@@ -912,19 +906,7 @@ const TrPage = {
     if(_trendRaw.length) _renderTrendChart();
   },
 
-  exportCsv() {
-    if(!_trendRaw.length||!_trendDates.length){ alert('Belum ada data untuk diekspor.'); return; }
-    const headers=['Tanggal',..._trendRaw.map(p=>p.label),'Total'];
-    const rows=_trendDates.map(date=>{
-      const vals=_trendRaw.map(p=>{ const d=p.data.find(x=>x.date===date); return d?d.count:0; });
-      return [date,...vals,vals.reduce((s,v)=>s+v,0)];
-    });
-    const csv=[headers,...rows].map(r=>r.join(',')).join('\r\n');
-    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-    const url=URL.createObjectURL(blob), a=document.createElement('a');
-    a.href=url; a.download=`trend_mentions_${TrCfg.pid}_${TrCfg.sd}_${TrCfg.ed}.csv`;
-    a.click(); URL.revokeObjectURL(url);
-  }
+
 };
 
 /* ── WEEKDAY & HOUR ── */

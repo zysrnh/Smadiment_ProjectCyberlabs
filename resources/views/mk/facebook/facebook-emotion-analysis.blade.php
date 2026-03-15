@@ -16,6 +16,7 @@
     --slate-800: #1E293B; --slate-900: #0F172A;
     --radius: 8px; --radius-sm: 5px;
     --shadow-sm: 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+    --shadow-lg: 0 10px 30px rgba(15,23,42,.12);
     --e-joy: #F59E0B; --e-trust: #10B981; --e-fear: #6366F1; --e-surprise: #3B82F6;
     --e-sadness: #8B5CF6; --e-disgust: #A855F7; --e-anger: #EF4444; --e-anticipation: #F97316;
 }
@@ -110,6 +111,38 @@
 .kpi-card-hover:hover .kpi-icon-bg { background:rgba(255,255,255,.35) !important; }
 .kpi-card-hover:hover .kpi-icon-bg i { animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both;display:inline-block; }
 
+/* ══ Page Export Bar ══ */
+.page-export-bar { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:#fff;border:1px solid var(--slate-200);border-radius:var(--radius);padding:9px 14px;margin-bottom:20px;box-shadow:var(--shadow-sm); }
+.page-export-bar-left { display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--slate-600); }
+.page-export-bar-left i { font-size:15px;color:var(--primary); }
+.page-export-bar-right { display:flex;gap:8px; }
+.page-export-btn { display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--radius-sm);font-size:16px;cursor:pointer;transition:all .15s ease;border:1.5px solid transparent;font-family:inherit; }
+.page-export-btn-pdf { background:#fff3f3;color:#dc2626;border-color:#fca5a5; }
+.page-export-btn-pdf:hover { background:#dc2626;color:#fff;border-color:#dc2626; }
+.page-export-btn-img { background:var(--primary-lt);color:var(--primary);border-color:rgba(3,128,71,.3); }
+.page-export-btn-img:hover { background:var(--primary);color:#fff;border-color:var(--primary); }
+.page-export-btn:disabled { opacity:.55;cursor:not-allowed;pointer-events:none; }
+.page-export-btn .export-spinner { width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .65s linear infinite;display:none; }
+.page-export-btn.exporting .export-spinner { display:inline-block; }
+.page-export-btn.exporting .export-icon { display:none; }
+
+/* ══ Card-level Export Buttons ══ */
+.card-exp-btn { display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:var(--radius-sm);font-size:14px;cursor:pointer;flex-shrink:0;transition:all .14s ease;border:1px solid transparent;font-family:inherit;background:transparent; }
+.card-exp-btn-pdf { color:#dc2626;border-color:#fca5a5;background:#fff3f3; }
+.card-exp-btn-pdf:hover { background:#dc2626;color:#fff;border-color:#dc2626; }
+.card-exp-btn-img { color:var(--primary);border-color:rgba(3,128,71,.3);background:var(--primary-lt); }
+.card-exp-btn-img:hover { background:var(--primary);color:#fff;border-color:var(--primary); }
+.card-exp-btn:disabled { opacity:.45;cursor:not-allowed;pointer-events:none; }
+.card-exp-btn .export-spinner { width:11px;height:11px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .65s linear infinite;display:none; }
+.card-exp-btn.exporting .export-spinner { display:inline-block; }
+.card-exp-btn.exporting .export-icon { display:none; }
+
+/* ══ Export Toast ══ */
+.export-toast { position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--slate-900);color:#fff;border-radius:var(--radius);padding:10px 18px;font-size:12px;font-weight:600;box-shadow:var(--shadow-lg);z-index:99999;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;display:flex;align-items:center;gap:8px;white-space:nowrap; }
+.export-toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
+.export-toast.success { background:#065f46; }
+.export-toast.error { background:#991b1b; }
+
 .do-panel-overlay { position:fixed;inset:0;z-index:9000;background:rgba(15,23,42,.45);backdrop-filter:blur(4px);display:none; }
 .do-panel-overlay.show { display:block;animation:overlayIn .22s ease-out; }
 .do-panel-overlay.hiding { animation:overlayOut .22s ease-out forwards; }
@@ -123,8 +156,7 @@
 .do-panel-close:hover { background:var(--red);border-color:var(--red);color:#fff; }
 .do-panel-actions { display:flex;align-items:center;gap:7px;padding:7px 12px;border-bottom:1px solid var(--slate-200);background:#fff;flex-shrink:0; }
 .do-panel-meta { flex:1;font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:5px; }
-.do-panel-export { display:flex;align-items:center;gap:4px;padding:4px 10px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-size:10px;font-weight:700;cursor:pointer;transition:filter .13s; }
-.do-panel-export:hover { filter:brightness(1.1); }
+
 .do-panel-list { overflow-y:auto;flex:1;padding:2px 0;min-height:0; }
 .do-panel-list::-webkit-scrollbar { width:4px; }
 .do-panel-list::-webkit-scrollbar-thumb { background:var(--slate-200);border-radius:99px; }
@@ -208,6 +240,9 @@
 </div>
 @else
 
+{{-- ════ PAGE EXPORT WRAPPER ════ --}}
+<div id="pageExportArea">
+
 {{-- KPI --}}
 <div class="row">
     @php
@@ -235,42 +270,101 @@
     @endforeach
 </div>
 
+{{-- ══ Page Export Toolbar ══ --}}
+<div class="page-export-bar" data-html2canvas-ignore="true">
+    <div class="page-export-bar-left">
+        <i class="ph ph-export"></i>
+        <span>Export Halaman</span>
+        <span class="badge bg-light-secondary text-muted ms-1" style="font-size:10px;">KPI + Charts + Post List</span>
+    </div>
+    <div class="page-export-bar-right">
+        <button type="button" class="page-export-btn page-export-btn-pdf" id="pageExportPdfBtn"
+                onclick="FBExport.run('pdf', this)" title="Export halaman sebagai PDF">
+            <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+        </button>
+        <button type="button" class="page-export-btn page-export-btn-img" id="pageExportImgBtn"
+                onclick="FBExport.run('image', this)" title="Export halaman sebagai PNG">
+            <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+        </button>
+    </div>
+</div>
+
 {{-- Donut --}}
 <div class="row"><div class="col-12">
     <div class="card" style="animation:fadeUp .38s ease-out .18s both;">
+        <div id="card-export-donut">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-donut f-18 text-primary"></i></div><div><h6 class="mb-0">Distribusi Emosi — Top 5</h6><small class="text-muted">Proporsi Plutchik wheel dari semua post</small></div></div>
-            <div id="donutLegend" class="donut-legend"></div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <div id="donutLegend" class="donut-legend"></div>
+                <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                    <button class="card-exp-btn card-exp-btn-pdf" onclick="FBExport.runCard('card-export-donut','donut','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                    <button class="card-exp-btn card-exp-btn-img" onclick="FBExport.runCard('card-export-donut','donut','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                </div>
+            </div>
         </div>
         <div class="card-body"><div style="height:420px;position:relative;">
             <div class="chart-loading" id="donutLoading"><div class="spin-ring"></div><span>Loading chart…</span></div>
             <div id="donutChart" style="width:100%;height:420px;display:none;"></div>
             <div id="donutEmpty" style="display:none;" class="chart-empty"><i class="ph ph-chart-donut"></i><span>No data</span></div>
         </div></div>
+        </div>{{-- /card-export-donut --}}
     </div>
 </div></div>
 
 {{-- Radar + Bar --}}
 <div class="row">
     <div class="col-xl-5"><div class="card" style="animation:fadeUp .38s ease-out .20s both;">
-        <div class="card-header d-flex align-items-center justify-content-between"><div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-polygon f-18 text-primary"></i></div><div><h6 class="mb-0">Emotion Radar</h6><small class="text-muted">Plutchik wheel distribution</small></div></div><span class="badge bg-light-secondary text-muted">Radar</span></div>
+        <div id="card-export-radar">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-polygon f-18 text-primary"></i></div><div><h6 class="mb-0">Emotion Radar</h6><small class="text-muted">Plutchik wheel distribution</small></div></div>
+            <div class="d-flex align-items-center gap-1">
+                <span class="badge bg-light-secondary text-muted me-1">Radar</span>
+                <div data-html2canvas-ignore="true" class="d-flex gap-1">
+                    <button class="card-exp-btn card-exp-btn-pdf" onclick="FBExport.runCard('card-export-radar','radar','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                    <button class="card-exp-btn card-exp-btn-img" onclick="FBExport.runCard('card-export-radar','radar','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                </div>
+            </div>
+        </div>
         <div class="card-body"><div class="chart-container" style="height:300px;"><div class="chart-loading" id="radarLoading"><div class="spin-ring"></div><span>Loading…</span></div><div id="radarChart" style="width:100%;height:300px;display:none;"></div></div></div>
+        </div>{{-- /card-export-radar --}}
     </div></div>
     <div class="col-xl-7"><div class="card" style="animation:fadeUp .38s ease-out .22s both;">
-        <div class="card-header d-flex align-items-center justify-content-between"><div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-bar f-18 text-primary"></i></div><div><h6 class="mb-0">Distribusi Emosi</h6><small class="text-muted">Jumlah post per emosi Plutchik</small></div></div><span class="badge bg-light-primary text-primary" id="barBadge">—</span></div>
+        <div id="card-export-bar">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-bar f-18 text-primary"></i></div><div><h6 class="mb-0">Distribusi Emosi</h6><small class="text-muted">Jumlah post per emosi Plutchik</small></div></div>
+            <div class="d-flex align-items-center gap-1">
+                <span class="badge bg-light-primary text-primary me-1" id="barBadge">—</span>
+                <div data-html2canvas-ignore="true" class="d-flex gap-1">
+                    <button class="card-exp-btn card-exp-btn-pdf" onclick="FBExport.runCard('card-export-bar','bar','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                    <button class="card-exp-btn card-exp-btn-img" onclick="FBExport.runCard('card-export-bar','bar','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                </div>
+            </div>
+        </div>
         <div class="card-body"><div class="chart-container" style="height:300px;"><div class="chart-loading" id="barLoading"><div class="spin-ring"></div><span>Loading…</span></div><div id="barChart" style="width:100%;height:300px;display:none;"></div></div></div>
+        </div>{{-- /card-export-bar --}}
     </div></div>
 </div>
 
 {{-- Trends --}}
 <div class="row"><div class="col-12"><div class="card" style="animation:fadeUp .38s ease-out .24s both;">
+    <div id="card-export-trends">
     <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-trend-up f-18 text-primary"></i></div><div><h6 class="mb-0">Tren Emosi Harian</h6><small class="text-muted">Aktivitas emosi per hari</small></div></div>
-        <div class="d-flex align-items-center gap-2"><span class="badge bg-light-primary text-primary" id="trendsBadge">—</span>
-            <div class="fea-toggle-group" id="trendsTypeToggle"><button class="fea-toggle-btn active" data-type="line" onclick="FEAChart.setTrendsType('line')">Line</button><button class="fea-toggle-btn" data-type="area" onclick="FEAChart.setTrendsType('area')">Area</button></div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-light-primary text-primary" id="trendsBadge">—</span>
+            <div class="fea-toggle-group" id="trendsTypeToggle">
+                <button class="fea-toggle-btn active" data-type="line" onclick="FEAChart.setTrendsType('line')">Line</button>
+                <button class="fea-toggle-btn" data-type="area" onclick="FEAChart.setTrendsType('area')">Area</button>
+            </div>
+            <div data-html2canvas-ignore="true" class="d-flex gap-1">
+                <button class="card-exp-btn card-exp-btn-pdf" onclick="FBExport.runCard('card-export-trends','trends','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                <button class="card-exp-btn card-exp-btn-img" onclick="FBExport.runCard('card-export-trends','trends','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+            </div>
         </div>
     </div>
     <div class="card-body"><div class="chart-container" style="height:300px;"><div class="chart-loading" id="trendsLoading"><div class="spin-ring"></div><span>Loading…</span></div><div id="trendsChart" style="width:100%;height:300px;display:none;"></div></div></div>
+    </div>{{-- /card-export-trends --}}
 </div></div></div>
 
 {{-- Tabs + Post List --}}
@@ -288,23 +382,37 @@
     </div>
 </div>
 <div class="card" style="animation:fadeUp .38s ease-out .26s both;">
+    <div id="card-export-posts">
     <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-brain f-18 text-primary"></i></div><div><h6 class="mb-0">Data Postingan</h6><small class="text-muted">Klik post untuk lihat detail</small></div></div>
         <div class="d-flex align-items-center gap-2">
             <select class="fea-rows-sel" id="rowsSel" onchange="FEAData.reload()"><option value="50">Top 50</option><option value="100" selected>Top 100</option><option value="200">Top 200</option></select>
-            <button class="btn btn-outline-secondary btn-sm" onclick="FEAData.exportCsv()" title="Export CSV"><i class="ph ph-download-simple me-1"></i>CSV</button>
             <span class="badge bg-light-primary text-primary" id="listBadge">Loading…</span>
+            <div data-html2canvas-ignore="true" class="d-flex gap-1">
+                <button class="card-exp-btn card-exp-btn-pdf" onclick="FBExport.runCard('card-export-posts','posts','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                <button class="card-exp-btn card-exp-btn-img" onclick="FBExport.runCard('card-export-posts','posts','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+            </div>
         </div>
     </div>
     <div id="listEl" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
     <div id="pagEl"></div>
+    </div>{{-- /card-export-posts --}}
+</div>
+
+{{-- /pageExportArea --}}
+</div>
+
+{{-- ══ Export Toast ══ --}}
+<div class="export-toast" id="exportToast">
+    <i class="ph ph-check-circle" id="exportToastIcon"></i>
+    <span id="exportToastMsg">Exporting…</span>
 </div>
 
 {{-- Slide Panel --}}
 <div class="do-panel-overlay" id="feaPanelOverlay" onclick="FEAPanel.close()"></div>
 <div class="do-panel" id="feaSntPanel">
     <div class="do-panel-header"><div class="do-panel-dot" id="feaPanelDot" style="background:var(--primary);"></div><span class="do-panel-title" id="feaPanelTitle">Emotion Posts</span><button class="do-panel-close" onclick="FEAPanel.close()"><i class="ph ph-x"></i></button></div>
-    <div class="do-panel-actions"><div class="do-panel-meta"><i class="ph ph-brain" style="font-size:11px;"></i><span id="feaPanelMeta">—</span></div><button class="do-panel-export" onclick="FEAPanel.exportCsv()"><i class="ph ph-download-simple"></i> CSV</button></div>
+    <div class="do-panel-actions"><div class="do-panel-meta"><i class="ph ph-brain" style="font-size:11px;"></i><span id="feaPanelMeta">—</span></div></div>
     <div class="do-panel-list" id="feaPanelList"></div>
     <div class="do-detail-panel" id="feaDetailPanel">
         <div class="do-dp2-header"><button class="do-dp2-back" onclick="FEADetail.close()"><i class="ph ph-caret-left"></i></button><span class="do-dp2-title" id="feaDetailTitle">Detail</span><button class="do-panel-close" onclick="FEAPanel.close()"><i class="ph ph-x"></i></button></div>
@@ -315,6 +423,12 @@
 @endsection
 
 @section('scripts')
+{{-- ══ Export dependencies ══ --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 <script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
 <script>
@@ -350,18 +464,9 @@ function detectEmotion(post){
 function getEmoCounts(posts){const c={};EMOTIONS.forEach(e=>c[e]=0);(posts||allPosts).forEach(p=>c[p.emotion]=(c[p.emotion]||0)+1);return c;}
 
 /* Facebook-specific helpers */
-function getName(item){
-    let n=(item.author_name||item.name||item.author?.name||item.author_scr_name||'').replace(/<[^>]*>/g,'').trim();
-    return n||'Facebook User';
-}
+function getName(item){let n=(item.author_name||item.name||item.author?.name||item.author_scr_name||'').replace(/<[^>]*>/g,'').trim();return n||'Facebook User';}
 function getAvatar(item){return(item.avatar_url||item.profile_url||item.author?.image||item.author_avatar||'').trim();}
-function getThumbnail(item){
-    const direct=(item.image_url||item.thumbnail||item.thumb_url||item.image||'').trim();
-    if(direct&&direct.startsWith('http'))return direct;
-    const pic=item.profile_picture||item.cover_photo||'';
-    if(pic&&pic.startsWith('http'))return pic;
-    return '';
-}
+function getThumbnail(item){const direct=(item.image_url||item.thumbnail||item.thumb_url||item.image||'').trim();if(direct&&direct.startsWith('http'))return direct;const pic=item.profile_picture||item.cover_photo||'';if(pic&&pic.startsWith('http'))return pic;return '';}
 function getLikes(item){return parseInt(item.num_likes||item.likes||item.like_count||0);}
 function getShares(item){return parseInt(item.num_shares||item.shares||item.share_count||0);}
 function getComments(item){return parseInt(item.num_comments||item.comments||item.comment_count||0);}
@@ -409,8 +514,7 @@ const FEAData={
         return `<div class="fea-post" data-item="${esc(enc)}"><div class="fea-post-rank fea-post-rank${rkCls}">${rank}</div><div class="fea-post-av" style="background:linear-gradient(135deg,${color},${color}99);">${avHtml(post)}</div><div class="fea-post-body"><div class="fea-post-author">${esc(name)}</div>${dt?`<div class="fea-post-date">${dt}</div>`:''}${content?`<div class="fea-post-text">${esc(content)}</div>`:''}<div class="fea-post-stats"><span class="fea-emo-badge" style="background:${ec}18;color:${ec};border-color:${ec}40;"><span class="emo-dot" style="background:${ec};"></span>${emo.charAt(0).toUpperCase()+emo.slice(1)}</span><span class="fea-metric fea-metric--amber"><i class="ph ph-thumbs-up me-1"></i>${numF(l)}</span><span class="fea-metric fea-metric--blue"><i class="ph ph-share-fat me-1"></i>${numF(s)}</span><span class="fea-metric fea-metric--cyan"><i class="ph ph-chat-circle me-1"></i>${numF(c)}</span><span class="fea-metric" style="font-weight:800;">∑ ${numF(total)}</span><span class="fea-sent fea-sent--${sent}">${sentLbl}</span>${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="fea-view-link" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out me-1"></i>Facebook</a>`:''}</div></div>${thumbHtml}</div>`;
     },
     _pagHtml(page,pages,total,from,to){let btns='',r=2;btns+=`<button class="fea-pag-btn" ${page<=1?'disabled':''} onclick="FEAData.goPage(${page-1})"><i class="ph ph-caret-left"></i></button>`;for(let i=1;i<=pages;i++){if(i===1||i===pages||(i>=page-r&&i<=page+r))btns+=`<button class="fea-pag-btn${i===page?' is-active':''}" onclick="FEAData.goPage(${i})">${i}</button>`;else if(i===page-r-1||i===page+r+1)btns+=`<span class="fea-pag-btn" style="cursor:default;opacity:.4;">…</span>`;}btns+=`<button class="fea-pag-btn" ${page>=pages?'disabled':''} onclick="FEAData.goPage(${page+1})"><i class="ph ph-caret-right"></i></button>`;return `<div class="fea-pagination"><span class="fea-pag-info">Menampilkan ${from}–${to} dari ${total} post</span><div class="fea-pag-controls">${btns}</div></div>`;},
-    goPage(p){const pages=Math.ceil(filteredPosts.length/FEACfg.perPage);if(p<1||p>pages)return;currentPage=p;this.renderList();_$('listEl')?.scrollIntoView({behavior:'smooth',block:'start'});},
-    exportCsv(){const posts=filteredPosts.length?filteredPosts:allPosts;if(!posts.length){alert('Tidak ada data.');return;}const hdr='index;nama;emosi;sentimen;likes;shares;comments;tanggal;url;konten';const rows=posts.map((p,i)=>{const name=getName(p),sent={pos:'Positif',neg:'Negatif',neu:'Netral'}[normSent(p)];const content=(p.content||p.message||'').replace(/<[^>]*>/g,'').trim().replace(/;/g,',').replace(/\n/g,' ').slice(0,300);return `${i+1};${name.replace(/;/g,',')};${p.emotion||''};${sent};${getLikes(p)};${getShares(p)};${getComments(p)};${(p.date_created||'').split('T')[0]};${p.url||''};${content}`;});const blob=new Blob(['\uFEFF'+[hdr,...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`Facebook_EmotionAnalysis_${FEACfg.sd}_${FEACfg.ed}.csv`});a.click();}
+    goPage(p){const pages=Math.ceil(filteredPosts.length/FEACfg.perPage);if(p<1||p>pages)return;currentPage=p;this.renderList();_$('listEl')?.scrollIntoView({behavior:'smooth',block:'start'});}
 };
 
 const FEAChart={
@@ -419,6 +523,7 @@ const FEAChart={
     renderBar(){hideLd('barLoading');if(!allPosts.length)return;const counts=getEmoCounts(),labels=EMOTIONS.map(e=>e.charAt(0).toUpperCase()+e.slice(1)),data=EMOTIONS.map(e=>counts[e]||0),colors=EMOTIONS.map(e=>EMO_COLORS[e]),total=allPosts.length||1;const el=_$('barBadge');if(el)el.textContent=numK(total)+' posts';
         makeApex('barChart',{chart:{type:'bar',height:300,fontFamily:'inherit',background:'transparent',toolbar:{show:false},zoom:{enabled:false},events:{mounted:()=>hideLd('barLoading'),dataPointSelection:(e,ctx,cfg)=>{const emo=EMOTIONS[cfg.dataPointIndex];if(emo)FEAPanel.open(allPosts.filter(p=>p.emotion===emo),emo);},click:(_,ctx,cfg)=>{const emo=EMOTIONS[cfg.dataPointIndex];if(emo)FEAPanel.open(allPosts.filter(p=>p.emotion===emo),emo);}}},series:[{name:'Posts',data}],colors,plotOptions:{bar:{borderRadius:5,columnWidth:'58%',distributed:true,dataLabels:{position:'top'}}},dataLabels:{enabled:true,formatter:v=>numK(v),offsetY:-16,style:{fontSize:'10px',fontWeight:'800',colors:EMOTIONS.map(e=>EMO_COLORS[e])},background:{enabled:false}},xaxis:{categories:labels,axisBorder:{show:false},axisTicks:{show:false},labels:{style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'},rotate:-20}},yaxis:{labels:{formatter:v=>numK(v),style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},axisBorder:{show:false},axisTicks:{show:false}},grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}},padding:{top:20,right:8,bottom:0,left:4}},fill:{type:'gradient',gradient:{type:'vertical',shadeIntensity:.2,opacityFrom:1,opacityTo:.7,stops:[0,100]}},tooltip:{shared:false,intersect:true,style:{fontFamily:'inherit',fontSize:'12px'},y:{formatter:(v)=>`${numF(v)} posts (${Math.round((v/total)*100)}%)`}},legend:{show:false}});},
     renderRadar(){hideLd('radarLoading');if(!allPosts.length)return;const counts=getEmoCounts(),max=Math.max(...Object.values(counts),1);const chart=makeEChart('radarChart');if(!chart)return;
+        window._feaRadarChart=chart;
         chart.setOption({animation:true,animationDuration:800,backgroundColor:'transparent',tooltip:{show:true,backgroundColor:'#1e293b',borderColor:'#334155',borderWidth:1,padding:[10,14],textStyle:{color:'#fff',fontFamily:'inherit',fontSize:12},formatter:params=>{if(!params.data)return '';const vals=params.data.value||[];return `<div style="min-width:180px;"><div style="font-weight:700;font-size:12px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.12);">Emotion Distribution</div>${EMOTIONS.map((e,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${EMO_COLORS[e]};"></span><span style="font-size:12px;color:#94a3b8;">${e.charAt(0).toUpperCase()+e.slice(1)}</span></div><span style="font-size:12px;font-weight:700;">${numF(vals[i]||0)}</span></div>`).join('')}</div>`;}},radar:{indicator:EMOTIONS.map(e=>({name:e.charAt(0).toUpperCase()+e.slice(1),max})),shape:'polygon',radius:'62%',center:['50%','50%'],axisName:{fontFamily:'inherit',fontSize:11,fontWeight:'700',color:'#475569'},splitLine:{lineStyle:{color:'#e2e8f0'}},axisLine:{lineStyle:{color:'#e2e8f0'}},splitArea:{show:true,areaStyle:{color:['rgba(248,250,252,0.8)','#fff']}}},series:[{type:'radar',data:[{value:EMOTIONS.map(e=>counts[e]||0),name:'Emotion',areaStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:1,colorStops:[{offset:0,color:'rgba(3,128,71,0.2)'},{offset:1,color:'rgba(3,128,71,0.05)'}]}},lineStyle:{color:'#038047',width:2.5},symbol:'circle',symbolSize:6,itemStyle:{color:EMOTIONS.map(e=>EMO_COLORS[e]),borderColor:'#fff',borderWidth:2}}]}]});
         chart.on('click',params=>{if(!params.name)return;const emo=params.name.toLowerCase();if(EMOTIONS.includes(emo))FEAPanel.open(allPosts.filter(p=>p.emotion===emo),emo);});},
     renderDonut(){const loadEl=_$('donutLoading'),chartEl=_$('donutChart'),emptyEl=_$('donutEmpty');if(!loadEl||!chartEl)return;const counts=getEmoCounts();const sorted=EMOTIONS.map(e=>({emo:e,count:counts[e]||0})).sort((a,b)=>b.count-a.count);const top5=sorted.slice(0,5).filter(x=>x.count>0);if(!top5.length){loadEl.style.display='none';if(emptyEl)emptyEl.style.display='flex';return;}const total=top5.reduce((s,x)=>s+x.count,0);const legEl=_$('donutLegend');if(legEl)legEl.innerHTML=top5.map((x,i)=>`<div class="donut-leg-item"><span class="donut-dot" style="background:${DONUT_COLORS[i]};"></span>${x.emo.charAt(0).toUpperCase()+x.emo.slice(1)} · ${numF(x.count)}</div>`).join('');loadEl.style.display='none';if(emptyEl)emptyEl.style.display='none';if(window.__feaDonut){try{window.__feaDonut.dispose();}catch(e){}}chartEl.style.display='block';const chart=echarts.init(chartEl,null,{renderer:'canvas'});window.__feaDonut=chart;window.addEventListener('resize',()=>{try{chart.resize();}catch(e){}});
@@ -433,7 +538,6 @@ const FEAPanel={
     _posts:[],_emo:null,
     open(posts,emo){this._posts=posts||[];this._emo=emo;FEADetail.close();const color=EMO_COLORS[emo]||'#038047';_$('feaPanelDot').style.background=color;_$('feaPanelTitle').textContent=emo?'Emotion: '+emo.charAt(0).toUpperCase()+emo.slice(1):'All Emotions';_$('feaPanelMeta').textContent=FEACfg.sd+' – '+FEACfg.ed;const ov=_$('feaPanelOverlay'),pn=_$('feaSntPanel');ov.classList.remove('hiding');pn.classList.remove('hiding');ov.classList.add('show');pn.classList.add('show');this._render();},
     close(){FEADetail.close();const ov=_$('feaPanelOverlay'),pn=_$('feaSntPanel');pn.classList.add('hiding');ov.classList.add('hiding');setTimeout(()=>{pn.classList.remove('show','hiding');ov.classList.remove('show','hiding');},240);},
-    exportCsv(){FEAData.exportCsv();},
     _render(){const list=_$('feaPanelList');if(!list)return;const posts=this._posts;if(!posts.length){list.innerHTML=emptyHtml('Tidak ada data');return;}const dummy='/assets/images/user/dummy.jpg';list.innerHTML=posts.slice(0,100).map(item=>{const name=getName(item),color2=getColor(item),av=getAvatar(item);const avH=(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.src='${dummy}'">`:`<img src="${dummy}">`;const text=dec((item.content||item.message||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim()).slice(0,130);const dt=(item.date_created||'').split('T')[0],sent=normSent(item),sentLbl={pos:'Pos',neg:'Neg',neu:'Neu'}[sent];const emo=item.emotion||'trust',ec=EMO_COLORS[emo]||'#64748b';const l=getLikes(item);const enc=encodeURIComponent(JSON.stringify(item));return `<div class="do-panel-item" data-item="${esc(enc)}" onclick="FEAPanel._click(this)"><div class="do-panel-avatar" style="background:linear-gradient(135deg,${color2},${color2}99);">${avH}</div><div class="do-panel-item-body"><div class="do-panel-author">${esc(name)}</div><div class="do-panel-text">${esc(text||'(tidak ada konten)')}</div><div class="do-panel-footer"><span style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:800;background:${ec}18;color:${ec};border:1px solid ${ec}40;">${emo.charAt(0).toUpperCase()+emo.slice(1)}</span><span class="do-sent-badge do-sent-badge--${sent}">${sentLbl}</span><span><i class="ph ph-thumbs-up" style="font-size:9px;"></i> ${numK(l)}</span>${dt?`<span style="margin-left:auto;">${dt}</span>`:''}</div></div></div>`;}).join('');},
     _click(el){try{const raw=el.dataset.item.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"');const item=JSON.parse(decodeURIComponent(raw));FEADetail.open(item);}catch(e){console.warn(e);}}
 };
@@ -445,6 +549,181 @@ const FEADetail={
         title.textContent=name;body.innerHTML=`<div class="do-dp2-avatar-row"><div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${color2},${color2}99);">${avH}</div><div><div class="do-dp2-name">${esc(name)}</div>${handle?`<div class="do-dp2-handle">@${esc(handle)}</div>`:''}<span class="do-dp2-plat-badge" style="background:${ec}18;color:${ec};">${emo.charAt(0).toUpperCase()+emo.slice(1)}</span></div></div>${dtFmt?`<div class="do-dp2-meta"><i class="ph ph-calendar me-1"></i>${dtFmt}</div>`:''}<div class="do-dp2-sent do-dp2-sent--${sent}">${sentLbl}</div>${mediaHtml}${content?`<div class="do-dp2-content">${esc(content)}</div>`:''}<div class="do-dp2-stats"><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(l)}</div><div class="do-dp2-stat-lbl">Likes</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(s)}</div><div class="do-dp2-stat-lbl">Shares</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(c)}</div><div class="do-dp2-stat-lbl">Comments</div></div></div><div style="margin-bottom:12px;"><div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--slate-400);margin-bottom:8px;">Distribusi Emosi (semua post)</div>${emoBars}</div>${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out me-1"></i>Buka di Facebook</a>`:''}`;panel.classList.add('show');},
     close(){_$('feaDetailPanel')?.classList.remove('show');}
 };
+
+/* ══════════════════════════════════════════════════════
+   FACEBOOK EXPORT MODULE
+   Captures #pageExportArea — KPI cards + charts + post list
+══════════════════════════════════════════════════════ */
+const FBExport = (() => {
+    let _toastTimer = null;
+
+    function _toast(msg, type = 'default', duration = 3200) {
+        const t = _$('exportToast'), m = _$('exportToastMsg'), ico = _$('exportToastIcon');
+        if (!t || !m) return;
+        m.textContent = msg;
+        t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
+        const icons   = { success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' };
+        ico.className = 'ph ' + (icons[type] || icons.default);
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+    }
+
+    function _btnState(btn, loading) {
+        if (!btn) return;
+        btn.disabled = loading;
+        btn.classList.toggle('exporting', loading);
+    }
+
+    async function _capture() {
+        const area = _$('pageExportArea');
+        if (!area) throw new Error('pageExportArea tidak ditemukan');
+        window.scrollTo({ top: 0 });
+        await new Promise(r => setTimeout(r, 300));
+        if (window.__feaDonut) { try { window.__feaDonut.resize(); } catch(e) {} }
+        if (window._feaRadarChart) { try { window._feaRadarChart.resize(); } catch(e) {} }
+        return html2canvas(area, {
+            scale: 2, useCORS: true, allowTaint: false,
+            backgroundColor: '#f1f5f9', logging: false, removeContainer: true,
+            windowWidth: document.documentElement.scrollWidth,
+            windowHeight: area.scrollHeight, height: area.scrollHeight,
+            ignoreElements: el =>
+                el.hasAttribute('data-html2canvas-ignore')
+                || el.id === 'pageExportPdfBtn'
+                || el.id === 'pageExportImgBtn',
+        });
+    }
+
+    async function _exportPdf() {
+        const canvas = await _capture();
+        const { jsPDF } = window.jspdf;
+        const imgW = canvas.width, imgH = canvas.height;
+        const pdf  = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pW   = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
+        const margin = 10, usableW = pW - margin * 2, usableH = pH - margin * 2 - 14;
+        const ratio = usableW / imgW, sliceH = usableH / ratio;
+
+        const _drawHeader = doc => {
+            doc.setFillColor(3, 128, 71); doc.rect(0, 0, pW, 11, 'F');
+            doc.setTextColor(255, 255, 255); doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+            doc.text('SMADIMENT — Facebook Emotion Analysis', margin, 7.5);
+            const now = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+            doc.text('Generated: ' + now, pW - margin, 7.5, { align: 'right' });
+        };
+
+        let srcY = 0, pageNum = 0;
+        while (srcY < imgH) {
+            if (pageNum > 0) pdf.addPage();
+            _drawHeader(pdf);
+            const srcSlice = Math.min(sliceH, imgH - srcY), dstH = srcSlice * ratio;
+            const slice = document.createElement('canvas');
+            slice.width = imgW; slice.height = Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(canvas, 0, srcY, imgW, srcSlice, 0, 0, imgW, srcSlice);
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
+            pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+            pdf.text(`Halaman ${pageNum + 1}`, pW / 2, pH - 3, { align: 'center' });
+            srcY += srcSlice; pageNum++;
+        }
+        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        pdf.save(`facebook_emotion_${FEA_PID}_${stamp}.pdf`);
+    }
+
+    async function _exportImage() {
+        const canvas = await _capture();
+        const stamp  = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const link   = document.createElement('a');
+        link.download = `facebook_emotion_${FEA_PID}_${stamp}.png`;
+        link.href     = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    async function _captureCard(areaId, cardKey) {
+        const area = document.getElementById(areaId);
+        if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+        const ecMap = { donut: window.__feaDonut, radar: window._feaRadarChart };
+        if (ecMap[cardKey]) { try { ecMap[cardKey].resize(); } catch(e) {} }
+        await new Promise(r => setTimeout(r, 220));
+        return html2canvas(area, {
+            scale: 2, useCORS: true, allowTaint: false,
+            backgroundColor: '#ffffff', logging: false, removeContainer: true,
+            ignoreElements: el => el.hasAttribute('data-html2canvas-ignore'),
+        });
+    }
+
+    function _cardFilename(cardKey) {
+        const labels = { donut: 'distribusi-emosi-top5', radar: 'emotion-radar', bar: 'distribusi-emosi-bar', trends: 'tren-emosi-harian', posts: 'data-postingan' };
+        const stamp  = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        return `facebook_${labels[cardKey] || cardKey}_${FEA_PID}_${stamp}`;
+    }
+
+    async function runCard(areaId, cardKey, type, btn) {
+        if (!window.html2canvas) { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+        _btnState(btn, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
+        try {
+            const canvas = await _captureCard(areaId, cardKey);
+            const fname  = _cardFilename(cardKey);
+            if (type === 'image') {
+                const link = document.createElement('a');
+                link.download = fname + '.png'; link.href = canvas.toDataURL('image/png'); link.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const imgW = canvas.width, imgH = canvas.height, landscape = imgW > imgH;
+                const pdf  = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+                const pW   = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
+                const margin = 10, usableW = pW - margin * 2, usableH = pH - margin * 2 - 14;
+                const ratio = usableW / imgW, sliceH = usableH / ratio;
+                pdf.setFillColor(3, 128, 71); pdf.rect(0, 0, pW, 11, 'F');
+                pdf.setTextColor(255, 255, 255); pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
+                const cardLabels = { donut: 'Distribusi Emosi — Top 5', radar: 'Emotion Radar', bar: 'Distribusi Emosi', trends: 'Tren Emosi Harian', posts: 'Data Postingan' };
+                pdf.text('SMADIMENT — ' + (cardLabels[cardKey] || cardKey), margin, 7.5);
+                const now = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+                pdf.text('Generated: ' + now, pW - margin, 7.5, { align: 'right' });
+                let srcY = 0, pageNum = 0;
+                while (srcY < imgH) {
+                    if (pageNum > 0) { pdf.addPage(); pdf.setFillColor(3, 128, 71); pdf.rect(0, 0, pW, 11, 'F'); }
+                    const srcSlice = Math.min(sliceH, imgH - srcY), dstH = srcSlice * ratio;
+                    const slice = document.createElement('canvas');
+                    slice.width = imgW; slice.height = Math.ceil(srcSlice);
+                    slice.getContext('2d').drawImage(canvas, 0, srcY, imgW, srcSlice, 0, 0, imgW, srcSlice);
+                    pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
+                    pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+                    pdf.text(`Halaman ${pageNum + 1}`, pW / 2, pH - 3, { align: 'center' });
+                    srcY += srcSlice; pageNum++;
+                }
+                pdf.save(fname + '.pdf');
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(err) {
+            console.error('[FBExport.runCard]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            _btnState(btn, false);
+        }
+    }
+
+    async function run(type, btn) {
+        if (!window.html2canvas) { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+        const btnPdf = _$('pageExportPdfBtn'), btnImg = _$('pageExportImgBtn');
+        _btnState(btnPdf, true); _btnState(btnImg, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+        try {
+            if (type === 'pdf') { await _exportPdf();   _toast('PDF berhasil diunduh!', 'success'); }
+            else                { await _exportImage(); _toast('Gambar berhasil diunduh!', 'success'); }
+        } catch(err) {
+            console.error('[FBExport]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            _btnState(btnPdf, false); _btnState(btnImg, false);
+        }
+    }
+
+    return { run, runCard };
+})();
 
 document.addEventListener('DOMContentLoaded',()=>{FEAData.loadAll();document.addEventListener('keydown',e=>{if(e.key==='Escape')FEAPanel.close();});});
 </script>

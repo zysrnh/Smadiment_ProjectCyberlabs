@@ -1,65 +1,738 @@
 @extends('mk.layouts.app')
 
-@section('title', 'News Word Cloud - SMADIMENT')
+@section('title', 'Word Cloud - SMADIMENT')
 
 @section('styles')
-<style>
-:root{--primary:#038047;--primary-rgb:3,128,71;--primary-lt:rgba(3,128,71,.10);--dark:#273B4A;--white:#FFFFFF;--bg:#F1F5F8;--green:#038047;--slate-50:#F8FAFC;--slate-100:#F1F5F9;--slate-200:#E2E8F0;--slate-300:#CBD5E1;--slate-400:#94A3B8;--slate-500:#64748B;--slate-600:#475569;--slate-700:#334155;--slate-800:#1E293B;--slate-900:#0F172A;--radius:8px;--radius-sm:5px;--shadow-sm:0 1px 3px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.04);--shadow-md:0 4px 14px rgba(15,23,42,.08);--shadow-lg:0 10px 30px rgba(15,23,42,.12)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes kpiIconBounce{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.25) rotate(-10deg)}60%{transform:scale(1.1) rotate(6deg)}}@keyframes kpiShimmer{0%{left:-100%}100%{left:150%}}
-.kpi-icon-bg{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.2);font-size:24px;color:#fff;flex-shrink:0}
-.sk-block{border-radius:4px;background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
-.spin-ring{width:26px;height:26px;border:2.5px solid var(--slate-100);border-top-color:var(--primary);border-radius:50%;animation:spin .65s linear infinite}
-.spinner-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:12px;color:var(--slate-400);font-size:12px;font-weight:600}
-.kpi-card-hover{will-change:transform,box-shadow;cursor:default;position:relative!important;overflow:hidden!important;transition:transform .25s cubic-bezier(.34,1.56,.64,1)!important,box-shadow .25s ease!important,filter .25s ease!important}.kpi-card-hover::before{content:'';position:absolute;top:0;bottom:0;left:-100%;width:60%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);pointer-events:none;z-index:1}.kpi-card-hover:hover{transform:translateY(-6px) scale(1.025)!important;box-shadow:0 20px 40px rgba(0,0,0,.25)!important;filter:brightness(1.07)!important}.kpi-card-hover:hover::before{animation:kpiShimmer .6s ease forwards}.kpi-card-hover:hover .kpi-icon-bg{background:rgba(255,255,255,.35)!important}.kpi-card-hover:hover .kpi-icon-bg i{animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both!important;display:inline-block!important}.kpi-card-hover:active{transform:translateY(-2px) scale(1.01)!important;transition-duration:.08s!important}
-.chart-empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--slate-400);font-size:12px;font-weight:600}.chart-empty i{font-size:34px;color:var(--slate-300);display:block}
-.sent-tabs{display:flex;gap:2px;background:var(--slate-100);border:1px solid var(--slate-200);border-radius:var(--radius-sm);padding:2px}.sent-tab{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 14px;border-radius:4px;border:none;background:transparent;font-size:12px;font-weight:600;color:var(--slate-500);cursor:pointer;transition:background .13s,color .13s;white-space:nowrap}.sent-tab:hover{background:#fff;color:var(--slate-800)}.sent-tab.active{background:#fff;color:var(--primary);box-shadow:0 1px 4px rgba(0,0,0,.08)}.sent-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.ht-list{display:flex;flex-direction:column}.ht-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--slate-100);cursor:pointer;transition:background .12s}.ht-item:last-child{border-bottom:none}.ht-item:hover{background:var(--slate-50)}.ht-rank{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--slate-400);background:var(--slate-100);border:1px solid var(--slate-200)}.ht-rank--1{background:linear-gradient(135deg,#ffd700,#F59E0B);color:#7c5900;border-color:#ffd700}.ht-rank--2{background:linear-gradient(135deg,#c0c0c0,#9ca3af);color:#3d3d3d;border-color:#c0c0c0}.ht-rank--3{background:linear-gradient(135deg,#cd7f32,#b06820);color:#fff;border-color:#cd7f32}.ht-name{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ht-bar-wrap{flex:0 0 100px;height:6px;background:var(--slate-100);border-radius:99px;overflow:hidden}.ht-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary),rgba(3,128,71,.5));transition:width .4s cubic-bezier(.4,0,.2,1)}.ht-count{font-size:11px;font-weight:700;color:var(--slate-500);white-space:nowrap;flex-shrink:0;min-width:36px;text-align:right}
-.tme-pagination{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--slate-100);flex-wrap:wrap;gap:8px}.tme-pag-info{font-size:11px;color:var(--slate-400);font-weight:500}.tme-pag-controls{display:flex;align-items:center;gap:3px}.tme-pag-btn{min-width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;border-radius:var(--radius-sm);border:1px solid var(--slate-200);background:#fff;font-size:11px;font-weight:600;color:var(--slate-500);cursor:pointer;transition:all .12s;user-select:none}.tme-pag-btn:hover:not(:disabled):not(.is-active){border-color:var(--primary);color:var(--primary);background:var(--primary-lt)}.tme-pag-btn.is-active{background:var(--primary);border-color:var(--primary);color:#fff}.tme-pag-btn:disabled{opacity:.35;cursor:not-allowed}
-.kpi-card-hover h3{font-size:1.5rem}
-</style>
+  <style>
+    /* ══ Design Tokens ══ */
+    :root {
+      --tm-primary: var(--bs-primary, #4361EE);
+      --tm-primary-rgb: var(--bs-primary-rgb, 67, 97, 238);
+      --tm-primary-lt: rgba(var(--tm-primary-rgb, 67, 97, 238), .10);
+      --tm-green: #10B981;
+      --tm-red: #EF4444;
+      --slate-50: #F8FAFC;
+      --slate-100: #F1F5F9;
+      --slate-200: #E2E8F0;
+      --slate-300: #CBD5E1;
+      --slate-400: #94A3B8;
+      --slate-500: #64748B;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1E293B;
+      --slate-900: #0F172A;
+      --radius: 8px;
+      --radius-sm: 5px;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, .06), 0 1px 2px rgba(15, 23, 42, .04);
+      --shadow-md: 0 4px 14px rgba(15, 23, 42, .08);
+      --shadow-lg: 0 10px 30px rgba(15, 23, 42, .12);
+    }
+
+    /* ══ Animations ══ */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+    @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+    .fade-up { animation: fadeUp .38s ease-out both; }
+    .fade-up-d1 { animation-delay: .05s }
+    .fade-up-d2 { animation-delay: .10s }
+    .fade-up-d3 { animation-delay: .15s }
+
+    /* ══ KPI Cards ══ */
+    .kpi-icon-bg { width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.2);font-size:24px;color:#fff;flex-shrink:0; }
+
+    /* ══ Chart Container ══ */
+    .tm-chart-wrap { position:relative;min-height:500px; }
+    .wordcloud-container { min-height:700px;height:700px;position:relative;background:linear-gradient(135deg,#ffffff 0%,#f8fafc 100%);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;overflow:hidden; }
+    #wordCloudChart { width:100%!important;height:100%!important;cursor:pointer;position:absolute;top:0;left:0;z-index:1; }
+    .wordcloud-hint { position:absolute;bottom:12px;right:16px;z-index:2;display:none;align-items:center;gap:5px;font-size:11px;color:var(--slate-400);pointer-events:none; }
+    .wordcloud-hint i { font-size:13px; }
+    .bar-chart-wrapper { position:relative;height:500px; }
+    .pie-chart-wrapper { position:relative;height:500px;display:flex;align-items:center;justify-content:center; }
+
+    /* ══ Chart switcher tabs ══ */
+    .tm-switcher { display:flex;background:var(--slate-100);border:1px solid var(--slate-200);border-radius:var(--radius-sm);padding:2px;gap:2px; }
+    .tm-switch-btn { padding:5px 14px;border-radius:3px;border:none;background:transparent;font-size:12px;font-weight:600;color:var(--slate-500);cursor:pointer;transition:all .13s;font-family:inherit; }
+    .tm-switch-btn:hover { background:#fff;color:var(--slate-800); }
+    .tm-switch-btn.active { background:#fff;color:var(--tm-primary);box-shadow:0 1px 4px rgba(0,0,0,.08); }
+    .chart-view { display:none; }
+    .chart-view.active { display:block; }
+
+    /* ══ Topic list ══ */
+    .topic-item { display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--slate-100);transition:background .12s,padding-left .12s;cursor:default; }
+    .topic-item:last-child { border-bottom:none; }
+    .topic-item:hover { background:var(--slate-50);padding-left:22px; }
+    .topic-rank { font-size:12px;font-weight:800;color:var(--slate-400);min-width:28px;flex-shrink:0; }
+    .topic-rank.top-3 { color:var(--tm-primary);font-size:13px; }
+    .topic-name { flex:1;font-size:13px;font-weight:600;color:var(--slate-800); }
+    .topic-count { background:var(--tm-primary-lt);color:var(--tm-primary);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap; }
+
+    /* ══ Skeleton / Spinner ══ */
+    .sk-block { border-radius:4px;background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite; }
+    .tm-spinner { width:32px;height:32px;border:3px solid var(--slate-100);border-top-color:var(--tm-primary);border-radius:50%;animation:spin .7s linear infinite; }
+    .tm-loading { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:60px 20px;color:var(--slate-400);font-size:12px;font-weight:600; }
+    .tm-empty { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:60px 20px;color:var(--slate-400);font-size:12px;font-weight:600;text-align:center; }
+    .tm-empty i { font-size:40px;color:var(--slate-300);display:block; }
+
+    /* ══ Modal ══ */
+    .tm-modal-overlay { display:none;position:fixed;inset:0;z-index:9000;background:rgba(15,23,42,.55);backdrop-filter:blur(6px);align-items:center;justify-content:center; }
+    .tm-modal-overlay.active { display:flex; }
+    .tm-modal-box { background:#fff;border-radius:var(--radius);width:90%;max-width:600px;max-height:80vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);animation:slideUp .28s cubic-bezier(.4,0,.2,1); }
+    .tm-modal-head { display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--slate-200);background:var(--slate-50); }
+    .tm-modal-head h5 { font-size:14px;font-weight:700;color:var(--slate-900);margin:0; }
+    .tm-modal-close { width:28px;height:28px;border-radius:var(--radius-sm);background:#fff;border:1px solid var(--slate-200);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-500);font-size:16px;transition:all .14s; }
+    .tm-modal-close:hover { background:var(--tm-red);border-color:var(--tm-red);color:#fff; }
+    .tm-modal-body { padding:16px 20px 20px;overflow-y:auto;flex:1; }
+    .tm-modal-body::-webkit-scrollbar { width:4px; }
+    .tm-modal-body::-webkit-scrollbar-thumb { background:var(--slate-200);border-radius:99px; }
+    .tm-modal-search { width:100%;padding:8px 12px;margin-bottom:14px;border:1px solid var(--slate-200);border-radius:var(--radius-sm);font-size:12px;font-family:inherit;outline:none;transition:border-color .14s; }
+    .tm-modal-search:focus { border-color:var(--tm-primary);box-shadow:0 0 0 3px var(--tm-primary-lt); }
+
+    /* ════════════════════════════════════════
+       EXPORT STYLES
+    ════════════════════════════════════════ */
+    .page-export-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:#fff;border:1px solid var(--slate-200);border-radius:var(--radius);padding:9px 14px;margin-bottom:20px;box-shadow:var(--shadow-sm)}
+    .page-export-bar-left{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--slate-600)}
+    .page-export-bar-left i{font-size:15px;color:var(--tm-primary)}
+    .page-export-bar-right{display:flex;gap:8px}
+    .page-export-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--radius-sm);font-size:16px;cursor:pointer;transition:all .15s ease;border:1.5px solid transparent;font-family:inherit}
+    .page-export-btn-pdf{background:#fff3f3;color:#dc2626;border-color:#fca5a5}
+    .page-export-btn-pdf:hover{background:#dc2626;color:#fff;border-color:#dc2626}
+    .page-export-btn-img{background:var(--tm-primary-lt);color:var(--tm-primary);border-color:rgba(67,97,238,.3)}
+    .page-export-btn-img:hover{background:var(--tm-primary);color:#fff;border-color:var(--tm-primary)}
+    .page-export-btn:disabled{opacity:.55;cursor:not-allowed;pointer-events:none}
+    .page-export-btn .export-spinner{width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .65s linear infinite;display:none}
+    .page-export-btn.exporting .export-spinner{display:inline-block}
+    .page-export-btn.exporting .export-icon{display:none}
+    .card-exp-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:var(--radius-sm);font-size:14px;cursor:pointer;flex-shrink:0;transition:all .14s ease;border:1px solid transparent;font-family:inherit;background:transparent}
+    .card-exp-btn-pdf{color:#dc2626;border-color:#fca5a5;background:#fff3f3}
+    .card-exp-btn-pdf:hover{background:#dc2626;color:#fff;border-color:#dc2626}
+    .card-exp-btn-img{color:var(--tm-primary);border-color:rgba(67,97,238,.3);background:var(--tm-primary-lt)}
+    .card-exp-btn-img:hover{background:var(--tm-primary);color:#fff;border-color:var(--tm-primary)}
+    .card-exp-btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+    .card-exp-btn .export-spinner{width:11px;height:11px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .65s linear infinite;display:none}
+    .card-exp-btn.exporting .export-spinner{display:inline-block}
+    .card-exp-btn.exporting .export-icon{display:none}
+    .export-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--slate-900);color:#fff;border-radius:var(--radius);padding:10px 18px;font-size:12px;font-weight:600;box-shadow:var(--shadow-lg);z-index:99999;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;display:flex;align-items:center;gap:8px;white-space:nowrap}
+    .export-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .export-toast.success{background:#065f46}
+    .export-toast.error{background:#991b1b}
+
+    @media(max-width:768px) {
+      .wordcloud-container { min-height:480px;height:480px; }
+    }
+  </style>
 @endsection
-@section('page-title', 'News Word Cloud')
+
+@section('page-title', 'Word Cloud')
+
 @section('content')
-@php $projectId=$projectId??request()->get('project_id');$startDate=$startDate??request()->get('start_date',now()->subDays(6)->format('Y-m-d'));$endDate=$endDate??request()->get('end_date',now()->format('Y-m-d'));$projects=$projects??[]; @endphp
-<script>const OV_PID='{{ $projectId }}';const OV_SD='{{ $startDate }}';const OV_ED='{{ $endDate }}';</script>
-@include('mk.layouts.partials.filter-datepicker')
-{{-- KPI --}}
-<div class="row mb-3">
-    <div class="col-md-6 col-xl-3"><div class="card h-100 bg-primary text-white kpi-card-hover fade-up fade-up-d1"><div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Words</p><h3 class="mb-0 text-white f-w-300" id="kpiTopics"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopicsSub"><i class="ph ph-hash me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-hash"></i></div></div></div></div></div></div>
-    <div class="col-md-6 col-xl-3"><div class="card h-100 bg-success text-white kpi-card-hover fade-up fade-up-d2"><div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p><h3 class="mb-0 text-white f-w-300" id="kpiVolume"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiVolumeSub"><i class="ph ph-chart-bar me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div></div></div></div></div>
-    <div class="col-md-6 col-xl-3"><div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d3"><div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Top Word</p><h3 class="mb-0 text-white f-w-300" id="kpiTopWord" style="font-size:1rem;"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopWordSub"><i class="ph ph-crown me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-crown"></i></div></div></div></div></div></div>
-    <div class="col-md-6 col-xl-3"><div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d4"><div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Avg per Word</p><h3 class="mb-0 text-white f-w-300" id="kpiAvg"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiAvgSub"><i class="ph ph-trend-up me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-trend-up"></i></div></div></div></div></div></div>
-</div>
-{{-- Sentiment Filter --}}
-<div class="sent-tabs mb-3" id="sentTabs">
-    <button class="sent-tab active" data-s="2"><span class="sent-dot" style="background:var(--primary);"></span> All</button>
-    <button class="sent-tab" data-s="0"><span class="sent-dot" style="background:#10b981;"></span> Positive</button>
-    <button class="sent-tab" data-s="-1"><span class="sent-dot" style="background:#ef4444;"></span> Negative</button>
-    <button class="sent-tab" data-s="1"><span class="sent-dot" style="background:#f59e0b;"></span> Neutral</button>
-</div>
-{{-- Content --}}
-<div class="row">
-    <div class="col-lg-8 col-12"><div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;"><div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"><div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-cloud f-18 text-primary"></i></div><div><h6 class="mb-0">Word Cloud</h6><small class="text-muted">Klik kata untuk cari di Google News</small></div></div><span class="badge bg-light-primary text-primary" id="badgeWC">Loading…</span></div><div class="card-body p-0"><div id="wcLoading" class="spinner-state" style="min-height:500px;"><div class="spin-ring"></div><span>Memuat word cloud…</span></div><div id="wordCloudChart" style="width:100%;height:500px;display:none;"></div><div id="wcEmpty" style="display:none;min-height:500px;" class="chart-empty"><i class="ph ph-cloud-slash"></i><span>Tidak ada data</span></div></div></div></div>
-    <div class="col-lg-4 col-12"><div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;"><div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"><div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-list-numbers f-18 text-primary"></i></div><div><h6 class="mb-0">Top Words</h6><small class="text-muted">Ranked by mentions</small></div></div><button class="btn btn-outline-secondary btn-sm" onclick="exportCsv()" title="Export CSV"><i class="ph ph-download-simple me-1"></i>CSV</button></div><div id="topicLoading" class="spinner-state"><div class="spin-ring"></div><span>Memuat…</span></div><div id="topicContent" style="display:none;"><div id="topicList" class="ht-list"></div><div id="pagArea"></div></div><div id="topicEmpty" style="display:none;" class="chart-empty"><i class="ph ph-hash"></i><span>Tidak ada data</span></div></div></div>
-</div>
+
+  {{-- ══ Filter ══ --}}
+  @include('mk.layouts.partials.filter-datepicker')
+
+  {{-- ════ PAGE EXPORT WRAPPER ════ --}}
+  <div id="pageExportArea">
+
+  {{-- ══ KPI Cards ══ --}}
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card text-white fade-up fade-up-d1" style="background:#4680ff;">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+              <p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p>
+              <h3 class="mb-0 text-white f-w-300" id="statTotalTopics">—</h3>
+              <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph ph-circle-dashed me-1"></i>Unique topics</p>
+            </div>
+            <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-hash"></i></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-white fade-up fade-up-d2" style="background:#10B981;">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+              <p class="mb-1 text-white text-opacity-75 f-12">Top Topic</p>
+              <h4 class="mb-0 text-white f-w-300 text-truncate" id="statTopTopic" style="max-width:180px;">—</h4>
+              <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph ph-trend-up me-1"></i>Most mentioned</p>
+            </div>
+            <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-star"></i></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-white fade-up fade-up-d3" style="background:#F59E0B;">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+              <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
+              <h3 class="mb-0 text-white f-w-300" id="statTotalMentions">—</h3>
+              <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph ph-chat-dots me-1"></i>Across all topics</p>
+            </div>
+            <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-activity"></i></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- ══ Page Export Toolbar ══ --}}
+  <div class="page-export-bar" data-html2canvas-ignore="true">
+    <div class="page-export-bar-left">
+      <i class="ph ph-export"></i>
+      <span>Export Halaman</span>
+      <span class="badge bg-light-secondary text-muted ms-1" style="font-size:10px;">KPI + Chart + Topic List</span>
+    </div>
+    <div class="page-export-bar-right">
+      <button type="button" class="page-export-btn page-export-btn-pdf" id="pageExportPdfBtn"
+              onclick="WCExport.run('pdf', this)" title="Export halaman sebagai PDF">
+        <i class="ph ph-file-pdf export-icon"></i>
+        <span class="export-spinner"></span>
+      </button>
+      <button type="button" class="page-export-btn page-export-btn-img" id="pageExportImgBtn"
+              onclick="WCExport.run('image', this)" title="Export halaman sebagai PNG">
+        <i class="ph ph-image export-icon"></i>
+        <span class="export-spinner"></span>
+      </button>
+    </div>
+  </div>
+
+  {{-- ══ Chart Card ══ --}}
+  <div class="card mb-3">
+    <div id="card-export-chart">
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <div class="avtar avtar-xs bg-light-primary rounded-circle"><i class="ph ph-cloud f-18 text-primary"></i></div>
+        <div>
+          <h6 class="mb-0" id="chartTitle">Topic Word Cloud</h6>
+          <small class="text-muted">Visualisasi topik berdasarkan frekuensi mention</small>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <div class="tm-switcher">
+          <button class="tm-switch-btn active" onclick="TMApp.switchChart('wordcloud')" id="btnWordCloud">
+            <i class="ph ph-cloud me-1"></i>Word Cloud
+          </button>
+          <button class="tm-switch-btn" onclick="TMApp.switchChart('bar')" id="btnBar">
+            <i class="ph ph-chart-bar me-1"></i>Bar Chart
+          </button>
+          <button class="tm-switch-btn" onclick="TMApp.switchChart('pie')" id="btnPie">
+            <i class="ph ph-chart-donut me-1"></i>Pie Chart
+          </button>
+        </div>
+        {{-- Card export buttons --}}
+        <div class="d-flex gap-1" data-html2canvas-ignore="true">
+          <button class="card-exp-btn card-exp-btn-pdf"
+                  onclick="WCExport.runCard('card-export-chart','chart','pdf',this)"
+                  title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+          <button class="card-exp-btn card-exp-btn-img"
+                  onclick="WCExport.runCard('card-export-chart','chart','image',this)"
+                  title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-3">
+
+      {{-- Word Cloud --}}
+      <div class="chart-view active" id="wordCloudView">
+        <div class="wordcloud-container">
+          <div class="tm-loading" id="wordCloudLoading"><div class="tm-spinner"></div><span>Loading topics…</span></div>
+          <div id="wordCloudChart" style="display:none;"></div>
+          <div class="wordcloud-hint" id="wordCloudHint"><i class="ph ph-cursor-click"></i> Hover to view details</div>
+        </div>
+      </div>
+
+      {{-- Bar Chart --}}
+      <div class="chart-view" id="barChartView">
+        <div class="bar-chart-wrapper"><canvas id="barChart"></canvas></div>
+      </div>
+
+      {{-- Pie Chart --}}
+      <div class="chart-view" id="pieChartView">
+        <div class="pie-chart-wrapper"><canvas id="pieChart"></canvas></div>
+      </div>
+
+    </div>
+    </div>{{-- /card-export-chart --}}
+  </div>
+
+  {{-- ══ Topic List Card ══ --}}
+  <div class="card mb-3">
+    <div id="card-export-topiclist">
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <div class="avtar avtar-xs bg-light-primary rounded-circle"><i class="ph ph-list-numbers f-18 text-primary"></i></div>
+        <div>
+          <h6 class="mb-0">Topic Details</h6>
+          <small class="text-muted">Daftar topik beserta jumlah mention</small>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-light-primary text-primary rounded-pill" id="topicCountBadge">Loading…</span>
+        {{-- Card export buttons --}}
+        <div class="d-flex gap-1" data-html2canvas-ignore="true">
+          <button class="card-exp-btn card-exp-btn-pdf"
+                  onclick="WCExport.runCard('card-export-topiclist','topiclist','pdf',this)"
+                  title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+          <button class="card-exp-btn card-exp-btn-img"
+                  onclick="WCExport.runCard('card-export-topiclist','topiclist','image',this)"
+                  title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-0" id="topicList">
+      <div class="tm-loading"><div class="tm-spinner"></div><span>Memuat data…</span></div>
+    </div>
+    <div class="card-footer bg-transparent border-top" id="viewAllWrap" style="display:none;">
+      <button class="btn btn-primary btn-sm w-100" onclick="TMApp.openModal()">
+        <i class="ph ph-list me-1"></i>View All Topics
+      </button>
+    </div>
+    </div>{{-- /card-export-topiclist --}}
+  </div>
+
+  {{-- /pageExportArea --}}
+  </div>
+
+  {{-- Export Toast --}}
+  <div class="export-toast" id="exportToast">
+    <i class="ph ph-check-circle" id="exportToastIcon"></i>
+    <span id="exportToastMsg">Exporting…</span>
+  </div>
+
+  {{-- ══ Modal ══ --}}
+  <div class="tm-modal-overlay" id="tmModalOverlay" onclick="TMApp.closeModalOnOverlay(event)">
+    <div class="tm-modal-box" onclick="event.stopPropagation()">
+      <div class="tm-modal-head">
+        <h5>All Topics</h5>
+        <button class="tm-modal-close" onclick="TMApp.closeModal()"><i class="ph ph-x"></i></button>
+      </div>
+      <div class="tm-modal-body">
+        <input type="text" class="tm-modal-search" id="modalSearch" placeholder="Search topics…">
+        <div id="modalTopicList"></div>
+      </div>
+    </div>
+  </div>
+
 @endsection
+
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
-<script>
-'use strict';
-const CFG={pid:OV_PID,sd:OV_SD,ed:OV_ED};
-const _$=id=>document.getElementById(id);const numF=n=>parseInt(n||0).toLocaleString('id-ID');const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-let allTopics=[],filtered=[],curPage=1,curSent='2';const PP=15;let wcChart=null;
-const COLORS=['#038047','#04995a','#2FC6F6','#06b6d4','#8b5cf6','#a78bfa','#f59e0b','#fbbf24','#10b981','#34d399','#ef4444','#f87171','#e74c3c','#e67e22','#3498db','#9b59b6','#e91e63','#ff5722','#009688','#673ab7','#2196f3','#4caf50','#ff9800','#00bcd4','#8bc34a'];
-function sentColor(s){return{0:['#10b981','#059669','#34d399','#6ee7b7','#047857'],'-1':['#ef4444','#dc2626','#b91c1c','#f87171','#c53030'],1:['#f59e0b','#d97706','#fbbf24','#b45309','#fcd34d'],2:COLORS}[s]||COLORS}
-async function loadData(){_$('wcLoading').style.display='flex';_$('wordCloudChart').style.display='none';_$('wcEmpty').style.display='none';_$('topicLoading').style.display='flex';_$('topicContent')&&(_$('topicContent').style.display='none');try{const r=await fetch(`/mk/api/news/word-cloud?project_id=${CFG.pid}&start_date=${CFG.sd}&end_date=${CFG.ed}&sentiment=${curSent}`);const j=await r.json();if(!j.success){showEmpty();return}const phrases=j.data?.data?.phrases||{};const entries=Object.entries(phrases).sort((a,b)=>b[1]-a[1]);if(!entries.length){showEmpty();return}allTopics=entries.map(([name,count])=>({name,size:count}));filtered=[...allTopics];curPage=1;updateKpi();renderWC();renderList()}catch(e){console.error(e);showEmpty()}}
-function updateKpi(){const n=allTopics.length,vol=allTopics.reduce((s,t)=>s+t.size,0),avg=n?Math.round(vol/n):0;const el=(id,v)=>{const e=_$(id);if(e)e.textContent=numF(v)};el('kpiTopics',n);_$('kpiTopicsSub').innerHTML=`<i class="ph ph-hash me-1"></i>${n} unique words`;el('kpiVolume',vol);_$('kpiVolumeSub').innerHTML=`<i class="ph ph-chart-bar me-1"></i>Total mentions`;if(n){_$('kpiTopWord').textContent=allTopics[0].name;_$('kpiTopWordSub').innerHTML=`<i class="ph ph-crown me-1"></i>${numF(allTopics[0].size)} mentions`}el('kpiAvg',avg);_$('kpiAvgSub').innerHTML=`<i class="ph ph-trend-up me-1"></i>Per word`;_$('badgeWC').textContent=filtered.length+' words'}
-function showEmpty(){_$('wcLoading').style.display='none';_$('wcEmpty').style.display='flex';_$('topicLoading').style.display='none';_$('topicEmpty').style.display='flex';['kpiTopics','kpiVolume','kpiAvg'].forEach(id=>{const e=_$(id);if(e)e.textContent='0'});_$('kpiTopWord').textContent='–'}
-function renderWC(){const ld=_$('wcLoading'),ch=_$('wordCloudChart'),em=_$('wcEmpty');if(!filtered.length){if(ld)ld.style.display='none';ch.style.display='none';if(em)em.style.display='flex';return}if(em)em.style.display='none';if(ld)ld.style.display='none';ch.style.display='block';if(wcChart){try{wcChart.dispose()}catch(e){}}wcChart=echarts.init(ch,null,{renderer:'canvas'});window.addEventListener('resize',()=>{try{wcChart.resize()}catch(e){}});const cols=sentColor(curSent);let ci=0;const data=filtered.slice(0,150).map(t=>({name:t.name,value:t.size,textStyle:{color:cols[ci++%cols.length]}}));wcChart.setOption({backgroundColor:'transparent',series:[{type:'wordCloud',shape:'circle',left:'center',top:'center',width:'90%',height:'90%',sizeRange:[32,120],rotationRange:[-45,45],rotationStep:15,gridSize:4,drawOutOfBound:false,layoutAnimation:true,textStyle:{fontFamily:'inherit',fontWeight:'700'},emphasis:{textStyle:{textShadowBlur:3,textShadowColor:'rgba(0,0,0,.15)'}},data}]});wcChart.on('click',p=>{const q=encodeURIComponent(p.name);window.open(`https://news.google.com/search?q=${q}`,'_blank','noopener,noreferrer')})}
-function renderList(){const ld=_$('topicLoading'),ct=_$('topicContent'),em=_$('topicEmpty'),list=_$('topicList'),pg=_$('pagArea');if(!filtered.length){if(ld)ld.style.display='none';if(em)em.style.display='flex';if(ct)ct.style.display='none';return}if(em)em.style.display='none';const total=filtered.length,pages=Math.ceil(total/PP),start=(curPage-1)*PP,items=filtered.slice(start,start+PP),mx=filtered[0]?.size||1;list.innerHTML='';items.forEach((h,i)=>{const rk=start+i+1,rc=rk<=3?` ht-rank--${rk}`:'',pct=Math.round((h.size/mx)*100);const el=document.createElement('div');el.className='ht-item';el.innerHTML=`<div class="ht-rank${rc}">${rk}</div><div class="ht-name">${esc(h.name)}</div><div class="ht-bar-wrap"><div class="ht-bar-fill" style="width:${pct}%;"></div></div><div class="ht-count">${numF(h.size)}</div>`;el.onclick=()=>{window.open(`https://news.google.com/search?q=${encodeURIComponent(h.name)}`,'_blank','noopener,noreferrer')};list.appendChild(el)});if(pg){if(pages<=1){pg.innerHTML=''}else{const fr=start+1,to=Math.min(start+PP,total);let b='',r=2;b+=`<button class="tme-pag-btn" ${curPage<=1?'disabled':''} onclick="goPage(${curPage-1})"><i class="ph ph-caret-left"></i></button>`;for(let i=1;i<=pages;i++){if(i===1||i===pages||(i>=curPage-r&&i<=curPage+r))b+=`<button class="tme-pag-btn${i===curPage?' is-active':''}" onclick="goPage(${i})">${i}</button>`;else if(i===curPage-r-1||i===curPage+r+1)b+=`<span class="tme-pag-btn" style="cursor:default;opacity:.4;">…</span>`}b+=`<button class="tme-pag-btn" ${curPage>=pages?'disabled':''} onclick="goPage(${curPage+1})"><i class="ph ph-caret-right"></i></button>`;pg.innerHTML=`<div class="tme-pagination"><span class="tme-pag-info">${fr}–${to} dari ${total}</span><div class="tme-pag-controls">${b}</div></div>`}}if(ld)ld.style.display='none';if(ct)ct.style.display='block'}
-function goPage(p){curPage=p;renderList();_$('topicList')?.scrollIntoView({behavior:'smooth',block:'nearest'})}
-function exportCsv(){if(!filtered.length){alert('Tidak ada data.');return}const hdr='rank;word;mentions';const rows=filtered.map((t,i)=>`${i+1};${t.name.replace(/;/g,',')};${t.size}`);const blob=new Blob(['\uFEFF'+[hdr,...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`News_WordCloud_${CFG.sd}_${CFG.ed}.csv`}).click()}
-document.addEventListener('DOMContentLoaded',()=>{loadData();document.querySelectorAll('.sent-tab').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.sent-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');curSent=btn.dataset.s;loadData()})})});
-</script>
+  {{-- Export dependencies --}}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <script>
+    'use strict';
+
+    /* ══════════════════════════════════════════════════
+       TMApp — core logic (tidak berubah)
+    ══════════════════════════════════════════════════ */
+    const TMApp = (() => {
+      const _urlP = new URLSearchParams(window.location.search);
+      const projectId = _urlP.get('project_id');
+      const startDate = _urlP.get('start_date') || '{{ $startDate }}';
+      const endDate   = _urlP.get('end_date')   || '{{ $endDate }}';
+
+      let topicsData      = [];
+      let barChartInst    = null;
+      let pieChartInst    = null;
+      let wordCloudInst   = null;
+      let currentChart    = 'wordcloud';
+
+      const $ = id => document.getElementById(id);
+      const nF = n => parseInt(n || 0).toLocaleString('id-ID');
+      function getPrimary() { return getComputedStyle(document.documentElement).getPropertyValue('--bs-primary').trim() || '#4361EE'; }
+
+      function init() {
+        if (!projectId) { _showEmpty('Pilih project dari sidebar terlebih dahulu.'); return; }
+        _load();
+        const search = $('modalSearch');
+        if (search) search.addEventListener('input', e => {
+          const q = e.target.value.toLowerCase();
+          document.querySelectorAll('#modalTopicList .topic-item').forEach(el => {
+            el.style.display = (el.dataset.name || '').includes(q) ? '' : 'none';
+          });
+        });
+      }
+
+      async function _load() {
+        try {
+          const r = await fetch(`/mk/api/topic-map?project_id=${projectId}&media=all&start_date=${startDate}&end_date=${endDate}`);
+          const j = await r.json();
+          if (!j.success || !j.data?.length) { _showEmpty('Tidak ada topik untuk periode ini.'); return; }
+          topicsData = j.data;
+          _updateStats(topicsData);
+          _renderWordCloud(topicsData);
+          _renderList(topicsData);
+        } catch (e) {
+          console.error(e);
+          _showEmpty('Gagal memuat data. Silakan coba lagi.');
+        }
+      }
+
+      function _updateStats(topics) {
+        const total    = topics.length;
+        const topTopic = topics[0]?.name || '-';
+        const mentions = topics.reduce((s, t) => s + t.count, 0);
+        $('statTotalTopics').textContent  = nF(total);
+        $('statTopTopic').textContent     = topTopic;
+        $('statTotalMentions').textContent= nF(mentions);
+        $('topicCountBadge').textContent  = total + ' topics';
+      }
+
+      function switchChart(type) {
+        document.querySelectorAll('.tm-switch-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.chart-view').forEach(v => v.classList.remove('active'));
+        currentChart = type;
+        const titleMap = { wordcloud:'Topic Word Cloud', bar:'Topic Bar Chart', pie:'Topic Distribution' };
+        $('chartTitle').textContent = titleMap[type];
+        if (type === 'wordcloud') {
+          $('btnWordCloud').classList.add('active');
+          $('wordCloudView').classList.add('active');
+          if (topicsData.length) _renderWordCloud(topicsData);
+        } else if (type === 'bar') {
+          $('btnBar').classList.add('active');
+          $('barChartView').classList.add('active');
+          if (!barChartInst && topicsData.length) _renderBar(topicsData);
+        } else if (type === 'pie') {
+          $('btnPie').classList.add('active');
+          $('pieChartView').classList.add('active');
+          if (!pieChartInst && topicsData.length) _renderPie(topicsData);
+        }
+      }
+
+      function _renderWordCloud(topics) {
+        const chartDiv  = $('wordCloudChart');
+        const loadingEl = $('wordCloudLoading');
+        const hintEl    = $('wordCloudHint');
+        if (!chartDiv || typeof echarts === 'undefined') return;
+        if (!topics.length) { _showEmpty('Tidak ada topik.'); return; }
+        loadingEl.style.display = 'none';
+        chartDiv.style.display  = 'block';
+        hintEl.style.display    = 'flex';
+        const top      = topics.slice(0, 60);
+        const maxCount = Math.max(...top.map(t => t.count));
+        const minCount = Math.min(...top.map(t => t.count));
+        const primary  = getPrimary();
+        const colors   = [primary,'#10B981','#2FC6F6','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#a78bfa','#34d399','#fbbf24'];
+        const wordData = top.map(t => ({
+          name  : t.name.replace(/^#/, ''),
+          value : Math.pow((t.count - minCount) / (maxCount - minCount || 1), 0.5) * 1200 + 200,
+          _topic: t,
+        }));
+        if (wordCloudInst) wordCloudInst.dispose();
+        wordCloudInst = echarts.init(chartDiv, null, { renderer:'canvas', devicePixelRatio:window.devicePixelRatio || 1 });
+        wordCloudInst.setOption({
+          tooltip: {
+            show:true, trigger:'item',
+            backgroundColor:'#fff', borderColor:'#E2E8F0', borderWidth:1, padding:14,
+            textStyle:{ color:'#0F172A', fontSize:12, fontFamily:'inherit' },
+            shadowBlur:20, shadowColor:'rgba(0,0,0,.1)', shadowOffsetY:4,
+            formatter: p => `<div style="font-family:inherit;min-width:160px;">
+                              <div style="font-weight:700;font-size:14px;color:#0F172A;margin-bottom:6px;text-align:center;">${p.name}</div>
+                              <div style="font-size:12px;color:#64748B;text-align:center;"><strong>${nF(p.data._topic.count)}</strong> mentions</div>
+                            </div>`,
+          },
+          series:[{
+            type:'wordCloud', shape:'circle', keepAspect:false, left:'center', top:'center',
+            width:'98%', height:'98%', right:null, bottom:null,
+            sizeRange:[24,120], rotationRange:[-45,45], rotationStep:45, gridSize:8,
+            drawOutOfBound:false, layoutAnimation:true,
+            textStyle:{ fontFamily:'Poppins, Inter, sans-serif', fontWeight:'bold', color:()=>colors[Math.floor(Math.random()*colors.length)] },
+            emphasis:{ focus:'self', textStyle:{ textShadowBlur:10, textShadowColor:'rgba(0,0,0,0.35)' } },
+            data:wordData,
+          }],
+        }, true);
+        let rtimer;
+        window.addEventListener('resize', () => { clearTimeout(rtimer); rtimer=setTimeout(()=>{ if(wordCloudInst) wordCloudInst.resize(); }, 250); });
+      }
+
+      function _renderBar(topics) {
+        const ctx = $('barChart')?.getContext('2d');
+        if (!ctx) return;
+        if (barChartInst) barChartInst.destroy();
+        const top     = topics.slice(0, 20);
+        const primary = getPrimary();
+        barChartInst = new Chart(ctx, {
+          type:'bar',
+          data:{ labels:top.map(t=>t.name), datasets:[{ label:'Mentions', data:top.map(t=>t.count), backgroundColor:primary+'CC', borderColor:primary, borderWidth:2, borderRadius:6 }] },
+          options:{
+            indexAxis:'y', responsive:true, maintainAspectRatio:false,
+            plugins:{
+              legend:{ display:false },
+              tooltip:{ backgroundColor:'rgba(15,23,42,.95)', padding:12, titleFont:{size:13,weight:'bold',family:'inherit'}, bodyFont:{size:12,family:'inherit'}, borderColor:primary, borderWidth:1, callbacks:{ label:c=>`Mentions: ${nF(c.parsed.x)}` } }
+            },
+            scales:{
+              x:{ beginAtZero:true, grid:{color:'rgba(226,232,240,.6)'}, ticks:{font:{weight:'600',family:'inherit',size:11}} },
+              y:{ grid:{display:false}, ticks:{font:{weight:'600',size:12,family:'inherit'}} }
+            }
+          }
+        });
+      }
+
+      function _renderPie(topics) {
+        const ctx = $('pieChart')?.getContext('2d');
+        if (!ctx) return;
+        if (pieChartInst) pieChartInst.destroy();
+        const top    = topics.slice(0, 10);
+        const others = topics.slice(10).reduce((s,t)=>s+t.count,0);
+        const labels = [...top.map(t=>t.name)];
+        const data   = [...top.map(t=>t.count)];
+        if (others > 0) { labels.push('Others'); data.push(others); }
+        const colors = ['#4361EE','#10B981','#2FC6F6','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#3b82f6','#ec4899','#6366f1','#94a3b8'];
+        pieChartInst = new Chart(ctx, {
+          type:'doughnut',
+          data:{ labels, datasets:[{ data, backgroundColor:colors, borderColor:'#fff', borderWidth:3, hoverOffset:14 }] },
+          options:{
+            responsive:true, maintainAspectRatio:false,
+            plugins:{
+              legend:{ position:'right', labels:{ padding:18, font:{size:12,weight:'600',family:'inherit'}, generateLabels:c=>c.data.labels.map((l,i)=>({ text:`${l} (${nF(c.data.datasets[0].data[i])})`, fillStyle:c.data.datasets[0].backgroundColor[i], hidden:false, index:i })) } },
+              tooltip:{ backgroundColor:'rgba(15,23,42,.95)', padding:12, titleFont:{size:13,weight:'bold',family:'inherit'}, bodyFont:{size:12,family:'inherit'}, borderColor:'#4361EE', borderWidth:1, callbacks:{ label:c=>{ const tot=c.dataset.data.reduce((a,b)=>a+b,0); return `${c.label}: ${nF(c.parsed)} (${((c.parsed/tot)*100).toFixed(1)}%)`; } } }
+            }
+          }
+        });
+      }
+
+      function _renderList(topics) {
+        const listEl      = $('topicList');
+        const viewAllWrap = $('viewAllWrap');
+        if (!listEl) return;
+        if (!topics.length) { listEl.innerHTML=`<div class="tm-empty"><i class="ph ph-folder-open"></i><span>Tidak ada topik</span></div>`; viewAllWrap.style.display='none'; return; }
+        listEl.innerHTML = topics.slice(0, 10).map((t,i) => {
+          const rank = i + 1;
+          return `<div class="topic-item"><span class="topic-rank${rank<=3?' top-3':''}">#${rank}</span><span class="topic-name">${t.name}</span><span class="topic-count">${nF(t.count)}</span></div>`;
+        }).join('');
+        viewAllWrap.style.display = topics.length > 10 ? '' : 'none';
+      }
+
+      function openModal() {
+        const overlay = $('tmModalOverlay'), listEl = $('modalTopicList');
+        listEl.innerHTML = topicsData.map((t,i) => {
+          const rank = i + 1;
+          return `<div class="topic-item" data-name="${t.name.toLowerCase()}"><span class="topic-rank${rank<=3?' top-3':''}">#${rank}</span><span class="topic-name">${t.name}</span><span class="topic-count">${nF(t.count)}</span></div>`;
+        }).join('');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => $('modalSearch')?.focus(), 100);
+      }
+      function closeModal() { $('tmModalOverlay').classList.remove('active'); document.body.style.overflow=''; if($('modalSearch'))$('modalSearch').value=''; }
+      function closeModalOnOverlay(e) { if (e.target.id==='tmModalOverlay') closeModal(); }
+
+      function _showEmpty(msg) {
+        const html = `<div class="tm-empty"><i class="ph ph-warning-circle"></i><span>${msg}</span></div>`;
+        $('wordCloudLoading').innerHTML = html;
+        $('topicList').innerHTML        = html;
+        $('statTotalTopics').textContent  = '0';
+        $('statTopTopic').textContent     = '—';
+        $('statTotalMentions').textContent= '0';
+        $('topicCountBadge').textContent  = '0 topics';
+        $('viewAllWrap').style.display    = 'none';
+      }
+
+      /* expose wordCloudInst & barChartInst for export resize */
+      function getInsts() { return { wordCloudInst, barChartInst, pieChartInst, currentChart }; }
+
+      document.addEventListener('DOMContentLoaded', init);
+      return { switchChart, openModal, closeModal, closeModalOnOverlay, getInsts };
+    })();
+
+    /* ════════════════════════════════════════════════════════
+       EXPORT MODULE — Word Cloud
+    ════════════════════════════════════════════════════════ */
+    const WCExport = (() => {
+        const _urlP     = new URLSearchParams(window.location.search);
+        const _pid      = _urlP.get('project_id') || '';
+        let _toastTimer = null;
+
+        function _toast(msg, type='default', duration=3200) {
+            const t=document.getElementById('exportToast'), m=document.getElementById('exportToastMsg'), ico=document.getElementById('exportToastIcon');
+            if(!t||!m) return;
+            m.textContent = msg;
+            t.className   = 'export-toast show '+(type!=='default'?type:'');
+            const icons   = { success:'ph-check-circle', error:'ph-x-circle', default:'ph-spinner' };
+            ico.className = 'ph '+(icons[type]||icons.default);
+            clearTimeout(_toastTimer);
+            _toastTimer   = setTimeout(()=>t.classList.remove('show'), duration);
+        }
+
+        function _btnState(btn, loading) {
+            if(!btn) return;
+            btn.disabled = loading;
+            btn.classList.toggle('exporting', loading);
+        }
+
+        /* Resize semua chart aktif sebelum capture */
+        function _resizeAll() {
+            const { wordCloudInst, barChartInst, pieChartInst } = TMApp.getInsts();
+            if(wordCloudInst) { try{ wordCloudInst.resize(); }catch(e){} }
+            if(barChartInst)  { try{ barChartInst.resize();  }catch(e){} }
+            if(pieChartInst)  { try{ pieChartInst.resize();  }catch(e){} }
+        }
+
+        async function _capture() {
+            const area = document.getElementById('pageExportArea');
+            if(!area) throw new Error('pageExportArea tidak ditemukan');
+            window.scrollTo({ top:0 });
+            await new Promise(r => setTimeout(r, 350));
+            _resizeAll();
+            return html2canvas(area, {
+                scale           : 2,
+                useCORS         : true,
+                allowTaint      : false,
+                backgroundColor : '#f1f5f9',
+                logging         : false,
+                removeContainer : true,
+                windowWidth     : document.documentElement.scrollWidth,
+                windowHeight    : area.scrollHeight,
+                height          : area.scrollHeight,
+                ignoreElements  : el =>
+                    el.hasAttribute('data-html2canvas-ignore') ||
+                    el.id === 'pageExportPdfBtn' ||
+                    el.id === 'pageExportImgBtn',
+            });
+        }
+
+        function _drawHeader(doc, pW, margin, subtitle) {
+            doc.setFillColor(67, 97, 238);          /* indigo primary */
+            doc.rect(0, 0, pW, 11, 'F');
+            doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
+            doc.text('SMADIMENT — Word Cloud'+(subtitle?' · '+subtitle:''), margin, 7.5);
+            const now = new Date().toLocaleDateString('id-ID',{ day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+            doc.setFontSize(7); doc.setFont('helvetica','normal');
+            doc.text('Generated: '+now, pW-margin, 7.5, { align:'right' });
+        }
+
+        async function _paginate(pdf, canvas, margin) {
+            const pW = pdf.internal.pageSize.getWidth();
+            const pH = pdf.internal.pageSize.getHeight();
+            const usableW = pW - margin*2;
+            const usableH = pH - margin*2 - 14;
+            const ratio   = usableW / canvas.width;
+            const sliceH  = usableH / ratio;
+            let srcY=0, pageNum=0;
+            while(srcY < canvas.height) {
+                if(pageNum > 0) { pdf.addPage(); _drawHeader(pdf, pW, margin); }
+                const srcSlice = Math.min(sliceH, canvas.height-srcY);
+                const dstH     = srcSlice * ratio;
+                const slice    = document.createElement('canvas');
+                slice.width=canvas.width; slice.height=Math.ceil(srcSlice);
+                slice.getContext('2d').drawImage(canvas,0,srcY,canvas.width,srcSlice,0,0,canvas.width,srcSlice);
+                pdf.addImage(slice.toDataURL('image/png'),'PNG',margin,14,usableW,dstH);
+                pdf.setFontSize(7); pdf.setTextColor(148,163,184);
+                pdf.text(`Halaman ${pageNum+1}`, pW/2, pH-3, { align:'center' });
+                srcY+=srcSlice; pageNum++;
+            }
+        }
+
+        async function _exportPdf() {
+            const canvas = await _capture();
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+            _drawHeader(pdf, pdf.internal.pageSize.getWidth(), 10);
+            await _paginate(pdf, canvas, 10);
+            const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
+            pdf.save(`wordcloud_${_pid}_${stamp}.pdf`);
+        }
+
+        async function _exportImage() {
+            const canvas = await _capture();
+            const stamp  = new Date().toISOString().slice(0,10).replace(/-/g,'');
+            const link   = document.createElement('a');
+            link.download = `wordcloud_${_pid}_${stamp}.png`;
+            link.href     = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        /* Per-card capture */
+        async function _captureCard(areaId, cardKey) {
+            const area = document.getElementById(areaId);
+            if(!area) throw new Error('Area #'+areaId+' tidak ditemukan');
+            if(cardKey === 'chart') {
+                /* resize chart yang sedang aktif */
+                const { wordCloudInst, barChartInst, pieChartInst, currentChart } = TMApp.getInsts();
+                if(currentChart==='wordcloud' && wordCloudInst) { try{ wordCloudInst.resize(); }catch(e){} }
+                if(currentChart==='bar'       && barChartInst)  { try{ barChartInst.resize();  }catch(e){} }
+                if(currentChart==='pie'       && pieChartInst)  { try{ pieChartInst.resize();  }catch(e){} }
+            }
+            await new Promise(r => setTimeout(r, 250));
+            return html2canvas(area, {
+                scale           : 2,
+                useCORS         : true,
+                allowTaint      : false,
+                backgroundColor : '#ffffff',
+                logging         : false,
+                removeContainer : true,
+                ignoreElements  : el => el.hasAttribute('data-html2canvas-ignore'),
+            });
+        }
+
+        const _cardLabels = { chart:'Topic Visualization', topiclist:'Topic Details' };
+        const _cardFiles  = { chart:'topic-chart',         topiclist:'topic-list'   };
+
+        async function runCard(areaId, cardKey, type, btn) {
+            if(!window.html2canvas)             { _toast('html2canvas tidak tersedia','error'); return; }
+            if(type==='pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
+            _btnState(btn, true);
+            _toast(type==='pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
+            try {
+                const canvas = await _captureCard(areaId, cardKey);
+                const label  = _cardLabels[cardKey] || cardKey;
+                const file   = _cardFiles[cardKey]  || cardKey;
+                const stamp  = new Date().toISOString().slice(0,10).replace(/-/g,'');
+                const fname  = `wordcloud_${file}_${_pid}_${stamp}`;
+                if(type === 'image') {
+                    const link = document.createElement('a');
+                    link.download = fname+'.png';
+                    link.href     = canvas.toDataURL('image/png');
+                    link.click();
+                    _toast('Gambar berhasil diunduh!', 'success');
+                } else {
+                    const { jsPDF } = window.jspdf;
+                    const landscape = canvas.width > canvas.height;
+                    const pdf = new jsPDF({ orientation:landscape?'landscape':'portrait', unit:'mm', format:'a4' });
+                    const pW  = pdf.internal.pageSize.getWidth();
+                    _drawHeader(pdf, pW, 10, label);
+                    await _paginate(pdf, canvas, 10);
+                    pdf.save(fname+'.pdf');
+                    _toast('PDF berhasil diunduh!', 'success');
+                }
+            } catch(err) {
+                console.error('[WCExport.runCard]', err);
+                _toast('Export gagal: '+err.message, 'error');
+            } finally {
+                _btnState(btn, false);
+            }
+        }
+
+        async function run(type, btn) {
+            if(!window.html2canvas)             { _toast('html2canvas tidak tersedia','error'); return; }
+            if(type==='pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
+            const btnPdf = document.getElementById('pageExportPdfBtn');
+            const btnImg = document.getElementById('pageExportImgBtn');
+            _btnState(btnPdf, true); _btnState(btnImg, true);
+            _toast(type==='pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+            try {
+                if(type==='pdf') { await _exportPdf();   _toast('PDF berhasil diunduh!',   'success'); }
+                else             { await _exportImage(); _toast('Gambar berhasil diunduh!','success'); }
+            } catch(err) {
+                console.error('[WCExport]', err);
+                _toast('Export gagal: '+err.message, 'error');
+            } finally {
+                _btnState(btnPdf, false); _btnState(btnImg, false);
+            }
+        }
+
+        return { run, runCard };
+    })();
+  </script>
 @endsection

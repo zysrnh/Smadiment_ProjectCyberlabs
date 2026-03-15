@@ -36,7 +36,46 @@
 .up-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:40px 20px;gap:8px;color:var(--slate-400)}.up-empty i{font-size:32px;color:var(--slate-300)}
 .do-detail-panel{position:absolute;inset:0;background:#fff;z-index:5;display:none;flex-direction:column;animation:slideInRight .2s cubic-bezier(.4,0,.2,1)}.do-detail-panel.show{display:flex}.do-dp2-header{display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--slate-50);border-bottom:1px solid var(--slate-200);flex-shrink:0}.do-dp2-back{width:28px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--slate-200);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-500);transition:all .13s;font-size:14px}.do-dp2-back:hover{background:var(--primary-lt);color:var(--primary);border-color:var(--primary)}.do-dp2-title{font-size:13px;font-weight:700;color:var(--slate-900);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.do-dp2-body{overflow-y:auto;flex:1;padding:16px}.do-dp2-body::-webkit-scrollbar{width:4px}.do-dp2-body::-webkit-scrollbar-thumb{background:var(--slate-200);border-radius:99px}
 .do-dp2-meta{font-size:11px;color:var(--slate-400);font-weight:500;margin-bottom:10px}.do-dp2-sent{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:3px;font-size:11px;font-weight:700;margin-bottom:10px}.do-dp2-sent--pos{background:#d1fae5;color:#065f46}.do-dp2-sent--neg{background:#fee2e2;color:#991b1b}.do-dp2-sent--neu{background:var(--slate-100);color:var(--slate-500)}.do-dp2-content{font-size:12px;color:var(--slate-700);line-height:1.7;margin-bottom:12px;background:var(--slate-50);border-radius:var(--radius-sm);padding:10px 12px;border:1px solid var(--slate-200);word-break:break-word}.do-dp2-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}.do-dp2-stat{background:var(--slate-50);border-radius:var(--radius-sm);padding:8px 10px;border:1px solid var(--slate-200);text-align:center}.do-dp2-stat-val{font-size:14px;font-weight:700;color:var(--slate-900)}.do-dp2-stat-lbl{font-size:9px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.4px;margin-top:1px}.do-dp2-link{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;background:var(--primary);color:#fff;border-radius:var(--radius-sm);font-size:12px;font-weight:700;text-decoration:none;transition:filter .14s;margin-top:4px}.do-dp2-link:hover{filter:brightness(1.1);color:#fff}
-.kpi-card-hover h3{font-size:1.5rem}@media(max-width:640px){.do-panel{width:100vw}}
+.kpi-card-hover h3{font-size:1.5rem}
+
+/* ════════════════════════════════════════
+   EXPORT STYLES — sama dengan TikTok page
+════════════════════════════════════════ */
+/* Page Export Bar */
+.page-export-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:#fff;border:1px solid var(--slate-200);border-radius:var(--radius);padding:9px 14px;margin-bottom:20px;box-shadow:var(--shadow-sm)}
+.page-export-bar-left{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--slate-600)}
+.page-export-bar-left i{font-size:15px;color:var(--primary)}
+.page-export-bar-right{display:flex;gap:8px}
+
+/* Page-level export buttons */
+.page-export-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--radius-sm);font-size:16px;cursor:pointer;transition:all .15s ease;border:1.5px solid transparent;font-family:inherit}
+.page-export-btn-pdf{background:#fff3f3;color:#dc2626;border-color:#fca5a5}
+.page-export-btn-pdf:hover{background:#dc2626;color:#fff;border-color:#dc2626}
+.page-export-btn-img{background:var(--primary-lt);color:var(--primary);border-color:rgba(3,128,71,.3)}
+.page-export-btn-img:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+.page-export-btn:disabled{opacity:.55;cursor:not-allowed;pointer-events:none}
+.page-export-btn .export-spinner{width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .65s linear infinite;display:none}
+.page-export-btn.exporting .export-spinner{display:inline-block}
+.page-export-btn.exporting .export-icon{display:none}
+
+/* Card-level export buttons */
+.card-exp-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:var(--radius-sm);font-size:14px;cursor:pointer;flex-shrink:0;transition:all .14s ease;border:1px solid transparent;font-family:inherit;background:transparent}
+.card-exp-btn-pdf{color:#dc2626;border-color:#fca5a5;background:#fff3f3}
+.card-exp-btn-pdf:hover{background:#dc2626;color:#fff;border-color:#dc2626}
+.card-exp-btn-img{color:var(--primary);border-color:rgba(3,128,71,.3);background:var(--primary-lt)}
+.card-exp-btn-img:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+.card-exp-btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+.card-exp-btn .export-spinner{width:11px;height:11px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .65s linear infinite;display:none}
+.card-exp-btn.exporting .export-spinner{display:inline-block}
+.card-exp-btn.exporting .export-icon{display:none}
+
+/* Export Toast */
+.export-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--slate-900);color:#fff;border-radius:var(--radius);padding:10px 18px;font-size:12px;font-weight:600;box-shadow:var(--shadow-lg);z-index:99999;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.export-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.export-toast.success{background:#065f46}
+.export-toast.error{background:#991b1b}
+
+@media(max-width:640px){.do-panel{width:100vw}}
 </style>
 @endsection
 @section('page-title', 'X Most Active Users')
@@ -44,6 +83,10 @@
 @php $projectId=$projectId??request()->get('project_id');$startDate=$startDate??request()->get('start_date',now()->subDays(6)->format('Y-m-d'));$endDate=$endDate??request()->get('end_date',now()->format('Y-m-d'));$projects=$projects??[]; @endphp
 <script>const OV_PID={{ $projectId?(int)$projectId:'null' }};const OV_SD='{{ $startDate }}';const OV_ED='{{ $endDate }}';</script>
 @include('mk.layouts.partials.filter-datepicker')
+
+{{-- ════ PAGE EXPORT WRAPPER ════ --}}
+<div id="pageExportArea">
+
 {{-- KPI --}}
 <div class="row mb-3">
     <div class="col-md-6 col-xl-3"><div class="card h-100 bg-primary text-white kpi-card-hover fade-up fade-up-d1"><div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Users</p><h3 class="mb-0 text-white f-w-300" id="kpiUsers"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiUsersSub"><i class="ph ph-users me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-users"></i></div></div></div></div></div></div>
@@ -51,11 +94,123 @@
     <div class="col-md-6 col-xl-3"><div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d3"><div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Avg. Engagement</p><h3 class="mb-0 text-white f-w-300" id="kpiAvg"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiAvgSub"><i class="ph ph-trend-up me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-trend-up"></i></div></div></div></div></div></div>
     <div class="col-md-6 col-xl-3"><div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d4"><div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Most Active</p><h3 class="mb-0 text-white f-w-300" id="kpiTop" style="font-size:1rem;"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopSub"><i class="ph ph-trophy me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-trophy"></i></div></div></div></div></div></div>
 </div>
+
+{{-- ══ Page Export Toolbar ══ --}}
+<div class="page-export-bar" data-html2canvas-ignore="true">
+    <div class="page-export-bar-left">
+        <i class="ph ph-export"></i>
+        <span>Export Halaman</span>
+        <span class="badge bg-light-secondary text-muted ms-1" style="font-size:10px;">
+            KPI + Ranked List + Donut Chart
+        </span>
+    </div>
+    <div class="page-export-bar-right">
+        <button type="button"
+                class="page-export-btn page-export-btn-pdf"
+                id="pageExportPdfBtn"
+                onclick="XExport.run('pdf', this)"
+                title="Export halaman sebagai PDF">
+            <i class="ph ph-file-pdf export-icon"></i>
+            <span class="export-spinner"></span>
+        </button>
+        <button type="button"
+                class="page-export-btn page-export-btn-img"
+                id="pageExportImgBtn"
+                onclick="XExport.run('image', this)"
+                title="Export halaman sebagai PNG">
+            <i class="ph ph-image export-icon"></i>
+            <span class="export-spinner"></span>
+        </button>
+    </div>
+</div>
+
 {{-- Content: Ranked list LEFT, Donut RIGHT --}}
 <div class="row">
-    <div class="col-lg-7 col-12"><div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;"><div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"><div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-users f-18 text-primary"></i></div><div><h6 class="mb-0">Ranked Users by Activity</h6><small class="text-muted">Klik user untuk lihat detail</small></div></div><div class="d-flex align-items-center gap-2"><button class="btn btn-outline-secondary btn-sm" onclick="exportCsv()" title="Export CSV"><i class="ph ph-download-simple me-1"></i>CSV</button><span class="badge bg-light-primary text-primary" id="badgeTotal">Loading…</span></div></div><div id="userList" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div><div id="pagArea"></div></div></div>
-    <div class="col-lg-5 col-12"><div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;"><div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"><div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-donut f-18 text-primary"></i></div><div><h6 class="mb-0">Top 5 User Engagement</h6><small class="text-muted">Klik untuk lihat detail</small></div></div><div id="donutLegend" class="donut-legend"></div></div><div class="card-body"><div class="chart-container" style="height:400px;"><div class="chart-loading" id="loadingDonut"><div class="spin-ring"></div><span>Loading…</span></div><div id="donutChart" style="width:100%;height:400px;display:none;"></div><div id="donutEmpty" style="display:none;" class="chart-empty"><i class="ph ph-chart-donut"></i><span>No data</span></div></div></div></div></div>
+    {{-- Ranked User List --}}
+    <div class="col-lg-7 col-12">
+        <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
+            <div id="card-export-userlist">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-users f-18 text-primary"></i></div>
+                    <div>
+                        <h6 class="mb-0">Ranked Users by Activity</h6>
+                        <small class="text-muted">Klik user untuk lihat detail</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-light-primary text-primary" id="badgeTotal">Loading…</span>
+                    {{-- Card export buttons --}}
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf"
+                                onclick="XExport.runCard('card-export-userlist','userlist','pdf',this)"
+                                title="Export PDF">
+                            <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                        <button class="card-exp-btn card-exp-btn-img"
+                                onclick="XExport.runCard('card-export-userlist','userlist','image',this)"
+                                title="Export PNG">
+                            <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="userList" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
+            <div id="pagArea"></div>
+            </div>{{-- /card-export-userlist --}}
+        </div>
+    </div>
+
+    {{-- Donut Chart --}}
+    <div class="col-lg-5 col-12">
+        <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
+            <div id="card-export-donut">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-donut f-18 text-primary"></i></div>
+                    <div>
+                        <h6 class="mb-0">Top 5 User Engagement</h6>
+                        <small class="text-muted">Klik untuk lihat detail</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div id="donutLegend" class="donut-legend"></div>
+                    {{-- Card export buttons --}}
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf"
+                                onclick="XExport.runCard('card-export-donut','donut','pdf',this)"
+                                title="Export PDF">
+                            <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                        <button class="card-exp-btn card-exp-btn-img"
+                                onclick="XExport.runCard('card-export-donut','donut','image',this)"
+                                title="Export PNG">
+                            <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height:400px;">
+                    <div class="chart-loading" id="loadingDonut"><div class="spin-ring"></div><span>Loading…</span></div>
+                    <div id="donutChart" style="width:100%;height:400px;display:none;"></div>
+                    <div id="donutEmpty" style="display:none;" class="chart-empty"><i class="ph ph-chart-donut"></i><span>No data</span></div>
+                </div>
+            </div>
+            </div>{{-- /card-export-donut --}}
+        </div>
+    </div>
 </div>
+
+{{-- /pageExportArea --}}
+</div>
+
+{{-- Export Toast --}}
+<div class="export-toast" id="exportToast">
+    <i class="ph ph-check-circle" id="exportToastIcon"></i>
+    <span id="exportToastMsg">Exporting…</span>
+</div>
+
 {{-- Slide Panel --}}
 <div class="do-panel-overlay" id="panelOverlay" onclick="Panel.close()"></div>
 <div class="do-panel" id="sntPanel">
@@ -71,6 +226,11 @@
 </div>
 @endsection
 @section('scripts')
+{{-- Export dependencies --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <script>
 'use strict';
@@ -160,8 +320,6 @@ function renderList(){
     pg.innerHTML=`<div class="tme-pagination"><span class="tme-pag-info">${fr}–${to} dari ${total}</span><div class="tme-pag-controls">${b}</div></div>`;
 }
 function goPage(p){curPage=p;renderList();_$('userList')?.scrollIntoView({behavior:'smooth',block:'nearest'})}
-/* CSV */
-function exportCsv(){if(!Store.length){alert('Tidak ada data.');return}const hdr='rank;username;name;followers;mentions;replies;retweets;engagement';const rows=Store.map((u,i)=>`${i+1};${u.username||''};${(u.name||'').replace(/;/g,',')};${u.followers||0};${u.mentions||0};${u.replies||0};${u.retweets||0};${eng(u)}`);const blob=new Blob(['\uFEFF'+[hdr,...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`X_MostActiveUsers_${CFG.sd}_${CFG.ed}.csv`}).click()}
 
 /* ═══ SLIDE PANEL ═══ */
 const Panel=(()=>{
@@ -261,6 +419,238 @@ const Detail=(()=>{
 })();
 
 function _linkify(raw){if(!raw)return'<em style="color:var(--slate-400)">No content</em>';let t=raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');t=t.replace(/(https?:\/\/[^\s<>"'\u0000-\u001F]+)/g,u=>{const h=u.replace(/&amp;/g,'&');return`<a href="${h}" target="_blank" rel="noopener" style="color:var(--primary);word-break:break-all">${u}</a>`});t=t.replace(/(?<![\/\w])@([A-Za-z0-9_]{1,50})/g,'<a href="https://twitter.com/$1" target="_blank" rel="noopener" style="color:#1d9bf0">@$1</a>');t=t.replace(/(?<!\w)#([A-Za-z0-9_\u00C0-\u024F]+)/g,'<a href="https://twitter.com/hashtag/$1" target="_blank" rel="noopener" style="color:#1d9bf0">#$1</a>');return t}
+
+/* ════════════════════════════════════════════════════════
+   EXPORT MODULE — X Most Active Users
+   Sama persis dengan TikTok Most Engagement
+════════════════════════════════════════════════════════ */
+const XExport = (() => {
+    let _toastTimer = null;
+
+    /* ── Toast ── */
+    function _toast(msg, type='default', duration=3200) {
+        const t=_$('exportToast'), m=_$('exportToastMsg'), ico=_$('exportToastIcon');
+        if(!t||!m) return;
+        m.textContent = msg;
+        t.className   = 'export-toast show '+(type!=='default'?type:'');
+        const icons   = { success:'ph-check-circle', error:'ph-x-circle', default:'ph-spinner' };
+        ico.className = 'ph '+(icons[type]||icons.default);
+        clearTimeout(_toastTimer);
+        _toastTimer   = setTimeout(()=>t.classList.remove('show'), duration);
+    }
+
+    /* ── Button state ── */
+    function _btnState(btn, loading) {
+        if(!btn) return;
+        btn.disabled = loading;
+        btn.classList.toggle('exporting', loading);
+    }
+
+    /* ── Full-page capture ── */
+    async function _capture() {
+        const area = _$('pageExportArea');
+        if(!area) throw new Error('pageExportArea tidak ditemukan');
+        window.scrollTo({ top:0 });
+        await new Promise(r => setTimeout(r, 300));
+        /* Resize ECharts (donut) so canvas is up-to-date */
+        if(donutInst) { try{ donutInst.resize(); }catch(e){} }
+        return html2canvas(area, {
+            scale           : 2,
+            useCORS         : true,
+            allowTaint      : false,
+            backgroundColor : '#f1f5f9',
+            logging         : false,
+            removeContainer : true,
+            windowWidth     : document.documentElement.scrollWidth,
+            windowHeight    : area.scrollHeight,
+            height          : area.scrollHeight,
+            ignoreElements  : el =>
+                el.hasAttribute('data-html2canvas-ignore') ||
+                el.id === 'pageExportPdfBtn' ||
+                el.id === 'pageExportImgBtn',
+        });
+    }
+
+    /* ── PDF (multi-page) ── */
+    async function _exportPdf() {
+        const canvas = await _capture();
+        const { jsPDF } = window.jspdf;
+        const imgW = canvas.width, imgH = canvas.height;
+        const pdf  = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+        const pW   = pdf.internal.pageSize.getWidth();
+        const pH   = pdf.internal.pageSize.getHeight();
+        const margin  = 10;
+        const usableW = pW  - margin * 2;
+        const usableH = pH  - margin * 2 - 14;
+        const ratio   = usableW / imgW;
+        const sliceH  = usableH / ratio;
+
+        const _drawHeader = (doc) => {
+            doc.setFillColor(3, 128, 71);
+            doc.rect(0, 0, pW, 11, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(9); doc.setFont('helvetica','bold');
+            doc.text('SMADIMENT — X Most Active Users', margin, 7.5);
+            const now = new Date().toLocaleDateString('id-ID',{ day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+            doc.setFontSize(7); doc.setFont('helvetica','normal');
+            doc.text('Generated: '+now, pW-margin, 7.5, { align:'right' });
+        };
+
+        let srcY=0, pageNum=0;
+        while(srcY < imgH) {
+            if(pageNum > 0) pdf.addPage();
+            _drawHeader(pdf);
+            const srcSlice = Math.min(sliceH, imgH-srcY);
+            const dstH     = srcSlice * ratio;
+            const slice    = document.createElement('canvas');
+            slice.width=imgW; slice.height=Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(canvas, 0, srcY, imgW, srcSlice, 0, 0, imgW, srcSlice);
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
+            pdf.setFontSize(7); pdf.setTextColor(148,163,184);
+            pdf.text(`Halaman ${pageNum+1}`, pW/2, pH-3, { align:'center' });
+            srcY += srcSlice; pageNum++;
+        }
+        const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
+        pdf.save(`x_most_active_users_${OV_PID}_${stamp}.pdf`);
+    }
+
+    /* ── Image ── */
+    async function _exportImage() {
+        const canvas = await _capture();
+        const stamp  = new Date().toISOString().slice(0,10).replace(/-/g,'');
+        const link   = document.createElement('a');
+        link.download = `x_most_active_users_${OV_PID}_${stamp}.png`;
+        link.href     = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    /* ── Per-card capture ── */
+    async function _captureCard(areaId, cardKey) {
+        const area = document.getElementById(areaId);
+        if(!area) throw new Error('Area #'+areaId+' tidak ditemukan');
+        if(cardKey === 'donut' && donutInst) { try{ donutInst.resize(); }catch(e){} }
+        await new Promise(r => setTimeout(r, 220));
+        return html2canvas(area, {
+            scale           : 2,
+            useCORS         : true,
+            allowTaint      : false,
+            backgroundColor : '#ffffff',
+            logging         : false,
+            removeContainer : true,
+            ignoreElements  : el => el.hasAttribute('data-html2canvas-ignore'),
+        });
+    }
+
+    /* ── Card filename map ── */
+    function _cardFilename(cardKey) {
+        const labels = {
+            'userlist' : 'ranked-users',
+            'donut'    : 'top5-engagement-donut',
+        };
+        const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
+        return `x_most_active_${labels[cardKey]||cardKey}_${OV_PID}_${stamp}`;
+    }
+
+    /* ── Card PDF label map ── */
+    function _cardLabel(cardKey) {
+        const m = {
+            'userlist' : 'Ranked Users by Activity',
+            'donut'    : 'Top 5 User Engagement',
+        };
+        return m[cardKey] || cardKey;
+    }
+
+    /* ── Run card export ── */
+    async function runCard(areaId, cardKey, type, btn) {
+        if(!window.html2canvas)             { _toast('html2canvas tidak tersedia','error'); return; }
+        if(type==='pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
+
+        _btnState(btn, true);
+        _toast(type==='pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
+
+        try {
+            const canvas = await _captureCard(areaId, cardKey);
+            const fname  = _cardFilename(cardKey);
+
+            if(type === 'image') {
+                const link    = document.createElement('a');
+                link.download = fname+'.png';
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const imgW = canvas.width, imgH = canvas.height;
+                const landscape = imgW > imgH;
+                const pdf  = new jsPDF({ orientation:landscape?'landscape':'portrait', unit:'mm', format:'a4' });
+                const pW   = pdf.internal.pageSize.getWidth();
+                const pH   = pdf.internal.pageSize.getHeight();
+                const margin  = 10;
+                const usableW = pW  - margin*2;
+                const usableH = pH  - margin*2 - 14;
+                const ratio   = usableW / imgW;
+                const sliceH  = usableH / ratio;
+
+                /* Header */
+                pdf.setFillColor(3, 128, 71);
+                pdf.rect(0, 0, pW, 11, 'F');
+                pdf.setTextColor(255,255,255); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
+                pdf.text('SMADIMENT — '+_cardLabel(cardKey), margin, 7.5);
+                const now = new Date().toLocaleDateString('id-ID',{ day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+                pdf.setFontSize(7); pdf.setFont('helvetica','normal');
+                pdf.text('Generated: '+now, pW-margin, 7.5, { align:'right' });
+
+                /* Paginate */
+                let srcY=0, pageNum=0;
+                while(srcY < imgH) {
+                    if(pageNum > 0) {
+                        pdf.addPage();
+                        pdf.setFillColor(3,128,71); pdf.rect(0,0,pW,11,'F');
+                    }
+                    const srcSlice = Math.min(sliceH, imgH-srcY);
+                    const dstH     = srcSlice * ratio;
+                    const slice    = document.createElement('canvas');
+                    slice.width=imgW; slice.height=Math.ceil(srcSlice);
+                    slice.getContext('2d').drawImage(canvas,0,srcY,imgW,srcSlice,0,0,imgW,srcSlice);
+                    pdf.addImage(slice.toDataURL('image/png'),'PNG',margin,14,usableW,dstH);
+                    pdf.setFontSize(7); pdf.setTextColor(148,163,184);
+                    pdf.text(`Halaman ${pageNum+1}`, pW/2, pH-3, { align:'center' });
+                    srcY+=srcSlice; pageNum++;
+                }
+                pdf.save(fname+'.pdf');
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(err) {
+            console.error('[XExport.runCard]', err);
+            _toast('Export gagal: '+err.message, 'error');
+        } finally {
+            _btnState(btn, false);
+        }
+    }
+
+    /* ── Run full-page export ── */
+    async function run(type, btn) {
+        if(!window.html2canvas)             { _toast('html2canvas tidak tersedia','error'); return; }
+        if(type==='pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
+
+        const btnPdf = _$('pageExportPdfBtn');
+        const btnImg = _$('pageExportImgBtn');
+        _btnState(btnPdf, true); _btnState(btnImg, true);
+        _toast(type==='pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+
+        try {
+            if(type==='pdf') { await _exportPdf();   _toast('PDF berhasil diunduh!',   'success'); }
+            else             { await _exportImage(); _toast('Gambar berhasil diunduh!','success'); }
+        } catch(err) {
+            console.error('[XExport]', err);
+            _toast('Export gagal: '+err.message, 'error');
+        } finally {
+            _btnState(btnPdf, false); _btnState(btnImg, false);
+        }
+    }
+
+    return { run, runCard };
+})();
 
 document.addEventListener('DOMContentLoaded',()=>{if(CFG.pid)loadData()});
 </script>

@@ -5,1050 +5,96 @@
 @section('styles')
   <style>
     :root {
-      --primary: #038047;
-      --primary-rgb: 3, 128, 71;
-      --primary-lt: rgba(3, 128, 71, .10);
-      --dark: #273B4A;
-      --white: #FFFFFF;
-      --bg: #F1F5F8;
-      --green: #038047;
-      --green-light: #E8F5EE;
-      --red: #EF4444;
-      --red-light: #FEF2F2;
-      --amber: #F59E0B;
-      --amber-light: #FFFBEB;
-      --cyan: #06B6D4;
-      --cyan-light: #ECFEFF;
-      --slate-50: #F8FAFC;
-      --slate-100: #F1F5F9;
-      --slate-200: #E2E8F0;
-      --slate-300: #CBD5E1;
-      --slate-400: #94A3B8;
-      --slate-500: #64748B;
-      --slate-600: #475569;
-      --slate-700: #334155;
-      --slate-800: #1E293B;
-      --slate-900: #0F172A;
-      --radius: 8px;
-      --radius-sm: 5px;
-      --shadow-sm: 0 1px 3px rgba(15, 23, 42, .06), 0 1px 2px rgba(15, 23, 42, .04);
-      --shadow-md: 0 4px 14px rgba(15, 23, 42, .08);
-      --shadow-lg: 0 10px 30px rgba(15, 23, 42, .12);
-      --sent-pos: #2FC6F6;
-      --sent-neg: #ef4444;
-      --sent-neu: #94a3b8;
-      --primary-green: #038047;
-      --primary-green-light: rgba(3, 128, 71, .08);
-      --primary-green-border: rgba(3, 128, 71, .2)
-    }
-
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(12px)
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0)
-      }
-    }
-
-    @keyframes shimmer {
-      0% {
-        background-position: -200% 0
-      }
-
-      100% {
-        background-position: 200% 0
-      }
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg)
-      }
-    }
-
-    @keyframes slideInRight {
-      from {
-        transform: translateX(100%);
-        opacity: 0
-      }
-
-      to {
-        transform: translateX(0);
-        opacity: 1
-      }
-    }
-
-    @keyframes slideOutRight {
-      from {
-        transform: translateX(0);
-        opacity: 1
-      }
-
-      to {
-        transform: translateX(100%);
-        opacity: 0
-      }
-    }
-
-    @keyframes overlayIn {
-      from {
-        opacity: 0
-      }
-
-      to {
-        opacity: 1
-      }
-    }
-
-    @keyframes overlayOut {
-      from {
-        opacity: 1
-      }
-
-      to {
-        opacity: 0
-      }
-    }
-
-    @keyframes kpiIconBounce {
-
-      0%,
-      100% {
-        transform: scale(1) rotate(0)
-      }
-
-      30% {
-        transform: scale(1.25) rotate(-10deg)
-      }
-
-      60% {
-        transform: scale(1.1) rotate(6deg)
-      }
-    }
-
-    @keyframes kpiShimmer {
-      0% {
-        left: -100%
-      }
-
-      100% {
-        left: 150%
-      }
-    }
-
-    .kpi-icon-bg {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, .2);
-      font-size: 24px;
-      color: #fff;
-      flex-shrink: 0
-    }
-
-    .sk-block {
-      border-radius: 4px;
-      background: linear-gradient(90deg, var(--slate-100) 25%, var(--slate-200) 50%, var(--slate-100) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.4s infinite
-    }
-
-    .spin-ring {
-      width: 26px;
-      height: 26px;
-      border: 2.5px solid var(--slate-100);
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin .65s linear infinite
-    }
-
-    .spinner-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 48px 20px;
-      gap: 12px;
-      color: var(--slate-400);
-      font-size: 12px;
-      font-weight: 600
-    }
-
-    .kpi-card-hover {
-      will-change: transform, box-shadow;
-      cursor: default;
-      position: relative !important;
-      overflow: hidden !important;
-      transition: transform .25s cubic-bezier(.34, 1.56, .64, 1) !important, box-shadow .25s ease !important, filter .25s ease !important
-    }
-
-    .kpi-card-hover::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: -100%;
-      width: 60%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .22), transparent);
-      pointer-events: none;
-      z-index: 1
-    }
-
-    .kpi-card-hover:hover {
-      transform: translateY(-6px) scale(1.025) !important;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, .25) !important;
-      filter: brightness(1.07) !important
-    }
-
-    .kpi-card-hover:hover::before {
-      animation: kpiShimmer .6s ease forwards
-    }
-
-    .kpi-card-hover:hover .kpi-icon-bg {
-      background: rgba(255, 255, 255, .35) !important
-    }
-
-    .kpi-card-hover:hover .kpi-icon-bg i {
-      animation: kpiIconBounce .5s cubic-bezier(.34, 1.56, .64, 1) both !important;
-      display: inline-block !important
-    }
-
-    .kpi-card-hover:active {
-      transform: translateY(-2px) scale(1.01) !important;
-      transition-duration: .08s !important
-    }
-
-    .chart-container {
-      position: relative
-    }
-
-    .chart-loading {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      background: #fff;
-      z-index: 2;
-      transition: opacity .3s
-    }
-
-    .chart-loading.hidden {
-      opacity: 0;
-      pointer-events: none
-    }
-
-    .chart-loading span {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--slate-400)
-    }
-
-    .chart-empty {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      color: var(--slate-400);
-      font-size: 12px;
-      font-weight: 600
-    }
-
-    .chart-empty i {
-      font-size: 34px;
-      color: var(--slate-300);
-      display: block
-    }
-
-    .snt-skel {
-      background: linear-gradient(90deg, var(--slate-50) 25%, #e2e8f0 50%, var(--slate-50) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s ease-in-out infinite;
-      border-radius: 4px
-    }
-
-    .snt-skel-overlay {
-      position: absolute;
-      inset: 0;
-      z-index: 3;
-      border-radius: inherit
-    }
-
-    .snt-legend {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      flex-wrap: wrap
-    }
-
-    .snt-legend-item {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--slate-500)
-    }
-
-    .snt-legend-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      flex-shrink: 0
-    }
-
-    .snt-media-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px
-    }
-
-    .snt-media-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      background: var(--slate-50);
-      border: 1px solid var(--slate-100);
-      border-radius: var(--radius-sm);
-      transition: background .13s, border-color .13s
-    }
-
-    .snt-media-row:hover {
-      border-color: var(--primary-green-border);
-      background: #fff;
-      box-shadow: var(--shadow-sm)
-    }
-
-    .snt-media-icon {
-      width: 28px;
-      height: 28px;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0
-    }
-
-    .snt-media-name {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--slate-900);
-      min-width: 80px
-    }
-
-    .snt-media-bars {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 2px
-    }
-
-    .snt-media-bar-row {
-      display: flex;
-      align-items: center;
-      gap: 5px
-    }
-
-    .snt-media-bar-track {
-      flex: 1;
-      height: 4px;
-      background: var(--slate-100);
-      border-radius: 2px;
-      overflow: hidden
-    }
-
-    .snt-media-bar-fill {
-      height: 100%;
-      border-radius: 2px;
-      transition: width .8s cubic-bezier(.4, 0, .2, 1)
-    }
-
-    .snt-media-bar-val {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--slate-500);
-      min-width: 36px;
-      text-align: right;
-      white-space: nowrap
-    }
-
-    .snt-media-total {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--slate-900);
-      min-width: 48px;
-      text-align: right
-    }
-
-    .do-panel-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 9000;
-      background: rgba(15, 23, 42, .45);
-      backdrop-filter: blur(4px);
-      display: none
-    }
-
-    .do-panel-overlay.show {
-      display: block;
-      animation: overlayIn .22s ease-out
-    }
-
-    .do-panel-overlay.hiding {
-      animation: overlayOut .22s ease-out forwards
-    }
-
-    #sntPopup {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 9001;
-      width: 480px;
-      max-width: 100vw;
-      background: #fff;
-      display: none;
-      flex-direction: column;
-      border-left: 1px solid var(--slate-200);
-      box-shadow: -8px 0 40px rgba(15, 23, 42, .16)
-    }
-
-    #sntPopup.show {
-      display: flex;
-      animation: slideInRight .28s cubic-bezier(.4, 0, .2, 1)
-    }
-
-    #sntPopup.hiding {
-      animation: slideOutRight .24s cubic-bezier(.4, 0, .2, 1) forwards
-    }
-
-    .sntp-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 16px;
-      background: var(--slate-50);
-      border-bottom: 1px solid var(--slate-200);
-      flex-shrink: 0
-    }
-
-    .sntp-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      flex-shrink: 0
-    }
-
-    .sntp-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--slate-900);
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap
-    }
-
-    .sntp-count {
-      display: none
-    }
-
-    .sntp-close {
-      width: 28px;
-      height: 28px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--slate-200);
-      background: #fff;
-      cursor: pointer;
-      font-size: 16px;
-      color: var(--slate-500);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all .14s;
-      flex-shrink: 0
-    }
-
-    .sntp-close:hover {
-      background: var(--red);
-      border-color: var(--red);
-      color: #fff
-    }
-
-    .sntp-actions {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 7px 12px;
-      border-bottom: 1px solid var(--slate-200);
-      background: #fff;
-      flex-shrink: 0
-    }
-
-    .sntp-meta {
-      flex: 1;
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--slate-400);
-      text-transform: uppercase;
-      letter-spacing: .5px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      overflow: hidden
-    }
-
-    .sntp-meta__label {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap
-    }
-
-    .sntp-sent-tabs {
-      display: flex;
-      background: var(--slate-100);
-      border: 1px solid var(--slate-200);
-      border-radius: var(--radius-sm);
-      padding: 2px;
-      gap: 2px
-    }
-
-    .sntp-sent-tab {
-      padding: 3px 9px;
-      border-radius: 3px;
-      border: none;
-      background: transparent;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all .13s;
-      color: var(--slate-500);
-      white-space: nowrap
-    }
-
-    .sntp-sent-tab:hover {
-      background: #fff
-    }
-
-    .sntp-sent-tab.active {
-      background: #fff;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, .08)
-    }
-
-    .sntp-sent-tab.active[data-s="all"] {
-      color: var(--primary)
-    }
-
-    .sntp-sent-tab.neg.active {
-      color: #ef4444
-    }
-
-    .sntp-sent-tab.pos.active {
-      color: #0ea5e9
-    }
-
-    .sntp-sent-tab.neu.active {
-      color: var(--slate-500)
-    }
-
-    .sntp-export-btn {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 10px;
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius-sm);
-      font-size: 10px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: filter .13s;
-      white-space: nowrap
-    }
-
-    .sntp-export-btn:hover {
-      filter: brightness(1.1)
-    }
-
-    .sntp-export-btn i {
-      font-size: 12px
-    }
-
-    .sntp-list {
-      overflow-y: auto;
-      flex: 1;
-      padding: 2px 0;
-      min-height: 0
-    }
-
-    .sntp-list::-webkit-scrollbar {
-      width: 4px
-    }
-
-    .sntp-list::-webkit-scrollbar-thumb {
-      background: var(--slate-200);
-      border-radius: 99px
-    }
-
-    .sntp-item {
-      display: flex;
-      gap: 10px;
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--slate-100);
-      transition: background .1s;
-      cursor: pointer;
-      align-items: flex-start
-    }
-
-    .sntp-item:last-child {
-      border-bottom: none
-    }
-
-    .sntp-item:hover {
-      background: #f0f9ff
-    }
-
-    .sntp-item.hidden {
-      display: none
-    }
-
-    .sntp-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      color: #fff;
-      font-weight: 700;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1.5px solid var(--slate-200);
-      overflow: hidden
-    }
-
-    .sntp-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 50%
-    }
-
-    .sntp-item-body {
-      flex: 1;
-      min-width: 0
-    }
-
-    .sntp-item-author {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--slate-900);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis
-    }
-
-    .sntp-item-handle {
-      font-size: 10px;
-      color: var(--slate-400);
-      font-weight: 500;
-      margin-bottom: 2px
-    }
-
-    .sntp-item-text {
-      font-size: 11px;
-      color: var(--slate-500);
-      line-height: 1.5;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      margin-bottom: 4px
-    }
-
-    .sntp-item-footer {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 10px;
-      color: var(--slate-400);
-      flex-wrap: wrap
-    }
-
-    .sntp-sent-badge {
-      padding: 1px 6px;
-      border-radius: 3px;
-      font-size: 9px;
-      font-weight: 800;
-      text-transform: uppercase
-    }
-
-    .sntp-sent-badge--pos {
-      background: #dbeafe;
-      color: #1d4ed8
-    }
-
-    .sntp-sent-badge--neg {
-      background: #fee2e2;
-      color: #991b1b
-    }
-
-    .sntp-sent-badge--neu {
-      background: var(--slate-100);
-      color: var(--slate-500)
-    }
-
-    .sntp-loading {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      gap: 12px;
-      color: var(--slate-500);
-      font-size: 13px;
-      font-weight: 600
-    }
-
-    .sntp-spinner {
-      width: 28px;
-      height: 28px;
-      border: 2.5px solid var(--slate-100);
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin .65s linear infinite
-    }
-
-    #sntDetailPanel {
-      position: absolute;
-      inset: 0;
-      background: #fff;
-      z-index: 5;
-      display: none;
-      flex-direction: column;
-      animation: slideInRight .2s cubic-bezier(.4, 0, .2, 1)
-    }
-
-    #sntDetailPanel.visible {
-      display: flex
-    }
-
-    .sntdp-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 14px;
-      background: var(--slate-50);
-      border-bottom: 1px solid var(--slate-200);
-      flex-shrink: 0
-    }
-
-    .sntdp-back {
-      width: 28px;
-      height: 28px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--slate-200);
-      background: #fff;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--slate-500);
-      transition: all .13s;
-      flex-shrink: 0
-    }
-
-    .sntdp-back:hover {
-      background: var(--primary-lt);
-      color: var(--primary);
-      border-color: var(--primary)
-    }
-
-    .sntdp-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--slate-900);
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap
-    }
-
-    .sntdp-close {
-      width: 28px;
-      height: 28px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--slate-200);
-      background: #fff;
-      cursor: pointer;
-      font-size: 16px;
-      color: var(--slate-500);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all .14s
-    }
-
-    .sntdp-close:hover {
-      background: var(--red);
-      border-color: var(--red);
-      color: #fff
-    }
-
-    .sntdp-body {
-      overflow-y: auto;
-      flex: 1;
-      padding: 16px
-    }
-
-    .sntdp-body::-webkit-scrollbar {
-      width: 4px
-    }
-
-    .sntdp-body::-webkit-scrollbar-thumb {
-      background: var(--slate-200);
-      border-radius: 99px
-    }
-
-    .sntdp-avatar-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px
-    }
-
-    .sntdp-avatar-lg {
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      color: #fff;
-      font-weight: 700;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid var(--slate-200);
-      overflow: hidden;
-      flex-shrink: 0
-    }
-
-    .sntdp-avatar-lg img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 50%
-    }
-
-    .sntdp-author-name {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--slate-900)
-    }
-
-    .sntdp-author-handle {
-      font-size: 11px;
-      color: var(--slate-400);
-      font-weight: 500
-    }
-
-    .sntdp-sent-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 10px;
-      border-radius: 3px;
-      font-size: 11px;
-      font-weight: 700;
-      margin-bottom: 10px
-    }
-
-    .sntdp-sent-badge--pos {
-      background: #dbeafe;
-      color: #1d4ed8
-    }
-
-    .sntdp-sent-badge--neg {
-      background: #fee2e2;
-      color: #991b1b
-    }
-
-    .sntdp-sent-badge--neu {
-      background: var(--slate-100);
-      color: var(--slate-500)
-    }
-
-    .sntdp-content-text {
-      font-size: 12px;
-      color: var(--slate-600);
-      line-height: 1.7;
-      margin-bottom: 12px;
-      background: var(--slate-50);
-      border-radius: var(--radius-sm);
-      padding: 10px 12px;
-      border: 1px solid var(--slate-200);
-      word-break: break-word
-    }
-
-    .sntdp-meta-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 11px;
-      color: var(--slate-400);
-      font-weight: 500;
-      margin-bottom: 10px
-    }
-
-    .sntdp-stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      margin-bottom: 10px
-    }
-
-    .sntdp-stat-box {
-      background: var(--slate-50);
-      border-radius: var(--radius-sm);
-      padding: 8px 10px;
-      border: 1px solid var(--slate-200);
-      text-align: center
-    }
-
-    .sntdp-stat-val {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--slate-900)
-    }
-
-    .sntdp-stat-lbl {
-      font-size: 9px;
-      font-weight: 700;
-      color: var(--slate-400);
-      text-transform: uppercase;
-      letter-spacing: .4px;
-      margin-top: 1px
-    }
-
-    .sntdp-media-wrap {
-      border-radius: var(--radius-sm);
-      overflow: hidden;
-      margin-bottom: 10px;
-      background: #000
-    }
-
-    .sntdp-media-img {
-      width: 100%;
-      max-height: 220px;
-      object-fit: cover;
-      display: block
-    }
-
-    .sntdp-link-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 9px 14px;
-      background: var(--primary);
-      color: #fff;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      font-weight: 700;
-      text-decoration: none;
-      transition: filter .14s;
-      width: 100%;
-      margin-top: 4px
-    }
-
-    .sntdp-link-btn:hover {
-      filter: brightness(1.1);
-      color: #fff
-    }
-
-    .sntdp-link-btn i {
-      font-size: 14px
-    }
-
-    #sntPlatPicker {
-      position: fixed;
-      z-index: 20000;
-      background: #fff;
-      border: 1px solid var(--slate-200);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-lg);
-      padding: 5px;
-      min-width: 175px;
-      animation: fadeUp .14s ease-out;
-      display: none
-    }
-
-    #sntPlatPicker.visible {
-      display: block
-    }
-
-    .sntpp-header {
-      padding: 4px 9px 6px;
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--slate-400);
-      text-transform: uppercase;
-      letter-spacing: .5px;
-      border-bottom: 1px solid var(--slate-100);
-      margin-bottom: 3px
-    }
-
-    .sntpp-btn {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 7px 10px;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      background: transparent;
-      border: none;
-      width: 100%;
-      text-align: left;
-      color: var(--slate-500);
-      transition: background .12s
-    }
-
-    .sntpp-btn:hover {
-      background: var(--primary-lt);
-      color: var(--primary)
-    }
-
-    .sntpp-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      margin-left: auto
-    }
-
-    .kpi-card-hover h3 {
-      font-size: 1.5rem
-    }
-
-    @media(max-width:640px) {
-      #sntPopup {
-        width: 100vw
-      }
-    }
+      --primary: #038047;--primary-rgb: 3, 128, 71;--primary-lt: rgba(3, 128, 71, .10);
+      --dark: #273B4A;--white: #FFFFFF;--bg: #F1F5F8;--green: #038047;--green-light: #E8F5EE;
+      --red: #EF4444;--red-light: #FEF2F2;--amber: #F59E0B;--amber-light: #FFFBEB;
+      --cyan: #06B6D4;--cyan-light: #ECFEFF;
+      --slate-50:#F8FAFC;--slate-100:#F1F5F9;--slate-200:#E2E8F0;--slate-300:#CBD5E1;
+      --slate-400:#94A3B8;--slate-500:#64748B;--slate-600:#475569;--slate-700:#334155;
+      --slate-800:#1E293B;--slate-900:#0F172A;
+      --radius:8px;--radius-sm:5px;
+      --shadow-sm:0 1px 3px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.04);
+      --shadow-md:0 4px 14px rgba(15,23,42,.08);--shadow-lg:0 10px 30px rgba(15,23,42,.12);
+      --sent-pos:#2FC6F6;--sent-neg:#ef4444;--sent-neu:#94a3b8;
+      --primary-green:#038047;--primary-green-light:rgba(3,128,71,.08);--primary-green-border:rgba(3,128,71,.2)
+    }
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+    @keyframes slideOutRight{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+    @keyframes overlayIn{from{opacity:0}to{opacity:1}}
+    @keyframes overlayOut{from{opacity:1}to{opacity:0}}
+    @keyframes kpiIconBounce{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.25) rotate(-10deg)}60%{transform:scale(1.1) rotate(6deg)}}
+    @keyframes kpiShimmer{0%{left:-100%}100%{left:150%}}
+    .kpi-icon-bg{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.2);font-size:24px;color:#fff;flex-shrink:0}
+    .sk-block{border-radius:4px;background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+    .spin-ring{width:26px;height:26px;border:2.5px solid var(--slate-100);border-top-color:var(--primary);border-radius:50%;animation:spin .65s linear infinite}
+    .spinner-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:12px;color:var(--slate-400);font-size:12px;font-weight:600}
+    .kpi-card-hover{will-change:transform,box-shadow;cursor:default;position:relative!important;overflow:hidden!important;transition:transform .25s cubic-bezier(.34,1.56,.64,1)!important,box-shadow .25s ease!important,filter .25s ease!important}.kpi-card-hover::before{content:'';position:absolute;top:0;bottom:0;left:-100%;width:60%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);pointer-events:none;z-index:1}.kpi-card-hover:hover{transform:translateY(-6px) scale(1.025)!important;box-shadow:0 20px 40px rgba(0,0,0,.25)!important;filter:brightness(1.07)!important}.kpi-card-hover:hover::before{animation:kpiShimmer .6s ease forwards}.kpi-card-hover:hover .kpi-icon-bg{background:rgba(255,255,255,.35)!important}.kpi-card-hover:hover .kpi-icon-bg i{animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both!important;display:inline-block!important}.kpi-card-hover:active{transform:translateY(-2px) scale(1.01)!important;transition-duration:.08s!important}
+    .chart-container{position:relative}.chart-loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#fff;z-index:2;transition:opacity .3s}.chart-loading.hidden{opacity:0;pointer-events:none}.chart-loading span{font-size:11px;font-weight:600;color:var(--slate-400)}.chart-empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--slate-400);font-size:12px;font-weight:600}.chart-empty i{font-size:34px;color:var(--slate-300);display:block}
+    .snt-skel{background:linear-gradient(90deg,var(--slate-50) 25%,#e2e8f0 50%,var(--slate-50) 75%);background-size:200% 100%;animation:shimmer 1.5s ease-in-out infinite;border-radius:4px}.snt-skel-overlay{position:absolute;inset:0;z-index:3;border-radius:inherit}
+    .snt-legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.snt-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--slate-500)}.snt-legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+    .snt-media-list{display:flex;flex-direction:column;gap:6px}.snt-media-row{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--slate-50);border:1px solid var(--slate-100);border-radius:var(--radius-sm);transition:background .13s,border-color .13s}.snt-media-row:hover{border-color:var(--primary-green-border);background:#fff;box-shadow:var(--shadow-sm)}.snt-media-icon{width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}.snt-media-name{font-size:11px;font-weight:700;color:var(--slate-900);min-width:80px}.snt-media-bars{flex:1;display:flex;flex-direction:column;gap:2px}.snt-media-bar-row{display:flex;align-items:center;gap:5px}.snt-media-bar-track{flex:1;height:4px;background:var(--slate-100);border-radius:2px;overflow:hidden}.snt-media-bar-fill{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.4,0,.2,1)}.snt-media-bar-val{font-size:10px;font-weight:700;color:var(--slate-500);min-width:36px;text-align:right;white-space:nowrap}.snt-media-total{font-size:11px;font-weight:700;color:var(--slate-900);min-width:48px;text-align:right}
+    .do-panel-overlay{position:fixed;inset:0;z-index:9000;background:rgba(15,23,42,.45);backdrop-filter:blur(4px);display:none}.do-panel-overlay.show{display:block;animation:overlayIn .22s ease-out}.do-panel-overlay.hiding{animation:overlayOut .22s ease-out forwards}
+    #sntPopup{position:fixed;top:0;right:0;bottom:0;z-index:9001;width:480px;max-width:100vw;background:#fff;display:none;flex-direction:column;border-left:1px solid var(--slate-200);box-shadow:-8px 0 40px rgba(15,23,42,.16)}
+    #sntPopup.show{display:flex;animation:slideInRight .28s cubic-bezier(.4,0,.2,1)}#sntPopup.hiding{animation:slideOutRight .24s cubic-bezier(.4,0,.2,1) forwards}
+    .sntp-header{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--slate-50);border-bottom:1px solid var(--slate-200);flex-shrink:0}.sntp-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}.sntp-title{font-size:13px;font-weight:700;color:var(--slate-900);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sntp-count{display:none}.sntp-close{width:28px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--slate-200);background:#fff;cursor:pointer;font-size:16px;color:var(--slate-500);display:flex;align-items:center;justify-content:center;transition:all .14s;flex-shrink:0}.sntp-close:hover{background:var(--red);border-color:var(--red);color:#fff}
+    .sntp-actions{display:flex;align-items:center;gap:7px;padding:7px 12px;border-bottom:1px solid var(--slate-200);background:#fff;flex-shrink:0}.sntp-meta{flex:1;font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:5px;overflow:hidden}.sntp-meta__label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .sntp-sent-tabs{display:flex;background:var(--slate-100);border:1px solid var(--slate-200);border-radius:var(--radius-sm);padding:2px;gap:2px}.sntp-sent-tab{padding:3px 9px;border-radius:3px;border:none;background:transparent;font-size:11px;font-weight:700;cursor:pointer;transition:all .13s;color:var(--slate-500);white-space:nowrap}.sntp-sent-tab:hover{background:#fff}.sntp-sent-tab.active{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.08)}.sntp-sent-tab.active[data-s="all"]{color:var(--primary)}.sntp-sent-tab.neg.active{color:#ef4444}.sntp-sent-tab.pos.active{color:#0ea5e9}.sntp-sent-tab.neu.active{color:var(--slate-500)}
+    .sntp-list{overflow-y:auto;flex:1;padding:2px 0;min-height:0}.sntp-list::-webkit-scrollbar{width:4px}.sntp-list::-webkit-scrollbar-thumb{background:var(--slate-200);border-radius:99px}
+    .sntp-item{display:flex;gap:10px;padding:10px 14px;border-bottom:1px solid var(--slate-100);transition:background .1s;cursor:pointer;align-items:flex-start}.sntp-item:last-child{border-bottom:none}.sntp-item:hover{background:#f0f9ff}.sntp-item.hidden{display:none}
+    .sntp-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--slate-200);overflow:hidden}.sntp-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .sntp-item-body{flex:1;min-width:0}.sntp-item-author{font-size:12px;font-weight:700;color:var(--slate-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sntp-item-handle{font-size:10px;color:var(--slate-400);font-weight:500;margin-bottom:2px}.sntp-item-text{font-size:11px;color:var(--slate-500);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:4px}.sntp-item-footer{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--slate-400);flex-wrap:wrap}
+    .sntp-sent-badge{padding:1px 6px;border-radius:3px;font-size:9px;font-weight:800;text-transform:uppercase}.sntp-sent-badge--pos{background:#dbeafe;color:#1d4ed8}.sntp-sent-badge--neg{background:#fee2e2;color:#991b1b}.sntp-sent-badge--neu{background:var(--slate-100);color:var(--slate-500)}
+    .sntp-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--slate-500);font-size:13px;font-weight:600}.sntp-spinner{width:28px;height:28px;border:2.5px solid var(--slate-100);border-top-color:var(--primary);border-radius:50%;animation:spin .65s linear infinite}
+    #sntDetailPanel{position:absolute;inset:0;background:#fff;z-index:5;display:none;flex-direction:column;animation:slideInRight .2s cubic-bezier(.4,0,.2,1)}#sntDetailPanel.visible{display:flex}
+    .sntdp-header{display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--slate-50);border-bottom:1px solid var(--slate-200);flex-shrink:0}.sntdp-back{width:28px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--slate-200);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-500);transition:all .13s;flex-shrink:0}.sntdp-back:hover{background:var(--primary-lt);color:var(--primary);border-color:var(--primary)}.sntdp-title{font-size:13px;font-weight:700;color:var(--slate-900);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sntdp-close{width:28px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--slate-200);background:#fff;cursor:pointer;font-size:16px;color:var(--slate-500);display:flex;align-items:center;justify-content:center;transition:all .14s}.sntdp-close:hover{background:var(--red);border-color:var(--red);color:#fff}
+    .sntdp-body{overflow-y:auto;flex:1;padding:16px}.sntdp-body::-webkit-scrollbar{width:4px}.sntdp-body::-webkit-scrollbar-thumb{background:var(--slate-200);border-radius:99px}
+    .sntdp-avatar-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}.sntdp-avatar-lg{width:46px;height:46px;border-radius:50%;color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;border:2px solid var(--slate-200);overflow:hidden;flex-shrink:0}.sntdp-avatar-lg img{width:100%;height:100%;object-fit:cover;border-radius:50%}.sntdp-author-name{font-size:14px;font-weight:700;color:var(--slate-900)}.sntdp-author-handle{font-size:11px;color:var(--slate-400);font-weight:500}
+    .sntdp-sent-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:3px;font-size:11px;font-weight:700;margin-bottom:10px}.sntdp-sent-badge--pos{background:#dbeafe;color:#1d4ed8}.sntdp-sent-badge--neg{background:#fee2e2;color:#991b1b}.sntdp-sent-badge--neu{background:var(--slate-100);color:var(--slate-500)}
+    .sntdp-content-text{font-size:12px;color:var(--slate-600);line-height:1.7;margin-bottom:12px;background:var(--slate-50);border-radius:var(--radius-sm);padding:10px 12px;border:1px solid var(--slate-200);word-break:break-word}.sntdp-meta-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--slate-400);font-weight:500;margin-bottom:10px}
+    .sntdp-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}.sntdp-stat-box{background:var(--slate-50);border-radius:var(--radius-sm);padding:8px 10px;border:1px solid var(--slate-200);text-align:center}.sntdp-stat-val{font-size:14px;font-weight:700;color:var(--slate-900)}.sntdp-stat-lbl{font-size:9px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.4px;margin-top:1px}
+    .sntdp-media-wrap{border-radius:var(--radius-sm);overflow:hidden;margin-bottom:10px;background:#000}.sntdp-media-img{width:100%;max-height:220px;object-fit:cover;display:block}
+    .sntdp-link-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;background:var(--primary);color:#fff;border-radius:var(--radius-sm);font-size:12px;font-weight:700;text-decoration:none;transition:filter .14s;width:100%;margin-top:4px}.sntdp-link-btn:hover{filter:brightness(1.1);color:#fff}.sntdp-link-btn i{font-size:14px}
+    #sntPlatPicker{position:fixed;z-index:20000;background:#fff;border:1px solid var(--slate-200);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:5px;min-width:175px;animation:fadeUp .14s ease-out;display:none}#sntPlatPicker.visible{display:block}
+    .sntpp-header{padding:4px 9px 6px;font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--slate-100);margin-bottom:3px}.sntpp-btn{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;background:transparent;border:none;width:100%;text-align:left;color:var(--slate-500);transition:background .12s}.sntpp-btn:hover{background:var(--primary-lt);color:var(--primary)}.sntpp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-left:auto}
+    .kpi-card-hover h3{font-size:1.5rem}
+
+    /* ════════════════════════════════════════
+       EXPORT STYLES
+    ════════════════════════════════════════ */
+    .page-export-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:#fff;border:1px solid var(--slate-200);border-radius:var(--radius);padding:9px 14px;margin-bottom:20px;box-shadow:var(--shadow-sm)}
+    .page-export-bar-left{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--slate-600)}
+    .page-export-bar-left i{font-size:15px;color:var(--primary)}
+    .page-export-bar-right{display:flex;gap:8px}
+    .page-export-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--radius-sm);font-size:16px;cursor:pointer;transition:all .15s ease;border:1.5px solid transparent;font-family:inherit}
+    .page-export-btn-pdf{background:#fff3f3;color:#dc2626;border-color:#fca5a5}
+    .page-export-btn-pdf:hover{background:#dc2626;color:#fff;border-color:#dc2626}
+    .page-export-btn-img{background:var(--primary-lt);color:var(--primary);border-color:rgba(3,128,71,.3)}
+    .page-export-btn-img:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .page-export-btn:disabled{opacity:.55;cursor:not-allowed;pointer-events:none}
+    .page-export-btn .export-spinner{width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .65s linear infinite;display:none}
+    .page-export-btn.exporting .export-spinner{display:inline-block}
+    .page-export-btn.exporting .export-icon{display:none}
+    .card-exp-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:var(--radius-sm);font-size:14px;cursor:pointer;flex-shrink:0;transition:all .14s ease;border:1px solid transparent;font-family:inherit;background:transparent}
+    .card-exp-btn-pdf{color:#dc2626;border-color:#fca5a5;background:#fff3f3}
+    .card-exp-btn-pdf:hover{background:#dc2626;color:#fff;border-color:#dc2626}
+    .card-exp-btn-img{color:var(--primary);border-color:rgba(3,128,71,.3);background:var(--primary-lt)}
+    .card-exp-btn-img:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .card-exp-btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+    .card-exp-btn .export-spinner{width:11px;height:11px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .65s linear infinite;display:none}
+    .card-exp-btn.exporting .export-spinner{display:inline-block}
+    .card-exp-btn.exporting .export-icon{display:none}
+    .export-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--slate-900);color:#fff;border-radius:var(--radius);padding:10px 18px;font-size:12px;font-weight:600;box-shadow:var(--shadow-lg);z-index:99999;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;display:flex;align-items:center;gap:8px;white-space:nowrap}
+    .export-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .export-toast.success{background:#065f46}
+    .export-toast.error{background:#991b1b}
+
+    /* Trend chart clickable cursor */
+    #chTrend { cursor: pointer; }
+
+    @media(max-width:640px){#sntPopup{width:100vw}}
   </style>
 @endsection
 
@@ -1067,8 +113,7 @@
   {{-- Media Filter --}}
   <div class="mb-3" style="margin-top:-8px;">
     <div style="display:flex;flex-direction:column;gap:5px;">
-      <label
-        style="font-size:10px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.5px;">Media</label>
+      <label style="font-size:10px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.5px;">Media</label>
       <select class="form-select form-select-sm" id="sntMediaFilter" style="max-width:220px;">
         <option value="all" {{ $media === 'all' ? 'selected' : '' }}>All Media</option>
         <option value="doc" {{ $media === 'doc' ? 'selected' : '' }}>Mass Media (Online News)</option>
@@ -1087,80 +132,49 @@
     });
   </script>
 
+  {{-- ════ PAGE EXPORT WRAPPER ════ --}}
+  <div id="pageExportArea">
+
   {{-- KPI --}}
   <div class="row mb-3">
     <div class="col-md-6 col-xl-3">
-      <div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d1" style="cursor:pointer;"
-        onclick="SNTPopup.openSentiment('neg')">
-        <div class="card-body">
-          <div class="d-flex align-items-center">
-            <div class="flex-grow-1">
-              <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
-              <h3 class="mb-0 text-white f-w-300" id="valNeg"><span class="sk-block"
-                  style="width:80px;height:24px;display:inline-block;background:rgba(255,255,255,.18);"></span></h3>
-              <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg">—</p>
-            </div>
-            <div class="flex-shrink-0 ms-3">
-              <div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div>
-            </div>
-          </div>
-        </div>
+      <div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d1" style="cursor:pointer;" onclick="SNTPopup.openSentiment('neg')">
+        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Negative</p><h3 class="mb-0 text-white f-w-300" id="valNeg"><span class="sk-block" style="width:80px;height:24px;display:inline-block;background:rgba(255,255,255,.18);"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg">—</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div></div></div>
       </div>
     </div>
     <div class="col-md-6 col-xl-3">
-      <div class="card h-100 bg-success text-white kpi-card-hover fade-up fade-up-d2" style="cursor:pointer;"
-        onclick="SNTPopup.openSentiment('pos')">
-        <div class="card-body">
-          <div class="d-flex align-items-center">
-            <div class="flex-grow-1">
-              <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
-              <h3 class="mb-0 text-white f-w-300" id="valPos"><span class="sk-block"
-                  style="width:80px;height:24px;display:inline-block;background:rgba(255,255,255,.18);"></span></h3>
-              <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctPos">—</p>
-            </div>
-            <div class="flex-shrink-0 ms-3">
-              <div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div>
-            </div>
-          </div>
-        </div>
+      <div class="card h-100 bg-success text-white kpi-card-hover fade-up fade-up-d2" style="cursor:pointer;" onclick="SNTPopup.openSentiment('pos')">
+        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Positive</p><h3 class="mb-0 text-white f-w-300" id="valPos"><span class="sk-block" style="width:80px;height:24px;display:inline-block;background:rgba(255,255,255,.18);"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctPos">—</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div></div></div>
       </div>
     </div>
     <div class="col-md-6 col-xl-3">
-      <div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d3" style="cursor:pointer;"
-        onclick="SNTPopup.openSentiment('neu')">
-        <div class="card-body">
-          <div class="d-flex align-items-center">
-            <div class="flex-grow-1">
-              <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
-              <h3 class="mb-0 text-white f-w-300" id="valNeu"><span class="sk-block"
-                  style="width:80px;height:24px;display:inline-block;background:rgba(255,255,255,.18);"></span></h3>
-              <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu">—</p>
-            </div>
-            <div class="flex-shrink-0 ms-3">
-              <div class="kpi-icon-bg"><i class="ph ph-smiley-meh"></i></div>
-            </div>
-          </div>
-        </div>
+      <div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d3" style="cursor:pointer;" onclick="SNTPopup.openSentiment('neu')">
+        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Neutral</p><h3 class="mb-0 text-white f-w-300" id="valNeu"><span class="sk-block" style="width:80px;height:24px;display:inline-block;background:rgba(255,255,255,.18);"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu">—</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-meh"></i></div></div></div></div>
       </div>
     </div>
     <div class="col-md-6 col-xl-3">
       <div class="card h-100 bg-primary text-white kpi-card-hover fade-up fade-up-d4">
-        <div class="card-body">
-          <div class="d-flex align-items-center">
-            <div class="flex-grow-1">
-              <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
-              <h3 class="mb-0 text-white f-w-300" id="valTot"><span class="sk-block"
-                  style="width:80px;height:24px;display:inline-block;background:rgba(255,255,255,.18);"></span></h3>
-              <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} –
-                {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p>
-            </div>
-            <div class="flex-shrink-0 ms-3">
-              <div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div>
-            </div>
-          </div>
-        </div>
+        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p><h3 class="mb-0 text-white f-w-300" id="valTot"><span class="sk-block" style="width:80px;height:24px;display:inline-block;background:rgba(255,255,255,.18);"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12">{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} – {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div></div></div>
       </div>
+    </div>
+  </div>
+
+  {{-- ══ Page Export Toolbar ══ --}}
+  <div class="page-export-bar" data-html2canvas-ignore="true">
+    <div class="page-export-bar-left">
+      <i class="ph ph-export"></i>
+      <span>Export Halaman</span>
+      <span class="badge bg-light-secondary text-muted ms-1" style="font-size:10px;">KPI + Semua Chart</span>
+    </div>
+    <div class="page-export-bar-right">
+      <button type="button" class="page-export-btn page-export-btn-pdf" id="pageExportPdfBtn"
+              onclick="SNTExport.run('pdf', this)" title="Export halaman sebagai PDF">
+        <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+      </button>
+      <button type="button" class="page-export-btn page-export-btn-img" id="pageExportImgBtn"
+              onclick="SNTExport.run('image', this)" title="Export halaman sebagai PNG">
+        <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+      </button>
     </div>
   </div>
 
@@ -1168,17 +182,20 @@
   <div class="row mb-3">
     <div class="col-lg-8 col-12">
       <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
+        <div id="card-export-overview">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div class="d-flex align-items-center gap-2">
             <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-bar f-18 text-primary"></i></div>
-            <div>
-              <h6 class="mb-0">Total Mentions by Sentiments</h6><small class="text-muted">Perbandingan volume Negative /
-                Positive / Neutral</small>
+            <div><h6 class="mb-0">Total Mentions by Sentiments</h6><small class="text-muted">Perbandingan volume Negative / Positive / Neutral</small></div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" onclick="SNTCsv.copyOverview()" title="Copy CSV"><i class="ph ph-copy me-1"></i>CSV</button>
+            <span class="badge bg-light-primary text-primary">Overview</span>
+            <div class="d-flex gap-1" data-html2canvas-ignore="true">
+              <button class="card-exp-btn card-exp-btn-pdf" onclick="SNTExport.runCard('card-export-overview','overview','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+              <button class="card-exp-btn card-exp-btn-img" onclick="SNTExport.runCard('card-export-overview','overview','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
             </div>
           </div>
-          <div class="d-flex align-items-center gap-2"><button class="btn btn-outline-secondary btn-sm"
-              onclick="SNTCsv.copyOverview()" title="Copy CSV"><i class="ph ph-copy me-1"></i>CSV</button><span
-              class="badge bg-light-primary text-primary">Overview</span></div>
         </div>
         <div class="card-body">
           <div style="position:relative;height:300px;" id="chOverviewWrap">
@@ -1191,17 +208,24 @@
             <div class="snt-legend-item"><span class="snt-legend-dot" style="background:#94a3b8;"></span>Neutral</div>
           </div>
         </div>
+        </div>{{-- /card-export-overview --}}
       </div>
     </div>
     <div class="col-lg-4 col-12">
       <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
+        <div id="card-export-sov">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div class="d-flex align-items-center gap-2">
             <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-donut f-18 text-primary"></i></div>
-            <div>
-              <h6 class="mb-0">Share of Voice</h6><small class="text-muted">Distribusi sentimen</small>
+            <div><h6 class="mb-0">Share of Voice</h6><small class="text-muted">Distribusi sentimen</small></div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-light-primary text-primary">SOV</span>
+            <div class="d-flex gap-1" data-html2canvas-ignore="true">
+              <button class="card-exp-btn card-exp-btn-pdf" onclick="SNTExport.runCard('card-export-sov','sov','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+              <button class="card-exp-btn card-exp-btn-img" onclick="SNTExport.runCard('card-export-sov','sov','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
             </div>
-          </div><span class="badge bg-light-primary text-primary">SOV</span>
+          </div>
         </div>
         <div class="card-body" style="display:flex;flex-direction:column;align-items:center;">
           <div style="position:relative;height:280px;width:100%;">
@@ -1209,6 +233,7 @@
             <div class="snt-skel" style="position:absolute;inset:0;border-radius:8px;" id="skSovTotal"></div>
           </div>
         </div>
+        </div>{{-- /card-export-sov --}}
       </div>
     </div>
   </div>
@@ -1217,16 +242,20 @@
   <div class="row mb-3">
     <div class="col-lg-6 col-12">
       <div class="card mb-3" style="animation:fadeUp .38s ease-out .26s both;">
+        <div id="card-export-mass">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div class="d-flex align-items-center gap-2">
             <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-newspaper f-18 text-primary"></i></div>
-            <div>
-              <h6 class="mb-0">Sentiments in Mass Media</h6><small class="text-muted">Online News / Artikel</small>
+            <div><h6 class="mb-0">Sentiments in Mass Media</h6><small class="text-muted">Online News / Artikel</small></div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" onclick="SNTCsv.copyMass()" title="CSV"><i class="ph ph-copy me-1"></i>CSV</button>
+            <span class="badge bg-light-primary text-primary">Mass</span>
+            <div class="d-flex gap-1" data-html2canvas-ignore="true">
+              <button class="card-exp-btn card-exp-btn-pdf" onclick="SNTExport.runCard('card-export-mass','mass','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+              <button class="card-exp-btn card-exp-btn-img" onclick="SNTExport.runCard('card-export-mass','mass','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
             </div>
           </div>
-          <div class="d-flex align-items-center gap-2"><button class="btn btn-outline-secondary btn-sm"
-              onclick="SNTCsv.copyMass()" title="CSV"><i class="ph ph-copy me-1"></i>CSV</button><span
-              class="badge bg-light-primary text-primary">Mass</span></div>
         </div>
         <div class="card-body">
           <div style="position:relative;height:260px;" id="chMassWrap">
@@ -1239,22 +268,25 @@
             <div class="snt-legend-item"><span class="snt-legend-dot" style="background:#94a3b8;"></span>Neu</div>
           </div>
         </div>
+        </div>{{-- /card-export-mass --}}
       </div>
     </div>
     <div class="col-lg-6 col-12">
       <div class="card mb-3" style="animation:fadeUp .38s ease-out .30s both;">
+        <div id="card-export-social">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div class="d-flex align-items-center gap-2">
-            <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-share-network f-18 text-primary"></i>
-            </div>
-            <div>
-              <h6 class="mb-0">Sentiments in Social Media</h6><small class="text-muted">Twitter · Facebook · Instagram ·
-                YouTube · TikTok</small>
+            <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-share-network f-18 text-primary"></i></div>
+            <div><h6 class="mb-0">Sentiments in Social Media</h6><small class="text-muted">Twitter · Facebook · Instagram · YouTube · TikTok</small></div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" onclick="SNTCsv.copySocial()" title="CSV"><i class="ph ph-copy me-1"></i>CSV</button>
+            <span class="badge bg-light-primary text-primary">Social</span>
+            <div class="d-flex gap-1" data-html2canvas-ignore="true">
+              <button class="card-exp-btn card-exp-btn-pdf" onclick="SNTExport.runCard('card-export-social','social','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+              <button class="card-exp-btn card-exp-btn-img" onclick="SNTExport.runCard('card-export-social','social','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
             </div>
           </div>
-          <div class="d-flex align-items-center gap-2"><button class="btn btn-outline-secondary btn-sm"
-              onclick="SNTCsv.copySocial()" title="CSV"><i class="ph ph-copy me-1"></i>CSV</button><span
-              class="badge bg-light-primary text-primary">Social</span></div>
         </div>
         <div class="card-body">
           <div style="position:relative;height:260px;" id="chSocialWrap">
@@ -1267,6 +299,7 @@
             <div class="snt-legend-item"><span class="snt-legend-dot" style="background:#94a3b8;"></span>Neu</div>
           </div>
         </div>
+        </div>{{-- /card-export-social --}}
       </div>
     </div>
   </div>
@@ -1275,14 +308,19 @@
   <div class="row mb-3">
     <div class="col-lg-6 col-12">
       <div class="card mb-3" style="animation:fadeUp .38s ease-out .34s both;">
+        <div id="card-export-bytype">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div class="d-flex align-items-center gap-2">
-            <div class="avtar avtar-xs bg-light-primary rounded"><i
-                class="ph ph-chart-bar-horizontal f-18 text-primary"></i></div>
-            <div>
-              <h6 class="mb-0">Sentiments by Media Types</h6><small class="text-muted">Persentase per platform (%)</small>
+            <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-bar-horizontal f-18 text-primary"></i></div>
+            <div><h6 class="mb-0">Sentiments by Media Types</h6><small class="text-muted">Persentase per platform (%)</small></div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-light-primary text-primary">% Share</span>
+            <div class="d-flex gap-1" data-html2canvas-ignore="true">
+              <button class="card-exp-btn card-exp-btn-pdf" onclick="SNTExport.runCard('card-export-bytype','bytype','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+              <button class="card-exp-btn card-exp-btn-img" onclick="SNTExport.runCard('card-export-bytype','bytype','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
             </div>
-          </div><span class="badge bg-light-primary text-primary">% Share</span>
+          </div>
         </div>
         <div class="card-body">
           <div style="position:relative;height:300px;" id="chByTypeWrap">
@@ -1290,18 +328,24 @@
             <div class="snt-skel snt-skel-overlay" id="skByType"></div>
           </div>
         </div>
+        </div>{{-- /card-export-bytype --}}
       </div>
     </div>
     <div class="col-lg-6 col-12">
       <div class="card mb-3" style="animation:fadeUp .38s ease-out .38s both;">
+        <div id="card-export-byplat">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div class="d-flex align-items-center gap-2">
             <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-columns f-18 text-primary"></i></div>
-            <div>
-              <h6 class="mb-0">Sentiments by Media Platforms</h6><small class="text-muted">Mass Media vs Social
-                Media</small>
+            <div><h6 class="mb-0">Sentiments by Media Platforms</h6><small class="text-muted">Mass Media vs Social Media</small></div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-light-primary text-primary">Grouped</span>
+            <div class="d-flex gap-1" data-html2canvas-ignore="true">
+              <button class="card-exp-btn card-exp-btn-pdf" onclick="SNTExport.runCard('card-export-byplat','byplat','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+              <button class="card-exp-btn card-exp-btn-img" onclick="SNTExport.runCard('card-export-byplat','byplat','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
             </div>
-          </div><span class="badge bg-light-primary text-primary">Grouped</span>
+          </div>
         </div>
         <div class="card-body">
           <div style="position:relative;height:300px;" id="chByPlatWrap">
@@ -1309,6 +353,7 @@
             <div class="snt-skel snt-skel-overlay" id="skByPlat"></div>
           </div>
         </div>
+        </div>{{-- /card-export-byplat --}}
       </div>
     </div>
   </div>
@@ -1317,13 +362,19 @@
   <div class="row mb-3">
     <div class="col-lg-6 col-12">
       <div class="card mb-3" style="animation:fadeUp .38s ease-out .42s both;">
+        <div id="card-export-masspie">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div class="d-flex align-items-center gap-2">
             <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-newspaper f-18 text-primary"></i></div>
-            <div>
-              <h6 class="mb-0">Mass Media SOV</h6><small class="text-muted">Share of Voice — Online News</small>
+            <div><h6 class="mb-0">Mass Media SOV</h6><small class="text-muted">Share of Voice — Online News</small></div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-light-primary text-primary">Mass</span>
+            <div class="d-flex gap-1" data-html2canvas-ignore="true">
+              <button class="card-exp-btn card-exp-btn-pdf" onclick="SNTExport.runCard('card-export-masspie','masspie','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+              <button class="card-exp-btn card-exp-btn-img" onclick="SNTExport.runCard('card-export-masspie','masspie','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
             </div>
-          </div><span class="badge bg-light-primary text-primary">Mass</span>
+          </div>
         </div>
         <div class="card-body" style="display:flex;flex-direction:column;align-items:center;">
           <div style="position:relative;height:260px;width:100%;">
@@ -1331,18 +382,24 @@
             <div class="snt-skel" style="position:absolute;inset:0;border-radius:8px;" id="skMassPie"></div>
           </div>
         </div>
+        </div>{{-- /card-export-masspie --}}
       </div>
     </div>
     <div class="col-lg-6 col-12">
       <div class="card mb-3" style="animation:fadeUp .38s ease-out .46s both;">
+        <div id="card-export-socialpie">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div class="d-flex align-items-center gap-2">
-            <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-share-network f-18 text-primary"></i>
+            <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-share-network f-18 text-primary"></i></div>
+            <div><h6 class="mb-0">Social Media SOV</h6><small class="text-muted">Share of Voice — Social platforms</small></div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-light-primary text-primary">Social</span>
+            <div class="d-flex gap-1" data-html2canvas-ignore="true">
+              <button class="card-exp-btn card-exp-btn-pdf" onclick="SNTExport.runCard('card-export-socialpie','socialpie','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+              <button class="card-exp-btn card-exp-btn-img" onclick="SNTExport.runCard('card-export-socialpie','socialpie','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
             </div>
-            <div>
-              <h6 class="mb-0">Social Media SOV</h6><small class="text-muted">Share of Voice — Social platforms</small>
-            </div>
-          </div><span class="badge bg-light-primary text-primary">Social</span>
+          </div>
         </div>
         <div class="card-body" style="display:flex;flex-direction:column;align-items:center;">
           <div style="position:relative;height:260px;width:100%;">
@@ -1350,25 +407,29 @@
             <div class="snt-skel" style="position:absolute;inset:0;border-radius:8px;" id="skSocialPie"></div>
           </div>
         </div>
+        </div>{{-- /card-export-socialpie --}}
       </div>
     </div>
   </div>
 
-  {{-- Trend Line — ApexCharts --}}
+  {{-- Trend Line --}}
   <div class="row mb-3">
     <div class="col-12">
       <div class="card mb-3" style="animation:fadeUp .38s ease-out .54s both;">
+        <div id="card-export-trend">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div class="d-flex align-items-center gap-2">
             <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-trend-up f-18 text-primary"></i></div>
-            <div>
-              <h6 class="mb-0">Sentiment Trends in All Media</h6><small class="text-muted">Tren harian Total / Positive /
-                Neutral / Negative</small>
+            <div><h6 class="mb-0">Sentiment Trends in All Media</h6><small class="text-muted">Tren harian Total / Positive / Neutral / Negative — <strong>klik chart untuk lihat mentions</strong></small></div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" onclick="SNTCsv.copyTrend()" title="Copy CSV"><i class="ph ph-copy me-1"></i>CSV</button>
+            <span class="badge bg-light-primary text-primary" id="trendBadge">Loading…</span>
+            <div class="d-flex gap-1" data-html2canvas-ignore="true">
+              <button class="card-exp-btn card-exp-btn-pdf" onclick="SNTExport.runCard('card-export-trend','trend','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+              <button class="card-exp-btn card-exp-btn-img" onclick="SNTExport.runCard('card-export-trend','trend','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
             </div>
           </div>
-          <div class="d-flex align-items-center gap-2"><button class="btn btn-outline-secondary btn-sm"
-              onclick="SNTCsv.copyTrend()" title="Copy CSV"><i class="ph ph-copy me-1"></i>CSV</button><span
-              class="badge bg-light-primary text-primary" id="trendBadge">Loading…</span></div>
         </div>
         <div class="card-body">
           <div style="position:relative;height:380px;" id="chTrendWrap">
@@ -1376,6 +437,7 @@
             <div class="snt-skel snt-skel-overlay" id="skTrend"></div>
           </div>
         </div>
+        </div>{{-- /card-export-trend --}}
       </div>
     </div>
   </div>
@@ -1384,13 +446,19 @@
   <div class="row mb-3">
     <div class="col-lg-6 col-12">
       <div class="card mb-3" style="animation:fadeUp .38s ease-out .58s both;">
+        <div id="card-export-weekday">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div class="d-flex align-items-center gap-2">
             <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-calendar f-18 text-primary"></i></div>
-            <div>
-              <h6 class="mb-0">Sentiments by Weekday</h6><small class="text-muted">Volume per hari dalam seminggu</small>
+            <div><h6 class="mb-0">Sentiments by Weekday</h6><small class="text-muted">Volume per hari dalam seminggu</small></div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-light-primary text-primary">7 Hari</span>
+            <div class="d-flex gap-1" data-html2canvas-ignore="true">
+              <button class="card-exp-btn card-exp-btn-pdf" onclick="SNTExport.runCard('card-export-weekday','weekday','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+              <button class="card-exp-btn card-exp-btn-img" onclick="SNTExport.runCard('card-export-weekday','weekday','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
             </div>
-          </div><span class="badge bg-light-primary text-primary">7 Hari</span>
+          </div>
         </div>
         <div class="card-body">
           <div style="position:relative;height:320px;">
@@ -1403,17 +471,24 @@
             <div class="snt-legend-item"><span class="snt-legend-dot" style="background:#94a3b8;"></span>Neu</div>
           </div>
         </div>
+        </div>{{-- /card-export-weekday --}}
       </div>
     </div>
     <div class="col-lg-6 col-12">
       <div class="card mb-3" style="animation:fadeUp .38s ease-out .62s both;">
+        <div id="card-export-hour">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div class="d-flex align-items-center gap-2">
             <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-clock f-18 text-primary"></i></div>
-            <div>
-              <h6 class="mb-0">Sentiments by Hour</h6><small class="text-muted">Distribusi per jam (00–23)</small>
+            <div><h6 class="mb-0">Sentiments by Hour</h6><small class="text-muted">Distribusi per jam (00–23)</small></div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-light-primary text-primary">24 Jam</span>
+            <div class="d-flex gap-1" data-html2canvas-ignore="true">
+              <button class="card-exp-btn card-exp-btn-pdf" onclick="SNTExport.runCard('card-export-hour','hour','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+              <button class="card-exp-btn card-exp-btn-img" onclick="SNTExport.runCard('card-export-hour','hour','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
             </div>
-          </div><span class="badge bg-light-primary text-primary">24 Jam</span>
+          </div>
         </div>
         <div class="card-body">
           <div style="position:relative;height:320px;">
@@ -1426,54 +501,59 @@
             <div class="snt-legend-item"><span class="snt-legend-dot" style="background:#94a3b8;"></span>Neu</div>
           </div>
         </div>
+        </div>{{-- /card-export-hour --}}
       </div>
     </div>
+  </div>
+
+  {{-- /pageExportArea --}}
+  </div>
+
+  {{-- Export Toast --}}
+  <div class="export-toast" id="exportToast">
+    <i class="ph ph-check-circle" id="exportToastIcon"></i>
+    <span id="exportToastMsg">Exporting…</span>
   </div>
 
   {{-- Slide Panel --}}
   <div class="do-panel-overlay" id="sntPanelOverlay" onclick="SNTPopup.close()"></div>
   <div id="sntPopup">
     <div class="sntp-header" id="sntPopHeader">
-      <div class="sntp-dot" id="sntPopDot"></div><span class="sntp-title" id="sntPopTitle">Mentions</span><span
-        class="sntp-count" id="sntPopCount">…</span><button class="sntp-close" onclick="SNTPopup.close()">×</button>
+      <div class="sntp-dot" id="sntPopDot"></div><span class="sntp-title" id="sntPopTitle">Mentions</span><span class="sntp-count" id="sntPopCount">…</span><button class="sntp-close" onclick="SNTPopup.close()">×</button>
     </div>
     <div class="sntp-actions">
-      <div class="sntp-meta"><i class="ph ph-magnifying-glass" style="font-size:11px;"></i><span class="sntp-meta__label"
-          id="sntPopMeta">—</span></div>
+      <div class="sntp-meta"><i class="ph ph-magnifying-glass" style="font-size:11px;"></i><span class="sntp-meta__label" id="sntPopMeta">—</span></div>
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-        <div class="sntp-sent-tabs" id="sntPopSentTabs"><button class="sntp-sent-tab active" data-s="all"
-            onclick="SNTPopup.filterSent('all')">Semua</button><button class="sntp-sent-tab neg" data-s="neg"
-            onclick="SNTPopup.filterSent('neg')">Neg</button><button class="sntp-sent-tab pos" data-s="pos"
-            onclick="SNTPopup.filterSent('pos')">Pos</button><button class="sntp-sent-tab neu" data-s="neu"
-            onclick="SNTPopup.filterSent('neu')">Neu</button></div><button class="sntp-export-btn"
-          onclick="SNTPopup.exportCsv()"><i class="ph ph-download-simple"></i> Export CSV</button>
+        <div class="sntp-sent-tabs" id="sntPopSentTabs">
+          <button class="sntp-sent-tab active" data-s="all" onclick="SNTPopup.filterSent('all')">Semua</button>
+          <button class="sntp-sent-tab neg" data-s="neg" onclick="SNTPopup.filterSent('neg')">Neg</button>
+          <button class="sntp-sent-tab pos" data-s="pos" onclick="SNTPopup.filterSent('pos')">Pos</button>
+          <button class="sntp-sent-tab neu" data-s="neu" onclick="SNTPopup.filterSent('neu')">Neu</button>
+        </div>
       </div>
     </div>
     <div class="sntp-list" id="sntPopList"></div>
     <div id="sntDetailPanel">
-      <div class="sntdp-header"><button class="sntdp-back" onclick="SNTDetail.close()"><i
-            class="ph ph-caret-left"></i></button><span class="sntdp-title" id="sntDpTitle">Detail</span><button
-          class="sntdp-close" onclick="SNTPopup.close()">×</button></div>
+      <div class="sntdp-header"><button class="sntdp-back" onclick="SNTDetail.close()"><i class="ph ph-caret-left"></i></button><span class="sntdp-title" id="sntDpTitle">Detail</span><button class="sntdp-close" onclick="SNTPopup.close()">×</button></div>
       <div class="sntdp-body" id="sntDpBody"></div>
     </div>
   </div>
   <div id="sntPlatPicker">
     <div class="sntpp-header">Pilih Platform</div>
-    <button class="sntpp-btn" onclick="SNTPopup.openPlatform('twit','all')">X / Twitter <span class="sntpp-dot"
-        style="background:#1d9bf0;"></span></button>
-    <button class="sntpp-btn" onclick="SNTPopup.openPlatform('fb','all')">Facebook <span class="sntpp-dot"
-        style="background:#1877f2;"></span></button>
-    <button class="sntpp-btn" onclick="SNTPopup.openPlatform('ig','all')">Instagram <span class="sntpp-dot"
-        style="background:#e1306c;"></span></button>
-    <button class="sntpp-btn" onclick="SNTPopup.openPlatform('yt','all')">YouTube <span class="sntpp-dot"
-        style="background:#ff0000;"></span></button>
-    <button class="sntpp-btn" onclick="SNTPopup.openPlatform('tiktok','all')">TikTok <span class="sntpp-dot"
-        style="background:#111827;"></span></button>
+    <button class="sntpp-btn" onclick="SNTPopup.openPlatform('twit','all')">X / Twitter <span class="sntpp-dot" style="background:#1d9bf0;"></span></button>
+    <button class="sntpp-btn" onclick="SNTPopup.openPlatform('fb','all')">Facebook <span class="sntpp-dot" style="background:#1877f2;"></span></button>
+    <button class="sntpp-btn" onclick="SNTPopup.openPlatform('ig','all')">Instagram <span class="sntpp-dot" style="background:#e1306c;"></span></button>
+    <button class="sntpp-btn" onclick="SNTPopup.openPlatform('yt','all')">YouTube <span class="sntpp-dot" style="background:#ff0000;"></span></button>
+    <button class="sntpp-btn" onclick="SNTPopup.openPlatform('tiktok','all')">TikTok <span class="sntpp-dot" style="background:#111827;"></span></button>
   </div>
 @endsection
 
 @section('scripts')
-  {{-- ✅ ApexCharts loaded BEFORE ECharts --}}
+  {{-- Export dependencies --}}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
   <script>
@@ -1507,7 +587,6 @@
       Object.values(SNTCharts._i).forEach(c => { try { if (!c.isDisposed()) c.resize(); } catch (e) { } });
     });
 
-    /* ── ApexCharts trend instance ── */
     let _apexTrend = null;
 
     const EC_TIP = {
@@ -1587,7 +666,7 @@
       renderTrend();
     }
 
-    /* ─── Overview Bar — ✅ solid colors ─── */
+    /* ─── Overview Bar ─── */
     function renderOverviewBar() {
       hideSk('skOverview');
       const { neg, pos, neu } = SNTData.totals;
@@ -1612,7 +691,6 @@
         yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } }, axisLabel: { fontFamily: "'Poppins',sans-serif", fontSize: 11, color: '#94a3b8', formatter: numK } },
         series: [{
           type: 'bar', barMaxWidth: 80,
-          /* ✅ solid colors — no gradient */
           data: [
             { value: neg, itemStyle: { color: '#ef4444', borderRadius: [8, 8, 0, 0] } },
             { value: pos, itemStyle: { color: '#2FC6F6', borderRadius: [8, 8, 0, 0] } },
@@ -1672,7 +750,6 @@
       const bm = SNTData.byMedia;
       const massPlt = bm.filter(m => m.key === 'doc');
       const socialPlt = bm.filter(m => m.key !== 'doc');
-
       hideSk('skMass');
       const massChart = SNTCharts.make('chMass');
       if (massChart) {
@@ -1680,7 +757,6 @@
         if (mLabels.length && mTot.some(v => v > 0)) massChart.setOption(makeStackedBarOption(mLabels, mNeg, mPos, mNeu, mLabels, mTot));
         else document.getElementById('chMass').parentElement.innerHTML = emptyHtml('Tidak ada data Mass Media');
       }
-
       hideSk('skSocial');
       const socialChart = SNTCharts.make('chSocial');
       if (socialChart) {
@@ -1708,10 +784,7 @@
         series: [
           { name: 'Neutral', type: 'bar', stack: 's', data: makeData(neuData, '#94a3b8'), itemStyle: { borderRadius: [0, 0, 0, 0] } },
           { name: 'Positive', type: 'bar', stack: 's', data: makeData(posData, '#2FC6F6') },
-          {
-            name: 'Negative', type: 'bar', stack: 's', barMaxWidth: 80, data: negData.map((v, i) => ({ value: v, itemStyle: { color: '#ef4444', borderRadius: [6, 6, 0, 0] } })),
-            label: { show: true, position: 'top', fontFamily: "'Poppins',sans-serif", fontWeight: '700', fontSize: 11, color: '#64748b', formatter: p => totals[p.dataIndex] > 0 ? numK(totals[p.dataIndex]) : '' }
-          }
+          { name: 'Negative', type: 'bar', stack: 's', barMaxWidth: 80, data: negData.map((v, i) => ({ value: v, itemStyle: { color: '#ef4444', borderRadius: [6, 6, 0, 0] } })), label: { show: true, position: 'top', fontFamily: "'Poppins',sans-serif", fontWeight: '700', fontSize: 11, color: '#64748b', formatter: p => totals[p.dataIndex] > 0 ? numK(totals[p.dataIndex]) : '' } }
         ]
       };
     }
@@ -1732,9 +805,7 @@
           ...EC_TIP, trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: params => {
             const idx = params[0]?.dataIndex ?? 0; const m = bm[idx]; if (!m) return '';
             const tot = m.neg + m.pos + m.neu;
-            return `<div style="font-weight:700;font-size:13px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.1);">${m.label}</div>
-                ${[['Negative', '#ef4444', m.neg], ['Positive', '#2FC6F6', m.pos], ['Neutral', '#94a3b8', m.neu]].map(([n, c, v]) =>
-              `<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c};"></span><span style="font-size:12px;color:#94a3b8;">${n}</span></div><div style="display:flex;gap:10px;"><span style="font-size:12px;font-weight:700;">${numFmt(v)}</span><span style="font-size:10px;color:#94a3b8;">${tot > 0 ? (v / tot * 100).toFixed(1) : '0'}%</span></div></div>`).join('')}`;
+            return `<div style="font-weight:700;font-size:13px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.1);">${m.label}</div>${[['Negative', '#ef4444', m.neg], ['Positive', '#2FC6F6', m.pos], ['Neutral', '#94a3b8', m.neu]].map(([n, c, v]) => `<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c};"></span><span style="font-size:12px;color:#94a3b8;">${n}</span></div><div style="display:flex;gap:10px;"><span style="font-size:12px;font-weight:700;">${numFmt(v)}</span><span style="font-size:10px;color:#94a3b8;">${tot > 0 ? (v / tot * 100).toFixed(1) : '0'}%</span></div></div>`).join('')}`;
           }
         },
         legend: { bottom: 0, data: ['Negative', 'Positive', 'Neutral'], textStyle: { fontFamily: "'Poppins',sans-serif", fontSize: 11, fontWeight: '600', color: '#64748b' }, icon: 'circle', itemWidth: 10, itemHeight: 10, itemGap: 20 },
@@ -1768,9 +839,7 @@
           ...EC_TIP, trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: params => {
             const idx = params[0]?.dataIndex ?? 0; const lbl = groups[idx];
             const neg = [mNeg, sNeg][idx], pos = [mPos, sPos][idx], neu = [mNeu, sNeu][idx], tot = [mTot, sTot][idx];
-            return `<div style="font-weight:700;font-size:13px;margin-bottom:8px;">${lbl}</div>
-                ${[['Negative', '#ef4444', neg], ['Positive', '#2FC6F6', pos], ['Neutral', '#94a3b8', neu]].map(([n, c, v]) =>
-              `<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c};"></span><span style="font-size:12px;color:#94a3b8;">${n}</span></div><span style="font-size:12px;font-weight:700;">${numFmt(v)} <span style="color:#94a3b8;font-size:10px;">(${tot > 0 ? (v / tot * 100).toFixed(1) : '0'}%)</span></span></div>`).join('')}`;
+            return `<div style="font-weight:700;font-size:13px;margin-bottom:8px;">${lbl}</div>${[['Negative', '#ef4444', neg], ['Positive', '#2FC6F6', pos], ['Neutral', '#94a3b8', neu]].map(([n, c, v]) => `<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c};"></span><span style="font-size:12px;color:#94a3b8;">${n}</span></div><span style="font-size:12px;font-weight:700;">${numFmt(v)} <span style="color:#94a3b8;font-size:10px;">(${tot > 0 ? (v / tot * 100).toFixed(1) : '0'}%)</span></span></div>`).join('')}`;
           }
         },
         legend: { bottom: 0, data: ['Negative', 'Positive', 'Neutral'], textStyle: { fontFamily: "'Poppins',sans-serif", fontSize: 11, fontWeight: '600', color: '#64748b' }, icon: 'circle', itemWidth: 10, itemHeight: 10, itemGap: 20 },
@@ -1801,7 +870,7 @@
     }
 
     /* ═══════════════════════════════════════════════════════
-       TREND — ✅ ApexCharts, matches realTimeOptions style
+       TREND — ApexCharts + ✅ FIXED click → open slide panel
     ═══════════════════════════════════════════════════════ */
     function renderTrend() {
       hideSk('skTrend');
@@ -1811,47 +880,37 @@
         document.getElementById('chTrend').innerHTML = emptyHtml('Data trend tidak tersedia untuk periode ini');
         return;
       }
-
       const dates = trend.map(d => d.date);
       const negVals = trend.map(d => d.neg || 0);
       const posVals = trend.map(d => d.pos || 0);
       const neuVals = trend.map(d => d.neu || 0);
       const totVals = trend.map(d => (d.neg || 0) + (d.pos || 0) + (d.neu || 0));
-
-      const xLabels = dates.map(d => {
-        const dt = new Date(d + 'T00:00:00');
-        return `${dt.getDate()}/${dt.getMonth() + 1}`;
-      });
-
-      const fmtB = d => {
-        const dt = new Date(d + 'T00:00:00');
-        return `${dt.getDate()} ${dt.toLocaleString('id-ID', { month: 'short' })}`;
-      };
+      const xLabels = dates.map(d => { const dt = new Date(d + 'T00:00:00'); return `${dt.getDate()}/${dt.getMonth() + 1}`; });
+      const fmtB = d => { const dt = new Date(d + 'T00:00:00'); return `${dt.getDate()} ${dt.toLocaleString('id-ID', { month: 'short' })}`; };
       document.getElementById('trendBadge').textContent = `${fmtB(dates[0])} – ${fmtB(dates[dates.length - 1])}`;
-
       if (_apexTrend) { try { _apexTrend.destroy(); } catch (e) { } _apexTrend = null; }
-
       const el = document.getElementById('chTrend');
       if (!el) return;
 
       _apexTrend = new ApexCharts(el, {
         chart: {
-          type: 'area',
-          height: 380,
-          fontFamily: 'inherit',
-          background: 'transparent',
+          type: 'area', height: 380, fontFamily: 'inherit', background: 'transparent',
           toolbar: { show: false },
-          /* ✅ matches realTimeOptions */
           animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 1000 } },
           events: {
-            markerClick: (e, ctx, { seriesIndex }) => {
+            /* ✅ FIX: markerClick opens panel with correct sentiment */
+            markerClick: (e, ctx, cfg) => {
               const sentMap = { 0: 'all', 1: 'pos', 2: 'neu', 3: 'neg' };
-              SNTPopup.open('all', sentMap[seriesIndex] || 'all');
+              SNTPopup.open('all', sentMap[cfg.seriesIndex] || 'all');
             },
             legendClick: (ctx, seriesIndex) => {
               const sentMap = { 0: 'all', 1: 'pos', 2: 'neu', 3: 'neg' };
               SNTPopup.open('all', sentMap[seriesIndex] || 'all');
-            }
+            },
+            dataPointSelection: (e, ctx, cfg) => {
+              const sentMap = { 0: 'all', 1: 'pos', 2: 'neu', 3: 'neg' };
+              SNTPopup.open('all', sentMap[cfg.seriesIndex] || 'all');
+            },
           }
         },
         series: [
@@ -1860,73 +919,33 @@
           { name: 'Neutral', data: neuVals },
           { name: 'Negative', data: negVals },
         ],
-        /* ✅ solid colors matching screenshot */
         colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
-        xaxis: {
-          categories: xLabels,
-          axisBorder: { show: false },
-          axisTicks: { show: false },
-          labels: { style: { fontFamily: 'inherit', fontSize: '11px', fontWeight: 600, colors: '#94A3B8' } }
-        },
-        yaxis: {
-          labels: {
-            formatter: v => numK(v),
-            style: { fontFamily: 'inherit', fontSize: '10px', fontWeight: 600, colors: '#94A3B8' }
-          },
-          axisBorder: { show: false },
-          axisTicks: { show: false }
-        },
-        /* ✅ matches realTimeOptions */
+        xaxis: { categories: xLabels, axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { fontFamily: 'inherit', fontSize: '11px', fontWeight: 600, colors: '#94A3B8' } } },
+        yaxis: { labels: { formatter: v => numK(v), style: { fontFamily: 'inherit', fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } }, axisBorder: { show: false }, axisTicks: { show: false } },
         fill: { opacity: 0.3 },
         stroke: { curve: 'smooth', width: 2.5 },
-        /* ✅ dot marker at each point */
-        markers: {
-          size: 5,
-          strokeWidth: 2,
-          strokeColors: '#fff',
-          hover: { size: 7 }
-        },
-        /* ✅ label numbers at each data point with background pill */
+        markers: { size: 5, strokeWidth: 2, strokeColors: '#fff', hover: { size: 7 } },
         dataLabels: {
           enabled: true,
           formatter: v => v > 0 ? numFmt(v) : '',
-          style: {
-            fontSize: '10px',
-            fontFamily: 'inherit',
-            fontWeight: '700',
-          },
-          background: {
-            enabled: true,
-            borderRadius: 3,
-            borderWidth: 0,
-            padding: 3,
-            opacity: 0.9,
-          },
+          style: { fontSize: '10px', fontFamily: 'inherit', fontWeight: '700' },
+          background: { enabled: true, borderRadius: 3, borderWidth: 0, padding: 3, opacity: 0.9 },
           offsetY: -6,
         },
-        grid: {
-          borderColor: 'rgba(226,232,240,.55)',
-          strokeDashArray: 3,
-          xaxis: { lines: { show: false } }
-        },
-        legend: {
-          position: 'bottom',
-          horizontalAlign: 'left',
-          fontFamily: 'inherit',
-          fontSize: '11px',
-          fontWeight: '600',
-          labels: { colors: '#94A3B8' },
-          markers: { width: 9, height: 9, radius: 50 },
-          itemMargin: { horizontal: 14, vertical: 4 }
-        },
-        tooltip: {
-          shared: true,
-          intersect: false,
-          style: { fontFamily: 'inherit', fontSize: '12px' },
-          y: { formatter: v => numFmt(v) + ' mentions' }
-        },
+        grid: { borderColor: 'rgba(226,232,240,.55)', strokeDashArray: 3, xaxis: { lines: { show: false } } },
+        legend: { position: 'bottom', horizontalAlign: 'left', fontFamily: 'inherit', fontSize: '11px', fontWeight: '600', labels: { colors: '#94A3B8' }, markers: { width: 9, height: 9, radius: 50 }, itemMargin: { horizontal: 14, vertical: 4 } },
+        tooltip: { shared: true, intersect: false, style: { fontFamily: 'inherit', fontSize: '12px' }, y: { formatter: v => numFmt(v) + ' mentions' } },
       });
       _apexTrend.render();
+
+      /* ✅ FIX: whole chart area click → open panel (same as dashboard) */
+      el.addEventListener('click', e => {
+        const t = e.target;
+        const skip = t.classList.contains('apexcharts-marker')
+                  || t.closest('.apexcharts-datalabels')
+                  || t.closest('.apexcharts-legend');
+        if (!skip) SNTPopup.open('all', 'all');
+      });
     }
 
     /* ─── Weekday & Hour ─── */
@@ -1955,10 +974,7 @@
         series: [
           makeS('Neutral', neuData, '#94a3b8'),
           makeS('Positive', posData, '#2FC6F6'),
-          {
-            name: 'Negative', type: 'bar', stack: 's', barMaxWidth: isHour ? 20 : 56, data: negData.map((v, i) => ({ value: v, itemStyle: { color: '#ef4444', borderRadius: [4, 4, 0, 0] } })),
-            label: { show: true, position: 'top', fontFamily: "'Poppins',sans-serif", fontWeight: '700', fontSize: isHour ? 9 : 10, color: '#64748b', formatter: p => totals[p.dataIndex] > 0 ? numK(totals[p.dataIndex]) : '' }, emphasis: { focus: 'series' }
-          }
+          { name: 'Negative', type: 'bar', stack: 's', barMaxWidth: isHour ? 20 : 56, data: negData.map((v, i) => ({ value: v, itemStyle: { color: '#ef4444', borderRadius: [4, 4, 0, 0] } })), label: { show: true, position: 'top', fontFamily: "'Poppins',sans-serif", fontWeight: '700', fontSize: isHour ? 9 : 10, color: '#64748b', formatter: p => totals[p.dataIndex] > 0 ? numK(totals[p.dataIndex]) : '' }, emphasis: { focus: 'series' } }
         ]
       });
     }
@@ -1992,31 +1008,198 @@
 
     document.addEventListener('DOMContentLoaded', () => SNTPage.init());
 
+    /* ════════════════════════════════════════════════════════
+       EXPORT MODULE — Sentiment Analysis
+    ════════════════════════════════════════════════════════ */
+    const SNTExport = (() => {
+      let _toastTimer = null;
+
+      function _toast(msg, type = 'default', duration = 3200) {
+        const t = document.getElementById('exportToast'), m = document.getElementById('exportToastMsg'), ico = document.getElementById('exportToastIcon');
+        if (!t || !m) return;
+        m.textContent = msg;
+        t.className = 'export-toast show ' + (type !== 'default' ? type : '');
+        const icons = { success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' };
+        ico.className = 'ph ' + (icons[type] || icons.default);
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+      }
+
+      function _btnState(btn, loading) {
+        if (!btn) return;
+        btn.disabled = loading;
+        btn.classList.toggle('exporting', loading);
+      }
+
+      /* Resize semua chart aktif */
+      function _resizeAll() {
+        Object.values(SNTCharts._i).forEach(c => { try { if (!c.isDisposed()) c.resize(); } catch (e) {} });
+        if (_apexTrend) { try { _apexTrend.updateOptions({}); } catch (e) {} }
+      }
+
+      async function _capture() {
+        const area = document.getElementById('pageExportArea');
+        if (!area) throw new Error('pageExportArea tidak ditemukan');
+        window.scrollTo({ top: 0 });
+        await new Promise(r => setTimeout(r, 350));
+        _resizeAll();
+        return html2canvas(area, {
+          scale: 2, useCORS: true, allowTaint: false,
+          backgroundColor: '#f1f5f9', logging: false, removeContainer: true,
+          windowWidth: document.documentElement.scrollWidth,
+          windowHeight: area.scrollHeight, height: area.scrollHeight,
+          ignoreElements: el =>
+            el.hasAttribute('data-html2canvas-ignore') ||
+            el.id === 'pageExportPdfBtn' ||
+            el.id === 'pageExportImgBtn',
+        });
+      }
+
+      function _drawHeader(doc, pW, margin, subtitle) {
+        doc.setFillColor(3, 128, 71);
+        doc.rect(0, 0, pW, 11, 'F');
+        doc.setTextColor(255, 255, 255); doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+        doc.text('SMADIMENT — Sentiment Analysis' + (subtitle ? ' · ' + subtitle : ''), margin, 7.5);
+        const now = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+        doc.text('Generated: ' + now, pW - margin, 7.5, { align: 'right' });
+      }
+
+      async function _paginate(pdf, canvas, margin) {
+        const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
+        const usableW = pW - margin * 2, usableH = pH - margin * 2 - 14;
+        const ratio = usableW / canvas.width, sliceH = usableH / ratio;
+        let srcY = 0, pageNum = 0;
+        while (srcY < canvas.height) {
+          if (pageNum > 0) { pdf.addPage(); _drawHeader(pdf, pW, margin); }
+          const srcSlice = Math.min(sliceH, canvas.height - srcY), dstH = srcSlice * ratio;
+          const slice = document.createElement('canvas');
+          slice.width = canvas.width; slice.height = Math.ceil(srcSlice);
+          slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice);
+          pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
+          pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+          pdf.text(`Halaman ${pageNum + 1}`, pW / 2, pH - 3, { align: 'center' });
+          srcY += srcSlice; pageNum++;
+        }
+      }
+
+      async function _captureCard(areaId, cardKey) {
+        const area = document.getElementById(areaId);
+        if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+        /* resize ECharts in this card if any */
+        const ecMap = {
+          overview: 'chOverview', sov: 'chSovTotal', mass: 'chMass', social: 'chSocial',
+          bytype: 'chByType', byplat: 'chByPlat', masspie: 'chMassPie', socialpie: 'chSocialPie',
+          weekday: 'chWeekday', hour: 'chHour',
+        };
+        if (ecMap[cardKey] && SNTCharts._i[ecMap[cardKey]]) {
+          try { SNTCharts._i[ecMap[cardKey]].resize(); } catch (e) {}
+        }
+        if (cardKey === 'trend' && _apexTrend) { try { _apexTrend.updateOptions({}); } catch (e) {} }
+        await new Promise(r => setTimeout(r, 220));
+        return html2canvas(area, {
+          scale: 2, useCORS: true, allowTaint: false,
+          backgroundColor: '#ffffff', logging: false, removeContainer: true,
+          ignoreElements: el => el.hasAttribute('data-html2canvas-ignore'),
+        });
+      }
+
+      const _cardLabels = {
+        overview: 'Total Mentions by Sentiments', sov: 'Share of Voice',
+        mass: 'Sentiments in Mass Media', social: 'Sentiments in Social Media',
+        bytype: 'Sentiments by Media Types', byplat: 'Sentiments by Media Platforms',
+        masspie: 'Mass Media SOV', socialpie: 'Social Media SOV',
+        trend: 'Sentiment Trends', weekday: 'Sentiments by Weekday', hour: 'Sentiments by Hour',
+      };
+      const _cardFiles = {
+        overview: 'overview-bar', sov: 'sov-donut', mass: 'mass-media',
+        social: 'social-media', bytype: 'by-type-pct', byplat: 'by-platform',
+        masspie: 'mass-sov', socialpie: 'social-sov', trend: 'trend-line',
+        weekday: 'by-weekday', hour: 'by-hour',
+      };
+
+      async function runCard(areaId, cardKey, type, btn) {
+        if (!window.html2canvas) { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+        _btnState(btn, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
+        try {
+          const canvas = await _captureCard(areaId, cardKey);
+          const label = _cardLabels[cardKey] || cardKey, file = _cardFiles[cardKey] || cardKey;
+          const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+          const fname = `sentiment_${file}_${OV_PID}_${stamp}`;
+          if (type === 'image') {
+            const link = document.createElement('a');
+            link.download = fname + '.png'; link.href = canvas.toDataURL('image/png'); link.click();
+            _toast('Gambar berhasil diunduh!', 'success');
+          } else {
+            const { jsPDF } = window.jspdf;
+            const landscape = canvas.width > canvas.height;
+            const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+            _drawHeader(pdf, pdf.internal.pageSize.getWidth(), 10, label);
+            await _paginate(pdf, canvas, 10);
+            pdf.save(fname + '.pdf');
+            _toast('PDF berhasil diunduh!', 'success');
+          }
+        } catch (err) {
+          console.error('[SNTExport.runCard]', err);
+          _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+          _btnState(btn, false);
+        }
+      }
+
+      async function run(type, btn) {
+        if (!window.html2canvas) { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+        const btnPdf = document.getElementById('pageExportPdfBtn'), btnImg = document.getElementById('pageExportImgBtn');
+        _btnState(btnPdf, true); _btnState(btnImg, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+        try {
+          const canvas = await _capture();
+          const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+          if (type === 'pdf') {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            _drawHeader(pdf, pdf.internal.pageSize.getWidth(), 10);
+            await _paginate(pdf, canvas, 10);
+            pdf.save(`sentiment_analysis_${OV_PID}_${stamp}.pdf`);
+            _toast('PDF berhasil diunduh!', 'success');
+          } else {
+            const link = document.createElement('a');
+            link.download = `sentiment_analysis_${OV_PID}_${stamp}.png`;
+            link.href = canvas.toDataURL('image/png'); link.click();
+            _toast('Gambar berhasil diunduh!', 'success');
+          }
+        } catch (err) {
+          console.error('[SNTExport]', err);
+          _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+          _btnState(btnPdf, false); _btnState(btnImg, false);
+        }
+      }
+
+      return { run, runCard };
+    })();
+
     /* ══════════════════════════════════════════════════════
        SENTIMENT MENTION POPUP
     ══════════════════════════════════════════════════════ */
     const SNTPlatMeta = {
-      doc: { label: 'Online News', color: '#0284c7' },
-      twit: { label: 'X / Twitter', color: '#0ea5e9' },
-      fb: { label: 'Facebook', color: '#1877f2' },
-      ig: { label: 'Instagram', color: '#e1306c' },
-      yt: { label: 'YouTube', color: '#ff0000' },
-      tiktok: { label: 'TikTok', color: '#111827' },
-      neg: { label: 'Negative', color: '#ef4444' },
-      pos: { label: 'Positive', color: '#2FC6F6' },
-      neu: { label: 'Neutral', color: '#94a3b8' },
+      doc: { label: 'Online News', color: '#0284c7' }, twit: { label: 'X / Twitter', color: '#0ea5e9' },
+      fb: { label: 'Facebook', color: '#1877f2' }, ig: { label: 'Instagram', color: '#e1306c' },
+      yt: { label: 'YouTube', color: '#ff0000' }, tiktok: { label: 'TikTok', color: '#111827' },
+      neg: { label: 'Negative', color: '#ef4444' }, pos: { label: 'Positive', color: '#2FC6F6' }, neu: { label: 'Neutral', color: '#94a3b8' },
     };
 
     const sntEsc = s => (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
     const SNTPopup = {
       _cache: {}, _allItems: [], _curSent: 'all', _curPlat: null,
-
       init() {
         document.addEventListener('mousedown', e => { const pp = document.getElementById('sntPlatPicker'); if (pp?.classList.contains('visible') && !pp.contains(e.target)) pp.classList.remove('visible'); });
         document.addEventListener('keydown', e => { if (e.key === 'Escape') this.close(); });
       },
-
       async open(platform, sentiment) {
         const popup = document.getElementById('sntPopup'), overlay = document.getElementById('sntPanelOverlay');
         if (!popup) return;
@@ -2053,9 +1236,7 @@
           document.getElementById('sntPopCount').textContent = '0';
         }
       },
-
       openSentiment(sentiment) { this.open('all', sentiment); },
-
       showPlatPicker(x, y, sentiment) {
         const pp = document.getElementById('sntPlatPicker'); if (!pp) return;
         pp.dataset.sentiment = sentiment || 'all';
@@ -2071,15 +1252,12 @@
           if (plat) btn.setAttribute('onclick', `SNTPopup.openPlatform('${plat}','${sentiment || 'all'}')`);
         });
       },
-
       openPlatform(platform, sentiment) { const pp = document.getElementById('sntPlatPicker'); if (pp) pp.classList.remove('visible'); this.open(platform, sentiment || 'all'); },
-
       filterSent(sent) {
         this._curSent = sent;
         document.querySelectorAll('.sntp-sent-tab').forEach(b => b.classList.toggle('active', b.dataset.s === sent));
         this._renderFiltered(document.getElementById('sntPopList'));
       },
-
       close() {
         const popup = document.getElementById('sntPopup'), overlay = document.getElementById('sntPanelOverlay');
         if (!popup || !popup.classList.contains('show')) return;
@@ -2090,26 +1268,6 @@
         if (overlay) overlay.classList.add('hiding');
         setTimeout(() => { popup.classList.remove('show', 'hiding'); if (overlay) overlay.classList.remove('show', 'hiding'); document.body.style.overflow = ''; }, 240);
       },
-
-      exportCsv() {
-        const items = this._getFiltered();
-        if (!items.length) { alert('Tidak ada data untuk diekspor.'); return; }
-        const platLabel = { doc: 'Online_News', twit: 'Twitter', fb: 'Facebook', ig: 'Instagram', yt: 'YouTube', tiktok: 'TikTok', all: 'All_Media', social: 'Social_Media' };
-        const rows = items.map((item, idx) => {
-          const name = (item.author_name || item.channel_name || item.publisher || item.source_name || item.name || item.author_scr_name || item.screen_name || '').trim();
-          const content = (item.content || item.caption || item.description || item.title || item.text || '').replace(/<[^>]*>/g, '').trim().slice(0, 500);
-          const sentRaw = String(item.class_sentiment || item.sentiment || '0').toLowerCase().trim();
-          const sent = sentRaw === '1' || sentRaw === 'positive' || sentRaw === 'positif' ? 'Positif' : sentRaw === '-1' || sentRaw === '2' || sentRaw === 'negative' || sentRaw === 'negatif' ? 'Negatif' : 'Netral';
-          const url = item.url || item.link || ''; const date = (item.date_created || item.created_at || '').split('T')[0];
-          const e2 = s => String(s || '').replace(/;/g, ',').replace(/\n/g, ' ');
-          return `${idx};${e2(name)};${e2(sent)};${e2(date)};${e2(url)};${e2(content)}`;
-        });
-        const csv = ['index;nama;sentimen;tanggal;url;konten', ...rows].join('\r\n');
-        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-        const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `sentiment_${platLabel[this._curPlat] || this._curPlat}_${this._curSent}_${SNTCfg.sd}_${SNTCfg.ed}.csv` });
-        a.click(); URL.revokeObjectURL(a.href);
-      },
-
       async _fetch(platform) {
         const q = `project_id=${SNTCfg.pid}&start_date=${SNTCfg.sd}&end_date=${SNTCfg.ed}&rows=500&start=0`;
         if (platform === 'social') {
@@ -2123,7 +1281,6 @@
         }
         return this._fetchOne(platform, q);
       },
-
       async _fetchOne(platform, q) {
         if (platform === 'ig') {
           for (const sub of ['postbylike', 'postbycomment', 'postbydate', '']) {
@@ -2139,10 +1296,8 @@
         if (platform === 'doc') items = items.filter(m => { const tc = String(m.tcode || '').toLowerCase(), mt = String(m.media_type || '').toLowerCase(); return tc === 'berita' || mt === 'berita' || mt === 'doc' || mt === 'news' || mt === 'online' || mt === 'article'; });
         return items;
       },
-
       _normSent(item) { const raw = String(item.class_sentiment || item.sentiment || item.sentiment_str || '0').toLowerCase().trim(); if (raw === '1' || raw === 'positive' || raw === 'positif') return 'pos'; if (raw === '-1' || raw === '2' || raw === 'negative' || raw === 'negatif') return 'neg'; return 'neu'; },
       _getFiltered() { return this._curSent === 'all' ? this._allItems : this._allItems.filter(item => this._normSent(item) === this._curSent); },
-
       _renderFiltered(list) {
         const items = this._getFiltered();
         document.getElementById('sntPopCount').textContent = items.length.toLocaleString();
@@ -2151,7 +1306,6 @@
         badge.style.background = bColors[this._curSent] || 'var(--primary-green)';
         this._render(list, items);
       },
-
       _render(list, items) {
         if (!items.length) { list.innerHTML = `<div class="sntp-loading" style="color:#94a3b8;">Tidak ada mention untuk filter ini</div>`; return; }
         const SHOW = 60;
@@ -2173,23 +1327,22 @@
           const platDot = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0;"></span>`;
           const itemData = sntEsc(JSON.stringify(item));
           return `<div class="sntp-item" data-item='${itemData}' data-plat="${plat}" onclick="SNTPopup._onItemClick(this)">
-          <div class="sntp-avatar" style="background:linear-gradient(135deg,${color},${color}99);">${avHtml}</div>
-          <div class="sntp-item-body">
-            <div class="sntp-item-author">${sntEsc(displayName)}</div>
-            ${handle ? `<div class="sntp-item-handle">${sntEsc(handle)}</div>` : ''}
-            <div class="sntp-item-text">${sntEsc(text || '(tidak ada konten)')}</div>
-            <div class="sntp-item-footer">
-              <span class="sntp-sent-badge sntp-sent-badge--${sent}">${sentLbl}</span>
-              ${platDot}<span style="font-size:10px;">${meta.label || ''}</span>
-              ${eng ? `<span>${sntEsc(eng)}</span>` : ''}
-              ${dt ? `<span style="margin-left:auto;">${dt}</span>` : ''}
+            <div class="sntp-avatar" style="background:linear-gradient(135deg,${color},${color}99);">${avHtml}</div>
+            <div class="sntp-item-body">
+              <div class="sntp-item-author">${sntEsc(displayName)}</div>
+              ${handle ? `<div class="sntp-item-handle">${sntEsc(handle)}</div>` : ''}
+              <div class="sntp-item-text">${sntEsc(text || '(tidak ada konten)')}</div>
+              <div class="sntp-item-footer">
+                <span class="sntp-sent-badge sntp-sent-badge--${sent}">${sentLbl}</span>
+                ${platDot}<span style="font-size:10px;">${meta.label || ''}</span>
+                ${eng ? `<span>${sntEsc(eng)}</span>` : ''}
+                ${dt ? `<span style="margin-left:auto;">${dt}</span>` : ''}
+              </div>
             </div>
-          </div>
-        </div>`;
+          </div>`;
         }).join('');
         if (items.length > SHOW) list.insertAdjacentHTML('beforeend', `<div style="padding:9px 14px;text-align:center;font-size:11px;font-weight:600;color:#64748b;background:var(--slate-50);border-top:1px dashed var(--slate-200);">+${(items.length - SHOW).toLocaleString()} mentions lainnya</div>`);
       },
-
       _onItemClick(el) {
         try { const raw = el.getAttribute('data-item'); const item = JSON.parse(raw.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')); SNTDetail.open(item, el.dataset.plat || this._curPlat || 'doc'); } catch (e) { console.warn('SNT Detail parse error:', e); }
       }

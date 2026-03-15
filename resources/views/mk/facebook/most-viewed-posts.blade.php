@@ -428,27 +428,6 @@
     .sentiment-badge.negative { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #991b1b; border: 1px solid #fca5a5; }
     .sentiment-badge.neutral  { background: linear-gradient(135deg, var(--bg-gray-100) 0%, var(--bg-gray-50) 100%); color: var(--text-secondary); border: 1px solid var(--border-gray); }
 
-    /* Export Button */
-    .export-btn {
-        padding: 10px 20px;
-        background: var(--bg-white);
-        border: 1px solid var(--border-gray);
-        border-radius: 10px;
-        font-family: 'Poppins', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-primary);
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .export-btn:hover { border-color: var(--primary-green); color: var(--primary-green); box-shadow: var(--shadow-md); }
-    .export-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
-
     /* Pagination */
     .pagination {
         display: flex;
@@ -892,18 +871,6 @@
             <div class="stat-label">Total Shares</div>
             <div id="totalShares" class="stat-value">0</div>
         </div>
-    </div>
-
-    <!-- Export -->
-    <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 24px;">
-        <button class="export-btn" onclick="FBPostsLoader.exportCSV()">
-            <svg viewBox="0 0 24 24">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            Download CSV
-        </button>
     </div>
 
     <!-- Top Posts Chart -->
@@ -1441,29 +1408,6 @@ const FBPostsLoader = {
         this.currentPage = p;
         this.renderTable();
         document.querySelector('.table-container:last-of-type')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    },
-
-    exportCSV() {
-        if (!this.allPosts.length) { alert('No data to export'); return; }
-        const headers = ['Rank', 'Author', 'Post', 'Likes', 'Comments', 'Shares', 'Engagement', 'Sentiment', 'Date'];
-        const rows = this.allPosts.map((post, idx) => [
-            idx + 1,
-            `"${(post.author?.name || post.name || 'Unknown').replace(/"/g, '""')}"`,
-            `"${(post.content || '').replace(/"/g, '""')}"`,
-            post.likes    || 0,
-            post.comments || 0,
-            post.shares   || 0,
-            (post.likes||0) + (post.comments||0) + (post.shares||0),
-            post.sentiment_str || 'Neutral',
-            post.date_created  || ''
-        ]);
-        const csv  = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href  = URL.createObjectURL(blob);
-        link.setAttribute('download', `facebook_most_viewed_posts_${this.startDate}_to_${this.endDate}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link); link.click(); document.body.removeChild(link);
     },
 
     formatDate(dateString) {

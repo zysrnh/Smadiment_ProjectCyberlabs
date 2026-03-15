@@ -50,6 +50,8 @@
 @keyframes slideOutRight { from{transform:translateX(0);opacity:1}    to{transform:translateX(100%);opacity:0} }
 @keyframes overlayIn  { from{opacity:0} to{opacity:1} }
 @keyframes overlayOut { from{opacity:1} to{opacity:0} }
+@keyframes kpiShimmer { 0%{left:-100%} 100%{left:150%} }
+@keyframes kpiIconBounce { 0%,100%{transform:scale(1) rotate(0deg);} 30%{transform:scale(1.25) rotate(-10deg);} 60%{transform:scale(1.1) rotate(6deg);} }
 
 .kpi-icon-bg { width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.2);font-size:24px;color:#fff;flex-shrink:0; }
 .sk-block { border-radius:4px;background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite; }
@@ -124,8 +126,6 @@
 .do-panel-close:hover { background:var(--red);border-color:var(--red);color:#fff; }
 .do-panel-actions { display:flex;align-items:center;gap:7px;padding:7px 12px;border-bottom:1px solid var(--slate-200);background:#fff;flex-shrink:0; }
 .do-panel-meta { flex:1;font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:5px; }
-.do-panel-export { display:flex;align-items:center;gap:4px;padding:4px 10px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-size:10px;font-weight:700;cursor:pointer;transition:filter .13s; }
-.do-panel-export:hover { filter:brightness(1.1); }
 .do-panel-list { overflow-y:auto;flex:1;padding:2px 0;min-height:0; }
 .do-panel-list::-webkit-scrollbar { width:4px; }
 .do-panel-list::-webkit-scrollbar-thumb { background:var(--slate-200);border-radius:99px; }
@@ -169,7 +169,7 @@
 .do-dp2-stat { background:var(--slate-50);border-radius:var(--radius-sm);padding:8px 10px;border:1px solid var(--slate-200);text-align:center; }
 .do-dp2-stat-val { font-size:14px;font-weight:700;color:var(--slate-900); }
 .do-dp2-stat-lbl { font-size:9px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.4px;margin-top:1px; }
-.do-dp2-link { display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;background:#1877f2;color:#fff;border-radius:var(--radius-sm);font-size:12px;font-weight:700;text-decoration:none;transition:filter .14s;margin-top:4px; }
+.do-dp2-link { display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;background:#1877f2;color:#fff;border-radius:var(--radius-sm);font-size:12px;font-weight:700;text-decoration:none;transition:filter .14px;margin-top:4px; }
 .do-dp2-link:hover { filter:brightness(1.1);color:#fff; }
 
 .tme-rows-sel { padding:4px 9px;border:1px solid var(--slate-200);border-radius:var(--radius-sm);font-size:11px;font-weight:600;color:var(--slate-600);background:var(--slate-50);outline:none;cursor:pointer;transition:border-color .14s; }
@@ -180,10 +180,6 @@
 .donut-leg-item:hover { border-color:var(--primary);background:var(--primary-lt);color:var(--primary); }
 .donut-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
 
-@media(max-width:640px) { .do-panel{width:100vw;} .tme-tabs{flex-wrap:wrap;} .tme-tab-btn{flex:unset;min-width:calc(50% - 4px);} }
-
-@keyframes kpiIconBounce { 0%,100%{transform:scale(1) rotate(0deg);} 30%{transform:scale(1.25) rotate(-10deg);} 60%{transform:scale(1.1) rotate(6deg);} }
-@keyframes kpiShimmer { 0%{left:-100%;} 100%{left:150%;} }
 .kpi-card-hover { will-change:transform,box-shadow;cursor:default;position:relative!important;overflow:hidden!important;transition:transform .25s cubic-bezier(.34,1.56,.64,1)!important,box-shadow .25s ease!important,filter .25s ease!important; }
 .kpi-card-hover::before { content:'';position:absolute;top:0;bottom:0;left:-100%;width:60%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);pointer-events:none;z-index:1;transition:none; }
 .kpi-card-hover:hover { transform:translateY(-6px) scale(1.025)!important;box-shadow:0 20px 40px rgba(0,0,0,.25)!important;filter:brightness(1.07)!important; }
@@ -191,6 +187,66 @@
 .kpi-card-hover:hover .kpi-icon-bg { background:rgba(255,255,255,.35)!important;transition:background .2s ease!important; }
 .kpi-card-hover:hover .kpi-icon-bg i { animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both!important;display:inline-block!important; }
 .kpi-card-hover:active { transform:translateY(-2px) scale(1.01)!important;transition-duration:.08s!important; }
+
+/* ══════════════════════════════════════════════════════
+   EXPORT STYLES
+══════════════════════════════════════════════════════ */
+.page-export-bar {
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:10px;
+    background:#fff; border:1px solid var(--slate-200);
+    border-radius:var(--radius); padding:9px 14px;
+    margin-bottom:20px; box-shadow:var(--shadow-sm);
+}
+.page-export-bar-left { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:var(--slate-600); }
+.page-export-bar-left i { font-size:15px; color:var(--primary); }
+.page-export-bar-right { display:flex; gap:8px; }
+
+.page-export-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:32px; height:32px; border-radius:var(--radius-sm);
+    font-size:16px; cursor:pointer; transition:all .15s ease;
+    border:1.5px solid transparent; font-family:inherit;
+}
+.page-export-btn-pdf { background:#fff3f3; color:#dc2626; border-color:#fca5a5; }
+.page-export-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.page-export-btn-img { background:var(--primary-lt); color:var(--primary); border-color:rgba(3,128,71,.3); }
+.page-export-btn-img:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.page-export-btn:disabled { opacity:.55; cursor:not-allowed; pointer-events:none; }
+.page-export-btn .export-spinner { width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .65s linear infinite;display:none; }
+.page-export-btn.exporting .export-spinner { display:inline-block; }
+.page-export-btn.exporting .export-icon    { display:none; }
+
+.card-exp-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    font-size:14px; cursor:pointer; flex-shrink:0;
+    transition:all .14s ease; border:1px solid transparent;
+    font-family:inherit; background:transparent;
+}
+.card-exp-btn-pdf { color:#dc2626; border-color:#fca5a5; background:#fff3f3; }
+.card-exp-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.card-exp-btn-img { color:var(--primary); border-color:rgba(3,128,71,.3); background:var(--primary-lt); }
+.card-exp-btn-img:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.card-exp-btn:disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+.card-exp-btn .export-spinner { width:11px;height:11px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .65s linear infinite;display:none; }
+.card-exp-btn.exporting .export-spinner { display:inline-block; }
+.card-exp-btn.exporting .export-icon    { display:none; }
+
+.export-toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--slate-900); color:#fff; border-radius:var(--radius);
+    padding:10px 18px; font-size:12px; font-weight:600;
+    box-shadow:var(--shadow-lg); z-index:99999;
+    opacity:0; pointer-events:none;
+    transition:opacity .22s ease, transform .22s ease;
+    display:flex; align-items:center; gap:8px; white-space:nowrap;
+}
+.export-toast.show    { opacity:1; transform:translateX(-50%) translateY(0); }
+.export-toast.success { background:#065f46; }
+.export-toast.error   { background:#991b1b; }
+
+@media(max-width:640px) { .do-panel{width:100vw;} .tme-tabs{flex-wrap:wrap;} .tme-tab-btn{flex:unset;min-width:calc(50% - 4px);} }
 </style>
 @endsection
 
@@ -212,6 +268,9 @@
 </script>
 
 @include('mk.layouts.partials.filter-datepicker')
+
+{{-- ════ PAGE EXPORT WRAPPER ════ --}}
+<div id="pageExportArea">
 
 {{-- ══ KPI Cards ══ --}}
 <div class="row mb-3">
@@ -259,10 +318,30 @@
     </div>
 </div>
 
+{{-- ══ Page Export Toolbar ══ --}}
+<div class="page-export-bar" data-html2canvas-ignore="true">
+    <div class="page-export-bar-left">
+        <i class="ph ph-export"></i>
+        <span>Export Halaman</span>
+        <span class="badge bg-light-secondary text-muted ms-1" style="font-size:10px;">KPI + Charts + Post List</span>
+    </div>
+    <div class="page-export-bar-right">
+        <button type="button" class="page-export-btn page-export-btn-pdf" id="pageExportPdfBtn"
+                onclick="FMEExport.run('pdf',this)" title="Export halaman sebagai PDF">
+            <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+        </button>
+        <button type="button" class="page-export-btn page-export-btn-img" id="pageExportImgBtn"
+                onclick="FMEExport.run('image',this)" title="Export halaman sebagai PNG">
+            <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+        </button>
+    </div>
+</div>
+
 {{-- ══ Donut Distribution ══ --}}
 <div class="row">
     <div class="col-12">
         <div class="card" style="animation:fadeUp .38s ease-out .18s both;">
+            <div id="card-export-donut">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
                     <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-donut f-18 text-primary"></i></div>
@@ -271,7 +350,19 @@
                         <small class="text-muted">Proporsi engagement per post</small>
                     </div>
                 </div>
-                <div id="donutLegend" class="donut-legend"></div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div id="donutLegend" class="donut-legend"></div>
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf"
+                                onclick="FMEExport.runCard('card-export-donut','donut','pdf',this)" title="Export PDF">
+                            <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                        <button class="card-exp-btn card-exp-btn-img"
+                                onclick="FMEExport.runCard('card-export-donut','donut','image',this)" title="Export PNG">
+                            <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <div class="chart-container" style="height:480px;" id="donutWrap">
@@ -280,6 +371,7 @@
                     <div id="donutEmpty" style="display:none;" class="chart-empty"><i class="ph ph-chart-donut"></i><span>No data</span></div>
                 </div>
             </div>
+            </div>{{-- /card-export-donut --}}
         </div>
     </div>
 </div>
@@ -297,7 +389,10 @@
     $panelIcons  = ['like'=>'ph-thumbs-up','share'=>'ph-share-network','comment'=>'ph-chat-circle'];
 @endphp
 <div class="tme-tab-panel {{ $tp === 'like' ? 'active' : '' }}" id="panel-{{ $tp }}">
+
+    {{-- Post List Card --}}
     <div class="card mb-3" style="animation:fadeUp .38s ease-out .2s both;">
+        <div id="card-export-list-{{ $tp }}">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
                 <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph {{ $panelIcons[$tp] }} f-18 text-primary"></i></div>
@@ -307,20 +402,45 @@
                 <select class="tme-rows-sel" id="rows-{{ $tp }}" onchange="FMEData.reloadTab('{{ $tp }}')">
                     <option value="10">Top 10</option><option value="20">Top 20</option><option value="50">Top 50</option><option value="100" selected>Top 100</option>
                 </select>
-                <button class="btn btn-outline-secondary btn-sm" onclick="FMEData.exportCsv('{{ $tp }}')" title="Export CSV"><i class="ph ph-download-simple me-1"></i>CSV</button>
                 <span class="badge bg-light-primary text-primary" id="badge-{{ $tp }}">Loading…</span>
+                <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                    <button class="card-exp-btn card-exp-btn-pdf"
+                            onclick="FMEExport.runCard('card-export-list-{{ $tp }}','list-{{ $tp }}','pdf',this)" title="Export PDF">
+                        <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                    <button class="card-exp-btn card-exp-btn-img"
+                            onclick="FMEExport.runCard('card-export-list-{{ $tp }}','list-{{ $tp }}','image',this)" title="Export PNG">
+                        <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                </div>
             </div>
         </div>
         <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
         <div id="pag-{{ $tp }}"></div>
+        </div>{{-- /card-export-list --}}
     </div>
+
+    {{-- Bar Chart Card --}}
     <div class="card mb-3" style="animation:fadeUp .38s ease-out .25s both;">
+        <div id="card-export-bar-{{ $tp }}">
         <div class="card-header d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2">
                 <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-bar f-18 text-primary"></i></div>
                 <div><h6 class="mb-0">{{ $panelLabels[$tp] }} Chart</h6><small class="text-muted">Top 10 posts</small></div>
             </div>
-            <span class="badge bg-light-secondary text-muted">Top 10</span>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-light-secondary text-muted">Top 10</span>
+                <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                    <button class="card-exp-btn card-exp-btn-pdf"
+                            onclick="FMEExport.runCard('card-export-bar-{{ $tp }}','bar-{{ $tp }}','pdf',this)" title="Export PDF">
+                        <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                    <button class="card-exp-btn card-exp-btn-img"
+                            onclick="FMEExport.runCard('card-export-bar-{{ $tp }}','bar-{{ $tp }}','image',this)" title="Export PNG">
+                        <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="card-body">
             <div class="chart-container" id="wrap-bar-{{ $tp }}">
@@ -328,17 +448,33 @@
                 <div id="bar-{{ $tp }}" style="width:100%;height:280px;display:none;"></div>
             </div>
         </div>
+        </div>{{-- /card-export-bar --}}
     </div>
+
+    {{-- Engagement comparison — like tab only --}}
     @if($tp === 'like')
     <div class="card mb-3" style="animation:fadeUp .38s ease-out .30s both;">
+        <div id="card-export-eng">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
                 <div class="avtar avtar-xs bg-light-secondary rounded"><i class="ph ph-chart-bar-horizontal f-18 text-muted"></i></div>
                 <div><h6 class="mb-0">Like vs Share vs Comment — Top 10</h6><small class="text-muted">Perbandingan engagement keseluruhan</small></div>
             </div>
-            <div class="tme-toggle-group" id="engTypeToggle">
-                <button class="tme-toggle-btn active" data-type="stacked" onclick="FMEChart.setEngType('stacked')">Stacked</button>
-                <button class="tme-toggle-btn" data-type="grouped" onclick="FMEChart.setEngType('grouped')">Grouped</button>
+            <div class="d-flex align-items-center gap-2">
+                <div class="tme-toggle-group" id="engTypeToggle">
+                    <button class="tme-toggle-btn active" data-type="stacked" onclick="FMEChart.setEngType('stacked')">Stacked</button>
+                    <button class="tme-toggle-btn" data-type="grouped" onclick="FMEChart.setEngType('grouped')">Grouped</button>
+                </div>
+                <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                    <button class="card-exp-btn card-exp-btn-pdf"
+                            onclick="FMEExport.runCard('card-export-eng','eng','pdf',this)" title="Export PDF">
+                        <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                    <button class="card-exp-btn card-exp-btn-img"
+                            onclick="FMEExport.runCard('card-export-eng','eng','image',this)" title="Export PNG">
+                        <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                </div>
             </div>
         </div>
         <div class="card-body">
@@ -347,10 +483,21 @@
                 <div id="bar-eng" style="width:100%;height:280px;display:none;"></div>
             </div>
         </div>
+        </div>{{-- /card-export-eng --}}
     </div>
     @endif
+
 </div>
 @endforeach
+
+{{-- /pageExportArea --}}
+</div>
+
+{{-- ══ Export Toast ══ --}}
+<div class="export-toast" id="exportToast">
+    <i class="ph ph-check-circle" id="exportToastIcon"></i>
+    <span id="exportToastMsg">Exporting…</span>
+</div>
 
 {{-- ══ Slide Panel ══ --}}
 <div class="do-panel-overlay" id="fmePanelOverlay" onclick="FMEPanel.close()"></div>
@@ -362,7 +509,6 @@
     </div>
     <div class="do-panel-actions">
         <div class="do-panel-meta"><i class="ph ph-magnifying-glass" style="font-size:11px;"></i><span id="fmePanelMeta">—</span></div>
-        <button class="do-panel-export" onclick="FMEPanel.exportCsv()"><i class="ph ph-download-simple"></i> CSV</button>
     </div>
     <div class="do-panel-list" id="fmePanelList"></div>
     <div class="do-detail-panel" id="fmeDetailPanel">
@@ -374,9 +520,16 @@
         <div class="do-dp2-body" id="fmeDetailBody"></div>
     </div>
 </div>
+
 @endsection
 
 @section('scripts')
+{{-- ══ Export dependencies ══ --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 <script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
 <script>
@@ -533,14 +686,7 @@ const FMEData={
         chart.on('mouseout',()=>{_ttEl.style.opacity='0';_ttEl.style.transform='translateY(6px) scale(.97)';_ttTimer=setTimeout(()=>{_ttEl.style.display='none';},180);});
         chartEl.addEventListener('mousemove',e=>{if(_ttEl.style.display==='none')return;const vw=window.innerWidth,vh=window.innerHeight,tw=_ttEl.offsetWidth+16,th=_ttEl.offsetHeight+16;let x=e.clientX+18,y=e.clientY-10;if(x+tw>vw)x=e.clientX-tw;if(y+th>vh)y=e.clientY-th;_ttEl.style.left=x+'px';_ttEl.style.top=y+'px';});
     },
-    _renderEngChart(items){hideLd('loading-eng');if(!items.length)return;const top10=[...items].map(it=>({...it,_total:parseInt(it.likes||0)+parseInt(it.shares||0)+parseInt(it.comments||0)})).sort((a,b)=>b._total-a._total).slice(0,10);FMEChart._items=top10;FMEChart._render(top10,FMEChart._type);},
-    exportCsv(type){
-        const items=Store[type];if(!items?.length){alert('Tidak ada data.');return;}
-        const hdr='index;nama;sentiment;likes;shares;comments;total_engagement;tanggal;url;konten';
-        const rows=items.map((it,i)=>{const name=this._getName(it),sent=this._normSent(it),sentLbl={pos:'Positif',neg:'Negatif',neu:'Netral'}[sent];const l=parseInt(it.likes||0),s=parseInt(it.shares||0),c=parseInt(it.comments||0);const content=(it.content||it.caption||'').replace(/<[^>]*>/g,'').trim().slice(0,300).replace(/;/g,',').replace(/\n/g,' ');return`${i};${name.replace(/;/g,',')};${sentLbl};${l};${s};${c};${l+s+c};${(it.date_created||'').split('T')[0]};${it.url||''};${content}`;});
-        const blob=new Blob(['\uFEFF'+[hdr,...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});
-        const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`Facebook_Most${type.charAt(0).toUpperCase()+type.slice(1)}_${FMECfg.sd}_${FMECfg.ed}.csv`});a.click();
-    }
+    _renderEngChart(items){hideLd('loading-eng');if(!items.length)return;const top10=[...items].map(it=>({...it,_total:parseInt(it.likes||0)+parseInt(it.shares||0)+parseInt(it.comments||0)})).sort((a,b)=>b._total-a._total).slice(0,10);FMEChart._items=top10;FMEChart._render(top10,FMEChart._type);}
 };
 
 const FMEChart={
@@ -568,7 +714,6 @@ const FMEPanel={
     _items:[],_type:null,
     open(items,type,title){this._items=items||[];this._type=type;FMEDetail.close();_$('fmePanelDot').style.background=FMECfg.colors[type]||FMECfg.primary;_$('fmePanelTitle').textContent=title||'Facebook Posts';_$('fmePanelMeta').textContent=FMECfg.sd+' – '+FMECfg.ed;const ov=_$('fmePanelOverlay'),pn=_$('fmeSntPanel');ov.classList.remove('hiding');pn.classList.remove('hiding');ov.classList.add('show');pn.classList.add('show');this._render(items,type);},
     close(){FMEDetail.close();const ov=_$('fmePanelOverlay'),pn=_$('fmeSntPanel');pn.classList.add('hiding');ov.classList.add('hiding');setTimeout(()=>{pn.classList.remove('show','hiding');ov.classList.remove('show','hiding');},240);},
-    exportCsv(){FMEData.exportCsv(this._type||'like');},
     _render(items,type){
         const list=_$('fmePanelList');if(!list)return;if(!items?.length){list.innerHTML='<div class="do-panel-loading"><div class="do-panel-spinner"></div>Tidak ada data</div>';return;}
         const metLbl={like:'Likes',share:'Shares',comment:'Comments'}[type];
@@ -593,6 +738,200 @@ const FMEDetail={
     },
     close(){_$('fmeDetailPanel')?.classList.remove('show');}
 };
+
+/* ══════════════════════════════════════════════════════
+   EXPORT MODULE — identik dengan platform lain
+   Menangkap #pageExportArea : KPI + Donut + Tab Cards
+══════════════════════════════════════════════════════ */
+const FMEExport = (() => {
+    let _toastTimer = null;
+
+    function _toast(msg, type='default', duration=3200) {
+        const t=_$('exportToast'), m=_$('exportToastMsg'), ico=_$('exportToastIcon');
+        if(!t||!m) return;
+        m.textContent = msg;
+        t.className   = 'export-toast show '+(type!=='default'?type:'');
+        const icons   = { success:'ph-check-circle', error:'ph-x-circle', default:'ph-spinner' };
+        ico.className = 'ph '+(icons[type]||icons.default);
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(()=>t.classList.remove('show'), duration);
+    }
+
+    function _btnState(btn, loading) {
+        if(!btn) return;
+        btn.disabled = loading;
+        btn.classList.toggle('exporting', loading);
+    }
+
+    function _drawHeader(doc, pW, margin, title) {
+        doc.setFillColor(3, 128, 71);
+        doc.rect(0, 0, pW, 11, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(9); doc.setFont('helvetica','bold');
+        doc.text(title, margin, 7.5);
+        const now = new Date().toLocaleDateString('id-ID',{ day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        doc.setFontSize(7); doc.setFont('helvetica','normal');
+        doc.text('Generated: '+now, pW-margin, 7.5, { align:'right' });
+    }
+
+    async function _capture() {
+        const area = _$('pageExportArea');
+        if(!area) throw new Error('pageExportArea tidak ditemukan');
+        window.scrollTo({ top:0 });
+        await new Promise(r => setTimeout(r, 300));
+        if(window.__donutEChart) { try{ window.__donutEChart.resize(); }catch(e){} }
+        Object.values(Charts).forEach(c=>{ try{ c.updateOptions({}); }catch(e){} });
+        return html2canvas(area, {
+            scale:2, useCORS:true, allowTaint:false, backgroundColor:'#f1f5f9',
+            logging:false, removeContainer:true,
+            windowWidth:document.documentElement.scrollWidth,
+            windowHeight:area.scrollHeight, height:area.scrollHeight,
+            ignoreElements: el =>
+                el.hasAttribute('data-html2canvas-ignore') ||
+                el.id === 'pageExportPdfBtn' ||
+                el.id === 'pageExportImgBtn',
+        });
+    }
+
+    async function _exportPdf() {
+        const canvas = await _capture();
+        const { jsPDF } = window.jspdf;
+        const imgW=canvas.width, imgH=canvas.height;
+        const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+        const pW=pdf.internal.pageSize.getWidth(), pH=pdf.internal.pageSize.getHeight();
+        const margin=10, usableW=pW-margin*2, usableH=pH-margin*2-14;
+        const ratio=usableW/imgW, sliceH=usableH/ratio;
+        let srcY=0, pageNum=0;
+        while(srcY < imgH) {
+            if(pageNum > 0) pdf.addPage();
+            _drawHeader(pdf, pW, margin, 'SMADIMENT — Facebook Most Engagement');
+            const srcSlice=Math.min(sliceH,imgH-srcY), dstH=srcSlice*ratio;
+            const slice=document.createElement('canvas');
+            slice.width=imgW; slice.height=Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(canvas,0,srcY,imgW,srcSlice,0,0,imgW,srcSlice);
+            pdf.addImage(slice.toDataURL('image/png'),'PNG',margin,14,usableW,dstH);
+            pdf.setFontSize(7); pdf.setTextColor(148,163,184);
+            pdf.text(`Halaman ${pageNum+1}`, pW/2, pH-3, { align:'center' });
+            srcY+=srcSlice; pageNum++;
+        }
+        const stamp=new Date().toISOString().slice(0,10).replace(/-/g,'');
+        pdf.save(`facebook_engagement_${FME_PID}_${stamp}.pdf`);
+    }
+
+    async function _exportImage() {
+        const canvas = await _capture();
+        const stamp=new Date().toISOString().slice(0,10).replace(/-/g,'');
+        const link=document.createElement('a');
+        link.download=`facebook_engagement_${FME_PID}_${stamp}.png`;
+        link.href=canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    async function _captureCard(areaId, cardKey) {
+        const area=document.getElementById(areaId);
+        if(!area) throw new Error('Area #'+areaId+' tidak ditemukan');
+        if(cardKey==='donut' && window.__donutEChart) { try{ window.__donutEChart.resize(); }catch(e){} }
+        const apexKey=cardKey.startsWith('bar-')?cardKey:(cardKey==='eng'?'bar-eng':null);
+        if(apexKey && Charts[apexKey]) { try{ Charts[apexKey].updateOptions({}); }catch(e){} }
+        await new Promise(r => setTimeout(r, 220));
+        return html2canvas(area, {
+            scale:2, useCORS:true, allowTaint:false, backgroundColor:'#ffffff',
+            logging:false, removeContainer:true,
+            ignoreElements: el => el.hasAttribute('data-html2canvas-ignore'),
+        });
+    }
+
+    function _cardFilename(cardKey) {
+        const labels={
+            'donut'         :'distribusi-likes-top5',
+            'eng'           :'engagement-comparison',
+            'list-like'     :'top-posts-by-like',
+            'list-share'    :'top-posts-by-share',
+            'list-comment'  :'top-posts-by-comment',
+            'bar-like'      :'chart-most-liked',
+            'bar-share'     :'chart-most-shared',
+            'bar-comment'   :'chart-most-comments',
+        };
+        const stamp=new Date().toISOString().slice(0,10).replace(/-/g,'');
+        return `facebook_engagement_${labels[cardKey]||cardKey}_${FME_PID}_${stamp}`;
+    }
+    function _cardLabel(cardKey) {
+        const m={
+            'donut'        :'Distribusi Likes — Top 5',
+            'eng'          :'Engagement Comparison',
+            'list-like'    :'Top Posts by Likes',
+            'list-share'   :'Top Posts by Shares',
+            'list-comment' :'Top Posts by Comments',
+            'bar-like'     :'Chart Most Liked',
+            'bar-share'    :'Chart Most Shared',
+            'bar-comment'  :'Chart Most Comments',
+        };
+        return m[cardKey]||cardKey;
+    }
+
+    async function runCard(areaId, cardKey, type, btn) {
+        if(!window.html2canvas)             { _toast('html2canvas tidak tersedia','error'); return; }
+        if(type==='pdf'&&!window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
+        _btnState(btn, true);
+        _toast(type==='pdf'?'Menyiapkan PDF card…':'Mengambil gambar card…','default',99999);
+        try {
+            const canvas=await _captureCard(areaId, cardKey);
+            const fname=_cardFilename(cardKey);
+            if(type==='image') {
+                const link=document.createElement('a');
+                link.download=fname+'.png'; link.href=canvas.toDataURL('image/png'); link.click();
+                _toast('Gambar berhasil diunduh!','success');
+            } else {
+                const { jsPDF }=window.jspdf;
+                const imgW=canvas.width, imgH=canvas.height;
+                const landscape=imgW>imgH;
+                const pdf=new jsPDF({ orientation:landscape?'landscape':'portrait', unit:'mm', format:'a4' });
+                const pW=pdf.internal.pageSize.getWidth(), pH=pdf.internal.pageSize.getHeight();
+                const margin=10, usableW=pW-margin*2, usableH=pH-margin*2-14;
+                const ratio=usableW/imgW, sliceH=usableH/ratio;
+                _drawHeader(pdf, pW, margin, 'SMADIMENT — '+_cardLabel(cardKey));
+                let srcY=0, pageNum=0;
+                while(srcY < imgH) {
+                    if(pageNum>0) { pdf.addPage(); _drawHeader(pdf, pW, margin, 'SMADIMENT — '+_cardLabel(cardKey)); }
+                    const srcSlice=Math.min(sliceH,imgH-srcY), dstH=srcSlice*ratio;
+                    const slice=document.createElement('canvas');
+                    slice.width=imgW; slice.height=Math.ceil(srcSlice);
+                    slice.getContext('2d').drawImage(canvas,0,srcY,imgW,srcSlice,0,0,imgW,srcSlice);
+                    pdf.addImage(slice.toDataURL('image/png'),'PNG',margin,14,usableW,dstH);
+                    pdf.setFontSize(7); pdf.setTextColor(148,163,184);
+                    pdf.text(`Halaman ${pageNum+1}`, pW/2, pH-3, { align:'center' });
+                    srcY+=srcSlice; pageNum++;
+                }
+                pdf.save(fname+'.pdf');
+                _toast('PDF berhasil diunduh!','success');
+            }
+        } catch(err) {
+            console.error('[FMEExport.runCard]', err);
+            _toast('Export gagal: '+err.message,'error');
+        } finally {
+            _btnState(btn, false);
+        }
+    }
+
+    async function run(type, btn) {
+        if(!window.html2canvas)             { _toast('html2canvas tidak tersedia','error'); return; }
+        if(type==='pdf'&&!window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
+        const btnPdf=_$('pageExportPdfBtn'), btnImg=_$('pageExportImgBtn');
+        _btnState(btnPdf,true); _btnState(btnImg,true);
+        _toast(type==='pdf'?'Menyiapkan PDF…':'Mengambil gambar…','default',99999);
+        try {
+            if(type==='pdf') { await _exportPdf();   _toast('PDF berhasil diunduh!','success'); }
+            else             { await _exportImage(); _toast('Gambar berhasil diunduh!','success'); }
+        } catch(err) {
+            console.error('[FMEExport]', err);
+            _toast('Export gagal: '+err.message,'error');
+        } finally {
+            _btnState(btnPdf,false); _btnState(btnImg,false);
+        }
+    }
+
+    return { run, runCard };
+})();
 
 document.addEventListener('DOMContentLoaded',()=>{FMEData.loadAll();document.addEventListener('keydown',e=>{if(e.key==='Escape')FMEPanel.close();});});
 </script>

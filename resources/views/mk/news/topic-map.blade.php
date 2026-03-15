@@ -5,7 +5,7 @@
 @section('styles')
 <style>
 /* ══════════════════════════════════════════════════════
-   DESIGN TOKENS — identical to TikTok Most Engagement
+   DESIGN TOKENS
 ══════════════════════════════════════════════════════ */
 :root {
     --primary        : #038047;
@@ -14,7 +14,6 @@
     --dark           : #273B4A;
     --white          : #FFFFFF;
     --bg             : #F1F5F8;
-
     --green          : #038047;
     --green-light    : #E8F5EE;
     --red            : #EF4444;
@@ -23,7 +22,6 @@
     --amber-light    : #FFFBEB;
     --cyan           : #06B6D4;
     --cyan-light     : #ECFEFF;
-
     --slate-50       : #F8FAFC;
     --slate-100      : #F1F5F9;
     --slate-200      : #E2E8F0;
@@ -34,7 +32,6 @@
     --slate-700      : #334155;
     --slate-800      : #1E293B;
     --slate-900      : #0F172A;
-
     --radius         : 8px;
     --radius-sm      : 5px;
     --shadow-sm      : 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
@@ -42,7 +39,7 @@
     --shadow-lg      : 0 10px 30px rgba(15,23,42,.12);
 }
 
-/* ══ Animations — identical to TME ══ */
+/* ══ Animations ══ */
 @keyframes fadeUp        { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 @keyframes shimmer       { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
 @keyframes spin          { to{transform:rotate(360deg)} }
@@ -72,7 +69,7 @@
     padding:56px 20px; gap:12px; color:var(--slate-400); font-size:12px; font-weight:600;
 }
 
-/* ══ KPI Cards — identical to TME ══ */
+/* ══ KPI Cards ══ */
 .kpi-icon-bg {
     width:48px; height:48px; border-radius:12px;
     display:flex; align-items:center; justify-content:center;
@@ -95,7 +92,7 @@
 .kpi-card-hover:hover .kpi-icon-bg i { animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both !important; display:inline-block !important; }
 .kpi-card-hover:active { transform:translateY(-2px) scale(1.01) !important; transition-duration:.08s !important; }
 
-/* ══ Tabs — identical to TME ══ */
+/* ══ Tabs ══ */
 .ntm-tabs {
     display:flex; gap:2px;
     background:var(--slate-100); border:1px solid var(--slate-200);
@@ -109,14 +106,11 @@
     cursor:pointer; transition:background .13s, color .13s; white-space:nowrap;
 }
 .ntm-tab-btn:hover { background:#fff; color:var(--slate-800); }
-.ntm-tab-btn.active {
-    background:#fff; color:var(--primary);
-    box-shadow:0 1px 4px rgba(0,0,0,.08);
-}
+.ntm-tab-btn.active { background:#fff; color:var(--primary); box-shadow:0 1px 4px rgba(0,0,0,.08); }
 .ntm-tab-panel { display:none; }
 .ntm-tab-panel.active { display:block; }
 
-/* ══ Toggle group — identical to TME ══ */
+/* ══ Toggle group ══ */
 .ntm-toggle-group {
     display:flex; background:var(--slate-50); border-radius:var(--radius-sm);
     padding:2px; gap:2px; border:1px solid var(--slate-200);
@@ -141,7 +135,7 @@
 .ntm-rlbtn svg { width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5; }
 .ntm-rlbtn.spin svg { animation:spin .7s linear infinite; }
 
-/* ══ Headline toggle — styled like TME toggle ══ */
+/* ══ Headline toggle ══ */
 .ntm-hl-tog {
     display:inline-flex; align-items:center; gap:5px;
     padding:4px 10px; border:1px solid var(--slate-200); border-radius:3px;
@@ -153,7 +147,6 @@
 
 /* ══ Treemap ══ */
 #ntmTreemap { position:relative; width:100%; overflow:hidden; }
-
 .ntm-tile {
     position:absolute; overflow:hidden; cursor:pointer;
     box-sizing:border-box; transition:filter .15s, transform .15s;
@@ -171,7 +164,7 @@
     overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; color:#fff;
 }
 
-/* Dark palette — mirrors Drone Emprit red-family + TME dark */
+/* Dark palette */
 .c0 {background:#7f1d1d} .c1 {background:#273B4A} .c2 {background:#92400e}
 .c3 {background:#064e3b} .c4 {background:#1e3a5f} .c5 {background:#5b21b6}
 .c6 {background:#9d174d} .c7 {background:#1e40af} .c8 {background:#374151}
@@ -218,14 +211,13 @@
 .ntm-empty-state h4  { font-size:14px; font-weight:700; color:var(--slate-500); margin:0; }
 .ntm-empty-state p   { font-size:12px; color:var(--slate-400); margin:0; text-align:center; }
 
-/* ══ SLIDE PANEL — identical to TME ══ */
+/* ══ Slide Panel ══ */
 .do-panel-overlay {
     position:fixed; inset:0; z-index:9000;
     background:rgba(15,23,42,.45); backdrop-filter:blur(4px); display:none;
 }
 .do-panel-overlay.show   { display:block; animation:overlayIn .22s ease-out; }
 .do-panel-overlay.hiding { animation:overlayOut .22s ease-out forwards; }
-
 .do-panel {
     position:fixed; top:0; right:0; bottom:0; z-index:9001;
     width:560px; max-width:100vw; background:#fff;
@@ -235,7 +227,6 @@
 }
 .do-panel.show   { display:flex; animation:slideInRight .28s cubic-bezier(.4,0,.2,1); }
 .do-panel.hiding { animation:slideOutRight .24s cubic-bezier(.4,0,.2,1) forwards; }
-
 .do-panel-header {
     display:flex; align-items:center; gap:10px;
     padding:14px 16px; border-bottom:1px solid var(--slate-200);
@@ -250,7 +241,6 @@
     color:var(--slate-500); font-size:16px; transition:all .14s; flex-shrink:0;
 }
 .do-panel-close:hover { background:var(--red); border-color:var(--red); color:#fff; }
-
 .do-panel-actions {
     display:flex; align-items:center; gap:7px; padding:7px 12px;
     border-bottom:1px solid var(--slate-200); background:#fff; flex-shrink:0;
@@ -260,18 +250,9 @@
     text-transform:uppercase; letter-spacing:.5px;
     display:flex; align-items:center; gap:5px;
 }
-.do-panel-export {
-    display:flex; align-items:center; gap:4px; padding:4px 10px;
-    background:var(--primary); color:#fff; border:none;
-    border-radius:var(--radius-sm); font-size:10px; font-weight:700;
-    cursor:pointer; transition:filter .13s;
-}
-.do-panel-export:hover { filter:brightness(1.1); }
 
-/* ── 3-column layout inside panel ── */
-.ntm-panel-body {
-    flex:1; display:flex; overflow:hidden; min-height:0;
-}
+/* Panel 3-col layout */
+.ntm-panel-body { flex:1; display:flex; overflow:hidden; min-height:0; }
 .ntm-p-pub {
     width:190px; flex-shrink:0; border-right:1px solid var(--slate-200);
     overflow-y:auto; display:flex; flex-direction:column;
@@ -296,7 +277,6 @@
 .ntm-pub-docs { font-size:9px; font-weight:700; color:#fff; background:var(--primary); padding:1px 6px; border-radius:9px; flex-shrink:0; }
 .ntm-pub-arr  { color:var(--slate-300); font-size:12px; flex-shrink:0; }
 .ntm-pub-row.act .ntm-pub-arr { color:var(--primary); }
-
 .ntm-p-kw {
     width:220px; flex-shrink:0; border-right:1px solid var(--slate-200);
     overflow-y:auto; display:flex; flex-direction:column;
@@ -321,7 +301,6 @@
 .ntm-kw-no { width:28px; padding:6px 4px 6px 10px; font-size:10px; color:var(--slate-400); font-weight:600; }
 .ntm-kw-w  { padding:6px 6px; font-size:11px; font-weight:500; color:var(--slate-700); }
 .ntm-kw-f  { padding:6px 10px 6px 4px; font-size:11px; font-weight:700; color:var(--slate-800); text-align:right; }
-
 .ntm-p-art { flex:1; overflow-y:auto; }
 .ntm-p-art::-webkit-scrollbar { width:3px; }
 .ntm-p-art::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
@@ -331,8 +310,6 @@
     border-bottom:1px solid var(--slate-200); background:var(--slate-50);
     position:sticky; top:0; z-index:1;
 }
-
-/* ── Article items ── */
 .ntm-ac {
     padding:12px 14px; border-bottom:1px solid var(--slate-50);
     transition:background .1s; display:flex; gap:10px;
@@ -363,6 +340,87 @@
 }
 .ntm-tip.on { opacity:1; }
 .ntm-tip b  { color:#4ade80; }
+
+/* ══ Metric chips ══ */
+.ntm-metric { display:inline-flex; align-items:center; gap:3px; padding:2px 6px; border-radius:3px; font-size:10px; font-weight:700; background:var(--slate-100); color:var(--slate-500); }
+.ntm-metric--primary { background:var(--primary-lt); color:var(--primary); }
+
+/* ══ Source badge ══ */
+.ntm-src-badge {
+    display:inline-flex; align-items:center; gap:5px;
+    padding:2px 9px; border-radius:3px;
+    font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px;
+    background:var(--primary-lt); color:var(--primary);
+    border:1px solid rgba(3,128,71,.2);
+}
+
+/* ══════════════════════════════════════════════════════
+   EXPORT STYLES
+══════════════════════════════════════════════════════ */
+.page-export-bar {
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:10px;
+    background:#fff; border:1px solid var(--slate-200);
+    border-radius:var(--radius); padding:9px 14px;
+    margin-bottom:20px; box-shadow:var(--shadow-sm);
+}
+.page-export-bar-left {
+    display:flex; align-items:center; gap:8px;
+    font-size:12px; font-weight:700; color:var(--slate-600);
+}
+.page-export-bar-left i { font-size:15px; color:var(--primary); }
+.page-export-bar-right  { display:flex; gap:8px; }
+.page-export-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:32px; height:32px; border-radius:var(--radius-sm);
+    font-size:16px; cursor:pointer; transition:all .15s ease;
+    border:1.5px solid transparent; font-family:inherit;
+}
+.page-export-btn-pdf { background:#fff3f3; color:#dc2626; border-color:#fca5a5; }
+.page-export-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.page-export-btn-img { background:var(--primary-lt); color:var(--primary); border-color:rgba(3,128,71,.3); }
+.page-export-btn-img:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.page-export-btn:disabled { opacity:.55; cursor:not-allowed; pointer-events:none; }
+.page-export-btn .export-spinner {
+    width:13px; height:13px; border:2px solid currentColor;
+    border-top-color:transparent; border-radius:50%;
+    animation:spin .65s linear infinite; display:none;
+}
+.page-export-btn.exporting .export-spinner { display:inline-block; }
+.page-export-btn.exporting .export-icon    { display:none; }
+
+.card-exp-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    font-size:14px; cursor:pointer; flex-shrink:0;
+    transition:all .14s ease; border:1px solid transparent;
+    font-family:inherit; background:transparent;
+}
+.card-exp-btn-pdf { color:#dc2626; border-color:#fca5a5; background:#fff3f3; }
+.card-exp-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.card-exp-btn-img { color:var(--primary); border-color:rgba(3,128,71,.3); background:var(--primary-lt); }
+.card-exp-btn-img:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.card-exp-btn:disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+.card-exp-btn .export-spinner {
+    width:11px; height:11px; border:2px solid currentColor;
+    border-top-color:transparent; border-radius:50%;
+    animation:spin .65s linear infinite; display:none;
+}
+.card-exp-btn.exporting .export-spinner { display:inline-block; }
+.card-exp-btn.exporting .export-icon    { display:none; }
+
+.export-toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--slate-900); color:#fff; border-radius:var(--radius);
+    padding:10px 18px; font-size:12px; font-weight:600;
+    box-shadow:var(--shadow-lg); z-index:99999;
+    opacity:0; pointer-events:none;
+    transition:opacity .22s ease, transform .22s ease;
+    display:flex; align-items:center; gap:8px; white-space:nowrap;
+}
+.export-toast.show    { opacity:1; transform:translateX(-50%) translateY(0); }
+.export-toast.success { background:#065f46; }
+.export-toast.error   { background:#991b1b; }
 
 /* ══ Date Picker Modal ══ */
 .ntm-dp-modal {
@@ -408,7 +466,6 @@
 }
 .ntm-dp-nav:hover { background:var(--primary); border-color:var(--primary); color:#fff; }
 .ntm-dp-nav svg  { width:16px; height:16px; }
-
 .ntm-cal-month   { font-size:13px; font-weight:700; color:var(--slate-800); margin-bottom:12px; text-align:center; }
 .ntm-cal-wdays   { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-bottom:4px; }
 .ntm-cal-wday    { text-align:center; font-size:9px; font-weight:700; color:var(--slate-400); padding:5px 0; }
@@ -425,7 +482,6 @@
 .ntm-cal-day.tod { border:2px solid var(--primary); }
 .ntm-cal-day.sel { background:var(--primary); color:#fff; }
 .ntm-cal-day.inr { background:var(--primary-lt); color:var(--primary); }
-
 .ntm-dp-display {
     padding:10px 14px; background:var(--slate-50); border-radius:var(--radius-sm);
     text-align:center; margin:14px 0; border:1px solid var(--slate-200);
@@ -445,24 +501,6 @@
     color:#fff; border:none; box-shadow:0 4px 12px rgba(3,128,71,.2);
 }
 .ntm-dp-apply:hover { filter:brightness(1.1); }
-
-/* ══ Metric chips ══ */
-.ntm-metric {
-    display:inline-flex; align-items:center; gap:3px;
-    padding:2px 6px; border-radius:3px;
-    font-size:10px; font-weight:700;
-    background:var(--slate-100); color:var(--slate-500);
-}
-.ntm-metric--primary { background:var(--primary-lt); color:var(--primary); }
-
-/* ══ Source badge ══ */
-.ntm-src-badge {
-    display:inline-flex; align-items:center; gap:5px;
-    padding:2px 9px; border-radius:3px;
-    font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px;
-    background:var(--primary-lt); color:var(--primary);
-    border:1px solid rgba(3,128,71,.2);
-}
 
 @media(max-width:768px) {
     .do-panel { width:100vw; }
@@ -491,7 +529,7 @@
     const NTM_ED  = '{{ $endDate }}';
 </script>
 
-{{-- ── Filter datepicker ── --}}
+{{-- Filter datepicker --}}
 @include('mk.layouts.partials.filter-datepicker')
 
 @if(!$projectId)
@@ -499,6 +537,9 @@
     <i class="ph ph-warning me-2"></i>No project selected. Please choose a project from the sidebar.
 </div>
 @else
+
+{{-- ════ PAGE EXPORT AREA WRAPPER ════ --}}
+<div id="ntmExportArea">
 
 {{-- ══ KPI Cards ══ --}}
 <div class="row mb-3">
@@ -584,8 +625,29 @@
     </div>
 </div>
 
+{{-- ══ Page Export Toolbar ══ --}}
+<div class="page-export-bar" data-html2canvas-ignore="true">
+    <div class="page-export-bar-left">
+        <i class="ph ph-export"></i>
+        <span>Export Halaman</span>
+        <span class="badge bg-light-secondary text-muted ms-1" style="font-size:10px;">KPI + Active Tab</span>
+    </div>
+    <div class="page-export-bar-right">
+        <button type="button" class="page-export-btn page-export-btn-pdf" id="ntmExportPdfBtn"
+                onclick="NTMExport.run('pdf', this)" title="Export sebagai PDF">
+            <i class="ph ph-file-pdf export-icon"></i>
+            <span class="export-spinner"></span>
+        </button>
+        <button type="button" class="page-export-btn page-export-btn-img" id="ntmExportImgBtn"
+                onclick="NTMExport.run('image', this)" title="Export sebagai PNG">
+            <i class="ph ph-image export-icon"></i>
+            <span class="export-spinner"></span>
+        </button>
+    </div>
+</div>
+
 {{-- ══ Tabs ══ --}}
-<div class="ntm-tabs">
+<div class="ntm-tabs" data-html2canvas-ignore="true">
     <button class="ntm-tab-btn active" id="tab-map"    onclick="NTMTab.show('map')">
         <i class="ph ph-squares-four"></i> Topic Map
     </button>
@@ -600,87 +662,139 @@
 {{-- ══ TAB: Map ══ --}}
 <div class="ntm-tab-panel active" id="panel-map">
     <div class="card" style="animation:fadeUp .38s ease-out .18s both;">
-        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div class="d-flex align-items-center gap-2">
-                <div class="avtar avtar-xs bg-light-primary rounded">
-                    <i class="ph ph-squares-four f-18 text-primary"></i>
+        <div id="card-ntm-map">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avtar avtar-xs bg-light-primary rounded">
+                        <i class="ph ph-squares-four f-18 text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">News Topic Map</h6>
+                        <small class="text-muted" id="ntmMapMeta">Visual map of the most-discussed topics</small>
+                    </div>
                 </div>
-                <div>
-                    <h6 class="mb-0">News Topic Map</h6>
-                    <small class="text-muted" id="ntmMapMeta">Visual map of the most-discussed topics</small>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="ntm-src-badge"><i class="ph ph-newspaper me-1"></i>Online News (Ind)</span>
+                    <button class="ntm-hl-tog" id="ntmHlTog" onclick="toggleHL()" title="Show/Hide Headline">
+                        <i class="ph ph-eye" style="font-size:11px;"></i>
+                        Headline: <span id="ntmHlLabel">On</span>
+                    </button>
+                    <input type="checkbox" id="ntmHlChk" checked style="display:none;" onchange="ntmRender()">
+                    <button class="ntm-rlbtn" id="ntmRl" onclick="ntmLoad()" title="Refresh" data-html2canvas-ignore="true">
+                        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    </button>
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf"
+                                onclick="NTMExport.runCard('card-ntm-map','topic-map','pdf',this)"
+                                title="Export PDF">
+                            <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                        <button class="card-exp-btn card-exp-btn-img"
+                                onclick="NTMExport.runCard('card-ntm-map','topic-map','image',this)"
+                                title="Export PNG">
+                            <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <span class="ntm-src-badge"><i class="ph ph-newspaper me-1"></i>Online News (Ind)</span>
-                <button class="ntm-hl-tog" id="ntmHlTog" onclick="toggleHL()" title="Show/Hide Headline">
-                    <i class="ph ph-eye" style="font-size:11px;"></i>
-                    Headline: <span id="ntmHlLabel">On</span>
-                </button>
-                <input type="checkbox" id="ntmHlChk" checked style="display:none;" onchange="ntmRender()">
-                <button class="ntm-rlbtn" id="ntmRl" onclick="ntmLoad()" title="Refresh">
-                    <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-                </button>
+            <div class="card-body p-0">
+                <div id="ntmLoading" class="spinner-state"><div class="spin-ring"></div>Loading topic map…</div>
+                <div id="ntmMapWrap" style="display:none;">
+                    <div id="ntmTreemap" style="position:relative;width:100%;overflow:hidden;"></div>
+                </div>
+                <div id="ntmEmpty" class="ntm-empty-state" style="display:none;">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <h4>No topic data found</h4>
+                    <p>Try a wider date range or check your project settings.</p>
+                </div>
             </div>
-        </div>
-        <div class="card-body p-0">
-            <div id="ntmLoading" class="spinner-state"><div class="spin-ring"></div>Loading topic map…</div>
-            <div id="ntmMapWrap" style="display:none;">
-                <div id="ntmTreemap" style="position:relative;width:100%;overflow:hidden;"></div>
-            </div>
-            <div id="ntmEmpty" class="ntm-empty-state" style="display:none;">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <h4>No topic data found</h4>
-                <p>Try a wider date range or check your project settings.</p>
-            </div>
-        </div>
+        </div>{{-- /card-ntm-map --}}
     </div>
 </div>
 
 {{-- ══ TAB: List ══ --}}
 <div class="ntm-tab-panel" id="panel-list">
     <div class="card" style="animation:fadeUp .38s ease-out .18s both;">
-        <div class="card-header d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-2">
-                <div class="avtar avtar-xs bg-light-primary rounded">
-                    <i class="ph ph-list-numbers f-18 text-primary"></i>
+        <div id="card-ntm-list">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avtar avtar-xs bg-light-primary rounded">
+                        <i class="ph ph-list-numbers f-18 text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">Topic Ranking</h6>
+                        <small class="text-muted">Sorted by article count</small>
+                    </div>
                 </div>
-                <div>
-                    <h6 class="mb-0">Topic Ranking</h6>
-                    <small class="text-muted">Sorted by article count</small>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-light-primary text-primary" id="badgeList">—</span>
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf"
+                                onclick="NTMExport.runCard('card-ntm-list','topic-list','pdf',this)"
+                                title="Export PDF">
+                            <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                        <button class="card-exp-btn card-exp-btn-img"
+                                onclick="NTMExport.runCard('card-ntm-list','topic-list','image',this)"
+                                title="Export PNG">
+                            <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                    </div>
                 </div>
             </div>
-            <span class="badge bg-light-primary text-primary" id="badgeList">—</span>
-        </div>
-        <div id="ntmListInner" class="p-0">
-            <div class="spinner-state"><div class="spin-ring"></div>Loading…</div>
-        </div>
+            <div id="ntmListInner" class="p-0">
+                <div class="spinner-state"><div class="spin-ring"></div>Loading…</div>
+            </div>
+        </div>{{-- /card-ntm-list --}}
     </div>
 </div>
 
 {{-- ══ TAB: Bubble ══ --}}
 <div class="ntm-tab-panel" id="panel-bubble">
     <div class="card" style="animation:fadeUp .38s ease-out .18s both;">
-        <div class="card-header d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-2">
-                <div class="avtar avtar-xs bg-light-primary rounded">
-                    <i class="ph ph-circles-three f-18 text-primary"></i>
+        <div id="card-ntm-bubble">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avtar avtar-xs bg-light-primary rounded">
+                        <i class="ph ph-circles-three f-18 text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">Bubble View</h6>
+                        <small class="text-muted">Size = topic weight</small>
+                    </div>
                 </div>
-                <div>
-                    <h6 class="mb-0">Bubble View</h6>
-                    <small class="text-muted">Size = topic weight</small>
+                <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                    <button class="card-exp-btn card-exp-btn-pdf"
+                            onclick="NTMExport.runCard('card-ntm-bubble','topic-bubble','pdf',this)"
+                            title="Export PDF">
+                        <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                    <button class="card-exp-btn card-exp-btn-img"
+                            onclick="NTMExport.runCard('card-ntm-bubble','topic-bubble','image',this)"
+                            title="Export PNG">
+                        <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                    </button>
                 </div>
             </div>
-        </div>
-        <div class="card-body p-0">
-            <div class="ntm-bub-card-inner" id="ntmBubWrap" style="display:none;">
-                <svg id="ntmBubSvg"></svg>
+            <div class="card-body p-0">
+                <div class="ntm-bub-card-inner" id="ntmBubWrap" style="display:none;">
+                    <svg id="ntmBubSvg"></svg>
+                </div>
+                <div class="spinner-state" id="ntmBubLoading"><div class="spin-ring"></div>Loading…</div>
             </div>
-            <div class="spinner-state" id="ntmBubLoading"><div class="spin-ring"></div>Loading…</div>
-        </div>
+        </div>{{-- /card-ntm-bubble --}}
     </div>
 </div>
 
-{{-- ══ Slide Panel (drawer) — identical structure to TME ══ --}}
+</div>{{-- /ntmExportArea --}}
+
+{{-- Export Toast --}}
+<div class="export-toast" id="ntmExportToast">
+    <i class="ph ph-check-circle" id="ntmExportToastIcon"></i>
+    <span id="ntmExportToastMsg">Exporting…</span>
+</div>
+
+{{-- ══ Slide Panel ══ --}}
 <div class="do-panel-overlay" id="ntmPanelOverlay" onclick="NTMPanel.close()"></div>
 <div class="do-panel" id="ntmDetailPanel">
     <div class="do-panel-header">
@@ -764,7 +878,13 @@
 @endsection
 
 @section('scripts')
+{{-- Export dependencies --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+
 <script>
 (function(){
 'use strict';
@@ -779,7 +899,7 @@ const CFG = {
     pubApi:   '/mk/api/news/top-publisher',
 };
 
-/* ══ Palette — TME dark palette ══ */
+/* ══ Palette ══ */
 const PAL = [
     '#7f1d1d','#273B4A','#92400e','#064e3b','#1e3a5f',
     '#5b21b6','#9d174d','#1e40af','#374151','#4d7c0f',
@@ -812,8 +932,8 @@ const NTMTab = {
             $('tab-'+t)?.classList.toggle('active', t===tab);
             $('panel-'+t)?.classList.toggle('active', t===tab);
         });
-        if(tab==='map' && D.raw.length && !this._rendered.map) { this._rendered.map=true; doMap(D.fil); }
-        if(tab==='list' && D.raw.length) { renderList(D.fil); }
+        if(tab==='map'    && D.raw.length && !this._rendered.map)    { this._rendered.map=true;    doMap(D.fil); }
+        if(tab==='list'   && D.raw.length)                           { renderList(D.fil); }
         if(tab==='bubble' && D.raw.length && !this._rendered.bubble) { this._rendered.bubble=true; doBub(D.fil); }
     },
     reset() { this._rendered={map:false,list:false,bubble:false}; }
@@ -825,10 +945,8 @@ function updateKPIs() {
     const total    = D.raw.reduce((s,d)=>s+d.count,0);
     const top      = D.raw[0]||{};
     const pubCount = Object.keys(D.arts.reduce((m,a)=>{ const p=a.publisher||extractHostname(a.url||'')||'Unknown'; m[p]=1; return m; },{})).length;
-
     const el  = (id,v) => { const e=$(id); if(e) e.textContent=v; };
     const sub = (id,v) => { const e=$(id); if(e) e.innerHTML=v; };
-
     el('kpiTopics', D.raw.length);
     sub('kpiTopicsSub', `<i class="ph ph-chart-bar me-1"></i>Sum weight ${numF(total)}`);
     el('kpiArts', D.arts.length);
@@ -837,7 +955,6 @@ function updateKPIs() {
     sub('kpiTopSub', top.count ? `<i class="ph ph-trophy me-1"></i>${numF(top.count)} articles / mentions` : '');
     el('kpiPubs', pubCount||D.allPubs.length);
     sub('kpiPubsSub', `<i class="ph ph-globe me-1"></i>Unique online publishers`);
-
     const bl=$('badgeList'); if(bl) bl.textContent=D.raw.length+' topics';
 }
 
@@ -855,15 +972,13 @@ function findHeadlineUnique(topic, usedSet) {
         words.forEach(w=>{ if(title.includes(w)) score+=15; });
         if(content.includes(q)) score+=20;
         words.forEach(w=>{ if(content.includes(w)) score+=3; });
-        if(score>bestScore||(score===bestScore&&best&&titleRaw.length<best.title.length)){
-            bestScore=score; best=a;
-        }
+        if(score>bestScore||(score===bestScore&&best&&titleRaw.length<best.title.length)){ bestScore=score; best=a; }
     });
     if(bestScore>=15&&best){ usedSet.add(best.title||''); return best.title||''; }
     return '';
 }
 
-/* ══ Fetch articles (paginated) ══ */
+/* ══ Fetch articles ══ */
 async function fetchAllArticles() {
     const batchSize=500; let all=[], start=0, hasMore=true;
     while(hasMore) {
@@ -889,7 +1004,6 @@ window.ntmLoad = async function() {
     if(D.busy||!CFG.pid) return; D.busy=true;
     const rl=$('ntmRl'); rl?.classList.add('spin');
     NTMTab.reset();
-    /* show loaders */
     $('ntmLoading').style.display='flex'; $('ntmMapWrap').style.display='none'; $('ntmEmpty').style.display='none';
     $('ntmListInner').innerHTML='<div class="spinner-state"><div class="spin-ring"></div>Loading…</div>';
     $('ntmBubLoading').style.display='flex'; $('ntmBubWrap').style.display='none';
@@ -900,12 +1014,10 @@ window.ntmLoad = async function() {
             fetch(`${CFG.pubApi}?project_id=${CFG.pid}&start_date=${CFG.s}&end_date=${CFG.e}&news_type=article`).catch(()=>null),
             fetchAllArticles(),
         ]);
-
         const topicJson = await topicRes.json();
         const pubJson   = pubRes ? await pubRes.json().catch(()=>null) : null;
         D.arts = allArts;
 
-        /* Publisher fallback */
         if(pubJson?.success&&Array.isArray(pubJson.data)&&pubJson.data.length) {
             D.allPubs = pubJson.data;
         } else {
@@ -914,7 +1026,6 @@ window.ntmLoad = async function() {
             D.allPubs=Object.entries(pm).map(([domain,count],i)=>({rank:i+1,domain,count})).sort((a,b)=>b.count-a.count);
         }
 
-        /* Parse topics */
         let raw={};
         if(topicJson.data&&!Array.isArray(topicJson.data)&&typeof topicJson.data==='object') raw=topicJson.data;
         else if(Array.isArray(topicJson.data)) topicJson.data.forEach(it=>{ raw[it.name||it.topic||'']={num_docs:it.weight||it.num_docs||1}; });
@@ -938,8 +1049,6 @@ window.ntmLoad = async function() {
 
         updateKPIs();
         ntmRender();
-
-        /* Pre-load detail silently */
         if(D.raw[0]) buildDetail(D.raw[0], 0);
 
     } catch(err) {
@@ -965,8 +1074,8 @@ window.toggleHL = function() {
     const tog=$('ntmHlTog'), lbl=$('ntmHlLabel');
     tog?.classList.toggle('off',!c.checked);
     if(lbl) lbl.textContent=c.checked?'On':'Off';
-    if(c.checked) { const i=tog?.querySelector('i'); if(i){ i.className='ph ph-eye'; i.style.fontSize='11px'; } }
-    else { const i=tog?.querySelector('i'); if(i){ i.className='ph ph-eye-slash'; i.style.fontSize='11px'; } }
+    const i=tog?.querySelector('i');
+    if(i){ i.className=c.checked?'ph ph-eye':'ph ph-eye-slash'; i.style.fontSize='11px'; }
     ntmRender();
 };
 
@@ -1056,7 +1165,7 @@ function doBub(data) {
     pack(root);
     const svg=d3.select(svgEl), defs=svg.append('defs');
 
-    function lighten(hex,a){ const n=parseInt(hex.replace('#',''),16); return `rgb(${Math.min(255,((n>>16)&0xff)+Math.round(255*a))},${Math.min(255,((n>>8)&0xff)+Math.round(255*a))},${Math.min(255,(n&0xff)+Math.round(255*a))})` }
+    function lighten(hex,a){ const n=parseInt(hex.replace('#',''),16); return `rgb(${Math.min(255,((n>>16)&0xff)+Math.round(255*a))},${Math.min(255,((n>>8)&0xff)+Math.round(255*a))},${Math.min(255,(n&0xff)+Math.round(255*a))})`; }
 
     root.leaves().forEach((node,i)=>{
         const gid=`bg${i}`, base=PAL[i%PAL.length];
@@ -1094,7 +1203,7 @@ function doBub(data) {
         .on('click',(e,d)=>openDetail(d.data, D.raw.indexOf(d.data)));
 }
 
-/* ══ Detail — build data ══ */
+/* ══ Detail ══ */
 function buildDetail(d, idx) {
     DS.topic=d; DS.idx=idx; DS.activePub=null;
     const q=d.topic.toLowerCase();
@@ -1108,7 +1217,6 @@ function buildDetail(d, idx) {
 function openDetail(d, idx) {
     if(!d) return;
     buildDetail(d, idx);
-    /* Update panel header */
     $('ntmPanelDot').style.background=PAL[idx%PAL.length];
     $('ntmPanelTitle').textContent=d.topic;
     $('ntmPanelMeta').textContent=`${CFG.s} – ${CFG.e}`;
@@ -1132,7 +1240,6 @@ const NTMPanel = {
 };
 window.NTMPanel=NTMPanel;
 
-/* ── Publisher panel ── */
 function renderPubPanel() {
     let pubs=Object.entries(DS.pubArts).filter(([,a])=>a.length>0).map(([domain,a])=>({domain,count:a.length})).sort((a,b)=>b.count-a.count);
     if(!pubs.length) pubs=D.allPubs.slice(0,30).map(p=>({domain:p.domain,count:p.count,isGlobal:true}));
@@ -1159,7 +1266,6 @@ window.selectPub=function(domain){
     renderArts(arts, domain);
 };
 
-/* ── Keywords: All ── */
 function renderKwAll() {
     $('ntmKwTitle').textContent='Keywords — All';
     if(!DS.arts.length){
@@ -1186,7 +1292,6 @@ function renderKwAll() {
     setTimeout(()=>{ $('ntmKwBody')?.querySelector('tr[style*="#f0fdf4"]')?.scrollIntoView({block:'center',behavior:'smooth'}); },100);
 }
 
-/* ── Keywords: per publisher ── */
 function renderKwForPub(arts, domain) {
     $('ntmKwTitle').textContent=`KW — ${domain.length>22?domain.slice(0,21)+'…':domain}`;
     if(!arts.length){ $('ntmKwBody').innerHTML='<tr><td colspan="3" style="padding:16px;text-align:center;color:var(--slate-400);font-size:11px;">No articles from this publisher</td></tr>'; return; }
@@ -1197,7 +1302,6 @@ function renderKwForPub(arts, domain) {
     $('ntmKwBody').innerHTML=h||'<tr><td colspan="3" style="padding:16px;text-align:center;color:var(--slate-400);font-size:11px;">No match</td></tr>';
 }
 
-/* ── Articles ── */
 function renderArts(arts, pubLabel) {
     $('ntmArtTitle').textContent=`Articles — ${pubLabel} (${arts.length})`;
     if(!arts.length){
@@ -1316,6 +1420,200 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(CFG.pid) ntmLoad();
 });
 
+})();
+
+/* ══════════════════════════════════════════════════════
+   EXPORT MODULE — News Topic Map
+══════════════════════════════════════════════════════ */
+const NTMExport = (() => {
+    let _toastTimer = null;
+
+    function _toast(msg, type = 'default', duration = 3200) {
+        const t = document.getElementById('ntmExportToast');
+        const m = document.getElementById('ntmExportToastMsg');
+        const ico = document.getElementById('ntmExportToastIcon');
+        if (!t || !m) return;
+        m.textContent = msg;
+        t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
+        const icons   = { success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' };
+        ico.className = 'ph ' + (icons[type] || icons.default);
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+    }
+
+    function _btnState(btn, loading) {
+        if (!btn) return;
+        btn.disabled = loading;
+        btn.classList.toggle('exporting', loading);
+    }
+
+    /* Detect active tab card id */
+    function _activeCardId() {
+        if (document.getElementById('panel-map')?.classList.contains('active'))    return 'card-ntm-map';
+        if (document.getElementById('panel-list')?.classList.contains('active'))   return 'card-ntm-list';
+        if (document.getElementById('panel-bubble')?.classList.contains('active')) return 'card-ntm-bubble';
+        return 'card-ntm-map';
+    }
+
+    /* Full-page capture: KPI rows + active tab card */
+    async function _capture() {
+        const area = document.getElementById('ntmExportArea');
+        if (!area) throw new Error('ntmExportArea tidak ditemukan');
+        window.scrollTo({ top: 0 });
+        await new Promise(r => setTimeout(r, 400));
+        return html2canvas(area, {
+            scale:           2,
+            useCORS:         true,
+            allowTaint:      false,
+            backgroundColor: '#f1f5f9',
+            logging:         false,
+            removeContainer: true,
+            windowWidth:     document.documentElement.scrollWidth,
+            windowHeight:    area.scrollHeight,
+            height:          area.scrollHeight,
+            ignoreElements:  el =>
+                el.hasAttribute('data-html2canvas-ignore') ||
+                el.id === 'ntmExportPdfBtn' ||
+                el.id === 'ntmExportImgBtn',
+        });
+    }
+
+    /* Per-card capture */
+    async function _captureCard(areaId) {
+        const area = document.getElementById(areaId);
+        if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+        await new Promise(r => setTimeout(r, 280));
+        return html2canvas(area, {
+            scale:           2,
+            useCORS:         true,
+            allowTaint:      false,
+            backgroundColor: '#ffffff',
+            logging:         false,
+            removeContainer: true,
+            ignoreElements:  el => el.hasAttribute('data-html2canvas-ignore'),
+        });
+    }
+
+    function _drawPdfHeader(pdf, pW, margin, label) {
+        pdf.setFillColor(3, 128, 71);
+        pdf.rect(0, 0, pW, 11, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
+        pdf.text('SMADIMENT — ' + (label || 'News Topic Map'), margin, 7.5);
+        const now = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+        pdf.text('Generated: ' + now, pW - margin, 7.5, { align: 'right' });
+    }
+
+    function _paginateCanvasToPdf(pdf, canvas, pW, pH, margin, headerH) {
+        const imgW    = canvas.width, imgH = canvas.height;
+        const usableW = pW - margin * 2;
+        const usableH = pH - margin * 2 - headerH;
+        const ratio   = usableW / imgW;
+        const sliceH  = usableH / ratio;
+        let srcY = 0, pageNum = 0;
+        while (srcY < imgH) {
+            if (pageNum > 0) pdf.addPage();
+            const srcSlice = Math.min(sliceH, imgH - srcY);
+            const dstH     = srcSlice * ratio;
+            const slice    = document.createElement('canvas');
+            slice.width = imgW; slice.height = Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(canvas, 0, srcY, imgW, srcSlice, 0, 0, imgW, srcSlice);
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, headerH + 3, usableW, dstH);
+            pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+            pdf.text('Halaman ' + (pageNum + 1), pW / 2, pH - 3, { align: 'center' });
+            srcY += srcSlice; pageNum++;
+        }
+    }
+
+    async function _exportPdf() {
+        const canvas = await _capture();
+        const { jsPDF } = window.jspdf;
+        const pdf    = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pW     = pdf.internal.pageSize.getWidth();
+        const pH     = pdf.internal.pageSize.getHeight();
+        const margin = 10;
+        _drawPdfHeader(pdf, pW, margin, 'News Topic Map');
+        _paginateCanvasToPdf(pdf, canvas, pW, pH, margin, 11);
+        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        pdf.save(`news_topic_map_${NTM_PID}_${stamp}.pdf`);
+    }
+
+    async function _exportImage() {
+        const canvas = await _capture();
+        const stamp  = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const link   = document.createElement('a');
+        link.download = `news_topic_map_${NTM_PID}_${stamp}.png`;
+        link.href     = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    const _cardLabels = {
+        'topic-map':    'News Topic Map',
+        'topic-list':   'Topic Ranking List',
+        'topic-bubble': 'Topic Bubble View',
+    };
+
+    async function runCard(areaId, cardKey, type, btn) {
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+
+        _btnState(btn, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
+
+        try {
+            const canvas = await _captureCard(areaId);
+            const stamp  = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            const fname  = `ntm_${cardKey}_${NTM_PID}_${stamp}`;
+
+            if (type === 'image') {
+                const link    = document.createElement('a');
+                link.download = fname + '.png';
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const imgW = canvas.width, imgH = canvas.height;
+                const landscape = imgW > imgH;
+                const pdf  = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+                const pW   = pdf.internal.pageSize.getWidth();
+                const pH   = pdf.internal.pageSize.getHeight();
+                const margin = 10;
+                _drawPdfHeader(pdf, pW, margin, _cardLabels[cardKey] || cardKey);
+                _paginateCanvasToPdf(pdf, canvas, pW, pH, margin, 11);
+                pdf.save(fname + '.pdf');
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(err) {
+            console.error('[NTMExport.runCard]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            _btnState(btn, false);
+        }
+    }
+
+    async function run(type, btn) {
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+
+        const btnPdf = document.getElementById('ntmExportPdfBtn');
+        const btnImg = document.getElementById('ntmExportImgBtn');
+        _btnState(btnPdf, true); _btnState(btnImg, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+
+        try {
+            if (type === 'pdf') { await _exportPdf();   _toast('PDF berhasil diunduh!',    'success'); }
+            else                { await _exportImage(); _toast('Gambar berhasil diunduh!', 'success'); }
+        } catch(err) {
+            console.error('[NTMExport]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            _btnState(btnPdf, false); _btnState(btnImg, false);
+        }
+    }
+
+    return { run, runCard };
 })();
 </script>
 @endsection

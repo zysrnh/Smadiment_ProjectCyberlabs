@@ -113,13 +113,13 @@ body { background: var(--bg); }
 .geo-card-subtitle { font-size: 12px; color: var(--slate-400); font-weight: 500; margin: 0; }
 .geo-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 22px; padding: 0 8px; border-radius: 3px; font-size: 10px; font-weight: 800; letter-spacing: .3px; background: var(--primary-lt); color: var(--primary); text-transform: uppercase; }
 
-/* ══ Donut legend (identical to TME) ══ */
+/* ══ Donut legend ══ */
 .donut-legend { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
 .donut-leg-item { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: var(--slate-500); padding: 3px 8px; background: var(--slate-50); border-radius: 3px; border: 1px solid var(--slate-200); cursor: pointer; transition: border-color .12s, background .12s, color .12s; }
 .donut-leg-item:hover { border-color: var(--primary); background: var(--primary-lt); color: var(--primary); }
 .donut-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-/* ══ Chart container/loading (identical to TME) ══ */
+/* ══ Chart container/loading ══ */
 .chart-container { position: relative; }
 .chart-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: #fff; z-index: 2; transition: opacity .3s; }
 .chart-loading.hidden { opacity: 0; pointer-events: none; }
@@ -127,7 +127,7 @@ body { background: var(--bg); }
 .chart-empty { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--slate-400); font-size: 12px; font-weight: 600; }
 .chart-empty i { font-size: 34px; color: var(--slate-300); display: block; }
 
-/* ══ Slide Panel — 1-to-1 from TME ══ */
+/* ══ Slide Panel ══ */
 .do-panel-overlay { position: fixed; inset: 0; z-index: 9000; background: rgba(15,23,42,.45); backdrop-filter: blur(4px); display: none; }
 .do-panel-overlay.show   { display: block; animation: overlayIn .22s ease-out; }
 .do-panel-overlay.hiding { animation: overlayOut .22s ease-out forwards; }
@@ -157,8 +157,6 @@ body { background: var(--bg); }
 .do-sent-badge--pos { background: #dbeafe; color: #1d4ed8; }
 .do-sent-badge--neg { background: #fee2e2; color: #991b1b; }
 .do-sent-badge--neu { background: var(--slate-100); color: var(--slate-500); }
-
-/* ── Detail sub-panel (identical to TME) ── */
 .do-detail-panel { position: absolute; inset: 0; background: #fff; z-index: 5; display: none; flex-direction: column; animation: slideInRight .2s cubic-bezier(.4,0,.2,1); }
 .do-detail-panel.show { display: flex; }
 .do-dp2-header { display: flex; align-items: center; gap: 8px; padding: 12px 14px; background: var(--slate-50); border-bottom: 1px solid var(--slate-200); flex-shrink: 0; }
@@ -204,23 +202,17 @@ body { background: var(--bg); }
 .location-item-name  { font-size: 12px; font-weight: 700; color: var(--slate-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .location-item-count { font-size: 11px; color: var(--slate-400); font-weight: 600; margin-top: 1px; }
 .location-item-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-
-/* Map skeleton */
 .map-skeleton { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
 .map-skeleton-fill { height: 100%; background: linear-gradient(90deg, var(--slate-50) 25%, var(--slate-200) 50%, var(--slate-50) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
 .panel-skeleton { padding: 10px 14px; }
 .panel-skeleton .sk-line { height: 18px; border-radius: 4px; margin-bottom: 8px; background: linear-gradient(90deg, var(--slate-100) 25%, var(--slate-200) 50%, var(--slate-100) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
 [data-loaded="true"] .map-skeleton, [data-loaded="true"] .panel-skeleton { display: none; }
-
-/* Scroll overlay */
 .map-scroll-overlay { position: absolute; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: 0; transition: opacity .2s; }
 .map-scroll-overlay.visible { opacity: 1; }
 .map-scroll-hint { display: flex; flex-direction: column; align-items: center; gap: 8px; background: rgba(15,23,42,.75); backdrop-filter: blur(6px); color: #fff; padding: 16px 28px; border-radius: var(--radius); font-size: 13px; font-weight: 700; pointer-events: none; }
 
-/* Charts row */
+/* ══ Charts row ══ */
 .charts-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-
-/* Bar charts */
 .country-bar-row { margin-bottom: 12px; }
 .country-bar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
 .country-bar-name  { font-size: 12px; font-weight: 700; color: var(--slate-800); }
@@ -234,7 +226,7 @@ body { background: var(--bg); }
 .prov-bar-track { height: 7px; background: var(--slate-100); border-radius: 99px; overflow: hidden; }
 .prov-bar-fill  { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--primary), rgba(3,128,71,.5)); transition: width .8s cubic-bezier(.4,0,.2,1); width: 0; }
 
-/* Table */
+/* ══ Table ══ */
 .geo-tbl { width: 100%; border-collapse: separate; border-spacing: 0; }
 .geo-tbl th { padding: 9px 12px; font-size: 10px; font-weight: 700; color: var(--slate-400); text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid var(--slate-200); text-align: left; }
 .geo-tbl td { padding: 11px 12px; font-size: 13px; color: var(--slate-800); border-bottom: 1px solid var(--slate-100); }
@@ -248,7 +240,7 @@ body { background: var(--bg); }
 .view-all-btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; background: #fff; color: var(--slate-600); border: 1px solid var(--slate-200); border-radius: var(--radius-sm); font-size: 11px; font-weight: 700; cursor: pointer; transition: all .12s; }
 .view-all-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-lt); }
 
-/* Modal */
+/* ══ Modal ══ */
 .geo-modal-overlay { display: none; position: fixed; inset: 0; z-index: 9000; background: rgba(15,23,42,.55); backdrop-filter: blur(6px); align-items: center; justify-content: center; }
 .geo-modal-overlay.open { display: flex; }
 .geo-modal { background: #fff; border-radius: var(--radius); width: 90%; max-width: 540px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 25px 50px rgba(0,0,0,.35); animation: modalIn .25s ease-out; }
@@ -259,11 +251,65 @@ body { background: var(--bg); }
 .geo-modal-body { padding: 12px 20px 20px; overflow-y: auto; flex: 1; }
 .geo-modal-body::-webkit-scrollbar { width: 4px; }
 .geo-modal-body::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 99px; }
-
-/* Leaflet */
 .circle-label { pointer-events: none !important; }
 
-/* Responsive */
+/* ══════════════════════════════════════════════════════
+   EXPORT STYLES — identik dengan TikTok Most Engagement
+══════════════════════════════════════════════════════ */
+.page-export-bar {
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:10px;
+    background:#fff; border:1px solid var(--slate-200);
+    border-radius:var(--radius); padding:9px 14px;
+    margin-bottom:20px; box-shadow:var(--shadow-sm);
+}
+.page-export-bar-left { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:var(--slate-600); }
+.page-export-bar-left i { font-size:15px; color:var(--primary); }
+.page-export-bar-right { display:flex; gap:8px; }
+.page-export-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:32px; height:32px; border-radius:var(--radius-sm);
+    font-size:16px; cursor:pointer;
+    transition:all .15s ease; border:1.5px solid transparent; font-family:inherit;
+}
+.page-export-btn-pdf { background:#fff3f3; color:#dc2626; border-color:#fca5a5; }
+.page-export-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.page-export-btn-img { background:var(--primary-lt); color:var(--primary); border-color:rgba(3,128,71,.3); }
+.page-export-btn-img:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.page-export-btn:disabled { opacity:.55; cursor:not-allowed; pointer-events:none; }
+.page-export-btn .export-spinner { width:13px; height:13px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin .65s linear infinite; display:none; }
+.page-export-btn.exporting .export-spinner { display:inline-block; }
+.page-export-btn.exporting .export-icon { display:none; }
+
+.card-exp-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    font-size:14px; cursor:pointer; flex-shrink:0;
+    transition:all .14s ease; border:1px solid transparent; font-family:inherit; background:transparent;
+}
+.card-exp-btn-pdf { color:#dc2626; border-color:#fca5a5; background:#fff3f3; }
+.card-exp-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.card-exp-btn-img { color:var(--primary); border-color:rgba(3,128,71,.3); background:var(--primary-lt); }
+.card-exp-btn-img:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.card-exp-btn:disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+.card-exp-btn .export-spinner { width:11px; height:11px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin .65s linear infinite; display:none; }
+.card-exp-btn.exporting .export-spinner { display:inline-block; }
+.card-exp-btn.exporting .export-icon { display:none; }
+
+.export-toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--slate-900); color:#fff; border-radius:var(--radius);
+    padding:10px 18px; font-size:12px; font-weight:600;
+    box-shadow:var(--shadow-lg); z-index:99999;
+    opacity:0; pointer-events:none;
+    transition:opacity .22s ease, transform .22s ease;
+    display:flex; align-items:center; gap:8px; white-space:nowrap;
+}
+.export-toast.show    { opacity:1; transform:translateX(-50%) translateY(0); }
+.export-toast.success { background:#065f46; }
+.export-toast.error   { background:#991b1b; }
+
+/* ══ Responsive ══ */
 @media(max-width:1100px) { .charts-row { grid-template-columns: 1fr 1fr; } }
 @media(max-width:700px)  { .charts-row { grid-template-columns: 1fr; } }
 @media(max-width:900px)  { .map-with-panel { flex-direction: column; } .location-panel { width: 100%; border-left: none; border-top: 1px solid var(--slate-100); } .location-list { max-height: 200px; } }
@@ -291,6 +337,9 @@ body { background: var(--bg); }
     @else
 
     @include('mk.layouts.partials.filter-datepicker')
+
+    {{-- ════ PAGE EXPORT WRAPPER ════ --}}
+    <div id="pageExportArea">
 
     {{-- ══ KPI Cards ══ --}}
     <div class="row mb-3">
@@ -344,45 +393,72 @@ body { background: var(--bg); }
         </div>
     </div>
 
-    {{-- ══ ECharts Donut — Sentiment by Location (identical markup to TME) ══ --}}
+    {{-- ══ Page Export Toolbar ══ --}}
+    <div class="page-export-bar" data-html2canvas-ignore="true">
+        <div class="page-export-bar-left">
+            <i class="ph ph-export"></i>
+            <span>Export Halaman</span>
+            <span class="badge bg-light-secondary text-muted ms-1" style="font-size:10px;">KPI + Charts + Maps</span>
+        </div>
+        <div class="page-export-bar-right">
+            <button type="button" class="page-export-btn page-export-btn-pdf" id="pageExportPdfBtn"
+                    onclick="XGeoExport.run('pdf', this)" title="Export halaman sebagai PDF">
+                <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+            </button>
+            <button type="button" class="page-export-btn page-export-btn-img" id="pageExportImgBtn"
+                    onclick="XGeoExport.run('image', this)" title="Export halaman sebagai PNG">
+                <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+            </button>
+        </div>
+    </div>
+
+    {{-- ══ ECharts Donut ══ --}}
     <div class="row mb-3">
         <div class="col-12">
             <div class="card" style="animation:fadeUp .38s ease-out .18s both;">
+                <div id="card-export-donut">
                 <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div class="d-flex align-items-center gap-2">
-                        <div class="avtar avtar-xs bg-light-primary rounded">
-                            <i class="ph ph-chart-donut f-18 text-primary"></i>
-                        </div>
+                        <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-donut f-18 text-primary"></i></div>
                         <div>
                             <h6 class="mb-0">Distribusi Sentiment — Top Locations</h6>
                             <small class="text-muted">Proporsi sentiment per lokasi — klik untuk lihat detail</small>
                         </div>
                     </div>
-                    <div id="geoDonutLegend" class="donut-legend"></div>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container" style="height:480px;">
-                        <div class="chart-loading" id="geoDonutLoading">
-                            <div class="spin-ring"></div><span>Loading chart…</span>
-                        </div>
-                        <div id="geoDonutChart" style="width:100%;height:480px;display:none;"></div>
-                        <div id="geoDonutEmpty" style="display:none;" class="chart-empty">
-                            <i class="ph ph-chart-donut"></i><span>No data</span>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div id="geoDonutLegend" class="donut-legend"></div>
+                        <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                            <button class="card-exp-btn card-exp-btn-pdf" onclick="XGeoExport.runCard('card-export-donut','donut','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                            <button class="card-exp-btn card-exp-btn-img" onclick="XGeoExport.runCard('card-export-donut','donut','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
                         </div>
                     </div>
                 </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height:480px;">
+                        <div class="chart-loading" id="geoDonutLoading"><div class="spin-ring"></div><span>Loading chart…</span></div>
+                        <div id="geoDonutChart" style="width:100%;height:480px;display:none;"></div>
+                        <div id="geoDonutEmpty" style="display:none;" class="chart-empty"><i class="ph ph-chart-donut"></i><span>No data</span></div>
+                    </div>
+                </div>
+                </div>{{-- /card-export-donut --}}
             </div>
         </div>
     </div>
 
-    {{-- ══ Map 1: Geographic User Distribution ══ --}}
-    <div class="geo-card" data-lazy="geo-user-map" style="animation-delay:.2s;">
+    {{-- ══ Map 1 ══ --}}
+    <div class="geo-card" data-lazy="geo-user-map" style="animation-delay:.2s;" id="card-export-map-user">
         <div class="geo-card-header">
             <div class="geo-card-header-left">
                 <div class="geo-avtar"><svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z"/></svg></div>
                 <div><p class="geo-card-title">Geographic User Distribution</p><p class="geo-card-subtitle">X users by country and province</p></div>
             </div>
-            <span class="geo-badge">All Users</span>
+            <div class="d-flex align-items-center gap-2">
+                <span class="geo-badge">All Users</span>
+                <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                    <button class="card-exp-btn card-exp-btn-pdf" onclick="XGeoExport.runCard('card-export-map-user','map-user','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                    <button class="card-exp-btn card-exp-btn-img" onclick="XGeoExport.runCard('card-export-map-user','map-user','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                </div>
+            </div>
         </div>
         <div class="map-with-panel">
             <div class="map-area">
@@ -401,14 +477,20 @@ body { background: var(--bg); }
         </div>
     </div>
 
-    {{-- ══ Map 2: Sentiment by Location ══ --}}
-    <div class="geo-card" data-lazy="geo-sentiment-map" style="animation-delay:.24s;">
+    {{-- ══ Map 2 ══ --}}
+    <div class="geo-card" data-lazy="geo-sentiment-map" style="animation-delay:.24s;" id="card-export-map-sentiment">
         <div class="geo-card-header">
             <div class="geo-card-header-left">
                 <div class="geo-avtar"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
                 <div><p class="geo-card-title">Sentiment by Location</p><p class="geo-card-subtitle">Positive, negative, and neutral sentiment distribution</p></div>
             </div>
-            <span class="geo-badge">Sentiment</span>
+            <div class="d-flex align-items-center gap-2">
+                <span class="geo-badge">Sentiment</span>
+                <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                    <button class="card-exp-btn card-exp-btn-pdf" onclick="XGeoExport.runCard('card-export-map-sentiment','map-sentiment','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                    <button class="card-exp-btn card-exp-btn-img" onclick="XGeoExport.runCard('card-export-map-sentiment','map-sentiment','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                </div>
+            </div>
         </div>
         <div class="map-with-panel">
             <div class="map-area">
@@ -429,39 +511,57 @@ body { background: var(--bg); }
 
     {{-- ══ 3 Chart Cards ══ --}}
     <div class="charts-row">
-        <div class="geo-card" data-lazy="chart-countries" style="animation-delay:.28s;">
+        <div class="geo-card" data-lazy="chart-countries" style="animation-delay:.28s;" id="card-export-chart-countries">
             <div class="geo-card-header">
                 <div class="geo-card-header-left">
                     <div class="geo-avtar"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
                     <div><p class="geo-card-title">Top Countries</p><p class="geo-card-subtitle">Users by country</p></div>
                 </div>
-                <span class="geo-badge">Users</span>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="geo-badge">Users</span>
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf" onclick="XGeoExport.runCard('card-export-chart-countries','chart-countries','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-img" onclick="XGeoExport.runCard('card-export-chart-countries','chart-countries','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                    </div>
+                </div>
             </div>
             <div style="padding:16px 18px 18px;">
                 <div class="spinner-state" id="loadingChartCountries" style="padding:28px 0;"><div class="spin-ring"></div><span>Loading…</span></div>
                 <div id="chartCountries" style="display:none;"></div>
             </div>
         </div>
-        <div class="geo-card" data-lazy="chart-provinces" style="animation-delay:.32s;">
+        <div class="geo-card" data-lazy="chart-provinces" style="animation-delay:.32s;" id="card-export-chart-provinces">
             <div class="geo-card-header">
                 <div class="geo-card-header-left">
                     <div class="geo-avtar"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
                     <div><p class="geo-card-title">Top Provinces</p><p class="geo-card-subtitle" id="provSubtitle">Province breakdown</p></div>
                 </div>
-                <span class="geo-badge">Detail</span>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="geo-badge">Detail</span>
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf" onclick="XGeoExport.runCard('card-export-chart-provinces','chart-provinces','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-img" onclick="XGeoExport.runCard('card-export-chart-provinces','chart-provinces','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                    </div>
+                </div>
             </div>
             <div style="padding:16px 18px 18px;">
                 <div class="spinner-state" id="loadingChartProvinces" style="padding:28px 0;"><div class="spin-ring"></div><span>Loading…</span></div>
                 <div id="chartProvinces" style="display:none;"></div>
             </div>
         </div>
-        <div class="geo-card" data-lazy="chart-sentiment-donut" style="animation-delay:.36s;">
+        <div class="geo-card" data-lazy="chart-sentiment-donut" style="animation-delay:.36s;" id="card-export-chart-sentiment">
             <div class="geo-card-header">
                 <div class="geo-card-header-left">
                     <div class="geo-avtar"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
                     <div><p class="geo-card-title">Sentiment Summary</p><p class="geo-card-subtitle">Overall distribution</p></div>
                 </div>
-                <span class="geo-badge">Sentiment</span>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="geo-badge">Sentiment</span>
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf" onclick="XGeoExport.runCard('card-export-chart-sentiment','chart-sentiment','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-img" onclick="XGeoExport.runCard('card-export-chart-sentiment','chart-sentiment','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                    </div>
+                </div>
             </div>
             <div style="padding:16px 18px 18px;display:flex;flex-direction:column;align-items:center;">
                 <div class="spinner-state" id="loadingChartSentiment" style="width:100%;padding:28px 0;"><div class="spin-ring"></div><span>Loading…</span></div>
@@ -472,13 +572,19 @@ body { background: var(--bg); }
     </div>
 
     {{-- ══ Top Author Locations Table ══ --}}
-    <div class="geo-card" data-lazy="top-locations" style="animation-delay:.40s;">
+    <div class="geo-card" data-lazy="top-locations" style="animation-delay:.40s;" id="card-export-top-locations">
         <div class="geo-card-header">
             <div class="geo-card-header-left">
                 <div class="geo-avtar"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
                 <div><p class="geo-card-title">Top Author Locations</p><p class="geo-card-subtitle">Ranking of locations by author count</p></div>
             </div>
-            <div id="topLocBtnWrap" style="display:flex;align-items:center;gap:8px;"><span class="geo-badge">Rankings</span></div>
+            <div id="topLocBtnWrap" style="display:flex;align-items:center;gap:8px;">
+                <span class="geo-badge">Rankings</span>
+                <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                    <button class="card-exp-btn card-exp-btn-pdf" onclick="XGeoExport.runCard('card-export-top-locations','top-locations','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                    <button class="card-exp-btn card-exp-btn-img" onclick="XGeoExport.runCard('card-export-top-locations','top-locations','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                </div>
+            </div>
         </div>
         <div style="padding:0 18px 18px;">
             <div class="spinner-state" id="loadingTopLocations" style="padding:28px 0;"><div class="spin-ring"></div><span>Loading…</span></div>
@@ -486,7 +592,16 @@ body { background: var(--bg); }
         </div>
     </div>
 
+    {{-- /pageExportArea --}}
+    </div>
+
     @endif
+</div>
+
+{{-- ══ Export Toast ══ --}}
+<div class="export-toast" id="exportToast">
+    <i class="ph ph-check-circle" id="exportToastIcon"></i>
+    <span id="exportToastMsg">Exporting…</span>
 </div>
 
 {{-- ══ Modal ══ --}}
@@ -500,7 +615,7 @@ body { background: var(--bg); }
     </div>
 </div>
 
-{{-- ══ Slide Panel (drawer) — identical to TME ══ --}}
+{{-- ══ Slide Panel ══ --}}
 <div class="do-panel-overlay" id="geoPanelOverlay" onclick="GeoPanel.close()"></div>
 <div class="do-panel" id="geoSntPanel">
     <div class="do-panel-header">
@@ -512,7 +627,6 @@ body { background: var(--bg); }
         <div class="do-panel-meta"><i class="ph ph-magnifying-glass" style="font-size:11px;"></i><span id="geoPanelMeta">—</span></div>
     </div>
     <div class="do-panel-list" id="geoPanelList"></div>
-    {{-- Detail sub-panel --}}
     <div class="do-detail-panel" id="geoDetailPanel">
         <div class="do-dp2-header">
             <button class="do-dp2-back" onclick="GeoDetail.close()"><i class="ph ph-caret-left"></i></button>
@@ -525,6 +639,12 @@ body { background: var(--bg); }
 @endsection
 
 @section('scripts')
+{{-- ══ Export dependencies ══ --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -562,7 +682,7 @@ const XGeo = {
             });
         }, { rootMargin:'100px', threshold:0.05 });
         document.querySelectorAll('[data-lazy]').forEach(el => obs.observe(el));
-        this._loadDonut(); // not lazy — load immediately
+        this._loadDonut();
     },
 
     async _load(sec, el) {
@@ -579,7 +699,6 @@ const XGeo = {
         } catch(err) { console.error(`❌ ${sec}:`, err); }
     },
 
-    /* ── Cached fetches ── */
     async fetchGeoUser() {
         if(this._geoUserCache) return this._geoUserCache;
         const j = await (await fetch(`/mk/api/x/geo-user?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`)).json();
@@ -594,7 +713,6 @@ const XGeo = {
         return j;
     },
 
-    /* ── Parsers ── */
     parseGeoRows(result) {
         if(!result?.success) return [];
         const d=result.data; if(!d) return [];
@@ -606,7 +724,6 @@ const XGeo = {
     },
     parseGeoTotal(r) { if(!r?.success||!r.data)return 0; const d=r.data; return d.country?.total||d.total||0; },
 
-    /* ── KPI ── */
     _loadStats(result) {
         const rows=this.parseGeoRows(result), total=this.parseGeoTotal(result), top=rows[0];
         const set=(id,v)=>{const e=_$(id);if(e)e.textContent=v;};
@@ -623,151 +740,75 @@ const XGeo = {
         } else { set('kpiTopCountry','N/A'); set('kpiTopProvince','N/A'); }
     },
 
-    /* ══════════════════════════════════════════════════════
-       ECHARTS DONUT — identical logic/structure to TME
-    ══════════════════════════════════════════════════════ */
     async _loadDonut() {
         const result  = await this.fetchGeoSentiment();
         const rows    = this.parseGeoRows(result);
         const loadEl  = _$('geoDonutLoading'), chartEl = _$('geoDonutChart'), emptyEl = _$('geoDonutEmpty'), legEl = _$('geoDonutLegend');
-
-        if(!rows.length) {
-            if(loadEl) loadEl.style.display='none';
-            if(emptyEl) emptyEl.style.display='flex';
-            return;
-        }
-
+        if(!rows.length) { if(loadEl)loadEl.style.display='none'; if(emptyEl)emptyEl.style.display='flex'; return; }
         const top5 = [...rows].sort((a,b)=>parseInt(b.count||0)-parseInt(a.count||0)).slice(0,5);
         const total = top5.reduce((s,r)=>s+parseInt(r.count||0),0);
-
         if(legEl) legEl.innerHTML = top5.map((r,i)=>{
             const n=r.name||'Unknown'; const sn=n.length>22?n.slice(0,21)+'…':n;
             return `<div class="donut-leg-item"><span class="donut-dot" style="background:${DONUT_COLORS[i]};"></span>${esc(sn)} · ${numF(r.count)}</div>`;
         }).join('');
-
         if(loadEl)  loadEl.style.display  = 'none';
         if(chartEl) chartEl.style.display = 'block';
         if(emptyEl) emptyEl.style.display = 'none';
-
         if(window.__geoDonutChart){ try{window.__geoDonutChart.dispose();}catch(e){} }
         if(typeof echarts==='undefined') return;
-
         const chart = echarts.init(chartEl, null, {renderer:'canvas'});
         window.__geoDonutChart = chart;
         window.addEventListener('resize', ()=>{ try{chart.resize();}catch(e){} });
-
-        const pieData = top5.map((row,i)=>{
-            const pos=parseInt(row.pos||0), neg=parseInt(row.neg||0), net=parseInt(row.net||0);
-            return {
-                name : row.name||'Unknown',
-                value: parseInt(row.count||0),
-                _pos:pos, _neg:neg, _net:net,
-                itemStyle: { color: DONUT_COLORS[i] },
-            };
-        });
-
+        const pieData = top5.map((row,i)=>({
+            name:row.name||'Unknown', value:parseInt(row.count||0),
+            _pos:parseInt(row.pos||0), _neg:parseInt(row.neg||0), _net:parseInt(row.net||0),
+            itemStyle:{ color:DONUT_COLORS[i] },
+        }));
         chart.setOption({
-            backgroundColor: 'transparent',
-            tooltip: { show:false },
+            backgroundColor:'transparent', tooltip:{show:false},
             animation:true, animationDuration:1000, animationEasing:'cubicOut', animationDelay:idx=>idx*80,
             series:[{
                 type:'pie', radius:['38%','62%'], center:['50%','50%'],
                 avoidLabelOverlap:true, selectedMode:false, minAngle:8,
-                itemStyle:{ borderColor:'#fff', borderWidth:3 },
+                itemStyle:{borderColor:'#fff',borderWidth:3},
                 label:{
                     show:true, position:'outside', alignTo:'edge', edgeDistance:20,
                     lineHeight:18, fontSize:11, fontFamily:'inherit', color:'#334155', fontWeight:'500',
-                    formatter: p => {
-                        const row=top5[p.dataIndex];
-                        const pos=parseInt(row.pos||0), neg=parseInt(row.neg||0), net=parseInt(row.net||0);
-                        return `{title|${p.name}}\n{pos|+${numK(pos)}}  {neg|-${numK(neg)}}  {neu|~${numK(net)}}\n({val|${numF(p.value)}} users, {pct|${p.percent.toFixed(1)}%})`;
-                    },
-                    rich:{
-                        title:{ fontSize:11, fontWeight:'700', color:'#1e293b', lineHeight:18 },
-                        val:  { fontSize:11, fontWeight:'700', color:'#038047' },
-                        pct:  { fontSize:11, fontWeight:'600', color:'#64748b' },
-                        pos:  { fontSize:10, fontWeight:'700', color:'#22c55e' },
-                        neg:  { fontSize:10, fontWeight:'700', color:'#ef4444' },
-                        neu:  { fontSize:10, fontWeight:'600', color:'#94a3b8' },
-                    }
+                    formatter:p=>{const row=top5[p.dataIndex];const pos=parseInt(row.pos||0),neg=parseInt(row.neg||0),net=parseInt(row.net||0);return `{title|${p.name}}\n{pos|+${numK(pos)}}  {neg|-${numK(neg)}}  {neu|~${numK(net)}}\n({val|${numF(p.value)}} users, {pct|${p.percent.toFixed(1)}%})`;},
+                    rich:{title:{fontSize:11,fontWeight:'700',color:'#1e293b',lineHeight:18},val:{fontSize:11,fontWeight:'700',color:'#038047'},pct:{fontSize:11,fontWeight:'600',color:'#64748b'},pos:{fontSize:10,fontWeight:'700',color:'#22c55e'},neg:{fontSize:10,fontWeight:'700',color:'#ef4444'},neu:{fontSize:10,fontWeight:'600',color:'#94a3b8'}}
                 },
-                labelLine:{ show:true, length:18, length2:24, smooth:0.3, lineStyle:{width:1.5,color:'#94A3B8'} },
-                emphasis:{
-                    scale:false,
-                    itemStyle:{ shadowBlur:0, shadowColor:'transparent', borderWidth:3, borderColor:'#fff', opacity:1 },
-                    labelLine:{ lineStyle:{width:2.5,color:'#273B4A'} },
-                    label:{ show:true }
-                },
-                select:{ disabled:true },
-                data: pieData,
+                labelLine:{show:true,length:18,length2:24,smooth:0.3,lineStyle:{width:1.5,color:'#94A3B8'}},
+                emphasis:{scale:false,itemStyle:{shadowBlur:0,shadowColor:'transparent',borderWidth:3,borderColor:'#fff',opacity:1},labelLine:{lineStyle:{width:2.5,color:'#273B4A'}},label:{show:true}},
+                select:{disabled:true}, data:pieData,
             }],
             graphic:[
-                { type:'text', left:'center', top:'46%', z:100, style:{ text:numK(total), fill:'#0f172a', font:"800 28px inherit", textAlign:'center' } },
-                { type:'text', left:'center', top:'54%', z:100, style:{ text:'TOTAL USERS', fill:'#94a3b8', font:"600 9px inherit", textAlign:'center' } },
+                {type:'text',left:'center',top:'46%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 28px inherit",textAlign:'center'}},
+                {type:'text',left:'center',top:'54%',z:100,style:{text:'TOTAL USERS',fill:'#94a3b8',font:"600 9px inherit",textAlign:'center'}},
             ]
         });
-
-        chart.on('click', p => { const row=top5[p.dataIndex]; if(row) GeoPanel.openLocation(row); });
-
-        /* ── Custom tooltip (identical to TME) ── */
-        let _ttEl = document.getElementById('geoCustomTT');
-        if(!_ttEl){
-            _ttEl = document.createElement('div'); _ttEl.id='geoCustomTT';
-            _ttEl.style.cssText=`position:fixed;z-index:9999;pointer-events:none;background:#1e293b;color:#fff;border:1px solid #334155;border-radius:6px;padding:10px 14px;max-width:280px;font-size:12px;line-height:1.5;display:none;box-shadow:0 8px 24px rgba(0,0,0,.32);font-family:inherit;opacity:0;transform:translateY(6px) scale(.97);transition:opacity .18s ease,transform .18s ease;`;
-            document.body.appendChild(_ttEl);
-        }
+        chart.on('click', p=>{ const row=top5[p.dataIndex]; if(row) GeoPanel.openLocation(row); });
+        let _ttEl=document.getElementById('geoCustomTT');
+        if(!_ttEl){_ttEl=document.createElement('div');_ttEl.id='geoCustomTT';_ttEl.style.cssText=`position:fixed;z-index:9999;pointer-events:none;background:#1e293b;color:#fff;border:1px solid #334155;border-radius:6px;padding:10px 14px;max-width:280px;font-size:12px;line-height:1.5;display:none;box-shadow:0 8px 24px rgba(0,0,0,.32);font-family:inherit;opacity:0;transform:translateY(6px) scale(.97);transition:opacity .18s ease,transform .18s ease;`;document.body.appendChild(_ttEl);}
         let _ttTimer=null;
-
-        chart.on('mouseover', p => {
-            if(p.componentType!=='series') return;
-            const row=top5[p.dataIndex], color=DONUT_COLORS[p.dataIndex];
-            const pos=parseInt(row.pos||0), neg=parseInt(row.neg||0), net=parseInt(row.net||0);
-            clearTimeout(_ttTimer);
-            _ttEl.innerHTML=`
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
-                    <span style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;box-shadow:0 0 0 3px ${color}33;animation:ttDotPulse 1.4s ease infinite;"></span>
-                    <b style="font-size:12.5px;">${esc(p.name)}</b>
-                </div>
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:7px;">
-                    <div style="text-align:center;background:#f0fdf4;border-radius:4px;padding:4px;"><div style="font-weight:800;color:#22c55e;">${numF(pos)}</div><div style="font-size:9px;color:#64748b;text-transform:uppercase;">Pos</div></div>
-                    <div style="text-align:center;background:#f8fafc;border-radius:4px;padding:4px;"><div style="font-weight:800;color:#94a3b8;">${numF(net)}</div><div style="font-size:9px;color:#64748b;text-transform:uppercase;">Neu</div></div>
-                    <div style="text-align:center;background:#fef2f2;border-radius:4px;padding:4px;"><div style="font-weight:800;color:#ef4444;">${numF(neg)}</div><div style="font-size:9px;color:#64748b;text-transform:uppercase;">Neg</div></div>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px;"><b style="font-size:13px;">${numF(p.value)} users</b><span style="color:${color};font-weight:700;">${p.percent.toFixed(1)}%</span></div>`;
-            _ttEl.style.display='block';
-            requestAnimationFrame(()=>{ _ttEl.style.opacity='1'; _ttEl.style.transform='translateY(0) scale(1)'; });
-        });
-        chart.on('mouseout', ()=>{
-            _ttEl.style.opacity='0'; _ttEl.style.transform='translateY(6px) scale(.97)';
-            _ttTimer=setTimeout(()=>{ _ttEl.style.display='none'; },180);
-        });
-        chartEl.addEventListener('mousemove', e=>{
-            if(_ttEl.style.display==='none') return;
-            const vw=window.innerWidth,vh=window.innerHeight,tw=_ttEl.offsetWidth+16,th=_ttEl.offsetHeight+16;
-            let x=e.clientX+18, y=e.clientY-10;
-            if(x+tw>vw) x=e.clientX-tw; if(y+th>vh) y=e.clientY-th;
-            _ttEl.style.left=x+'px'; _ttEl.style.top=y+'px';
-        });
+        chart.on('mouseover',p=>{if(p.componentType!=='series')return;const row=top5[p.dataIndex],color=DONUT_COLORS[p.dataIndex];const pos=parseInt(row.pos||0),neg=parseInt(row.neg||0),net=parseInt(row.net||0);clearTimeout(_ttTimer);_ttEl.innerHTML=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;"><span style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span><b style="font-size:12.5px;">${esc(p.name)}</b></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:7px;"><div style="text-align:center;background:#f0fdf4;border-radius:4px;padding:4px;"><div style="font-weight:800;color:#22c55e;">${numF(pos)}</div><div style="font-size:9px;color:#64748b;text-transform:uppercase;">Pos</div></div><div style="text-align:center;background:#f8fafc;border-radius:4px;padding:4px;"><div style="font-weight:800;color:#94a3b8;">${numF(net)}</div><div style="font-size:9px;color:#64748b;text-transform:uppercase;">Neu</div></div><div style="text-align:center;background:#fef2f2;border-radius:4px;padding:4px;"><div style="font-weight:800;color:#ef4444;">${numF(neg)}</div><div style="font-size:9px;color:#64748b;text-transform:uppercase;">Neg</div></div></div><div style="display:flex;align-items:center;gap:8px;"><b style="font-size:13px;">${numF(p.value)} users</b><span style="color:${color};font-weight:700;">${p.percent.toFixed(1)}%</span></div>`;_ttEl.style.display='block';requestAnimationFrame(()=>{_ttEl.style.opacity='1';_ttEl.style.transform='translateY(0) scale(1)';});});
+        chart.on('mouseout',()=>{_ttEl.style.opacity='0';_ttEl.style.transform='translateY(6px) scale(.97)';_ttTimer=setTimeout(()=>{_ttEl.style.display='none';},180);});
+        chartEl.addEventListener('mousemove',e=>{if(_ttEl.style.display==='none')return;const vw=window.innerWidth,vh=window.innerHeight,tw=_ttEl.offsetWidth+16,th=_ttEl.offsetHeight+16;let x=e.clientX+18,y=e.clientY-10;if(x+tw>vw)x=e.clientX-tw;if(y+th>vh)y=e.clientY-th;_ttEl.style.left=x+'px';_ttEl.style.top=y+'px';});
     },
 
-    /* ── Shared renderMap ── */
     renderMap(elementId, rows, getMarkerProps) {
         const map=L.map(elementId,{center:[-2.5,118],zoom:5,scrollWheelZoom:false});
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap, © CARTO',subdomains:'abcd',maxZoom:19}).addTo(map);
         const mapEl=document.getElementById(elementId);
-        const overlay=document.createElement('div'); overlay.className='map-scroll-overlay';
+        const overlay=document.createElement('div');overlay.className='map-scroll-overlay';
         overlay.innerHTML='<div class="map-scroll-hint"><svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;"><rect x="5" y="2" width="14" height="20" rx="7"/><line x1="12" y1="6" x2="12" y2="10"/></svg>Use Ctrl + Scroll to zoom</div>';
-        mapEl.style.position='relative'; mapEl.appendChild(overlay);
-        mapEl.addEventListener('wheel',function(e){
-            if(!e.ctrlKey){overlay.classList.add('visible');clearTimeout(overlay._t);overlay._t=setTimeout(()=>overlay.classList.remove('visible'),1800);}
-            else{map.scrollWheelZoom.enable();overlay.classList.remove('visible');}
-        });
+        mapEl.style.position='relative';mapEl.appendChild(overlay);
+        mapEl.addEventListener('wheel',function(e){if(!e.ctrlKey){overlay.classList.add('visible');clearTimeout(overlay._t);overlay._t=setTimeout(()=>overlay.classList.remove('visible'),1800);}else{map.scrollWheelZoom.enable();overlay.classList.remove('visible');}});
         map.on('zoomend',()=>setTimeout(()=>map.scrollWheelZoom.disable(),300));
         if(!rows.length) return {map,markerRefs:[]};
         const maxCount=Math.max(...rows.map(p=>parseInt(p.count||0)));
         const markerRefs=[];
         rows.forEach(p=>{
-            const lat=parseFloat(p.latitude||0), lng=parseFloat(p.longitude||0);
+            const lat=parseFloat(p.latitude||0),lng=parseFloat(p.longitude||0);
             if(lat===0&&lng===0){markerRefs.push(null);return;}
             const{color,count,popup}=getMarkerProps(p);
             if(count>=10){let r=Math.min(Math.max(Math.sqrt(count)*2500,5000),50000);L.circle([lat,lng],{radius:r,fillColor:color,color,weight:1,opacity:.3,fillOpacity:Math.min(.15+(count/maxCount)*.45,.6)}).addTo(map);}
@@ -779,41 +820,35 @@ const XGeo = {
         return{map,markerRefs};
     },
 
-    /* ── Location sidebar panel builder ── */
     buildLocationPanel(listId, rows, mapResult, defaultColor, useSentiment) {
-        const listEl=_$(listId); if(!listEl) return;
+        const listEl=_$(listId);if(!listEl)return;
         const{map,markerRefs}=mapResult;
         const valid=rows.filter(p=>!(parseFloat(p.latitude||0)===0&&parseFloat(p.longitude||0)===0));
         if(!valid.length){listEl.innerHTML='<div class="geo-empty" style="padding:24px 14px;font-size:12px;">No location data</div>';return;}
         const sorted=[...valid].sort((a,b)=>parseInt(b.count||0)-parseInt(a.count||0));
         listEl.innerHTML=sorted.map((p,rank)=>{
-            const name=p.name||'Unknown', count=parseInt(p.count||0);
+            const name=p.name||'Unknown',count=parseInt(p.count||0);
             let color=defaultColor||'#038047';
             if(useSentiment){const pos=parseInt(p.pos||0),neg=parseInt(p.neg||0),net=parseInt(p.net||0);if(pos>neg&&pos>net)color='#22c55e';else if(neg>pos&&neg>net)color='#ef4444';else color='#64748b';}
             const rkCls=rank<3?` location-item-rank--${rank+1}`:'';
             const label=count>999?(count/1000).toFixed(1)+'k':count;
-            return `<div class="location-item" data-rank="${rank}">
-                <div class="location-item-rank${rkCls}">${rank+1}</div>
-                <div class="location-item-info"><div class="location-item-name" title="${esc(name)}">${esc(name)}</div><div class="location-item-count">${label} ${useSentiment?'mentions':'users'}</div></div>
-                <div class="location-item-dot" style="background:${color};"></div>
-            </div>`;
+            return `<div class="location-item" data-rank="${rank}"><div class="location-item-rank${rkCls}">${rank+1}</div><div class="location-item-info"><div class="location-item-name" title="${esc(name)}">${esc(name)}</div><div class="location-item-count">${label} ${useSentiment?'mentions':'users'}</div></div><div class="location-item-dot" style="background:${color};"></div></div>`;
         }).join('');
         listEl.querySelectorAll('.location-item').forEach((item,i)=>{
             item.addEventListener('click',()=>{
                 const p=sorted[i],lat=parseFloat(p.latitude||0),lng=parseFloat(p.longitude||0);
-                if(lat===0&&lng===0) return;
+                if(lat===0&&lng===0)return;
                 map.flyTo([lat,lng],8,{animate:true,duration:1});
                 const ref=markerRefs.find(r=>r&&Math.abs(r.lat-lat)<.001&&Math.abs(r.lng-lng)<.001);
-                if(ref) setTimeout(()=>ref.marker.openPopup(),800);
+                if(ref)setTimeout(()=>ref.marker.openPopup(),800);
                 listEl.querySelectorAll('.location-item').forEach(el=>el.classList.remove('active'));
                 item.classList.add('active');
             });
         });
     },
 
-    /* ── Maps ── */
     async loadGeoUserMap(card) {
-        const result=await this.fetchGeoUser(), rows=this.parseGeoRows(result);
+        const result=await this.fetchGeoUser(),rows=this.parseGeoRows(result);
         const markers=this.renderMap('geoMap',rows,p=>({
             color:'#038047',count:parseInt(p.count||0),
             popup:`<div style="font-family:inherit;text-align:center;padding:8px;min-width:140px;"><div style="font-weight:700;font-size:15px;color:#0f172a;margin-bottom:6px;">${esc(p.name||'Unknown')}</div><div style="font-size:24px;font-weight:800;color:#038047;">${numF(p.count)}</div><div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;font-weight:700;">users</div></div>`
@@ -822,61 +857,48 @@ const XGeo = {
         card.dataset.loaded='true';
     },
     async loadGeoSentimentMap(card) {
-        const result=await this.fetchGeoSentiment(), rows=this.parseGeoRows(result);
+        const result=await this.fetchGeoSentiment(),rows=this.parseGeoRows(result);
         const markers=this.renderMap('geoSentimentMap',rows,p=>{
             const count=parseInt(p.count||0),pos=parseInt(p.pos||0),neg=parseInt(p.neg||0),net=parseInt(p.net||0),safe=count||1;
             let color='#64748b',sentiment='Neutral';
             if(pos>neg&&pos>net){color='#22c55e';sentiment='Positive';}else if(neg>pos&&neg>net){color='#ef4444';sentiment='Negative';}
-            return{color,count,popup:`<div style="font-family:inherit;text-align:center;padding:8px;min-width:200px;">
-                <div style="font-weight:700;font-size:15px;color:#0f172a;margin-bottom:6px;">${esc(p.name||'Unknown')}</div>
-                <div style="display:inline-block;padding:3px 10px;background:${color}20;border-radius:20px;margin-bottom:8px;"><span style="font-size:10px;font-weight:800;color:${color};text-transform:uppercase;">${sentiment}</span></div>
-                <div style="font-size:24px;font-weight:800;color:${color};">${numF(count)}</div>
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;border-top:1px solid #e2e8f0;padding-top:10px;">
-                    <div style="text-align:center;background:#f0fdf4;border-radius:5px;padding:5px;"><div style="font-size:14px;font-weight:800;color:#22c55e;">${pos}</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;">Pos</div><div style="font-size:8px;color:#94a3b8;">${((pos/safe)*100).toFixed(1)}%</div></div>
-                    <div style="text-align:center;background:#f8fafc;border-radius:5px;padding:5px;"><div style="font-size:14px;font-weight:800;color:#94a3b8;">${net}</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;">Neu</div><div style="font-size:8px;color:#94a3b8;">${((net/safe)*100).toFixed(1)}%</div></div>
-                    <div style="text-align:center;background:#fef2f2;border-radius:5px;padding:5px;"><div style="font-size:14px;font-weight:800;color:#ef4444;">${neg}</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;">Neg</div><div style="font-size:8px;color:#94a3b8;">${((neg/safe)*100).toFixed(1)}%</div></div>
-                </div>
-            </div>`};
+            return{color,count,popup:`<div style="font-family:inherit;text-align:center;padding:8px;min-width:200px;"><div style="font-weight:700;font-size:15px;color:#0f172a;margin-bottom:6px;">${esc(p.name||'Unknown')}</div><div style="display:inline-block;padding:3px 10px;background:${color}20;border-radius:20px;margin-bottom:8px;"><span style="font-size:10px;font-weight:800;color:${color};text-transform:uppercase;">${sentiment}</span></div><div style="font-size:24px;font-weight:800;color:${color};">${numF(count)}</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;border-top:1px solid #e2e8f0;padding-top:10px;"><div style="text-align:center;background:#f0fdf4;border-radius:5px;padding:5px;"><div style="font-size:14px;font-weight:800;color:#22c55e;">${pos}</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;">Pos</div><div style="font-size:8px;color:#94a3b8;">${((pos/safe)*100).toFixed(1)}%</div></div><div style="text-align:center;background:#f8fafc;border-radius:5px;padding:5px;"><div style="font-size:14px;font-weight:800;color:#94a3b8;">${net}</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;">Neu</div><div style="font-size:8px;color:#94a3b8;">${((net/safe)*100).toFixed(1)}%</div></div><div style="text-align:center;background:#fef2f2;border-radius:5px;padding:5px;"><div style="font-size:14px;font-weight:800;color:#ef4444;">${neg}</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;">Neg</div><div style="font-size:8px;color:#94a3b8;">${((neg/safe)*100).toFixed(1)}%</div></div></div></div>`};
         });
         this.buildLocationPanel('geoSentimentList',rows,markers,null,true);
         card.dataset.loaded='true';
     },
 
-    /* ── Small charts ── */
     async loadChartCountries(card) {
         const result=await this.fetchGeoUser(),rows=this.parseGeoRows(result);
-        const ldEl=_$('loadingChartCountries'),el=_$('chartCountries'); if(!el) return;
+        const ldEl=_$('loadingChartCountries'),el=_$('chartCountries');if(!el)return;
         if(!rows.length){if(ldEl)ldEl.innerHTML='<div class="geo-empty">No data</div>';return;}
         const colors=['#038047','#059669','#0891b2','#7c3aed','#db2777','#ea580c'],top=rows.slice(0,6),max=parseInt(top[0]?.count)||1;
-        el.innerHTML=top.map((row,i)=>{const count=parseInt(row.count),pct=Math.max(Math.round((Math.log(count+1)/Math.log(max+1))*100),6);
-            return `<div class="country-bar-row"><div class="country-bar-header"><span class="country-bar-name">${esc(row.name)}</span><span class="country-bar-count">${numF(count)}</span></div><div class="country-bar-track"><div class="country-bar-fill" data-pct="${pct}" style="background:${colors[i%colors.length]};"></div></div></div>`;
-        }).join('');
-        if(ldEl)ldEl.style.display='none'; el.style.display='block';
+        el.innerHTML=top.map((row,i)=>{const count=parseInt(row.count),pct=Math.max(Math.round((Math.log(count+1)/Math.log(max+1))*100),6);return `<div class="country-bar-row"><div class="country-bar-header"><span class="country-bar-name">${esc(row.name)}</span><span class="country-bar-count">${numF(count)}</span></div><div class="country-bar-track"><div class="country-bar-fill" data-pct="${pct}" style="background:${colors[i%colors.length]};"></div></div></div>`;}).join('');
+        if(ldEl)ldEl.style.display='none';el.style.display='block';
         requestAnimationFrame(()=>el.querySelectorAll('.country-bar-fill').forEach(b=>b.style.width=b.dataset.pct+'%'));
     },
     async loadChartProvinces(card) {
         const result=await this.fetchGeoUser(),rows=this.parseGeoRows(result);
-        const ldEl=_$('loadingChartProvinces'),el=_$('chartProvinces'); if(!el) return;
-        const top=rows[0]; if(!top?.detail){if(ldEl)ldEl.innerHTML='<div class="geo-empty">No province data</div>';return;}
+        const ldEl=_$('loadingChartProvinces'),el=_$('chartProvinces');if(!el)return;
+        const top=rows[0];if(!top?.detail){if(ldEl)ldEl.innerHTML='<div class="geo-empty">No province data</div>';return;}
         const subEl=_$('provSubtitle');if(subEl)subEl.textContent=top.name+' provinces';
         const provinces=Object.entries(top.detail).filter(([k])=>k&&!k.startsWith('\u0000')&&k.trim()).map(([name,count])=>({name,count:parseInt(count)})).sort((a,b)=>b.count-a.count).slice(0,8);
         const max=provinces[0]?.count||1;
         el.innerHTML=provinces.map(p=>{const pct=Math.round((p.count/max)*100);return `<div class="prov-bar-row"><div class="prov-bar-header"><span class="prov-bar-name">${esc(p.name)}</span><span class="prov-bar-count">${numF(p.count)}</span></div><div class="prov-bar-track"><div class="prov-bar-fill" data-pct="${pct}"></div></div></div>`;}).join('');
-        if(ldEl)ldEl.style.display='none'; el.style.display='block';
+        if(ldEl)ldEl.style.display='none';el.style.display='block';
         requestAnimationFrame(()=>el.querySelectorAll('.prov-bar-fill').forEach(b=>b.style.width=b.dataset.pct+'%'));
     },
     async loadChartSentimentSmall(card) {
         const result=await this.fetchGeoSentiment(),rows=this.parseGeoRows(result);
-        let pos=0,neg=0,net=0; rows.forEach(r=>{pos+=parseInt(r.pos||0);neg+=parseInt(r.neg||0);net+=parseInt(r.net||0);});
+        let pos=0,neg=0,net=0;rows.forEach(r=>{pos+=parseInt(r.pos||0);neg+=parseInt(r.neg||0);net+=parseInt(r.net||0);});
         const total=pos+neg+net||1;
         const ldEl=_$('loadingChartSentiment'),canvasEl=_$('chartSentimentDonut'),legendEl=_$('chartSentimentLegend');
-        if(ldEl)ldEl.style.display='none'; if(canvasEl)canvasEl.style.display='block';
+        if(ldEl)ldEl.style.display='none';if(canvasEl)canvasEl.style.display='block';
         const canvas=document.createElement('canvas');canvas.width=180;canvas.height=180;canvasEl.appendChild(canvas);
         new Chart(canvas.getContext('2d'),{type:'doughnut',data:{labels:['Positive','Neutral','Negative'],datasets:[{data:[pos,net,neg],backgroundColor:['#22c55e','#94a3b8','#ef4444'],borderColor:'#fff',borderWidth:3,hoverOffset:6}]},options:{responsive:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed.toLocaleString()} (${((ctx.parsed/total)*100).toFixed(1)}%)`}}},animation:{animateRotate:true,duration:900}}});
         if(legendEl)legendEl.innerHTML=[{label:'Positive',val:pos,color:'#22c55e'},{label:'Neutral',val:net,color:'#94a3b8'},{label:'Negative',val:neg,color:'#ef4444'}].map(item=>`<div style="display:flex;align-items:center;gap:8px;"><div style="width:9px;height:9px;border-radius:50%;background:${item.color};flex-shrink:0;"></div><span style="font-size:12px;font-weight:700;color:#1e293b;flex:1;">${item.label}</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${numF(item.val)}</span><span style="font-size:11px;color:#94a3b8;width:40px;text-align:right;font-weight:600;">${((item.val/total)*100).toFixed(1)}%</span></div>`).join('');
     },
 
-    /* ── Top Locations Table ── */
     async loadTopLocations(card) {
         const r=await fetch(`/mk/api/x/top-locations?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`);
         const result=await r.json();
@@ -902,9 +924,7 @@ const XGeo = {
     closeModal(){_$('geoLocModal')?.classList.remove('open');document.body.style.overflow='';if(this._escHandler)document.removeEventListener('keydown',this._escHandler);},
 };
 
-/* ══════════════════════════════════════════════════════
-   SLIDE PANEL — identical structure/behavior to TME
-══════════════════════════════════════════════════════ */
+/* ══ SLIDE PANEL ══ */
 const GeoPanel = {
     open(rows, title, dotColor) {
         GeoDetail.close();
@@ -918,9 +938,9 @@ const GeoPanel = {
     },
     openLocation(row) {
         const pos=parseInt(row.pos||0),neg=parseInt(row.neg||0),net=parseInt(row.net||0);
-        let color='#64748b'; if(pos>neg&&pos>net)color='#22c55e'; else if(neg>pos&&neg>net)color='#ef4444';
-        this.open([row], `X — ${row.name||'Unknown'}`, color);
-        GeoDetail.openLocation(row, color);
+        let color='#64748b';if(pos>neg&&pos>net)color='#22c55e';else if(neg>pos&&neg>net)color='#ef4444';
+        this.open([row],`X — ${row.name||'Unknown'}`,color);
+        GeoDetail.openLocation(row,color);
     },
     close() {
         GeoDetail.close();
@@ -929,88 +949,221 @@ const GeoPanel = {
         setTimeout(()=>{pn.classList.remove('show','hiding');ov.classList.remove('show','hiding');},240);
     },
     _render(rows) {
-        const list=_$('geoPanelList'); if(!list) return;
+        const list=_$('geoPanelList');if(!list)return;
         if(!rows?.length){list.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:#94A3B8;font-size:13px;font-weight:600;"><div class="do-panel-spinner"></div>No data</div>';return;}
         list.innerHTML=rows.slice(0,100).map(row=>{
             const name=row.name||'Unknown',count=parseInt(row.count||0);
             const pos=parseInt(row.pos||0),neg=parseInt(row.neg||0),net=parseInt(row.net||0);
             const sent=pos>neg&&pos>net?'pos':neg>pos&&neg>net?'neg':'neu';
-            let color='#64748b'; if(sent==='pos')color='#22c55e'; else if(sent==='neg')color='#ef4444';
+            let color='#64748b';if(sent==='pos')color='#22c55e';else if(sent==='neg')color='#ef4444';
             const sentLbl={pos:'Pos',neg:'Neg',neu:'Neu'}[sent];
             const enc=encodeURIComponent(JSON.stringify(row));
-            return `<div class="do-panel-item" data-item="${esc(enc)}" onclick="GeoPanel._click(this)">
-                <div class="do-panel-avatar" style="background:linear-gradient(135deg,${color},${color}99);">
-                    <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z"/></svg>
-                </div>
-                <div class="do-panel-item-body">
-                    <div class="do-panel-author">${esc(name)}</div>
-                    <div class="do-panel-text">${numF(pos)} pos · ${numF(net)} neu · ${numF(neg)} neg</div>
-                    <div class="do-panel-footer">
-                        <span class="do-sent-badge do-sent-badge--${sent}">${sentLbl}</span>
-                        <span>${numF(count)} users</span><span style="margin-left:auto;">X (Twitter)</span>
-                    </div>
-                </div>
-            </div>`;
+            return `<div class="do-panel-item" data-item="${esc(enc)}" onclick="GeoPanel._click(this)"><div class="do-panel-avatar" style="background:linear-gradient(135deg,${color},${color}99);"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z"/></svg></div><div class="do-panel-item-body"><div class="do-panel-author">${esc(name)}</div><div class="do-panel-text">${numF(pos)} pos · ${numF(net)} neu · ${numF(neg)} neg</div><div class="do-panel-footer"><span class="do-sent-badge do-sent-badge--${sent}">${sentLbl}</span><span>${numF(count)} users</span><span style="margin-left:auto;">X (Twitter)</span></div></div></div>`;
         }).join('');
     },
     _click(el) {
         try {
             const row=JSON.parse(decodeURIComponent(el.dataset.item.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"')));
-            let color='#64748b'; const pos=parseInt(row.pos||0),neg=parseInt(row.neg||0),net=parseInt(row.net||0);
-            if(pos>neg&&pos>net)color='#22c55e'; else if(neg>pos&&neg>net)color='#ef4444';
-            GeoDetail.openLocation(row, color);
-        } catch(e){ console.warn(e); }
+            let color='#64748b';const pos=parseInt(row.pos||0),neg=parseInt(row.neg||0),net=parseInt(row.net||0);
+            if(pos>neg&&pos>net)color='#22c55e';else if(neg>pos&&neg>net)color='#ef4444';
+            GeoDetail.openLocation(row,color);
+        } catch(e){console.warn(e);}
     }
 };
 
-/* ══ DETAIL SUB-PANEL ══ */
+/* ══ DETAIL ══ */
 const GeoDetail = {
     openLocation(row, color) {
         const panel=_$('geoDetailPanel'),body=_$('geoDetailBody'),title=_$('geoDetailTitle');
-        if(!panel||!body) return;
+        if(!panel||!body)return;
         const name=row.name||'Unknown',count=parseInt(row.count||0);
         const pos=parseInt(row.pos||0),neg=parseInt(row.neg||0),net=parseInt(row.net||0),safe=count||1;
         const sent=pos>neg&&pos>net?'pos':neg>pos&&neg>net?'neg':'neu';
         const sentLbl={pos:'Positive',neg:'Negative',neu:'Neutral'}[sent];
         title.textContent=name;
-        body.innerHTML=`
-            <div class="do-dp2-avatar-row">
-                <div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${color},${color}99);">
-                    <svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z"/></svg>
-                </div>
-                <div>
-                    <div class="do-dp2-name">${esc(name)}</div>
-                    <div class="do-dp2-handle">Geographic Region</div>
-                    <span class="do-dp2-plat-badge" style="background:${color}18;color:${color};">X (Twitter)</span>
-                </div>
-            </div>
-            <div class="do-dp2-sent do-dp2-sent--${sent}">${sentLbl} dominant</div>
-            <div class="do-dp2-stats">
-                <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(count)}</div><div class="do-dp2-stat-lbl">Total Users</div></div>
-                <div class="do-dp2-stat"><div class="do-dp2-stat-val" style="color:#22c55e;">${numF(pos)}</div><div class="do-dp2-stat-lbl">Positive</div></div>
-                <div class="do-dp2-stat"><div class="do-dp2-stat-val" style="color:#ef4444;">${numF(neg)}</div><div class="do-dp2-stat-lbl">Negative</div></div>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px;">
-                <div style="background:#f0fdf4;border-radius:6px;padding:8px;text-align:center;border:1px solid #bbf7d0;">
-                    <div style="font-size:13px;font-weight:800;color:#22c55e;">${((pos/safe)*100).toFixed(1)}%</div>
-                    <div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;margin-top:2px;">Positive</div>
-                </div>
-                <div style="background:#f8fafc;border-radius:6px;padding:8px;text-align:center;border:1px solid #e2e8f0;">
-                    <div style="font-size:13px;font-weight:800;color:#94a3b8;">${((net/safe)*100).toFixed(1)}%</div>
-                    <div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;margin-top:2px;">Neutral</div>
-                </div>
-                <div style="background:#fef2f2;border-radius:6px;padding:8px;text-align:center;border:1px solid #fecaca;">
-                    <div style="font-size:13px;font-weight:800;color:#ef4444;">${((neg/safe)*100).toFixed(1)}%</div>
-                    <div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;margin-top:2px;">Negative</div>
-                </div>
-            </div>
-            <div style="font-size:11px;color:#94a3b8;font-weight:600;text-align:center;padding:8px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;">
-                <i class="ph ph-map-pin me-1"></i>${esc(name)} · ${numF(count)} total mentions tracked
-            </div>`;
+        body.innerHTML=`<div class="do-dp2-avatar-row"><div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${color},${color}99);"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z"/></svg></div><div><div class="do-dp2-name">${esc(name)}</div><div class="do-dp2-handle">Geographic Region</div><span class="do-dp2-plat-badge" style="background:${color}18;color:${color};">X (Twitter)</span></div></div><div class="do-dp2-sent do-dp2-sent--${sent}">${sentLbl} dominant</div><div class="do-dp2-stats"><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(count)}</div><div class="do-dp2-stat-lbl">Total Users</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val" style="color:#22c55e;">${numF(pos)}</div><div class="do-dp2-stat-lbl">Positive</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val" style="color:#ef4444;">${numF(neg)}</div><div class="do-dp2-stat-lbl">Negative</div></div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px;"><div style="background:#f0fdf4;border-radius:6px;padding:8px;text-align:center;border:1px solid #bbf7d0;"><div style="font-size:13px;font-weight:800;color:#22c55e;">${((pos/safe)*100).toFixed(1)}%</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;margin-top:2px;">Positive</div></div><div style="background:#f8fafc;border-radius:6px;padding:8px;text-align:center;border:1px solid #e2e8f0;"><div style="font-size:13px;font-weight:800;color:#94a3b8;">${((net/safe)*100).toFixed(1)}%</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;margin-top:2px;">Neutral</div></div><div style="background:#fef2f2;border-radius:6px;padding:8px;text-align:center;border:1px solid #fecaca;"><div style="font-size:13px;font-weight:800;color:#ef4444;">${((neg/safe)*100).toFixed(1)}%</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;margin-top:2px;">Negative</div></div></div><div style="font-size:11px;color:#94a3b8;font-weight:600;text-align:center;padding:8px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;"><i class="ph ph-map-pin me-1"></i>${esc(name)} · ${numF(count)} total mentions tracked</div>`;
         panel.classList.add('show');
     },
     close() { _$('geoDetailPanel')?.classList.remove('show'); },
 };
+
+/* ══════════════════════════════════════════════════════
+   EXPORT MODULE — identik dengan TikTok Most Engagement
+══════════════════════════════════════════════════════ */
+const XGeoExport = (() => {
+    let _toastTimer = null;
+    const PID = '{{ $projectId ?? "0" }}';
+
+    function _toast(msg, type='default', duration=3200) {
+        const t=_$('exportToast'), m=_$('exportToastMsg'), ico=_$('exportToastIcon');
+        if(!t||!m) return;
+        m.textContent = msg;
+        t.className   = 'export-toast show '+(type!=='default'?type:'');
+        const icons   = { success:'ph-check-circle', error:'ph-x-circle', default:'ph-spinner' };
+        ico.className = 'ph '+(icons[type]||icons.default);
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(()=>t.classList.remove('show'), duration);
+    }
+
+    function _btnState(btn, loading) {
+        if(!btn) return;
+        btn.disabled = loading;
+        btn.classList.toggle('exporting', loading);
+    }
+
+    function _drawPdfHeader(pdf, pW, margin, label) {
+        pdf.setFillColor(3, 128, 71);
+        pdf.rect(0, 0, pW, 11, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(9); pdf.setFont('helvetica','bold');
+        pdf.text('SMADIMENT — '+(label||'X Geographic'), margin, 7.5);
+        const now = new Date().toLocaleDateString('id-ID',{ day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        pdf.setFontSize(7); pdf.setFont('helvetica','normal');
+        pdf.text('Generated: '+now, pW-margin, 7.5, { align:'right' });
+    }
+
+    function _paginateCanvas(pdf, canvas, margin, pW, pH, label) {
+        const usableW = pW - margin*2;
+        const usableH = pH - margin*2 - 14;
+        const ratio   = usableW / canvas.width;
+        const sliceH  = usableH / ratio;
+        let srcY=0, pageNum=0;
+        while(srcY < canvas.height) {
+            if(pageNum > 0) pdf.addPage();
+            _drawPdfHeader(pdf, pW, margin, label);
+            const srcSlice = Math.min(sliceH, canvas.height-srcY);
+            const dstH     = srcSlice * ratio;
+            const slice    = document.createElement('canvas');
+            slice.width  = canvas.width;
+            slice.height = Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice);
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
+            pdf.setFontSize(7); pdf.setTextColor(148,163,184);
+            pdf.text(`Halaman ${pageNum+1}`, pW/2, pH-3, { align:'center' });
+            srcY += srcSlice; pageNum++;
+        }
+    }
+
+    async function _captureArea(areaEl) {
+        window.scrollTo({ top:0 });
+        await new Promise(r => setTimeout(r, 300));
+        // Resize ECharts
+        if(window.__geoDonutChart) { try{window.__geoDonutChart.resize();}catch(e){} }
+        return html2canvas(areaEl, {
+            scale:           2,
+            useCORS:         true,
+            allowTaint:      false,
+            backgroundColor: '#f1f5f9',
+            logging:         false,
+            removeContainer: true,
+            windowWidth:     document.documentElement.scrollWidth,
+            windowHeight:    areaEl.scrollHeight,
+            height:          areaEl.scrollHeight,
+            ignoreElements:  el => el.hasAttribute('data-html2canvas-ignore'),
+        });
+    }
+
+    async function _captureCard(areaId) {
+        const area = document.getElementById(areaId);
+        if(!area) throw new Error('Area #'+areaId+' tidak ditemukan');
+        if(window.__geoDonutChart) { try{window.__geoDonutChart.resize();}catch(e){} }
+        await new Promise(r => setTimeout(r, 220));
+        return html2canvas(area, {
+            scale:           2,
+            useCORS:         true,
+            allowTaint:      false,
+            backgroundColor: '#ffffff',
+            logging:         false,
+            removeContainer: true,
+            ignoreElements:  el => el.hasAttribute('data-html2canvas-ignore'),
+        });
+    }
+
+    const _cardLabels = {
+        'donut'              : 'Distribusi Sentiment — Top Locations',
+        'map-user'           : 'Geographic User Distribution',
+        'map-sentiment'      : 'Sentiment by Location',
+        'chart-countries'    : 'Top Countries',
+        'chart-provinces'    : 'Top Provinces',
+        'chart-sentiment'    : 'Sentiment Summary',
+        'top-locations'      : 'Top Author Locations',
+    };
+
+    function _filename(cardKey) {
+        const slug = { 'donut':'distribusi-sentiment', 'map-user':'map-user-distribution', 'map-sentiment':'map-sentiment', 'chart-countries':'chart-countries', 'chart-provinces':'chart-provinces', 'chart-sentiment':'chart-sentiment-summary', 'top-locations':'top-author-locations' };
+        const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
+        return `x_geographic_${slug[cardKey]||cardKey}_${PID}_${stamp}`;
+    }
+
+    async function runCard(areaId, cardKey, type, btn) {
+        if(!window.html2canvas)      { _toast('html2canvas tidak tersedia','error'); return; }
+        if(type==='pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
+        _btnState(btn, true);
+        _toast(type==='pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
+        try {
+            const canvas = await _captureCard(areaId);
+            const fname  = _filename(cardKey);
+            const label  = _cardLabels[cardKey] || cardKey;
+            if(type === 'image') {
+                const link = document.createElement('a');
+                link.download = fname+'.png';
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const landscape = canvas.width > canvas.height;
+                const pdf  = new jsPDF({ orientation:landscape?'landscape':'portrait', unit:'mm', format:'a4' });
+                const pW   = pdf.internal.pageSize.getWidth();
+                const pH   = pdf.internal.pageSize.getHeight();
+                _paginateCanvas(pdf, canvas, 10, pW, pH, label);
+                pdf.save(fname+'.pdf');
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(err) {
+            console.error('[XGeoExport.runCard]', err);
+            _toast('Export gagal: '+err.message, 'error');
+        } finally {
+            _btnState(btn, false);
+        }
+    }
+
+    async function run(type, btn) {
+        if(!window.html2canvas)      { _toast('html2canvas tidak tersedia','error'); return; }
+        if(type==='pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
+        const btnPdf = _$('pageExportPdfBtn');
+        const btnImg = _$('pageExportImgBtn');
+        _btnState(btnPdf, true); _btnState(btnImg, true);
+        _toast(type==='pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar halaman…', 'default', 99999);
+        try {
+            const area   = _$('pageExportArea');
+            const canvas = await _captureArea(area);
+            const stamp  = new Date().toISOString().slice(0,10).replace(/-/g,'');
+            if(type === 'image') {
+                const link    = document.createElement('a');
+                link.download = `x_geographic_${PID}_${stamp}.png`;
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+                const pW  = pdf.internal.pageSize.getWidth();
+                const pH  = pdf.internal.pageSize.getHeight();
+                _paginateCanvas(pdf, canvas, 10, pW, pH, 'X Geographic');
+                pdf.save(`x_geographic_${PID}_${stamp}.pdf`);
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(err) {
+            console.error('[XGeoExport]', err);
+            _toast('Export gagal: '+err.message, 'error');
+        } finally {
+            _btnState(btnPdf, false); _btnState(btnImg, false);
+        }
+    }
+
+    return { run, runCard };
+})();
 
 /* ══ INIT ══ */
 document.addEventListener('DOMContentLoaded', () => {

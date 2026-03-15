@@ -18,6 +18,7 @@ use App\Http\Controllers\MK\CompareProjectController;
 use App\Http\Controllers\MK\TrendingTopicController;
 use App\Http\Controllers\MK\SearchTopicController;
 use App\Http\Controllers\MK\MediaStatisticController;
+use App\Http\Controllers\MK\AllPlatformAiController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -220,6 +221,14 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
 
         // Trending Topic API
         Route::get('/trending-topics-twitter', [TrendingTopicController::class, 'getData'])->name('trending-topics-twitter');
+
+        // ─────────────────────────────────────────────────────
+        // ALL PLATFORM AI ROUTES
+        // ─────────────────────────────────────────────────────
+        Route::prefix('all-platform')->name('all-platform.')->group(function () {
+            Route::get('/ai-analysis-data', [AllPlatformAiController::class, 'data'])->name('ai-analysis-data');
+            Route::post('/ai-proxy',        [AllPlatformAiController::class, 'proxy'])->name('ai-proxy');
+        });
     });
 
     // ═══════════════════════════════════════════════════════
@@ -340,6 +349,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     });
 
     Route::get('/geographic', [MkController::class, 'geographic'])->name('geographic');
+    Route::get('/all-ai-analysis', [AllPlatformAiController::class, 'page'])->name('all-ai-analysis');
 
     Route::prefix('authors')->name('authors.')->group(function () {
         Route::get('/age',    [MkController::class, 'authorsAge'])->name('age');

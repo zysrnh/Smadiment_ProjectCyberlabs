@@ -5,7 +5,7 @@
 @section('styles')
 <style>
 /* ══════════════════════════════════════════════════════
-   DESIGN TOKENS — sama persis dengan Data Overview
+   DESIGN TOKENS
 ══════════════════════════════════════════════════════ */
 :root {
     --do-primary        : var(--bs-primary, #4361EE);
@@ -36,14 +36,16 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-@keyframes fadeUp    { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-@keyframes shimmer   { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
-@keyframes spin      { to{transform:rotate(360deg)} }
-@keyframes dropIn    { from{opacity:0;transform:translateY(-6px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
-@keyframes overlayIn  { from{opacity:0} to{opacity:1} }
-@keyframes overlayOut { from{opacity:1} to{opacity:0} }
+@keyframes fadeUp        { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+@keyframes shimmer       { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes spin          { to{transform:rotate(360deg)} }
+@keyframes dropIn        { from{opacity:0;transform:translateY(-6px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+@keyframes overlayIn     { from{opacity:0} to{opacity:1} }
+@keyframes overlayOut    { from{opacity:1} to{opacity:0} }
 @keyframes slideInRight  { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
 @keyframes slideOutRight { from{transform:translateX(0);opacity:1}    to{transform:translateX(100%);opacity:0} }
+@keyframes kpiIconBounce { 0%,100%{transform:scale(1) rotate(0)} 30%{transform:scale(1.25) rotate(-10deg)} 60%{transform:scale(1.1) rotate(6deg)} }
+@keyframes kpiShimmer    { 0%{left:-100%} 100%{left:150%} }
 
 .fade-up    { animation:fadeUp .36s ease-out both; }
 .fade-up-d1 { animation-delay:.04s; }
@@ -96,11 +98,15 @@
 .do-card-body { padding:16px; flex:1; }
 
 /* ══ KPI Card Hover ══ */
-@keyframes kpiIconBounce{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.25) rotate(-10deg)}60%{transform:scale(1.1) rotate(6deg)}}
-@keyframes kpiShimmer{0%{left:-100%}100%{left:150%}}
-.kpi-icon-bg{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.2);font-size:24px;color:#fff;flex-shrink:0}
-.kpi-card-hover{will-change:transform,box-shadow;cursor:pointer;position:relative!important;overflow:hidden!important;transition:transform .25s cubic-bezier(.34,1.56,.64,1)!important,box-shadow .25s ease!important,filter .25s ease!important}.kpi-card-hover::before{content:'';position:absolute;top:0;bottom:0;left:-100%;width:60%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);pointer-events:none;z-index:1}.kpi-card-hover:hover{transform:translateY(-6px) scale(1.025)!important;box-shadow:0 20px 40px rgba(0,0,0,.25)!important;filter:brightness(1.07)!important}.kpi-card-hover:hover::before{animation:kpiShimmer .6s ease forwards}.kpi-card-hover:hover .kpi-icon-bg{background:rgba(255,255,255,.35)!important}.kpi-card-hover:hover .kpi-icon-bg i{animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both!important;display:inline-block!important}.kpi-card-hover:active{transform:translateY(-2px) scale(1.01)!important;transition-duration:.08s!important}
-.kpi-card-hover h3{font-size:1.5rem}
+.kpi-icon-bg { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.2); font-size:24px; color:#fff; flex-shrink:0; }
+.kpi-card-hover { will-change:transform,box-shadow; cursor:pointer; position:relative!important; overflow:hidden!important; transition:transform .25s cubic-bezier(.34,1.56,.64,1)!important,box-shadow .25s ease!important,filter .25s ease!important; }
+.kpi-card-hover::before { content:''; position:absolute; top:0; bottom:0; left:-100%; width:60%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent); pointer-events:none; z-index:1; }
+.kpi-card-hover:hover { transform:translateY(-6px) scale(1.025)!important; box-shadow:0 20px 40px rgba(0,0,0,.25)!important; filter:brightness(1.07)!important; }
+.kpi-card-hover:hover::before { animation:kpiShimmer .6s ease forwards; }
+.kpi-card-hover:hover .kpi-icon-bg { background:rgba(255,255,255,.35)!important; }
+.kpi-card-hover:hover .kpi-icon-bg i { animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both!important; display:inline-block!important; }
+.kpi-card-hover:active { transform:translateY(-2px) scale(1.01)!important; transition-duration:.08s!important; }
+.kpi-card-hover h3 { font-size:1.5rem; }
 
 /* ══ Main Layout ══ */
 .nss-main-grid { display:grid; grid-template-columns:1fr 340px; gap:14px; align-items:start; }
@@ -139,22 +145,87 @@
 /* ══ Skeleton ══ */
 .sk-block { border-radius:4px; background:linear-gradient(90deg,var(--do-slate-100) 25%,var(--do-slate-200) 50%,var(--do-slate-100) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
 
-/* ══ Slide Panel — IDENTICAL to Data Overview ══ */
+/* ══════════════════════════════════════════════════════
+   EXPORT STYLES
+══════════════════════════════════════════════════════ */
+.page-export-bar {
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:10px;
+    background:#fff; border:1px solid var(--do-slate-200);
+    border-radius:var(--do-radius); padding:9px 14px;
+    margin-bottom:20px; box-shadow:var(--do-shadow-sm);
+}
+.page-export-bar-left {
+    display:flex; align-items:center; gap:8px;
+    font-size:12px; font-weight:700; color:var(--do-slate-500);
+}
+.page-export-bar-left i { font-size:15px; color:#038047; }
+.page-export-bar-right  { display:flex; gap:8px; }
+.page-export-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:32px; height:32px; border-radius:var(--do-radius-sm);
+    font-size:16px; cursor:pointer; transition:all .15s ease;
+    border:1.5px solid transparent; font-family:inherit;
+}
+.page-export-btn-pdf { background:#fff3f3; color:#dc2626; border-color:#fca5a5; }
+.page-export-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.page-export-btn-img { background:rgba(3,128,71,.10); color:#038047; border-color:rgba(3,128,71,.3); }
+.page-export-btn-img:hover { background:#038047; color:#fff; border-color:#038047; }
+.page-export-btn:disabled { opacity:.55; cursor:not-allowed; pointer-events:none; }
+.page-export-btn .export-spinner {
+    width:13px; height:13px; border:2px solid currentColor;
+    border-top-color:transparent; border-radius:50%;
+    animation:spin .65s linear infinite; display:none;
+}
+.page-export-btn.exporting .export-spinner { display:inline-block; }
+.page-export-btn.exporting .export-icon    { display:none; }
+
+.card-exp-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:var(--do-radius-sm);
+    font-size:14px; cursor:pointer; flex-shrink:0;
+    transition:all .14s ease; border:1px solid transparent;
+    font-family:inherit; background:transparent;
+}
+.card-exp-btn-pdf { color:#dc2626; border-color:#fca5a5; background:#fff3f3; }
+.card-exp-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.card-exp-btn-img { color:#038047; border-color:rgba(3,128,71,.3); background:rgba(3,128,71,.10); }
+.card-exp-btn-img:hover { background:#038047; color:#fff; border-color:#038047; }
+.card-exp-btn:disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+.card-exp-btn .export-spinner {
+    width:11px; height:11px; border:2px solid currentColor;
+    border-top-color:transparent; border-radius:50%;
+    animation:spin .65s linear infinite; display:none;
+}
+.card-exp-btn.exporting .export-spinner { display:inline-block; }
+.card-exp-btn.exporting .export-icon    { display:none; }
+
+.export-toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--do-slate-900); color:#fff; border-radius:var(--do-radius);
+    padding:10px 18px; font-size:12px; font-weight:600;
+    box-shadow:var(--do-shadow-lg); z-index:99999;
+    opacity:0; pointer-events:none;
+    transition:opacity .22s ease, transform .22s ease;
+    display:flex; align-items:center; gap:8px; white-space:nowrap;
+}
+.export-toast.show    { opacity:1; transform:translateX(-50%) translateY(0); }
+.export-toast.success { background:#065f46; }
+.export-toast.error   { background:#991b1b; }
+
+/* ══ Slide Panel ══ */
 .do-panel-overlay { position:fixed; inset:0; z-index:9000; background:rgba(15,23,42,.45); backdrop-filter:blur(4px); display:none; }
 .do-panel-overlay.show   { display:block; animation:overlayIn .22s ease-out; }
 .do-panel-overlay.hiding { animation:overlayOut .22s ease-out forwards; }
-
 .do-panel { position:fixed; top:0; right:0; bottom:0; z-index:9001; width:480px; max-width:100vw; background:#fff; display:none; flex-direction:column; border-left:1px solid var(--do-slate-200); box-shadow:-8px 0 40px rgba(15,23,42,.16); }
 .do-panel.show   { display:flex; animation:slideInRight .28s cubic-bezier(.4,0,.2,1); }
 .do-panel.hiding { animation:slideOutRight .24s cubic-bezier(.4,0,.2,1) forwards; }
-
 .do-panel-header { display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--do-slate-200); background:var(--do-slate-50); flex-shrink:0; }
 .do-panel-dot   { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
 .do-panel-title { font-size:13px; font-weight:700; color:var(--do-slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .do-panel-count { background:var(--do-primary); color:#fff; border-radius:3px; padding:1px 8px; font-size:10px; font-weight:800; flex-shrink:0; }
 .do-panel-close { width:28px; height:28px; border-radius:var(--do-radius-sm); border:1px solid var(--do-slate-200); background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--do-slate-500); font-size:16px; transition:all .14s; flex-shrink:0; }
 .do-panel-close:hover { background:var(--do-red); border-color:var(--do-red); color:#fff; }
-
 .do-panel-actions { display:flex; align-items:center; gap:7px; padding:7px 12px; border-bottom:1px solid var(--do-slate-200); background:#fff; flex-shrink:0; }
 .do-panel-meta { flex:1; font-size:10px; font-weight:700; color:var(--do-slate-400); text-transform:uppercase; letter-spacing:.5px; overflow:hidden; display:flex; align-items:center; gap:5px; }
 .do-panel-tabs { display:flex; background:var(--do-slate-100); border:1px solid var(--do-slate-200); border-radius:var(--do-radius-sm); padding:2px; gap:2px; }
@@ -165,14 +236,9 @@
 .do-panel-tab.neg.active { color:var(--do-red); }
 .do-panel-tab.pos.active { color:#0ea5e9; }
 .do-panel-tab.neu.active { color:var(--do-slate-500); }
-.do-panel-export { display:flex; align-items:center; gap:4px; padding:4px 10px; background:var(--do-primary); color:#fff; border:none; border-radius:var(--do-radius-sm); font-size:10px; font-weight:700; cursor:pointer; transition:filter .13s; font-family:inherit; }
-.do-panel-export:hover { filter:brightness(1.1); }
-.do-panel-export i { font-size:12px; }
-
 .do-panel-list { overflow-y:auto; flex:1; padding:2px 0; min-height:0; }
 .do-panel-list::-webkit-scrollbar { width:4px; }
 .do-panel-list::-webkit-scrollbar-thumb { background:var(--do-slate-200); border-radius:99px; }
-
 .do-panel-item { display:flex; gap:10px; padding:10px 14px; border-bottom:1px solid var(--do-slate-50); cursor:pointer; transition:background .1s; align-items:flex-start; }
 .do-panel-item:hover { background:#f0f9ff; }
 .do-panel-item:last-child { border-bottom:none; }
@@ -182,12 +248,10 @@
 .do-panel-author { font-size:12px; font-weight:700; color:var(--do-slate-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .do-panel-text   { font-size:11px; color:var(--do-slate-600); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px; }
 .do-panel-footer { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--do-slate-400); flex-wrap:wrap; }
-
 .do-sent-badge { padding:1px 6px; border-radius:3px; font-size:9px; font-weight:800; text-transform:uppercase; }
 .do-sent-badge--pos { background:#dbeafe; color:#1d4ed8; }
 .do-sent-badge--neg { background:#fee2e2; color:#991b1b; }
 .do-sent-badge--neu { background:var(--do-slate-100); color:var(--do-slate-500); }
-
 .do-panel-loading { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:12px; color:var(--do-slate-400); font-size:13px; font-weight:600; }
 .do-panel-spinner { width:28px; height:28px; border:2.5px solid var(--do-slate-100); border-top-color:var(--do-primary); border-radius:50%; animation:spin .65s linear infinite; }
 
@@ -207,14 +271,11 @@
   $endDate   = $endDate   ?? request()->get('end_date', now()->format('Y-m-d'));
 @endphp
 
-
 @include('mk.layouts.partials.filter-datepicker')
 
 {{-- ══ Sub-header ══ --}}
 <div class="do-page-header fade-up">
-   
     <div class="nss-media-wrap" id="nssMediaWrap">
-         
         <div class="nss-media-menu" id="nssMediaMenu">
             <div class="nss-media-menu-section">Filter Media</div>
             <button class="nss-media-menu-item active" data-m="all"       onclick="NSSPage.selectMedia(this)"><span class="nss-menu-dot" style="background:var(--do-primary)"></span>All Media</button>
@@ -228,7 +289,31 @@
     </div>
 </div>
 
-{{-- ══ KPI Cards — same pattern as engagement ══ --}}
+{{-- ════ PAGE EXPORT AREA WRAPPER ════ --}}
+<div id="nssExportArea">
+
+{{-- ══ Page Export Toolbar ══ --}}
+<div class="page-export-bar" data-html2canvas-ignore="true">
+    <div class="page-export-bar-left">
+        <i class="ph ph-export"></i>
+        <span>Export Halaman</span>
+        <span class="badge bg-light-secondary text-muted ms-1" style="font-size:10px;">KPI + Gauge + Breakdown</span>
+    </div>
+    <div class="page-export-bar-right">
+        <button type="button" class="page-export-btn page-export-btn-pdf" id="nssExportPdfBtn"
+                onclick="NSSExport.run('pdf', this)" title="Export sebagai PDF">
+            <i class="ph ph-file-pdf export-icon"></i>
+            <span class="export-spinner"></span>
+        </button>
+        <button type="button" class="page-export-btn page-export-btn-img" id="nssExportImgBtn"
+                onclick="NSSExport.run('image', this)" title="Export sebagai PNG">
+            <i class="ph ph-image export-icon"></i>
+            <span class="export-spinner"></span>
+        </button>
+    </div>
+</div>
+
+{{-- ══ KPI Cards ══ --}}
 <div class="row mb-3">
     <div class="col-md-6 col-xl-4">
         <div class="card h-100 bg-success text-white kpi-card-hover fade-up fade-up-d1" onclick="NSSPanel.open('pos')">
@@ -236,7 +321,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
-                        <h3 class="mb-0 text-white f-w-300" id="statPos"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="statPos">
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                        </h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctPos">—</p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -252,7 +339,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
-                        <h3 class="mb-0 text-white f-w-300" id="statNeu"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="statNeu">
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                        </h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu">—</p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -268,7 +357,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
-                        <h3 class="mb-0 text-white f-w-300" id="statNeg"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="statNeg">
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                        </h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg">—</p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -282,110 +373,167 @@
 
 {{-- ══ MAIN GRID ══ --}}
 <div class="nss-main-grid">
-    {{-- Gauge --}}
+
+    {{-- Gauge Card --}}
     <div class="do-card fade-up">
-        <div class="do-card-head">
-            <div class="do-card-head-left">
-                <span class="do-head-icon"><i class="ph ph-gauge"></i></span>
-                <div>
-                    <div class="do-card-title">Net Sentiment Score</div>
-                    <div class="do-card-subtitle">Klik pada stat card untuk lihat mentions per sentimen</div>
+        <div id="card-nss-gauge">
+            <div class="do-card-head">
+                <div class="do-card-head-left">
+                    <span class="do-head-icon"><i class="ph ph-gauge"></i></span>
+                    <div>
+                        <div class="do-card-title">Net Sentiment Score</div>
+                        <div class="do-card-subtitle">Klik pada stat card untuk lihat mentions per sentimen</div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="do-badge" id="nssBadgeMain">Loading…</span>
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf"
+                                onclick="NSSExport.runCard('card-nss-gauge','gauge','pdf',this)"
+                                title="Export PDF">
+                            <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                        <button class="card-exp-btn card-exp-btn-img"
+                                onclick="NSSExport.runCard('card-nss-gauge','gauge','image',this)"
+                                title="Export PNG">
+                            <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                    </div>
                 </div>
             </div>
-            <span class="do-badge" id="nssBadgeMain">Loading…</span>
-        </div>
-        <div class="nss-gauge-wrap">
-            <div class="nss-gauge-outer">
-                <svg id="nssGaugeSVG" viewBox="0 0 500 310" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <filter id="ndlShadow" x="-60%" y="-60%" width="220%" height="220%">
-                            <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,.18)"/>
-                        </filter>
-                    </defs>
-                    <path d="M 60,260 A 190,190 0 0,1 440,260" fill="none" stroke="#e2e8f0" stroke-width="36" stroke-linecap="butt"/>
-                    <path d="M 60,260 A 190,190 0 0,1 250,70"  fill="none" stroke="#EF4444" stroke-width="36" stroke-linecap="butt"/>
-                    <path d="M 250,70 A 190,190 0 0,1 440,260" fill="none" stroke="#0ea5e9" stroke-width="36" stroke-linecap="butt"/>
-                    <line x1="60"    y1="254"   x2="60"    y2="266"   stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-                    <line x1="111.4" y1="121.4" x2="119.9" y2="129.9" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-                    <line x1="244"   y1="70"    x2="256"   y2="70"    stroke="#fff" stroke-width="3"   stroke-linecap="round"/>
-                    <line x1="380.1" y1="129.9" x2="388.6" y2="121.4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-                    <line x1="440"   y1="254"   x2="440"   y2="266"   stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-                    <text x="32"  y="265" text-anchor="middle" font-family="inherit" font-size="11" font-weight="600" fill="#94A3B8">−100%</text>
-                    <text x="88"  y="100" text-anchor="middle" font-family="inherit" font-size="11" font-weight="600" fill="#94A3B8">−50%</text>
-                    <text x="250" y="36"  text-anchor="middle" font-family="inherit" font-size="12" font-weight="700" fill="#334155">0%</text>
-                    <text x="412" y="100" text-anchor="middle" font-family="inherit" font-size="11" font-weight="600" fill="#94A3B8">50%</text>
-                    <text x="468" y="265" text-anchor="middle" font-family="inherit" font-size="11" font-weight="600" fill="#94A3B8">100%</text>
-                    <g id="nssNeedle" transform="rotate(0, 250, 260)" filter="url(#ndlShadow)">
-                        <polygon points="250,260 247.5,255 250,96 252.5,255" fill="#1e293b"/>
-                        <circle cx="250" cy="260" r="12" fill="#1e293b"/>
-                        <circle cx="250" cy="260" r="4.5" fill="#ffffff"/>
-                    </g>
-                </svg>
-                <div class="nss-score-overlay">
-                    <div id="nssScoreNum" class="nss-score-num">—</div>
-                    <div id="nssScoreLbl" class="nss-score-lbl">NET SENTIMENT</div>
+            <div class="nss-gauge-wrap">
+                <div class="nss-gauge-outer">
+                    <svg id="nssGaugeSVG" viewBox="0 0 500 310" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="ndlShadow" x="-60%" y="-60%" width="220%" height="220%">
+                                <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,.18)"/>
+                            </filter>
+                        </defs>
+                        <path d="M 60,260 A 190,190 0 0,1 440,260" fill="none" stroke="#e2e8f0" stroke-width="36" stroke-linecap="butt"/>
+                        <path d="M 60,260 A 190,190 0 0,1 250,70"  fill="none" stroke="#EF4444" stroke-width="36" stroke-linecap="butt"/>
+                        <path d="M 250,70 A 190,190 0 0,1 440,260" fill="none" stroke="#0ea5e9" stroke-width="36" stroke-linecap="butt"/>
+                        <line x1="60"    y1="254"   x2="60"    y2="266"   stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+                        <line x1="111.4" y1="121.4" x2="119.9" y2="129.9" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+                        <line x1="244"   y1="70"    x2="256"   y2="70"    stroke="#fff" stroke-width="3"   stroke-linecap="round"/>
+                        <line x1="380.1" y1="129.9" x2="388.6" y2="121.4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+                        <line x1="440"   y1="254"   x2="440"   y2="266"   stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+                        <text x="32"  y="265" text-anchor="middle" font-family="inherit" font-size="11" font-weight="600" fill="#94A3B8">−100%</text>
+                        <text x="88"  y="100" text-anchor="middle" font-family="inherit" font-size="11" font-weight="600" fill="#94A3B8">−50%</text>
+                        <text x="250" y="36"  text-anchor="middle" font-family="inherit" font-size="12" font-weight="700" fill="#334155">0%</text>
+                        <text x="412" y="100" text-anchor="middle" font-family="inherit" font-size="11" font-weight="600" fill="#94A3B8">50%</text>
+                        <text x="468" y="265" text-anchor="middle" font-family="inherit" font-size="11" font-weight="600" fill="#94A3B8">100%</text>
+                        <g id="nssNeedle" transform="rotate(0, 250, 260)" filter="url(#ndlShadow)">
+                            <polygon points="250,260 247.5,255 250,96 252.5,255" fill="#1e293b"/>
+                            <circle cx="250" cy="260" r="12" fill="#1e293b"/>
+                            <circle cx="250" cy="260" r="4.5" fill="#ffffff"/>
+                        </g>
+                    </svg>
+                    <div class="nss-score-overlay">
+                        <div id="nssScoreNum" class="nss-score-num">—</div>
+                        <div id="nssScoreLbl" class="nss-score-lbl">NET SENTIMENT</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="nss-gauge-legend">
-            <div class="nss-legend-item"><span class="nss-legend-dot" style="background:var(--c-pos);"></span><span id="legPos">Positive</span></div>
-            <div class="nss-legend-item"><span class="nss-legend-dot" style="background:var(--c-neu);"></span><span id="legNeu">Neutral</span></div>
-            <div class="nss-legend-item"><span class="nss-legend-dot" style="background:var(--c-neg);"></span><span id="legNeg">Negative</span></div>
-        </div>
+            <div class="nss-gauge-legend">
+                <div class="nss-legend-item"><span class="nss-legend-dot" style="background:var(--c-pos);"></span><span id="legPos">Positive</span></div>
+                <div class="nss-legend-item"><span class="nss-legend-dot" style="background:var(--c-neu);"></span><span id="legNeu">Neutral</span></div>
+                <div class="nss-legend-item"><span class="nss-legend-dot" style="background:var(--c-neg);"></span><span id="legNeg">Negative</span></div>
+            </div>
+        </div>{{-- /card-nss-gauge --}}
     </div>
 
     {{-- Sidebar --}}
     <div class="nss-sidebar">
-        {{-- Distribution --}}
+
+        {{-- Distribution Card --}}
         <div class="do-card fade-up fade-up-d1">
-            <div class="do-card-head">
-                <div class="do-card-head-left">
-                    <span class="do-head-icon"><i class="ph ph-chart-bar-horizontal"></i></span>
-                    <div>
-                        <div class="do-card-title">Distribution</div>
-                        <div class="do-card-subtitle">Persentase per sentimen</div>
+            <div id="card-nss-dist">
+                <div class="do-card-head">
+                    <div class="do-card-head-left">
+                        <span class="do-head-icon"><i class="ph ph-chart-bar-horizontal"></i></span>
+                        <div>
+                            <div class="do-card-title">Distribution</div>
+                            <div class="do-card-subtitle">Persentase per sentimen</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="do-badge">3 Kategori</span>
+                        <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                            <button class="card-exp-btn card-exp-btn-pdf"
+                                    onclick="NSSExport.runCard('card-nss-dist','dist','pdf',this)"
+                                    title="Export PDF">
+                                <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                            </button>
+                            <button class="card-exp-btn card-exp-btn-img"
+                                    onclick="NSSExport.runCard('card-nss-dist','dist','image',this)"
+                                    title="Export PNG">
+                                <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <span class="do-badge">3 Kategori</span>
-            </div>
-            <div class="do-card-body">
-                <div class="nss-dist-wrap"><div id="chNssDist"></div></div>
-            </div>
+                <div class="do-card-body">
+                    <div class="nss-dist-wrap"><div id="chNssDist"></div></div>
+                </div>
+            </div>{{-- /card-nss-dist --}}
         </div>
 
-        {{-- Score Breakdown --}}
+        {{-- Score Breakdown Card --}}
         <div class="do-card fade-up fade-up-d2">
-            <div class="do-card-head">
-                <div class="do-card-head-left">
-                    <span class="do-head-icon"><i class="ph ph-list-numbers"></i></span>
-                    <div>
-                        <div class="do-card-title">Score Breakdown</div>
-                        <div class="do-card-subtitle">Kalkulasi NSS real-time</div>
+            <div id="card-nss-breakdown">
+                <div class="do-card-head">
+                    <div class="do-card-head-left">
+                        <span class="do-head-icon"><i class="ph ph-list-numbers"></i></span>
+                        <div>
+                            <div class="do-card-title">Score Breakdown</div>
+                            <div class="do-card-subtitle">Kalkulasi NSS real-time</div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf"
+                                onclick="NSSExport.runCard('card-nss-breakdown','breakdown','pdf',this)"
+                                title="Export PDF">
+                            <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                        <button class="card-exp-btn card-exp-btn-img"
+                                onclick="NSSExport.runCard('card-nss-breakdown','breakdown','image',this)"
+                                title="Export PNG">
+                            <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                        </button>
                     </div>
                 </div>
-            </div>
-            <div class="nss-breakdown-body">
-                <div class="nss-brk-row"><span class="nss-brk-key"><span class="nss-brk-dot" style="background:var(--c-pos);"></span>Positive</span><span class="nss-brk-val" id="brkPos">—</span></div>
-                <div class="nss-brk-row"><span class="nss-brk-key"><span class="nss-brk-dot" style="background:var(--c-neu);"></span>Neutral</span><span class="nss-brk-val" id="brkNeu">—</span></div>
-                <div class="nss-brk-row"><span class="nss-brk-key"><span class="nss-brk-dot" style="background:var(--c-neg);"></span>Negative</span><span class="nss-brk-val" id="brkNeg">—</span></div>
-                <div class="nss-brk-divider"></div>
-                <div class="nss-brk-total-row"><span class="nss-brk-total-key">Total Mention</span><span class="nss-brk-total-val" id="brkTot">—</span></div>
-                <div class="nss-brk-nss-row"><span class="nss-brk-nss-key">NSS Score</span><span class="nss-brk-nss-val" id="brkNSS">—</span></div>
-            </div>
-            <div class="nss-formula-eq">NSS = (Pos − Neg) / (Pos + Neg) × 100</div>
+                <div class="nss-breakdown-body">
+                    <div class="nss-brk-row"><span class="nss-brk-key"><span class="nss-brk-dot" style="background:var(--c-pos);"></span>Positive</span><span class="nss-brk-val" id="brkPos">—</span></div>
+                    <div class="nss-brk-row"><span class="nss-brk-key"><span class="nss-brk-dot" style="background:var(--c-neu);"></span>Neutral</span><span class="nss-brk-val" id="brkNeu">—</span></div>
+                    <div class="nss-brk-row"><span class="nss-brk-key"><span class="nss-brk-dot" style="background:var(--c-neg);"></span>Negative</span><span class="nss-brk-val" id="brkNeg">—</span></div>
+                    <div class="nss-brk-divider"></div>
+                    <div class="nss-brk-total-row"><span class="nss-brk-total-key">Total Mention</span><span class="nss-brk-total-val" id="brkTot">—</span></div>
+                    <div class="nss-brk-nss-row"><span class="nss-brk-nss-key">NSS Score</span><span class="nss-brk-nss-val" id="brkNSS">—</span></div>
+                </div>
+                <div class="nss-formula-eq">NSS = (Pos − Neg) / (Pos + Neg) × 100</div>
+            </div>{{-- /card-nss-breakdown --}}
         </div>
-    </div>
+
+    </div>{{-- /nss-sidebar --}}
+</div>{{-- /nss-main-grid --}}
+
+</div>{{-- /nssExportArea --}}
+
+{{-- Export Toast --}}
+<div class="export-toast" id="nssExportToast">
+    <i class="ph ph-check-circle" id="nssExportToastIcon"></i>
+    <span id="nssExportToastMsg">Exporting…</span>
 </div>
 
 <input type="hidden" id="nssPID" value="{{ $projectId }}">
 <input type="hidden" id="nssSD"  value="{{ $startDate }}">
 <input type="hidden" id="nssED"  value="{{ $endDate }}">
 
-{{-- ══ SLIDE PANEL — identical to Data Overview ══ --}}
+{{-- ══ SLIDE PANEL ══ --}}
 <div class="do-panel-overlay" id="nssPanelOverlay" onclick="NSSPanel.closeByOverlay()"></div>
 <div class="do-panel" id="nssSntPanel">
     <div class="do-panel-header">
-        <div class="do-panel-dot"   id="nssPanelDot"></div>
+        <div class="do-panel-dot"    id="nssPanelDot"></div>
         <span class="do-panel-title" id="nssPanelTitle">Mentions</span>
         <span class="do-panel-count" id="nssPanelCount">…</span>
         <button class="do-panel-close" onclick="NSSPanel.close()"><i class="ph ph-x"></i></button>
@@ -401,9 +549,6 @@
             <button class="do-panel-tab pos"    data-s="pos" onclick="NSSPanel.filterSent('pos')">Pos</button>
             <button class="do-panel-tab neu"    data-s="neu" onclick="NSSPanel.filterSent('neu')">Neu</button>
         </div>
-        <button class="do-panel-export" onclick="NSSPanel.exportCsv()">
-            <i class="ph ph-download-simple"></i> CSV
-        </button>
     </div>
     <div class="do-panel-list" id="nssPanelList"></div>
 </div>
@@ -411,7 +556,13 @@
 @endsection
 
 @section('scripts')
+{{-- Export dependencies --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+
 <script>
 'use strict';
 
@@ -525,23 +676,20 @@ async function loadNSS(){
 /* ══ Media Dropdown ══ */
 const MEDIA_LABELS={all:'All Media',doc:'Mass Media (News)',twitter:'X / Twitter',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok'};
 const NSSPage={
-    toggleMenu(){const o=$('nssMediaMenu').classList.toggle('show');$('nssMediaBtn').classList.toggle('open',o);},
+    toggleMenu(){const o=$('nssMediaMenu').classList.toggle('show');$('nssMediaBtn')?.classList.toggle('open',o);},
     selectMedia(el){
         document.querySelectorAll('.nss-media-menu-item').forEach(i=>i.classList.remove('active'));
         el.classList.add('active');
-        $('nssMediaLabel').textContent=MEDIA_LABELS[el.dataset.m]||'All Media';
-        $('nssMediaMenu').classList.remove('show'); $('nssMediaBtn').classList.remove('open');
+        const lbl=$('nssMediaLabel'); if(lbl) lbl.textContent=MEDIA_LABELS[el.dataset.m]||'All Media';
+        $('nssMediaMenu').classList.remove('show'); $('nssMediaBtn')?.classList.remove('open');
         NSSPanel._cache={}; loadNSS();
     },
 };
-document.addEventListener('click',e=>{const w=$('nssMediaWrap');if(w&&!w.contains(e.target)){$('nssMediaMenu').classList.remove('show');$('nssMediaBtn').classList.remove('open');}});
+document.addEventListener('click',e=>{const w=$('nssMediaWrap');if(w&&!w.contains(e.target)){$('nssMediaMenu').classList.remove('show');$('nssMediaBtn')?.classList.remove('open');}});
 
-/* ══════════════════════════════════════════════════════
-   SLIDE PANEL — identical to Data Overview DOPanel
-══════════════════════════════════════════════════════ */
+/* ══ SLIDE PANEL ══ */
 const NSSPanel=(()=>{
     let _cache={},_allItems=[],_filtered=[],_curSent='all';
-
     const SENT_MAP={'1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg'};
     const SENT_COLORS={pos:'#0ea5e9',neg:'#EF4444',neu:'#94A3B8',all:'#4361EE'};
     const SENT_LABELS={pos:'Positive',neg:'Negative',neu:'Neutral',all:'All Mentions'};
@@ -553,7 +701,6 @@ const NSSPanel=(()=>{
         youtube:  {label:'YouTube',     color:'#ff0000'},
         tiktok:   {label:'TikTok',      color:'#111827'},
     };
-
     function _normSent(item){const r=String(item.class_sentiment||item.sentiment||item.sentiment_str||'0').toLowerCase().trim();return SENT_MAP[r]||'neu';}
 
     async function open(sentiment){
@@ -561,21 +708,16 @@ const NSSPanel=(()=>{
         const color=SENT_COLORS[_curSent]||getPrimary();
         const label=SENT_LABELS[_curSent]||'Mentions';
         const media=document.querySelector('.nss-media-menu-item.active')?.dataset.m||'all';
-
         $('nssPanelDot').style.background=color;
         $('nssPanelTitle').textContent=label;
         $('nssPanelCount').textContent='…';
         $('nssPanelMeta').textContent=NSS_SD+' – '+NSS_ED;
-
         document.querySelectorAll('#nssSntPanel .do-panel-tab').forEach(t=>t.classList.toggle('active',t.dataset.s===_curSent));
-
         const list=$('nssPanelList');
         list.innerHTML=`<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat mentions…</span></div>`;
-
         const overlay=$('nssPanelOverlay'),panel=$('nssSntPanel');
         overlay.classList.remove('hiding'); panel.classList.remove('hiding');
         overlay.classList.add('show'); panel.classList.add('show');
-
         try{
             const key=`${NSS_PID}_${media}_${NSS_SD}_${NSS_ED}`;
             if(!_cache[key]) _cache[key]=await _fetchAll(media);
@@ -594,9 +736,7 @@ const NSSPanel=(()=>{
         panel.classList.add('hiding'); overlay.classList.add('hiding');
         setTimeout(()=>{panel.classList.remove('show','hiding');overlay.classList.remove('show','hiding');},240);
     }
-
     function closeByOverlay(){close();}
-
     function filterSent(sent){
         _curSent=sent;
         document.querySelectorAll('#nssSntPanel .do-panel-tab').forEach(t=>t.classList.toggle('active',t.dataset.s===sent));
@@ -604,30 +744,13 @@ const NSSPanel=(()=>{
         $('nssPanelCount').textContent=_filtered.length.toLocaleString();
         _render($('nssPanelList'),_filtered);
     }
-
     function _filterBySent(items,sent){return sent==='all'?items:items.filter(i=>_normSent(i)===sent);}
-
-    function exportCsv(){
-        if(!_filtered.length){alert('Tidak ada data.');return;}
-        const rows=_filtered.map(item=>({
-            nama:(item.author_name||item.channel_name||item.publisher||item.source_name||'').trim(),
-            sentimen:{pos:'Positif',neg:'Negatif',neu:'Netral'}[_normSent(item)],
-            tanggal:item.date_created||'',url:item.url||item.link||'',
-            konten:(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,500),
-        }));
-        const headers=Object.keys(rows[0]);
-        const lines=[headers.join(';'),...rows.map(r=>headers.map(h=>{let v=String(r[h]||'').replace(/"/g,'""');return v.includes(';')||v.includes('"')||v.includes('\n')?`"${v}"`:v;}).join(';'))];
-        const blob=new Blob(['\uFEFF'+lines.join('\n')],{type:'text/csv;charset=utf-8;'});
-        const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`sentiment_NSS_${_curSent}_${NSS_SD}_${NSS_ED}.csv`});
-        document.body.appendChild(a);a.click();document.body.removeChild(a);
-    }
 
     async function _fetchAll(media){
         const platforms=media==='all'?['doc','twitter','facebook','instagram','youtube','tiktok']:[media];
         const res=await Promise.allSettled(platforms.map(p=>_fetchOne(p)));
         return res.flatMap(r=>r.status==='fulfilled'?r.value:[]);
     }
-
     async function _fetchOne(platform){
         const q=`project_id=${NSS_PID}&start_date=${NSS_SD}&end_date=${NSS_ED}&rows=200&start=0`;
         const eps={
@@ -689,10 +812,205 @@ const NSSPanel=(()=>{
                 </div>
             </div>`;
         }).join('');
-        if(items.length>SHOW) list.insertAdjacentHTML('beforeend',`<div style="padding:9px;text-align:center;font-size:11px;font-weight:600;color:var(--do-slate-400);background:var(--do-slate-50);border-top:1px dashed var(--do-slate-200);">+${(items.length-SHOW).toLocaleString()} mentions lainnya · Export CSV untuk lihat semua</div>`);
+        if(items.length>SHOW) list.insertAdjacentHTML('beforeend',`<div style="padding:9px;text-align:center;font-size:11px;font-weight:600;color:var(--do-slate-400);background:var(--do-slate-50);border-top:1px dashed var(--do-slate-200);">+${(items.length-SHOW).toLocaleString()} mentions lainnya</div>`);
     }
 
-    return{open,close,closeByOverlay,filterSent,exportCsv,get _cache(){return _cache;},set _cache(v){_cache=v;}};
+    return{open,close,closeByOverlay,filterSent,get _cache(){return _cache;},set _cache(v){_cache=v;}};
+})();
+
+/* ══════════════════════════════════════════════════════
+   EXPORT MODULE — Net Sentiment Score
+══════════════════════════════════════════════════════ */
+const NSSExport = (() => {
+    let _toastTimer = null;
+
+    function _toast(msg, type = 'default', duration = 3200) {
+        const t = document.getElementById('nssExportToast');
+        const m = document.getElementById('nssExportToastMsg');
+        const ico = document.getElementById('nssExportToastIcon');
+        if (!t || !m) return;
+        m.textContent = msg;
+        t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
+        const icons   = { success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' };
+        ico.className = 'ph ' + (icons[type] || icons.default);
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+    }
+
+    function _btnState(btn, loading) {
+        if (!btn) return;
+        btn.disabled = loading;
+        btn.classList.toggle('exporting', loading);
+    }
+
+    /* Resize ECharts agar canvas up-to-date */
+    function _resizeCharts() {
+        Object.values(NSS_Charts._i).forEach(c => {
+            try { if (!c.isDisposed()) c.resize(); } catch(e) {}
+        });
+    }
+
+    /* Full-page capture */
+    async function _capture() {
+        const area = document.getElementById('nssExportArea');
+        if (!area) throw new Error('nssExportArea tidak ditemukan');
+        window.scrollTo({ top: 0 });
+        _resizeCharts();
+        await new Promise(r => setTimeout(r, 350));
+        return html2canvas(area, {
+            scale:           2,
+            useCORS:         true,
+            allowTaint:      false,
+            backgroundColor: '#f1f5f9',
+            logging:         false,
+            removeContainer: true,
+            windowWidth:     document.documentElement.scrollWidth,
+            windowHeight:    area.scrollHeight,
+            height:          area.scrollHeight,
+            ignoreElements:  el =>
+                el.hasAttribute('data-html2canvas-ignore') ||
+                el.id === 'nssExportPdfBtn' ||
+                el.id === 'nssExportImgBtn',
+        });
+    }
+
+    /* Per-card capture */
+    async function _captureCard(areaId) {
+        const area = document.getElementById(areaId);
+        if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+        if (areaId === 'card-nss-dist') _resizeCharts();
+        await new Promise(r => setTimeout(r, 250));
+        return html2canvas(area, {
+            scale:           2,
+            useCORS:         true,
+            allowTaint:      false,
+            backgroundColor: '#ffffff',
+            logging:         false,
+            removeContainer: true,
+            ignoreElements:  el => el.hasAttribute('data-html2canvas-ignore'),
+        });
+    }
+
+    function _drawPdfHeader(pdf, pW, margin, label) {
+        pdf.setFillColor(3, 128, 71);
+        pdf.rect(0, 0, pW, 11, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
+        pdf.text('SMADIMENT — ' + (label || 'Net Sentiment Score'), margin, 7.5);
+        const now = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+        pdf.text('Generated: ' + now, pW - margin, 7.5, { align: 'right' });
+    }
+
+    function _paginateCanvasToPdf(pdf, canvas, pW, pH, margin, headerH) {
+        const imgW    = canvas.width, imgH = canvas.height;
+        const usableW = pW - margin * 2;
+        const usableH = pH - margin * 2 - headerH;
+        const ratio   = usableW / imgW;
+        const sliceH  = usableH / ratio;
+        let srcY = 0, pageNum = 0;
+        while (srcY < imgH) {
+            if (pageNum > 0) pdf.addPage();
+            const srcSlice = Math.min(sliceH, imgH - srcY);
+            const dstH     = srcSlice * ratio;
+            const slice    = document.createElement('canvas');
+            slice.width = imgW; slice.height = Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(canvas, 0, srcY, imgW, srcSlice, 0, 0, imgW, srcSlice);
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, headerH + 3, usableW, dstH);
+            pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+            pdf.text('Halaman ' + (pageNum + 1), pW / 2, pH - 3, { align: 'center' });
+            srcY += srcSlice; pageNum++;
+        }
+    }
+
+    async function _exportPdf() {
+        const canvas = await _capture();
+        const { jsPDF } = window.jspdf;
+        const pdf    = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pW     = pdf.internal.pageSize.getWidth();
+        const pH     = pdf.internal.pageSize.getHeight();
+        const margin = 10;
+        _drawPdfHeader(pdf, pW, margin, 'Net Sentiment Score');
+        _paginateCanvasToPdf(pdf, canvas, pW, pH, margin, 11);
+        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        pdf.save(`net_sentiment_score_${NSS_PID}_${stamp}.pdf`);
+    }
+
+    async function _exportImage() {
+        const canvas = await _capture();
+        const stamp  = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const link   = document.createElement('a');
+        link.download = `net_sentiment_score_${NSS_PID}_${stamp}.png`;
+        link.href     = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    const _cardLabels = {
+        gauge:     'Net Sentiment Score Gauge',
+        dist:      'Sentiment Distribution',
+        breakdown: 'Score Breakdown',
+    };
+
+    async function runCard(areaId, cardKey, type, btn) {
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+
+        _btnState(btn, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
+
+        try {
+            const canvas = await _captureCard(areaId);
+            const stamp  = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            const fname  = `nss_${cardKey}_${NSS_PID}_${stamp}`;
+
+            if (type === 'image') {
+                const link    = document.createElement('a');
+                link.download = fname + '.png';
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const imgW = canvas.width, imgH = canvas.height;
+                const landscape = imgW > imgH;
+                const pdf  = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+                const pW   = pdf.internal.pageSize.getWidth();
+                const pH   = pdf.internal.pageSize.getHeight();
+                const margin = 10;
+                _drawPdfHeader(pdf, pW, margin, _cardLabels[cardKey] || cardKey);
+                _paginateCanvasToPdf(pdf, canvas, pW, pH, margin, 11);
+                pdf.save(fname + '.pdf');
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(err) {
+            console.error('[NSSExport.runCard]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            _btnState(btn, false);
+        }
+    }
+
+    async function run(type, btn) {
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+
+        const btnPdf = document.getElementById('nssExportPdfBtn');
+        const btnImg = document.getElementById('nssExportImgBtn');
+        _btnState(btnPdf, true); _btnState(btnImg, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+
+        try {
+            if (type === 'pdf') { await _exportPdf();   _toast('PDF berhasil diunduh!',    'success'); }
+            else                { await _exportImage(); _toast('Gambar berhasil diunduh!', 'success'); }
+        } catch(err) {
+            console.error('[NSSExport]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            _btnState(btnPdf, false); _btnState(btnImg, false);
+        }
+    }
+
+    return { run, runCard };
 })();
 
 /* ══ Boot ══ */

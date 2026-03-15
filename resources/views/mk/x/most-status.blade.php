@@ -504,37 +504,6 @@
         margin-left: 4px;
     }
 
-    /* Export Button */
-    .export-btn {
-        padding: 10px 20px;
-        background: var(--bg-white);
-        border: 1px solid var(--border-gray);
-        border-radius: 10px;
-        font-family: 'Poppins', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-primary);
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .export-btn:hover {
-        border-color: var(--primary-green);
-        color: var(--primary-green);
-        box-shadow: var(--shadow-md);
-    }
-
-    .export-btn svg {
-        width: 16px;
-        height: 16px;
-        stroke: currentColor;
-        fill: none;
-    }
-
     /* Pagination */
     .pagination {
         display: flex;
@@ -1454,18 +1423,6 @@
         </div>
     </div>
 
-    <!-- View Tabs & Export -->
-    <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 24px;">
-        <button class="export-btn" onclick="MostStatusLoader.exportCSV()">
-            <svg viewBox="0 0 24 24">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            Download CSV
-        </button>
-    </div>
-
     <!-- Top Posts Chart -->
     <div class="table-container" style="margin-bottom: 24px;">
         <div style="padding: 20px 24px; border-bottom: 2px solid var(--bg-gray-50);">
@@ -2321,44 +2278,6 @@ changePage(p) {
     this.renderTable();
     document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
 },
-
-    exportCSV() {
-        if (!this.allPosts.length) {
-            alert('No data to export');
-            return;
-        }
-
-        const headers = ['Rank', 'Author', 'Handle', 'Status', 'Followers', 'Views', 'Retweets', 'Sentiment', 'Sentiment %', 'Date'];
-        const rows = this.allPosts.map((post, idx) => [
-            idx + 1,
-            `"${(post.author?.name || post.name || 'Unknown').replace(/"/g, '""')}"`,
-            `"${(post.author?.scr_name || post.name || 'unknown').replace(/"/g, '""')}"`,
-            `"${(post.content || '').replace(/"/g, '""')}"`,
-            post.author?.flw_cnt || 0,
-            post.view_cnt || 0,
-            post.rt || 0,
-            post.sentiment_str || 'Neutral',
-            (post.sentiment_prec || 0).toFixed(2),
-            post.date_created || ''
-        ]);
-
-        const csv = [
-            headers.join(','),
-            ...rows.map(row => row.join(','))
-        ].join('\n');
-
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', `most_viewed_posts_${this.startDate}_to_${this.endDate}.csv`);
-        link.style.visibility = 'hidden';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    },
 
     formatDate(dateString) {
         if (!dateString) return '';

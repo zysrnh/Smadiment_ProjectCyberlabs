@@ -54,6 +54,12 @@
 @keyframes slideOutRight { from{transform:translateX(0);opacity:1}    to{transform:translateX(100%);opacity:0} }
 @keyframes overlayIn  { from{opacity:0} to{opacity:1} }
 @keyframes overlayOut { from{opacity:1} to{opacity:0} }
+@keyframes kpiShimmer { 0%{left:-100%} 100%{left:150%} }
+@keyframes kpiIconBounce {
+    0%,100% { transform:scale(1) rotate(0deg); }
+    30%     { transform:scale(1.25) rotate(-10deg); }
+    60%     { transform:scale(1.1) rotate(6deg); }
+}
 
 /* ══ KPI Icon bg — same as dashboard ══ */
 .kpi-icon-bg {
@@ -282,14 +288,6 @@
     text-transform:uppercase; letter-spacing:.5px;
     display:flex; align-items:center; gap:5px;
 }
-.do-panel-export {
-    display:flex; align-items:center; gap:4px; padding:4px 10px;
-    background:var(--primary); color:#fff; border:none;
-    border-radius:var(--radius-sm); font-size:10px; font-weight:700;
-    cursor:pointer; transition:filter .13s;
-}
-.do-panel-export:hover { filter:brightness(1.1); }
-
 .do-panel-list { overflow-y:auto; flex:1; padding:2px 0; min-height:0; }
 .do-panel-list::-webkit-scrollbar { width:4px; }
 .do-panel-list::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
@@ -405,24 +403,7 @@
 .donut-leg-item:hover { border-color:var(--primary); background:var(--primary-lt); color:var(--primary); }
 .donut-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 
-@media(max-width:640px) {
-    .do-panel { width:100vw; }
-    .tme-tabs { flex-wrap:wrap; }
-    .tme-tab-btn { flex:unset; min-width:calc(50% - 4px); }
-    .tme-post-thumb { display:none; }
-}
-
 /* ══ KPI Card Hover Animations ══ */
-@keyframes kpiIconBounce {
-    0%,100% { transform:scale(1) rotate(0deg); }
-    30%      { transform:scale(1.25) rotate(-10deg); }
-    60%      { transform:scale(1.1) rotate(6deg); }
-}
-@keyframes kpiShimmer {
-    0%   { left:-100%; }
-    100% { left:150%; }
-}
-
 .kpi-card-hover {
     will-change: transform, box-shadow;
     transition: transform .25s cubic-bezier(.34,1.56,.64,1) !important,
@@ -448,20 +429,90 @@
     box-shadow: 0 20px 40px rgba(0,0,0,.25) !important;
     filter: brightness(1.07) !important;
 }
-.kpi-card-hover:hover::before {
-    animation: kpiShimmer .6s ease forwards;
+.kpi-card-hover:hover::before { animation: kpiShimmer .6s ease forwards; }
+.kpi-card-hover:hover .kpi-icon-bg { background: rgba(255,255,255,.35) !important; transition: background .2s ease !important; }
+.kpi-card-hover:hover .kpi-icon-bg i { animation: kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both !important; display: inline-block !important; }
+.kpi-card-hover:active { transform: translateY(-2px) scale(1.01) !important; transition-duration: .08s !important; }
+
+/* ══════════════════════════════════════════════════════
+   EXPORT STYLES — identik dengan TikTok Emotion Analysis
+══════════════════════════════════════════════════════ */
+
+/* Page Export Bar */
+.page-export-bar {
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:10px;
+    background:#fff; border:1px solid var(--slate-200);
+    border-radius:var(--radius); padding:9px 14px;
+    margin-bottom:20px; box-shadow:var(--shadow-sm);
 }
-.kpi-card-hover:hover .kpi-icon-bg {
-    background: rgba(255,255,255,.35) !important;
-    transition: background .2s ease !important;
+.page-export-bar-left {
+    display:flex; align-items:center; gap:8px;
+    font-size:12px; font-weight:700; color:var(--slate-600);
 }
-.kpi-card-hover:hover .kpi-icon-bg i {
-    animation: kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both !important;
-    display: inline-block !important;
+.page-export-bar-left i { font-size:15px; color:var(--primary); }
+.page-export-bar-right  { display:flex; gap:8px; }
+
+.page-export-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:32px; height:32px; border-radius:var(--radius-sm);
+    font-size:16px; cursor:pointer;
+    transition:all .15s ease; border:1.5px solid transparent;
+    font-family:inherit;
 }
-.kpi-card-hover:active {
-    transform: translateY(-2px) scale(1.01) !important;
-    transition-duration: .08s !important;
+.page-export-btn-pdf { background:#fff3f3; color:#dc2626; border-color:#fca5a5; }
+.page-export-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.page-export-btn-img { background:var(--primary-lt); color:var(--primary); border-color:rgba(3,128,71,.3); }
+.page-export-btn-img:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.page-export-btn:disabled { opacity:.55; cursor:not-allowed; pointer-events:none; }
+.page-export-btn .export-spinner {
+    width:13px; height:13px; border:2px solid currentColor;
+    border-top-color:transparent; border-radius:50%;
+    animation:spin .65s linear infinite; display:none;
+}
+.page-export-btn.exporting .export-spinner { display:inline-block; }
+.page-export-btn.exporting .export-icon    { display:none; }
+
+/* Card-level Export Buttons */
+.card-exp-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    font-size:14px; cursor:pointer; flex-shrink:0;
+    transition:all .14s ease; border:1px solid transparent;
+    font-family:inherit; background:transparent;
+}
+.card-exp-btn-pdf { color:#dc2626; border-color:#fca5a5; background:#fff3f3; }
+.card-exp-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.card-exp-btn-img { color:var(--primary); border-color:rgba(3,128,71,.3); background:var(--primary-lt); }
+.card-exp-btn-img:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.card-exp-btn:disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+.card-exp-btn .export-spinner {
+    width:11px; height:11px; border:2px solid currentColor;
+    border-top-color:transparent; border-radius:50%;
+    animation:spin .65s linear infinite; display:none;
+}
+.card-exp-btn.exporting .export-spinner { display:inline-block; }
+.card-exp-btn.exporting .export-icon    { display:none; }
+
+/* Export Toast */
+.export-toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--slate-900); color:#fff; border-radius:var(--radius);
+    padding:10px 18px; font-size:12px; font-weight:600;
+    box-shadow:var(--shadow-lg); z-index:99999;
+    opacity:0; pointer-events:none;
+    transition:opacity .22s ease, transform .22s ease;
+    display:flex; align-items:center; gap:8px; white-space:nowrap;
+}
+.export-toast.show    { opacity:1; transform:translateX(-50%) translateY(0); }
+.export-toast.success { background:#065f46; }
+.export-toast.error   { background:#991b1b; }
+
+@media(max-width:640px) {
+    .do-panel { width:100vw; }
+    .tme-tabs { flex-wrap:wrap; }
+    .tme-tab-btn { flex:unset; min-width:calc(50% - 4px); }
+    .tme-post-thumb { display:none; }
 }
 </style>
 @endsection
@@ -485,6 +536,9 @@
 
 {{-- Filter --}}
 @include('mk.layouts.partials.filter-datepicker')
+
+{{-- ════ PAGE EXPORT WRAPPER ════ --}}
+<div id="pageExportArea">
 
 {{-- ══ KPI Cards — same pattern as dashboard ══ --}}
 <div class="row mb-3">
@@ -570,10 +624,40 @@
     </div>
 </div>
 
+{{-- ══ Page Export Toolbar ══ --}}
+<div class="page-export-bar" data-html2canvas-ignore="true">
+    <div class="page-export-bar-left">
+        <i class="ph ph-export"></i>
+        <span>Export Halaman</span>
+        <span class="badge bg-light-secondary text-muted ms-1" style="font-size:10px;">
+            KPI + Charts + Post List
+        </span>
+    </div>
+    <div class="page-export-bar-right">
+        <button type="button"
+                class="page-export-btn page-export-btn-pdf"
+                id="pageExportPdfBtn"
+                onclick="TMEExport.run('pdf', this)"
+                title="Export halaman sebagai PDF">
+            <i class="ph ph-file-pdf export-icon"></i>
+            <span class="export-spinner"></span>
+        </button>
+        <button type="button"
+                class="page-export-btn page-export-btn-img"
+                id="pageExportImgBtn"
+                onclick="TMEExport.run('image', this)"
+                title="Export halaman sebagai PNG">
+            <i class="ph ph-image export-icon"></i>
+            <span class="export-spinner"></span>
+        </button>
+    </div>
+</div>
+
 {{-- ══ Donut Distribution Card ══ --}}
 <div class="row">
     <div class="col-12">
         <div class="card" style="animation:fadeUp .38s ease-out .18s both;">
+            <div id="card-export-donut">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
                     <div class="avtar avtar-xs bg-light-primary rounded">
@@ -584,7 +668,21 @@
                         <small class="text-muted">Proporsi engagement per video</small>
                     </div>
                 </div>
-                <div id="donutLegend" class="donut-legend"></div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div id="donutLegend" class="donut-legend"></div>
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf"
+                                onclick="TMEExport.runCard('card-export-donut','donut','pdf',this)"
+                                title="Export PDF">
+                            <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                        <button class="card-exp-btn card-exp-btn-img"
+                                onclick="TMEExport.runCard('card-export-donut','donut','image',this)"
+                                title="Export PNG">
+                            <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <div class="chart-container" style="height:480px;" id="donutWrap">
@@ -598,6 +696,7 @@
                     </div>
                 </div>
             </div>
+            </div>{{-- /card-export-donut --}}
         </div>
     </div>
 </div>
@@ -628,6 +727,7 @@
 
     {{-- Post List Card --}}
     <div class="card mb-3" style="animation:fadeUp .38s ease-out .2s both;">
+        <div id="card-export-list-{{ $tp }}">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
                 <div class="avtar avtar-xs bg-light-primary rounded">
@@ -645,18 +745,29 @@
                     <option value="50">Top 50</option>
                     <option value="100" selected>Top 100</option>
                 </select>
-                <button class="btn btn-outline-secondary btn-sm" onclick="TMEData.exportCsv('{{ $tp }}')" title="Export CSV">
-                    <i class="ph ph-download-simple me-1"></i>CSV
-                </button>
                 <span class="badge bg-light-primary text-primary" id="badge-{{ $tp }}">Loading…</span>
+                <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                    <button class="card-exp-btn card-exp-btn-pdf"
+                            onclick="TMEExport.runCard('card-export-list-{{ $tp }}','list-{{ $tp }}','pdf',this)"
+                            title="Export PDF">
+                        <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                    <button class="card-exp-btn card-exp-btn-img"
+                            onclick="TMEExport.runCard('card-export-list-{{ $tp }}','list-{{ $tp }}','image',this)"
+                            title="Export PNG">
+                        <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                </div>
             </div>
         </div>
         <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
         <div id="pag-{{ $tp }}"></div>
+        </div>{{-- /card-export-list --}}
     </div>
 
     {{-- Bar Chart Card --}}
     <div class="card mb-3" style="animation:fadeUp .38s ease-out .25s both;">
+        <div id="card-export-bar-{{ $tp }}">
         <div class="card-header d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2">
                 <div class="avtar avtar-xs bg-light-primary rounded">
@@ -667,7 +778,21 @@
                     <small class="text-muted">Top 10 video</small>
                 </div>
             </div>
-            <span class="badge bg-light-secondary text-muted">Top 10</span>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-light-secondary text-muted">Top 10</span>
+                <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                    <button class="card-exp-btn card-exp-btn-pdf"
+                            onclick="TMEExport.runCard('card-export-bar-{{ $tp }}','bar-{{ $tp }}','pdf',this)"
+                            title="Export PDF">
+                        <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                    <button class="card-exp-btn card-exp-btn-img"
+                            onclick="TMEExport.runCard('card-export-bar-{{ $tp }}','bar-{{ $tp }}','image',this)"
+                            title="Export PNG">
+                        <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="card-body">
             <div class="chart-container" id="wrap-bar-{{ $tp }}">
@@ -677,11 +802,13 @@
                 <div id="bar-{{ $tp }}" style="width:100%;height:280px;display:none;"></div>
             </div>
         </div>
+        </div>{{-- /card-export-bar --}}
     </div>
 
     {{-- Engagement comparison only on view tab --}}
     @if($tp === 'view')
     <div class="card mb-3" style="animation:fadeUp .38s ease-out .30s both;">
+        <div id="card-export-eng">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
                 <div class="avtar avtar-xs bg-light-secondary rounded">
@@ -692,9 +819,23 @@
                     <small class="text-muted">Perbandingan engagement keseluruhan</small>
                 </div>
             </div>
-            <div class="tme-toggle-group" id="engTypeToggle">
-                <button class="tme-toggle-btn active" data-type="stacked" onclick="TMEChart.setEngType('stacked')">Stacked</button>
-                <button class="tme-toggle-btn" data-type="grouped"  onclick="TMEChart.setEngType('grouped')">Grouped</button>
+            <div class="d-flex align-items-center gap-2">
+                <div class="tme-toggle-group" id="engTypeToggle">
+                    <button class="tme-toggle-btn active" data-type="stacked" onclick="TMEChart.setEngType('stacked')">Stacked</button>
+                    <button class="tme-toggle-btn" data-type="grouped"  onclick="TMEChart.setEngType('grouped')">Grouped</button>
+                </div>
+                <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                    <button class="card-exp-btn card-exp-btn-pdf"
+                            onclick="TMEExport.runCard('card-export-eng','eng','pdf',this)"
+                            title="Export PDF">
+                        <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                    <button class="card-exp-btn card-exp-btn-img"
+                            onclick="TMEExport.runCard('card-export-eng','eng','image',this)"
+                            title="Export PNG">
+                        <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                </div>
             </div>
         </div>
         <div class="card-body">
@@ -705,11 +846,21 @@
                 <div id="bar-eng" style="width:100%;height:280px;display:none;"></div>
             </div>
         </div>
+        </div>{{-- /card-export-eng --}}
     </div>
     @endif
 
 </div>
 @endforeach
+
+{{-- /pageExportArea --}}
+</div>
+
+{{-- ══ Export Toast ══ --}}
+<div class="export-toast" id="exportToast">
+    <i class="ph ph-check-circle" id="exportToastIcon"></i>
+    <span id="exportToastMsg">Exporting…</span>
+</div>
 
 {{-- ══ Slide Panel (drawer) ══ --}}
 <div class="do-panel-overlay" id="tmePanelOverlay" onclick="TMEPanel.close()"></div>
@@ -724,9 +875,6 @@
             <i class="ph ph-magnifying-glass" style="font-size:11px;"></i>
             <span id="tmePanelMeta">—</span>
         </div>
-        <button class="do-panel-export" onclick="TMEPanel.exportCsv()">
-            <i class="ph ph-download-simple"></i> CSV
-        </button>
     </div>
     <div class="do-panel-list" id="tmePanelList"></div>
 
@@ -743,6 +891,12 @@
 @endsection
 
 @section('scripts')
+{{-- ══ Export dependencies ══ --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 <script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
 <script>
@@ -795,11 +949,10 @@ const TMETab = {
             _$('tab-'+t)?.classList.toggle('active', t===type);
             _$('panel-'+t)?.classList.toggle('active', t===type);
         });
-        /* update donut section title */
         const lblMap = { view:'Distribusi Views — Top 5', like:'Distribusi Likes — Top 5', comment:'Distribusi Comments — Top 5', share:'Distribusi Shares — Top 5' };
         const dtitle = _$('donutTitle'); if(dtitle) dtitle.textContent = lblMap[type] || '';
         if(!this._loaded[type]) { this._loaded[type]=true; TMEData.loadTab(type); }
-        else { /* re-render donut if data exists */ if(Store[type].length) TMEData._renderDonut(type, Store[type]); }
+        else { if(Store[type].length) TMEData._renderDonut(type, Store[type]); }
     },
     reset() { this._loaded = {view:false,like:false,comment:false,share:false}; }
 };
@@ -1006,7 +1159,6 @@ const TMEData = {
         const total  = top5.reduce((s,it)=>s+this._metric(it,type),0);
         const metLbl = {view:'Views',like:'Likes',comment:'Comments',share:'Shares'}[type];
 
-        /* Legend chips */
         const legEl = _$('donutLegend');
         if(legEl) legEl.innerHTML = top5.map((it,i)=>{
             const n=this._getName(it), sn=n.length>22?n.slice(0,21)+'…':n;
@@ -1017,7 +1169,6 @@ const TMEData = {
         chartEl.style.display = 'block';
         if(emptyEl) emptyEl.style.display = 'none';
 
-        /* Destroy previous ECharts instance if exists */
         if(window.__donutEChart) { try{ window.__donutEChart.dispose(); }catch(e){} }
 
         if(typeof echarts === 'undefined') { chartEl.innerHTML='<div class="chart-empty"><i class="ph ph-chart-donut"></i><span>ECharts not loaded</span></div>'; return; }
@@ -1031,7 +1182,6 @@ const TMEData = {
             const val     = this._metric(it,type);
             const pct     = total>0?((val/total)*100).toFixed(1):'0';
             const content = dec((it.content||it.caption||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim());
-            /* wrap label text at ~40 chars */
             const fullLabel = content ? `${name}\n${content.slice(0,80)}${content.length>80?'…':''}\n(${numF(val)} ${metLbl})` : `${name}\n(${numF(val)} ${metLbl})`;
             return {
                 name,
@@ -1039,9 +1189,7 @@ const TMEData = {
                 _content: content,
                 _pct: pct,
                 itemStyle: { color: DONUT_COLORS[i] },
-                label: {
-                    formatter: ()=> fullLabel,
-                },
+                label: { formatter: ()=> fullLabel },
             };
         });
 
@@ -1076,7 +1224,6 @@ const TMEData = {
                         const val   = p.value;
                         const pct   = p.percent.toFixed(1);
                         const content = dec((it.content||it.caption||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim());
-                        /* break content into ~42-char lines */
                         const words = content ? content.slice(0,120).split(' ') : [];
                         const lines = []; let cur='';
                         words.forEach(w=>{ if((cur+' '+w).trim().length>42){ lines.push(cur.trim()); cur=w; } else { cur=(cur+' '+w).trim(); } });
@@ -1099,31 +1246,16 @@ const TMEData = {
                 },
                 emphasis: {
                     scale: false,
-                    itemStyle: {
-                        shadowBlur: 0,
-                        shadowColor: 'transparent',
-                        borderWidth: 3,
-                        borderColor: '#fff',
-                        opacity: 1,
-                    },
-                    labelLine: {
-                        lineStyle: { width:2.5, color:'#273B4A' }
-                    },
+                    itemStyle: { shadowBlur:0, shadowColor:'transparent', borderWidth:3, borderColor:'#fff', opacity:1 },
+                    labelLine: { lineStyle:{ width:2.5, color:'#273B4A' } },
                     label: { show: true }
                 },
                 select: { disabled: true },
                 data: pieData,
             }],
-            /* center hole labels */
             graphic: [
-                {
-                    type: 'text', left:'center', top:'46%', z:100,
-                    style: { text: numK(total), fill:'#0f172a', font:"800 28px inherit", textAlign:'center' }
-                },
-                {
-                    type: 'text', left:'center', top:'54%', z:100,
-                    style: { text:'TOTAL '+metLbl.toUpperCase(), fill:'#94a3b8', font:"600 9px inherit", textAlign:'center' }
-                }
+                { type:'text', left:'center', top:'46%', z:100, style:{ text:numK(total), fill:'#0f172a', font:"800 28px inherit", textAlign:'center' } },
+                { type:'text', left:'center', top:'54%', z:100, style:{ text:'TOTAL '+metLbl.toUpperCase(), fill:'#94a3b8', font:"600 9px inherit", textAlign:'center' } }
             ]
         };
 
@@ -1133,20 +1265,12 @@ const TMEData = {
             if(item) { TMEPanel.open(Store[type].length?Store[type]:top5, type, 'TikTok'); TMEDetail.open(item, type); }
         });
 
-        /* ── Custom tooltip: follows mouse, positioned near label not center ── */
+        /* Custom tooltip */
         let _ttEl = document.getElementById('donutCustomTT');
         if(!_ttEl) {
             _ttEl = document.createElement('div');
             _ttEl.id = 'donutCustomTT';
-            _ttEl.style.cssText = `
-                position:fixed; z-index:9999; pointer-events:none;
-                background:#1e293b; color:#fff; border:1px solid #334155;
-                border-radius:6px; padding:10px 14px; max-width:280px;
-                font-size:12px; line-height:1.5; display:none;
-                box-shadow:0 8px 24px rgba(0,0,0,.32); font-family:inherit;
-                opacity:0; transform:translateY(6px) scale(.97);
-                transition:opacity .18s ease, transform .18s ease;
-            `;
+            _ttEl.style.cssText = `position:fixed;z-index:9999;pointer-events:none;background:#1e293b;color:#fff;border:1px solid #334155;border-radius:6px;padding:10px 14px;max-width:280px;font-size:12px;line-height:1.5;display:none;box-shadow:0 8px 24px rgba(0,0,0,.32);font-family:inherit;opacity:0;transform:translateY(6px) scale(.97);transition:opacity .18s ease,transform .18s ease;`;
             document.body.appendChild(_ttEl);
         }
         let _ttTimer = null;
@@ -1159,8 +1283,7 @@ const TMEData = {
             clearTimeout(_ttTimer);
             _ttEl.innerHTML = `
                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
-                    <span style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;
-                        box-shadow:0 0 0 3px ${color}33;animation:ttDotPulse 1.4s ease infinite;"></span>
+                    <span style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;box-shadow:0 0 0 3px ${color}33;animation:ttDotPulse 1.4s ease infinite;"></span>
                     <b style="font-size:12.5px;">${esc(p.name)}</b>
                 </div>
                 ${content ? `<div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">${esc(content)}</div>` : ''}
@@ -1169,27 +1292,22 @@ const TMEData = {
                     <span style="color:${color};font-weight:700;">${p.percent.toFixed(1)}%</span>
                 </div>`;
             _ttEl.style.display = 'block';
-            requestAnimationFrame(()=>{
-                _ttEl.style.opacity   = '1';
-                _ttEl.style.transform = 'translateY(0) scale(1)';
-            });
+            requestAnimationFrame(()=>{ _ttEl.style.opacity='1'; _ttEl.style.transform='translateY(0) scale(1)'; });
         });
 
         chart.on('mouseout', () => {
-            _ttEl.style.opacity   = '0';
-            _ttEl.style.transform = 'translateY(6px) scale(.97)';
+            _ttEl.style.opacity='0'; _ttEl.style.transform='translateY(6px) scale(.97)';
             _ttTimer = setTimeout(()=>{ _ttEl.style.display='none'; }, 180);
         });
 
         chartEl.addEventListener('mousemove', e => {
             if(_ttEl.style.display === 'none') return;
-            const vw = window.innerWidth, vh = window.innerHeight;
-            const tw = _ttEl.offsetWidth + 16, th = _ttEl.offsetHeight + 16;
-            let x = e.clientX + 18, y = e.clientY - 10;
-            if(x + tw > vw) x = e.clientX - tw;
-            if(y + th > vh) y = e.clientY - th;
-            _ttEl.style.left = x + 'px';
-            _ttEl.style.top  = y + 'px';
+            const vw=window.innerWidth, vh=window.innerHeight;
+            const tw=_ttEl.offsetWidth+16, th=_ttEl.offsetHeight+16;
+            let x=e.clientX+18, y=e.clientY-10;
+            if(x+tw>vw) x=e.clientX-tw;
+            if(y+th>vh) y=e.clientY-th;
+            _ttEl.style.left=x+'px'; _ttEl.style.top=y+'px';
         });
     },
 
@@ -1198,21 +1316,6 @@ const TMEData = {
         if(!items.length) return;
         const top10=[...items].map(it=>({...it,_total:parseInt(it.view_cnt||it.views||it.freq||0)+parseInt(it.likes||0)+parseInt(it.comments||0)+parseInt(it.shares||0)})).sort((a,b)=>b._total-a._total).slice(0,10);
         TMEChart._items=top10; TMEChart._render(top10, TMEChart._type);
-    },
-
-    exportCsv(type) {
-        const items=Store[type]; if(!items?.length){ alert('Tidak ada data.'); return; }
-        const hdr='index;nama;sentiment;views;likes;comments;shares;total_engagement;tanggal;url;konten';
-        const rows=items.map((it,i)=>{
-            const name=this._getName(it), sent=this._normSent(it);
-            const sentLbl={pos:'Positif',neg:'Negatif',neu:'Netral'}[sent];
-            const v=parseInt(it.view_cnt||it.views||it.freq||0),l=parseInt(it.likes||0),c=parseInt(it.comments||0),s=parseInt(it.shares||0);
-            const content=(it.content||it.caption||'').replace(/<[^>]*>/g,'').trim().slice(0,300).replace(/;/g,',').replace(/\n/g,' ');
-            return `${i};${name.replace(/;/g,',')};${sentLbl};${v};${l};${c};${s};${v+l+c+s};${(it.date_created||'').split('T')[0]};${it.url||''};${content}`;
-        });
-        const blob=new Blob(['\uFEFF'+[hdr,...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});
-        const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`TikTok_Most${type.charAt(0).toUpperCase()+type.slice(1)}_${TMECfg.sd}_${TMECfg.ed}.csv`});
-        a.click();
     }
 };
 
@@ -1227,7 +1330,6 @@ const TMEChart = {
     _render(items,stackType) {
         const barEl=_$('bar-eng'); if(!barEl) return;
         barEl.style.display='block';
-        const primary=getPrimary();
         const labels=items.map(it=>{ const n=TMEData._getName(it); return n.length>14?n.slice(0,13)+'…':n; });
         const isStack=stackType==='stacked';
         const seriesData = [
@@ -1272,7 +1374,6 @@ const TMEPanel = {
         pn.classList.add('hiding'); ov.classList.add('hiding');
         setTimeout(()=>{ pn.classList.remove('show','hiding'); ov.classList.remove('show','hiding'); },240);
     },
-    exportCsv() { TMEData.exportCsv(this._type||'view'); },
     _render(items, type) {
         const list=_$('tmePanelList'); if(!list) return;
         if(!items?.length){ list.innerHTML='<div class="do-panel-loading"><div class="do-panel-spinner"></div>Tidak ada data</div>'; return; }
@@ -1364,6 +1465,262 @@ const TMEDetail = {
     close() { _$('tmeDetailPanel')?.classList.remove('show'); },
     killIframe() { const b=_$('tmeDetailBody'); if(b) b.querySelectorAll('iframe').forEach(f=>{ f.src=''; f.remove(); }); }
 };
+
+/* ══════════════════════════════════════════════════════
+   EXPORT MODULE — identik dengan TikTok Emotion Analysis
+   Menangkap #pageExportArea : KPI + Donut + Tab Cards
+══════════════════════════════════════════════════════ */
+const TMEExport = (() => {
+    let _toastTimer = null;
+
+    /* ── Toast ── */
+    function _toast(msg, type='default', duration=3200) {
+        const t=_$('exportToast'), m=_$('exportToastMsg'), ico=_$('exportToastIcon');
+        if(!t||!m) return;
+        m.textContent = msg;
+        t.className   = 'export-toast show '+(type!=='default'?type:'');
+        const icons   = { success:'ph-check-circle', error:'ph-x-circle', default:'ph-spinner' };
+        ico.className = 'ph '+(icons[type]||icons.default);
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(()=>t.classList.remove('show'), duration);
+    }
+
+    /* ── Button loading state ── */
+    function _btnState(btn, loading) {
+        if(!btn) return;
+        btn.disabled = loading;
+        btn.classList.toggle('exporting', loading);
+    }
+
+    /* ── html2canvas full-page capture ── */
+    async function _capture() {
+        const area = _$('pageExportArea');
+        if(!area) throw new Error('pageExportArea tidak ditemukan');
+        window.scrollTo({ top:0 });
+        await new Promise(r => setTimeout(r, 300));
+        /* Resize ECharts agar canvas up-to-date */
+        if(window.__donutEChart) { try{ window.__donutEChart.resize(); }catch(e){} }
+        /* Resize ApexCharts */
+        Object.values(Charts).forEach(c=>{ try{ c.updateOptions({}); }catch(e){} });
+        return html2canvas(area, {
+            scale:           2,
+            useCORS:         true,
+            allowTaint:      false,
+            backgroundColor: '#f1f5f9',
+            logging:         false,
+            removeContainer: true,
+            windowWidth:     document.documentElement.scrollWidth,
+            windowHeight:    area.scrollHeight,
+            height:          area.scrollHeight,
+            ignoreElements:  el =>
+                el.hasAttribute('data-html2canvas-ignore') ||
+                el.id === 'pageExportPdfBtn' ||
+                el.id === 'pageExportImgBtn',
+        });
+    }
+
+    /* ── PDF (multi-page) ── */
+    async function _exportPdf() {
+        const canvas = await _capture();
+        const { jsPDF } = window.jspdf;
+        const imgW = canvas.width, imgH = canvas.height;
+        const pdf  = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+        const pW   = pdf.internal.pageSize.getWidth();
+        const pH   = pdf.internal.pageSize.getHeight();
+        const margin  = 10;
+        const usableW = pW  - margin * 2;
+        const usableH = pH  - margin * 2 - 14;
+        const ratio   = usableW / imgW;
+        const sliceH  = usableH / ratio;
+
+        const _drawHeader = (doc) => {
+            doc.setFillColor(3, 128, 71);
+            doc.rect(0, 0, pW, 11, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(9); doc.setFont('helvetica','bold');
+            doc.text('SMADIMENT — TikTok Most Engagement', margin, 7.5);
+            const now = new Date().toLocaleDateString('id-ID',{ day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+            doc.setFontSize(7); doc.setFont('helvetica','normal');
+            doc.text('Generated: '+now, pW-margin, 7.5, { align:'right' });
+        };
+
+        let srcY=0, pageNum=0;
+        while(srcY < imgH) {
+            if(pageNum > 0) pdf.addPage();
+            _drawHeader(pdf);
+            const srcSlice = Math.min(sliceH, imgH-srcY);
+            const dstH     = srcSlice * ratio;
+            const slice    = document.createElement('canvas');
+            slice.width=imgW; slice.height=Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(canvas, 0, srcY, imgW, srcSlice, 0, 0, imgW, srcSlice);
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
+            pdf.setFontSize(7); pdf.setTextColor(148,163,184);
+            pdf.text(`Halaman ${pageNum+1}`, pW/2, pH-3, { align:'center' });
+            srcY += srcSlice; pageNum++;
+        }
+
+        const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
+        pdf.save(`tiktok_engagement_${TME_PID}_${stamp}.pdf`);
+    }
+
+    /* ── Image ── */
+    async function _exportImage() {
+        const canvas = await _capture();
+        const stamp  = new Date().toISOString().slice(0,10).replace(/-/g,'');
+        const link   = document.createElement('a');
+        link.download = `tiktok_engagement_${TME_PID}_${stamp}.png`;
+        link.href     = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    /* ── Per-card capture ── */
+    async function _captureCard(areaId, cardKey) {
+        const area = document.getElementById(areaId);
+        if(!area) throw new Error('Area #'+areaId+' tidak ditemukan');
+        /* Resize relevant chart instances */
+        if(cardKey === 'donut' && window.__donutEChart) {
+            try{ window.__donutEChart.resize(); }catch(e){}
+        }
+        const apexId = cardKey.startsWith('bar-') ? cardKey : (cardKey === 'eng' ? 'bar-eng' : null);
+        if(apexId && Charts[apexId]) { try{ Charts[apexId].updateOptions({}); }catch(e){} }
+        await new Promise(r => setTimeout(r, 220));
+        return html2canvas(area, {
+            scale:           2,
+            useCORS:         true,
+            allowTaint:      false,
+            backgroundColor: '#ffffff',
+            logging:         false,
+            removeContainer: true,
+            ignoreElements:  el => el.hasAttribute('data-html2canvas-ignore'),
+        });
+    }
+
+    /* ── Per-card filename map ── */
+    function _cardFilename(cardKey) {
+        const labels = {
+            'donut'         : 'distribusi-views-top5',
+            'eng'           : 'engagement-comparison',
+            'list-view'     : 'top-videos-by-view',
+            'list-like'     : 'top-videos-by-like',
+            'list-comment'  : 'top-videos-by-comment',
+            'list-share'    : 'top-videos-by-share',
+            'bar-view'      : 'chart-most-viewed',
+            'bar-like'      : 'chart-most-liked',
+            'bar-comment'   : 'chart-most-comments',
+            'bar-share'     : 'chart-most-shares',
+        };
+        const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
+        return `tiktok_engagement_${labels[cardKey]||cardKey}_${TME_PID}_${stamp}`;
+    }
+
+    /* ── Per-card PDF label map ── */
+    function _cardLabel(cardKey) {
+        const m = {
+            'donut'        : 'Distribusi Views — Top 5',
+            'eng'          : 'Engagement Comparison',
+            'list-view'    : 'Top Videos by Views',
+            'list-like'    : 'Top Videos by Likes',
+            'list-comment' : 'Top Videos by Comments',
+            'list-share'   : 'Top Videos by Shares',
+            'bar-view'     : 'Chart Most Viewed',
+            'bar-like'     : 'Chart Most Liked',
+            'bar-comment'  : 'Chart Most Comments',
+            'bar-share'    : 'Chart Most Shares',
+        };
+        return m[cardKey] || cardKey;
+    }
+
+    /* ── Run card export (PDF or PNG) ── */
+    async function runCard(areaId, cardKey, type, btn) {
+        if(!window.html2canvas)      { _toast('html2canvas tidak tersedia','error'); return; }
+        if(type==='pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
+
+        _btnState(btn, true);
+        _toast(type==='pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
+
+        try {
+            const canvas = await _captureCard(areaId, cardKey);
+            const fname  = _cardFilename(cardKey);
+
+            if(type === 'image') {
+                const link    = document.createElement('a');
+                link.download = fname+'.png';
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const imgW = canvas.width, imgH = canvas.height;
+                const landscape = imgW > imgH;
+                const pdf  = new jsPDF({ orientation:landscape?'landscape':'portrait', unit:'mm', format:'a4' });
+                const pW   = pdf.internal.pageSize.getWidth();
+                const pH   = pdf.internal.pageSize.getHeight();
+                const margin  = 10;
+                const usableW = pW - margin*2;
+                const usableH = pH - margin*2 - 14;
+                const ratio   = usableW / imgW;
+                const sliceH  = usableH / ratio;
+
+                /* Header bar */
+                pdf.setFillColor(3, 128, 71);
+                pdf.rect(0, 0, pW, 11, 'F');
+                pdf.setTextColor(255,255,255); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
+                pdf.text('SMADIMENT — '+_cardLabel(cardKey), margin, 7.5);
+                const now = new Date().toLocaleDateString('id-ID',{ day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+                pdf.setFontSize(7); pdf.setFont('helvetica','normal');
+                pdf.text('Generated: '+now, pW-margin, 7.5, { align:'right' });
+
+                /* Paginate image */
+                let srcY=0, pageNum=0;
+                while(srcY < imgH) {
+                    if(pageNum > 0) {
+                        pdf.addPage();
+                        pdf.setFillColor(3,128,71); pdf.rect(0,0,pW,11,'F');
+                    }
+                    const srcSlice = Math.min(sliceH, imgH-srcY);
+                    const dstH     = srcSlice * ratio;
+                    const slice    = document.createElement('canvas');
+                    slice.width=imgW; slice.height=Math.ceil(srcSlice);
+                    slice.getContext('2d').drawImage(canvas,0,srcY,imgW,srcSlice,0,0,imgW,srcSlice);
+                    pdf.addImage(slice.toDataURL('image/png'),'PNG',margin,14,usableW,dstH);
+                    pdf.setFontSize(7); pdf.setTextColor(148,163,184);
+                    pdf.text(`Halaman ${pageNum+1}`, pW/2, pH-3, { align:'center' });
+                    srcY+=srcSlice; pageNum++;
+                }
+                pdf.save(fname+'.pdf');
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(err) {
+            console.error('[TMEExport.runCard]', err);
+            _toast('Export gagal: '+err.message, 'error');
+        } finally {
+            _btnState(btn, false);
+        }
+    }
+
+    /* ── Run full-page export ── */
+    async function run(type, btn) {
+        if(!window.html2canvas)      { _toast('html2canvas tidak tersedia','error'); return; }
+        if(type==='pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
+
+        const btnPdf = _$('pageExportPdfBtn');
+        const btnImg = _$('pageExportImgBtn');
+        _btnState(btnPdf, true); _btnState(btnImg, true);
+        _toast(type==='pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+
+        try {
+            if(type==='pdf') { await _exportPdf();    _toast('PDF berhasil diunduh!',   'success'); }
+            else             { await _exportImage();  _toast('Gambar berhasil diunduh!','success'); }
+        } catch(err) {
+            console.error('[TMEExport]', err);
+            _toast('Export gagal: '+err.message, 'error');
+        } finally {
+            _btnState(btnPdf, false); _btnState(btnImg, false);
+        }
+    }
+
+    return { run, runCard };
+})();
 
 /* ══ INIT ══ */
 document.addEventListener('DOMContentLoaded', () => {

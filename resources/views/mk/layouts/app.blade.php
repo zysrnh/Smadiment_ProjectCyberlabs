@@ -135,8 +135,10 @@
     </div>
 
     @include('mk.layouts.partials.footer')
-    @include('mk.layouts.partials.customizer')
 
+    {{-- -
+    @include('mk.layouts.partials.customizer')
+ --}}
     <script src="/assets/js/plugins/popper.min.js"></script>
     <script src="/assets/js/plugins/simplebar.min.js"></script>
     <script src="/assets/js/plugins/bootstrap.min.js"></script>

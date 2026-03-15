@@ -297,6 +297,85 @@
 .kpi-card-hover:hover .kpi-icon-bg i { animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both; display:inline-block; }
 .kpi-card-hover:active { transform:translateY(-2px) scale(1.01); }
 
+/* ══ Page Export Bar ══ */
+.page-export-bar {
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:10px;
+    background:#fff; border:1px solid var(--slate-200);
+    border-radius:var(--radius); padding:9px 14px;
+    margin-bottom:20px; box-shadow:var(--shadow-sm);
+}
+.page-export-bar-left {
+    display:flex; align-items:center; gap:8px;
+    font-size:12px; font-weight:700; color:var(--slate-600);
+}
+.page-export-bar-left i { font-size:15px; color:var(--primary); }
+.page-export-bar-right  { display:flex; gap:8px; }
+
+.page-export-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:32px; height:32px; border-radius:var(--radius-sm);
+    font-size:16px; cursor:pointer;
+    transition:all .15s ease; border:1.5px solid transparent;
+    font-family:inherit;
+}
+.page-export-btn-pdf {
+    background:#fff3f3; color:#dc2626; border-color:#fca5a5;
+}
+.page-export-btn-pdf:hover {
+    background:#dc2626; color:#fff; border-color:#dc2626;
+}
+.page-export-btn-img {
+    background:var(--primary-lt); color:var(--primary);
+    border-color:rgba(3,128,71,.3);
+}
+.page-export-btn-img:hover {
+    background:var(--primary); color:#fff; border-color:var(--primary);
+}
+.page-export-btn:disabled { opacity:.55; cursor:not-allowed; pointer-events:none; }
+.page-export-btn .export-spinner {
+    width:13px; height:13px;
+    border:2px solid currentColor; border-top-color:transparent;
+    border-radius:50%; animation:spin .65s linear infinite; display:none;
+}
+.page-export-btn.exporting .export-spinner { display:inline-block; }
+.page-export-btn.exporting .export-icon    { display:none; }
+
+/* ══ Card-level Export Buttons ══ */
+.card-exp-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    font-size:14px; cursor:pointer; flex-shrink:0;
+    transition:all .14s ease; border:1px solid transparent;
+    font-family:inherit; background:transparent;
+}
+.card-exp-btn-pdf { color:#dc2626; border-color:#fca5a5; background:#fff3f3; }
+.card-exp-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.card-exp-btn-img { color:var(--primary); border-color:rgba(3,128,71,.3); background:var(--primary-lt); }
+.card-exp-btn-img:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.card-exp-btn:disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+.card-exp-btn .export-spinner {
+    width:11px; height:11px;
+    border:2px solid currentColor; border-top-color:transparent;
+    border-radius:50%; animation:spin .65s linear infinite; display:none;
+}
+.card-exp-btn.exporting .export-spinner { display:inline-block; }
+.card-exp-btn.exporting .export-icon    { display:none; }
+
+/* ══ Export Toast ══ */
+.export-toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--slate-900); color:#fff; border-radius:var(--radius);
+    padding:10px 18px; font-size:12px; font-weight:600;
+    box-shadow:var(--shadow-lg); z-index:99999;
+    opacity:0; pointer-events:none;
+    transition:opacity .22s ease, transform .22s ease;
+    display:flex; align-items:center; gap:8px; white-space:nowrap;
+}
+.export-toast.show    { opacity:1; transform:translateX(-50%) translateY(0); }
+.export-toast.success { background:#065f46; }
+.export-toast.error   { background:#991b1b; }
+
 /* ══ Slide Panel ══ */
 .do-panel-overlay {
     position:fixed; inset:0; z-index:9000;
@@ -339,13 +418,6 @@
     text-transform:uppercase; letter-spacing:.5px;
     display:flex; align-items:center; gap:5px;
 }
-.do-panel-export {
-    display:flex; align-items:center; gap:4px; padding:4px 10px;
-    background:var(--primary); color:#fff; border:none;
-    border-radius:var(--radius-sm); font-size:10px; font-weight:700;
-    cursor:pointer; transition:filter .13s;
-}
-.do-panel-export:hover { filter:brightness(1.1); }
 
 .do-panel-list { overflow-y:auto; flex:1; padding:2px 0; min-height:0; }
 .do-panel-list::-webkit-scrollbar { width:4px; }
@@ -472,6 +544,9 @@
 </div>
 @else
 
+{{-- ════ PAGE EXPORT WRAPPER ════ --}}
+<div id="pageExportArea">
+
 {{-- ══ KPI Cards ══ --}}
 <div class="row">
     @php
@@ -510,10 +585,40 @@
     @endforeach
 </div>
 
+{{-- ══ Page Export Toolbar ══ --}}
+<div class="page-export-bar" data-html2canvas-ignore="true">
+    <div class="page-export-bar-left">
+        <i class="ph ph-export"></i>
+        <span>Export Halaman</span>
+        <span class="badge bg-light-secondary text-muted ms-1" style="font-size:10px;">
+            KPI + Charts + Post List
+        </span>
+    </div>
+    <div class="page-export-bar-right">
+        <button type="button"
+                class="page-export-btn page-export-btn-pdf"
+                id="pageExportPdfBtn"
+                onclick="YTExport.run('pdf', this)"
+                title="Export halaman sebagai PDF">
+            <i class="ph ph-file-pdf export-icon"></i>
+            <span class="export-spinner"></span>
+        </button>
+        <button type="button"
+                class="page-export-btn page-export-btn-img"
+                id="pageExportImgBtn"
+                onclick="YTExport.run('image', this)"
+                title="Export halaman sebagai PNG">
+            <i class="ph ph-image export-icon"></i>
+            <span class="export-spinner"></span>
+        </button>
+    </div>
+</div>
+
 {{-- ══ Donut Distribution ══ --}}
 <div class="row">
     <div class="col-12">
         <div class="card" style="animation:fadeUp .38s ease-out .18s both;">
+            <div id="card-export-donut">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
                     <div class="avtar avtar-xs bg-light-primary rounded">
@@ -524,7 +629,13 @@
                         <small class="text-muted">Proporsi Plutchik wheel dari semua post</small>
                     </div>
                 </div>
-                <div id="donutLegend" class="donut-legend"></div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div id="donutLegend" class="donut-legend"></div>
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf" onclick="YTExport.runCard('card-export-donut','donut','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-img" onclick="YTExport.runCard('card-export-donut','donut','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <div style="height:420px;position:relative;">
@@ -538,6 +649,7 @@
                     </div>
                 </div>
             </div>
+            </div>{{-- /card-export-donut --}}
         </div>
     </div>
 </div>
@@ -546,6 +658,7 @@
 <div class="row">
     <div class="col-xl-5">
         <div class="card" style="animation:fadeUp .38s ease-out .20s both;">
+            <div id="card-export-radar">
             <div class="card-header d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
                     <div class="avtar avtar-xs bg-light-primary rounded">
@@ -556,7 +669,13 @@
                         <small class="text-muted">Plutchik wheel distribution</small>
                     </div>
                 </div>
-                <span class="badge bg-light-secondary text-muted">Radar</span>
+                <div class="d-flex align-items-center gap-1">
+                    <span class="badge bg-light-secondary text-muted me-1">Radar</span>
+                    <div data-html2canvas-ignore="true" class="d-flex gap-1">
+                        <button class="card-exp-btn card-exp-btn-pdf" onclick="YTExport.runCard('card-export-radar','radar','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-img" onclick="YTExport.runCard('card-export-radar','radar','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <div class="chart-container" id="radarWrap" style="height:300px;">
@@ -566,10 +685,12 @@
                     <div id="radarChart" style="width:100%;height:300px;display:none;"></div>
                 </div>
             </div>
+            </div>{{-- /card-export-radar --}}
         </div>
     </div>
     <div class="col-xl-7">
         <div class="card" style="animation:fadeUp .38s ease-out .22s both;">
+            <div id="card-export-bar">
             <div class="card-header d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
                     <div class="avtar avtar-xs bg-light-primary rounded">
@@ -580,7 +701,13 @@
                         <small class="text-muted">Jumlah post per emosi Plutchik</small>
                     </div>
                 </div>
-                <span class="badge bg-light-primary text-primary" id="barBadge">—</span>
+                <div class="d-flex align-items-center gap-1">
+                    <span class="badge bg-light-primary text-primary me-1" id="barBadge">—</span>
+                    <div data-html2canvas-ignore="true" class="d-flex gap-1">
+                        <button class="card-exp-btn card-exp-btn-pdf" onclick="YTExport.runCard('card-export-bar','bar','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-img" onclick="YTExport.runCard('card-export-bar','bar','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <div class="chart-container" id="barWrap" style="height:300px;">
@@ -590,6 +717,7 @@
                     <div id="barChart" style="width:100%;height:300px;display:none;"></div>
                 </div>
             </div>
+            </div>{{-- /card-export-bar --}}
         </div>
     </div>
 </div>
@@ -598,6 +726,7 @@
 <div class="row">
     <div class="col-12">
         <div class="card" style="animation:fadeUp .38s ease-out .24s both;">
+            <div id="card-export-trends">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
                     <div class="avtar avtar-xs bg-light-primary rounded">
@@ -614,6 +743,10 @@
                         <button class="fea-toggle-btn active" data-type="line" onclick="FEAChart.setTrendsType('line')">Line</button>
                         <button class="fea-toggle-btn" data-type="area" onclick="FEAChart.setTrendsType('area')">Area</button>
                     </div>
+                    <div data-html2canvas-ignore="true" class="d-flex gap-1">
+                        <button class="card-exp-btn card-exp-btn-pdf" onclick="YTExport.runCard('card-export-trends','trends','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-img" onclick="YTExport.runCard('card-export-trends','trends','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                    </div>
                 </div>
             </div>
             <div class="card-body">
@@ -624,6 +757,7 @@
                     <div id="trendsChart" style="width:100%;height:300px;display:none;"></div>
                 </div>
             </div>
+            </div>{{-- /card-export-trends --}}
         </div>
     </div>
 </div>
@@ -646,6 +780,7 @@
 </div>
 
 <div class="card" style="animation:fadeUp .38s ease-out .26s both;">
+    <div id="card-export-posts">
     <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div class="d-flex align-items-center gap-2">
             <div class="avtar avtar-xs bg-light-primary rounded">
@@ -662,14 +797,25 @@
                 <option value="100" selected>Top 100</option>
                 <option value="200">Top 200</option>
             </select>
-            <button class="btn btn-outline-secondary btn-sm" onclick="FEAData.exportCsv()" title="Export CSV">
-                <i class="ph ph-download-simple me-1"></i>CSV
-            </button>
             <span class="badge bg-light-primary text-primary" id="listBadge">Loading…</span>
+            <div data-html2canvas-ignore="true" class="d-flex gap-1">
+                <button class="card-exp-btn card-exp-btn-pdf" onclick="YTExport.runCard('card-export-posts','posts','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                <button class="card-exp-btn card-exp-btn-img" onclick="YTExport.runCard('card-export-posts','posts','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+            </div>
         </div>
     </div>
     <div id="listEl" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
     <div id="pagEl"></div>
+    </div>{{-- /card-export-posts --}}
+</div>
+
+{{-- /pageExportArea --}}
+</div>
+
+{{-- ══ Export Toast ══ --}}
+<div class="export-toast" id="exportToast">
+    <i class="ph ph-check-circle" id="exportToastIcon"></i>
+    <span id="exportToastMsg">Exporting…</span>
 </div>
 
 {{-- ══ Slide Panel ══ --}}
@@ -685,9 +831,6 @@
             <i class="ph ph-brain" style="font-size:11px;"></i>
             <span id="feaPanelMeta">—</span>
         </div>
-        <button class="do-panel-export" onclick="FEAPanel.exportCsv()">
-            <i class="ph ph-download-simple"></i> CSV
-        </button>
     </div>
     <div class="do-panel-list" id="feaPanelList"></div>
 
@@ -705,6 +848,12 @@
 @endsection
 
 @section('scripts')
+{{-- ══ Export dependencies ══ --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 <script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
 <script>
@@ -925,7 +1074,6 @@ const FEAData = {
         });
     },
 
-    /* ── POST LIST ── */
     renderList() {
         const listEl = _$('listEl'), pagEl = _$('pagEl');
         if (!listEl) return;
@@ -1024,25 +1172,6 @@ const FEAData = {
         this.renderList();
         _$('listEl')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     },
-
-    exportCsv() {
-        const posts = filteredPosts.length ? filteredPosts : allPosts;
-        if (!posts.length) { alert('Tidak ada data.'); return; }
-        const hdr  = 'index;nama;emosi;sentimen;views;likes;comments;tanggal;url;judul;konten';
-        const rows = posts.map((p, i) => {
-            const name    = getName(p);
-            const sent    = { pos: 'Positif', neg: 'Negatif', neu: 'Netral' }[normSent(p)];
-            const title   = (p.title || '').replace(/;/g, ',').replace(/\n/g, ' ').slice(0, 200);
-            const content = (p.content || '').replace(/<[^>]*>/g, '').trim().replace(/;/g, ',').replace(/\n/g, ' ').slice(0, 300);
-            return `${i+1};${name.replace(/;/g,',')};${p.emotion||''};${sent};${getViews(p)};${getLikes(p)};${getComments(p)};${(p.date_created||'').split('T')[0]};${p.url||''};${title};${content}`;
-        });
-        const blob = new Blob(['\uFEFF' + [hdr, ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8;' });
-        const a    = Object.assign(document.createElement('a'), {
-            href: URL.createObjectURL(blob),
-            download: `YouTube_EmotionAnalysis_${FEACfg.sd}_${FEACfg.ed}.csv`
-        });
-        a.click();
-    }
 };
 
 /* ══ CHARTS ══ */
@@ -1076,14 +1205,12 @@ const FEAChart = {
                     dataPointSelection: (e, ctx, cfg) => {
                         const emo = EMOTIONS[cfg.dataPointIndex];
                         if (!emo) return;
-                        const emoPosts = allPosts.filter(p => p.emotion === emo);
-                        FEAPanel.open(emoPosts, emo);
+                        FEAPanel.open(allPosts.filter(p => p.emotion === emo), emo);
                     },
-                    click  : (_, ctx, cfg) => {
+                    click: (_, ctx, cfg) => {
                         const emo = EMOTIONS[cfg.dataPointIndex];
                         if (!emo) return;
-                        const emoPosts = allPosts.filter(p => p.emotion === emo);
-                        FEAPanel.open(emoPosts, emo);
+                        FEAPanel.open(allPosts.filter(p => p.emotion === emo), emo);
                     }
                 }
             },
@@ -1110,6 +1237,7 @@ const FEAChart = {
         const max    = Math.max(...Object.values(counts), 1);
         const chart  = makeEChart('radarChart');
         if (!chart) { hideLd('radarLoading'); return; }
+        window._feaRadarChart = chart;
         hideLd('radarLoading');
         chart.setOption({
             animation: true, animationDuration: 800, backgroundColor: 'transparent',
@@ -1155,10 +1283,7 @@ const FEAChart = {
         chart.on('click', params => {
             if (!params.name) return;
             const emo = params.name.toLowerCase();
-            if (EMOTIONS.includes(emo)) {
-                const emoPosts = allPosts.filter(p => p.emotion === emo);
-                FEAPanel.open(emoPosts, emo);
-            }
+            if (EMOTIONS.includes(emo)) FEAPanel.open(allPosts.filter(p => p.emotion === emo), emo);
         });
     },
 
@@ -1260,10 +1385,7 @@ const FEAChart = {
         });
         chart.on('click', p => {
             const x = top5[p.dataIndex];
-            if (x) {
-                const emoPosts = allPosts.filter(post => post.emotion === x.emo);
-                FEAPanel.open(emoPosts, x.emo);
-            }
+            if (x) FEAPanel.open(allPosts.filter(post => post.emotion === x.emo), x.emo);
         });
     },
 
@@ -1298,18 +1420,14 @@ const FEAChart = {
                 events     : {
                     mounted: () => hideLd('trendsLoading'),
                     markerClick: (e, ctx, { seriesIndex, dataPointIndex }) => {
-                        const emo = EMOTIONS[seriesIndex];
-                        const date = dates[dataPointIndex];
+                        const emo = EMOTIONS[seriesIndex], date = dates[dataPointIndex];
                         if (!emo) return;
                         const emoPosts = allPosts.filter(p => p.emotion === emo && (p.date_created || '').substring(0,10) === date);
-                        if (emoPosts.length) FEAPanel.open(emoPosts, emo);
-                        else { const all = allPosts.filter(p => p.emotion === emo); FEAPanel.open(all, emo); }
+                        FEAPanel.open(emoPosts.length ? emoPosts : allPosts.filter(p => p.emotion === emo), emo);
                     },
                     legendClick: (ctx, seriesIndex) => {
-                        const emo = EMOTIONS[seriesIndex];
-                        if (!emo) return;
-                        const emoPosts = allPosts.filter(p => p.emotion === emo);
-                        FEAPanel.open(emoPosts, emo);
+                        const emo = EMOTIONS[seriesIndex]; if (!emo) return;
+                        FEAPanel.open(allPosts.filter(p => p.emotion === emo), emo);
                     }
                 }
             },
@@ -1356,8 +1474,6 @@ const FEAPanel = {
         }, 240);
     },
 
-    exportCsv() { FEAData.exportCsv(); },
-
     _render() {
         const list  = _$('feaPanelList'); if (!list) return;
         const posts = this._posts;
@@ -1369,10 +1485,8 @@ const FEAPanel = {
             const avH    = (av && av.startsWith('http')) ? `<img src="${esc(av)}" onerror="this.src='${dummy}'">` : `<img src="${dummy}">`;
             const text   = dec((item.content || item.title || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()).slice(0, 130);
             const dt     = (item.date_created || '').split('T')[0];
-            const sent   = normSent(item);
-            const sentLbl= { pos: 'Pos', neg: 'Neg', neu: 'Neu' }[sent];
-            const emo    = item.emotion || 'trust';
-            const ec     = EMO_COLORS[emo] || '#64748b';
+            const sent   = normSent(item), sentLbl = { pos: 'Pos', neg: 'Neg', neu: 'Neu' }[sent];
+            const emo    = item.emotion || 'trust', ec = EMO_COLORS[emo] || '#64748b';
             const v = getViews(item), l = getLikes(item);
             const enc    = encodeURIComponent(JSON.stringify(item));
             return `<div class="do-panel-item" data-item="${esc(enc)}" onclick="FEAPanel._click(this)">
@@ -1434,13 +1548,10 @@ const FEADetail = {
             ? `<div class="do-dp2-media"><iframe src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>`
             : '';
 
-        /* emotion distribution bars */
         const counts = getEmoCounts();
         const maxC   = Math.max(...Object.values(counts), 1);
         const emoBars = EMOTIONS.map(e => {
-            const cc = counts[e] || 0;
-            const w  = Math.round((cc / maxC) * 100);
-            const ecc= EMO_COLORS[e];
+            const cc = counts[e] || 0, w = Math.round((cc / maxC) * 100), ecc = EMO_COLORS[e];
             return `<div class="emo-dist-bar">
                 <div class="emo-dist-label"><span class="emo-dist-dot" style="background:${ecc};"></span>${e.charAt(0).toUpperCase() + e.slice(1)}</div>
                 <div class="emo-dist-track"><div class="emo-dist-fill" style="width:${w}%;background:${ecc};"></div></div>
@@ -1479,6 +1590,237 @@ const FEADetail = {
     close()     { _$('feaDetailPanel')?.classList.remove('show'); },
     killIframe(){ const b = _$('feaDetailBody'); if (b) b.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); }); }
 };
+
+/* ══════════════════════════════════════════════════════
+   YOUTUBE EXPORT MODULE
+   Captures #pageExportArea — KPI cards + charts + post list
+══════════════════════════════════════════════════════ */
+const YTExport = (() => {
+    let _toastTimer = null;
+
+    /* ── Toast ── */
+    function _toast(msg, type = 'default', duration = 3200) {
+        const t = _$('exportToast'), m = _$('exportToastMsg'), ico = _$('exportToastIcon');
+        if (!t || !m) return;
+        m.textContent = msg;
+        t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
+        const icons   = { success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' };
+        ico.className = 'ph ' + (icons[type] || icons.default);
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+    }
+
+    /* ── Button loading state ── */
+    function _btnState(btn, loading) {
+        if (!btn) return;
+        btn.disabled = loading;
+        btn.classList.toggle('exporting', loading);
+    }
+
+    /* ── html2canvas capture (full page) ── */
+    async function _capture() {
+        const area = _$('pageExportArea');
+        if (!area) throw new Error('pageExportArea tidak ditemukan');
+
+        window.scrollTo({ top: 0 });
+        await new Promise(r => setTimeout(r, 300));
+
+        Object.values(window.__feaDonut ? { donut: window.__feaDonut } : {})
+            .forEach(c => { try { c.resize(); } catch(e) {} });
+        if (window._feaRadarChart) { try { window._feaRadarChart.resize(); } catch(e) {} }
+
+        return html2canvas(area, {
+            scale           : 2,
+            useCORS         : true,
+            allowTaint      : false,
+            backgroundColor : '#f1f5f9',
+            logging         : false,
+            removeContainer : true,
+            windowWidth     : document.documentElement.scrollWidth,
+            windowHeight    : area.scrollHeight,
+            height          : area.scrollHeight,
+            ignoreElements  : el =>
+                el.hasAttribute('data-html2canvas-ignore')
+                || el.id === 'pageExportPdfBtn'
+                || el.id === 'pageExportImgBtn',
+        });
+    }
+
+    /* ── PDF (full page) ── */
+    async function _exportPdf() {
+        const canvas = await _capture();
+        const { jsPDF } = window.jspdf;
+        const imgW = canvas.width, imgH = canvas.height;
+        const pdf  = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pW   = pdf.internal.pageSize.getWidth();
+        const pH   = pdf.internal.pageSize.getHeight();
+        const margin   = 10;
+        const usableW  = pW - margin * 2;
+        const usableH  = pH - margin * 2 - 14;
+        const ratio    = usableW / imgW;
+        const sliceH   = usableH / ratio;
+
+        const _drawHeader = doc => {
+            doc.setFillColor(3, 128, 71);
+            doc.rect(0, 0, pW, 11, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+            doc.text('SMADIMENT — YouTube Emotion Analysis', margin, 7.5);
+            const now = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+            doc.text('Generated: ' + now, pW - margin, 7.5, { align: 'right' });
+        };
+
+        let srcY = 0, pageNum = 0;
+        while (srcY < imgH) {
+            if (pageNum > 0) pdf.addPage();
+            _drawHeader(pdf);
+            const srcSlice = Math.min(sliceH, imgH - srcY);
+            const dstH     = srcSlice * ratio;
+            const slice    = document.createElement('canvas');
+            slice.width = imgW; slice.height = Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(canvas, 0, srcY, imgW, srcSlice, 0, 0, imgW, srcSlice);
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
+            pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+            pdf.text(`Halaman ${pageNum + 1}`, pW / 2, pH - 3, { align: 'center' });
+            srcY += srcSlice; pageNum++;
+        }
+        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        pdf.save(`youtube_emotion_${FEA_PID}_${stamp}.pdf`);
+    }
+
+    /* ── Image (full page) ── */
+    async function _exportImage() {
+        const canvas = await _capture();
+        const stamp  = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const link   = document.createElement('a');
+        link.download = `youtube_emotion_${FEA_PID}_${stamp}.png`;
+        link.href     = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    /* ── Per-card capture ── */
+    async function _captureCard(areaId, cardKey) {
+        const area = document.getElementById(areaId);
+        if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+
+        const ecMap = { donut: window.__feaDonut, radar: window._feaRadarChart };
+        if (ecMap[cardKey]) { try { ecMap[cardKey].resize(); } catch(e) {} }
+
+        await new Promise(r => setTimeout(r, 220));
+
+        return html2canvas(area, {
+            scale           : 2,
+            useCORS         : true,
+            allowTaint      : false,
+            backgroundColor : '#ffffff',
+            logging         : false,
+            removeContainer : true,
+            ignoreElements  : el => el.hasAttribute('data-html2canvas-ignore'),
+        });
+    }
+
+    function _cardFilename(cardKey) {
+        const labels = {
+            donut  : 'distribusi-emosi-top5',
+            radar  : 'emotion-radar',
+            bar    : 'distribusi-emosi-bar',
+            trends : 'tren-emosi-harian',
+            posts  : 'data-postingan',
+        };
+        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        return `youtube_${labels[cardKey] || cardKey}_${FEA_PID}_${stamp}`;
+    }
+
+    /* ── Per-card export (public) ── */
+    async function runCard(areaId, cardKey, type, btn) {
+        if (!window.html2canvas) { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+
+        _btnState(btn, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
+
+        try {
+            const canvas = await _captureCard(areaId, cardKey);
+            const fname  = _cardFilename(cardKey);
+
+            if (type === 'image') {
+                const link    = document.createElement('a');
+                link.download = fname + '.png';
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const imgW = canvas.width, imgH = canvas.height;
+                const landscape = imgW > imgH;
+                const pdf  = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+                const pW   = pdf.internal.pageSize.getWidth();
+                const pH   = pdf.internal.pageSize.getHeight();
+                const margin   = 10;
+                const usableW  = pW - margin * 2;
+                const usableH  = pH - margin * 2 - 14;
+                const ratio    = usableW / imgW;
+                const sliceH   = usableH / ratio;
+
+                pdf.setFillColor(3, 128, 71);
+                pdf.rect(0, 0, pW, 11, 'F');
+                pdf.setTextColor(255, 255, 255); pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
+                const cardLabels = { donut: 'Distribusi Emosi — Top 5', radar: 'Emotion Radar', bar: 'Distribusi Emosi', trends: 'Tren Emosi Harian', posts: 'Data Postingan' };
+                pdf.text('SMADIMENT — ' + (cardLabels[cardKey] || cardKey), margin, 7.5);
+                const now = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+                pdf.text('Generated: ' + now, pW - margin, 7.5, { align: 'right' });
+
+                let srcY = 0, pageNum = 0;
+                while (srcY < imgH) {
+                    if (pageNum > 0) {
+                        pdf.addPage();
+                        pdf.setFillColor(3, 128, 71); pdf.rect(0, 0, pW, 11, 'F');
+                    }
+                    const srcSlice = Math.min(sliceH, imgH - srcY);
+                    const dstH     = srcSlice * ratio;
+                    const slice    = document.createElement('canvas');
+                    slice.width = imgW; slice.height = Math.ceil(srcSlice);
+                    slice.getContext('2d').drawImage(canvas, 0, srcY, imgW, srcSlice, 0, 0, imgW, srcSlice);
+                    pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
+                    pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+                    pdf.text(`Halaman ${pageNum + 1}`, pW / 2, pH - 3, { align: 'center' });
+                    srcY += srcSlice; pageNum++;
+                }
+                pdf.save(fname + '.pdf');
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(err) {
+            console.error('[YTExport.runCard]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            _btnState(btn, false);
+        }
+    }
+
+    /* ── Full-page export (public) ── */
+    async function run(type, btn) {
+        if (!window.html2canvas) { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+
+        const btnPdf = _$('pageExportPdfBtn'), btnImg = _$('pageExportImgBtn');
+        _btnState(btnPdf, true); _btnState(btnImg, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+
+        try {
+            if (type === 'pdf') { await _exportPdf();   _toast('PDF berhasil diunduh!', 'success'); }
+            else                { await _exportImage(); _toast('Gambar berhasil diunduh!', 'success'); }
+        } catch(err) {
+            console.error('[YTExport]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            _btnState(btnPdf, false); _btnState(btnImg, false);
+        }
+    }
+
+    return { run, runCard };
+})();
 
 /* ══ INIT ══ */
 document.addEventListener('DOMContentLoaded', () => {

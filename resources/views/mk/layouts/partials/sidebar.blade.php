@@ -3,12 +3,45 @@
 .pc-sidebar .pc-micon { width:32px; height:32px; }
 .pc-sidebar .pc-micon i { font-size:26px; }
 .pc-sidebar .pc-micon > svg { width:26px; height:26px; }
+
+/* ── Logo sizing ── */
+.pc-sidebar .m-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 16px;
+}
+.pc-sidebar .m-header .b-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+.pc-sidebar .m-header .sidebar-logo {
+    height: 72px;
+    width: auto;
+    max-width: 220px;
+    object-fit: contain;
+    display: block;
+    transition: opacity .2s ease;
+}
+.pc-sidebar .m-header .sidebar-logo:hover {
+    opacity: .85;
+}
+/* Collapsed sidebar — show compact version if needed */
+.pc-sidebar.pc-sidebar-hide .m-header .sidebar-logo {
+    height: 40px;
+    max-width: 48px;
+    object-fit: contain;
+}
 </style>
 <nav class="pc-sidebar">
     <div class="navbar-wrapper">
         <div class="m-header">
-            <a href="{{ route('mk.dashboard') }}" class="b-brand text-primary"">
-                <img src="{{ asset('images/SMADIMENT 2025 _ Logo-03.png') }}" class="img-fluid logo-lg" alt="SMADIMENT" style="height: 52px; width: auto; display: block;" />
+            <a href="{{ route('mk.dashboard') }}" class="b-brand text-primary">
+                <img src="{{ asset('images/WSma.png') }}"
+                     class="sidebar-logo"
+                     alt="SMADIMENT" />
             </a>
         </div>
         <div class="navbar-content">
@@ -95,7 +128,6 @@
                         <li class="pc-item {{ request()->routeIs('mk.trending-topic') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.trending-topic') }}">Hot Topic</a>
                         </li>
-                        {{-- Search Topic hidden for now --}}
                     </ul>
                 </li>
 
@@ -143,12 +175,13 @@
                         <span class="pc-mtext">Compare Projects</span>
                     </a>
                 </li>
-<li class="pc-item {{ request()->routeIs('mk.topic-map') ? 'active' : '' }}">
-    <a href="{{ route('mk.topic-map') }}{{ $qs }}" class="pc-link">
-        <span class="pc-micon"><i class="ph ph-globe-hemisphere-west"></i></span>
-        <span class="pc-mtext">Word Cloud</span>
-    </a>
-</li>
+
+                <li class="pc-item {{ request()->routeIs('mk.topic-map') ? 'active' : '' }}">
+                    <a href="{{ route('mk.topic-map') }}{{ $qs }}" class="pc-link">
+                        <span class="pc-micon"><i class="ph ph-globe-hemisphere-west"></i></span>
+                        <span class="pc-mtext">Word Cloud</span>
+                    </a>
+                </li>
 
                 <li class="pc-item {{ request()->routeIs('mk.x.geographic') ? 'active' : '' }}">
                     <a href="{{ route('mk.x.geographic') }}{{ $qs }}" class="pc-link">
@@ -157,7 +190,12 @@
                     </a>
                 </li>
 
-                {{-- Posts with Location hidden from sidebar --}}
+                <li class="pc-item {{ request()->routeIs('mk.all-ai-analysis') ? 'active' : '' }}">
+                    <a href="{{ route('mk.all-ai-analysis') }}{{ $qs }}" class="pc-link">
+                        <span class="pc-micon"><i class="ph ph-brain"></i></span>
+                        <span class="pc-mtext">AI Analysis</span>
+                    </a>
+                </li>
 
                 {{-- ── NEWS ── --}}
                 <li class="pc-item pc-caption">
@@ -207,8 +245,6 @@
                         <li class="pc-item {{ request()->routeIs('mk.x.overview') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.x.overview') }}{{ $qs }}">Overview</a>
                         </li>
-                        {{-- Top Hashtags, Author Profiles, Location Map, Posts with Location, Shared URLs — now in Overview --}}
-                        {{-- Most Viewed Posts hidden — covered by Most Engagement --}}
                         <li class="pc-item {{ request()->routeIs('mk.x.most-retweets') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.x.most-retweets') }}{{ $qs }}">Most Retweets</a>
                         </li>
@@ -244,9 +280,6 @@
                         <li class="pc-item {{ request()->routeIs('mk.facebook.overview') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.facebook.overview') }}{{ $qs }}">Overview</a>
                         </li>
-                        {{-- <li class="pc-item {{ request()->routeIs('mk.facebook.trending-topics') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('mk.facebook.trending-topics') }}{{ $qs }}">Top Hashtags</a>
-                        </li> --}}
                         <li class="pc-item {{ request()->routeIs('mk.facebook.trending-word-cloud') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.facebook.trending-word-cloud') }}{{ $qs }}">Word Cloud</a>
                         </li>
@@ -273,9 +306,6 @@
                         <li class="pc-item {{ request()->routeIs('mk.instagram.overview') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.instagram.overview') }}{{ $qs }}">Overview</a>
                         </li>
-                        {{-- <li class="pc-item {{ request()->routeIs('mk.instagram.trending-topics') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('mk.instagram.trending-topics') }}{{ $qs }}">Top Hashtags</a>
-                        </li> --}}
                         <li class="pc-item {{ request()->routeIs('mk.instagram.trending-word-cloud') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.instagram.trending-word-cloud') }}{{ $qs }}">Word Cloud</a>
                         </li>
@@ -302,9 +332,6 @@
                         <li class="pc-item {{ request()->routeIs('mk.youtube.overview') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.youtube.overview') }}{{ $qs }}">Overview</a>
                         </li>
-                        {{-- <li class="pc-item {{ request()->routeIs('mk.youtube.trending-topics') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('mk.youtube.trending-topics') }}{{ $qs }}">Top Hashtags</a>
-                        </li> --}}
                         <li class="pc-item {{ request()->routeIs('mk.youtube.trending-word-cloud') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.youtube.trending-word-cloud') }}{{ $qs }}">Word Cloud</a>
                         </li>
@@ -331,11 +358,6 @@
                         <li class="pc-item {{ request()->routeIs('mk.tiktok.overview') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.tiktok.overview') }}{{ $qs }}">Overview</a>
                         </li>
-                        {{-- 
-                        <li class="pc-item {{ request()->routeIs('mk.tiktok.trending-topics') ? 'active' : '' }}">
-                            <a class="pc-link" href="{{ route('mk.tiktok.trending-topics') }}{{ $qs }}">Top Hashtags</a>
-                        </li>
-                         --}}
                         <li class="pc-item {{ request()->routeIs('mk.tiktok.trending-word-cloud') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.tiktok.trending-word-cloud') }}{{ $qs }}">Word Cloud</a>
                         </li>
@@ -357,7 +379,7 @@
             document.addEventListener('DOMContentLoaded', function(){
                 var container = document.querySelector('.pc-sidebar .navbar-content');
                 if (!container) return;
-                var el = container.querySelector('.pc-submenu > .pc-item.active') 
+                var el = container.querySelector('.pc-submenu > .pc-item.active')
                       || container.querySelector('.pc-hasmenu.pc-trigger.active');
                 if (!el) return;
                 setTimeout(function(){
