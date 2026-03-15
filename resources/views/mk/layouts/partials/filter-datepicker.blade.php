@@ -20,11 +20,11 @@
     --do-slate-700      : #334155;
     --do-slate-800      : #1E293B;
     --do-slate-900      : #0F172A;
-    --do-radius         : 8px;
-    --do-radius-sm      : 5px;
-    --do-shadow-sm      : 0 1px 3px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.04);
-    --do-shadow-md      : 0 4px 14px rgba(15,23,42,.08);
-    --do-shadow-lg      : 0 10px 30px rgba(15,23,42,.12);
+    --do-radius         : 0px;
+    --do-radius-sm      : 0px;
+    --do-shadow-sm      : 0 1px 3px rgba(15, 23, 42, 0),0 1px 2px rgba(15,23,42,.04);
+    --do-shadow-md      : 0 4px 14px rgba(15, 23, 42, 0);
+    --do-shadow-lg      : 0 10px 30px rgba(15, 23, 42, 0);
 }
 
 /* ══ Animations (safe re-declare) ════════════════════ */
