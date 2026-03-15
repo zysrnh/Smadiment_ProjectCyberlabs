@@ -4,24 +4,14 @@
 
 @section('styles')
 <style>
-/* ══ Design Tokens — konsisten dengan dashboard ══ */
+/* ══ Design Tokens ══ */
 :root {
-    --primary          : #4361EE;
-    --primary-rgb      : 67, 97, 238;
-    --primary-lt       : rgba(67,97,238,.10);
-    --primary-border   : rgba(67,97,238,.25);
+    --primary          : var(--bs-primary, #4361EE);
+    --primary-rgb      : var(--bs-primary-rgb, 67, 97, 238);
+    --primary-lt       : rgba(var(--primary-rgb, 67,97,238), .10);
     --green            : #10B981;
     --green-light      : #ECFDF5;
     --red              : #EF4444;
-    --red-light        : #FEF2F2;
-    --blue             : #0284c7;
-    --blue-lt          : rgba(2,132,199,.10);
-    --fb-color         : #1877f2;
-    --ig-color         : #e1306c;
-    --yt-color         : #ff0000;
-    --tt-color         : #111827;
-    --tw-color         : #1d9bf0;
-
     --slate-50         : #F8FAFC;
     --slate-100        : #F1F5F9;
     --slate-200        : #E2E8F0;
@@ -32,29 +22,29 @@
     --slate-700        : #334155;
     --slate-800        : #1E293B;
     --slate-900        : #0F172A;
-
     --radius           : 8px;
     --radius-sm        : 5px;
-    --radius-lg        : 12px;
-    --shadow-xs        : 0 1px 2px rgba(15,23,42,.05);
     --shadow-sm        : 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
     --shadow-md        : 0 4px 14px rgba(15,23,42,.08);
     --shadow-lg        : 0 10px 30px rgba(15,23,42,.12);
-    --shadow-xl        : 0 20px 40px rgba(15,23,42,.18);
-    --transition       : all .18s cubic-bezier(.4,0,.2,1);
-    --font             : 'Poppins', -apple-system, sans-serif;
+    --font             : inherit;
 
-    /* ── Dashboard compat aliases ── */
+    /* aliases for JS compatibility */
     --dash-primary     : var(--primary);
     --dash-primary-rgb : var(--primary-rgb);
     --dash-primary-lt  : var(--primary-lt);
 }
 
-*, *::before, *::after { box-sizing: border-box; }
-
-/* ══ Animations — konsisten dengan dashboard ══ */
-@keyframes fadeUp   { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-@keyframes fadeIn   { from{opacity:0}                            to{opacity:1} }
+/* ══ Animations ══ */
+@keyframes fadeUp        { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes spin          { to{transform:rotate(360deg)} }
+@keyframes shimmer       { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes slideInRight  { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes slideOutRight { from{transform:translateX(0);opacity:1}    to{transform:translateX(100%);opacity:0} }
+@keyframes overlayIn     { from{opacity:0} to{opacity:1} }
+@keyframes overlayOut    { from{opacity:1} to{opacity:0} }
+@keyframes detailIn      { from{transform:translateX(100%)} to{transform:translateX(0)} }
+@keyframes dpUp          { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
 
 .fade-up    { animation:fadeUp .38s ease-out both; }
 .fade-up-d1 { animation-delay:.05s }
@@ -62,761 +52,225 @@
 .fade-up-d3 { animation-delay:.15s }
 .fade-up-d4 { animation-delay:.20s }
 
-/* ══ KPI Card Icons — konsisten dengan dashboard ══ */
+/* ══ KPI Card Icons — same as dashboard ══ */
 .kpi-icon-bg {
     width:48px; height:48px; border-radius:12px;
     display:flex; align-items:center; justify-content:center;
     background:rgba(255,255,255,.2); font-size:24px; color:#fff; flex-shrink:0;
 }
 
-/* ══ Page Layout ══ */
-.ms-page {
-    padding: 24px;
-    max-width: 1600px;
-    margin: 0 auto;
-    background: var(--slate-50);
-    min-height: 100vh;
-}
-
-/* ══ Page Header ══ */
-.ms-page-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-.ms-page-header h1 {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--slate-900);
-    margin: 0 0 4px;
-    letter-spacing: -.3px;
-}
-.ms-page-header p {
-    font-size: 13px;
-    color: var(--slate-500);
-    margin: 0;
-}
-.ms-refresh-btn {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 9px 18px;
-    background: var(--slate-800);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    font-family: var(--font);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    box-shadow: var(--shadow-md);
-}
-.ms-refresh-btn:hover { background: var(--slate-900); transform: translateY(-1px); }
-.ms-refresh-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-
-/* ══ Section Divider ══ */
-.ms-section-divider {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 16px;
-    margin-top: 8px;
-}
-.ms-section-divider-icon {
-    width: 32px; height: 32px;
-    border-radius: var(--radius);
-    background: var(--primary-lt);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-.ms-section-divider-icon svg {
-    width: 16px; height: 16px;
-    stroke: var(--primary);
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-.ms-section-divider-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--slate-400);
-    text-transform: uppercase;
-    letter-spacing: .7px;
-}
-.ms-section-divider-line {
-    flex: 1;
-    height: 1px;
-    background: var(--slate-200);
-}
-
-/* ══ Stat Cards — KPI style konsisten dashboard ══ */
-.ms-stat-grid {
-    display: grid;
-    grid-template-columns: repeat(4,1fr);
-    gap: 14px;
-    margin-bottom: 18px;
-}
+/* ══ KPI Stat Cards ══ */
 .ms-stat-card {
-    border-radius: var(--radius-lg);
-    padding: 18px 20px;
-    box-shadow: var(--shadow-sm);
-    transition: transform .18s, box-shadow .18s;
-    position: relative;
-    overflow: hidden;
-    color: #fff;
-    border: none;
-    display: flex;
-    align-items: center;
-    gap: 14px;
+    border-radius: 0;
+    padding:18px 20px;
+    box-shadow:var(--shadow-sm);
+    transition:transform .18s, box-shadow .18s;
+    position:relative; overflow:hidden;
+    color:#fff; border:none;
+    display:flex; align-items:center; gap:14px;
+    margin-bottom:0;
 }
-.ms-stat-content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.ms-stat-card.clickable { cursor: pointer; }
-.ms-stat-card.clickable:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
-.ms-stat-card--blue   { background: #0284c7; }
-.ms-stat-card--green  { background: var(--green); }
-.ms-stat-card--purple { background: #7c3aed; }
-.ms-stat-card--amber  { background: #d97706; }
-
-.ms-stat-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: rgba(255,255,255,.78);
-    text-transform: none;
-    letter-spacing: 0;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.ms-stat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: rgba(255,255,255,.45); }
-.ms-stat-value {
-    font-size: 28px;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: -1px;
-    line-height: 1;
-    min-height: 36px;
-    display: flex;
-    align-items: center;
-}
-.ms-stat-sub  { font-size: 11px; color: rgba(255,255,255,.68); font-weight: 500; margin-top: 6px; }
-.ms-stat-hint {
-    font-size: 10px;
-    color: rgba(255,255,255,.72);
-    font-weight: 600;
-    margin-top: 7px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-.ms-stat-hint svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2.5; }
-.ms-stat-card .sk-block { background: rgba(255,255,255,.18) !important; }
+.ms-stat-card.clickable { cursor:pointer; }
+.ms-stat-card.clickable:hover { box-shadow:var(--shadow-lg); transform:translateY(-2px); }
+.ms-stat-card--blue   { background:#0284c7; }
+.ms-stat-card--green  { background:#10B981; }
+.ms-stat-card--purple { background:#7c3aed; }
+.ms-stat-card--amber  { background:#d97706; }
+.ms-stat-content { flex:1; min-width:0; }
+.ms-stat-label  { font-size:11px; font-weight:600; color:rgba(255,255,255,.78); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+.ms-stat-dot    { width:7px; height:7px; border-radius:50%; flex-shrink:0; background:rgba(255,255,255,.45); }
+.ms-stat-value  { font-size:28px; font-weight:700; color:#fff; letter-spacing:-1px; line-height:1; min-height:36px; display:flex; align-items:center; }
+.ms-stat-sub    { font-size:11px; color:rgba(255,255,255,.68); font-weight:500; margin-top:6px; }
+.ms-stat-hint   { font-size:10px; color:rgba(255,255,255,.72); font-weight:600; margin-top:7px; display:flex; align-items:center; gap:4px; }
+.ms-stat-hint i { font-size:11px; }
 
 /* ══ Platform Mini Cards ══ */
-.ms-plat-grid {
-    display: grid;
-    grid-template-columns: repeat(6,1fr);
-    gap: 10px;
-    margin-bottom: 18px;
-}
 .ms-plat-card {
-    background: #fff;
-    border: 1px solid var(--slate-200);
-    border-radius: var(--radius-lg);
-    padding: 12px 14px;
-    box-shadow: var(--shadow-xs);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: var(--transition);
-    cursor: pointer;
+    background:#fff; border:1px solid var(--slate-200);
+    border-radius:var(--radius); padding:12px 14px;
+    box-shadow:var(--shadow-sm);
+    display:flex; align-items:center; gap:10px;
+    transition:all .18s; cursor:pointer;
 }
-.ms-plat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--primary-border); }
+.ms-plat-card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); border-color:rgba(var(--primary-rgb),.25); }
 .ms-plat-icon {
-    width: 38px; height: 38px;
-    border-radius: var(--radius);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+    width:38px; height:38px; border-radius:var(--radius);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
-.ms-plat-name {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--slate-400);
-    text-transform: uppercase;
-    letter-spacing: .4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.ms-plat-count {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--slate-900);
-    letter-spacing: -.4px;
-    min-height: 24px;
-    display: flex;
-    align-items: center;
-}
+.ms-plat-name  { font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ms-plat-count { font-size:17px; font-weight:700; color:var(--slate-900); letter-spacing:-.4px; min-height:24px; display:flex; align-items:center; }
 
 /* ══ Grid Layouts ══ */
-.ms-grid-3-2 { display: grid; grid-template-columns: 1.55fr 1fr; gap: 18px; margin-bottom: 18px; }
-.ms-grid-2-3 { display: grid; grid-template-columns: 1fr 1.55fr; gap: 18px; margin-bottom: 18px; }
-.ms-grid-2   { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
-.ms-mb18     { margin-bottom: 18px; }
-
-/* ══ Cards — konsisten dashboard ══ */
-.ms-card {
-    background: #fff;
-    border: 1px solid var(--slate-200);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow .2s, border-color .2s;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-}
-.ms-card:hover { box-shadow: var(--shadow-md); }
-
-.ms-card-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
-    background: var(--slate-50);
-    border-bottom: 1px solid var(--slate-200);
-    flex-shrink: 0;
-    gap: 10px;
-}
-.ms-card-head-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-}
-.ms-card-icon {
-    width: 36px; height: 36px;
-    border-radius: var(--radius);
-    background: var(--primary-lt);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-}
-.ms-card-icon svg {
-    width: 17px; height: 17px;
-    fill: none;
-    stroke: var(--primary);
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-.ms-card-title   { font-size: 14px; font-weight: 700; color: var(--slate-800); line-height: 1.3; }
-.ms-card-subtitle{ font-size: 11px; color: var(--slate-400); font-weight: 500; margin-top: 2px; }
-.ms-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .3px;
-    background: var(--slate-100);
-    color: var(--slate-500);
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-.ms-badge--green { background: #d1fae5; color: #065f46; }
-.ms-card-body { padding: 18px; flex: 1; }
+.ms-grid-3-2 { display:grid; grid-template-columns:1.55fr 1fr; gap:16px; }
+.ms-grid-2-3 { display:grid; grid-template-columns:1fr 1.55fr; gap:16px; }
 
 /* ══ Chart Heights ══ */
-.ms-ch { position: relative; }
-.ms-ch-280 { height: 280px; }
-.ms-ch-300 { height: 300px; }
-.ms-ch-320 { height: 320px; }
-.ms-ch-340 { height: 340px; }
-.ms-ch > div[id] { width: 100%; height: 100%; }
+.ms-ch { position:relative; }
+.ms-ch-280 { height:280px; }
+.ms-ch-300 { height:300px; }
+.ms-ch-320 { height:320px; }
+.ms-ch-340 { height:340px; }
+.ms-ch > div[id] { width:100%; height:100%; }
 
 /* ══ SOV body ══ */
-.ms-sov-body {
-    padding: 18px 22px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+.ms-sov-body { padding:16px 18px; display:flex; flex-direction:column; align-items:center; }
 
-/* ══ Tabs ══ */
+/* ══ Tabs — same style as dashboard toggle ══ */
 .ms-tabs {
-    display: flex;
-    gap: 4px;
-    background: #fff;
-    border: 1px solid var(--slate-200);
-    border-radius: var(--radius-lg);
-    padding: 5px;
-    margin-bottom: 20px;
-    box-shadow: var(--shadow-sm);
+    display:flex; gap:2px;
+    background:var(--slate-100); border:1px solid var(--slate-200);
+    border-radius:var(--radius-sm); padding:3px; margin-bottom:14px;
 }
 .ms-tab-btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    padding: 10px 18px;
-    border-radius: var(--radius);
-    border: none;
-    background: transparent;
-    font-family: var(--font);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--slate-500);
-    cursor: pointer;
-    transition: var(--transition);
+    flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
+    padding:7px 16px; border-radius:3px; border:none; background:transparent;
+    font-family:inherit; font-size:12px; font-weight:600;
+    color:var(--slate-500); cursor:pointer; transition:all .13s;
 }
-.ms-tab-btn:hover { background: var(--slate-50); color: var(--slate-800); }
-.ms-tab-btn.active {
-    background: var(--primary);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(67,97,238,.25);
-}
-.ms-tab-btn svg {
-    width: 14px; height: 14px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-.ms-tab-panel { display: none; }
-.ms-tab-panel.active { display: block; }
+.ms-tab-btn:hover { background:#fff; color:var(--slate-800); }
+.ms-tab-btn.active { background:#fff; color:var(--primary); box-shadow:0 1px 4px rgba(0,0,0,.08); }
+.ms-tab-btn i { font-size:14px; }
+.ms-tab-panel { display:none; }
+.ms-tab-panel.active { display:block; }
 
 /* ══ Toggle Group ══ */
 .ms-toggle-group {
-    display: flex;
-    background: var(--slate-100);
-    border-radius: var(--radius-sm);
-    padding: 2px;
-    gap: 2px;
-    border: 1px solid var(--slate-200);
+    display:flex; background:var(--slate-100); border-radius:var(--radius-sm);
+    padding:2px; gap:2px; border:1px solid var(--slate-200);
 }
 .ms-toggle-btn {
-    display: flex; align-items: center; gap: 5px;
-    padding: 5px 12px;
-    border-radius: 3px;
-    border: none;
-    background: transparent;
-    font-family: var(--font);
-    font-size: 11px; font-weight: 600;
-    color: var(--slate-500);
-    cursor: pointer;
-    transition: var(--transition);
-    white-space: nowrap;
+    display:flex; align-items:center; gap:5px;
+    padding:4px 10px; border-radius:3px; border:none; background:transparent;
+    font-family:inherit; font-size:11px; font-weight:600;
+    color:var(--slate-500); cursor:pointer; transition:all .13s; white-space:nowrap;
 }
-.ms-toggle-btn:hover { background: #fff; color: var(--slate-800); }
-.ms-toggle-btn.active {
-    background: #fff;
-    color: var(--primary);
-    box-shadow: 0 1px 4px rgba(0,0,0,.08);
-}
+.ms-toggle-btn:hover { background:#fff; color:var(--slate-800); }
+.ms-toggle-btn.active { background:#fff; color:var(--primary); box-shadow:0 1px 4px rgba(0,0,0,.08); }
 
 /* ══ CSV Button ══ */
 .ms-csv-btn {
-    display: flex; align-items: center; gap: 5px;
-    padding: 5px 12px;
-    background: var(--slate-100);
-    border: 1px solid var(--slate-200);
-    border-radius: var(--radius-sm);
-    font-family: var(--font);
-    font-size: 11px; font-weight: 600;
-    color: var(--slate-500);
-    cursor: pointer;
-    transition: var(--transition);
-    white-space: nowrap;
+    display:flex; align-items:center; gap:5px; padding:4px 10px;
+    background:var(--slate-100); border:1px solid var(--slate-200);
+    border-radius:var(--radius-sm); font-family:inherit;
+    font-size:11px; font-weight:600; color:var(--slate-500);
+    cursor:pointer; transition:all .13s; white-space:nowrap;
 }
-.ms-csv-btn:hover { background: var(--primary); border-color: var(--primary); color: #fff; }
+.ms-csv-btn:hover { background:var(--primary); border-color:var(--primary); color:#fff; }
 
 /* ══ Skeleton ══ */
 .sk-block {
-    border-radius: 4px;
-    background: linear-gradient(90deg, var(--slate-100) 25%, var(--slate-200) 50%, var(--slate-100) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.4s infinite;
+    border-radius:4px;
+    background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);
+    background-size:200% 100%; animation:shimmer 1.4s infinite;
 }
-@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
-.sk-overlay { position: absolute; inset: 0; z-index: 3; border-radius: inherit; }
+.sk-overlay { position:absolute; inset:0; z-index:3; border-radius:inherit; }
 
 /* ══ Empty State ══ */
 .ms-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 44px 20px;
-    gap: 8px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:44px 20px; gap:8px;
 }
-.ms-empty svg { width: 38px; height: 38px; stroke: var(--slate-300); fill: none; stroke-width: 1.5; }
-.ms-empty span { font-size: 12px; font-weight: 600; color: var(--slate-400); }
+.ms-empty i { font-size:38px; color:var(--slate-300); }
+.ms-empty span { font-size:12px; font-weight:600; color:var(--slate-400); }
 
 /* ══ CSV Modal ══ */
 .ms-csv-modal {
-    position: fixed; inset: 0; z-index: 99998;
-    background: rgba(15,23,42,.5);
-    backdrop-filter: blur(5px);
-    display: none;
-    align-items: center;
-    justify-content: center;
+    position:fixed; inset:0; z-index:99998;
+    background:rgba(15,23,42,.5); backdrop-filter:blur(5px);
+    display:none; align-items:center; justify-content:center;
 }
-.ms-csv-modal.show { display: flex; }
-.ms-csv-modal__box {
-    background: #fff;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-xl);
-    width: 520px;
-    max-width: 92vw;
-    overflow: hidden;
-    animation: dpUp .22s cubic-bezier(.34,1.3,.64,1);
-}
-.ms-csv-modal__head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 18px;
-    background: var(--slate-50);
-    border-bottom: 1px solid var(--slate-200);
-}
-.ms-csv-modal__title { font-size: 14px; font-weight: 700; color: var(--slate-800); }
-.ms-csv-modal__close {
-    width: 26px; height: 26px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--slate-200);
-    background: #fff;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--slate-500);
-    font-size: 16px;
-    transition: var(--transition);
-}
-.ms-csv-modal__close:hover { background: var(--red); border-color: var(--red); color: #fff; }
-.ms-csv-modal__body { padding: 14px 18px; }
-.ms-csv-modal__pre {
-    background: var(--slate-50);
-    border: 1px solid var(--slate-200);
-    border-radius: var(--radius);
-    padding: 12px 14px;
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
-    color: var(--slate-800);
-    line-height: 1.7;
-    max-height: 260px;
-    overflow-y: auto;
-    white-space: pre;
-}
-.ms-csv-modal__foot {
-    display: flex; align-items: center; justify-content: flex-end; gap: 9px;
-    padding: 12px 18px;
-    border-top: 1px solid var(--slate-200);
-    background: var(--slate-50);
-}
-.ms-csv-copy-btn {
-    display: flex; align-items: center; gap: 5px;
-    padding: 8px 18px;
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    font-family: var(--font);
-    font-size: 12px; font-weight: 700;
-    cursor: pointer;
-    transition: var(--transition);
-}
-.ms-csv-copy-btn:hover { background: #3451c7; }
-.ms-csv-copy-btn.copied { background: var(--green); }
+.ms-csv-modal.show { display:flex; }
+.ms-csv-modal__box { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-lg); width:520px; max-width:92vw; overflow:hidden; animation:dpUp .22s cubic-bezier(.34,1.3,.64,1); }
+.ms-csv-modal__head { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:var(--slate-50); border-bottom:1px solid var(--slate-200); }
+.ms-csv-modal__title { font-size:14px; font-weight:700; color:var(--slate-800); }
+.ms-csv-modal__close { width:26px; height:26px; border-radius:var(--radius-sm); border:1px solid var(--slate-200); background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--slate-500); font-size:16px; transition:all .14s; }
+.ms-csv-modal__close:hover { background:var(--red); border-color:var(--red); color:#fff; }
+.ms-csv-modal__body { padding:14px 18px; }
+.ms-csv-modal__pre { background:var(--slate-50); border:1px solid var(--slate-200); border-radius:var(--radius); padding:12px 14px; font-family:'Courier New',monospace; font-size:12px; color:var(--slate-800); line-height:1.7; max-height:260px; overflow-y:auto; white-space:pre; }
+.ms-csv-modal__foot { display:flex; align-items:center; justify-content:flex-end; gap:9px; padding:12px 18px; border-top:1px solid var(--slate-200); background:var(--slate-50); }
+.ms-csv-copy-btn { display:flex; align-items:center; gap:5px; padding:8px 18px; background:var(--primary); color:#fff; border:none; border-radius:var(--radius); font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; transition:all .13s; }
+.ms-csv-copy-btn:hover { filter:brightness(1.1); }
+.ms-csv-copy-btn.copied { background:var(--green); }
 
-/* ══════════════════════════════════════════════
-   SLIDE PANEL — konsisten 100% dengan dashboard
-══════════════════════════════════════════════ */
-@keyframes slideInRight  { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
-@keyframes slideOutRight { from{transform:translateX(0);opacity:1}    to{transform:translateX(100%);opacity:0} }
-@keyframes overlayIn     { from{opacity:0} to{opacity:1} }
-@keyframes overlayOut    { from{opacity:1} to{opacity:0} }
-@keyframes spin          { to{transform:rotate(360deg)} }
-@keyframes fadeUp        { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+/* ══ Slide Panel ══ */
+.do-panel-overlay { position:fixed; inset:0; z-index:9000; background:rgba(15,23,42,.45); backdrop-filter:blur(4px); display:none; }
+.do-panel-overlay.show   { display:block; animation:overlayIn .22s ease-out; }
+.do-panel-overlay.hiding { animation:overlayOut .22s ease-out forwards; }
+.do-panel { position:fixed; top:0; right:0; bottom:0; z-index:9001; width:480px; max-width:100vw; background:#fff; display:none; flex-direction:column; border-left:1px solid var(--slate-200); box-shadow:-8px 0 40px rgba(15,23,42,.16); }
+.do-panel.show   { display:flex; animation:slideInRight .28s cubic-bezier(.4,0,.2,1); }
+.do-panel.hiding { animation:slideOutRight .24s cubic-bezier(.4,0,.2,1) forwards; }
+.do-panel-header { display:flex; align-items:center; gap:9px; padding:14px 16px; border-bottom:1px solid var(--slate-200); background:var(--slate-50); flex-shrink:0; }
+.do-panel-dot   { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.do-panel-title { font-size:13px; font-weight:700; color:var(--slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.do-panel-count { background:var(--primary); color:#fff; border-radius:10px; padding:1px 9px; font-size:11px; font-weight:800; flex-shrink:0; }
+.do-panel-close { width:28px; height:28px; border-radius:var(--radius-sm); border:1px solid var(--slate-200); background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--slate-500); font-size:16px; transition:all .14s; flex-shrink:0; }
+.do-panel-close:hover { background:var(--red); border-color:var(--red); color:#fff; }
+.do-panel-actions { display:flex; align-items:center; gap:7px; padding:7px 12px; border-bottom:1px solid var(--slate-200); background:#fff; flex-shrink:0; }
+.do-panel-meta  { flex:1; font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.5px; display:flex; align-items:center; gap:5px; overflow:hidden; }
+.do-panel-export { display:flex; align-items:center; gap:4px; padding:4px 10px; background:var(--primary); color:#fff; border:none; border-radius:var(--radius-sm); font-family:inherit; font-size:10px; font-weight:700; cursor:pointer; transition:filter .13s; }
+.do-panel-export:hover { filter:brightness(1.1); }
+.do-panel-list { overflow-y:auto; flex:1; padding:2px 0; min-height:0; }
+.do-panel-list::-webkit-scrollbar { width:4px; }
+.do-panel-list::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
+.do-panel-item { display:flex; gap:10px; padding:10px 14px; border-bottom:1px solid var(--slate-50); cursor:pointer; transition:background .1s; align-items:flex-start; }
+.do-panel-item:hover { background:#f0f9ff; }
+.do-panel-item:last-child { border-bottom:none; }
+.do-panel-avatar { width:36px; height:36px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; color:#fff; border:1.5px solid var(--slate-200); overflow:hidden; }
+.do-panel-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.do-panel-item-body { flex:1; min-width:0; }
+.do-panel-author { font-size:12px; font-weight:700; color:var(--slate-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.do-panel-handle { font-size:10px; color:var(--slate-400); font-weight:500; margin-bottom:2px; }
+.do-panel-text   { font-size:11px; color:var(--slate-600); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px; }
+.do-panel-footer { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--slate-400); flex-wrap:wrap; }
+.do-sent-badge { padding:1px 6px; border-radius:3px; font-size:9px; font-weight:800; text-transform:uppercase; }
+.do-sent-badge--pos { background:#dbeafe; color:#1d4ed8; }
+.do-sent-badge--neg { background:#fee2e2; color:#991b1b; }
+.do-sent-badge--neu { background:var(--slate-100); color:var(--slate-500); }
+.do-panel-loading { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:12px; color:var(--slate-400); font-size:12px; font-weight:600; }
+.do-panel-spinner { width:28px; height:28px; border:2.5px solid var(--slate-100); border-top-color:var(--primary); border-radius:50%; animation:spin .65s linear infinite; }
 
-.do-panel-overlay {
-    position: fixed; inset: 0; z-index: 9000;
-    background: rgba(15,23,42,.45);
-    backdrop-filter: blur(4px);
-    display: none;
-}
-.do-panel-overlay.show   { display: block; animation: overlayIn .22s ease-out; }
-.do-panel-overlay.hiding { animation: overlayOut .22s ease-out forwards; }
+/* Detail sub-panel */
+.do-detail-panel { position:absolute; inset:0; background:#fff; z-index:10; display:none; flex-direction:column; animation:detailIn .2s cubic-bezier(.4,0,.2,1); }
+.do-detail-panel.show { display:flex; }
+.do-dp2-header { display:flex; align-items:center; gap:8px; padding:12px 14px; background:var(--slate-50); border-bottom:1px solid var(--slate-200); flex-shrink:0; }
+.do-dp2-back { width:28px; height:28px; border-radius:var(--radius-sm); border:1px solid var(--slate-200); background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--slate-500); transition:all .13s; font-size:14px; }
+.do-dp2-back:hover { background:var(--primary-lt); color:var(--primary); border-color:var(--primary); }
+.do-dp2-title { font-size:13px; font-weight:700; color:var(--slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.do-dp2-body  { overflow-y:auto; flex:1; padding:16px; }
+.do-dp2-body::-webkit-scrollbar { width:4px; }
+.do-dp2-body::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
+.do-dp2-avatar-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.do-dp2-avatar-lg  { width:46px; height:46px; border-radius:50%; color:#fff; font-weight:700; font-size:16px; display:flex; align-items:center; justify-content:center; border:2px solid var(--slate-200); overflow:hidden; flex-shrink:0; }
+.do-dp2-avatar-lg img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.do-dp2-name   { font-size:14px; font-weight:700; color:var(--slate-900); }
+.do-dp2-handle { font-size:11px; color:var(--slate-400); font-weight:500; }
+.do-dp2-plat-badge { display:inline-block; padding:2px 8px; border-radius:3px; font-size:10px; font-weight:700; margin-top:3px; }
+.do-dp2-meta   { font-size:11px; color:var(--slate-400); font-weight:500; margin-bottom:10px; }
+.do-dp2-sent   { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:3px; font-size:11px; font-weight:700; margin-bottom:10px; }
+.do-dp2-sent--pos { background:#dbeafe; color:#1d4ed8; }
+.do-dp2-sent--neg { background:#fee2e2; color:#991b1b; }
+.do-dp2-sent--neu { background:var(--slate-100); color:var(--slate-500); }
+.do-dp2-media     { border-radius:var(--radius); overflow:hidden; margin-bottom:10px; }
+.do-dp2-media img { width:100%; max-height:220px; object-fit:cover; display:block; }
+.do-dp2-content   { font-size:12px; color:var(--slate-700); line-height:1.7; margin-bottom:12px; background:var(--slate-50); border-radius:var(--radius-sm); padding:10px 12px; border:1px solid var(--slate-200); word-break:break-word; }
+.do-dp2-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:10px; }
+.do-dp2-stat  { background:var(--slate-50); border-radius:var(--radius-sm); padding:8px 10px; border:1px solid var(--slate-200); text-align:center; }
+.do-dp2-stat-val { font-size:14px; font-weight:700; color:var(--slate-900); }
+.do-dp2-stat-lbl { font-size:9px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.4px; margin-top:1px; }
+.do-dp2-link { display:flex; align-items:center; justify-content:center; gap:6px; padding:9px 14px; background:var(--primary); color:#fff; border-radius:var(--radius); font-size:12px; font-weight:700; text-decoration:none; transition:filter .14s; margin-top:4px; }
+.do-dp2-link:hover { filter:brightness(1.1); color:#fff; }
 
-.do-panel {
-    position: fixed; top: 0; right: 0; bottom: 0; z-index: 9001;
-    width: 480px; max-width: 100vw;
-    background: #fff;
-    display: none;
-    flex-direction: column;
-    border-left: 1px solid var(--slate-200);
-    box-shadow: -8px 0 40px rgba(15,23,42,.16);
-}
-.do-panel.show   { display: flex; animation: slideInRight .28s cubic-bezier(.4,0,.2,1); }
-.do-panel.hiding { animation: slideOutRight .24s cubic-bezier(.4,0,.2,1) forwards; }
-
-.do-panel-header {
-    display: flex; align-items: center; gap: 9px;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--slate-200);
-    background: var(--slate-50);
-    flex-shrink: 0;
-}
-.do-panel-dot   { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-.do-panel-title { font-size: 13px; font-weight: 700; color: var(--slate-900); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.do-panel-count { background: var(--primary); color: #fff; border-radius: 10px; padding: 1px 9px; font-size: 11px; font-weight: 800; flex-shrink: 0; }
-.do-panel-close {
-    width: 28px; height: 28px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--slate-200);
-    background: #fff;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--slate-500);
-    font-size: 16px;
-    transition: var(--transition);
-    flex-shrink: 0;
-}
-.do-panel-close:hover { background: var(--red); border-color: var(--red); color: #fff; }
-
-.do-panel-actions {
-    display: flex; align-items: center; gap: 7px;
-    padding: 7px 12px;
-    border-bottom: 1px solid var(--slate-200);
-    background: #fff;
-    flex-shrink: 0;
-}
-.do-panel-meta {
-    flex: 1;
-    font-size: 10px; font-weight: 700;
-    color: var(--slate-400);
-    text-transform: uppercase; letter-spacing: .5px;
-    display: flex; align-items: center; gap: 5px;
-    overflow: hidden;
-}
-.do-panel-export {
-    display: flex; align-items: center; gap: 4px;
-    padding: 4px 10px;
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-family: var(--font);
-    font-size: 10px; font-weight: 700;
-    cursor: pointer;
-    transition: var(--transition);
-}
-.do-panel-export:hover { background: #3451c7; }
-.do-panel-export svg { width: 12px; height: 12px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-
-.do-panel-list {
-    overflow-y: auto;
-    flex: 1;
-    padding: 2px 0;
-    min-height: 0;
-}
-.do-panel-list::-webkit-scrollbar { width: 4px; }
-.do-panel-list::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 99px; }
-.do-panel-list::-webkit-scrollbar-thumb:hover { background: var(--slate-300); }
-
-.do-panel-item {
-    display: flex; gap: 10px;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--slate-50);
-    cursor: pointer;
-    transition: background .1s;
-    align-items: flex-start;
-}
-.do-panel-item:hover { background: #f0f9ff; }
-.do-panel-item:last-child { border-bottom: none; }
-
-.do-panel-avatar {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 12px; color: #fff;
-    border: 1.5px solid var(--slate-200);
-    overflow: hidden;
-}
-.do-panel-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-
-.do-panel-item-body { flex: 1; min-width: 0; }
-.do-panel-author { font-size: 12px; font-weight: 700; color: var(--slate-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.do-panel-handle { font-size: 10px; color: var(--slate-400); font-weight: 500; margin-bottom: 2px; }
-.do-panel-text   {
-    font-size: 11px; color: var(--slate-600); line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin-bottom: 4px;
-}
-.do-panel-footer { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--slate-400); flex-wrap: wrap; }
-
-.do-sent-badge { padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 800; text-transform: uppercase; }
-.do-sent-badge--pos { background: #dbeafe; color: #1d4ed8; }
-.do-sent-badge--neg { background: #fee2e2; color: #991b1b; }
-.do-sent-badge--neu { background: var(--slate-100); color: var(--slate-500); }
-
-.do-panel-loading {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    height: 100%; gap: 12px; color: var(--slate-400); font-size: 12px; font-weight: 600;
-}
-.do-panel-spinner {
-    width: 28px; height: 28px;
-    border: 2.5px solid var(--slate-100);
-    border-top-color: var(--primary);
-    border-radius: 50%;
-    animation: spin .65s linear infinite;
-}
-
-/* ── Detail Sub-panel ── */
-@keyframes detailIn { from{transform:translateX(100%)} to{transform:translateX(0)} }
-.do-detail-panel {
-    position: absolute; inset: 0;
-    background: #fff; z-index: 10;
-    display: none;
-    flex-direction: column;
-    animation: detailIn .2s cubic-bezier(.4,0,.2,1);
-}
-.do-detail-panel.show { display: flex; }
-
-.do-dp2-header {
-    display: flex; align-items: center; gap: 8px;
-    padding: 12px 14px;
-    background: var(--slate-50);
-    border-bottom: 1px solid var(--slate-200);
-    flex-shrink: 0;
-}
-.do-dp2-back {
-    width: 28px; height: 28px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--slate-200);
-    background: #fff;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--slate-500);
-    transition: var(--transition);
-    font-size: 14px;
-}
-.do-dp2-back:hover { background: var(--primary-lt); color: var(--primary); border-color: var(--primary); }
-.do-dp2-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-.do-dp2-title  { font-size: 13px; font-weight: 700; color: var(--slate-900); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.do-dp2-body   { overflow-y: auto; flex: 1; padding: 16px; }
-.do-dp2-body::-webkit-scrollbar { width: 4px; }
-.do-dp2-body::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 99px; }
-.do-dp2-avatar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.do-dp2-avatar-lg  {
-    width: 46px; height: 46px;
-    border-radius: 50%;
-    color: #fff; font-weight: 700; font-size: 16px;
-    display: flex; align-items: center; justify-content: center;
-    border: 2px solid var(--slate-200);
-    overflow: hidden; flex-shrink: 0;
-}
-.do-dp2-avatar-lg img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-.do-dp2-name   { font-size: 14px; font-weight: 700; color: var(--slate-900); }
-.do-dp2-handle { font-size: 11px; color: var(--slate-400); font-weight: 500; }
-.do-dp2-plat-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700; margin-top: 3px; }
-.do-dp2-meta   { font-size: 11px; color: var(--slate-400); font-weight: 500; margin-bottom: 10px; }
-.do-dp2-sent   { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 3px; font-size: 11px; font-weight: 700; margin-bottom: 10px; }
-.do-dp2-sent--pos { background: #dbeafe; color: #1d4ed8; }
-.do-dp2-sent--neg { background: #fee2e2; color: #991b1b; }
-.do-dp2-sent--neu { background: var(--slate-100); color: var(--slate-500); }
-.do-dp2-media      { border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; }
-.do-dp2-media img  { width: 100%; max-height: 220px; object-fit: cover; display: block; }
-.do-dp2-content    {
-    font-size: 12px; color: var(--slate-700); line-height: 1.7;
-    margin-bottom: 12px;
-    background: var(--slate-50);
-    border-radius: var(--radius-sm);
-    padding: 10px 12px;
-    border: 1px solid var(--slate-200);
-    word-break: break-word;
-}
-.do-dp2-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-bottom: 10px; }
-.do-dp2-stat  { background: var(--slate-50); border-radius: var(--radius-sm); padding: 8px 10px; border: 1px solid var(--slate-200); text-align: center; }
-.do-dp2-stat-val { font-size: 14px; font-weight: 700; color: var(--slate-900); }
-.do-dp2-stat-lbl { font-size: 9px; font-weight: 700; color: var(--slate-400); text-transform: uppercase; letter-spacing: .4px; margin-top: 1px; }
-.do-dp2-link {
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    padding: 9px 14px;
-    background: var(--primary);
-    color: #fff;
-    border-radius: var(--radius);
-    font-size: 12px; font-weight: 700;
-    text-decoration: none;
-    transition: var(--transition);
-    margin-top: 4px;
-}
-.do-dp2-link:hover { background: #3451c7; color: #fff; }
-
-/* ── Platform Picker ── */
-.do-plat-picker {
-    position: fixed; z-index: 999999;
-    background: #fff;
-    border: 1px solid var(--slate-200);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    padding: 5px;
-    min-width: 175px;
-    font-family: var(--font);
-    display: none;
-    animation: fadeUp .14s ease-out;
-}
-.do-plat-picker.show { display: block; }
-.do-plat-picker-head {
-    padding: 4px 9px 7px;
-    font-size: 10px; font-weight: 700;
-    color: var(--slate-400);
-    text-transform: uppercase; letter-spacing: .5px;
-    border-bottom: 1px solid var(--slate-100);
-    margin-bottom: 3px;
-}
-.do-plat-btn {
-    display: flex; align-items: center; gap: 7px;
-    padding: 7px 10px;
-    border-radius: var(--radius-sm);
-    font-size: 12px; font-weight: 600;
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    font-family: var(--font);
-    width: 100%;
-    text-align: left;
-    color: var(--slate-700);
-    transition: var(--transition);
-}
-.do-plat-btn:hover { background: var(--primary-lt); color: var(--primary); }
-.do-plat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-left: auto; }
+/* Platform picker */
+.do-plat-picker { position:fixed; z-index:999999; background:#fff; border:1px solid var(--slate-200); border-radius:var(--radius); box-shadow:var(--shadow-lg); padding:5px; min-width:175px; font-family:inherit; display:none; animation:fadeUp .14s ease-out; }
+.do-plat-picker.show { display:block; }
+.do-plat-picker-head { padding:4px 9px 7px; font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--slate-100); margin-bottom:3px; }
+.do-plat-btn { display:flex; align-items:center; gap:7px; padding:7px 10px; border-radius:var(--radius-sm); font-size:12px; font-weight:600; cursor:pointer; background:transparent; border:none; font-family:inherit; width:100%; text-align:left; color:var(--slate-700); transition:background .12s; }
+.do-plat-btn:hover { background:var(--primary-lt); color:var(--primary); }
+.do-plat-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-left:auto; }
 
 /* ══ Responsive ══ */
-@media(max-width:1280px) {
-    .ms-stat-grid   { grid-template-columns: repeat(2,1fr); }
-    .ms-plat-grid   { grid-template-columns: repeat(3,1fr); }
-    .ms-grid-3-2,
-    .ms-grid-2-3    { grid-template-columns: 1fr; }
-    .ms-grid-2      { grid-template-columns: 1fr; }
-}
-@media(max-width:768px) {
-    .ms-page     { padding: 14px; }
-    .ms-stat-grid{ grid-template-columns: 1fr 1fr; }
-    .ms-plat-grid{ grid-template-columns: repeat(2,1fr); }
-    .do-panel    { width: 100vw; }
-}
+@media(max-width:1280px) { .ms-grid-3-2,.ms-grid-2-3 { grid-template-columns:1fr; } }
+@media(max-width:768px)  { .do-panel { width:100vw; } }
 </style>
 @endsection
 
@@ -825,461 +279,386 @@
   $projectId = $projectId ?? request()->get('project_id');
   $startDate = $startDate ?? request()->get('start_date', now()->startOfMonth()->format('Y-m-d'));
   $endDate   = $endDate ?? request()->get('end_date', now()->format('Y-m-d'));
-  $projects  = $projects ?? [];
 @endphp
 
-<div class="ms-page">
+{{-- ══ Filter ══ --}}
+@include('mk.layouts.partials.filter-datepicker')
 
-  {{-- FILTER CARD + DATE PICKER --}}
-  @include('mk.layouts.partials.filter-datepicker')
-
-  {{-- ── SECTION 1: DISTRIBUTION ── --}}
-  <div class="ms-section-divider fade-up">
-    <div class="ms-section-divider-icon">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+{{-- ══ KPI Cards — same as Dashboard ══ --}}
+<div class="row g-3 mb-3">
+    <div class="col-md-6 col-xl-3">
+        <div class="ms-stat-card ms-stat-card--blue clickable fade-up fade-up-d1 h-100"
+             onclick="MSPanel.open('doc', event.clientX, event.clientY)">
+            <div class="ms-stat-content">
+                <div class="ms-stat-label"><span class="ms-stat-dot"></span>Mass Media</div>
+                <div class="ms-stat-value" id="valMass">
+                    <div class="sk-block" style="height:34px;width:110px;border-radius:5px;background:rgba(255,255,255,.2)!important;"></div>
+                </div>
+                <div class="ms-stat-sub">Online News / Article</div>
+                <div class="ms-stat-hint"><i class="ph ph-arrow-square-out"></i>Klik untuk lihat detail</div>
+            </div>
+            <div class="kpi-icon-bg"><i class="ph ph-newspaper" style="font-size:24px;"></i></div>
+        </div>
     </div>
-    <span class="ms-section-divider-label">Distribution of Mentions by Media</span>
-    <div class="ms-section-divider-line"></div>
-  </div>
-
-  {{-- STAT CARDS --}}
-  <div class="ms-stat-grid">
-
-    <div class="ms-stat-card ms-stat-card--blue clickable fade-up fade-up-d1"
-         onclick="MSPanel.open('doc', event.clientX, event.clientY)"
-         title="Klik untuk lihat Online News">
-      <div class="ms-stat-content">
-        <div class="ms-stat-label">
-          <span class="ms-stat-dot"></span>
-          Mass Media
+    <div class="col-md-6 col-xl-3">
+        <div class="ms-stat-card ms-stat-card--green clickable fade-up fade-up-d2 h-100"
+             onclick="MSPanel.showPlatPicker(event.clientX, event.clientY)">
+            <div class="ms-stat-content">
+                <div class="ms-stat-label"><span class="ms-stat-dot"></span>Social Media</div>
+                <div class="ms-stat-value" id="valSocial">
+                    <div class="sk-block" style="height:34px;width:110px;border-radius:5px;background:rgba(255,255,255,.2)!important;"></div>
+                </div>
+                <div class="ms-stat-sub">Semua platform sosial</div>
+                <div class="ms-stat-hint"><i class="ph ph-arrow-square-out"></i>Klik untuk lihat detail</div>
+            </div>
+            <div class="kpi-icon-bg"><i class="ph ph-users" style="font-size:24px;"></i></div>
         </div>
-        <div class="ms-stat-value" id="valMass">
-          <div class="sk-block" style="height:34px;width:110px;border-radius:5px;"></div>
-        </div>
-        <div class="ms-stat-sub">Online News / Article</div>
-        <div class="ms-stat-hint">
-          <svg viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-          Klik untuk lihat detail
-        </div>
-      </div>
-      <div class="kpi-icon-bg">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      </div>
     </div>
-
-    <div class="ms-stat-card ms-stat-card--green clickable fade-up fade-up-d2"
-         onclick="MSPanel.showPlatPicker(event.clientX, event.clientY)"
-         title="Klik untuk lihat Social Media">
-      <div class="ms-stat-content">
-        <div class="ms-stat-label">
-          <span class="ms-stat-dot"></span>
-          Social Media
+    <div class="col-md-6 col-xl-3">
+        <div class="ms-stat-card ms-stat-card--purple fade-up fade-up-d3 h-100">
+            <div class="ms-stat-content">
+                <div class="ms-stat-label">Total Mentions</div>
+                <div class="ms-stat-value" id="valTotal">
+                    <div class="sk-block" style="height:34px;width:110px;border-radius:5px;background:rgba(255,255,255,.2)!important;"></div>
+                </div>
+                <div class="ms-stat-sub">Mass Media + Social Media</div>
+            </div>
+            <div class="kpi-icon-bg"><i class="ph ph-chat-dots" style="font-size:24px;"></i></div>
         </div>
-        <div class="ms-stat-value" id="valSocial">
-          <div class="sk-block" style="height:34px;width:110px;border-radius:5px;"></div>
-        </div>
-        <div class="ms-stat-sub">Semua platform sosial</div>
-        <div class="ms-stat-hint">
-          <svg viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-          Klik untuk lihat detail
-        </div>
-      </div>
-      <div class="kpi-icon-bg">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      </div>
     </div>
-
-    <div class="ms-stat-card ms-stat-card--purple fade-up fade-up-d3">
-      <div class="ms-stat-content">
-        <div class="ms-stat-label">Total Mentions</div>
-        <div class="ms-stat-value" id="valTotal">
-          <div class="sk-block" style="height:34px;width:110px;border-radius:5px;"></div>
+    <div class="col-md-6 col-xl-3">
+        <div class="ms-stat-card ms-stat-card--amber fade-up fade-up-d4 h-100">
+            <div class="ms-stat-content">
+                <div class="ms-stat-label">Periode Data</div>
+                <div class="ms-stat-value" style="font-size:15px;font-weight:700;">
+                    {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}
+                </div>
+                <div class="ms-stat-sub">s/d {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
+            </div>
+            <div class="kpi-icon-bg"><i class="ph ph-calendar-blank" style="font-size:24px;"></i></div>
         </div>
-        <div class="ms-stat-sub">Mass Media + Social Media</div>
-      </div>
-      <div class="kpi-icon-bg">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      </div>
     </div>
+</div>
 
-    <div class="ms-stat-card ms-stat-card--amber fade-up fade-up-d4">
-      <div class="ms-stat-content">
-        <div class="ms-stat-label">Periode Data</div>
-        <div class="ms-stat-value" style="font-size:15px;font-weight:700;">
-          {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}
+{{-- ══ Platform Mini Cards ══ --}}
+<div class="row g-2 mb-3 fade-up">
+    @foreach([
+        ['doc',    'pcDoc',  '#0284c7', 'rgba(2,132,199,.1)',    'ph-newspaper',   'Mass Media'],
+        ['twit',   'pcTwit', '#1d9bf0', 'rgba(29,155,240,.1)',   'ph-x-logo',      'X / Twitter'],
+        ['fb',     'pcFb',   '#1877f2', 'rgba(24,119,242,.1)',   'ph-facebook-logo','Facebook'],
+        ['ig',     'pcIg',   '#e1306c', 'rgba(225,48,108,.1)',   'ph-instagram-logo','Instagram'],
+        ['yt',     'pcYt',   '#ff0000', 'rgba(255,0,0,.07)',     'ph-youtube-logo', 'YouTube'],
+        ['tiktok', 'pcTt',   '#111827', 'rgba(17,24,39,.06)',    'ph-tiktok-logo',  'TikTok'],
+    ] as [$key, $elId, $color, $bg, $icon, $label])
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="ms-plat-card" onclick="MSPanel.open('{{ $key }}', event.clientX, event.clientY)">
+            <div class="ms-plat-icon" style="background:{{ $bg }};">
+                <i class="ph {{ $icon }}" style="font-size:20px;color:{{ $color }};"></i>
+            </div>
+            <div>
+                <div class="ms-plat-name">{{ $label }}</div>
+                <div class="ms-plat-count" id="{{ $elId }}">
+                    <div class="sk-block" style="height:20px;width:50px;border-radius:4px;"></div>
+                </div>
+            </div>
         </div>
-        <div class="ms-stat-sub">s/d {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
-      </div>
-      <div class="kpi-icon-bg">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      </div>
     </div>
+    @endforeach
+</div>
 
-  </div>
-
-  {{-- PLATFORM MINI CARDS --}}
-  <div class="ms-plat-grid fade-up">
-
-    <div class="ms-plat-card" onclick="MSPanel.open('doc', event.clientX, event.clientY)">
-      <div class="ms-plat-icon" style="background:rgba(2,132,199,.1);">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-          <line x1="10" y1="6" x2="16" y2="6"/><line x1="10" y1="10" x2="16" y2="10"/><line x1="10" y1="14" x2="16" y2="14"/>
-        </svg>
-      </div>
-      <div>
-        <div class="ms-plat-name">Mass Media</div>
-        <div class="ms-plat-count" id="pcDoc"><div class="sk-block" style="height:20px;width:50px;border-radius:4px;"></div></div>
-      </div>
-    </div>
-
-    <div class="ms-plat-card" onclick="MSPanel.open('twit', event.clientX, event.clientY)">
-      <div class="ms-plat-icon" style="background:rgba(29,155,240,.1);">
-        <svg viewBox="0 0 24 24" fill="#1d9bf0" stroke="none" style="width:18px;height:18px;"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-      </div>
-      <div>
-        <div class="ms-plat-name">X / Twitter</div>
-        <div class="ms-plat-count" id="pcTwit"><div class="sk-block" style="height:20px;width:50px;border-radius:4px;"></div></div>
-      </div>
+{{-- ══ Bar Chart + SOV Mass vs Social ══ --}}
+<div class="ms-grid-3-2 mb-3 fade-up">
+    <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <div class="avtar avtar-xs bg-light-primary rounded-circle">
+                    <i class="ph ph-chart-bar f-18 text-primary"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0">Total Mention by Media Platform</h6>
+                    <small class="text-muted">Klik bar untuk lihat detail mentions per platform</small>
+                </div>
+            </div>
+            <span class="badge bg-light-secondary text-muted rounded-pill">All Platforms</span>
+        </div>
+        <div class="card-body">
+            <div class="ms-ch ms-ch-300">
+                <div id="chBar"></div>
+                <div class="sk-block sk-overlay" id="skBar"></div>
+            </div>
+        </div>
     </div>
 
-    <div class="ms-plat-card" onclick="MSPanel.open('fb', event.clientX, event.clientY)">
-      <div class="ms-plat-icon" style="background:rgba(24,119,242,.1);">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#1877f2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-      </div>
-      <div>
-        <div class="ms-plat-name">Facebook</div>
-        <div class="ms-plat-count" id="pcFb"><div class="sk-block" style="height:20px;width:50px;border-radius:4px;"></div></div>
-      </div>
-    </div>
-
-    <div class="ms-plat-card" onclick="MSPanel.open('ig', event.clientX, event.clientY)">
-      <div class="ms-plat-icon" style="background:rgba(225,48,108,.1);">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#e1306c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-      </div>
-      <div>
-        <div class="ms-plat-name">Instagram</div>
-        <div class="ms-plat-count" id="pcIg"><div class="sk-block" style="height:20px;width:50px;border-radius:4px;"></div></div>
-      </div>
-    </div>
-
-    <div class="ms-plat-card" onclick="MSPanel.open('yt', event.clientX, event.clientY)">
-      <div class="ms-plat-icon" style="background:rgba(255,0,0,.07);">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#ff0000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
-      </div>
-      <div>
-        <div class="ms-plat-name">YouTube</div>
-        <div class="ms-plat-count" id="pcYt"><div class="sk-block" style="height:20px;width:50px;border-radius:4px;"></div></div>
-      </div>
-    </div>
-
-    <div class="ms-plat-card" onclick="MSPanel.open('tiktok', event.clientX, event.clientY)">
-      <div class="ms-plat-icon" style="background:rgba(17,24,39,.06);">
-        <svg viewBox="0 0 24 24" fill="#111827" stroke="none" style="width:18px;height:18px;"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.16 8.16 0 0 0 4.77 1.52V6.74a4.85 4.85 0 0 1-1-.05z"/></svg>
-      </div>
-      <div>
-        <div class="ms-plat-name">TikTok</div>
-        <div class="ms-plat-count" id="pcTt"><div class="sk-block" style="height:20px;width:50px;border-radius:4px;"></div></div>
-      </div>
-    </div>
-
-  </div>
-
-  {{-- BAR CHART + SOV MASS VS SOCIAL --}}
-  <div class="ms-grid-3-2 fade-up">
-    <div class="ms-card">
-      <div class="ms-card-head">
-        <div class="ms-card-head-left">
-          <div class="ms-card-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-          <div>
-            <div class="ms-card-title">Total Mention by Media Platform</div>
-            <div class="ms-card-subtitle">Klik bar untuk lihat detail mentions per platform</div>
-          </div>
+    <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <div class="avtar avtar-xs bg-light-primary rounded-circle">
+                    <i class="ph ph-chart-donut f-18 text-primary"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0">Share of Voice</h6>
+                    <small class="text-muted">Mass vs Social</small>
+                </div>
+            </div>
+            <span class="badge bg-light-secondary text-muted rounded-pill">2 Categories</span>
         </div>
-        <span class="ms-badge">All Platforms</span>
-      </div>
-      <div class="ms-card-body">
-        <div class="ms-ch ms-ch-300">
-          <div id="chBar"></div>
-          <div class="sk-block sk-overlay" id="skBar"></div>
+        <div class="ms-sov-body">
+            <div style="position:relative;height:280px;width:100%;">
+                <div id="chSovMass" style="width:100%;height:100%;"></div>
+                <div class="sk-block" style="position:absolute;inset:0;border-radius:6px;" id="skSovMass"></div>
+            </div>
         </div>
-      </div>
+    </div>
+</div>
+
+{{-- ══ SOV Platform + Bar Race ══ --}}
+<div class="ms-grid-2-3 mb-3 fade-up">
+    <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <div class="avtar avtar-xs bg-light-primary rounded-circle">
+                    <i class="ph ph-chart-donut f-18 text-primary"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0">Share of Voice</h6>
+                    <small class="text-muted">Breakdown per platform</small>
+                </div>
+            </div>
+            <span class="badge bg-light-secondary text-muted rounded-pill">By Platform</span>
+        </div>
+        <div class="ms-sov-body">
+            <div style="position:relative;height:340px;width:100%;">
+                <div id="chSovPlat" style="width:100%;height:100%;"></div>
+                <div class="sk-block" style="position:absolute;inset:0;border-radius:6px;" id="skSovPlat"></div>
+            </div>
+        </div>
     </div>
 
-    <div class="ms-card">
-      <div class="ms-card-head">
-        <div class="ms-card-head-left">
-          <div class="ms-card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
-          <div>
-            <div class="ms-card-title">Share of Voice</div>
-            <div class="ms-card-subtitle">Mass vs Social</div>
-          </div>
+    <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <div class="avtar avtar-xs bg-light-primary rounded-circle">
+                    <i class="ph ph-chart-bar-horizontal f-18 text-primary"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0">Mentions per Platform</h6>
+                    <small class="text-muted">Volume &amp; share — klik untuk lihat mentions</small>
+                </div>
+            </div>
+            <span class="badge bg-light-success text-success rounded-pill">Bar Race</span>
         </div>
-        <span class="ms-badge">2 Categories</span>
-      </div>
-      <div class="ms-sov-body">
-        <div style="position:relative;height:280px;width:100%;">
-          <div id="chSovMass" style="width:100%;height:100%;"></div>
-          <div class="sk-block" style="position:absolute;inset:0;border-radius:6px;" id="skSovMass"></div>
+        <div class="card-body p-0">
+            <div style="position:relative;height:320px;">
+                <div id="chBarRace" style="width:100%;height:100%;"></div>
+                <div class="sk-block sk-overlay" id="skBarRace"></div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
+</div>
 
-  {{-- SOV PLATFORM + BAR RACE --}}
-  <div class="ms-grid-2-3 ms-mb18 fade-up">
-    <div class="ms-card">
-      <div class="ms-card-head">
-        <div class="ms-card-head-left">
-          <div class="ms-card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-          <div>
-            <div class="ms-card-title">Share of Voice</div>
-            <div class="ms-card-subtitle">Breakdown per platform</div>
-          </div>
-        </div>
-        <span class="ms-badge">By Platform</span>
-      </div>
-      <div class="ms-sov-body">
-        <div style="position:relative;height:340px;width:100%;">
-          <div id="chSovPlat" style="width:100%;height:100%;"></div>
-          <div class="sk-block" style="position:absolute;inset:0;border-radius:6px;" id="skSovPlat"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="ms-card">
-      <div class="ms-card-head">
-        <div class="ms-card-head-left">
-          <div class="ms-card-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-          <div>
-            <div class="ms-card-title">Mentions per Platform</div>
-            <div class="ms-card-subtitle">Volume &amp; share — klik untuk lihat mentions</div>
-          </div>
-        </div>
-        <span class="ms-badge ms-badge--green">Bar Race</span>
-      </div>
-      <div class="ms-card-body" style="padding:0;">
-        <div style="position:relative;height:320px;">
-          <div id="chBarRace" style="width:100%;height:100%;"></div>
-          <div class="sk-block sk-overlay" id="skBarRace"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {{-- ── SECTION 2+3: TREND & POLA WAKTU ── --}}
-  <div class="ms-section-divider fade-up">
-    <div class="ms-section-divider-icon">
-      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    </div>
-    <span class="ms-section-divider-label">Media Type</span>
-    <div class="ms-section-divider-line"></div>
-  </div>
-
-  {{-- TABS --}}
-  <div class="ms-tabs fade-up">
+{{-- ══ Tabs ══ --}}
+<div class="ms-tabs fade-up">
     <button class="ms-tab-btn active" id="tabBtnTrend" onclick="MSTab.show('trend')">
-      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Trend Mentions
+        <i class="ph ph-pulse"></i> Trend Mentions
     </button>
     <button class="ms-tab-btn" id="tabBtnPola" onclick="MSTab.show('pola')">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      Pola Waktu Posting
+        <i class="ph ph-clock"></i> Pola Waktu Posting
     </button>
-  </div>
+</div>
 
-  {{-- TAB: TREND --}}
-  <div class="ms-tab-panel active" id="panelTrend">
+{{-- ══ TAB: TREND ══ --}}
+<div class="ms-tab-panel active" id="panelTrend">
 
-    <div class="ms-card ms-mb18">
-      <div class="ms-card-head">
-        <div class="ms-card-head-left">
-          <div class="ms-card-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-          <div>
-            <div class="ms-card-title">The Trends of Total Mentions by Media Types</div>
-            <div class="ms-card-subtitle" id="trendSubtitle">8 hari terakhir</div>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          <div class="ms-toggle-group" id="trendToggle">
-            <button class="ms-toggle-btn active" data-mode="daily" onclick="MSTrendToggle.set('daily')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              Harian
-            </button>
-            <button class="ms-toggle-btn" data-mode="monthly" onclick="MSTrendToggle.set('monthly')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              Bulanan
-            </button>
-          </div>
-          <div class="ms-toggle-group" id="weekNavGroup">
-            <button class="ms-toggle-btn" id="weekNavPrev" onclick="MSTrendToggle.navWeek(1)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <span id="weekNavLabel" style="padding:5px 9px;font-size:10px;font-weight:700;color:var(--slate-500);white-space:nowrap;line-height:1;display:flex;align-items:center;">Minggu Ini</span>
-            <button class="ms-toggle-btn" id="weekNavNext" onclick="MSTrendToggle.navWeek(-1)" disabled style="opacity:.35;cursor:not-allowed;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-          </div>
-          <button class="ms-csv-btn" onclick="MSTrendToggle.copyCSV()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            CSV
-          </button>
-          <span class="ms-badge" id="trendBadge">Loading…</span>
-        </div>
-      </div>
-      <div class="ms-card-body">
-        <div class="ms-ch ms-ch-340">
-          <div id="chTrend"></div>
-          <div class="sk-block sk-overlay" id="skTrend"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="ms-card ms-mb18">
-      <div class="ms-card-head">
-        <div class="ms-card-head-left">
-          <div class="ms-card-icon"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="10" y1="6" x2="16" y2="6"/><line x1="10" y1="10" x2="16" y2="10"/><line x1="10" y1="14" x2="16" y2="14"/></svg></div>
-          <div>
-            <div class="ms-card-title">The Trends of Total Articles by Media Types</div>
-            <div class="ms-card-subtitle">Artikel Online News per hari</div>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          <button class="ms-csv-btn" onclick="MSCsvModal.showArticleTrend()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            CSV
-          </button>
-          <span class="ms-badge" id="articleTrendBadge">Loading…</span>
-        </div>
-      </div>
-      <div class="ms-card-body">
-        <div class="ms-ch ms-ch-340">
-          <div id="chArticleTrend"></div>
-          <div class="sk-block sk-overlay" id="skArticleTrend"></div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  {{-- TAB: POLA WAKTU --}}
-  <div class="ms-tab-panel" id="panelPola">
-    <div class="ms-grid-2">
-
-      <div class="ms-card">
-        <div class="ms-card-head">
-          <div class="ms-card-head-left">
-            <div class="ms-card-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-            <div>
-              <div class="ms-card-title">Mentions by Weekday</div>
-              <div class="ms-card-subtitle">Total mention per hari dalam seminggu</div>
+    <div class="card mb-3">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <div class="avtar avtar-xs bg-light-primary rounded-circle">
+                    <i class="ph ph-pulse f-18 text-primary"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0">The Trends of Total Mentions by Media Types</h6>
+                    <small class="text-muted" id="trendSubtitle">8 hari terakhir</small>
+                </div>
             </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:7px;flex-shrink:0;">
-            <button class="ms-csv-btn" onclick="MSCsvModal.showWeekday()">CSV</button>
-            <span class="ms-badge">7 Hari</span>
-          </div>
-        </div>
-        <div class="ms-card-body">
-          <div class="ms-ch ms-ch-280">
-            <div id="chWeekday"></div>
-            <div class="sk-block sk-overlay" id="skWeekday"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="ms-card">
-        <div class="ms-card-head">
-          <div class="ms-card-head-left">
-            <div class="ms-card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-            <div>
-              <div class="ms-card-title">Mentions by Hour</div>
-              <div class="ms-card-subtitle">Distribusi volume mention per jam (00–23)</div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <div class="ms-toggle-group" id="trendToggle">
+                    <button class="ms-toggle-btn active" data-mode="daily" onclick="MSTrendToggle.set('daily')">
+                        <i class="ph ph-pulse" style="font-size:11px;"></i> Harian
+                    </button>
+                    <button class="ms-toggle-btn" data-mode="monthly" onclick="MSTrendToggle.set('monthly')">
+                        <i class="ph ph-calendar-blank" style="font-size:11px;"></i> Bulanan
+                    </button>
+                </div>
+                <div class="ms-toggle-group" id="weekNavGroup">
+                    <button class="ms-toggle-btn" id="weekNavPrev" onclick="MSTrendToggle.navWeek(1)">
+                        <i class="ph ph-caret-left" style="font-size:11px;"></i>
+                    </button>
+                    <span id="weekNavLabel" style="padding:4px 9px;font-size:10px;font-weight:700;color:var(--slate-500);white-space:nowrap;line-height:1;display:flex;align-items:center;">Minggu Ini</span>
+                    <button class="ms-toggle-btn" id="weekNavNext" onclick="MSTrendToggle.navWeek(-1)" disabled style="opacity:.35;cursor:not-allowed;">
+                        <i class="ph ph-caret-right" style="font-size:11px;"></i>
+                    </button>
+                </div>
+                <button class="ms-csv-btn" onclick="MSTrendToggle.copyCSV()">
+                    <i class="ph ph-copy" style="font-size:11px;"></i> CSV
+                </button>
+                <span class="badge bg-light-primary text-primary rounded-pill" id="trendBadge">Loading…</span>
             </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:7px;flex-shrink:0;">
-            <button class="ms-csv-btn" onclick="MSCsvModal.showHour()">CSV</button>
-            <span class="ms-badge">24 Jam</span>
-          </div>
         </div>
-        <div class="ms-card-body">
-          <div class="ms-ch ms-ch-280">
-            <div id="chHour"></div>
-            <div class="sk-block sk-overlay" id="skHour"></div>
-          </div>
+        <div class="card-body">
+            <div class="ms-ch ms-ch-340">
+                <div id="chTrend"></div>
+                <div class="sk-block sk-overlay" id="skTrend"></div>
+            </div>
         </div>
-      </div>
-
     </div>
-  </div>
 
-</div>{{-- /ms-page --}}
+    <div class="card mb-3">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <div class="avtar avtar-xs bg-light-primary rounded-circle">
+                    <i class="ph ph-newspaper f-18 text-primary"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0">The Trends of Total Articles by Media Types</h6>
+                    <small class="text-muted">Artikel Online News per hari</small>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button class="ms-csv-btn" onclick="MSCsvModal.showArticleTrend()">
+                    <i class="ph ph-copy" style="font-size:11px;"></i> CSV
+                </button>
+                <span class="badge bg-light-primary text-primary rounded-pill" id="articleTrendBadge">Loading…</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="ms-ch ms-ch-340">
+                <div id="chArticleTrend"></div>
+                <div class="sk-block sk-overlay" id="skArticleTrend"></div>
+            </div>
+        </div>
+    </div>
 
-{{-- ══ SLIDE PANEL — konsisten dengan dashboard ══ --}}
+</div>
+
+{{-- ══ TAB: POLA WAKTU ══ --}}
+<div class="ms-tab-panel" id="panelPola">
+    <div class="row g-3">
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avtar avtar-xs bg-light-primary rounded-circle">
+                            <i class="ph ph-calendar-blank f-18 text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Mentions by Weekday</h6>
+                            <small class="text-muted">Total mention per hari dalam seminggu</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="ms-csv-btn" onclick="MSCsvModal.showWeekday()">
+                            <i class="ph ph-copy" style="font-size:11px;"></i> CSV
+                        </button>
+                        <span class="badge bg-light-secondary text-muted rounded-pill">7 Hari</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="ms-ch ms-ch-280">
+                        <div id="chWeekday"></div>
+                        <div class="sk-block sk-overlay" id="skWeekday"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avtar avtar-xs bg-light-primary rounded-circle">
+                            <i class="ph ph-clock f-18 text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Mentions by Hour</h6>
+                            <small class="text-muted">Distribusi volume mention per jam (00–23)</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="ms-csv-btn" onclick="MSCsvModal.showHour()">
+                            <i class="ph ph-copy" style="font-size:11px;"></i> CSV
+                        </button>
+                        <span class="badge bg-light-secondary text-muted rounded-pill">24 Jam</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="ms-ch ms-ch-280">
+                        <div id="chHour"></div>
+                        <div class="sk-block sk-overlay" id="skHour"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ══ Slide Panel ══ --}}
 <div class="do-panel-overlay" id="msPanelOverlay" onclick="MSPanel.closeByOverlay()"></div>
 <div class="do-panel" id="msSntPanel">
-  <div class="do-panel-header">
-    <div class="do-panel-dot" id="msPanelDot"></div>
-    <span class="do-panel-title" id="msPanelTitle">Mentions</span>
-    <span class="do-panel-count" id="msPanelCount">…</span>
-    <button class="do-panel-close" onclick="MSPanel.close()">×</button>
-  </div>
-  <div class="do-panel-actions">
-    <div class="do-panel-meta">
-      <svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <span id="msPanelMeta">—</span>
+    <div class="do-panel-header">
+        <div class="do-panel-dot" id="msPanelDot"></div>
+        <span class="do-panel-title" id="msPanelTitle">Mentions</span>
+        <span class="do-panel-count" id="msPanelCount">…</span>
+        <button class="do-panel-close" onclick="MSPanel.close()"><i class="ph ph-x"></i></button>
     </div>
-    <button class="do-panel-export" onclick="MSPanel.exportCsv()">
-      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Export CSV
-    </button>
-  </div>
-  <div class="do-panel-list" id="msPanelList"></div>
-
-  {{-- Detail Sub-panel --}}
-  <div class="do-detail-panel" id="msDetailPanel">
-    <div class="do-dp2-header">
-      <button class="do-dp2-back" onclick="MSDetail.close()">
-        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <span class="do-dp2-title" id="msDpTitle">Detail</span>
-      <button class="do-panel-close" onclick="MSPanel.close()">×</button>
+    <div class="do-panel-actions">
+        <div class="do-panel-meta">
+            <i class="ph ph-magnifying-glass" style="font-size:11px;"></i>
+            <span id="msPanelMeta">—</span>
+        </div>
+        <button class="do-panel-export" onclick="MSPanel.exportCsv()">
+            <i class="ph ph-download-simple"></i> Export CSV
+        </button>
     </div>
-    <div class="do-dp2-body" id="msDpBody"></div>
-  </div>
+    <div class="do-panel-list" id="msPanelList"></div>
+    <div class="do-detail-panel" id="msDetailPanel">
+        <div class="do-dp2-header">
+            <button class="do-dp2-back" onclick="MSDetail.close()"><i class="ph ph-caret-left"></i></button>
+            <span class="do-dp2-title" id="msDpTitle">Detail</span>
+            <button class="do-panel-close" onclick="MSPanel.close()"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="do-dp2-body" id="msDpBody"></div>
+    </div>
 </div>
 
-{{-- Platform Picker --}}
+{{-- Platform Picker ══ --}}
 <div class="do-plat-picker" id="msPlatPicker">
-  <div class="do-plat-picker-head">Pilih Platform</div>
-  <button class="do-plat-btn" onclick="MSPanel.openPlatform('twit')">X / Twitter <span class="do-plat-dot" style="background:#1d9bf0;"></span></button>
-  <button class="do-plat-btn" onclick="MSPanel.openPlatform('fb')">Facebook <span class="do-plat-dot" style="background:#1877f2;"></span></button>
-  <button class="do-plat-btn" onclick="MSPanel.openPlatform('ig')">Instagram <span class="do-plat-dot" style="background:#e1306c;"></span></button>
-  <button class="do-plat-btn" onclick="MSPanel.openPlatform('yt')">YouTube <span class="do-plat-dot" style="background:#ff0000;"></span></button>
-  <button class="do-plat-btn" onclick="MSPanel.openPlatform('tiktok')">TikTok <span class="do-plat-dot" style="background:#111827;"></span></button>
+    <div class="do-plat-picker-head">Pilih Platform</div>
+    <button class="do-plat-btn" onclick="MSPanel.openPlatform('twit')">X / Twitter <span class="do-plat-dot" style="background:#1d9bf0;"></span></button>
+    <button class="do-plat-btn" onclick="MSPanel.openPlatform('fb')">Facebook <span class="do-plat-dot" style="background:#1877f2;"></span></button>
+    <button class="do-plat-btn" onclick="MSPanel.openPlatform('ig')">Instagram <span class="do-plat-dot" style="background:#e1306c;"></span></button>
+    <button class="do-plat-btn" onclick="MSPanel.openPlatform('yt')">YouTube <span class="do-plat-dot" style="background:#ff0000;"></span></button>
+    <button class="do-plat-btn" onclick="MSPanel.openPlatform('tiktok')">TikTok <span class="do-plat-dot" style="background:#111827;"></span></button>
 </div>
 
-{{-- CSV Modal --}}
+{{-- CSV Modal ══ --}}
 <div class="ms-csv-modal" id="msCsvModal">
-  <div style="position:absolute;inset:0;" onclick="MSCsvModal.close()"></div>
-  <div class="ms-csv-modal__box">
-    <div class="ms-csv-modal__head">
-      <span class="ms-csv-modal__title">CSV Data</span>
-      <button class="ms-csv-modal__close" onclick="MSCsvModal.close()">×</button>
+    <div style="position:absolute;inset:0;" onclick="MSCsvModal.close()"></div>
+    <div class="ms-csv-modal__box">
+        <div class="ms-csv-modal__head">
+            <span class="ms-csv-modal__title">CSV Data</span>
+            <button class="ms-csv-modal__close" onclick="MSCsvModal.close()"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="ms-csv-modal__body">
+            <pre class="ms-csv-modal__pre" id="msCsvContent"></pre>
+        </div>
+        <div class="ms-csv-modal__foot">
+            <button class="ms-csv-copy-btn" id="msCsvCopyBtn" onclick="MSCsvModal.copy()">
+                <i class="ph ph-copy" style="font-size:12px;"></i> Copy CSV data
+            </button>
+            <button onclick="MSCsvModal.close()" style="padding:8px 18px;background:var(--slate-100);border:1px solid var(--slate-200);border-radius:var(--radius);font-family:inherit;font-size:12px;font-weight:600;color:var(--slate-600);cursor:pointer;">
+                <i class="ph ph-x me-1"></i> Close
+            </button>
+        </div>
     </div>
-    <div class="ms-csv-modal__body">
-      <pre class="ms-csv-modal__pre" id="msCsvContent"></pre>
-    </div>
-    <div class="ms-csv-modal__foot">
-      <button class="ms-csv-copy-btn" id="msCsvCopyBtn" onclick="MSCsvModal.copy()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        Copy CSV data
-      </button>
-      <button onclick="MSCsvModal.close()" style="padding:8px 18px;background:var(--slate-100);border:1px solid var(--slate-200);border-radius:var(--radius);font-family:var(--font);font-size:12px;font-weight:600;color:var(--slate-600);cursor:pointer;">
-        ✕ Close
-      </button>
-    </div>
-  </div>
 </div>
 
 @endsection
@@ -1315,21 +694,17 @@ const MSCfg = {
   }
 };
 
-/* ══════════════════════════════════════════════════════
-   UTILS
-══════════════════════════════════════════════════════ */
+/* ══ UTILS ══ */
 const numFmt    = n => parseInt(n||0).toLocaleString('id-ID');
 const numK      = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':String(n); };
 const esc       = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const hideSk    = id => { const e=document.getElementById(id); if(e) e.style.display='none'; };
 const showSk    = id => { const e=document.getElementById(id); if(e) e.style.display=''; };
-const emptyHtml = msg => `<div class="ms-empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>${msg}</span></div>`;
+const emptyHtml = msg => `<div class="ms-empty"><i class="ph ph-warning-circle"></i><span>${msg}</span></div>`;
 const labelToKey= { 'Mass Media':'doc','X (Twitter)':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok' };
 const Y_AXIS_IDX= { doc:1, twitter:0, facebook:1, instagram:1, youtube:1, tiktok:1 };
 
-/* ══════════════════════════════════════════════════════
-   ECHARTS REGISTRY
-══════════════════════════════════════════════════════ */
+/* ══ ECHARTS REGISTRY ══ */
 const MSCharts = {
   _i: {},
   make(id) {
@@ -1346,14 +721,11 @@ window.addEventListener('resize',()=>{
 
 const EC_TT = {
   backgroundColor:'#1e293b', borderColor:'#334155', borderWidth:1,
-  padding:[10,14],
-  textStyle:{ color:'#fff', fontFamily:"'Poppins',sans-serif", fontSize:12 },
+  padding:[10,14], textStyle:{ color:'#fff', fontFamily:"'Poppins',sans-serif", fontSize:12 },
   extraCssText:'border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.28);'
 };
 
-/* ══════════════════════════════════════════════════════
-   TAB SYSTEM
-══════════════════════════════════════════════════════ */
+/* ══ TAB SYSTEM ══ */
 const MSTab = {
   _loaded:{ trend:false, pola:false },
   show(tab) {
@@ -1371,9 +743,7 @@ const MSTab = {
   reset(){ this._loaded={trend:false,pola:false}; }
 };
 
-/* ══════════════════════════════════════════════════════
-   ECHARTS DOUGHNUT
-══════════════════════════════════════════════════════ */
+/* ══ ECHARTS DOUGHNUT ══ */
 function makeEDoughnut(domId,labels,values,colors,onClickFns,subtitles){
   const total=values.reduce((a,b)=>a+b,0);
   const chart=MSCharts.make(domId);if(!chart)return null;
@@ -1382,40 +752,18 @@ function makeEDoughnut(domId,labels,values,colors,onClickFns,subtitles){
     itemStyle:{color:colors[i],borderColor:'#fff',borderWidth:3},
   }));
   chart.setOption({
-    animation:true,animationDuration:800,animationEasing:'cubicOut',
-    backgroundColor:'transparent',
-    tooltip:{
-      trigger:'item',
-      backgroundColor:'#1e293b',borderColor:'#334155',borderWidth:1,padding:[10,14],
-      textStyle:{color:'#fff',fontFamily:"'Poppins',sans-serif",fontSize:12},
-      extraCssText:'border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.28);',
-      formatter:params=>{
-        const pct=total>0?((params.value/total)*100).toFixed(1):'0.0';
-        const sub=params.data.subtitle?`<br><span style="color:#94a3b8;font-size:11px;">${params.data.subtitle}</span>`:'';
-        return`<div style="font-weight:700;margin-bottom:5px;">${params.name}${sub}</div>
-               <div style="display:flex;justify-content:space-between;gap:18px;margin-top:4px;"><span style="color:#94a3b8;">Mentions</span><span style="font-weight:700;">${numFmt(params.value)}</span></div>
-               <div style="display:flex;justify-content:space-between;gap:18px;margin-top:3px;"><span style="color:#94a3b8;">Share</span><span style="font-weight:700;color:#34d399;">${pct}%</span></div>`;
-      }
+    animation:true,animationDuration:800,animationEasing:'cubicOut',backgroundColor:'transparent',
+    tooltip:{trigger:'item',backgroundColor:'#1e293b',borderColor:'#334155',borderWidth:1,padding:[10,14],
+      textStyle:{color:'#fff',fontFamily:"'Poppins',sans-serif",fontSize:12},extraCssText:'border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.28);',
+      formatter:params=>{const pct=total>0?((params.value/total)*100).toFixed(1):'0.0';const sub=params.data.subtitle?`<br><span style="color:#94a3b8;font-size:11px;">${params.data.subtitle}</span>`:'';
+        return`<div style="font-weight:700;margin-bottom:5px;">${params.name}${sub}</div><div style="display:flex;justify-content:space-between;gap:18px;margin-top:4px;"><span style="color:#94a3b8;">Mentions</span><span style="font-weight:700;">${numFmt(params.value)}</span></div><div style="display:flex;justify-content:space-between;gap:18px;margin-top:3px;"><span style="color:#94a3b8;">Share</span><span style="font-weight:700;color:#34d399;">${pct}%</span></div>`;}
     },
     legend:{show:false},
-    series:[{
-      type:'pie',radius:['46%','64%'],center:['50%','52%'],
-      avoidLabelOverlap:true,minAngle:5,
-      itemStyle:{borderRadius:6},
-      label:{
-        show:true,alignTo:'edge',edgeDistance:10,lineHeight:17,
-        fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#374151',
-        formatter:params=>{
-          const pct=total>0?(params.value/total*100):0;if(pct<2)return'';
-          const name=params.name.length>11?params.name.slice(0,10)+'…':params.name;
-          const sub=params.data.subtitle?(params.data.subtitle.length>11?params.data.subtitle.slice(0,10)+'…':params.data.subtitle):'';
-          return sub?`{name|${name}}\n{sub|${sub}}\n{eng|${numK(params.value)}}` : `{name|${name}}\n{eng|${numK(params.value)}}`;
-        },
-        rich:{
-          name:{fontWeight:'700',fontSize:12,color:'#1a202c',lineHeight:19},
-          sub :{fontWeight:'400',fontSize:10.5,color:'#64748b',lineHeight:16},
-          eng :{fontWeight:'700',fontSize:11,color:'#4361EE',lineHeight:16,backgroundColor:'#eff2fe',borderRadius:4,padding:[1,5]},
-        },
+    series:[{type:'pie',radius:['46%','64%'],center:['50%','52%'],avoidLabelOverlap:true,minAngle:5,itemStyle:{borderRadius:6},
+      label:{show:true,alignTo:'edge',edgeDistance:10,lineHeight:17,fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#374151',
+        formatter:params=>{const pct=total>0?(params.value/total*100):0;if(pct<2)return'';const name=params.name.length>11?params.name.slice(0,10)+'…':params.name;const sub=params.data.subtitle?(params.data.subtitle.length>11?params.data.subtitle.slice(0,10)+'…':params.data.subtitle):'';
+          return sub?`{name|${name}}\n{sub|${sub}}\n{eng|${numK(params.value)}}` : `{name|${name}}\n{eng|${numK(params.value)}}`;},
+        rich:{name:{fontWeight:'700',fontSize:12,color:'#1a202c',lineHeight:19},sub:{fontWeight:'400',fontSize:10.5,color:'#64748b',lineHeight:16},eng:{fontWeight:'700',fontSize:11,color:'#4361EE',lineHeight:16,backgroundColor:'#eff2fe',borderRadius:4,padding:[1,5]}},
       },
       labelLine:{show:true,length:14,length2:18,smooth:.4,minTurnAngle:130,lineStyle:{color:'#c4cdd8',width:1.2,type:'solid'},showAbove:false},
       emphasis:{scale:true,scaleSize:5,itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,.12)'}},
@@ -1426,26 +774,15 @@ function makeEDoughnut(domId,labels,values,colors,onClickFns,subtitles){
       {type:'text',left:'center',top:'55%',z:100,style:{text:'TOTAL',fill:'#94a3b8',font:"600 9px 'Poppins',sans-serif",textAlign:'center',letterSpacing:2}},
     ],
   });
-  if(onClickFns){
-    chart.on('click',params=>{
-      const fn=onClickFns[params.dataIndex];
-      if(typeof fn==='function'){const rect=chart.getDom().getBoundingClientRect();fn(rect.left+rect.width/2,rect.top+rect.height/2);}
-    });
-  }
+  if(onClickFns){chart.on('click',params=>{const fn=onClickFns[params.dataIndex];if(typeof fn==='function'){const rect=chart.getDom().getBoundingClientRect();fn(rect.left+rect.width/2,rect.top+rect.height/2);}});}
   chart.on('mouseover',()=>{if(onClickFns)chart.getDom().style.cursor='pointer';});
   chart.on('mouseout', ()=>{chart.getDom().style.cursor='default';});
   return chart;
 }
 
-/* ══════════════════════════════════════════════════════
-   LOAD: MENTION BY PLATFORM
-══════════════════════════════════════════════════════ */
+/* ══ LOAD: MENTION BY PLATFORM ══ */
 async function loadMentionByPlatform(){
-  if(!MSCfg.pid){
-    ['valMass','valSocial','valTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<span style="font-size:13px;color:#94a3b8;">—</span>';});
-    ['skBar','skSovMass','skSovPlat','skBarRace'].forEach(hideSk);
-    return;
-  }
+  if(!MSCfg.pid){ ['valMass','valSocial','valTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<span style="font-size:13px;color:#94a3b8;">—</span>'}); ['skBar','skSovMass','skSovPlat','skBarRace'].forEach(hideSk); return; }
   try{
     const res=await fetch(`/mk/api/media-statistic/mention-by-platform?project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}`);
     const d=await res.json();
@@ -1455,32 +792,19 @@ async function loadMentionByPlatform(){
     document.getElementById('valTotal').textContent  =numFmt(d.grand_total||0);
     const platforms=d.platforms||[];
     const pcMap={doc:'pcDoc',twit:'pcTwit',twitter:'pcTwit',fb:'pcFb',facebook:'pcFb',ig:'pcIg',instagram:'pcIg',yt:'pcYt',youtube:'pcYt',tiktok:'pcTt'};
-    platforms.forEach(p=>{
-      const key=labelToKey[p.label]||'';
-      const elId=pcMap[key];
-      if(elId){const e=document.getElementById(elId);if(e)e.textContent=numFmt(p.count||0);}
-    });
+    platforms.forEach(p=>{const key=labelToKey[p.label]||'';const elId=pcMap[key];if(elId){const e=document.getElementById(elId);if(e)e.textContent=numFmt(p.count||0);}});
 
-    /* Bar Chart */
     hideSk('skBar');
     if(platforms.length){
-      const bLabels=platforms.map(p=>p.label);
-      const bValues=platforms.map(p=>p.count||0);
-      const bColors=platforms.map(p=>MSCfg.platColors[p.label]||'#4361EE');
+      const bLabels=platforms.map(p=>p.label),bValues=platforms.map(p=>p.count||0),bColors=platforms.map(p=>MSCfg.platColors[p.label]||'#4361EE');
       const barChart=MSCharts.make('chBar');
       if(barChart){
-        barChart.setOption({
-          animation:true,animationDuration:800,animationEasing:'elasticOut',
-          tooltip:{...EC_TT,trigger:'axis',axisPointer:{type:'shadow',shadowStyle:{color:'rgba(67,97,238,.06)'}},
-            formatter:params=>{const p=params[0];return`<div style="font-weight:700;font-size:13px;margin-bottom:4px;">${p.name}</div><div style="font-size:13px;">${numFmt(p.value)} mentions</div><div style="margin-top:6px;font-size:10px;color:#94a3b8;text-align:center;">Klik untuk lihat mentions</div>`;}},
+        barChart.setOption({animation:true,animationDuration:800,animationEasing:'elasticOut',
+          tooltip:{...EC_TT,trigger:'axis',axisPointer:{type:'shadow',shadowStyle:{color:'rgba(67,97,238,.06)'}},formatter:params=>{const p=params[0];return`<div style="font-weight:700;font-size:13px;margin-bottom:4px;">${p.name}</div><div style="font-size:13px;">${numFmt(p.value)} mentions</div>`;}},
           grid:{top:14,right:14,bottom:34,left:54,containLabel:false},
           xAxis:{type:'category',data:bLabels,axisLine:{show:false},axisTick:{show:false},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#64748b',interval:0}},
           yAxis:{type:'value',axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:10,color:'#94a3b8',formatter:numK}},
-          series:[{type:'bar',data:bValues.map((v,i)=>({value:v,
-            itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:bColors[i]},{offset:1,color:bColors[i]+'55'}]},borderRadius:[7,7,0,0]},
-            emphasis:{itemStyle:{color:bColors[i],shadowBlur:12,shadowColor:bColors[i]+'66'}}})),
-            barMaxWidth:52,
-            label:{show:true,position:'top',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b',formatter:p=>numK(p.value)}}]
+          series:[{type:'bar',data:bValues.map((v,i)=>({value:v,itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:bColors[i]},{offset:1,color:bColors[i]+'55'}]},borderRadius:[7,7,0,0]},emphasis:{itemStyle:{color:bColors[i],shadowBlur:12,shadowColor:bColors[i]+'66'}}})),barMaxWidth:52,label:{show:true,position:'top',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b',formatter:p=>numK(p.value)}}]
         });
         barChart.on('click',params=>{const k=labelToKey[bLabels[params.dataIndex]];if(k){const rect=barChart.getDom().getBoundingClientRect();MSPanel.open(k,rect.left+rect.width/2,rect.top+100);}});
         barChart.on('mouseover',()=>{barChart.getDom().style.cursor='pointer';});
@@ -1488,19 +812,16 @@ async function loadMentionByPlatform(){
       }
     } else { document.getElementById('chBar').innerHTML=emptyHtml('Tidak ada data mention'); }
 
-    /* SOV Mass vs Social */
     hideSk('skSovMass');
     makeEDoughnut('chSovMass',['Mass Media','Social Media'],[d.mass_total||0,d.social_total||0],['#0284c7','#10B981'],
       [(x,y)=>MSPanel.open('doc',x,y),(x,y)=>MSPanel.showPlatPicker(x,y)],null);
 
-    /* SOV by Platform */
     hideSk('skSovPlat');
     const nz=platforms.filter(p=>p.count>0);const pList=nz.length?nz:platforms;
     makeEDoughnut('chSovPlat',pList.map(p=>p.label),pList.map(p=>p.count||0),pList.map(p=>MSCfg.platColors[p.label]||'#4361EE'),
       pList.map(p=>{const k=labelToKey[p.label];return k?(x,y)=>MSPanel.open(k,x,y):null;}),
       pList.map(p=>{ const gt=d.grand_total||1; return((p.count||0)/gt*100).toFixed(1)+'%'; }));
 
-    /* Bar Race */
     hideSk('skBarRace');
     if(platforms.length){
       const grandTotal=d.grand_total||1;
@@ -1508,26 +829,14 @@ async function loadMentionByPlatform(){
       const brMax=Math.max(...brData.map(p=>p.value),1);
       const brChart=MSCharts.make('chBarRace');
       if(brChart){
-        const buildSD=items=>items.map(item=>({value:item.value,
-          itemStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:item.color+'33'},{offset:.6,color:item.color+'bb'},{offset:1,color:item.color}]},borderRadius:[0,9,9,0]},
-          emphasis:{itemStyle:{shadowBlur:18,shadowColor:item.color+'55'}}}));
-        brChart.setOption({
-          animation:true,animationDuration:1400,animationDurationUpdate:1100,animationEasing:'elasticOut',animationEasingUpdate:'cubicInOut',
-          backgroundColor:'#ffffff',
-          tooltip:{backgroundColor:'#1e293b',borderColor:'#334155',borderWidth:1,padding:[12,16],textStyle:{color:'#fff',fontFamily:"'Poppins',sans-serif",fontSize:12},extraCssText:'border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.3);',trigger:'axis',axisPointer:{type:'shadow',shadowStyle:{color:'rgba(67,97,238,.05)'}},
-            formatter:params=>{const p=params[0];const item=brData.find(x=>x.label===p.name)||{};const pct=((p.value/grandTotal)*100).toFixed(1);const clr=item.color||'#4361EE';
-              return`<div style="font-weight:800;font-size:13px;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.12);"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clr};margin-right:6px;vertical-align:middle;"></span>${p.name}</div>
-                     <div style="display:flex;justify-content:space-between;gap:22px;margin-bottom:5px;"><span style="font-size:11px;color:#94a3b8;">Mentions</span><span style="font-size:14px;font-weight:700;">${numFmt(p.value)}</span></div>
-                     <div style="display:flex;justify-content:space-between;gap:22px;"><span style="font-size:11px;color:#94a3b8;">Share of Voice</span><span style="font-size:12px;font-weight:700;color:#34d399;">${pct}%</span></div>
-                     <div style="margin-top:6px;font-size:10px;color:#94a3b8;text-align:center;">Klik untuk lihat mentions</div>`;
-            }},
+        const buildSD=items=>items.map(item=>({value:item.value,itemStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:item.color+'33'},{offset:.6,color:item.color+'bb'},{offset:1,color:item.color}]},borderRadius:[0,9,9,0]},emphasis:{itemStyle:{shadowBlur:18,shadowColor:item.color+'55'}}}));
+        brChart.setOption({animation:true,animationDuration:1400,animationDurationUpdate:1100,animationEasing:'elasticOut',animationEasingUpdate:'cubicInOut',backgroundColor:'#ffffff',
+          tooltip:{...EC_TT,trigger:'axis',axisPointer:{type:'shadow'},formatter:params=>{const p=params[0];const item=brData.find(x=>x.label===p.name)||{};const pct=((p.value/grandTotal)*100).toFixed(1);const clr=item.color||'#4361EE';
+            return`<div style="font-weight:800;font-size:13px;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.12);"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clr};margin-right:6px;vertical-align:middle;"></span>${p.name}</div><div style="display:flex;justify-content:space-between;gap:22px;margin-bottom:5px;"><span style="font-size:11px;color:#94a3b8;">Mentions</span><span style="font-size:14px;font-weight:700;">${numFmt(p.value)}</span></div><div style="display:flex;justify-content:space-between;gap:22px;"><span style="font-size:11px;color:#94a3b8;">Share of Voice</span><span style="font-size:12px;font-weight:700;color:#34d399;">${pct}%</span></div>`;}},
           grid:{top:10,right:108,bottom:10,left:14,containLabel:true},
           xAxis:{type:'value',max:brMax*1.15,axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#f8fafc',type:'solid'}},axisLabel:{show:false}},
           yAxis:{type:'category',data:brData.map(p=>p.label),inverse:false,animationDuration:300,animationDurationUpdate:1100,axisLine:{show:false},axisTick:{show:false},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'700',color:'#1a202c',margin:12}},
-          series:[{realtimeSort:true,type:'bar',data:buildSD(brData),barMaxWidth:40,
-            label:{show:true,position:'right',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:11,color:'#1a202c',
-              formatter:p=>{const pct=((p.value/grandTotal)*100).toFixed(1);return`{val|${numFmt(p.value)}}  {pct|${pct}%}`;},
-              rich:{val:{fontSize:11,fontWeight:'700',color:'#1a202c',fontFamily:"'Poppins',sans-serif"},pct:{fontSize:9,fontWeight:'600',color:'#94a3b8',fontFamily:"'Poppins',sans-serif"}}}}]
+          series:[{realtimeSort:true,type:'bar',data:buildSD(brData),barMaxWidth:40,label:{show:true,position:'right',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:11,color:'#1a202c',formatter:p=>{const pct=((p.value/grandTotal)*100).toFixed(1);return`{val|${numFmt(p.value)}}  {pct|${pct}%}`;},rich:{val:{fontSize:11,fontWeight:'700',color:'#1a202c',fontFamily:"'Poppins',sans-serif"},pct:{fontSize:9,fontWeight:'600',color:'#94a3b8',fontFamily:"'Poppins',sans-serif"}}}}]
         });
         setTimeout(()=>{ const sorted=[...brData].sort((a,b)=>b.value-a.value); brChart.setOption({yAxis:{data:sorted.map(p=>p.label)},series:[{data:buildSD(sorted)}]}); },1600);
         brChart.on('click',params=>{const k=labelToKey[params.name];if(k){const rect=brChart.getDom().getBoundingClientRect();MSPanel.open(k,rect.left+rect.width/2,rect.top+100);}});
@@ -1543,239 +852,129 @@ async function loadMentionByPlatform(){
   }
 }
 
-/* ══════════════════════════════════════════════════════
-   LOAD TREND
-══════════════════════════════════════════════════════ */
+/* ══ LOAD TREND ══ */
 async function loadTrend(){
   if(!MSCfg.pid){ hideSk('skTrend'); return; }
   const fmtDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   let trendSD,trendED;
   if(MSTrendToggle._datePickerOverride){ trendSD=MSCfg.sd; trendED=MSCfg.ed; }
-  else{
-    const now=new Date(),off=MSTrendToggle._weekOffset;
-    const edDate=new Date(now);edDate.setDate(now.getDate()-(7*off));
-    const sdDate=new Date(now);sdDate.setDate(now.getDate()-(7*(off+1)));
-    trendSD=fmtDate(sdDate); trendED=fmtDate(edDate);
-  }
-  const platMeta={
-    doc:      {label:'Online News (Ind)',color:'#0284c7'},
-    twitter:  {label:'Twitter',          color:'#1d9bf0'},
-    facebook: {label:'Facebook',         color:'#1877f2'},
-    instagram:{label:'Instagram',        color:'#e1306c'},
-    youtube:  {label:'YouTube',          color:'#ff0000'},
-    tiktok:   {label:'TikTok',           color:'#111827'},
-  };
+  else{ const now=new Date(),off=MSTrendToggle._weekOffset;const edDate=new Date(now);edDate.setDate(now.getDate()-(7*off));const sdDate=new Date(now);sdDate.setDate(now.getDate()-(7*(off+1)));trendSD=fmtDate(sdDate);trendED=fmtDate(edDate); }
+  const platMeta={doc:{label:'Online News (Ind)',color:'#0284c7'},twitter:{label:'Twitter',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
   const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];
   try{
     const res=await fetch(`/mk/api/media-statistic/trend-mentions?project_id=${MSCfg.pid}&start_date=${trendSD}&end_date=${trendED}`);
-    const json=await res.json();
-    if(json.error) throw new Error(json.error);
+    const json=await res.json();if(json.error)throw new Error(json.error);
     hideSk('skTrend');
-    const raw=json.data||[];
-    const dSet=new Set();
-    raw.forEach(p=>(p.data||[]).forEach(d=>dSet.add(d.date)));
-    const allDates=Array.from(dSet).sort();
+    const raw=json.data||[];const dSet=new Set();raw.forEach(p=>(p.data||[]).forEach(d=>dSet.add(d.date)));const allDates=Array.from(dSet).sort();
     MSTrendToggle.setData(raw);
     if(MSTrendToggle._mode==='monthly'){ hideSk('skTrend'); MSTrendToggle._render(raw); return; }
-    const trendRaw=platOrder.map(key=>{
-      const found=raw.find(p=>p.key===key);
-      return found||{key,label:platMeta[key]?.label||key,color:platMeta[key]?.color||'#94a3b8',data:[]};
-    });
+    const trendRaw=platOrder.map(key=>{const found=raw.find(p=>p.key===key);return found||{key,label:platMeta[key]?.label||key,color:platMeta[key]?.color||'#94a3b8',data:[]};});
     const fmtB=d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()} ${dt.toLocaleString('id-ID',{month:'short'})}`;};
     document.getElementById('trendBadge').textContent=`${fmtB(trendSD)} – ${fmtB(trendED)}`;
-    const weekNavGroup=document.getElementById('weekNavGroup');
-    const weekNavLabel=document.getElementById('weekNavLabel');
-    const weekNavNext =document.getElementById('weekNavNext');
-    if(weekNavGroup&&MSTrendToggle._mode==='daily'&&!MSTrendToggle._datePickerOverride){
-      weekNavGroup.style.display='flex';
-      if(weekNavLabel)weekNavLabel.textContent=MSTrendToggle._weekLabel();
-      if(weekNavNext){const ic=MSTrendToggle._weekOffset===0;weekNavNext.disabled=ic;weekNavNext.style.opacity=ic?'.35':'1';weekNavNext.style.cursor=ic?'not-allowed':'pointer';}
-    } else if(weekNavGroup) weekNavGroup.style.display='none';
+    const weekNavGroup=document.getElementById('weekNavGroup'),weekNavLabel=document.getElementById('weekNavLabel'),weekNavNext=document.getElementById('weekNavNext');
+    if(weekNavGroup&&MSTrendToggle._mode==='daily'&&!MSTrendToggle._datePickerOverride){ weekNavGroup.style.display='flex';if(weekNavLabel)weekNavLabel.textContent=MSTrendToggle._weekLabel();if(weekNavNext){const ic=MSTrendToggle._weekOffset===0;weekNavNext.disabled=ic;weekNavNext.style.opacity=ic?'.35':'1';weekNavNext.style.cursor=ic?'not-allowed':'pointer';} } else if(weekNavGroup) weekNavGroup.style.display='none';
     const trendChart=MSCharts.make('chTrend');if(!trendChart)return;
-    const series=trendRaw.map(p=>{
-      const vals=allDates.map(d=>{const pt=p.data.find(x=>x.date===d);return pt?pt.count:0;});
-      const hasData=vals.some(v=>v>0);
-      return{
-        name:p.label,type:'line',yAxisIndex:Y_AXIS_IDX[p.key]??1,data:vals,smooth:.4,
-        symbol:'circle',symbolSize:hasData&&allDates.length<=30?6:0,showSymbol:allDates.length<=30,
-        itemStyle:{color:p.color,borderColor:'#fff',borderWidth:2},
-        lineStyle:{color:p.color,width:hasData?2.5:1,opacity:hasData?1:.15},
-        label:{show:hasData&&allDates.length<=14,position:'top',formatter:params=>params.value>0?numFmt(params.value):'',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b'},
-        emphasis:{focus:'series',lineStyle:{width:3.5},itemStyle:{symbolSize:10,borderColor:'#fff',borderWidth:2.5,shadowBlur:10,shadowColor:p.color+'88'}},
-      };
-    });
+    const series=trendRaw.map(p=>{const vals=allDates.map(d=>{const pt=p.data.find(x=>x.date===d);return pt?pt.count:0;});const hasData=vals.some(v=>v>0);
+      return{name:p.label,type:'line',yAxisIndex:Y_AXIS_IDX[p.key]??1,data:vals,smooth:.4,symbol:'circle',symbolSize:hasData&&allDates.length<=30?6:0,showSymbol:allDates.length<=30,itemStyle:{color:p.color,borderColor:'#fff',borderWidth:2},lineStyle:{color:p.color,width:hasData?2.5:1,opacity:hasData?1:.15},label:{show:hasData&&allDates.length<=14,position:'top',formatter:params=>params.value>0?numFmt(params.value):'',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b'},emphasis:{focus:'series',lineStyle:{width:3.5},itemStyle:{symbolSize:10,borderColor:'#fff',borderWidth:2.5,shadowBlur:10,shadowColor:p.color+'88'}}};});
     const xLabels=allDates.map(d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()}. ${dt.toLocaleString('id-ID',{month:'short'})}`;});
-    trendChart.setOption({
-      animation:true,animationDuration:900,animationEasing:'cubicInOut',backgroundColor:'#ffffff',
-      tooltip:{backgroundColor:'#1e293b',borderColor:'#334155',borderWidth:1,padding:[12,16],textStyle:{color:'#fff',fontFamily:"'Poppins',sans-serif",fontSize:12},extraCssText:'border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.3);',
-        trigger:'item',formatter:params=>{
-          if(params.componentType!=='series')return'';
-          const date=allDates[params.dataIndex]||'';
-          const fullDt=date?new Date(date+'T00:00:00').toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'';
-          return`<div style="font-weight:800;font-size:13px;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.12);"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${params.color};margin-right:6px;vertical-align:middle;"></span>${params.seriesName}</div>
-                 ${fullDt?`<div style="font-size:11px;color:#94a3b8;margin-bottom:7px;">${fullDt}</div>`:''}
-                 <div style="display:flex;justify-content:space-between;gap:22px;"><span style="font-size:11px;color:#94a3b8;">Mentions</span><span style="font-size:14px;font-weight:700;">${numFmt(params.value)}</span></div>
-                 <div style="margin-top:6px;font-size:10px;color:#94a3b8;text-align:center;">Klik untuk lihat mentions</div>`;
-        }},
+    trendChart.setOption({animation:true,animationDuration:900,animationEasing:'cubicInOut',backgroundColor:'#ffffff',
+      tooltip:{...EC_TT,trigger:'item',formatter:params=>{if(params.componentType!=='series')return'';const date=allDates[params.dataIndex]||'';const fullDt=date?new Date(date+'T00:00:00').toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'';
+        return`<div style="font-weight:800;font-size:13px;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.12);"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${params.color};margin-right:6px;vertical-align:middle;"></span>${params.seriesName}</div>${fullDt?`<div style="font-size:11px;color:#94a3b8;margin-bottom:7px;">${fullDt}</div>`:''}<div style="display:flex;justify-content:space-between;gap:22px;"><span style="font-size:11px;color:#94a3b8;">Mentions</span><span style="font-size:14px;font-weight:700;">${numFmt(params.value)}</span></div>`;}},
       legend:{bottom:0,type:'scroll',data:trendRaw.map(p=>p.label),textStyle:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'},icon:'circle',itemWidth:9,itemHeight:9,itemGap:18},
       grid:{top:30,right:70,bottom:48,left:62},
       xAxis:{type:'category',data:xLabels,boundaryGap:false,axisLine:{lineStyle:{color:'#e2e8f0'}},axisTick:{show:false},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'}},
       yAxis:[
         {type:'value',position:'left',name:'Twitter',nameGap:8,nameTextStyle:{color:'#1d9bf044',fontSize:9,fontWeight:'700',fontFamily:"'Poppins',sans-serif",align:'right'},axisLine:{show:true,lineStyle:{color:'#1d9bf018',width:1}},axisTick:{show:false},splitLine:{show:false},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:10,color:'#1d9bf0aa',formatter:numK}},
         {type:'value',position:'right',name:'Others',nameGap:8,nameTextStyle:{color:'#94a3b8',fontSize:9,fontWeight:'700',fontFamily:"'Poppins',sans-serif",align:'left'},axisLine:{show:true,lineStyle:{color:'#e2e8f0',width:1}},axisTick:{show:false},splitLine:{lineStyle:{color:'#f1f5f9',type:'solid',width:1}},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:10,color:'#94a3b8',formatter:numK}},
-      ],
-      series,
-    },true);
+      ],series,},true);
     const keyMap={'Online News (Ind)':'doc','Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
-    trendChart.on('click',params=>{ if(params.componentType!=='series')return; const k=keyMap[params.seriesName];if(!k)return; const rect=trendChart.getDom().getBoundingClientRect();MSPanel.open(k,rect.left+params.event.offsetX,rect.top+params.event.offsetY); });
+    trendChart.on('click',params=>{ if(params.componentType!=='series')return;const k=keyMap[params.seriesName];if(!k)return;const rect=trendChart.getDom().getBoundingClientRect();MSPanel.open(k,rect.left+params.event.offsetX,rect.top+params.event.offsetY); });
     trendChart.on('mouseover',params=>{if(params.componentType==='series')trendChart.getDom().style.cursor='pointer';});
     trendChart.on('mouseout', ()=>{trendChart.getDom().style.cursor='default';});
-  }catch(err){
-    hideSk('skTrend');
-    document.getElementById('trendBadge').textContent='Error';
-    document.getElementById('chTrend').innerHTML=emptyHtml('Data trend tidak tersedia');
-  }
+  }catch(err){ hideSk('skTrend');document.getElementById('trendBadge').textContent='Error';document.getElementById('chTrend').innerHTML=emptyHtml('Data trend tidak tersedia'); }
 }
 
-/* ══════════════════════════════════════════════════════
-   LOAD ARTICLE TREND
-══════════════════════════════════════════════════════ */
+/* ══ LOAD ARTICLE TREND ══ */
 async function loadArticleTrend(){
   if(!MSCfg.pid){ hideSk('skArticleTrend'); return; }
   const fmtB=d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()} ${dt.toLocaleString('id-ID',{month:'short'})}`;};
   try{
     const res=await fetch(`/mk/api/media-statistic/trend-mentions?project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}`);
-    const json=await res.json();
-    if(json.error) throw new Error(json.error);
+    const json=await res.json();if(json.error)throw new Error(json.error);
     hideSk('skArticleTrend');
-    const raw=json.data||[];
-    const docData=raw.find(p=>p.key==='doc');
-    if(!docData||!docData.data?.length){
-      document.getElementById('articleTrendBadge').textContent='No Data';
-      document.getElementById('chArticleTrend').innerHTML=emptyHtml('Data artikel tidak tersedia untuk periode ini');
-      return;
-    }
+    const raw=json.data||[];const docData=raw.find(p=>p.key==='doc');
+    if(!docData||!docData.data?.length){ document.getElementById('articleTrendBadge').textContent='No Data';document.getElementById('chArticleTrend').innerHTML=emptyHtml('Data artikel tidak tersedia untuk periode ini');return; }
     document.getElementById('articleTrendBadge').textContent=`${fmtB(MSCfg.sd)} – ${fmtB(MSCfg.ed)}`;
-    const dates=docData.data.map(d=>d.date);
-    const values=docData.data.map(d=>d.count);
+    const dates=docData.data.map(d=>d.date),values=docData.data.map(d=>d.count);
     MSCsvModal.setArticleData(dates,values);
     const xLabels=dates.map(d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()}. ${dt.toLocaleString('id-ID',{month:'short'})}`;});
     const artChart=MSCharts.make('chArticleTrend');if(!artChart)return;
-    artChart.setOption({
-      animation:true,animationDuration:900,animationEasing:'cubicInOut',backgroundColor:'#ffffff',
-      tooltip:{backgroundColor:'#ffffff',borderColor:'#e2e8f0',borderWidth:1,padding:[12,16],textStyle:{color:'#1a202c',fontFamily:"'Poppins',sans-serif",fontSize:12},extraCssText:'border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.10);',trigger:'axis',
-        axisPointer:{type:'line',lineStyle:{color:'#e2e8f0',type:'dashed',width:1.5}},
+    artChart.setOption({animation:true,animationDuration:900,animationEasing:'cubicInOut',backgroundColor:'#ffffff',
+      tooltip:{backgroundColor:'#ffffff',borderColor:'#e2e8f0',borderWidth:1,padding:[12,16],textStyle:{color:'#1a202c',fontFamily:"'Poppins',sans-serif",fontSize:12},extraCssText:'border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.10);',trigger:'axis',axisPointer:{type:'line',lineStyle:{color:'#e2e8f0',type:'dashed',width:1.5}},
         formatter:params=>{const p=params[0];const fullDt=new Date(dates[p.dataIndex]+'T00:00:00').toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-          return`<div style="font-weight:700;font-size:12px;color:#1a202c;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid #f1f5f9;">${fullDt}</div>
-                 <div style="display:flex;align-items:center;justify-content:space-between;gap:18px;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#0284c7;"></span><span style="font-size:11px;color:#64748b;">Online News</span></div><span style="font-size:12px;font-weight:700;color:#1a202c;">${numFmt(p.value)}</span></div>
-                 <div style="margin-top:5px;font-size:10px;color:#94a3b8;text-align:center;">Klik untuk lihat mentions</div>`;}},
+          return`<div style="font-weight:700;font-size:12px;color:#1a202c;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid #f1f5f9;">${fullDt}</div><div style="display:flex;align-items:center;justify-content:space-between;gap:18px;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#0284c7;"></span><span style="font-size:11px;color:#64748b;">Online News</span></div><span style="font-size:12px;font-weight:700;color:#1a202c;">${numFmt(p.value)}</span></div>`;}},
       legend:{bottom:0,data:['Online News (Ind)'],textStyle:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'},icon:'circle',itemWidth:9,itemHeight:9},
       grid:{top:22,right:18,bottom:48,left:58},
       xAxis:{type:'category',data:xLabels,boundaryGap:false,axisLine:{lineStyle:{color:'#e2e8f0'}},axisTick:{show:false},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'}},
       yAxis:{type:'value',axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#f1f5f9',type:'solid',width:1}},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#94a3b8',formatter:numK}},
-      series:[{name:'Online News (Ind)',type:'line',data:values,smooth:.4,symbol:'circle',symbolSize:xLabels.length<=30?6:0,showSymbol:xLabels.length<=30,
-        itemStyle:{color:'#0284c7',borderColor:'#fff',borderWidth:2},lineStyle:{color:'#0284c7',width:2.5},
-        areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(2,132,199,.18)'},{offset:1,color:'rgba(2,132,199,.02)'}]}},
-        label:{show:xLabels.length<=14,position:'top',formatter:params=>params.value>0?numFmt(params.value):'',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b'},
-        emphasis:{focus:'series',lineStyle:{width:3.5},itemStyle:{symbolSize:11,borderColor:'#fff',borderWidth:2.5,shadowBlur:12,shadowColor:'#0284c788'}}}]
+      series:[{name:'Online News (Ind)',type:'line',data:values,smooth:.4,symbol:'circle',symbolSize:xLabels.length<=30?6:0,showSymbol:xLabels.length<=30,itemStyle:{color:'#0284c7',borderColor:'#fff',borderWidth:2},lineStyle:{color:'#0284c7',width:2.5},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(2,132,199,.18)'},{offset:1,color:'rgba(2,132,199,.02)'}]}},label:{show:xLabels.length<=14,position:'top',formatter:params=>params.value>0?numFmt(params.value):'',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b'},emphasis:{focus:'series',lineStyle:{width:3.5},itemStyle:{symbolSize:11,borderColor:'#fff',borderWidth:2.5,shadowBlur:12,shadowColor:'#0284c788'}}}]
     });
-    artChart.on('click',params=>{ if(params.componentType!=='series')return; const rect=artChart.getDom().getBoundingClientRect();MSPanel.open('doc',rect.left+params.event.offsetX,rect.top+params.event.offsetY); });
+    artChart.on('click',params=>{ if(params.componentType!=='series')return;const rect=artChart.getDom().getBoundingClientRect();MSPanel.open('doc',rect.left+params.event.offsetX,rect.top+params.event.offsetY); });
     artChart.on('mouseover',params=>{if(params.componentType==='series')artChart.getDom().style.cursor='pointer';});
     artChart.on('mouseout', ()=>{artChart.getDom().style.cursor='default';});
-  }catch(err){
-    hideSk('skArticleTrend');
-    document.getElementById('articleTrendBadge').textContent='Error';
-    document.getElementById('chArticleTrend').innerHTML=emptyHtml('Data artikel tidak tersedia');
-  }
+  }catch(err){ hideSk('skArticleTrend');document.getElementById('articleTrendBadge').textContent='Error';document.getElementById('chArticleTrend').innerHTML=emptyHtml('Data artikel tidak tersedia'); }
 }
 
-/* ══════════════════════════════════════════════════════
-   LOAD WEEKDAY & HOUR
-══════════════════════════════════════════════════════ */
+/* ══ LOAD WEEKDAY & HOUR ══ */
 async function loadWeekHour(){
   if(!MSCfg.pid){['skWeekday','skHour'].forEach(hideSk);return;}
   const [wdRes,hrRes]=await Promise.allSettled([
     fetch(`/mk/api/media-statistic/mentions-by-weekday?project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}`).then(r=>r.json()),
     fetch(`/mk/api/media-statistic/mentions-by-hour?project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}`).then(r=>r.json()),
   ]);
-
-  /* Weekday */
+  const ltk={'Online News (Ind)':'doc','Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok','Online News':'doc'};
   try{
-    if(wdRes.status==='rejected') throw wdRes.reason;
-    const json=wdRes.value;
-    const wdNames=json.weekdays||['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
-    const wdTotal=json.total||Array(7).fill(0);
-    const platItems=json.platforms||[];
-    hideSk('skWeekday');
-    MSCsvModal.setWeekdayData(wdNames,platItems);
-    if(!wdTotal.some(v=>v>0)){ document.getElementById('chWeekday').innerHTML=emptyHtml('Data weekday tidak tersedia untuk periode ini'); return; }
+    if(wdRes.status==='rejected')throw wdRes.reason;
+    const json=wdRes.value;const wdNames=json.weekdays||['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];const wdTotal=json.total||Array(7).fill(0);const platItems=json.platforms||[];
+    hideSk('skWeekday');MSCsvModal.setWeekdayData(wdNames,platItems);
+    if(!wdTotal.some(v=>v>0)){ document.getElementById('chWeekday').innerHTML=emptyHtml('Data weekday tidak tersedia'); return; }
     const wdChart=MSCharts.make('chWeekday');
     if(wdChart){
-      const series=platItems.map((plat,pi)=>({
-        name:plat.label,type:'bar',stack:'total',
-        data:plat.data.map((v,di)=>{let isTop=v>0;if(isTop){for(let si=pi+1;si<platItems.length;si++){if(platItems[si].data[di]>0){isTop=false;break;}}}return{value:v,itemStyle:{color:plat.color,borderRadius:isTop?[4,4,0,0]:[0,0,0,0]}};},),
-        emphasis:{focus:'series'},
-      }));
-      if(series.length>0) series[series.length-1].label={show:true,position:'top',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b',formatter:p=>wdTotal[p.dataIndex]>0?numK(wdTotal[p.dataIndex]):''};
-      wdChart.setOption({
-        animation:true,animationDuration:800,animationEasing:'elasticOut',
-        tooltip:{...EC_TT,trigger:'axis',axisPointer:{type:'shadow',shadowStyle:{color:'rgba(67,97,238,.05)'}},
-          formatter:params=>{const day=params[0]?.axisValue||'';const total=params.reduce((s,p)=>s+(p.value||0),0);
-            const rows=[...params].sort((a,b)=>b.value-a.value).filter(p=>p.value>0).map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 0;"><div style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color};"></span><span style="font-size:11px;color:#94a3b8;">${p.seriesName}</span></div><span style="font-size:11px;font-weight:700;">${numFmt(p.value)}</span></div>`).join('');
-            return`<div style="font-weight:700;font-size:12px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.1);">${day}</div>${rows||'<div style="color:#64748b;font-size:11px;">Tidak ada data</div>'}<div style="border-top:1px solid rgba(255,255,255,.1);margin-top:5px;padding-top:5px;display:flex;justify-content:space-between;gap:14px;"><span style="font-size:10px;color:#94a3b8;">Total</span><span style="font-size:12px;font-weight:700;">${numFmt(total)}</span></div>`;}},
+      const series=platItems.map((plat,pi)=>({name:plat.label,type:'bar',stack:'total',data:plat.data.map((v,di)=>{let isTop=v>0;if(isTop){for(let si=pi+1;si<platItems.length;si++){if(platItems[si].data[di]>0){isTop=false;break;}}}return{value:v,itemStyle:{color:plat.color,borderRadius:isTop?[4,4,0,0]:[0,0,0,0]}}}),emphasis:{focus:'series'}}));
+      if(series.length>0)series[series.length-1].label={show:true,position:'top',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b',formatter:p=>wdTotal[p.dataIndex]>0?numK(wdTotal[p.dataIndex]):''};
+      wdChart.setOption({animation:true,animationDuration:800,animationEasing:'elasticOut',
+        tooltip:{...EC_TT,trigger:'axis',axisPointer:{type:'shadow'},formatter:params=>{const day=params[0]?.axisValue||'';const total=params.reduce((s,p)=>s+(p.value||0),0);const rows=[...params].sort((a,b)=>b.value-a.value).filter(p=>p.value>0).map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 0;"><div style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color};"></span><span style="font-size:11px;color:#94a3b8;">${p.seriesName}</span></div><span style="font-size:11px;font-weight:700;">${numFmt(p.value)}</span></div>`).join('');return`<div style="font-weight:700;font-size:12px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.1);">${day}</div>${rows}<div style="border-top:1px solid rgba(255,255,255,.1);margin-top:5px;padding-top:5px;display:flex;justify-content:space-between;gap:14px;"><span style="font-size:10px;color:#94a3b8;">Total</span><span style="font-size:12px;font-weight:700;">${numFmt(total)}</span></div>`;}},
         legend:{bottom:0,data:platItems.map(p=>p.label),textStyle:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'},icon:'circle',itemWidth:8,itemHeight:8,itemGap:12},
         grid:{top:22,right:14,bottom:56,left:54},
         xAxis:{type:'category',data:wdNames,axisLine:{show:false},axisTick:{show:false},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'}},
-        yAxis:{type:'value',axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:10,color:'#94a3b8',formatter:numK}},
-        series,
-      });
-      const ltk={'Online News (Ind)':'doc','Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok','Online News':'doc'};
-      wdChart.on('click',params=>{ if(params.componentType!=='series')return; const k=ltk[params.seriesName]; const rect=wdChart.getDom().getBoundingClientRect(); if(k)MSPanel.open(k,rect.left+params.event.offsetX,rect.top+params.event.offsetY); else MSPanel.showPlatPicker(rect.left+params.event.offsetX,rect.top+params.event.offsetY); });
+        yAxis:{type:'value',axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:10,color:'#94a3b8',formatter:numK}},series});
+      wdChart.on('click',params=>{ if(params.componentType!=='series')return;const k=ltk[params.seriesName];const rect=wdChart.getDom().getBoundingClientRect();if(k)MSPanel.open(k,rect.left+params.event.offsetX,rect.top+params.event.offsetY);else MSPanel.showPlatPicker(rect.left+params.event.offsetX,rect.top+params.event.offsetY); });
       wdChart.on('mouseover',params=>{if(params.componentType==='series')wdChart.getDom().style.cursor='pointer';});
       wdChart.on('mouseout', ()=>{wdChart.getDom().style.cursor='default';});
     }
   }catch(e){ hideSk('skWeekday');document.getElementById('chWeekday').innerHTML=emptyHtml('Data tidak tersedia'); }
-
-  /* Hour */
   try{
-    if(hrRes.status==='rejected') throw hrRes.reason;
-    const json=hrRes.value;
-    const hrLabels=json.hours||Array.from({length:24},(_,i)=>String(i).padStart(2,'0')+':00');
-    const hrTotal=json.total||Array(24).fill(0);
-    const platItems=json.platforms||[];
-    hideSk('skHour');
-    MSCsvModal.setHourData(hrLabels,platItems);
-    if(!hrTotal.some(v=>v>0)){ document.getElementById('chHour').innerHTML=emptyHtml('Data per jam tidak tersedia untuk periode ini'); return; }
+    if(hrRes.status==='rejected')throw hrRes.reason;
+    const json=hrRes.value;const hrLabels=json.hours||Array.from({length:24},(_,i)=>String(i).padStart(2,'0')+':00');const hrTotal=json.total||Array(24).fill(0);const platItems=json.platforms||[];
+    hideSk('skHour');MSCsvModal.setHourData(hrLabels,platItems);
+    if(!hrTotal.some(v=>v>0)){ document.getElementById('chHour').innerHTML=emptyHtml('Data per jam tidak tersedia'); return; }
     const hrChart=MSCharts.make('chHour');
     if(hrChart){
-      const series=platItems.map((plat,pi)=>({
-        name:plat.label,type:'bar',stack:'total',
-        data:plat.data.map((v,di)=>{let isTop=v>0;if(isTop){for(let si=pi+1;si<platItems.length;si++){if(platItems[si].data[di]>0){isTop=false;break;}}}return{value:v,itemStyle:{color:plat.color,borderRadius:isTop?[3,3,0,0]:[0,0,0,0]}};},),
-        emphasis:{focus:'series'},
-      }));
-      hrChart.setOption({
-        animation:true,animationDuration:800,animationEasing:'elasticOut',
-        tooltip:{...EC_TT,trigger:'axis',axisPointer:{type:'shadow',shadowStyle:{color:'rgba(67,97,238,.05)'}},
-          formatter:params=>{const hour=params[0]?.axisValue||'';const total=params.reduce((s,p)=>s+(p.value||0),0);
-            const rows=[...params].sort((a,b)=>b.value-a.value).filter(p=>p.value>0).map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 0;"><div style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color};"></span><span style="font-size:11px;color:#94a3b8;">${p.seriesName}</span></div><span style="font-size:11px;font-weight:700;">${numFmt(p.value)}</span></div>`).join('');
-            return`<div style="font-weight:700;font-size:12px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.1);">Jam ${hour}</div>${rows||'<div style="color:#64748b;font-size:11px;">Tidak ada data</div>'}<div style="border-top:1px solid rgba(255,255,255,.1);margin-top:5px;padding-top:5px;display:flex;justify-content:space-between;gap:14px;"><span style="font-size:10px;color:#94a3b8;">Total</span><span style="font-size:12px;font-weight:700;">${numFmt(total)}</span></div>`;}},
+      const series=platItems.map((plat,pi)=>({name:plat.label,type:'bar',stack:'total',data:plat.data.map((v,di)=>{let isTop=v>0;if(isTop){for(let si=pi+1;si<platItems.length;si++){if(platItems[si].data[di]>0){isTop=false;break;}}}return{value:v,itemStyle:{color:plat.color,borderRadius:isTop?[3,3,0,0]:[0,0,0,0]}}}),emphasis:{focus:'series'}}));
+      hrChart.setOption({animation:true,animationDuration:800,animationEasing:'elasticOut',
+        tooltip:{...EC_TT,trigger:'axis',axisPointer:{type:'shadow'},formatter:params=>{const hour=params[0]?.axisValue||'';const total=params.reduce((s,p)=>s+(p.value||0),0);const rows=[...params].sort((a,b)=>b.value-a.value).filter(p=>p.value>0).map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 0;"><div style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color};"></span><span style="font-size:11px;color:#94a3b8;">${p.seriesName}</span></div><span style="font-size:11px;font-weight:700;">${numFmt(p.value)}</span></div>`).join('');return`<div style="font-weight:700;font-size:12px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.1);">Jam ${hour}</div>${rows}<div style="border-top:1px solid rgba(255,255,255,.1);margin-top:5px;padding-top:5px;display:flex;justify-content:space-between;gap:14px;"><span style="font-size:10px;color:#94a3b8;">Total</span><span style="font-size:12px;font-weight:700;">${numFmt(total)}</span></div>`;}},
         legend:{bottom:0,data:platItems.map(p=>p.label),textStyle:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'},icon:'circle',itemWidth:8,itemHeight:8,itemGap:12},
         grid:{top:22,right:14,bottom:56,left:54},
         xAxis:{type:'category',data:hrLabels,axisLine:{show:false},axisTick:{show:false},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:10,fontWeight:'600',color:'#64748b',interval:1,rotate:45}},
-        yAxis:{type:'value',axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:10,color:'#94a3b8',formatter:numK}},
-        series,
-      });
-      const ltk={'Online News (Ind)':'doc','Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok','Online News':'doc'};
-      hrChart.on('click',params=>{ if(params.componentType!=='series')return; const k=ltk[params.seriesName]; const rect=hrChart.getDom().getBoundingClientRect(); if(k)MSPanel.open(k,rect.left+params.event.offsetX,rect.top+params.event.offsetY); else MSPanel.showPlatPicker(rect.left+params.event.offsetX,rect.top+params.event.offsetY); });
+        yAxis:{type:'value',axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:10,color:'#94a3b8',formatter:numK}},series});
+      hrChart.on('click',params=>{ if(params.componentType!=='series')return;const k=ltk[params.seriesName];const rect=hrChart.getDom().getBoundingClientRect();if(k)MSPanel.open(k,rect.left+params.event.offsetX,rect.top+params.event.offsetY);else MSPanel.showPlatPicker(rect.left+params.event.offsetX,rect.top+params.event.offsetY); });
       hrChart.on('mouseover',params=>{if(params.componentType==='series')hrChart.getDom().style.cursor='pointer';});
       hrChart.on('mouseout', ()=>{hrChart.getDom().style.cursor='default';});
     }
   }catch(e){ hideSk('skHour');document.getElementById('chHour').innerHTML=emptyHtml('Data tidak tersedia'); }
 }
 
-/* ══════════════════════════════════════════════════════
-   SLIDE PANEL — konsisten 100% dengan DashPanel
-══════════════════════════════════════════════════════ */
+/* ══ SLIDE PANEL ══ */
 const MSPanel = (() => {
   let _cache={}, _items=[], _curPlat=null;
   const SENT_MAP={'1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg'};
@@ -1785,49 +984,26 @@ const MSPanel = (() => {
   function showPlatPicker(x,y){
     const pp=_$('msPlatPicker');if(!pp)return;
     const pw=180,ph=250,vw=window.innerWidth,vh=window.innerHeight;
-    let left=x+10,top=y-10;
-    if(left+pw>vw-8)left=x-pw-10;
-    if(top+ph>vh-8)top=vh-ph-8;
-    if(top<8)top=8;
-    pp.style.left=left+'px'; pp.style.top=top+'px';
-    pp.classList.add('show');
+    let left=x+10,top=y-10;if(left+pw>vw-8)left=x-pw-10;if(top+ph>vh-8)top=vh-ph-8;if(top<8)top=8;
+    pp.style.left=left+'px';pp.style.top=top+'px';pp.classList.add('show');
   }
-
-  function openPlatform(platform){
-    _$('msPlatPicker')?.classList.remove('show');
-    open(platform, window.innerWidth-500, 80);
-  }
+  function openPlatform(platform){ _$('msPlatPicker')?.classList.remove('show'); open(platform,window.innerWidth-500,80); }
 
   async function open(platform,x,y){
-    _curPlat=platform;
-    const meta=MSCfg.platMeta[platform]||{label:platform,color:'#4361EE'};
+    _curPlat=platform;const meta=MSCfg.platMeta[platform]||{label:platform,color:'#4361EE'};
     MSDetail.close();
-    _$('msPanelDot').style.background=meta.color;
-    _$('msPanelTitle').textContent=meta.label;
-    _$('msPanelMeta').textContent=MSCfg.sd+' – '+MSCfg.ed;
-    _$('msPanelCount').textContent='…';
-    const list=_$('msPanelList');
-    list.innerHTML=`<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat mentions…</span></div>`;
+    _$('msPanelDot').style.background=meta.color;_$('msPanelTitle').textContent=meta.label;_$('msPanelMeta').textContent=MSCfg.sd+' – '+MSCfg.ed;_$('msPanelCount').textContent='…';
+    const list=_$('msPanelList');list.innerHTML=`<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat mentions…</span></div>`;
     const overlay=_$('msPanelOverlay'),panel=_$('msSntPanel');
-    overlay.classList.remove('hiding'); panel.classList.remove('hiding');
-    overlay.classList.add('show'); panel.classList.add('show');
+    overlay.classList.remove('hiding');panel.classList.remove('hiding');overlay.classList.add('show');panel.classList.add('show');
     try{
       const key=`${MSCfg.pid}_${platform}_${MSCfg.sd}_${MSCfg.ed}`;
-      if(!_cache[key]) _cache[key]=await _fetch(platform);
-      _items=_cache[key];
-      _$('msPanelCount').textContent=_items.length.toLocaleString();
+      if(!_cache[key])_cache[key]=await _fetch(platform);
+      _items=_cache[key];_$('msPanelCount').textContent=_items.length.toLocaleString();
       _render(list,_items,platform,meta.color);
-    }catch(err){
-      list.innerHTML=`<div class="do-panel-loading" style="color:#94a3b8;"><svg style="width:30px;height:30px;stroke:#e2e8f0;fill:none;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>Gagal memuat data</div>`;
-      _$('msPanelCount').textContent='0';
-    }
+    }catch(err){ list.innerHTML=`<div class="do-panel-loading" style="color:#94a3b8;"><i class="ph ph-warning-circle" style="font-size:28px;color:#e2e8f0;"></i>Gagal memuat data</div>`;_$('msPanelCount').textContent='0'; }
   }
-
-  function close(){
-    const overlay=_$('msPanelOverlay'),panel=_$('msSntPanel');
-    panel.classList.add('hiding'); overlay.classList.add('hiding');
-    setTimeout(()=>{ panel.classList.remove('show','hiding'); overlay.classList.remove('show','hiding'); MSDetail.close(); },240);
-  }
+  function close(){ const overlay=_$('msPanelOverlay'),panel=_$('msSntPanel');panel.classList.add('hiding');overlay.classList.add('hiding');setTimeout(()=>{panel.classList.remove('show','hiding');overlay.classList.remove('show','hiding');MSDetail.close();},240); }
   function closeByOverlay(){ close(); }
 
   function exportCsv(){
@@ -1838,85 +1014,40 @@ const MSPanel = (() => {
       const handle=(item.author_scr_name||item.screen_name||item.username||'').trim();
       const content=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,500);
       const sent={pos:'Positif',neg:'Negatif',neu:'Netral'}[_ns(item)];
-      const url=item.url||item.link||'';
-      const date=item.date_created||item.created_at||'';
-      const likes=item.num_likes||item.likes||item.favorite_count||item.digg_count||0;
-      const shares=item.num_retweeted||item.shares||item.retweet_count||item.share_count||0;
-      const views=item.num_views||item.views||item.play_count||0;
       const e2=s=>String(s||'').replace(/;/g,',').replace(/\n/g,' ').replace(/\r/g,'');
-      return`${idx};${e2(name)};${e2(handle)};${e2(sent)};${e2(parseInt(likes)||0)};${e2(parseInt(shares)||0)};${e2(parseInt(views)||0)};${e2(date.split('T')[0])};${e2(url)};${e2(content)}`;
+      return`${idx};${e2(name)};${e2(handle)};${e2(sent)};${e2(item.date_created||item.created_at||'')};${e2(item.url||item.link||'')};${e2(content)}`;
     });
-    const header='index;nama;handle;sentimen;likes;shares;views;tanggal;url;konten';
-    const csv=[header,...rows].join('\r\n');
-    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download=`${lbl[_curPlat]||_curPlat}_${MSCfg.sd}_${MSCfg.ed}.csv`;
-    a.click();URL.revokeObjectURL(url);
+    const blob=new Blob(['\uFEFF'+'index;nama;handle;sentimen;tanggal;url;konten\r\n'+rows.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${lbl[_curPlat]||_curPlat}_${MSCfg.sd}_${MSCfg.ed}.csv`;a.click();URL.revokeObjectURL(a.href);
   }
 
   async function _fetch(platform){
     const q=`project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}&rows=500&start=0`;
-    if(platform==='ig'){
-      for(const sub of['postbylike','postbycomment','postbydate','']){
-        const url=`/mk/api/news/ig-top-status?${q}${sub?'&sub='+sub:''}`;
-        try{ const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),15000); const res=await fetch(url,{signal:ctrl.signal});clearTimeout(tid); if(!res.ok)continue; const data=await res.json(); const items=Array.isArray(data.data)?data.data:(Array.isArray(data)?data:[]); if(items.length>0)return items; }catch(e){continue;}
-      }
-      return[];
-    }
-    const eps={
-      doc:   `/mk/api/news/mentions?${q}`,
-      twit:  `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,
-      fb:    `/mk/api/news/fb-top-status?${q}&sub=fblike`,
-      yt:    `/mk/api/news/ytb-top-status?${q}`,
-      tiktok:`/mk/api/news/tiktok-top-status?${q}&sub=postbylike`,
-    };
+    if(platform==='ig'){for(const sub of['postbylike','postbycomment','postbydate','']){try{const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),15000);const res=await fetch(`/mk/api/news/ig-top-status?${q}${sub?'&sub='+sub:''}`,{signal:ctrl.signal});clearTimeout(tid);if(!res.ok)continue;const data=await res.json();const items=Array.isArray(data.data)?data.data:(Array.isArray(data)?data:[]);if(items.length>0)return items;}catch(e){continue;}} return[];}
+    const eps={doc:`/mk/api/news/mentions?${q}`,twit:`/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,fb:`/mk/api/news/fb-top-status?${q}&sub=fblike`,yt:`/mk/api/news/ytb-top-status?${q}`,tiktok:`/mk/api/news/tiktok-top-status?${q}&sub=postbylike`};
     const url=eps[platform];if(!url)throw new Error('Platform tidak dikenali');
     const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),30000);
-    const res=await fetch(url,{signal:ctrl.signal});clearTimeout(tid);
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    const data=await res.json();
-    let items=Array.isArray(data.data)?data.data:(Array.isArray(data)?data:[]);
-    if(platform==='doc') items=items.filter(m=>{ const tc=String(m.tcode||'').toLowerCase();const mt=String(m.media_type||'').toLowerCase();return tc==='berita'||mt==='berita'||mt==='doc'||mt==='news'||mt==='online'||mt==='article'; });
+    const res=await fetch(url,{signal:ctrl.signal});clearTimeout(tid);if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();let items=Array.isArray(data.data)?data.data:(Array.isArray(data)?data:[]);
+    if(platform==='doc')items=items.filter(m=>{const tc=String(m.tcode||'').toLowerCase(),mt=String(m.media_type||'').toLowerCase();return tc==='berita'||mt==='berita'||mt==='doc'||mt==='news'||mt==='online'||mt==='article';});
     return items;
   }
 
   function _render(list,items,platform,color){
-    if(!items.length){
-      list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:#94a3b8;font-size:12px;font-weight:600;">Tidak ada mention periode ini.</div>`;
-      return;
-    }
-    const SHOW=60;
+    if(!items.length){list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:#94a3b8;font-size:12px;font-weight:600;">Tidak ada mention periode ini.</div>`;return;}
+    const SHOW=60;const meta=MSCfg.platMeta[platform]||{label:platform,color};
     list.innerHTML=items.slice(0,SHOW).map(item=>{
-      const meta=MSCfg.platMeta[platform]||{label:platform,color};
-      const rawName=(()=>{
-        if(platform==='fb')    return item.from_name||item.page_name||item.account_name||(item.from&&item.from.name)||null;
-        if(platform==='ig')    return item.username||item.user_name||item.account_name||null;
-        if(platform==='tiktok')return item.author_nickname||item.nickname||item.author_name||item.unique_id||null;
-        if(platform==='yt')    return item.channel_title||item.channel_name||item.author_name||null;
-        return null;
-      })();
+      const rawName=(()=>{if(platform==='fb')return item.from_name||item.page_name||null;if(platform==='ig')return item.username||item.user_name||null;if(platform==='tiktok')return item.author_nickname||item.nickname||item.author_name||null;if(platform==='yt')return item.channel_title||item.channel_name||item.author_name||null;return null;})();
       const name=(rawName||item.author_name||item.channel_name||item.publisher||item.source_name||item.name||item.author_scr_name||item.screen_name||item.username||'Tidak diketahui').trim();
-      const isNum=/^\d{8,}$/.test(name);
-      const dName=isNum?`User FB ${name.slice(-4)}`:name;
+      const dName=/^\d{8,}$/.test(name)?`User ${name.slice(-4)}`:name;
       const rawH=((platform==='ig'?item.username:'')||item.author_scr_name||item.screen_name||item.username||'').trim();
       const handle=(()=>{if(!rawH)return'';const w=['twit','ig','tiktok'].includes(platform)?(rawH.startsWith('@')?rawH:'@'+rawH):rawH;return w.replace(/^@/,'').toLowerCase()===dName.toLowerCase()?'':w;})();
       const text=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,155);
-      const av=(item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||item.thumbnail||item.picture||item.user_image||item.avatar||'').trim();
+      const av=(item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||item.thumbnail||'').trim();
       const words=dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
       const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||dName[0]||'?')).toUpperCase().replace(/['"]/g,'');
       const avHtml=(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">`:ini;
-      const sent=_ns(item);
-      const sentLbl=sent==='pos'?'Pos':sent==='neg'?'Neg':'Neu';
-      const dt=(item.date_created||item.created_at||item.publish_date||'').split('T')[0];
-      const eng=(()=>{const f=n=>parseInt(n)||0>0?parseInt(n).toLocaleString():null;const parts=[];
-        if(platform==='twit'){const rt=f(item.num_retweeted||item.retweet_count),lk=f(item.num_likes||item.favorite_count);if(rt)parts.push('RT '+rt);if(lk)parts.push('Like '+lk);}
-        else if(platform==='yt'){const v=f(item.num_views||item.views),lk=f(item.num_likes||item.likes);if(v)parts.push('Views '+v);if(lk)parts.push('Like '+lk);}
-        else if(platform==='tiktok'){const v=f(item.views||item.num_views||item.play_count),lk=f(item.likes||item.num_likes||item.digg_count);if(v)parts.push('Views '+v);if(lk)parts.push('Like '+lk);}
-        else if(platform==='ig'){const lk=f(item.num_likes||item.likes||item.like_count),cm=f(item.num_comments||item.comment_count||item.comments_count);if(lk)parts.push('Like '+lk);if(cm)parts.push('Komen '+cm);}
-        else if(platform==='fb'){const lk=f(item.likes||item.num_likes||item.like_count),sh=f(item.shares||item.share_count);if(lk)parts.push('Like '+lk);if(sh)parts.push('Share '+sh);}
-        return parts.join(' · ');
-      })();
+      const sent=_ns(item);const dt=(item.date_created||item.created_at||'').split('T')[0];
       const enc=encodeURIComponent(JSON.stringify(item));
       return`<div class="do-panel-item" onclick="MSDetail.openEncoded('${enc}','${platform}')">
         <div class="do-panel-avatar" style="background:linear-gradient(135deg,${color},${color}99);">${avHtml}</div>
@@ -1925,170 +1056,101 @@ const MSPanel = (() => {
           ${handle?`<div class="do-panel-handle">${esc(handle)}</div>`:''}
           <div class="do-panel-text">${esc(text||'(tidak ada konten)')}</div>
           <div class="do-panel-footer">
-            <span class="do-sent-badge do-sent-badge--${sent}">${sentLbl}</span>
+            <span class="do-sent-badge do-sent-badge--${sent}">${sent==='pos'?'Pos':sent==='neg'?'Neg':'Neu'}</span>
             <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${color};flex-shrink:0;"></span>
             <span style="font-size:10px;font-weight:600;color:${color};">${meta.label}</span>
-            ${eng?`<span>${esc(eng)}</span>`:''}
             ${dt?`<span style="margin-left:auto;">${dt}</span>`:''}
           </div>
         </div>
       </div>`;
     }).join('');
-    if(items.length>SHOW){
-      list.insertAdjacentHTML('beforeend',`<div style="padding:9px 14px;text-align:center;font-size:11px;font-weight:600;color:#94a3b8;background:var(--slate-50);border-top:1px dashed var(--slate-200);">+${(items.length-SHOW).toLocaleString()} mentions lainnya · Export CSV untuk semua</div>`);
-    }
+    if(items.length>SHOW)list.insertAdjacentHTML('beforeend',`<div style="padding:9px 14px;text-align:center;font-size:11px;font-weight:600;color:#94a3b8;background:#F8FAFC;border-top:1px dashed #E2E8F0;">+${(items.length-SHOW).toLocaleString()} mentions lainnya · Export CSV untuk semua</div>`);
   }
-
   return{open,close,closeByOverlay,showPlatPicker,openPlatform,exportCsv};
 })();
 
-/* ══════════════════════════════════════════════════════
-   DETAIL SUB-PANEL — konsisten dengan DashDetail
-══════════════════════════════════════════════════════ */
+/* ══ DETAIL SUB-PANEL ══ */
 const MSDetail = {
   openEncoded(enc,plat){ try{this.open(JSON.parse(decodeURIComponent(enc)),plat);}catch(e){} },
-
   open(item,platform){
     const panel=document.getElementById('msDetailPanel'),body=document.getElementById('msDpBody'),title=document.getElementById('msDpTitle');
     if(!panel||!body)return;
     const meta=MSCfg.platMeta[platform]||{label:platform,color:'#4361EE'};
     const SM={'1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg'};
     const sent=SM[String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim()]||'neu';
-    const SLBL={pos:'Positive',neg:'Negative',neu:'Neutral'};
-    const SBGS={pos:'do-dp2-sent--pos',neg:'do-dp2-sent--neg',neu:'do-dp2-sent--neu'};
-    const rawName=(()=>{
-      if(platform==='fb')    return item.from_name||item.page_name||null;
-      if(platform==='ig')    return item.username||null;
-      if(platform==='tiktok')return item.author_nickname||item.nickname||null;
-      if(platform==='yt')    return item.channel_title||item.channel_name||null;
-      return null;
-    })();
+    const SLBL={pos:'Positive',neg:'Negative',neu:'Neutral'};const SBGS={pos:'do-dp2-sent--pos',neg:'do-dp2-sent--neg',neu:'do-dp2-sent--neu'};
+    const rawName=(()=>{if(platform==='fb')return item.from_name||item.page_name||null;if(platform==='ig')return item.username||null;if(platform==='tiktok')return item.author_nickname||item.nickname||null;if(platform==='yt')return item.channel_title||item.channel_name||null;return null;})();
     const name=(rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'Unknown').trim();
     const handle=((platform==='ig'?item.username:'')||item.author_scr_name||item.screen_name||item.username||'').trim();
     const content=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
     const av=(item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||item.thumbnail||'').trim();
-    const url=item.url||item.link||'';
-    const dt=item.date_created||item.created_at||item.publish_date||'';
+    const url=item.url||item.link||'';const dt=item.date_created||item.created_at||item.publish_date||'';
     title.textContent=name;
     const words=name.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
     const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||name[0]||'?')).toUpperCase().replace(/['"]/g,'');
     const avHtml=(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.parentElement.textContent='${ini}';">`:ini;
-    let dtFmt='';
-    if(dt){try{dtFmt=new Date(dt).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){dtFmt=dt.split('T')[0];}}
+    let dtFmt='';if(dt){try{dtFmt=new Date(dt).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){dtFmt=dt.split('T')[0];}}
     let mediaHtml='';
-    if(platform==='yt'){
-      const ytId=(url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)||[])[1];
-      if(ytId)mediaHtml=`<div class="do-dp2-media"><iframe style="width:100%;height:210px;border:none;display:block;" src="https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1" allowfullscreen></iframe></div>`;
-    } else {
-      const imgUrl=item.image_url||item.thumbnail||item.media_url||item.picture||'';
-      if(imgUrl)mediaHtml=`<div class="do-dp2-media"><img src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:var(--radius);"></div>`;
-    }
-    const statsMap={
-      twit:  [['Retweet',item.num_retweeted||item.retweet_count||0],['Like',item.num_likes||item.favorite_count||0],['Quote',item.num_quote||0]],
-      fb:    [['Like',item.likes||item.num_likes||0],['Share',item.shares||item.share_count||0],['Comment',item.num_comments||0]],
-      ig:    [['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||item.comment_count||0],['View',item.num_views||item.views||0]],
-      yt:    [['View',item.num_views||item.views||0],['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||item.comment_count||0]],
-      tiktok:[['Play',item.views||item.play_count||0],['Like',item.likes||item.digg_count||0],['Share',item.shares||item.share_count||0]],
-      doc:   [['Read',item.num_views||0],['Share',item.num_share||0],['Comment',item.num_comments||0]],
-    };
+    if(platform==='yt'){const ytId=(url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)||[])[1];if(ytId)mediaHtml=`<div class="do-dp2-media"><iframe style="width:100%;height:210px;border:none;display:block;" src="https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1" allowfullscreen></iframe></div>`;}
+    else{const imgUrl=item.image_url||item.thumbnail||item.media_url||item.picture||'';if(imgUrl)mediaHtml=`<div class="do-dp2-media"><img src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:var(--radius);"></div>`;}
+    const statsMap={twit:[['Retweet',item.num_retweeted||item.retweet_count||0],['Like',item.num_likes||item.favorite_count||0],['Quote',item.num_quote||0]],fb:[['Like',item.likes||item.num_likes||0],['Share',item.shares||item.share_count||0],['Comment',item.num_comments||0]],ig:[['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||item.comment_count||0],['View',item.num_views||item.views||0]],yt:[['View',item.num_views||item.views||0],['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||item.comment_count||0]],tiktok:[['Play',item.views||item.play_count||0],['Like',item.likes||item.digg_count||0],['Share',item.shares||item.share_count||0]],doc:[['Read',item.num_views||0],['Share',item.num_share||0],['Comment',item.num_comments||0]]};
     const stats=statsMap[platform]||[];
     const statsHtml=stats.some(s=>parseInt(s[1])>0)?`<div class="do-dp2-stats">${stats.map(([l,v])=>`<div class="do-dp2-stat"><div class="do-dp2-stat-val">${parseInt(v||0).toLocaleString()}</div><div class="do-dp2-stat-lbl">${l}</div></div>`).join('')}</div>`:'';
     const handleDisp=handle&&handle.replace('@','').toLowerCase()!==name.toLowerCase().slice(0,handle.replace('@','').length)?(handle.startsWith('@')?handle:'@'+handle):'';
     body.innerHTML=`
       <div class="do-dp2-avatar-row">
         <div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
-        <div>
-          <div class="do-dp2-name">${esc(name)}</div>
-          ${handleDisp?`<div class="do-dp2-handle">${esc(handleDisp)}</div>`:''}
-          <span class="do-dp2-plat-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span>
-        </div>
+        <div><div class="do-dp2-name">${esc(name)}</div>${handleDisp?`<div class="do-dp2-handle">${esc(handleDisp)}</div>`:''}<span class="do-dp2-plat-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span></div>
       </div>
       ${dtFmt?`<div class="do-dp2-meta">${dtFmt}</div>`:''}
       <div class="do-dp2-sent ${SBGS[sent]}">${SLBL[sent]}</div>
       ${mediaHtml}
       ${content?`<div class="do-dp2-content">${esc(content)}</div>`:''}
       ${statsHtml}
-      ${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Lihat ${meta.label} Asli</a>`:''}`;
+      ${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out me-1"></i>Lihat ${meta.label} Asli</a>`:''}`;
     panel.classList.add('show');
   },
-  close(){
-    const panel=document.getElementById('msDetailPanel');
-    if(!panel)return;
-    panel.classList.remove('show');
-    panel.querySelectorAll('iframe').forEach(f=>{try{f.src=f.src;}catch(e){}});
-  }
+  close(){ const panel=document.getElementById('msDetailPanel');if(!panel)return;panel.classList.remove('show');panel.querySelectorAll('iframe').forEach(f=>{try{f.src=f.src;}catch(e){}});}
 };
 
-/* ══════════════════════════════════════════════════════
-   TREND TOGGLE
-══════════════════════════════════════════════════════ */
+/* ══ TREND TOGGLE ══ */
 const MSTrendToggle = {
   _mode:'daily', _trendData:null, _weekOffset:0, _datePickerOverride:false,
   set(mode){
-    if(this._mode===mode)return;
-    this._mode=mode;
+    if(this._mode===mode)return;this._mode=mode;
     document.querySelectorAll('#trendToggle .ms-toggle-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
-    const sub=document.getElementById('trendSubtitle');
-    if(sub) sub.textContent=mode==='monthly'?'Total mentions per bulan':this._datePickerOverride?`${MSCfg.sd} – ${MSCfg.ed}`:'8 hari terakhir';
-    const wng=document.getElementById('weekNavGroup');
-    if(wng) wng.style.display=mode==='daily'?'flex':'none';
+    const sub=document.getElementById('trendSubtitle');if(sub)sub.textContent=mode==='monthly'?'Total mentions per bulan':this._datePickerOverride?`${MSCfg.sd} – ${MSCfg.ed}`:'8 hari terakhir';
+    const wng=document.getElementById('weekNavGroup');if(wng)wng.style.display=mode==='daily'?'flex':'none';
     if(mode==='daily'){this._weekOffset=0;this._trendData=null;}
-    if(this._trendData) this._render(this._trendData); else loadTrend();
+    if(this._trendData)this._render(this._trendData);else loadTrend();
   },
   setData(rawData){ this._trendData=rawData; },
-  navWeek(dir){
-    const next=this._weekOffset+dir;
-    if(next<0)return;
-    this._weekOffset=next;
-    this._trendData=null;
-    loadTrend();
-  },
+  navWeek(dir){ const next=this._weekOffset+dir;if(next<0)return;this._weekOffset=next;this._trendData=null;loadTrend(); },
   _weekLabel(){ return this._weekOffset===0?'Minggu Ini':`Week -${this._weekOffset}`; },
-  copyCSV(){
-    if(!this._trendData){alert('Data belum tersedia');return;}
-    const lines=this._buildCSV(this._trendData,this._mode);
-    MSCsvModal.show('Trend Mentions — '+(this._mode==='monthly'?'Bulanan':'Harian'),lines);
-  },
+  copyCSV(){if(!this._trendData){alert('Data belum tersedia');return;}const lines=this._buildCSV(this._trendData,this._mode);MSCsvModal.show('Trend Mentions — '+(this._mode==='monthly'?'Bulanan':'Harian'),lines);},
   _buildCSV(raw,mode){
     const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];
     const platMeta={doc:'Online News (Ind)',twitter:'Twitter',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok'};
-    if(mode==='monthly'){
-      const monthMap={};raw.forEach(p=>(p.data||[]).forEach(d=>{const m=d.date.slice(0,7);if(!monthMap[m])monthMap[m]={};monthMap[m][p.key]=(monthMap[m][p.key]||0)+d.count;}));
-      const months=Object.keys(monthMap).sort();const lines=[];
-      months.forEach(m=>platOrder.forEach(k=>{const val=monthMap[m][k]||0;if(val>0)lines.push(`${lines.length};${platMeta[k]||k};${val};${m}`);}));
-      return lines;
-    } else {
-      const dSet=new Set();raw.forEach(p=>(p.data||[]).forEach(d=>dSet.add(d.date)));const allDates=Array.from(dSet).sort();const lines=[];
-      allDates.forEach(date=>raw.forEach(p=>{const pt=(p.data||[]).find(x=>x.date===date);if(pt&&pt.count>0)lines.push(`${lines.length};${platMeta[p.key]||p.key};${pt.count};${date}`);}));
-      return lines;
-    }
+    if(mode==='monthly'){const monthMap={};raw.forEach(p=>(p.data||[]).forEach(d=>{const m=d.date.slice(0,7);if(!monthMap[m])monthMap[m]={};monthMap[m][p.key]=(monthMap[m][p.key]||0)+d.count;}));const months=Object.keys(monthMap).sort();const lines=[];months.forEach(m=>platOrder.forEach(k=>{const val=monthMap[m][k]||0;if(val>0)lines.push(`${lines.length};${platMeta[k]||k};${val};${m}`);}));return lines;}
+    else{const dSet=new Set();raw.forEach(p=>(p.data||[]).forEach(d=>dSet.add(d.date)));const allDates=Array.from(dSet).sort();const lines=[];allDates.forEach(date=>raw.forEach(p=>{const pt=(p.data||[]).find(x=>x.date===date);if(pt&&pt.count>0)lines.push(`${lines.length};${platMeta[p.key]||p.key};${pt.count};${date}`);}));return lines;}
   },
   _render(raw){
     const platMetaFull={doc:{label:'Online News (Ind)',color:'#0284c7'},twitter:{label:'Twitter',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
     const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];
     if(this._mode==='monthly'){
       const monthMap={};raw.forEach(p=>(p.data||[]).forEach(d=>{const m=d.date.slice(0,7);if(!monthMap[m])monthMap[m]={};monthMap[m][p.key]=(monthMap[m][p.key]||0)+d.count;}));
-      const months=Object.keys(monthMap).sort();
-      const xLabels=months.map(m=>{const dt=new Date(m+'-01T00:00:00');return dt.toLocaleString('id-ID',{month:'short',year:'numeric'});});
+      const months=Object.keys(monthMap).sort();const xLabels=months.map(m=>{const dt=new Date(m+'-01T00:00:00');return dt.toLocaleString('id-ID',{month:'short',year:'numeric'});});
       document.getElementById('trendBadge').textContent=xLabels[0]+' – '+xLabels[xLabels.length-1];
-      const series=platOrder.map(key=>{const meta=platMetaFull[key];const vals=months.map(m=>monthMap[m]?.[key]||0);const hasData=vals.some(v=>v>0);
-        return{name:meta.label,type:'bar',stack:'total',data:vals,itemStyle:{color:meta.color,borderRadius:[4,4,0,0]},label:{show:false},emphasis:{focus:'series'}};
-      }).filter(s=>s.data.some(v=>v>0));
-      if(series.length>0) series[series.length-1].label={show:months.length<=18,position:'top',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b',
-        formatter:p=>{const total=platOrder.reduce((s,k)=>s+(monthMap[months[p.dataIndex]]?.[k]||0),0);return total>0?numK(total):'';} };
+      const series=platOrder.map(key=>{const meta=platMetaFull[key];const vals=months.map(m=>monthMap[m]?.[key]||0);const hasData=vals.some(v=>v>0);return{name:meta.label,type:'bar',stack:'total',data:vals,itemStyle:{color:meta.color,borderRadius:[4,4,0,0]},label:{show:false},emphasis:{focus:'series'}};}).filter(s=>s.data.some(v=>v>0));
+      if(series.length>0)series[series.length-1].label={show:months.length<=18,position:'top',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b',formatter:p=>{const total=platOrder.reduce((s,k)=>s+(monthMap[months[p.dataIndex]]?.[k]||0),0);return total>0?numK(total):'';}};
       const trendChart=MSCharts.make('chTrend');if(!trendChart)return;
-      trendChart.setOption({
-        animation:true,animationDuration:800,animationEasing:'elasticOut',backgroundColor:'#ffffff',
-        tooltip:{backgroundColor:'#ffffff',borderColor:'#e2e8f0',borderWidth:1,padding:[12,16],textStyle:{color:'#1a202c',fontFamily:"'Poppins',sans-serif",fontSize:12},extraCssText:'border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.10);',trigger:'axis',axisPointer:{type:'shadow',shadowStyle:{color:'rgba(67,97,238,.04)'}},
-          formatter:params=>{const sorted=[...params].sort((a,b)=>b.value-a.value);const rows=sorted.filter(p=>p.value>0).map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:18px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color};"></span><span style="font-size:11px;color:#64748b;">${p.seriesName}</span></div><span style="font-size:11px;font-weight:700;color:#1a202c;">${numFmt(p.value)}</span></div>`).join('');
-            const total=params.reduce((s,p)=>s+(p.value||0),0);
-            return`<div style="font-weight:700;font-size:12px;color:#1a202c;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid #f1f5f9;">${xLabels[params[0]?.dataIndex??0]}</div>${rows||'<div style="color:#94a3b8;font-size:11px;">Tidak ada data</div>'}<div style="border-top:1px solid #f1f5f9;margin-top:5px;padding-top:5px;display:flex;justify-content:space-between;"><span style="font-size:10px;color:#94a3b8;">Total</span><span style="font-size:11px;font-weight:700;color:#1a202c;">${numFmt(total)}</span></div>`;}},
+      trendChart.setOption({animation:true,animationDuration:800,animationEasing:'elasticOut',backgroundColor:'#ffffff',
+        tooltip:{backgroundColor:'#ffffff',borderColor:'#e2e8f0',borderWidth:1,padding:[12,16],textStyle:{color:'#1a202c',fontFamily:"'Poppins',sans-serif",fontSize:12},extraCssText:'border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.10);',trigger:'axis',axisPointer:{type:'shadow'},
+          formatter:params=>{const sorted=[...params].sort((a,b)=>b.value-a.value);const rows=sorted.filter(p=>p.value>0).map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:18px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color};"></span><span style="font-size:11px;color:#64748b;">${p.seriesName}</span></div><span style="font-size:11px;font-weight:700;color:#1a202c;">${numFmt(p.value)}</span></div>`).join('');const total=params.reduce((s,p)=>s+(p.value||0),0);return`<div style="font-weight:700;font-size:12px;color:#1a202c;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid #f1f5f9;">${xLabels[params[0]?.dataIndex??0]}</div>${rows}<div style="border-top:1px solid #f1f5f9;margin-top:5px;padding-top:5px;display:flex;justify-content:space-between;"><span style="font-size:10px;color:#94a3b8;">Total</span><span style="font-size:11px;font-weight:700;color:#1a202c;">${numFmt(total)}</span></div>`;}},
         legend:{bottom:0,type:'scroll',data:series.map(s=>s.name),textStyle:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'},icon:'circle',itemWidth:9,itemHeight:9,itemGap:18},
         grid:{top:22,right:18,bottom:48,left:58},
         xAxis:{type:'category',data:xLabels,axisLine:{lineStyle:{color:'#e2e8f0'}},axisTick:{show:false},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'}},
-        yAxis:{type:'value',axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#f1f5f9',type:'solid',width:1}},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#94a3b8',formatter:numK}},
-        series,
-      },true);
+        yAxis:{type:'value',axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#f1f5f9',type:'solid',width:1}},axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#94a3b8',formatter:numK}},series},true);
       const keyMap={'Online News (Ind)':'doc','Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
       trendChart.on('click',params=>{ if(params.componentType!=='series')return;const k=keyMap[params.seriesName];if(k){const rect=trendChart.getDom().getBoundingClientRect();MSPanel.open(k,rect.left+params.event.offsetX,rect.top+params.event.offsetY);} });
       trendChart.on('mouseover',p=>{if(p.componentType==='series')trendChart.getDom().style.cursor='pointer';});
@@ -2097,93 +1159,34 @@ const MSTrendToggle = {
   }
 };
 
-/* ══════════════════════════════════════════════════════
-   CSV MODAL
-══════════════════════════════════════════════════════ */
+/* ══ CSV MODAL ══ */
 const MSCsvModal = {
   _content:'', _articleData:null, _weekdayData:null, _hourData:null,
-  show(title,lines){
-    this._content=lines.join('\n');
-    document.querySelector('.ms-csv-modal__title').textContent=title||'CSV Data';
-    document.getElementById('msCsvContent').textContent=this._content;
-    const btn=document.getElementById('msCsvCopyBtn');
-    btn.textContent='Copy CSV data';btn.classList.remove('copied');
-    document.getElementById('msCsvModal').classList.add('show');
-  },
+  show(title,lines){ this._content=lines.join('\n');document.querySelector('.ms-csv-modal__title').textContent=title||'CSV Data';document.getElementById('msCsvContent').textContent=this._content;const btn=document.getElementById('msCsvCopyBtn');btn.innerHTML='<i class="ph ph-copy" style="font-size:12px;"></i> Copy CSV data';btn.classList.remove('copied');document.getElementById('msCsvModal').classList.add('show'); },
   close(){ document.getElementById('msCsvModal').classList.remove('show'); },
   setArticleData(dates,values){ this._articleData={dates,values}; },
-  showArticleTrend(){
-    if(!this._articleData){alert('Data belum tersedia');return;}
-    const{dates,values}=this._articleData;
-    const lines=dates.map((d,i)=>`${i};Online News (Ind);${values[i]};${d}`).filter((_,i)=>values[i]>0);
-    this.show('Trend Articles — Online News',lines);
-  },
+  showArticleTrend(){ if(!this._articleData){alert('Data belum tersedia');return;}const{dates,values}=this._articleData;const lines=dates.map((d,i)=>`${i};Online News (Ind);${values[i]};${d}`).filter((_,i)=>values[i]>0);this.show('Trend Articles — Online News',lines); },
   setWeekdayData(wdNames,platItems){ this._weekdayData={wdNames,platItems}; },
-  showWeekday(){
-    if(!this._weekdayData){alert('Data belum tersedia');return;}
-    const{wdNames,platItems}=this._weekdayData;const lines=[];
-    wdNames.forEach((day,di)=>platItems.forEach(plat=>{const v=plat.data[di]||0;if(v>0)lines.push(`${lines.length};${plat.label};${v};${day}`);}));
-    this.show('Mentions by Weekday',lines);
-  },
+  showWeekday(){ if(!this._weekdayData){alert('Data belum tersedia');return;}const{wdNames,platItems}=this._weekdayData;const lines=[];wdNames.forEach((day,di)=>platItems.forEach(plat=>{const v=plat.data[di]||0;if(v>0)lines.push(`${lines.length};${plat.label};${v};${day}`);}));this.show('Mentions by Weekday',lines); },
   setHourData(hrLabels,platItems){ this._hourData={hrLabels,platItems}; },
-  showHour(){
-    if(!this._hourData){alert('Data belum tersedia');return;}
-    const{hrLabels,platItems}=this._hourData;const lines=[];
-    hrLabels.forEach((hr,hi)=>platItems.forEach(plat=>{const v=plat.data[hi]||0;if(v>0)lines.push(`${lines.length};${plat.label};${v};${hr}`);}));
-    this.show('Mentions by Hour',lines);
-  },
+  showHour(){ if(!this._hourData){alert('Data belum tersedia');return;}const{hrLabels,platItems}=this._hourData;const lines=[];hrLabels.forEach((hr,hi)=>platItems.forEach(plat=>{const v=plat.data[hi]||0;if(v>0)lines.push(`${lines.length};${plat.label};${v};${hr}`);}));this.show('Mentions by Hour',lines); },
   copy(){
-    if(!this._content)return;
-    const btn=document.getElementById('msCsvCopyBtn');
-    navigator.clipboard.writeText(this._content).then(()=>{
-      btn.textContent='✓ Tersalin!';btn.classList.add('copied');
-      setTimeout(()=>{btn.textContent='Copy CSV data';btn.classList.remove('copied');},2000);
-    }).catch(()=>{
-      const ta=document.createElement('textarea');ta.value=this._content;ta.style.cssText='position:fixed;opacity:0;';
-      document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
-      btn.textContent='✓ Tersalin!';btn.classList.add('copied');
-      setTimeout(()=>{btn.textContent='Copy CSV data';btn.classList.remove('copied');},2000);
-    });
+    if(!this._content)return;const btn=document.getElementById('msCsvCopyBtn');
+    navigator.clipboard.writeText(this._content).then(()=>{btn.innerHTML='<i class="ph ph-check" style="font-size:12px;"></i> Tersalin!';btn.classList.add('copied');setTimeout(()=>{btn.innerHTML='<i class="ph ph-copy" style="font-size:12px;"></i> Copy CSV data';btn.classList.remove('copied');},2000);}).catch(()=>{const ta=document.createElement('textarea');ta.value=this._content;ta.style.cssText='position:fixed;opacity:0;';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);btn.innerHTML='<i class="ph ph-check" style="font-size:12px;"></i> Tersalin!';btn.classList.add('copied');setTimeout(()=>{btn.innerHTML='<i class="ph ph-copy" style="font-size:12px;"></i> Copy CSV data';btn.classList.remove('copied');},2000);});
   }
 };
 
-/* ══════════════════════════════════════════════════════
-   MSPage
-══════════════════════════════════════════════════════ */
+/* ══ INIT ══ */
 const MSPage = {
   _syncDateFilter(){
-    const today=new Date();today.setHours(0,0,0,0);
-    const ed=new Date(MSCfg.ed+'T00:00:00');
-    const sd=new Date(MSCfg.sd+'T00:00:00');
-    const diff=Math.round((ed-sd)/86400000)+1;
-    MSTrendToggle._datePickerOverride=!(ed.getTime()===today.getTime()&&diff<=8);
-    MSTrendToggle._weekOffset=0;
+    const today=new Date();today.setHours(0,0,0,0);const ed=new Date(MSCfg.ed+'T00:00:00');const sd=new Date(MSCfg.sd+'T00:00:00');const diff=Math.round((ed-sd)/86400000)+1;
+    MSTrendToggle._datePickerOverride=!(ed.getTime()===today.getTime()&&diff<=8);MSTrendToggle._weekOffset=0;
   },
-  reload(){
-    MSCharts.disposeAll();
-    MSTab.reset();
-    this._syncDateFilter();
-    ['skBar','skTrend','skWeekday','skHour','skBarRace'].forEach(showSk);
-    loadMentionByPlatform();
-    const activeTab=document.querySelector('.ms-tab-panel.active')?.id;
-    if(activeTab==='panelTrend'){ MSTab._loaded.trend=true;loadTrend();loadArticleTrend(); }
-    else if(activeTab==='panelPola'){ MSTab._loaded.pola=true;loadWeekHour(); }
-  },
-  init(){
-    this._syncDateFilter();
-    loadMentionByPlatform();
-    MSTab._loaded.trend=true;
-    loadTrend();
-    loadArticleTrend();
-  }
+  reload(){ MSCharts.disposeAll();MSTab.reset();this._syncDateFilter();['skBar','skTrend','skWeekday','skHour','skBarRace'].forEach(showSk);loadMentionByPlatform();const activeTab=document.querySelector('.ms-tab-panel.active')?.id;if(activeTab==='panelTrend'){MSTab._loaded.trend=true;loadTrend();loadArticleTrend();}else if(activeTab==='panelPola'){MSTab._loaded.pola=true;loadWeekHour();} },
+  init(){ this._syncDateFilter();loadMentionByPlatform();MSTab._loaded.trend=true;loadTrend();loadArticleTrend(); }
 };
 
-/* Dismiss platform picker on outside click */
-document.addEventListener('mousedown',e=>{
-  const pp=document.getElementById('msPlatPicker');
-  if(pp?.classList.contains('show')&&!pp.contains(e.target)) pp.classList.remove('show');
-});
-
+document.addEventListener('mousedown',e=>{const pp=document.getElementById('msPlatPicker');if(pp?.classList.contains('show')&&!pp.contains(e.target))pp.classList.remove('show');});
 document.addEventListener('DOMContentLoaded',()=>MSPage.init());
 </script>
 @endsection
