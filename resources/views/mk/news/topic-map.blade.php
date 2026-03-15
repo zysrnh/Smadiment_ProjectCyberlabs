@@ -503,7 +503,7 @@
 {{-- ══ KPI Cards ══ --}}
 <div class="row mb-3">
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#4680ff;animation:fadeUp .38s ease-out both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -523,7 +523,7 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#10B981;animation:fadeUp .38s ease-out .05s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -543,7 +543,7 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-warning text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#F59E0B;animation:fadeUp .38s ease-out .10s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -563,7 +563,7 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-danger text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .15s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#8B5CF6;animation:fadeUp .38s ease-out .15s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -790,6 +790,8 @@ const PAL = [
 /* ══ State ══ */
 let D  = { raw:[], fil:[], arts:[], allPubs:[], busy:false };
 let DS = { topic:null, idx:0, arts:[], pubArts:{}, activePub:null };
+window.D  = D;
+window.DS = DS;
 
 const $ = id => document.getElementById(id);
 const tip = $('ntmTip');

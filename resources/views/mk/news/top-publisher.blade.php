@@ -392,7 +392,7 @@
 {{-- ══ KPI Cards ══ --}}
 <div class="row mb-3">
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#4680ff;animation:fadeUp .38s ease-out both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -412,7 +412,7 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#10B981;animation:fadeUp .38s ease-out .05s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -747,7 +747,7 @@ function renderBarChart(items) {
 
     EC.bar.setOption({
         animation:true, animationDuration:700, animationEasing:'cubicOut',
-        backgroundColor:'#fff',
+        backgroundColor:'transparent',
         tooltip:{
             trigger:'axis',
             backgroundColor:'#1e293b', borderColor:'#334155', borderWidth:1,
@@ -773,10 +773,19 @@ function renderBarChart(items) {
         },
         series:[{
             type:'bar',
-            data: values.map((v,i)=>({
-                value:v,
-                itemStyle:{color:RED, borderRadius:[0,5,5,0], opacity: i===values.length-1?1:0.78+i*0.01}
-            })),
+            data: values.map((v,i)=>{
+                const ratio = i / Math.max(values.length-1,1);
+                return {
+                    value:v,
+                    itemStyle:{
+                        color: new echarts.graphic.LinearGradient(0,0,1,0,[
+                            {offset:0, color: DONUT_COLORS[i % DONUT_COLORS.length]},
+                            {offset:1, color: DONUT_COLORS[(i+1) % DONUT_COLORS.length] + 'AA'}
+                        ]),
+                        borderRadius:[0,5,5,0]
+                    }
+                }
+            }),
             barMaxWidth:20,
             label:{
                 show:true, position:'right',
@@ -842,7 +851,7 @@ function renderDonut(data) {
 
     EC.donut.setOption({
         animation:true, animationDuration:900, animationEasing:'cubicOut',
-        backgroundColor:'#fff',
+        backgroundColor:'transparent',
         tooltip:{show:false},
         series:[{
             type:'pie',

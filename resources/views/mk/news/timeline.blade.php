@@ -267,7 +267,7 @@
 
 <div class="row mb-3">
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#4680ff;animation:fadeUp .38s ease-out both;">
             <div class="card-body"><div class="d-flex align-items-center">
                 <div class="flex-grow-1">
                     <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
@@ -279,7 +279,7 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#10B981;animation:fadeUp .38s ease-out .05s both;">
             <div class="card-body"><div class="d-flex align-items-center">
                 <div class="flex-grow-1">
                     <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
@@ -291,7 +291,7 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-warning text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#94A3B8;animation:fadeUp .38s ease-out .10s both;">
             <div class="card-body"><div class="d-flex align-items-center">
                 <div class="flex-grow-1">
                     <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
@@ -303,7 +303,7 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-danger text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .15s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#EF4444;animation:fadeUp .38s ease-out .15s both;">
             <div class="card-body"><div class="d-flex align-items-center">
                 <div class="flex-grow-1">
                     <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
@@ -550,6 +550,7 @@ const MTData = {
         });
 
         if(_trendChart) { try{_trendChart.dispose();}catch(e){} }
+        el.style.display = 'block';
         _trendChart = echarts.init(el, null, {renderer:'canvas'});
         window.addEventListener('resize', function(){ try{_trendChart.resize();}catch(e){} });
 
@@ -567,8 +568,8 @@ const MTData = {
         _trendChart.setOption({
             animation:true, animationDuration:800, backgroundColor:'transparent',
             tooltip:{ trigger:'axis', backgroundColor:'#1e293b', borderColor:'#334155', textStyle:{color:'#e2e8f0',fontFamily:'inherit',fontSize:12} },
-            legend:{ bottom:0, data:PLAT_KEYS.map(function(k){return PLAT[k].label;}), textStyle:{fontFamily:'inherit',fontSize:11,fontWeight:600,color:'#64748b'}, icon:'circle', itemWidth:10, itemHeight:10, itemGap:16 },
-            grid:{top:20,right:16,bottom:50,left:50},
+            legend:{ top:10, left:'center', data:PLAT_KEYS.map(function(k){return PLAT[k].label;}), textStyle:{fontFamily:'inherit',fontSize:11,fontWeight:600,color:'#64748b'}, icon:'circle', itemWidth:10, itemHeight:10, itemGap:16 },
+            grid:{top:50,right:20,bottom:24,left:50},
             xAxis:{ type:'category', data:xLabels, boundaryGap:false, axisLine:{lineStyle:{color:'#e2e8f0'}}, axisTick:{show:false}, axisLabel:{fontSize:11,fontWeight:600,color:'#64748b'} },
             yAxis:{ type:'value', axisLine:{show:false}, axisTick:{show:false}, splitLine:{lineStyle:{color:'#f1f5f9'}}, axisLabel:{fontSize:11,color:'#94a3b8',formatter:numK} },
             series:series
@@ -581,7 +582,7 @@ const MTData = {
         });
 
         if(ld) ld.classList.add('hidden');
-        el.style.display = 'block';
+        requestAnimationFrame(function(){ _trendChart.resize(); });
         var fmtB = function(d){ var dt=new Date(d+'T00:00:00'); return dt.getDate()+' '+dt.toLocaleString('id-ID',{month:'short'}); };
         _$('trendBadge').textContent = fmtB(dates[0])+' - '+fmtB(dates[dates.length-1]);
     },
