@@ -1241,8 +1241,7 @@ Log::info('mostStatus raw result', [
         public function mostActiveUsersPage(Request $request)
         {
             try {
-                $projectsData = $this->client->listProjects(0, 100);
-                $projects = $projectsData['data'] ?? [];
+                $projects = $this->getAllProjects();
                 $projectId = $request->query('project_id');
                 if (!$projectId && count($projects) > 0) {
                     $projectId = $projects[0]['id'] ?? null;
@@ -1398,8 +1397,7 @@ Log::info('mostStatus raw result', [
         public function topInfluencersPage(Request $request)
         {
             try {
-                $projectsData = $this->client->listProjects(0, 100);
-                $projects = $projectsData['data'] ?? [];
+                $projects = $this->getAllProjects();
                 $projectId = $request->query('project_id');
 
                 if (!$projectId && count($projects) > 0) {
