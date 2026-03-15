@@ -45,6 +45,8 @@
 @keyframes overlayOut    { from{opacity:1} to{opacity:0} }
 @keyframes detailIn      { from{transform:translateX(100%)} to{transform:translateX(0)} }
 @keyframes dpUp          { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes kpiIconBounce { 0%{transform:scale(1)} 40%{transform:scale(1.25)} 60%{transform:scale(.95)} 100%{transform:scale(1)} }
+@keyframes kpiShimmer    { 0%{left:-100%} 100%{left:150%} }
 
 .fade-up    { animation:fadeUp .38s ease-out both; }
 .fade-up-d1 { animation-delay:.05s }
@@ -58,6 +60,48 @@
     display:flex; align-items:center; justify-content:center;
     background:rgba(255,255,255,.2); font-size:24px; color:#fff; flex-shrink:0;
 }
+
+/* ══ KPI Card Hover — same as most-engagement ══ */
+.kpi-card-hover {
+    will-change: transform, box-shadow;
+    transition: transform .25s cubic-bezier(.34,1.56,.64,1) !important,
+                box-shadow .25s ease !important,
+                filter .25s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+.kpi-card-hover::before {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    left: -100%;
+    width: 60%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
+    pointer-events: none;
+    z-index: 1;
+    transition: none;
+}
+.kpi-card-hover:hover {
+    transform: translateY(-6px) scale(1.025) !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,.25) !important;
+    filter: brightness(1.07) !important;
+}
+.kpi-card-hover:hover::before {
+    animation: kpiShimmer .6s ease forwards;
+}
+.kpi-card-hover:hover .kpi-icon-bg {
+    background: rgba(255,255,255,.35) !important;
+    transition: background .2s ease !important;
+}
+.kpi-card-hover:hover .kpi-icon-bg i {
+    animation: kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both !important;
+    display: inline-block !important;
+}
+.kpi-card-hover:active {
+    transform: translateY(-2px) scale(1.01) !important;
+    transition-duration: .08s !important;
+}
+.kpi-card-hover.clickable { cursor: pointer; }
 
 /* ══ KPI Stat Cards ══ */
 .ms-stat-card {
@@ -284,58 +328,88 @@
 {{-- ══ Filter ══ --}}
 @include('mk.layouts.partials.filter-datepicker')
 
-{{-- ══ KPI Cards — same as Dashboard ══ --}}
+{{-- ══ KPI Cards — same as Most Engagement ══ --}}
 <div class="row g-3 mb-3">
     <div class="col-md-6 col-xl-3">
-        <div class="ms-stat-card ms-stat-card--blue clickable fade-up fade-up-d1 h-100"
+        <div class="card h-100 text-white kpi-card-hover clickable" style="background:#0284c7;animation:fadeUp .38s ease-out both;"
              onclick="MSPanel.open('doc', event.clientX, event.clientY)">
-            <div class="ms-stat-content">
-                <div class="ms-stat-label"><span class="ms-stat-dot"></span>Mass Media</div>
-                <div class="ms-stat-value" id="valMass">
-                    <div class="sk-block" style="height:34px;width:110px;border-radius:5px;background:rgba(255,255,255,.2)!important;"></div>
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Mass Media</p>
+                        <h3 class="mb-0 text-white f-w-300" id="valMass">
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                        </h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
+                            <i class="ph ph-arrow-square-out me-1"></i>Klik untuk lihat detail
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-newspaper"></i></div>
+                    </div>
                 </div>
-                <div class="ms-stat-sub">Online News / Article</div>
-                <div class="ms-stat-hint"><i class="ph ph-arrow-square-out"></i>Klik untuk lihat detail</div>
             </div>
-            <div class="kpi-icon-bg"><i class="ph ph-newspaper" style="font-size:24px;"></i></div>
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="ms-stat-card ms-stat-card--green clickable fade-up fade-up-d2 h-100"
+        <div class="card h-100 text-white kpi-card-hover clickable" style="background:#10B981;animation:fadeUp .38s ease-out .05s both;"
              onclick="MSPanel.showPlatPicker(event.clientX, event.clientY)">
-            <div class="ms-stat-content">
-                <div class="ms-stat-label"><span class="ms-stat-dot"></span>Social Media</div>
-                <div class="ms-stat-value" id="valSocial">
-                    <div class="sk-block" style="height:34px;width:110px;border-radius:5px;background:rgba(255,255,255,.2)!important;"></div>
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Social Media</p>
+                        <h3 class="mb-0 text-white f-w-300" id="valSocial">
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                        </h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
+                            <i class="ph ph-arrow-square-out me-1"></i>Klik untuk lihat detail
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-users"></i></div>
+                    </div>
                 </div>
-                <div class="ms-stat-sub">Semua platform sosial</div>
-                <div class="ms-stat-hint"><i class="ph ph-arrow-square-out"></i>Klik untuk lihat detail</div>
             </div>
-            <div class="kpi-icon-bg"><i class="ph ph-users" style="font-size:24px;"></i></div>
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="ms-stat-card ms-stat-card--purple fade-up fade-up-d3 h-100">
-            <div class="ms-stat-content">
-                <div class="ms-stat-label">Total Mentions</div>
-                <div class="ms-stat-value" id="valTotal">
-                    <div class="sk-block" style="height:34px;width:110px;border-radius:5px;background:rgba(255,255,255,.2)!important;"></div>
+        <div class="card h-100 text-white kpi-card-hover" style="background:#7c3aed;animation:fadeUp .38s ease-out .10s both;">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
+                        <h3 class="mb-0 text-white f-w-300" id="valTotal">
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                        </h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
+                            <i class="ph ph-chat-dots me-1"></i>Mass Media + Social Media
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-chat-dots"></i></div>
+                    </div>
                 </div>
-                <div class="ms-stat-sub">Mass Media + Social Media</div>
             </div>
-            <div class="kpi-icon-bg"><i class="ph ph-chat-dots" style="font-size:24px;"></i></div>
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="ms-stat-card ms-stat-card--amber fade-up fade-up-d4 h-100">
-            <div class="ms-stat-content">
-                <div class="ms-stat-label">Periode Data</div>
-                <div class="ms-stat-value" style="font-size:15px;font-weight:700;">
-                    {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}
+        <div class="card h-100 text-white kpi-card-hover" style="background:#d97706;animation:fadeUp .38s ease-out .15s both;">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Periode Data</p>
+                        <h3 class="mb-0 text-white f-w-300" style="font-size:16px;">
+                            {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}
+                        </h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
+                            <i class="ph ph-calendar-blank me-1"></i>s/d {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-calendar-blank"></i></div>
+                    </div>
                 </div>
-                <div class="ms-stat-sub">s/d {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</div>
             </div>
-            <div class="kpi-icon-bg"><i class="ph ph-calendar-blank" style="font-size:24px;"></i></div>
         </div>
     </div>
 </div>
@@ -830,7 +904,7 @@ async function loadMentionByPlatform(){
       const brChart=MSCharts.make('chBarRace');
       if(brChart){
         const buildSD=items=>items.map(item=>({value:item.value,itemStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:item.color+'33'},{offset:.6,color:item.color+'bb'},{offset:1,color:item.color}]},borderRadius:[0,9,9,0]},emphasis:{itemStyle:{shadowBlur:18,shadowColor:item.color+'55'}}}));
-        brChart.setOption({animation:true,animationDuration:1400,animationDurationUpdate:1100,animationEasing:'elasticOut',animationEasingUpdate:'cubicInOut',backgroundColor:'#ffffff',
+        brChart.setOption({animation:true,animationDuration:1400,animationDurationUpdate:1100,animationEasing:'elasticOut',animationEasingUpdate:'cubicInOut',backgroundColor:'transparent',
           tooltip:{...EC_TT,trigger:'axis',axisPointer:{type:'shadow'},formatter:params=>{const p=params[0];const item=brData.find(x=>x.label===p.name)||{};const pct=((p.value/grandTotal)*100).toFixed(1);const clr=item.color||'#4361EE';
             return`<div style="font-weight:800;font-size:13px;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.12);"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${clr};margin-right:6px;vertical-align:middle;"></span>${p.name}</div><div style="display:flex;justify-content:space-between;gap:22px;margin-bottom:5px;"><span style="font-size:11px;color:#94a3b8;">Mentions</span><span style="font-size:14px;font-weight:700;">${numFmt(p.value)}</span></div><div style="display:flex;justify-content:space-between;gap:22px;"><span style="font-size:11px;color:#94a3b8;">Share of Voice</span><span style="font-size:12px;font-weight:700;color:#34d399;">${pct}%</span></div>`;}},
           grid:{top:10,right:108,bottom:10,left:14,containLabel:true},
@@ -875,9 +949,9 @@ async function loadTrend(){
     if(weekNavGroup&&MSTrendToggle._mode==='daily'&&!MSTrendToggle._datePickerOverride){ weekNavGroup.style.display='flex';if(weekNavLabel)weekNavLabel.textContent=MSTrendToggle._weekLabel();if(weekNavNext){const ic=MSTrendToggle._weekOffset===0;weekNavNext.disabled=ic;weekNavNext.style.opacity=ic?'.35':'1';weekNavNext.style.cursor=ic?'not-allowed':'pointer';} } else if(weekNavGroup) weekNavGroup.style.display='none';
     const trendChart=MSCharts.make('chTrend');if(!trendChart)return;
     const series=trendRaw.map(p=>{const vals=allDates.map(d=>{const pt=p.data.find(x=>x.date===d);return pt?pt.count:0;});const hasData=vals.some(v=>v>0);
-      return{name:p.label,type:'line',yAxisIndex:Y_AXIS_IDX[p.key]??1,data:vals,smooth:.4,symbol:'circle',symbolSize:hasData&&allDates.length<=30?6:0,showSymbol:allDates.length<=30,itemStyle:{color:p.color,borderColor:'#fff',borderWidth:2},lineStyle:{color:p.color,width:hasData?2.5:1,opacity:hasData?1:.15},label:{show:hasData&&allDates.length<=14,position:'top',formatter:params=>params.value>0?numFmt(params.value):'',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b'},emphasis:{focus:'series',lineStyle:{width:3.5},itemStyle:{symbolSize:10,borderColor:'#fff',borderWidth:2.5,shadowBlur:10,shadowColor:p.color+'88'}}};});
+      return{name:p.label,type:'line',yAxisIndex:Y_AXIS_IDX[p.key]??1,data:vals,smooth:.4,symbol:'circle',symbolSize:hasData?8:0,showSymbol:true,itemStyle:{color:p.color,borderColor:'#fff',borderWidth:2},lineStyle:{color:p.color,width:hasData?2.5:1,opacity:hasData?1:.15},areaStyle:hasData?{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:p.color+'33'},{offset:1,color:p.color+'05'}]}}:undefined,label:{show:hasData&&allDates.length<=14,position:'top',formatter:params=>params.value>0?numFmt(params.value):'',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b',backgroundColor:'rgba(255,255,255,.85)',borderRadius:3,padding:[2,5]},emphasis:{focus:'series',lineStyle:{width:3.5},itemStyle:{symbolSize:12,borderColor:'#fff',borderWidth:2.5,shadowBlur:10,shadowColor:p.color+'88'}}};});
     const xLabels=allDates.map(d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()}. ${dt.toLocaleString('id-ID',{month:'short'})}`;});
-    trendChart.setOption({animation:true,animationDuration:900,animationEasing:'cubicInOut',backgroundColor:'#ffffff',
+    trendChart.setOption({animation:true,animationDuration:900,animationEasing:'cubicInOut',backgroundColor:'transparent',
       tooltip:{...EC_TT,trigger:'item',formatter:params=>{if(params.componentType!=='series')return'';const date=allDates[params.dataIndex]||'';const fullDt=date?new Date(date+'T00:00:00').toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'';
         return`<div style="font-weight:800;font-size:13px;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.12);"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${params.color};margin-right:6px;vertical-align:middle;"></span>${params.seriesName}</div>${fullDt?`<div style="font-size:11px;color:#94a3b8;margin-bottom:7px;">${fullDt}</div>`:''}<div style="display:flex;justify-content:space-between;gap:22px;"><span style="font-size:11px;color:#94a3b8;">Mentions</span><span style="font-size:14px;font-weight:700;">${numFmt(params.value)}</span></div>`;}},
       legend:{bottom:0,type:'scroll',data:trendRaw.map(p=>p.label),textStyle:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'},icon:'circle',itemWidth:9,itemHeight:9,itemGap:18},
@@ -909,7 +983,7 @@ async function loadArticleTrend(){
     MSCsvModal.setArticleData(dates,values);
     const xLabels=dates.map(d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()}. ${dt.toLocaleString('id-ID',{month:'short'})}`;});
     const artChart=MSCharts.make('chArticleTrend');if(!artChart)return;
-    artChart.setOption({animation:true,animationDuration:900,animationEasing:'cubicInOut',backgroundColor:'#ffffff',
+    artChart.setOption({animation:true,animationDuration:900,animationEasing:'cubicInOut',backgroundColor:'transparent',
       tooltip:{backgroundColor:'#ffffff',borderColor:'#e2e8f0',borderWidth:1,padding:[12,16],textStyle:{color:'#1a202c',fontFamily:"'Poppins',sans-serif",fontSize:12},extraCssText:'border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.10);',trigger:'axis',axisPointer:{type:'line',lineStyle:{color:'#e2e8f0',type:'dashed',width:1.5}},
         formatter:params=>{const p=params[0];const fullDt=new Date(dates[p.dataIndex]+'T00:00:00').toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
           return`<div style="font-weight:700;font-size:12px;color:#1a202c;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid #f1f5f9;">${fullDt}</div><div style="display:flex;align-items:center;justify-content:space-between;gap:18px;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#0284c7;"></span><span style="font-size:11px;color:#64748b;">Online News</span></div><span style="font-size:12px;font-weight:700;color:#1a202c;">${numFmt(p.value)}</span></div>`;}},
@@ -1144,7 +1218,7 @@ const MSTrendToggle = {
       const series=platOrder.map(key=>{const meta=platMetaFull[key];const vals=months.map(m=>monthMap[m]?.[key]||0);const hasData=vals.some(v=>v>0);return{name:meta.label,type:'bar',stack:'total',data:vals,itemStyle:{color:meta.color,borderRadius:[4,4,0,0]},label:{show:false},emphasis:{focus:'series'}};}).filter(s=>s.data.some(v=>v>0));
       if(series.length>0)series[series.length-1].label={show:months.length<=18,position:'top',fontFamily:"'Poppins',sans-serif",fontWeight:'700',fontSize:10,color:'#64748b',formatter:p=>{const total=platOrder.reduce((s,k)=>s+(monthMap[months[p.dataIndex]]?.[k]||0),0);return total>0?numK(total):'';}};
       const trendChart=MSCharts.make('chTrend');if(!trendChart)return;
-      trendChart.setOption({animation:true,animationDuration:800,animationEasing:'elasticOut',backgroundColor:'#ffffff',
+      trendChart.setOption({animation:true,animationDuration:800,animationEasing:'elasticOut',backgroundColor:'transparent',
         tooltip:{backgroundColor:'#ffffff',borderColor:'#e2e8f0',borderWidth:1,padding:[12,16],textStyle:{color:'#1a202c',fontFamily:"'Poppins',sans-serif",fontSize:12},extraCssText:'border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.10);',trigger:'axis',axisPointer:{type:'shadow'},
           formatter:params=>{const sorted=[...params].sort((a,b)=>b.value-a.value);const rows=sorted.filter(p=>p.value>0).map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:18px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color};"></span><span style="font-size:11px;color:#64748b;">${p.seriesName}</span></div><span style="font-size:11px;font-weight:700;color:#1a202c;">${numFmt(p.value)}</span></div>`).join('');const total=params.reduce((s,p)=>s+(p.value||0),0);return`<div style="font-weight:700;font-size:12px;color:#1a202c;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid #f1f5f9;">${xLabels[params[0]?.dataIndex??0]}</div>${rows}<div style="border-top:1px solid #f1f5f9;margin-top:5px;padding-top:5px;display:flex;justify-content:space-between;"><span style="font-size:10px;color:#94a3b8;">Total</span><span style="font-size:11px;font-weight:700;color:#1a202c;">${numFmt(total)}</span></div>`;}},
         legend:{bottom:0,type:'scroll',data:series.map(s=>s.name),textStyle:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'},icon:'circle',itemWidth:9,itemHeight:9,itemGap:18},

@@ -770,6 +770,7 @@ public function articlesData(Request $request)
             session(['selected_project_id' => $projectId]);
 
             return view('mk.news.timeline', [
+                'projects'  => $this->getAllProjects(),
                 'projectId' => $projectId,
                 'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
                 'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
@@ -1348,6 +1349,7 @@ public function newsTopicMapPage(Request $request)
         session(['selected_project_id' => $projectId]);
 
         return view('mk.news.topic-map', [
+            'projects'  => $this->getAllProjects(),
             'projectId' => $projectId,
             'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
             'endDate'   => $request->query('end_date', now()->format('Y-m-d')),

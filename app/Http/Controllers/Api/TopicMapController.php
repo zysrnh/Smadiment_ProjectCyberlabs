@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\MediaKernelsClient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class TopicMapController extends Controller
@@ -16,13 +17,28 @@ class TopicMapController extends Controller
         $this->mkClient = $mkClient;
     }
 
+    private function getAllProjects(): array
+    {
+        $user = Auth::user();
+        $assignedProjectIds = $user->assignedProjectIds();
+
+        $rawProjects = $this->mkClient->listProjects(0, 100);
+        $allProjects = array_values($rawProjects);
+
+        $userProjects = array_filter($allProjects, function ($project) use ($assignedProjectIds) {
+            return in_array($project['id'] ?? null, $assignedProjectIds);
+        });
+
+        return array_values($userProjects);
+    }
+
     /**
      * 🔥 Display Topic Map Page
      */
     public function index(Request $request)
     {
         try {
-            $projects = $this->mkClient->listProjects(0, 100)['data'] ?? [];
+            $projects = $this->getAllProjects();
             $projectId = $request->query('project_id');
             if (!$projectId && count($projects) > 0) {
                 $projectId = $projects[0]['id'] ?? null;

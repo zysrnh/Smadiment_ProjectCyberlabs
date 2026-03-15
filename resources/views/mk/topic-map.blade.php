@@ -417,7 +417,7 @@
   {{-- ══ KPI Cards — Bootstrap cards same as Dashboard ══ --}}
   <div class="row">
     <div class="col-md-4">
-      <div class="card bg-primary text-white fade-up fade-up-d1">
+      <div class="card text-white fade-up fade-up-d1" style="background:#4680ff;">
         <div class="card-body">
           <div class="d-flex align-items-center">
             <div class="flex-grow-1">
@@ -435,7 +435,7 @@
       </div>
     </div>
     <div class="col-md-4">
-      <div class="card bg-success text-white fade-up fade-up-d2">
+      <div class="card text-white fade-up fade-up-d2" style="background:#10B981;">
         <div class="card-body">
           <div class="d-flex align-items-center">
             <div class="flex-grow-1">
@@ -453,7 +453,7 @@
       </div>
     </div>
     <div class="col-md-4">
-      <div class="card bg-warning text-white fade-up fade-up-d3">
+      <div class="card text-white fade-up fade-up-d3" style="background:#F59E0B;">
         <div class="card-body">
           <div class="d-flex align-items-center">
             <div class="flex-grow-1">
