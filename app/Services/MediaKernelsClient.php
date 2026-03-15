@@ -2239,7 +2239,7 @@ public function mostStatus(
         try {
             $token = $this->getToken();
 
-            $res = Http::timeout(60)->acceptJson()->get(
+            $res = Http::connectTimeout(30)->timeout(120)->retry(2, 3000)->acceptJson()->get(
                 $this->baseUrl() . '/top_influencers/',
                 [
                     'project_id' => $projectId,
