@@ -187,9 +187,6 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
             Route::get('/most-viewed-posts',[YoutubeOverviewController::class, 'mostViewedPostsData'])->name('most-viewed-posts');
             Route::get('/most-engagement',  [YoutubeOverviewController::class, 'mostEngagementData'])->name('most-engagement');
             Route::get('/emotion-analysis', [YoutubeOverviewController::class, 'emotionAnalysisData'])->name('emotion-analysis');
-            Route::get('/authors-demographics', [YoutubeOverviewController::class, 'authorsDemographicsPage'])->name('authors.demographics');
-            Route::get('/geographic',       [YoutubeOverviewController::class, 'geographicPage'])->name('geographic');
-            Route::get('/trending-word-cloud', [YoutubeOverviewController::class, 'trendingWordCloudPage'])->name('trending-word-cloud');
             Route::get('/ai-analysis-data', [YoutubeOverviewController::class, 'aiAnalysisData'])->name('ai-analysis-data');
             Route::post('/ai-proxy',        [YoutubeOverviewController::class, 'aiAnalysisProxy'])->name('ai-proxy');
             Route::get('/top-locations',    [YoutubeOverviewController::class, 'topLocations'])->name('top-locations');
