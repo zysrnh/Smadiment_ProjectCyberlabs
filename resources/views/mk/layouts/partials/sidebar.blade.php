@@ -3,14 +3,12 @@
 .pc-sidebar .pc-micon { width:32px; height:32px; }
 .pc-sidebar .pc-micon i { font-size:26px; }
 .pc-sidebar .pc-micon > svg { width:26px; height:26px; }
-.pc-sidebar .m-header { padding: 12px 16px; padding-left: 24px; }
-.pc-sidebar .m-header .b-brand { background: #ffffff; border-radius: 10px; padding: 10px 14px; display: inline-block; }
 </style>
 <nav class="pc-sidebar">
     <div class="navbar-wrapper">
-        <div class="m-header">
-            <a href="{{ route('mk.dashboard') }}" class="b-brand text-primary">
-                <img src="{{ asset('images/SMADIMENT 2025 _ Logo-03.png') }}" class="img-fluid logo-lg" alt="SMADIMENT" style="height: 52px; width: auto;" />
+        <div class="m-header" style="padding: 0; background: #ffffff;">
+            <a href="{{ route('mk.dashboard') }}" class="b-brand text-primary" style="display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px 24px; background: #ffffff; border-radius: 0; border-bottom: 1px solid #f0f0f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); text-decoration: none;">
+                <img src="{{ asset('images/SMADIMENT 2025 _ Logo-03.png') }}" class="img-fluid logo-lg" alt="SMADIMENT" style="height: 52px; width: auto; display: block;" />
             </a>
         </div>
         <div class="navbar-content">
@@ -145,13 +143,12 @@
                         <span class="pc-mtext">Compare Projects</span>
                     </a>
                 </li>
-
-                <li class="pc-item {{ request()->routeIs('mk.topic-map') ? 'active' : '' }}">
-                    <a href="{{ route('mk.topic-map') }}{{ $sideqs }}" class="pc-link">
-                        <span class="pc-micon"><i class="ph ph-globe-hemisphere-west"></i></span>
-                        <span class="pc-mtext">Word Cloud   </span>
-                    </a>
-                </li>
+<li class="pc-item {{ request()->routeIs('mk.topic-map') ? 'active' : '' }}">
+    <a href="{{ route('mk.topic-map') }}{{ $qs }}" class="pc-link">
+        <span class="pc-micon"><i class="ph ph-globe-hemisphere-west"></i></span>
+        <span class="pc-mtext">Word Cloud</span>
+    </a>
+</li>
 
                 <li class="pc-item {{ request()->routeIs('mk.x.geographic') ? 'active' : '' }}">
                     <a href="{{ route('mk.x.geographic') }}{{ $qs }}" class="pc-link">
@@ -360,7 +357,6 @@
             document.addEventListener('DOMContentLoaded', function(){
                 var container = document.querySelector('.pc-sidebar .navbar-content');
                 if (!container) return;
-                // Find the active submenu item first, fallback to active parent menu
                 var el = container.querySelector('.pc-submenu > .pc-item.active') 
                       || container.querySelector('.pc-hasmenu.pc-trigger.active');
                 if (!el) return;
@@ -369,7 +365,6 @@
                     var cH   = container.clientHeight;
                     var eTop = el.getBoundingClientRect().top;
                     var eH   = el.offsetHeight;
-                    // Scroll so the element is centered in the sidebar
                     container.scrollTop += (eTop - cTop) - (cH / 2) + (eH / 2);
                 }, 200);
             });

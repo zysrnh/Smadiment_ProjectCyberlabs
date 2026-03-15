@@ -5,64 +5,636 @@
 @section('styles')
 <style>
 :root{--primary:#038047;--primary-rgb:3,128,71;--primary-lt:rgba(3,128,71,.10);--dark:#273B4A;--white:#FFFFFF;--bg:#F1F5F8;--green:#038047;--slate-50:#F8FAFC;--slate-100:#F1F5F9;--slate-200:#E2E8F0;--slate-300:#CBD5E1;--slate-400:#94A3B8;--slate-500:#64748B;--slate-600:#475569;--slate-700:#334155;--slate-800:#1E293B;--slate-900:#0F172A;--radius:8px;--radius-sm:5px;--shadow-sm:0 1px 3px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.04);--shadow-md:0 4px 14px rgba(15,23,42,.08);--shadow-lg:0 10px 30px rgba(15,23,42,.12)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes kpiIconBounce{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.25) rotate(-10deg)}60%{transform:scale(1.1) rotate(6deg)}}@keyframes kpiShimmer{0%{left:-100%}100%{left:150%}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes kpiIconBounce{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.25) rotate(-10deg)}60%{transform:scale(1.1) rotate(6deg)}}
+@keyframes kpiShimmer{0%{left:-100%}100%{left:150%}}
 .kpi-icon-bg{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.2);font-size:24px;color:#fff;flex-shrink:0}
 .sk-block{border-radius:4px;background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
 .spin-ring{width:26px;height:26px;border:2.5px solid var(--slate-100);border-top-color:var(--primary);border-radius:50%;animation:spin .65s linear infinite}
 .spinner-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:12px;color:var(--slate-400);font-size:12px;font-weight:600}
-.kpi-card-hover{will-change:transform,box-shadow;cursor:default;position:relative!important;overflow:hidden!important;transition:transform .25s cubic-bezier(.34,1.56,.64,1)!important,box-shadow .25s ease!important,filter .25s ease!important}.kpi-card-hover::before{content:'';position:absolute;top:0;bottom:0;left:-100%;width:60%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);pointer-events:none;z-index:1}.kpi-card-hover:hover{transform:translateY(-6px) scale(1.025)!important;box-shadow:0 20px 40px rgba(0,0,0,.25)!important;filter:brightness(1.07)!important}.kpi-card-hover:hover::before{animation:kpiShimmer .6s ease forwards}.kpi-card-hover:hover .kpi-icon-bg{background:rgba(255,255,255,.35)!important}.kpi-card-hover:hover .kpi-icon-bg i{animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both!important;display:inline-block!important}.kpi-card-hover:active{transform:translateY(-2px) scale(1.01)!important;transition-duration:.08s!important}
-.chart-empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--slate-400);font-size:12px;font-weight:600}.chart-empty i{font-size:34px;color:var(--slate-300);display:block}
-.sent-tabs{display:flex;gap:2px;background:var(--slate-100);border:1px solid var(--slate-200);border-radius:var(--radius-sm);padding:2px}.sent-tab{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 14px;border-radius:4px;border:none;background:transparent;font-size:12px;font-weight:600;color:var(--slate-500);cursor:pointer;transition:background .13s,color .13s;white-space:nowrap}.sent-tab:hover{background:#fff;color:var(--slate-800)}.sent-tab.active{background:#fff;color:var(--primary);box-shadow:0 1px 4px rgba(0,0,0,.08)}.sent-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.ht-list{display:flex;flex-direction:column}.ht-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--slate-100);cursor:pointer;transition:background .12s}.ht-item:last-child{border-bottom:none}.ht-item:hover{background:var(--slate-50)}.ht-rank{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--slate-400);background:var(--slate-100);border:1px solid var(--slate-200)}.ht-rank--1{background:linear-gradient(135deg,#ffd700,#F59E0B);color:#7c5900;border-color:#ffd700}.ht-rank--2{background:linear-gradient(135deg,#c0c0c0,#9ca3af);color:#3d3d3d;border-color:#c0c0c0}.ht-rank--3{background:linear-gradient(135deg,#cd7f32,#b06820);color:#fff;border-color:#cd7f32}.ht-name{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ht-bar-wrap{flex:0 0 100px;height:6px;background:var(--slate-100);border-radius:99px;overflow:hidden}.ht-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary),rgba(3,128,71,.5));transition:width .4s cubic-bezier(.4,0,.2,1)}.ht-count{font-size:11px;font-weight:700;color:var(--slate-500);white-space:nowrap;flex-shrink:0;min-width:36px;text-align:right}
-.tme-pagination{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--slate-100);flex-wrap:wrap;gap:8px}.tme-pag-info{font-size:11px;color:var(--slate-400);font-weight:500}.tme-pag-controls{display:flex;align-items:center;gap:3px}.tme-pag-btn{min-width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;border-radius:var(--radius-sm);border:1px solid var(--slate-200);background:#fff;font-size:11px;font-weight:600;color:var(--slate-500);cursor:pointer;transition:all .12s;user-select:none}.tme-pag-btn:hover:not(:disabled):not(.is-active){border-color:var(--primary);color:var(--primary);background:var(--primary-lt)}.tme-pag-btn.is-active{background:var(--primary);border-color:var(--primary);color:#fff}.tme-pag-btn:disabled{opacity:.35;cursor:not-allowed}
+.kpi-card-hover{will-change:transform,box-shadow;cursor:default;position:relative!important;overflow:hidden!important;transition:transform .25s cubic-bezier(.34,1.56,.64,1)!important,box-shadow .25s ease!important,filter .25s ease!important}
+.kpi-card-hover::before{content:'';position:absolute;top:0;bottom:0;left:-100%;width:60%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);pointer-events:none;z-index:1}
+.kpi-card-hover:hover{transform:translateY(-6px) scale(1.025)!important;box-shadow:0 20px 40px rgba(0,0,0,.25)!important;filter:brightness(1.07)!important}
+.kpi-card-hover:hover::before{animation:kpiShimmer .6s ease forwards}
+.kpi-card-hover:hover .kpi-icon-bg{background:rgba(255,255,255,.35)!important}
+.kpi-card-hover:hover .kpi-icon-bg i{animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both!important;display:inline-block!important}
+.kpi-card-hover:active{transform:translateY(-2px) scale(1.01)!important;transition-duration:.08s!important}
 .kpi-card-hover h3{font-size:1.5rem}
+.chart-empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--slate-400);font-size:12px;font-weight:600}
+.chart-empty i{font-size:34px;color:var(--slate-300);display:block}
+.sent-tabs{display:flex;gap:2px;background:var(--slate-100);border:1px solid var(--slate-200);border-radius:var(--radius-sm);padding:2px}
+.sent-tab{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 14px;border-radius:4px;border:none;background:transparent;font-size:12px;font-weight:600;color:var(--slate-500);cursor:pointer;transition:background .13s,color .13s;white-space:nowrap}
+.sent-tab:hover{background:#fff;color:var(--slate-800)}
+.sent-tab.active{background:#fff;color:var(--primary);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.sent-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ht-list{display:flex;flex-direction:column}
+.ht-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--slate-100);cursor:pointer;transition:background .12s}
+.ht-item:last-child{border-bottom:none}
+.ht-item:hover{background:var(--slate-50)}
+.ht-rank{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--slate-400);background:var(--slate-100);border:1px solid var(--slate-200)}
+.ht-rank--1{background:linear-gradient(135deg,#ffd700,#F59E0B);color:#7c5900;border-color:#ffd700}
+.ht-rank--2{background:linear-gradient(135deg,#c0c0c0,#9ca3af);color:#3d3d3d;border-color:#c0c0c0}
+.ht-rank--3{background:linear-gradient(135deg,#cd7f32,#b06820);color:#fff;border-color:#cd7f32}
+.ht-name{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ht-bar-wrap{flex:0 0 100px;height:6px;background:var(--slate-100);border-radius:99px;overflow:hidden}
+.ht-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary),rgba(3,128,71,.5));transition:width .4s cubic-bezier(.4,0,.2,1)}
+.ht-count{font-size:11px;font-weight:700;color:var(--slate-500);white-space:nowrap;flex-shrink:0;min-width:36px;text-align:right}
+.tme-pagination{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--slate-100);flex-wrap:wrap;gap:8px}
+.tme-pag-info{font-size:11px;color:var(--slate-400);font-weight:500}
+.tme-pag-controls{display:flex;align-items:center;gap:3px}
+.tme-pag-btn{min-width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;border-radius:var(--radius-sm);border:1px solid var(--slate-200);background:#fff;font-size:11px;font-weight:600;color:var(--slate-500);cursor:pointer;transition:all .12s;user-select:none}
+.tme-pag-btn:hover:not(:disabled):not(.is-active){border-color:var(--primary);color:var(--primary);background:var(--primary-lt)}
+.tme-pag-btn.is-active{background:var(--primary);border-color:var(--primary);color:#fff}
+.tme-pag-btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* Mode toggle */
+.mode-toggle{display:inline-flex;background:var(--slate-100);border:1px solid var(--slate-200);border-radius:var(--radius-sm);padding:2px;gap:2px}
+.mode-btn{padding:4px 10px;border-radius:3px;border:none;background:transparent;font-size:11px;font-weight:600;color:var(--slate-500);cursor:pointer;transition:all .12s}
+.mode-btn.active{background:#fff;color:var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.07)}
 </style>
 @endsection
+
 @section('page-title', 'YouTube Word Cloud')
+
 @section('content')
-@php $projectId=$projectId??request()->get('project_id');$startDate=$startDate??request()->get('start_date',now()->subDays(6)->format('Y-m-d'));$endDate=$endDate??request()->get('end_date',now()->format('Y-m-d'));$projects=$projects??[];$hashtagsJson=$hashtagsJson??'[]'; @endphp
-<script>const OV_PID='{{ $projectId }}';const OV_SD='{{ $startDate }}';const OV_ED='{{ $endDate }}';const PRELOADED_DATA={!! $hashtagsJson !!};</script>
+@php
+    $projectId  = $projectId  ?? request()->get('project_id');
+    $startDate  = $startDate  ?? request()->get('start_date', now()->subDays(6)->format('Y-m-d'));
+    $endDate    = $endDate    ?? request()->get('end_date', now()->format('Y-m-d'));
+    $projects   = $projects   ?? [];
+    $hashtagsJson = $hashtagsJson ?? '[]';
+@endphp
+
+<script>
+    const OV_PID = '{{ $projectId }}';
+    const OV_SD  = '{{ $startDate }}';
+    const OV_ED  = '{{ $endDate }}';
+    {{-- Controller sends a plain array — could be hashtags or empty --}}
+    const PRELOADED_RAW = {!! $hashtagsJson !!};
+</script>
+
 @include('mk.layouts.partials.filter-datepicker')
+
 {{-- KPI --}}
 <div class="row mb-3">
-    <div class="col-md-6 col-xl-3"><div class="card h-100 bg-primary text-white kpi-card-hover fade-up fade-up-d1"><div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p><h3 class="mb-0 text-white f-w-300" id="kpiTopics"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopicsSub"><i class="ph ph-hash me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-hash"></i></div></div></div></div></div></div>
-    <div class="col-md-6 col-xl-3"><div class="card h-100 bg-success text-white kpi-card-hover fade-up fade-up-d2"><div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Volume</p><h3 class="mb-0 text-white f-w-300" id="kpiVolume"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiVolumeSub"><i class="ph ph-chart-bar me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div></div></div></div></div>
-    <div class="col-md-6 col-xl-3"><div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d3"><div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Positive Topics</p><h3 class="mb-0 text-white f-w-300" id="kpiPos"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPosSub"><i class="ph ph-smiley me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div></div></div></div></div>
-    <div class="col-md-6 col-xl-3"><div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d4"><div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Negative Topics</p><h3 class="mb-0 text-white f-w-300" id="kpiNeg"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNegSub"><i class="ph ph-smiley-sad me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div></div></div></div></div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d1" style="background:#4680FF;">
+            <div class="card-body"><div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p>
+                    <h3 class="mb-0 text-white f-w-300" id="kpiTopics"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopicsSub"><i class="ph ph-hash me-1"></i>Loading…</p>
+                </div>
+                <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-hash"></i></div></div>
+            </div></div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d2" style="background:#2CA87F;">
+            <div class="card-body"><div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="mb-1 text-white text-opacity-75 f-12">Total Volume</p>
+                    <h3 class="mb-0 text-white f-w-300" id="kpiVolume"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiVolumeSub"><i class="ph ph-chart-bar me-1"></i>Loading…</p>
+                </div>
+                <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div>
+            </div></div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d3" style="background:#E58A00;">
+            <div class="card-body"><div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="mb-1 text-white text-opacity-75 f-12">Positive Topics</p>
+                    <h3 class="mb-0 text-white f-w-300" id="kpiPos"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPosSub"><i class="ph ph-smiley me-1"></i>Loading…</p>
+                </div>
+                <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div>
+            </div></div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d4" style="background:#DC2626;">
+            <div class="card-body"><div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="mb-1 text-white text-opacity-75 f-12">Negative Topics</p>
+                    <h3 class="mb-0 text-white f-w-300" id="kpiNeg"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNegSub"><i class="ph ph-smiley-sad me-1"></i>Loading…</p>
+                </div>
+                <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div>
+            </div></div>
+        </div>
+    </div>
 </div>
-{{-- Sentiment Filter --}}
-<div class="sent-tabs mb-3" id="sentTabs">
-    <button class="sent-tab active" data-s="all"><span class="sent-dot" style="background:var(--primary);"></span> All</button>
-    <button class="sent-tab" data-s="positive"><span class="sent-dot" style="background:#10b981;"></span> Positive</button>
-    <button class="sent-tab" data-s="negative"><span class="sent-dot" style="background:#ef4444;"></span> Negative</button>
-    <button class="sent-tab" data-s="neutral"><span class="sent-dot" style="background:#f59e0b;"></span> Neutral</button>
+
+{{-- Filters row --}}
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    {{-- Sentiment tabs --}}
+    <div class="sent-tabs" id="sentTabs">
+        <button class="sent-tab active" data-s="all"><span class="sent-dot" style="background:var(--primary);"></span> All</button>
+        <button class="sent-tab" data-s="positive"><span class="sent-dot" style="background:#10b981;"></span> Positive</button>
+        <button class="sent-tab" data-s="negative"><span class="sent-dot" style="background:#ef4444;"></span> Negative</button>
+        <button class="sent-tab" data-s="neutral"><span class="sent-dot" style="background:#f59e0b;"></span> Neutral</button>
+    </div>
+
+    {{-- Mode toggle: Hashtag vs Keywords --}}
+    <div class="d-flex align-items-center gap-2">
+        <small class="text-muted fw-600" style="font-size:11px;">Mode:</small>
+        <div class="mode-toggle" id="modeToggle">
+            <button class="mode-btn active" data-mode="hashtag"><i class="ph ph-hash me-1"></i>Hashtag</button>
+            <button class="mode-btn" data-mode="keyword"><i class="ph ph-text-aa me-1"></i>Keyword</button>
+        </div>
+    </div>
 </div>
+
 {{-- Content --}}
 <div class="row">
-    <div class="col-lg-8 col-12"><div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;"><div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"><div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-cloud f-18 text-primary"></i></div><div><h6 class="mb-0">Word Cloud</h6><small class="text-muted">Klik kata untuk cari di YouTube</small></div></div><span class="badge bg-light-primary text-primary" id="badgeWC">Loading…</span></div><div class="card-body p-0"><div id="wcLoading" class="spinner-state" style="min-height:500px;"><div class="spin-ring"></div><span>Memuat word cloud…</span></div><div id="wordCloudChart" style="width:100%;height:500px;display:none;"></div><div id="wcEmpty" style="display:none;min-height:500px;" class="chart-empty"><i class="ph ph-cloud-slash"></i><span>Tidak ada data topic</span></div></div></div></div>
-    <div class="col-lg-4 col-12"><div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;"><div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"><div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-list-numbers f-18 text-primary"></i></div><div><h6 class="mb-0">Top Topics</h6><small class="text-muted">Ranked by volume</small></div></div><button class="btn btn-outline-secondary btn-sm" onclick="exportCsv()" title="Export CSV"><i class="ph ph-download-simple me-1"></i>CSV</button></div><div id="topicLoading" class="spinner-state"><div class="spin-ring"></div><span>Memuat…</span></div><div id="topicContent" style="display:none;"><div id="topicList" class="ht-list"></div><div id="pagArea"></div></div><div id="topicEmpty" style="display:none;" class="chart-empty"><i class="ph ph-hash"></i><span>Tidak ada data</span></div></div></div>
+    {{-- Word Cloud --}}
+    <div class="col-lg-8 col-12">
+        <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avtar avtar-xs bg-light-primary rounded">
+                        <i class="ph ph-cloud f-18 text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">Word Cloud</h6>
+                        <small class="text-muted" id="wcSubtitle">Klik kata untuk cari di YouTube</small>
+                    </div>
+                </div>
+                <span class="badge bg-light-primary text-primary" id="badgeWC">Loading…</span>
+            </div>
+            <div class="card-body p-0">
+                <div id="wcLoading" class="spinner-state" style="min-height:500px;">
+                    <div class="spin-ring"></div><span>Memuat word cloud…</span>
+                </div>
+                <div id="wordCloudChart" style="width:100%;height:500px;display:none;"></div>
+                <div id="wcEmpty" style="display:none;min-height:500px;" class="chart-empty">
+                    <i class="ph ph-cloud-slash"></i><span>Tidak ada data topic</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Top Topics List --}}
+    <div class="col-lg-4 col-12">
+        <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avtar avtar-xs bg-light-primary rounded">
+                        <i class="ph ph-list-numbers f-18 text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">Top Topics</h6>
+                        <small class="text-muted">Ranked by volume</small>
+                    </div>
+                </div>
+                <button class="btn btn-outline-secondary btn-sm" onclick="exportCsv()" title="Export CSV">
+                    <i class="ph ph-download-simple me-1"></i>CSV
+                </button>
+            </div>
+            <div id="topicLoading" class="spinner-state"><div class="spin-ring"></div><span>Memuat…</span></div>
+            <div id="topicContent" style="display:none;">
+                <div id="topicList" class="ht-list"></div>
+                <div id="pagArea"></div>
+            </div>
+            <div id="topicEmpty" style="display:none;" class="chart-empty"><i class="ph ph-hash"></i><span>Tidak ada data</span></div>
+        </div>
+    </div>
 </div>
 @endsection
+
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
 <script>
 'use strict';
-const CFG={pid:OV_PID,sd:OV_SD,ed:OV_ED};
-const _$=id=>document.getElementById(id);const numF=n=>parseInt(n||0).toLocaleString('id-ID');const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-let allTopics=[],filtered=[],curPage=1,curSent='all';const PP=15;let wcChart=null;
-const NEG_KW=['bad','worst','hate','sad','fail','lose','lost','angry','terrible','poor','dead','death','die','kill','corrupt','corruption','crime','fraud','scam','lie','lies','abuse','terror','attack','war','riot','scandal','boycott','crisis','disaster','wrong','hurt','suffer','violence','racist','bully','threat','danger','victim','buruk','benci','sedih','gagal','kalah','marah','parah','miskin','mati','bunuh','tewas','korupsi','kejahatan','penipuan','bohong','curang','kekerasan','serang','perang','rusuh','skandal','krisis','bencana','salah','rusak','sakit','derita','ilegal','ancaman','bahaya','darurat','korban','bangkrut','narkoba','meninggal','wafat','kecelakaan','banjir','gempa','longsor'];
-const POS_KW=['win','won','best','good','great','love','happy','success','amazing','excellent','awesome','celebrate','proud','champion','victory','achieve','congratulations','hope','inspire','wonderful','beautiful','brilliant','fantastic','legend','hero','progress','growth','menang','juara','terbaik','baik','bagus','cinta','senang','sukses','berhasil','hebat','keren','bangga','kemenangan','prestasi','selamat','harapan','inspirasi','indah','cemerlang','fantastis','pahlawan','kemajuan','merdeka','damai','sejahtera'];
-function getSent(name){const low=name.toLowerCase().replace(/^#/,'').trim();const tk=low.split(/[^a-z0-9]+/).filter(t=>t.length>0);for(const k of NEG_KW)if(tk.includes(k))return 'negative';for(const k of POS_KW)if(tk.includes(k))return 'positive';return 'neutral'}
-function sentColor(s){return{positive:['#10b981','#059669','#34d399','#6ee7b7','#047857'],negative:['#ef4444','#dc2626','#b91c1c','#f87171','#c53030'],neutral:['#f59e0b','#d97706','#fbbf24','#b45309','#fcd34d'],all:['#038047','#04995a','#2FC6F6','#06b6d4','#8b5cf6','#a78bfa','#f59e0b','#fbbf24','#10b981','#34d399','#ef4444','#f87171']}[s]||[]}
-async function loadData(){try{let ht=PRELOADED_DATA||[];if(!ht.length&&CFG.pid){try{const r=await fetch(`/mk/api/youtube/trending-topics?project_id=${CFG.pid}&start_date=${CFG.sd}&end_date=${CFG.ed}`);const j=await r.json();if(j.success&&j.data?.hashtags?.length)ht=j.data.hashtags}catch(fe){console.warn('[YT-WC] AJAX fallback failed',fe)}}if(!ht.length){showEmpty();return}allTopics=ht.map(t=>{const name=(t.hashtag||t.name||'').trim();return{name,size:t.size||t.total_volume||t.appearances||100,sent:getSent(name)}}).filter(t=>t.name);applyFilter()}catch(e){console.error('[YT-WC] ERROR',e);showEmpty()}}
-function applyFilter(){filtered=curSent==='all'?[...allTopics]:allTopics.filter(t=>t.sent===curSent);curPage=1;updateKpi();renderWC();renderList()}
-function updateKpi(){const n=allTopics.length,vol=allTopics.reduce((s,t)=>s+t.size,0),pos=allTopics.filter(t=>t.sent==='positive').length,neg=allTopics.filter(t=>t.sent==='negative').length;const el=(id,v)=>{const e=_$(id);if(e)e.textContent=numF(v)};el('kpiTopics',n);_$('kpiTopicsSub').innerHTML=`<i class="ph ph-hash me-1"></i>${n} trending topics`;el('kpiVolume',vol);_$('kpiVolumeSub').innerHTML=`<i class="ph ph-chart-bar me-1"></i>Avg ${numF(n?Math.round(vol/n):0)} / topic`;el('kpiPos',pos);_$('kpiPosSub').innerHTML=`<i class="ph ph-smiley me-1"></i>${n?(pos/n*100).toFixed(1):0}% of topics`;el('kpiNeg',neg);_$('kpiNegSub').innerHTML=`<i class="ph ph-smiley-sad me-1"></i>${n?(neg/n*100).toFixed(1):0}% of topics`;_$('badgeWC').textContent=filtered.length+' topics'}
-function showEmpty(){_$('wcLoading').style.display='none';_$('wcEmpty').style.display='flex';_$('topicLoading').style.display='none';_$('topicEmpty').style.display='flex';['kpiTopics','kpiVolume','kpiPos','kpiNeg'].forEach(id=>{const e=_$(id);if(e)e.textContent='0'})}
-function renderWC(){const ld=_$('wcLoading'),ch=_$('wordCloudChart'),em=_$('wcEmpty');if(!filtered.length){if(ld)ld.style.display='none';ch.style.display='none';if(em)em.style.display='flex';return}if(em)em.style.display='none';if(ld)ld.style.display='none';ch.style.display='block';if(wcChart){try{wcChart.dispose()}catch(e){}}wcChart=echarts.init(ch,null,{renderer:'canvas'});window.addEventListener('resize',()=>{try{wcChart.resize()}catch(e){}});const cols=sentColor(curSent),data=filtered.slice(0,100).map(t=>({name:t.name.replace(/^#/,''),value:t.size,textStyle:{color:cols[Math.floor(Math.random()*cols.length)]}}));wcChart.setOption({backgroundColor:'transparent',series:[{type:'wordCloud',shape:'circle',left:'center',top:'center',width:'90%',height:'90%',sizeRange:[32,120],rotationRange:[-45,45],rotationStep:15,gridSize:4,drawOutOfBound:false,layoutAnimation:true,textStyle:{fontFamily:'inherit',fontWeight:'700'},emphasis:{textStyle:{textShadowBlur:3,textShadowColor:'rgba(0,0,0,.15)'}},data}]});wcChart.on('click',p=>{const q=encodeURIComponent(p.name);window.open(`https://www.youtube.com/results?search_query=${q}`,'_blank','noopener,noreferrer')})}
-function renderList(){const ld=_$('topicLoading'),ct=_$('topicContent'),em=_$('topicEmpty'),list=_$('topicList'),pg=_$('pagArea');if(!filtered.length){if(ld)ld.style.display='none';if(em)em.style.display='flex';if(ct)ct.style.display='none';return}if(em)em.style.display='none';const total=filtered.length,pages=Math.ceil(total/PP),start=(curPage-1)*PP,items=filtered.slice(start,start+PP),mx=filtered[0]?.size||1;list.innerHTML='';items.forEach((h,i)=>{const rk=start+i+1,rc=rk<=3?` ht-rank--${rk}`:'',pct=Math.round((h.size/mx)*100);const el=document.createElement('div');el.className='ht-item';el.innerHTML=`<div class="ht-rank${rc}">${rk}</div><div class="ht-name">${esc(h.name)}</div><div class="ht-bar-wrap"><div class="ht-bar-fill" style="width:${pct}%;"></div></div><div class="ht-count">${numF(h.size)}</div>`;el.onclick=()=>{const q=encodeURIComponent(h.name.replace(/^#/,''));window.open(`https://www.youtube.com/results?search_query=${q}`,'_blank','noopener,noreferrer')};list.appendChild(el)});if(pg){if(pages<=1){pg.innerHTML=''}else{const fr=start+1,to=Math.min(start+PP,total);let b='',r=2;b+=`<button class="tme-pag-btn" ${curPage<=1?'disabled':''} onclick="goPage(${curPage-1})"><i class="ph ph-caret-left"></i></button>`;for(let i=1;i<=pages;i++){if(i===1||i===pages||(i>=curPage-r&&i<=curPage+r))b+=`<button class="tme-pag-btn${i===curPage?' is-active':''}" onclick="goPage(${i})">${i}</button>`;else if(i===curPage-r-1||i===curPage+r+1)b+=`<span class="tme-pag-btn" style="cursor:default;opacity:.4;">…</span>`}b+=`<button class="tme-pag-btn" ${curPage>=pages?'disabled':''} onclick="goPage(${curPage+1})"><i class="ph ph-caret-right"></i></button>`;pg.innerHTML=`<div class="tme-pagination"><span class="tme-pag-info">${fr}–${to} dari ${total}</span><div class="tme-pag-controls">${b}</div></div>`}}if(ld)ld.style.display='none';if(ct)ct.style.display='block'}
-function goPage(p){curPage=p;renderList();_$('topicList')?.scrollIntoView({behavior:'smooth',block:'nearest'})}
-function exportCsv(){if(!filtered.length){alert('Tidak ada data.');return}const hdr='rank;topic;volume;sentiment';const rows=filtered.map((t,i)=>`${i+1};${t.name.replace(/;/g,',')};${t.size};${t.sent}`);const blob=new Blob(['\uFEFF'+[hdr,...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`YouTube_WordCloud_${CFG.sd}_${CFG.ed}.csv`}).click()}
-document.addEventListener('DOMContentLoaded',()=>{loadData();document.querySelectorAll('.sent-tab').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.sent-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');curSent=btn.dataset.s;applyFilter()})})});
+
+const CFG = { pid: OV_PID, sd: OV_SD, ed: OV_ED };
+const _$  = id => document.getElementById(id);
+const numF = n => parseInt(n||0).toLocaleString('id-ID');
+const esc  = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* ── State ── */
+let allTopics = [], filtered = [], curPage = 1, curSent = 'all', curMode = 'hashtag';
+const PP = 15;
+let wcChart = null;
+
+/* ── Stopwords to skip in keyword mode ── */
+const STOPWORDS = new Set([
+    'the','a','an','and','or','but','in','on','at','to','for','of','with',
+    'is','are','was','were','be','been','being','have','has','had','do','does',
+    'did','will','would','could','should','may','might','shall','can',
+    'this','that','these','those','i','you','he','she','we','they','it',
+    'my','your','his','her','our','their','its','me','him','us','them',
+    'dari','dan','ke','di','yang','dengan','untuk','ini','itu','ada',
+    'tidak','bisa','akan','juga','sudah','pada','atau','dalam','oleh',
+    'karena','saat','kita','anda','kami','mereka','nya','si','ya','lagi',
+    'jadi','buat','tapi','kalau','aja','saja','pun','punya','lebih',
+    'seperti','masih','harus','kali','video','youtube','channel','watch',
+    'subscribe','like','comment','share','link','click','here','now',
+    'new','how','what','why','when','where','who','all','get','let',
+    'amp','via','rt','http','https','www','com','co','id'
+]);
+
+/* ── Sentiment keyword lists ── */
+const NEG_KW = ['bad','worst','hate','sad','fail','lose','lost','angry','terrible','poor','dead','death','die','kill','corrupt','corruption','crime','fraud','scam','lie','lies','abuse','terror','attack','war','riot','scandal','boycott','crisis','disaster','wrong','hurt','suffer','violence','racist','bully','threat','danger','victim','buruk','benci','sedih','gagal','kalah','marah','parah','miskin','mati','bunuh','tewas','korupsi','kejahatan','penipuan','bohong','curang','kekerasan','serang','perang','rusuh','skandal','krisis','bencana','salah','rusak','sakit','derita','ilegal','ancaman','bahaya','darurat','korban','bangkrut','narkoba','meninggal','wafat','kecelakaan','banjir','gempa','longsor'];
+const POS_KW = ['win','won','best','good','great','love','happy','success','amazing','excellent','awesome','celebrate','proud','champion','victory','achieve','congratulations','hope','inspire','wonderful','beautiful','brilliant','fantastic','legend','hero','progress','growth','menang','juara','terbaik','baik','bagus','cinta','senang','sukses','berhasil','hebat','keren','bangga','kemenangan','prestasi','selamat','harapan','inspirasi','indah','cemerlang','fantastis','pahlawan','kemajuan','merdeka','damai','sejahtera'];
+
+function getSent(name) {
+    const low = name.toLowerCase().replace(/^#/,'').trim();
+    const tk  = low.split(/[^a-z0-9]+/).filter(t => t.length > 0);
+    for (const k of NEG_KW) if (tk.includes(k)) return 'negative';
+    for (const k of POS_KW) if (tk.includes(k)) return 'positive';
+    return 'neutral';
+}
+
+function sentColor(s) {
+    return ({
+        positive: ['#10b981','#059669','#34d399','#6ee7b7','#047857'],
+        negative: ['#ef4444','#dc2626','#b91c1c','#f87171','#c53030'],
+        neutral:  ['#f59e0b','#d97706','#fbbf24','#b45309','#fcd34d'],
+        all:      ['#038047','#04995a','#2FC6F6','#06b6d4','#8b5cf6','#a78bfa','#f59e0b','#fbbf24','#10b981','#34d399','#ef4444','#f87171'],
+    })[s] || [];
+}
+
+/* ══════════════════════════════════════════════════════
+   EXTRACT HELPERS
+══════════════════════════════════════════════════════ */
+
+/**
+ * Extract #hashtags from a list of posts.
+ * Returns {name, size} array sorted desc.
+ */
+function extractHashtags(posts) {
+    const counts = {};
+    posts.forEach(p => {
+        const text = [(p.content||''),(p.title||''),(p.name||'')].join(' ');
+        const matches = text.match(/#([a-zA-Z0-9_\u00C0-\u024F\u0400-\u04FF]+)/gu) || [];
+        matches.forEach(tag => {
+            const t = tag.toLowerCase().trim();
+            if (t.length > 2) counts[t] = (counts[t]||0) + 1;
+        });
+    });
+    return Object.entries(counts)
+        .sort((a,b) => b[1]-a[1])
+        .map(([name, size]) => ({ name, size }));
+}
+
+/**
+ * Extract significant keywords from post titles/content.
+ * Filters stopwords, short words, and pure numbers.
+ * Returns {name, size} array sorted desc.
+ */
+function extractKeywords(posts) {
+    const counts = {};
+    posts.forEach(p => {
+        // Prioritize title, then content
+        const text = [(p.title||''),(p.content||'')].join(' ')
+            .toLowerCase()
+            .replace(/https?:\/\/\S+/g, '')      // strip URLs
+            .replace(/[^a-z0-9\u00C0-\u024F\u0400-\u04FF\s]/gu, ' ') // strip symbols
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        const words = text.split(' ');
+        words.forEach(w => {
+            w = w.trim();
+            if (w.length < 3) return;             // too short
+            if (/^\d+$/.test(w)) return;          // pure number
+            if (STOPWORDS.has(w)) return;          // stopword
+            counts[w] = (counts[w]||0) + 1;
+        });
+    });
+
+    return Object.entries(counts)
+        .filter(([,v]) => v >= 2)                 // must appear at least twice
+        .sort((a,b) => b[1]-a[1])
+        .slice(0, 150)
+        .map(([name, size]) => ({ name, size }));
+}
+
+/* ══════════════════════════════════════════════════════
+   LOAD DATA
+══════════════════════════════════════════════════════ */
+async function loadData() {
+    if (!CFG.pid) { showEmpty(); return; }
+
+    try {
+        /* ── Step 1: Try PRELOADED_RAW (plain array from controller) ── */
+        let preloaded = [];
+        if (Array.isArray(PRELOADED_RAW) && PRELOADED_RAW.length) {
+            preloaded = PRELOADED_RAW.map(t => ({
+                name : (t.hashtag || t.name || '').trim(),
+                size : t.size || t.total_volume || t.appearances || 1,
+            })).filter(t => t.name && t.size > 0);
+        }
+
+        if (preloaded.length) {
+            console.log('[WC] Using preloaded hashtags:', preloaded.length);
+            buildTopics(preloaded, 'hashtag');
+            return;
+        }
+
+        /* ── Step 2: Fetch posts directly from most-engagement API ──
+           This is the most reliable source — we get actual video data
+           and then extract hashtags OR keywords from it.              */
+        console.log('[WC] No preloaded data, fetching posts…');
+
+        const postsRes = await fetch(
+            `/mk/api/youtube/most-engagement?project_id=${CFG.pid}&start_date=${CFG.sd}&end_date=${CFG.ed}&sub=postbyview&rows=500`
+        );
+        const postsJson = await postsRes.json();
+        const posts = (postsJson.success && Array.isArray(postsJson.data)) ? postsJson.data : [];
+
+        console.log('[WC] Posts fetched:', posts.length);
+
+        if (!posts.length) {
+            /* ── Step 3: Try the trending-topics API as last resort ── */
+            console.log('[WC] No posts, trying trending-topics API…');
+            try {
+                const ttRes  = await fetch(`/mk/api/youtube/trending-topics?project_id=${CFG.pid}&start_date=${CFG.sd}&end_date=${CFG.ed}`);
+                const ttJson = await ttRes.json();
+                if (ttJson.success && ttJson.data?.hashtags?.length) {
+                    const ht = ttJson.data.hashtags.map(t => ({
+                        name: (t.hashtag || t.name || '').trim(),
+                        size: t.size || 1,
+                    })).filter(t => t.name);
+                    if (ht.length) { buildTopics(ht, 'hashtag'); return; }
+                }
+            } catch(e) { console.warn('[WC] trending-topics failed', e); }
+
+            showEmpty();
+            return;
+        }
+
+        /* ── Step 4: Extract hashtags first ── */
+        const hashtags = extractHashtags(posts);
+        console.log('[WC] Hashtags extracted:', hashtags.length);
+
+        if (hashtags.length >= 5) {
+            /* Enough hashtags — use them, keep mode=hashtag */
+            buildTopics(hashtags, 'hashtag');
+        } else {
+            /* Not enough hashtags → auto-switch to keyword mode */
+            console.log('[WC] Not enough hashtags, switching to keyword mode');
+            const keywords = extractKeywords(posts);
+            console.log('[WC] Keywords extracted:', keywords.length);
+
+            if (!keywords.length) { showEmpty(); return; }
+
+            /* Store hashtags too so user can toggle */
+            window._hashtagData = hashtags;
+            window._keywordData = keywords;
+
+            setMode('keyword');
+            buildTopics(keywords, 'keyword');
+        }
+
+        /* Also store posts for toggle */
+        window._rawPosts = posts;
+
+    } catch(e) {
+        console.error('[WC] ERROR', e);
+        showEmpty();
+    }
+}
+
+/**
+ * Build allTopics from extracted data and render.
+ */
+function buildTopics(data, mode) {
+    curMode = mode;
+
+    /* Update mode buttons */
+    document.querySelectorAll('.mode-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === mode);
+    });
+    _$('wcSubtitle').textContent = mode === 'keyword'
+        ? 'Keyword dari judul video — klik untuk cari di YouTube'
+        : 'Klik kata untuk cari di YouTube';
+
+    allTopics = data.map(t => ({
+        name : t.name,
+        size : t.size,
+        sent : getSent(t.name),
+    })).filter(t => t.name);
+
+    if (!allTopics.length) { showEmpty(); return; }
+
+    applyFilter();
+}
+
+/* ── Toggle mode manually ── */
+function switchMode(mode) {
+    if (mode === curMode) return;
+    if (!window._rawPosts?.length) return;
+
+    if (mode === 'hashtag') {
+        const ht = window._hashtagData || extractHashtags(window._rawPosts);
+        window._hashtagData = ht;
+        buildTopics(ht.length ? ht : extractKeywords(window._rawPosts), ht.length ? 'hashtag' : 'keyword');
+    } else {
+        const kw = window._keywordData || extractKeywords(window._rawPosts);
+        window._keywordData = kw;
+        buildTopics(kw, 'keyword');
+    }
+}
+
+function setMode(m) {
+    curMode = m;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+}
+
+/* ── Apply sentiment filter ── */
+function applyFilter() {
+    filtered = curSent === 'all'
+        ? [...allTopics]
+        : allTopics.filter(t => t.sent === curSent);
+    curPage = 1;
+    updateKpi();
+    renderWC();
+    renderList();
+}
+
+/* ── KPI ── */
+function updateKpi() {
+    const n   = allTopics.length;
+    const vol = allTopics.reduce((s,t) => s+t.size, 0);
+    const pos = allTopics.filter(t => t.sent === 'positive').length;
+    const neg = allTopics.filter(t => t.sent === 'negative').length;
+    const el  = (id,v) => { const e=_$(id); if(e) e.textContent=numF(v); };
+    el('kpiTopics', n);
+    _$('kpiTopicsSub').innerHTML = `<i class="ph ph-hash me-1"></i>${n} trending topics`;
+    el('kpiVolume', vol);
+    _$('kpiVolumeSub').innerHTML = `<i class="ph ph-chart-bar me-1"></i>Avg ${numF(n ? Math.round(vol/n) : 0)} / topic`;
+    el('kpiPos', pos);
+    _$('kpiPosSub').innerHTML = `<i class="ph ph-smiley me-1"></i>${n ? (pos/n*100).toFixed(1) : 0}% of topics`;
+    el('kpiNeg', neg);
+    _$('kpiNegSub').innerHTML = `<i class="ph ph-smiley-sad me-1"></i>${n ? (neg/n*100).toFixed(1) : 0}% of topics`;
+    _$('badgeWC').textContent = filtered.length + ' topics';
+}
+
+/* ── Show empty state ── */
+function showEmpty() {
+    _$('wcLoading').style.display  = 'none';
+    _$('wcEmpty').style.display    = 'flex';
+    _$('topicLoading').style.display = 'none';
+    _$('topicEmpty').style.display   = 'flex';
+    ['kpiTopics','kpiVolume','kpiPos','kpiNeg'].forEach(id => {
+        const e = _$(id); if(e) e.textContent = '0';
+    });
+}
+
+/* ── Render Word Cloud ── */
+function renderWC() {
+    const ld = _$('wcLoading'), ch = _$('wordCloudChart'), em = _$('wcEmpty');
+    if (!filtered.length) {
+        if(ld) ld.style.display = 'none';
+        ch.style.display = 'none';
+        if(em) em.style.display = 'flex';
+        return;
+    }
+    if(em) em.style.display = 'none';
+    if(ld) ld.style.display = 'none';
+    ch.style.display = 'block';
+
+    if (wcChart) { try { wcChart.dispose(); } catch(e) {} }
+    wcChart = echarts.init(ch, null, { renderer: 'canvas' });
+    window.addEventListener('resize', () => { try { wcChart.resize(); } catch(e) {} });
+
+    const cols = sentColor(curSent);
+    const data = filtered.slice(0, 120).map(t => ({
+        name      : t.name.replace(/^#/, ''),
+        value     : t.size,
+        textStyle : { color: cols[Math.floor(Math.random() * cols.length)] }
+    }));
+
+    wcChart.setOption({
+        backgroundColor: 'transparent',
+        series: [{
+            type            : 'wordCloud',
+            shape           : 'circle',
+            left            : 'center',
+            top             : 'center',
+            width           : '90%',
+            height          : '90%',
+            sizeRange       : [18, 96],
+            rotationRange   : [-45, 45],
+            rotationStep    : 15,
+            gridSize        : 4,
+            drawOutOfBound  : false,
+            layoutAnimation : true,
+            textStyle       : { fontFamily: 'inherit', fontWeight: '700' },
+            emphasis        : { textStyle: { textShadowBlur: 3, textShadowColor: 'rgba(0,0,0,.15)' } },
+            data,
+        }],
+    });
+
+    wcChart.on('click', p => {
+        const q = encodeURIComponent(p.name);
+        window.open(`https://www.youtube.com/results?search_query=${q}`, '_blank', 'noopener,noreferrer');
+    });
+}
+
+/* ── Render ranked list ── */
+function renderList() {
+    const ld = _$('topicLoading'), ct = _$('topicContent'), em = _$('topicEmpty');
+    const list = _$('topicList'), pg = _$('pagArea');
+    if (!filtered.length) {
+        if(ld) ld.style.display = 'none';
+        if(em) em.style.display = 'flex';
+        if(ct) ct.style.display = 'none';
+        return;
+    }
+    if(em) em.style.display = 'none';
+    const total = filtered.length, pages = Math.ceil(total/PP), start = (curPage-1)*PP;
+    const items = filtered.slice(start, start+PP), mx = filtered[0]?.size || 1;
+
+    list.innerHTML = '';
+    items.forEach((h, i) => {
+        const rk  = start + i + 1;
+        const rc  = rk <= 3 ? ` ht-rank--${rk}` : '';
+        const pct = Math.round((h.size / mx) * 100);
+        const el  = document.createElement('div');
+        el.className = 'ht-item';
+        el.innerHTML = `
+            <div class="ht-rank${rc}">${rk}</div>
+            <div class="ht-name">${esc(h.name)}</div>
+            <div class="ht-bar-wrap"><div class="ht-bar-fill" style="width:${pct}%;"></div></div>
+            <div class="ht-count">${numF(h.size)}</div>`;
+        el.onclick = () => {
+            const q = encodeURIComponent(h.name.replace(/^#/, ''));
+            window.open(`https://www.youtube.com/results?search_query=${q}`, '_blank', 'noopener,noreferrer');
+        };
+        list.appendChild(el);
+    });
+
+    if (pg) {
+        if (pages <= 1) {
+            pg.innerHTML = '';
+        } else {
+            const fr = start+1, to = Math.min(start+PP, total);
+            let b = '', r = 2;
+            b += `<button class="tme-pag-btn" ${curPage<=1?'disabled':''} onclick="goPage(${curPage-1})"><i class="ph ph-caret-left"></i></button>`;
+            for (let i=1; i<=pages; i++) {
+                if (i===1||i===pages||(i>=curPage-r&&i<=curPage+r)) {
+                    b += `<button class="tme-pag-btn${i===curPage?' is-active':''}" onclick="goPage(${i})">${i}</button>`;
+                } else if (i===curPage-r-1||i===curPage+r+1) {
+                    b += `<span class="tme-pag-btn" style="cursor:default;opacity:.4;">…</span>`;
+                }
+            }
+            b += `<button class="tme-pag-btn" ${curPage>=pages?'disabled':''} onclick="goPage(${curPage+1})"><i class="ph ph-caret-right"></i></button>`;
+            pg.innerHTML = `<div class="tme-pagination"><span class="tme-pag-info">${fr}–${to} dari ${total}</span><div class="tme-pag-controls">${b}</div></div>`;
+        }
+    }
+
+    if(ld) ld.style.display = 'none';
+    if(ct) ct.style.display = 'block';
+}
+
+function goPage(p) {
+    curPage = p;
+    renderList();
+    _$('topicList')?.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+/* ── Export CSV ── */
+function exportCsv() {
+    if (!filtered.length) { alert('Tidak ada data.'); return; }
+    const hdr  = 'rank;topic;volume;sentiment';
+    const rows = filtered.map((t,i) => `${i+1};${t.name.replace(/;/g,',')};${t.size};${t.sent}`);
+    const blob = new Blob(['\uFEFF'+[hdr,...rows].join('\r\n')], { type:'text/csv;charset=utf-8;' });
+    Object.assign(document.createElement('a'), {
+        href     : URL.createObjectURL(blob),
+        download : `YouTube_WordCloud_${CFG.sd}_${CFG.ed}.csv`,
+    }).click();
+}
+
+/* ── INIT ── */
+document.addEventListener('DOMContentLoaded', () => {
+    loadData();
+
+    /* Sentiment tab switch */
+    document.querySelectorAll('.sent-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.sent-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            curSent = btn.dataset.s;
+            applyFilter();
+        });
+    });
+
+    /* Mode toggle (hashtag vs keyword) */
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            switchMode(btn.dataset.mode);
+        });
+    });
+});
 </script>
 @endsection

@@ -681,80 +681,6 @@ $views = (int) ($item['num_views'] ?? $item['view_cnt'] ?? $item['views'] ?? 0);
         }
     }
 
-    public function trendingTopicsData(Request $request)
-    {
-        try {
-            $projectId = $request->query('project_id');
-            $startDate = $request->query('start_date');
-            $endDate   = $request->query('end_date');
-
-            if (!$projectId || !$startDate || !$endDate) {
-                return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
-            }
-
-            $posts = $this->client->ytbTopStatus($projectId, $startDate, $endDate, 0, 23, 500, 'postbyview');
-
-            Log::info('YT trendingTopicsData via ytbTopStatus', [
-                'type'  => gettype($posts),
-                'count' => is_array($posts) ? count($posts) : 0,
-            ]);
-
-            $hashtagCount = [];
-
-            if (is_array($posts)) {
-                foreach ($posts as $post) {
-                    if (!is_array($post)) continue;
-
-                    $content = $post['content'] ?? $post['caption'] ?? $post['text'] ?? $post['name'] ?? '';
-
-                    if (empty($content)) continue;
-
-                    preg_match_all('/#([a-zA-Z0-9_\x{00C0}-\x{024F}\x{0400}-\x{04FF}]+)/u', $content, $matches);
-
-                    foreach ($matches[1] as $tag) {
-                        $tag = strtolower(trim($tag));
-                        if (strlen($tag) < 2) continue;
-                        $hashtagCount[$tag] = ($hashtagCount[$tag] ?? 0) + 1;
-                    }
-                }
-            }
-
-            arsort($hashtagCount);
-
-            $hashtags      = [];
-            $totalMentions = 0;
-
-            foreach ($hashtagCount as $name => $size) {
-                $hashtags[]     = [
-                    'name'    => $name,
-                    'hashtag' => $name,
-                    'size'    => $size,
-                ];
-                $totalMentions += $size;
-            }
-
-            Log::info('YT trendingTopicsData parsed', [
-                'total_hashtags' => count($hashtags),
-                'total_mentions' => $totalMentions,
-                'top5'           => array_slice($hashtags, 0, 5),
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'data'    => [
-                    'hashtags'       => $hashtags,
-                    'total_hashtags' => count($hashtags),
-                    'total_mentions' => $totalMentions,
-                    'top_hashtag'    => $hashtags[0] ?? null,
-                ],
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('YT trendingTopicsData error', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
-        }
-    }
-
     // ─────────────────────────────────────────────────────
     // AUTHORS DEMOGRAPHICS
     // ─────────────────────────────────────────────────────
@@ -997,75 +923,237 @@ $views = (int) ($item['num_views'] ?? $item['view_cnt'] ?? $item['views'] ?? 0);
     // ─────────────────────────────────────────────────────
 
     public function trendingWordCloudPage(Request $request)
-    {
-        try {
-            $projects  = $this->getAllProjects();
-            $projectId = $request->query('project_id');
-
-            if (!$projectId && count($projects) > 0) {
-                $projectId = $projects[0]['id'] ?? null;
-
-                if ($projectId) {
-                    return redirect()->route('mk.youtube.trending-word-cloud', [
-                        'project_id' => $projectId,
-                        'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
-                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
-                    ]);
-                }
-            }
-
-            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
-            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
-
-            // Pre-load trending topics data server-side
-            $hashtagsJson = '[]';
+{
+    try {
+        $projects  = $this->getAllProjects();
+        $projectId = $request->query('project_id');
+ 
+        if (!$projectId && count($projects) > 0) {
+            $projectId = $projects[0]['id'] ?? null;
+ 
             if ($projectId) {
-                try {
-                    $posts = $this->client->ytbTopStatus($projectId, $startDate, $endDate, 0, 23, 500, 'postbyview');
-                    $hashtagCount = [];
-                    if (is_array($posts)) {
-                        foreach ($posts as $post) {
-                            if (!is_array($post)) continue;
-                            $content = $post['content'] ?? $post['caption'] ?? $post['text'] ?? $post['name'] ?? '';
-                            if (empty($content)) continue;
-                            preg_match_all('/#([a-zA-Z0-9_\x{00C0}-\x{024F}\x{0400}-\x{04FF}]+)/u', $content, $matches);
-                            foreach ($matches[1] as $tag) {
-                                $tag = strtolower(trim($tag));
-                                if (strlen($tag) < 2) continue;
-                                $hashtagCount[$tag] = ($hashtagCount[$tag] ?? 0) + 1;
-                            }
+                return redirect()->route('mk.youtube.trending-word-cloud', [
+                    'project_id' => $projectId,
+                    'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
+                    'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                ]);
+            }
+        }
+ 
+        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+        $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+ 
+        // Pre-load data server-side
+        $hashtagsJson = '[]';
+ 
+        if ($projectId) {
+            try {
+                $posts = $this->client->ytbTopStatus($projectId, $startDate, $endDate, 0, 23, 500, 'postbyview');
+ 
+                $hashtagCount = [];
+                $keywordCount = [];
+ 
+                if (is_array($posts)) {
+                    foreach ($posts as $post) {
+                        if (!is_array($post)) continue;
+ 
+                        $content = ($post['content'] ?? '') . ' ' . ($post['title'] ?? '') . ' ' . ($post['name'] ?? '');
+ 
+                        if (empty(trim($content))) continue;
+ 
+                        // ── Extract #hashtags ──
+                        preg_match_all('/#([a-zA-Z0-9_\x{00C0}-\x{024F}\x{0400}-\x{04FF}]+)/u', $content, $hashMatches);
+                        foreach ($hashMatches[1] as $tag) {
+                            $tag = strtolower(trim($tag));
+                            if (strlen($tag) < 2) continue;
+                            $hashtagCount[$tag] = ($hashtagCount[$tag] ?? 0) + 1;
+                        }
+ 
+                        // ── Extract keywords from title (fallback) ──
+                        $titleText = strtolower($post['title'] ?? $post['name'] ?? '');
+                        $titleText = preg_replace('/https?:\/\/\S+/', '', $titleText);
+                        $titleText = preg_replace('/[^a-z0-9\x{00C0}-\x{024F}\x{0400}-\x{04FF}\s]/u', ' ', $titleText);
+                        $words = preg_split('/\s+/', trim($titleText), -1, PREG_SPLIT_NO_EMPTY);
+ 
+                        $stopwords = ['the','a','an','and','or','but','in','on','at','to','for','of','with','is','are','was','were','be','been','this','that','i','you','he','she','we','they','it','my','your','his','her','our','dari','dan','ke','di','yang','dengan','untuk','ini','itu','ada','tidak','bisa','akan','juga','sudah','pada','atau','dalam','oleh','karena','kita','anda','kami','mereka','ya','jadi','tapi','kalau','aja','video','youtube','channel','watch','subscribe','like','comment','new','how','what','why','when','where','all','get','let','amp','http','https','www','com','co','id'];
+ 
+                        foreach ($words as $word) {
+                            if (strlen($word) < 3) continue;
+                            if (preg_match('/^\d+$/', $word)) continue;
+                            if (in_array($word, $stopwords)) continue;
+                            $keywordCount[$word] = ($keywordCount[$word] ?? 0) + 1;
                         }
                     }
+                }
+ 
+                // Prefer hashtags; fall back to keywords if not enough
+                if (count($hashtagCount) >= 5) {
                     arsort($hashtagCount);
-                    $hashtags = [];
+                    $topics = [];
                     foreach ($hashtagCount as $name => $size) {
-                        $hashtags[] = ['name' => $name, 'hashtag' => $name, 'size' => $size];
+                        $topics[] = ['name' => '#' . $name, 'hashtag' => $name, 'size' => $size];
                     }
-                    $hashtagsJson = json_encode($hashtags);
-                } catch (\Exception $e) {
-                    Log::warning('YT word cloud pre-load failed', ['error' => $e->getMessage()]);
+                } else {
+                    // Use keywords, merge with any hashtags found
+                    arsort($keywordCount);
+                    arsort($hashtagCount);
+ 
+                    $topics = [];
+                    foreach ($hashtagCount as $name => $size) {
+                        $topics[] = ['name' => '#' . $name, 'hashtag' => $name, 'size' => $size * 3]; // boost hashtags
+                    }
+                    foreach ($keywordCount as $name => $size) {
+                        if ($size >= 2) { // only words appearing 2+ times
+                            $topics[] = ['name' => $name, 'hashtag' => $name, 'size' => $size];
+                        }
+                    }
+ 
+                    // Sort merged list by size
+                    usort($topics, fn($a, $b) => $b['size'] - $a['size']);
+                }
+ 
+                $hashtagsJson = json_encode($topics);
+ 
+                Log::info('YT word cloud pre-load', [
+                    'hashtag_count' => count($hashtagCount),
+                    'keyword_count' => count($keywordCount),
+                    'topics_total'  => count($topics),
+                ]);
+ 
+            } catch (\Exception $e) {
+                Log::warning('YT word cloud pre-load failed', ['error' => $e->getMessage()]);
+            }
+        }
+ 
+        return view('mk.youtube.youtube-trending-word-cloud')->with([
+            'projectId'    => $projectId,
+            'startDate'    => $startDate,
+            'endDate'      => $endDate,
+            'projects'     => $projects,
+            'hashtagsJson' => $hashtagsJson,
+        ]);
+ 
+    } catch (\Exception $e) {
+        return view('mk.youtube.youtube-trending-word-cloud')->with([
+            'projectId'    => null,
+            'startDate'    => now()->subDays(6)->format('Y-m-d'),
+            'endDate'      => now()->format('Y-m-d'),
+            'projects'     => [],
+            'hashtagsJson' => '[]',
+            'error'        => $e->getMessage(),
+        ]);
+    }
+}
+ 
+// ─────────────────────────────────────────────────────
+// TRENDING TOPICS DATA API
+// ─────────────────────────────────────────────────────
+ 
+public function trendingTopicsData(Request $request)
+{
+    try {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date');
+        $endDate   = $request->query('end_date');
+ 
+        if (!$projectId || !$startDate || !$endDate) {
+            return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
+        }
+ 
+        $posts = $this->client->ytbTopStatus($projectId, $startDate, $endDate, 0, 23, 500, 'postbyview');
+ 
+        Log::info('YT trendingTopicsData via ytbTopStatus', [
+            'type'  => gettype($posts),
+            'count' => is_array($posts) ? count($posts) : 0,
+        ]);
+ 
+        $hashtagCount = [];
+        $keywordCount = [];
+ 
+        $stopwords = ['the','a','an','and','or','but','in','on','at','to','for','of','with','is','are','was','were','be','been','this','that','i','you','he','she','we','they','it','my','your','his','her','our','dari','dan','ke','di','yang','dengan','untuk','ini','itu','ada','tidak','bisa','akan','juga','sudah','pada','atau','dalam','oleh','karena','kita','anda','kami','mereka','ya','jadi','tapi','kalau','aja','video','youtube','channel','watch','subscribe','like','comment','new','how','what','why','when','where','all','get','let','amp','http','https','www','com','co','id'];
+ 
+        if (is_array($posts)) {
+            foreach ($posts as $post) {
+                if (!is_array($post)) continue;
+ 
+                $content = ($post['content'] ?? '') . ' ' . ($post['title'] ?? '') . ' ' . ($post['name'] ?? '');
+ 
+                if (empty(trim($content))) continue;
+ 
+                // Extract hashtags
+                preg_match_all('/#([a-zA-Z0-9_\x{00C0}-\x{024F}\x{0400}-\x{04FF}]+)/u', $content, $hashMatches);
+                foreach ($hashMatches[1] as $tag) {
+                    $tag = strtolower(trim($tag));
+                    if (strlen($tag) < 2) continue;
+                    $hashtagCount[$tag] = ($hashtagCount[$tag] ?? 0) + 1;
+                }
+ 
+                // Extract keywords from title as fallback
+                $titleText = strtolower($post['title'] ?? $post['name'] ?? '');
+                $titleText = preg_replace('/https?:\/\/\S+/', '', $titleText);
+                $titleText = preg_replace('/[^a-z0-9\x{00C0}-\x{024F}\x{0400}-\x{04FF}\s]/u', ' ', $titleText);
+                $words = preg_split('/\s+/', trim($titleText), -1, PREG_SPLIT_NO_EMPTY);
+ 
+                foreach ($words as $word) {
+                    if (strlen($word) < 3) continue;
+                    if (preg_match('/^\d+$/', $word)) continue;
+                    if (in_array($word, $stopwords)) continue;
+                    $keywordCount[$word] = ($keywordCount[$word] ?? 0) + 1;
                 }
             }
-
-            return view('mk.youtube.youtube-trending-word-cloud')->with([
-                'projectId'    => $projectId,
-                'startDate'    => $startDate,
-                'endDate'      => $endDate,
-                'projects'     => $projects,
-                'hashtagsJson' => $hashtagsJson,
-            ]);
-
-        } catch (\Exception $e) {
-            return view('mk.youtube.youtube-trending-word-cloud')->with([
-                'projectId'    => null,
-                'startDate'    => now()->subDays(6)->format('Y-m-d'),
-                'endDate'      => now()->format('Y-m-d'),
-                'projects'     => [],
-                'hashtagsJson' => '[]',
-                'error'        => $e->getMessage(),
-            ]);
         }
+ 
+        $hashtags      = [];
+        $totalMentions = 0;
+ 
+        if (count($hashtagCount) >= 5) {
+            arsort($hashtagCount);
+            foreach ($hashtagCount as $name => $size) {
+                $hashtags[]     = ['name' => '#'.$name, 'hashtag' => $name, 'size' => $size];
+                $totalMentions += $size;
+            }
+        } else {
+            // Merge hashtags + keywords
+            arsort($hashtagCount);
+            arsort($keywordCount);
+ 
+            foreach ($hashtagCount as $name => $size) {
+                $boosted        = $size * 3;
+                $hashtags[]     = ['name' => '#'.$name, 'hashtag' => $name, 'size' => $boosted];
+                $totalMentions += $boosted;
+            }
+            foreach ($keywordCount as $name => $size) {
+                if ($size >= 2) {
+                    $hashtags[]     = ['name' => $name, 'hashtag' => $name, 'size' => $size];
+                    $totalMentions += $size;
+                }
+            }
+            usort($hashtags, fn($a, $b) => $b['size'] - $a['size']);
+        }
+ 
+        Log::info('YT trendingTopicsData parsed', [
+            'hashtag_count' => count($hashtagCount),
+            'keyword_count' => count($keywordCount),
+            'topics_total'  => count($hashtags),
+            'top5'          => array_slice($hashtags, 0, 5),
+        ]);
+ 
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'hashtags'       => $hashtags,
+                'total_hashtags' => count($hashtags),
+                'total_mentions' => $totalMentions,
+                'top_hashtag'    => $hashtags[0] ?? null,
+            ],
+        ]);
+ 
+    } catch (\Exception $e) {
+        Log::error('YT trendingTopicsData error', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
     }
+}
+ 
 
     // ─────────────────────────────────────────────────────
     // AI ANALYSIS
