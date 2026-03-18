@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="/assets/css/custom-theme.css" />
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
+ 
     <style>
         #gdpTriggerLabel {
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
