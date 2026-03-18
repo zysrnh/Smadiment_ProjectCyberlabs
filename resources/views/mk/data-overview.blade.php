@@ -3,296 +3,535 @@
 @section('title', 'Data Overview - SMADIMENT')
 
 @section('styles')
-    <style>
-        :root {
-            --do-primary: var(--bs-primary, #4361EE);
-            --do-primary-rgb: var(--bs-primary-rgb, 67, 97, 238);
-            --do-primary-lt: rgba(var(--do-primary-rgb, 67, 97, 238), .10);
-            --do-green: #10B981;
-            --do-red: #EF4444;
-            --do-slate-50: #F8FAFC;
-            --do-slate-100: #F1F5F9;
-            --do-slate-200: #E2E8F0;
-            --do-slate-300: #CBD5E1;
-            --do-slate-400: #94A3B8;
-            --do-slate-500: #64748B;
-            --do-slate-700: #334155;
-            --do-slate-800: #1E293B;
-            --do-slate-900: #0F172A;
-            --do-radius: 8px;
-            --do-radius-sm: 5px;
-            --do-shadow-sm: 0 1px 3px rgba(15,23,42,.06),0 1px 2px rgba(15,23,42,.04);
-            --do-shadow-md: 0 4px 14px rgba(15,23,42,.08);
-            --do-shadow-lg: 0 10px 30px rgba(15,23,42,.12);
-            --c-news: #0284c7;
-            --c-twitter: #1d9bf0;
-            --c-facebook: #1877f2;
-            --c-instagram: #e1306c;
-            --c-youtube: #ff0000;
-            --c-tiktok: #111827;
-        }
-        *,*::before,*::after { box-sizing:border-box; }
+<style>
+:root {
+    --primary        : #038047;
+    --primary-rgb    : 3, 128, 71;
+    --primary-lt     : rgba(3,128,71,.10);
+    --dark           : #273B4A;
+    --white          : #FFFFFF;
+    --bg             : #F1F5F8;
+    --green          : #038047;
+    --green-light    : #E8F5EE;
+    --red            : #EF4444;
+    --red-light      : #FEF2F2;
+    --amber          : #F59E0B;
+    --amber-light    : #FFFBEB;
+    --cyan           : #06B6D4;
+    --cyan-light     : #ECFEFF;
+    --slate-50       : #F8FAFC;
+    --slate-100      : #F1F5F9;
+    --slate-200      : #E2E8F0;
+    --slate-300      : #CBD5E1;
+    --slate-400      : #94A3B8;
+    --slate-500      : #64748B;
+    --slate-600      : #475569;
+    --slate-700      : #334155;
+    --slate-800      : #1E293B;
+    --slate-900      : #0F172A;
+    --radius         : 8px;
+    --radius-sm      : 5px;
+    --shadow-sm      : 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+    --shadow-md      : 0 4px 14px rgba(15,23,42,.08);
+    --shadow-lg      : 0 10px 30px rgba(15,23,42,.12);
+    --c-news         : #0284c7;
+    --c-twitter      : #1d9bf0;
+    --c-facebook     : #1877f2;
+    --c-instagram    : #e1306c;
+    --c-youtube      : #ff0000;
+    --c-tiktok       : #111827;
+}
 
-        @keyframes fadeUp        { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes slideInRight  { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
-        @keyframes slideOutRight { from{transform:translateX(0);opacity:1}    to{transform:translateX(100%);opacity:0} }
-        @keyframes overlayIn     { from{opacity:0} to{opacity:1} }
-        @keyframes overlayOut    { from{opacity:1} to{opacity:0} }
-        @keyframes shimmer       { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
-        @keyframes spin          { to{transform:rotate(360deg)} }
-        @keyframes kpiShimmer    { 0%{left:-100%} 100%{left:150%} }
+@keyframes ttDotPulse   { 0%,100%{box-shadow:0 0 0 3px rgba(3,128,71,.3)} 50%{box-shadow:0 0 0 6px transparent} }
+@keyframes fadeUp       { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes shimmer      { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes spin         { to{transform:rotate(360deg)} }
+@keyframes slideInRight  { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes slideOutRight { from{transform:translateX(0);opacity:1} to{transform:translateX(100%);opacity:0} }
+@keyframes overlayIn    { from{opacity:0} to{opacity:1} }
+@keyframes overlayOut   { from{opacity:1} to{opacity:0} }
+@keyframes kpiShimmer   { 0%{left:-100%} 100%{left:150%} }
+@keyframes kpiIconBounce {
+    0%,100%{transform:scale(1) rotate(0deg)}
+    30%    {transform:scale(1.25) rotate(-10deg)}
+    60%    {transform:scale(1.1) rotate(6deg)}
+}
 
-        .fade-up    { animation:fadeUp .36s ease-out both; }
-        .fade-up-d1 { animation-delay:.04s; }
-        .fade-up-d2 { animation-delay:.08s; }
-        .fade-up-d3 { animation-delay:.12s; }
+.kpi-icon-bg {
+    width:48px; height:48px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,.2); font-size:24px; color:#fff; flex-shrink:0;
+}
 
-        /* Grid */
-        .do-row-top { display:grid; grid-template-columns:1fr 1fr 360px; gap:14px; margin-bottom:14px; align-items:start; }
-        .do-row-mid { display:grid; grid-template-columns:380px 1fr; gap:14px; margin-bottom:14px; align-items:stretch; }
-        .do-mb14 { margin-bottom:14px; }
+.sk-block {
+    border-radius:4px;
+    background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);
+    background-size:200% 100%; animation:shimmer 1.4s infinite;
+}
+.snt-skel {
+    border-radius:4px;
+    background:linear-gradient(90deg,var(--slate-50) 25%,#e2e8f0 50%,var(--slate-50) 75%);
+    background-size:200% 100%; animation:shimmer 1.5s ease-in-out infinite;
+}
 
-        /* Tables */
-        .do-tbl { width:100%; border-collapse:separate; border-spacing:0; font-size:12px; }
-        .do-tbl th { padding:0 0 8px; text-align:left; font-size:10px; font-weight:700; color:var(--do-slate-400); text-transform:uppercase; letter-spacing:.4px; border-bottom:1px solid var(--do-slate-200); }
-        .do-tbl td { padding:8px 0; border-bottom:1px solid var(--do-slate-100); vertical-align:middle; }
-        .do-tbl tbody tr:last-child td { border-bottom:none; }
-        .do-tbl tbody tr:hover td { background:var(--do-slate-50); }
-        .do-tbl-rank { font-weight:800; color:var(--do-primary); width:22px; font-size:11px; }
-        .do-tbl-name { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:220px; }
-        .do-tbl-num  { text-align:right; font-weight:700; font-size:11px; color:var(--do-slate-500); }
-        .topic-link  { color:var(--do-slate-800); text-decoration:none; transition:color .14s; }
-        .topic-link:hover { color:var(--do-primary); }
+.spin-ring {
+    width:26px; height:26px;
+    border:2.5px solid var(--slate-100); border-top-color:var(--primary);
+    border-radius:50%; animation:spin .65s linear infinite;
+}
+.spinner-state {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:48px 20px; gap:12px; color:var(--slate-400); font-size:12px; font-weight:600;
+}
 
-        /* View-all */
-        .do-view-all { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; background:transparent; color:var(--do-primary); border:1px solid var(--do-primary); border-radius:var(--do-radius-sm); font-size:10px; font-weight:700; cursor:pointer; transition:all .14s; }
-        .do-view-all:hover { background:var(--do-primary); color:#fff; }
+.kpi-card-hover {
+    will-change:transform,box-shadow;
+    transition:transform .25s cubic-bezier(.34,1.56,.64,1) !important,
+               box-shadow .25s ease !important,
+               filter .25s ease !important;
+    cursor:default; position:relative !important; overflow:hidden !important;
+}
+.kpi-card-hover::before {
+    content:''; position:absolute; top:0; bottom:0; left:-100%;
+    width:60%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
+    pointer-events:none; z-index:1; transition:none;
+}
+.kpi-card-hover:hover {
+    transform:translateY(-6px) scale(1.025) !important;
+    box-shadow:0 20px 40px rgba(0,0,0,.25) !important;
+    filter:brightness(1.07) !important;
+}
+.kpi-card-hover:hover::before      { animation:kpiShimmer .6s ease forwards; }
+.kpi-card-hover:hover .kpi-icon-bg { background:rgba(255,255,255,.35) !important; transition:background .2s ease !important; }
+.kpi-card-hover:hover .kpi-icon-bg i { animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both !important; display:inline-block !important; }
+.kpi-card-hover:active { transform:translateY(-2px) scale(1.01) !important; transition-duration:.08s !important; }
 
-        /* Mention */
-        .do-mention-body  { display:flex; align-items:stretch; min-height:240px; }
-        .do-mention-chart { flex:1; display:flex; align-items:center; justify-content:center; padding:16px; min-width:0; }
-        #chMentionPie     { width:100% !important; max-width:200px; height:200px !important; }
-        .do-mention-stats { width:148px; flex-shrink:0; border-left:1px solid var(--do-slate-200); padding:16px 14px; display:flex; flex-direction:column; justify-content:center; gap:14px; }
-        .do-mstat-label   { font-size:10px; font-weight:700; color:var(--do-slate-400); text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px; }
-        .do-mstat-row     { display:flex; flex-direction:column; gap:2px; cursor:pointer; border-radius:var(--do-radius-sm); padding:5px 6px; margin:-5px -6px; transition:background .13s; }
-        .do-mstat-row:hover { background:var(--do-primary-lt); }
-        .do-mstat-name    { font-size:11px; font-weight:600; color:var(--do-slate-500); display:flex; align-items:center; gap:4px; }
-        .do-mstat-name span { display:inline-block; width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-        .do-mstat-val     { font-size:19px; font-weight:800; letter-spacing:-.5px; color:var(--do-slate-900); line-height:1.1; }
-        .do-mstat-divider { height:1px; background:var(--do-slate-100); }
-        .do-mstat-total-lbl { font-size:10px; font-weight:700; color:var(--do-slate-400); text-transform:uppercase; letter-spacing:.4px; }
-        .do-mstat-total-val { font-size:22px; font-weight:800; letter-spacing:-1px; color:var(--do-primary); line-height:1.1; }
+.chart-container { position:relative; }
+.chart-loading {
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px; background:#fff; z-index:2; transition:opacity .3s;
+}
+.chart-loading.hidden { opacity:0; pointer-events:none; }
+.chart-loading span { font-size:11px; font-weight:600; color:var(--slate-400); }
+.chart-empty {
+    height:100%; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:6px; color:var(--slate-400); font-size:12px; font-weight:600;
+}
+.chart-empty i { font-size:34px; color:var(--slate-300); display:block; }
 
-        /* SOV */
-        .do-sov-body   { display:flex; align-items:stretch; min-height:300px; }
-        .do-sov-chart  { flex:0 0 230px; display:flex; align-items:center; justify-content:center; padding:20px 14px 20px 20px; }
-        #chSovPie      { width:200px !important; height:200px !important; }
-        .do-sov-legend { flex:1; border-left:1px solid var(--do-slate-200); padding:16px 16px 16px 14px; display:flex; flex-direction:column; justify-content:center; overflow:hidden; }
-        .do-sov-legend-title { font-size:10px; font-weight:800; color:var(--do-slate-400); text-transform:uppercase; letter-spacing:.7px; margin-bottom:8px; padding-bottom:7px; border-bottom:2px solid var(--do-slate-100); }
-        .do-sov-item   { display:flex; flex-direction:column; padding:5px; border-radius:var(--do-radius-sm); transition:background .13s; cursor:pointer; gap:3px; }
-        .do-sov-item:hover { background:var(--do-primary-lt); }
-        .do-sov-item-row { display:flex; align-items:center; gap:6px; }
-        .do-sov-dot    { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-        .do-sov-name   { flex:1; font-size:11px; font-weight:600; color:var(--do-slate-800); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .do-sov-pct    { font-size:12px; font-weight:800; flex-shrink:0; letter-spacing:-.3px; }
-        .do-sov-bar-wrap { height:4px; background:var(--do-slate-100); border-radius:2px; overflow:hidden; }
-        .do-sov-bar    { height:100%; border-radius:2px; transition:width .8s cubic-bezier(.4,0,.2,1); }
+.page-export-bar {
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:10px;
+    background:#fff; border:1px solid var(--slate-200);
+    border-radius:var(--radius); padding:9px 14px;
+    margin-bottom:20px; box-shadow:var(--shadow-sm);
+}
+.page-export-bar-left  { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:var(--slate-600); }
+.page-export-bar-left i { font-size:15px; color:var(--primary); }
+.page-export-bar-right { display:flex; gap:8px; }
 
-        /* Map */
-        .do-map-wrap  { display:flex; }
-        .do-map-area  { flex:1; min-width:0; position:relative; }
-        .do-loc-panel { width:210px; flex-shrink:0; border-left:1px solid var(--do-slate-200); display:flex; flex-direction:column; }
-        .do-loc-title { padding:11px 14px 8px; font-size:10px; font-weight:700; color:var(--do-slate-400); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--do-slate-100); }
-        .do-loc-list  { overflow-y:auto; flex:1; max-height:400px; }
-        .do-loc-list::-webkit-scrollbar { width:3px; }
-        .do-loc-list::-webkit-scrollbar-thumb { background:var(--do-slate-200); border-radius:99px; }
-        .do-loc-item  { display:flex; align-items:center; gap:8px; padding:9px 12px; cursor:pointer; border-bottom:1px solid var(--do-slate-50); transition:all .13s; }
-        .do-loc-item:hover { background:rgba(67,97,238,.05); }
-        .do-loc-item.active { background:var(--do-primary-lt); border-left:3px solid var(--do-primary); padding-left:9px; }
-        .do-loc-rank  { font-size:10px; font-weight:700; color:var(--do-primary); width:16px; flex-shrink:0; }
-        .do-loc-info  { flex:1; min-width:0; }
-        .do-loc-name  { font-size:11px; font-weight:600; color:var(--do-slate-800); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .do-loc-count { font-size:10px; color:var(--do-slate-400); font-weight:500; }
-        .do-loc-dot   { width:7px; height:7px; border-radius:50%; flex-shrink:0; background:var(--do-primary); }
+.page-export-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:32px; height:32px; border-radius:var(--radius-sm);
+    font-size:16px; cursor:pointer;
+    transition:all .15s ease; border:1.5px solid transparent; font-family:inherit;
+}
+.page-export-btn-pdf { background:#fff3f3; color:#dc2626; border-color:#fca5a5; }
+.page-export-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.page-export-btn-img { background:var(--primary-lt); color:var(--primary); border-color:rgba(3,128,71,.3); }
+.page-export-btn-img:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.page-export-btn:disabled { opacity:.55; cursor:not-allowed; pointer-events:none; }
+.page-export-btn .export-spinner { width:13px; height:13px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin .65s linear infinite; display:none; }
+.page-export-btn.exporting .export-spinner { display:inline-block; }
+.page-export-btn.exporting .export-icon    { display:none; }
 
-        /* Skeleton */
-        .sk-block { border-radius:4px; background:linear-gradient(90deg,var(--do-slate-100) 25%,var(--do-slate-200) 50%,var(--do-slate-100) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
-        .sk-overlay { position:absolute; inset:0; z-index:3; border-radius:var(--do-radius-sm); }
-        .do-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 16px; gap:7px; }
-        .do-empty i { font-size:32px; color:var(--do-slate-300); }
-        .do-empty-txt { font-size:12px; font-weight:600; color:var(--do-slate-400); }
-        .do-body-scroll { max-height:210px; overflow-y:auto; }
-        .do-body-scroll::-webkit-scrollbar { width:3px; }
-        .do-body-scroll::-webkit-scrollbar-thumb { background:var(--do-slate-200); border-radius:99px; }
+.card-exp-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    font-size:14px; cursor:pointer; flex-shrink:0;
+    transition:all .14s ease; border:1px solid transparent;
+    font-family:inherit; background:transparent;
+}
+.card-exp-btn-pdf { color:#dc2626; border-color:#fca5a5; background:#fff3f3; }
+.card-exp-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.card-exp-btn-img { color:var(--primary); border-color:rgba(3,128,71,.3); background:var(--primary-lt); }
+.card-exp-btn-img:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.card-exp-btn:disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+.card-exp-btn .export-spinner { width:11px; height:11px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin .65s linear infinite; display:none; }
+.card-exp-btn.exporting .export-spinner { display:inline-block; }
+.card-exp-btn.exporting .export-icon    { display:none; }
 
-        /* ══ EXPORT STYLES ══ */
-        .page-export-bar {
-            display:flex; align-items:center; justify-content:space-between;
-            flex-wrap:wrap; gap:10px;
-            background:#fff; border:1px solid var(--do-slate-200);
-            border-radius:var(--do-radius); padding:9px 14px;
-            margin-bottom:14px; box-shadow:var(--do-shadow-sm);
-        }
-        .page-export-bar-left  { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:var(--do-slate-600); }
-        .page-export-bar-left i { font-size:15px; color:var(--do-primary); }
-        .page-export-bar-right { display:flex; gap:8px; }
+.export-toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--slate-900); color:#fff; border-radius:var(--radius);
+    padding:10px 18px; font-size:12px; font-weight:600;
+    box-shadow:var(--shadow-lg); z-index:99999;
+    opacity:0; pointer-events:none;
+    transition:opacity .22s ease, transform .22s ease;
+    display:flex; align-items:center; gap:8px; white-space:nowrap;
+}
+.export-toast.show    { opacity:1; transform:translateX(-50%) translateY(0); }
+.export-toast.success { background:#065f46; }
+.export-toast.error   { background:#991b1b; }
 
-        .page-export-btn {
-            display:inline-flex; align-items:center; justify-content:center;
-            width:32px; height:32px; border-radius:var(--do-radius-sm);
-            font-size:16px; cursor:pointer;
-            transition:all .15s ease; border:1.5px solid transparent; font-family:inherit;
-        }
-        .page-export-btn-pdf { background:#fff3f3; color:#dc2626; border-color:#fca5a5; }
-        .page-export-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
-        .page-export-btn-img { background:var(--do-primary-lt); color:var(--do-primary); border-color:rgba(67,97,238,.3); }
-        .page-export-btn-img:hover { background:var(--do-primary); color:#fff; border-color:var(--do-primary); }
-        .page-export-btn:disabled { opacity:.55; cursor:not-allowed; pointer-events:none; }
-        .page-export-btn .export-spinner { width:13px; height:13px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin .65s linear infinite; display:none; }
-        .page-export-btn.exporting .export-spinner { display:inline-block; }
-        .page-export-btn.exporting .export-icon    { display:none; }
+/* ══ Mention Card ══ */
+.do-mention-body  { display:flex; align-items:stretch; min-height:240px; }
+.do-mention-chart { flex:1; display:flex; align-items:center; justify-content:center; padding:16px; min-width:0; }
+#chMentionPie     { width:100% !important; max-width:200px; height:200px !important; }
+.do-mention-stats { width:148px; flex-shrink:0; border-left:1px solid var(--slate-200); padding:16px 14px; display:flex; flex-direction:column; justify-content:center; gap:14px; }
+.do-mstat-label   { font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px; }
+.do-mstat-row     { display:flex; flex-direction:column; gap:2px; cursor:pointer; border-radius:var(--radius-sm); padding:5px 6px; margin:-5px -6px; transition:background .13s; }
+.do-mstat-row:hover { background:var(--primary-lt); }
+.do-mstat-name    { font-size:11px; font-weight:600; color:var(--slate-500); display:flex; align-items:center; gap:4px; }
+.do-mstat-name span { display:inline-block; width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.do-mstat-val     { font-size:19px; font-weight:800; letter-spacing:-.5px; color:var(--slate-900); line-height:1.1; }
+.do-mstat-divider { height:1px; background:var(--slate-100); }
+.do-mstat-total-lbl { font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.4px; }
+.do-mstat-total-val { font-size:22px; font-weight:800; letter-spacing:-1px; color:var(--primary); line-height:1.1; }
 
-        .card-exp-btn {
-            display:inline-flex; align-items:center; justify-content:center;
-            width:28px; height:28px; border-radius:var(--do-radius-sm);
-            font-size:14px; cursor:pointer; flex-shrink:0;
-            transition:all .14s ease; border:1px solid transparent;
-            font-family:inherit; background:transparent;
-        }
-        .card-exp-btn-pdf { color:#dc2626; border-color:#fca5a5; background:#fff3f3; }
-        .card-exp-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
-        .card-exp-btn-img { color:var(--do-primary); border-color:rgba(67,97,238,.3); background:var(--do-primary-lt); }
-        .card-exp-btn-img:hover { background:var(--do-primary); color:#fff; border-color:var(--do-primary); }
-        .card-exp-btn:disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
-        .card-exp-btn .export-spinner { width:11px; height:11px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin .65s linear infinite; display:none; }
-        .card-exp-btn.exporting .export-spinner { display:inline-block; }
-        .card-exp-btn.exporting .export-icon    { display:none; }
+/* ══ SOV Card — Centered Donut Only ══ */
+.do-sov-body {
+    display:flex; align-items:center; justify-content:center;
+    min-height:340px; padding:20px 16px;
+}
+.do-sov-chart {
+    width:100%; display:flex; align-items:center; justify-content:center;
+}
+#chSovPie { width:100% !important; height:380px !important; }
 
-        .export-toast {
-            position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
-            background:var(--do-slate-900); color:#fff; border-radius:var(--do-radius);
-            padding:10px 18px; font-size:12px; font-weight:600;
-            box-shadow:var(--do-shadow-lg); z-index:99999;
-            opacity:0; pointer-events:none;
-            transition:opacity .22s ease, transform .22s ease;
-            display:flex; align-items:center; gap:8px; white-space:nowrap;
-        }
-        .export-toast.show    { opacity:1; transform:translateX(-50%) translateY(0); }
-        .export-toast.success { background:#065f46; }
-        .export-toast.error   { background:#991b1b; }
+/* ══ Map ══ */
+.do-map-wrap  { display:flex; }
+.do-map-area  { flex:1; min-width:0; position:relative; }
+.do-loc-panel { width:210px; flex-shrink:0; border-left:1px solid var(--slate-200); display:flex; flex-direction:column; }
+.do-loc-title { padding:11px 14px 8px; font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--slate-100); }
+.do-loc-list  { overflow-y:auto; flex:1; max-height:400px; }
+.do-loc-list::-webkit-scrollbar { width:3px; }
+.do-loc-list::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
+.do-loc-item  { display:flex; align-items:center; gap:8px; padding:9px 12px; cursor:pointer; border-bottom:1px solid var(--slate-50); transition:all .13s; }
+.do-loc-item:hover { background:rgba(3,128,71,.05); }
+.do-loc-item.active { background:var(--primary-lt); border-left:3px solid var(--primary); padding-left:9px; }
+.do-loc-rank  { font-size:10px; font-weight:700; color:var(--primary); width:16px; flex-shrink:0; }
+.do-loc-info  { flex:1; min-width:0; }
+.do-loc-name  { font-size:11px; font-weight:600; color:var(--slate-800); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.do-loc-count { font-size:10px; color:var(--slate-400); font-weight:500; }
+.do-loc-dot   { width:7px; height:7px; border-radius:50%; flex-shrink:0; background:var(--primary); }
 
-        /* Slide Panel */
-        .do-panel-overlay { position:fixed; inset:0; z-index:9000; background:rgba(15,23,42,.45); backdrop-filter:blur(4px); display:none; }
-        .do-panel-overlay.show   { display:block; animation:overlayIn .22s ease-out; }
-        .do-panel-overlay.hiding { animation:overlayOut .22s ease-out forwards; }
-        .do-panel { position:fixed; top:0; right:0; bottom:0; z-index:9001; width:480px; max-width:100vw; background:#fff; display:none; flex-direction:column; border-left:1px solid var(--do-slate-200); box-shadow:-8px 0 40px rgba(15,23,42,.16); }
-        .do-panel.show   { display:flex; animation:slideInRight .28s cubic-bezier(.4,0,.2,1); }
-        .do-panel.hiding { animation:slideOutRight .24s cubic-bezier(.4,0,.2,1) forwards; }
-        .do-panel-header { display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--do-slate-200); background:var(--do-slate-50); flex-shrink:0; }
-        .do-panel-dot    { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
-        .do-panel-title  { font-size:13px; font-weight:700; color:var(--do-slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .do-panel-count  { display:none; }
-        .do-panel-close  { width:28px; height:28px; border-radius:var(--do-radius-sm); border:1px solid var(--do-slate-200); background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--do-slate-500); font-size:16px; transition:all .14s; flex-shrink:0; }
-        .do-panel-close:hover { background:var(--do-red); border-color:var(--do-red); color:#fff; }
-        .do-panel-actions { display:flex; align-items:center; gap:7px; padding:7px 12px; border-bottom:1px solid var(--do-slate-200); background:#fff; flex-shrink:0; }
-        .do-panel-meta   { flex:1; font-size:10px; font-weight:700; color:var(--do-slate-400); text-transform:uppercase; letter-spacing:.5px; overflow:hidden; display:flex; align-items:center; gap:5px; }
-        .do-panel-tabs   { display:flex; background:var(--do-slate-100); border:1px solid var(--do-slate-200); border-radius:var(--do-radius-sm); padding:2px; gap:2px; }
-        .do-panel-tab    { padding:3px 9px; border-radius:3px; border:none; background:transparent; font-size:11px; font-weight:700; cursor:pointer; transition:all .13s; color:var(--do-slate-500); font-family:inherit; }
-        .do-panel-tab:hover { background:#fff; }
-        .do-panel-tab.active { background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.08); }
-        .do-panel-tab.active[data-s="all"] { color:var(--do-primary); }
-        .do-panel-tab.neg.active { color:var(--do-red); }
-        .do-panel-tab.pos.active { color:#0ea5e9; }
-        .do-panel-tab.neu.active { color:var(--do-slate-500); }
-        .do-panel-list { overflow-y:auto; flex:1; padding:2px 0; min-height:0; }
-        .do-panel-list::-webkit-scrollbar { width:4px; }
-        .do-panel-list::-webkit-scrollbar-thumb { background:var(--do-slate-200); border-radius:99px; }
-        .do-panel-item { display:flex; gap:10px; padding:10px 14px; border-bottom:1px solid var(--do-slate-50); cursor:pointer; transition:background .1s; align-items:flex-start; }
-        .do-panel-item:hover { background:#f0f9ff; }
-        .do-panel-item:last-child { border-bottom:none; }
-        .do-panel-avatar { width:36px; height:36px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; color:#fff; border:1.5px solid var(--do-slate-200); overflow:hidden; }
-        .do-panel-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-        .do-panel-item-body { flex:1; min-width:0; }
-        .do-panel-author { font-size:12px; font-weight:700; color:var(--do-slate-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .do-panel-handle { font-size:10px; color:var(--do-slate-400); font-weight:500; margin-bottom:2px; }
-        .do-panel-text   { font-size:11px; color:var(--do-slate-600); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px; }
-        .do-panel-footer { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--do-slate-400); flex-wrap:wrap; }
-        .do-sent-badge       { padding:1px 6px; border-radius:3px; font-size:9px; font-weight:800; text-transform:uppercase; }
-        .do-sent-badge--pos  { background:#dbeafe; color:#1d4ed8; }
-        .do-sent-badge--neg  { background:#fee2e2; color:#991b1b; }
-        .do-sent-badge--neu  { background:var(--do-slate-100); color:var(--do-slate-500); }
-        .do-panel-loading { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:12px; color:var(--do-slate-400); font-size:13px; font-weight:600; }
-        .do-panel-spinner { width:28px; height:28px; border:2.5px solid var(--do-slate-100); border-top-color:var(--do-primary); border-radius:50%; animation:spin .65s linear infinite; }
+/* ══ Tables ══ */
+.do-tbl { width:100%; border-collapse:separate; border-spacing:0; font-size:12px; }
+.do-tbl th { padding:0 0 8px; text-align:left; font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.4px; border-bottom:1px solid var(--slate-200); }
+.do-tbl td { padding:8px 0; border-bottom:1px solid var(--slate-100); vertical-align:middle; }
+.do-tbl tbody tr:last-child td { border-bottom:none; }
+.do-tbl tbody tr:hover td { background:var(--slate-50); }
+.do-tbl-rank { font-weight:800; color:var(--primary); width:22px; font-size:11px; }
+.do-tbl-name { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:220px; }
+.do-tbl-num  { text-align:right; font-weight:700; font-size:11px; color:var(--slate-500); }
+.topic-link  { color:var(--slate-800); text-decoration:none; transition:color .14s; }
+.topic-link:hover { color:var(--primary); }
 
-        /* Detail sub-panel */
-        .do-detail-panel { position:absolute; inset:0; background:#fff; z-index:5; display:none; flex-direction:column; animation:slideInRight .2s cubic-bezier(.4,0,.2,1); }
-        .do-detail-panel.show { display:flex; }
-        .do-dp2-header { display:flex; align-items:center; gap:8px; padding:12px 14px; background:var(--do-slate-50); border-bottom:1px solid var(--do-slate-200); flex-shrink:0; }
-        .do-dp2-back { width:28px; height:28px; border-radius:var(--do-radius-sm); border:1px solid var(--do-slate-200); background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--do-slate-500); transition:all .13s; font-size:14px; }
-        .do-dp2-back:hover { background:var(--do-primary-lt); color:var(--do-primary); border-color:var(--do-primary); }
-        .do-dp2-title { font-size:13px; font-weight:700; color:var(--do-slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .do-dp2-body  { overflow-y:auto; flex:1; padding:16px; }
-        .do-dp2-body::-webkit-scrollbar { width:4px; }
-        .do-dp2-body::-webkit-scrollbar-thumb { background:var(--do-slate-200); border-radius:99px; }
-        .do-dp2-avatar-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
-        .do-dp2-avatar-lg  { width:46px; height:46px; border-radius:50%; color:#fff; font-weight:700; font-size:16px; display:flex; align-items:center; justify-content:center; border:2px solid var(--do-slate-200); overflow:hidden; flex-shrink:0; }
-        .do-dp2-avatar-lg img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-        .do-dp2-name   { font-size:14px; font-weight:700; color:var(--do-slate-900); }
-        .do-dp2-handle { font-size:11px; color:var(--do-slate-400); font-weight:500; }
-        .do-dp2-plat-badge { display:inline-block; padding:2px 8px; border-radius:3px; font-size:10px; font-weight:700; margin-top:3px; }
-        .do-dp2-meta   { display:flex; align-items:center; justify-content:space-between; font-size:11px; color:var(--do-slate-400); font-weight:500; margin-bottom:10px; }
-        .do-dp2-sent   { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:3px; font-size:11px; font-weight:700; margin-bottom:10px; }
-        .do-dp2-sent--pos { background:#dbeafe; color:#1d4ed8; }
-        .do-dp2-sent--neg { background:#fee2e2; color:#991b1b; }
-        .do-dp2-sent--neu { background:var(--do-slate-100); color:var(--do-slate-500); }
-        .do-dp2-content { font-size:12px; color:var(--do-slate-700); line-height:1.7; margin-bottom:12px; background:var(--do-slate-50); border-radius:var(--do-radius-sm); padding:10px 12px; border:1px solid var(--do-slate-200); word-break:break-word; }
-        .do-dp2-media   { border-radius:var(--do-radius-sm); overflow:hidden; margin-bottom:10px; background:#000; }
-        .do-dp2-media img { width:100%; max-height:220px; object-fit:cover; display:block; }
-        .do-dp2-media--video { background:var(--do-slate-900); }
-        .do-dp2-stats  { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:10px; }
-        .do-dp2-stat   { background:var(--do-slate-50); border-radius:var(--do-radius-sm); padding:8px 10px; border:1px solid var(--do-slate-200); text-align:center; }
-        .do-dp2-stat-val { font-size:14px; font-weight:700; color:var(--do-slate-900); }
-        .do-dp2-stat-lbl { font-size:9px; font-weight:700; color:var(--do-slate-400); text-transform:uppercase; letter-spacing:.4px; margin-top:1px; }
-        .do-dp2-link   { display:flex; align-items:center; justify-content:center; gap:6px; padding:9px 14px; background:var(--do-primary); color:#fff; border-radius:var(--do-radius-sm); font-size:12px; font-weight:700; text-decoration:none; transition:filter .14s; margin-top:4px; }
-        .do-dp2-link:hover { filter:brightness(1.1); color:#fff; }
-        .do-dp2-link i { font-size:13px; }
+.do-view-all {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:4px 10px; background:transparent;
+    color:var(--primary); border:1px solid var(--primary);
+    border-radius:var(--radius-sm); font-size:10px; font-weight:700;
+    cursor:pointer; transition:all .14px;
+}
+.do-view-all:hover { background:var(--primary); color:#fff; }
 
-        /* Platform picker */
-        .do-plat-picker { position:fixed; z-index:20000; background:#fff; border:1px solid var(--do-slate-200); border-radius:var(--do-radius); box-shadow:var(--do-shadow-lg); padding:5px; min-width:175px; font-family:inherit; display:none; animation:fadeUp .14s ease-out; }
-        .do-plat-picker.show { display:block; }
-        .do-plat-picker-head { padding:4px 9px 6px; font-size:10px; font-weight:700; color:var(--do-slate-400); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--do-slate-100); margin-bottom:3px; }
-        .do-plat-btn { display:flex; align-items:center; gap:7px; padding:7px 10px; border-radius:var(--do-radius-sm); font-size:12px; font-weight:600; cursor:pointer; background:transparent; border:none; font-family:inherit; width:100%; text-align:left; color:var(--do-slate-700); transition:background .12s; }
-        .do-plat-btn:hover { background:var(--do-primary-lt); color:var(--do-primary); }
-        .do-plat-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-left:auto; }
+.do-body-scroll { max-height:210px; overflow-y:auto; }
+.do-body-scroll::-webkit-scrollbar { width:3px; }
+.do-body-scroll::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
 
-        /* Modals */
-        .do-modal-overlay { position:fixed; inset:0; z-index:8000; background:rgba(15,23,42,.55); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; }
-        .do-modal-overlay.show { display:flex; animation:overlayIn .2s ease-out; }
-        .do-modal-box  { background:#fff; border-radius:var(--do-radius); width:90%; max-width:560px; max-height:80vh; box-shadow:var(--do-shadow-lg); overflow:hidden; animation:fadeUp .24s ease-out; display:flex; flex-direction:column; }
-        .do-modal-head { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid var(--do-slate-200); }
-        .do-modal-head-title { font-size:15px; font-weight:700; color:var(--do-slate-900); margin:0; }
-        .do-modal-head-close { width:30px; height:30px; border-radius:var(--do-radius-sm); background:#fff; border:1px solid var(--do-slate-200); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .14s; font-size:16px; color:var(--do-slate-500); }
-        .do-modal-head-close:hover { background:var(--do-red); border-color:var(--do-red); color:#fff; }
-        .do-modal-body { padding:16px 20px 20px; overflow-y:auto; }
-        .do-modal-body::-webkit-scrollbar { width:4px; }
-        .do-modal-body::-webkit-scrollbar-thumb { background:var(--do-slate-200); border-radius:99px; }
+.do-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 16px; gap:7px; }
+.do-empty i { font-size:32px; color:var(--slate-300); }
+.do-empty-txt { font-size:12px; font-weight:600; color:var(--slate-400); }
 
-        /* Responsive */
-        @media(max-width:1280px) { .do-row-top{grid-template-columns:1fr 1fr;} .do-row-top>.card:last-child{grid-column:1/-1;} .do-row-mid{grid-template-columns:320px 1fr;} }
-        @media(max-width:1024px) { .do-row-mid{grid-template-columns:1fr;} .do-sov-body{flex-direction:column;} .do-sov-chart{flex:none;} .do-sov-legend{border-left:none;border-top:1px solid var(--do-slate-200);} }
-        @media(max-width:900px)  { .do-row-top{grid-template-columns:1fr;} .do-mention-body{flex-direction:column;} .do-mention-stats{width:100%;border-left:none;border-top:1px solid var(--do-slate-200);flex-direction:row;flex-wrap:wrap;gap:14px;padding:14px 16px;} .do-map-wrap{flex-direction:column;} .do-loc-panel{width:100%;border-left:none;border-top:1px solid var(--do-slate-200);} .do-panel{width:100vw;} }
-    </style>
+/* ══ Slide Panel ══ */
+.do-panel-overlay {
+    position:fixed; inset:0; z-index:9000;
+    background:rgba(15,23,42,.45); backdrop-filter:blur(4px); display:none;
+}
+.do-panel-overlay.show   { display:block; animation:overlayIn .22s ease-out; }
+.do-panel-overlay.hiding { animation:overlayOut .22s ease-out forwards; }
+.do-panel {
+    position:fixed; top:0; right:0; bottom:0; z-index:9001;
+    width:480px; max-width:100vw; background:#fff;
+    display:none; flex-direction:column;
+    border-left:1px solid var(--slate-200);
+    box-shadow:-8px 0 40px rgba(15,23,42,.16);
+}
+.do-panel.show   { display:flex; animation:slideInRight .28s cubic-bezier(.4,0,.2,1); }
+.do-panel.hiding { animation:slideOutRight .24s cubic-bezier(.4,0,.2,1) forwards; }
+.do-panel-header {
+    display:flex; align-items:center; gap:10px;
+    padding:14px 16px; border-bottom:1px solid var(--slate-200);
+    background:var(--slate-50); flex-shrink:0;
+}
+.do-panel-dot   { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.do-panel-title { font-size:13px; font-weight:700; color:var(--slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.do-panel-close {
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    border:1px solid var(--slate-200); background:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--slate-500); font-size:16px; transition:all .14s; flex-shrink:0;
+}
+.do-panel-close:hover { background:var(--red); border-color:var(--red); color:#fff; }
+.do-panel-actions {
+    display:flex; align-items:center; gap:7px; padding:7px 12px;
+    border-bottom:1px solid var(--slate-200); background:#fff; flex-shrink:0;
+}
+.do-panel-meta {
+    flex:1; font-size:10px; font-weight:700; color:var(--slate-400);
+    text-transform:uppercase; letter-spacing:.5px;
+    display:flex; align-items:center; gap:5px;
+}
+.do-panel-tabs {
+    display:flex; background:var(--slate-100); border:1px solid var(--slate-200);
+    border-radius:var(--radius-sm); padding:2px; gap:2px;
+}
+.do-panel-tab {
+    padding:3px 9px; border-radius:3px; border:none; background:transparent;
+    font-size:11px; font-weight:700; cursor:pointer; transition:all .13s;
+    color:var(--slate-500); font-family:inherit;
+}
+.do-panel-tab:hover { background:#fff; }
+.do-panel-tab.active { background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+.do-panel-tab.active[data-s="all"] { color:var(--primary); }
+.do-panel-tab.neg.active { color:var(--red); }
+.do-panel-tab.pos.active { color:#0ea5e9; }
+.do-panel-tab.neu.active { color:var(--slate-500); }
+.do-panel-list { overflow-y:auto; flex:1; padding:2px 0; min-height:0; }
+.do-panel-list::-webkit-scrollbar { width:4px; }
+.do-panel-list::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
+.do-panel-item {
+    display:flex; gap:10px; padding:10px 14px;
+    border-bottom:1px solid var(--slate-50); cursor:pointer;
+    transition:background .1s; align-items:flex-start;
+}
+.do-panel-item:hover { background:#f0fff8; }
+.do-panel-item:last-child { border-bottom:none; }
+.do-panel-avatar {
+    width:36px; height:36px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:12px; color:#fff;
+    border:1.5px solid var(--slate-200); overflow:hidden;
+}
+.do-panel-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.do-panel-item-body { flex:1; min-width:0; }
+.do-panel-author { font-size:12px; font-weight:700; color:var(--slate-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.do-panel-handle { font-size:10px; color:var(--slate-400); font-weight:500; margin-bottom:2px; }
+.do-panel-text   { font-size:11px; color:var(--slate-600); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px; }
+.do-panel-footer { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--slate-400); flex-wrap:wrap; }
+.do-sent-badge      { padding:1px 6px; border-radius:3px; font-size:9px; font-weight:800; text-transform:uppercase; }
+.do-sent-badge--pos { background:#d1fae5; color:#065f46; }
+.do-sent-badge--neg { background:#fee2e2; color:#991b1b; }
+.do-sent-badge--neu { background:var(--slate-100); color:var(--slate-500); }
+.do-panel-loading {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    height:100%; gap:12px; color:var(--slate-400); font-size:13px; font-weight:600;
+}
+.do-panel-spinner {
+    width:28px; height:28px; border:2.5px solid var(--slate-100);
+    border-top-color:var(--primary); border-radius:50%; animation:spin .65s linear infinite;
+}
+
+/* Detail sub-panel */
+.do-detail-panel {
+    position:absolute; inset:0; background:#fff; z-index:5;
+    display:none; flex-direction:column;
+    animation:slideInRight .2s cubic-bezier(.4,0,.2,1);
+}
+.do-detail-panel.show { display:flex; }
+.do-dp2-header {
+    display:flex; align-items:center; gap:8px; padding:12px 14px;
+    background:var(--slate-50); border-bottom:1px solid var(--slate-200); flex-shrink:0;
+}
+.do-dp2-back {
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    border:1px solid var(--slate-200); background:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--slate-500); transition:all .13s; font-size:14px;
+}
+.do-dp2-back:hover { background:var(--primary-lt); color:var(--primary); border-color:var(--primary); }
+.do-dp2-title  { font-size:13px; font-weight:700; color:var(--slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.do-dp2-body   { overflow-y:auto; flex:1; padding:16px; }
+.do-dp2-body::-webkit-scrollbar { width:4px; }
+.do-dp2-body::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
+.do-dp2-avatar-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.do-dp2-avatar-lg  { width:46px; height:46px; border-radius:50%; color:#fff; font-weight:700; font-size:16px; display:flex; align-items:center; justify-content:center; border:2px solid var(--slate-200); overflow:hidden; flex-shrink:0; }
+.do-dp2-avatar-lg img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.do-dp2-name   { font-size:14px; font-weight:700; color:var(--slate-900); }
+.do-dp2-handle { font-size:11px; color:var(--slate-400); font-weight:500; }
+.do-dp2-plat-badge { display:inline-block; padding:2px 8px; border-radius:3px; font-size:10px; font-weight:700; margin-top:3px; }
+.do-dp2-meta   { display:flex; align-items:center; justify-content:space-between; font-size:11px; color:var(--slate-400); font-weight:500; margin-bottom:10px; }
+.do-dp2-sent   { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:3px; font-size:11px; font-weight:700; margin-bottom:10px; }
+.do-dp2-sent--pos { background:#d1fae5; color:#065f46; }
+.do-dp2-sent--neg { background:#fee2e2; color:#991b1b; }
+.do-dp2-sent--neu { background:var(--slate-100); color:var(--slate-500); }
+.do-dp2-content { font-size:12px; color:var(--slate-700); line-height:1.7; margin-bottom:12px; background:var(--slate-50); border-radius:var(--radius-sm); padding:10px 12px; border:1px solid var(--slate-200); word-break:break-word; }
+.do-dp2-media   { border-radius:var(--radius-sm); overflow:hidden; margin-bottom:10px; background:#000; }
+.do-dp2-media img { width:100%; max-height:220px; object-fit:cover; display:block; }
+.do-dp2-media--video { background:var(--slate-900); }
+.do-dp2-stats  { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:10px; }
+.do-dp2-stat   { background:var(--slate-50); border-radius:var(--radius-sm); padding:8px 10px; border:1px solid var(--slate-200); text-align:center; }
+.do-dp2-stat-val { font-size:14px; font-weight:700; color:var(--slate-900); }
+.do-dp2-stat-lbl { font-size:9px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.4px; margin-top:1px; }
+.do-dp2-link   { display:flex; align-items:center; justify-content:center; gap:6px; padding:9px 14px; background:var(--primary); color:#fff; border-radius:var(--radius-sm); font-size:12px; font-weight:700; text-decoration:none; transition:filter .14s; margin-top:4px; }
+.do-dp2-link:hover { filter:brightness(1.1); color:#fff; }
+.do-dp2-link i { font-size:13px; }
+
+/* ══ Platform picker ══ */
+.do-plat-picker {
+    position:fixed; z-index:20000; background:#fff;
+    border:1px solid var(--slate-200); border-radius:var(--radius);
+    box-shadow:var(--shadow-lg); padding:5px; min-width:175px;
+    font-family:inherit; display:none; animation:fadeUp .14s ease-out;
+}
+.do-plat-picker.show { display:block; }
+.do-plat-picker-head { padding:4px 9px 6px; font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--slate-100); margin-bottom:3px; }
+.do-plat-btn { display:flex; align-items:center; gap:7px; padding:7px 10px; border-radius:var(--radius-sm); font-size:12px; font-weight:600; cursor:pointer; background:transparent; border:none; font-family:inherit; width:100%; text-align:left; color:var(--slate-700); transition:background .12s; }
+.do-plat-btn:hover { background:var(--primary-lt); color:var(--primary); }
+.do-plat-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-left:auto; }
+
+/* ══ Modals ══ */
+.do-modal-overlay { position:fixed; inset:0; z-index:8000; background:rgba(15,23,42,.55); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; }
+.do-modal-overlay.show { display:flex; animation:overlayIn .2s ease-out; }
+.do-modal-box  { background:#fff; border-radius:var(--radius); width:90%; max-width:560px; max-height:80vh; box-shadow:var(--shadow-lg); overflow:hidden; animation:fadeUp .24s ease-out; display:flex; flex-direction:column; }
+.do-modal-head { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid var(--slate-200); }
+.do-modal-head-title { font-size:15px; font-weight:700; color:var(--slate-900); margin:0; }
+.do-modal-head-close { width:30px; height:30px; border-radius:var(--radius-sm); background:#fff; border:1px solid var(--slate-200); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .14s; font-size:16px; color:var(--slate-500); }
+.do-modal-head-close:hover { background:var(--red); border-color:var(--red); color:#fff; }
+.do-modal-body { padding:16px 20px 20px; overflow-y:auto; }
+.do-modal-body::-webkit-scrollbar { width:4px; }
+.do-modal-body::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
+
+/* ══ Grid layout ══ */
+.do-row-top { display:grid; grid-template-columns:1fr 1fr 360px; gap:14px; margin-bottom:14px; align-items:start; }
+.do-row-mid { display:grid; grid-template-columns:420px 1fr; gap:14px; margin-bottom:14px; align-items:stretch; }
+.do-mb14    { margin-bottom:14px; }
+
+.donut-legend { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:10px; }
+.donut-leg-item {
+    display:flex; align-items:center; gap:5px;
+    font-size:11px; font-weight:600; color:var(--slate-500);
+    padding:3px 8px; background:var(--slate-50);
+    border-radius:3px; border:1px solid var(--slate-200);
+    cursor:pointer; transition:border-color .12s, background .12s, color .12s;
+}
+.donut-leg-item:hover { border-color:var(--primary); background:var(--primary-lt); color:var(--primary); }
+.donut-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+@media(max-width:1280px) {
+    .do-row-top{grid-template-columns:1fr 1fr;}
+    .do-row-top>.card:last-child{grid-column:1/-1;}
+    .do-row-mid{grid-template-columns:360px 1fr;}
+}
+@media(max-width:1024px) {
+    .do-row-mid{grid-template-columns:1fr;}
+}
+@media(max-width:900px) {
+    .do-row-top{grid-template-columns:1fr;}
+    .do-mention-body{flex-direction:column;}
+    .do-mention-stats{width:100%;border-left:none;border-top:1px solid var(--slate-200);flex-direction:row;flex-wrap:wrap;gap:14px;padding:14px 16px;}
+    .do-map-wrap{flex-direction:column;}
+    .do-loc-panel{width:100%;border-left:none;border-top:1px solid var(--slate-200);}
+    .do-panel{width:100vw;}
+}
+</style>
 @endsection
 
 @section('page-title', 'Data Overview')
 
 @section('content')
 
-    {{-- Filter --}}
     @include('mk.layouts.partials.filter-datepicker')
 
-    {{-- ════ PAGE EXPORT WRAPPER ════ --}}
     <div id="doPageExportArea">
+
+    {{-- ══ KPI Cards ══ --}}
+    <div class="row mb-3">
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out both;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiTotal">
+                                <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                            </h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub">
+                                <i class="ph ph-chart-line-up me-1"></i>Loading…
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3">
+                            <div class="kpi-icon-bg"><i class="ph ph-chat-dots"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">Online News</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiNews">
+                                <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                            </h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNewsSub">
+                                <i class="ph ph-newspaper me-1"></i>Loading…
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3">
+                            <div class="kpi-icon-bg"><i class="ph ph-newspaper"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 bg-warning text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">Social Media</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiSocial">
+                                <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                            </h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiSocialSub">
+                                <i class="ph ph-share-network me-1"></i>Loading…
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3">
+                            <div class="kpi-icon-bg"><i class="ph ph-share-network"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 bg-danger text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .15s both;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">Platforms Active</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiPlatforms">
+                                <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                            </h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPlatformsSub">
+                                <i class="ph ph-circles-four me-1"></i>Loading…
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3">
+                            <div class="kpi-icon-bg"><i class="ph ph-circles-four"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     {{-- ══ Page Export Toolbar ══ --}}
     <div class="page-export-bar" data-html2canvas-ignore="true">
@@ -321,17 +560,20 @@
     <div class="do-row-top do-mb14">
 
         {{-- Trending Topics --}}
-        <div class="card fade-up fade-up-d1" data-lazy="trending-topics" id="do-card-trending">
+        <div class="card" data-lazy="trending-topics" id="do-card-trending" style="animation:fadeUp .38s ease-out .18s both;">
+            <div id="card-export-trending">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
-                    <div class="avtar avtar-xs bg-light-primary rounded-circle"><i class="ph ph-trend-up f-18 text-primary"></i></div>
+                    <div class="avtar avtar-xs bg-light-primary rounded">
+                        <i class="ph ph-trend-up f-18 text-primary"></i>
+                    </div>
                     <h6 class="mb-0">Trending Topics</h6>
                 </div>
                 <div class="d-flex align-items-center gap-2" id="trendingHead">
                     <span class="badge bg-light-secondary text-muted rounded-pill">News</span>
                     <div class="d-flex gap-1" data-html2canvas-ignore="true">
-                        <button class="card-exp-btn card-exp-btn-pdf" onclick="DOExport.runCard('do-card-trending','trending','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
-                        <button class="card-exp-btn card-exp-btn-img" onclick="DOExport.runCard('do-card-trending','trending','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-pdf" onclick="DOExport.runCard('card-export-trending','trending','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-img" onclick="DOExport.runCard('card-export-trending','trending','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
                     </div>
                 </div>
             </div>
@@ -341,20 +583,24 @@
                 <div class="sk-block" style="height:22px;margin-bottom:8px;"></div>
                 <div class="sk-block" style="height:22px;width:70%;"></div>
             </div>
+            </div>
         </div>
 
         {{-- Top Hashtag --}}
-        <div class="card fade-up fade-up-d2" data-lazy="top-hashtags" id="do-card-hashtag">
+        <div class="card" data-lazy="top-hashtags" id="do-card-hashtag" style="animation:fadeUp .38s ease-out .21s both;">
+            <div id="card-export-hashtag">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
-                    <div class="avtar avtar-xs bg-light-primary rounded-circle"><i class="ph ph-hash f-18 text-primary"></i></div>
+                    <div class="avtar avtar-xs bg-light-primary rounded">
+                        <i class="ph ph-hash f-18 text-primary"></i>
+                    </div>
                     <h6 class="mb-0">Top Hashtag</h6>
                 </div>
                 <div class="d-flex align-items-center gap-2" id="hashtagHead">
                     <span class="badge bg-light-secondary text-muted rounded-pill">X</span>
                     <div class="d-flex gap-1" data-html2canvas-ignore="true">
-                        <button class="card-exp-btn card-exp-btn-pdf" onclick="DOExport.runCard('do-card-hashtag','hashtag','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
-                        <button class="card-exp-btn card-exp-btn-img" onclick="DOExport.runCard('do-card-hashtag','hashtag','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-pdf" onclick="DOExport.runCard('card-export-hashtag','hashtag','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-img" onclick="DOExport.runCard('card-export-hashtag','hashtag','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
                     </div>
                 </div>
             </div>
@@ -364,20 +610,24 @@
                 <div class="sk-block" style="height:22px;margin-bottom:8px;"></div>
                 <div class="sk-block" style="height:22px;width:70%;"></div>
             </div>
+            </div>
         </div>
 
         {{-- Mention --}}
-        <div class="card fade-up fade-up-d3" data-lazy="mention-combined" id="do-card-mention">
+        <div class="card" data-lazy="mention-combined" id="do-card-mention" style="animation:fadeUp .38s ease-out .24s both;">
+            <div id="card-export-mention">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
-                    <div class="avtar avtar-xs bg-light-primary rounded-circle"><i class="ph ph-chat-dots f-18 text-primary"></i></div>
+                    <div class="avtar avtar-xs bg-light-primary rounded">
+                        <i class="ph ph-chat-dots f-18 text-primary"></i>
+                    </div>
                     <h6 class="mb-0">Mention</h6>
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <span class="badge bg-light-secondary text-muted rounded-pill">All Media</span>
                     <div class="d-flex gap-1" data-html2canvas-ignore="true">
-                        <button class="card-exp-btn card-exp-btn-pdf" onclick="DOExport.runCard('do-card-mention','mention','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
-                        <button class="card-exp-btn card-exp-btn-img" onclick="DOExport.runCard('do-card-mention','mention','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-pdf" onclick="DOExport.runCard('card-export-mention','mention','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-img" onclick="DOExport.runCard('card-export-mention','mention','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
                     </div>
                 </div>
             </div>
@@ -389,11 +639,11 @@
                 <div class="do-mention-stats">
                     <div class="do-mstat-label">Breakdown</div>
                     <div class="do-mstat-row" id="statNewsRow">
-                        <span class="do-mstat-name"><span style="background:var(--c-news);"></span>Online News</span>
+                        <span class="do-mstat-name"><span style="background:#0284c7;"></span>Online News</span>
                         <span class="do-mstat-val" id="mentionNewsVal">—</span>
                     </div>
                     <div class="do-mstat-row" id="statSocialRow">
-                        <span class="do-mstat-name"><span style="background:var(--do-primary);"></span>Social Media</span>
+                        <span class="do-mstat-name"><span style="background:var(--primary);"></span>Social Media</span>
                         <span class="do-mstat-val" id="mentionSocialVal">—</span>
                     </div>
                     <div class="do-mstat-divider"></div>
@@ -403,47 +653,56 @@
                     </div>
                 </div>
             </div>
+            </div>
         </div>
+
     </div>
 
     {{-- ROW 2: SOV | Sentiment --}}
     <div class="do-row-mid do-mb14">
 
-        {{-- Share of Voice --}}
-        <div class="card" data-lazy="sov" id="do-card-sov">
-            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="avtar avtar-xs bg-light-primary rounded-circle"><i class="ph ph-microphone f-18 text-primary"></i></div>
-                    <div>
-                        <h6 class="mb-0">Share of Voice</h6>
-                        <small class="text-muted">Klik untuk lihat mentions per platform</small>
+        {{-- Share of Voice — Donut Only (NO legend panel) --}}
+        <div class="card" data-lazy="sov" id="do-card-sov" style="animation:fadeUp .38s ease-out .27s both;">
+            <div id="card-export-sov">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avtar avtar-xs bg-light-primary rounded">
+                            <i class="ph ph-microphone f-18 text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Share of Voice</h6>
+                            <small class="text-muted">Distribusi per platform</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-light-secondary text-muted rounded-pill">By Media</span>
+                        <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                            <button class="card-exp-btn card-exp-btn-pdf" onclick="DOExport.runCard('card-export-sov','sov','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                            <button class="card-exp-btn card-exp-btn-img" onclick="DOExport.runCard('card-export-sov','sov','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                        </div>
                     </div>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-light-secondary text-muted rounded-pill">By Media</span>
-                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
-                        <button class="card-exp-btn card-exp-btn-pdf" onclick="DOExport.runCard('do-card-sov','sov','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
-                        <button class="card-exp-btn card-exp-btn-img" onclick="DOExport.runCard('do-card-sov','sov','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
-                    </div>
+                {{-- Skeleton --}}
+                <div id="sovSkel" style="padding:20px;">
+                    <div class="snt-skel" style="height:340px;border-radius:8px;"></div>
                 </div>
-            </div>
-            <div id="sovSkel" style="padding:16px;">
-                <div class="sk-block" style="height:260px;border-radius:6px;"></div>
-            </div>
-            <div class="do-sov-body" id="sovBody" style="display:none;">
-                <div class="do-sov-chart"><div id="chSovPie"></div></div>
-                <div class="do-sov-legend">
-                    <div class="do-sov-legend-title">Media Platforms</div>
-                    <div id="sovLegendItems"></div>
+                {{-- Donut chart only — NO legend panel --}}
+                <div class="do-sov-body" id="sovBody" style="display:none;">
+                    <div class="do-sov-chart">
+                        <div id="chSovPie"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
         {{-- Sentiment Timeline --}}
-        <div class="card" data-lazy="sentiment-timeline" id="do-card-sentiment">
+        <div class="card" data-lazy="sentiment-timeline" id="do-card-sentiment" style="animation:fadeUp .38s ease-out .30s both;">
+            <div id="card-export-sentiment">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
-                    <div class="avtar avtar-xs bg-light-primary rounded-circle"><i class="ph ph-pulse f-18 text-primary"></i></div>
+                    <div class="avtar avtar-xs bg-light-primary rounded">
+                        <i class="ph ph-pulse f-18 text-primary"></i>
+                    </div>
                     <div>
                         <h6 class="mb-0">Sentiment Score</h6>
                         <small class="text-muted">Klik pada garis untuk lihat mentions per sentimen</small>
@@ -452,30 +711,38 @@
                 <div class="d-flex align-items-center gap-2">
                     <span class="badge bg-light-secondary text-muted rounded-pill">All Media</span>
                     <div class="d-flex gap-1" data-html2canvas-ignore="true">
-                        <button class="card-exp-btn card-exp-btn-pdf" onclick="DOExport.runCard('do-card-sentiment','sentiment','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
-                        <button class="card-exp-btn card-exp-btn-img" onclick="DOExport.runCard('do-card-sentiment','sentiment','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-pdf" onclick="DOExport.runCard('card-export-sentiment','sentiment','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-img" onclick="DOExport.runCard('card-export-sentiment','sentiment','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
                     </div>
                 </div>
             </div>
             <div class="card-body" style="position:relative;height:400px;">
                 <div id="chSentiment" style="width:100%;height:100%;"></div>
-                <div class="sk-block sk-overlay" id="skSentiment"></div>
+                <div class="chart-loading" id="skSentiment">
+                    <div class="spin-ring"></div>
+                    <span>Loading chart…</span>
+                </div>
+            </div>
             </div>
         </div>
+
     </div>
 
     {{-- Buzzer Map --}}
-    <div class="card do-mb14" data-lazy="buzzer-map" id="do-card-map">
+    <div class="card do-mb14" data-lazy="buzzer-map" id="do-card-map" style="animation:fadeUp .38s ease-out .33s both;">
+        <div id="card-export-map">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
-                <div class="avtar avtar-xs bg-light-primary rounded-circle"><i class="ph ph-map-pin f-18 text-primary"></i></div>
+                <div class="avtar avtar-xs bg-light-primary rounded">
+                    <i class="ph ph-map-pin f-18 text-primary"></i>
+                </div>
                 <h6 class="mb-0">Buzzer Map</h6>
             </div>
             <div class="d-flex align-items-center gap-2">
                 <span class="badge bg-light-secondary text-muted rounded-pill">Geographic</span>
                 <div class="d-flex gap-1" data-html2canvas-ignore="true">
-                    <button class="card-exp-btn card-exp-btn-pdf" onclick="DOExport.runCard('do-card-map','map','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
-                    <button class="card-exp-btn card-exp-btn-img" onclick="DOExport.runCard('do-card-map','map','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                    <button class="card-exp-btn card-exp-btn-pdf" onclick="DOExport.runCard('card-export-map','map','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                    <button class="card-exp-btn card-exp-btn-img" onclick="DOExport.runCard('card-export-map','map','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
                 </div>
             </div>
         </div>
@@ -497,10 +764,10 @@
                 </div>
             </div>
         </div>
+        </div>
     </div>
 
-    {{-- /doPageExportArea --}}
-    </div>
+    </div>{{-- /doPageExportArea --}}
 
     {{-- Export Toast --}}
     <div class="export-toast" id="doExportToast">
@@ -514,10 +781,8 @@
         <div class="do-panel-header" id="doPanelHeader">
             <div class="do-panel-dot" id="doPanelDot"></div>
             <span class="do-panel-title" id="doPanelTitle">Mentions</span>
-            <span class="do-panel-count" id="doPanelCount">…</span>
-            <button class="do-panel-close" title="Refresh" id="doPanelRefreshBtn"
-                style="margin-right:2px;" onclick="DOPanel.refresh()">
-                <i class="ph ph-arrows-clockwise"></i>
+            <button class="do-panel-close" style="margin-right:2px;" onclick="DOPanel.refresh()" title="Refresh">
+                <i class="ph ph-arrows-clockwise" id="doPanelRefreshIcon"></i>
             </button>
             <button class="do-panel-close" onclick="DOPanel.close()"><i class="ph ph-x"></i></button>
         </div>
@@ -547,11 +812,11 @@
     {{-- Platform Picker --}}
     <div class="do-plat-picker" id="doPlatPicker">
         <div class="do-plat-picker-head">Pilih Platform</div>
-        <button class="do-plat-btn" onclick="DOPanel.openPlatform('twit','all')">X / Twitter <span class="do-plat-dot" style="background:var(--c-twitter);"></span></button>
-        <button class="do-plat-btn" onclick="DOPanel.openPlatform('fb','all')">Facebook <span class="do-plat-dot" style="background:var(--c-facebook);"></span></button>
-        <button class="do-plat-btn" onclick="DOPanel.openPlatform('instagram','all')">Instagram <span class="do-plat-dot" style="background:var(--c-instagram);"></span></button>
-        <button class="do-plat-btn" onclick="DOPanel.openPlatform('youtube','all')">YouTube <span class="do-plat-dot" style="background:var(--c-youtube);"></span></button>
-        <button class="do-plat-btn" onclick="DOPanel.openPlatform('tiktok','all')">TikTok <span class="do-plat-dot" style="background:var(--c-tiktok);"></span></button>
+        <button class="do-plat-btn" onclick="DOPanel.openPlatform('twit','all')">X / Twitter <span class="do-plat-dot" style="background:#1d9bf0;"></span></button>
+        <button class="do-plat-btn" onclick="DOPanel.openPlatform('fb','all')">Facebook <span class="do-plat-dot" style="background:#1877f2;"></span></button>
+        <button class="do-plat-btn" onclick="DOPanel.openPlatform('instagram','all')">Instagram <span class="do-plat-dot" style="background:#e1306c;"></span></button>
+        <button class="do-plat-btn" onclick="DOPanel.openPlatform('youtube','all')">YouTube <span class="do-plat-dot" style="background:#ff0000;"></span></button>
+        <button class="do-plat-btn" onclick="DOPanel.openPlatform('tiktok','all')">TikTok <span class="do-plat-dot" style="background:#111827;"></span></button>
     </div>
 
     {{-- Modals --}}
@@ -577,24 +842,21 @@
 @endsection
 
 @section('scripts')
-    {{-- Export deps --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"       crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link  rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
     <script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
     'use strict';
 
-    /* ══ CONFIG ══ */
     const DOCfg = {
         pid: {{ $projectId ? (int)$projectId : 'null' }},
         sd:  '{{ $startDate }}',
         ed:  '{{ $endDate }}',
+        primary: '#038047',
         colorMap: {
             'Online News': '#0284c7',
             'X (Twitter)': '#1d9bf0',
@@ -610,8 +872,8 @@
             instagram: { label:'Instagram',    color:'#e1306c' },
             youtube:   { label:'YouTube',      color:'#ff0000' },
             tiktok:    { label:'TikTok',       color:'#111827' },
-            all:       { label:'All Media',    color:'#4361EE' },
-            social:    { label:'Social Media', color:'#4361EE' },
+            all:       { label:'All Media',    color:'#038047' },
+            social:    { label:'Social Media', color:'#038047' },
         },
         mediaKeyMap: {
             'Online News': 'doc',
@@ -623,21 +885,18 @@
         }
     };
 
-    /* ── Helpers ── */
     const $      = id => document.getElementById(id);
     const numFmt = n  => parseInt(n||0).toLocaleString('id-ID');
     const numK   = n  => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':String(n); };
     const esc    = s  => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     const emptyHtml = m => `<div class="do-empty"><i class="ph ph-warning-circle"></i><span class="do-empty-txt">${m||'Tidak ada data'}</span></div>`;
 
-    /* ── Case-insensitive media lookup ── */
     const _mediaNorm    = s => (s||'').toLowerCase().replace(/[\s()]/g,'');
     const _keyMapNorm   = Object.fromEntries(Object.entries(DOCfg.mediaKeyMap).map(([k,v])=>[_mediaNorm(k),v]));
     const _colorMapNorm = Object.fromEntries(Object.entries(DOCfg.colorMap).map(([k,v])=>[_mediaNorm(k),v]));
     const _resolveKey   = name => DOCfg.mediaKeyMap[name]  || _keyMapNorm[_mediaNorm(name)]  || '';
     const _resolveColor = name => DOCfg.colorMap[name]     || _colorMapNorm[_mediaNorm(name)] || '';
 
-    /* ── ECharts ── */
     const DOCharts = {
         _inst: {},
         make(id) {
@@ -654,9 +913,19 @@
         padding:[9,13],textStyle:{color:'#fff',fontFamily:'inherit',fontSize:12},
         extraCssText:'border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.3);'
     };
-    function getPrimary(){ return getComputedStyle(document.documentElement).getPropertyValue('--bs-primary').trim()||'#4361EE'; }
+    function getPrimary(){ return DOCfg.primary; }
 
-    /* ══ LIST MODALS ══ */
+    function _updateKPIs(news, social) {
+        const total = news + social;
+        const el = (id,val) => { const e=$(id); if(e) e.textContent=numFmt(val); };
+        el('kpiTotal', total); el('kpiNews', news); el('kpiSocial', social); el('kpiPlatforms', 6);
+        const sub = (id,txt) => { const e=$(id); if(e) e.innerHTML=txt; };
+        sub('kpiTotalSub',  `<i class="ph ph-chart-line-up me-1"></i>${numFmt(news+social)} total periode ini`);
+        sub('kpiNewsSub',   `<i class="ph ph-newspaper me-1"></i>${(total>0?(news/total*100).toFixed(1):0)}% dari total`);
+        sub('kpiSocialSub', `<i class="ph ph-share-network me-1"></i>${(total>0?(social/total*100).toFixed(1):0)}% dari total`);
+        sub('kpiPlatformsSub', `<i class="ph ph-circles-four me-1"></i>News + 5 social platforms`);
+    }
+
     const DOListModal = {
         open(id)  { $(id).classList.add('show'); document.body.style.overflow='hidden'; },
         close(id) { $(id).classList.remove('show'); document.body.style.overflow='auto'; },
@@ -667,18 +936,16 @@
         },
         openHashtag(tags) {
             let h=`<table class="do-tbl"><thead><tr><th style="width:30px;">#</th><th>Hashtag</th><th style="text-align:right;">Mention</th></tr></thead><tbody>`;
-            tags.forEach((tag,i)=>{ let name=tag.name||tag.hashtag||tag.tag||'?'; if(!name.startsWith('#')) name='#'+name; h+=`<tr><td class="do-tbl-rank">${i+1}</td><td class="do-tbl-name" style="color:var(--do-primary);font-weight:700;">${name}</td><td class="do-tbl-num">${parseInt(tag.size||tag.mention||tag.count||0).toLocaleString()}</td></tr>`; });
+            tags.forEach((tag,i)=>{ let name=tag.name||tag.hashtag||tag.tag||'?'; if(!name.startsWith('#')) name='#'+name; h+=`<tr><td class="do-tbl-rank">${i+1}</td><td class="do-tbl-name" style="color:var(--primary);font-weight:700;">${name}</td><td class="do-tbl-num">${parseInt(tag.size||tag.mention||tag.count||0).toLocaleString()}</td></tr>`; });
             h+='</tbody></table>'; $('hashtagModalBody').innerHTML=h; this.open('doHashtagModal');
         }
     };
     window.addEventListener('click',e=>{ if(e.target===$('doHashtagModal')) DOListModal.close('doHashtagModal'); if(e.target===$('doTrendingModal')) DOListModal.close('doTrendingModal'); });
 
-    /* ══ SLIDE PANEL ══ */
     const DOPanel = (()=>{
         const PAGE_SINGLE=25, PAGE_MULTI=10;
         const SENT_NORM={'1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg'};
         function _normSent(item){ return SENT_NORM[String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim()]||'neu'; }
-
         let _allItems=[],_filtered=[];
         let _curSent='all',_curPlat=null,_curPlatForSent='all';
         let _curPage=0,_hasMore=false,_loadingMore=false;
@@ -696,22 +963,22 @@
 
         async function open(platform,sentiment){
             _curPlat=platform; _curSent=sentiment||'all'; _curPage=0; _hasMore=false; _allItems=[]; _filtered=[];
-            const meta=DOCfg.platMeta[platform]||{label:platform,color:'#4361EE'};
+            const meta=DOCfg.platMeta[platform]||{label:platform,color:DOCfg.primary};
             DODetail.close();
             $('doPanelDot').style.background=meta.color;
             $('doPanelTitle').textContent=meta.label;
             $('doPanelMeta').textContent=DOCfg.sd+' – '+DOCfg.ed;
             document.querySelectorAll('.do-panel-tab').forEach(t=>t.classList.toggle('active',t.dataset.s===_curSent));
-            const refreshBtn=$('doPanelRefreshBtn');
-            if(refreshBtn) refreshBtn.innerHTML='<i class="ph ph-arrows-clockwise" style="animation:spin .7s linear infinite;display:inline-block;"></i>';
+            const ri=$('doPanelRefreshIcon');
+            if(ri) ri.style.cssText='animation:spin .7s linear infinite;display:inline-block;';
             const list=$('doPanelList');
             list.innerHTML=`<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat mentions…</span></div>`;
             const overlay=$('doPanelOverlay'),panel=$('doSntPanel');
             overlay.classList.remove('hiding'); panel.classList.remove('hiding');
             overlay.classList.add('show'); panel.classList.add('show');
             try { const result=await _fetchPage(platform,0); _allItems=result.items; _hasMore=result.hasMore; _filtered=_filterBySent(_allItems,_curSent); _render(list,_filtered,platform,meta.color); }
-            catch(err){ list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:var(--do-slate-400);font-size:13px;">Gagal memuat data<br><small>${esc(err.message)}</small></div>`; }
-            finally { if(refreshBtn) refreshBtn.innerHTML='<i class="ph ph-arrows-clockwise"></i>'; }
+            catch(err){ list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:var(--slate-400);font-size:13px;">Gagal memuat data<br><small>${esc(err.message)}</small></div>`; }
+            finally { if(ri) ri.style.cssText=''; }
         }
 
         async function refresh(){ if(_curPlat) open(_curPlat,_curSent); }
@@ -723,11 +990,11 @@
                 _curPage++;
                 const result=await _fetchPage(_curPlat,_curPage); _allItems=[..._allItems,...result.items]; _hasMore=result.hasMore;
                 document.getElementById('_doLMWrap')?.remove();
-                const list=$('doPanelList'), meta=DOCfg.platMeta[_curPlat]||{color:'#4361EE'};
+                const list=$('doPanelList'), meta=DOCfg.platMeta[_curPlat]||{color:DOCfg.primary};
                 const newFil=_filterBySent(result.items,_curSent); _filtered=_filterBySent(_allItems,_curSent);
                 if(newFil.length) list.insertAdjacentHTML('beforeend',newFil.map(it=>_renderItem(it,_curPlat,meta.color)).join(''));
                 if(_hasMore) list.insertAdjacentHTML('beforeend',_lmHtml());
-                else list.insertAdjacentHTML('beforeend',`<div style="padding:9px;text-align:center;font-size:10px;color:var(--do-slate-400);font-weight:600;border-top:1px dashed var(--do-slate-200);">✓ Semua mentions sudah dimuat</div>`);
+                else list.insertAdjacentHTML('beforeend',`<div style="padding:9px;text-align:center;font-size:10px;color:var(--slate-400);font-weight:600;border-top:1px dashed var(--slate-200);">✓ Semua mentions sudah dimuat</div>`);
             } catch(err){ _curPage--; document.getElementById('_doLMWrap')?.remove(); $('doPanelList').insertAdjacentHTML('beforeend',_lmHtml()); }
             finally { _loadingMore=false; }
         }
@@ -738,14 +1005,12 @@
             setTimeout(()=>{ panel.classList.remove('show','hiding'); overlay.classList.remove('show','hiding'); DODetail.close(); },240);
         }
         function closeByOverlay(){ close(); }
-
         function filterSent(sent){
             _curSent=sent; document.querySelectorAll('.do-panel-tab').forEach(t=>t.classList.toggle('active',t.dataset.s===sent));
-            _filtered=_filterBySent(_allItems,sent); const meta=DOCfg.platMeta[_curPlat]||{color:'#4361EE'};
+            _filtered=_filterBySent(_allItems,sent); const meta=DOCfg.platMeta[_curPlat]||{color:DOCfg.primary};
             _render($('doPanelList'),_filtered,_curPlat,meta.color);
         }
         function _filterBySent(items,sent){ return sent==='all'?items:items.filter(i=>_normSent(i)===sent); }
-
         function _extractItems(d){
             if(Array.isArray(d?.data?.data)) return d.data.data; if(Array.isArray(d?.data)) return d.data;
             if(Array.isArray(d?.statuses)) return d.statuses; if(Array.isArray(d?.tweets)) return d.tweets;
@@ -754,14 +1019,12 @@
             if(d?.data&&typeof d.data==='object'&&!Array.isArray(d.data)){const vals=Object.values(d.data);if(vals.length&&typeof vals[0]==='object')return vals;}
             return [];
         }
-
         async function _fetchPage(platform,page){
             const isMulti=['all','social'].includes(platform), size=isMulti?PAGE_MULTI:PAGE_SINGLE, start=page*size;
             if(platform==='all'){ const plats=['doc','twit','fb','instagram','youtube','tiktok']; const res=await Promise.allSettled(plats.map(p=>_fetchOnePage(p,start,size))); return {items:res.flatMap(r=>r.status==='fulfilled'?r.value.items:[]),hasMore:res.some(r=>r.status==='fulfilled'&&r.value.hasMore)}; }
             if(platform==='social'){ const plats=['twit','fb','instagram','youtube','tiktok']; const res=await Promise.allSettled(plats.map(p=>_fetchOnePage(p,start,size))); return {items:res.flatMap(r=>r.status==='fulfilled'?r.value.items:[]),hasMore:res.some(r=>r.status==='fulfilled'&&r.value.hasMore)}; }
             return _fetchOnePage(platform,start,size);
         }
-
         async function _fetchOnePage(platform,start,size){
             const fetchRows=size+1, q=`project_id=${DOCfg.pid}&start_date=${DOCfg.sd}&end_date=${DOCfg.ed}&rows=${fetchRows}&start=${start}`;
             if(platform==='youtube'){ for(const sub of ['postbylike','postbyview','postbydate','postbycomment',null]){ try{ const url=sub?`/mk/api/news/ytb-top-status?${q}&sub=${sub}`:`/mk/api/news/ytb-top-status?${q}`; const r=await fetch(url); if(!r.ok) continue; const raw=_extractItems(await r.json()); if(raw.length>0) return {items:raw.slice(0,size).map(i=>({...i,_platform:'youtube'})),hasMore:raw.length>size}; }catch(e){continue;} } return {items:[],hasMore:false}; }
@@ -777,9 +1040,7 @@
                 return {items:raw.slice(0,size).map(i=>({...i,_platform:platform})),hasMore:raw.length>size};
             } catch(e){ clearTimeout(tid); return {items:[],hasMore:false}; }
         }
-
-        function _lmHtml(){ return `<div id="_doLMWrap" style="padding:11px 14px;text-align:center;background:var(--do-slate-50);border-top:1px dashed var(--do-slate-200);"><button id="_doLMBtn" onclick="DOPanel.loadMore()" style="display:inline-flex;align-items:center;gap:5px;padding:6px 20px;background:var(--do-primary);color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:filter .14s;" onmouseover="this.style.filter='brightness(1.12)'" onmouseout="this.style.filter=''"><i class="ph ph-arrow-circle-down" style="font-size:13px;"></i> Muat Lebih Banyak</button></div>`; }
-
+        function _lmHtml(){ return `<div id="_doLMWrap" style="padding:11px 14px;text-align:center;background:var(--slate-50);border-top:1px dashed var(--slate-200);"><button id="_doLMBtn" onclick="DOPanel.loadMore()" style="display:inline-flex;align-items:center;gap:5px;padding:6px 20px;background:var(--primary);color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:filter .14s;" onmouseover="this.style.filter='brightness(1.12)'" onmouseout="this.style.filter=''"><i class="ph ph-arrow-circle-down" style="font-size:13px;"></i> Muat Lebih Banyak</button></div>`; }
         function _renderItem(item,platform,accentColor){
             const plat=item._platform||platform, meta=DOCfg.platMeta[plat]||{label:plat,color:accentColor};
             const rawName=(()=>{ if(plat==='fb') return item.from_name||item.page_name||null; if(plat==='instagram') return item.username||item.user_name||null; if(plat==='tiktok') return item.author_nickname||item.nickname||item.author?.nickname||null; if(plat==='youtube') return item.channel_title||item.channel_name||item.snippet?.channelTitle||null; if(plat==='twit'){const ao=typeof item.author==='object'?item.author:(()=>{try{return JSON.parse(item.author||'{}');}catch(e){return {};}})(); return item.name||ao?.name||ao?.scr_name||item.author_name||null;} return null; })();
@@ -798,22 +1059,19 @@
             const sentCls=sent==='pos'?'pos':sent==='neg'?'neg':'neu', sentLbl=sent==='pos'?'Pos':sent==='neg'?'Neg':'Neu';
             return `<div class="do-panel-item" onclick="DODetail.openEncoded('${enc}','${plat}')"><div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div><div class="do-panel-item-body"><div class="do-panel-author">${esc(dName)}</div>${handle?`<div class="do-panel-handle">${esc(handle)}</div>`:''}<div class="do-panel-text">${esc(text||'(tidak ada konten)')}</div><div class="do-panel-footer"><span class="do-sent-badge do-sent-badge--${sentCls}">${sentLbl}</span><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span><span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>${dt?`<span style="margin-left:auto;">${dt}</span>`:''}</div></div></div>`;
         }
-
         function _render(list,items,platform,accentColor){
-            if(!items.length) list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:var(--do-slate-400);font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`;
+            if(!items.length) list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:var(--slate-400);font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`;
             else list.innerHTML=items.map(it=>_renderItem(it,platform,accentColor)).join('');
             if(_hasMore) list.insertAdjacentHTML('beforeend',_lmHtml());
         }
-
         return {open,close,closeByOverlay,showPlatPicker,openPlatform,filterSent,loadMore,refresh};
     })();
 
-    /* ══ DETAIL SUB-PANEL ══ */
     const DODetail = {
         openEncoded(enc,plat){ try{this.open(JSON.parse(decodeURIComponent(enc)),plat);}catch(e){} },
         open(item,platform){
             const panel=$('doDetailPanel'),body=$('doDetailBody'),title=$('doDetailTitle'); if(!panel||!body) return;
-            const meta=DOCfg.platMeta[platform]||{label:platform,color:'#4361EE'};
+            const meta=DOCfg.platMeta[platform]||{label:platform,color:DOCfg.primary};
             const SENT_MAP={pos:'Positif',neg:'Negatif',neu:'Netral'}, SENT_BGS={pos:'do-dp2-sent--pos',neg:'do-dp2-sent--neg',neu:'do-dp2-sent--neu'};
             const rawS=String(item.class_sentiment||item.sentiment||'0').toLowerCase();
             const sent={'1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg'}[rawS]||'neu';
@@ -852,7 +1110,6 @@
         }
     };
 
-    /* ══ LAZY LOADER ══ */
     const DOLoader = {
         loaded: new Set(),
         init(){
@@ -883,7 +1140,7 @@
             if(tags.length>5) $('hashtagHead').insertAdjacentHTML('beforeend',`<button class="do-view-all" onclick="DOListModal.openHashtag(window._doHashtags)"><i class="ph ph-caret-right"></i>All</button>`);
             window._doHashtags=tags;
             let h=`<table class="do-tbl"><thead><tr><th style="width:22px;">#</th><th>Hashtag</th><th style="text-align:right;">Mention</th></tr></thead><tbody>`;
-            tags.slice(0,5).forEach((tag,i)=>{ let name=tag.name||tag.hashtag||tag.tag||'?'; if(!name.startsWith('#')) name='#'+name; h+=`<tr><td class="do-tbl-rank">${i+1}</td><td class="do-tbl-name" style="color:var(--do-primary);font-weight:700;">${name}</td><td class="do-tbl-num">${parseInt(tag.size||tag.mention||tag.count||0).toLocaleString()}</td></tr>`; });
+            tags.slice(0,5).forEach((tag,i)=>{ let name=tag.name||tag.hashtag||tag.tag||'?'; if(!name.startsWith('#')) name='#'+name; h+=`<tr><td class="do-tbl-rank">${i+1}</td><td class="do-tbl-name" style="color:var(--primary);font-weight:700;">${name}</td><td class="do-tbl-num">${parseInt(tag.size||tag.mention||tag.count||0).toLocaleString()}</td></tr>`; });
             h+='</tbody></table>'; body.innerHTML=h;
         },
 
@@ -895,48 +1152,295 @@
             $('statNewsRow').onclick=()=>DOPanel.open('doc','all');
             $('statSocialRow').onclick=e=>DOPanel.showPlatPicker(e.clientX,e.clientY,'all');
             $('statTotalRow').onclick=()=>DOPanel.open('all','all');
+            _updateKPIs(news, social);
             if(total>0){
                 const chart=DOCharts.make('chMentionPie'); if(chart){
                     const primary=getPrimary();
-                    chart.setOption({animation:true,animationDuration:800,animationEasing:'cubicInOut',tooltip:{...EC_TT,trigger:'item',confine:true,formatter:p=>{const pct=total>0?p.value/total*100:0;const dot=`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color};margin-right:6px;flex-shrink:0;"></span>`;return `<div style="display:flex;align-items:center;font-weight:700;margin-bottom:4px;">${dot}${p.name}</div><div style="padding-left:14px;">${numFmt(p.value)} mentions</div><div style="padding-left:14px;opacity:.7;">${pct<1&&pct>0?'<1':Math.round(pct)}% dari total</div>`;}},legend:{show:true,bottom:0,orient:'horizontal',textStyle:{fontFamily:'inherit',fontSize:10,fontWeight:'600',color:'var(--do-slate-400)'},icon:'circle',itemWidth:7,itemHeight:7,itemGap:10},series:[{type:'pie',radius:['48%','72%'],center:['50%','45%'],avoidLabelOverlap:true,itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2},label:{show:false},emphasis:{label:{show:true,fontSize:11,fontWeight:'700',fontFamily:'inherit',formatter:p=>{const pct=total>0?p.value/total*100:0;return `{n|${p.name}}\n{v|${numK(p.value)}}\n{p|${pct<1&&pct>0?'<1%':Math.round(pct)+'%'}}`;},rich:{n:{fontSize:9,color:'var(--do-slate-400)',fontWeight:'600',lineHeight:14},v:{fontSize:13,color:'var(--do-slate-900)',fontWeight:'700',lineHeight:18},p:{fontSize:9,color:primary,fontWeight:'700',lineHeight:14}}},scale:true,scaleSize:4},data:[{name:'Online News',value:news,itemStyle:{color:'#0284c7'}},{name:'Social Media',value:social,itemStyle:{color:primary}}]}]});
+                   chart.setOption({
+    animation: true,
+    animationDuration: 800,
+    animationEasing: 'cubicOut',
+    backgroundColor: 'transparent',
+    tooltip: {
+        ...EC_TT, trigger:'item', confine:true,
+        formatter: p => {
+            const pct = totalAll > 0 ? (p.value / totalAll * 100) : 0;
+            return `<div style="font-weight:700;font-size:13px;margin-bottom:5px;">${p.name}</div>
+                    <div style="display:flex;justify-content:space-between;gap:20px;margin-top:4px;">
+                        <span style="color:#94a3b8;">Mentions</span>
+                        <span style="font-weight:700;">${numFmt(p.value)}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;gap:20px;margin-top:3px;">
+                        <span style="color:#94a3b8;">Share</span>
+                        <span style="font-weight:700;color:#34d399;">${pct<1&&pct>0?'<1':pct.toFixed(1)}%</span>
+                    </div>`;
+        }
+    },
+    legend: {
+        show: true,
+        orient: 'horizontal',
+        bottom: 0,
+        left: 'center',
+        itemWidth: 10,
+        itemHeight: 10,
+        borderRadius: 50,
+        icon: 'circle',
+        itemGap: 14,
+        textStyle: {
+            fontFamily: 'inherit',
+            fontSize: 11,
+            fontWeight: '600',
+            color: '#475569'
+        },
+        formatter: name => {
+            const idx = labels.indexOf(name);
+            const pct = totalAll > 0 ? (counts[idx] / totalAll * 100) : 0;
+            return `${name}  ${pct < 1 ? '<1' : pct.toFixed(1)}%`;
+        }
+    },
+    series: [{
+        type: 'pie',
+        radius: ['36%','54%'],
+        center: ['50%','44%'],
+        avoidLabelOverlap: true,
+        minAngle: 2,
+        itemStyle: { borderColor:'#fff', borderWidth:3, borderRadius:5 },
+        label: {
+            show: true,
+            alignTo: 'edge',
+            edgeDistance: 12,
+            lineHeight: 16,
+            fontFamily: 'inherit',
+            fontSize: 11,
+            formatter: p => {
+                const pc = totalAll > 0 ? (p.value / totalAll * 100) : 0;
+                if(pc < 5) return '';
+                return `{name|${p.name}}\n{pct|${pc.toFixed(1)}%}`;
+            },
+            rich: {
+                name: { fontWeight:'700', fontSize:11, color:'#1a202c', lineHeight:17 },
+                pct:  { fontWeight:'700', fontSize:11, color:primary, lineHeight:15,
+                        backgroundColor:'#edf7f3', borderRadius:4, padding:[1,4] }
+            }
+        },
+        labelLine: {
+            show: true,
+            length: 10,
+            length2: 14,
+            smooth: .4,
+            lineStyle: { color:'#c4cdd8', width:1.2 }
+        },
+        emphasis: {
+            scale: true,
+            scaleSize: 5,
+            itemStyle: { shadowBlur:10, shadowColor:'rgba(0,0,0,.12)' },
+            label: {
+                show: true,
+                fontFamily: 'inherit',
+                fontSize: 12,
+                fontWeight: '700',
+                formatter: p => {
+                    const pc = totalAll > 0 ? p.value/totalAll*100 : 0;
+                    return `{n|${p.name}}\n{v|${numK(p.value)}}\n{p|${pc<1&&pc>0?'<1%':pc.toFixed(1)+'%'}}`;
+                },
+                rich: {
+                    n: { fontSize:10, color:'#94A3B8', fontWeight:'600', lineHeight:14 },
+                    v: { fontSize:15, color:'#0F172A', fontWeight:'700', lineHeight:20 },
+                    p: { fontSize:10, color:primary,   fontWeight:'800', lineHeight:14 }
+                }
+            }
+        },
+        data: labels.map((lb,i) => ({ name:lb, value:counts[i], itemStyle:{color:colors[i]} }))
+    }],
+    graphic: [
+        {
+            type:'text', left:'center', top:'37%', z:100,
+            style:{ text:numK(totalAll), fill:'#0f172a', font:"800 22px sans-serif", textAlign:'center' }
+        },
+        {
+            type:'text', left:'center', top:'47%', z:100,
+            style:{ text:'TOTAL', fill:'#94a3b8', font:"600 10px sans-serif", textAlign:'center' }
+        }
+    ]
+});
                     chart.on('click',p=>{if(p.name==='Online News') DOPanel.open('doc','all'); else DOPanel.showPlatPicker(window.innerWidth/2,window.innerHeight/2,'all');});
                     chart.on('mouseover',p=>{if(p.componentType==='series') chart.getDom().style.cursor='pointer';}); chart.on('mouseout',()=>{chart.getDom().style.cursor='default';});
                 }
             }
         },
 
+        /* ══ SOV — Donut ONLY, no legend panel ══ */
         async loadSov(){
-            const r=await fetch(`/mk/api/sentiment-by-media?project_id=${DOCfg.pid}&start_date=${DOCfg.sd}&end_date=${DOCfg.ed}`); const d=await r.json();
-            const data=d.data||[]; $('sovSkel').style.display='none';
-            const sovBody=$('sovBody'); if(sovBody) sovBody.style.display='flex';
-            if(!data.length){if(sovBody) sovBody.innerHTML=emptyHtml(); return;}
-            const fallback=['#22c55e','#1d9bf0','#1877f2','#e1306c','#ff0000','#111827','#7c3aed','#f59e0b'];
-            const totalAll=data.reduce((s,m)=>s+(m.total||0),0);
-            const labels=data.map(m=>m.media), counts=data.map(m=>m.total||0);
-            const colors=data.map((m,i)=>_resolveColor(m.media)||fallback[i%fallback.length]);
-            const primary=getPrimary();
-            const chart=DOCharts.make('chSovPie');
-            if(chart){
-                chart.setOption({animation:true,animationDuration:800,animationEasing:'cubicInOut',tooltip:{...EC_TT,trigger:'item',confine:true,formatter:p=>{const pct=totalAll>0?p.value/totalAll*100:0;return `<div style="font-weight:700;margin-bottom:3px;">${p.name}</div><div>${numFmt(p.value)} mentions</div><div style="opacity:.7;">${pct<1&&pct>0?'<1':pct.toFixed(1)}% dari total</div>`;}},legend:{show:false},series:[{type:'pie',radius:['48%','76%'],center:['50%','50%'],avoidLabelOverlap:true,itemStyle:{borderRadius:5,borderColor:'#fff',borderWidth:2.5},label:{show:false},emphasis:{label:{show:true,fontSize:12,fontWeight:'700',fontFamily:'inherit',formatter:p=>{const pct=totalAll>0?p.value/totalAll*100:0;return `{n|${p.name}}\n{v|${numK(p.value)}}\n{p|${pct<1&&pct>0?'<1%':pct.toFixed(1)+'%'}}`;},rich:{n:{fontSize:9,color:'var(--do-slate-400)',fontWeight:'600',lineHeight:14},v:{fontSize:14,color:'var(--do-slate-900)',fontWeight:'700',lineHeight:20},p:{fontSize:9,color:primary,fontWeight:'800',lineHeight:14}}},scale:true,scaleSize:4},data:labels.map((lb,i)=>({name:lb,value:counts[i],itemStyle:{color:colors[i]}}))}]});
-                chart.on('click',p=>{const k=_resolveKey(p.name); if(!k) return; DOPanel.open(k,'all');});
-                chart.on('mouseover',p=>{if(p.componentType==='series') chart.getDom().style.cursor='pointer';}); chart.on('mouseout',()=>{chart.getDom().style.cursor='default';});
+            const r = await fetch(`/mk/api/sentiment-by-media?project_id=${DOCfg.pid}&start_date=${DOCfg.sd}&end_date=${DOCfg.ed}`);
+            const d = await r.json();
+            const data = d.data || [];
+
+            const sovSkel = $('sovSkel');
+            const sovBody = $('sovBody');
+            if(sovSkel) sovSkel.style.display = 'none';
+            if(sovBody) sovBody.style.display  = 'flex';
+
+            if(!data.length){
+                if(sovBody) sovBody.innerHTML = `<div style="padding:40px;width:100%;">${emptyHtml('Tidak ada data Share of Voice')}</div>`;
+                return;
             }
-            const legendEl=$('sovLegendItems');
-            if(legendEl){ legendEl.innerHTML=data.map((m,i)=>{ const pctF=totalAll>0?m.total/totalAll*100:0; const pctD=pctF===0?'0%':pctF<1?'<1%':pctF.toFixed(1)+'%'; const k=_resolveKey(m.media)||_resolveKey(m.media_key)||''; return `<div class="do-sov-item" ${k?`onclick="DOPanel.open('${k}','all')" title="Lihat mentions ${m.media}"`:''}><div class="do-sov-item-row"><span class="do-sov-dot" style="background:${colors[i]};"></span><span class="do-sov-name">${m.media}</span><span class="do-sov-pct" style="color:${colors[i]};">${pctD}</span></div><div class="do-sov-bar-wrap"><div class="do-sov-bar" style="width:${Math.max(pctF,pctF>0?2:0)}%;background:${colors[i]};"></div></div></div>`; }).join(''); }
+
+            const fallbackColors = ['#0284c7','#1d9bf0','#1877f2','#e1306c','#ff0000','#111827','#7c3aed','#f59e0b'];
+            const totalAll = data.reduce((s,m) => s + (m.total||0), 0);
+            const labels   = data.map(m => m.media);
+            const counts   = data.map(m => m.total || 0);
+            const colors   = data.map((m,i) => _resolveColor(m.media) || fallbackColors[i % fallbackColors.length]);
+            const primary  = getPrimary();
+
+            const chart = DOCharts.make('chSovPie');
+            if(!chart) return;
+
+            chart.setOption({
+                animation: true,
+                animationDuration: 800,
+                animationEasing: 'cubicOut',
+                backgroundColor: 'transparent',
+                tooltip: {
+                    ...EC_TT, trigger:'item', confine:true,
+                    formatter: p => {
+                        const pct = totalAll > 0 ? (p.value / totalAll * 100) : 0;
+                        return `<div style="font-weight:700;font-size:13px;margin-bottom:5px;">${p.name}</div>
+                                <div style="display:flex;justify-content:space-between;gap:20px;margin-top:4px;">
+                                    <span style="color:#94a3b8;">Mentions</span>
+                                    <span style="font-weight:700;">${numFmt(p.value)}</span>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;gap:20px;margin-top:3px;">
+                                    <span style="color:#94a3b8;">Share</span>
+                                    <span style="font-weight:700;color:#34d399;">${pct<1&&pct>0?'<1':pct.toFixed(1)}%</span>
+                                </div>`;
+                    }
+                },
+                legend: { show: false },
+               series: [{
+    type: 'pie',
+    radius: ['30%','46%'],
+    center: ['50%','50%'],
+    avoidLabelOverlap: true,
+    minAngle: 3,
+    itemStyle: { borderColor:'#fff', borderWidth:3, borderRadius:5 },
+    label: {
+        show: true,
+        alignTo: 'edge',
+        edgeDistance: 15,
+        lineHeight: 18,
+        fontFamily: 'inherit',
+        fontSize: 11,
+        formatter: p => {
+            const pc = totalAll > 0 ? (p.value / totalAll * 100) : 0;
+            if(pc < 1) return '';
+            return `{name|${p.name}}\n{pct|${pc.toFixed(1)}%}`;
+        },
+        rich: {
+            name: { fontWeight:'700', fontSize:11, color:'#1a202c', lineHeight:18 },
+            pct:  { fontWeight:'700', fontSize:11, color:primary, lineHeight:16,
+                    backgroundColor:'#edf7f3', borderRadius:4, padding:[1,5] }
+        }
+    },
+    labelLine: {
+        show: true,
+        length: 12,
+        length2: 16,
+        smooth: .4,
+        lineStyle: { color:'#c4cdd8', width:1.2 }
+    },
+    emphasis: {
+        scale: true,
+        scaleSize: 5,
+        itemStyle: { shadowBlur:10, shadowColor:'rgba(0,0,0,.12)' },
+        label: {
+            show: true,
+            fontFamily: 'inherit',
+            fontSize: 12,
+            fontWeight: '700',
+            formatter: p => {
+                const pc = totalAll > 0 ? p.value/totalAll*100 : 0;
+                return `{n|${p.name}}\n{v|${numK(p.value)}}\n{p|${pc<1&&pc>0?'<1%':pc.toFixed(1)+'%'}}`;
+            },
+            rich: {
+                n: { fontSize:10, color:'#94A3B8', fontWeight:'600', lineHeight:15 },
+                v: { fontSize:16, color:'#0F172A', fontWeight:'700', lineHeight:22 },
+                p: { fontSize:10, color:primary,   fontWeight:'800', lineHeight:15 }
+            }
+        }
+    },
+    data: labels.map((lb,i) => ({ name:lb, value:counts[i], itemStyle:{color:colors[i]} }))
+}],
+graphic: [
+    {
+        type:'text', left:'center', top:'44%', z:100,
+        style:{ text:numK(totalAll), fill:'#0f172a', font:"800 22px sans-serif", textAlign:'center' }
+    },
+    {
+        type:'text', left:'center', top:'55%', z:100,
+        style:{ text:'TOTAL', fill:'#94a3b8', font:"600 10px sans-serif", textAlign:'center' }
+    }
+]
+            });
+
+            chart.on('click', p => {
+                const k = _resolveKey(p.name);
+                if(!k) return;
+                DOPanel.open(k, 'all');
+            });
+            chart.on('mouseover', p => { if(p.componentType==='series') chart.getDom().style.cursor='pointer'; });
+            chart.on('mouseout',  () => { chart.getDom().style.cursor='default'; });
         },
 
-        _apexSentiment:null,
+        _apexSentiment: null,
         async loadSentLine(){
-            const r=await fetch(`/mk/api/sentiment-timeline?project_id=${DOCfg.pid}&start_date=${DOCfg.sd}&end_date=${DOCfg.ed}`); const d=await r.json();
-            $('skSentiment').style.display='none';
-            const xLabels=(d.dates||[]).map(dt=>{try{const o=new Date(dt+'T00:00:00');return `${o.getDate()}/${o.getMonth()+1}`;}catch(e){return dt;}});
-            const sentNames=['Total','Positive','Neutral','Negative'], sentMap={Total:'all',Positive:'pos',Neutral:'neu',Negative:'neg'};
-            const options={chart:{type:'area',height:360,fontFamily:'inherit',background:'transparent',toolbar:{show:false},animations:{enabled:true,easing:'linear',dynamicAnimation:{speed:1000}},events:{markerClick:(e,ctx,cfg)=>{DOPanel.open('all',sentMap[sentNames[cfg.seriesIndex]]||'all');}}},series:[{name:'Total',data:d.values||[]},{name:'Positive',data:d.sentiment?.positive||[]},{name:'Neutral',data:d.sentiment?.neutral||[]},{name:'Negative',data:d.sentiment?.negative||[]}],colors:['#4680ff','#10B981','#94A3B8','#EF4444'],xaxis:{categories:xLabels,axisBorder:{show:false},axisTicks:{show:false},labels:{style:{fontFamily:'inherit',fontSize:'11px',fontWeight:600,colors:'#94A3B8'}}},yaxis:{labels:{formatter:v=>numK(v),style:{fontFamily:'inherit',fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},axisBorder:{show:false},axisTicks:{show:false}},fill:{opacity:0.3},stroke:{curve:'smooth',width:2.5},markers:{size:xLabels.length<=20?5:0,strokeWidth:2,strokeColors:'#fff',hover:{size:7}},dataLabels:{enabled:xLabels.length<=20,formatter:v=>v>0?numK(v):'',style:{fontSize:'10px',fontFamily:'inherit',fontWeight:'700'},background:{enabled:true,borderRadius:3,borderWidth:0,padding:3,opacity:0.9},offsetY:-6},grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}}},legend:{position:'bottom',horizontalAlign:'left',fontFamily:'inherit',fontSize:'11px',fontWeight:'600',labels:{colors:'#94A3B8'},markers:{width:9,height:9,radius:50},itemMargin:{horizontal:14,vertical:4}},tooltip:{shared:true,intersect:false,style:{fontFamily:'inherit',fontSize:'12px'},y:{formatter:v=>numFmt(v)+' mentions'}}};
-            if(this._apexSentiment){try{this._apexSentiment.destroy();}catch(e){}}
-            const el=$('chSentiment'); if(!el) return;
-            el.innerHTML=''; el.style.cursor='pointer';
-            this._apexSentiment=new ApexCharts(el,options); this._apexSentiment.render();
-            el.addEventListener('click',e=>{ const t=e.target; if(!t.classList.contains('apexcharts-marker')&&!t.closest('.apexcharts-data-labels')&&!t.closest('.apexcharts-datalabel')) DOPanel.open('all','all'); });
+            const skEl = $('skSentiment');
+            try {
+                const r = await fetch(`/mk/api/sentiment-timeline?project_id=${DOCfg.pid}&start_date=${DOCfg.sd}&end_date=${DOCfg.ed}`);
+                const d = await r.json();
+                if(skEl) skEl.classList.add('hidden');
+                const dates    = d.dates||[];
+                const valTotal = d.values||[];
+                const valPos   = d.sentiment?.positive||[];
+                const valNeu   = d.sentiment?.neutral||[];
+                const valNeg   = d.sentiment?.negative||[];
+                const el = $('chSentiment');
+                if(!el) return;
+                if(!dates.length || valTotal.every(v=>!v)){
+                    el.innerHTML=`<div class="chart-empty"><i class="ph ph-chart-line-up"></i><span>Tidak ada data sentimen untuk periode ini</span></div>`;
+                    return;
+                }
+                const xLabels = dates.map(dt=>{ try{ const o=new Date(dt+'T00:00:00'); return `${o.getDate()}/${o.getMonth()+1}`; }catch(e){ return dt; } });
+                const isManyPoints = xLabels.length > 20;
+                const sentMap  = {Total:'all',Positive:'pos',Neutral:'neu',Negative:'neg'};
+                const sentNames= ['Total','Positive','Neutral','Negative'];
+                const options  = {
+                    chart:{ type:'area', height:360, fontFamily:'inherit', background:'transparent', toolbar:{show:false}, animations:{enabled:!isManyPoints,easing:'linear',dynamicAnimation:{speed:600}}, events:{ markerClick:(e,ctx,cfg)=>{ DOPanel.open('all', sentMap[sentNames[cfg.seriesIndex]]||'all'); } } },
+                    series:[ {name:'Total',data:valTotal},{name:'Positive',data:valPos},{name:'Neutral',data:valNeu},{name:'Negative',data:valNeg} ],
+                    colors:['#038047','#10B981','#94A3B8','#EF4444'],
+                    xaxis:{ categories:xLabels, axisBorder:{show:false}, axisTicks:{show:false}, tickAmount:isManyPoints?10:undefined, labels:{ rotate:isManyPoints?-45:0, style:{fontFamily:'inherit',fontSize:'10px',fontWeight:600,colors:'#94A3B8'} } },
+                    yaxis:{ labels:{ formatter:v=>numK(v), style:{fontFamily:'inherit',fontSize:'10px',fontWeight:600,colors:'#94A3B8'} }, axisBorder:{show:false}, axisTicks:{show:false} },
+                    fill:{opacity:0.3}, stroke:{curve:'smooth',width:2.5},
+                    markers:{ size:isManyPoints?0:5, strokeWidth:2, strokeColors:'#fff', hover:{size:isManyPoints?4:7} },
+                    dataLabels:{ enabled:!isManyPoints, formatter:v=>v>0?numK(v):'', style:{fontSize:'10px',fontFamily:'inherit',fontWeight:'700'}, background:{enabled:true,borderRadius:3,borderWidth:0,padding:3,opacity:.9}, offsetY:-6 },
+                    grid:{ borderColor:'rgba(226,232,240,.55)', strokeDashArray:3, xaxis:{lines:{show:false}} },
+                    legend:{ position:'bottom', horizontalAlign:'left', fontFamily:'inherit', fontSize:'11px', fontWeight:'600', labels:{colors:'#94A3B8'}, markers:{width:9,height:9,radius:50}, itemMargin:{horizontal:14,vertical:4} },
+                    tooltip:{ shared:true, intersect:false, style:{fontFamily:'inherit',fontSize:'12px'}, y:{formatter:v=>numFmt(v)+' mentions'} }
+                };
+                if(this._apexSentiment){ try{this._apexSentiment.destroy();}catch(e){} }
+                el.innerHTML=''; el.style.cursor='pointer';
+                this._apexSentiment = new ApexCharts(el, options);
+                await this._apexSentiment.render();
+                el.addEventListener('click', e => {
+                    const t=e.target;
+                    if(!t.classList.contains('apexcharts-marker')&&!t.closest('.apexcharts-data-labels')&&!t.closest('.apexcharts-datalabel'))
+                        DOPanel.open('all','all');
+                });
+            } catch(err){
+                console.error('[loadSentLine]',err);
+                if(skEl) skEl.classList.add('hidden');
+                const el=$('chSentiment');
+                if(el) el.innerHTML=`<div class="chart-empty"><i class="ph ph-warning-circle"></i><span>Gagal memuat chart: ${esc(err.message)}</span></div>`;
+            }
         },
 
         async loadMap(){
@@ -983,10 +1487,8 @@
         }
     };
 
-    /* ══ EXPORT MODULE ══ */
     const DOExport = (()=>{
         let _toastTimer=null;
-
         function _toast(msg,type='default',duration=3200){
             const t=$('doExportToast'),m=$('doExportToastMsg'),ico=$('doExportToastIcon'); if(!t||!m) return;
             m.textContent=msg; t.className='export-toast show '+(type!=='default'?type:'');
@@ -994,40 +1496,25 @@
             ico.className='ph '+(icons[type]||icons.default);
             clearTimeout(_toastTimer); _toastTimer=setTimeout(()=>t.classList.remove('show'),duration);
         }
-
         function _btnState(btn,loading){ if(!btn) return; btn.disabled=loading; btn.classList.toggle('exporting',loading); }
-
-        /* ── Resize all charts before capture ── */
-        function _resizeAll(){
-            Object.values(DOCharts._inst).forEach(c=>{try{if(!c.isDisposed())c.resize();}catch(e){}});
-            if(window._apexSentimentInst){try{window._apexSentimentInst.updateOptions({});}catch(e){}}
-        }
-
-        /* ── Full-page capture ── */
+        function _resizeAll(){ Object.values(DOCharts._inst).forEach(c=>{try{if(!c.isDisposed())c.resize();}catch(e){}});}
         async function _capturePage(){
             const area=$('doPageExportArea'); if(!area) throw new Error('Export area tidak ditemukan');
             window.scrollTo({top:0}); await new Promise(r=>setTimeout(r,300)); _resizeAll();
             return html2canvas(area,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#f1f5f9',logging:false,removeContainer:true,windowWidth:document.documentElement.scrollWidth,windowHeight:area.scrollHeight,height:area.scrollHeight,ignoreElements:el=>el.hasAttribute('data-html2canvas-ignore')||el.id==='doPageExpPdf'||el.id==='doPageExpImg'});
         }
-
-        /* ── Card capture ── */
-        async function _captureCard(areaId,cardKey){
+        async function _captureCard(areaId){
             const area=document.getElementById(areaId); if(!area) throw new Error('Area #'+areaId+' tidak ditemukan');
             _resizeAll(); await new Promise(r=>setTimeout(r,220));
             return html2canvas(area,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,removeContainer:true,ignoreElements:el=>el.hasAttribute('data-html2canvas-ignore')});
         }
-
-        /* ── PDF header ── */
         function _pdfHeader(pdf,pW,label){
-            const primary=[67,97,238]; // #4361EE
-            pdf.setFillColor(...primary); pdf.rect(0,0,pW,11,'F');
+            pdf.setFillColor(3,128,71); pdf.rect(0,0,pW,11,'F');
             pdf.setTextColor(255,255,255); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
             pdf.text('SMADIMENT — Data Overview'+(label?(' · '+label):''),10,7.5);
             const now=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
             pdf.setFontSize(7); pdf.setFont('helvetica','normal'); pdf.text('Generated: '+now,pW-10,7.5,{align:'right'});
         }
-
-        /* ── Build PDF from canvas ── */
         function _buildPdf(canvas,pdfLabel,landscape=false){
             const {jsPDF}=window.jspdf;
             const imgW=canvas.width,imgH=canvas.height;
@@ -1047,12 +1534,8 @@
             }
             return pdf;
         }
-
-        /* ── Filename ── */
         function _stamp(){ return new Date().toISOString().slice(0,10).replace(/-/g,''); }
         const _cardLabels={trending:'Trending Topics',hashtag:'Top Hashtag',mention:'Mention',sov:'Share of Voice',sentiment:'Sentiment Score',map:'Buzzer Map'};
-
-        /* ── Run full-page ── */
         async function run(type,btn){
             if(!window.html2canvas){_toast('html2canvas tidak tersedia','error');return;}
             if(type==='pdf'&&!window.jspdf?.jsPDF){_toast('jsPDF tidak tersedia','error');return;}
@@ -1061,45 +1544,33 @@
             _toast(type==='pdf'?'Menyiapkan PDF…':'Mengambil gambar…','default',99999);
             try {
                 const canvas=await _capturePage();
-                if(type==='pdf'){
-                    const pdf=_buildPdf(canvas,'Full Page',false);
-                    pdf.save(`data_overview_${_stamp()}.pdf`); _toast('PDF berhasil diunduh!','success');
-                } else {
-                    const link=document.createElement('a'); link.download=`data_overview_${_stamp()}.png`; link.href=canvas.toDataURL('image/png'); link.click();
-                    _toast('Gambar berhasil diunduh!','success');
-                }
+                if(type==='pdf'){ const pdf=_buildPdf(canvas,'Full Page',false); pdf.save(`data_overview_${_stamp()}.pdf`); _toast('PDF berhasil diunduh!','success'); }
+                else { const link=document.createElement('a'); link.download=`data_overview_${_stamp()}.png`; link.href=canvas.toDataURL('image/png'); link.click(); _toast('Gambar berhasil diunduh!','success'); }
             } catch(err){ console.error('[DOExport]',err); _toast('Export gagal: '+err.message,'error'); }
             finally { _btnState(btnPdf,false); _btnState(btnImg,false); }
         }
-
-        /* ── Run per-card ── */
         async function runCard(areaId,cardKey,type,btn){
             if(!window.html2canvas){_toast('html2canvas tidak tersedia','error');return;}
             if(type==='pdf'&&!window.jspdf?.jsPDF){_toast('jsPDF tidak tersedia','error');return;}
             _btnState(btn,true);
             _toast(type==='pdf'?'Menyiapkan PDF card…':'Mengambil gambar card…','default',99999);
             try {
-                const canvas=await _captureCard(areaId,cardKey);
+                const canvas=await _captureCard(areaId);
                 const label=_cardLabels[cardKey]||cardKey;
                 const fname=`data_overview_${cardKey}_${_stamp()}`;
-                if(type==='image'){
-                    const link=document.createElement('a'); link.download=fname+'.png'; link.href=canvas.toDataURL('image/png'); link.click();
-                    _toast('Gambar berhasil diunduh!','success');
-                } else {
-                    const pdf=_buildPdf(canvas,label,canvas.width>canvas.height);
-                    pdf.save(fname+'.pdf'); _toast('PDF berhasil diunduh!','success');
-                }
+                if(type==='image'){ const link=document.createElement('a'); link.download=fname+'.png'; link.href=canvas.toDataURL('image/png'); link.click(); _toast('Gambar berhasil diunduh!','success'); }
+                else { const pdf=_buildPdf(canvas,label,canvas.width>canvas.height); pdf.save(fname+'.pdf'); _toast('PDF berhasil diunduh!','success'); }
             } catch(err){ console.error('[DOExport.runCard]',err); _toast('Export gagal: '+err.message,'error'); }
             finally { _btnState(btn,false); }
         }
-
         return {run,runCard};
     })();
 
-    /* ══ PLATFORM PICKER DISMISS ══ */
     document.addEventListener('mousedown',e=>{ const pp=$('doPlatPicker'); if(pp?.classList.contains('show')&&!pp.contains(e.target)) pp.classList.remove('show'); });
 
-    /* ══ BOOT ══ */
-    document.addEventListener('DOMContentLoaded',()=>{ DOLoader.init(); });
+    document.addEventListener('DOMContentLoaded',()=>{
+        DOLoader.init();
+        document.addEventListener('keydown',e=>{ if(e.key==='Escape') DOPanel.close(); });
+    });
     </script>
 @endsection

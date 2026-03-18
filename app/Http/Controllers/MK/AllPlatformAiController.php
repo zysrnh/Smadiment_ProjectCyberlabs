@@ -400,7 +400,7 @@ class AllPlatformAiController extends Controller
         // Twitter
         if (!empty($twitter)) {
             $lines[] = "\n--- X / TWITTER (" . count($twitter) . " tweets) ---";
-            foreach ($twitter as $i => $t) {
+        foreach ($twitter as $i => $t) {
                 $lines[] = "[T" . ($i+1) . "] @{$t['author']} | {$t['views']} views, {$t['rt']} RT | {$t['date']} | {$t['sentiment']}";
                 if ($t['content']) $lines[] = "   \"{$t['content']}\"";
             }

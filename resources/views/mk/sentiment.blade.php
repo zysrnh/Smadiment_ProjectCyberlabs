@@ -955,29 +955,98 @@
     }
 
     function renderTimeChart(domId, skelId, labels, negData, posData, neuData, totals, isHour = false) {
-      hideSk(skelId);
-      if (!labels.length || !totals.some(v => v > 0)) { document.getElementById(domId).parentElement.innerHTML = emptyHtml('Data tidak tersedia untuk periode ini'); return; }
-      const chart = SNTCharts.make(domId); if (!chart) return;
-      const makeS = (name, data, color) => ({ name, type: 'bar', stack: 's', data: data.map(v => ({ value: v, itemStyle: { color, borderRadius: [0, 0, 0, 0] } })), emphasis: { focus: 'series' } });
-      chart.setOption({
-        animation: true, animationDuration: 800, animationEasing: 'elasticOut', backgroundColor: '#fff',
-        tooltip: {
-          ...EC_TIP, trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(3,128,71,.06)' } }, formatter: params => {
-            const idx = params[0]?.dataIndex ?? 0; const lbl = labels[idx] || ''; const tot = totals[idx] || 0;
-            const rows = [...params].reverse().map(p => `<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${p.color};"></span><span style="font-size:12px;color:#94a3b8;">${p.seriesName}</span></div><span style="font-size:12px;font-weight:700;">${numFmt(p.value)}</span></div>`).join('');
-            return `<div style="font-weight:700;font-size:13px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.1);">${isHour ? 'Jam ' : ''}${lbl}</div>${rows}<div style="border-top:1px solid rgba(255,255,255,.1);margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;"><span style="font-size:11px;color:#94a3b8;">Total</span><span style="font-weight:700;">${numFmt(tot)}</span></div>`;
-          }
+  hideSk(skelId);
+  if (!labels.length || !totals.some(v => v > 0)) {
+    document.getElementById(domId).parentElement.innerHTML = emptyHtml('Data tidak tersedia untuk periode ini');
+    return;
+  }
+  const chart = SNTCharts.make(domId); if (!chart) return;
+  const makeS = (name, data, color) => ({
+    name, type: 'bar', stack: 's',
+    data: data.map(v => ({ value: v, itemStyle: { color, borderRadius: [0,0,0,0] } })),
+    emphasis: { focus: 'series' }
+  });
+  chart.setOption({
+    animation: true, animationDuration: 800, animationEasing: 'elasticOut', backgroundColor: '#fff',
+    tooltip: {
+      ...EC_TIP, trigger: 'axis',
+      axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(3,128,71,.06)' } },
+      formatter: params => {
+        const idx  = params[0]?.dataIndex ?? 0;
+        const lbl  = labels[idx] || '';
+        const tot  = totals[idx] || 0;
+        const rows = [...params].reverse()
+          .map(p => `<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${p.color};"></span>
+              <span style="font-size:12px;color:#94a3b8;">${p.seriesName}</span>
+            </div>
+            <span style="font-size:12px;font-weight:700;">${numFmt(p.value)}</span>
+          </div>`).join('');
+        return `<div style="font-weight:700;font-size:13px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.1);">
+                  ${isHour ? 'Jam ' : ''}${lbl}
+                </div>
+                ${rows}
+                <div style="border-top:1px solid rgba(255,255,255,.1);margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;">
+                  <span style="font-size:11px;color:#94a3b8;">Total</span>
+                  <span style="font-weight:700;">${numFmt(tot)}</span>
+                </div>`;
+      }
+    },
+    grid: {
+      top:    24,
+      right:  16,
+      bottom: isHour ? 65 : 40,   /* ← FIX: cukup ruang untuk label rotasi 45° */
+      left:   56
+    },
+    xAxis: {
+      type: 'category',
+      data: labels,
+      axisLine:  { show: false },
+      axisTick:  { show: false },
+      axisLabel: {
+        fontFamily: "'Poppins',sans-serif",
+        fontSize:   isHour ? 10 : 11,
+        fontWeight: '600',
+        color:      '#64748b',
+        interval:   isHour ? 2 : 0,   /* ← FIX: tiap 2 jam agar tidak berjejal */
+        rotate:     isHour ? 45 : 0,
+        margin:     isHour ? 10 : 8,
+      }
+    },
+    yAxis: {
+      type: 'value',
+      axisLine:   { show: false },
+      axisTick:   { show: false },
+      splitLine:  { lineStyle: { color: '#f1f5f9', type: 'dashed' } },
+      axisLabel:  { fontFamily: "'Poppins',sans-serif", fontSize: 11, color: '#94a3b8', formatter: numK }
+    },
+    series: [
+      makeS('Neutral',  neuData, '#94a3b8'),
+      makeS('Positive', posData, '#2FC6F6'),
+      {
+        name: 'Negative', type: 'bar', stack: 's',
+        barMaxWidth: isHour ? 16 : 56,   /* ← sedikit lebih tipis agar 24 bar muat */
+        data: negData.map((v, i) => ({
+          value: v,
+          itemStyle: { color: '#ef4444', borderRadius: [4,4,0,0] }
+        })),
+        label: {
+          show:       true,
+          position:   'top',
+          fontFamily: "'Poppins',sans-serif",
+          fontWeight: '700',
+          fontSize:   isHour ? 8 : 10,
+          color:      '#64748b',
+          rotate:     isHour ? 45 : 0,   /* ← label total juga dirotasi agar tidak nabrak */
+          formatter:  p => totals[p.dataIndex] > 0 ? numK(totals[p.dataIndex]) : ''
         },
-        grid: { top: 24, right: 16, bottom: 40, left: 56 },
-        xAxis: { type: 'category', data: labels, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { fontFamily: "'Poppins',sans-serif", fontSize: isHour ? 9 : 11, fontWeight: '600', color: '#64748b', interval: isHour ? 1 : 0, rotate: isHour ? 45 : 0 } },
-        yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } }, axisLabel: { fontFamily: "'Poppins',sans-serif", fontSize: 11, color: '#94a3b8', formatter: numK } },
-        series: [
-          makeS('Neutral', neuData, '#94a3b8'),
-          makeS('Positive', posData, '#2FC6F6'),
-          { name: 'Negative', type: 'bar', stack: 's', barMaxWidth: isHour ? 20 : 56, data: negData.map((v, i) => ({ value: v, itemStyle: { color: '#ef4444', borderRadius: [4, 4, 0, 0] } })), label: { show: true, position: 'top', fontFamily: "'Poppins',sans-serif", fontWeight: '700', fontSize: isHour ? 9 : 10, color: '#64748b', formatter: p => totals[p.dataIndex] > 0 ? numK(totals[p.dataIndex]) : '' }, emphasis: { focus: 'series' } }
-        ]
-      });
-    }
+        emphasis: { focus: 'series' }
+      }
+    ]
+  });
+}
+ 
 
     /* ═══════════════════════════════════════════════════════
        CSV EXPORT
@@ -1011,176 +1080,339 @@
     /* ════════════════════════════════════════════════════════
        EXPORT MODULE — Sentiment Analysis
     ════════════════════════════════════════════════════════ */
-    const SNTExport = (() => {
-      let _toastTimer = null;
+   /* ══════════════════════════════════════════════════════
+   SNTExport — FULL REPLACE
+   Fix:
+   1. Chart pudar → set ApexCharts fill opacity=1 sementara sebelum capture
+   2. Halaman bolong → smart split: cari batas antar-card, bukan 50/50
+   3. Blur → scale pakai devicePixelRatio
+══════════════════════════════════════════════════════ */
+const SNTExport = (() => {
+  'use strict';
+  let _toastTimer = null;
 
-      function _toast(msg, type = 'default', duration = 3200) {
-        const t = document.getElementById('exportToast'), m = document.getElementById('exportToastMsg'), ico = document.getElementById('exportToastIcon');
-        if (!t || !m) return;
-        m.textContent = msg;
-        t.className = 'export-toast show ' + (type !== 'default' ? type : '');
-        const icons = { success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' };
-        ico.className = 'ph ' + (icons[type] || icons.default);
-        clearTimeout(_toastTimer);
-        _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+  function _toast(msg, type = 'default', duration = 9000) {
+    const t = document.getElementById('exportToast'),
+          m = document.getElementById('exportToastMsg'),
+          i = document.getElementById('exportToastIcon');
+    if (!t || !m) return;
+    m.textContent = msg;
+    t.className = 'export-toast show' + (type !== 'default' ? ' ' + type : '');
+    i.className = 'ph ' + ({ success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' }[type] ?? 'ph-spinner');
+    clearTimeout(_toastTimer);
+    if (type !== 'default') _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+  }
+
+  function _btnState(btns, on) {
+    [].concat(btns).forEach(b => { if (!b) return; b.disabled = on; b.classList.toggle('exporting', on); });
+  }
+
+  /* ── Resize semua chart ── */
+  function _resizeAll() {
+    Object.values(SNTCharts._i).forEach(c => { try { if (!c.isDisposed()) c.resize(); } catch (e) {} });
+    if (_apexTrend) { try { _apexTrend.updateOptions({}); } catch (e) {} }
+  }
+
+  /* ── Sementara perkuat opacity ApexCharts fill agar tidak faded ── */
+  function _boostApexFill() {
+    if (!_apexTrend) return null;
+    try {
+      /* Ambil nilai fill saat ini lalu set ke opaque */
+      _apexTrend.updateOptions({
+        fill: { opacity: 0.7 },
+        stroke: { width: 3 },
+      }, false, false, false);
+      return true;
+    } catch (e) { return null; }
+  }
+  function _restoreApexFill() {
+    if (!_apexTrend) return;
+    try {
+      _apexTrend.updateOptions({
+        fill: { opacity: 0.3 },
+        stroke: { width: 2.5 },
+      }, false, false, false);
+    } catch (e) {}
+  }
+
+  const _dpr = () => Math.max(window.devicePixelRatio || 1, 2);
+
+  /* ════════════════════════════════════════════════════
+     CAPTURE FULL PAGE
+  ════════════════════════════════════════════════════ */
+  async function _capture() {
+    const area = document.getElementById('pageExportArea');
+    if (!area) throw new Error('pageExportArea tidak ditemukan');
+
+    window.scrollTo({ top: 0 });
+    _resizeAll();
+    _boostApexFill();
+    await new Promise(r => setTimeout(r, 500));  // tunggu apex redraw
+
+    const canvas = await html2canvas(area, {
+      scale:           _dpr(),
+      useCORS:         true,
+      allowTaint:      false,
+      backgroundColor: '#f1f5f9',
+      logging:         false,
+      removeContainer: true,
+      windowWidth:     document.documentElement.scrollWidth,
+      windowHeight:    area.scrollHeight,
+      height:          area.scrollHeight,
+      ignoreElements:  el =>
+        el.hasAttribute('data-html2canvas-ignore') ||
+        el.id === 'pageExportPdfBtn' ||
+        el.id === 'pageExportImgBtn',
+    });
+
+    _restoreApexFill();
+    return canvas;
+  }
+
+  /* ════════════════════════════════════════════════════
+     CAPTURE SINGLE CARD
+  ════════════════════════════════════════════════════ */
+  async function _captureCard(areaId, cardKey) {
+    const area = document.getElementById(areaId);
+    if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+
+    const ecMap = {
+      overview:'chOverview', sov:'chSovTotal', mass:'chMass', social:'chSocial',
+      bytype:'chByType', byplat:'chByPlat', masspie:'chMassPie', socialpie:'chSocialPie',
+      weekday:'chWeekday', hour:'chHour',
+    };
+    if (ecMap[cardKey] && SNTCharts._i[ecMap[cardKey]]) {
+      try { SNTCharts._i[ecMap[cardKey]].resize(); } catch (e) {}
+    }
+    const boosted = cardKey === 'trend' ? _boostApexFill() : null;
+    await new Promise(r => setTimeout(r, 300));
+
+    const canvas = await html2canvas(area, {
+      scale:           _dpr(),
+      useCORS:         true,
+      allowTaint:      false,
+      backgroundColor: '#ffffff',
+      logging:         false,
+      removeContainer: true,
+      ignoreElements:  el => el.hasAttribute('data-html2canvas-ignore'),
+    });
+
+    if (boosted) _restoreApexFill();
+    return canvas;
+  }
+
+  /* ════════════════════════════════════════════════════
+     SMART SPLIT — cari titik potong antar-card
+     Hindari memotong di tengah chart
+  ════════════════════════════════════════════════════ */
+  function _smartSplitY(canvas, pdfScaledH) {
+    /*
+      pdfScaledH = tinggi 1 halaman dalam pixel canvas
+      Cari titik potong yang tidak memotong card.
+      Strategi: cari "gap" (baris piksel yang mayoritas
+      warna background #f1f5f9 ≈ rgb(241,245,248)).
+      Scan dari pdfScaledH ke atas max 15% canvas.
+    */
+    const ctx   = canvas.getContext('2d');
+    const W     = canvas.width;
+    const BGr   = 241, BGg = 245, BGb = 248;   // #f1f5f9
+    const THRESH = 0.75;   // 75% piksel baris harus mirip BG
+    const SCAN   = Math.floor(pdfScaledH * 0.15);   // scan ±15%
+
+    const isBgRow = (y) => {
+      if (y < 0 || y >= canvas.height) return false;
+      const data = ctx.getImageData(0, y, W, 1).data;
+      let bg = 0;
+      for (let x = 0; x < W; x++) {
+        const off = x * 4;
+        const dr = Math.abs(data[off]   - BGr);
+        const dg = Math.abs(data[off+1] - BGg);
+        const db = Math.abs(data[off+2] - BGb);
+        if (dr < 18 && dg < 18 && db < 18) bg++;
       }
+      return (bg / W) >= THRESH;
+    };
 
-      function _btnState(btn, loading) {
-        if (!btn) return;
-        btn.disabled = loading;
-        btn.classList.toggle('exporting', loading);
+    /* Cari dari pdfScaledH turun ke bawah dulu (gap setelah card) */
+    for (let dy = 0; dy < SCAN; dy++) {
+      if (isBgRow(pdfScaledH + dy)) return pdfScaledH + dy;
+    }
+    /* Kalau tidak ada, cari ke atas */
+    for (let dy = 1; dy <= SCAN; dy++) {
+      if (isBgRow(pdfScaledH - dy)) return pdfScaledH - dy;
+    }
+    /* Fallback: potong di posisi asli */
+    return pdfScaledH;
+  }
+
+  /* ════════════════════════════════════════════════════
+     PDF HEADER STRIP
+  ════════════════════════════════════════════════════ */
+  function _drawHeader(doc, pW, margin, subtitle) {
+    doc.setFillColor(3, 128, 71);
+    doc.rect(0, 0, pW, 11, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+    doc.text('SMADIMENT — Sentiment Analysis' + (subtitle ? ' · ' + subtitle : ''), margin, 7.5);
+    const now = new Date().toLocaleDateString('id-ID', {
+      day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+    });
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+    doc.text(now, pW - margin, 7.5, { align: 'right' });
+  }
+
+  /* ════════════════════════════════════════════════════
+     PDF PAGINATE — smart split, max 2 halaman
+  ════════════════════════════════════════════════════ */
+  async function _paginate(pdf, canvas, margin) {
+    const pW     = pdf.internal.pageSize.getWidth();
+    const pH     = pdf.internal.pageSize.getHeight();
+    const useW   = pW - margin * 2;
+    const useH   = pH - margin * 2 - 14;   // 14 = header
+    const ratio  = useW / canvas.width;
+    const slicePx = Math.floor(useH / ratio);   // piksel per halaman (canvas units)
+
+    let srcY   = 0;
+    let pageNum = 0;
+
+    while (srcY < canvas.height) {
+      if (pageNum > 0) { pdf.addPage(); _drawHeader(pdf, pW, margin); }
+
+      /* Cari titik potong cerdas */
+      const idealEnd = srcY + slicePx;
+      const cutY     = idealEnd >= canvas.height
+        ? canvas.height
+        : _smartSplitY(canvas, idealEnd);
+
+      const srcH  = Math.min(cutY - srcY, canvas.height - srcY);
+      if (srcH <= 0) break;
+
+      const slice = document.createElement('canvas');
+      slice.width  = canvas.width;
+      slice.height = srcH;
+      const sCtx   = slice.getContext('2d');
+      sCtx.fillStyle = '#f1f5f9';
+      sCtx.fillRect(0, 0, slice.width, slice.height);
+      sCtx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+
+      const dstH = srcH * ratio;
+      pdf.addImage(slice.toDataURL('image/png', 1), 'PNG', margin, 14, useW, dstH);
+
+      pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+      pdf.text(`Halaman ${pageNum + 1}`, pW / 2, pH - 3, { align: 'center' });
+
+      srcY    = cutY;
+      pageNum++;
+    }
+  }
+
+  /* ════════════════════════════════════════════════════
+     CARD: fit ke 1 halaman, tidak terpotong
+  ════════════════════════════════════════════════════ */
+  async function _fitCardToPdf(pdf, canvas, margin, label) {
+    const pW   = pdf.internal.pageSize.getWidth();
+    const pH   = pdf.internal.pageSize.getHeight();
+    const useW = pW - margin * 2;
+    const useH = pH - 14 - margin * 2;
+    const ratio = Math.min(useW / canvas.width, useH / canvas.height);
+    const dW    = canvas.width  * ratio;
+    const dH    = canvas.height * ratio;
+    const offX  = margin + (useW - dW) / 2;
+    const offY  = 14 + (useH - dH) / 2;
+    pdf.addImage(canvas.toDataURL('image/png', 1), 'PNG', offX, offY, dW, dH);
+    pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+    pdf.text('1 / 1', pW / 2, pH - 3, { align: 'center' });
+  }
+
+  /* ════════════════════════════════════════════════════
+     CARD labels & filenames
+  ════════════════════════════════════════════════════ */
+  const _cardLabels = {
+    overview:'Total Mentions by Sentiments', sov:'Share of Voice',
+    mass:'Sentiments in Mass Media', social:'Sentiments in Social Media',
+    bytype:'Sentiments by Media Types', byplat:'Sentiments by Media Platforms',
+    masspie:'Mass Media SOV', socialpie:'Social Media SOV',
+    trend:'Sentiment Trends', weekday:'Sentiments by Weekday', hour:'Sentiments by Hour',
+  };
+  const _cardFiles = {
+    overview:'overview-bar', sov:'sov-donut', mass:'mass-media', social:'social-media',
+    bytype:'by-type-pct', byplat:'by-platform', masspie:'mass-sov', socialpie:'social-sov',
+    trend:'trend-line', weekday:'by-weekday', hour:'by-hour',
+  };
+
+  /* ════════════════════════════════════════════════════
+     PUBLIC: export per card
+  ════════════════════════════════════════════════════ */
+  async function runCard(areaId, cardKey, type, btn) {
+    if (!window.html2canvas)            { _toast('html2canvas tidak tersedia', 'error'); return; }
+    if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+    _btnState(btn, true);
+    _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+    try {
+      const canvas = await _captureCard(areaId, cardKey);
+      const label  = _cardLabels[cardKey] || cardKey;
+      const file   = _cardFiles[cardKey]  || cardKey;
+      const stamp  = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const fname  = `sentiment_${file}_${OV_PID}_${stamp}`;
+
+      if (type === 'image') {
+        const a = document.createElement('a');
+        a.download = fname + '.png'; a.href = canvas.toDataURL('image/png', 1); a.click();
+        _toast('✅ Gambar berhasil diunduh!', 'success');
+      } else {
+        const { jsPDF } = window.jspdf;
+        const orient = canvas.width > canvas.height ? 'landscape' : 'portrait';
+        const pdf    = new jsPDF({ orientation: orient, unit: 'mm', format: 'a4' });
+        const pW     = pdf.internal.pageSize.getWidth();
+        _drawHeader(pdf, pW, 10, label);
+        await _fitCardToPdf(pdf, canvas, 10, label);
+        pdf.save(fname + '.pdf');
+        _toast('✅ PDF berhasil diunduh!', 'success');
       }
+    } catch (err) {
+      console.error('[SNTExport.runCard]', err);
+      _toast('❌ Export gagal: ' + err.message, 'error');
+    } finally {
+      _btnState(btn, false);
+    }
+  }
 
-      /* Resize semua chart aktif */
-      function _resizeAll() {
-        Object.values(SNTCharts._i).forEach(c => { try { if (!c.isDisposed()) c.resize(); } catch (e) {} });
-        if (_apexTrend) { try { _apexTrend.updateOptions({}); } catch (e) {} }
+  /* ════════════════════════════════════════════════════
+     PUBLIC: export full page
+  ════════════════════════════════════════════════════ */
+  async function run(type, btn) {
+    if (!window.html2canvas)            { _toast('html2canvas tidak tersedia', 'error'); return; }
+    if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+    const btnPdf = document.getElementById('pageExportPdfBtn');
+    const btnImg = document.getElementById('pageExportImgBtn');
+    _btnState([btnPdf, btnImg], true);
+    _toast(type === 'pdf' ? '⏳ Menyiapkan PDF…' : '⏳ Mengambil gambar…', 'default', 99999);
+    try {
+      const canvas = await _capture();
+      const stamp  = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const fname  = `sentiment_analysis_${OV_PID}_${stamp}`;
+
+      if (type === 'image') {
+        const a = document.createElement('a');
+        a.download = fname + '.png'; a.href = canvas.toDataURL('image/png', 1); a.click();
+        _toast('✅ Gambar berhasil diunduh!', 'success');
+      } else {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        _drawHeader(pdf, pdf.internal.pageSize.getWidth(), 10);
+        await _paginate(pdf, canvas, 10);
+        pdf.save(fname + '.pdf');
+        _toast('✅ PDF berhasil diunduh!', 'success');
       }
+    } catch (err) {
+      console.error('[SNTExport.run]', err);
+      _toast('❌ Export gagal: ' + err.message, 'error');
+    } finally {
+      _btnState([btnPdf, btnImg], false);
+    }
+  }
 
-      async function _capture() {
-        const area = document.getElementById('pageExportArea');
-        if (!area) throw new Error('pageExportArea tidak ditemukan');
-        window.scrollTo({ top: 0 });
-        await new Promise(r => setTimeout(r, 350));
-        _resizeAll();
-        return html2canvas(area, {
-          scale: 2, useCORS: true, allowTaint: false,
-          backgroundColor: '#f1f5f9', logging: false, removeContainer: true,
-          windowWidth: document.documentElement.scrollWidth,
-          windowHeight: area.scrollHeight, height: area.scrollHeight,
-          ignoreElements: el =>
-            el.hasAttribute('data-html2canvas-ignore') ||
-            el.id === 'pageExportPdfBtn' ||
-            el.id === 'pageExportImgBtn',
-        });
-      }
-
-      function _drawHeader(doc, pW, margin, subtitle) {
-        doc.setFillColor(3, 128, 71);
-        doc.rect(0, 0, pW, 11, 'F');
-        doc.setTextColor(255, 255, 255); doc.setFontSize(9); doc.setFont('helvetica', 'bold');
-        doc.text('SMADIMENT — Sentiment Analysis' + (subtitle ? ' · ' + subtitle : ''), margin, 7.5);
-        const now = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        doc.setFontSize(7); doc.setFont('helvetica', 'normal');
-        doc.text('Generated: ' + now, pW - margin, 7.5, { align: 'right' });
-      }
-
-      async function _paginate(pdf, canvas, margin) {
-        const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
-        const usableW = pW - margin * 2, usableH = pH - margin * 2 - 14;
-        const ratio = usableW / canvas.width, sliceH = usableH / ratio;
-        let srcY = 0, pageNum = 0;
-        while (srcY < canvas.height) {
-          if (pageNum > 0) { pdf.addPage(); _drawHeader(pdf, pW, margin); }
-          const srcSlice = Math.min(sliceH, canvas.height - srcY), dstH = srcSlice * ratio;
-          const slice = document.createElement('canvas');
-          slice.width = canvas.width; slice.height = Math.ceil(srcSlice);
-          slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice);
-          pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
-          pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
-          pdf.text(`Halaman ${pageNum + 1}`, pW / 2, pH - 3, { align: 'center' });
-          srcY += srcSlice; pageNum++;
-        }
-      }
-
-      async function _captureCard(areaId, cardKey) {
-        const area = document.getElementById(areaId);
-        if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
-        /* resize ECharts in this card if any */
-        const ecMap = {
-          overview: 'chOverview', sov: 'chSovTotal', mass: 'chMass', social: 'chSocial',
-          bytype: 'chByType', byplat: 'chByPlat', masspie: 'chMassPie', socialpie: 'chSocialPie',
-          weekday: 'chWeekday', hour: 'chHour',
-        };
-        if (ecMap[cardKey] && SNTCharts._i[ecMap[cardKey]]) {
-          try { SNTCharts._i[ecMap[cardKey]].resize(); } catch (e) {}
-        }
-        if (cardKey === 'trend' && _apexTrend) { try { _apexTrend.updateOptions({}); } catch (e) {} }
-        await new Promise(r => setTimeout(r, 220));
-        return html2canvas(area, {
-          scale: 2, useCORS: true, allowTaint: false,
-          backgroundColor: '#ffffff', logging: false, removeContainer: true,
-          ignoreElements: el => el.hasAttribute('data-html2canvas-ignore'),
-        });
-      }
-
-      const _cardLabels = {
-        overview: 'Total Mentions by Sentiments', sov: 'Share of Voice',
-        mass: 'Sentiments in Mass Media', social: 'Sentiments in Social Media',
-        bytype: 'Sentiments by Media Types', byplat: 'Sentiments by Media Platforms',
-        masspie: 'Mass Media SOV', socialpie: 'Social Media SOV',
-        trend: 'Sentiment Trends', weekday: 'Sentiments by Weekday', hour: 'Sentiments by Hour',
-      };
-      const _cardFiles = {
-        overview: 'overview-bar', sov: 'sov-donut', mass: 'mass-media',
-        social: 'social-media', bytype: 'by-type-pct', byplat: 'by-platform',
-        masspie: 'mass-sov', socialpie: 'social-sov', trend: 'trend-line',
-        weekday: 'by-weekday', hour: 'by-hour',
-      };
-
-      async function runCard(areaId, cardKey, type, btn) {
-        if (!window.html2canvas) { _toast('html2canvas tidak tersedia', 'error'); return; }
-        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
-        _btnState(btn, true);
-        _toast(type === 'pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
-        try {
-          const canvas = await _captureCard(areaId, cardKey);
-          const label = _cardLabels[cardKey] || cardKey, file = _cardFiles[cardKey] || cardKey;
-          const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-          const fname = `sentiment_${file}_${OV_PID}_${stamp}`;
-          if (type === 'image') {
-            const link = document.createElement('a');
-            link.download = fname + '.png'; link.href = canvas.toDataURL('image/png'); link.click();
-            _toast('Gambar berhasil diunduh!', 'success');
-          } else {
-            const { jsPDF } = window.jspdf;
-            const landscape = canvas.width > canvas.height;
-            const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
-            _drawHeader(pdf, pdf.internal.pageSize.getWidth(), 10, label);
-            await _paginate(pdf, canvas, 10);
-            pdf.save(fname + '.pdf');
-            _toast('PDF berhasil diunduh!', 'success');
-          }
-        } catch (err) {
-          console.error('[SNTExport.runCard]', err);
-          _toast('Export gagal: ' + err.message, 'error');
-        } finally {
-          _btnState(btn, false);
-        }
-      }
-
-      async function run(type, btn) {
-        if (!window.html2canvas) { _toast('html2canvas tidak tersedia', 'error'); return; }
-        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
-        const btnPdf = document.getElementById('pageExportPdfBtn'), btnImg = document.getElementById('pageExportImgBtn');
-        _btnState(btnPdf, true); _btnState(btnImg, true);
-        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
-        try {
-          const canvas = await _capture();
-          const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-          if (type === 'pdf') {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            _drawHeader(pdf, pdf.internal.pageSize.getWidth(), 10);
-            await _paginate(pdf, canvas, 10);
-            pdf.save(`sentiment_analysis_${OV_PID}_${stamp}.pdf`);
-            _toast('PDF berhasil diunduh!', 'success');
-          } else {
-            const link = document.createElement('a');
-            link.download = `sentiment_analysis_${OV_PID}_${stamp}.png`;
-            link.href = canvas.toDataURL('image/png'); link.click();
-            _toast('Gambar berhasil diunduh!', 'success');
-          }
-        } catch (err) {
-          console.error('[SNTExport]', err);
-          _toast('Export gagal: ' + err.message, 'error');
-        } finally {
-          _btnState(btnPdf, false); _btnState(btnImg, false);
-        }
-      }
-
-      return { run, runCard };
-    })();
+  return { run, runCard };
+})();
 
     /* ══════════════════════════════════════════════════════
        SENTIMENT MENTION POPUP

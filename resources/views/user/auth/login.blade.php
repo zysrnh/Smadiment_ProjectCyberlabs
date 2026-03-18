@@ -494,9 +494,27 @@
 
       {{-- Error Message --}}
       @if($errors->any())
-      <div class="alert alert-error">
-        {{ $errors->first() }}
-      </div>
+        @if(str_contains($errors->first(), '419'))
+          <div class="alert alert-warning">
+            <div class="alert-icon">&#9888;</div>
+            <div class="alert-body">
+              <strong>Session Expired!</strong>
+              <span>Halaman ini sudah kadaluarsa. Silakan refresh halaman dan login ulang. Pastikan cookies browser aktif.</span>
+            </div>
+          </div>
+        @elseif(str_contains($errors->first(), '409'))
+          <div class="alert alert-warning">
+            <div class="alert-icon">&#9888;</div>
+            <div class="alert-body">
+              <strong>Conflict Detected!</strong>
+              <span>Terjadi konflik data atau permintaan ganda. Silakan coba lagi, pastikan tidak ada proses login ganda atau data duplikat.</span>
+            </div>
+          </div>
+        @else
+          <div class="alert alert-error">
+            {{ $errors->first() }}
+          </div>
+        @endif
       @endif
 
       <form method="POST" action="{{ route('user.login.submit') }}" id="loginForm">
