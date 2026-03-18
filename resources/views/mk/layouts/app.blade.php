@@ -22,7 +22,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
  
     <style>
-        #gdpTriggerLabel {
+        #gdpTriggerLabel { 
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
             max-width: 150px; display: inline-block; vertical-align: middle; font-size: 12px;
         }
