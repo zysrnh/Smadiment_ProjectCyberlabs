@@ -25,7 +25,7 @@
         #gdpTriggerLabel { 
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
             max-width: 150px; display: inline-block; vertical-align: middle; font-size: 12px;
-        }
+        } 
         /* Date picker modal - smooth fade + slide */
         .gdp-modal {
             display: flex !important;
