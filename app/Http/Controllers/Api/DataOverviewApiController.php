@@ -248,8 +248,15 @@ class DataOverviewApiController extends Controller
                 }
 
                 try {
-                    $newsStats = $mk->projectStats($projectId, 'onlinenews', $startDate, $endDate, 0, 23, 'volumetotal');
-                    $newsCount = $this->extractTotal($newsStats);
+                    $mediaData = $mk->sentimentMedia($projectId, $startDate, $endDate, 0, 23);
+                    $byMedia   = $mediaData['bymedia'] ?? [];
+
+                    $newsCount = 0;
+                    if (isset($byMedia['doc'])) {
+                        $newsCount = (int) ($byMedia['doc']['pos'] ?? 0)
+                                   + (int) ($byMedia['doc']['neg'] ?? 0)
+                                   + (int) ($byMedia['doc']['net'] ?? $byMedia['doc']['neu'] ?? $byMedia['doc']['neutral'] ?? 0);
+                    }
 
                     if ($newsCount > 0 && $newsCount <= $totalMentions) {
                         return response()->json([
@@ -298,7 +305,7 @@ class DataOverviewApiController extends Controller
 
                 $mediaData  = [];
                 $mediaNames = [
-                    'doc'    => 'Online News',
+                    'doc'    => 'Mass Media',
                     'twit'   => 'X (Twitter)',
                     'fb'     => 'Facebook',
                     'ig'     => 'Instagram',
@@ -405,23 +412,23 @@ class DataOverviewApiController extends Controller
      * - Loop dinamis berdasarkan range (harian jika <= 14 hari, mingguan jika > 14 hari)
      * - Cache key menyertakan tanggal
      */
-    public function sentimentTimeline(Request $request, MediaKernelsClient $mk)
+   public function sentimentTimeline(Request $request, MediaKernelsClient $mk)
     {
         $projectId = $request->query('project_id');
         $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
         $endDate   = $request->query('end_date', now()->format('Y-m-d'));
-
+ 
         if (!$projectId) {
             return response()->json(['success' => false, 'dates' => [], 'values' => []], 400);
         }
-
-        // ✅ Cache key sertakan tanggal agar tidak stale saat filter berubah
+ 
         $cacheKey = "sentiment_timeline_{$projectId}_{$startDate}_{$endDate}";
-
+ 
         return Cache::remember($cacheKey, 300, function () use ($mk, $projectId, $startDate, $endDate) {
             try {
                 $timeline = [
                     'dates'     => [],
+                    'dates_end' => [],
                     'values'    => [],
                     'sentiment' => [
                         'positive' => [],
@@ -429,52 +436,57 @@ class DataOverviewApiController extends Controller
                         'negative' => [],
                     ],
                 ];
-
+ 
                 $start   = \Carbon\Carbon::parse($startDate);
                 $end     = \Carbon\Carbon::parse($endDate);
                 $diff    = $start->diffInDays($end);
-                $maxDays = min($diff, 90); // batasi maks 90 hari
-
-                // Agregasi per minggu jika range > 14 hari
-                $useWeekly = $maxDays > 14;
-
+                $maxDays = min($diff, 90);
+ 
+                // ✅ FIX: Selalu harian sampai 90 hari (identik Dashboard)
+                // Weekly hanya jika > 90 hari agar tidak terlalu banyak request
+                $useWeekly = $maxDays > 90;
+ 
                 if ($useWeekly) {
                     $cursor = $start->copy()->startOfWeek();
-
+ 
                     while ($cursor->lte($end)) {
                         $weekStart = $cursor->copy()->max($start)->format('Y-m-d');
                         $weekEnd   = $cursor->copy()->endOfWeek()->min($end)->format('Y-m-d');
-
+ 
                         $sentimentData = $mk->sentimentTotal($projectId, $weekStart, $weekEnd, 0, 23);
                         $normalized    = $this->normalizeSentimentTotal($sentimentData);
                         $total         = $normalized['positive'] + $normalized['neutral'] + $normalized['negative'];
-
-                        $timeline['dates'][]                 = $cursor->format('d M');
+ 
+                        // ✅ Format Y-m-d agar JS dapat parse dengan benar
+                        $timeline['dates'][]                 = $weekStart;
+                        $timeline['dates_end'][]             = $weekEnd;
                         $timeline['values'][]                = $total;
                         $timeline['sentiment']['positive'][] = $normalized['positive'];
                         $timeline['sentiment']['neutral'][]  = $normalized['neutral'];
                         $timeline['sentiment']['negative'][] = $normalized['negative'];
-
+ 
                         $cursor->addWeek();
                     }
                 } else {
-                    // Agregasi per hari
+                    // ✅ Harian — dari startDate sampai endDate (urut ascending)
                     for ($i = $maxDays; $i >= 0; $i--) {
                         $date    = $end->copy()->subDays($i);
                         $dateStr = $date->format('Y-m-d');
-
+ 
                         $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $dateStr, 0, 23);
                         $normalized    = $this->normalizeSentimentTotal($sentimentData);
                         $total         = $normalized['positive'] + $normalized['neutral'] + $normalized['negative'];
-
-                        $timeline['dates'][]                 = $date->format('d M');
+ 
+                        // ✅ Format Y-m-d agar JS dapat parse dengan benar
+                        $timeline['dates'][]                 = $dateStr;
+                        $timeline['dates_end'][]             = $dateStr;
                         $timeline['values'][]                = $total;
                         $timeline['sentiment']['positive'][] = $normalized['positive'];
                         $timeline['sentiment']['neutral'][]  = $normalized['neutral'];
                         $timeline['sentiment']['negative'][] = $normalized['negative'];
                     }
                 }
-
+ 
                 Log::info('✅ Sentiment Timeline', [
                     'project_id' => $projectId,
                     'start'      => $startDate,
@@ -482,14 +494,14 @@ class DataOverviewApiController extends Controller
                     'points'     => count($timeline['dates']),
                     'weekly'     => $useWeekly,
                 ]);
-
+ 
                 return response()->json([
-                    'success'  => true,
-                    'dates'    => $timeline['dates'],
-                    'values'   => $timeline['values'],
-                    'sentiment'=> $timeline['sentiment'],
+                    'success'   => true,
+                    'dates'     => $timeline['dates'],
+                    'values'    => $timeline['values'],
+                    'sentiment' => $timeline['sentiment'],
                 ]);
-
+ 
             } catch (\Exception $e) {
                 Log::error('❌ Timeline failed', [
                     'error' => $e->getMessage(),

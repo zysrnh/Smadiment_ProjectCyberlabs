@@ -28,7 +28,7 @@
         } 
         /* Date picker modal - smooth fade + slide */
         .gdp-modal {
-            display: flex !important;
+            display: flex !important; 
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.22s ease;

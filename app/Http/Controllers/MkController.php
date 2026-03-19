@@ -202,9 +202,11 @@ class MkController extends Controller
     private function extractTimelineByRange($projectId, string $startDate, string $endDate, MediaKernelsClient $mk): array
     {
         $timeline = [
-            'dates'     => [],
-            'values'    => [],
-            'sentiment' => [
+            'dates'       => [],
+            'dates_start' => [],
+            'dates_end'   => [],
+            'values'      => [],
+            'sentiment'   => [
                 'positive' => [],
                 'neutral'  => [],
                 'negative' => [],
@@ -242,6 +244,8 @@ class MkController extends Controller
                     $total = $pos + $neu + $neg;
 
                     $timeline['dates'][]                 = $dateLabel;
+                    $timeline['dates_start'][]           = $dateStr;
+                    $timeline['dates_end'][]             = $weekEndStr;
                     $timeline['values'][]                = $total;
                     $timeline['sentiment']['positive'][] = $pos;
                     $timeline['sentiment']['neutral'][]  = $neu;
@@ -268,6 +272,8 @@ class MkController extends Controller
                     $total = $pos + $neu + $neg;
 
                     $timeline['dates'][]                 = $dateLabel;
+                    $timeline['dates_start'][]           = $dateStr;
+                    $timeline['dates_end'][]             = $dateStr;
                     $timeline['values'][]                = $total;
                     $timeline['sentiment']['positive'][] = $pos;
                     $timeline['sentiment']['neutral'][]  = $neu;

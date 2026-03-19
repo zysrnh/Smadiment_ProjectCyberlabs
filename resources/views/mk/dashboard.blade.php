@@ -423,14 +423,36 @@
             font-size: 9px; font-weight: 700; color: var(--slate-400);
             text-transform: uppercase; letter-spacing: .4px; margin-top: 1px;
         }
+
+        /* ── Detail action buttons ── */
+        .do-dp2-actions { display: flex; flex-direction: column; gap: 7px; margin-top: 4px; }
         .do-dp2-link {
             display: flex; align-items: center; justify-content: center; gap: 6px;
             padding: 9px 14px; background: var(--dash-primary); color: #fff;
             border-radius: var(--radius-sm); font-size: 12px; font-weight: 700;
-            text-decoration: none; transition: filter .14s; margin-top: 4px;
+            text-decoration: none; transition: filter .14s;
         }
         .do-dp2-link:hover { filter: brightness(1.1); color: #fff; }
         .do-dp2-link i    { font-size: 13px; }
+        /* secondary (outline) link variant */
+        .do-dp2-link-sec {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 8px 14px; background: transparent; color: var(--dash-primary);
+            border: 1.5px solid var(--dash-primary);
+            border-radius: var(--radius-sm); font-size: 12px; font-weight: 700;
+            text-decoration: none; transition: background .14s, color .14s;
+        }
+        .do-dp2-link-sec:hover { background: var(--dash-primary-lt); color: var(--dash-primary); }
+        .do-dp2-link-sec i { font-size: 13px; }
+        /* news-specific green link */
+        .do-dp2-link-news {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 9px 14px; background: #0284c7; color: #fff;
+            border-radius: var(--radius-sm); font-size: 12px; font-weight: 700;
+            text-decoration: none; transition: filter .14s;
+        }
+        .do-dp2-link-news:hover { filter: brightness(1.1); color: #fff; }
+        .do-dp2-link-news i { font-size: 13px; }
 
         /* ── Platform picker ── */
         .do-plat-picker {
@@ -480,13 +502,15 @@
         const END_DATE        = '{{ $endDate }}';
         const CSRF_TOKEN      = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
         const PROJECT_TIMELINES = {};
+        // Base URL for Data Overview page
+        const DATA_OVERVIEW_URL = '{{ route("mk.data-overview") }}';
     </script>
 
     {{-- ════ PAGE EXPORT WRAPPER — wraps everything visible on the dashboard ════ --}}
     <div id="pageExportArea">
 
     {{-- ══ KPI Cards ══ --}}
-    <div class="row">
+<div class="row g-3 mb-3">
         <div class="col-md-6 col-xl-3">
             <div class="card bg-primary text-white fade-up fade-up-d1">
                 <div class="card-body">
@@ -1124,6 +1148,24 @@
                 toolbar: { show: false },
                 animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 1000 } },
                 events: {
+                    click: (_e, _ctx, cfg) => {
+                        let sdStr = null, edStr = null;
+                        if (cfg && typeof cfg.dataPointIndex !== 'undefined' && cfg.dataPointIndex >= 0) {
+                            if (tl.dates_start && tl.dates_start[cfg.dataPointIndex]) {
+                                sdStr = tl.dates_start[cfg.dataPointIndex];
+                            }
+                            if (tl.dates_end && tl.dates_end[cfg.dataPointIndex]) {
+                                edStr = tl.dates_end[cfg.dataPointIndex];
+                            }
+                        }
+                        if (cfg && cfg.seriesIndex >= 0) {
+                            const mapping = {0:'all', 1:'pos', 2:'neu', 3:'neg'};
+                            const sent = mapping[cfg.seriesIndex] || 'all';
+                            DashPanel.open('all', sent, projectId, sdStr, edStr);
+                        } else {
+                            DashPanel.open('all', 'all', projectId, sdStr, edStr);
+                        }
+                    },
                     mounted: function () {
                         if (loadEl) {
                             loadEl.classList.add('hidden');
@@ -1184,10 +1226,10 @@
                 itemMargin: { horizontal:14, vertical:4 }
             },
             tooltip: {
-                shared: true,
-                intersect: false,
+                shared: false,
+                intersect: true,
                 style: { fontFamily:'inherit', fontSize:'12px' },
-                y: { formatter: v => v.toLocaleString('id-ID') + ' mentions' }
+                y: { formatter: v => v ? v.toLocaleString('id-ID') + ' mentions' : '0 mentions' }
             },
         };
 
@@ -1211,345 +1253,344 @@
 
     /* ════════════════════════════════════════════════════════
        DASH EXPORT MODULE
-       Captures dashboardExportArea-{id} with html2canvas
-       and either downloads a PNG or generates a PDF via jsPDF.
     ════════════════════════════════════════════════════════ */
-    const DashExport = (() => {
+    /* ══════════════════════════════════════════════════════
+   DashExport — FIXED
+   Ganti seluruh blok const DashExport = (() => { ... })();
 
-        /* ── helpers ── */
-        let _toastTimer = null;
+   Fix:
+   1. _freeze / _unfreeze — matikan fadeUp, shimmer, pulseP
+      agar KPI cards tidak transparan di screenshot
+   2. onclone — paksa semua konten visible, hide panel/overlay,
+      paksa .lazy-card opacity:1 transform:none
+   3. _capture per-project: pakai offsetHeight bukan scrollHeight
+   4. Page export: sama, + freeze sebelum capture
+══════════════════════════════════════════════════════ */
+const DashExport = (() => {
 
-        function _toast(msg, type = 'default', duration = 3200) {
-            const t   = _$('exportToast');
-            const m   = _$('exportToastMsg');
-            const ico = _$('exportToastIcon');
-            if (!t || !m) return;
+    let _toastTimer = null;
 
-            m.textContent = msg;
-            t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
+    /* ════════════════════════════
+       Toast & button state
+    ════════════════════════════ */
+    function _toast(msg, type = 'default', duration = 3200) {
+        const t = _$('exportToast'), m = _$('exportToastMsg'), ico = _$('exportToastIcon');
+        if (!t || !m) return;
+        m.textContent = msg;
+        t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
+        const icons = { success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' };
+        ico.className = 'ph ' + (icons[type] || icons.default);
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+    }
 
-            const icons = { success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' };
-            ico.className = 'ph ' + (icons[type] || icons.default);
+    function _btnState(btn, loading) {
+        if (!btn) return;
+        btn.disabled = loading;
+        btn.classList.toggle('exporting', loading);
+    }
 
-            clearTimeout(_toastTimer);
-            _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
-        }
+    /* ════════════════════════════
+       Freeze: matikan animasi secara targeted
+       (tidak pakai global *{animation:none} karena
+       Bootstrap KPI cards bisa menghilang)
+    ════════════════════════════ */
+    let _freezeStyle = null;
 
-        function _btnState(btn, loading) {
-            if (!btn) return;
-            if (loading) {
-                btn.disabled = true;
-                btn.classList.add('exporting');
-            } else {
-                btn.disabled = false;
-                btn.classList.remove('exporting');
+    function _freeze() {
+        if (_freezeStyle) return;
+        _freezeStyle = document.createElement('style');
+        _freezeStyle.id = '__dash_freeze__';
+        _freezeStyle.textContent = `
+            /* Paksa lazy-card ke posisi final */
+            #pageExportArea .lazy-card,
+            #pageExportArea .fade-up,
+            #pageExportArea [class*="fade-up"] {
+                animation: none !important;
+                opacity: 1 !important;
+                transform: none !important;
             }
-        }
+            /* Stop shimmer skeleton */
+            #pageExportArea .sk-block {
+                animation: none !important;
+                background: #e2e8f0 !important;
+            }
+            /* Stop pulse dot */
+            #pageExportArea .proj-status-dot {
+                animation: none !important;
+                box-shadow: 0 0 0 3px rgba(67,97,238,.15) !important;
+            }
+            /* Stop spin-ring */
+            #pageExportArea .spin-ring {
+                animation: none !important;
+            }
+            /* Hide elemen yang tidak perlu */
+            #pageExportArea [data-html2canvas-ignore],
+            #pageExportArea .page-export-bar,
+            #pageExportArea .scroll-top-btn,
+            #pageExportArea .chart-loading.hidden {
+                display: none !important;
+            }
+        `;
+        document.head.appendChild(_freezeStyle);
+    }
 
-        /* ── core capture ── */
-        async function _capture(projectId) {
+    function _unfreeze() {
+        if (_freezeStyle) { _freezeStyle.remove(); _freezeStyle = null; }
+    }
+
+    /* ════════════════════════════
+       onclone — paksa semua konten visible
+    ════════════════════════════ */
+    function _onClone(clonedDoc) {
+        /* Sembunyikan panel/overlay/toast */
+        clonedDoc.querySelectorAll(
+            '#dashPanelOverlay, #dashSntPanel, .do-panel-overlay, .do-panel,' +
+            '#dashPlatPicker, .do-plat-picker,' +
+            '.export-toast, .scroll-top-btn,' +
+            '[data-html2canvas-ignore], .page-export-bar'
+        ).forEach(el => {
+            el.style.cssText += 'display:none!important;visibility:hidden!important;';
+        });
+
+        /* Stop animasi */
+        clonedDoc.querySelectorAll('*').forEach(el => {
+            el.style.animationPlayState = 'paused';
+            el.style.animation  = 'none';
+            el.style.transition = 'none';
+        });
+
+        /* Paksa semua card visible */
+        clonedDoc.querySelectorAll(
+            '.lazy-card, .card, .card-body, .card-header,' +
+            '.row, [class*="col-"], #pageExportArea, #actualCards'
+        ).forEach(el => {
+            el.style.opacity    = '1';
+            el.style.transform  = 'none';
+            el.style.visibility = 'visible';
+        });
+
+        /* Paksa chart container visible */
+        clonedDoc.querySelectorAll('[id^="chart-"]').forEach(el => {
+            el.style.display    = 'block';
+            el.style.opacity    = '1';
+            el.style.visibility = 'visible';
+        });
+
+        /* Hilangkan chart-loading yang masih tampil */
+        clonedDoc.querySelectorAll('.chart-loading').forEach(el => {
+            el.style.display = 'none';
+        });
+
+        /* Hilangkan skeleton yang masih tampil */
+        clonedDoc.querySelectorAll('#skeletonWrap').forEach(el => {
+            el.style.display = 'none';
+        });
+
+        /* Pastikan actualCards visible */
+        const ac = clonedDoc.getElementById('actualCards');
+        if (ac) ac.style.display = 'block';
+    }
+
+    /* ════════════════════════════
+       Capture helpers
+    ════════════════════════════ */
+    async function _captureEl(el, bg) {
+        return html2canvas(el, {
+            scale          : 2,
+            useCORS        : true,
+            allowTaint     : false,
+            backgroundColor: bg || '#ffffff',
+            logging        : false,
+            removeContainer: true,
+            onclone        : d => _onClone(d),
+            ignoreElements : e => e.hasAttribute('data-html2canvas-ignore'),
+            x      : 0,
+            y      : 0,
+            width  : el.offsetWidth,
+            height : el.offsetHeight || el.scrollHeight,
+        });
+    }
+
+    async function _captureArea(el, bg) {
+        return html2canvas(el, {
+            scale          : 2,
+            useCORS        : true,
+            allowTaint     : false,
+            backgroundColor: bg || '#f1f5f9',
+            logging        : false,
+            removeContainer: true,
+            onclone        : d => _onClone(d),
+            ignoreElements : e =>
+                e.hasAttribute('data-html2canvas-ignore') ||
+                e.id === 'pageExportPdfBtn' ||
+                e.id === 'pageExportImgBtn',
+            windowWidth    : document.documentElement.scrollWidth,
+            windowHeight   : el.scrollHeight,
+            height         : el.scrollHeight,
+        });
+    }
+
+    /* ════════════════════════════
+       Filename
+    ════════════════════════════ */
+    function _filename(projectId) {
+        const card  = _$('proj-card-' + projectId);
+        const title = card?.querySelector('h6')?.textContent?.trim() || ('project-' + projectId);
+        const safe  = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48);
+        const d     = new Date();
+        const stamp = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+        return `${safe}_${stamp}`;
+    }
+
+    /* ════════════════════════════
+       PDF builder (slice)
+    ════════════════════════════ */
+    function _buildPdf(canvas, headerColor, headerText, landscape) {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+        const pW  = pdf.internal.pageSize.getWidth();
+        const pH  = pdf.internal.pageSize.getHeight();
+        const margin   = 12;
+        const usableW  = pW - margin * 2;
+        const usableH  = pH - 14 - 6;
+        const ratio    = usableW / canvas.width;
+        const sliceH   = usableH / ratio;
+        const total    = Math.max(1, Math.ceil((canvas.height * ratio) / usableH));
+
+        const _hdr = (page) => {
+            const [r, g, b] = headerColor;
+            pdf.setFillColor(r, g, b);
+            pdf.rect(0, 0, pW, 11, 'F');
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
+            pdf.text(headerText, margin, 7.5);
+            const now = new Date().toLocaleDateString('id-ID', {
+                day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+            pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+            pdf.text('Generated: ' + now, pW - margin, 7.5, { align: 'right' });
+            pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+            pdf.text(`Halaman ${page} / ${total}`, pW / 2, pH - 3, { align: 'center' });
+        };
+
+        let srcY = 0, page = 1;
+        while (srcY < canvas.height) {
+            if (page > 1) pdf.addPage();
+            _hdr(page);
+            const srcSlice = Math.min(sliceH, canvas.height - srcY);
+            const dstH     = srcSlice * ratio;
+            const slice    = document.createElement('canvas');
+            slice.width  = canvas.width;
+            slice.height = Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice);
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
+            srcY += srcSlice; page++;
+        }
+        return pdf;
+    }
+
+    /* ════════════════════════════
+       run — per-project export
+    ════════════════════════════ */
+    async function run(projectId, type, btn) {
+        if (!window.html2canvas)                    { _toast('html2canvas not loaded', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF not loaded', 'error'); return; }
+
+        _btnState(btn, true);
+        _toast(type === 'pdf' ? 'Generating PDF…' : 'Capturing image…', 'default', 99999);
+
+        try {
             const area = _$('dashboardExportArea-' + projectId);
             if (!area) throw new Error('Export area not found for project ' + projectId);
 
-            /* Wait a tick so any in-progress chart render settles */
-            await new Promise(r => setTimeout(r, 180));
+            _freeze();
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+            await new Promise(r => setTimeout(r, 300));
 
-            const canvas = await html2canvas(area, {
-                scale:            2,          /* 2× for crisp output */
-                useCORS:          true,
-                allowTaint:       false,
-                backgroundColor:  '#ffffff',
-                logging:          false,
-                removeContainer:  true,
-                /* Exclude the action-button row from the snapshot */
-                ignoreElements: el =>
-                    el.hasAttribute('data-html2canvas-ignore')
-                    || el.id === ('btn-pdf-' + projectId)
-                    || el.id === ('btn-img-' + projectId),
-            });
+            let canvas;
+            try   { canvas = await _captureEl(area, '#ffffff'); }
+            finally { _unfreeze(); }
 
-            return canvas;
-        }
+            const fname = _filename(projectId);
 
-        /* Derive a safe filename from the card title */
-        function _filename(projectId) {
-            const card  = _$('proj-card-' + projectId);
-            const title = card?.querySelector('h6')?.textContent?.trim()
-                       || ('project-' + projectId);
-            const safe  = title.toLowerCase()
-                              .replace(/[^a-z0-9]+/g, '-')
-                              .replace(/^-+|-+$/g, '')
-                              .slice(0, 48);
-            const d     = new Date();
-            const stamp = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
-            return `${safe}_${stamp}`;
-        }
-
-        /* ── PDF export ── */
-        async function _exportPdf(projectId) {
-            const canvas   = await _capture(projectId);
-            const { jsPDF } = window.jspdf;
-
-            const imgData  = canvas.toDataURL('image/png');
-            const imgW     = canvas.width;
-            const imgH     = canvas.height;
-
-            /* A4 dimensions in mm: 210 × 297 */
-            const pageW    = 210;
-            const pageH    = 297;
-            const margin   = 12;
-            const usableW  = pageW - margin * 2;
-
-            /* Scale image proportionally to fill usable width */
-            const ratio    = usableW / imgW;
-            const rendW    = usableW;
-            const rendH    = imgH * ratio;
-
-            /* Choose orientation based on aspect ratio */
-            const landscape = rendH > pageH - margin * 2;
-            const pdf       = new jsPDF({
-                orientation: landscape ? 'landscape' : 'portrait',
-                unit:        'mm',
-                format:      'a4',
-            });
-
-            const pW  = pdf.internal.pageSize.getWidth();
-            const pH  = pdf.internal.pageSize.getHeight();
-            const mW  = pW - margin * 2;
-            const mH  = pH - margin * 2;
-            const r2  = mW / imgW;
-            const fW  = mW;
-            const fH  = imgH * r2;
-
-            /* Header bar */
-            pdf.setFillColor(67, 97, 238);
-            pdf.rect(0, 0, pW, 10, 'F');
-            pdf.setTextColor(255, 255, 255);
-            pdf.setFontSize(9);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text('SMADIMENT — Dashboard Export', margin, 7);
-
-            const now  = new Date().toLocaleDateString('id-ID', {
-                day:'2-digit', month:'long', year:'numeric',
-                hour:'2-digit', minute:'2-digit'
-            });
-            pdf.setFontSize(7);
-            pdf.setFont('helvetica', 'normal');
-            pdf.text('Generated: ' + now, pW - margin, 7, { align: 'right' });
-
-            /* Image — paginate if taller than a single page */
-            const topOffset = 14;  /* px below header */
-            const sliceH    = (mH - 4) / r2;  /* source px per page */
-            let   srcY      = 0;
-            let   pageNum   = 0;
-
-            while (srcY < imgH) {
-                if (pageNum > 0) pdf.addPage();
-
-                const srcSlice = Math.min(sliceH, imgH - srcY);
-                const dstH     = srcSlice * r2;
-
-                /* Crop a horizontal slice of the canvas */
-                const slice = document.createElement('canvas');
-                slice.width  = imgW;
-                slice.height = srcSlice;
-                const ctx = slice.getContext('2d');
-                ctx.drawImage(canvas, 0, srcY, imgW, srcSlice, 0, 0, imgW, srcSlice);
-
-                const sliceData = slice.toDataURL('image/png');
-                pdf.addImage(sliceData, 'PNG', margin, topOffset, fW, dstH);
-
-                /* Page footer */
-                pdf.setFontSize(7);
-                pdf.setTextColor(148, 163, 184);
-                pdf.text(`Page ${pageNum + 1}`, pW / 2, pH - 4, { align: 'center' });
-
-                srcY    += srcSlice;
-                pageNum += 1;
+            if (type === 'image') {
+                const link     = document.createElement('a');
+                link.download  = fname + '.png';
+                link.href      = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Image downloaded!', 'success');
+            } else {
+                const landscape = canvas.width > canvas.height * 1.3;
+                const pdf = _buildPdf(canvas, [67, 97, 238], 'SMADIMENT — Dashboard Export', landscape);
+                pdf.save(fname + '.pdf');
+                _toast('PDF downloaded!', 'success');
             }
-
-            pdf.save(_filename(projectId) + '.pdf');
+        } catch (err) {
+            console.error('[DashExport]', err);
+            _unfreeze();
+            _toast('Export failed: ' + err.message, 'error');
+        } finally {
+            _btnState(btn, false);
         }
+    }
 
-        /* ── Image / PNG export ── */
-        async function _exportImage(projectId) {
-            const canvas = await _capture(projectId);
-            const link   = document.createElement('a');
-            link.download = _filename(projectId) + '.png';
-            link.href     = canvas.toDataURL('image/png');
-            link.click();
-        }
+    /* ════════════════════════════
+       runPage — full page export
+    ════════════════════════════ */
+    async function runPage(type, btn) {
+        if (!window.html2canvas)                    { _toast('html2canvas not loaded', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF not loaded', 'error'); return; }
 
-        /* ── Page-level export (entire dashboard: KPI + all project cards) ── */
-        async function _exportPagePdf() {
-            const area = _$('pageExportArea');
-            if (!area) throw new Error('pageExportArea not found');
+        const btnPdf = _$('pageExportPdfBtn'), btnImg = _$('pageExportImgBtn');
+        _btnState(btnPdf, true); _btnState(btnImg, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar halaman…', 'default', 99999);
 
-            // Scroll to top so all cards are in initial position
-            window.scrollTo({ top: 0 });
-            await new Promise(r => setTimeout(r, 260));
-
-            const { jsPDF } = window.jspdf;
-
-            const canvas = await html2canvas(area, {
-                scale:           2,
-                useCORS:         true,
-                allowTaint:      false,
-                backgroundColor: '#f1f5f9',
-                logging:         false,
-                removeContainer: true,
-                windowWidth:     document.documentElement.scrollWidth,
-                windowHeight:    area.scrollHeight,
-                height:          area.scrollHeight,
-                ignoreElements:  el =>
-                    el.hasAttribute('data-html2canvas-ignore')
-                    || el.id === 'pageExportPdfBtn'
-                    || el.id === 'pageExportImgBtn',
-            });
-
-            const imgW = canvas.width;
-            const imgH = canvas.height;
-
-            // A4 portrait, 2mm margins
-            const pdf     = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            const pW      = pdf.internal.pageSize.getWidth();
-            const pH      = pdf.internal.pageSize.getHeight();
-            const margin  = 10;
-            const usableW = pW - margin * 2;
-            const usableH = pH - margin * 2 - 14; // 14mm header
-            const ratio   = usableW / imgW;
-            const sliceH  = usableH / ratio;  // canvas px per page
-
-            // Header
-            const _drawHeader = (doc, pageNum, totalEst) => {
-                doc.setFillColor(67, 97, 238);
-                doc.rect(0, 0, pW, 11, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(9);
-                doc.setFont('helvetica', 'bold');
-                doc.text('SMADIMENT — Dashboard Full Export', margin, 7.5);
-                const now = new Date().toLocaleDateString('id-ID', {
-                    day: '2-digit', month: 'short', year: 'numeric',
-                    hour: '2-digit', minute: '2-digit',
-                });
-                doc.setFontSize(7);
-                doc.setFont('helvetica', 'normal');
-                doc.text('Generated: ' + now, pW - margin, 7.5, { align: 'right' });
-            };
-
-            let srcY    = 0;
-            let pageNum = 0;
-
-            while (srcY < imgH) {
-                if (pageNum > 0) pdf.addPage();
-                _drawHeader(pdf, pageNum);
-
-                const srcSlice = Math.min(sliceH, imgH - srcY);
-                const dstH     = srcSlice * ratio;
-
-                const slice    = document.createElement('canvas');
-                slice.width    = imgW;
-                slice.height   = Math.ceil(srcSlice);
-                const ctx      = slice.getContext('2d');
-                ctx.drawImage(canvas, 0, srcY, imgW, srcSlice, 0, 0, imgW, srcSlice);
-
-                pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
-
-                // Footer
-                pdf.setFontSize(7);
-                pdf.setTextColor(148, 163, 184);
-                pdf.text(`Halaman ${pageNum + 1}`, pW / 2, pH - 3, { align: 'center' });
-
-                srcY    += srcSlice;
-                pageNum += 1;
-            }
-
-            const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
-            pdf.save(`smadiment_dashboard_${stamp}.pdf`);
-        }
-
-        async function _exportPageImage() {
+        try {
             const area = _$('pageExportArea');
             if (!area) throw new Error('pageExportArea not found');
 
             window.scrollTo({ top: 0 });
-            await new Promise(r => setTimeout(r, 260));
+            _freeze();
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+            await new Promise(r => setTimeout(r, 400));
 
-            const canvas = await html2canvas(area, {
-                scale:           2,
-                useCORS:         true,
-                allowTaint:      false,
-                backgroundColor: '#f1f5f9',
-                logging:         false,
-                removeContainer: true,
-                windowWidth:     document.documentElement.scrollWidth,
-                windowHeight:    area.scrollHeight,
-                height:          area.scrollHeight,
-                ignoreElements:  el =>
-                    el.hasAttribute('data-html2canvas-ignore')
-                    || el.id === 'pageExportPdfBtn'
-                    || el.id === 'pageExportImgBtn',
-            });
+            let canvas;
+            try   { canvas = await _captureArea(area, '#f1f5f9'); }
+            finally { _unfreeze(); }
 
-            const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
-            const link  = document.createElement('a');
-            link.download = `smadiment_dashboard_${stamp}.png`;
-            link.href     = canvas.toDataURL('image/png');
-            link.click();
-        }
+            const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
 
-        /* ── Public: per-card export ── */
-        async function run(projectId, type, btn) {
-            if (!window.html2canvas) { _toast('html2canvas not loaded', 'error'); return; }
-            if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF not loaded', 'error'); return; }
-
-            _btnState(btn, true);
-            _toast(type === 'pdf' ? 'Generating PDF…' : 'Capturing image…', 'default', 99999);
-
-            try {
-                if (type === 'pdf') { await _exportPdf(projectId); _toast('PDF downloaded!', 'success'); }
-                else                { await _exportImage(projectId); _toast('Image downloaded!', 'success'); }
-            } catch (err) {
-                console.error('[DashExport]', err);
-                _toast('Export failed: ' + err.message, 'error');
-            } finally {
-                _btnState(btn, false);
+            if (type === 'image') {
+                const link    = document.createElement('a');
+                link.download = `smadiment_dashboard_${stamp}.png`;
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Gambar halaman berhasil diunduh!', 'success');
+            } else {
+                const pdf = _buildPdf(canvas, [67, 97, 238], 'SMADIMENT — Dashboard Full Export', false);
+                pdf.save(`smadiment_dashboard_${stamp}.pdf`);
+                _toast('PDF halaman berhasil diunduh!', 'success');
             }
+        } catch (err) {
+            console.error('[DashExport.runPage]', err);
+            _unfreeze();
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            _btnState(btnPdf, false); _btnState(btnImg, false);
         }
+    }
 
-        /* ── Public: full-page export ── */
-        async function runPage(type, btn) {
-            if (!window.html2canvas) { _toast('html2canvas not loaded', 'error'); return; }
-            if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF not loaded', 'error'); return; }
-
-            // Disable both page export buttons together
-            const btnPdf = _$('pageExportPdfBtn');
-            const btnImg = _$('pageExportImgBtn');
-            _btnState(btnPdf, true);
-            _btnState(btnImg, true);
-            _toast(type === 'pdf' ? 'Menyiapkan PDF halaman penuh…' : 'Mengambil gambar halaman…', 'default', 99999);
-
-            try {
-                if (type === 'pdf') { await _exportPagePdf();   _toast('PDF halaman berhasil diunduh!', 'success'); }
-                else                { await _exportPageImage(); _toast('Gambar halaman berhasil diunduh!', 'success'); }
-            } catch (err) {
-                console.error('[DashExport.runPage]', err);
-                _toast('Export gagal: ' + err.message, 'error');
-            } finally {
-                _btnState(btnPdf, false);
-                _btnState(btnImg, false);
-            }
-        }
-
-        return { run, runPage };
-    })();
+    return { run, runPage };
+})();
 
     /* ════════════════════════════════════════════════════════
        DASH PANEL — slide-in drawer
     ════════════════════════════════════════════════════════ */
     const DashPanel = (() => {
-        let _cache = {}, _allItems = [], _filtered = [], _curSent = 'all',
-            _curPlat = null, _curPid = null, _curPlatForSent = 'all';
+        let _cache = {}, _allItems = [], _filtered = [];
+        let _curPlat = 'all', _curSent = 'all', _curPid = null, _curPlatForSent = 'all';
+        let _overrideSd = null, _overrideEd = null;
 
         const SENT_MAP = {
             '1': 'pos', 'positive': 'pos', 'positif': 'pos',
@@ -1568,73 +1609,62 @@
                 const pm = m.match(/openPlatform\('([^']+)'/);
                 if (pm) btn.setAttribute('onclick', `DashPanel.openPlatform('${pm[1]}','${_curPlatForSent}')`);
             });
-            const pw = 180, ph = 250, vw = window.innerWidth, vh = window.innerHeight;
-            let left = x + 10, top = y - 10;
-            if (left + pw > vw - 8) left = x - pw - 10;
-            if (top  + ph > vh - 8) top  = vh - ph - 8;
-            if (top  < 8) top = 8;
-            pp.style.left = left + 'px';
-            pp.style.top  = top  + 'px';
-            pp.classList.add('show');
+            const pw=180, ph=250, vw=window.innerWidth, vh=window.innerHeight;
+            let left=x+10, top=y-10;
+            if (left+pw>vw-8) left=x-pw-10;
+            if (top+ph>vh-8)  top=vh-ph-8;
+            if (top<8) top=8;
+            pp.style.left=left+'px'; pp.style.top=top+'px'; pp.classList.add('show');
         }
 
         function openPlatform(platform, sentiment) {
             _$('dashPlatPicker')?.classList.remove('show');
-            open(platform, sentiment || _curPlatForSent || 'all', _curPid);
+            open(platform, sentiment || _curPlatForSent || 'all', _curPid, _overrideSd, _overrideEd);
         }
 
-        async function open(platform, sentiment, projectId) {
-            _curPlat = platform;
-            _curSent = sentiment || 'all';
+        async function open(platform, sentiment, projectId, sdOverride = null, edOverride = null) {
+            _curPlat = platform; _curSent = sentiment || 'all';
             if (projectId) _curPid = projectId;
+            _overrideSd = sdOverride; _overrideEd = edOverride;
 
             const meta = DashCfg.platMeta[platform] || { label: platform, color: '#4361EE' };
-
             DashDetail.close();
-
             _$('dashPanelDot').style.background  = meta.color;
-            _$('dashPanelTitle').textContent      = meta.label + (platform === 'all' ? ' — All Platforms' : '');
-            _$('dashPanelMeta').textContent       = DashCfg.sd + ' – ' + DashCfg.ed;
+            _$('dashPanelTitle').textContent      = meta.label + (platform==='all' ? ' — All Platforms' : '');
+            
+            const titleDate = sdOverride ? (sdOverride === edOverride ? sdOverride : sdOverride + ' – ' + edOverride) : (DashCfg.sd + ' – ' + DashCfg.ed);
+            _$('dashPanelMeta').textContent       = titleDate;
 
             document.querySelectorAll('#dashSntPanel .do-panel-tab').forEach(t =>
                 t.classList.toggle('active', t.dataset.s === _curSent)
             );
-
             const list = _$('dashPanelList');
-            list.innerHTML = `<div class="do-panel-loading">
-                <div class="do-panel-spinner"></div><span>Memuat mentions…</span>
-            </div>`;
-
+            list.innerHTML = `<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat mentions…</span></div>`;
             const overlay = _$('dashPanelOverlay'), panel = _$('dashSntPanel');
             overlay.classList.remove('hiding'); panel.classList.remove('hiding');
-            overlay.classList.add('show');      panel.classList.add('show');
-
+            overlay.classList.add('show'); panel.classList.add('show');
             try {
-                const key = `${_curPid}_${platform}_${DashCfg.sd}_${DashCfg.ed}`;
-                if (!_cache[key]) _cache[key] = await _fetchAll(platform, _curPid);
+                const sdStr = _overrideSd || DashCfg.sd;
+                const edStr = _overrideEd || DashCfg.ed;
+                const key = `${_curPid}_${platform}_${sdStr}_${edStr}`;
+                if (!_cache[key]) _cache[key] = await _fetchAll(platform, _curPid, sdStr, edStr);
                 _allItems = _cache[key];
                 _filtered = _filterBySent(_allItems, _curSent);
                 _render(list, _filtered, platform, meta.color);
             } catch (err) {
-                list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:13px;">
-                    Gagal memuat data<br><small>${_es(err.message)}</small>
-                </div>`;
+                list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:13px;">Gagal memuat data<br><small>${_es(err.message)}</small></div>`;
             }
         }
 
         function close() {
             const overlay = _$('dashPanelOverlay'), panel = _$('dashSntPanel');
-            panel.classList.add('hiding');  overlay.classList.add('hiding');
-            setTimeout(() => {
-                panel.classList.remove('show','hiding');
-                overlay.classList.remove('show','hiding');
-                DashDetail.close();
-            }, 240);
+            panel.classList.add('hiding'); overlay.classList.add('hiding');
+            setTimeout(() => { panel.classList.remove('show','hiding'); overlay.classList.remove('show','hiding'); DashDetail.close(); }, 240);
         }
         function closeByOverlay() { close(); }
 
         function filterSent(sent) {
-            _curSent  = sent;
+            _curSent = sent;
             document.querySelectorAll('#dashSntPanel .do-panel-tab').forEach(t =>
                 t.classList.toggle('active', t.dataset.s === sent)
             );
@@ -1647,37 +1677,35 @@
             return sent === 'all' ? items : items.filter(i => _normSent(i) === sent);
         }
 
-        async function _fetchAll(platform, pid) {
+        async function _fetchAll(platform, pid, sd, ed) {
             if (platform === 'all') {
                 const all = ['doc','twit','fb','instagram','youtube','tiktok'];
-                const res = await Promise.allSettled(all.map(p => _fetchOne(p, pid)));
-                return res.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+                const res = await Promise.allSettled(all.map(p => _fetchOne(p, pid, sd, ed)));
+                return res.flatMap(r => r.status==='fulfilled' ? r.value : []);
             }
             if (platform === 'social') {
                 const s = ['twit','fb','instagram','youtube','tiktok'];
-                const res = await Promise.allSettled(s.map(p => _fetchOne(p, pid)));
-                return res.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+                const res = await Promise.allSettled(s.map(p => _fetchOne(p, pid, sd, ed)));
+                return res.flatMap(r => r.status==='fulfilled' ? r.value : []);
             }
-            return _fetchOne(platform, pid);
+            return _fetchOne(platform, pid, sd, ed);
         }
 
-        async function _fetchOne(platform, pid) {
-            const q = `project_id=${pid}&start_date=${DashCfg.sd}&end_date=${DashCfg.ed}&rows=500&start=0`;
-
+        async function _fetchOne(platform, pid, sd, ed) {
+            const q = `project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=500&start=0`;
             if (platform === 'instagram') {
                 for (const sub of ['postbylike','postbydate']) {
                     const ic = new AbortController(), it = setTimeout(() => ic.abort(), 12000);
                     try {
                         const r = await fetch(`/mk/api/news/ig-top-status?${q}${sub ? '&sub='+sub : ''}`, { signal: ic.signal });
                         clearTimeout(it);
-                        const d     = await r.json();
+                        const d = await r.json();
                         const items = Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []);
                         if (items.length > 0) return items.map(i => ({ ...i, _platform: platform }));
                     } catch (e) { clearTimeout(it); continue; }
                 }
                 return [];
             }
-
             const eps = {
                 doc:     `/mk/api/news/mentions?${q}`,
                 twit:    `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,
@@ -1687,143 +1715,162 @@
             };
             const twitFallback = `/mk/api/news/mentions?${q}&media_type=twit`;
             const url = eps[platform]; if (!url) return [];
-
             const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 15000);
             try {
                 const r = await fetch(url, { signal: ctrl.signal }); clearTimeout(tid);
                 if (!r.ok) return [];
                 const d = await r.json();
-
                 let items = [];
-                if      (Array.isArray(d?.data?.data))                          items = d.data.data;
-                else if (Array.isArray(d?.data))                                items = d.data;
-                else if (Array.isArray(d?.statuses))                            items = d.statuses;
-                else if (Array.isArray(d?.tweets))                              items = d.tweets;
-                else if (Array.isArray(d?.results))                             items = d.results;
-                else if (Array.isArray(d?.posts))                               items = d.posts;
-                else if (Array.isArray(d))                                      items = d;
-                else if (d?.data && typeof d.data === 'object' && !Array.isArray(d.data)) {
+                if      (Array.isArray(d?.data?.data))  items = d.data.data;
+                else if (Array.isArray(d?.data))         items = d.data;
+                else if (Array.isArray(d?.statuses))     items = d.statuses;
+                else if (Array.isArray(d?.tweets))       items = d.tweets;
+                else if (Array.isArray(d?.results))      items = d.results;
+                else if (Array.isArray(d?.posts))        items = d.posts;
+                else if (Array.isArray(d))               items = d;
+                else if (d?.data && typeof d.data==='object' && !Array.isArray(d.data)) {
                     const vals = Object.values(d.data);
-                    if (vals.length && typeof vals[0] === 'object') items = vals;
+                    if (vals.length && typeof vals[0]==='object') items = vals;
                 }
-
-                if (platform === 'twit' && items.length === 0) {
+                if (platform==='twit' && items.length===0) {
                     try {
                         const r2 = await fetch(twitFallback);
                         const d2 = await r2.json();
-                        let fb   = Array.isArray(d2?.data?.data) ? d2.data.data
-                                 : Array.isArray(d2?.data) ? d2.data
-                                 : Array.isArray(d2) ? d2 : [];
+                        let fb = Array.isArray(d2?.data?.data) ? d2.data.data : Array.isArray(d2?.data) ? d2.data : Array.isArray(d2) ? d2 : [];
                         items = fb.filter(m => {
-                            const tc = String(m.tcode || '').toLowerCase();
-                            const mt = String(m.media_type || '').toLowerCase();
-                            return tc === 'twit' || tc === 'rt' || mt === 'twit';
+                            const tc=String(m.tcode||'').toLowerCase(), mt=String(m.media_type||'').toLowerCase();
+                            return tc==='twit'||tc==='rt'||mt==='twit';
                         });
                     } catch (e2) {}
                 }
-
-                if (platform === 'doc') items = items.filter(m => {
-                    const tc = String(m.tcode      || '').toLowerCase();
-                    const mt = String(m.media_type || '').toLowerCase();
-                    return tc === 'berita' || mt === 'berita' || mt === 'doc'
-                        || mt === 'news'   || mt === 'online' || mt === 'article';
+                if (platform==='doc') items = items.filter(m => {
+                    const tc=String(m.tcode||'').toLowerCase(), mt=String(m.media_type||'').toLowerCase();
+                    return tc==='berita'||mt==='berita'||mt==='doc'||mt==='news'||mt==='online'||mt==='article';
                 });
-
                 return items.map(i => ({ ...i, _platform: platform }));
             } catch (e) { clearTimeout(tid); return []; }
         }
 
-        function _render(list, items, platform, accentColor) {
-            if (!items.length) {
-                list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:12px;font-weight:600;">
-                    Tidak ada mentions untuk filter ini.
-                </div>`;
-                return;
-            }
-            const SHOW = 60;
-            list.innerHTML = items.slice(0, SHOW).map(item => {
-                const plat = item._platform || platform;
-                const meta = DashCfg.platMeta[plat] || { label: plat, color: accentColor };
+       function _render(list, items, platform, accentColor) {
+    if (!items.length) {
+        list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`;
+        return;
+    }
 
-                const rawName = (() => {
-                    if (plat==='fb')        return item.from_name||item.page_name||null;
-                    if (plat==='instagram') return item.username||item.user_name||null;
-                    if (plat==='tiktok')   return item.author_nickname||item.nickname||item.author?.nickname||null;
-                    if (plat==='youtube')  return item.channel_title||item.channel_name||item.snippet?.channelTitle||null;
-                    if (plat==='twit') {
-                        const ao = typeof item.author==='object' ? item.author
-                            : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
-                        return item.name||ao?.name||ao?.scr_name||item.author_name||null;
-                    }
-                    return null;
-                })();
-                const name  = (rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'Unknown').trim();
-                const isNum = /^\d{10,}$/.test(name);
-                const dName = isNum ? `User ${name.slice(-4)}` : name;
+    const PAGE = 10;
+    let _page = 0;
 
-                const rawH = (() => {
-                    if (plat==='instagram') return item.username||'';
-                    if (plat==='twit') {
-                        const ao = typeof item.author==='object' ? item.author
-                            : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
-                        return item.screen_name||item.author_scr_name||ao?.scr_name||ao?.username||'';
-                    }
-                    return item.author_scr_name||item.screen_name||item.username||'';
-                })().trim();
-                const handle = (() => {
-                    if (!rawH) return '';
-                    const w = ['twit','instagram','tiktok'].includes(plat)
-                        ? (rawH.startsWith('@') ? rawH : '@'+rawH) : rawH;
-                    return w.replace(/^@/,'').toLowerCase() === dName.toLowerCase() ? '' : w;
-                })();
-
-                const text = (item.content||item.caption||item.description||item.title||item.text||'')
-                    .replace(/<[^>]*>/g,'').trim().slice(0,150);
-                const ao  = (() => {
-                    if (typeof item.author==='object' && item.author) return item.author;
-                    try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }
-                })();
-                const av  = (item.avatar_url||item.profile_image_url||ao?.image||item.author_image||item.profile_image||item.thumbnail||'').trim();
-                const dt  = (item.date_created||item.created_at||'').split('T')[0];
-                const sent     = _normSent(item);
-                const sentLbl  = sent==='pos' ? 'Pos' : sent==='neg' ? 'Neg' : 'Neu';
-                const words    = dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
-                const ini      = (words.length>=2 ? (words[0][0]+words[words.length-1][0]) : (words[0]?.[0]||dName[0]||'?')).toUpperCase().replace(/['"]/g,'');
-                const avHtml   = (av && av.startsWith('http'))
-                    ? `<img src="${_es(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">`
-                    : ini;
-                const sentBadge = `do-sent-badge--${sent}`;
-                const enc       = encodeURIComponent(JSON.stringify(item));
-
-                return `<div class="do-panel-item" onclick="DashDetail.openEncoded('${enc}','${plat}')">
-                    <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
-                    <div class="do-panel-item-body">
-                        <div class="do-panel-author">${_es(dName)}</div>
-                        ${handle ? `<div class="do-panel-handle">${_es(handle)}</div>` : ''}
-                        <div class="do-panel-text">${_es(text||'(tidak ada konten)')}</div>
-                        <div class="do-panel-footer">
-                            <span class="do-sent-badge ${sentBadge}">${sentLbl}</span>
-                            <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
-                            <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
-                            ${dt ? `<span style="margin-left:auto;">${dt}</span>` : ''}
-                        </div>
+    function _renderItems(arr) {
+        return arr.map(item => {
+            const plat = item._platform || platform;
+            const meta = DashCfg.platMeta[plat] || { label: plat, color: accentColor };
+            const rawName = (() => {
+                if (plat==='fb')        return item.from_name||item.page_name||null;
+                if (plat==='instagram') return item.username||item.user_name||null;
+                if (plat==='tiktok')    return item.author_nickname||item.nickname||item.author?.nickname||null;
+                if (plat==='youtube')   return item.channel_title||item.channel_name||item.snippet?.channelTitle||null;
+                if (plat==='twit') {
+                    const ao = typeof item.author==='object' ? item.author : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
+                    return item.name||ao?.name||ao?.scr_name||item.author_name||null;
+                }
+                return null;
+            })();
+            const name  = (rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'Unknown').trim();
+            const isNum = /^\d{10,}$/.test(name);
+            const dName = isNum ? `User ${name.slice(-4)}` : name;
+            const rawH = (() => {
+                if (plat==='instagram') return item.username||'';
+                if (plat==='twit') {
+                    const ao = typeof item.author==='object' ? item.author : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
+                    return item.screen_name||item.author_scr_name||ao?.scr_name||ao?.username||'';
+                }
+                return item.author_scr_name||item.screen_name||item.username||'';
+            })().trim();
+            const handle = (() => {
+                if (!rawH) return '';
+                const w = ['twit','instagram','tiktok'].includes(plat) ? (rawH.startsWith('@') ? rawH : '@'+rawH) : rawH;
+                return w.replace(/^@/,'').toLowerCase()===dName.toLowerCase() ? '' : w;
+            })();
+            const text  = (item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,150);
+            const ao    = (() => { if (typeof item.author==='object'&&item.author) return item.author; try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
+            const av    = (item.avatar_url||item.profile_image_url||ao?.image||item.author_image||item.profile_image||item.thumbnail||'').trim();
+            const dt    = (item.date_created||item.created_at||'').split('T')[0];
+            const sent  = _normSent(item);
+            const sentLbl = sent==='pos'?'Pos':sent==='neg'?'Neg':'Neu';
+            const words = dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
+            const ini   = (words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||dName[0]||'?')).toUpperCase().replace(/['"]/g,'');
+            const avHtml = (av&&av.startsWith('http')) ? `<img src="${_es(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">` : ini;
+            const sentBadge = `do-sent-badge--${sent}`;
+            const enc = encodeURIComponent(JSON.stringify(item));
+            return `<div class="do-panel-item" onclick="DashDetail.openEncoded('${enc}','${plat}')">
+                <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
+                <div class="do-panel-item-body">
+                    <div class="do-panel-author">${_es(dName)}</div>
+                    ${handle ? `<div class="do-panel-handle">${_es(handle)}</div>` : ''}
+                    <div class="do-panel-text">${_es(text||'(tidak ada konten)')}</div>
+                    <div class="do-panel-footer">
+                        <span class="do-sent-badge ${sentBadge}">${sentLbl}</span>
+                        <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
+                        <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
+                        ${dt ? `<span style="margin-left:auto;">${dt}</span>` : ''}
                     </div>
-                </div>`;
-            }).join('');
+                </div>
+            </div>`;
+        }).join('');
+    }
 
-            if (items.length > SHOW) {
-                list.insertAdjacentHTML('beforeend',
-                    `<div style="padding:9px;text-align:center;font-size:11px;font-weight:600;color:#94A3B8;background:#F8FAFC;border-top:1px dashed #E2E8F0;">` +
-                    `+${(items.length - SHOW).toLocaleString()} lainnya</div>`
-                );
-            }
+    function _renderLoadMore() {
+        const shown = (_page + 1) * PAGE;
+        const remaining = items.length - shown;
+        if (remaining <= 0) {
+            return `<div style="padding:9px;text-align:center;font-size:10px;color:#94A3B8;font-weight:600;border-top:1px dashed #E2E8F0;">
+                ✓ Semua ${items.length.toLocaleString()} mentions sudah dimuat
+            </div>`;
         }
+        return `<div id="_dashLMWrap" style="padding:11px 14px;text-align:center;background:#F8FAFC;border-top:1px dashed #E2E8F0;">
+            <button id="_dashLMBtn" onclick="window.__dashLoadMore()"
+                style="display:inline-flex;align-items:center;gap:5px;padding:6px 20px;
+                background:var(--dash-primary);color:#fff;border:none;border-radius:5px;
+                font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;"
+                onmouseover="this.style.filter='brightness(1.12)'"
+                onmouseout="this.style.filter=''">
+                <i class="ph ph-arrow-circle-down" style="font-size:13px;"></i>
+                Muat ${Math.min(remaining, PAGE).toLocaleString()} lagi
+                <span style="opacity:.7;font-weight:500;">(sisa ${remaining.toLocaleString()})</span>
+            </button>
+        </div>`;
+    }
+
+    /* Initial render — first page */
+    const firstBatch = items.slice(0, PAGE);
+    list.innerHTML = _renderItems(firstBatch) + _renderLoadMore();
+
+    /* Load more handler */
+    window.__dashLoadMore = function() {
+        const btn = document.getElementById('_dashLMBtn');
+        if (btn) { btn.textContent = 'Memuat…'; btn.disabled = true; }
+
+        setTimeout(() => {
+            _page++;
+            const start = _page * PAGE;
+            const batch = items.slice(start, start + PAGE);
+
+            /* Remove the load-more wrapper */
+            document.getElementById('_doLMWrap')?.remove();
+            document.getElementById('_dashLMWrap')?.remove();
+
+            /* Append new items */
+            list.insertAdjacentHTML('beforeend', _renderItems(batch) + _renderLoadMore());
+        }, 80);
+    };
+}
 
         return { open, close, closeByOverlay, showPlatPicker, openPlatform, filterSent };
     })();
 
     /* ════════════════════════════════════════════════════════
        DASH DETAIL — sub-panel
+       ★ UPDATED: added direct article link + Data Overview shortcut
     ════════════════════════════════════════════════════════ */
     const DashDetail = {
         openEncoded(enc, plat) {
@@ -1835,10 +1882,7 @@
             if (!panel || !body) return;
 
             const meta = DashCfg.platMeta[platform] || { label: platform, color: '#4361EE' };
-            const SM2  = {
-                '1':'pos','positive':'pos','positif':'pos',
-                '-1':'neg','2':'neg','negative':'neg','negatif':'neg'
-            };
+            const SM2  = { '1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg' };
             const raw  = String(item.class_sentiment||item.sentiment||'0').toLowerCase();
             const sent = SM2[raw] || 'neu';
             const SLBL = { pos:'Positif', neg:'Negatif', neu:'Netral' };
@@ -1850,42 +1894,49 @@
                 if (platform==='tiktok')    return item.author_nickname||item.nickname||item.author?.nickname||null;
                 if (platform==='youtube')   return item.channel_title||item.channel_name||item.snippet?.channelTitle||null;
                 if (platform==='twit') {
-                    const ao = typeof item.author==='object' ? item.author
-                        : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
+                    const ao = typeof item.author==='object' ? item.author : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
                     return item.name||ao?.name||ao?.scr_name||item.author_name||null;
                 }
                 return null;
             })();
-            const name   = (rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'Unknown').trim();
-            const handle = ((platform==='instagram' ? item.username : '')||item.author_scr_name||item.screen_name||item.username||'').trim();
-            const content= (item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
-            const av     = (item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||item.thumbnail||'').trim();
-            const url    = item.url||item.link||'';
-            const dt     = item.date_created||item.created_at||'';
+            const name    = (rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'Unknown').trim();
+            const handle  = ((platform==='instagram' ? item.username : '')||item.author_scr_name||item.screen_name||item.username||'').trim();
+            const content = (item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
+            const av      = (item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||item.thumbnail||'').trim();
+            const dt      = item.date_created||item.created_at||'';
+
+            // ── Resolve the current project ID stored by DashPanel ──
+            const currentPid = (() => {
+                // walk up from current panel to find which project is active
+                // DashPanel stores _curPid internally; we read it via closure-held var
+                return window.__dashCurrentPid || '';
+            })();
 
             title.textContent = name;
 
             const words  = name.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
-            const ini    = (words.length>=2 ? (words[0][0]+words[words.length-1][0]) : (words[0]?.[0]||name[0]||'?')).toUpperCase().replace(/['"]/g,'');
-            const avHtml = (av && av.startsWith('http'))
+            const ini    = (words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||name[0]||'?')).toUpperCase().replace(/['"]/g,'');
+            const avHtml = (av&&av.startsWith('http'))
                 ? `<img src="${_es(av)}" onerror="this.parentElement.textContent='${ini}';">`
                 : ini;
 
             let dtFmt = '';
             if (dt) {
                 try {
-                    dtFmt = new Date(dt).toLocaleDateString('id-ID', {
-                        weekday:'long', day:'2-digit', month:'long', year:'numeric',
-                        hour:'2-digit', minute:'2-digit'
+                    dtFmt = new Date(dt).toLocaleDateString('id-ID',{
+                        weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'
                     });
                 } catch (e) { dtFmt = dt.split('T')[0]; }
             }
 
-            /* Media embed per platform */
+            /* ── Media embed per platform ── */
             let mediaHtml = '';
             if (platform === 'youtube') {
-                const ytId = (url.match(/[?&]v=([a-zA-Z0-9_-]{11})/)||url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)||url.match(/shorts\/([a-zA-Z0-9_-]{11})/)||[])[1]
+                let ytId = ((item.url||'').match(/[?&]v=([a-zA-Z0-9_-]{11})/)||
+                              (item.url||'').match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)||
+                              (item.url||'').match(/shorts\/([a-zA-Z0-9_-]{11})/)||[])[1]
                            || (item.video_id||item.youtube_id||'');
+                if(!ytId && item.id) { const strId = String(item.id); if(strId.length === 11) ytId = strId; }
                 const thumb = item.thumbnail||item.thumbnail_url||item.image_url||(ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
                 if (ytId) {
                     const eid = `yt_${ytId}_${Date.now()}`;
@@ -1902,7 +1953,7 @@
                     mediaHtml = `<div class="do-dp2-media"><img src="${_es(thumb)}" onerror="this.parentElement.style.display='none'" style="border-radius:6px;"></div>`;
                 }
             } else if (platform === 'tiktok') {
-                const tid   = (url.match(/\/video\/(\d+)/)||url.match(/\/v\/(\d+)/)||[])[1]||(item.video_id||item.aweme_id||'');
+                const tid   = ((item.url||'').match(/\/video\/(\d+)/)||(item.url||'').match(/\/v\/(\d+)/)||[])[1]||(item.video_id||item.aweme_id||'');
                 const thumb = item.thumbnail||item.cover||item.image_url||item.video_cover||'';
                 if (tid) {
                     const eid = `tt_${tid}_${Date.now()}`;
@@ -1931,6 +1982,7 @@
                 }
             }
 
+            /* ── Stats ── */
             const statsMap = {
                 twit:      [['Retweet',item.num_retweeted||item.retweet_count||0],['Like',item.num_likes||item.favorite_count||0],['Quote',item.num_quote||0]],
                 fb:        [['Like',item.likes||item.num_likes||0],['Share',item.shares||item.share_count||0],['Comment',item.num_comments||0]],
@@ -1942,14 +1994,131 @@
             const stats     = statsMap[platform] || [];
             const statsHtml = stats.some(s => parseInt(s[1]) > 0)
                 ? `<div class="do-dp2-stats">${stats.map(([l,v]) =>
-                    `<div class="do-dp2-stat">
-                        <div class="do-dp2-stat-val">${parseInt(v||0).toLocaleString()}</div>
-                        <div class="do-dp2-stat-lbl">${l}</div>
-                    </div>`
-                ).join('')}</div>` : '';
+                    `<div class="do-dp2-stat"><div class="do-dp2-stat-val">${parseInt(v||0).toLocaleString()}</div><div class="do-dp2-stat-lbl">${l}</div></div>`
+                  ).join('')}</div>` : '';
 
             const handleDisp = handle && !handle.replace('@','').toLowerCase().startsWith(name.toLowerCase().slice(0,4))
                 ? (handle.startsWith('@') ? handle : '@'+handle) : '';
+
+            /* ════════════════════════════════════════════════════
+               ★ SOURCE URL — resolve direct link per platform
+               For Online News (doc): url field is often null in API,
+               fallback to publisher homepage.
+               For social: build canonical URL from IDs.
+            ════════════════════════════════════════════════════ */
+            let sourceUrl = '';
+            let publisherHomepage = '';
+            let isDirectArticleUrl = false;
+
+            if (platform === 'doc') {
+                // Try all possible direct article URL fields
+                sourceUrl = (item.url && item.url !== 'null' ? item.url : '')
+                          || item.link || item.article_url || item.source_url
+                          || item.news_url || item.permalink || item.web_url
+                          || item.full_url || item.original_url || item.reference
+                          || item.href || '';
+
+                // Clean up empty/null strings
+                if (sourceUrl && (sourceUrl === 'null' || sourceUrl === 'undefined' || sourceUrl.trim() === '')) {
+                    sourceUrl = '';
+                }
+
+                if (sourceUrl) {
+                    isDirectArticleUrl = true;
+                } else {
+                    // Fallback: construct publisher homepage from publisher field
+                    const pub = (item.publisher || item.source_name || item.name || '').replace(/^@/, '').trim();
+                    if (pub) {
+                        publisherHomepage = 'https://' + (pub.includes('.') ? pub : pub + '.com');
+                    }
+                }
+            } else if (platform === 'twit') {
+                // Try direct URL first (contentJson often has the real tweet URL)
+                const cj = (() => { try { return JSON.parse(item.contentJson||'{}'); } catch(e){ return {}; }})();
+                sourceUrl = cj?.url || item.url || '';
+                if (!sourceUrl || sourceUrl.includes('pbs.twimg.com') || sourceUrl.includes('t.co')) {
+                    const ao  = typeof item.author==='object' ? item.author : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
+                    const scr = (item.author_scr_name||item.screen_name||ao?.scr_name||ao?.username||'').replace(/^@/,'');
+                    const sid = item.post_id_s||item.sub_id||item.tweet_id||item.id_str||item.docid?.replace('tw-','')||'';
+                    if (scr && sid) sourceUrl = `https://twitter.com/${scr}/status/${sid}`;
+                    else if (scr)   sourceUrl = `https://twitter.com/${scr}`;
+                }
+            } else if (platform === 'instagram') {
+                const shortcode = item.shortcode||item.code||item.media_id||'';
+                if (shortcode)          sourceUrl = `https://www.instagram.com/p/${shortcode}/`;
+                else if (item.username) sourceUrl = `https://www.instagram.com/${item.username}/`;
+            } else if (platform === 'youtube') {
+                const ytId = item.video_id||item.youtube_id||item.id||'';
+                if (ytId)                sourceUrl = `https://www.youtube.com/watch?v=${ytId}`;
+                else if (item.channel_id) sourceUrl = `https://www.youtube.com/channel/${item.channel_id}`;
+            } else if (platform === 'tiktok') {
+                const tid  = item.video_id||item.aweme_id||item.id||'';
+                const nick = item.author_nickname||item.nickname||item.unique_id||item.author?.unique_id||'';
+                if (tid && nick) sourceUrl = `https://www.tiktok.com/@${nick}/video/${tid}`;
+                else if (tid)    sourceUrl = `https://vm.tiktok.com/${tid}`;
+            } else if (platform === 'fb') {
+                const ao2   = typeof item.author==='object' ? item.author : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
+                const pname = item.page_name||item.from_name||ao2?.username||'';
+                const pid2  = item.post_id_s||item.post_id||item.story_id||item.docid?.replace('fb-','')||'';
+                const fbProfUrl = ao2?.profile_url || '';
+                if (fbProfUrl)         sourceUrl = fbProfUrl;
+                else if (pname&&pid2)  sourceUrl = `https://www.facebook.com/${pname}/posts/${pid2}`;
+                else if (pname)        sourceUrl = `https://www.facebook.com/${pname}`;
+            }
+
+            /* ════════════════════════════════════════════════════
+               ★ DATA OVERVIEW URL
+            ════════════════════════════════════════════════════ */
+            const pid = window.__dashCurrentPid || '';
+            const overviewUrl = pid
+                ? `${DATA_OVERVIEW_URL}?project_id=${encodeURIComponent(pid)}&start_date=${encodeURIComponent(DashCfg.sd)}&end_date=${encodeURIComponent(DashCfg.ed)}`
+                : DATA_OVERVIEW_URL;
+
+            /* ── Build action buttons ── */
+            let actionBtns = '';
+
+            if (platform === 'doc') {
+                const articleTitle = _es(item.title || content.slice(0, 80) || '');
+                const pub = _es((item.publisher || '').trim());
+
+                if (isDirectArticleUrl && sourceUrl) {
+                    // Direct article URL available
+                    actionBtns = `
+                    <div class="do-dp2-actions">
+                        <a href="${_es(sourceUrl)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link-news">
+                            <i class="ph ph-newspaper"></i> Baca Artikel Asli
+                        </a>
+                         
+                    </div>`;
+                } else if (publisherHomepage) {
+                   
+                } else {
+                    // No URL at all
+                    actionBtns = `
+                    <div class="do-dp2-actions">
+                        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:9px 12px;font-size:11px;color:#92400e;display:flex;align-items:flex-start;gap:7px;margin-bottom:2px;">
+                            <i class="ph ph-warning" style="font-size:14px;flex-shrink:0;margin-top:1px;"></i>
+                            <span>URL artikel tidak tersedia dari sistem.</span>
+                        </div>
+                        
+                    </div>`;
+                }
+            } else if (sourceUrl) {
+                // Social platforms: primary "Lihat asli" + secondary overview
+                actionBtns = `
+                <div class="do-dp2-actions">
+                    <a href="${_es(sourceUrl)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link">
+                        <i class="ph ph-arrow-square-out"></i> Lihat ${_es(meta.label)} Asli
+                    </a>
+                     
+                </div>`;
+            } else {
+                // No direct URL available, only show overview link
+                actionBtns = `
+                <div class="do-dp2-actions">
+                   
+                </div>`;
+            }
 
             body.innerHTML = `
             <div class="do-dp2-avatar-row">
@@ -1965,9 +2134,7 @@
             ${mediaHtml}
             ${content ? `<div class="do-dp2-content">${_es(content)}</div>` : ''}
             ${statsHtml}
-            ${url ? `<a href="${_es(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link">
-                <i class="ph ph-arrow-square-out"></i> Lihat ${meta.label} Asli
-            </a>` : ''}`;
+            ${actionBtns}`;
 
             panel.classList.add('show');
         },
@@ -1986,6 +2153,16 @@
                 frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"
                 allowfullscreen style="display:block;border:none;border-radius:6px;background:#111827;"></iframe>`;
         },
+    };
+
+    /* ════════════════════════════════════════════════════════
+       Track current project ID for DashDetail to use
+       (patch DashPanel.open to expose _curPid globally)
+    ════════════════════════════════════════════════════════ */
+    const _origPanelOpen = DashPanel.open.bind(DashPanel);
+    DashPanel.open = function(platform, sentiment, projectId) {
+        if (projectId) window.__dashCurrentPid = projectId;
+        return _origPanelOpen(platform, sentiment, projectId);
     };
 
     /* Platform picker — dismiss on outside click */

@@ -1,4 +1,4 @@
-﻿@extends('mk.layouts.app')
+@extends('mk.layouts.app')
 
 @section('title', 'Mentions Timeline - SMADIMENT')
 
@@ -15,6 +15,42 @@
 @keyframes kpiIconBounce{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.25) rotate(-10deg)}60%{transform:scale(1.1) rotate(6deg)}}
 @keyframes kpiShimmer{0%{left:-100%}100%{left:150%}}
 @keyframes pulseP{0%,100%{box-shadow:0 0 0 3px rgba(255,255,255,.2)}50%{box-shadow:0 0 0 6px transparent}}
+
+/* ══════════════════════════════════════════
+   EXPORT MODE — hanya matikan animasi & transform
+   TIDAK override opacity agar Bootstrap text-opacity tetap jalan
+══════════════════════════════════════════ */
+body.is-exporting *,
+body.is-exporting *::before,
+body.is-exporting *::after {
+    animation: none !important;
+    animation-delay: 0s !important;
+    animation-duration: 0s !important;
+    transition: none !important;
+}
+/* Paksa elemen dengan animasi fadeUp agar langsung tampil penuh */
+body.is-exporting .card[style*="animation"],
+body.is-exporting .kpi-card-hover {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+}
+/* Hilangkan shimmer overlay KPI */
+body.is-exporting .kpi-card-hover::before {
+    display: none !important;
+}
+/* Shimmer skeleton tampil sebagai block diam */
+body.is-exporting .sk-block {
+    background: var(--slate-200) !important;
+}
+/* Spinner tombol export tetap tersembunyi */
+body.is-exporting .exp-spinner {
+    display: none !important;
+}
+body.is-exporting .exp-icon {
+    display: inline-block !important;
+}
+
 /* KPI */
 .kpi-icon-bg{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.2);font-size:24px;color:#fff;flex-shrink:0}
 .sk-block{border-radius:4px;background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
@@ -114,7 +150,7 @@
 .do-sent-badge--pos{background:#dbeafe;color:#1d4ed8}
 .do-sent-badge--neg{background:#fee2e2;color:#991b1b}
 .do-sent-badge--neu{background:var(--slate-100);color:var(--slate-500)}
-.do-panel-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--slate-400);font-size:13px;font-weight:600}
+.do-panel-loading{display:flex;flex-direction:column;align-items:center;justify-content:height:100%;gap:12px;color:var(--slate-400);font-size:13px;font-weight:600}
 .do-panel-spinner{width:28px;height:28px;border:2.5px solid var(--slate-100);border-top-color:var(--primary);border-radius:50%;animation:spin .65s linear infinite}
 /* Detail Sub-panel */
 .do-detail-panel{position:absolute;inset:0;background:#fff;z-index:5;display:none;flex-direction:column;animation:slideInRight .2s cubic-bezier(.4,0,.2,1)}
@@ -361,7 +397,7 @@
 
 </div>{{-- /pageExportArea --}}
 
-{{-- Slide Panel --}}
+{{-- Slide Panel (Dashboard-style with sentiment tabs) --}}
 <div class="do-panel-overlay" id="mtPanelOverlay" onclick="MTPanelNew.close()"></div>
 <div class="do-panel" id="mtPanelNew">
     <div class="do-panel-header">
@@ -379,6 +415,7 @@
         </div>
     </div>
     <div class="do-panel-list" id="mtPanelList"></div>
+    {{-- Detail sub-panel --}}
     <div class="do-detail-panel" id="mtDetailPanelNew">
         <div class="do-dp2-header">
             <button class="do-dp2-back" onclick="MTDetailNew.close()"><i class="ph ph-caret-left"></i></button>
@@ -493,12 +530,9 @@ const MTData={
         _$('kpiPos').textContent=numF(pos);_$('kpiPosSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(pos)+'% of total';
         _$('kpiNeu').textContent=numF(neu);_$('kpiNeuSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(neu)+'% of total';
         _$('kpiNeg').textContent=numF(neg);_$('kpiNegSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(neg)+'% of total';
+        /* dot badges */
         _$('dotTotalVal').textContent=numK(all.length);_$('dotPosVal').textContent=numK(pos);_$('dotNeuVal').textContent=numK(neu);_$('dotNegVal').textContent=numK(neg);
     },
-
-    /* ════════════════════════════════════════
-       TREND CHART — num badge always shown
-    ════════════════════════════════════════ */
     _renderTrend(){
         const el=_$('trendChart'),ld=_$('trendLoading');if(!el)return;
         const start=new Date(MTCfg.sd),end=new Date(MTCfg.ed),dates=[];
@@ -511,75 +545,24 @@ const MTData={
         el.style.display='block';if(ld)ld.classList.add('hidden');
         const seriesArr=PLAT_KEYS.map(k=>({name:PLAT[k].label,data:datasets[k]})).filter(s=>s.data.some(v=>v>0));
         const colorsArr=seriesArr.map(s=>{const k=PLAT_KEYS.find(k=>PLAT[k].label===s.name);return k?PLAT[k].color:'#94a3b8';});
-
-        /* dense data: > 30 data points — scale back labels to avoid overlap */
-        const tooManyPoints = dates.length > 30;
-
+        const showLabels=dates.length<=20;
         _trendChart=new ApexCharts(el,{
             chart:{type:'area',height:340,fontFamily:'inherit',background:'transparent',toolbar:{show:false},
                 events:{click:(e,ctx,cfg)=>{if(cfg&&cfg.seriesIndex>=0&&seriesArr[cfg.seriesIndex]){const s=seriesArr[cfg.seriesIndex];const pk=PLAT_KEYS.find(k=>PLAT[k].label===s.name);if(pk&&Store[pk].length)MTPanelNew.open(Store[pk],pk);}else if(Store.all.length)MTPanelNew.open(Store.all,'all');}}},
-            series:seriesArr,
-            colors:colorsArr,
-            xaxis:{
-                categories:xLabels,
-                axisBorder:{show:false},
-                axisTicks:{show:false},
-                labels:{style:{fontFamily:'inherit',fontSize:'11px',fontWeight:600,colors:'#94A3B8'}},
-            },
-            yaxis:{
-                labels:{formatter:v=>numK(v),style:{fontFamily:'inherit',fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},
-                axisBorder:{show:false},
-                axisTicks:{show:false},
-            },
-            fill:{opacity:0.3},
-            stroke:{curve:'smooth',width:2.5},
-
-            /* ══ NUM BADGE — always on, smart density handling ══ */
-            markers:{
-                size: tooManyPoints ? 3 : 5,
-                strokeWidth:2,
-                strokeColors:'#fff',
-                hover:{size: tooManyPoints ? 5 : 7},
-            },
-            dataLabels:{
-                enabled: true,
-                formatter: function(v, opts) {
-                    if (v <= 0) return '';
-                    if (tooManyPoints) {
-                        /* dense: only label the max value of each series */
-                        const seriesData = opts.w.config.series[opts.seriesIndex].data;
-                        const maxVal = Math.max(...seriesData);
-                        return v === maxVal ? numK(v) : '';
-                    }
-                    return numK(v);
-                },
-                    style: {
-    fontSize: '10px',
-    fontFamily: 'inherit',
-    fontWeight: '700',
-    colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],  // Total, Positive, Neutral, Negative
-},
-                background:{
-                    enabled:true,
-                    foreColor:'#fff',
-                    borderRadius:4,
-                    borderWidth:0,
-                    padding:4,
-                    opacity:0.92,
-                    dropShadow:{enabled:true,top:1,left:0,blur:2,color:'#000',opacity:0.10},
-                },
-                offsetY:-8,
-            },
-
+            series:seriesArr,colors:colorsArr,
+            xaxis:{categories:xLabels,axisBorder:{show:false},axisTicks:{show:false},labels:{style:{fontFamily:'inherit',fontSize:'11px',fontWeight:600,colors:'#94A3B8'}}},
+            yaxis:{labels:{formatter:v=>numK(v),style:{fontFamily:'inherit',fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},axisBorder:{show:false},axisTicks:{show:false}},
+            fill:{opacity:0.3},stroke:{curve:'smooth',width:2.5},
+            markers:{size:showLabels?5:0,strokeWidth:2,strokeColors:'#fff',hover:{size:7}},
+            dataLabels:{enabled:showLabels,formatter:v=>v>0?numK(v):'',style:{fontSize:'10px',fontFamily:'inherit',fontWeight:'700'},background:{enabled:true,borderRadius:3,borderWidth:0,padding:3,opacity:0.9},offsetY:-6},
             grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}}},
             legend:{position:'bottom',horizontalAlign:'left',fontFamily:'inherit',fontSize:'11px',fontWeight:'600',labels:{colors:'#94A3B8'},markers:{width:9,height:9,radius:50},itemMargin:{horizontal:14,vertical:4}},
-            tooltip:{shared:true,intersect:false,style:{fontFamily:'inherit',fontSize:'12px'},y:{formatter:v=>numF(v)+' mentions'}},
+            tooltip:{shared:false,intersect:true,style:{fontFamily:'inherit',fontSize:'12px'},y:{formatter:v=>numF(v)+' mentions'}},
         });
         _trendChart.render();
         const fmtB=d=>{const dt=new Date(d+'T00:00:00');return dt.getDate()+' '+dt.toLocaleString('id-ID',{month:'short'});};
         _$('trendBadge').textContent=fmtB(dates[0])+' - '+fmtB(dates[dates.length-1]);
     },
-
     _renderBar(){
         const el=_$('barChart'),ld=_$('barLoading');if(!el)return;
         const platData=PLAT_KEYS.map(k=>({name:PLAT[k].label,value:Store[k].length,color:PLAT[k].color,key:k})).sort((a,b)=>b.value-a.value);
@@ -598,7 +581,6 @@ const MTData={
         _barChart.on('click',p=>{const pk=PLAT_KEYS.find(k=>PLAT[k].label===p.name);if(pk&&Store[pk].length)MTPanelNew.open(Store[pk],pk);});
         if(ld)ld.classList.add('hidden');requestAnimationFrame(()=>{_barChart.resize();});
     },
-
     _getItems(){return _activeTab==='all'?Store.all:(Store[_activeTab]||[]);},
     _renderList(){
         const items=this._getItems(),listEl=_$('listContainer'),pagEl=_$('pagContainer');
@@ -648,7 +630,9 @@ const MTData={
     goPage(p){const items=this._getItems(),pages=Math.ceil(items.length/MTCfg.perPage);if(p<1||p>pages)return;_page=p;this._renderList();const el=_$('listContainer');if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});}
 };
 
-/* ════ SLIDE PANEL ════ */
+/* ════════════════════════════════════════
+   SLIDE PANEL — Dashboard style
+════════════════════════════════════════ */
 const MTPanelNew=(() => {
     let _allItems=[],_filtered=[],_curSent='all';
 
@@ -673,6 +657,8 @@ const MTPanelNew=(() => {
         setTimeout(()=>{pn.classList.remove('show','hiding');ov.classList.remove('show','hiding');},240);
     }
 
+    let _renderedCount = 0;
+    
     function filterSent(sent){
         _curSent=sent;
         document.querySelectorAll('#mtPanelNew .do-panel-tab').forEach(t=>t.classList.toggle('active',t.dataset.s===sent));
@@ -682,9 +668,18 @@ const MTPanelNew=(() => {
 
     function _render(){
         const list=_$('mtPanelList');if(!list)return;
+        list.innerHTML=''; list.scrollTop=0; _renderedCount=0;
+        loadMore(list);
+    }
+    
+    function loadMore(list = _$('mtPanelList')){
+        const btn = _$('mtPopLoadMoreBtn'); if(btn) btn.remove();
+        if(!list)return;
         if(!_filtered.length){list.innerHTML='<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>';return;}
-        const dummy='/assets/images/user/dummy.jpg';const SHOW=80;
-        list.innerHTML=_filtered.slice(0,SHOW).map(item=>{
+        const dummy='/assets/images/user/dummy.jpg';
+        const limit=10, start=_renderedCount||0, chunk=_filtered.slice(start, start+limit);
+        
+        const html=chunk.map(item=>{
             const plat=PLAT[item._platform]||PLAT.doc;
             const avHtml=(item.avatar&&item.avatar.indexOf('http')===0)?'<img src="'+esc(item.avatar)+'" onerror="this.src=\''+dummy+'\'">':'<img src="'+dummy+'">';
             const sentLbl={pos:'Pos',neg:'Neg',neu:'Neu'}[item.sentiment];
@@ -701,13 +696,23 @@ const MTPanelNew=(() => {
                 +(dt?'<span style="margin-left:auto;">'+dt+'</span>':'')
                 +'</div></div></div>';
         }).join('');
-        if(_filtered.length>SHOW)list.insertAdjacentHTML('beforeend','<div style="padding:8px;text-align:center;font-size:10px;font-weight:600;color:#94A3B8;background:#F8FAFC;border-top:1px dashed #E2E8F0;">+'+(_filtered.length-SHOW).toLocaleString()+' lainnya</div>');
+        
+        list.insertAdjacentHTML('beforeend', html);
+        _renderedCount = start + chunk.length;
+
+        if (_filtered.length > _renderedCount) {
+             const left = _filtered.length - _renderedCount;
+             const next = Math.min(limit, left);
+             list.insertAdjacentHTML('beforeend', `<div id="mtPopLoadMoreBtn" style="padding:10px;"><button style="width:100%;height:32px;display:flex;align-items:center;justify-content:center;gap:6px;background:#f8fafc;color:#475569;border:1px dashed #cbd5e1;border-radius:6px;font-weight:600;cursor:pointer;" onclick="MTPanelNew.loadMore()">Muat ${next} lagi <span style="font-weight:400;opacity:0.8;">(${left.toLocaleString()} tersisa)</span> <i class="ph ph-caret-down"></i></button></div>`);
+        }
     }
 
-    return{open,close,filterSent};
+    return{open,close,filterSent,loadMore};
 })();
 
-/* ════ DETAIL SUB-PANEL ════ */
+/* ════════════════════════════════════════
+   DETAIL SUB-PANEL — Dashboard style
+════════════════════════════════════════ */
 const MTDetailNew={
     openEnc(enc){try{this.open(JSON.parse(decodeURIComponent(enc)));}catch(e){console.warn(e);}},
     open(item){
@@ -719,9 +724,16 @@ const MTDetailNew={
         const sentLbl={pos:'Positif',neg:'Negatif',neu:'Netral'}[item.sentiment];
         const sentCls={pos:'do-dp2-sent--pos',neg:'do-dp2-sent--neg',neu:'do-dp2-sent--neu'}[item.sentiment];
         let dtFmt='';if(item.date){try{dtFmt=new Date(item.date).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){dtFmt=(item.date||'').split('T')[0];}}
+        /* Media embed */
         let mediaHtml='';const url=item.url||'';
-        if(item._platform==='ytb'){const m=url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);if(m){const eid='yt_'+Date.now();mediaHtml='<div id="'+eid+'" style="position:relative;cursor:pointer;border-radius:6px;overflow:hidden;background:#000;margin-bottom:10px;" onclick="MTDetailNew._playYT(\''+eid+'\',\''+m[1]+'\')"><img src="https://img.youtube.com/vi/'+m[1]+'/hqdefault.jpg" style="width:100%;height:200px;object-fit:cover;display:block;" onerror="this.src=\'https://img.youtube.com/vi/'+m[1]+'/mqdefault.jpg\'"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);"><div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:22px;color:#fff;margin-left:3px;"></i></div></div></div>';}}
+        if(item._platform==='ytb'){
+            let vid='';if(url){const m=url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);if(m)vid=m[1];}
+            if(!vid && item._raw && item._raw.video_id) vid=item._raw.video_id; 
+            if(!vid && item._raw && item._raw.id) {const strId=String(item._raw.id); if(strId.length===11) vid=strId;}
+            if(vid){const eid='yt_'+Date.now();mediaHtml='<div id="'+eid+'" style="position:relative;cursor:pointer;border-radius:6px;overflow:hidden;background:#000;margin-bottom:10px;" onclick="MTDetailNew._playYT(\''+eid+'\',\''+vid+'\')"><img src="https://img.youtube.com/vi/'+vid+'/hqdefault.jpg" style="width:100%;height:200px;object-fit:cover;display:block;" onerror="this.src=\'https://img.youtube.com/vi/'+vid+'/mqdefault.jpg\'"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);"><div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:22px;color:#fff;margin-left:3px;"></i></div></div></div>';}
+        }
         else if(item._platform==='tiktok'){let vid='';if(url){const m2=url.match(/\/video\/(\d+)/);if(m2)vid=m2[1];}if(!vid&&item._raw&&item._raw.id){const m3=String(item._raw.id).match(/(\d{10,})/);if(m3)vid=m3[1];}if(vid){const eid='tt_'+Date.now();mediaHtml='<div id="'+eid+'" style="position:relative;cursor:pointer;background:#111827;border-radius:6px;overflow:hidden;height:240px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;" onclick="MTDetailNew._playTT(\''+eid+'\',\''+vid+'\')"><div style="z-index:2;width:56px;height:56px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:24px;color:#111827;margin-left:3px;"></i></div><div style="position:absolute;bottom:8px;right:8px;background:#111827;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;">TIKTOK</div></div>';}}
+        /* Stats */
         const sm={twit:[['Retweet',item.retweets],['Like',item.likes],['Comment',item.comments]],fb:[['Like',item.likes],['Share',item.shares],['Comment',item.comments]],ig:[['Like',item.likes],['Comment',item.comments],['View',item.views]],ytb:[['View',item.views],['Like',item.likes],['Comment',item.comments]],tiktok:[['Play',item.views],['Like',item.likes],['Share',item.shares]],doc:[['View',item.views],['Share',item.shares],['Comment',item.comments]]};
         const stats=sm[item._platform]||[];
         const statsHtml=stats.some(s=>parseInt(s[1])>0)?'<div class="do-dp2-stats">'+stats.map(([l,v])=>'<div class="do-dp2-stat"><div class="do-dp2-stat-val">'+parseInt(v||0).toLocaleString('id-ID')+'</div><div class="do-dp2-stat-lbl">'+l+'</div></div>').join('')+'</div>':'';
@@ -739,26 +751,67 @@ const MTDetailNew={
     _playTT(eid,vid){const el=_$(eid);if(!el)return;el.style.cssText='min-height:560px;height:auto;background:#111827;border-radius:6px;overflow:hidden;margin-bottom:10px;';el.innerHTML='<iframe src="https://www.tiktok.com/embed/v2/'+vid+'" width="100%" height="560" frameborder="0" allow="autoplay" allowfullscreen style="display:block;border:none;"></iframe>';}
 };
 
-/* ════ EXPORT MODULE ════ */
+/* ════════════════════════════════════════
+   EXPORT MODULE
+════════════════════════════════════════ */
 const MTExport=(() => {
     let _timer=null;
     function _toast(msg,type='default',dur=3200){const t=_$('exportToast'),m=_$('exportToastMsg'),ico=_$('exportToastIcon');if(!t||!m)return;m.textContent=msg;t.className='export-toast show'+(type!=='default'?' '+type:'');const ic={success:'ph-check-circle',error:'ph-x-circle',default:'ph-spinner'};if(ico)ico.className='ph '+(ic[type]||ic.default);clearTimeout(_timer);_timer=setTimeout(()=>t.classList.remove('show'),dur);}
     function _btnState(btn,on){if(!btn)return;btn.disabled=on;btn.classList.toggle('exporting',on);}
     function _disableAll(on){['pageExportPdfBtn','pageExportImgBtn','pageExportCsvBtn'].forEach(id=>{const b=_$(id);if(b){b.disabled=on;b.classList.toggle('exporting',on);}});}
+
+    /* ── Export Mode: matikan animasi saat capture ── */
+    let _savedInlineStyles = [];
+    function _enterExportMode() {
+        // Strip inline style animation pada semua elemen (fadeUp ada di style="animation:...")
+        _savedInlineStyles = [];
+        document.querySelectorAll('#pageExportArea [style*="animation"]').forEach(el => {
+            _savedInlineStyles.push({ el, style: el.getAttribute('style') });
+            el.style.animation = 'none';
+            el.style.opacity   = '1';
+            el.style.transform = 'none';
+        });
+        document.body.classList.add('is-exporting');
+        document.body.offsetHeight; // force reflow
+    }
+    function _exitExportMode() {
+        document.body.classList.remove('is-exporting');
+        // Kembalikan inline style semula
+        _savedInlineStyles.forEach(({ el, style }) => {
+            el.setAttribute('style', style);
+        });
+        _savedInlineStyles = [];
+    }
+
     async function _capturePage(){
         const area=_$('pageExportArea');if(!area)throw new Error('pageExportArea tidak ditemukan');
-        window.scrollTo({top:0});await new Promise(r=>setTimeout(r,400));
+        window.scrollTo({top:0});
+        await new Promise(r=>setTimeout(r,300));
         if(_trendChart){try{await _trendChart.updateOptions({});}catch(e){}}
         if(_barChart){try{_barChart.resize();}catch(e){}}
         await new Promise(r=>setTimeout(r,200));
-        return html2canvas(area,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#f1f5f8',logging:false,removeContainer:true,windowWidth:document.documentElement.scrollWidth,windowHeight:area.scrollHeight,height:area.scrollHeight,ignoreElements:el=>el.hasAttribute('data-html2canvas-ignore')||['pageExportPdfBtn','pageExportImgBtn','pageExportCsvBtn'].includes(el.id)});
+        _enterExportMode();
+        await new Promise(r=>setTimeout(r,60)); // beri waktu CSS diterapkan
+        try {
+            return await html2canvas(area,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#f1f5f8',logging:false,removeContainer:true,windowWidth:document.documentElement.scrollWidth,windowHeight:area.scrollHeight,height:area.scrollHeight,ignoreElements:el=>el.hasAttribute('data-html2canvas-ignore')||['pageExportPdfBtn','pageExportImgBtn','pageExportCsvBtn'].includes(el.id)});
+        } finally {
+            _exitExportMode();
+        }
     }
+
     async function _captureCard(areaId){
         const area=document.getElementById(areaId);if(!area)throw new Error('Area #'+areaId+' tidak ditemukan');
         if(_barChart&&areaId==='card-export-dist'){try{_barChart.resize();}catch(e){}}
         await new Promise(r=>setTimeout(r,280));
-        return html2canvas(area,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,removeContainer:true,ignoreElements:el=>el.hasAttribute('data-html2canvas-ignore')});
+        _enterExportMode();
+        await new Promise(r=>setTimeout(r,60));
+        try {
+            return await html2canvas(area,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,removeContainer:true,ignoreElements:el=>el.hasAttribute('data-html2canvas-ignore')});
+        } finally {
+            _exitExportMode();
+        }
     }
+
     function _pdfHeader(pdf,title){const pW=pdf.internal.pageSize.getWidth();pdf.setFillColor(3,128,71);pdf.rect(0,0,pW,11,'F');pdf.setTextColor(255,255,255);pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.text('SMADIMENT — '+title,10,7.5);const now=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});pdf.setFontSize(7);pdf.setFont('helvetica','normal');pdf.text('Generated: '+now,pW-10,7.5,{align:'right'});}
     async function _paginatePdf(pdf,canvas,title){const pW=pdf.internal.pageSize.getWidth(),pH=pdf.internal.pageSize.getHeight(),margin=10,usableW=pW-margin*2,usableH=pH-margin*2-14,ratio=usableW/canvas.width,sliceH=usableH/ratio;let srcY=0,pg=0;while(srcY<canvas.height){if(pg>0){pdf.addPage();_pdfHeader(pdf,title);}const srcSlice=Math.min(sliceH,canvas.height-srcY),dstH=srcSlice*ratio,slice=document.createElement('canvas');slice.width=canvas.width;slice.height=Math.ceil(srcSlice);slice.getContext('2d').drawImage(canvas,0,srcY,canvas.width,srcSlice,0,0,canvas.width,srcSlice);pdf.addImage(slice.toDataURL('image/png'),'PNG',margin,14,usableW,dstH);pdf.setFontSize(7);pdf.setTextColor(148,163,184);pdf.text('Halaman '+(pg+1),pW/2,pH-3,{align:'center'});srcY+=srcSlice;pg++;}}
     function _stamp(){return new Date().toISOString().slice(0,10).replace(/-/g,'');}

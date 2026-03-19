@@ -92,6 +92,8 @@
 .ms-plat-count { font-size:17px; font-weight:700; color:var(--slate-900); letter-spacing:-.4px; min-height:24px; display:flex; align-items:center; }
 
 /* ══ Grid Layouts ══ */
+.ms-grid-1-1 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.ms-grid-11-9 { display:grid; grid-template-columns:1.2fr 1fr; gap:16px; }
 .ms-grid-3-2 { display:grid; grid-template-columns:1.55fr 1fr; gap:16px; }
 .ms-grid-2-3 { display:grid; grid-template-columns:1fr 1.55fr; gap:16px; }
 
@@ -176,7 +178,7 @@
 .do-panel-author { font-size:12px; font-weight:700; color:var(--slate-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .do-panel-handle { font-size:10px; color:var(--slate-400); font-weight:500; margin-bottom:2px; }
 .do-panel-text   { font-size:11px; color:var(--slate-600); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px; }
-.do-panel-footer { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--slate-400); flex-wrap:wrap; }
+.do-panel-footer { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--slate-400); }
 .do-sent-badge { padding:1px 6px; border-radius:3px; font-size:9px; font-weight:800; text-transform:uppercase; }
 .do-sent-badge--pos { background:#dbeafe; color:#1d4ed8; }
 .do-sent-badge--neg { background:#fee2e2; color:#991b1b; }
@@ -213,6 +215,18 @@
 .do-dp2-link { display:flex; align-items:center; justify-content:center; gap:6px; padding:9px 14px; background:var(--primary); color:#fff; border-radius:var(--radius); font-size:12px; font-weight:700; text-decoration:none; transition:filter .14s; margin-top:4px; }
 .do-dp2-link:hover { filter:brightness(1.1); color:#fff; }
 
+/* ══ Direct Link Button (panel item footer) ══ */
+.do-panel-link-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:22px; height:22px; border-radius:4px; flex-shrink:0;
+    background:rgba(var(--primary-rgb),.08); color:var(--primary);
+    border:1px solid rgba(var(--primary-rgb),.2);
+    transition:background .13s, color .13s, border-color .13s;
+    text-decoration:none;
+}
+.do-panel-link-btn:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.do-panel-link-btn i { font-size:12px; pointer-events:none; }
+
 /* Platform picker */
 .do-plat-picker { position:fixed; z-index:999999; background:#fff; border:1px solid var(--slate-200); border-radius:var(--radius); box-shadow:var(--shadow-lg); padding:5px; min-width:175px; font-family:inherit; display:none; animation:fadeUp .14s ease-out; }
 .do-plat-picker.show { display:block; }
@@ -221,9 +235,7 @@
 .do-plat-btn:hover { background:var(--primary-lt); color:var(--primary); }
 .do-plat-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-left:auto; }
 
-/* ══════════════════════════════════════════════════════
-   EXPORT STYLES — identik dengan TikTok Most Engagement
-══════════════════════════════════════════════════════ */
+/* ══ EXPORT STYLES ══ */
 .page-export-bar {
     display:flex; align-items:center; justify-content:space-between;
     flex-wrap:wrap; gap:10px;
@@ -278,8 +290,16 @@
 .export-toast.error   { background:#991b1b; }
 
 /* ══ Responsive ══ */
-@media(max-width:1280px) { .ms-grid-3-2,.ms-grid-2-3 { grid-template-columns:1fr; } }
+@media(max-width:1280px) { .ms-grid-1-1,.ms-grid-11-9,.ms-grid-3-2,.ms-grid-2-3 { grid-template-columns:1fr; } }
 @media(max-width:768px)  { .do-panel { width:100vw; } }
+
+/* ══ Apexcharts click hint ══ */
+.apx-click-hint {
+    display:flex; align-items:center; gap:5px;
+    font-size:10px; font-weight:600; color:var(--slate-400);
+    margin-top:4px;
+}
+.apx-click-hint i { font-size:11px; }
 </style>
 @endsection
 
@@ -485,7 +505,7 @@
 </div>
 
 {{-- ══ SOV Platform + Bar Race ══ --}}
-<div class="ms-grid-2-3 mb-3 fade-up">
+<div class="ms-grid-11-9 mb-3 fade-up">
     <div class="card" id="card-export-sov-plat">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
@@ -598,6 +618,10 @@
                 <div class="sk-block sk-overlay" id="skTrend"></div>
                 <div id="chTrend" style="width:100%;height:340px;"></div>
             </div>
+            <div class="apx-click-hint" data-html2canvas-ignore="true">
+                <i class="ph ph-cursor-click"></i>
+                <span>Klik pada titik data atau nama legend untuk melihat detail mentions</span>
+            </div>
         </div>
     </div>
 
@@ -627,6 +651,10 @@
             <div class="ms-ch ms-ch-340" style="position:relative;">
                 <div class="sk-block sk-overlay" id="skArticleTrend"></div>
                 <div id="chArticleTrend" style="width:100%;height:340px;"></div>
+            </div>
+            <div class="apx-click-hint" data-html2canvas-ignore="true">
+                <i class="ph ph-cursor-click"></i>
+                <span>Klik pada titik data untuk melihat detail artikel Online News</span>
             </div>
         </div>
     </div>
@@ -768,6 +796,14 @@
     </div>
 </div>
 
+{{-- ══ Media Viewer Modal ══ --}}
+<div class="video-modal-overlay" id="vidViewModal" onclick="closeVidModal()" style="display:none;position:fixed;inset:0;background:rgba(15,20,25,0.85);backdrop-filter:blur(8px);z-index:99999;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .2s ease;">
+    <div class="video-modal-content" style="position:relative;width:100%;max-width:800px;background:#000;border-radius:12px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.4);transform:scale(0.95);transition:transform .2s ease;" onclick="event.stopPropagation()">
+        <button onclick="closeVidModal()" style="position:absolute;top:12px;right:12px;z-index:10;background:rgba(0,0,0,.5);color:#fff;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;"><i class="ph ph-x" style="font-size:18px;"></i></button>
+        <div id="vidViewWrap" style="width:100%;aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;"></div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
@@ -843,19 +879,77 @@ const EC_TT = {
   extraCssText:'border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.28);'
 };
 
-function apxBase(colors, series, categories, height=340) {
-  return {
-    chart: { type:'area', height, fontFamily:'inherit', background:'transparent', toolbar:{show:false}, animations:{enabled:true,easing:'linear',dynamicAnimation:{speed:1000}} },
+function apxBase(colors, series, categories, height=340, onPointClick) {
+  const opts = {
+    chart: {
+      type:'area', height,
+      fontFamily:'inherit', background:'transparent',
+      toolbar:{show:false},
+      animations:{enabled:true,easing:'linear',dynamicAnimation:{speed:1000}},
+      events: {
+        click: function(event, chartContext, config) {
+          if(typeof onPointClick !== 'function') return;
+          let platformKey = null;
+          if(config.seriesIndex !== undefined && config.seriesIndex >= 0) {
+            platformKey = config.seriesIndex;
+          } else {
+            const globals = chartContext?.w?.globals;
+            if(globals && globals.seriesXvalues) { platformKey = 0; }
+          }
+          if(platformKey !== null) { onPointClick(platformKey, event.clientX, event.clientY); }
+        },
+        legendClick: function(chartContext, seriesIndex) {
+          if(typeof onPointClick !== 'function') return;
+          onPointClick(seriesIndex, window.innerWidth - 520, 200);
+        },
+        mouseMove: function(event, chartContext, config) {
+          const el = chartContext?.el; if(el) el.style.cursor = 'pointer';
+        },
+        mouseLeave: function(event, chartContext) {
+          const el = chartContext?.el; if(el) el.style.cursor = 'default';
+        }
+      }
+    },
     series, colors,
-    xaxis: { categories, axisBorder:{show:false}, axisTicks:{show:false}, labels:{style:{fontFamily:'inherit',fontSize:'11px',fontWeight:600,colors:'#94A3B8'}} },
-    yaxis: { labels:{formatter:v=>numK(v),style:{fontFamily:'inherit',fontSize:'10px',fontWeight:600,colors:'#94A3B8'}}, axisBorder:{show:false}, axisTicks:{show:false} },
-    fill:{ opacity:0.3 }, stroke:{ curve:'smooth', width:2.5 },
+    xaxis: {
+      categories,
+      axisBorder:{show:false}, axisTicks:{show:false},
+      labels:{style:{fontFamily:'inherit',fontSize:'11px',fontWeight:600,colors:'#94A3B8'}}
+    },
+    yaxis: {
+      labels:{formatter:v=>numK(v),style:{fontFamily:'inherit',fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},
+      axisBorder:{show:false}, axisTicks:{show:false}
+    },
+    fill:{ opacity:0.3 },
+    stroke:{ curve:'smooth', width:2.5 },
     grid:{ borderColor:'rgba(226,232,240,.55)', strokeDashArray:3, xaxis:{lines:{show:false}} },
-    legend:{ position:'bottom', horizontalAlign:'left', fontFamily:'inherit', fontSize:'11px', fontWeight:'600', labels:{colors:'#94A3B8'}, markers:{width:9,height:9,radius:50}, itemMargin:{horizontal:14,vertical:4} },
-    tooltip:{ shared:true, intersect:false, style:{fontFamily:'inherit',fontSize:'12px'}, y:{formatter:v=>numFmt(v)+' mentions'} },
-    dataLabels:{ enabled:true, formatter:v=>v>0?numFmt(v):'', style:{fontSize:'10px',fontFamily:'inherit',fontWeight:'700'}, background:{enabled:true,borderRadius:3,borderWidth:0,padding:3,opacity:0.9}, offsetY:-6 },
-    markers:{ size:5, strokeWidth:2, strokeColors:'#fff', hover:{size:7} },
+    legend:{
+      position:'bottom', horizontalAlign:'left', fontFamily:'inherit',
+      fontSize:'11px', fontWeight:'600', labels:{colors:'#94A3B8'},
+      markers:{width:9,height:9,radius:50},
+      itemMargin:{horizontal:14,vertical:4},
+      onItemClick:{ toggleDataSeries:true },
+      onItemHover:{ highlightDataSeries:true }
+    },
+    tooltip:{
+      shared:false, intersect:true,
+      style:{fontFamily:'inherit',fontSize:'12px'},
+      y:{formatter:v=>numFmt(v)+' mentions'}
+    },
+    dataLabels:{
+      enabled:true,
+      formatter:v=>v>0?numFmt(v):'',
+      style:{fontSize:'10px',fontFamily:'inherit',fontWeight:'700'},
+      background:{enabled:true,borderRadius:3,borderWidth:0,padding:3,opacity:0.9},
+      offsetY:-6
+    },
+    markers:{ size:5, strokeWidth:2, strokeColors:'#fff', hover:{size:7}, discrete:[] },
+    states:{
+      hover:{ filter:{ type:'lighten', value:0.1 } },
+      active:{ filter:{ type:'darken', value:0.35 } }
+    }
   };
+  return opts;
 }
 
 /* ══ TAB SYSTEM ══ */
@@ -890,14 +984,14 @@ function makeEDoughnut(domId,labels,values,colors,onClickFns,subtitles){
     tooltip:{trigger:'item',backgroundColor:'#1e293b',borderColor:'#334155',borderWidth:1,padding:[10,14],textStyle:{color:'#fff',fontFamily:"'Poppins',sans-serif",fontSize:12},extraCssText:'border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.28);',
       formatter:params=>{const pct=total>0?((params.value/total)*100).toFixed(1):'0.0';const sub=params.data.subtitle?`<br><span style="color:#94a3b8;font-size:11px;">${params.data.subtitle}</span>`:'';return`<div style="font-weight:700;margin-bottom:5px;">${params.name}${sub}</div><div style="display:flex;justify-content:space-between;gap:18px;margin-top:4px;"><span style="color:#94a3b8;">Mentions</span><span style="font-weight:700;">${numFmt(params.value)}</span></div><div style="display:flex;justify-content:space-between;gap:18px;margin-top:3px;"><span style="color:#94a3b8;">Share</span><span style="font-weight:700;color:#34d399;">${pct}%</span></div>`;}},
     legend:{show:false},
-    series:[{type:'pie',radius:['46%','64%'],center:['50%','52%'],avoidLabelOverlap:true,minAngle:5,itemStyle:{borderRadius:6},
-      label:{show:true,alignTo:'edge',edgeDistance:10,lineHeight:17,fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#374151',
-        formatter:params=>{const pct=total>0?(params.value/total*100):0;if(pct<2)return'';const name=params.name.length>11?params.name.slice(0,10)+'…':params.name;const sub=params.data.subtitle?(params.data.subtitle.length>11?params.data.subtitle.slice(0,10)+'…':params.data.subtitle):'';return sub?`{name|${name}}\n{sub|${sub}}\n{eng|${numK(params.value)}}` : `{name|${name}}\n{eng|${numK(params.value)}}`;},
+    series:[{type:'pie',radius:['38%','54%'],center:['50%','52%'],avoidLabelOverlap:true,minAngle:5,itemStyle:{borderRadius:6},
+      label:{show:true,alignTo:'none',lineHeight:17,fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#374151',
+        formatter:params=>{const name=params.name.length>11?params.name.slice(0,10)+'…':params.name;const sub=params.data.subtitle?(params.data.subtitle.length>11?params.data.subtitle.slice(0,10)+'…':params.data.subtitle):'';return sub?`{name|${name}}\n{sub|${sub}}\n{eng|${numK(params.value)}}` : `{name|${name}}\n{eng|${numK(params.value)}}`;},
         rich:{name:{fontWeight:'700',fontSize:12,color:'#1a202c',lineHeight:19},sub:{fontWeight:'400',fontSize:10.5,color:'#64748b',lineHeight:16},eng:{fontWeight:'700',fontSize:11,color:'#4361EE',lineHeight:16,backgroundColor:'#eff2fe',borderRadius:4,padding:[1,5]}}},
-      labelLine:{show:true,length:14,length2:18,smooth:.4,minTurnAngle:130,lineStyle:{color:'#c4cdd8',width:1.2,type:'solid'},showAbove:false},
+      labelLine:{show:true,length:12,length2:16,smooth:.4,minTurnAngle:130,lineStyle:{color:'#c4cdd8',width:1.2,type:'solid'},showAbove:false},
       emphasis:{scale:true,scaleSize:5,itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,.12)'}},data:seriesData}],
     graphic:[
-      {type:'text',left:'center',top:'47%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 24px 'Poppins',sans-serif",textAlign:'center'}},
+      {type:'text',left:'center',top:'47%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 22px 'Poppins',sans-serif",textAlign:'center'}},
       {type:'text',left:'center',top:'55%',z:100,style:{text:'TOTAL',fill:'#94a3b8',font:"600 9px 'Poppins',sans-serif",textAlign:'center',letterSpacing:2}},
     ]});
   if(onClickFns){chart.on('click',params=>{const fn=onClickFns[params.dataIndex];if(typeof fn==='function'){const rect=chart.getDom().getBoundingClientRect();fn(rect.left+rect.width/2,rect.top+rect.height/2);}});}
@@ -976,6 +1070,7 @@ async function loadTrend(){
   else{ const now=new Date(),off=MSTrendToggle._weekOffset;const edDate=new Date(now);edDate.setDate(now.getDate()-(7*off));const sdDate=new Date(now);sdDate.setDate(now.getDate()-(7*(off+1)));trendSD=fmtDate(sdDate);trendED=fmtDate(edDate); }
   const platMeta={doc:{label:'Online News',color:'#0284c7'},twitter:{label:'Twitter',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
   const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];
+  const keyMap={'Online News':'doc','Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
   try{
     const res=await fetch(`/mk/api/media-statistic/trend-mentions?project_id=${MSCfg.pid}&start_date=${trendSD}&end_date=${trendED}`);
     const json=await res.json();if(json.error)throw new Error(json.error);
@@ -996,22 +1091,13 @@ async function loadTrend(){
     const colorsArr=seriesArr.map(s=>{const key=Object.keys(platMeta).find(k=>platMeta[k].label===s.name);return platMeta[key]?.color||'#94a3b8';});
     _destroyApx('trend');
     const el=document.getElementById('chTrend');if(!el)return;
-    const keyMap={'Online News':'doc','Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
-    const trendOpts=apxBase(colorsArr,seriesArr,xLabels,340);
-    /* ── Buka panel via ApexCharts native events ── */
-    trendOpts.chart.events={
-      dataPointSelection(_e,_ctx,cfg){
-        const sName=seriesArr[cfg.seriesIndex]?.name;
-        const k=keyMap[sName];
-        if(k){ const rect=el.getBoundingClientRect(); MSPanel.open(k,rect.left+rect.width/2,rect.top+100); }
-      },
-      legendClick(_ctx,sIdx){
-        const sName=seriesArr[sIdx]?.name;
-        const k=keyMap[sName];
-        if(k){ const rect=el.getBoundingClientRect(); MSPanel.open(k,rect.left+rect.width/2,rect.top+100); }
-      }
+    const onPointClick = (seriesIndex, cx, cy) => {
+      const sName = seriesArr[seriesIndex]?.name;
+      const k = keyMap[sName];
+      if(k) MSPanel.open(k, cx, cy);
     };
-    APX.trend=new ApexCharts(el,trendOpts);
+    const trendOpts = apxBase(colorsArr, seriesArr, xLabels, 340, onPointClick);
+    APX.trend = new ApexCharts(el, trendOpts);
     APX.trend.render();
   }catch(err){ hideSk('skTrend');document.getElementById('trendBadge').textContent='Error';document.getElementById('chTrend').innerHTML=emptyHtml('Data trend tidak tersedia'); }
 }
@@ -1032,13 +1118,11 @@ async function loadArticleTrend(){
     const xLabels=dates.map(d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()} ${dt.toLocaleString('id-ID',{month:'short'})}`;});
     _destroyApx('article');
     const el=document.getElementById('chArticleTrend');if(!el)return;
-    const opts=apxBase(['#0284c7'],[{name:'Online News',data:values}],xLabels,340);
-    opts.tooltip.y={formatter:v=>numFmt(v)+' articles'};
-    opts.chart.events={
-      dataPointSelection(){ const rect=el.getBoundingClientRect(); MSPanel.open('doc',rect.left+rect.width/2,rect.top+100); },
-      legendClick(){        const rect=el.getBoundingClientRect(); MSPanel.open('doc',rect.left+rect.width/2,rect.top+100); }
-    };
-    APX.article=new ApexCharts(el,opts);APX.article.render();
+    const onPointClick = (_sIdx, cx, cy) => { MSPanel.open('doc', cx, cy); };
+    const opts = apxBase(['#0284c7'], [{name:'Online News', data:values}], xLabels, 340, onPointClick);
+    opts.tooltip.y = { formatter: v => numFmt(v)+' articles' };
+    APX.article = new ApexCharts(el, opts);
+    APX.article.render();
   }catch(err){ hideSk('skArticleTrend');document.getElementById('articleTrendBadge').textContent='Error';document.getElementById('chArticleTrend').innerHTML=emptyHtml('Data artikel tidak tersedia'); }
 }
 
@@ -1113,15 +1197,31 @@ const MSPanel = (() => {
   function closeByOverlay(){ close(); }
   async function _fetch(platform){
     const q=`project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}&rows=500&start=0`;
-    if(platform==='ig'){for(const sub of['postbylike','postbycomment','postbydate','']){try{const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),15000);const res=await fetch(`/mk/api/news/ig-top-status?${q}${sub?'&sub='+sub:''}`,{signal:ctrl.signal});clearTimeout(tid);if(!res.ok)continue;const data=await res.json();const items=Array.isArray(data.data)?data.data:(Array.isArray(data)?data:[]);if(items.length>0)return items;}catch(e){continue;}} return[];}
-    const eps={doc:`/mk/api/news/mentions?${q}`,twit:`/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,fb:`/mk/api/news/fb-top-status?${q}&sub=fblike`,yt:`/mk/api/news/ytb-top-status?${q}`,tiktok:`/mk/api/news/tiktok-top-status?${q}&sub=postbylike`};
+    if(platform==='ig'){for(const sub of['postbylike','postbycomment','postbydate','']){try{const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),15000);const res=await fetch(`/mk/api/news/ig-top-status?${q}${sub?'&sub='+sub:''}`,{signal:ctrl.signal});clearTimeout(tid);if(!res.ok)continue;const d=await res.json();let items=[];if(Array.isArray(d?.data?.data))items=d.data.data;else if(Array.isArray(d?.data))items=d.data;else if(Array.isArray(d?.statuses))items=d.statuses;else if(Array.isArray(d))items=d;if(items.length>0)return items;}catch(e){continue;}} return[];}
+    if(platform==='yt'){for(const sub of['postbylike','postbyview','postbydate','postbycomment','']){try{const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),15000);const res=await fetch(`/mk/api/news/ytb-top-status?${q}${sub?'&sub='+sub:''}`,{signal:ctrl.signal});clearTimeout(tid);if(!res.ok)continue;const d=await res.json();let items=[];if(Array.isArray(d?.data?.data))items=d.data.data;else if(Array.isArray(d?.data))items=d.data;else if(Array.isArray(d?.statuses))items=d.statuses;else if(Array.isArray(d?.results))items=d.results;else if(Array.isArray(d?.posts))items=d.posts;else if(Array.isArray(d))items=d;else if(d?.data&&typeof d.data==='object'&&!Array.isArray(d.data)){const vals=Object.values(d.data);if(vals.length&&typeof vals[0]==='object')items=vals;}if(items.length>0)return items;}catch(e){continue;}} return[];}
+    const eps={doc:`/mk/api/news/mentions?${q}`,twit:`/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,fb:`/mk/api/news/fb-top-status?${q}&sub=fblike`,tiktok:`/mk/api/news/tiktok-top-status?${q}&sub=postbylike`};
     const url=eps[platform];if(!url)throw new Error('Platform tidak dikenali');
     const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),30000);
     const res=await fetch(url,{signal:ctrl.signal});clearTimeout(tid);if(!res.ok)throw new Error('HTTP '+res.status);
-    const data=await res.json();let items=Array.isArray(data.data)?data.data:(Array.isArray(data)?data:[]);
+    const d=await res.json();
+    let items=[];
+    if(Array.isArray(d?.data?.data))items=d.data.data;
+    else if(Array.isArray(d?.data))items=d.data;
+    else if(Array.isArray(d?.statuses))items=d.statuses;
+    else if(Array.isArray(d?.results))items=d.results;
+    else if(Array.isArray(d?.posts))items=d.posts;
+    else if(Array.isArray(d))items=d;
+    else if(d?.data&&typeof d.data==='object'&&!Array.isArray(d.data)){const vals=Object.values(d.data);if(vals.length&&typeof vals[0]==='object')items=vals;}
     if(platform==='doc')items=items.filter(m=>{const tc=String(m.tcode||'').toLowerCase(),mt=String(m.media_type||'').toLowerCase();return tc==='berita'||mt==='berita'||mt==='doc'||mt==='news'||mt==='online'||mt==='article';});
     return items;
   }
+
+  /* ══════════════════════════════════════════════════════
+     _render — UPDATED: direct link icon di setiap item
+     - Tambah: const url = (item.url||item.link||'').trim()
+     - Footer dibagi dua: kiri (badge+platform+tgl), kanan (link icon)
+     - onclick link pakai event.stopPropagation() agar detail panel tidak ikut terbuka
+  ══════════════════════════════════════════════════════ */
   function _render(list,items,platform,color){
     if(!items.length){list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:#94a3b8;font-size:12px;font-weight:600;">Tidak ada mention periode ini.</div>`;return;}
     const SHOW=60;const meta=MSCfg.platMeta[platform]||{label:platform,color};
@@ -1133,14 +1233,40 @@ const MSPanel = (() => {
       const handle=(()=>{if(!rawH)return'';const w=['twit','ig','tiktok'].includes(platform)?(rawH.startsWith('@')?rawH:'@'+rawH):rawH;return w.replace(/^@/,'').toLowerCase()===dName.toLowerCase()?'':w;})();
       const text=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,155);
       const av=(item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||item.thumbnail||'').trim();
+      /* ── URL untuk direct link ── */
+      const url=(item.url||item.link||'').trim();
       const words=dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
       const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||dName[0]||'?')).toUpperCase().replace(/['"]/g,'');
       const avHtml=(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">`:ini;
-      const sent=_ns(item);const dt=(item.date_created||item.created_at||'').split('T')[0];const enc=encodeURIComponent(JSON.stringify(item));
+      const sent=_ns(item);
+      const dt=(item.date_created||item.created_at||'').split('T')[0];
+      const enc=encodeURIComponent(JSON.stringify(item));
+      /* ── Link icon HTML (hanya jika ada url) ── */
+      const linkBtn=url
+        ?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer"
+              onclick="event.stopPropagation()"
+              title="Buka di tab baru"
+              class="do-panel-link-btn">
+            <i class="ph ph-arrow-square-out"></i>
+          </a>`
+        :'';
       return`<div class="do-panel-item" onclick="MSDetail.openEncoded('${enc}','${platform}')">
         <div class="do-panel-avatar" style="background:linear-gradient(135deg,${color},${color}99);">${avHtml}</div>
-        <div class="do-panel-item-body"><div class="do-panel-author">${esc(dName)}</div>${handle?`<div class="do-panel-handle">${esc(handle)}</div>`:''}<div class="do-panel-text">${esc(text||'(tidak ada konten)')}</div>
-        <div class="do-panel-footer"><span class="do-sent-badge do-sent-badge--${sent}">${sent==='pos'?'Pos':sent==='neg'?'Neg':'Neu'}</span><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${color};flex-shrink:0;"></span><span style="font-size:10px;font-weight:600;color:${color};">${meta.label}</span>${dt?`<span style="margin-left:auto;">${dt}</span>`:''}</div></div></div>`;
+        <div class="do-panel-item-body">
+          <div class="do-panel-author">${esc(dName)}</div>
+          ${handle?`<div class="do-panel-handle">${esc(handle)}</div>`:''}
+          <div class="do-panel-text">${esc(text||'(tidak ada konten)')}</div>
+          <div class="do-panel-footer" style="justify-content:space-between;flex-wrap:nowrap;">
+            <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0;">
+              <span class="do-sent-badge do-sent-badge--${sent}">${sent==='pos'?'Pos':sent==='neg'?'Neg':'Neu'}</span>
+              <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${color};flex-shrink:0;"></span>
+              <span style="font-size:10px;font-weight:600;color:${color};">${meta.label}</span>
+              ${dt?`<span style="font-size:10px;color:var(--slate-400);">${dt}</span>`:''}
+            </div>
+            ${linkBtn}
+          </div>
+        </div>
+      </div>`;
     }).join('');
     if(items.length>SHOW)list.insertAdjacentHTML('beforeend',`<div style="padding:9px 14px;text-align:center;font-size:11px;font-weight:600;color:#94a3b8;background:#F8FAFC;border-top:1px dashed #E2E8F0;">+${(items.length-SHOW).toLocaleString()} mentions lainnya</div>`);
   }
@@ -1168,13 +1294,43 @@ const MSDetail = {
     const avHtml=(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.parentElement.textContent='${ini}';">`:ini;
     let dtFmt='';if(dt){try{dtFmt=new Date(dt).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){dtFmt=dt.split('T')[0];}}
     let mediaHtml='';
-    if(platform==='yt'){const ytId=(url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)||[])[1];if(ytId)mediaHtml=`<div class="do-dp2-media"><iframe style="width:100%;height:210px;border:none;display:block;" src="https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1" allowfullscreen></iframe></div>`;}
-    else{const imgUrl=item.image_url||item.thumbnail||item.media_url||item.picture||'';if(imgUrl)mediaHtml=`<div class="do-dp2-media"><img src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:var(--radius);"></div>`;}
+    if(platform==='yt'){
+        let ytId=''; if(url){ const m=url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|\/vi\/)([a-zA-Z0-9_-]{11})/); if(m) ytId=m[1]; }
+        if(!ytId && item.video_id) ytId = item.video_id;
+        if(!ytId && item.yt_id) ytId = item.yt_id;
+        if(!ytId && item.id){ const m=String(item.id).match(/(?:yt-|youtube-)?([A-Za-z0-9_-]{11})$/); if(m) ytId=m[1]; }
+        
+        const imgUrl = item.thumbnail || item.image_url || item.picture || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
+        if(ytId){
+            mediaHtml=`<div class="do-dp2-media" style="cursor:pointer;position:relative;background:#000;aspect-ratio:16/9;border-radius:var(--radius);overflow:hidden;" onclick="openVidModal('yt', '${ytId}')">
+                <img src="${esc(imgUrl)}" style="width:100%;height:100%;object-fit:cover;opacity:0.6;" onerror="this.src='https://img.youtube.com/vi/${ytId}/hqdefault.jpg'">
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><i class="ph ph-youtube-logo" style="font-size:48px;color:#ff0000;filter:drop-shadow(0 0 10px rgba(0,0,0,.5));"></i></div>
+            </div>`;
+        } else if(imgUrl) {
+            mediaHtml=`<div class="do-dp2-media"><img src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:var(--radius);"></div>`;
+        }
+    }
+    else if(platform==='tiktok'){
+        let videoId=''; if(url){ const m=url.match(/\/video\/(\d+)/); if(m) videoId=m[1]; } if(!videoId&&item.id){ const m=String(item.id).match(/(\d{10,})/); if(m) videoId=m[1]; }
+        const imgUrl=item.image_url||item.thumbnail||item.media_url||item.picture||'';
+        if(videoId) {
+            mediaHtml=`<div class="do-dp2-media" style="cursor:pointer;position:relative;background:#111827;aspect-ratio:9/16;max-width:280px;margin:0 auto;border-radius:var(--radius);overflow:hidden;" onclick="openVidModal('tiktok', '${videoId}')">
+                ${imgUrl ? `<img src="${esc(imgUrl)}" style="width:100%;height:100%;object-fit:cover;opacity:0.5;" onerror="this.style.display='none'">` : ''}
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;"><i class="ph ph-tiktok-logo" style="font-size:42px;color:#fff;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4));margin-bottom:8px;"></i><span style="font-size:12px;font-weight:700;background:rgba(255,255,255,.2);padding:4px 10px;border-radius:20px;backdrop-filter:blur(4px);">Play Video</span></div>
+            </div>`;
+        } else if(imgUrl) {
+            mediaHtml=`<div class="do-dp2-media"><img src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:var(--radius);"></div>`;
+        }
+    }
+    else {
+        const imgUrl=item.image_url||item.thumbnail||item.media_url||item.picture||'';
+        if(imgUrl) mediaHtml=`<div class="do-dp2-media"><img src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:var(--radius);"></div>`;
+    }
     const statsMap={twit:[['Retweet',item.num_retweeted||item.retweet_count||0],['Like',item.num_likes||item.favorite_count||0],['Quote',item.num_quote||0]],fb:[['Like',item.likes||item.num_likes||0],['Share',item.shares||item.share_count||0],['Comment',item.num_comments||0]],ig:[['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||item.comment_count||0],['View',item.num_views||item.views||0]],yt:[['View',item.num_views||item.views||0],['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||item.comment_count||0]],tiktok:[['Play',item.views||item.play_count||0],['Like',item.likes||item.digg_count||0],['Share',item.shares||item.share_count||0]],doc:[['Read',item.num_views||0],['Share',item.num_share||0],['Comment',item.num_comments||0]]};
     const stats=statsMap[platform]||[];
     const statsHtml=stats.some(s=>parseInt(s[1])>0)?`<div class="do-dp2-stats">${stats.map(([l,v])=>`<div class="do-dp2-stat"><div class="do-dp2-stat-val">${parseInt(v||0).toLocaleString()}</div><div class="do-dp2-stat-lbl">${l}</div></div>`).join('')}</div>`:'';
     const handleDisp=handle&&handle.replace('@','').toLowerCase()!==name.toLowerCase().slice(0,handle.replace('@','').length)?(handle.startsWith('@')?handle:'@'+handle):'';
-    body.innerHTML=`<div class="do-dp2-avatar-row"><div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div><div><div class="do-dp2-name">${esc(name)}</div>${handleDisp?`<div class="do-dp2-handle">${esc(handleDisp)}</div>`:''}<span class="do-dp2-plat-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span></div></div>${dtFmt?`<div class="do-dp2-meta">${dtFmt}</div>`:''}<div class="do-dp2-sent ${SBGS[sent]}">${SLBL[sent]}</div>${mediaHtml}${content?`<div class="do-dp2-content">${esc(content)}</div>`:''}${statsHtml}${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out me-1"></i>Lihat ${meta.label} Asli</a>`:''}`;
+    body.innerHTML=`<div class="do-dp2-avatar-row"><div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div><div><div class="do-dp2-name">${esc(name)}</div>${handleDisp?`<div class="do-dp2-handle">${esc(handleDisp)}</div>`:''}<span class="do-dp2-plat-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span></div></div>${dtFmt?`<div class="do-dp2-meta">${dtFmt}</div>`:''}<div class="do-dp2-sent ${SBGS[sent]}">${SLBL[sent]}</div>${mediaHtml}${content?`<div class="do-dp2-content">${esc(content)}</div>`:''}${statsHtml}`;
     panel.classList.add('show');
   },
   close(){ const panel=document.getElementById('msDetailPanel');if(!panel)return;panel.classList.remove('show');panel.querySelectorAll('iframe').forEach(f=>{try{f.src=f.src;}catch(e){}});}
@@ -1196,6 +1352,7 @@ const MSTrendToggle = {
   _render(raw){
     const platMetaFull={doc:{label:'Online News',color:'#0284c7'},twitter:{label:'Twitter',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
     const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];
+    const keyMap={'Online News':'doc','Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
     if(this._mode==='monthly'){
       const monthMap={};raw.forEach(p=>(p.data||[]).forEach(d=>{const m=d.date.slice(0,7);if(!monthMap[m])monthMap[m]={};monthMap[m][p.key]=(monthMap[m][p.key]||0)+d.count;}));
       const months=Object.keys(monthMap).sort();const xLabels=months.map(m=>{const dt=new Date(m+'-01T00:00:00');return dt.toLocaleString('id-ID',{month:'short',year:'numeric'});});
@@ -1203,7 +1360,44 @@ const MSTrendToggle = {
       const seriesArr=platOrder.map(key=>{const meta=platMetaFull[key];const vals=months.map(m=>monthMap[m]?.[key]||0);if(!vals.some(v=>v>0))return null;return{name:meta.label,data:vals};}).filter(Boolean);
       const colorsArr=seriesArr.map(s=>{const k=Object.keys(platMetaFull).find(k=>platMetaFull[k].label===s.name);return platMetaFull[k]?.color||'#94a3b8';});
       _destroyApx('trend');const el=document.getElementById('chTrend');if(!el)return;
-      APX.trend=new ApexCharts(el,{chart:{type:'bar',height:340,fontFamily:'inherit',background:'transparent',toolbar:{show:false},stacked:true,animations:{enabled:true,easing:'linear',dynamicAnimation:{speed:1000}}},series:seriesArr,colors:colorsArr,plotOptions:{bar:{columnWidth:'60%',borderRadius:3,borderRadiusApplication:'end'}},fill:{opacity:1},stroke:{show:false},xaxis:{categories:xLabels,axisBorder:{show:false},axisTicks:{show:false},labels:{style:{fontFamily:'inherit',fontSize:'11px',fontWeight:600,colors:'#94A3B8'}}},yaxis:{labels:{formatter:v=>numK(v),style:{fontFamily:'inherit',fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},axisBorder:{show:false},axisTicks:{show:false}},grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}}},legend:{position:'bottom',horizontalAlign:'left',fontFamily:'inherit',fontSize:'11px',fontWeight:'600',labels:{colors:'#94A3B8'},markers:{width:9,height:9,radius:50},itemMargin:{horizontal:14,vertical:4}},tooltip:{shared:true,intersect:false,style:{fontFamily:'inherit',fontSize:'12px'},y:{formatter:v=>numFmt(v)+' mentions'}},dataLabels:{enabled:false}});
+      const onPointClick = (seriesIndex, cx, cy) => {
+        const sName = seriesArr[seriesIndex]?.name;
+        const k = keyMap[sName];
+        if(k) MSPanel.open(k, cx, cy);
+      };
+      APX.trend=new ApexCharts(el,{
+        chart:{
+          type:'bar', height:340, fontFamily:'inherit', background:'transparent',
+          toolbar:{show:false}, stacked:true,
+          animations:{enabled:true,easing:'linear',dynamicAnimation:{speed:1000}},
+          events:{
+            click: function(event, chartContext, config) {
+              if(config.seriesIndex >= 0 && typeof onPointClick === 'function') {
+                onPointClick(config.seriesIndex, event.clientX, event.clientY);
+              }
+            },
+            legendClick: function(chartContext, seriesIndex) {
+              if(typeof onPointClick === 'function') { onPointClick(seriesIndex, window.innerWidth - 520, 200); }
+            },
+            mouseMove: function(event, chartContext) {
+              if(chartContext?.el) chartContext.el.style.cursor = 'pointer';
+            },
+            mouseLeave: function(event, chartContext) {
+              if(chartContext?.el) chartContext.el.style.cursor = 'default';
+            }
+          }
+        },
+        series:seriesArr, colors:colorsArr,
+        plotOptions:{bar:{columnWidth:'60%',borderRadius:3,borderRadiusApplication:'end'}},
+        fill:{opacity:1}, stroke:{show:false},
+        xaxis:{categories:xLabels,axisBorder:{show:false},axisTicks:{show:false},labels:{style:{fontFamily:'inherit',fontSize:'11px',fontWeight:600,colors:'#94A3B8'}}},
+        yaxis:{labels:{formatter:v=>numK(v),style:{fontFamily:'inherit',fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},axisBorder:{show:false},axisTicks:{show:false}},
+        grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}}},
+        legend:{position:'bottom',horizontalAlign:'left',fontFamily:'inherit',fontSize:'11px',fontWeight:'600',labels:{colors:'#94A3B8'},markers:{width:9,height:9,radius:50},itemMargin:{horizontal:14,vertical:4}},
+        tooltip:{shared:true,intersect:false,style:{fontFamily:'inherit',fontSize:'12px'},y:{formatter:v=>numFmt(v)+' mentions'}},
+        dataLabels:{enabled:false},
+        states:{hover:{filter:{type:'lighten',value:0.1}},active:{filter:{type:'darken',value:0.35}}}
+      });
       APX.trend.render();
     } else { loadTrend(); }
   }
@@ -1227,12 +1421,12 @@ const MSCsvModal = {
 };
 
 /* ══════════════════════════════════════════════════════
-   EXPORT MODULE — identik dengan TikTok Most Engagement
+   EXPORT MODULE
 ══════════════════════════════════════════════════════ */
 const MSExport = (() => {
     let _toastTimer = null;
     const PID = '{{ $projectId ?? "0" }}';
-
+ 
     function _toast(msg, type='default', duration=3200) {
         const t=document.getElementById('exportToast'), m=document.getElementById('exportToastMsg'), ico=document.getElementById('exportToastIcon');
         if(!t||!m) return;
@@ -1243,21 +1437,21 @@ const MSExport = (() => {
         clearTimeout(_toastTimer);
         _toastTimer = setTimeout(()=>t.classList.remove('show'), duration);
     }
-
+ 
     function _btnState(btn, loading) {
         if(!btn) return;
         btn.disabled = loading;
         btn.classList.toggle('exporting', loading);
     }
-
+ 
     function _resizeAllCharts() {
         Object.values(MSCharts._i).forEach(c=>{try{if(!c.isDisposed())c.resize();}catch(e){}});
         if(APX.trend)  try{APX.trend.updateOptions({});}catch(e){}
         if(APX.article)try{APX.article.updateOptions({});}catch(e){}
     }
-
+ 
     function _drawPdfHeader(pdf, pW, margin, label) {
-        pdf.setFillColor(67, 97, 238);
+     pdf.setFillColor(3, 128, 71);
         pdf.rect(0, 0, pW, 11, 'F');
         pdf.setTextColor(255, 255, 255);
         pdf.setFontSize(9); pdf.setFont('helvetica','bold');
@@ -1266,28 +1460,55 @@ const MSExport = (() => {
         pdf.setFontSize(7); pdf.setFont('helvetica','normal');
         pdf.text('Generated: '+now, pW-margin, 7.5, { align:'right' });
     }
-
-    function _paginateCanvas(pdf, canvas, margin, pW, pH, label) {
-        const usableW = pW - margin*2;
-        const usableH = pH - margin*2 - 14;
-        const ratio   = usableW / canvas.width;
-        const sliceH  = usableH / ratio;
-        let srcY=0, pageNum=0;
-        while(srcY < canvas.height) {
-            if(pageNum > 0) pdf.addPage();
+ 
+    /* ── Split canvas menjadi tepat `numPages` halaman ── */
+    function _splitCanvas(pdf, canvas, margin, pW, pH, label, numPages) {
+        const usableW  = pW - margin * 2;
+        const sliceH   = Math.ceil(canvas.height / numPages);
+ 
+        for (let page = 0; page < numPages; page++) {
+            if (page > 0) pdf.addPage();
             _drawPdfHeader(pdf, pW, margin, label);
-            const srcSlice = Math.min(sliceH, canvas.height-srcY);
-            const dstH     = srcSlice * ratio;
-            const slice    = document.createElement('canvas');
-            slice.width = canvas.width; slice.height = Math.ceil(srcSlice);
-            slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice);
+ 
+            const srcY     = page * sliceH;
+            const srcSlice = Math.min(sliceH, canvas.height - srcY);
+            if (srcSlice <= 0) break;
+ 
+            const ratio = usableW / canvas.width;
+            const dstH  = srcSlice * ratio;
+ 
+            const slice = document.createElement('canvas');
+            slice.width  = canvas.width;
+            slice.height = Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(
+                canvas,
+                0, srcY, canvas.width, srcSlice,
+                0, 0,    canvas.width, srcSlice
+            );
+ 
             pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
-            pdf.setFontSize(7); pdf.setTextColor(148,163,184);
-            pdf.text(`Halaman ${pageNum+1}`, pW/2, pH-3, { align:'center' });
-            srcY += srcSlice; pageNum++;
+            pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+            pdf.text(`Halaman ${page + 1} / ${numPages}`, pW / 2, pH - 3, { align:'center' });
         }
     }
-
+ 
+    /* ── Fit canvas ke 1 halaman (scale to fit, tidak terpotong) ── */
+    function _fitCanvas(pdf, canvas, margin, pW, pH, label) {
+        _drawPdfHeader(pdf, pW, margin, label);
+ 
+        const usableW = pW - margin * 2;
+        const usableH = pH - margin * 2 - 18; // 14 header + 4 footer
+        const ratio   = Math.min(usableW / canvas.width, usableH / canvas.height);
+        const dstW    = canvas.width  * ratio;
+        const dstH    = canvas.height * ratio;
+        const x       = margin + (usableW - dstW) / 2;   // tengah horizontal
+        const y       = 14 + (usableH - dstH) / 2;       // tengah vertikal
+ 
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, dstW, dstH);
+        pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+        pdf.text('Halaman 1 / 1', pW / 2, pH - 3, { align:'center' });
+    }
+ 
     async function _captureArea(areaEl) {
         window.scrollTo({ top:0 });
         await new Promise(r => setTimeout(r, 350));
@@ -1305,7 +1526,7 @@ const MSExport = (() => {
             ignoreElements:  el => el.hasAttribute('data-html2canvas-ignore'),
         });
     }
-
+ 
     async function _captureCard(areaId) {
         const area = document.getElementById(areaId);
         if(!area) throw new Error('Area #'+areaId+' tidak ditemukan');
@@ -1321,7 +1542,7 @@ const MSExport = (() => {
             ignoreElements:  el => el.hasAttribute('data-html2canvas-ignore'),
         });
     }
-
+ 
     const _cardLabels = {
         'bar'           : 'Total Mention by Media Platform',
         'sov-mass'      : 'Share of Voice — Mass vs Social',
@@ -1332,7 +1553,7 @@ const MSExport = (() => {
         'weekday'       : 'Mentions by Weekday',
         'hour'          : 'Mentions by Hour',
     };
-
+ 
     function _filename(cardKey) {
         const slug = {
             'bar':'mention-by-platform', 'sov-mass':'sov-mass-social', 'sov-plat':'sov-by-platform',
@@ -1342,9 +1563,10 @@ const MSExport = (() => {
         const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
         return `media_stat_${slug[cardKey]||cardKey}_${PID}_${stamp}`;
     }
-
+ 
+    /* ── Export per-card: 1 halaman, fit to page ── */
     async function runCard(areaId, cardKey, type, btn) {
-        if(!window.html2canvas)      { _toast('html2canvas tidak tersedia','error'); return; }
+        if(!window.html2canvas)           { _toast('html2canvas tidak tersedia','error'); return; }
         if(type==='pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
         _btnState(btn, true);
         _toast(type==='pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
@@ -1352,17 +1574,19 @@ const MSExport = (() => {
             const canvas = await _captureCard(areaId);
             const fname  = _filename(cardKey);
             const label  = _cardLabels[cardKey] || cardKey;
-            if(type === 'image') {
+            if (type === 'image') {
                 const link = document.createElement('a');
                 link.download = fname+'.png'; link.href = canvas.toDataURL('image/png'); link.click();
                 _toast('Gambar berhasil diunduh!', 'success');
             } else {
                 const { jsPDF } = window.jspdf;
+                /* orientasi otomatis berdasarkan rasio canvas */
                 const landscape = canvas.width > canvas.height;
-                const pdf = new jsPDF({ orientation:landscape?'landscape':'portrait', unit:'mm', format:'a4' });
+                const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit:'mm', format:'a4' });
                 const pW  = pdf.internal.pageSize.getWidth();
                 const pH  = pdf.internal.pageSize.getHeight();
-                _paginateCanvas(pdf, canvas, 10, pW, pH, label);
+                /* fit seluruh card ke 1 halaman, tidak terpotong */
+                _fitCanvas(pdf, canvas, 10, pW, pH, label);
                 pdf.save(fname+'.pdf');
                 _toast('PDF berhasil diunduh!', 'success');
             }
@@ -1373,19 +1597,20 @@ const MSExport = (() => {
             _btnState(btn, false);
         }
     }
-
+ 
+    /* ── Export full page: tepat 2 halaman ── */
     async function run(type, btn) {
-        if(!window.html2canvas)      { _toast('html2canvas tidak tersedia','error'); return; }
+        if(!window.html2canvas)           { _toast('html2canvas tidak tersedia','error'); return; }
         if(type==='pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
         const btnPdf = document.getElementById('pageExportPdfBtn');
         const btnImg = document.getElementById('pageExportImgBtn');
         _btnState(btnPdf, true); _btnState(btnImg, true);
-        _toast(type==='pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar halaman…', 'default', 99999);
+        _toast(type==='pdf' ? 'Menyiapkan PDF 2 halaman…' : 'Mengambil gambar halaman…', 'default', 99999);
         try {
             const area   = document.getElementById('pageExportArea');
             const canvas = await _captureArea(area);
             const stamp  = new Date().toISOString().slice(0,10).replace(/-/g,'');
-            if(type === 'image') {
+            if (type === 'image') {
                 const link = document.createElement('a');
                 link.download = `media_statistic_${PID}_${stamp}.png`;
                 link.href = canvas.toDataURL('image/png'); link.click();
@@ -1395,9 +1620,10 @@ const MSExport = (() => {
                 const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
                 const pW  = pdf.internal.pageSize.getWidth();
                 const pH  = pdf.internal.pageSize.getHeight();
-                _paginateCanvas(pdf, canvas, 10, pW, pH, 'Media Statistic');
+                /* split tepat 2 halaman */
+                _splitCanvas(pdf, canvas, 10, pW, pH, 'Media Statistic', 2);
                 pdf.save(`media_statistic_${PID}_${stamp}.pdf`);
-                _toast('PDF berhasil diunduh!', 'success');
+                _toast('PDF 2 halaman berhasil diunduh!', 'success');
             }
         } catch(err) {
             console.error('[MSExport]', err);
@@ -1406,7 +1632,7 @@ const MSExport = (() => {
             _btnState(btnPdf, false); _btnState(btnImg, false);
         }
     }
-
+ 
     return { run, runCard };
 })();
 
@@ -1429,5 +1655,50 @@ const MSPage = {
 
 document.addEventListener('mousedown',e=>{const pp=document.getElementById('msPlatPicker');if(pp?.classList.contains('show')&&!pp.contains(e.target))pp.classList.remove('show');});
 document.addEventListener('DOMContentLoaded',()=>MSPage.init());
+/* ══ MEDIA VIEWER MODAL ══ */
+function openVidModal(type, id) {
+    const m = document.getElementById('vidViewModal');
+    const w = document.getElementById('vidViewWrap');
+    if(!m || !w || !id) return;
+    let url = '';
+    if(type === 'yt') {
+        url = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0`;
+        w.style.aspectRatio = '16/9';
+        w.style.maxWidth = '100%';
+    } else if(type === 'tiktok') {
+        url = `https://www.tiktok.com/embed/v2/${id}`;
+        w.style.aspectRatio = '9/16';
+        w.style.maxWidth = '400px';
+        w.style.margin = '0 auto';
+    }
+    w.innerHTML = `<iframe src="${url}" style="width:100%;height:100%;border:none;border-radius:12px;display:block;" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+    
+    m.style.display = 'flex';
+    requestAnimationFrame(() => {
+        m.style.opacity = '1';
+        m.querySelector('.video-modal-content').style.transform = 'scale(1)';
+    });
+}
+function closeVidModal() {
+    const m = document.getElementById('vidViewModal');
+    const w = document.getElementById('vidViewWrap');
+    if(!m) return;
+    m.style.opacity = '0';
+    m.querySelector('.video-modal-content').style.transform = 'scale(0.95)';
+    setTimeout(() => {
+        m.style.display = 'none';
+        if(w) w.innerHTML = '';
+    }, 200);
+}
+
+document.addEventListener('keydown', e => { 
+    if(e.key==='Escape') {
+        const vm = document.getElementById('vidViewModal');
+        if(vm && vm.style.display !== 'none') {
+            closeVidModal();
+        }
+    }
+});
+
 </script>
 @endsection
