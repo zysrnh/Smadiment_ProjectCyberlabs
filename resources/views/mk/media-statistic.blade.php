@@ -986,8 +986,8 @@ function makeEDoughnut(domId,labels,values,colors,onClickFns,subtitles){
     legend:{show:false},
     series:[{type:'pie',radius:['38%','54%'],center:['50%','52%'],avoidLabelOverlap:true,minAngle:5,itemStyle:{borderRadius:6},
       label:{show:true,alignTo:'none',lineHeight:17,fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#374151',
-        formatter:params=>{const name=params.name.length>11?params.name.slice(0,10)+'…':params.name;const sub=params.data.subtitle?(params.data.subtitle.length>11?params.data.subtitle.slice(0,10)+'…':params.data.subtitle):'';return sub?`{name|${name}}\n{sub|${sub}}\n{eng|${numK(params.value)}}` : `{name|${name}}\n{eng|${numK(params.value)}}`;},
-        rich:{name:{fontWeight:'700',fontSize:12,color:'#1a202c',lineHeight:19},sub:{fontWeight:'400',fontSize:10.5,color:'#64748b',lineHeight:16},eng:{fontWeight:'700',fontSize:11,color:'#4361EE',lineHeight:16,backgroundColor:'#eff2fe',borderRadius:4,padding:[1,5]}}},
+    formatter:params=>{const pct2=total>0?Math.round((params.value/total)*100)+'%':'0%';const name=params.name.length>11?params.name.slice(0,10)+'…':params.name;const sub=params.data.subtitle?(params.data.subtitle.length>11?params.data.subtitle.slice(0,10)+'…':params.data.subtitle):'';return sub?`{name|${name}}\n{sub|${sub}}\n{eng|${numK(params.value)}} {pct|${pct2}}`:`{name|${name}}\n{eng|${numK(params.value)}} {pct|${pct2}}`;},
+        rich:{name:{fontWeight:'700',fontSize:12,color:'#1a202c',lineHeight:19},sub:{fontWeight:'400',fontSize:10.5,color:'#64748b',lineHeight:16},eng:{fontWeight:'700',fontSize:11,color:'#4361EE',lineHeight:16,backgroundColor:'#eff2fe',borderRadius:4,padding:[1,5]},pct:{fontWeight:'600',fontSize:10,color:'#64748b',lineHeight:16}}},
       labelLine:{show:true,length:12,length2:16,smooth:.4,minTurnAngle:130,lineStyle:{color:'#c4cdd8',width:1.2,type:'solid'},showAbove:false},
       emphasis:{scale:true,scaleSize:5,itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,.12)'}},data:seriesData}],
     graphic:[

@@ -731,7 +731,8 @@
                     <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <div class="d-flex align-items-center gap-2">
                             <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chat-dots f-18 text-primary"></i></div>
-                            <h6 class="mb-0">Mention</h6>
+                            <h6 class="mb-0">Share of Voice by Media Platform
+</h6>
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <span class="badge bg-light-secondary text-muted rounded-pill">All Media</span>
@@ -774,7 +775,7 @@
                 </div>
             </div>
 
-            {{-- Share of Voice — sama layout dengan Mention --}}
+            {{-- Share of Voice --}}
             <div class="card" data-lazy="sov" id="do-card-sov" style="animation:fadeUp .38s ease-out .27s both;">
                 <div id="card-export-sov">
                     <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -793,21 +794,19 @@
                             </div>
                         </div>
                     </div>
-                    {{-- Skeleton --}}
                     <div id="sovSkel" style="padding:16px;">
                         <div class="sk-block" style="height:200px;border-radius:6px;"></div>
                     </div>
-                    {{-- Body: chart kiri + breakdown kanan (identik dengan Mention) --}}
                     <div class="do-sov-body" id="sovBody" style="display:none;">
                         <div class="do-sov-chart">
                             <div id="chSovPie"></div>
                         </div>
-                        <div class="do-sov-stats" id="sovStats"></div>
+                        <!-- Breakdown SOV stats dihilangkan agar % kecil lebih terlihat -->
                     </div>
                 </div>
             </div>
 
-            {{-- Sentiment Timeline — full width --}}
+            {{-- Sentiment Timeline --}}
             <div class="card do-col-full" data-lazy="sentiment-timeline" id="do-card-sentiment" style="animation:fadeUp .38s ease-out .30s both;">
                 <div id="card-export-sentiment">
                     <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -840,7 +839,7 @@
                 </div>
             </div>
 
-            {{-- Buzzer Map — full width --}}
+            {{-- Buzzer Map --}}
             <div class="card do-col-full" data-lazy="buzzer-map" id="do-card-map" style="animation:fadeUp .38s ease-out .33s both;">
                 <div id="card-export-map">
                     <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -986,17 +985,20 @@
         },
     };
 
-    const $     = id => document.getElementById(id);
-    const numFmt = n => parseInt(n||0).toLocaleString('id-ID');
-    const numK   = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':String(n); };
-    const esc    = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const $      = id => document.getElementById(id);
+const numFmt = n => {
+  const num = parseInt(n||0);
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+};
+const numK = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1).replace('.',',')+' M':n>=1000?(n/1000).toFixed(1).replace('.',',')+' k':String(n); };
+    const esc    = s  => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     const emptyHtml = m => `<div class="do-empty"><i class="ph ph-warning-circle"></i><span class="do-empty-txt">${m||'Tidak ada data'}</span></div>`;
 
-    const _mediaNorm   = s => (s||'').toLowerCase().replace(/[\s()]/g,'');
-    const _keyMapNorm  = Object.fromEntries(Object.entries(DOCfg.mediaKeyMap).map(([k,v])=>[_mediaNorm(k),v]));
-    const _colorMapNorm= Object.fromEntries(Object.entries(DOCfg.colorMap).map(([k,v])=>[_mediaNorm(k),v]));
-    const _resolveKey  = name => DOCfg.mediaKeyMap[name]||_keyMapNorm[_mediaNorm(name)]||'';
-    const _resolveColor= name => DOCfg.colorMap[name]||_colorMapNorm[_mediaNorm(name)]||'';
+    const _mediaNorm    = s => (s||'').toLowerCase().replace(/[\s()]/g,'');
+    const _keyMapNorm   = Object.fromEntries(Object.entries(DOCfg.mediaKeyMap).map(([k,v])=>[_mediaNorm(k),v]));
+    const _colorMapNorm = Object.fromEntries(Object.entries(DOCfg.colorMap).map(([k,v])=>[_mediaNorm(k),v]));
+    const _resolveKey   = name => DOCfg.mediaKeyMap[name]||_keyMapNorm[_mediaNorm(name)]||'';
+    const _resolveColor = name => DOCfg.colorMap[name]||_colorMapNorm[_mediaNorm(name)]||'';
 
     /* ══ ECharts registry ══ */
     const DOCharts = {
@@ -1055,7 +1057,7 @@
         const _normSent = item => SENT_NORM[String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim()]||'neu';
         let _allItems=[], _filtered=[], _curSent='all', _curPlat=null, _curPlatForSent='all';
         let _curPage=0, _hasMore=false, _loadingMore=false;
-        let _overrideSd = null, _overrideEd = null; // Stored dates for chart click
+        let _overrideSd=null, _overrideEd=null;
 
         function showPlatPicker(x,y,sent) {
             _curPlatForSent=sent||'all';
@@ -1068,18 +1070,15 @@
         }
         function openPlatform(platform,sentiment){ $('doPlatPicker')?.classList.remove('show'); open(platform,sentiment||_curPlatForSent||'all'); }
 
-        async function open(platform, sentiment, sdOverride = null, edOverride = null) {
+        async function open(platform, sentiment, sdOverride=null, edOverride=null) {
             _curPlat=platform; _curSent=sentiment||'all'; _curPage=0; _hasMore=false; _allItems=[]; _filtered=[];
-            _overrideSd = sdOverride; _overrideEd = edOverride;
-            
+            _overrideSd=sdOverride; _overrideEd=edOverride;
             const meta=DOCfg.platMeta[platform]||{label:platform,color:DOCfg.primary};
             DODetail.close();
             $('doPanelDot').style.background=meta.color;
             $('doPanelTitle').textContent=meta.label;
-            
-            const titleDate = sdOverride ? (sdOverride === edOverride ? sdOverride : sdOverride + ' – ' + edOverride) : (DOCfg.sd + ' – ' + DOCfg.ed);
+            const titleDate=sdOverride?(sdOverride===edOverride?sdOverride:sdOverride+' – '+edOverride):(DOCfg.sd+' – '+DOCfg.ed);
             $('doPanelMeta').textContent=titleDate;
-
             document.querySelectorAll('.do-panel-tab').forEach(t=>t.classList.toggle('active',t.dataset.s===_curSent));
             const ri=$('doPanelRefreshIcon');
             if(ri) ri.style.cssText='animation:spin .7s linear infinite;display:inline-block;';
@@ -1093,7 +1092,7 @@
             finally{ if(ri) ri.style.cssText=''; }
         }
 
-        async function refresh(){ if(_curPlat) open(_curPlat, _curSent, _overrideSd, _overrideEd); }
+        async function refresh(){ if(_curPlat) open(_curPlat,_curSent,_overrideSd,_overrideEd); }
 
         async function loadMore(){
             if(_loadingMore||!_hasMore) return; _loadingMore=true;
@@ -1138,7 +1137,7 @@
             return _fetchOnePage(platform,start,size);
         }
         async function _fetchOnePage(platform,start,size){
-            const sd = _overrideSd || DOCfg.sd, ed = _overrideEd || DOCfg.ed;
+            const sd=_overrideSd||DOCfg.sd, ed=_overrideEd||DOCfg.ed;
             const fetchRows=size+1, q=`project_id=${DOCfg.pid}&start_date=${sd}&end_date=${ed}&rows=${fetchRows}&start=${start}`;
             if(platform==='youtube'){ for(const sub of['postbylike','postbyview','postbydate','postbycomment',null]){ try{ const url=sub?`/mk/api/news/ytb-top-status?${q}&sub=${sub}`:`/mk/api/news/ytb-top-status?${q}`; const r=await fetch(url); if(!r.ok) continue; const raw=_extractItems(await r.json()); if(raw.length>0) return{items:raw.slice(0,size).map(i=>({...i,_platform:'youtube'})),hasMore:raw.length>size}; }catch(e){continue;} } return{items:[],hasMore:false}; }
             if(platform==='instagram'){ for(const sub of['postbylike','postbycomment','postbydate',null]){ try{ const url=sub?`/mk/api/news/ig-top-status?${q}&sub=${sub}`:`/mk/api/news/ig-top-status?${q}`; const r=await fetch(url); if(!r.ok) continue; const raw=_extractItems(await r.json()); if(raw.length>0) return{items:raw.slice(0,size).map(i=>({...i,_platform:'instagram'})),hasMore:raw.length>size}; }catch(e){continue;} } return{items:[],hasMore:false}; }
@@ -1353,11 +1352,36 @@
                         tooltip:{...EC_TT,trigger:'item',confine:true,formatter:p=>{const pct=totalAll>0?(p.value/totalAll*100):0;return`<div style="font-weight:700;font-size:13px;margin-bottom:5px;">${p.name}</div><div style="display:flex;justify-content:space-between;gap:20px;margin-top:4px;"><span style="color:#94a3b8;">Mentions</span><span style="font-weight:700;">${numFmt(p.value)}</span></div><div style="display:flex;justify-content:space-between;gap:20px;margin-top:3px;"><span style="color:#94a3b8;">Share</span><span style="font-weight:700;color:#34d399;">${pct<1&&pct>0?'<1':pct.toFixed(1)}%</span></div>`;}},
                         legend:{show:false},
                         series:[{
-                            type:'pie',radius:['38%','58%'],center:['50%','50%'],avoidLabelOverlap:true,minAngle:2,
+                            type:'pie',radius:['38%','58%'],center:['50%','50%'],
+                            avoidLabelOverlap:true,minAngle:6,
                             itemStyle:{borderColor:'#fff',borderWidth:3,borderRadius:5},
-                            label:{show:true,alignTo:'edge',edgeDistance:10,lineHeight:16,fontFamily:'inherit',fontSize:11,formatter:p=>{const pc=totalAll>0?(p.value/totalAll*100):0;if(pc<3)return'';return`{name|${p.name.replace('Mass ','').replace('Social ','Soc.')}}\n{pct|${pc.toFixed(1)}%}`;},rich:{name:{fontWeight:'700',fontSize:10,color:'#1a202c',lineHeight:16},pct:{fontWeight:'700',fontSize:10,color:primary,lineHeight:14,backgroundColor:'#edf7f3',borderRadius:4,padding:[1,4]}}},
-                            labelLine:{show:true,length:8,length2:10,smooth:.4,lineStyle:{color:'#c4cdd8',width:1.2}},
-                            emphasis:{scale:true,scaleSize:4,itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,.12)'},label:{show:true,fontFamily:'inherit',formatter:p=>{const pc=totalAll>0?p.value/totalAll*100:0;return`{n|${p.name}}\n{v|${numK(p.value)}}\n{p|${pc.toFixed(1)}%}`;},rich:{n:{fontSize:10,color:'#94A3B8',fontWeight:'600',lineHeight:14},v:{fontSize:15,color:'#0F172A',fontWeight:'700',lineHeight:20},p:{fontSize:10,color:primary,fontWeight:'800',lineHeight:14}}}},
+                            label:{
+                                show:true,alignTo:'edge',edgeDistance:8,lineHeight:16,
+                                fontFamily:'inherit',fontSize:11,
+                                formatter:p=>{
+                                    const pc=totalAll>0?(p.value/totalAll*100):0;
+                                    if(pc<1) return'';
+                                    const shortName=p.name.replace('Mass ','').replace('Social ','Soc.');
+                                    return`{name|${shortName}}\n{pct|${pc.toFixed(1)}%}`;
+                                },
+                                rich:{
+                                    name:{fontWeight:'700',fontSize:10,color:'#1a202c',lineHeight:16},
+                                    pct:{fontWeight:'700',fontSize:10,color:primary,lineHeight:14,backgroundColor:'#edf7f3',borderRadius:4,padding:[1,4]}
+                                }
+                            },
+                            labelLine:{show:true,length:8,length2:10,smooth:.4,showAbove:true,lineStyle:{color:'#c4cdd8',width:1.2}},
+                            emphasis:{
+                                scale:true,scaleSize:6,
+                                itemStyle:{shadowBlur:14,shadowColor:'rgba(0,0,0,.18)'},
+                                label:{show:true,fontFamily:'inherit',formatter:p=>{
+                                    const pc=totalAll>0?p.value/totalAll*100:0;
+                                    return`{n|${p.name}}\n{v|${numK(p.value)}}\n{p|${pc.toFixed(1)}%}`;
+                                },rich:{
+                                    n:{fontSize:10,color:'#94A3B8',fontWeight:'600',lineHeight:14},
+                                    v:{fontSize:15,color:'#0F172A',fontWeight:'700',lineHeight:20},
+                                    p:{fontSize:10,color:primary,fontWeight:'800',lineHeight:14}
+                                }}
+                            },
                             data:labels.map((lb,i)=>({name:lb,value:counts[i],itemStyle:{color:colors[i]}}))
                         }],graphic:[]
                     },true);
@@ -1369,7 +1393,7 @@
         },
 
         /* ══════════════════════════════════════════
-           loadSov — identik layout dengan Mention
+           loadSov
         ══════════════════════════════════════════ */
         async loadSov(){
             const r=await fetch(`/mk/api/sentiment-by-media?project_id=${DOCfg.pid}&start_date=${DOCfg.sd}&end_date=${DOCfg.ed}`);
@@ -1399,7 +1423,7 @@
                     const pct=totalAll>0?(cnt/totalAll*100).toFixed(1)+'%':'';
                     const color=colors[i];
                     const key=_resolveKey(m.media)||'all';
-                    h+=`<div class="do-mstat-row" onclick="DOPanel.open('${key}','all')">
+                    h+=`<div class="do-mstat-row" onclick="DOPanel.open('${key}','all')" title="${esc(m.media)}: ${numFmt(cnt)} mentions (${pct})">
                         <span class="do-mstat-name">
                             <span style="background:${color};"></span>${esc(m.media)}
                         </span>
@@ -1417,7 +1441,7 @@
                 statsEl.innerHTML=h;
             }
 
-            /* ── Donut chart (kiri) — ukuran identik Mention ── */
+            /* ── Donut chart (kiri) ── */
             const chart=DOCharts.make('chSovPie'); if(!chart) return;
             chart.setOption({
                 animation:true,animationDuration:800,animationEasing:'cubicOut',backgroundColor:'transparent',
@@ -1430,26 +1454,33 @@
                 legend:{show:false},
                 series:[{
                     type:'pie',radius:['38%','58%'],center:['50%','50%'],
-                    avoidLabelOverlap:true,minAngle:2,
+                    avoidLabelOverlap:true,
+                    minAngle:15,                          // ← segment kecil tetap kelihatan
                     itemStyle:{borderColor:'#fff',borderWidth:3,borderRadius:5},
                     label:{
                         show:true,alignTo:'edge',edgeDistance:8,lineHeight:16,
                         fontFamily:'inherit',fontSize:11,
-                        formatter:p=>{
-                            const pc=totalAll>0?(p.value/totalAll*100):0;
-                            if(pc<2) return'';
-                            const shortName=p.name.replace('X (Twitter)','X').replace('Online News','News').replace('Mass Media','News');
-                            return`{name|${shortName}}\n{pct|${pc.toFixed(1)}%}`;
-                        },
+                       formatter:p=>{
+    const pc=totalAll>0?(p.value/totalAll*100):0;
+    // Hapus baris: if(pc<1) return'';
+    const shortName=p.name.replace('X (Twitter)','X').replace('Online News','News').replace('Mass Media','News');
+    return`{name|${shortName}}\n{pct|${pc.toFixed(1)}%}`;
+},
                         rich:{
                             name:{fontWeight:'700',fontSize:10,color:'#1a202c',lineHeight:16},
                             pct:{fontWeight:'700',fontSize:10,color:primary,lineHeight:14,backgroundColor:'#edf7f3',borderRadius:4,padding:[1,4]}
                         }
                     },
-                    labelLine:{show:true,length:6,length2:8,smooth:.4,lineStyle:{color:'#c4cdd8',width:1.2}},
+                    labelLine:{
+                        show:true,length:6,length2:8,smooth:.4,
+                            minTurnAngle:5,   // ← tambahkan ini
+
+                        showAbove:true,                  // ← label line di atas segment kecil
+                        lineStyle:{color:'#c4cdd8',width:1.2}
+                    },
                     emphasis:{
-                        scale:true,scaleSize:4,
-                        itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,.12)'},
+                        scale:true,scaleSize:8,          // ← hover lebih dramatis untuk segment kecil
+                        itemStyle:{shadowBlur:14,shadowColor:'rgba(0,0,0,.18)'},
                         label:{show:true,fontFamily:'inherit',formatter:p=>{
                             const pc=totalAll>0?p.value/totalAll*100:0;
                             return`{n|${p.name}}\n{v|${numK(p.value)}}\n{p|${pc.toFixed(1)}%}`;
@@ -1470,212 +1501,111 @@
 
         /* ══════════════════════════════════════════
            loadSentLine
-           • xaxis.type = 'datetime' → ApexCharts plot tepat per hari
-           • Series data format: [[timestamp_ms, value], ...]
-           • Label format: d/M (tidak ada skip/group otomatis)
-           • Datalabel: tampil jika ≤ 31 hari
         ══════════════════════════════════════════ */
-async loadSentLine(){
-    const skEl = $('skSentiment');
-    try {
-        const r = await fetch(
-            `/mk/api/sentiment-timeline?project_id=${DOCfg.pid}&start_date=${DOCfg.sd}&end_date=${DOCfg.ed}`
-        );
-        const d = await r.json();
- 
-        const dates    = d.dates             || [];
-        const datesEnd = d.dates_end         || dates;
-        const valTotal = d.values            || [];
-        const valPos   = d.sentiment?.positive || [];
-        const valNeu   = d.sentiment?.neutral  || [];
-        const valNeg   = d.sentiment?.negative || [];
- 
-        const mainEl = $('chSentiment');
-        if (!mainEl) return;
- 
-        /* ── Kosong ── */
-        if (!dates.length || valTotal.every(v => !v)) {
-            if (skEl) skEl.style.display = 'none';
-            mainEl.style.display = 'block';
-            mainEl.innerHTML = `<div class="chart-empty"><i class="ph ph-chart-line-up"></i><span>Tidak ada data sentimen untuk periode ini</span></div>`;
-            return;
-        }
- 
-        /* ── Destroy lama ── */
-        if (this._apexSentiment) {
-            try { this._apexSentiment.destroy(); } catch (e) {}
-            this._apexSentiment = null;
-        }
- 
-        const hintEl = $('sntHint');
-        const n = dates.length;
- 
-        /* ════════════════════════════════════════════
-           STRETCH / SCROLL SETUP
-           - Jika n > 20: bungkus mainEl dengan scroll wrapper
-           - Lebar chart = max(container, n * 45px)
-        ════════════════════════════════════════════ */
-        const PX_PER_POINT = 45;
-        const MIN_WIDTH    = 600;
-        const containerW   = mainEl.parentElement?.offsetWidth || 800;
-        const needsScroll  = n > 20;
-        const chartWidth   = needsScroll
-            ? Math.max(MIN_WIDTH, n * PX_PER_POINT)
-            : containerW;
- 
-        /* Bersihkan wrapper lama jika ada */
-        const oldWrap = $('sntScrollWrap');
-        if (oldWrap) oldWrap.replaceWith(mainEl);
- 
-        if (needsScroll) {
-            /* Buat scroll wrapper */
-            const wrap = document.createElement('div');
-            wrap.id = 'sntScrollWrap';
-            wrap.style.cssText = [
-                'overflow-x: auto',
-                'overflow-y: hidden',
-                '-webkit-overflow-scrolling: touch',
-                'width: 100%',
-                /* custom scrollbar tipis */
-                'scrollbar-width: thin',
-                'scrollbar-color: #CBD5E1 transparent',
-            ].join(';');
-            mainEl.parentElement.insertBefore(wrap, mainEl);
-            wrap.appendChild(mainEl);
-            mainEl.style.width = chartWidth + 'px';
- 
-            /* Hint scroll */
-            if (hintEl) hintEl.style.display = 'flex';
-        } else {
-            mainEl.style.width = '';
-            if (hintEl) hintEl.style.display = 'none';
-        }
- 
-        mainEl.style.display = 'block';
-        mainEl.innerHTML = '';
- 
-        /* ── Label kategori d/M ── */
-        const labels = dates.map(dt => {
+        async loadSentLine(){
+            const skEl=$('skSentiment');
             try {
-                const d2 = new Date(dt + 'T00:00:00');
-                return `${d2.getDate()}/${d2.getMonth() + 1}`;
-            } catch (e) { return dt; }
-        });
- 
-        const toNum = arr => arr.map(v => Number(v || 0));
- 
-        const seriesArr = [
-            { name: 'Total',    data: toNum(valTotal) },
-            { name: 'Positive', data: toNum(valPos)   },
-            { name: 'Neutral',  data: toNum(valNeu)   },
-            { name: 'Negative', data: toNum(valNeg)   },
-        ];
- 
-        /* Marker & label: selalu tampil karena sudah ada ruang */
-        const showLabels = true;
-        const markerSize = 5;
- 
-        const opts = {
-            chart: {
-                type: 'area',
-                height: 350,
-                width: chartWidth,
-                animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 1000 } },
-                toolbar: { show: false },
-                fontFamily: 'inherit',
-                events: {
-                    click: (_e, _ctx, cfg) => {
-                        let sd = null, ed = null;
-                        if (cfg && typeof cfg.dataPointIndex !== 'undefined' && cfg.dataPointIndex >= 0) {
-                            sd = dates[cfg.dataPointIndex];
-                            ed = typeof datesEnd !== 'undefined' ? datesEnd[cfg.dataPointIndex] : sd;
-                        }
-                        if (cfg && cfg.seriesIndex >= 0) {
-                            const sentMap = { Total:'all', Positive:'pos', Neutral:'neu', Negative:'neg' };
-                            DOPanel.open('all', sentMap[seriesArr[cfg.seriesIndex]?.name] || 'all', sd, ed);
-                        } else {
-                            DOPanel.open('all', 'all', sd, ed);
-                        }
+                const r=await fetch(`/mk/api/sentiment-timeline?project_id=${DOCfg.pid}&start_date=${DOCfg.sd}&end_date=${DOCfg.ed}`);
+                const d=await r.json();
+                const dates    = d.dates             || [];
+                const datesEnd = d.dates_end         || dates;
+                const valTotal = d.values            || [];
+                const valPos   = d.sentiment?.positive || [];
+                const valNeu   = d.sentiment?.neutral  || [];
+                const valNeg   = d.sentiment?.negative || [];
+                const mainEl=$('chSentiment');
+                if(!mainEl) return;
+                if(!dates.length||valTotal.every(v=>!v)){
+                    if(skEl) skEl.style.display='none';
+                    mainEl.style.display='block';
+                    mainEl.innerHTML=`<div class="chart-empty"><i class="ph ph-chart-line-up"></i><span>Tidak ada data sentimen untuk periode ini</span></div>`;
+                    return;
+                }
+                if(this._apexSentiment){ try{this._apexSentiment.destroy();}catch(e){} this._apexSentiment=null; }
+                const hintEl=$('sntHint'), n=dates.length;
+                const PX_PER_POINT=45, MIN_WIDTH=600;
+                const containerW=mainEl.parentElement?.offsetWidth||800;
+                const needsScroll=n>20;
+                const chartWidth=needsScroll?Math.max(MIN_WIDTH,n*PX_PER_POINT):containerW;
+                const oldWrap=$('sntScrollWrap');
+                if(oldWrap) oldWrap.replaceWith(mainEl);
+                if(needsScroll){
+                    const wrap=document.createElement('div');
+                    wrap.id='sntScrollWrap';
+                    wrap.style.cssText='overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;width:100%;scrollbar-width:thin;scrollbar-color:#CBD5E1 transparent;';
+                    mainEl.parentElement.insertBefore(wrap,mainEl);
+                    wrap.appendChild(mainEl);
+                    mainEl.style.width=chartWidth+'px';
+                    if(hintEl) hintEl.style.display='flex';
+                } else {
+                    mainEl.style.width='';
+                    if(hintEl) hintEl.style.display='none';
+                }
+                mainEl.style.display='block';
+                mainEl.innerHTML='';
+                const labels=dates.map(dt=>{ try{ const d2=new Date(dt+'T00:00:00'); return`${d2.getDate()}/${d2.getMonth()+1}`; }catch(e){return dt;} });
+                const toNum=arr=>arr.map(v=>Number(v||0));
+                const seriesArr=[
+                    {name:'Total',    data:toNum(valTotal)},
+                    {name:'Positive', data:toNum(valPos)  },
+                    {name:'Neutral',  data:toNum(valNeu)  },
+                    {name:'Negative', data:toNum(valNeg)  },
+                ];
+                const opts={
+                    chart:{
+                        type:'area',height:350,width:chartWidth,
+                        animations:{enabled:true,easing:'linear',dynamicAnimation:{speed:1000}},
+                        toolbar:{show:false},fontFamily:'inherit',
+                        events:{
+                            click:(_e,_ctx,cfg)=>{
+                                let sd=null,ed=null;
+                                if(cfg&&typeof cfg.dataPointIndex!=='undefined'&&cfg.dataPointIndex>=0){
+                                    sd=dates[cfg.dataPointIndex];
+                                    ed=datesEnd[cfg.dataPointIndex]||sd;
+                                }
+                                if(cfg&&cfg.seriesIndex>=0){
+                                    const sentMap={Total:'all',Positive:'pos',Neutral:'neu',Negative:'neg'};
+                                    DOPanel.open('all',sentMap[seriesArr[cfg.seriesIndex]?.name]||'all',sd,ed);
+                                } else {
+                                    DOPanel.open('all','all',sd,ed);
+                                }
+                            },
+                            mounted:()=>{ if(skEl){skEl.style.display='none';setTimeout(()=>{try{skEl.remove();}catch(e){}},260);} },
+                        },
                     },
-                    mounted: () => {
-                        if (skEl) {
-                            skEl.style.display = 'none';
-                            setTimeout(() => { try { skEl.remove(); } catch (e) {} }, 260);
-                        }
+                    series:seriesArr,
+                    xaxis:{
+                        categories:labels,
+                        labels:{rotate:n>20?-45:0,style:{colors:'#94A3B8',fontSize:'11px',fontFamily:'inherit'}},
+                        axisBorder:{show:false},axisTicks:{show:false}
                     },
-                },
-            },
-            series: seriesArr,
-            xaxis: {
-                categories: labels,
-                labels: {
-                    rotate: n > 20 ? -45 : 0,
-                    style: { colors: '#94A3B8', fontSize: '11px', fontFamily: 'inherit' }
-                },
-                axisBorder: { show: false },
-                axisTicks: { show: false }
-            },
-            yaxis: {
-                labels: {
-                    formatter: v => numFmt(v),
-                    style: { colors: '#94A3B8', fontSize: '10px', fontFamily: 'inherit' }
-                },
-                axisBorder: { show: false },
-                axisTicks: { show: false }
-            },
-            colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
-            fill: { opacity: 0.3 },
-            stroke: { curve: 'smooth', width: 2.5 },
-            markers: {
-                size: 5,
-                strokeWidth: 2,
-                strokeColors: '#fff',
-                hover: { size: 7 }
-            },
-            dataLabels: {
-                enabled: true,
-                formatter: v => v > 0 ? numFmt(v) : '',
-                style: {
-                    fontSize: '10px',
-                    fontFamily: 'inherit',
-                    fontWeight: '700'
-                },
-                background: {
-                    enabled: true,
-                    foreColor: '#fff',
-                    borderRadius: 3,
-                    borderWidth: 0,
-                    padding: 3,
-                    opacity: 0.92,
-                    dropShadow: { enabled: true, top: 1, left: 0, blur: 2, color: '#000', opacity: 0.10 }
-                },
-                offsetY: -6
-            },
-            legend: {
-                position: 'bottom',
-                horizontalAlign: 'left',
-                labels: { colors: '#94A3B8' }
-            },
-            tooltip: {
-                shared: false,
-                intersect: false,
-                y: { formatter: v => v ? numFmt(v) + ' mentions' : '0 mentions' }
+                    yaxis:{
+                        labels:{formatter:v=>numFmt(v),style:{colors:'#94A3B8',fontSize:'10px',fontFamily:'inherit'}},
+                        axisBorder:{show:false},axisTicks:{show:false}
+                    },
+                    colors:['#4680ff','#10B981','#94A3B8','#EF4444'],
+                    fill:{opacity:0.3},
+                    stroke:{curve:'smooth',width:2.5},
+                    markers:{size:5,strokeWidth:2,strokeColors:'#fff',hover:{size:7}},
+                    dataLabels:{
+                        enabled:true,
+                        formatter:v=>v>0?numFmt(v):'',
+                        style:{fontSize:'10px',fontFamily:'inherit',fontWeight:'700'},
+                        background:{enabled:true,foreColor:'#fff',borderRadius:3,borderWidth:0,padding:3,opacity:0.92,dropShadow:{enabled:true,top:1,left:0,blur:2,color:'#000',opacity:0.10}},
+                        offsetY:-6
+                    },
+                    legend:{position:'bottom',horizontalAlign:'left',labels:{colors:'#94A3B8'}},
+                    tooltip:{shared:false,y:{formatter:v=>numFmt(v)+' mentions'}}
+                };
+                this._apexSentiment=new ApexCharts(mainEl,opts);
+                this._apexSentiment.render();
+            } catch(err){
+                console.error('[loadSentLine]',err);
+                if(skEl) skEl.style.display='none';
+                const el=$('chSentiment');
+                if(el){ el.style.display='block'; el.innerHTML=`<div class="chart-empty"><i class="ph ph-warning-circle"></i><span>Gagal memuat chart: ${esc(err.message)}</span></div>`; }
             }
-        };
- 
-        this._apexSentiment = new ApexCharts(mainEl, opts);
-        this._apexSentiment.render();
- 
-    } catch (err) {
-        console.error('[loadSentLine]', err);
-        if (skEl) skEl.style.display = 'none';
-        const el = $('chSentiment');
-        if (el) {
-            el.style.display = 'block';
-            el.innerHTML = `<div class="chart-empty"><i class="ph ph-warning-circle"></i><span>Gagal memuat chart: ${esc(err.message)}</span></div>`;
-        }
-    }
-},
+        },
 
         async loadMap(){
             const r=await fetch(`/mk/api/geo-users?project_id=${DOCfg.pid}&start_date=${DOCfg.sd}&end_date=${DOCfg.ed}`); const d=await r.json();
@@ -1738,15 +1668,12 @@ async loadSentLine(){
             _toastTimer=setTimeout(()=>t.classList.remove('show'),duration);
         }
         function _btnState(btn,loading){ if(!btn) return; btn.disabled=loading; btn.classList.toggle('exporting',loading); }
-
         function _freeze(){ if(document.getElementById('__do_freeze')) return; const s=document.createElement('style'); s.id='__do_freeze'; s.textContent='*{animation:none!important;transition:none!important;animation-play-state:paused!important;}'; document.head.appendChild(s); }
         function _unfreeze(){ document.getElementById('__do_freeze')?.remove(); }
-
         function _preSnapshot(){
             _ecSnapshots={};
             Object.entries(DOCharts._inst||{}).forEach(([id,inst])=>{ if(!inst||inst.isDisposed?.()) return; try{ _ecSnapshots[id]=inst.getDataURL({type:'png',pixelRatio:window.devicePixelRatio||2,backgroundColor:'#ffffff'}); }catch(e){} });
         }
-
         function _onClone(clonedDoc){
             clonedDoc.querySelectorAll('.do-panel-overlay,.do-panel,.do-detail-panel,.do-plat-picker,.do-modal-overlay,.spin-ring,.spinner-state,.snt-skel,.sk-block,.export-toast,.chart-loading,[data-html2canvas-ignore]').forEach(el=>{ el.style.cssText+='display:none!important;visibility:hidden!important;opacity:0!important;height:0!important;overflow:hidden!important;'; });
             clonedDoc.querySelectorAll('.do-body-scroll').forEach(el=>{ el.style.maxHeight='none'; el.style.overflow='visible'; el.style.height='auto'; });
@@ -1757,12 +1684,10 @@ async loadSentLine(){
             clonedDoc.querySelectorAll('#mentionSkelWrap,#sovSkel,#skSentiment,#mapSkel').forEach(el=>{ el.style.display='none'; });
             ['mentionBody','sovBody','chSentiment'].forEach(id=>{ const el=clonedDoc.getElementById(id); if(el) el.style.display=el.id==='mentionBody'||el.id==='sovBody'?'flex':'block'; });
         }
-
         async function _doCapture(el,bg){
             const h=el.offsetHeight||el.scrollHeight;
             return html2canvas(el,{scale:2,useCORS:true,allowTaint:true,backgroundColor:bg||'#f1f5f9',logging:false,removeContainer:true,imageTimeout:0,onclone:d=>_onClone(d),ignoreElements:e=>e.hasAttribute('data-html2canvas-ignore'),x:0,y:0,width:el.offsetWidth,height:h});
         }
-
         function _drawHeader(pdf,pW,pH,label,page,total){
             pdf.setFillColor(3,128,71); pdf.rect(0,0,pW,11,'F');
             pdf.setTextColor(255,255,255); pdf.setFontSize(9); pdf.setFont('helvetica','bold');

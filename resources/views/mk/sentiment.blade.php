@@ -1582,9 +1582,7 @@
         let dtFmt = ''; if (date) { try { dtFmt = new Date(date).toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { dtFmt = date.split('T')[0]; } }
         let mediaHtml = '';
         if (platform === 'yt') { 
-            let ytId = ((url||'').match(/[?&]v=([a-zA-Z0-9_-]{11})/)||
-                        (url||'').match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)||
-                        (url||'').match(/shorts\/([a-zA-Z0-9_-]{11})/)||[])[1];
+            let ytId = ''; if(url){ const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/); if(m) ytId = m[1]; }
             if(!ytId && item.video_id) ytId = item.video_id;
             if(!ytId && item.id) { const strId = String(item.id); if(strId.length === 11) ytId = strId; }
             if (ytId) mediaHtml = `<div class="sntdp-media-wrap"><iframe style="width:100%;height:210px;border:none;display:block;border-radius:12px;" src="https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1" allowfullscreen></iframe></div>`; 
