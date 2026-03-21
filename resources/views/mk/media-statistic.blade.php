@@ -998,7 +998,7 @@ function makeEDoughnut(domId,labels,values,colors,onClickFns,subtitles){
   chart.on('mouseover',()=>{if(onClickFns)chart.getDom().style.cursor='pointer';});
   chart.on('mouseout', ()=>{chart.getDom().style.cursor='default';});
   return chart;
-}
+} 
 
 /* ══ LOAD MENTION BY PLATFORM ══ */
 async function loadMentionByPlatform(){
