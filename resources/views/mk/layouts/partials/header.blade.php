@@ -181,8 +181,9 @@
             const d = new Date(str); return isNaN(d) ? fallback : d;
         }
 
-        const initStart = params.get('start_date');
-        const initEnd   = params.get('end_date');
+        // Priority: URL params > sessionStorage > defaults
+        const initStart = params.get('start_date') || sessionStorage.getItem('smadiment_start_date');
+        const initEnd   = params.get('end_date')   || sessionStorage.getItem('smadiment_end_date');
         if (initStart && initEnd) {
             startDate = parseOrDefault(initStart, new Date(today.getFullYear(), today.getMonth(), 1));
             endDate   = parseOrDefault(initEnd, today);
@@ -190,6 +191,10 @@
             startDate = new Date(today.getFullYear(), today.getMonth(), 1);
             endDate   = new Date(today);
         }
+        // Always save current dates to sessionStorage
+        sessionStorage.setItem('smadiment_start_date', fmt(startDate));
+        sessionStorage.setItem('smadiment_end_date', fmt(endDate));
+
         viewMonth1 = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
         viewMonth2 = new Date(viewMonth1.getFullYear(), viewMonth1.getMonth() + 1, 1);
 
@@ -268,7 +273,27 @@
         function openModal()  { const m = document.getElementById('gdpModal'); m.classList.add('show'); renderAll(); }
         function closeModal() { document.getElementById('gdpModal').classList.remove('show'); }
 
+        // Sync filter datepicker on the page (if exists)
+        function syncFilterDatepicker() {
+            const sd = fmt(startDate), ed = fmt(endDate);
+            // Update hidden inputs
+            const hsd = document.getElementById('hiddenStartDate');
+            const hed = document.getElementById('hiddenEndDate');
+            if (hsd) hsd.value = sd;
+            if (hed) hed.value = ed;
+            // Update display text
+            const dd = document.getElementById('doDateDisplay');
+            if (dd) dd.textContent = sd + ' – ' + ed;
+            // Update modal display text
+            const rt = document.getElementById('doDpRangeText');
+            if (rt) rt.textContent = sd + ' – ' + ed;
+        }
+
         function applyAndReload() {
+            // Save to sessionStorage
+            sessionStorage.setItem('smadiment_start_date', fmt(startDate));
+            sessionStorage.setItem('smadiment_end_date', fmt(endDate));
+
             const url = new URL(window.location.href);
             url.searchParams.set('start_date', fmt(startDate));
             url.searchParams.set('end_date', fmt(endDate));
@@ -302,6 +327,9 @@
 
             const trigLabel = document.getElementById('gdpTriggerLabel');
             if (trigLabel) trigLabel.textContent = fmt(startDate) + ' – ' + fmt(endDate);
+
+            // Sync filter datepicker on page load
+            syncFilterDatepicker();
         });
     })();
     </script>

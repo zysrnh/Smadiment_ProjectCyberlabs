@@ -1137,7 +1137,7 @@
             } catch (e) { return dt; }
         });
 
-        const showLabels = labels.length <= 20;
+        const showLabels = true;
 
         const options = {
             chart: {
@@ -1207,7 +1207,7 @@
                 enabled: showLabels,
                 formatter: v => v > 0 ? numK(v) : '',
                 style: { fontSize:'10px', fontFamily:'inherit', fontWeight:'700' },
-                background: { enabled:true, borderRadius:3, borderWidth:0, padding:3, opacity:0.9 },
+                background: { enabled:true, foreColor:'#fff', borderRadius:3, borderWidth:0, padding:3, opacity:0.92, dropShadow:{enabled:true, top:1, left:0, blur:2, color:'#000', opacity:0.10} },
                 offsetY: -6,
             },
             grid: {

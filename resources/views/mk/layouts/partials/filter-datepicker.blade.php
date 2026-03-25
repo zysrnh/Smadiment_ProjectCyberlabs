@@ -240,8 +240,19 @@ const DPicker = (()=>{
     }
     function init(){
         const si=_dpEl('hiddenStartDate'),ei=_dpEl('hiddenEndDate');
-        ds=si?.value?parseLocal(si.value):(()=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-6);return d;})();
-        de=ei?.value?parseLocal(ei.value):(()=>{const d=new Date();d.setHours(0,0,0,0);return d;})();
+        // Priority: hidden input (from URL) > sessionStorage > default
+        const startVal = si?.value || sessionStorage.getItem('smadiment_start_date');
+        const endVal   = ei?.value || sessionStorage.getItem('smadiment_end_date');
+        ds=startVal?parseLocal(startVal):(()=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-6);return d;})();
+        de=endVal?parseLocal(endVal):(()=>{const d=new Date();d.setHours(0,0,0,0);return d;})();
+        // Save to sessionStorage for persistence
+        sessionStorage.setItem('smadiment_start_date', fmt(ds));
+        sessionStorage.setItem('smadiment_end_date', fmt(de));
+        // Sync hidden inputs and display with resolved dates
+        if(si) si.value = fmt(ds);
+        if(ei) ei.value = fmt(de);
+        const dd = _dpEl('doDateDisplay');
+        if(dd) dd.textContent = fmt(ds) + ' – ' + fmt(de);
         m1=new Date(ds);m2=new Date(ds);m2.setMonth(m2.getMonth()+1);
         render();
         _dpEl('doDateTrigger')?.addEventListener('click',open);
@@ -249,6 +260,9 @@ const DPicker = (()=>{
         document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
         _dpEl('doProject')?.addEventListener('change',function(){
             _dpEl('hiddenProjectId').value=this.value;
+            // Ensure dates are set before submit
+            _dpEl('hiddenStartDate').value = fmt(ds);
+            _dpEl('hiddenEndDate').value = fmt(de);
             _dpEl('doFilterForm').submit();
         });
     }
@@ -258,6 +272,14 @@ const DPicker = (()=>{
         _dpEl('hiddenStartDate').value=fmt(ds);
         _dpEl('hiddenEndDate').value=fmt(de);
         _dpEl('doDateDisplay').textContent=fmt(ds)+' – '+fmt(de);
+        // Save to sessionStorage
+        sessionStorage.setItem('smadiment_start_date', fmt(ds));
+        sessionStorage.setItem('smadiment_end_date', fmt(de));
+        // Sync global datepicker display (header)
+        const gdpLabel = document.getElementById('gdpTriggerLabel');
+        if (gdpLabel) gdpLabel.textContent = fmt(ds) + ' – ' + fmt(de);
+        const gdpDisp = document.getElementById('gdpDisplay');
+        if (gdpDisp) gdpDisp.textContent = fmt(ds) + ' – ' + fmt(de);
         close();
         _dpEl('doFilterForm').submit();
     }
@@ -322,3 +344,4 @@ _dpEl('doFilterForm')?.addEventListener('submit',function(e){e.preventDefault();
 document.addEventListener('DOMContentLoaded',()=>DPicker.init());
 })();
 </script>
+

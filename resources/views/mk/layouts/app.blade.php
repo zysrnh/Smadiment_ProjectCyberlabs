@@ -7,8 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
 
-    <link rel="icon" href="{{ asset('images/SMADIMENT 2025 _ Logo-03.png') }}" type="image/png" />
-
+ 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -20,15 +19,15 @@
     <link rel="stylesheet" href="/assets/css/custom-theme.css" />
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
- 
+
     <style>
-        #gdpTriggerLabel { 
+        #gdpTriggerLabel {
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
             max-width: 150px; display: inline-block; vertical-align: middle; font-size: 12px;
-        } 
+        }
         /* Date picker modal - smooth fade + slide */
         .gdp-modal {
-            display: flex !important; 
+            display: flex !important;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.22s ease;
@@ -325,6 +324,14 @@
 
         const path   = window.location.pathname;
         const params = new URLSearchParams(window.location.search);
+        
+        // Ensure dates are in the query string for breadcrumb links
+        if (!params.get('start_date') && sessionStorage.getItem('smadiment_start_date')) {
+            params.set('start_date', sessionStorage.getItem('smadiment_start_date'));
+        }
+        if (!params.get('end_date') && sessionStorage.getItem('smadiment_end_date')) {
+            params.set('end_date', sessionStorage.getItem('smadiment_end_date'));
+        }
         const qs     = params.toString() ? '?' + params.toString() : '';
         const route  = ROUTE_MAP.find(r => r.match.test(path));
         if (!route) return;

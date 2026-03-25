@@ -1362,7 +1362,7 @@ const numK = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1).replace('
                                     const pc=totalAll>0?(p.value/totalAll*100):0;
                                     if(pc<1) return'';
                                     const shortName=p.name.replace('Mass ','').replace('Social ','Soc.');
-                                    return`{name|${shortName}}\n{pct|${pc.toFixed(1)}%}`;
+return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
                                 },
                                 rich:{
                                     name:{fontWeight:'700',fontSize:10,color:'#1a202c',lineHeight:16},
@@ -1464,7 +1464,7 @@ const numK = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1).replace('
     const pc=totalAll>0?(p.value/totalAll*100):0;
     // Hapus baris: if(pc<1) return'';
     const shortName=p.name.replace('X (Twitter)','X').replace('Online News','News').replace('Mass Media','News');
-    return`{name|${shortName}}\n{pct|${pc.toFixed(1)}%}`;
+return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
 },
                         rich:{
                             name:{fontWeight:'700',fontSize:10,color:'#1a202c',lineHeight:16},

@@ -39,7 +39,7 @@
     <div class="navbar-wrapper">
         <div class="m-header">
             <a href="{{ route('mk.dashboard') }}" class="b-brand text-primary">
-                <img src="{{ asset('images/WSma.png') }}"
+                <img src="{{ asset('images/20260315_171432_361 - Edited.png') }}"
                      class="sidebar-logo"
                      alt="SMADIMENT" />
             </a>
@@ -81,7 +81,20 @@
                 $isTiktokActive    = request()->routeIs($tiktokRoutes);
                 $isTopicActive     = request()->routeIs($topicRoutes);
 
-                $qs = !empty($currentProjectId) ? '?project_id=' . $currentProjectId : '';
+                // Build query string preserving project_id + date range
+                $qsParts = [];
+                if (!empty($currentProjectId)) {
+                    $qsParts[] = 'project_id=' . $currentProjectId;
+                }
+                $sidebarStartDate = request()->get('start_date');
+                $sidebarEndDate   = request()->get('end_date');
+                if ($sidebarStartDate) {
+                    $qsParts[] = 'start_date=' . $sidebarStartDate;
+                }
+                if ($sidebarEndDate) {
+                    $qsParts[] = 'end_date=' . $sidebarEndDate;
+                }
+                $qs = !empty($qsParts) ? '?' . implode('&', $qsParts) : '';
             @endphp
 
             <ul class="pc-navbar">
@@ -400,18 +413,29 @@ function changeProject(projectId, projectName) {
     localStorage.setItem('selected_project_id', projectId);
     const url = new URL(window.location.href);
     url.searchParams.set('project_id', projectId);
+    // Preserve existing dates — if not in URL, check sessionStorage, else use defaults
     if (!url.searchParams.get('start_date')) {
-        const now = new Date();
-        const y = now.getFullYear();
-        const m = String(now.getMonth() + 1).padStart(2, '0');
-        url.searchParams.set('start_date', `${y}-${m}-01`);
+        const saved = sessionStorage.getItem('smadiment_start_date');
+        if (saved) {
+            url.searchParams.set('start_date', saved);
+        } else {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            url.searchParams.set('start_date', `${y}-${m}-01`);
+        }
     }
     if (!url.searchParams.get('end_date')) {
-        const now = new Date();
-        const y = now.getFullYear();
-        const m = String(now.getMonth() + 1).padStart(2, '0');
-        const d = String(now.getDate()).padStart(2, '0');
-        url.searchParams.set('end_date', `${y}-${m}-${d}`);
+        const saved = sessionStorage.getItem('smadiment_end_date');
+        if (saved) {
+            url.searchParams.set('end_date', saved);
+        } else {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            url.searchParams.set('end_date', `${y}-${m}-${d}`);
+        }
     }
     window.location.href = url.toString();
 }
