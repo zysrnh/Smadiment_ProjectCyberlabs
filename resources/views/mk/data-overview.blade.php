@@ -1637,7 +1637,7 @@ return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
             const valid=rows.filter(p=>!(parseFloat(p.latitude||0)===0&&parseFloat(p.longitude||0)===0));
             if(!valid.length){listEl.innerHTML='<div class="do-empty" style="padding:20px 12px;font-size:11px;">No location data</div>';return;}
             const sorted=[...valid].sort((a,b)=>parseInt(b.count||0)-parseInt(a.count||0));
-            listEl.innerHTML=sorted.map((p,rank)=>{ const name=p.name||'Unknown',count=parseInt(p.count||0); const lbl=count>999?(count/1000).toFixed(1)+'k':count; return`<div class="do-loc-item" data-name="${name}"><span class="do-loc-rank">${rank+1}</span><div class="do-loc-info"><div class="do-loc-name" title="${name}">${name}</div><div class="do-loc-count">${lbl} mentions</div></div><div class="do-loc-dot"></div></div>`; }).join('');
+            listEl.innerHTML=sorted.slice(0, 8).map((p,rank)=>{ const name=p.name||'Unknown',count=parseInt(p.count||0); const lbl=count>999?(count/1000).toFixed(1)+'k':count; return`<div class="do-loc-item" data-name="${name}"><span class="do-loc-rank">${rank+1}</span><div class="do-loc-info"><div class="do-loc-name" title="${name}">${name}</div><div class="do-loc-count">${lbl} mentions</div></div><div class="do-loc-dot"></div></div>`; }).join('');
             listEl.querySelectorAll('.do-loc-item').forEach(item=>{
                 item.addEventListener('click',()=>{
                     const name=item.dataset.name, target=valid.find(p=>(p.name||'Unknown')===name); if(!target) return;

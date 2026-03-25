@@ -801,7 +801,7 @@ const XGeo = {
         const valid=rows.filter(p=>!(parseFloat(p.latitude||0)===0&&parseFloat(p.longitude||0)===0));
         if(!valid.length){listEl.innerHTML='<div class="geo-empty" style="padding:24px 14px;font-size:12px;">No location data</div>';return;}
         const sorted=[...valid].sort((a,b)=>parseInt(b.count||0)-parseInt(a.count||0));
-        listEl.innerHTML=sorted.map((p,rank)=>{
+        listEl.innerHTML=sorted.slice(0, 8).map((p,rank)=>{
             const name=p.name||'Unknown',count=parseInt(p.count||0);
             let color=defaultColor||'#038047';
             if(useSentiment){const pos=parseInt(p.pos||0),neg=parseInt(p.neg||0),net=parseInt(p.net||0);if(pos>neg&&pos>net)color='#22c55e';else if(neg>pos&&neg>net)color='#ef4444';else color='#64748b';}
@@ -884,21 +884,34 @@ const XGeo = {
         const ldEl=_$('loadingChartSentiment'),canvasEl=_$('chartSentimentDonut'),legendEl=_$('chartSentimentLegend');
         if(ldEl)ldEl.style.display='none';if(canvasEl)canvasEl.style.display='block';
         const canvas=document.createElement('canvas');canvas.width=180;canvas.height=180;canvasEl.appendChild(canvas);
-        new Chart(canvas.getContext('2d'),{type:'doughnut',data:{labels:['Positive','Neutral','Negative'],datasets:[{data:[pos,net,neg],backgroundColor:['#22c55e','#94a3b8','#ef4444'],borderColor:'#fff',borderWidth:3,hoverOffset:6}]},options:{responsive:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed.toLocaleString()} (${((ctx.parsed/total)*100).toFixed(1)}%)`}}},animation:{animateRotate:true,duration:900}}});
+        new Chart(canvas.getContext('2d'),{type:'doughnut',data:{labels:['Positive','Neutral','Negative'],datasets:[{data:[pos,net,neg],backgroundColor:['#22c55e','#94a3b8','#ef4444'],borderColor:'#fff',borderWidth:3,hoverOffset:6}]},options:{responsive:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed.toLocaleString()} (${((ctx.parsed/total)*100).toFixed(1)}%)`}}},animation:false}});
         if(legendEl)legendEl.innerHTML=[{label:'Positive',val:pos,color:'#22c55e'},{label:'Neutral',val:net,color:'#94a3b8'},{label:'Negative',val:neg,color:'#ef4444'}].map(item=>`<div style="display:flex;align-items:center;gap:8px;"><div style="width:9px;height:9px;border-radius:50%;background:${item.color};flex-shrink:0;"></div><span style="font-size:12px;font-weight:700;color:#1e293b;flex:1;">${item.label}</span><span style="font-size:12px;font-weight:700;color:#1e293b;">${numF(item.val)}</span><span style="font-size:11px;color:#94a3b8;width:40px;text-align:right;font-weight:600;">${((item.val/total)*100).toFixed(1)}%</span></div>`).join('');
     },
 
     async loadTopLocations(card) {
-        const r=await fetch(`/mk/api/x/top-locations?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`);
-        const result=await r.json();
         const ldEl=_$('loadingTopLocations'),tblEl=_$('topLocationsTable');
         let locs=[];
-        if(result.success&&Array.isArray(result.data)){locs=result.data.filter(l=>{const n=(l.name||l.location||'').trim();return n&&n!=='Unknown'&&!n.startsWith('\u0000');}).map(l=>({name:l.name||l.location||'Unknown',count:parseInt(l.count||l.total||0)}));}
+        try {
+            const r=await fetch(`/mk/api/x/top-locations?project_id=${this.projectId}&start_date=${this.startDate}&end_date=${this.endDate}`);
+            if(r.ok) {
+                const result=await r.json();
+                if(result.success&&Array.isArray(result.data)){locs=result.data.filter(l=>{const n=(l.name||l.location||'').trim();return n&&n!=='Unknown'&&!n.startsWith('\u0000');}).map(l=>({name:l.name||l.location||'Unknown',count:parseInt(l.count||l.total||0)}));}
+            }
+        } catch(e) { console.warn('top-loc api missing', e); }
         if(!locs.length){
             const geo=await this.fetchGeoUser(),rows=this.parseGeoRows(geo);
             rows.forEach(country=>{
-                const cName=(country.name||'').trim();if(cName&&cName!=='Unknown')locs.push({name:cName,count:parseInt(country.count||0)});
-                if(country.detail&&typeof country.detail==='object')Object.entries(country.detail).filter(([k])=>k&&!k.startsWith('\u0000')&&k.trim()).forEach(([name,val])=>{const count=typeof val==='number'?val:parseInt(val?.count||0);if(count>0)locs.push({name:name.trim(),count});});
+                const cName=(country.name||'').trim();
+                const hasProvinces = (country.detail && typeof country.detail==='object' && Object.keys(country.detail).length > 0);
+                
+                if (hasProvinces) {
+                    Object.entries(country.detail).filter(([k])=>k&&!k.startsWith('\u0000')&&k.trim()).forEach(([name,val])=>{
+                        const count=typeof val==='number'?val:parseInt(val?.count||0);
+                        if(count>0) locs.push({name:name.trim(), count});
+                    });
+                } else if(cName && cName!=='Unknown') {
+                    locs.push({name:cName, count:parseInt(country.count||0)});
+                }
             });
             locs.sort((a,b)=>b.count-a.count);
         }
