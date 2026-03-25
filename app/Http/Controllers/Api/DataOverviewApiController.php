@@ -12,7 +12,7 @@ class DataOverviewApiController extends Controller
 {
     public function trendingTopics(Request $request, MediaKernelsClient $mk)
     {
-        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+        $startDate = $request->query('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate   = $request->query('end_date', now()->format('Y-m-d'));
         $location  = $request->query('location', 'Indonesia');
         $limit     = (int) $request->query('limit', 50);
@@ -108,7 +108,7 @@ class DataOverviewApiController extends Controller
     public function topHashtags(Request $request, MediaKernelsClient $mk)
     {
         $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date', now()->subDay()->toDateString());
+        $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
         $endDate   = $request->query('end_date', now()->toDateString());
         $media     = $request->query('media', 'all');
 
@@ -226,7 +226,7 @@ class DataOverviewApiController extends Controller
     public function mentionCounts(Request $request, MediaKernelsClient $mk)
     {
         $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date', now()->subDay()->toDateString());
+        $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
         $endDate   = $request->query('end_date', now()->toDateString());
 
         if (!$projectId) {
@@ -288,7 +288,7 @@ class DataOverviewApiController extends Controller
     public function sentimentByMedia(Request $request, MediaKernelsClient $mk)
     {
         $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date', now()->subDay()->toDateString());
+        $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
         $endDate   = $request->query('end_date', now()->toDateString());
 
         if (!$projectId) {
@@ -352,7 +352,7 @@ class DataOverviewApiController extends Controller
     public function activeUsers(Request $request, MediaKernelsClient $mk)
     {
         $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date', now()->subDay()->toDateString());
+        $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
         $endDate   = $request->query('end_date', now()->toDateString());
 
         if (!$projectId) {
@@ -412,110 +412,133 @@ class DataOverviewApiController extends Controller
      * - Loop dinamis berdasarkan range (harian jika <= 14 hari, mingguan jika > 14 hari)
      * - Cache key menyertakan tanggal
      */
-   public function sentimentTimeline(Request $request, MediaKernelsClient $mk)
+    public function sentimentTimeline(Request $request, MediaKernelsClient $mk)
     {
         $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+        $startDate = $request->query('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate   = $request->query('end_date', now()->format('Y-m-d'));
- 
+
         if (!$projectId) {
             return response()->json(['success' => false, 'dates' => [], 'values' => []], 400);
         }
- 
+
         $cacheKey = "sentiment_timeline_{$projectId}_{$startDate}_{$endDate}";
- 
-        return Cache::remember($cacheKey, 300, function () use ($mk, $projectId, $startDate, $endDate) {
-            try {
-                $timeline = [
-                    'dates'     => [],
-                    'dates_end' => [],
-                    'values'    => [],
-                    'sentiment' => [
-                        'positive' => [],
-                        'neutral'  => [],
-                        'negative' => [],
-                    ],
-                ];
- 
-                $start   = \Carbon\Carbon::parse($startDate);
-                $end     = \Carbon\Carbon::parse($endDate);
-                $diff    = $start->diffInDays($end);
-                $maxDays = min($diff, 90);
- 
-                // ✅ FIX: Selalu harian sampai 90 hari (identik Dashboard)
-                // Weekly hanya jika > 90 hari agar tidak terlalu banyak request
-                $useWeekly = $maxDays > 90;
- 
-                if ($useWeekly) {
-                    $cursor = $start->copy()->startOfWeek();
- 
-                    while ($cursor->lte($end)) {
-                        $weekStart = $cursor->copy()->max($start)->format('Y-m-d');
-                        $weekEnd   = $cursor->copy()->endOfWeek()->min($end)->format('Y-m-d');
- 
-                        $sentimentData = $mk->sentimentTotal($projectId, $weekStart, $weekEnd, 0, 23);
-                        $normalized    = $this->normalizeSentimentTotal($sentimentData);
-                        $total         = $normalized['positive'] + $normalized['neutral'] + $normalized['negative'];
- 
-                        // ✅ Format Y-m-d agar JS dapat parse dengan benar
-                        $timeline['dates'][]                 = $weekStart;
-                        $timeline['dates_end'][]             = $weekEnd;
-                        $timeline['values'][]                = $total;
-                        $timeline['sentiment']['positive'][] = $normalized['positive'];
-                        $timeline['sentiment']['neutral'][]  = $normalized['neutral'];
-                        $timeline['sentiment']['negative'][] = $normalized['negative'];
- 
-                        $cursor->addWeek();
-                    }
-                } else {
-                    // ✅ Harian — dari startDate sampai endDate (urut ascending)
-                    for ($i = $maxDays; $i >= 0; $i--) {
-                        $date    = $end->copy()->subDays($i);
-                        $dateStr = $date->format('Y-m-d');
- 
-                        $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $dateStr, 0, 23);
-                        $normalized    = $this->normalizeSentimentTotal($sentimentData);
-                        $total         = $normalized['positive'] + $normalized['neutral'] + $normalized['negative'];
- 
-                        // ✅ Format Y-m-d agar JS dapat parse dengan benar
-                        $timeline['dates'][]                 = $dateStr;
-                        $timeline['dates_end'][]             = $dateStr;
-                        $timeline['values'][]                = $total;
-                        $timeline['sentiment']['positive'][] = $normalized['positive'];
-                        $timeline['sentiment']['neutral'][]  = $normalized['neutral'];
-                        $timeline['sentiment']['negative'][] = $normalized['negative'];
-                    }
+
+        if (Cache::has($cacheKey)) {
+            return response()->json(Cache::get($cacheKey));
+        }
+
+        try {
+            $timeline = [
+                'dates'     => [],
+                'dates_end' => [],
+                'values'    => [],
+                'sentiment' => [
+                    'positive' => [],
+                    'neutral'  => [],
+                    'negative' => [],
+                ],
+            ];
+
+            $start   = \Carbon\Carbon::parse($startDate);
+            $end     = \Carbon\Carbon::parse($endDate);
+            $diff    = $start->diffInDays($end);
+            $maxDays = min($diff, 90);
+
+            $useWeekly = $maxDays > 90;
+            $urls = [];
+            $datePairs = [];
+            
+            $token = $mk->getToken();
+            $baseUrl = rtrim(config('services.mediakernels.base_url'), '/');
+
+            if ($useWeekly) {
+                $cursor = $start->copy()->startOfWeek();
+                while ($cursor->lte($end)) {
+                    $weekStart = $cursor->copy()->max($start)->format('Y-m-d');
+                    $weekEnd   = $cursor->copy()->endOfWeek()->min($end)->format('Y-m-d');
+                    $key = "{$weekStart}_{$weekEnd}";
+
+                    $datePairs[$key] = ['start' => $weekStart, 'end' => $weekEnd];
+                    
+                    $urls[$key] = $baseUrl . '/sentiment_total/?' . http_build_query([
+                        'project_id' => $projectId,
+                        'start_date' => $weekStart,
+                        'start_time' => 0,
+                        'end_date'   => $weekEnd,
+                        'end_time'   => 23,
+                        'token'      => $token,
+                    ]);
+                    $cursor->addWeek();
                 }
- 
-                Log::info('✅ Sentiment Timeline', [
-                    'project_id' => $projectId,
-                    'start'      => $startDate,
-                    'end'        => $endDate,
-                    'points'     => count($timeline['dates']),
-                    'weekly'     => $useWeekly,
-                ]);
- 
-                return response()->json([
-                    'success'   => true,
-                    'dates'     => $timeline['dates'],
-                    'values'    => $timeline['values'],
-                    'sentiment' => $timeline['sentiment'],
-                ]);
- 
-            } catch (\Exception $e) {
-                Log::error('❌ Timeline failed', [
-                    'error' => $e->getMessage(),
-                    'line'  => $e->getLine(),
-                ]);
-                return response()->json(['success' => false, 'dates' => [], 'values' => []], 500);
+            } else {
+                for ($i = $maxDays; $i >= 0; $i--) {
+                    $dateStr = $end->copy()->subDays($i)->format('Y-m-d');
+                    $key = "{$dateStr}_{$dateStr}";
+
+                    $datePairs[$key] = ['start' => $dateStr, 'end' => $dateStr];
+
+                    $urls[$key] = $baseUrl . '/sentiment_total/?' . http_build_query([
+                        'project_id' => $projectId,
+                        'start_date' => $dateStr,
+                        'start_time' => 0,
+                        'end_date'   => $dateStr,
+                        'end_time'   => 23,
+                        'token'      => $token,
+                    ]);
+                }
             }
-        });
+
+            // Eksekusi semua request harian secara asinkron bersamaan! (Concurrent Pool)
+            $responses = \Illuminate\Support\Facades\Http::pool(function ($pool) use ($urls) {
+                foreach ($urls as $key => $url) {
+                    $pool->as($key)->timeout(30)->acceptJson()->get($url);
+                }
+            });
+
+            // Format ulang array result
+            foreach ($datePairs as $key => $pair) {
+                $res = $responses[$key] ?? null;
+                $sentimentData = ($res && $res->successful()) ? $res->json() : [];
+
+                $normalized = $this->normalizeSentimentTotal(is_array($sentimentData) ? $sentimentData : []);
+                $total      = $normalized['positive'] + $normalized['neutral'] + $normalized['negative'];
+
+                $timeline['dates'][]                 = $pair['start'];
+                $timeline['dates_end'][]             = $pair['end'];
+                $timeline['values'][]                = $total;
+                $timeline['sentiment']['positive'][] = $normalized['positive'];
+                $timeline['sentiment']['neutral'][]  = $normalized['neutral'];
+                $timeline['sentiment']['negative'][] = $normalized['negative'];
+            }
+
+            $result = [
+                'success'   => true,
+                'dates'     => $timeline['dates'],
+                'values'    => $timeline['values'],
+                'sentiment' => $timeline['sentiment'],
+            ];
+
+            // Cegah caching "response kosong 000" kalau memang kebetulan API timeout parsial atau kosong
+            if (array_sum($timeline['values']) > 0) {
+                Cache::put($cacheKey, $result, 300);
+            }
+
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            Log::error('❌ Timeline failed', [
+                'error' => $e->getMessage(),
+                'line'  => $e->getLine(),
+            ]);
+            return response()->json(['success' => false, 'dates' => [], 'values' => []], 500);
+        }
     }
 
     public function geoUsers(Request $request, MediaKernelsClient $mk)
     {
         $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date', now()->subDay()->toDateString());
+        $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
         $endDate   = $request->query('end_date', now()->toDateString());
         $media     = $request->query('media', 'twit');
 
