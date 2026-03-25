@@ -1097,4 +1097,27 @@
         $projects = $this->getProjects($mk);
         return view('mk.profile', compact('projects'));
     }
+
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user = Auth::user();
+
+        if ($request->file('avatar')) {
+            $file = $request->file('avatar');
+            $filename = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
+            
+            // Simpan di public/avatars
+            $file->move(public_path('avatars'), $filename);
+
+            // Update user record
+            $user->avatar = asset('avatars/' . $filename);
+            $user->save();
+        }
+
+        return redirect()->back()->with('success', 'Profile picture updated successfully!');
+    }
 }

@@ -237,6 +237,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     Route::get('/dashboard',        [MkController::class, 'dashboard'])->name('dashboard');
     Route::get('/dashboard/chart-data', [MkController::class, 'chartData'])->name('dashboard.chart-data'); // ← ADDED
     Route::get('/profile',          [MkController::class, 'profile'])->name('profile');
+    Route::post('/profile/avatar',  [MkController::class, 'updateAvatar'])->name('profile.avatar');
     Route::get('/data-overview',    [MkController::class, 'dataOverview'])->name('data-overview');
     Route::get('/projects',         [MkController::class, 'projects'])->name('projects');
     Route::get('/media-statistic',       [MediaStatisticController::class, 'index'])->name('media-statistic');

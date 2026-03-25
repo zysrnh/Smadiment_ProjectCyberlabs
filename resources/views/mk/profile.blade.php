@@ -9,18 +9,36 @@
     <div class="col-lg-4 col-xl-3 mb-4">
         <div class="card h-100 shadow-sm border-0">
             <div class="card-body text-center pt-5">
-                <div class="position-relative d-inline-block mb-3">
-                    <img src="{{ auth()->user() && auth()->user()->avatar ? auth()->user()->avatar : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name ?? 'Admin') . '&background=038047&color=fff&size=120&bold=true' }}" 
+                <div class="position-relative d-inline-block mb-3 profile-avatar-container">
+                    <img id="avatarPreview" src="{{ auth()->user() && auth()->user()->avatar ? auth()->user()->avatar : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name ?? 'Admin') . '&background=038047&color=fff&size=120&bold=true' }}" 
                          alt="User Avatar" 
                          class="img-fluid rounded-circle" 
-                         style="width: 130px; height: 130px; object-fit: cover; border: 5px solid #f8fafc; box-shadow: 0 8px 16px rgba(0,0,0,0.08);">
+                         style="width: 130px; height: 130px; object-fit: cover; border: 5px solid #f8fafc; box-shadow: 0 8px 16px rgba(0,0,0,0.08); transition: all 0.3s;">
+                    
+                    <div class="avatar-upload-overlay" onclick="document.getElementById('avatarInput').click();">
+                        <i class="ph ph-camera"></i>
+                        <span>Change</span>
+                    </div>
+
+                    <form action="{{ route('mk.profile.avatar') }}" method="POST" enctype="multipart/form-data" id="avatarForm" class="d-none">
+                        @csrf
+                        <input type="file" name="avatar" id="avatarInput" accept="image/*" onchange="document.getElementById('avatarForm').submit();">
+                    </form>
                 </div>
+                
+                @if(session('success'))
+                    <div class="alert alert-success py-2 px-3 mt-2" style="font-size: 13px; border-radius: 8px;">
+                        {{ session('success') }}
+                    </div>
+                @endif
+                @error('avatar')
+                    <div class="alert alert-danger py-2 px-3 mt-2" style="font-size: 13px; border-radius: 8px;">
+                        {{ $message }}
+                    </div>
+                @enderror
+                
                 <h4 class="mb-1 fw-bold text-dark">{{ auth()->user()->name ?? 'Administrator' }}</h4>
                 <p class="text-muted mb-3">{{ auth()->user()->email ?? 'admin@smadiment.com' }}</p>
-                <div class="d-inline-flex align-items-center justify-content-center badge bg-light-success text-success px-4 py-2 rounded-pill mb-4" style="font-size: 13px; font-weight: 600;">
-                    <i class="ph ph-shield-check me-2 fs-5"></i> {{ auth()->user()->role ?? 'Admin' }}
-                </div>
-            </div>
             
             <div class="card-body border-top p-4" style="background: #fdfdfd; border-radius: 0 0 16px 16px;">
                 <div class="d-flex align-items-center mb-4">
@@ -85,10 +103,7 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="mt-auto pt-3 border-top border-dashed d-flex align-items-center justify-content-between">
-                                        <span class="d-flex align-items-center text-muted" style="font-size: 12px; font-weight: 500; gap: 6px;">
-                                            <i class="ph ph-check-circle text-success fs-6"></i> Authorized Access
-                                        </span>
+                                    <div class="mt-auto pt-3 border-top border-dashed d-flex align-items-center justify-content-end">
                                         <a href="{{ route('mk.dashboard', ['project_id' => $project['id'] ?? '']) }}" class="btn btn-sm btn-light pcard-btn" style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 6px;">
                                             Enter <i class="ph ph-arrow-right ms-1"></i>
                                         </a>
@@ -135,6 +150,38 @@
 .border-dashed {
     border-top-style: dashed !important;
     border-top-color: #e2e8f0 !important;
+}
+
+/* Avatar Upload Overlay */
+.profile-avatar-container {
+    cursor: pointer;
+}
+.avatar-upload-overlay {
+    position: absolute;
+    inset: 5px; /* respect the border */
+    background: rgba(0,0,0,0.5);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+.profile-avatar-container:hover .avatar-upload-overlay {
+    opacity: 1;
+}
+.avatar-upload-overlay i {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+.avatar-upload-overlay span {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 </style>
 @endsection
