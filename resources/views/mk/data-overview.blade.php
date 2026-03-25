@@ -1668,8 +1668,17 @@ return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
             _toastTimer=setTimeout(()=>t.classList.remove('show'),duration);
         }
         function _btnState(btn,loading){ if(!btn) return; btn.disabled=loading; btn.classList.toggle('exporting',loading); }
-        function _freeze(){ if(document.getElementById('__do_freeze')) return; const s=document.createElement('style'); s.id='__do_freeze'; s.textContent='*{animation:none!important;transition:none!important;animation-play-state:paused!important;}'; document.head.appendChild(s); }
-        function _unfreeze(){ document.getElementById('__do_freeze')?.remove(); }
+        function _freeze(){
+            if(document.getElementById('__do_freeze')) return;
+            const s=document.createElement('style'); s.id='__do_freeze';
+            s.textContent='*{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
+            document.head.appendChild(s);
+            Object.values(DOCharts._inst||{}).forEach(c=>{ if(c&&!c.isDisposed?.()){try{c.setOption({animation:false},false);}catch(e){}} });
+        }
+        function _unfreeze(){
+            document.getElementById('__do_freeze')?.remove();
+            Object.values(DOCharts._inst||{}).forEach(c=>{ if(c&&!c.isDisposed?.()){try{c.setOption({animation:true},false);}catch(e){}} });
+        }
         function _preSnapshot(){
             _ecSnapshots={};
             Object.entries(DOCharts._inst||{}).forEach(([id,inst])=>{ if(!inst||inst.isDisposed?.()) return; try{ _ecSnapshots[id]=inst.getDataURL({type:'png',pixelRatio:window.devicePixelRatio||2,backgroundColor:'#ffffff'}); }catch(e){} });
@@ -1727,9 +1736,10 @@ return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
             _btnState(btnPdf,true); _btnState(btnImg,true);
             _toast(type==='pdf'?'Menyiapkan PDF 2 halaman…':'Mengambil gambar…','default',99999);
             try{
-                _preSnapshot(); _freeze();
+                _freeze();
                 await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
                 await new Promise(r=>setTimeout(r,600));
+                _preSnapshot();
                 const area=$('doPageExportArea'), mapCard=$('card-export-map');
                 if(type==='image'){
                     let canvas; try{canvas=await _doCapture(area,'#f1f5f9');}finally{_unfreeze();}
@@ -1776,9 +1786,10 @@ return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
                     restores.push({el,orig}); el.style.maxHeight='none'; el.style.overflow='visible'; el.style.height='auto';
                 });
                 if(cardKey==='map'&&window.L){ try{Object.values(window).filter(v=>v instanceof L.Map).forEach(m=>{try{m.invalidateSize({animate:false});}catch(e){}});}catch(e){} await new Promise(r=>setTimeout(r,200)); }
-                _preSnapshot(); _freeze();
+                _freeze();
                 await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
                 await new Promise(r=>setTimeout(r,400));
+                _preSnapshot();
                 let canvas;
                 try{canvas=await _doCapture(area,'#ffffff');}
                 finally{ _unfreeze(); restores.forEach(({el,orig})=>Object.entries(orig).forEach(([p,v])=>el.style[p]=v)); }
