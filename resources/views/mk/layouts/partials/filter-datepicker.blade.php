@@ -240,14 +240,14 @@ const DPicker = (()=>{
     }
     function init(){
         const si=_dpEl('hiddenStartDate'),ei=_dpEl('hiddenEndDate');
-        // Priority: hidden input (from URL) > sessionStorage > default
-        const startVal = si?.value || sessionStorage.getItem('smadiment_start_date');
-        const endVal   = ei?.value || sessionStorage.getItem('smadiment_end_date');
+        // Priority: hidden input (from URL) > localStorage > default
+        const startVal = si?.value || localStorage.getItem('smadiment_start_date');
+        const endVal   = ei?.value || localStorage.getItem('smadiment_end_date');
         ds=startVal?parseLocal(startVal):(()=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-6);return d;})();
         de=endVal?parseLocal(endVal):(()=>{const d=new Date();d.setHours(0,0,0,0);return d;})();
-        // Save to sessionStorage for persistence
-        sessionStorage.setItem('smadiment_start_date', fmt(ds));
-        sessionStorage.setItem('smadiment_end_date', fmt(de));
+        // Save to localStorage for cross-tab persistence
+        localStorage.setItem('smadiment_start_date', fmt(ds));
+        localStorage.setItem('smadiment_end_date', fmt(de));
         // Sync hidden inputs and display with resolved dates
         if(si) si.value = fmt(ds);
         if(ei) ei.value = fmt(de);
@@ -258,6 +258,22 @@ const DPicker = (()=>{
         _dpEl('doDateTrigger')?.addEventListener('click',open);
         document.querySelectorAll('.do-dp-preset').forEach(b=>b.addEventListener('click',onPreset));
         document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+        // Listen for cross-tab date changes
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'smadiment_start_date' || e.key === 'smadiment_end_date') {
+                const newStart = localStorage.getItem('smadiment_start_date');
+                const newEnd   = localStorage.getItem('smadiment_end_date');
+                if (newStart && newEnd) {
+                    ds = parseLocal(newStart); de = parseLocal(newEnd);
+                    const dd = _dpEl('doDateDisplay');
+                    if (dd) dd.textContent = fmt(ds) + ' \u2013 ' + fmt(de);
+                    const si = _dpEl('hiddenStartDate'), ei = _dpEl('hiddenEndDate');
+                    if (si) si.value = fmt(ds); if (ei) ei.value = fmt(de);
+                    m1 = new Date(ds); m2 = new Date(ds); m2.setMonth(m2.getMonth()+1);
+                    render();
+                }
+            }
+        });
         _dpEl('doProject')?.addEventListener('change',function(){
             _dpEl('hiddenProjectId').value=this.value;
             // Ensure dates are set before submit
@@ -272,9 +288,9 @@ const DPicker = (()=>{
         _dpEl('hiddenStartDate').value=fmt(ds);
         _dpEl('hiddenEndDate').value=fmt(de);
         _dpEl('doDateDisplay').textContent=fmt(ds)+' – '+fmt(de);
-        // Save to sessionStorage
-        sessionStorage.setItem('smadiment_start_date', fmt(ds));
-        sessionStorage.setItem('smadiment_end_date', fmt(de));
+        // Save to localStorage (shared across all tabs)
+        localStorage.setItem('smadiment_start_date', fmt(ds));
+        localStorage.setItem('smadiment_end_date', fmt(de));
         // Sync global datepicker display (header)
         const gdpLabel = document.getElementById('gdpTriggerLabel');
         if (gdpLabel) gdpLabel.textContent = fmt(ds) + ' – ' + fmt(de);
