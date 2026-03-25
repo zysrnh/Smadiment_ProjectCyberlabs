@@ -574,23 +574,87 @@ const FBExport = (() => {
         btn.classList.toggle('exporting', loading);
     }
 
+    /* ── Freeze / Unfreeze CSS animations ── */
+    function _freeze() {
+        if (document.getElementById('__fb_ea_freeze')) return;
+        const s = document.createElement('style');
+        s.id = '__fb_ea_freeze';
+        s.textContent = '*{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
+        document.head.appendChild(s);
+    }
+    function _unfreeze() { document.getElementById('__fb_ea_freeze')?.remove(); }
+
+    /* ── Pre-snapshot ECharts instances ── */
+    function _preSnapshot() {
+        const snaps = {};
+        [['__feaDonut','donutChart'],['_feaRadarChart','radarChart']].forEach(([key,id]) => {
+            const inst = window[key];
+            if (!inst || inst.isDisposed?.()) return;
+            try { snaps[id] = inst.getDataURL({ type:'png', pixelRatio: window.devicePixelRatio||2, backgroundColor:'#ffffff' }); } catch(e) {}
+        });
+        return snaps;
+    }
+
+    /* ── onclone callback ── */
+    function _onClone(clonedDoc, ecSnaps) {
+        const s = clonedDoc.createElement('style');
+        s.textContent = `
+            *,*::before,*::after { animation:none!important; transition:none!important; }
+            [data-html2canvas-ignore] { display:none!important; }
+            .card,.card-body,.card-header,.row,[class*="col-"],.fea-post-list,.fea-post,#pageExportArea {
+                opacity:1!important; transform:none!important; visibility:visible!important;
+            }
+            .do-panel-overlay,.do-panel,.do-detail-panel,.export-toast { display:none!important; }
+        `;
+        clonedDoc.head.appendChild(s);
+        /* Replace cross-origin avatars dengan initial letter */
+        clonedDoc.querySelectorAll('.fea-post-av,.do-panel-avatar,.do-dp2-avatar-lg').forEach(wrapper => {
+            wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
+            if (!wrapper.querySelector('.__ini')) {
+                const sp = clonedDoc.createElement('span');
+                sp.className = '__ini';
+                sp.textContent = (wrapper.textContent||'F').trim()[0].toUpperCase();
+                sp.style.cssText = 'font-size:12px;font-weight:700;color:#fff;line-height:1;';
+                wrapper.appendChild(sp);
+            }
+        });
+        /* Ganti ECharts canvas dengan snapshot img */
+        Object.entries(ecSnaps).forEach(([containerId, dataUrl]) => {
+            const el = clonedDoc.getElementById(containerId);
+            if (!el) return;
+            el.innerHTML = '';
+            const img = clonedDoc.createElement('img');
+            img.src = dataUrl;
+            img.style.cssText = 'width:100%;height:100%;display:block;object-fit:contain;';
+            el.appendChild(img);
+            el.style.cssText += 'display:block!important;opacity:1!important;visibility:visible!important;';
+        });
+    }
+
     async function _capture() {
         const area = _$('pageExportArea');
         if (!area) throw new Error('pageExportArea tidak ditemukan');
         window.scrollTo({ top: 0 });
-        await new Promise(r => setTimeout(r, 300));
-        if (window.__feaDonut) { try { window.__feaDonut.resize(); } catch(e) {} }
-        if (window._feaRadarChart) { try { window._feaRadarChart.resize(); } catch(e) {} }
-        return html2canvas(area, {
-            scale: 2, useCORS: true, allowTaint: false,
-            backgroundColor: '#f1f5f9', logging: false, removeContainer: true,
-            windowWidth: document.documentElement.scrollWidth,
-            windowHeight: area.scrollHeight, height: area.scrollHeight,
-            ignoreElements: el =>
-                el.hasAttribute('data-html2canvas-ignore')
-                || el.id === 'pageExportPdfBtn'
-                || el.id === 'pageExportImgBtn',
-        });
+        const ecSnaps = _preSnapshot();
+        _freeze();
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, 500));
+        try {
+            return await html2canvas(area, {
+                scale: 2, useCORS: true, allowTaint: true,
+                backgroundColor: '#f1f5f9', logging: false, removeContainer: true,
+                imageTimeout: 0,
+                windowWidth: document.documentElement.scrollWidth,
+                windowHeight: area.scrollHeight, height: area.scrollHeight,
+                onclone: d => _onClone(d, ecSnaps),
+                ignoreElements: el =>
+                    el.hasAttribute('data-html2canvas-ignore')
+                    || el.id === 'pageExportPdfBtn'
+                    || el.id === 'pageExportImgBtn',
+            });
+        } finally {
+            _unfreeze();
+        }
     }
 
     async function _exportPdf() {
@@ -642,12 +706,21 @@ const FBExport = (() => {
         if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
         const ecMap = { donut: window.__feaDonut, radar: window._feaRadarChart };
         if (ecMap[cardKey]) { try { ecMap[cardKey].resize(); } catch(e) {} }
-        await new Promise(r => setTimeout(r, 220));
-        return html2canvas(area, {
-            scale: 2, useCORS: true, allowTaint: false,
-            backgroundColor: '#ffffff', logging: false, removeContainer: true,
-            ignoreElements: el => el.hasAttribute('data-html2canvas-ignore'),
-        });
+        const ecSnaps = _preSnapshot();
+        _freeze();
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, 350));
+        try {
+            return await html2canvas(area, {
+                scale: 2, useCORS: true, allowTaint: true,
+                backgroundColor: '#ffffff', logging: false, removeContainer: true,
+                imageTimeout: 0,
+                onclone: d => _onClone(d, ecSnaps),
+                ignoreElements: el => el.hasAttribute('data-html2canvas-ignore'),
+            });
+        } finally {
+            _unfreeze();
+        }
     }
 
     function _cardFilename(cardKey) {

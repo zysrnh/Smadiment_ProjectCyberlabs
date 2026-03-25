@@ -760,27 +760,54 @@ const MTExport=(() => {
     function _btnState(btn,on){if(!btn)return;btn.disabled=on;btn.classList.toggle('exporting',on);}
     function _disableAll(on){['pageExportPdfBtn','pageExportImgBtn','pageExportCsvBtn'].forEach(id=>{const b=_$(id);if(b){b.disabled=on;b.classList.toggle('exporting',on);}});}
 
-    /* ── Export Mode: matikan animasi saat capture ── */
-    let _savedInlineStyles = [];
-    function _enterExportMode() {
-        // Strip inline style animation pada semua elemen (fadeUp ada di style="animation:...")
-        _savedInlineStyles = [];
-        document.querySelectorAll('#pageExportArea [style*="animation"]').forEach(el => {
-            _savedInlineStyles.push({ el, style: el.getAttribute('style') });
-            el.style.animation = 'none';
-            el.style.opacity   = '1';
-            el.style.transform = 'none';
-        });
-        document.body.classList.add('is-exporting');
-        document.body.offsetHeight; // force reflow
+    /* ── Freeze / Unfreeze semua animasi CSS (Safari-safe) ── */
+    function _freeze() {
+        if (document.getElementById('__mt_freeze')) return;
+        const s = document.createElement('style');
+        s.id = '__mt_freeze';
+        s.textContent = `
+            *, *::before, *::after {
+                animation-play-state: paused !important;
+                animation-duration: 0s !important;
+                animation-delay: 0s !important;
+                transition-duration: 0s !important;
+                transition-delay: 0s !important;
+            }
+            .mt-post, .card, [class*="col-"], .kpi-card-hover {
+                opacity: 1 !important;
+                transform: none !important;
+                animation: none !important;
+            }
+        `;
+        document.head.appendChild(s);
     }
-    function _exitExportMode() {
-        document.body.classList.remove('is-exporting');
-        // Kembalikan inline style semula
-        _savedInlineStyles.forEach(({ el, style }) => {
-            el.setAttribute('style', style);
+    function _unfreeze() { document.getElementById('__mt_freeze')?.remove(); }
+
+    /* onclone helper bersama */
+    function _onClone(clonedDoc) {
+        const s = clonedDoc.createElement('style');
+        s.textContent = `
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+            [data-html2canvas-ignore] { display: none !important; }
+            .mt-post, .card, [class*="col-"], .kpi-card-hover {
+                opacity: 1 !important; transform: none !important; visibility: visible !important;
+            }
+            .do-panel-overlay, .do-panel, .do-detail-panel, .export-toast {
+                display: none !important;
+            }
+        `;
+        clonedDoc.head.appendChild(s);
+        /* Sembunyikan avatar cross-origin */
+        clonedDoc.querySelectorAll('.mt-post-av, .do-panel-avatar, .do-dp2-avatar-lg').forEach(wrapper => {
+            wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
+            if (!wrapper.querySelector('.__ini')) {
+                const sp = clonedDoc.createElement('span');
+                sp.className  = '__ini';
+                sp.textContent = (wrapper.textContent || 'M').trim()[0].toUpperCase();
+                sp.style.cssText = 'font-size:12px;font-weight:700;color:#fff;line-height:1;';
+                wrapper.appendChild(sp);
+            }
         });
-        _savedInlineStyles = [];
     }
 
     async function _capturePage(){
@@ -789,26 +816,38 @@ const MTExport=(() => {
         await new Promise(r=>setTimeout(r,300));
         if(_trendChart){try{await _trendChart.updateOptions({});}catch(e){}}
         if(_barChart){try{_barChart.resize();}catch(e){}}
-        await new Promise(r=>setTimeout(r,200));
-        _enterExportMode();
-        await new Promise(r=>setTimeout(r,60)); // beri waktu CSS diterapkan
+        _freeze();
+        await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+        await new Promise(r=>setTimeout(r,400));
         try {
-            return await html2canvas(area,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#f1f5f8',logging:false,removeContainer:true,windowWidth:document.documentElement.scrollWidth,windowHeight:area.scrollHeight,height:area.scrollHeight,ignoreElements:el=>el.hasAttribute('data-html2canvas-ignore')||['pageExportPdfBtn','pageExportImgBtn','pageExportCsvBtn'].includes(el.id)});
+            return await html2canvas(area,{
+                scale:2,useCORS:true,allowTaint:false,
+                backgroundColor:'#f1f5f8',logging:false,removeContainer:true,
+                windowWidth:document.documentElement.scrollWidth,
+                windowHeight:area.scrollHeight,height:area.scrollHeight,
+                onclone: d => _onClone(d),
+                ignoreElements:el=>el.hasAttribute('data-html2canvas-ignore')||['pageExportPdfBtn','pageExportImgBtn','pageExportCsvBtn'].includes(el.id)
+            });
         } finally {
-            _exitExportMode();
+            _unfreeze();
         }
     }
 
     async function _captureCard(areaId){
         const area=document.getElementById(areaId);if(!area)throw new Error('Area #'+areaId+' tidak ditemukan');
         if(_barChart&&areaId==='card-export-dist'){try{_barChart.resize();}catch(e){}}
-        await new Promise(r=>setTimeout(r,280));
-        _enterExportMode();
-        await new Promise(r=>setTimeout(r,60));
+        _freeze();
+        await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+        await new Promise(r=>setTimeout(r,350));
         try {
-            return await html2canvas(area,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,removeContainer:true,ignoreElements:el=>el.hasAttribute('data-html2canvas-ignore')});
+            return await html2canvas(area,{
+                scale:2,useCORS:true,allowTaint:false,
+                backgroundColor:'#ffffff',logging:false,removeContainer:true,
+                onclone: d => _onClone(d),
+                ignoreElements:el=>el.hasAttribute('data-html2canvas-ignore')
+            });
         } finally {
-            _exitExportMode();
+            _unfreeze();
         }
     }
 

@@ -703,6 +703,16 @@ const FBWCExport = (() => {
         } catch(e) { return null; }
     }
 
+    /* ── Freeze / Unfreeze CSS animations (Safari-safe) ── */
+    function _freeze() {
+        if (document.getElementById('__fbwc_freeze')) return;
+        const s = document.createElement('style');
+        s.id = '__fbwc_freeze';
+        s.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
+        document.head.appendChild(s);
+    }
+    function _unfreeze() { document.getElementById('__fbwc_freeze')?.remove(); }
+
     function _makeOnClone(wcSnapshot) {
         return (clonedDoc) => {
             const s = clonedDoc.createElement('style');
@@ -742,18 +752,22 @@ const FBWCExport = (() => {
         const wcSnapshot = _getWCSnapshot();
         area.querySelectorAll('.kpi-card-hover,.ht-item,.card,[class*="col-"]')
             .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; });
+        _freeze();
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        const capturePromise = html2canvas(area, {
-            scale: 2, useCORS: true, allowTaint: true,
-            backgroundColor: bgColor || '#f1f5f8', logging: false, removeContainer: true,
-            scrollX: 0, scrollY: 0,
-            windowWidth: document.documentElement.scrollWidth,
-            windowHeight: area.scrollHeight,
-            width: area.offsetWidth, height: area.scrollHeight,
-            onclone: _makeOnClone(wcSnapshot),
-        });
-        const timeout = new Promise((_,reject) => setTimeout(() => reject(new Error('Capture timeout')), 15000));
-        return Promise.race([capturePromise, timeout]);
+        await new Promise(r => setTimeout(r, 400));
+        try {
+            return await html2canvas(area, {
+                scale: 2, useCORS: true, allowTaint: true,
+                backgroundColor: bgColor || '#f1f5f8', logging: false, removeContainer: true,
+                scrollX: 0, scrollY: 0,
+                windowWidth: document.documentElement.scrollWidth,
+                windowHeight: area.scrollHeight,
+                width: area.offsetWidth, height: area.scrollHeight,
+                onclone: _makeOnClone(wcSnapshot),
+            });
+        } finally {
+            _unfreeze();
+        }
     }
 
     function _pdfHeader(pdf, title) {

@@ -608,32 +608,99 @@ const IGWCExport = (() => {
         btn.classList.toggle('exporting', on);
     }
 
+    /* ── ECharts snapshot ── */
+    function _getWCSnapshot() {
+        try {
+            if (!wcChart || wcChart.isDisposed()) return null;
+            return wcChart.getDataURL({ type:'png', pixelRatio:2, backgroundColor:'#ffffff' });
+        } catch(e) { return null; }
+    }
+
+    /* ── Freeze / Unfreeze CSS animations (Safari-safe) ── */
+    function _freeze() {
+        if (document.getElementById('__igwc_freeze')) return;
+        const s = document.createElement('style');
+        s.id = '__igwc_freeze';
+        s.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
+        document.head.appendChild(s);
+    }
+    function _unfreeze() { document.getElementById('__igwc_freeze')?.remove(); }
+
+    /* ── onclone callback ── */
+    function _makeOnClone(wcSnapshot) {
+        return (clonedDoc) => {
+            const s = clonedDoc.createElement('style');
+            s.textContent = `
+                *, *::before, *::after { animation:none!important; transition:none!important; }
+                [data-html2canvas-ignore] { display:none!important; }
+                .sk-block { animation:none!important; background:#e2e8f0!important; }
+                .kpi-card-hover { transform:none!important; filter:none!important; }
+                .spinner-state, #wcLoading, .spin-ring { display:none!important; }
+                .sent-tabs { display:none!important; }
+                .card,.row,[class*="col-"],.ht-item,.ht-list,#topicContent {
+                    opacity:1!important; transform:none!important; visibility:visible!important;
+                }
+            `;
+            clonedDoc.head.appendChild(s);
+            clonedDoc.querySelectorAll('#wcLoading,#topicLoading,.spinner-state,.spin-ring,.export-toast,.sent-tabs')
+                .forEach(el => { el.style.display = 'none'; });
+            clonedDoc.querySelectorAll('.card,.kpi-card-hover,[class*="col-"],.ht-item,.ht-list,#topicContent')
+                .forEach(el => { el.style.opacity='1'; el.style.transform='none'; el.style.visibility='visible'; el.style.animation='none'; });
+            const tc = clonedDoc.getElementById('topicContent');
+            if (tc) tc.style.display = 'block';
+            const wcDiv = clonedDoc.getElementById('wordCloudChart');
+            if (wcDiv) {
+                wcDiv.innerHTML = '';
+                wcDiv.style.cssText = 'display:block!important;width:100%;height:520px;';
+                if (wcSnapshot) {
+                    const img = clonedDoc.createElement('img');
+                    img.src = wcSnapshot;
+                    img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
+                    wcDiv.appendChild(img);
+                }
+            }
+        };
+    }
+
     async function _capturePage() {
         const area = _$('pageExportArea');
         if (!area) throw new Error('pageExportArea tidak ditemukan');
         window.scrollTo({ top: 0 });
-        await new Promise(r => setTimeout(r, 400));
-        if (wcChart) { try { wcChart.resize(); } catch(e) {} }
-        await new Promise(r => setTimeout(r, 200));
-        return html2canvas(area, {
-            scale: 2, useCORS: true, allowTaint: false,
-            backgroundColor: '#f1f5f8', logging: false, removeContainer: true,
-            windowWidth: document.documentElement.scrollWidth,
-            windowHeight: area.scrollHeight, height: area.scrollHeight,
-            ignoreElements: el => el.hasAttribute('data-html2canvas-ignore'),
-        });
+        const wcSnapshot = _getWCSnapshot();
+        _freeze();
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, 500));
+        try {
+            return await html2canvas(area, {
+                scale: 2, useCORS: true, allowTaint: true,
+                backgroundColor: '#f1f5f8', logging: false, removeContainer: true,
+                windowWidth: document.documentElement.scrollWidth,
+                windowHeight: area.scrollHeight, height: area.scrollHeight,
+                onclone: _makeOnClone(wcSnapshot),
+                ignoreElements: el => el.hasAttribute('data-html2canvas-ignore'),
+            });
+        } finally {
+            _unfreeze();
+        }
     }
 
     async function _captureCard(areaId) {
         const area = document.getElementById(areaId);
         if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
-        if (wcChart && areaId === 'card-export-wc') { try { wcChart.resize(); } catch(e) {} }
-        await new Promise(r => setTimeout(r, 280));
-        return html2canvas(area, {
-            scale: 2, useCORS: true, allowTaint: false,
-            backgroundColor: '#ffffff', logging: false, removeContainer: true,
-            ignoreElements: el => el.hasAttribute('data-html2canvas-ignore'),
-        });
+        const wcSnapshot = (areaId === 'card-export-wc') ? _getWCSnapshot() : null;
+        _freeze();
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, 350));
+        try {
+            return await html2canvas(area, {
+                scale: 2, useCORS: true, allowTaint: true,
+                backgroundColor: '#ffffff', logging: false, removeContainer: true,
+                onclone: _makeOnClone(wcSnapshot),
+                ignoreElements: el => el.hasAttribute('data-html2canvas-ignore'),
+            });
+        } finally {
+            _unfreeze();
+        }
     }
 
     function _pdfHeader(pdf, title) {
