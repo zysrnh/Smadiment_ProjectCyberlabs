@@ -1,4 +1,4 @@
-    <?php
+<?php
 
     namespace App\Http\Controllers;
 
@@ -1092,4 +1092,9 @@
             ], 200);
         }
     }
+    public function profile(MediaKernelsClient $mk)
+    {
+        $projects = $this->getProjects($mk);
+        return view('mk.profile', compact('projects'));
     }
+}

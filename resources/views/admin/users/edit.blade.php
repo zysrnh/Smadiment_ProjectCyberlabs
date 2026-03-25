@@ -137,7 +137,7 @@
                   </svg>
                 </span>
                 <div>
-                  <div class="project-checkbox-name">{{ $project['name'] ?? $project['title'] ?? 'Unnamed Project' }}</div>
+                  <div class="project-checkbox-name">{{ $project['name'] ?? $project['project_name'] ?? $project['title'] ?? $project['label'] ?? 'Unknown Project' }}</div>
                   <div class="project-checkbox-id">ID: {{ $project['id'] }}</div>
                 </div>
               </div>

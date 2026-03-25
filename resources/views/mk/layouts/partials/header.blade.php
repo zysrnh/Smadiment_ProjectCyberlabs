@@ -76,11 +76,10 @@
                                 <h6 class="mb-0">{{ auth()->user()->name ?? 'Admin' }}</h6>
                                 <small class="text-muted">{{ auth()->user()->email ?? 'admin@smadiment.com' }}</small>
                             </div>
-                            <a href="#!" class="dropdown-item">
+                            <a href="{{ route('mk.profile') }}" class="dropdown-item">
                                 <i class="ph ph-user-circle"></i>
                                 <span>Profile</span>
                             </a>
-                            {{-- Settings dihapus --}}
                             <div class="dropdown-divider"></div>
                             <a href="#" class="dropdown-item text-danger"
                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
