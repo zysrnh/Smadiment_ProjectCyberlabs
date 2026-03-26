@@ -1225,6 +1225,14 @@ const MAUExport = (() => {
     clearTimeout(_timer);_timer=setTimeout(()=>t.classList.remove('show'),dur);
   }
   function _btnState(btn,loading){ if(!btn)return; btn.disabled=loading; btn.classList.toggle('exporting',loading); }
+    function _freeze() {
+        if(document.getElementById('__s_freeze')) return;
+        const s = document.createElement('style'); s.id = '__s_freeze';
+        s.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
+        document.head.appendChild(s);
+    }
+    function _unfreeze() { document.getElementById('__s_freeze')?.remove(); }
+     
   function _donutSnap(){
     try{ if(!donutInst||donutInst.isDisposed())return null; const ch=$('donutChart'); if(!ch||ch.style.display==='none')return null; return donutInst.getDataURL({type:'png',pixelRatio:2,backgroundColor:'#ffffff'}); }catch(e){return null;}
   }

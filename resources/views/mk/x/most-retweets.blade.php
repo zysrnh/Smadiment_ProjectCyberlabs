@@ -796,6 +796,14 @@ const XExport = (() => {
         btn.disabled = loading;
         btn.classList.toggle('exporting', loading);
     }
+    function _freeze() {
+        if(document.getElementById('__s_freeze')) return;
+        const s = document.createElement('style'); s.id = '__s_freeze';
+        s.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
+        document.head.appendChild(s);
+    }
+    function _unfreeze() { document.getElementById('__s_freeze')?.remove(); }
+     
 
     /* ── Snapshot ECharts donut → dataURL ── */
     async function _getDonutSnapshot() {

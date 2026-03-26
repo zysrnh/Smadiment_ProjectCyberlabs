@@ -1548,6 +1548,14 @@
                 btn.disabled = loading;
                 btn.classList.toggle('exporting', loading);
             }
+    function _freeze() {
+        if(document.getElementById('__s_freeze')) return;
+        const s = document.createElement('style'); s.id = '__s_freeze';
+        s.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
+        document.head.appendChild(s);
+    }
+    function _unfreeze() { document.getElementById('__s_freeze')?.remove(); }
+     
 
             /* ── html2canvas capture ── */
             async function _capture() {
@@ -1562,7 +1570,11 @@
                 Object.values(window.__feaDonut ? { donut: window.__feaDonut } : {})
                     .forEach(c => { try { c.resize(); } catch(e) {} });
 
-                return html2canvas(area, {
+                _freeze(); await new Promise(r=>setTimeout(r,400));
+        try { _freeze(); await new Promise(r=>setTimeout(r,400));
+        try { return await html2canvas(area, {
+
+
                     scale:           2,
                     useCORS:         true,
                     allowTaint:      false,
@@ -1574,7 +1586,9 @@
                         el.hasAttribute('data-html2canvas-ignore')
                         || el.id === 'pageExportPdfBtn'
                         || el.id === 'pageExportImgBtn',
-                });
+                
+        
+        }); } finally { _unfreeze(); } } finally { _unfreeze(); }
             }
 
             /* ── PDF ── */
@@ -1648,7 +1662,11 @@
 
                 await new Promise(r => setTimeout(r, 220));
 
-                return html2canvas(area, {
+                _freeze(); await new Promise(r=>setTimeout(r,400));
+        try { _freeze(); await new Promise(r=>setTimeout(r,400));
+        try { return await html2canvas(area, {
+
+
                     scale:           2,
                     useCORS:         true,
                     allowTaint:      false,
@@ -1656,7 +1674,9 @@
                     logging:         false,
                     removeContainer: true,
                     ignoreElements:  el => el.hasAttribute('data-html2canvas-ignore'),
-                });
+                
+        
+        }); } finally { _unfreeze(); } } finally { _unfreeze(); }
             }
 
             function _cardFilename(cardKey) {

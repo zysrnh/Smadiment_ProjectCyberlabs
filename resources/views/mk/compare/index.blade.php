@@ -1060,6 +1060,14 @@
         btn.disabled = loading;
         btn.classList.toggle('exporting', loading);
     }
+    function _freeze() {
+        if(document.getElementById('__s_freeze')) return;
+        const s = document.createElement('style'); s.id = '__s_freeze';
+        s.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
+        document.head.appendChild(s);
+    }
+    function _unfreeze() { document.getElementById('__s_freeze')?.remove(); }
+     
 
     function _resizeAllCharts() {
         [_apexVol, _apexMedia].forEach(c => { if (c) { try { c.updateOptions({}); } catch (e) { } } });
@@ -1133,12 +1141,18 @@
         await new Promise(r => setTimeout(r, 400));
         _resizeAllCharts();
         await new Promise(r => setTimeout(r, 200));
-        return html2canvas(area, {
+        _freeze(); await new Promise(r=>setTimeout(r,400));
+        try { _freeze(); await new Promise(r=>setTimeout(r,400));
+        try { return await html2canvas(area, {
+
+
             scale: 2, useCORS: true, allowTaint: false,
             backgroundColor: '#f1f5f9', logging: false, removeContainer: true,
             height: area.scrollHeight,
             ignoreElements: el => el.hasAttribute('data-html2canvas-ignore'),
-        });
+        
+        
+        }); } finally { _unfreeze(); } } finally { _unfreeze(); }
     }
 
     async function _captureCard(areaId, cardKey) {
@@ -1152,11 +1166,17 @@
         };
         (chartMap[cardKey] || []).forEach(c => { if (c) { try { c.updateOptions({}); } catch (e) { } } });
         await new Promise(r => setTimeout(r, 280));
-        return html2canvas(area, {
+        _freeze(); await new Promise(r=>setTimeout(r,400));
+        try { _freeze(); await new Promise(r=>setTimeout(r,400));
+        try { return await html2canvas(area, {
+
+
             scale: 2, useCORS: true, allowTaint: false,
             backgroundColor: '#ffffff', logging: false, removeContainer: true,
             ignoreElements: el => el.hasAttribute('data-html2canvas-ignore'),
-        });
+        
+        
+        }); } finally { _unfreeze(); } } finally { _unfreeze(); }
     }
 
     const _cardLabels = {

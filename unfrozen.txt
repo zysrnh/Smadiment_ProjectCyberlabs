@@ -1,0 +1,9 @@
+d:\Gawe\January\Smadiment_ProjectCyberlabs\resources\views\mk\media-statistic.blade.php
+d:\Gawe\January\Smadiment_ProjectCyberlabs\resources\views\mk\trending-topic.blade.php
+d:\Gawe\January\Smadiment_ProjectCyberlabs\resources\views\mk\compare\index.blade.php
+d:\Gawe\January\Smadiment_ProjectCyberlabs\resources\views\mk\tiktok\tiktok-emotion-analysis.blade.php
+d:\Gawe\January\Smadiment_ProjectCyberlabs\resources\views\mk\x\most-active-users.blade.php
+d:\Gawe\January\Smadiment_ProjectCyberlabs\resources\views\mk\x\most-retweets.blade.php
+d:\Gawe\January\Smadiment_ProjectCyberlabs\resources\views\mk\x\overview.blade.php
+d:\Gawe\January\Smadiment_ProjectCyberlabs\resources\views\mk\x\top-influencers.blade.php
+d:\Gawe\January\Smadiment_ProjectCyberlabs\resources\views\mk\ai\partials\ai-analysis-scripts.blade.php

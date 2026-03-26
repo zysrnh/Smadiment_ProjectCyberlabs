@@ -1443,6 +1443,14 @@ const MSExport = (() => {
         btn.disabled = loading;
         btn.classList.toggle('exporting', loading);
     }
+    function _freeze() {
+        if(document.getElementById('__s_freeze')) return;
+        const s = document.createElement('style'); s.id = '__s_freeze';
+        s.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
+        document.head.appendChild(s);
+    }
+    function _unfreeze() { document.getElementById('__s_freeze')?.remove(); }
+     
  
     function _resizeAllCharts() {
         Object.values(MSCharts._i).forEach(c=>{try{if(!c.isDisposed())c.resize();}catch(e){}});
@@ -1513,7 +1521,11 @@ const MSExport = (() => {
         window.scrollTo({ top:0 });
         await new Promise(r => setTimeout(r, 350));
         _resizeAllCharts();
-        return html2canvas(areaEl, {
+        _freeze(); await new Promise(r=>setTimeout(r,400));
+        try { _freeze(); await new Promise(r=>setTimeout(r,400));
+        try { return await html2canvas(areaEl, {
+
+
             scale:           2,
             useCORS:         true,
             allowTaint:      false,
@@ -1523,7 +1535,9 @@ const MSExport = (() => {
             windowHeight:    areaEl.scrollHeight,
             height:          areaEl.scrollHeight,
             ignoreElements:  el => el.hasAttribute('data-html2canvas-ignore'),
-        });
+        
+        
+        }); } finally { _unfreeze(); } } finally { _unfreeze(); }
     }
  
     async function _captureCard(areaId) {
@@ -1531,7 +1545,11 @@ const MSExport = (() => {
         if(!area) throw new Error('Area #'+areaId+' tidak ditemukan');
         _resizeAllCharts();
         await new Promise(r => setTimeout(r, 220));
-        return html2canvas(area, {
+        _freeze(); await new Promise(r=>setTimeout(r,400));
+        try { _freeze(); await new Promise(r=>setTimeout(r,400));
+        try { return await html2canvas(area, {
+
+
             scale:           2,
             useCORS:         true,
             allowTaint:      false,
@@ -1539,7 +1557,9 @@ const MSExport = (() => {
             logging:         false,
             removeContainer: true,
             ignoreElements:  el => el.hasAttribute('data-html2canvas-ignore'),
-        });
+        
+        
+        }); } finally { _unfreeze(); } } finally { _unfreeze(); }
     }
  
     const _cardLabels = {
