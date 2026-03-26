@@ -893,8 +893,6 @@ const XExport = (() => {
                 removeContainer: true,
                 scrollX:         0,
                 scrollY:         0,
-                windowWidth:     document.documentElement.scrollWidth,
-                windowHeight:    area.scrollHeight,
                 width:           area.offsetWidth,
                 height:          area.scrollHeight,
                 onclone:         _makeOnClone(donutSnapshot),

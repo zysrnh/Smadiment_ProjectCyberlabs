@@ -1149,9 +1149,7 @@ const XGeoExport = (() => {
             scrollX: 0, scrollY : 0,
             width  : el.offsetWidth,
             height : el.scrollHeight,
-            windowWidth : document.documentElement.scrollWidth,
-            windowHeight: el.scrollHeight,
-        });
+            });
     }
 
     /* ── PDF helpers ── */

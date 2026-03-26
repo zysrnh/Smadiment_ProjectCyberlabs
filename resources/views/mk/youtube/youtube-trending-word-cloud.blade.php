@@ -718,35 +718,153 @@ function renderList() {
 
 function goPage(p){curPage=p;renderList();_$('topicList')?.scrollIntoView({behavior:'smooth',block:'nearest'});}
 
-/* ══ EXPORT (tidak berubah) ══ */
-const YTWCExport=(()=>{
-    'use strict';let _timer=null;const PID=OV_PID;
-    function _toast(msg,type='default',dur=3200){const t=_$('exportToast'),m=_$('exportToastMsg'),ico=_$('exportToastIcon');if(!t||!m)return;m.textContent=msg;t.className='export-toast show'+(type!=='default'?' '+type:'');if(ico)ico.className='ph '+({success:'ph-check-circle',error:'ph-x-circle',default:'ph-spinner'}[type]||'ph-spinner');clearTimeout(_timer);_timer=setTimeout(()=>t.classList.remove('show'),dur);}
-    function _btnState(btn,on){if(!btn)return;btn.disabled=on;btn.classList.toggle('exporting',on);}
-    async function _capPage(){const a=_$('pageExportArea');if(!a)throw new Error('pageExportArea tidak ditemukan');window.scrollTo({top:0});await new Promise(r=>setTimeout(r,400));if(wcChart){try{wcChart.resize();}catch(e){}}await new Promise(r=>setTimeout(r,200));return html2canvas(a,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#f1f5f8',logging:false,removeContainer:true,windowWidth:document.documentElement.scrollWidth,windowHeight:a.scrollHeight,height:a.scrollHeight,ignoreElements:el=>el.hasAttribute('data-html2canvas-ignore')||el.id==='pageExportPdfBtn'||el.id==='pageExportImgBtn'});}
-    async function _capCard(id){const a=document.getElementById(id);if(!a)throw new Error('Area #'+id+' tidak ditemukan');if(wcChart&&id==='card-export-wc'){try{wcChart.resize();}catch(e){}}await new Promise(r=>setTimeout(r,280));return html2canvas(a,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',logging:false,removeContainer:true,ignoreElements:el=>el.hasAttribute('data-html2canvas-ignore')});}
-    function _hdr(pdf,title){const pW=pdf.internal.pageSize.getWidth();pdf.setFillColor(3,128,71);pdf.rect(0,0,pW,11,'F');pdf.setTextColor(255,255,255);pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.text('SMADIMENT — '+title,10,7.5);const now=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});pdf.setFontSize(7);pdf.setFont('helvetica','normal');pdf.text('Generated: '+now,pW-10,7.5,{align:'right'});}
-    async function _pag(pdf,cv){const pW=pdf.internal.pageSize.getWidth(),pH=pdf.internal.pageSize.getHeight(),m=10,uW=pW-m*2,uH=pH-m*2-14,ratio=uW/cv.width,sH=uH/ratio;let sy=0,pg=0;while(sy<cv.height){if(pg>0){pdf.addPage();_hdr(pdf,'YouTube Word Cloud');}const ss=Math.min(sH,cv.height-sy),dH=ss*ratio;const sl=document.createElement('canvas');sl.width=cv.width;sl.height=Math.ceil(ss);sl.getContext('2d').drawImage(cv,0,sy,cv.width,ss,0,0,cv.width,ss);pdf.addImage(sl.toDataURL('image/png'),'PNG',m,14,uW,dH);pdf.setFontSize(7);pdf.setTextColor(148,163,184);pdf.text(`Halaman ${pg+1}`,pW/2,pH-3,{align:'center'});sy+=ss;pg++;}}
-    const _stamp=()=>new Date().toISOString().slice(0,10).replace(/-/g,'');
-    async function run(type,btn){
-        if(!window.html2canvas){_toast('html2canvas tidak tersedia','error');return;}
-        if(type==='pdf'&&!window.jspdf?.jsPDF){_toast('jsPDF tidak tersedia','error');return;}
-        const bP=_$('pageExportPdfBtn'),bI=_$('pageExportImgBtn');
-        _btnState(bP,true);_btnState(bI,true);
-        _toast(type==='pdf'?'Menyiapkan PDF…':'Mengambil gambar…','default',99999);
-        try{const cv=await _capPage(),st=_stamp();if(type==='image'){const a=document.createElement('a');a.download=`youtube_wordcloud_${PID}_${st}.png`;a.href=cv.toDataURL('image/png');a.click();_toast('Gambar berhasil diunduh!','success');}else{const{jsPDF}=window.jspdf,pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});_hdr(pdf,'YouTube Word Cloud');await _pag(pdf,cv);pdf.save(`youtube_wordcloud_${PID}_${st}.pdf`);_toast('PDF berhasil diunduh!','success');}}
-        catch(e){console.error('[YTWCExport]',e);_toast('Export gagal: '+e.message,'error');}
-        finally{_btnState(bP,false);_btnState(bI,false);}
+/* ══ EXPORT (Safari Safe) ══ */
+const YTWCExport = (() => {
+    'use strict'; let _timer = null; const PID = OV_PID;
+
+    function _toast(msg, type = 'default', dur = 3200) {
+        const t = _$('exportToast'), m = _$('exportToastMsg'), ico = _$('exportToastIcon');
+        if (!t || !m) return;
+        m.textContent = msg; t.className = 'export-toast show' + (type!=='default'?' '+type:'');
+        if (ico) ico.className = 'ph ' + ({success:'ph-check-circle',error:'ph-x-circle',default:'ph-spinner'}[type]||'ph-spinner');
+        clearTimeout(_timer); _timer = setTimeout(() => t.classList.remove('show'), dur);
     }
-    async function runCard(areaId,cardKey,type,btn){
-        if(!window.html2canvas){_toast('html2canvas tidak tersedia','error');return;}
-        if(type==='pdf'&&!window.jspdf?.jsPDF){_toast('jsPDF tidak tersedia','error');return;}
-        _btnState(btn,true);_toast(type==='pdf'?'Menyiapkan PDF card…':'Mengambil gambar…','default',99999);
-        try{const cv=await _capCard(areaId),st=_stamp();const labels={wordcloud:'word-cloud',topics:'top-topics'},titles={wordcloud:'YouTube Word Cloud',topics:'YouTube Top Topics'},fname=`youtube_${labels[cardKey]||cardKey}_${PID}_${st}`;if(type==='image'){const a=document.createElement('a');a.download=fname+'.png';a.href=cv.toDataURL('image/png');a.click();_toast('Gambar berhasil diunduh!','success');}else{const{jsPDF}=window.jspdf,landscape=cv.width>cv.height,pdf=new jsPDF({orientation:landscape?'landscape':'portrait',unit:'mm',format:'a4'});_hdr(pdf,titles[cardKey]||'YouTube Word Cloud');await _pag(pdf,cv);pdf.save(fname+'.pdf');_toast('PDF berhasil diunduh!','success');}}
-        catch(e){console.error('[YTWCExport.runCard]',e);_toast('Export gagal: '+e.message,'error');}
-        finally{_btnState(btn,false);}
+    function _btnState(btn, on) { if(btn){ btn.disabled = on; btn.classList.toggle('exporting', on); } }
+
+    function _getWCSnapshot() {
+        if (!wcChart) return null;
+        try { return wcChart.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: '#ffffff' }); } catch(e) { return null; }
     }
-    return{run,runCard};
+    function _freeze() {
+        const s = document.createElement('style'); s.id = '__wc_freeze';
+        s.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
+        document.head.appendChild(s);
+    }
+    function _unfreeze() { document.getElementById('__wc_freeze')?.remove(); }
+
+    function _makeOnClone(wcSnapshot) {
+        return (clonedDoc) => {
+            const s = clonedDoc.createElement('style');
+            s.textContent = `
+                *, *::before, *::after { animation:none!important; transition:none!important; }
+                [data-html2canvas-ignore] { display:none!important; }
+                .sk-block { animation:none!important; background:#e2e8f0!important; }
+                .kpi-card-hover { transform:none!important; filter:none!important; }
+                .spinner-state, #wcLoading, .spin-ring { display:none!important; }
+                .sent-tabs, .mode-toggle-wrap { display:none!important; }`;
+            clonedDoc.head.appendChild(s);
+            clonedDoc.querySelectorAll('#wcLoading,#topicLoading,.spinner-state,.spin-ring,.export-toast,.sent-tabs,.mode-toggle-wrap')
+                .forEach(e => { e.style.display = 'none'; });
+            clonedDoc.querySelectorAll('.card,.kpi-card-hover,[class*="col-"],.ht-item,.ht-list,#topicContent')
+                .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; e.style.animation='none'; });
+            
+            const tc = clonedDoc.getElementById('topicContent');
+            if (tc) tc.style.display = 'block';
+
+            const wcDiv = clonedDoc.getElementById('wordCloudChart');
+            if (wcDiv && wcSnapshot) {
+                wcDiv.innerHTML = '';
+                wcDiv.style.cssText = 'display:block!important;width:100%;height:460px;';
+                const img = clonedDoc.createElement('img');
+                img.src = wcSnapshot;
+                img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
+                wcDiv.appendChild(img);
+            }
+        };
+    }
+
+    async function _capture(areaId, bgColor) {
+        const area = document.getElementById(areaId);
+        if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+        window.scrollTo({ top: 0 });
+        const snapshot = _getWCSnapshot();
+        area.querySelectorAll('.kpi-card-hover,.ht-item,.card,[class*="col-"]')
+            .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; });
+        _freeze();
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, 400));
+        try {
+            return await html2canvas(area, {
+                scale: 2, useCORS: true, allowTaint: true,
+                backgroundColor: bgColor || '#f1f5f8', logging: false, removeContainer: true,
+                scrollX: 0, scrollY: 0,
+                width: area.offsetWidth, height: area.scrollHeight,
+                onclone: _makeOnClone(snapshot)
+            });
+        } finally { _unfreeze(); }
+    }
+
+    function _hdr(pdf, title) {
+        const pW = pdf.internal.pageSize.getWidth();
+        pdf.setFillColor(3, 128, 71); pdf.rect(0, 0, pW, 11, 'F');
+        pdf.setTextColor(255, 255, 255); pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
+        pdf.text('SMADIMENT — ' + title, 10, 7.5);
+        const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+        pdf.text('Generated: ' + now, pW - 10, 7.5, { align: 'right' });
+    }
+
+    async function _pag(pdf, cv) {
+        const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
+        const m = 10, uW = pW - m*2, uH = pH - m*2 - 14, ratio = uW / cv.width, sH = uH / ratio;
+        let sy = 0, pg = 0;
+        while (sy < cv.height) {
+            if (pg > 0) { pdf.addPage(); _hdr(pdf, 'YouTube Word Cloud'); }
+            const ss = Math.min(sH, cv.height - sy), dH = ss * ratio;
+            const sl = document.createElement('canvas'); sl.width = cv.width; sl.height = Math.ceil(ss);
+            sl.getContext('2d').drawImage(cv, 0, sy, cv.width, ss, 0, 0, cv.width, ss);
+            pdf.addImage(sl.toDataURL('image/png'), 'PNG', m, 14, uW, dH);
+            pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+            pdf.text(`Halaman ${pg + 1}`, pW / 2, pH - 3, { align: 'center' });
+            sy += ss; pg++;
+        }
+    }
+
+    const _stamp = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
+
+    async function run(type, btn) {
+        if (!window.html2canvas) { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+        const bP = _$('pageExportPdfBtn'), bI = _$('pageExportImgBtn');
+        _btnState(bP, true); _btnState(bI, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+        try {
+            const cv = await _capture('pageExportArea', '#f1f5f8'), st = _stamp();
+            if (type === 'image') {
+                const a = document.createElement('a'); a.download = `youtube_wordcloud_${PID}_${st}.png`;
+                a.href = cv.toDataURL('image/png'); a.click(); _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                _hdr(pdf, 'YouTube Word Cloud'); await _pag(pdf, cv); pdf.save(`youtube_wordcloud_${PID}_${st}.pdf`);
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(e) { console.error('[YTWCExport]', e); _toast('Export gagal: ' + e.message, 'error'); }
+        finally { _btnState(bP, false); _btnState(bI, false); }
+    }
+
+    async function runCard(areaId, cardKey, type, btn) {
+        if (!window.html2canvas) { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+        _btnState(btn, true); _toast(type === 'pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar…', 'default', 99999);
+        try {
+            const cv = await _capture(areaId, '#ffffff'), st = _stamp();
+            const labels = { wordcloud: 'word-cloud', topics: 'top-topics' };
+            const titles = { wordcloud: 'YouTube Word Cloud', topics: 'YouTube Top Topics' };
+            const fname = `youtube_${labels[cardKey] || cardKey}_${PID}_${st}`;
+            if (type === 'image') {
+                const a = document.createElement('a'); a.download = fname + '.png';
+                a.href = cv.toDataURL('image/png'); a.click(); _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf, landscape = cv.width > cv.height;
+                const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+                _hdr(pdf, titles[cardKey] || 'YouTube Word Cloud'); await _pag(pdf, cv); pdf.save(fname + '.pdf');
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(e) { console.error('[YTWCExport.runCard]', e); _toast('Export gagal: ' + e.message, 'error'); }
+        finally { _btnState(btn, false); }
+    }
+
+    return { run, runCard };
 })();
 
 /* ══ Init ══ */

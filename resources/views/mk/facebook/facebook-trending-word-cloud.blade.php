@@ -771,8 +771,6 @@ const FBWCExport = (() => {
                 scale: 2, useCORS: true, allowTaint: true,
                 backgroundColor: bgColor || '#f1f5f8', logging: false, removeContainer: true,
                 scrollX: 0, scrollY: 0,
-                windowWidth: document.documentElement.scrollWidth,
-                windowHeight: area.scrollHeight,
                 width: area.offsetWidth, height: area.scrollHeight,
                 onclone: _makeOnClone(wcSnapshot),
             });

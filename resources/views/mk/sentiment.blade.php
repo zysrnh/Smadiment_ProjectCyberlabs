@@ -1210,8 +1210,7 @@
                 ignoreElements: e => e.hasAttribute('data-html2canvas-ignore') || ['exportToast','sntPopup','sntPanelOverlay','sntPlatPicker'].includes(e.id),
                 x: 0, y: 0, scrollX: 0, scrollY: 0,
                 width: el.offsetWidth, height: el.scrollHeight,
-                windowWidth: document.documentElement.scrollWidth, windowHeight: el.scrollHeight,
-            });
+                });
         }
 
         function _stamp() { return new Date().toISOString().slice(0,10).replace(/-/g,''); }

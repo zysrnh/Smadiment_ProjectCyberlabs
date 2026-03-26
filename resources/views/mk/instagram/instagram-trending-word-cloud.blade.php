@@ -288,6 +288,9 @@ const numF = n => parseInt(n||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'
 const esc  = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
 let allTopics = [], filtered = [], curPage = 1, curSent = 'all';
+const PP = 15;
+let wcChart = null;
+
 const NEG_SET = new Set([
     /* ── EN ── */
     'bad','worst','worse','hate','hated','hating','sad','sadness','fail','failed','failing','failure',
@@ -741,10 +744,9 @@ const IGWCExport = (() => {
             return await html2canvas(area, {
                 scale: 2, useCORS: true, allowTaint: true,
                 backgroundColor: '#f1f5f8', logging: false, removeContainer: true,
-                windowWidth: document.documentElement.scrollWidth,
-                windowHeight: area.scrollHeight, height: area.scrollHeight,
-                onclone: _makeOnClone(wcSnapshot),
-                ignoreElements: el => el.hasAttribute('data-html2canvas-ignore'),
+                scrollX: 0, scrollY: 0,
+                width: area.offsetWidth, height: area.scrollHeight,
+                onclone: _makeOnClone(wcSnapshot)
             });
         } finally {
             _unfreeze();

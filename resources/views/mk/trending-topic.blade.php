@@ -1009,7 +1009,6 @@ const TTExport = {
                 backgroundColor: '#F1F5F8',
                 width          : offscreen.offsetWidth,
                 height         : offscreen.offsetHeight,
-                windowWidth    : offscreen.offsetWidth,
                 windowHeight   : offscreen.offsetHeight,
             });
             return {

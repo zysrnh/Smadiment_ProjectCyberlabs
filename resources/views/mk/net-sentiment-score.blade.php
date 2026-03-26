@@ -945,7 +945,6 @@ const NSSExport = (() => {
             y:               0,
             scrollX:         0,
             scrollY:         0,
-            windowWidth:     document.documentElement.scrollWidth,
             windowHeight:    areaH,
             width:           area.offsetWidth,
             height:          areaH,

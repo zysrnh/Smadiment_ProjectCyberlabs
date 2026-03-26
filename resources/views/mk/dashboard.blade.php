@@ -1425,8 +1425,6 @@ const DashExport = (() => {
                 e.hasAttribute('data-html2canvas-ignore') ||
                 e.id === 'pageExportPdfBtn' ||
                 e.id === 'pageExportImgBtn',
-            windowWidth    : document.documentElement.scrollWidth,
-            windowHeight   : el.scrollHeight,
             height         : el.scrollHeight,
         });
     }

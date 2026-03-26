@@ -1520,7 +1520,6 @@ const MSExport = (() => {
             backgroundColor: '#f1f5f9',
             logging:         false,
             removeContainer: true,
-            windowWidth:     document.documentElement.scrollWidth,
             windowHeight:    areaEl.scrollHeight,
             height:          areaEl.scrollHeight,
             ignoreElements:  el => el.hasAttribute('data-html2canvas-ignore'),

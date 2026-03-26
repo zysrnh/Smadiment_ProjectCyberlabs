@@ -644,8 +644,7 @@ const FBExport = (() => {
                 scale: 2, useCORS: true, allowTaint: true,
                 backgroundColor: '#f1f5f9', logging: false, removeContainer: true,
                 imageTimeout: 0,
-                windowWidth: document.documentElement.scrollWidth,
-                windowHeight: area.scrollHeight, height: area.scrollHeight,
+                height: area.scrollHeight,
                 onclone: d => _onClone(d, ecSnaps),
                 ignoreElements: el =>
                     el.hasAttribute('data-html2canvas-ignore')
