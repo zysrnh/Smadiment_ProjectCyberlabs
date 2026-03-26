@@ -86,7 +86,7 @@
                                 <i class="ph ph-sign-out"></i>
                                 <span>Sign Out</span>
                             </a>
-                            <form id="logout-form" action="/logout" method="POST" class="d-none">
+                            <form id="logout-form" action="{{ route('user.logout') }}" method="POST" class="d-none">
                                 @csrf
                             </form>
                         </div>

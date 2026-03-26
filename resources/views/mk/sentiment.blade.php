@@ -1118,98 +1118,18 @@
             }
         }
 
-        async function _preSnapshot() {
-            _ecSnapshots = {};
-            _apexSnap    = null;
-            const ecIds = ['chOverview','chSovTotal','chMass','chSocial','chByType','chByPlat','chMassPie','chSocialPie','chWeekday','chHour'];
-            for (const id of ecIds) {
-                const ec = SNTCharts._i[id];
-                if (!ec || ec.isDisposed()) continue;
-                try {
-                    ec.setOption({ animation: false }, false);
-                    ec.resize();
-                    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-                    _ecSnapshots[id] = ec.getDataURL({ type: 'png', pixelRatio: window.devicePixelRatio || 2, backgroundColor: '#ffffff' });
-                } catch (e) { console.warn('[SNTExport] EC snapshot fail:', id, e); }
-            }
-            if (typeof _apexTrend !== 'undefined' && _apexTrend) {
-                try {
-                    _apexTrend.updateOptions({ fill: { opacity: 1 }, chart: { animations: { enabled: false } } }, false, false, false);
-                    await new Promise(r => setTimeout(r, 300));
-                    const result = await _apexTrend.dataURI({ scale: 2 });
-                    _apexSnap = result?.imgURI || null;
-                } catch (e) { console.warn('[SNTExport] Apex snapshot fail:', e); }
-            }
-        }
-
-        function _onClone(clonedDoc) {
-            clonedDoc.querySelectorAll(
-                '#sntPopup,.do-panel-overlay,#sntPanelOverlay,#sntPlatPicker,' +
-                '#sntDetailPanel,.export-toast,[data-html2canvas-ignore],' +
-                '.page-export-bar,.chart-loading,.snt-skel,.snt-skel-overlay'
-            ).forEach(el => { el.style.cssText += 'display:none!important;visibility:hidden!important;opacity:0!important;'; });
-
-            clonedDoc.querySelectorAll('*').forEach(el => {
-                el.style.animationPlayState = 'paused';
-                el.style.animation  = 'none';
-                el.style.transition = 'none';
-            });
-
-            clonedDoc.querySelectorAll(
-                '.card,.card-body,.card-header,.row,[class*="col-"],' +
-                '.kpi-card-hover,#pageExportArea,#exportPage1,#exportPage2'
-            ).forEach(el => {
-                el.style.opacity    = '1';
-                el.style.transform  = 'none';
-                el.style.visibility = 'visible';
-                el.style.filter     = 'none';
-            });
-
-            clonedDoc.querySelectorAll(
-                '[id$="Wrap"],.chart-container,' +
-                '[style*="height:300px"],[style*="height:260px"],[style*="height:280px"],' +
-                '[style*="height:320px"],[style*="height:380px"]'
-            ).forEach(el => {
-                el.style.height    = 'auto';
-                el.style.minHeight = '200px';
-                el.style.overflow  = 'visible';
-            });
-
-            Object.entries(_ecSnapshots).forEach(([id, dataUrl]) => {
-                const container = clonedDoc.getElementById(id);
-                if (!container) return;
-                container.innerHTML = '';
-                const img = clonedDoc.createElement('img');
-                img.src = dataUrl;
-                img.style.cssText = 'width:100%;height:100%;display:block;object-fit:contain;min-height:200px;';
-                container.appendChild(img);
-                container.style.cssText += 'display:block!important;opacity:1!important;visibility:visible!important;';
-            });
-
-            const apexEl = clonedDoc.getElementById('chTrend');
-            if (apexEl && _apexSnap) {
-                apexEl.innerHTML = '';
-                apexEl.style.cssText = 'display:block!important;width:100%;height:380px;';
-                const img = clonedDoc.createElement('img');
-                img.src = _apexSnap;
-                img.style.cssText = 'width:100%;height:380px;object-fit:contain;display:block;';
-                apexEl.appendChild(img);
-            }
-
-            ['valNeg','valPos','valNeu','valTot'].forEach(id => {
-                const el = clonedDoc.getElementById(id);
-                if (el) { el.style.opacity = '1'; el.style.visibility = 'visible'; }
-            });
+        function _resizeAllCharts() {
+            Object.values(SNTCharts._i||{}).forEach(c=>{ try{ if(!c.isDisposed()) c.resize(); } catch(e){} });
+            if(typeof _apexTrend!=='undefined'&&_apexTrend) { try{ _apexTrend.updateOptions({}); } catch(e){} }
         }
 
         async function _captureEl(el, bg) {
             return html2canvas(el, {
                 scale: 2, useCORS: true, allowTaint: true, backgroundColor: bg || '#ffffff',
                 logging: false, removeContainer: true, imageTimeout: 0,
-                onclone: d => _onClone(d),
-                ignoreElements: e => e.hasAttribute('data-html2canvas-ignore') || ['exportToast','sntPopup','sntPanelOverlay','sntPlatPicker'].includes(e.id),
-                x: 0, y: 0, scrollX: 0, scrollY: 0,
-                width: el.offsetWidth, height: el.scrollHeight,
+                windowHeight: el.scrollHeight,
+                height: el.scrollHeight,
+                ignoreElements: e => e.hasAttribute('data-html2canvas-ignore') || ['exportToast','sntPopup','sntPanelOverlay','sntPlatPicker'].includes(e.id)
                 });
         }
 
@@ -1260,10 +1180,12 @@
                 const area = document.getElementById(areaId);
                 if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
 
-                await _preSnapshot();
+                window.scrollTo({ top:0 });
+                await new Promise(r => setTimeout(r, 350));
+                _resizeAllCharts();
                 _freeze();
                 await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-                await new Promise(r => setTimeout(r, 300));
+                await new Promise(r => setTimeout(r, 400));
 
                 let canvas;
                 try   { canvas = await _captureEl(area, '#ffffff'); }
@@ -1311,7 +1233,8 @@
 
             try {
                 window.scrollTo({ top: 0 });
-                await _preSnapshot();
+                await new Promise(r => setTimeout(r, 350));
+                _resizeAllCharts();
                 _freeze();
                 await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
                 await new Promise(r => setTimeout(r, 500));

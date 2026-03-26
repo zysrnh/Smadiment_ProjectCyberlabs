@@ -1679,23 +1679,21 @@ return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
             document.getElementById('__do_freeze')?.remove();
             Object.values(DOCharts._inst||{}).forEach(c=>{ if(c&&!c.isDisposed?.()){try{c.setOption({animation:true},false);}catch(e){}} });
         }
-        function _preSnapshot(){
-            _ecSnapshots={};
-            Object.entries(DOCharts._inst||{}).forEach(([id,inst])=>{ if(!inst||inst.isDisposed?.()) return; try{ _ecSnapshots[id]=inst.getDataURL({type:'png',pixelRatio:window.devicePixelRatio||2,backgroundColor:'#ffffff'}); }catch(e){} });
-        }
-        function _onClone(clonedDoc){
-            clonedDoc.querySelectorAll('.do-panel-overlay,.do-panel,.do-detail-panel,.do-plat-picker,.do-modal-overlay,.spin-ring,.spinner-state,.snt-skel,.sk-block,.export-toast,.chart-loading,[data-html2canvas-ignore]').forEach(el=>{ el.style.cssText+='display:none!important;visibility:hidden!important;opacity:0!important;height:0!important;overflow:hidden!important;'; });
-            clonedDoc.querySelectorAll('.do-body-scroll').forEach(el=>{ el.style.maxHeight='none'; el.style.overflow='visible'; el.style.height='auto'; });
-            clonedDoc.querySelectorAll('.do-loc-list,.do-sov-stats').forEach(el=>{ el.style.maxHeight='none'; el.style.overflow='visible'; });
-            clonedDoc.querySelectorAll('*').forEach(el=>{ el.style.animationPlayState='paused'; el.style.animation='none'; el.style.transition='none'; });
-            clonedDoc.querySelectorAll('.card,.card-body,.card-header,.row,[class*="col-"],.do-row-top,.do-row-mid,.do-mention-body,.do-sov-body,.do-map-wrap,.do-map-area,.do-loc-panel,#doPageExportArea').forEach(el=>{ el.style.opacity='1'; el.style.transform='none'; el.style.visibility='visible'; });
-            Object.entries(_ecSnapshots).forEach(([cid,dataUrl])=>{ const container=clonedDoc.getElementById(cid); if(!container) return; container.innerHTML=''; const img=clonedDoc.createElement('img'); img.src=dataUrl; img.style.cssText='width:100%;height:100%;display:block;object-fit:contain;'; container.appendChild(img); container.style.cssText+='display:block!important;opacity:1!important;visibility:visible!important;'; });
-            clonedDoc.querySelectorAll('#mentionSkelWrap,#sovSkel,#skSentiment,#mapSkel').forEach(el=>{ el.style.display='none'; });
-            ['mentionBody','sovBody','chSentiment'].forEach(id=>{ const el=clonedDoc.getElementById(id); if(el) el.style.display=el.id==='mentionBody'||el.id==='sovBody'?'flex':'block'; });
+        function _resizeAllCharts() {
+            Object.values(DOCharts._inst||{}).forEach(c=>{ try{ if(!c.isDisposed()) c.resize(); } catch(e){} });
         }
         async function _doCapture(el,bg){
-            const h=el.offsetHeight||el.scrollHeight;
-            return html2canvas(el,{scale:2,useCORS:true,allowTaint:true,backgroundColor:bg||'#f1f5f9',logging:false,removeContainer:true,imageTimeout:0,onclone:d=>_onClone(d),ignoreElements:e=>e.hasAttribute('data-html2canvas-ignore'),x:0,y:0,width:el.offsetWidth,height:h});
+            return html2canvas(el,{
+                scale: 2,
+                useCORS: true,
+                allowTaint: false,
+                backgroundColor: bg || '#f1f5f9',
+                logging: false,
+                removeContainer: true,
+                windowHeight: el.scrollHeight,
+                height: el.scrollHeight,
+                ignoreElements: e => e.hasAttribute('data-html2canvas-ignore')
+            });
         }
         function _drawHeader(pdf,pW,pH,label,page,total){
             pdf.setFillColor(3,128,71); pdf.rect(0,0,pW,11,'F');
@@ -1736,25 +1734,32 @@ return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
             _btnState(btnPdf,true); _btnState(btnImg,true);
             _toast(type==='pdf'?'Menyiapkan PDF 2 halaman…':'Mengambil gambar…','default',99999);
             try{
+                const restores=[];
+                document.querySelectorAll('.do-body-scroll,.do-loc-list,.do-sov-stats').forEach(el=>{
+                    const orig={maxHeight:el.style.maxHeight,overflow:el.style.overflow,height:el.style.height};
+                    restores.push({el,orig}); el.style.maxHeight='none'; el.style.overflow='visible'; el.style.height='auto';
+                });
+                window.scrollTo({ top:0 });
+                await new Promise(r => setTimeout(r, 350));
+                _resizeAllCharts();
                 _freeze();
                 await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-                await new Promise(r=>setTimeout(r,600));
-                _preSnapshot();
+                await new Promise(r=>setTimeout(r,400));
                 const area=$('doPageExportArea'), mapCard=$('card-export-map');
+                let canvasMain=null, canvasMap=null;
                 if(type==='image'){
-                    let canvas; try{canvas=await _doCapture(area,'#f1f5f9');}finally{_unfreeze();}
-                    const a=document.createElement('a'); a.download=`data_overview_${_stamp()}.png`; a.href=canvas.toDataURL('image/png'); a.click();
+                    try{canvasMain=await _doCapture(area,'#f1f5f9');}finally{_unfreeze(); restores.forEach(({el,orig})=>Object.entries(orig).forEach(([p,v])=>el.style[p]=v));}
+                    const a=document.createElement('a'); a.download=`data_overview_${_stamp()}.png`; a.href=canvasMain.toDataURL('image/png'); a.click();
                     _toast('Gambar berhasil diunduh!','success'); return;
                 }
                 if(mapCard) mapCard.style.visibility='hidden';
-                let canvasMain; try{canvasMain=await _doCapture(area,'#f1f5f9');}finally{if(mapCard) mapCard.style.visibility='';}
-                let canvasMap=null;
+                try{canvasMain=await _doCapture(area,'#f1f5f9');}finally{if(mapCard) mapCard.style.visibility='';}
                 if(mapCard){
                     try{if(window.L){Object.values(window).filter(v=>v instanceof L.Map).forEach(m=>{try{m.invalidateSize({animate:false});}catch(e){}});}}catch(e){}
                     await new Promise(r=>setTimeout(r,200));
                     try{canvasMap=await _doCapture(mapCard,'#ffffff');}catch(e){console.warn('[DOExport] map capture failed:',e);}
                 }
-                _unfreeze();
+                _unfreeze(); restores.forEach(({el,orig})=>Object.entries(orig).forEach(([p,v])=>el.style[p]=v));
                 const{jsPDF}=window.jspdf;
                 const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
                 const pW1=pdf.internal.pageSize.getWidth(), pH1=pdf.internal.pageSize.getHeight();
@@ -1786,10 +1791,12 @@ return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
                     restores.push({el,orig}); el.style.maxHeight='none'; el.style.overflow='visible'; el.style.height='auto';
                 });
                 if(cardKey==='map'&&window.L){ try{Object.values(window).filter(v=>v instanceof L.Map).forEach(m=>{try{m.invalidateSize({animate:false});}catch(e){}});}catch(e){} await new Promise(r=>setTimeout(r,200)); }
+                window.scrollTo({ top:0 });
+                await new Promise(r => setTimeout(r, 350));
+                _resizeAllCharts();
                 _freeze();
                 await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
                 await new Promise(r=>setTimeout(r,400));
-                _preSnapshot();
                 let canvas;
                 try{canvas=await _doCapture(area,'#ffffff');}
                 finally{ _unfreeze(); restores.forEach(({el,orig})=>Object.entries(orig).forEach(([p,v])=>el.style[p]=v)); }

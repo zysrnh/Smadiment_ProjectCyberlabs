@@ -836,16 +836,17 @@
                                     </div>
 
                                     {{-- Chart --}}
-                                    <div class="chart-container" id="chart-wrap-{{ $id }}">
-                                        <div class="chart-loading" id="chart-loading-{{ $id }}">
-                                            <div class="spin-ring"></div>
-                                            <span>Loading chart...</span>
-                                        </div>
-                                        <div id="chart-{{ $id }}"
-                                             style="width:100%;height:280px;display:none;cursor:pointer;">
-                                        </div>
-                                    </div>
-
+                                    {{-- Chart --}}
+<div class="chart-container" id="chart-wrap-{{ $id }}">
+    <div class="chart-loading" id="chart-loading-{{ $id }}">
+        <div class="spin-ring"></div>
+        <span>Loading chart...</span>
+    </div>
+    {{-- ← tambah scroll-wrapper --}}
+    <div id="chart-scroll-{{ $id }}" style="overflow-x:auto;overflow-y:hidden;width:100%;-webkit-overflow-scrolling:touch;">
+        <div id="chart-{{ $id }}" style="width:100%;height:280px;display:none;cursor:pointer;"></div>
+    </div>
+</div>
                                 </div>
                                 {{-- /card-body --}}
 
@@ -1115,141 +1116,198 @@
        RENDER CHART
     ════════════════════════════════════════════════════════ */
     function renderProjectChart(projectId) {
-        const chartEl = _$('chart-' + projectId);
-        const wrapEl  = _$('chart-wrap-' + projectId);
-        const loadEl  = _$('chart-loading-' + projectId);
-        const tl      = PROJECT_TIMELINES[String(projectId)] || null;
+    const chartEl  = _$('chart-' + projectId);
+    const wrapEl   = _$('chart-wrap-' + projectId);
+    const loadEl   = _$('chart-loading-' + projectId);
+    const tl       = PROJECT_TIMELINES[String(projectId)] || null;
 
-        if (!chartEl || !wrapEl || typeof ApexCharts === 'undefined') return;
+    if (!chartEl || !wrapEl || typeof ApexCharts === 'undefined') return;
 
-        if (!tl || !tl.dates || tl.dates.length === 0) {
-            if (loadEl) loadEl.remove();
-            wrapEl.innerHTML = '<div class="chart-empty"><i class="ph ph-chart-line"></i><span>No data for selected range</span></div>';
-            return;
+    if (!tl || !tl.dates || tl.dates.length === 0) {
+        if (loadEl) loadEl.remove();
+        wrapEl.innerHTML = '<div class="chart-empty"><i class="ph ph-chart-line"></i><span>No data for selected range</span></div>';
+        return;
+    }
+
+    chartEl.style.display = 'block';
+
+    /* ── Safari-safe label parse ── */
+    const totalPoints      = tl.dates.length;
+    const SCROLL_THRESHOLD = 31;
+
+    const labels = tl.dates.map(dt => {
+        try {
+            const datePart = String(dt || '').split(/[T\s]/)[0];
+            const parts    = datePart.split('-');
+            if (parts.length !== 3) return dt;
+            const year  = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            const day   = parseInt(parts[2], 10);
+            if (isNaN(year) || isNaN(month) || isNaN(day)) return dt;
+            const d = new Date(year, month - 1, day);
+            /* > 31 hari tampilkan "15 Jan", ≤ 31 hari tampilkan "15/1" */
+            return totalPoints > SCROLL_THRESHOLD
+                ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+                : `${d.getDate()}/${d.getMonth() + 1}`;
+        } catch (e) { return dt; }
+    });
+
+    /* ── Scroll setup ── */
+    const containerW  = chartEl.parentElement?.offsetWidth || 600;
+    const chartWidth  = totalPoints > SCROLL_THRESHOLD
+        ? Math.max(totalPoints * 42, containerW)
+        : containerW;
+
+    const scrollWrap = _$('chart-scroll-' + projectId);
+    if (scrollWrap) {
+        if (totalPoints > SCROLL_THRESHOLD) {
+            scrollWrap.style.overflowX = 'auto';
+            /* Hint "geser" — hanya inject sekali */
+            if (!scrollWrap.dataset.hinted) {
+                scrollWrap.dataset.hinted = '1';
+                const hint = document.createElement('div');
+                hint.style.cssText = 'text-align:right;font-size:10px;color:#94A3B8;font-weight:600;padding:2px 4px 4px;';
+                hint.innerHTML = '<i class="ph ph-arrows-left-right" style="font-size:11px;vertical-align:middle;"></i> Geser untuk lihat semua';
+                scrollWrap.parentElement?.insertBefore(hint, scrollWrap);
+            }
+        } else {
+            scrollWrap.style.overflowX = 'hidden';
         }
+    }
 
-        chartEl.style.display = 'block';
+    chartEl.style.width    = chartWidth + 'px';
+    chartEl.style.minWidth = chartWidth + 'px';
 
-        const labels = tl.dates.map(dt => {
-            try {
-                const d = new Date(dt + 'T00:00:00');
-                return `${d.getDate()}/${d.getMonth() + 1}`;
-            } catch (e) { return dt; }
-        });
+    const showLabels = totalPoints <= 31; /* dataLabels hanya kalau tidak padat */
 
-        const showLabels = true;
-
-        const options = {
-            chart: {
-                type: 'area',
-                height: 280,
-                fontFamily: 'inherit',
-                background: 'transparent',
-                toolbar: { show: false },
-                animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 1000 } },
-                events: {
-                    click: (_e, _ctx, cfg) => {
-                        let sdStr = null, edStr = null;
-                        if (cfg && typeof cfg.dataPointIndex !== 'undefined' && cfg.dataPointIndex >= 0) {
-                            if (tl.dates_start && tl.dates_start[cfg.dataPointIndex]) {
-                                sdStr = tl.dates_start[cfg.dataPointIndex];
-                            }
-                            if (tl.dates_end && tl.dates_end[cfg.dataPointIndex]) {
-                                edStr = tl.dates_end[cfg.dataPointIndex];
-                            }
-                        }
-                        if (cfg && cfg.seriesIndex >= 0) {
-                            const mapping = {0:'all', 1:'pos', 2:'neu', 3:'neg'};
-                            const sent = mapping[cfg.seriesIndex] || 'all';
-                            DashPanel.open('all', sent, projectId, sdStr, edStr);
-                        } else {
-                            DashPanel.open('all', 'all', projectId, sdStr, edStr);
-                        }
-                    },
-                    mounted: function () {
-                        if (loadEl) {
-                            loadEl.classList.add('hidden');
-                            setTimeout(() => { try { loadEl.remove(); } catch (e) {} }, 260);
-                        }
-                    },
+    const options = {
+        chart: {
+            type:       'area',
+            height:     280,
+            width:      chartWidth,   /* ← dynamic */
+            fontFamily: 'inherit',
+            background: 'transparent',
+            toolbar:    { show: false },
+            animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 1000 } },
+            events: {
+                click: (_e, _ctx, cfg) => {
+                    let sdStr = null, edStr = null;
+                    if (cfg && typeof cfg.dataPointIndex !== 'undefined' && cfg.dataPointIndex >= 0) {
+                        if (tl.dates_start && tl.dates_start[cfg.dataPointIndex]) sdStr = tl.dates_start[cfg.dataPointIndex];
+                        if (tl.dates_end   && tl.dates_end[cfg.dataPointIndex])   edStr = tl.dates_end[cfg.dataPointIndex];
+                    }
+                    if (cfg && cfg.seriesIndex >= 0) {
+                        const mapping = {0:'all', 1:'pos', 2:'neu', 3:'neg'};
+                        DashPanel.open('all', mapping[cfg.seriesIndex] || 'all', projectId, sdStr, edStr);
+                    } else {
+                        DashPanel.open('all', 'all', projectId, sdStr, edStr);
+                    }
+                },
+                mounted: function () {
+                    if (loadEl) {
+                        loadEl.classList.add('hidden');
+                        setTimeout(() => { try { loadEl.remove(); } catch (e) {} }, 260);
+                    }
                 },
             },
-            series: [
-                { name: 'Total',    data: tl.values || [] },
-                { name: 'Positive', data: tl.sentiment?.positive || [] },
-                { name: 'Neutral',  data: tl.sentiment?.neutral  || [] },
-                { name: 'Negative', data: tl.sentiment?.negative || [] },
-            ],
-            colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
-            xaxis: {
-                categories: labels,
-                axisBorder: { show: false },
-                axisTicks:  { show: false },
-                labels: { style: { fontFamily:'inherit', fontSize:'11px', fontWeight:600, colors:'#94A3B8' } }
+        },
+        series: [
+            { name: 'Total',    data: tl.values || [] },
+            { name: 'Positive', data: tl.sentiment?.positive || [] },
+            { name: 'Neutral',  data: tl.sentiment?.neutral  || [] },
+            { name: 'Negative', data: tl.sentiment?.negative || [] },
+        ],
+        colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
+        xaxis: {
+            categories: labels,
+            axisBorder: { show: false },
+            axisTicks:  { show: false },
+            tickAmount: totalPoints,                          /* ← semua label tampil */
+            labels: {
+                rotate:                   -45,
+                rotateAlways:             totalPoints > SCROLL_THRESHOLD,
+                hideOverlappingLabels:    false,              /* ← matikan, sudah scroll */
+                style: {
+                    fontFamily: 'inherit',
+                    fontSize:   totalPoints > SCROLL_THRESHOLD ? '10px' : '11px',
+                    fontWeight: 600,
+                    colors:     '#94A3B8',
+                }
+            }
+        },
+        yaxis: {
+            labels: {
+                formatter: v => numK(v),
+                style: { fontFamily:'inherit', fontSize:'10px', fontWeight:600, colors:'#94A3B8' }
             },
-            yaxis: {
-                labels: {
-                    formatter: v => numK(v),
-                    style: { fontFamily:'inherit', fontSize:'10px', fontWeight:600, colors:'#94A3B8' }
-                },
-                axisBorder: { show: false },
-                axisTicks:  { show: false }
-            },
-            fill:    { opacity: 0.3 },
-            stroke:  { curve: 'smooth', width: 2.5 },
-            markers: {
-                size: showLabels ? 5 : 0,
-                strokeWidth: 2,
-                strokeColors: '#fff',
-                hover: { size: 7 }
-            },
-            dataLabels: {
-                enabled: showLabels,
-                formatter: v => v > 0 ? numK(v) : '',
-                style: { fontSize:'10px', fontFamily:'inherit', fontWeight:'700' },
-                background: { enabled:true, foreColor:'#fff', borderRadius:3, borderWidth:0, padding:3, opacity:0.92, dropShadow:{enabled:true, top:1, left:0, blur:2, color:'#000', opacity:0.10} },
-                offsetY: -6,
-            },
-            grid: {
-                borderColor: 'rgba(226,232,240,.55)',
-                strokeDashArray: 3,
-                xaxis: { lines: { show: false } }
-            },
-            legend: {
-                position: 'bottom',
-                horizontalAlign: 'left',
-                fontFamily: 'inherit',
-                fontSize: '11px',
-                fontWeight: '600',
-                labels: { colors: '#94A3B8' },
-                markers: { width:9, height:9, radius:50 },
-                itemMargin: { horizontal:14, vertical:4 }
-            },
-            tooltip: {
-                shared: false,
-                intersect: true,
-                style: { fontFamily:'inherit', fontSize:'12px' },
-                y: { formatter: v => v ? v.toLocaleString('id-ID') + ' mentions' : '0 mentions' }
-            },
-        };
+            axisBorder: { show: false },
+            axisTicks:  { show: false }
+        },
+        fill:    { opacity: 0.3 },
+        stroke:  { curve: 'smooth', width: 2.5 },
+        markers: {
+            size:         showLabels ? 5 : 3,
+            strokeWidth:  2,
+            strokeColors: '#fff',
+            hover:        { size: 7 }
+        },
+        dataLabels: {
+            enabled:   showLabels,                           /* ← hide kalau > 31 titik */
+            formatter: v => v > 0 ? numK(v) : '',
+            style: { fontSize:'10px', fontFamily:'inherit', fontWeight:'700' },
+            background: { enabled:true, foreColor:'#fff', borderRadius:3, borderWidth:0, padding:3, opacity:0.92, dropShadow:{enabled:true,top:1,left:0,blur:2,color:'#000',opacity:0.10} },
+            offsetY: -6,
+        },
+        grid: {
+            borderColor:    'rgba(226,232,240,.55)',
+            strokeDashArray: 3,
+            xaxis: { lines: { show: false } }
+        },
+        legend: {
+            position:        'bottom',
+            horizontalAlign: 'left',
+            fontFamily:      'inherit',
+            fontSize:        '11px',
+            fontWeight:      '600',
+            labels:          { colors: '#94A3B8' },
+            markers:         { width:9, height:9, radius:50 },
+            itemMargin:      { horizontal:14, vertical:4 }
+        },
+        tooltip: {
+            shared:    false,
+            intersect: true,
+            style:     { fontFamily:'inherit', fontSize:'12px' },
+            y:         { formatter: v => v ? v.toLocaleString('id-ID') + ' mentions' : '0 mentions' }
+        },
+    };
 
-        const prevKey = '__apexInst_' + projectId;
-        if (window[prevKey]) { try { window[prevKey].destroy(); } catch (e) {} }
+    const prevKey = '__apexInst_' + projectId;
+    if (window[prevKey]) { try { window[prevKey].destroy(); } catch (e) {} }
 
-        chartEl.innerHTML = '';
-        const inst = new ApexCharts(chartEl, options);
-        window[prevKey] = inst;
-        inst.render();
+    chartEl.innerHTML = '';
+    const inst = new ApexCharts(chartEl, options);
+    window[prevKey] = inst;
+    inst.render();
 
-        /* Whole-chart area click → open mentions panel */
-        chartEl.addEventListener('click', e => {
-            const t    = e.target;
-            const skip = t.classList.contains('apexcharts-marker')
-                      || t.closest('.apexcharts-datalabels')
-                      || t.closest('.apexcharts-legend');
-            if (!skip) DashPanel.open('all', 'all', projectId);
+    /* Resize listener — hanya kalau tidak scroll mode */
+    if (totalPoints <= SCROLL_THRESHOLD) {
+        window.addEventListener('resize', () => {
+            const i = window['__apexInst_' + projectId];
+            if (i) {
+                const w = chartEl.parentElement?.offsetWidth || 600;
+                try { i.updateOptions({ chart: { width: w } }, false, false); } catch(e) {}
+            }
         });
     }
+
+    chartEl.addEventListener('click', e => {
+        const t    = e.target;
+        const skip = t.classList.contains('apexcharts-marker')
+                  || t.closest('.apexcharts-datalabels')
+                  || t.closest('.apexcharts-legend');
+        if (!skip) DashPanel.open('all', 'all', projectId);
+    });
+}
 
     /* ════════════════════════════════════════════════════════
        DASH EXPORT MODULE
@@ -1404,11 +1462,7 @@ const DashExport = (() => {
             logging        : false,
             removeContainer: true,
             onclone        : d => _onClone(d),
-            ignoreElements : e => e.hasAttribute('data-html2canvas-ignore'),
-            x      : 0,
-            y      : 0,
-            width  : el.offsetWidth,
-            height : el.offsetHeight || el.scrollHeight,
+            ignoreElements : e => e.hasAttribute('data-html2canvas-ignore')
         });
     }
 
@@ -1424,8 +1478,7 @@ const DashExport = (() => {
             ignoreElements : e =>
                 e.hasAttribute('data-html2canvas-ignore') ||
                 e.id === 'pageExportPdfBtn' ||
-                e.id === 'pageExportImgBtn',
-            height         : el.scrollHeight,
+                e.id === 'pageExportImgBtn'
         });
     }
 
@@ -1919,14 +1972,32 @@ const DashExport = (() => {
                 : ini;
 
             let dtFmt = '';
-            if (dt) {
-                try {
-                    dtFmt = new Date(dt).toLocaleDateString('id-ID',{
-                        weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'
-                    });
-                } catch (e) { dtFmt = dt.split('T')[0]; }
-            }
+// ✅ Safari-safe date format untuk detail panel
+if (dt) {
+    try {
+        // Normalize: "2024-01-15 10:30:00" → "2024-01-15T10:30:00"
+        const normalized = String(dt).trim().replace(' ', 'T');
+        const parts = normalized.split(/[T\-\:\.Z]/);
+        // parts: [yyyy, MM, dd, HH, mm, ss]
+        const year  = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day   = parseInt(parts[2], 10);
+        const hour  = parseInt(parts[3] || '0', 10);
+        const min   = parseInt(parts[4] || '0', 10);
 
+        if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+            const d = new Date(year, month, day, hour, min);
+            dtFmt = d.toLocaleDateString('id-ID', {
+                weekday: 'long', day: '2-digit', month: 'long',
+                year: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+        } else {
+            dtFmt = dt.split(/[T\s]/)[0];
+        }
+    } catch (e) {
+        dtFmt = dt.split(/[T\s]/)[0];
+    }
+}
             /* ── Media embed per platform ── */
             let mediaHtml = '';
             if (platform === 'youtube') {
