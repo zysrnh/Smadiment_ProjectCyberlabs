@@ -115,8 +115,8 @@
 <div id="pageExportArea">
 
 {{-- KPI --}}
-<div class="row mb-3">
-    <div class="col-md-6 col-xl-3">
+<div class="row mb-3 g-3">
+    <div class="col-sm-6 col-xl">
         <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .00s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                 <p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p>
@@ -125,8 +125,8 @@
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-hash"></i></div></div></div></div>
         </div>
     </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
+    <div class="col-sm-6 col-xl">
+        <div class="card h-100 bg-info text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                 <p class="mb-1 text-white text-opacity-75 f-12">Total Volume</p>
                 <h3 class="mb-0 text-white f-w-300" id="kpiVolume"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
@@ -134,22 +134,31 @@
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div></div></div>
         </div>
     </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-warning text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
+    <div class="col-sm-6 col-xl">
+        <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
-                <p class="mb-1 text-white text-opacity-75 f-12">Positive Topics</p>
+                <p class="mb-1 text-white text-opacity-75 f-12">Positif</p>
                 <h3 class="mb-0 text-white f-w-300" id="kpiPos"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
                 <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPosSub"><i class="ph ph-smiley me-1"></i>Loading…</p>
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div></div></div>
         </div>
     </div>
-    <div class="col-md-6 col-xl-3">
+    <div class="col-sm-6 col-xl">
         <div class="card h-100 bg-danger text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .15s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
-                <p class="mb-1 text-white text-opacity-75 f-12">Negative Topics</p>
+                <p class="mb-1 text-white text-opacity-75 f-12">Negatif</p>
                 <h3 class="mb-0 text-white f-w-300" id="kpiNeg"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
                 <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNegSub"><i class="ph ph-smiley-sad me-1"></i>Loading…</p>
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div></div></div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl">
+        <div class="card h-100 text-white kpi-card-hover" style="background-color:#b45309; animation:fadeUp .38s ease-out .20s both;">
+            <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
+                <p class="mb-1 text-white text-opacity-75 f-12">Netral</p>
+                <h3 class="mb-0 text-white f-w-300" id="kpiNeu"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNeuSub"><i class="ph ph-smiley-blank me-1"></i>Loading…</p>
+            </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-blank"></i></div></div></div></div>
         </div>
     </div>
 </div>
@@ -279,108 +288,163 @@ const numF = n => parseInt(n||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'
 const esc  = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
 let allTopics = [], filtered = [], curPage = 1, curSent = 'all';
-const PP = 15;
-let wcChart = null;
-
-/* ══ Sentiment Keywords ══ */
-const NEG_KW = [
-    /* EN */
-    'bad','worst','hate','sad','fail','failed','failing','lose','lost','angry','anger',
-    'terrible','horrible','awful','poor','dead','death','die','died','dying','kill','killed',
-    'corrupt','corruption','crime','criminal','fraud','scam','lie','lies','lied','lying',
-    'abuse','abused','terror','terrorist','attack','attacked','war','riot','scandal',
-    'boycott','crisis','disaster','wrong','hurt','suffer','suffering','violence','violent',
-    'racist','racism','bully','bullying','threat','threatened','danger','dangerous',
-    'victim','victims','bankrupt','drugs','drug','accident','flood','earthquake','landslide',
-    'fire','crash','explosion','murder','rape','robbery','theft','steal','stolen',
-    'illegal','fake','hoax','mislead','misleading','manipulate','manipulation',
-    'protest','chaos','collapse','broken','damage','damaged','destroy','destroyed',
-    'loss','losses','penalty','punish','punished','shame','shameful','disgrace','disgraced',
+const NEG_SET = new Set([
+    /* ── EN ── */
+    'bad','worst','worse','hate','hated','hating','sad','sadness','fail','failed','failing','failure',
+    'lose','lost','losing','loss','loser','angry','anger','furious','rage','raging',
+    'terrible','horrible','awful','dreadful','disgusting','poor','dead','death','die','died','dying',
+    'kill','killed','killing','killer','murder','murdered','murderer','suicide','suicidal',
+    'corrupt','corruption','corrupted','crime','criminal','criminals','fraud','fraudulent','scam','scammer',
+    'lie','lies','lied','lying','liar','fake','hoax','misinformation','disinformation','mislead','misleading',
+    'manipulate','manipulation','manipulated','abuse','abused','abuser','abusive',
+    'terror','terrorist','terrorism','attack','attacked','war','riot','riots','rioting','scandal',
+    'boycott','crisis','disaster','disasters','catastrophe','wrong','hurt','hurting','suffer','suffering',
+    'violence','violent','victim','victims','bankrupt','bankruptcy',
+    'drug','drugs','addict','addiction','accident','accidents',
+    'flood','earthquake','landslide','wildfire','tornado','hurricane','tsunami',
+    'crash','explosion','explode','exploded','rape','raped','robbery','robbed','theft','steal','stealing','stolen',
+    'illegal','unlawful','criminal','arrested','arrest','imprisoned','prison','jail','guilty','convicted','sentenced',
+    'banned','suspended','fired','dismissed','resign','resigned','resignation',
+    'shutdown','collapse','collapsed','bankrupt','broke','broken','damage','damaged','destroy','destroyed',
+    'penalty','punish','punished','shame','shameful','disgrace','disgraced','humiliate','humiliated',
     'embarrass','embarrassed','betrayal','betrayed','betray','deceive','deceived','deception',
-    'oppression','oppressed','exploit','exploited','exploitation','discrimination',
-    'harass','harassment','intimidate','intimidation','depressed','depression','anxiety',
-    'suicide','suicidal','poverty','starving','starvation','homeless','neglect','neglected',
-    'cheat','cheated','cheating','bribe','bribery','corrupt','corrupted','criminal',
-    'arrested','imprisoned','guilty','convicted','sentenced','banned','suspended',
-    'fired','dismissed','resign','resigned','shutdown','bankrupt','insolvent',
-    'toxic','poisoned','polluted','contaminated','infected','diseased','pandemic',
-    'homeless','hungry','poverty','poor','underpaid','underprivileged',
-    /* ID */
-    'buruk','benci','sedih','gagal','kalah','marah','amarah','parah','miskin','mati',
-    'bunuh','tewas','korupsi','kejahatan','penipuan','bohong','curang','kekerasan',
-    'serang','perang','rusuh','skandal','krisis','bencana','salah','rusak','sakit',
-    'derita','ilegal','ancaman','bahaya','darurat','korban','bangkrut','narkoba',
-    'meninggal','wafat','kecelakaan','banjir','gempa','longsor','kebakaran','tabrakan',
-    'ledakan','pembunuhan','pemerkosaan','perampokan','pencurian','mencuri','dicuri',
-    'palsu','hoaks','menyesatkan','manipulasi','protes','kacau','anarki',
-    'runtuh','hancur','kerusakan','menghancurkan','kerugian','hukuman','dihukum',
-    'dikecam','malu','memalukan','aib','pengkhianatan','mengkhianati',
-    'menipu','penindasan','ditindas','eksploitasi','diskriminasi',
-    'pelecehan','intimidasi','depresi','kecemasan','bunuhdiri','kemiskinan',
-    'kelaparan','gelandangan','ditelantarkan','terabaikan','dikucilkan','dibuang',
-    'dipecat','pemecatan','gelap','suram','nestapa','duka','cemas','takut',
-    'khawatir','panik','tertekan','stress','stres','trauma','luka','cedera',
-    'terluka','dicederai','disakiti','dizalimi','zalim','aniaya','dianiaya',
-    'ditangkap','dipenjara','penjara','divonis','vonis','terdakwa','tersangka',
-    'kejam','brutal','sadis','jahat','jahanam','laknat','haram','terlarang',
+    'oppression','oppressed','oppress','exploit','exploited','exploitation',
+    'discriminate','discrimination','harass','harassment','intimidate','intimidation',
+    'depress','depressed','depression','anxiety','anxious','panic','panicked',
+    'poverty','starving','starvation','homeless','neglect','neglected',
+    'cheat','cheated','cheating','bribe','bribery','toxic','poisoned','poisonous',
+    'polluted','pollution','contaminate','contaminated','infected','infection','diseased','pandemic','epidemic',
+    'protest','protests','protesting','unrest','conflict','war','warfare','battle','battles','fighting',
+    'vandalism','vandalize','arson','looting','chaos','anarchy','anarchist',
+    'threat','threatened','threatening','dangerous','danger','hazard','hazardous',
+    'racist','racism','racist','sexist','sexism','bigot','bigotry','xenophobia','xenophobic',
+    'bully','bullied','bullying','cyberbully','cyberbullying','harass',
+    'crisis','crises','emergency','critical','catastrophic','devastating','devasted',
+    'fake','counterfeit','forgery','forged','plagiarism','plagiarize',
+    /* ── ID ── */
+    'buruk','terburuk','benci','membenci','sedih','kesedihan','gagal','kegagalan',
+    'kalah','kekalahan','marah','kemarahan','murka','amarah','geram','berang',
+    'parah','mengerikan','menakutkan','menjijikkan','mati','kematian','meninggal',
+    'tewas','wafat','bunuh','membunuh','pembunuhan','bunuhdiri','bunuh diri',
+    'korupsi','koruptor','korup','kejahatan','kriminal','penipuan','penipu','curang','kecurangan',
+    'bohong','berbohong','pembohong','dusta','fitnah','hoaks','palsu','menyesatkan',
+    'manipulasi','memanipulasi','pelecehan','peleceh','kekerasan','brutal','sadis','kejam',
+    'teror','teroris','terorisme','serangan','menyerang','perang','huru-hara','rusuh','kerusuhan',
+    'skandal','krisis','bencana','malapetaka','musibah','celaka','petaka',
+    'salah','rusak','hancur','menghancurkan','kehancuran','kerusakan',
+    'sakit','penyakit','derita','menderita','sengsara','nestapa','duka','cemas',
+    'narkoba','narkotika','obat-terlarang','pecandu',
+    'kecelakaan','tabrakan','ledakan','meledak','kebakaran','kebanjiran','banjir',
+    'gempa','longsor','tsunami','puting beliung',
+    'pemerkosaan','memperkosa','perampokan','merampok','pencurian','mencuri','dicuri',
+    'korupsi','pungutan liar','pungli','suap','menyuap','gratifikasi',
+    'ilegal','melanggar hukum','ditangkap','penangkapan','dipenjara','penjara',
+    'divonis','vonis','hukuman','dihukum','terdakwa','tersangka','pidana',
     'dilarang','dicabut','dibekukan','disita','dirampas','dihapus','ditolak',
-    'gagalkan','kegagalan','kekacauan','kehancuran','kekerasan','kebencian',
-    'permusuhan','konflik','sengketa','saling','serangan','teror','ancam',
-];
+    'dipecat','pemecatan','mengundurkan diri','pengunduran diri',
+    'bangkrut','pailit','rugi','kerugian','kebangkrutan',
+    'malu','memalukan','aib','tercela','terhina','penghinaan',
+    'pengkhianatan','mengkhianati','berkhianat','menipu','tipu',
+    'penindasan','menindas','tertindas','eksploitasi','mengeksploitasi','diskriminasi',
+    'pelecehan','melecehkan','intimidasi','mengintimidasi',
+    'depresi','kecemasan','panik','trauma','stres','tertekan',
+    'kemiskinan','miskin','melarat','kelaparan','gelandangan','tunawisma','terlantar',
+    'terbuang','dikucilkan','diabaikan','ditelantarkan',
+    'beracun','racun','tercemar','pencemaran','polusi','terinfeksi','wabah','pandemi','epidemi',
+    'protes','demonstrasi','demo','bentrok','konflik','pertikaian','pertengkaran',
+    'ancaman','mengancam','berbahaya','bahaya','darurat','kritis',
+    'rasis','rasisme','rasis','diskriminatif','bully','perundungan','intimidasi',
+    'gelap','suram','kelam','muram','galau','resah','gundah','khawatir','takut',
+    'gagalkan','kacau','kekacauan','anarki','perusakan','merusak','vandalisme',
+    'pemalsuan','palsu','tiruan','plagiat','curang',
+    'penjahat','bajingan','brengsek','laknat','terkutuk','terlaknat',
+    'dipermalukan','dicerca','dicaci','dimaki','dihujat','hujatan',
+    'sampah','limbah','jorok','kotor','busuk','najis',
+    'susah','sulit','kesulitan','hambatan','masalah besar','keterpurukan',
+]);
 
-const POS_KW = [
-    /* EN */
-    'win','won','winning','best','good','great','love','loved','loving','happy','happiness',
-    'success','successful','succeed','amazing','excellent','awesome','celebrate','celebrated',
-    'celebration','proud','pride','champion','champions','championship','victory','victorious',
-    'achieve','achieved','achievement','congratulations','congratulate','hope','hopeful',
-    'inspire','inspired','inspiring','inspiration','wonderful','beautiful','brilliant',
-    'fantastic','legend','legendary','hero','heroes','progress','growth','growing',
-    'peace','peaceful','prosperous','prosperity','freedom','free','liberated','liberation',
-    'healthy','health','strong','strength','power','powerful','brave','bravery','courage',
-    'courageous','smart','intelligent','genius','innovative','innovation','creative',
-    'creativity','talented','talent','skilled','skill','expert','master','professional',
+const POS_SET = new Set([
+    /* ── EN ── */
+    'win','won','winning','winner','best','good','great','love','loved','loving','happy','happiness',
+    'success','successful','succeed','succeeded','amazing','excellent','awesome','superb','outstanding',
+    'celebrate','celebrated','celebration','proud','pride','champion','champions','championship',
+    'victory','victorious','achieve','achieved','achievement','achievements',
+    'congratulations','congratulate','congratulated','hope','hopeful','hoping',
+    'inspire','inspired','inspiring','inspiration','wonderful','beautiful','brilliant','magnificent',
+    'fantastic','legend','legendary','hero','heroes','heroic','progress','progressive','growth','growing',
+    'peace','peaceful','prosperous','prosperity','freedom','free','liberate','liberated','liberation',
+    'healthy','health','strong','strength','powerful','brave','bravery','courage','courageous',
+    'smart','intelligent','genius','innovative','innovation','creative','creativity',
+    'talented','talent','skilled','skill','expert','master','professional','professionalism',
     'improve','improved','improvement','advance','advanced','upgrade','upgraded',
     'build','built','building','develop','developed','development','grow','grew','grown',
-    'rise','risen','rising','boost','boosted','boosting','help','helped','helping',
-    'support','supported','supporting','care','caring','cared','kind','kindness',
-    'generous','generosity','grateful','gratitude','thankful','blessed','blessing',
+    'rise','risen','rising','boost','boosted','boosting',
+    'help','helped','helping','support','supported','supporting',
+    'care','caring','cared','kind','kindness','generous','generosity',
+    'grateful','gratitude','thankful','blessed','blessing','bless',
     'joy','joyful','cheerful','cheer','smile','smiling','laugh','laughter','fun',
     'enjoy','enjoyed','enjoying','pleasure','pleased','delight','delighted','delightful',
-    'perfect','perfection','outstanding','superb','magnificent','remarkable',
-    'extraordinary','incredible','unbelievable','phenomenal','award','awarded',
-    'reward','rewarded','recognition','recognized','honor','honored',
-    'respect','respected','trust','trusted','trustworthy','loyal','loyalty','unity',
-    'united','together','togetherness','community','solidarity','cooperation',
-    'launch','launched','new','official','milestone','record','historic','first',
-    'top','trending','viral','popular','famous','iconic','premium','quality',
-    /* ID */
-    'menang','juara','terbaik','baik','bagus','cinta','senang','sukses','berhasil',
-    'hebat','keren','bangga','kemenangan','prestasi','selamat','harapan','inspirasi',
-    'indah','cemerlang','fantastis','pahlawan','kemajuan','merdeka','damai','sejahtera',
-    'sehat','kuat','berani','pintar','cerdas','inovatif','inovasi','kreatif',
-    'kreativitas','berbakat','bakat','ahli','profesional','berkembang','meningkat',
-    'peningkatan','maju','canggih','bangun','membangun','tumbuh','naik',
-    'membantu','dukungan','mendukung','peduli','dermawan',
-    'syukur','bersyukur','berkah','bahagia','gembira','senyum','tertawa',
-    'menikmati','menyenangkan','sempurna','luarbiasa','mengagumkan','fenomenal',
-    'penghargaan','hadiah','pengakuan','dihormati','kepercayaan','setia','kesetiaan',
-    'bersatu','bersama','kebersamaan','komunitas','solidaritas','kerjasama','gotong',
-    'royong','kompak','harmonis','harmoni','ceria','riang','giat','rajin','tekun',
-    'semangat','antusias','optimis','positif','terpilih','unggul','istimewa',
-    'spesial','favorit','populer','viral','trending','hits','booming',
-    'resmi','diluncurkan','diresmikan','terpilih','meraih','mendapatkan',
-    'diraih','berhasil','sukses','lolos','lulus','diterima','dipuji',
-];
+    'perfect','perfection','phenomenal','incredible','extraordinary','remarkable','unbelievable',
+    'award','awarded','reward','rewarded','recognition','recognized','honor','honored','honoured',
+    'respect','respected','trust','trusted','trustworthy','loyal','loyalty',
+    'unity','united','together','togetherness','community','solidarity','cooperation','collaborative',
+    'launch','launched','milestone','record','historic','first','top','trending','viral',
+    'popular','famous','iconic','premium','quality','excellence','superior',
+    'safe','safety','secure','security','protect','protected','protection',
+    'fair','fairness','justice','just','righteous','honest','honesty','integrity',
+    'clean','transparent','transparency','accountable','accountability',
+    /* ── ID ── */
+    'menang','kemenangan','juara','kejuaraan','terbaik','unggulan','unggulan',
+    'baik','bagus','keren','hebat','luar biasa','luarbiasa','fantastis','menakjubkan','luar biasa',
+    'cinta','mencintai','kasih','sayang','menyayangi','peduli','kepedulian',
+    'senang','kesenangan','bahagia','kebahagiaan','gembira','ria','ceria','sukacita',
+    'sukses','kesuksesan','berhasil','keberhasilan','prestasi','berprestasi','meraih','diraih',
+    'bangga','kebanggaan','semangat','antusias','optimis','positif',
+    'harapan','berharap','optimisme','impian','cita-cita','mimpi',
+    'inspirasi','menginspirasi','terinspirasi','motivasi','memotivasi','termotivasi',
+    'indah','cantik','tampan','elok','molek','permai','menawan','memesona',
+    'cemerlang','brilian','cerdas','pandai','pintar','jenius','berbakat','bakat',
+    'maju','kemajuan','berkembang','perkembangan','pertumbuhan','tumbuh','meningkat','peningkatan',
+    'inovatif','inovasi','kreatif','kreativitas','solusi','ide cemerlang',
+    'ahli','pakar','profesional','berpengalaman','kompeten','kompetensi','terampil','keahlian',
+    'damai','kedamaian','harmonis','harmoni','rukun','kerukunan',
+    'sejahtera','kesejahteraan','makmur','kemakmuran','merdeka','kebebasan',
+    'sehat','kesehatan','bugar','kebugaran','kuat','kekuatan','tangguh',
+    'berani','keberanian','gagah','perkasa',
+    'gotong royong','bersatu','kebersamaan','solidaritas','kerjasama','kompak','bersama',
+    'syukur','bersyukur','terima kasih','berkah','karunia','anugerah','rezeki',
+    'penghargaan','apresiasi','diapresiasi','dihargai','diakui','pengakuan',
+    'terpercaya','amanah','jujur','kejujuran','integritas','transparan','keterbukaan',
+    'adil','keadilan','merata','pemerataan',
+    'bersih','kebersihan','rapi','kerapian','tertib','ketertiban',
+    'aman','keamanan','terlindungi','perlindungan',
+    'diresmikan','diluncurkan','terpilih','dipercaya','dianugerahi',
+    'rekor','bersejarah','berhasil','lolos','lulus','diterima','diterima',
+    'viral','populer','hits','trending','booming','digemari','favorit',
+    'spesial','istimewa','premium','berkualitas','terjamin',
+    'peringkat','rangking','nomor satu','terdepan','terbaik',
+]);
 
 function getSent(name) {
-    const low = name.toLowerCase().replace(/^#/,'').replace(/[_-]/g,' ').trim();
+    const clean  = name.toLowerCase().replace(/^[#@]+/, '');
+    const tokens = clean.split(/[\s_\-\.\/\\|&]+/).filter(Boolean);
+
     let negScore = 0, posScore = 0;
-    for (const k of NEG_KW) { if (low.includes(k)) negScore++; }
-    for (const k of POS_KW) { if (low.includes(k)) posScore++; }
+    for (const tok of tokens) {
+        if (NEG_SET.has(tok)) negScore++;
+        if (POS_SET.has(tok)) posScore++;
+    }
+    if (tokens.length === 1 && clean.length > 4) {
+        for (const kw of NEG_SET) {
+            if (kw.length >= 4 && clean.includes(kw)) negScore += 0.5;
+        }
+        for (const kw of POS_SET) {
+            if (kw.length >= 4 && clean.includes(kw)) posScore += 0.5;
+        }
+    }
     if (negScore > posScore) return 'negative';
     if (posScore > negScore) return 'positive';
-    return 'positive'; /* default positive jika tie */
+    return 'neutral';
 }
 
 /* ══ Load Data ══ */
@@ -412,6 +476,7 @@ function updateKpi() {
     const vol = allTopics.reduce((s,t) => s + t.size, 0);
     const pos = allTopics.filter(t => t.sent === 'positive').length;
     const neg = allTopics.filter(t => t.sent === 'negative').length;
+    const neu = allTopics.filter(t => t.sent === 'neutral').length;
     const el  = (id, v) => { const e = _$(id); if (e) e.textContent = numF(v); };
     el('kpiTopics', n);
     _$('kpiTopicsSub').innerHTML = `<i class="ph ph-hash me-1"></i>${numF(n)} trending topics`;
@@ -421,6 +486,8 @@ function updateKpi() {
     _$('kpiPosSub').innerHTML = `<i class="ph ph-smiley me-1"></i>${n ? (pos/n*100).toFixed(1) : 0}% of topics`;
     el('kpiNeg', neg);
     _$('kpiNegSub').innerHTML = `<i class="ph ph-smiley-sad me-1"></i>${n ? (neg/n*100).toFixed(1) : 0}% of topics`;
+    el('kpiNeu', neu);
+    _$('kpiNeuSub').innerHTML = `<i class="ph ph-smiley-blank me-1"></i>${n ? (neu/n*100).toFixed(1) : 0}% of topics`;
     _$('badgeWC').textContent = numF(filtered.length) + ' topics';
 }
 
@@ -429,7 +496,7 @@ function showEmpty() {
     _$('wcEmpty').style.display      = 'flex';
     _$('topicLoading').style.display = 'none';
     _$('topicEmpty').style.display   = 'flex';
-    ['kpiTopics','kpiVolume','kpiPos','kpiNeg'].forEach(id => { const e = _$(id); if (e) e.textContent = '0'; });
+    ['kpiTopics','kpiVolume','kpiPos','kpiNeg','kpiNeu'].forEach(id => { const e = _$(id); if (e) e.textContent = '0'; });
 }
 
 /* ══ Word Cloud ══ */

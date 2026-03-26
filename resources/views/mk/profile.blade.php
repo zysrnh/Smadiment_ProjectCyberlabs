@@ -9,21 +9,9 @@
     <div class="col-lg-4 col-xl-3 mb-4">
         <div class="card h-100 shadow-sm border-0">
             <div class="card-body text-center pt-5">
-                <div class="position-relative d-inline-block mb-3 profile-avatar-container">
-                    <img id="avatarPreview" src="{{ auth()->user() && auth()->user()->avatar ? auth()->user()->avatar : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name ?? 'Admin') . '&background=038047&color=fff&size=120&bold=true' }}" 
-                         alt="User Avatar" 
-                         class="img-fluid rounded-circle" 
-                         style="width: 130px; height: 130px; object-fit: cover; border: 5px solid #f8fafc; box-shadow: 0 8px 16px rgba(0,0,0,0.08); transition: all 0.3s;">
-                    
-                    <div class="avatar-upload-overlay" onclick="document.getElementById('avatarInput').click();">
-                        <i class="ph ph-camera"></i>
-                        <span>Change</span>
-                    </div>
-
-                    <form action="{{ route('mk.profile.avatar') }}" method="POST" enctype="multipart/form-data" id="avatarForm" class="d-none">
-                        @csrf
-                        <input type="file" name="avatar" id="avatarInput" accept="image/*" onchange="document.getElementById('avatarForm').submit();">
-                    </form>
+                <div class="position-relative d-inline-flex align-items-center justify-content-center mb-3 profile-avatar-container"
+                     style="width: 130px; height: 130px; border-radius: 50%; background: var(--primary-green, #038047); color: #fff; font-size: 48px; font-weight: 800; border: 5px solid #f8fafc; box-shadow: 0 8px 16px rgba(0,0,0,0.08);">
+                    {{ strtoupper(substr(auth()->user()->name ?? 'Admin', 0, 2)) }}
                 </div>
                 
                 @if(session('success'))
@@ -39,6 +27,7 @@
                 
                 <h4 class="mb-1 fw-bold text-dark">{{ auth()->user()->name ?? 'Administrator' }}</h4>
                 <p class="text-muted mb-3">{{ auth()->user()->email ?? 'admin@smadiment.com' }}</p>
+            </div>
             
             <div class="card-body border-top p-4" style="background: #fdfdfd; border-radius: 0 0 16px 16px;">
                 <div class="d-flex align-items-center mb-4">
@@ -154,7 +143,7 @@
 
 /* Avatar Upload Overlay */
 .profile-avatar-container {
-    cursor: pointer;
+    /* cursor: pointer; */
 }
 .avatar-upload-overlay {
     position: absolute;

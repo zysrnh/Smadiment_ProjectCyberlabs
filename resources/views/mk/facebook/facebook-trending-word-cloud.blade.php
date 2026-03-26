@@ -117,8 +117,8 @@
 <div id="pageExportArea">
 
 {{-- KPI --}}
-<div class="row mb-3">
-    <div class="col-md-6 col-xl-3">
+<div class="row mb-3 g-3">
+    <div class="col-sm-6 col-xl">
         <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .00s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                 <p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p>
@@ -127,8 +127,8 @@
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-hash"></i></div></div></div></div>
         </div>
     </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
+    <div class="col-sm-6 col-xl">
+        <div class="card h-100 bg-info text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                 <p class="mb-1 text-white text-opacity-75 f-12">Total Volume</p>
                 <h3 class="mb-0 text-white f-w-300" id="kpiVolume"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
@@ -136,22 +136,31 @@
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div></div></div>
         </div>
     </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-warning text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
+    <div class="col-sm-6 col-xl">
+        <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
-                <p class="mb-1 text-white text-opacity-75 f-12">Positive Topics</p>
+                <p class="mb-1 text-white text-opacity-75 f-12">Positif</p>
                 <h3 class="mb-0 text-white f-w-300" id="kpiPos"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
                 <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPosSub"><i class="ph ph-smiley me-1"></i>Loading…</p>
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div></div></div>
         </div>
     </div>
-    <div class="col-md-6 col-xl-3">
+    <div class="col-sm-6 col-xl">
         <div class="card h-100 bg-danger text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .15s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
-                <p class="mb-1 text-white text-opacity-75 f-12">Negative Topics</p>
+                <p class="mb-1 text-white text-opacity-75 f-12">Negatif</p>
                 <h3 class="mb-0 text-white f-w-300" id="kpiNeg"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
                 <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNegSub"><i class="ph ph-smiley-sad me-1"></i>Loading…</p>
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div></div></div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl">
+        <div class="card h-100 text-white kpi-card-hover" style="background-color:#b45309; animation:fadeUp .38s ease-out .20s both;">
+            <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
+                <p class="mb-1 text-white text-opacity-75 f-12">Netral</p>
+                <h3 class="mb-0 text-white f-w-300" id="kpiNeu"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNeuSub"><i class="ph ph-smiley-blank me-1"></i>Loading…</p>
+            </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-blank"></i></div></div></div></div>
         </div>
     </div>
 </div>
@@ -507,6 +516,8 @@ function updateKpi() {
     _$('kpiPosSub').innerHTML = `<i class="ph ph-smiley me-1"></i>${n ? (pos/n*100).toFixed(1) : 0}% of topics`;
     el('kpiNeg', neg);
     _$('kpiNegSub').innerHTML = `<i class="ph ph-smiley-sad me-1"></i>${n ? (neg/n*100).toFixed(1) : 0}% of topics`;
+    el('kpiNeu', neu);
+    _$('kpiNeuSub').innerHTML = `<i class="ph ph-smiley-blank me-1"></i>${n ? (neu/n*100).toFixed(1) : 0}% of topics`;
     _$('badgeWC').textContent = numF(filtered.length) + ' topics';
 }
 
@@ -515,7 +526,7 @@ function showEmpty() {
     _$('wcEmpty').style.display      = 'flex';
     _$('topicLoading').style.display = 'none';
     _$('topicEmpty').style.display   = 'flex';
-    ['kpiTopics','kpiVolume','kpiPos','kpiNeg'].forEach(id => { const e = _$(id); if (e) e.textContent = '0'; });
+    ['kpiTopics','kpiVolume','kpiPos','kpiNeg','kpiNeu'].forEach(id => { const e = _$(id); if (e) e.textContent = '0'; });
 }
 
 /* ══ Word Cloud ══ */
