@@ -54,6 +54,8 @@
 .sent-tab.tab-pos.active{color:#16a34a}
 .sent-tab.tab-neg.active{color:#dc2626}
 .sent-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .sent-tab.tab-neu.active{color:#b45309}
+
 
 /* ══ Export Styles ══ */
 .page-export-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:#fff;border:1px solid var(--slate-200);border-radius:var(--radius);padding:9px 14px;margin-bottom:20px;box-shadow:var(--shadow-sm)}
@@ -200,6 +202,8 @@
                             <button class="sent-tab active" data-s="all">Semua</button>
                             <button class="sent-tab tab-pos" data-s="positive"><span class="sent-dot" style="background:#16a34a;"></span>Positif</button>
                             <button class="sent-tab tab-neg" data-s="negative"><span class="sent-dot" style="background:#dc2626;"></span>Negatif</button>
+                              <button class="sent-tab tab-neu" data-s="neutral"><span class="sent-dot" style="background:#b45309;"></span>Netral</button>
+
                         </div>
                         <span class="badge bg-light-primary text-primary" id="badgeWC">Loading…</span>
                         <div data-html2canvas-ignore="true" class="d-flex gap-1">
@@ -620,7 +624,7 @@ function renderList() {
         const rk  = start + i + 1;
         const rc  = rk <= 3 ? ` ht-rank--${rk}` : '';
         const pct = Math.round((h.size / mx) * 100);
-        const sentColor = h.sent === 'positive' ? '#16a34a' : h.sent === 'negative' ? '#dc2626' : 'var(--primary)';
+const sentColor = h.sent === 'positive' ? '#16a34a' : h.sent === 'negative' ? '#dc2626' : '#b45309';
         const el  = document.createElement('div');
         el.className = 'ht-item';
         el.innerHTML = `
@@ -677,130 +681,164 @@ const IGWCExport = (() => {
         btn.disabled = on;
         btn.classList.toggle('exporting', on);
     }
+function _swapChartsIn(el) {
+    const swaps = [];
+    const container = document.getElementById('wordCloudChart');
+    if (!container || !el.contains(container)) return swaps;
+    if (container.style.display === 'none') return swaps;
 
-    /* ── ECharts snapshot ── */
-    function _getWCSnapshot() {
+    // Cari elemen <canvas> di dalam container (ECharts render di sini)
+    const echartsCanvas = container.querySelector('canvas');
+    if (!echartsCanvas) return swaps;
+
+    let dataUrl = null;
+
+    // Coba via ECharts API dulu
+    try {
+        if (wcChart && !wcChart.isDisposed()) {
+            dataUrl = wcChart.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: '#ffffff' });
+        }
+    } catch(e) {
+        console.warn('[IGWCExport] getDataURL gagal:', e);
+    }
+
+    // Fallback: langsung ambil dari DOM canvas (Safari-safe)
+    if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 100) {
         try {
-            if (!wcChart || wcChart.isDisposed()) return null;
-            return wcChart.getDataURL({ type:'png', pixelRatio:2, backgroundColor:'#ffffff' });
-        } catch(e) { return null; }
-    }
-
-    /* ── Freeze / Unfreeze CSS animations (Safari-safe) ── */
-    function _freeze() {
-        if (document.getElementById('__igwc_freeze')) return;
-        const s = document.createElement('style');
-        s.id = '__igwc_freeze';
-        s.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
-        document.head.appendChild(s);
-    }
-    function _unfreeze() { document.getElementById('__igwc_freeze')?.remove(); }
-
-    /* ── onclone callback ── */
-    function _makeOnClone(wcSnapshot) {
-        return (clonedDoc) => {
-            const s = clonedDoc.createElement('style');
-            s.textContent = `
-                *, *::before, *::after { animation:none!important; transition:none!important; }
-                [data-html2canvas-ignore] { display:none!important; }
-                .sk-block { animation:none!important; background:#e2e8f0!important; }
-                .kpi-card-hover { transform:none!important; filter:none!important; }
-                .spinner-state, #wcLoading, .spin-ring { display:none!important; }
-                .sent-tabs { display:none!important; }
-                .card,.row,[class*="col-"],.ht-item,.ht-list,#topicContent {
-                    opacity:1!important; transform:none!important; visibility:visible!important;
-                }
-            `;
-            clonedDoc.head.appendChild(s);
-            clonedDoc.querySelectorAll('#wcLoading,#topicLoading,.spinner-state,.spin-ring,.export-toast,.sent-tabs')
-                .forEach(el => { el.style.display = 'none'; });
-            clonedDoc.querySelectorAll('.card,.kpi-card-hover,[class*="col-"],.ht-item,.ht-list,#topicContent')
-                .forEach(el => { el.style.opacity='1'; el.style.transform='none'; el.style.visibility='visible'; el.style.animation='none'; });
-            const tc = clonedDoc.getElementById('topicContent');
-            if (tc) tc.style.display = 'block';
-            const wcDiv = clonedDoc.getElementById('wordCloudChart');
-            if (wcDiv) {
-                wcDiv.innerHTML = '';
-                wcDiv.style.cssText = 'display:block!important;width:100%;height:520px;';
-                if (wcSnapshot) {
-                    const img = clonedDoc.createElement('img');
-                    img.src = wcSnapshot;
-                    img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
-                    wcDiv.appendChild(img);
-                }
-            }
-        };
-    }
-
-    async function _capturePage() {
-        const area = _$('pageExportArea');
-        if (!area) throw new Error('pageExportArea tidak ditemukan');
-        window.scrollTo({ top: 0 });
-        const wcSnapshot = _getWCSnapshot();
-        _freeze();
-        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        await new Promise(r => setTimeout(r, 500));
-        try {
-            return await html2canvas(area, {
-                scale: 2, useCORS: true, allowTaint: true,
-                backgroundColor: '#f1f5f8', logging: false, removeContainer: true,
-                scrollX: 0, scrollY: 0,
-                width: area.offsetWidth, height: area.scrollHeight,
-                onclone: _makeOnClone(wcSnapshot)
-            });
-        } finally {
-            _unfreeze();
+            const offscreen = document.createElement('canvas');
+            offscreen.width  = echartsCanvas.width;
+            offscreen.height = echartsCanvas.height;
+            const ctx = offscreen.getContext('2d');
+            // Isi background putih dulu (canvas ECharts transparent)
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, offscreen.width, offscreen.height);
+            ctx.drawImage(echartsCanvas, 0, 0);
+            dataUrl = offscreen.toDataURL('image/png');
+        } catch(e2) {
+            console.warn('[IGWCExport] fallback canvas gagal:', e2);
         }
     }
 
-    async function _captureCard(areaId) {
-        const area = document.getElementById(areaId);
-        if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
-        const wcSnapshot = (areaId === 'card-export-wc') ? _getWCSnapshot() : null;
-        _freeze();
-        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        await new Promise(r => setTimeout(r, 350));
-        try {
-            return await html2canvas(area, {
-                scale: 2, useCORS: true, allowTaint: true,
-                backgroundColor: '#ffffff', logging: false, removeContainer: true,
-                onclone: _makeOnClone(wcSnapshot),
-                ignoreElements: el => el.hasAttribute('data-html2canvas-ignore'),
-            });
-        } finally {
-            _unfreeze();
-        }
+    if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 100) return swaps;
+
+    const h = container.offsetHeight || 520;
+    const w = container.offsetWidth  || echartsCanvas.width || 800;
+
+    const placeholder = document.createElement('div');
+    placeholder.dataset.swapFor = 'wordCloudChart';
+
+    const img = document.createElement('img');
+    img.dataset.swapImg = 'wordCloudChart';
+    img.src = dataUrl;
+    img.style.cssText = `width:${w}px;height:${h}px;object-fit:contain;display:block;background:#fff;`;
+
+    container.parentNode.insertBefore(placeholder, container);
+    container.parentNode.insertBefore(img, placeholder);
+    container.style.display = 'none';
+
+    swaps.push({ container, placeholder, img });
+    return swaps;
+}
+
+    function _swapChartsOut(swaps) {
+        swaps.forEach(({ container, placeholder, img }) => {
+            try { img.remove(); }         catch(e) {}
+            try { placeholder.remove(); } catch(e) {}
+            container.style.display = 'block';
+        });
     }
 
-    function _pdfHeader(pdf, title) {
-        const pW = pdf.internal.pageSize.getWidth();
-        pdf.setFillColor(3, 128, 71);
-        pdf.rect(0, 0, pW, 11, 'F');
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
-        pdf.text('SMADIMENT — ' + title, 10, 7.5);
+    function _onClone(clonedDoc) {
+        clonedDoc.querySelectorAll(
+            '#wcLoading,#topicLoading,.spinner-state,.spin-ring,' +
+            '.export-toast,.sent-tabs,[data-html2canvas-ignore]'
+        ).forEach(el => { el.style.cssText += 'display:none!important;'; });
+
+        clonedDoc.querySelectorAll('*').forEach(el => {
+            el.style.animationPlayState = 'paused';
+            el.style.animation  = 'none';
+            el.style.transition = 'none';
+        });
+
+        clonedDoc.querySelectorAll(
+            '.card,.card-body,.card-header,.row,[class*="col-"],' +
+            '.kpi-card-hover,.ht-item,.ht-list,#topicContent,#pageExportArea'
+        ).forEach(el => {
+            el.style.opacity    = '1';
+            el.style.transform  = 'none';
+            el.style.visibility = 'visible';
+        });
+
+        const tc = clonedDoc.getElementById('topicContent');
+        if (tc) tc.style.display = 'block';
+    }
+
+    async function _doCapture(el, isCard) {
+    el.querySelectorAll('.kpi-card-hover,.ht-item,.card,[class*="col-"]')
+      .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; });
+
+    const swaps = _swapChartsIn(el);
+
+    // Safari butuh waktu lebih untuk composite canvas
+    await new Promise(r => setTimeout(r, 300));
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    let canvas;
+    try {
+        canvas = await html2canvas(el, {
+            scale           : 2,
+            useCORS         : true,
+            allowTaint      : true,   // <-- ubah jadi true untuk Safari
+            backgroundColor : isCard ? '#ffffff' : '#f1f5f8',
+            logging         : false,
+            removeContainer : true,
+            imageTimeout    : 0,
+            x               : 0,
+            y               : 0,
+            width           : el.offsetWidth,
+            height          : el.scrollHeight,
+            onclone         : d => _onClone(d),
+            ignoreElements  : e => e.hasAttribute('data-html2canvas-ignore'),
+        });
+    } finally {
+        _swapChartsOut(swaps);
+    }
+    return canvas;
+}
+    function _drawHeader(pdf, pW, pH, label, page, total) {
+        pdf.setFillColor(3, 128, 71); pdf.rect(0, 0, pW, 11, 'F');
+        pdf.setTextColor(255, 255, 255); pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
+        pdf.text('SMADIMENT — ' + (label || 'Instagram Word Cloud'), 10, 7.5);
         const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
         pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
         pdf.text('Generated: ' + now, pW - 10, 7.5, { align: 'right' });
+        pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+        pdf.text(`Halaman ${page} / ${total}`, pW / 2, pH - 3, { align: 'center' });
     }
 
-    async function _paginatePdf(pdf, canvas) {
-        const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
-        const margin = 10, usableW = pW - margin * 2, usableH = pH - margin * 2 - 14;
-        const ratio = usableW / canvas.width, sliceH = usableH / ratio;
-        let srcY = 0, pg = 0;
+    function _addCanvas(pdf, canvas, margin, pW, pH) {
+        const uw = pW - margin*2, uh = pH - 14 - 10;
+        const ratio = Math.min(uw / canvas.width, uh / canvas.height);
+        const dw = canvas.width * ratio, dh = canvas.height * ratio;
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin + (uw-dw)/2, 14 + (uh-dh)/2, dw, dh);
+    }
+
+    function _paginate(pdf, canvas, margin, pW, pH, labelFn) {
+        const uw = pW - margin*2, uh = pH - 14 - 10;
+        const ratio = uw / canvas.width, sliceH = uh / ratio;
+        const total = Math.max(1, Math.ceil((canvas.height * ratio) / uh));
+        let srcY = 0, pg = 1;
         while (srcY < canvas.height) {
-            if (pg > 0) { pdf.addPage(); _pdfHeader(pdf, 'Instagram Word Cloud'); }
-            const srcSlice = Math.min(sliceH, canvas.height - srcY);
-            const dstH     = srcSlice * ratio;
-            const slice    = document.createElement('canvas');
-            slice.width    = canvas.width; slice.height = Math.ceil(srcSlice);
+            if (pg > 1) pdf.addPage();
+            _drawHeader(pdf, pW, pH, labelFn(), pg, total);
+            const srcSlice = Math.min(sliceH, canvas.height - srcY), dstH = srcSlice * ratio;
+            const slice = document.createElement('canvas');
+            slice.width = canvas.width; slice.height = Math.ceil(srcSlice);
             slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice);
-            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
-            pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
-            pdf.text(`Halaman ${pg + 1}`, pW / 2, pH - 3, { align: 'center' });
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, uw, dstH);
             srcY += srcSlice; pg++;
         }
+        return total;
     }
 
     function _stamp() { return new Date().toISOString().slice(0, 10).replace(/-/g, ''); }
@@ -808,12 +846,16 @@ const IGWCExport = (() => {
     async function run(type, btn) {
         if (!window.html2canvas) { _toast('html2canvas tidak tersedia', 'error'); return; }
         if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+
         const bPdf = _$('pageExportPdfBtn'), bImg = _$('pageExportImgBtn');
         _btnState(bPdf, true); _btnState(bImg, true);
         _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+
         try {
-            const canvas = await _capturePage();
+            const area   = _$('pageExportArea');
+            const canvas = await _doCapture(area, false);
             const stamp  = _stamp();
+
             if (type === 'image') {
                 const a = document.createElement('a');
                 a.download = `instagram_wordcloud_${PID}_${stamp}.png`;
@@ -821,38 +863,66 @@ const IGWCExport = (() => {
                 _toast('Gambar berhasil diunduh!', 'success');
             } else {
                 const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-                _pdfHeader(pdf, 'Instagram Word Cloud');
-                await _paginatePdf(pdf, canvas);
+                const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+                const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight(), M = 10;
+                const uw = pW - M*2, uh = pH - 14 - 10;
+
+                if ((canvas.height * (uw / canvas.width)) <= uh) {
+                    _drawHeader(pdf, pW, pH, 'Instagram Word Cloud', 1, 1);
+                    _addCanvas(pdf, canvas, M, pW, pH);
+                } else {
+                    _paginate(pdf, canvas, M, pW, pH, () => 'Instagram Word Cloud');
+                }
                 pdf.save(`instagram_wordcloud_${PID}_${stamp}.pdf`);
                 _toast('PDF berhasil diunduh!', 'success');
             }
         } catch(err) {
-            console.error('[IGWCExport]', err);
+            console.error('[IGWCExport.run]', err);
             _toast('Export gagal: ' + err.message, 'error');
-        } finally { _btnState(bPdf, false); _btnState(bImg, false); }
+        } finally {
+            _btnState(bPdf, false); _btnState(bImg, false);
+        }
+    }
+
+    const _cardLabels = {
+        'wordcloud' : 'Instagram Word Cloud',
+        'topics'    : 'Instagram Top Topics',
+    };
+    function _cardFilename(k) {
+        const map = { wordcloud:'word-cloud', topics:'top-topics' };
+        return `instagram_${map[k]||k}_${PID}_${_stamp()}`;
     }
 
     async function runCard(areaId, cardKey, type, btn) {
         if (!window.html2canvas) { _toast('html2canvas tidak tersedia', 'error'); return; }
         if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
         _btnState(btn, true);
-        _toast(type === 'pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar…', 'default', 99999);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
         try {
-            const canvas = await _captureCard(areaId);
-            const labels = { wordcloud: 'word-cloud', topics: 'top-topics' };
-            const titles = { wordcloud: 'Instagram Word Cloud', topics: 'Instagram Top Topics' };
-            const fname  = `instagram_${labels[cardKey] || cardKey}_${PID}_${_stamp()}`;
+            const area = document.getElementById(areaId);
+            if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+            const canvas = await _doCapture(area, true);
+            const fname  = _cardFilename(cardKey);
+            const label  = _cardLabels[cardKey] || cardKey;
+
             if (type === 'image') {
                 const a = document.createElement('a');
                 a.download = fname + '.png'; a.href = canvas.toDataURL('image/png'); a.click();
                 _toast('Gambar berhasil diunduh!', 'success');
             } else {
                 const { jsPDF } = window.jspdf;
-                const landscape = canvas.width > canvas.height;
-                const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
-                _pdfHeader(pdf, titles[cardKey] || 'Instagram Word Cloud');
-                await _paginatePdf(pdf, canvas);
+                const pdf = new jsPDF({
+                    orientation : canvas.width > canvas.height * 1.2 ? 'landscape' : 'portrait',
+                    unit:'mm', format:'a4'
+                });
+                const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight(), M = 10;
+                const uw = pW - M*2, uh = pH - 14 - 10;
+                if ((canvas.height * (uw / canvas.width)) <= uh) {
+                    _drawHeader(pdf, pW, pH, label, 1, 1);
+                    _addCanvas(pdf, canvas, M, pW, pH);
+                } else {
+                    _paginate(pdf, canvas, M, pW, pH, () => label);
+                }
                 pdf.save(fname + '.pdf');
                 _toast('PDF berhasil diunduh!', 'success');
             }
@@ -864,7 +934,6 @@ const IGWCExport = (() => {
 
     return { run, runCard };
 })();
-
 /* ══ Init ══ */
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
