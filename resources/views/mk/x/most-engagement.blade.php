@@ -471,7 +471,7 @@
 </style>
 @endsection
 
-@section('page-title', 'X Most Viewed Posts')
+@section('page-title', 'X Most Engagement Posts')
 
 @section('content')
 @php
@@ -1152,8 +1152,8 @@ const XMVData = {
         if(window.__xmvDonutChart) { try{ window.__xmvDonutChart.dispose(); }catch(e){} }
         if(typeof echarts === 'undefined') { chartEl.innerHTML='<div class="chart-empty"><i class="ph ph-chart-donut"></i><span>ECharts not loaded</span></div>'; return; }
 
-        const chart = echarts.init(chartEl, null, {renderer:'canvas'});
-        window.__xmvDonutChart = chart;
+const chart = echarts.init(chartEl, null, {renderer:'svg'});
+      window.__xmvDonutChart = chart;
         window.addEventListener('resize', ()=>{ try{ chart.resize(); }catch(e){} });
 
         const pieData = top5.map((it,i)=>{
@@ -1370,292 +1370,183 @@ const XMVDetail = {
 ══════════════════════════════════════════════════════ */
 const XMVExport = (() => {
     'use strict';
-    let _toastTimer  = null;
-    let _ecSnapshots = {};
+    let _toastTimer = null;
 
-    /* ── Toast ── */
-    function _toast(msg, type = 'default', duration = 3200) {
-        const t   = _$('exportToast'),
-              m   = _$('exportToastMsg'),
-              ico = _$('exportToastIcon');
-        if (!t || !m) return;
-        m.textContent = msg;
-        t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
-        ico.className = 'ph ' + ({ success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' }[type] || 'ph-spinner');
-        clearTimeout(_toastTimer);
-        _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+    function _toast(msg, type='default', duration=3200) {
+        const t=_$('exportToast'), m=_$('exportToastMsg'), ico=_$('exportToastIcon');
+        if(!t||!m) return;
+        m.textContent=msg; t.className='export-toast show '+(type!=='default'?type:'');
+        ico.className='ph '+({success:'ph-check-circle',error:'ph-x-circle',default:'ph-spinner'}[type]||'ph-spinner');
+        clearTimeout(_toastTimer); _toastTimer=setTimeout(()=>t.classList.remove('show'),duration);
     }
+    function _btnState(btn,loading){ if(!btn)return; btn.disabled=loading; btn.classList.toggle('exporting',loading); }
 
-    /* ── Button state ── */
-    function _btnState(btn, loading) {
-        if (!btn) return;
-        btn.disabled = loading;
-        btn.classList.toggle('exporting', loading);
-    }
-
-    /* ── Freeze / unfreeze animations ── */
-    function _freeze() {
-        if (document.getElementById('__xmv_freeze')) return;
-        const s = document.createElement('style');
-        s.id = '__xmv_freeze';
-        s.textContent = '*{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
+    function _freeze(){
+        if(document.getElementById('__xmv_freeze')) return;
+        const s=document.createElement('style'); s.id='__xmv_freeze';
+        s.textContent='*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}.fade-up,.kpi-card-hover{opacity:1!important;transform:none!important;}.sk-block{animation:none!important;}';
         document.head.appendChild(s);
     }
-    function _unfreeze() { document.getElementById('__xmv_freeze')?.remove(); }
+    function _unfreeze(){ document.getElementById('__xmv_freeze')?.remove(); }
 
-    /* ── Pre-snapshot ECharts donut (stored di window.__xmvDonutChart) ── */
-    function _preSnapshot() {
-        _ecSnapshots = {};
-        const inst = window.__xmvDonutChart;
-        if (!inst || inst.isDisposed?.()) return;
-        try {
-            _ecSnapshots['donutChart'] = inst.getDataURL({
-                type           : 'png',
-                pixelRatio     : window.devicePixelRatio || 2,
-                backgroundColor: '#ffffff',
-            });
-        } catch (e) { console.warn('[XMVExport] snapshot failed:', e); }
+    function _resizeCharts(){
+        try{ if(window.__xmvDonutChart&&!window.__xmvDonutChart.isDisposed()) window.__xmvDonutChart.resize(); }catch(e){}
+        Object.values(Charts).forEach(c=>{ try{ c.updateOptions({}); }catch(e){} });
     }
 
-    /* ── onclone: bersihkan DOM clone sebelum html2canvas render ── */
-    function _onClone(clonedDoc) {
-        /* 1. Sembunyikan elemen yang tidak perlu */
-        clonedDoc.querySelectorAll(
-            '.do-panel-overlay,.do-panel,.do-detail-panel,' +
-            '#xmvDonutTT,#xmvPanelOverlay,#xmvSntPanel,' +
-            '.spin-ring,.spinner-state,.export-toast,.chart-loading,' +
-            '[data-html2canvas-ignore]'
-        ).forEach(el => {
-            el.style.cssText += 'display:none!important;visibility:hidden!important;' +
-                                'opacity:0!important;height:0!important;overflow:hidden!important;';
-        });
+    function _drawHeader(pdf,pW,pH,label,page,total){
+        pdf.setFillColor(3,128,71); pdf.rect(0,0,pW,11,'F');
+        pdf.setTextColor(255,255,255); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
+        pdf.text('SMADIMENT — '+(label||'X Most Engagement'),10,7.5);
+        const now=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+        pdf.setFontSize(7); pdf.setFont('helvetica','normal'); pdf.text('Generated: '+now,pW-10,7.5,{align:'right'});
+        pdf.setFontSize(7); pdf.setTextColor(148,163,184); pdf.text(`Halaman ${page} / ${total}`,pW/2,pH-3,{align:'center'});
+    }
 
-        /* 2. Sembunyikan tab panel yang tidak aktif */
-        clonedDoc.querySelectorAll('.xmv-tab-panel:not(.active)').forEach(el => {
-            el.style.cssText += 'display:none!important;height:0!important;overflow:hidden!important;';
-        });
+    function _addCanvas(pdf,canvas,margin,pW,pH){
+        const uw=pW-margin*2, uh=pH-14-10;
+        const ratio=Math.min(uw/canvas.width, uh/canvas.height);
+        const dw=canvas.width*ratio, dh=canvas.height*ratio;
+        pdf.addImage(canvas.toDataURL('image/png'),'PNG',margin+(uw-dw)/2,14+(uh-dh)/2,dw,dh);
+    }
 
-        /* 3. Ganti avatar cross-origin dengan initial letter */
-        clonedDoc.querySelectorAll('.xmv-post-av,.do-panel-avatar,.do-dp2-avatar-lg').forEach(wrapper => {
-            wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
-            if (!wrapper.querySelector('.__ini')) {
-                const txt     = (wrapper.textContent || '').trim();
-                const initial = txt ? txt[0].toUpperCase() : 'X';
-                const sp      = clonedDoc.createElement('span');
-                sp.className  = '__ini';
-                sp.textContent = initial;
-                sp.style.cssText = 'font-size:13px;font-weight:700;color:#fff;line-height:1;';
-                wrapper.appendChild(sp);
-            }
-            if (!wrapper.style.background)
-                wrapper.style.background = 'linear-gradient(135deg,#038047,#05a85e)';
-        });
-
-        /* 4. Stop animasi & pastikan elemen terlihat */
-        clonedDoc.querySelectorAll('*').forEach(el => {
-            el.style.animationPlayState = 'paused';
-            el.style.animation          = 'none';
-            el.style.transition         = 'none';
-        });
-        clonedDoc.querySelectorAll(
-            '.card,.card-body,.card-header,.row,[class*="col-"],' +
-            '.xmv-tab-panel.active,.xmv-post-list,.xmv-post,' +
-            '#pageExportArea'
-        ).forEach(el => {
-            el.style.opacity    = '1';
-            el.style.transform  = 'none';
-            el.style.visibility = 'visible';
-        });
-
-        /* 5. ★ Ganti ECharts <canvas> dengan <img> dari snapshot ★ */
-        if (_ecSnapshots['donutChart']) {
-            const container = clonedDoc.getElementById('donutChart');
-            if (container) {
-                container.innerHTML = '';
-                const img       = clonedDoc.createElement('img');
-                img.src         = _ecSnapshots['donutChart'];
-                img.style.cssText = 'width:100%;height:100%;display:block;object-fit:contain;';
-                container.appendChild(img);
-                container.style.cssText += 'display:block!important;opacity:1!important;visibility:visible!important;';
-            }
+    function _sliceIntoPages(pdf,canvas,margin,pW,pH,label,startPageNum,totalPages){
+        const uw=pW-margin*2, uh=pH-14-10;
+        const ratio=uw/canvas.width, sliceH=uh/ratio;
+        let srcY=0, pg=startPageNum, first=true;
+        while(srcY<canvas.height){
+            if(!first) pdf.addPage(); first=false;
+            _drawHeader(pdf,pW,pH,label,pg,totalPages);
+            const srcSlice=Math.min(sliceH,canvas.height-srcY), dstH=srcSlice*ratio;
+            const slice=document.createElement('canvas');
+            slice.width=canvas.width; slice.height=Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(canvas,0,srcY,canvas.width,srcSlice,0,0,canvas.width,srcSlice);
+            pdf.addImage(slice.toDataURL('image/png'),'PNG',margin,14,uw,dstH);
+            srcY+=srcSlice; pg++;
         }
+        return pg;
     }
 
-    /* ── Core capture (freeze → snapshot → html2canvas → unfreeze) ── */
-    async function _doCapture(el, isCard) {
-        _preSnapshot();
+    // ── Core capture — sama persis dengan Media Statistic yang works ──
+    async function _captureArea(el, isCard){
+        _resizeCharts();
+        await new Promise(r=>setTimeout(r,300));
         _freeze();
-        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        await new Promise(r => setTimeout(r, 400));
-        let canvas;
-        try {
-            canvas = await html2canvas(el, {
-                scale          : 2,
-                useCORS        : true,
-                allowTaint     : true,
+        await new Promise(r=>setTimeout(r,400));
+        try{
+            return await html2canvas(el,{
+                scale:2,
+                useCORS:true,
+                allowTaint:false,
                 backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
-                logging        : false,
-                removeContainer: true,
-                imageTimeout   : 0,
-                onclone        : d => _onClone(d),
-                ignoreElements : e => e.hasAttribute('data-html2canvas-ignore'),
-                x              : 0,
-                y              : 0,
-                width          : el.offsetWidth,
-                height         : el.scrollHeight,
+                logging:false,
+                removeContainer:true,
+                windowHeight: el.scrollHeight,
+                height: el.scrollHeight,
+                ignoreElements: e=>e.hasAttribute('data-html2canvas-ignore'),
             });
-        } finally { _unfreeze(); }
-        return canvas;
-    }
-
-    /* ── PDF header ── */
-    function _drawHeader(pdf, pW, pH, label, page, total) {
-        pdf.setFillColor(3, 128, 71);
-        pdf.rect(0, 0, pW, 11, 'F');
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
-        pdf.text('SMADIMENT — ' + (label || 'X Most Viewed Posts'), 10, 7.5);
-        const now = new Date().toLocaleDateString('id-ID', {
-            day: '2-digit', month: 'short', year: 'numeric',
-            hour: '2-digit', minute: '2-digit',
-        });
-        pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
-        pdf.text('Generated: ' + now, pW - 10, 7.5, { align: 'right' });
-        pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
-        pdf.text(`Halaman ${page} / ${total}`, pW / 2, pH - 3, { align: 'center' });
-    }
-
-    /* ── Tambahkan canvas ke halaman PDF (fit-in-page) ── */
-    function _addCanvas(pdf, canvas, margin, pW, pH) {
-        const uw = pW - margin * 2, uh = pH - 14 - 10;
-        const ratio = Math.min(uw / canvas.width, uh / canvas.height);
-        const dw = canvas.width * ratio, dh = canvas.height * ratio;
-        pdf.addImage(
-            canvas.toDataURL('image/png'), 'PNG',
-            margin + (uw - dw) / 2,
-            14   + (uh - dh) / 2,
-            dw, dh
-        );
-    }
-
-    /* ── Paginate canvas panjang ke multi-halaman PDF ── */
-    function _paginate(pdf, canvas, margin, pW, pH, labelFn) {
-        const uw = pW - margin * 2, uh = pH - 14 - 10;
-        const ratio  = uw / canvas.width, sliceH = uh / ratio;
-        const total  = Math.max(1, Math.ceil((canvas.height * ratio) / uh));
-        let srcY = 0, pg = 1;
-        while (srcY < canvas.height) {
-            if (pg > 1) pdf.addPage();
-            _drawHeader(pdf, pW, pH, labelFn(), pg, total);
-            const srcSlice = Math.min(sliceH, canvas.height - srcY), dstH = srcSlice * ratio;
-            const slice    = document.createElement('canvas');
-            slice.width    = canvas.width;
-            slice.height   = Math.ceil(srcSlice);
-            slice.getContext('2d').drawImage(
-                canvas, 0, srcY, canvas.width, srcSlice,
-                0, 0,           canvas.width, srcSlice
-            );
-            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, uw, dstH);
-            srcY += srcSlice; pg++;
+        }finally{
+            _unfreeze();
         }
-        return total;
     }
 
-    /* ════════════════════════════════════════════
-       run — Export seluruh halaman (semua 4 tab)
-    ════════════════════════════════════════════ */
-    async function run(type, btn) {
-        if (!window.html2canvas)       { _toast('html2canvas tidak tersedia', 'error'); return; }
-        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+    // ── run(): export full page ──
+    async function run(type,btn){
+        if(!window.html2canvas){ _toast('html2canvas tidak tersedia','error'); return; }
+        if(type==='pdf'&&!window.jspdf?.jsPDF){ _toast('jsPDF tidak tersedia','error'); return; }
 
-        const btnPdf = _$('pageExportPdfBtn'), btnImg = _$('pageExportImgBtn');
-        _btnState(btnPdf, true); _btnState(btnImg, true);
-        _toast(type === 'pdf' ? 'Menyiapkan PDF semua tab…' : 'Mengambil gambar…', 'default', 99999);
+        const btnPdf=_$('pageExportPdfBtn'), btnImg=_$('pageExportImgBtn');
+        _btnState(btnPdf,true); _btnState(btnImg,true);
+        _toast(type==='pdf'?'Menyiapkan PDF…':'Mengambil gambar…','default',99999);
 
-        const originalTab = ['view','retweet','follower','sentiment']
-            .find(t => _$('tab-' + t)?.classList.contains('active')) || 'view';
-        const area  = _$('pageExportArea');
-        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const TAB_KEYS=['view','retweet','follower','sentiment'];
+        const originalTab=TAB_KEYS.find(t=>_$('tab-'+t)?.classList.contains('active'))||'view';
+        const area=_$('pageExportArea');
+        const stamp=new Date().toISOString().slice(0,10).replace(/-/g,'');
 
-        try {
-            /* ── Image: capture tab aktif saja ── */
-            if (type === 'image') {
-                const canvas = await _doCapture(area, false);
-                const link   = document.createElement('a');
-                link.download = `x_most_viewed_${XMVCfg.pid}_${stamp}.png`;
-                link.href     = canvas.toDataURL('image/png');
-                link.click();
-                _toast('Gambar berhasil diunduh!', 'success');
+        try{
+            if(type==='image'){
+                const canvas=await _captureArea(area,false);
+                const link=document.createElement('a');
+                link.download=`x_most_engagement_${XMVCfg.pid}_${stamp}.png`;
+                link.href=canvas.toDataURL('image/png'); link.click();
+                _toast('Gambar berhasil diunduh!','success');
                 return;
             }
 
-            /* ── PDF: capture semua 4 tab ── */
-            const { jsPDF }  = window.jspdf;
-            const TAB_ORDER  = [
-                { key: 'view',      label: 'Most Viewed'     },
-                { key: 'retweet',   label: 'Most Retweeted'  },
-                { key: 'follower',  label: 'Top Followers'   },
-                { key: 'sentiment', label: 'Sentiment'       },
+            const TAB_ORDER=[
+                {key:'view',      label:'Most Viewed'},
+                {key:'retweet',   label:'Most Retweeted'},
+                {key:'follower',  label:'Top Followers'},
+                {key:'sentiment', label:'Sentiment'},
             ];
 
-            const canvases = [];
-            for (let i = 0; i < TAB_ORDER.length; i++) {
-                const { key, label } = TAB_ORDER[i];
-                _toast(`Mengambil tab ${i + 1}/4: ${label}…`, 'default', 99999);
-                XMVTab.show(key);
-                await new Promise(r => setTimeout(r, 900));
-                canvases.push({ label, canvas: await _doCapture(area, false) });
+            // Load semua tab yang belum loaded
+            _toast('Memuat semua tab…','default',99999);
+            for(const {key} of TAB_ORDER){
+                if(!XMVTab._loaded[key]){
+                    XMVTab._loaded[key]=true;
+                    await XMVData.loadTab(key);
+                    await new Promise(r=>setTimeout(r,800));
+                }
             }
 
-            /* Hitung total halaman */
-            const pdf   = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            const pW    = pdf.internal.pageSize.getWidth();
-            const pH    = pdf.internal.pageSize.getHeight();
-            const M     = 10, uw = pW - M * 2, uh = pH - 14 - 10;
-            let totalPg = 0;
-            canvases.forEach(({ canvas }) => {
-                const ratio = uw / canvas.width;
-                totalPg += Math.max(1, Math.ceil((canvas.height * ratio) / uh));
+            // Capture tiap tab
+            const canvases=[];
+            for(let i=0;i<TAB_ORDER.length;i++){
+                const {key,label}=TAB_ORDER[i];
+                _toast(`Mengambil tab ${i+1}/4: ${label}…`,'default',99999);
+
+                // Aktifkan tab
+                TAB_KEYS.forEach(x=>{
+                    _$('tab-'+x)?.classList.toggle('active',x===key);
+                    _$('panel-'+x)?.classList.toggle('active',x===key);
+                });
+
+                // Resize chart
+                try{ if(window.__xmvDonutChart&&!window.__xmvDonutChart.isDisposed()) window.__xmvDonutChart.resize(); }catch(e){}
+
+                await new Promise(r=>setTimeout(r,600));
+                const canvas=await _captureArea(area,false);
+                canvases.push({label:`X Most Engagement — ${label}`, canvas});
+            }
+
+            // Build PDF
+            const {jsPDF}=window.jspdf;
+            const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+            const pW=pdf.internal.pageSize.getWidth(), pH=pdf.internal.pageSize.getHeight(), M=10;
+            const usableW=pW-M*2, usableH=pH-14-10;
+
+            let totalPages=0;
+            canvases.forEach(({canvas})=>{
+                const ratio=usableW/canvas.width;
+                totalPages+=Math.max(1,Math.ceil((canvas.height*ratio)/usableH));
             });
 
-            /* Build PDF */
-            let pageNum = 1, firstPage = true;
-            canvases.forEach(({ label, canvas }) => {
-                const ratio   = uw / canvas.width, sliceH = uh / ratio;
-                let srcY = 0;
-                while (srcY < canvas.height) {
-                    if (!firstPage) pdf.addPage();
-                    firstPage = false;
-                    _drawHeader(pdf, pW, pH, `X Most Viewed — ${label}`, pageNum, totalPg);
-                    const srcSlice = Math.min(sliceH, canvas.height - srcY), dstH = srcSlice * ratio;
-                    const slice    = document.createElement('canvas');
-                    slice.width    = canvas.width;
-                    slice.height   = Math.ceil(srcSlice);
-                    slice.getContext('2d').drawImage(
-                        canvas, 0, srcY, canvas.width, srcSlice,
-                        0, 0,           canvas.width, srcSlice
-                    );
-                    pdf.addImage(slice.toDataURL('image/png'), 'PNG', M, 14, uw, dstH);
-                    srcY += srcSlice; pageNum++;
-                }
+            let pageNum=1, firstPage=true;
+            canvases.forEach(({label,canvas})=>{
+                if(!firstPage) pdf.addPage(); firstPage=false;
+                pageNum=_sliceIntoPages(pdf,canvas,M,pW,pH,label,pageNum,totalPages);
             });
 
-            pdf.save(`x_most_viewed_${XMVCfg.pid}_${stamp}.pdf`);
-            _toast(`PDF ${totalPg} halaman berhasil diunduh!`, 'success');
+            pdf.save(`x_most_engagement_${XMVCfg.pid}_${stamp}.pdf`);
+            _toast(`PDF ${totalPages} halaman berhasil diunduh!`,'success');
 
-        } catch (err) {
-            console.error('[XMVExport.run]', err);
-            _toast('Export gagal: ' + err.message, 'error');
-        } finally {
-            XMVTab.show(originalTab);
-            _btnState(btnPdf, false); _btnState(btnImg, false);
+        }catch(err){
+            console.error('[XMVExport.run]',err);
+            _unfreeze();
+            _toast('Export gagal: '+err.message,'error');
+        }finally{
+            TAB_KEYS.forEach(x=>{
+                _$('tab-'+x)?.classList.toggle('active',x===originalTab);
+                _$('panel-'+x)?.classList.toggle('active',x===originalTab);
+            });
+            _btnState(btnPdf,false); _btnState(btnImg,false);
         }
     }
 
-    /* ════════════════════════════════════════════
-       runCard — Export per-card
-    ════════════════════════════════════════════ */
-    const _cardLabels = {
+    // ── runCard() ──
+    const _cardLabels={
         'donut'          : 'Distribusi Views — Top 5',
         'eng'            : 'Engagement Comparison',
         'list-view'      : 'Top Posts by Views',
@@ -1667,73 +1558,55 @@ const XMVExport = (() => {
         'bar-follower'   : 'Chart Top Followers',
         'bar-sentiment'  : 'Chart Sentiment',
     };
-
-    function _cardFilename(k) {
-        const map = {
-            'donut'          : 'distribusi-views-top5',
-            'eng'            : 'engagement-comparison',
-            'list-view'      : 'top-posts-view',
-            'list-retweet'   : 'top-posts-retweet',
-            'list-follower'  : 'top-posts-follower',
-            'list-sentiment' : 'top-posts-sentiment',
-            'bar-view'       : 'chart-most-viewed',
-            'bar-retweet'    : 'chart-most-retweet',
-            'bar-follower'   : 'chart-top-follower',
-            'bar-sentiment'  : 'chart-sentiment',
+    function _cardFilename(k){
+        const map={
+            'donut':'distribusi-views-top5','eng':'engagement-comparison',
+            'list-view':'top-posts-view','list-retweet':'top-posts-retweet',
+            'list-follower':'top-posts-follower','list-sentiment':'top-posts-sentiment',
+            'bar-view':'chart-most-viewed','bar-retweet':'chart-most-retweet',
+            'bar-follower':'chart-top-follower','bar-sentiment':'chart-sentiment',
         };
-        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        return `x_most_viewed_${map[k] || k}_${XMVCfg.pid}_${stamp}`;
+        return `x_most_engagement_${map[k]||k}_${XMVCfg.pid}_${new Date().toISOString().slice(0,10).replace(/-/g,'')}`;
     }
 
-    async function runCard(areaId, cardKey, type, btn) {
-        if (!window.html2canvas)       { _toast('html2canvas tidak tersedia', 'error'); return; }
-        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
-
-        _btnState(btn, true);
-        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
-
-        try {
-            const area = document.getElementById(areaId);
-            if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
-
-            const canvas = await _doCapture(area, true);
-            const fname  = _cardFilename(cardKey);
-            const label  = _cardLabels[cardKey] || cardKey;
-
-            if (type === 'image') {
-                const link    = document.createElement('a');
-                link.download = fname + '.png';
-                link.href     = canvas.toDataURL('image/png');
-                link.click();
-                _toast('Gambar berhasil diunduh!', 'success');
-            } else {
-                const { jsPDF }  = window.jspdf;
-                const landscape  = canvas.width > canvas.height * 1.2;
-                const pdf        = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
-                const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
-                const M  = 10, uw = pW - M * 2, uh = pH - 14 - 10;
-                const fitsOne = (canvas.height * (uw / canvas.width)) <= uh;
-
-                if (fitsOne) {
-                    _drawHeader(pdf, pW, pH, label, 1, 1);
-                    _addCanvas(pdf, canvas, M, pW, pH);
-                } else {
-                    _paginate(pdf, canvas, M, pW, pH, () => label);
+    async function runCard(areaId,cardKey,type,btn){
+        if(!window.html2canvas){ _toast('html2canvas tidak tersedia','error'); return; }
+        if(type==='pdf'&&!window.jspdf?.jsPDF){ _toast('jsPDF tidak tersedia','error'); return; }
+        _btnState(btn,true); _toast(type==='pdf'?'Menyiapkan PDF…':'Mengambil gambar…','default',99999);
+        try{
+            const area=document.getElementById(areaId);
+            if(!area) throw new Error('Area #'+areaId+' tidak ditemukan');
+            _resizeCharts();
+            await new Promise(r=>setTimeout(r,220));
+            const canvas=await _captureArea(area,true);
+            const fname=_cardFilename(cardKey), label=_cardLabels[cardKey]||cardKey;
+            if(type==='image'){
+                const link=document.createElement('a');
+                link.download=fname+'.png'; link.href=canvas.toDataURL('image/png'); link.click();
+                _toast('Gambar berhasil diunduh!','success');
+            }else{
+                const {jsPDF}=window.jspdf;
+                const landscape=canvas.width>canvas.height*1.2;
+                const pdf=new jsPDF({orientation:landscape?'landscape':'portrait',unit:'mm',format:'a4'});
+                const pW=pdf.internal.pageSize.getWidth(), pH=pdf.internal.pageSize.getHeight(), M=10;
+                const uw=pW-M*2, uh=pH-14-10;
+                const fitsOne=(canvas.height*(uw/canvas.width))<=uh;
+                if(fitsOne){
+                    _drawHeader(pdf,pW,pH,label,1,1); _addCanvas(pdf,canvas,M,pW,pH);
+                }else{
+                    const ratio=uw/canvas.width, sliceH=uh/ratio;
+                    const total=Math.max(1,Math.ceil((canvas.height*ratio)/uh));
+                    _sliceIntoPages(pdf,canvas,M,pW,pH,label,1,total);
                 }
-                pdf.save(fname + '.pdf');
-                _toast('PDF berhasil diunduh!', 'success');
+                pdf.save(fname+'.pdf'); _toast('PDF berhasil diunduh!','success');
             }
-        } catch (err) {
-            console.error('[XMVExport.runCard]', err);
-            _toast('Export gagal: ' + err.message, 'error');
-        } finally {
-            _btnState(btn, false);
-        }
+        }catch(err){
+            console.error('[XMVExport.runCard]',err); _toast('Export gagal: '+err.message,'error');
+        }finally{ _btnState(btn,false); }
     }
 
-    return { run, runCard };
+    return {run,runCard};
 })();
-
 /* ══ INIT ══ */
 document.addEventListener('DOMContentLoaded', () => {
     XMVData.loadAll();

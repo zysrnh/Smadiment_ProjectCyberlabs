@@ -735,8 +735,8 @@ const OVData = {
         const ek=windowKey||('__ec_'+chartEl.id);
         if(window[ek]){ try{window[ek].dispose()}catch(e){} }
         if(typeof echarts==='undefined'){ chartEl.innerHTML='<div class="chart-empty"><i class="ph ph-chart-donut"></i><span>ECharts not loaded</span></div>'; return; }
-        const chart=echarts.init(chartEl, null, {renderer:'canvas'});
-        window[ek]=chart;
+const chart=echarts.init(chartEl, null, {renderer:'svg'});
+      window[ek]=chart;
         window.addEventListener('resize',()=>{ try{chart.resize()}catch(e){} });
         const pd=data.map((d,i)=>({
             name:getNameFn(d), value:getValFn(d),
@@ -916,8 +916,7 @@ const OVDetail = {
 ════════════════════════════════════════════════════════ */
 const OVExport = (() => {
     'use strict';
-    let _toastTimer  = null;
-    let _ecSnapshots = {};
+    let _toastTimer = null;
 
     function _toast(msg, type='default', duration=3200) {
         const t=_$('exportToast'), m=_$('exportToastMsg'), ico=_$('exportToastIcon');
@@ -928,113 +927,113 @@ const OVExport = (() => {
     }
     function _btnState(btn,loading){ if(!btn)return; btn.disabled=loading; btn.classList.toggle('exporting',loading); }
 
-    function _freeze(){
-        if(document.getElementById('__fb_freeze')) return;
-        const s=document.createElement('style'); s.id='__fb_freeze';
-        s.textContent='*{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
-        document.head.appendChild(s);
-    }
-    function _unfreeze(){ document.getElementById('__fb_freeze')?.remove(); }
+    // ID semua container chart ECharts
+    const EC_CONTAINER_IDS = [
+        'donutHashtagChart',
+        'donutChart-like',
+        'donutChart-share',
+        'donutChart-comment',
+    ];
 
-    const EC_ID_MAP = {
-        '__ec_donutHashtagChart'  : 'donutHashtagChart',
-        '__ec_donutChart-like'    : 'donutChart-like',
-        '__ec_donutChart-share'   : 'donutChart-share',
-        '__ec_donutChart-comment' : 'donutChart-comment',
-    };
-
-    const TAB_EC_MAP = {
-        hashtag : [['__ec_donutHashtagChart','donutHashtagChart']],
-        like    : [['__ec_donutChart-like',   'donutChart-like']],
-        share   : [['__ec_donutChart-share',  'donutChart-share']],
-        comment : [['__ec_donutChart-comment','donutChart-comment']],
-    };
-
-    function _snapshotForTab(tabKey) {
-        _ecSnapshots = {};
-        (TAB_EC_MAP[tabKey]||[]).forEach(([key,containerId]) => {
-            const inst=window[key]; if(!inst||inst.isDisposed?.()) return;
+    // Swap semua chart SVG → <img> di DOM asli, return daftar swap untuk restore
+    function _swapChartsIn(el) {
+        const swaps = [];
+        EC_CONTAINER_IDS.forEach(id => {
+            const container = el.contains(document.getElementById(id))
+                ? document.getElementById(id)
+                : null;
+            if (!container || container.style.display === 'none') return;
+            const svgEl = container.querySelector('svg');
+            if (!svgEl) return;
             try {
-                _ecSnapshots[containerId] = inst.getDataURL({
-                    type:'png', pixelRatio:window.devicePixelRatio||2, backgroundColor:'#ffffff'
-                });
-            } catch(e){ console.warn('[OVExport] snapshot tab failed:',key,e); }
+                const svgStr = new XMLSerializer().serializeToString(svgEl);
+                const b64    = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
+                const h      = container.offsetHeight || 320;
+
+                const placeholder = document.createElement('div');
+                placeholder.dataset.ecPlaceholder = id;
+
+                const img = document.createElement('img');
+                img.dataset.ecSwap = id;
+                img.src = b64;
+                img.style.cssText = `width:100%;height:${h}px;object-fit:contain;display:block;`;
+
+                container.parentNode.insertBefore(placeholder, container);
+                container.parentNode.insertBefore(img, placeholder);
+                container.style.display = 'none';
+
+                swaps.push({ container, placeholder, img });
+            } catch(e) { console.warn('[OVExport] swap failed:', id, e); }
         });
+        return swaps;
     }
 
-    function _preSnapshot() {
-        _ecSnapshots = {};
-        Object.entries(EC_ID_MAP).forEach(([key,containerId]) => {
-            const inst=window[key]; if(!inst||inst.isDisposed?.()) return;
-            try {
-                _ecSnapshots[containerId] = inst.getDataURL({
-                    type:'png', pixelRatio:window.devicePixelRatio||2, backgroundColor:'#ffffff'
-                });
-            } catch(e){ console.warn('[OVExport] snapshot failed:',key,e); }
+    function _swapChartsOut(swaps) {
+        swaps.forEach(({ container, placeholder, img }) => {
+            try { img.remove(); } catch(e) {}
+            try { placeholder.remove(); } catch(e) {}
+            container.style.display = 'block';
         });
     }
 
     function _onClone(clonedDoc) {
+        // Sembunyikan elemen tidak perlu
         clonedDoc.querySelectorAll(
             '.do-panel-overlay,.do-panel,.do-detail-panel,#ovCustomTT,' +
             '.spin-ring,.spinner-state,.export-toast,.chart-loading,[data-html2canvas-ignore]'
-        ).forEach(el => {
-            el.style.cssText += 'display:none!important;visibility:hidden!important;opacity:0!important;height:0!important;overflow:hidden!important;';
-        });
+        ).forEach(el => { el.style.cssText += 'display:none!important;'; });
 
-        clonedDoc.querySelectorAll('.tme-tab-panel:not(.active)').forEach(el => {
-            el.style.cssText += 'display:none!important;height:0!important;overflow:hidden!important;';
-        });
-
-        clonedDoc.querySelectorAll('.tme-post-av,.do-panel-avatar,.do-dp2-avatar-lg').forEach(wrapper => {
-            wrapper.querySelectorAll('img').forEach(img => { img.style.display='none'; });
-            if(!wrapper.querySelector('.__ini')){
-                const txt=(wrapper.textContent||'').trim(), initial=txt?txt[0].toUpperCase():'F';
-                const sp=clonedDoc.createElement('span'); sp.className='__ini';
-                sp.textContent=initial; sp.style.cssText='font-size:13px;font-weight:700;color:#fff;line-height:1;';
-                wrapper.appendChild(sp);
-            }
-            if(!wrapper.style.background) wrapper.style.background='linear-gradient(135deg,#1877f2,#0d5fc2)';
-        });
-
+        // Freeze animasi
         clonedDoc.querySelectorAll('*').forEach(el => {
-            el.style.animationPlayState='paused'; el.style.animation='none'; el.style.transition='none';
+            el.style.animationPlayState = 'paused';
+            el.style.animation  = 'none';
+            el.style.transition = 'none';
         });
+
+        // Pastikan elemen visual visible
         clonedDoc.querySelectorAll(
             '.card,.card-body,.card-header,.row,[class*="col-"],' +
             '.tme-tab-panel.active,.ht-list,.ht-item,' +
             '.tme-post-list,.tme-post,.donut-stack-wrap,.donut-breakdown-list,' +
-            '#pageExportArea,#ovTabsBar'
+            '#pageExportArea,#ovTabsBar,.fade-up,.kpi-card-hover'
         ).forEach(el => {
-            el.style.opacity='1'; el.style.transform='none'; el.style.visibility='visible';
-        });
-
-        Object.entries(_ecSnapshots).forEach(([containerId,dataUrl]) => {
-            const container=clonedDoc.getElementById(containerId); if(!container) return;
-            container.innerHTML='';
-            const img=clonedDoc.createElement('img');
-            img.src=dataUrl; img.style.cssText='width:100%;height:100%;display:block;object-fit:contain;';
-            container.appendChild(img);
-            container.style.cssText += 'display:block!important;opacity:1!important;visibility:visible!important;';
+            el.style.opacity    = '1';
+            el.style.transform  = 'none';
+            el.style.visibility = 'visible';
         });
     }
 
-    async function _doCapture(el, isCard, skipSnapshot=false) {
-        if(!skipSnapshot) _preSnapshot();
-        _freeze();
-        await new Promise(r => requestAnimationFrame(()=>requestAnimationFrame(r)));
-        await new Promise(r => setTimeout(r, 400));
+    async function _doCapture(el, isCard) {
+        // Freeze animasi DOM asli
+        el.querySelectorAll('.fade-up,.kpi-card-hover,.tme-post,.card,[class*="col-"]')
+          .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; });
+
+        // Swap chart → img
+        const swaps = _swapChartsIn(el);
+
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
         let canvas;
         try {
             canvas = await html2canvas(el, {
-                scale:2, useCORS:true, allowTaint:true,
-                backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
-                logging:false, removeContainer:true, imageTimeout:0,
-                onclone: d => _onClone(d),
-                ignoreElements: e => e.hasAttribute('data-html2canvas-ignore'),
-                x:0, y:0, width:el.offsetWidth, height:el.scrollHeight,
+                scale           : 2,
+                useCORS         : true,
+                allowTaint      : false,
+                backgroundColor : isCard ? '#ffffff' : '#f1f5f9',
+                logging         : false,
+                removeContainer : true,
+                imageTimeout    : 0,
+                x               : 0,
+                y               : 0,
+                width           : el.offsetWidth,
+                height          : el.scrollHeight,
+                onclone         : d => _onClone(d),
+                ignoreElements  : e => e.hasAttribute('data-html2canvas-ignore'),
             });
-        } finally { _unfreeze(); }
+        } finally {
+            // Restore DOM — selalu jalan meski error
+            _swapChartsOut(swaps);
+        }
         return canvas;
     }
 
@@ -1060,12 +1059,11 @@ const OVExport = (() => {
         if(type==='pdf'&&!window.jspdf?.jsPDF){ _toast('jsPDF tidak tersedia','error'); return; }
         const btnPdf=_$('pageExportPdfBtn'), btnImg=_$('pageExportImgBtn');
         _btnState(btnPdf,true); _btnState(btnImg,true);
-        _toast(type==='pdf'?'Menyiapkan PDF semua tab…':'Mengambil gambar…','default',99999);
+        _toast(type==='pdf'?'Menyiapkan PDF…':'Mengambil gambar…','default',99999);
         const originalTab=TAB_TYPES.find(t=>_$('tab-'+t)?.classList.contains('active'))||'hashtag';
+        const area=_$('pageExportArea');
+        const stamp=new Date().toISOString().slice(0,10).replace(/-/g,'');
         try {
-            const area=_$('pageExportArea');
-            const stamp=new Date().toISOString().slice(0,10).replace(/-/g,'');
-
             if(type==='image'){
                 const canvas=await _doCapture(area,false);
                 const link=document.createElement('a');
@@ -1088,24 +1086,16 @@ const OVExport = (() => {
             for(let i=0;i<TAB_ORDER.length;i++){
                 const {key,label}=TAB_ORDER[i];
                 _toast(`Mengambil tab ${i+1}/4: ${label}…`,'default',99999);
-
                 OVTab.show(key);
-                await new Promise(r=>setTimeout(r,1000));
-
-                (TAB_EC_MAP[key]||[]).forEach(([wk])=>{
-                    try{ if(window[wk]&&!window[wk].isDisposed()) window[wk].resize(); }catch(e){}
-                });
-                await new Promise(r=>setTimeout(r,150));
-
-                _snapshotForTab(key);
-                const canvas=await _doCapture(area, false, true);
+                // Tunggu data + chart render
+                await new Promise(r=>setTimeout(r,800));
+                const canvas=await _doCapture(area,false);
                 canvases.push({label, canvas});
             }
 
             let totalPages=0;
             canvases.forEach(({canvas})=>{
-                const ratio=uw/canvas.width;
-                totalPages+=Math.max(1, Math.ceil((canvas.height*ratio)/uh));
+                totalPages+=Math.max(1,Math.ceil((canvas.height*(uw/canvas.width))/uh));
             });
 
             let pageNum=1, firstPage=true;
@@ -1115,11 +1105,11 @@ const OVExport = (() => {
                 while(srcY<canvas.height){
                     if(!firstPage) pdf.addPage(); firstPage=false;
                     _drawHeader(pdf, pW, pH, `Facebook Overview — ${label}`, pageNum, totalPages);
-                    const srcSlice=Math.min(sliceH, canvas.height-srcY), dstH=srcSlice*ratio;
+                    const srcSlice=Math.min(sliceH,canvas.height-srcY), dstH=srcSlice*ratio;
                     const slice=document.createElement('canvas');
                     slice.width=canvas.width; slice.height=Math.ceil(srcSlice);
-                    slice.getContext('2d').drawImage(canvas, 0,srcY, canvas.width,srcSlice, 0,0, canvas.width,srcSlice);
-                    pdf.addImage(slice.toDataURL('image/png'),'PNG', M, 14, uw, dstH);
+                    slice.getContext('2d').drawImage(canvas,0,srcY,canvas.width,srcSlice,0,0,canvas.width,srcSlice);
+                    pdf.addImage(slice.toDataURL('image/png'),'PNG',M,14,uw,dstH);
                     srcY+=srcSlice; pageNum++;
                 }
             });
@@ -1134,23 +1124,23 @@ const OVExport = (() => {
     }
 
     const _cardLabels={
-        'hashtag-list'  : 'Top Hashtags',
-        'hashtag-donut' : 'Distribusi Top Hashtags',
-        'donut-like'    : 'Distribusi Most Liked',
-        'donut-share'   : 'Distribusi Most Shared',
-        'donut-comment' : 'Distribusi Most Comments',
-        'list-like'     : 'Top Posts by Likes',
-        'list-share'    : 'Top Posts by Shares',
-        'list-comment'  : 'Top Posts by Comments',
+        'hashtag-list'  :'Top Hashtags',
+        'hashtag-donut' :'Distribusi Top Hashtags',
+        'donut-like'    :'Distribusi Most Liked',
+        'donut-share'   :'Distribusi Most Shared',
+        'donut-comment' :'Distribusi Most Comments',
+        'list-like'     :'Top Posts by Likes',
+        'list-share'    :'Top Posts by Shares',
+        'list-comment'  :'Top Posts by Comments',
     };
     function _cardFilename(k){
         const map={
             'hashtag-list':'top-hashtags','hashtag-donut':'hashtag-distribusi',
-            'donut-like':'distribusi-most-liked','donut-share':'distribusi-most-shared','donut-comment':'distribusi-most-comments',
-            'list-like':'top-posts-by-like','list-share':'top-posts-by-share','list-comment':'top-posts-by-comment',
+            'donut-like':'distribusi-most-liked','donut-share':'distribusi-most-shared',
+            'donut-comment':'distribusi-most-comments','list-like':'top-posts-by-like',
+            'list-share':'top-posts-by-share','list-comment':'top-posts-by-comment',
         };
-        const stamp=new Date().toISOString().slice(0,10).replace(/-/g,'');
-        return `facebook_${map[k]||k}_${OV_PID}_${stamp}`;
+        return `facebook_${map[k]||k}_${OV_PID}_${new Date().toISOString().slice(0,10).replace(/-/g,'')}`;
     }
 
     async function runCard(areaId, cardKey, type, btn) {
@@ -1158,22 +1148,27 @@ const OVExport = (() => {
         if(type==='pdf'&&!window.jspdf?.jsPDF){ _toast('jsPDF tidak tersedia','error'); return; }
         _btnState(btn,true); _toast(type==='pdf'?'Menyiapkan PDF…':'Mengambil gambar…','default',99999);
         try {
-            const area=document.getElementById(areaId); if(!area) throw new Error('Area #'+areaId+' tidak ditemukan');
+            const area=document.getElementById(areaId);
+            if(!area) throw new Error('Area #'+areaId+' tidak ditemukan');
             const canvas=await _doCapture(area, true);
             const fname=_cardFilename(cardKey), label=_cardLabels[cardKey]||cardKey;
             if(type==='image'){
-                const link=document.createElement('a'); link.download=fname+'.png'; link.href=canvas.toDataURL('image/png'); link.click();
+                const link=document.createElement('a'); link.download=fname+'.png';
+                link.href=canvas.toDataURL('image/png'); link.click();
                 _toast('Gambar berhasil diunduh!','success');
             } else {
                 const {jsPDF}=window.jspdf;
-                const landscape=canvas.width>canvas.height*1.2;
-                const pdf=new jsPDF({orientation:landscape?'landscape':'portrait',unit:'mm',format:'a4'});
+                const pdf=new jsPDF({
+                    orientation: canvas.width>canvas.height*1.2?'landscape':'portrait',
+                    unit:'mm', format:'a4'
+                });
                 const pW=pdf.internal.pageSize.getWidth(), pH=pdf.internal.pageSize.getHeight(), M=10;
                 const uw=pW-M*2, uh=pH-14-10;
-                const fitsOne=(canvas.height*(uw/canvas.width))<=uh;
-                if(fitsOne){ _drawHeader(pdf,pW,pH,label,1,1); _addCanvas(pdf,canvas,M,pW,pH); }
-                else {
-                    const ratio=uw/canvas.width, sliceH=uh/ratio, total=Math.ceil((canvas.height*ratio)/uh);
+                if((canvas.height*(uw/canvas.width))<=uh){
+                    _drawHeader(pdf,pW,pH,label,1,1); _addCanvas(pdf,canvas,M,pW,pH);
+                } else {
+                    const ratio=uw/canvas.width, sliceH=uh/ratio;
+                    const total=Math.ceil((canvas.height*ratio)/uh);
                     let srcY=0, pg=1;
                     while(srcY<canvas.height){
                         if(pg>1) pdf.addPage();
@@ -1181,7 +1176,7 @@ const OVExport = (() => {
                         const srcSlice=Math.min(sliceH,canvas.height-srcY), dstH=srcSlice*ratio;
                         const slice=document.createElement('canvas');
                         slice.width=canvas.width; slice.height=Math.ceil(srcSlice);
-                        slice.getContext('2d').drawImage(canvas, 0,srcY, canvas.width,srcSlice, 0,0, canvas.width,srcSlice);
+                        slice.getContext('2d').drawImage(canvas,0,srcY,canvas.width,srcSlice,0,0,canvas.width,srcSlice);
                         pdf.addImage(slice.toDataURL('image/png'),'PNG',M,14,uw,dstH);
                         srcY+=srcSlice; pg++;
                     }
@@ -1195,7 +1190,7 @@ const OVExport = (() => {
 
     return { run, runCard };
 })();
-
+  
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', () => {
     if (!OVCfg.pid) return;

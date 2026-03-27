@@ -31,18 +31,19 @@
     .sk-block{border-radius:4px;background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
     .spin-ring{width:26px;height:26px;border:2.5px solid var(--slate-100);border-top-color:var(--primary);border-radius:50%;animation:spin .65s linear infinite}
     .spinner-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:12px;color:var(--slate-400);font-size:12px;font-weight:600}
-    .kpi-card-hover{will-change:transform,box-shadow;cursor:default;position:relative!important;overflow:hidden!important;transition:transform .25s cubic-bezier(.34,1.56,.64,1)!important,box-shadow .25s ease!important,filter .25s ease!important}.kpi-card-hover::before{content:'';position:absolute;top:0;bottom:0;left:-100%;width:60%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);pointer-events:none;z-index:1}.kpi-card-hover:hover{transform:translateY(-6px) scale(1.025)!important;box-shadow:0 20px 40px rgba(0,0,0,.25)!important;filter:brightness(1.07)!important}.kpi-card-hover:hover::before{animation:kpiShimmer .6s ease forwards}.kpi-card-hover:hover .kpi-icon-bg{background:rgba(255,255,255,.35)!important}.kpi-card-hover:hover .kpi-icon-bg i{animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both!important;display:inline-block!important}.kpi-card-hover:active{transform:translateY(-2px) scale(1.01)!important;transition-duration:.08s!important}
+    .kpi-card-hover{will-change:auto;cursor:default;position:relative!important;overflow:hidden!important;transition:transform .25s cubic-bezier(.34,1.56,.64,1)!important,box-shadow .25s ease!important,filter .25s ease!important}.kpi-card-hover::before{content:'';position:absolute;top:0;bottom:0;left:-100%;width:60%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);pointer-events:none;z-index:1}.kpi-card-hover:hover{transform:translateY(-6px) scale(1.025)!important;box-shadow:0 20px 40px rgba(0,0,0,.25)!important;filter:brightness(1.07)!important}.kpi-card-hover:hover::before{animation:kpiShimmer .6s ease forwards}.kpi-card-hover:hover .kpi-icon-bg{background:rgba(255,255,255,.35)!important}.kpi-card-hover:hover .kpi-icon-bg i{animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both!important;display:inline-block!important}.kpi-card-hover:active{transform:translateY(-2px) scale(1.01)!important;transition-duration:.08s!important}
     .chart-container{position:relative}.chart-loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#fff;z-index:2;transition:opacity .3s}.chart-loading.hidden{opacity:0;pointer-events:none}.chart-loading span{font-size:11px;font-weight:600;color:var(--slate-400)}.chart-empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--slate-400);font-size:12px;font-weight:600}.chart-empty i{font-size:34px;color:var(--slate-300);display:block}
     .snt-skel{background:linear-gradient(90deg,var(--slate-50) 25%,#e2e8f0 50%,var(--slate-50) 75%);background-size:200% 100%;animation:shimmer 1.5s ease-in-out infinite;border-radius:4px}.snt-skel-overlay{position:absolute;inset:0;z-index:3;border-radius:inherit}
     .snt-legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.snt-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--slate-500)}.snt-legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
     .snt-media-list{display:flex;flex-direction:column;gap:6px}.snt-media-row{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--slate-50);border:1px solid var(--slate-100);border-radius:var(--radius-sm);transition:background .13s,border-color .13s}.snt-media-row:hover{border-color:var(--primary-green-border);background:#fff;box-shadow:var(--shadow-sm)}.snt-media-icon{width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}.snt-media-name{font-size:11px;font-weight:700;color:var(--slate-900);min-width:80px}.snt-media-bars{flex:1;display:flex;flex-direction:column;gap:2px}.snt-media-bar-row{display:flex;align-items:center;gap:5px}.snt-media-bar-track{flex:1;height:4px;background:var(--slate-100);border-radius:2px;overflow:hidden}.snt-media-bar-fill{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.4,0,.2,1)}.snt-media-bar-val{font-size:10px;font-weight:700;color:var(--slate-500);min-width:36px;text-align:right;white-space:nowrap}.snt-media-total{font-size:11px;font-weight:700;color:var(--slate-900);min-width:48px;text-align:right}
-    .do-panel-overlay{position:fixed;inset:0;z-index:9000;background:rgba(15,23,42,.45);backdrop-filter:blur(4px);display:none}.do-panel-overlay.show{display:block;animation:overlayIn .22s ease-out}.do-panel-overlay.hiding{animation:overlayOut .22s ease-out forwards}
+    /* SAFARI FIX: backdrop-filter needs -webkit- prefix */
+    .do-panel-overlay{position:fixed;inset:0;z-index:9000;background:rgba(15,23,42,.45);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);display:none}.do-panel-overlay.show{display:block;animation:overlayIn .22s ease-out}.do-panel-overlay.hiding{animation:overlayOut .22s ease-out forwards}
     #sntPopup{position:fixed;top:0;right:0;bottom:0;z-index:9001;width:480px;max-width:100vw;background:#fff;display:none;flex-direction:column;border-left:1px solid var(--slate-200);box-shadow:-8px 0 40px rgba(15,23,42,.16)}
     #sntPopup.show{display:flex;animation:slideInRight .28s cubic-bezier(.4,0,.2,1)}#sntPopup.hiding{animation:slideOutRight .24s cubic-bezier(.4,0,.2,1) forwards}
     .sntp-header{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--slate-50);border-bottom:1px solid var(--slate-200);flex-shrink:0}.sntp-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}.sntp-title{font-size:13px;font-weight:700;color:var(--slate-900);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sntp-count{display:none}.sntp-close{width:28px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--slate-200);background:#fff;cursor:pointer;font-size:16px;color:var(--slate-500);display:flex;align-items:center;justify-content:center;transition:all .14s;flex-shrink:0}.sntp-close:hover{background:var(--red);border-color:var(--red);color:#fff}
     .sntp-actions{display:flex;align-items:center;gap:7px;padding:7px 12px;border-bottom:1px solid var(--slate-200);background:#fff;flex-shrink:0}.sntp-meta{flex:1;font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:5px;overflow:hidden}.sntp-meta__label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .sntp-sent-tabs{display:flex;background:var(--slate-100);border:1px solid var(--slate-200);border-radius:var(--radius-sm);padding:2px;gap:2px}.sntp-sent-tab{padding:3px 9px;border-radius:3px;border:none;background:transparent;font-size:11px;font-weight:700;cursor:pointer;transition:all .13s;color:var(--slate-500);white-space:nowrap}.sntp-sent-tab:hover{background:#fff}.sntp-sent-tab.active{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.08)}.sntp-sent-tab.active[data-s="all"]{color:var(--primary)}.sntp-sent-tab.neg.active{color:#ef4444}.sntp-sent-tab.pos.active{color:#0ea5e9}.sntp-sent-tab.neu.active{color:var(--slate-500)}
-    .sntp-list{overflow-y:auto;flex:1;padding:2px 0;min-height:0}.sntp-list::-webkit-scrollbar{width:4px}.sntp-list::-webkit-scrollbar-thumb{background:var(--slate-200);border-radius:99px}
+    .sntp-list{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;padding:2px 0;min-height:0}.sntp-list::-webkit-scrollbar{width:4px}.sntp-list::-webkit-scrollbar-thumb{background:var(--slate-200);border-radius:99px}
     .sntp-item{display:flex;gap:10px;padding:10px 14px;border-bottom:1px solid var(--slate-100);transition:background .1s;cursor:pointer;align-items:flex-start}.sntp-item:last-child{border-bottom:none}.sntp-item:hover{background:#f0f9ff}.sntp-item.hidden{display:none}
     .sntp-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--slate-200);overflow:hidden}.sntp-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
     .sntp-item-body{flex:1;min-width:0}.sntp-item-author{font-size:12px;font-weight:700;color:var(--slate-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sntp-item-handle{font-size:10px;color:var(--slate-400);font-weight:500;margin-bottom:2px}.sntp-item-text{font-size:11px;color:var(--slate-500);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:4px}.sntp-item-footer{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--slate-400);flex-wrap:wrap}
@@ -50,7 +51,7 @@
     .sntp-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--slate-500);font-size:13px;font-weight:600}.sntp-spinner{width:28px;height:28px;border:2.5px solid var(--slate-100);border-top-color:var(--primary);border-radius:50%;animation:spin .65s linear infinite}
     #sntDetailPanel{position:absolute;inset:0;background:#fff;z-index:5;display:none;flex-direction:column;animation:slideInRight .2s cubic-bezier(.4,0,.2,1)}#sntDetailPanel.visible{display:flex}
     .sntdp-header{display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--slate-50);border-bottom:1px solid var(--slate-200);flex-shrink:0}.sntdp-back{width:28px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--slate-200);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-500);transition:all .13s;flex-shrink:0}.sntdp-back:hover{background:var(--primary-lt);color:var(--primary);border-color:var(--primary)}.sntdp-title{font-size:13px;font-weight:700;color:var(--slate-900);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sntdp-close{width:28px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--slate-200);background:#fff;cursor:pointer;font-size:16px;color:var(--slate-500);display:flex;align-items:center;justify-content:center;transition:all .14s}.sntdp-close:hover{background:var(--red);border-color:var(--red);color:#fff}
-    .sntdp-body{overflow-y:auto;flex:1;padding:16px}.sntdp-body::-webkit-scrollbar{width:4px}.sntdp-body::-webkit-scrollbar-thumb{background:var(--slate-200);border-radius:99px}
+    .sntdp-body{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;padding:16px}.sntdp-body::-webkit-scrollbar{width:4px}.sntdp-body::-webkit-scrollbar-thumb{background:var(--slate-200);border-radius:99px}
     .sntdp-avatar-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}.sntdp-avatar-lg{width:46px;height:46px;border-radius:50%;color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;border:2px solid var(--slate-200);overflow:hidden;flex-shrink:0}.sntdp-avatar-lg img{width:100%;height:100%;object-fit:cover;border-radius:50%}.sntdp-author-name{font-size:14px;font-weight:700;color:var(--slate-900)}.sntdp-author-handle{font-size:11px;color:var(--slate-400);font-weight:500}
     .sntdp-sent-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:3px;font-size:11px;font-weight:700;margin-bottom:10px}.sntdp-sent-badge--pos{background:#dbeafe;color:#1d4ed8}.sntdp-sent-badge--neg{background:#fee2e2;color:#991b1b}.sntdp-sent-badge--neu{background:var(--slate-100);color:var(--slate-500)}
     .sntdp-content-text{font-size:12px;color:var(--slate-600);line-height:1.7;margin-bottom:12px;background:var(--slate-50);border-radius:var(--radius-sm);padding:10px 12px;border:1px solid var(--slate-200);word-break:break-word}.sntdp-meta-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--slate-400);font-weight:500;margin-bottom:10px}
@@ -60,6 +61,9 @@
     #sntPlatPicker{position:fixed;z-index:20000;background:#fff;border:1px solid var(--slate-200);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:5px;min-width:175px;animation:fadeUp .14s ease-out;display:none}#sntPlatPicker.visible{display:block}
     .sntpp-header{padding:4px 9px 6px;font-size:10px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--slate-100);margin-bottom:3px}.sntpp-btn{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;background:transparent;border:none;width:100%;text-align:left;color:var(--slate-500);transition:background .12s}.sntpp-btn:hover{background:var(--primary-lt);color:var(--primary)}.sntpp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-left:auto}
     .kpi-card-hover h3{font-size:1.5rem}
+    /* SAFARI FIX: chart-wrap containers need explicit height, not 100% in flex */
+    .snt-chart-wrap{position:relative;width:100%;}
+    .snt-chart-wrap > div[id^="ch"]{width:100%;display:block;}
 
     /* ════════════════════════════════════════
        EXPORT STYLES
@@ -201,8 +205,9 @@
           </div>
         </div>
         <div class="card-body">
-          <div style="position:relative;height:300px;" id="chOverviewWrap">
-            <div id="chOverview" style="width:100%;height:100%;"></div>
+          {{-- SAFARI FIX: explicit height on wrapper AND inner div --}}
+          <div class="snt-chart-wrap" style="height:300px;" id="chOverviewWrap">
+            <div id="chOverview" style="width:100%;height:300px;"></div>
             <div class="snt-skel snt-skel-overlay" id="skOverview"></div>
           </div>
           <div class="snt-legend" style="margin-top:14px;justify-content:center;">
@@ -211,7 +216,7 @@
             <div class="snt-legend-item"><span class="snt-legend-dot" style="background:#94a3b8;"></span>Neutral</div>
           </div>
         </div>
-        </div>{{-- /card-export-overview --}}
+        </div>
       </div>
     </div>
     <div class="col-lg-4 col-12">
@@ -231,12 +236,12 @@
           </div>
         </div>
         <div class="card-body" style="display:flex;flex-direction:column;align-items:center;">
-          <div style="position:relative;height:280px;width:100%;">
-            <div id="chSovTotal" style="width:100%;height:100%;"></div>
+          <div class="snt-chart-wrap" style="height:280px;">
+            <div id="chSovTotal" style="width:100%;height:280px;"></div>
             <div class="snt-skel" style="position:absolute;inset:0;border-radius:8px;" id="skSovTotal"></div>
           </div>
         </div>
-        </div>{{-- /card-export-sov --}}
+        </div>
       </div>
     </div>
   </div>
@@ -261,8 +266,8 @@
           </div>
         </div>
         <div class="card-body">
-          <div style="position:relative;height:260px;" id="chMassWrap">
-            <div id="chMass" style="width:100%;height:100%;"></div>
+          <div class="snt-chart-wrap" style="height:260px;" id="chMassWrap">
+            <div id="chMass" style="width:100%;height:260px;"></div>
             <div class="snt-skel snt-skel-overlay" id="skMass"></div>
           </div>
           <div class="snt-legend" style="margin-top:12px;justify-content:center;">
@@ -271,7 +276,7 @@
             <div class="snt-legend-item"><span class="snt-legend-dot" style="background:#94a3b8;"></span>Neu</div>
           </div>
         </div>
-        </div>{{-- /card-export-mass --}}
+        </div>
       </div>
     </div>
     <div class="col-lg-6 col-12">
@@ -292,8 +297,8 @@
           </div>
         </div>
         <div class="card-body">
-          <div style="position:relative;height:260px;" id="chSocialWrap">
-            <div id="chSocial" style="width:100%;height:100%;"></div>
+          <div class="snt-chart-wrap" style="height:260px;" id="chSocialWrap">
+            <div id="chSocial" style="width:100%;height:260px;"></div>
             <div class="snt-skel snt-skel-overlay" id="skSocial"></div>
           </div>
           <div class="snt-legend" style="margin-top:12px;justify-content:center;">
@@ -302,7 +307,7 @@
             <div class="snt-legend-item"><span class="snt-legend-dot" style="background:#94a3b8;"></span>Neu</div>
           </div>
         </div>
-        </div>{{-- /card-export-social --}}
+        </div>
       </div>
     </div>
   </div>
@@ -326,12 +331,12 @@
           </div>
         </div>
         <div class="card-body">
-          <div style="position:relative;height:300px;" id="chByTypeWrap">
-            <div id="chByType" style="width:100%;height:100%;"></div>
+          <div class="snt-chart-wrap" style="height:300px;" id="chByTypeWrap">
+            <div id="chByType" style="width:100%;height:300px;"></div>
             <div class="snt-skel snt-skel-overlay" id="skByType"></div>
           </div>
         </div>
-        </div>{{-- /card-export-bytype --}}
+        </div>
       </div>
     </div>
     <div class="col-lg-6 col-12">
@@ -351,12 +356,12 @@
           </div>
         </div>
         <div class="card-body">
-          <div style="position:relative;height:300px;" id="chByPlatWrap">
-            <div id="chByPlat" style="width:100%;height:100%;"></div>
+          <div class="snt-chart-wrap" style="height:300px;" id="chByPlatWrap">
+            <div id="chByPlat" style="width:100%;height:300px;"></div>
             <div class="snt-skel snt-skel-overlay" id="skByPlat"></div>
           </div>
         </div>
-        </div>{{-- /card-export-byplat --}}
+        </div>
       </div>
     </div>
   </div>
@@ -385,12 +390,12 @@
           </div>
         </div>
         <div class="card-body" style="display:flex;flex-direction:column;align-items:center;">
-          <div style="position:relative;height:260px;width:100%;">
-            <div id="chMassPie" style="width:100%;height:100%;"></div>
+          <div class="snt-chart-wrap" style="height:260px;">
+            <div id="chMassPie" style="width:100%;height:260px;"></div>
             <div class="snt-skel" style="position:absolute;inset:0;border-radius:8px;" id="skMassPie"></div>
           </div>
         </div>
-        </div>{{-- /card-export-masspie --}}
+        </div>
       </div>
     </div>
     <div class="col-lg-6 col-12">
@@ -410,12 +415,12 @@
           </div>
         </div>
         <div class="card-body" style="display:flex;flex-direction:column;align-items:center;">
-          <div style="position:relative;height:260px;width:100%;">
-            <div id="chSocialPie" style="width:100%;height:100%;"></div>
+          <div class="snt-chart-wrap" style="height:260px;">
+            <div id="chSocialPie" style="width:100%;height:260px;"></div>
             <div class="snt-skel" style="position:absolute;inset:0;border-radius:8px;" id="skSocialPie"></div>
           </div>
         </div>
-        </div>{{-- /card-export-socialpie --}}
+        </div>
       </div>
     </div>
   </div>
@@ -440,12 +445,13 @@
           </div>
         </div>
         <div class="card-body">
-          <div style="position:relative;height:380px;" id="chTrendWrap">
-            <div id="chTrend" style="width:100%;height:380px;"></div>
+          {{-- SAFARI FIX: ApexCharts needs explicit pixel height on wrapper too --}}
+          <div class="snt-chart-wrap" style="height:380px;" id="chTrendWrap">
+            <div id="chTrend" style="width:100%;height:380px;min-height:380px;"></div>
             <div class="snt-skel snt-skel-overlay" id="skTrend"></div>
           </div>
         </div>
-        </div>{{-- /card-export-trend --}}
+        </div>
       </div>
     </div>
   </div>
@@ -469,8 +475,8 @@
           </div>
         </div>
         <div class="card-body">
-          <div style="position:relative;height:320px;">
-            <div id="chWeekday" style="width:100%;height:100%;"></div>
+          <div class="snt-chart-wrap" style="height:320px;">
+            <div id="chWeekday" style="width:100%;height:320px;"></div>
             <div class="snt-skel snt-skel-overlay" id="skWeekday"></div>
           </div>
           <div class="snt-legend" style="margin-top:12px;justify-content:center;">
@@ -479,7 +485,7 @@
             <div class="snt-legend-item"><span class="snt-legend-dot" style="background:#94a3b8;"></span>Neu</div>
           </div>
         </div>
-        </div>{{-- /card-export-weekday --}}
+        </div>
       </div>
     </div>
     <div class="col-lg-6 col-12">
@@ -499,8 +505,8 @@
           </div>
         </div>
         <div class="card-body">
-          <div style="position:relative;height:320px;">
-            <div id="chHour" style="width:100%;height:100%;"></div>
+          <div class="snt-chart-wrap" style="height:320px;">
+            <div id="chHour" style="width:100%;height:320px;"></div>
             <div class="snt-skel snt-skel-overlay" id="skHour"></div>
           </div>
           <div class="snt-legend" style="margin-top:12px;justify-content:center;">
@@ -509,7 +515,7 @@
             <div class="snt-legend-item"><span class="snt-legend-dot" style="background:#94a3b8;"></span>Neu</div>
           </div>
         </div>
-        </div>{{-- /card-export-hour --}}
+        </div>
       </div>
     </div>
   </div>
@@ -569,6 +575,15 @@
   <script>
     'use strict';
 
+    /* ══ SAFARI DETECTION ══
+       Must be first — everything below branches on this flag.
+    */
+    const _isSafari = (function () {
+      const ua = navigator.userAgent;
+      // True Safari: has "Safari" but NOT "Chrome" and NOT "Android"
+      return /^((?!chrome|android).)*safari/i.test(ua);
+    })();
+
     /* ══ CONFIG ══ */
     const SNTCfg = {
       pid: OV_PID, sd: OV_SD, ed: OV_ED, media: OV_MEDIA,
@@ -577,25 +592,91 @@
 
     /* ── UTILS ── */
     const numFmt = n => parseInt(n || 0).toLocaleString('id-ID');
-    const numK = n => { n = parseInt(n || 0); return n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n); };
+    const numK   = n => { n = parseInt(n || 0); return n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n); };
     const hideSk = id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; };
-    const pct = (v, t) => t > 0 ? ((v / t) * 100).toFixed(1) + '%' : '0%';
+    const pct    = (v,t) => t > 0 ? ((v/t)*100).toFixed(1)+'%' : '0%';
     const emptyHtml = msg => `<div class="chart-empty"><i class="ph ph-warning-circle"></i><span>${msg}</span></div>`;
+
+    /* ── SAFARI: wait for DOM paint + optional extra tick ── */
+    function _rafReady(fn, extraMs = 0) {
+      if (_isSafari) {
+        // Safari needs an extra rAF + optional setTimeout to flush layout
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (extraMs > 0) setTimeout(fn, extraMs);
+            else fn();
+          });
+        });
+      } else {
+        requestAnimationFrame(fn);
+      }
+    }
+
+    /* ── SAFARI: force explicit px size on a chart DOM node ──
+       Safari flex children can report 0 offsetHeight even when
+       the parent has an explicit height. We read the parent's
+       inline style and stamp it on the child before init.
+    */
+    function _ensureDim(dom) {
+      if (!dom) return;
+      if (dom.offsetHeight > 0 && dom.offsetWidth > 0) return; // already fine
+      // Walk up to find the first ancestor with explicit inline height
+      let el = dom.parentElement;
+      while (el) {
+        const h = parseInt(el.style.height);
+        if (h > 0) { dom.style.height = h + 'px'; break; }
+        el = el.parentElement;
+      }
+      if (!dom.style.height) dom.style.height = '300px'; // safe fallback
+      if (!dom.offsetWidth)  dom.style.width  = '100%';
+    }
 
     /* ── ECHARTS REGISTRY ── */
     const SNTCharts = {
       _i: {},
       make(id) {
-        if (this._i[id]) { try { this._i[id].dispose(); } catch (e) { } }
-        const dom = document.getElementById(id); if (!dom) return null;
-        const c = echarts.init(dom, null, { renderer: 'canvas' });
-        this._i[id] = c; return c;
+        if (this._i[id]) { try { this._i[id].dispose(); } catch(e) {} }
+        const dom = document.getElementById(id);
+        if (!dom) return null;
+
+        // SAFARI FIX: ensure container has real pixel dimensions before init
+        _ensureDim(dom);
+
+        const w = dom.offsetWidth  || (dom.parentElement ? dom.parentElement.offsetWidth  : 400);
+        const h = dom.offsetHeight || (dom.parentElement ? dom.parentElement.offsetHeight : 300);
+
+        const c = echarts.init(dom, null, {
+          // SAFARI FIX: SVG renderer is more reliable on Safari/WebKit
+          renderer: _isSafari ? 'svg' : 'canvas',
+          width:  w > 0 ? w : undefined,
+          height: h > 0 ? h : undefined,
+          devicePixelRatio: _isSafari ? 1 : (window.devicePixelRatio || 1),
+        });
+        this._i[id] = c;
+        return c;
       },
-      disposeAll() { Object.values(this._i).forEach(c => { try { c.dispose(); } catch (e) { } }); this._i = {}; }
+      disposeAll() {
+        Object.values(this._i).forEach(c => { try { c.dispose(); } catch(e) {} });
+        this._i = {};
+      }
     };
-    window.addEventListener('resize', () => {
-      Object.values(SNTCharts._i).forEach(c => { try { if (!c.isDisposed()) c.resize(); } catch (e) { } });
-    });
+
+    /* ── RESIZE HANDLER: prefer ResizeObserver (Safari 13.1+), fallback window ── */
+    (function _setupResize() {
+      const resizeAll = () => {
+        Object.values(SNTCharts._i).forEach(c => {
+          try { if (!c.isDisposed()) c.resize(); } catch(e) {}
+        });
+      };
+      if (window.ResizeObserver) {
+        const ro = new ResizeObserver(resizeAll);
+        document.addEventListener('DOMContentLoaded', () => {
+          const area = document.getElementById('pageExportArea');
+          if (area) ro.observe(area);
+        });
+      }
+      window.addEventListener('resize', resizeAll);
+    })();
 
     let _apexTrend = null;
 
@@ -609,7 +690,7 @@
        DATA STORE
     ═══════════════════════════════════════════════════════ */
     const SNTData = {
-      totals: { neg: 0, pos: 0, neu: 0 },
+      totals: { neg:0, pos:0, neu:0 },
       byMedia: [],
       trend: [],
       weekday: null,
@@ -621,35 +702,43 @@
     ═══════════════════════════════════════════════════════ */
     async function loadSentiment() {
       if (!SNTCfg.pid) {
-        ['skOverview', 'skSovTotal', 'skMass', 'skSocial', 'skByType', 'skByPlat', 'skMassPie', 'skSocialPie', 'skTrend', 'skWeekday', 'skHour'].forEach(hideSk);
+        ['skOverview','skSovTotal','skMass','skSocial','skByType','skByPlat','skMassPie','skSocialPie','skTrend','skWeekday','skHour'].forEach(hideSk);
         return;
       }
       try {
-        const res = await fetch(`/mk/api/sentiment/totals?project_id=${SNTCfg.pid}&start_date=${SNTCfg.sd}&end_date=${SNTCfg.ed}&media=${SNTCfg.media}`);
+        // SAFARI FIX: wait for fonts before charting to avoid 0-height flash
+        if (document.fonts && document.fonts.ready) await document.fonts.ready;
+
+        const res  = await fetch(`/mk/api/sentiment/totals?project_id=${SNTCfg.pid}&start_date=${SNTCfg.sd}&end_date=${SNTCfg.ed}&media=${SNTCfg.media}`);
         const data = await res.json();
         if (data.error) throw new Error(data.error);
-        SNTData.totals = data.totals || { neg: 0, pos: 0, neu: 0 };
+        SNTData.totals  = data.totals   || { neg:0, pos:0, neu:0 };
         SNTData.byMedia = data.by_media || [];
-        SNTData.trend = data.trend || [];
-        renderAll();
-      } catch (err) {
+        SNTData.trend   = data.trend    || [];
+
+        // SAFARI FIX: give browser time to finish layout before rendering charts
+        _rafReady(renderAll, _isSafari ? 120 : 0);
+      } catch(err) {
         console.error('loadSentiment error:', err);
-        ['skOverview', 'skSovTotal', 'skMass', 'skSocial', 'skByType', 'skByPlat', 'skMassPie', 'skSocialPie'].forEach(hideSk);
+        ['skOverview','skSovTotal','skMass','skSocial','skByType','skByPlat','skMassPie','skSocialPie'].forEach(hideSk);
       }
     }
 
     async function loadTimeData() {
       if (!SNTCfg.pid) return;
       try {
-        const res = await fetch(`/mk/api/sentiment/by-time?project_id=${SNTCfg.pid}&start_date=${SNTCfg.sd}&end_date=${SNTCfg.ed}`);
+        if (document.fonts && document.fonts.ready) await document.fonts.ready;
+
+        const res  = await fetch(`/mk/api/sentiment/by-time?project_id=${SNTCfg.pid}&start_date=${SNTCfg.sd}&end_date=${SNTCfg.ed}`);
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         SNTData.weekday = data.weekday;
-        SNTData.hour = data.hour;
-        renderWeekdayHour();
-      } catch (err) {
+        SNTData.hour    = data.hour;
+
+        _rafReady(renderWeekdayHour, _isSafari ? 120 : 0);
+      } catch(err) {
         console.error('loadTimeData error:', err);
-        ['skWeekday', 'skHour'].forEach(hideSk);
+        ['skWeekday','skHour'].forEach(hideSk);
       }
     }
 
@@ -667,7 +756,7 @@
       document.getElementById('pctPos').textContent = pct(pos, tot);
       document.getElementById('pctNeu').textContent = pct(neu, tot);
       renderOverviewBar();
-      renderSovDoughnut('chSovTotal', ['Negative', 'Positive', 'Neutral'], [neg, pos, neu], ['#ef4444', '#2FC6F6', '#94a3b8'], true);
+      renderSovDoughnut('chSovTotal', ['Negative','Positive','Neutral'], [neg,pos,neu], ['#ef4444','#2FC6F6','#94a3b8'], true);
       hideSk('skSovTotal');
       renderMassSocialBars();
       renderByTypePct();
@@ -685,7 +774,7 @@
       const chart = SNTCharts.make('chOverview');
       if (!chart) return;
       chart.setOption({
-        animation: true, animationDuration: 900, animationEasing: 'elasticOut', backgroundColor: '#fff',
+        animation: true, animationDuration: _isSafari ? 400 : 900, animationEasing: 'elasticOut', backgroundColor: '#fff',
         tooltip: {
           ...EC_TIP, trigger: 'axis',
           axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(3,128,71,.06)' } },
@@ -693,108 +782,113 @@
             const p = params[0]; const v = p.value;
             return `<div style="font-weight:700;font-size:13px;margin-bottom:6px;">${p.name}</div>
                   <div style="display:flex;justify-content:space-between;gap:20px;"><span style="color:#94a3b8;">Mentions</span><span style="font-weight:700;">${numFmt(v)}</span></div>
-                  <div style="display:flex;justify-content:space-between;gap:20px;margin-top:3px;"><span style="color:#94a3b8;">Share</span><span style="font-weight:700;color:#34d399;">${pct(v, tot)}</span></div>`;
+                  <div style="display:flex;justify-content:space-between;gap:20px;margin-top:3px;"><span style="color:#94a3b8;">Share</span><span style="font-weight:700;color:#34d399;">${pct(v,tot)}</span></div>`;
           }
         },
-        grid: { top: 20, right: 20, bottom: 40, left: 60 },
-        xAxis: { type: 'category', data: ['Negative', 'Positive', 'Neutral'], axisLine: { show: false }, axisTick: { show: false }, axisLabel: { fontFamily: "'Poppins',sans-serif", fontSize: 13, fontWeight: '600', color: '#374151' } },
-        yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } }, axisLabel: { fontFamily: "'Poppins',sans-serif", fontSize: 11, color: '#94a3b8', formatter: numK } },
+        grid: { top:20, right:20, bottom:40, left:60 },
+        xAxis: { type:'category', data:['Negative','Positive','Neutral'], axisLine:{show:false}, axisTick:{show:false}, axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:13,fontWeight:'600',color:'#374151'} },
+        yAxis: { type:'value', axisLine:{show:false}, axisTick:{show:false}, splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}}, axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#94a3b8',formatter:numK} },
         series: [{
-          type: 'bar', barMaxWidth: 80,
+          type:'bar', barMaxWidth:80,
           data: [
-            { value: neg, itemStyle: { color: '#ef4444', borderRadius: [8, 8, 0, 0] } },
-            { value: pos, itemStyle: { color: '#2FC6F6', borderRadius: [8, 8, 0, 0] } },
-            { value: neu, itemStyle: { color: '#94a3b8', borderRadius: [8, 8, 0, 0] } },
+            { value:neg, itemStyle:{ color:'#ef4444', borderRadius:[8,8,0,0] } },
+            { value:pos, itemStyle:{ color:'#2FC6F6', borderRadius:[8,8,0,0] } },
+            { value:neu, itemStyle:{ color:'#94a3b8', borderRadius:[8,8,0,0] } },
           ],
-          label: { show: true, position: 'top', fontFamily: "'Poppins',sans-serif", fontWeight: '700', fontSize: 11, color: '#64748b', formatter: p => numK(p.value) }
+          label:{ show:true, position:'top', fontFamily:"'Poppins',sans-serif", fontWeight:'700', fontSize:11, color:'#64748b', formatter: p => numK(p.value) }
         }]
       });
+      // SAFARI FIX: force a resize after setOption to fix any 0-dimension init
+      if (_isSafari) setTimeout(() => { try { chart.resize(); } catch(e){} }, 60);
     }
 
     /* ─── SOV Doughnut ─── */
     function renderSovDoughnut(domId, labels, values, colors, ready = false) {
-      const tot = values.reduce((a, b) => a + b, 0);
+      const tot = values.reduce((a,b) => a+b, 0);
       const chart = SNTCharts.make(domId);
       if (!chart) return;
       chart.setOption({
-        animation: true, animationDuration: 800, animationEasing: 'cubicOut', backgroundColor: 'transparent',
+        animation: true, animationDuration: _isSafari ? 400 : 800, animationEasing: 'cubicOut', backgroundColor: 'transparent',
         tooltip: {
-          ...EC_TIP, trigger: 'item',
+          ...EC_TIP, trigger:'item',
           formatter: p => {
-            const pct2 = tot > 0 ? ((p.value / tot) * 100).toFixed(1) : '0.0';
+            const pct2 = tot > 0 ? ((p.value/tot)*100).toFixed(1) : '0.0';
             return `<div style="font-weight:700;font-size:13px;margin-bottom:5px;">${p.name}</div>
                   <div style="display:flex;justify-content:space-between;gap:20px;margin-top:4px;"><span style="color:#94a3b8;">Mentions</span><span style="font-weight:700;">${numFmt(p.value)}</span></div>
                   <div style="display:flex;justify-content:space-between;gap:20px;margin-top:3px;"><span style="color:#94a3b8;">Share</span><span style="font-weight:700;color:#34d399;">${pct2}%</span></div>`;
           }
         },
-        legend: { show: false },
+        legend: { show:false },
         series: [{
-          type: 'pie', radius: ['42%', '62%'], center: ['50%', '50%'],
-          avoidLabelOverlap: true, minAngle: 5,
-          itemStyle: { borderColor: '#fff', borderWidth: 3, borderRadius: 5 },
+          type:'pie', radius:['42%','62%'], center:['50%','50%'],
+          avoidLabelOverlap:true, minAngle:5,
+          itemStyle:{ borderColor:'#fff', borderWidth:3, borderRadius:5 },
           label: {
-            show: true, alignTo: 'edge', edgeDistance: 10, lineHeight: 18,
-            fontFamily: "'Poppins',sans-serif", fontSize: 11, color: '#374151',
+            show:true, alignTo:'edge', edgeDistance:10, lineHeight:18,
+            fontFamily:"'Poppins',sans-serif", fontSize:11, color:'#374151',
             formatter: p => {
-              const pc = tot > 0 ? (p.value / tot * 100) : 0; if (pc < 3) return '';
+              const pc = tot > 0 ? (p.value/tot*100) : 0; if (pc < 3) return '';
               return `{name|${p.name}}\n{pct|${pc.toFixed(1)}%}`;
             },
             rich: {
-              name: { fontWeight: '700', fontSize: 11, color: '#1a202c', lineHeight: 18 },
-              pct: { fontWeight: '700', fontSize: 10, color: '#038047', lineHeight: 16, backgroundColor: '#edf7f3', borderRadius: 4, padding: [1, 5] },
+              name:{ fontWeight:'700', fontSize:11, color:'#1a202c', lineHeight:18 },
+              pct:{ fontWeight:'700', fontSize:10, color:'#038047', lineHeight:16, backgroundColor:'#edf7f3', borderRadius:4, padding:[1,5] },
             }
           },
-          labelLine: { show: true, length: 12, length2: 16, smooth: .4, lineStyle: { color: '#c4cdd8', width: 1.2 } },
-          emphasis: { scale: true, scaleSize: 5, itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,.12)' } },
-          data: labels.map((l, i) => ({ name: l, value: values[i], itemStyle: { color: colors[i] } }))
+          labelLine:{ show:true, length:12, length2:16, smooth:.4, lineStyle:{color:'#c4cdd8',width:1.2} },
+          emphasis:{ scale:true, scaleSize:5, itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,.12)'} },
+          data: labels.map((l,i) => ({ name:l, value:values[i], itemStyle:{color:colors[i]} }))
         }],
         graphic: [
-          { type: 'text', left: 'center', top: '44%', z: 100, style: { text: numK(tot), fill: '#0f172a', font: "800 24px 'Poppins',sans-serif", textAlign: 'center' } },
-          { type: 'text', left: 'center', top: '53%', z: 100, style: { text: 'TOTAL', fill: '#94a3b8', font: "600 9px 'Poppins',sans-serif", textAlign: 'center', letterSpacing: 2 } },
+          { type:'text', left:'center', top:'44%', z:100, style:{ text:numK(tot), fill:'#0f172a', font:"800 24px 'Poppins',sans-serif", textAlign:'center' } },
+          { type:'text', left:'center', top:'53%', z:100, style:{ text:'TOTAL', fill:'#94a3b8', font:"600 9px 'Poppins',sans-serif", textAlign:'center', letterSpacing:2 } },
         ]
       });
+      if (_isSafari) setTimeout(() => { try { chart.resize(); } catch(e){} }, 60);
     }
 
     /* ─── Mass vs Social stacked bars ─── */
     function renderMassSocialBars() {
       const bm = SNTData.byMedia;
-      const massPlt = bm.filter(m => m.key === 'doc');
+      const massPlt   = bm.filter(m => m.key === 'doc');
       const socialPlt = bm.filter(m => m.key !== 'doc');
       hideSk('skMass');
       const massChart = SNTCharts.make('chMass');
       if (massChart) {
-        const mLabels = massPlt.map(m => m.label), mNeg = massPlt.map(m => m.neg), mPos = massPlt.map(m => m.pos), mNeu = massPlt.map(m => m.neu), mTot = massPlt.map(m => m.neg + m.pos + m.neu);
-        if (mLabels.length && mTot.some(v => v > 0)) massChart.setOption(makeStackedBarOption(mLabels, mNeg, mPos, mNeu, mLabels, mTot));
+        const mLabels = massPlt.map(m => m.label), mNeg = massPlt.map(m => m.neg), mPos = massPlt.map(m => m.pos), mNeu = massPlt.map(m => m.neu), mTot = massPlt.map(m => m.neg+m.pos+m.neu);
+        if (mLabels.length && mTot.some(v => v > 0)) massChart.setOption(makeStackedBarOption(mLabels,mNeg,mPos,mNeu,mLabels,mTot));
         else document.getElementById('chMass').parentElement.innerHTML = emptyHtml('Tidak ada data Mass Media');
+        if (_isSafari) setTimeout(() => { try { massChart.resize(); } catch(e){} }, 60);
       }
       hideSk('skSocial');
       const socialChart = SNTCharts.make('chSocial');
       if (socialChart) {
-        const sLabels = socialPlt.map(m => m.label), sNeg = socialPlt.map(m => m.neg), sPos = socialPlt.map(m => m.pos), sNeu = socialPlt.map(m => m.neu), sTot = socialPlt.map(m => m.neg + m.pos + m.neu);
-        if (sLabels.length && sTot.some(v => v > 0)) socialChart.setOption(makeStackedBarOption(sLabels, sNeg, sPos, sNeu, sLabels, sTot));
+        const sLabels = socialPlt.map(m => m.label), sNeg = socialPlt.map(m => m.neg), sPos = socialPlt.map(m => m.pos), sNeu = socialPlt.map(m => m.neu), sTot = socialPlt.map(m => m.neg+m.pos+m.neu);
+        if (sLabels.length && sTot.some(v => v > 0)) socialChart.setOption(makeStackedBarOption(sLabels,sNeg,sPos,sNeu,sLabels,sTot));
         else document.getElementById('chSocial').parentElement.innerHTML = emptyHtml('Tidak ada data Social Media');
+        if (_isSafari) setTimeout(() => { try { socialChart.resize(); } catch(e){} }, 60);
       }
     }
 
     function makeStackedBarOption(xLabels, negData, posData, neuData, tooltipLabels, totals) {
-      const makeData = (arr, col) => arr.map(v => ({ value: v, itemStyle: { color: col } }));
+      const makeData = (arr, col) => arr.map(v => ({ value:v, itemStyle:{color:col} }));
       return {
-        animation: true, animationDuration: 900, animationEasing: 'elasticOut', backgroundColor: '#fff',
+        animation:true, animationDuration: _isSafari ? 400 : 900, animationEasing:'elasticOut', backgroundColor:'#fff',
         tooltip: {
-          ...EC_TIP, trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(3,128,71,.06)' } },
+          ...EC_TIP, trigger:'axis', axisPointer:{ type:'shadow', shadowStyle:{color:'rgba(3,128,71,.06)'} },
           formatter: params => {
             const idx = params[0]?.dataIndex ?? 0; const tot = totals[idx] || 0;
             const rows = params.slice().reverse().map(p => `<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${p.color};flex-shrink:0;"></span><span style="font-size:12px;color:#94a3b8;">${p.seriesName}</span></div><span style="font-size:12px;font-weight:700;">${numFmt(p.value)}</span></div>`).join('');
-            return `<div style="font-weight:700;font-size:13px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.1);">${xLabels[idx] || ''}</div>${rows}<div style="border-top:1px solid rgba(255,255,255,.1);margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;gap:16px;"><span style="font-size:11px;color:#94a3b8;">Total</span><span style="font-weight:700;">${numFmt(tot)}</span></div>`;
+            return `<div style="font-weight:700;font-size:13px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.1);">${xLabels[idx]||''}</div>${rows}<div style="border-top:1px solid rgba(255,255,255,.1);margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;gap:16px;"><span style="font-size:11px;color:#94a3b8;">Total</span><span style="font-weight:700;">${numFmt(tot)}</span></div>`;
           }
         },
-        grid: { top: 28, right: 16, bottom: 36, left: 60 },
-        xAxis: { type: 'category', data: xLabels, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { fontFamily: "'Poppins',sans-serif", fontSize: 11, fontWeight: '600', color: '#64748b', interval: 0, formatter: v => v.length > 11 ? v.slice(0, 10) + '…' : v } },
-        yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } }, axisLabel: { fontFamily: "'Poppins',sans-serif", fontSize: 11, color: '#94a3b8', formatter: numK } },
+        grid: { top:28, right:16, bottom:36, left:60 },
+        xAxis: { type:'category', data:xLabels, axisLine:{show:false}, axisTick:{show:false}, axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b',interval:0,formatter:v=>v.length>11?v.slice(0,10)+'…':v} },
+        yAxis: { type:'value', axisLine:{show:false}, axisTick:{show:false}, splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}}, axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#94a3b8',formatter:numK} },
         series: [
-          { name: 'Neutral', type: 'bar', stack: 's', data: makeData(neuData, '#94a3b8'), itemStyle: { borderRadius: [0, 0, 0, 0] } },
-          { name: 'Positive', type: 'bar', stack: 's', data: makeData(posData, '#2FC6F6') },
-          { name: 'Negative', type: 'bar', stack: 's', barMaxWidth: 80, data: negData.map((v, i) => ({ value: v, itemStyle: { color: '#ef4444', borderRadius: [6, 6, 0, 0] } })), label: { show: true, position: 'top', fontFamily: "'Poppins',sans-serif", fontWeight: '700', fontSize: 11, color: '#64748b', formatter: p => totals[p.dataIndex] > 0 ? numK(totals[p.dataIndex]) : '' } }
+          { name:'Neutral',  type:'bar', stack:'s', data:makeData(neuData,'#94a3b8'), itemStyle:{borderRadius:[0,0,0,0]} },
+          { name:'Positive', type:'bar', stack:'s', data:makeData(posData,'#2FC6F6') },
+          { name:'Negative', type:'bar', stack:'s', barMaxWidth:80, data:negData.map((v,i) => ({ value:v, itemStyle:{color:'#ef4444',borderRadius:[6,6,0,0]} })), label:{ show:true, position:'top', fontFamily:"'Poppins',sans-serif", fontWeight:'700', fontSize:11, color:'#64748b', formatter:p=>totals[p.dataIndex]>0?numK(totals[p.dataIndex]):'' } }
         ]
       };
     }
@@ -805,29 +899,30 @@
       const bm = SNTData.byMedia;
       if (!bm.length) { document.getElementById('chByType').parentElement.innerHTML = emptyHtml('Tidak ada data'); return; }
       const chart = SNTCharts.make('chByType'); if (!chart) return;
-      const labels = bm.map(m => m.label);
-      const negPcts = bm.map(m => { const t = m.neg + m.pos + m.neu; return t > 0 ? parseFloat((m.neg / t * 100).toFixed(1)) : 0; });
-      const posPcts = bm.map(m => { const t = m.neg + m.pos + m.neu; return t > 0 ? parseFloat((m.pos / t * 100).toFixed(1)) : 0; });
-      const neuPcts = bm.map(m => { const t = m.neg + m.pos + m.neu; return t > 0 ? parseFloat((m.neu / t * 100).toFixed(1)) : 0; });
+      const labels  = bm.map(m => m.label);
+      const negPcts = bm.map(m => { const t=m.neg+m.pos+m.neu; return t>0?parseFloat((m.neg/t*100).toFixed(1)):0; });
+      const posPcts = bm.map(m => { const t=m.neg+m.pos+m.neu; return t>0?parseFloat((m.pos/t*100).toFixed(1)):0; });
+      const neuPcts = bm.map(m => { const t=m.neg+m.pos+m.neu; return t>0?parseFloat((m.neu/t*100).toFixed(1)):0; });
       chart.setOption({
-        animation: true, animationDuration: 900, animationEasing: 'elasticOut', backgroundColor: '#fff',
+        animation:true, animationDuration: _isSafari ? 400 : 900, animationEasing:'elasticOut', backgroundColor:'#fff',
         tooltip: {
-          ...EC_TIP, trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: params => {
+          ...EC_TIP, trigger:'axis', axisPointer:{ type:'shadow' }, formatter: params => {
             const idx = params[0]?.dataIndex ?? 0; const m = bm[idx]; if (!m) return '';
-            const tot = m.neg + m.pos + m.neu;
-            return `<div style="font-weight:700;font-size:13px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.1);">${m.label}</div>${[['Negative', '#ef4444', m.neg], ['Positive', '#2FC6F6', m.pos], ['Neutral', '#94a3b8', m.neu]].map(([n, c, v]) => `<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c};"></span><span style="font-size:12px;color:#94a3b8;">${n}</span></div><div style="display:flex;gap:10px;"><span style="font-size:12px;font-weight:700;">${numFmt(v)}</span><span style="font-size:10px;color:#94a3b8;">${tot > 0 ? (v / tot * 100).toFixed(1) : '0'}%</span></div></div>`).join('')}`;
+            const tot = m.neg+m.pos+m.neu;
+            return `<div style="font-weight:700;font-size:13px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.1);">${m.label}</div>${[['Negative','#ef4444',m.neg],['Positive','#2FC6F6',m.pos],['Neutral','#94a3b8',m.neu]].map(([n,c,v]) => `<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c};"></span><span style="font-size:12px;color:#94a3b8;">${n}</span></div><div style="display:flex;gap:10px;"><span style="font-size:12px;font-weight:700;">${numFmt(v)}</span><span style="font-size:10px;color:#94a3b8;">${tot>0?(v/tot*100).toFixed(1):'0'}%</span></div></div>`).join('')}`;
           }
         },
-        legend: { bottom: 0, data: ['Negative', 'Positive', 'Neutral'], textStyle: { fontFamily: "'Poppins',sans-serif", fontSize: 11, fontWeight: '600', color: '#64748b' }, icon: 'circle', itemWidth: 10, itemHeight: 10, itemGap: 20 },
-        grid: { top: 12, right: 16, bottom: 50, left: 100 },
-        xAxis: { type: 'value', max: 100, min: 0, axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } }, axisLabel: { fontFamily: "'Poppins',sans-serif", fontSize: 11, color: '#94a3b8', formatter: v => v + '%' } },
-        yAxis: { type: 'category', data: labels, inverse: false, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { fontFamily: "'Poppins',sans-serif", fontSize: 11, fontWeight: '600', color: '#374151', margin: 10 } },
+        legend: { bottom:0, data:['Negative','Positive','Neutral'], textStyle:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'}, icon:'circle', itemWidth:10, itemHeight:10, itemGap:20 },
+        grid: { top:12, right:16, bottom:50, left:100 },
+        xAxis: { type:'value', max:100, min:0, axisLine:{show:false}, axisTick:{show:false}, splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}}, axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#94a3b8',formatter:v=>v+'%'} },
+        yAxis: { type:'category', data:labels, inverse:false, axisLine:{show:false}, axisTick:{show:false}, axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#374151',margin:10} },
         series: [
-          { name: 'Negative', type: 'bar', stack: 'pct', data: negPcts, itemStyle: { color: '#ef4444' }, barMaxWidth: 30, emphasis: { focus: 'series' }, label: { show: posPcts.length <= 5, position: 'inside', formatter: p => p.value > 5 ? p.value + '%' : '', fontFamily: "'Poppins',sans-serif", fontSize: 9, fontWeight: '700', color: '#fff' } },
-          { name: 'Positive', type: 'bar', stack: 'pct', data: posPcts, itemStyle: { color: '#2FC6F6' }, barMaxWidth: 30, emphasis: { focus: 'series' }, label: { show: posPcts.length <= 5, position: 'inside', formatter: p => p.value > 5 ? p.value + '%' : '', fontFamily: "'Poppins',sans-serif", fontSize: 9, fontWeight: '700', color: '#fff' } },
-          { name: 'Neutral', type: 'bar', stack: 'pct', data: neuPcts, itemStyle: { color: '#94a3b8', borderRadius: [0, 4, 4, 0] }, barMaxWidth: 30, emphasis: { focus: 'series' } },
+          { name:'Negative', type:'bar', stack:'pct', data:negPcts, itemStyle:{color:'#ef4444'}, barMaxWidth:30, emphasis:{focus:'series'}, label:{show:posPcts.length<=5,position:'inside',formatter:p=>p.value>5?p.value+'%':'',fontFamily:"'Poppins',sans-serif",fontSize:9,fontWeight:'700',color:'#fff'} },
+          { name:'Positive', type:'bar', stack:'pct', data:posPcts, itemStyle:{color:'#2FC6F6'}, barMaxWidth:30, emphasis:{focus:'series'}, label:{show:posPcts.length<=5,position:'inside',formatter:p=>p.value>5?p.value+'%':'',fontFamily:"'Poppins',sans-serif",fontSize:9,fontWeight:'700',color:'#fff'} },
+          { name:'Neutral',  type:'bar', stack:'pct', data:neuPcts, itemStyle:{color:'#94a3b8',borderRadius:[0,4,4,0]}, barMaxWidth:30, emphasis:{focus:'series'} },
         ]
       });
+      if (_isSafari) setTimeout(() => { try { chart.resize(); } catch(e){} }, 60);
     }
 
     /* ─── By Platform Grouped ─── */
@@ -836,51 +931,53 @@
       const bm = SNTData.byMedia;
       if (!bm.length) { document.getElementById('chByPlat').parentElement.innerHTML = emptyHtml('Tidak ada data'); return; }
       const chart = SNTCharts.make('chByPlat'); if (!chart) return;
-      const massDat = bm.filter(m => m.key === 'doc'), socialDat = bm.filter(m => m.key !== 'doc');
-      const groups = ['Mass Media', 'Social Media'];
-      const mNeg = massDat.reduce((s, m) => s + m.neg, 0), mPos = massDat.reduce((s, m) => s + m.pos, 0), mNeu = massDat.reduce((s, m) => s + m.neu, 0), mTot = mNeg + mPos + mNeu;
-      const sNeg = socialDat.reduce((s, m) => s + m.neg, 0), sPos = socialDat.reduce((s, m) => s + m.pos, 0), sNeu = socialDat.reduce((s, m) => s + m.neu, 0), sTot = sNeg + sPos + sNeu;
-      const negPct = [mTot > 0 ? (mNeg / mTot * 100).toFixed(1) : 0, sTot > 0 ? (sNeg / sTot * 100).toFixed(1) : 0];
-      const posPct = [mTot > 0 ? (mPos / mTot * 100).toFixed(1) : 0, sTot > 0 ? (sPos / sTot * 100).toFixed(1) : 0];
-      const neuPct = [mTot > 0 ? (mNeu / mTot * 100).toFixed(1) : 0, sTot > 0 ? (sNeu / sTot * 100).toFixed(1) : 0];
+      const massDat   = bm.filter(m => m.key === 'doc');
+      const socialDat = bm.filter(m => m.key !== 'doc');
+      const groups    = ['Mass Media','Social Media'];
+      const mNeg=massDat.reduce((s,m)=>s+m.neg,0), mPos=massDat.reduce((s,m)=>s+m.pos,0), mNeu=massDat.reduce((s,m)=>s+m.neu,0), mTot=mNeg+mPos+mNeu;
+      const sNeg=socialDat.reduce((s,m)=>s+m.neg,0), sPos=socialDat.reduce((s,m)=>s+m.pos,0), sNeu=socialDat.reduce((s,m)=>s+m.neu,0), sTot=sNeg+sPos+sNeu;
+      const negPct=[mTot>0?(mNeg/mTot*100).toFixed(1):0, sTot>0?(sNeg/sTot*100).toFixed(1):0];
+      const posPct=[mTot>0?(mPos/mTot*100).toFixed(1):0, sTot>0?(sPos/sTot*100).toFixed(1):0];
+      const neuPct=[mTot>0?(mNeu/mTot*100).toFixed(1):0, sTot>0?(sNeu/sTot*100).toFixed(1):0];
       chart.setOption({
-        animation: true, animationDuration: 900, backgroundColor: '#fff',
+        animation:true, animationDuration: _isSafari ? 400 : 900, backgroundColor:'#fff',
         tooltip: {
-          ...EC_TIP, trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: params => {
-            const idx = params[0]?.dataIndex ?? 0; const lbl = groups[idx];
-            const neg = [mNeg, sNeg][idx], pos = [mPos, sPos][idx], neu = [mNeu, sNeu][idx], tot = [mTot, sTot][idx];
-            return `<div style="font-weight:700;font-size:13px;margin-bottom:8px;">${lbl}</div>${[['Negative', '#ef4444', neg], ['Positive', '#2FC6F6', pos], ['Neutral', '#94a3b8', neu]].map(([n, c, v]) => `<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c};"></span><span style="font-size:12px;color:#94a3b8;">${n}</span></div><span style="font-size:12px;font-weight:700;">${numFmt(v)} <span style="color:#94a3b8;font-size:10px;">(${tot > 0 ? (v / tot * 100).toFixed(1) : '0'}%)</span></span></div>`).join('')}`;
+          ...EC_TIP, trigger:'axis', axisPointer:{type:'shadow'}, formatter: params => {
+            const idx=params[0]?.dataIndex??0; const lbl=groups[idx];
+            const neg=[mNeg,sNeg][idx], pos=[mPos,sPos][idx], neu=[mNeu,sNeu][idx], tot=[mTot,sTot][idx];
+            return `<div style="font-weight:700;font-size:13px;margin-bottom:8px;">${lbl}</div>${[['Negative','#ef4444',neg],['Positive','#2FC6F6',pos],['Neutral','#94a3b8',neu]].map(([n,c,v]) => `<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c};"></span><span style="font-size:12px;color:#94a3b8;">${n}</span></div><span style="font-size:12px;font-weight:700;">${numFmt(v)} <span style="color:#94a3b8;font-size:10px;">(${tot>0?(v/tot*100).toFixed(1):'0'}%)</span></span></div>`).join('')}`;
           }
         },
-        legend: { bottom: 0, data: ['Negative', 'Positive', 'Neutral'], textStyle: { fontFamily: "'Poppins',sans-serif", fontSize: 11, fontWeight: '600', color: '#64748b' }, icon: 'circle', itemWidth: 10, itemHeight: 10, itemGap: 20 },
-        grid: { top: 24, right: 16, bottom: 50, left: 72 },
-        xAxis: { type: 'category', data: groups, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { fontFamily: "'Poppins',sans-serif", fontSize: 13, fontWeight: '700', color: '#374151' } },
-        yAxis: { type: 'value', max: 100, min: 0, axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } }, axisLabel: { fontFamily: "'Poppins',sans-serif", fontSize: 11, color: '#94a3b8', formatter: v => v + '%' } },
+        legend: { bottom:0, data:['Negative','Positive','Neutral'], textStyle:{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:'600',color:'#64748b'}, icon:'circle', itemWidth:10, itemHeight:10, itemGap:20 },
+        grid: { top:24, right:16, bottom:50, left:72 },
+        xAxis: { type:'category', data:groups, axisLine:{show:false}, axisTick:{show:false}, axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:13,fontWeight:'700',color:'#374151'} },
+        yAxis: { type:'value', max:100, min:0, axisLine:{show:false}, axisTick:{show:false}, splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}}, axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#94a3b8',formatter:v=>v+'%'} },
         series: [
-          { name: 'Neutral', type: 'bar', stack: 's', data: neuPct.map(v => parseFloat(v)), itemStyle: { color: '#94a3b8' }, barMaxWidth: 90, emphasis: { focus: 'series' } },
-          { name: 'Positive', type: 'bar', stack: 's', data: posPct.map(v => parseFloat(v)), itemStyle: { color: '#2FC6F6' }, barMaxWidth: 90, emphasis: { focus: 'series' }, label: { show: true, position: 'inside', formatter: p => p.value > 8 ? p.value + '%' : '', fontFamily: "'Poppins',sans-serif", fontSize: 10, fontWeight: '700', color: '#fff' } },
-          { name: 'Negative', type: 'bar', stack: 's', data: negPct.map(v => parseFloat(v)), itemStyle: { color: '#ef4444', borderRadius: [4, 4, 0, 0] }, barMaxWidth: 90, emphasis: { focus: 'series' }, label: { show: true, position: 'inside', formatter: p => p.value > 8 ? p.value + '%' : '', fontFamily: "'Poppins',sans-serif", fontSize: 10, fontWeight: '700', color: '#fff' } },
+          { name:'Neutral',  type:'bar', stack:'s', data:neuPct.map(v=>parseFloat(v)), itemStyle:{color:'#94a3b8'}, barMaxWidth:90, emphasis:{focus:'series'} },
+          { name:'Positive', type:'bar', stack:'s', data:posPct.map(v=>parseFloat(v)), itemStyle:{color:'#2FC6F6'}, barMaxWidth:90, emphasis:{focus:'series'}, label:{show:true,position:'inside',formatter:p=>p.value>8?p.value+'%':'',fontFamily:"'Poppins',sans-serif",fontSize:10,fontWeight:'700',color:'#fff'} },
+          { name:'Negative', type:'bar', stack:'s', data:negPct.map(v=>parseFloat(v)), itemStyle:{color:'#ef4444',borderRadius:[4,4,0,0]}, barMaxWidth:90, emphasis:{focus:'series'}, label:{show:true,position:'inside',formatter:p=>p.value>8?p.value+'%':'',fontFamily:"'Poppins',sans-serif",fontSize:10,fontWeight:'700',color:'#fff'} },
         ]
       });
+      if (_isSafari) setTimeout(() => { try { chart.resize(); } catch(e){} }, 60);
     }
 
     /* ─── Mass + Social Pies ─── */
     function renderMassSocialPies() {
       const bm = SNTData.byMedia;
       const massDat = bm.filter(m => m.key === 'doc');
-      const mN = massDat.reduce((s, m) => s + m.neg, 0), mP = massDat.reduce((s, m) => s + m.pos, 0), mNe = massDat.reduce((s, m) => s + m.neu, 0);
+      const mN=massDat.reduce((s,m)=>s+m.neg,0), mP=massDat.reduce((s,m)=>s+m.pos,0), mNe=massDat.reduce((s,m)=>s+m.neu,0);
       hideSk('skMassPie');
-      if (mN + mP + mNe > 0) renderSovDoughnut('chMassPie', ['Negative', 'Positive', 'Neutral'], [mN, mP, mNe], ['#ef4444', '#2FC6F6', '#94a3b8']);
+      if (mN+mP+mNe > 0) renderSovDoughnut('chMassPie',['Negative','Positive','Neutral'],[mN,mP,mNe],['#ef4444','#2FC6F6','#94a3b8']);
       else document.getElementById('chMassPie').parentElement.innerHTML = emptyHtml('Tidak ada data Mass Media');
-      const sD = bm.filter(m => m.key !== 'doc');
-      const sN = sD.reduce((s, m) => s + m.neg, 0), sP = sD.reduce((s, m) => s + m.pos, 0), sNe = sD.reduce((s, m) => s + m.neu, 0);
+      const sD=bm.filter(m=>m.key!=='doc');
+      const sN=sD.reduce((s,m)=>s+m.neg,0), sP=sD.reduce((s,m)=>s+m.pos,0), sNe=sD.reduce((s,m)=>s+m.neu,0);
       hideSk('skSocialPie');
-      if (sN + sP + sNe > 0) renderSovDoughnut('chSocialPie', ['Negative', 'Positive', 'Neutral'], [sN, sP, sNe], ['#ef4444', '#2FC6F6', '#94a3b8']);
+      if (sN+sP+sNe > 0) renderSovDoughnut('chSocialPie',['Negative','Positive','Neutral'],[sN,sP,sNe],['#ef4444','#2FC6F6','#94a3b8']);
       else document.getElementById('chSocialPie').parentElement.innerHTML = emptyHtml('Tidak ada data Social Media');
     }
 
     /* ═══════════════════════════════════════════════════════
-       TREND
+       TREND  (ApexCharts)
     ═══════════════════════════════════════════════════════ */
     function renderTrend() {
       hideSk('skTrend');
@@ -890,62 +987,93 @@
         document.getElementById('chTrend').innerHTML = emptyHtml('Data trend tidak tersedia untuk periode ini');
         return;
       }
-      const dates = trend.map(d => d.date);
+      const dates   = trend.map(d => d.date);
       const negVals = trend.map(d => d.neg || 0);
       const posVals = trend.map(d => d.pos || 0);
       const neuVals = trend.map(d => d.neu || 0);
-      const totVals = trend.map(d => (d.neg || 0) + (d.pos || 0) + (d.neu || 0));
-      const xLabels = dates.map(d => { const dt = new Date(d + 'T00:00:00'); return `${dt.getDate()}/${dt.getMonth() + 1}`; });
-      const fmtB = d => { const dt = new Date(d + 'T00:00:00'); return `${dt.getDate()} ${dt.toLocaleString('id-ID', { month: 'short' })}`; };
-      document.getElementById('trendBadge').textContent = `${fmtB(dates[0])} – ${fmtB(dates[dates.length - 1])}`;
-      if (_apexTrend) { try { _apexTrend.destroy(); } catch (e) { } _apexTrend = null; }
+      const totVals = trend.map(d => (d.neg||0)+(d.pos||0)+(d.neu||0));
+      const xLabels = dates.map(d => { const dt=new Date(d+'T00:00:00'); return `${dt.getDate()}/${dt.getMonth()+1}`; });
+      const fmtB    = d => { const dt=new Date(d+'T00:00:00'); return `${dt.getDate()} ${dt.toLocaleString('id-ID',{month:'short'})}`; };
+      document.getElementById('trendBadge').textContent = `${fmtB(dates[0])} – ${fmtB(dates[dates.length-1])}`;
+
+      if (_apexTrend) { try { _apexTrend.destroy(); } catch(e) {} _apexTrend = null; }
       const el = document.getElementById('chTrend');
       if (!el) return;
 
+      // SAFARI FIX: ensure the element has explicit height before ApexCharts mounts
+      if (_isSafari && el.offsetHeight < 10) el.style.height = '380px';
+
       _apexTrend = new ApexCharts(el, {
         chart: {
-          type: 'area', height: 380, fontFamily: 'inherit', background: 'transparent',
+          type: 'area', height: 380,
+          fontFamily: 'inherit',
+          background: 'transparent',
           toolbar: { show: false },
-          animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 1000 } },
+          // SAFARI FIX: disable complex animations; Safari SVG gradient can freeze
+          animations: {
+            enabled: !_isSafari,
+            easing: 'linear',
+            dynamicAnimation: { speed: 1000 }
+          },
           events: {
             markerClick: (e, ctx, cfg) => {
-              const sentMap = { 0: 'all', 1: 'pos', 2: 'neu', 3: 'neg' };
+              const sentMap = {0:'all',1:'pos',2:'neu',3:'neg'};
               SNTPopup.open('all', sentMap[cfg.seriesIndex] || 'all');
             },
             legendClick: (ctx, seriesIndex) => {
-              const sentMap = { 0: 'all', 1: 'pos', 2: 'neu', 3: 'neg' };
+              const sentMap = {0:'all',1:'pos',2:'neu',3:'neg'};
               SNTPopup.open('all', sentMap[seriesIndex] || 'all');
             },
             dataPointSelection: (e, ctx, cfg) => {
-              const sentMap = { 0: 'all', 1: 'pos', 2: 'neu', 3: 'neg' };
+              const sentMap = {0:'all',1:'pos',2:'neu',3:'neg'};
               SNTPopup.open('all', sentMap[cfg.seriesIndex] || 'all');
             },
           }
         },
         series: [
-          { name: 'Total', data: totVals },
-          { name: 'Positive', data: posVals },
-          { name: 'Neutral', data: neuVals },
-          { name: 'Negative', data: negVals },
+          { name:'Total',    data:totVals },
+          { name:'Positive', data:posVals },
+          { name:'Neutral',  data:neuVals },
+          { name:'Negative', data:negVals },
         ],
-        colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
-        xaxis: { categories: xLabels, axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { fontFamily: 'inherit', fontSize: '11px', fontWeight: 600, colors: '#94A3B8' } } },
-        yaxis: { labels: { formatter: v => numK(v), style: { fontFamily: 'inherit', fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } }, axisBorder: { show: false }, axisTicks: { show: false } },
-        fill: { opacity: 0.3 },
-        stroke: { curve: 'smooth', width: 2.5 },
-        markers: { size: 5, strokeWidth: 2, strokeColors: '#fff', hover: { size: 7 } },
+        colors: ['#4680ff','#10B981','#94A3B8','#EF4444'],
+        xaxis: {
+          categories: xLabels,
+          axisBorder: { show:false }, axisTicks: { show:false },
+          labels: { style:{ fontFamily:'inherit', fontSize:'11px', fontWeight:600, colors:'#94A3B8' } }
+        },
+        yaxis: {
+          labels: {
+            formatter: v => numK(v),
+            style: { fontFamily:'inherit', fontSize:'10px', fontWeight:600, colors:'#94A3B8' }
+          },
+          axisBorder: { show:false }, axisTicks: { show:false }
+        },
+        // SAFARI FIX: use solid fill instead of gradient; Safari SVG gradient causes blank chart
+        fill: _isSafari
+          ? { opacity: 0.15, type: 'solid' }
+          : { opacity: 0.30 },
+        stroke: { curve:'smooth', width:2.5 },
+        markers: { size:5, strokeWidth:2, strokeColors:'#fff', hover:{ size:7 } },
         dataLabels: {
           enabled: true,
           formatter: v => v > 0 ? numFmt(v) : '',
-          style: { fontSize: '10px', fontFamily: 'inherit', fontWeight: '700' },
-          background: { enabled: true, borderRadius: 3, borderWidth: 0, padding: 3, opacity: 0.9 },
+          style: { fontSize:'10px', fontFamily:'inherit', fontWeight:'700' },
+          background: { enabled:true, borderRadius:3, borderWidth:0, padding:3, opacity:0.9 },
           offsetY: -6,
         },
-        grid: { borderColor: 'rgba(226,232,240,.55)', strokeDashArray: 3, xaxis: { lines: { show: false } } },
-        legend: { position: 'bottom', horizontalAlign: 'left', fontFamily: 'inherit', fontSize: '11px', fontWeight: '600', labels: { colors: '#94A3B8' }, markers: { width: 9, height: 9, radius: 50 }, itemMargin: { horizontal: 14, vertical: 4 } },
-        tooltip: { shared: false, intersect: true, style: { fontFamily: 'inherit', fontSize: '12px' }, y: { formatter: v => numFmt(v) + ' mentions' } },
+        grid: { borderColor:'rgba(226,232,240,.55)', strokeDashArray:3, xaxis:{ lines:{ show:false } } },
+        legend: { position:'bottom', horizontalAlign:'left', fontFamily:'inherit', fontSize:'11px', fontWeight:'600', labels:{ colors:'#94A3B8' }, markers:{ width:9, height:9, radius:50 }, itemMargin:{ horizontal:14, vertical:4 } },
+        tooltip: { shared:false, intersect:true, style:{ fontFamily:'inherit', fontSize:'12px' }, y:{ formatter:v => numFmt(v)+' mentions' } },
       });
       _apexTrend.render();
+
+      // SAFARI FIX: force layout recalculation after render
+      if (_isSafari) {
+        setTimeout(() => {
+          try { _apexTrend.updateOptions({}, false, false, false); } catch(e) {}
+        }, 250);
+      }
 
       el.addEventListener('click', e => {
         const t = e.target;
@@ -958,27 +1086,27 @@
 
     /* ─── Weekday & Hour ─── */
     function renderWeekdayHour() {
-      renderTimeChart('chWeekday', 'skWeekday', SNTData.weekday?.weekdays || [], SNTData.weekday?.neg || [], SNTData.weekday?.pos || [], SNTData.weekday?.neu || [], SNTData.weekday?.total || [], false);
-      renderTimeChart('chHour', 'skHour', SNTData.hour?.hours || [], SNTData.hour?.neg || [], SNTData.hour?.pos || [], SNTData.hour?.neu || [], SNTData.hour?.total || [], true);
+      renderTimeChart('chWeekday','skWeekday', SNTData.weekday?.weekdays||[], SNTData.weekday?.neg||[], SNTData.weekday?.pos||[], SNTData.weekday?.neu||[], SNTData.weekday?.total||[], false);
+      renderTimeChart('chHour','skHour', SNTData.hour?.hours||[], SNTData.hour?.neg||[], SNTData.hour?.pos||[], SNTData.hour?.neu||[], SNTData.hour?.total||[], true);
     }
 
     function renderTimeChart(domId, skelId, labels, negData, posData, neuData, totals, isHour = false) {
       hideSk(skelId);
-      if (!labels.length || !totals.some(v => v > 0)) {
+      if (!labels.length || !totals.some(v=>v>0)) {
         document.getElementById(domId).parentElement.innerHTML = emptyHtml('Data tidak tersedia untuk periode ini');
         return;
       }
       const chart = SNTCharts.make(domId); if (!chart) return;
-      const makeS = (name, data, color) => ({
-        name, type: 'bar', stack: 's',
-        data: data.map(v => ({ value: v, itemStyle: { color, borderRadius: [0,0,0,0] } })),
-        emphasis: { focus: 'series' }
+      const makeS = (name,data,color) => ({
+        name, type:'bar', stack:'s',
+        data: data.map(v => ({ value:v, itemStyle:{color,borderRadius:[0,0,0,0]} })),
+        emphasis: { focus:'series' }
       });
       chart.setOption({
-        animation: true, animationDuration: 800, animationEasing: 'elasticOut', backgroundColor: '#fff',
+        animation:true, animationDuration: _isSafari ? 400 : 800, animationEasing:'elasticOut', backgroundColor:'#fff',
         tooltip: {
-          ...EC_TIP, trigger: 'axis',
-          axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(3,128,71,.06)' } },
+          ...EC_TIP, trigger:'axis',
+          axisPointer:{ type:'shadow', shadowStyle:{color:'rgba(3,128,71,.06)'} },
           formatter: params => {
             const idx  = params[0]?.dataIndex ?? 0;
             const lbl  = labels[idx] || '';
@@ -1001,24 +1129,25 @@
                     </div>`;
           }
         },
-        grid: { top: 24, right: 16, bottom: isHour ? 65 : 40, left: 56 },
+        grid: { top:24, right:16, bottom: isHour ? 65 : 40, left:56 },
         xAxis: {
-          type: 'category', data: labels, axisLine: { show: false }, axisTick: { show: false },
-          axisLabel: { fontFamily: "'Poppins',sans-serif", fontSize: isHour ? 10 : 11, fontWeight: '600', color: '#64748b', interval: isHour ? 2 : 0, rotate: isHour ? 45 : 0, margin: isHour ? 10 : 8 }
+          type:'category', data:labels, axisLine:{show:false}, axisTick:{show:false},
+          axisLabel:{ fontFamily:"'Poppins',sans-serif", fontSize: isHour ? 10 : 11, fontWeight:'600', color:'#64748b', interval: isHour ? 2 : 0, rotate: isHour ? 45 : 0, margin: isHour ? 10 : 8 }
         },
-        yAxis: { type: 'value', axisLine: { show: false }, axisTick: { show: false }, splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } }, axisLabel: { fontFamily: "'Poppins',sans-serif", fontSize: 11, color: '#94a3b8', formatter: numK } },
+        yAxis: { type:'value', axisLine:{show:false}, axisTick:{show:false}, splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}}, axisLabel:{fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#94a3b8',formatter:numK} },
         series: [
-          makeS('Neutral', neuData, '#94a3b8'),
+          makeS('Neutral',  neuData, '#94a3b8'),
           makeS('Positive', posData, '#2FC6F6'),
           {
-            name: 'Negative', type: 'bar', stack: 's',
+            name:'Negative', type:'bar', stack:'s',
             barMaxWidth: isHour ? 16 : 56,
-            data: negData.map((v, i) => ({ value: v, itemStyle: { color: '#ef4444', borderRadius: [4,4,0,0] } })),
-            label: { show: true, position: 'top', fontFamily: "'Poppins',sans-serif", fontWeight: '700', fontSize: isHour ? 8 : 10, color: '#64748b', rotate: isHour ? 45 : 0, formatter: p => totals[p.dataIndex] > 0 ? numK(totals[p.dataIndex]) : '' },
-            emphasis: { focus: 'series' }
+            data: negData.map((v,i) => ({ value:v, itemStyle:{color:'#ef4444',borderRadius:[4,4,0,0]} })),
+            label: { show:true, position:'top', fontFamily:"'Poppins',sans-serif", fontWeight:'700', fontSize: isHour ? 8 : 10, color:'#64748b', rotate: isHour ? 45 : 0, formatter:p=>totals[p.dataIndex]>0?numK(totals[p.dataIndex]):'' },
+            emphasis: { focus:'series' }
           }
         ]
       });
+      if (_isSafari) setTimeout(() => { try { chart.resize(); } catch(e){} }, 60);
     }
 
     /* ═══════════════════════════════════════════════════════
@@ -1026,13 +1155,13 @@
     ═══════════════════════════════════════════════════════ */
     const SNTCsv = {
       _copy(text) {
-        navigator.clipboard?.writeText(text).catch(() => { const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); });
+        navigator.clipboard?.writeText(text).catch(() => { const ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;opacity:0;'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); });
         alert('CSV data tersalin ke clipboard!');
       },
-      copyOverview() { const { neg, pos, neu } = SNTData.totals; const tot = neg + pos + neu; this._copy(['sentiment;count;percentage', `Negative;${neg};${tot > 0 ? (neg / tot * 100).toFixed(1) : 0}`, `Positive;${pos};${tot > 0 ? (pos / tot * 100).toFixed(1) : 0}`, `Neutral;${neu};${tot > 0 ? (neu / tot * 100).toFixed(1) : 0}`, `Total;${tot};100`].join('\n')); },
-      copyMass() { const bm = SNTData.byMedia.filter(m => m.key === 'doc'); const lines = ['platform;negative;positive;neutral;total']; bm.forEach(m => lines.push(`${m.label};${m.neg};${m.pos};${m.neu};${m.neg + m.pos + m.neu}`)); this._copy(lines.join('\n')); },
-      copySocial() { const bm = SNTData.byMedia.filter(m => m.key !== 'doc'); const lines = ['platform;negative;positive;neutral;total']; bm.forEach(m => lines.push(`${m.label};${m.neg};${m.pos};${m.neu};${m.neg + m.pos + m.neu}`)); this._copy(lines.join('\n')); },
-      copyTrend() { const lines = ['date;negative;positive;neutral;total']; SNTData.trend.forEach(d => lines.push(`${d.date};${d.neg};${d.pos};${d.neu};${d.neg + d.pos + d.neu}`)); this._copy(lines.join('\n')); }
+      copyOverview() { const {neg,pos,neu}=SNTData.totals; const tot=neg+pos+neu; this._copy(['sentiment;count;percentage',`Negative;${neg};${tot>0?(neg/tot*100).toFixed(1):0}`,`Positive;${pos};${tot>0?(pos/tot*100).toFixed(1):0}`,`Neutral;${neu};${tot>0?(neu/tot*100).toFixed(1):0}`,`Total;${tot};100`].join('\n')); },
+      copyMass()     { const bm=SNTData.byMedia.filter(m=>m.key==='doc'); const lines=['platform;negative;positive;neutral;total']; bm.forEach(m=>lines.push(`${m.label};${m.neg};${m.pos};${m.neu};${m.neg+m.pos+m.neu}`)); this._copy(lines.join('\n')); },
+      copySocial()   { const bm=SNTData.byMedia.filter(m=>m.key!=='doc'); const lines=['platform;negative;positive;neutral;total']; bm.forEach(m=>lines.push(`${m.label};${m.neg};${m.pos};${m.neu};${m.neg+m.pos+m.neu}`)); this._copy(lines.join('\n')); },
+      copyTrend()    { const lines=['date;negative;positive;neutral;total']; SNTData.trend.forEach(d=>lines.push(`${d.date};${d.neg};${d.pos};${d.neu};${d.neg+d.pos+d.neu}`)); this._copy(lines.join('\n')); }
     };
 
     /* ═══════════════════════════════════════════════════════
@@ -1040,9 +1169,9 @@
     ═══════════════════════════════════════════════════════ */
     const SNTPage = {
       reload() {
-        if (_apexTrend) { try { _apexTrend.destroy(); } catch (e) { } _apexTrend = null; }
+        if (_apexTrend) { try { _apexTrend.destroy(); } catch(e) {} _apexTrend = null; }
         SNTCharts.disposeAll();
-        SNTData.trend = []; SNTData.byMedia = []; SNTData.weekday = null; SNTData.hour = null;
+        SNTData.trend=[]; SNTData.byMedia=[]; SNTData.weekday=null; SNTData.hour=null;
         loadSentiment(); loadTimeData();
       },
       init() { loadSentiment(); loadTimeData(); }
@@ -1052,429 +1181,602 @@
 
     /* ══════════════════════════════════════════════════════════
        SNTExport v2 — 2-Page PDF Split (no slice, scale-to-fit)
-       PDF full-page  → Hal.1 = #exportPage1  |  Hal.2 = #exportPage2
-       Image full-page → 1 PNG panjang dari #pageExportArea
-       Card export    → tidak berubah, 1 halaman auto-fit
     ══════════════════════════════════════════════════════════ */
     const SNTExport = (() => {
-        'use strict';
-
-        let _toastTimer  = null;
-        let _ecSnapshots = {};
-        let _apexSnap    = null;
-        let _freezeStyle = null;
-
-        function _toast(msg, type = 'default', duration = 3200) {
-            const t   = document.getElementById('exportToast');
-            const m   = document.getElementById('exportToastMsg');
-            const ico = document.getElementById('exportToastIcon');
-            if (!t || !m) return;
-            m.textContent = msg;
-            t.className   = 'export-toast show' + (type !== 'default' ? ' ' + type : '');
-            ico.className = 'ph ' + ({ success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' }[type] || 'ph-spinner');
-            clearTimeout(_toastTimer);
-            _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+      'use strict';
+ 
+      let _toastTimer = null;
+      let _freezeStyle = null;
+ 
+      /* ── Toast ── */
+      function _toast(msg, type = 'default', duration = 3200) {
+        const t   = document.getElementById('exportToast');
+        const m   = document.getElementById('exportToastMsg');
+        const ico = document.getElementById('exportToastIcon');
+        if (!t || !m) return;
+        m.textContent = msg;
+        t.className   = 'export-toast show' + (type !== 'default' ? ' ' + type : '');
+        ico.className = 'ph ' + ({ success:'ph-check-circle', error:'ph-x-circle', default:'ph-spinner' }[type] || 'ph-spinner');
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+      }
+ 
+      function _btnState(btns, loading) {
+        [].concat(btns).forEach(b => { if (!b) return; b.disabled = loading; b.classList.toggle('exporting', loading); });
+      }
+ 
+      /* ── Freeze CSS animations ── */
+      function _freeze() {
+        if (_freezeStyle) return;
+        _freezeStyle = document.createElement('style');
+        _freezeStyle.id = '__snt_freeze__';
+        _freezeStyle.textContent = `
+          #pageExportArea .fade-up,#pageExportArea [class*="fade-up"]{animation:none!important;opacity:1!important;transform:none!important;}
+          #pageExportArea .sk-block,#pageExportArea .snt-skel,#pageExportArea .snt-skel-overlay{animation:none!important;display:none!important;}
+          #pageExportArea .kpi-card-hover::before{display:none!important;}
+          #pageExportArea .spin-ring{animation:none!important;}
+        `;
+        document.head.appendChild(_freezeStyle);
+        Object.values(SNTCharts._i || {}).forEach(ec => {
+          if (!ec || ec.isDisposed()) return;
+          try { ec.setOption({ animation: false }, false); } catch(e) {}
+        });
+      }
+ 
+      function _unfreeze() {
+        if (_freezeStyle) { _freezeStyle.remove(); _freezeStyle = null; }
+        Object.values(SNTCharts._i || {}).forEach(ec => {
+          if (!ec || ec.isDisposed()) return;
+          try { ec.setOption({ animation: true }, false); } catch(e) {}
+        });
+        if (typeof _apexTrend !== 'undefined' && _apexTrend) {
+          try {
+            _apexTrend.updateOptions({
+              fill: _isSafari ? { opacity: .15, type: 'solid' } : { opacity: .3 },
+              chart: { animations: { enabled: !_isSafari } }
+            }, false, false, false);
+          } catch(e) {}
         }
-
-        function _btnState(btns, loading) {
-            [].concat(btns).forEach(b => {
-                if (!b) return;
-                b.disabled = loading;
-                b.classList.toggle('exporting', loading);
+      }
+ 
+      /* ─────────────────────────────────────────────────────
+         STEP 1: Snapshot semua chart ke dataURL
+         Harus dilakukan SEBELUM modifikasi DOM apapun.
+      ───────────────────────────────────────────────────── */
+      async function _snapshotAllCharts() {
+        const snapshots = {}; // { elementId: dataUrl }
+ 
+        /* ── ECharts instances ── */
+        const ecIds = [
+          'chOverview', 'chSovTotal', 'chMass', 'chSocial',
+          'chByType', 'chByPlat', 'chMassPie', 'chSocialPie',
+          'chWeekday', 'chHour'
+        ];
+        for (const id of ecIds) {
+          const ec = SNTCharts._i[id];
+          if (!ec || ec.isDisposed()) continue;
+          try {
+            ec.setOption({ animation: false }, false);
+            ec.resize();
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+            snapshots[id] = ec.getDataURL({
+              type          : 'png',
+              pixelRatio    : _isSafari ? 1 : (window.devicePixelRatio || 2),
+              backgroundColor: '#ffffff',
             });
+          } catch(e) {
+            console.warn('[SNTExport] EC snapshot fail:', id, e);
+          }
         }
-
-        function _freeze() {
-            if (_freezeStyle) return;
-            _freezeStyle = document.createElement('style');
-            _freezeStyle.id = '__snt_freeze__';
-            _freezeStyle.textContent = `
-                #pageExportArea .fade-up,
-                #pageExportArea [class*="fade-up"] { animation:none!important;opacity:1!important;transform:none!important; }
-                #pageExportArea .sk-block,
-                #pageExportArea .snt-skel,
-                #pageExportArea .snt-skel-overlay { animation:none!important;background:#e2e8f0!important;display:none!important; }
-                #pageExportArea .kpi-card-hover::before { display:none!important; }
-                #pageExportArea .spin-ring { animation:none!important; }
-                #pageExportArea [data-html2canvas-ignore],
-                #pageExportArea .page-export-bar,
-                #pageExportArea .chart-loading { display:none!important; }
-            `;
-            document.head.appendChild(_freezeStyle);
-            Object.values(SNTCharts._i || {}).forEach(ec => {
-                if (!ec || ec.isDisposed()) return;
-                try { ec.setOption({ animation: false }, false); } catch (e) {}
-            });
+ 
+        /* ── ApexCharts trend ── */
+        if (typeof _apexTrend !== 'undefined' && _apexTrend) {
+          try {
+            // Solid fill agar dataURI tidak blank di Safari
+            _apexTrend.updateOptions({
+              fill: { opacity: 1, type: 'solid' },
+              chart: { animations: { enabled: false } }
+            }, false, false, false);
+            await new Promise(r => setTimeout(r, _isSafari ? 600 : 350));
+            const result = await _apexTrend.dataURI({ scale: _isSafari ? 1 : 2 });
+            if (result?.imgURI) snapshots['chTrend'] = result.imgURI;
+          } catch(e) {
+            console.warn('[SNTExport] ApexCharts snapshot fail:', e);
+          }
         }
-
-        function _unfreeze() {
-            if (_freezeStyle) { _freezeStyle.remove(); _freezeStyle = null; }
-            Object.values(SNTCharts._i || {}).forEach(ec => {
-                if (!ec || ec.isDisposed()) return;
-                try { ec.setOption({ animation: true }, false); } catch (e) {}
+ 
+        return snapshots;
+      }
+ 
+      /* ─────────────────────────────────────────────────────
+         STEP 2: Ganti elemen chart di LIVE DOM dengan <img>
+         Return array restore-info untuk mengembalikan elemen asli.
+      ───────────────────────────────────────────────────── */
+      function _replaceChartsWithImages(snapshots) {
+        const restores = [];
+ 
+        function _swap(id, styleOverride) {
+          const el = document.getElementById(id);
+          if (!el || !snapshots[id]) return;
+          const img = document.createElement('img');
+          img.src   = snapshots[id];
+          img.style.cssText = styleOverride || 'width:100%;height:100%;display:block;object-fit:contain;';
+          const parent  = el.parentNode;
+          const nextSib = el.nextSibling;
+          if (!parent) return;
+          parent.replaceChild(img, el);
+          restores.push({ el, img, parent, nextSib });
+        }
+ 
+        const ecIds = [
+          'chOverview', 'chSovTotal', 'chMass', 'chSocial',
+          'chByType', 'chByPlat', 'chMassPie', 'chSocialPie',
+          'chWeekday', 'chHour'
+        ];
+        ecIds.forEach(id => _swap(id, 'width:100%;height:100%;display:block;object-fit:contain;min-height:200px;'));
+        _swap('chTrend', 'width:100%;height:380px;display:block;object-fit:contain;');
+ 
+        return restores;
+      }
+ 
+      /* ─────────────────────────────────────────────────────
+         STEP 3: Sembunyikan elemen UI noise di live DOM
+      ───────────────────────────────────────────────────── */
+      function _hideUIElements() {
+        const selectors = [
+          '[data-html2canvas-ignore]',
+          '.page-export-bar',
+          '.chart-loading',
+          '.snt-skel',
+          '.snt-skel-overlay',
+          '#sntPopup',
+          '#sntPanelOverlay',
+          '#sntPlatPicker',
+          '#sntDetailPanel',
+          '.export-toast',
+        ];
+        const hidden = [];
+        selectors.forEach(sel => {
+          document.querySelectorAll(sel).forEach(el => {
+            const prev = el.style.display;
+            hidden.push({ el, prev });
+            el.style.display = 'none';
+          });
+        });
+        return () => hidden.forEach(({ el, prev }) => { el.style.display = prev; });
+      }
+ 
+      /* ─────────────────────────────────────────────────────
+         STEP 4: Restore elemen ke DOM
+      ───────────────────────────────────────────────────── */
+      function _restoreElements(restores) {
+        for (const { el, img, parent, nextSib } of restores) {
+          try {
+            if (img.parentNode === parent) {
+              parent.replaceChild(el, img);
+            } else if (nextSib && nextSib.parentNode === parent) {
+              parent.insertBefore(el, nextSib);
+            } else {
+              parent.appendChild(el);
+            }
+          } catch(e) {
+            console.warn('[SNTExport] restore failed:', e);
+          }
+        }
+      }
+ 
+      /* ─────────────────────────────────────────────────────
+         Core capture — Safari-safe, tanpa onclone
+      ───────────────────────────────────────────────────── */
+      async function _capture(areaEl, bgColor) {
+        /* 1. Scroll ke atas */
+        window.scrollTo({ top: 0 });
+        await new Promise(r => setTimeout(r, 150));
+ 
+        /* 2. Snapshot semua chart sebelum apapun berubah */
+        const snapshots = await _snapshotAllCharts();
+ 
+        /* 3. Ganti chart di live DOM dengan <img> */
+        const domRestores = _replaceChartsWithImages(snapshots);
+ 
+        /* 4. Sembunyikan elemen UI */
+        const restoreUI = _hideUIElements();
+ 
+        /* 5. Freeze animasi */
+        _freeze();
+ 
+        /* 6. Tunggu browser repaint */
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, _isSafari ? 600 : 350));
+ 
+        let canvas;
+        try {
+          canvas = await html2canvas(areaEl, {
+            scale           : _isSafari ? 1.5 : 2,
+            useCORS         : true,
+            allowTaint      : false,
+            backgroundColor : bgColor || '#ffffff',
+            logging         : false,
+            removeContainer : true,
+            imageTimeout    : 0,
+            /* TIDAK pakai onclone — itu yang bikin blank di Safari */
+          });
+        } finally {
+          /* 7. Restore semua perubahan DOM */
+          _restoreElements(domRestores);
+          restoreUI();
+          _unfreeze();
+ 
+          /* 8. Restore ApexCharts ke state normal */
+          if (typeof _apexTrend !== 'undefined' && _apexTrend) {
+            try {
+              _apexTrend.updateOptions({
+                fill: _isSafari ? { opacity: .15, type: 'solid' } : { opacity: .3 },
+                chart: { animations: { enabled: !_isSafari } }
+              }, false, false, false);
+            } catch(e) {}
+          }
+        }
+ 
+        return canvas;
+      }
+ 
+      /* ── PDF helper ── */
+      function _stamp() { return new Date().toISOString().slice(0, 10).replace(/-/g, ''); }
+ 
+      function _drawHeader(pdf, pW, pH, label, page, total) {
+        pdf.setFillColor(3, 128, 71);
+        pdf.rect(0, 0, pW, 11, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
+        pdf.text('SMADIMENT — Sentiment Analysis' + (label ? '  ·  ' + label : ''), 10, 7.5);
+        const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+        pdf.text('Generated: ' + now, pW - 10, 7.5, { align: 'right' });
+        pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+        pdf.text(`Halaman ${page} / ${total}`, pW / 2, pH - 3, { align: 'center' });
+      }
+ 
+      function _fitCanvas(pdf, canvas, margin, pW, pH) {
+        const uw = pW - margin * 2;
+        const uh = pH - 14 - 8;
+        const r  = Math.min(uw / canvas.width, uh / canvas.height);
+        const dw = canvas.width * r;
+        const dh = canvas.height * r;
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG',
+          margin + (uw - dw) / 2, 14, dw, dh);
+      }
+ 
+      const _cardLabels = {
+        overview  : 'Total Mentions by Sentiments',
+        sov       : 'Share of Voice',
+        mass      : 'Sentiments in Mass Media',
+        social    : 'Sentiments in Social Media',
+        bytype    : 'Sentiments by Media Types',
+        byplat    : 'Sentiments by Media Platforms',
+        masspie   : 'Mass Media SOV',
+        socialpie : 'Social Media SOV',
+        trend     : 'Sentiment Trends',
+        weekday   : 'Sentiments by Weekday',
+        hour      : 'Sentiments by Hour',
+      };
+ 
+      /* ════════════
+         Export single card
+      ════════════ */
+      async function runCard(areaId, cardKey, type, btn) {
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+ 
+        _btnState(btn, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
+ 
+        try {
+          const area = document.getElementById(areaId);
+          if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+ 
+          const canvas = await _capture(area, '#ffffff');
+          const label  = _cardLabels[cardKey] || cardKey;
+          const fname  = `sentiment_${cardKey}_${OV_PID}_${_stamp()}`;
+ 
+          if (type === 'image') {
+            const a = document.createElement('a');
+            a.download = fname + '.png';
+            a.href     = canvas.toDataURL('image/png');
+            a.click();
+            _toast('Gambar berhasil diunduh!', 'success');
+          } else {
+            const { jsPDF } = window.jspdf;
+            const landscape = canvas.width > canvas.height * 1.2;
+            const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+            const pW  = pdf.internal.pageSize.getWidth();
+            const pH  = pdf.internal.pageSize.getHeight();
+            _drawHeader(pdf, pW, pH, label, 1, 1);
+            _fitCanvas(pdf, canvas, 10, pW, pH);
+            pdf.save(fname + '.pdf');
+            _toast('PDF berhasil diunduh!', 'success');
+          }
+        } catch(err) {
+          console.error('[SNTExport.runCard]', err);
+          _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+          _btnState(btn, false);
+        }
+      }
+ 
+      /* ════════════
+         Export full page (2-page PDF)
+      ════════════ */
+      async function run(type, btn) {
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+ 
+        const btnPdf = document.getElementById('pageExportPdfBtn');
+        const btnImg = document.getElementById('pageExportImgBtn');
+        _btnState([btnPdf, btnImg], true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF 2 halaman…' : 'Mengambil gambar halaman…', 'default', 99999);
+ 
+        try {
+          window.scrollTo({ top: 0 });
+          await new Promise(r => setTimeout(r, 150));
+ 
+          const stamp = _stamp();
+ 
+          if (type === 'image') {
+            const area = document.getElementById('pageExportArea');
+            if (!area) throw new Error('pageExportArea tidak ditemukan');
+            const canvas = await _capture(area, '#f1f5f9');
+            const a = document.createElement('a');
+            a.download = `sentiment_analysis_${OV_PID}_${stamp}.png`;
+            a.href     = canvas.toDataURL('image/png');
+            a.click();
+            _toast('Gambar berhasil diunduh!', 'success');
+            return;
+          }
+ 
+          /* ── PDF: capture page 1 & page 2 secara terpisah ── */
+          const pg1 = document.getElementById('exportPage1');
+          const pg2 = document.getElementById('exportPage2');
+          if (!pg1 || !pg2) throw new Error('Wrapper #exportPage1 / #exportPage2 tidak ditemukan');
+ 
+          /* Snapshot semua chart sekali sebelum capture page 1 maupun 2 */
+          const snapshots = await _snapshotAllCharts();
+          const restoreUI = _hideUIElements();
+          _freeze();
+          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+          await new Promise(r => setTimeout(r, _isSafari ? 600 : 350));
+ 
+          let canvas1, canvas2;
+          try {
+            /* Page 1 */
+            _toast('Menangkap Halaman 1…', 'default', 99999);
+            const dom1 = _replaceChartsWithImages(snapshots);
+            canvas1 = await html2canvas(pg1, {
+              scale: _isSafari ? 1.5 : 2, useCORS: true, allowTaint: false,
+              backgroundColor: '#f1f5f9', logging: false, removeContainer: true, imageTimeout: 0,
             });
+            _restoreElements(dom1);
+ 
+            /* Page 2 */
+            _toast('Menangkap Halaman 2…', 'default', 99999);
+            const dom2 = _replaceChartsWithImages(snapshots);
+            canvas2 = await html2canvas(pg2, {
+              scale: _isSafari ? 1.5 : 2, useCORS: true, allowTaint: false,
+              backgroundColor: '#f1f5f9', logging: false, removeContainer: true, imageTimeout: 0,
+            });
+            _restoreElements(dom2);
+          } finally {
+            restoreUI();
+            _unfreeze();
             if (typeof _apexTrend !== 'undefined' && _apexTrend) {
-                try { _apexTrend.updateOptions({ fill: { opacity: 0.3 }, chart: { animations: { enabled: true } } }, false, false, false); } catch (e) {}
+              try {
+                _apexTrend.updateOptions({
+                  fill: _isSafari ? { opacity: .15, type: 'solid' } : { opacity: .3 },
+                  chart: { animations: { enabled: !_isSafari } }
+                }, false, false, false);
+              } catch(e) {}
             }
+          }
+ 
+          /* Build PDF */
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+          const pW  = pdf.internal.pageSize.getWidth();
+          const pH  = pdf.internal.pageSize.getHeight();
+ 
+          _drawHeader(pdf, pW, pH, 'KPI & Overview Charts', 1, 2);
+          _fitCanvas(pdf, canvas1, 10, pW, pH);
+ 
+          pdf.addPage();
+          _drawHeader(pdf, pW, pH, 'SOV, Trend & Time Analysis', 2, 2);
+          _fitCanvas(pdf, canvas2, 10, pW, pH);
+ 
+          pdf.save(`sentiment_analysis_${OV_PID}_${stamp}.pdf`);
+          _toast('PDF 2 halaman berhasil diunduh!', 'success');
+ 
+        } catch(err) {
+          console.error('[SNTExport.run]', err);
+          _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+          _btnState([btnPdf, btnImg], false);
         }
-
-        function _resizeAllCharts() {
-            Object.values(SNTCharts._i||{}).forEach(c=>{ try{ if(!c.isDisposed()) c.resize(); } catch(e){} });
-            if(typeof _apexTrend!=='undefined'&&_apexTrend) { try{ _apexTrend.updateOptions({}); } catch(e){} }
-        }
-
-        async function _captureEl(el, bg) {
-            return html2canvas(el, {
-                scale: 2, useCORS: true, allowTaint: true, backgroundColor: bg || '#ffffff',
-                logging: false, removeContainer: true, imageTimeout: 0,
-                windowHeight: el.scrollHeight,
-                height: el.scrollHeight,
-                ignoreElements: e => e.hasAttribute('data-html2canvas-ignore') || ['exportToast','sntPopup','sntPanelOverlay','sntPlatPicker'].includes(e.id)
-                });
-        }
-
-        function _stamp() { return new Date().toISOString().slice(0,10).replace(/-/g,''); }
-
-        function _drawHeader(pdf, pW, pH, label, page, total) {
-            pdf.setFillColor(3, 128, 71);
-            pdf.rect(0, 0, pW, 11, 'F');
-            pdf.setTextColor(255, 255, 255);
-            pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
-            pdf.text('SMADIMENT — Sentiment Analysis' + (label ? '  ·  ' + label : ''), 10, 7.5);
-            const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
-            pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
-            pdf.text('Generated: ' + now, pW - 10, 7.5, { align: 'right' });
-            pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
-            pdf.text(`Halaman ${page} / ${total}`, pW / 2, pH - 3, { align: 'center' });
-        }
-
-        /* Scale-to-fit: canvas selalu muat 1 halaman, tidak pernah dipotong */
-        function _addCanvasAsPage(pdf, canvas, margin, pW, pH, label, page, total) {
-            _drawHeader(pdf, pW, pH, label, page, total);
-            const usableW = pW - margin * 2;
-            const usableH = pH - 14 - 8;
-            const ratio   = Math.min(usableW / canvas.width, usableH / canvas.height);
-            const dw = canvas.width  * ratio;
-            const dh = canvas.height * ratio;
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin + (usableW - dw) / 2, 14, dw, dh);
-        }
-
-        const _cardLabels = {
-            overview:'Total Mentions by Sentiments', sov:'Share of Voice',
-            mass:'Sentiments in Mass Media',         social:'Sentiments in Social Media',
-            bytype:'Sentiments by Media Types',      byplat:'Sentiments by Media Platforms',
-            masspie:'Mass Media SOV',                socialpie:'Social Media SOV',
-            trend:'Sentiment Trends',                weekday:'Sentiments by Weekday',
-            hour:'Sentiments by Hour',
-        };
-
-        /* runCard — export 1 card, tidak berubah */
-        async function runCard(areaId, cardKey, type, btn) {
-            if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia','error'); return; }
-            if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
-
-            _btnState(btn, true);
-            _toast(type === 'pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
-
-            try {
-                const area = document.getElementById(areaId);
-                if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
-
-                window.scrollTo({ top:0 });
-                await new Promise(r => setTimeout(r, 350));
-                _resizeAllCharts();
-                _freeze();
-                await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-                await new Promise(r => setTimeout(r, 400));
-
-                let canvas;
-                try   { canvas = await _captureEl(area, '#ffffff'); }
-                finally { _unfreeze(); }
-
-                const fname = `sentiment_${cardKey}_${OV_PID}_${_stamp()}`;
-                const label = _cardLabels[cardKey] || cardKey;
-
-                if (type === 'image') {
-                    const a = document.createElement('a');
-                    a.download = fname + '.png';
-                    a.href     = canvas.toDataURL('image/png');
-                    a.click();
-                    _toast('Gambar berhasil diunduh!', 'success');
-                } else {
-                    const { jsPDF } = window.jspdf;
-                    const landscape = canvas.width > canvas.height * 1.2;
-                    const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
-                    const pW  = pdf.internal.pageSize.getWidth();
-                    const pH  = pdf.internal.pageSize.getHeight();
-                    _addCanvasAsPage(pdf, canvas, 10, pW, pH, label, 1, 1);
-                    pdf.save(fname + '.pdf');
-                    _toast('PDF berhasil diunduh!', 'success');
-                }
-            } catch (err) {
-                console.error('[SNTExport.runCard]', err);
-                _unfreeze();
-                _toast('Export gagal: ' + err.message, 'error');
-            } finally {
-                _btnState(btn, false);
-            }
-        }
-
-        /* run — full page export
-           PDF   → 2 halaman A4 (exportPage1 + exportPage2)
-           Image → 1 PNG dari pageExportArea */
-        async function run(type, btn) {
-            if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia','error'); return; }
-            if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
-
-            const btnPdf = document.getElementById('pageExportPdfBtn');
-            const btnImg = document.getElementById('pageExportImgBtn');
-            _btnState([btnPdf, btnImg], true);
-            _toast(type === 'pdf' ? 'Menyiapkan PDF 2 halaman…' : 'Mengambil gambar halaman…', 'default', 99999);
-
-            try {
-                window.scrollTo({ top: 0 });
-                await new Promise(r => setTimeout(r, 350));
-                _resizeAllCharts();
-                _freeze();
-                await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-                await new Promise(r => setTimeout(r, 500));
-
-                const stamp = _stamp();
-
-                /* IMAGE: satu PNG panjang */
-                if (type === 'image') {
-                    const area = document.getElementById('pageExportArea');
-                    if (!area) throw new Error('pageExportArea tidak ditemukan');
-                    let canvas;
-                    try   { canvas = await _captureEl(area, '#f1f5f9'); }
-                    finally { _unfreeze(); }
-                    const a    = document.createElement('a');
-                    a.download = `sentiment_analysis_${OV_PID}_${stamp}.png`;
-                    a.href     = canvas.toDataURL('image/png');
-                    a.click();
-                    _toast('Gambar berhasil diunduh!', 'success');
-                    return;
-                }
-
-                /* PDF: 2 halaman */
-                const pg1El = document.getElementById('exportPage1');
-                const pg2El = document.getElementById('exportPage2');
-                if (!pg1El || !pg2El) throw new Error('Wrapper #exportPage1 / #exportPage2 tidak ditemukan.');
-
-                _toast('Menangkap Halaman 1…', 'default', 99999);
-                const canvas1 = await _captureEl(pg1El, '#f1f5f9');
-
-                _toast('Menangkap Halaman 2…', 'default', 99999);
-                const canvas2 = await _captureEl(pg2El, '#f1f5f9');
-
-                _unfreeze();
-
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-                const pW  = pdf.internal.pageSize.getWidth();
-                const pH  = pdf.internal.pageSize.getHeight();
-
-                _addCanvasAsPage(pdf, canvas1, 10, pW, pH, 'KPI & Overview Charts', 1, 2);
-                pdf.addPage();
-                _addCanvasAsPage(pdf, canvas2, 10, pW, pH, 'SOV, Trend & Time Analysis', 2, 2);
-
-                pdf.save(`sentiment_analysis_${OV_PID}_${stamp}.pdf`);
-                _toast('PDF 2 halaman berhasil diunduh!', 'success');
-
-            } catch (err) {
-                console.error('[SNTExport.run]', err);
-                _unfreeze();
-                _toast('Export gagal: ' + err.message, 'error');
-            } finally {
-                _btnState([btnPdf, btnImg], false);
-            }
-        }
-
-        return { run, runCard };
+      }
+ 
+      return { run, runCard };
     })();
-
     /* ══════════════════════════════════════════════════════
        SENTIMENT MENTION POPUP
     ══════════════════════════════════════════════════════ */
     const SNTPlatMeta = {
-      doc: { label: 'Online News', color: '#0284c7' }, twit: { label: 'X / Twitter', color: '#0ea5e9' },
-      fb: { label: 'Facebook', color: '#1877f2' }, ig: { label: 'Instagram', color: '#e1306c' },
-      yt: { label: 'YouTube', color: '#ff0000' }, tiktok: { label: 'TikTok', color: '#111827' },
-      neg: { label: 'Negative', color: '#ef4444' }, pos: { label: 'Positive', color: '#2FC6F6' }, neu: { label: 'Neutral', color: '#94a3b8' },
+      doc:   { label:'Online News',  color:'#0284c7' }, twit: { label:'X / Twitter',  color:'#0ea5e9' },
+      fb:    { label:'Facebook',     color:'#1877f2' }, ig:   { label:'Instagram',     color:'#e1306c' },
+      yt:    { label:'YouTube',      color:'#ff0000' }, tiktok:{ label:'TikTok',       color:'#111827' },
+      neg:   { label:'Negative',     color:'#ef4444' }, pos:  { label:'Positive',      color:'#2FC6F6' },
+      neu:   { label:'Neutral',      color:'#94a3b8' },
     };
 
-    const sntEsc = s => (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const sntEsc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
     const SNTPopup = {
-      _cache: {}, _allItems: [], _curSent: 'all', _curPlat: null,
+      _cache:{}, _allItems:[], _curSent:'all', _curPlat:null,
       init() {
-        document.addEventListener('mousedown', e => { const pp = document.getElementById('sntPlatPicker'); if (pp?.classList.contains('visible') && !pp.contains(e.target)) pp.classList.remove('visible'); });
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') this.close(); });
+        document.addEventListener('mousedown', e=>{ const pp=document.getElementById('sntPlatPicker'); if(pp?.classList.contains('visible')&&!pp.contains(e.target)) pp.classList.remove('visible'); });
+        document.addEventListener('keydown', e=>{ if(e.key==='Escape') this.close(); });
       },
-      async open(platform, sentiment) {
-        const popup = document.getElementById('sntPopup'), overlay = document.getElementById('sntPanelOverlay');
-        if (!popup) return;
+      async open(platform,sentiment) {
+        const popup=document.getElementById('sntPopup'), overlay=document.getElementById('sntPanelOverlay');
+        if(!popup) return;
         SNTDetail.close();
-        this._curPlat = platform; this._curSent = sentiment || 'all';
-        let dotColor, title;
-        if (sentiment && sentiment !== 'all') {
-          dotColor = SNTPlatMeta[sentiment]?.color || '#038047';
-          const sentLabel = { neg: 'Negative', pos: 'Positive', neu: 'Neutral' }[sentiment] || sentiment;
-          const platLabel = platform === 'all' ? 'All Media' : platform === 'social' ? 'Social Media' : (SNTPlatMeta[platform]?.label || platform);
-          title = `${sentLabel} — ${platLabel}`;
+        this._curPlat=platform; this._curSent=sentiment||'all';
+        let dotColor,title;
+        if (sentiment&&sentiment!=='all') {
+          dotColor=SNTPlatMeta[sentiment]?.color||'#038047';
+          const sentLabel={neg:'Negative',pos:'Positive',neu:'Neutral'}[sentiment]||sentiment;
+          const platLabel=platform==='all'?'All Media':platform==='social'?'Social Media':(SNTPlatMeta[platform]?.label||platform);
+          title=`${sentLabel} — ${platLabel}`;
         } else {
-          dotColor = platform === 'all' || platform === 'social' ? '#038047' : (SNTPlatMeta[platform]?.color || '#038047');
-          title = platform === 'all' ? 'All Media' : platform === 'social' ? 'Social Media' : (SNTPlatMeta[platform]?.label || platform);
+          dotColor=platform==='all'||platform==='social'?'#038047':(SNTPlatMeta[platform]?.color||'#038047');
+          title=platform==='all'?'All Media':platform==='social'?'Social Media':(SNTPlatMeta[platform]?.label||platform);
         }
-        document.getElementById('sntPopDot').style.background = dotColor;
-        document.getElementById('sntPopTitle').textContent = title;
-        document.getElementById('sntPopMeta').textContent = SNTCfg.sd + ' – ' + SNTCfg.ed;
-        document.getElementById('sntPopCount').textContent = '…';
-        this._curSent = sentiment || 'all';
-        document.querySelectorAll('.sntp-sent-tab').forEach(b => b.classList.toggle('active', b.dataset.s === this._curSent));
-        const list = document.getElementById('sntPopList');
-        list.innerHTML = `<div class="sntp-loading"><div class="sntp-spinner"></div>Memuat mentions…</div>`;
+        document.getElementById('sntPopDot').style.background=dotColor;
+        document.getElementById('sntPopTitle').textContent=title;
+        document.getElementById('sntPopMeta').textContent=SNTCfg.sd+' – '+SNTCfg.ed;
+        document.getElementById('sntPopCount').textContent='…';
+        this._curSent=sentiment||'all';
+        document.querySelectorAll('.sntp-sent-tab').forEach(b=>b.classList.toggle('active',b.dataset.s===this._curSent));
+        const list=document.getElementById('sntPopList');
+        list.innerHTML=`<div class="sntp-loading"><div class="sntp-spinner"></div>Memuat mentions…</div>`;
         popup.classList.remove('hiding'); popup.classList.add('show');
-        if (overlay) { overlay.classList.remove('hiding'); overlay.classList.add('show'); }
-        document.body.style.overflow = 'hidden';
-        const cacheKey = `${SNTCfg.pid}_${platform}_${SNTCfg.sd}_${SNTCfg.ed}`;
+        if(overlay){overlay.classList.remove('hiding');overlay.classList.add('show');}
+        document.body.style.overflow='hidden';
+        const cacheKey=`${SNTCfg.pid}_${platform}_${SNTCfg.sd}_${SNTCfg.ed}`;
         try {
-          if (!this._cache[cacheKey]) this._cache[cacheKey] = await this._fetch(platform);
-          this._allItems = this._cache[cacheKey];
+          if(!this._cache[cacheKey]) this._cache[cacheKey]=await this._fetch(platform);
+          this._allItems=this._cache[cacheKey];
           this._renderFiltered(list);
-        } catch (err) {
-          list.innerHTML = `<div class="sntp-loading" style="color:#94a3b8;">Gagal memuat data</div>`;
-          document.getElementById('sntPopCount').textContent = '0';
+        } catch(err) {
+          list.innerHTML=`<div class="sntp-loading" style="color:#94a3b8;">Gagal memuat data</div>`;
+          document.getElementById('sntPopCount').textContent='0';
         }
       },
-      openSentiment(sentiment) { this.open('all', sentiment); },
-      showPlatPicker(x, y, sentiment) {
-        const pp = document.getElementById('sntPlatPicker'); if (!pp) return;
-        pp.dataset.sentiment = sentiment || 'all';
-        const pw = 185, ph = 240, vw = window.innerWidth, vh = window.innerHeight;
-        let left = x + 10, top = y - 10;
-        if (left + pw > vw - 8) left = x - pw - 10;
-        if (top + ph > vh - 8) top = vh - ph - 8;
-        if (top < 8) top = 8;
-        pp.style.left = left + 'px'; pp.style.top = top + 'px';
+      openSentiment(sentiment){ this.open('all',sentiment); },
+      showPlatPicker(x,y,sentiment) {
+        const pp=document.getElementById('sntPlatPicker'); if(!pp) return;
+        pp.dataset.sentiment=sentiment||'all';
+        const pw=185,ph=240,vw=window.innerWidth,vh=window.innerHeight;
+        let left=x+10,top=y-10;
+        if(left+pw>vw-8) left=x-pw-10;
+        if(top+ph>vh-8) top=vh-ph-8;
+        if(top<8) top=8;
+        pp.style.left=left+'px'; pp.style.top=top+'px';
         pp.classList.add('visible');
-        pp.querySelectorAll('.sntpp-btn').forEach(btn => {
-          const plat = btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
-          if (plat) btn.setAttribute('onclick', `SNTPopup.openPlatform('${plat}','${sentiment || 'all'}')`);
+        pp.querySelectorAll('.sntpp-btn').forEach(btn=>{
+          const plat=btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
+          if(plat) btn.setAttribute('onclick',`SNTPopup.openPlatform('${plat}','${sentiment||'all'}')`);
         });
       },
-      openPlatform(platform, sentiment) { const pp = document.getElementById('sntPlatPicker'); if (pp) pp.classList.remove('visible'); this.open(platform, sentiment || 'all'); },
+      openPlatform(platform,sentiment){ const pp=document.getElementById('sntPlatPicker'); if(pp) pp.classList.remove('visible'); this.open(platform,sentiment||'all'); },
       filterSent(sent) {
-        this._curSent = sent;
-        document.querySelectorAll('.sntp-sent-tab').forEach(b => b.classList.toggle('active', b.dataset.s === sent));
+        this._curSent=sent;
+        document.querySelectorAll('.sntp-sent-tab').forEach(b=>b.classList.toggle('active',b.dataset.s===sent));
         this._renderFiltered(document.getElementById('sntPopList'));
       },
       close() {
-        const popup = document.getElementById('sntPopup'), overlay = document.getElementById('sntPanelOverlay');
-        if (!popup || !popup.classList.contains('show')) return;
+        const popup=document.getElementById('sntPopup'), overlay=document.getElementById('sntPanelOverlay');
+        if(!popup||!popup.classList.contains('show')) return;
         SNTDetail.close();
-        const dpBody = document.getElementById('sntDpBody');
-        if (dpBody) dpBody.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); });
+        const dpBody=document.getElementById('sntDpBody');
+        if(dpBody) dpBody.querySelectorAll('iframe').forEach(f=>{f.src='';f.remove();});
         popup.classList.add('hiding');
-        if (overlay) overlay.classList.add('hiding');
-        setTimeout(() => { popup.classList.remove('show', 'hiding'); if (overlay) overlay.classList.remove('show', 'hiding'); document.body.style.overflow = ''; }, 240);
+        if(overlay) overlay.classList.add('hiding');
+        setTimeout(()=>{popup.classList.remove('show','hiding');if(overlay) overlay.classList.remove('show','hiding');document.body.style.overflow='';},240);
       },
       async _fetch(platform) {
-        const q = `project_id=${SNTCfg.pid}&start_date=${SNTCfg.sd}&end_date=${SNTCfg.ed}&rows=500&start=0`;
-        if (platform === 'social') {
-          const results = await Promise.allSettled(['twit', 'fb', 'ig', 'yt', 'tiktok'].map(p => this._fetchOne(p, q)));
-          let merged = []; results.forEach(r => { if (r.status === 'fulfilled') merged = merged.concat(r.value); }); return merged;
+        const q=`project_id=${SNTCfg.pid}&start_date=${SNTCfg.sd}&end_date=${SNTCfg.ed}&rows=500&start=0`;
+        if(platform==='social'){
+          const results=await Promise.allSettled(['twit','fb','ig','yt','tiktok'].map(p=>this._fetchOne(p,q)));
+          let merged=[]; results.forEach(r=>{if(r.status==='fulfilled') merged=merged.concat(r.value);}); return merged;
         }
-        if (platform === 'all') {
-          const results = await Promise.allSettled(['doc', 'twit', 'fb', 'ig', 'yt', 'tiktok'].map(p => this._fetchOne(p, q)));
-          let merged = []; results.forEach(r => { if (r.status === 'fulfilled') merged = merged.concat(r.value); });
-          merged.sort((a, b) => (b.date_created || b.created_at || '').localeCompare(a.date_created || a.created_at || '')); return merged;
+        if(platform==='all'){
+          const results=await Promise.allSettled(['doc','twit','fb','ig','yt','tiktok'].map(p=>this._fetchOne(p,q)));
+          let merged=[]; results.forEach(r=>{if(r.status==='fulfilled') merged=merged.concat(r.value);});
+          merged.sort((a,b)=>(b.date_created||b.created_at||'').localeCompare(a.date_created||a.created_at||'')); return merged;
         }
-        return this._fetchOne(platform, q);
+        return this._fetchOne(platform,q);
       },
-      async _fetchOne(platform, q) {
-        if (platform === 'ig') {
-          for (const sub of ['postbylike', 'postbycomment', 'postbydate', '']) {
-            try { const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 15000); const res = await fetch(`/mk/api/news/ig-top-status?${q}${sub ? '&sub=' + sub : ''}`, { signal: ctrl.signal }); clearTimeout(tid); if (!res.ok) continue; const data = await res.json(); const items = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []); if (items.length > 0) { items.forEach(it => { if (!it._type) it._type = 'ig'; }); return items; } } catch (e) { continue; }
+      async _fetchOne(platform,q) {
+        if(platform==='ig'){
+          for(const sub of ['postbylike','postbycomment','postbydate','']){
+            try{ const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),15000); const res=await fetch(`/mk/api/news/ig-top-status?${q}${sub?'&sub='+sub:''}`,{signal:ctrl.signal}); clearTimeout(tid); if(!res.ok) continue; const data=await res.json(); const items=Array.isArray(data.data)?data.data:(Array.isArray(data)?data:[]); if(items.length>0){items.forEach(it=>{if(!it._type) it._type='ig';}); return items;} }catch(e){continue;}
           } return [];
         }
-        const eps = { doc: `/mk/api/news/mentions?${q}`, twit: `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`, fb: `/mk/api/news/fb-top-status?${q}&sub=fblike`, yt: `/mk/api/news/ytb-top-status?${q}`, tiktok: `/mk/api/news/tiktok-top-status?${q}&sub=postbylike` };
-        const url = eps[platform]; if (!url) return [];
-        const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 30000);
-        const res = await fetch(url, { signal: ctrl.signal }); clearTimeout(tid); if (!res.ok) return [];
-        const data = await res.json(); let items = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
-        items.forEach(it => { if (!it._type) it._type = platform; });
-        if (platform === 'doc') items = items.filter(m => { const tc = String(m.tcode || '').toLowerCase(), mt = String(m.media_type || '').toLowerCase(); return tc === 'berita' || mt === 'berita' || mt === 'doc' || mt === 'news' || mt === 'online' || mt === 'article'; });
+        const eps={doc:`/mk/api/news/mentions?${q}`,twit:`/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,fb:`/mk/api/news/fb-top-status?${q}&sub=fblike`,yt:`/mk/api/news/ytb-top-status?${q}`,tiktok:`/mk/api/news/tiktok-top-status?${q}&sub=postbylike`};
+        const url=eps[platform]; if(!url) return [];
+        const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),30000);
+        const res=await fetch(url,{signal:ctrl.signal}); clearTimeout(tid); if(!res.ok) return [];
+        const data=await res.json(); let items=Array.isArray(data.data)?data.data:(Array.isArray(data)?data:[]);
+        items.forEach(it=>{if(!it._type) it._type=platform;});
+        if(platform==='doc') items=items.filter(m=>{ const tc=String(m.tcode||'').toLowerCase(),mt=String(m.media_type||'').toLowerCase(); return tc==='berita'||mt==='berita'||mt==='doc'||mt==='news'||mt==='online'||mt==='article'; });
         return items;
       },
-      _normSent(item) { const raw = String(item.class_sentiment || item.sentiment || item.sentiment_str || '0').toLowerCase().trim(); if (raw === '1' || raw === 'positive' || raw === 'positif') return 'pos'; if (raw === '-1' || raw === '2' || raw === 'negative' || raw === 'negatif') return 'neg'; return 'neu'; },
-      _getFiltered() { return this._curSent === 'all' ? this._allItems : this._allItems.filter(item => this._normSent(item) === this._curSent); },
+      _normSent(item){ const raw=String(item.class_sentiment||item.sentiment||item.sentiment_str||'0').toLowerCase().trim(); if(raw==='1'||raw==='positive'||raw==='positif') return 'pos'; if(raw==='-1'||raw==='2'||raw==='negative'||raw==='negatif') return 'neg'; return 'neu'; },
+      _getFiltered(){ return this._curSent==='all'?this._allItems:this._allItems.filter(item=>this._normSent(item)===this._curSent); },
       _renderFiltered(list) {
-        const items = this._getFiltered();
-        document.getElementById('sntPopCount').textContent = items.length.toLocaleString();
-        const badge = document.getElementById('sntPopCount');
-        const bColors = { neg: '#ef4444', pos: '#2FC6F6', neu: '#94a3b8', all: 'var(--primary-green)' };
-        badge.style.background = bColors[this._curSent] || 'var(--primary-green)';
-        list.innerHTML = ''; list.scrollTop = 0;
-        this._renderedCount = 0;
+        const items=this._getFiltered();
+        document.getElementById('sntPopCount').textContent=items.length.toLocaleString();
+        const badge=document.getElementById('sntPopCount');
+        const bColors={neg:'#ef4444',pos:'#2FC6F6',neu:'#94a3b8',all:'var(--primary-green)'};
+        badge.style.background=bColors[this._curSent]||'var(--primary-green)';
+        list.innerHTML=''; list.scrollTop=0;
+        this._renderedCount=0;
         this.loadMore(list);
       },
-      loadMore(list = document.getElementById('sntPopList')) {
-        const items = this._getFiltered();
-        const btn = document.getElementById('sntPopLoadMoreBtn');
-        if(btn) btn.remove();
-        
-        if (!items.length) { list.innerHTML = `<div class="sntp-loading" style="color:#94a3b8;">Tidak ada mention untuk filter ini</div>`; return; }
-        
-        const limit = 10;
-        const start = this._renderedCount || 0;
-        const chunk = items.slice(start, start + limit);
-        
-        const getPlat = item => { if (item._type) return item._type; const mt = String(item.media_type || item.type || item.tcode || '').toLowerCase(); if (mt.includes('doc') || mt.includes('news') || mt.includes('berita')) return 'doc'; if (mt.includes('twit') || mt.includes('twitter') || mt.includes('x')) return 'twit'; if (mt.includes('fb') || mt.includes('facebook')) return 'fb'; if (mt.includes('ig') || mt.includes('instagram')) return 'ig'; if (mt.includes('yt') || mt.includes('youtube')) return 'yt'; if (mt.includes('tiktok')) return 'tiktok'; return this._curPlat || 'doc'; };
-        
-        const html = chunk.map(item => {
-          const plat = getPlat(item), meta = SNTPlatMeta[plat] || { color: '#038047' }, color = meta.color;
-          const name = (item.from_name || item.page_name || item.author_nickname || item.nickname || item.channel_title || item.channel_name || item.author_name || item.username || item.user_name || item.author_scr_name || item.screen_name || item.author?.name || item.author?.scr_name || item.publisher || item.source_name || item.name || 'Tidak diketahui').trim();
-          const isNumericId = /^\d{8,}$/.test(name), displayName = isNumericId ? `User ${name.slice(-4)}` : name;
-          const rawHandle = (item.author_scr_name || item.screen_name || item.author?.scr_name || item.username || item.handle || '').trim();
-          const handle = rawHandle && rawHandle.toLowerCase() !== displayName.toLowerCase() ? (['twit', 'ig', 'tiktok'].includes(plat) ? (rawHandle.startsWith('@') ? rawHandle : '@' + rawHandle) : rawHandle) : '';
-          const text = (item.content || item.caption || item.description || item.title || item.text || '').replace(/<[^>]*>/g, '').trim().slice(0, 155);
-          const av = (item.avatar_url || item.profile_image_url || item.author_image || item.author?.image || item.profile_image || item.thumbnail || item.picture || '').trim();
-          const words = displayName.replace(/[^a-zA-Z0-9\s]/g, '').trim().split(/\s+/).filter(Boolean);
-          const ini = (words.length >= 2 ? (words[0][0] + words[words.length - 1][0]) : (words[0]?.[0] || displayName[0] || '?')).toUpperCase().replace(/['"]/g, '');
-          const avHtml = (av && (av.startsWith('http://') || av.startsWith('https://'))) ? `<img src="${sntEsc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}'">` : ini;
-          const sent = this._normSent(item), sentLbl = { neg: 'Neg', pos: 'Pos', neu: 'Neu' }[sent] || 'Neu';
-          const dt = (item.date_created || item.created_at || item.publish_date || '').split('T')[0];
-          const eng = (() => { const f = n => parseInt(n) || 0 > 0 ? parseInt(n).toLocaleString() : null; const parts = []; if (plat === 'twit') { const vw = f(item.view_cnt || item.num_views), rt = f(item.rt || item.num_retweeted || item.retweet_count), lk = f(item.num_likes || item.favorite_count); if (vw) parts.push('Views ' + vw); if (rt) parts.push('RT ' + rt); if (lk) parts.push('Like ' + lk); } else if (plat === 'yt') { const v = f(item.num_views || item.views), lk = f(item.num_likes || item.likes); if (v) parts.push('Views ' + v); if (lk) parts.push('Like ' + lk); } else if (plat === 'tiktok') { const v = f(item.views || item.play_count), lk = f(item.likes || item.digg_count); if (v) parts.push('Play ' + v); if (lk) parts.push('Like ' + lk); } else if (plat === 'ig') { const lk = f(item.num_likes || item.likes || item.like_count), cm = f(item.num_comments || item.comment_count); if (lk) parts.push('Like ' + lk); if (cm) parts.push('Komen ' + cm); } else if (plat === 'fb') { const lk = f(item.likes || item.num_likes || item.like_count), sh = f(item.shares || item.share_count); if (lk) parts.push('Like ' + lk); if (sh) parts.push('Share ' + sh); } return parts.join(' · '); })();
-          const platDot = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0;"></span>`;
-          const itemData = sntEsc(JSON.stringify(item));
+      loadMore(list=document.getElementById('sntPopList')) {
+        const items=this._getFiltered();
+        const btn=document.getElementById('sntPopLoadMoreBtn'); if(btn) btn.remove();
+        if(!items.length){list.innerHTML=`<div class="sntp-loading" style="color:#94a3b8;">Tidak ada mention untuk filter ini</div>`;return;}
+        const limit=10, start=this._renderedCount||0, chunk=items.slice(start,start+limit);
+        const getPlat=item=>{ if(item._type) return item._type; const mt=String(item.media_type||item.type||item.tcode||'').toLowerCase(); if(mt.includes('doc')||mt.includes('news')||mt.includes('berita')) return 'doc'; if(mt.includes('twit')||mt.includes('twitter')||mt.includes('x')) return 'twit'; if(mt.includes('fb')||mt.includes('facebook')) return 'fb'; if(mt.includes('ig')||mt.includes('instagram')) return 'ig'; if(mt.includes('yt')||mt.includes('youtube')) return 'yt'; if(mt.includes('tiktok')) return 'tiktok'; return this._curPlat||'doc'; };
+        const html=chunk.map(item=>{
+          const plat=getPlat(item),meta=SNTPlatMeta[plat]||{color:'#038047'},color=meta.color;
+          const name=(item.from_name||item.page_name||item.author_nickname||item.nickname||item.channel_title||item.channel_name||item.author_name||item.username||item.user_name||item.author_scr_name||item.screen_name||item.author?.name||item.author?.scr_name||item.publisher||item.source_name||item.name||'Tidak diketahui').trim();
+          const isNumericId=/^\d{8,}$/.test(name),displayName=isNumericId?`User ${name.slice(-4)}`:name;
+          const rawHandle=(item.author_scr_name||item.screen_name||item.author?.scr_name||item.username||item.handle||'').trim();
+          const handle=rawHandle&&rawHandle.toLowerCase()!==displayName.toLowerCase()?(['twit','ig','tiktok'].includes(plat)?(rawHandle.startsWith('@')?rawHandle:'@'+rawHandle):rawHandle):'';
+          const text=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,155);
+          const av=(item.avatar_url||item.profile_image_url||item.author_image||item.author?.image||item.profile_image||item.thumbnail||item.picture||'').trim();
+          const words=displayName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
+          const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||displayName[0]||'?')).toUpperCase().replace(/['"]/g,'');
+          const avHtml=(av&&(av.startsWith('http://')||av.startsWith('https://')))?`<img src="${sntEsc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}'">`:ini;
+          const sent=this._normSent(item),sentLbl={neg:'Neg',pos:'Pos',neu:'Neu'}[sent]||'Neu';
+          const dt=(item.date_created||item.created_at||item.publish_date||'').split('T')[0];
+          const eng=(()=>{ const f=n=>parseInt(n)>0?parseInt(n).toLocaleString():null; const parts=[]; if(plat==='twit'){const vw=f(item.view_cnt||item.num_views),rt=f(item.rt||item.num_retweeted||item.retweet_count),lk=f(item.num_likes||item.favorite_count); if(vw) parts.push('Views '+vw); if(rt) parts.push('RT '+rt); if(lk) parts.push('Like '+lk);} else if(plat==='yt'){const v=f(item.num_views||item.views),lk=f(item.num_likes||item.likes); if(v) parts.push('Views '+v); if(lk) parts.push('Like '+lk);} else if(plat==='tiktok'){const v=f(item.views||item.play_count),lk=f(item.likes||item.digg_count); if(v) parts.push('Play '+v); if(lk) parts.push('Like '+lk);} else if(plat==='ig'){const lk=f(item.num_likes||item.likes||item.like_count),cm=f(item.num_comments||item.comment_count); if(lk) parts.push('Like '+lk); if(cm) parts.push('Komen '+cm);} else if(plat==='fb'){const lk=f(item.likes||item.num_likes||item.like_count),sh=f(item.shares||item.share_count); if(lk) parts.push('Like '+lk); if(sh) parts.push('Share '+sh);} return parts.join(' · '); })();
+          const platDot=`<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0;"></span>`;
+          const itemData=sntEsc(JSON.stringify(item));
           return `<div class="sntp-item" data-item='${itemData}' data-plat="${plat}" onclick="SNTPopup._onItemClick(this)">
             <div class="sntp-avatar" style="background:linear-gradient(135deg,${color},${color}99);">${avHtml}</div>
             <div class="sntp-item-body">
               <div class="sntp-item-author">${sntEsc(displayName)}</div>
-              ${handle ? `<div class="sntp-item-handle">${sntEsc(handle)}</div>` : ''}
-              <div class="sntp-item-text">${sntEsc(text || '(tidak ada konten)')}</div>
+              ${handle?`<div class="sntp-item-handle">${sntEsc(handle)}</div>`:''}
+              <div class="sntp-item-text">${sntEsc(text||'(tidak ada konten)')}</div>
               <div class="sntp-item-footer">
                 <span class="sntp-sent-badge sntp-sent-badge--${sent}">${sentLbl}</span>
-                ${platDot}<span style="font-size:10px;">${meta.label || ''}</span>
-                ${eng ? `<span>${sntEsc(eng)}</span>` : ''}
-                ${dt ? `<span style="margin-left:auto;">${dt}</span>` : ''}
+                ${platDot}<span style="font-size:10px;">${meta.label||''}</span>
+                ${eng?`<span>${sntEsc(eng)}</span>`:''}
+                ${dt?`<span style="margin-left:auto;">${dt}</span>`:''}
               </div>
             </div>
           </div>`;
         }).join('');
-        
-        list.insertAdjacentHTML('beforeend', html);
-        this._renderedCount = start + chunk.length;
-
-        if (items.length > this._renderedCount) {
-             const left = items.length - this._renderedCount;
-             const next = Math.min(limit, left);
-             list.insertAdjacentHTML('beforeend', `<div id="sntPopLoadMoreBtn" style="padding:10px;"><button class="btn btn-light-primary btn-sm w-100 d-flex justify-content-center align-items-center gap-2" style="font-weight:600;background:#f8fafc;color:#475569;border:1px dashed #cbd5e1;border-radius:6px;min-height:36px;" onclick="SNTPopup.loadMore()">Muat ${next} lagi <span style="font-weight:400;opacity:0.8;">(${left.toLocaleString()} tersisa)</span> <i class="ph ph-caret-down"></i></button></div>`);
+        list.insertAdjacentHTML('beforeend',html);
+        this._renderedCount=start+chunk.length;
+        if(items.length>this._renderedCount){
+          const left=items.length-this._renderedCount, next=Math.min(limit,left);
+          list.insertAdjacentHTML('beforeend',`<div id="sntPopLoadMoreBtn" style="padding:10px;"><button class="btn btn-light-primary btn-sm w-100 d-flex justify-content-center align-items-center gap-2" style="font-weight:600;background:#f8fafc;color:#475569;border:1px dashed #cbd5e1;border-radius:6px;min-height:36px;" onclick="SNTPopup.loadMore()">Muat ${next} lagi <span style="font-weight:400;opacity:0.8;">(${left.toLocaleString()} tersisa)</span> <i class="ph ph-caret-down"></i></button></div>`);
         }
       },
       _onItemClick(el) {
-        try { const raw = el.getAttribute('data-item'); const item = JSON.parse(raw.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')); SNTDetail.open(item, el.dataset.plat || this._curPlat || 'doc'); } catch (e) { console.warn('SNT Detail parse error:', e); }
+        try{ const raw=el.getAttribute('data-item'); const item=JSON.parse(raw.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"')); SNTDetail.open(item,el.dataset.plat||this._curPlat||'doc'); }catch(e){ console.warn('SNT Detail parse error:',e); }
       }
     };
 
@@ -1482,81 +1784,86 @@
        DETAIL PANEL
     ══════════════════════════════════════════════════════ */
     const SNTDetail = {
-      open(item, platform) {
-        const panel = document.getElementById('sntDetailPanel'), body = document.getElementById('sntDpBody'), title = document.getElementById('sntDpTitle');
-        const meta = SNTPlatMeta[platform] || { label: platform, color: '#038047' };
-        const name = (item.from_name || item.page_name || item.author_nickname || item.nickname || item.channel_title || item.channel_name || item.author_name || item.username || item.user_name || item.author_scr_name || item.screen_name || item.author?.name || item.author?.scr_name || item.publisher || item.source_name || item.name || 'Tidak diketahui').trim();
-        const isNumericId = /^\d{8,}$/.test(name), displayName = isNumericId ? `User ${name.slice(-4)}` : name;
-        const rawHandle = (item.author_scr_name || item.screen_name || item.author?.scr_name || item.username || item.handle || '').trim();
-        const handle = rawHandle && rawHandle.toLowerCase() !== displayName.toLowerCase() ? (rawHandle.startsWith('@') ? rawHandle : '@' + rawHandle) : '';
-        const content = (item.content || item.caption || item.description || item.title || item.text || '').replace(/<[^>]*>/g, '').trim();
-        const av = (item.avatar_url || item.profile_image_url || item.author_image || item.author?.image || item.profile_image || item.thumbnail || item.picture || '').trim();
-        let url = item.url || item.link || '';
-        if (!url && platform === 'twit') { const scr = rawHandle.replace(/^@/, ''), subId = item.sub_id || ''; if (subId) url = `https://twitter.com/${encodeURIComponent(scr)}/status/${encodeURIComponent(subId)}`; else if (scr) url = `https://twitter.com/${encodeURIComponent(scr)}`; }
-        const date = item.date_created || item.created_at || item.publish_date || '';
-        const sentRaw = String(item.class_sentiment || item.sentiment || item.sentiment_str || '0').toLowerCase().trim();
-        const sent = sentRaw === '1' || sentRaw === 'positive' || sentRaw === 'positif' ? 'pos' : sentRaw === '-1' || sentRaw === '2' || sentRaw === 'negative' || sentRaw === 'negatif' ? 'neg' : 'neu';
-        const sentLbl = { pos: 'Positive', neg: 'Negative', neu: 'Neutral' }[sent];
-        title.textContent = displayName;
-        const words = displayName.replace(/[^a-zA-Z0-9\s]/g, '').trim().split(/\s+/).filter(Boolean);
-        const ini = (words.length >= 2 ? (words[0][0] + words[words.length - 1][0]) : (words[0]?.[0] || displayName[0] || '?')).toUpperCase().replace(/['"]/g, '');
-        const avHtml = (av && (av.startsWith('http://') || av.startsWith('https://'))) ? `<img src="${sntEsc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}'">` : ini;
-        let dtFmt = ''; if (date) { try { dtFmt = new Date(date).toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { dtFmt = date.split('T')[0]; } }
-        let mediaHtml = '';
-        if (platform === 'yt') { 
-            let ytId = ''; if(url){ const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/); if(m) ytId = m[1]; }
-            if(!ytId && item.video_id) ytId = item.video_id;
-            if(!ytId && item.id) { const strId = String(item.id); if(strId.length === 11) ytId = strId; }
-            if (ytId) mediaHtml = `<div class="sntdp-media-wrap"><iframe style="width:100%;height:210px;border:none;display:block;border-radius:12px;" src="https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1" allowfullscreen></iframe></div>`; 
+      open(item,platform) {
+        const panel=document.getElementById('sntDetailPanel'),body=document.getElementById('sntDpBody'),title=document.getElementById('sntDpTitle');
+        const meta=SNTPlatMeta[platform]||{label:platform,color:'#038047'};
+        const name=(item.from_name||item.page_name||item.author_nickname||item.nickname||item.channel_title||item.channel_name||item.author_name||item.username||item.user_name||item.author_scr_name||item.screen_name||item.author?.name||item.author?.scr_name||item.publisher||item.source_name||item.name||'Tidak diketahui').trim();
+        const isNumericId=/^\d{8,}$/.test(name),displayName=isNumericId?`User ${name.slice(-4)}`:name;
+        const rawHandle=(item.author_scr_name||item.screen_name||item.author?.scr_name||item.username||item.handle||'').trim();
+        const handle=rawHandle&&rawHandle.toLowerCase()!==displayName.toLowerCase()?(rawHandle.startsWith('@')?rawHandle:'@'+rawHandle):'';
+        const content=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
+        const av=(item.avatar_url||item.profile_image_url||item.author_image||item.author?.image||item.profile_image||item.thumbnail||item.picture||'').trim();
+        let url=item.url||item.link||'';
+        if(!url&&platform==='twit'){const scr=rawHandle.replace(/^@/,''),subId=item.sub_id||''; if(subId) url=`https://twitter.com/${encodeURIComponent(scr)}/status/${encodeURIComponent(subId)}`; else if(scr) url=`https://twitter.com/${encodeURIComponent(scr)}`;}
+        const date=item.date_created||item.created_at||item.publish_date||'';
+        const sentRaw=String(item.class_sentiment||item.sentiment||item.sentiment_str||'0').toLowerCase().trim();
+        const sent=sentRaw==='1'||sentRaw==='positive'||sentRaw==='positif'?'pos':sentRaw==='-1'||sentRaw==='2'||sentRaw==='negative'||sentRaw==='negatif'?'neg':'neu';
+        const sentLbl={pos:'Positive',neg:'Negative',neu:'Neutral'}[sent];
+        title.textContent=displayName;
+        const words=displayName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
+        const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||displayName[0]||'?')).toUpperCase().replace(/['"]/g,'');
+        const avHtml=(av&&(av.startsWith('http://')||av.startsWith('https://')))?`<img src="${sntEsc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}'">`:ini;
+        let dtFmt=''; if(date){try{dtFmt=new Date(date).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){dtFmt=date.split('T')[0];}}
+        let mediaHtml='';
+        if(platform==='yt'){
+          let ytId=''; if(url){const m=url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/); if(m) ytId=m[1];}
+          if(!ytId&&item.video_id) ytId=item.video_id;
+          if(!ytId&&item.id){const strId=String(item.id); if(strId.length===11) ytId=strId;}
+          if(ytId) mediaHtml=`<div class="sntdp-media-wrap"><iframe style="width:100%;height:210px;border:none;display:block;border-radius:12px;" src="https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1" allowfullscreen></iframe></div>`;
+        } else if(platform==='tiktok'){
+          let videoId=''; if(url){const m=url.match(/\/video\/(\d+)/); if(m) videoId=m[1];} if(!videoId&&item.id){const m=String(item.id).match(/(\d{10,})/); if(m) videoId=m[1];}
+          if(videoId) mediaHtml=`<div class="sntdp-media-wrap"><iframe style="width:100%;height:480px;border:none;display:block;border-radius:12px;" src="https://www.tiktok.com/embed/v2/${videoId}" allow="autoplay" allowfullscreen></iframe></div>`;
+          else{const imgUrl=item.image_url||item.thumbnail||item.media_url||item.picture||''; if(imgUrl) mediaHtml=`<div class="sntdp-media-wrap"><img class="sntdp-media-img" src="${sntEsc(imgUrl)}" onerror="this.parentElement.style.display='none'"></div>`;}
+        } else {
+          const imgUrl=item.image_url||item.thumbnail||item.media_url||item.picture||'';
+          if(imgUrl) mediaHtml=`<div class="sntdp-media-wrap"><img class="sntdp-media-img" src="${sntEsc(imgUrl)}" onerror="this.parentElement.style.display='none'"></div>`;
         }
-        else if (platform === 'tiktok') { let videoId = ''; if (url) { const m = url.match(/\/video\/(\d+)/); if (m) videoId = m[1]; } if (!videoId && item.id) { const m = String(item.id).match(/(\d{10,})/); if (m) videoId = m[1]; } if (videoId) mediaHtml = `<div class="sntdp-media-wrap"><iframe style="width:100%;height:480px;border:none;display:block;border-radius:12px;" src="https://www.tiktok.com/embed/v2/${videoId}" allow="autoplay" allowfullscreen></iframe></div>`; else { const imgUrl = item.image_url || item.thumbnail || item.media_url || item.picture || ''; if (imgUrl) mediaHtml = `<div class="sntdp-media-wrap"><img class="sntdp-media-img" src="${sntEsc(imgUrl)}" onerror="this.parentElement.style.display='none'"></div>`; } }
-        else { const imgUrl = item.image_url || item.thumbnail || item.media_url || item.picture || ''; if (imgUrl) mediaHtml = `<div class="sntdp-media-wrap"><img class="sntdp-media-img" src="${sntEsc(imgUrl)}" onerror="this.parentElement.style.display='none'"></div>`; }
-        const statsMap = { twit: [['Views', item.view_cnt || item.num_views || 0], ['Retweet', item.rt || item.num_retweeted || item.retweet_count || 0], ['Like', item.num_likes || item.favorite_count || 0]], fb: [['Like', item.likes || item.num_likes || 0], ['Share', item.shares || item.share_count || 0], ['Comment', item.num_comments || 0]], ig: [['Like', item.num_likes || item.likes || 0], ['Comment', item.num_comments || item.comment_count || 0], ['View', item.num_views || item.views || 0]], yt: [['View', item.num_views || item.views || 0], ['Like', item.num_likes || item.likes || 0], ['Comment', item.num_comments || 0]], tiktok: [['Play', item.views || item.play_count || 0], ['Like', item.likes || item.digg_count || 0], ['Share', item.shares || item.share_count || 0]], doc: [['Read', item.num_views || 0], ['Share', item.num_share || 0], ['Comment', item.num_comments || 0]] };
-        const stats = statsMap[platform] || [];
-        const statsHtml = stats.some(s => parseInt(s[1]) > 0) ? `<div class="sntdp-stats-grid">${stats.map(([l, v]) => `<div class="sntdp-stat-box"><div class="sntdp-stat-val">${parseInt(v || 0).toLocaleString()}</div><div class="sntdp-stat-lbl">${l}</div></div>`).join('')}</div>` : '';
-        body.innerHTML = `
+        const statsMap={twit:[['Views',item.view_cnt||item.num_views||0],['Retweet',item.rt||item.num_retweeted||item.retweet_count||0],['Like',item.num_likes||item.favorite_count||0]],fb:[['Like',item.likes||item.num_likes||0],['Share',item.shares||item.share_count||0],['Comment',item.num_comments||0]],ig:[['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||item.comment_count||0],['View',item.num_views||item.views||0]],yt:[['View',item.num_views||item.views||0],['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||0]],tiktok:[['Play',item.views||item.play_count||0],['Like',item.likes||item.digg_count||0],['Share',item.shares||item.share_count||0]],doc:[['Read',item.num_views||0],['Share',item.num_share||0],['Comment',item.num_comments||0]]};
+        const stats=statsMap[platform]||[];
+        const statsHtml=stats.some(s=>parseInt(s[1])>0)?`<div class="sntdp-stats-grid">${stats.map(([l,v])=>`<div class="sntdp-stat-box"><div class="sntdp-stat-val">${parseInt(v||0).toLocaleString()}</div><div class="sntdp-stat-lbl">${l}</div></div>`).join('')}</div>`:'';
+        body.innerHTML=`
         <div class="sntdp-avatar-row">
           <div class="sntdp-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
           <div>
             <div class="sntdp-author-name">${sntEsc(displayName)}</div>
-            ${handle ? `<div class="sntdp-author-handle">${sntEsc(handle)}</div>` : ''}
+            ${handle?`<div class="sntdp-author-handle">${sntEsc(handle)}</div>`:''}
             <span style="background:${meta.color}22;color:${meta.color};padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;display:inline-block;margin-top:4px;">${meta.label}</span>
           </div>
         </div>
-        ${dtFmt ? `<div class="sntdp-meta-row"><span>${dtFmt}</span></div>` : ''}
+        ${dtFmt?`<div class="sntdp-meta-row"><span>${dtFmt}</span></div>`:''}
         <span class="sntdp-sent-badge sntdp-sent-badge--${sent}">${sentLbl}</span>
         ${mediaHtml}
-        ${content ? `<div class="sntdp-content-text">${sntEsc(content)}</div>` : ''}
+        ${content?`<div class="sntdp-content-text">${sntEsc(content)}</div>`:''}
         ${statsHtml}
-        ${url ? `<a href="${sntEsc(url)}" target="_blank" rel="noopener noreferrer" class="sntdp-link-btn"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Lihat Sumber Asli</a>` : ''}`;
+        ${url?`<a href="${sntEsc(url)}" target="_blank" rel="noopener noreferrer" class="sntdp-link-btn"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Lihat Sumber Asli</a>`:''}`;
         panel.classList.add('visible');
       },
-      close() { document.getElementById('sntDetailPanel')?.classList.remove('visible'); }
+      close(){ document.getElementById('sntDetailPanel')?.classList.remove('visible'); }
     };
 
     /* ══ Patch Chart Click Handlers ══ */
     const _origOverviewBar = renderOverviewBar;
-    window.renderOverviewBar = function () { _origOverviewBar(); const c = SNTCharts._i['chOverview']; if (!c) return; c.on('click', p => { if (p.componentType !== 'series') return; const sm = { 'Negative': 'neg', 'Positive': 'pos', 'Neutral': 'neu' }; SNTPopup.open('all', sm[p.name] || 'all'); }); c.on('mouseover', p => { if (p.componentType === 'series') c.getDom().style.cursor = 'pointer'; }); c.on('mouseout', () => { c.getDom().style.cursor = 'default'; }); };
+    window.renderOverviewBar = function(){ _origOverviewBar(); const c=SNTCharts._i['chOverview']; if(!c) return; c.on('click',p=>{ if(p.componentType!=='series') return; const sm={'Negative':'neg','Positive':'pos','Neutral':'neu'}; SNTPopup.open('all',sm[p.name]||'all'); }); c.on('mouseover',p=>{ if(p.componentType==='series') c.getDom().style.cursor='pointer'; }); c.on('mouseout',()=>{ c.getDom().style.cursor='default'; }); };
 
     const _origSovDoughnut = renderSovDoughnut;
-    window.renderSovDoughnut = function (domId, labels, values, colors, ready = false) { _origSovDoughnut(domId, labels, values, colors, ready); const c = SNTCharts._i[domId]; if (!c) return; c.on('click', p => { const sm = { 'Negative': 'neg', 'Positive': 'pos', 'Neutral': 'neu' }; const sent = sm[p.name] || 'all'; if (domId === 'chSovTotal') SNTPopup.open('all', sent); else if (domId === 'chMassPie') SNTPopup.open('doc', sent); else if (domId === 'chSocialPie') { const rect = c.getDom().getBoundingClientRect(); SNTPopup.showPlatPicker(rect.left + rect.width / 2, rect.top + rect.height / 2, sent); } }); c.on('mouseover', () => { c.getDom().style.cursor = 'pointer'; }); c.on('mouseout', () => { c.getDom().style.cursor = 'default'; }); };
+    window.renderSovDoughnut = function(domId,labels,values,colors,ready=false){ _origSovDoughnut(domId,labels,values,colors,ready); const c=SNTCharts._i[domId]; if(!c) return; c.on('click',p=>{ const sm={'Negative':'neg','Positive':'pos','Neutral':'neu'}; const sent=sm[p.name]||'all'; if(domId==='chSovTotal') SNTPopup.open('all',sent); else if(domId==='chMassPie') SNTPopup.open('doc',sent); else if(domId==='chSocialPie'){ const rect=c.getDom().getBoundingClientRect(); SNTPopup.showPlatPicker(rect.left+rect.width/2,rect.top+rect.height/2,sent); } }); c.on('mouseover',()=>{ c.getDom().style.cursor='pointer'; }); c.on('mouseout',()=>{ c.getDom().style.cursor='default'; }); };
 
     const _origMassSocialBars = renderMassSocialBars;
-    window.renderMassSocialBars = function () { _origMassSocialBars();['chMass', 'chSocial'].forEach(id => { const c = SNTCharts._i[id]; if (!c) return; const isMass = id === 'chMass'; c.on('click', p => { if (p.componentType !== 'series') return; const sm = { 'Negative': 'neg', 'Positive': 'pos', 'Neutral': 'neu' }; const sent = sm[p.seriesName] || 'all'; if (isMass) SNTPopup.open('doc', sent); else { const rect = c.getDom().getBoundingClientRect(); SNTPopup.showPlatPicker(rect.left + p.event.offsetX, rect.top + p.event.offsetY, sent); } }); c.on('mouseover', p => { if (p.componentType === 'series') c.getDom().style.cursor = 'pointer'; }); c.on('mouseout', () => { c.getDom().style.cursor = 'default'; }); }); };
+    window.renderMassSocialBars = function(){ _origMassSocialBars();['chMass','chSocial'].forEach(id=>{ const c=SNTCharts._i[id]; if(!c) return; const isMass=id==='chMass'; c.on('click',p=>{ if(p.componentType!=='series') return; const sm={'Negative':'neg','Positive':'pos','Neutral':'neu'}; const sent=sm[p.seriesName]||'all'; if(isMass) SNTPopup.open('doc',sent); else{const rect=c.getDom().getBoundingClientRect(); SNTPopup.showPlatPicker(rect.left+p.event.offsetX,rect.top+p.event.offsetY,sent);} }); c.on('mouseover',p=>{ if(p.componentType==='series') c.getDom().style.cursor='pointer'; }); c.on('mouseout',()=>{ c.getDom().style.cursor='default'; }); }); };
 
     const _origByTypePct = renderByTypePct;
-    window.renderByTypePct = function () { _origByTypePct(); const c = SNTCharts._i['chByType']; if (!c) return; const lk = { 'Mass Media': 'doc', 'X / Twitter': 'twit', 'Facebook': 'fb', 'Instagram': 'ig', 'YouTube': 'yt', 'TikTok': 'tiktok' }; c.on('click', p => { if (p.componentType !== 'series') return; const plat = lk[SNTData.byMedia[p.dataIndex]?.label] || 'doc'; const sm = { 'Negative': 'neg', 'Positive': 'pos', 'Neutral': 'neu' }; SNTPopup.open(plat, sm[p.seriesName] || 'all'); }); c.on('mouseover', p => { if (p.componentType === 'series') c.getDom().style.cursor = 'pointer'; }); c.on('mouseout', () => { c.getDom().style.cursor = 'default'; }); };
+    window.renderByTypePct = function(){ _origByTypePct(); const c=SNTCharts._i['chByType']; if(!c) return; const lk={'Mass Media':'doc','X / Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'}; c.on('click',p=>{ if(p.componentType!=='series') return; const plat=lk[SNTData.byMedia[p.dataIndex]?.label]||'doc'; const sm={'Negative':'neg','Positive':'pos','Neutral':'neu'}; SNTPopup.open(plat,sm[p.seriesName]||'all'); }); c.on('mouseover',p=>{ if(p.componentType==='series') c.getDom().style.cursor='pointer'; }); c.on('mouseout',()=>{ c.getDom().style.cursor='default'; }); };
 
     const _origByPlatGrouped = renderByPlatGrouped;
-    window.renderByPlatGrouped = function () { _origByPlatGrouped(); const c = SNTCharts._i['chByPlat']; if (!c) return; c.on('click', p => { if (p.componentType !== 'series') return; const sm = { 'Negative': 'neg', 'Positive': 'pos', 'Neutral': 'neu' }; const sent = sm[p.seriesName] || 'all'; const grps = ['Mass Media', 'Social Media']; if (grps[p.dataIndex] === 'Mass Media') SNTPopup.open('doc', sent); else { const rect = c.getDom().getBoundingClientRect(); SNTPopup.showPlatPicker(rect.left + rect.width / 2, rect.top + p.event.offsetY, sent); } }); c.on('mouseover', p => { if (p.componentType === 'series') c.getDom().style.cursor = 'pointer'; }); c.on('mouseout', () => { c.getDom().style.cursor = 'default'; }); };
+    window.renderByPlatGrouped = function(){ _origByPlatGrouped(); const c=SNTCharts._i['chByPlat']; if(!c) return; c.on('click',p=>{ if(p.componentType!=='series') return; const sm={'Negative':'neg','Positive':'pos','Neutral':'neu'}; const sent=sm[p.seriesName]||'all'; const grps=['Mass Media','Social Media']; if(grps[p.dataIndex]==='Mass Media') SNTPopup.open('doc',sent); else{const rect=c.getDom().getBoundingClientRect(); SNTPopup.showPlatPicker(rect.left+rect.width/2,rect.top+p.event.offsetY,sent);} }); c.on('mouseover',p=>{ if(p.componentType==='series') c.getDom().style.cursor='pointer'; }); c.on('mouseout',()=>{ c.getDom().style.cursor='default'; }); };
 
     const _origTimeChart = renderTimeChart;
-    window.renderTimeChart = function (domId, skelId, labels, negData, posData, neuData, totals, isHour = false) { _origTimeChart(domId, skelId, labels, negData, posData, neuData, totals, isHour); const c = SNTCharts._i[domId]; if (!c) return; c.on('click', p => { if (p.componentType !== 'series') return; const sm = { 'Negative': 'neg', 'Positive': 'pos', 'Neutral': 'neu' }; SNTPopup.open('all', sm[p.seriesName] || 'all'); }); c.on('mouseover', p => { if (p.componentType === 'series') c.getDom().style.cursor = 'pointer'; }); c.on('mouseout', () => { c.getDom().style.cursor = 'default'; }); };
+    window.renderTimeChart = function(domId,skelId,labels,negData,posData,neuData,totals,isHour=false){ _origTimeChart(domId,skelId,labels,negData,posData,neuData,totals,isHour); const c=SNTCharts._i[domId]; if(!c) return; c.on('click',p=>{ if(p.componentType!=='series') return; const sm={'Negative':'neg','Positive':'pos','Neutral':'neu'}; SNTPopup.open('all',sm[p.seriesName]||'all'); }); c.on('mouseover',p=>{ if(p.componentType==='series') c.getDom().style.cursor='pointer'; }); c.on('mouseout',()=>{ c.getDom().style.cursor='default'; }); };
 
     const _origSNTPageInit = SNTPage.init.bind(SNTPage);
-    SNTPage.init = function () { SNTPopup.init(); _origSNTPageInit(); };
+    SNTPage.init = function(){ SNTPopup.init(); _origSNTPageInit(); };
 
     const _origSNTPageReload = SNTPage.reload.bind(SNTPage);
-    SNTPage.reload = function () { SNTPopup._cache = {}; _origSNTPageReload(); };
+    SNTPage.reload = function(){ SNTPopup._cache={}; _origSNTPageReload(); };
   </script>
 @endsection

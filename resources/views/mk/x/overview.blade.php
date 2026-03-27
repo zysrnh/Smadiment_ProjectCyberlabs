@@ -914,8 +914,7 @@ const OVDetail = {
 ════════════════════════════════════════════════════════ */
 const OVExport = (() => {
     'use strict';
-    let _toastTimer  = null;
-    let _ecSnapshots = {};
+    let _toastTimer = null;
 
     function _toast(msg, type='default', duration=3200) {
         const t=_$('exportToast'), m=_$('exportToastMsg'), ico=_$('exportToastIcon');
@@ -925,196 +924,21 @@ const OVExport = (() => {
         clearTimeout(_toastTimer); _toastTimer=setTimeout(()=>t.classList.remove('show'),duration);
     }
     function _btnState(btn,loading){ if(!btn)return; btn.disabled=loading; btn.classList.toggle('exporting',loading); }
-    function _freeze() {
-        if(document.getElementById('__s_freeze')) return;
-        const s = document.createElement('style'); s.id = '__s_freeze';
-        s.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
+
+    function _freeze(){
+        if(document.getElementById('__ov_freeze')) return;
+        const s=document.createElement('style'); s.id='__ov_freeze';
+        s.textContent='*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}.fade-up,.fade-up-d1,.fade-up-d2{opacity:1!important;transform:none!important;}.sk-block{animation:none!important;}';
         document.head.appendChild(s);
     }
-    function _unfreeze() { document.getElementById('__s_freeze')?.remove(); }
-     
+    function _unfreeze(){ document.getElementById('__ov_freeze')?.remove(); }
 
-    /* ── Matikan SEMUA animasi di dokumen asli (live DOM) ── */
-    function _killAnimations(){
-        if(document.getElementById('__ov_kill_anim')) return;
-        const s=document.createElement('style'); s.id='__ov_kill_anim';
-        s.textContent=[
-            '*,*::before,*::after{',
-            '  animation:none!important;',
-            '  animation-duration:0.001ms!important;',
-            '  animation-delay:0ms!important;',
-            '  animation-iteration-count:1!important;',
-            '  animation-play-state:paused!important;',
-            '  transition:none!important;',
-            '  transition-duration:0.001ms!important;',
-            '}',
-            /* Paksa elemen dengan fadeUp animation langsung visible */
-            '.fade-up,.fade-up-d1,.fade-up-d2,',
-            '[style*="animation"],[style*="fadeUp"]{',
-            '  opacity:1!important;transform:none!important;',
-            '}',
-            /* Paksa semua card visible */
-            '.card{opacity:1!important;transform:none!important;}',
-            /* Paksa tab aktif full visible */
-            '.tme-tab-panel.active{display:block!important;opacity:1!important;visibility:visible!important;}',
-            /* Hentikan shimmer skeleton */
-            '.sk-block{animation:none!important;}',
-        ].join('');
-        document.head.appendChild(s);
-    }
-    function _restoreAnimations(){ document.getElementById('__ov_kill_anim')?.remove(); }
-
-    /* ── ECharts snapshot map ── */
-    const EC_ID_MAP = {
-        '__ec_donutHashtagChart' : 'donutHashtagChart',
-        '__ec_donutChart_view'   : 'donutChart-view',
-        '__ec_donutChart_retweet': 'donutChart-retweet',
-    };
-    /* Hanya snapshot chart tab tertentu (hindari cross-tab contamination) */
-    const TAB_EC_MAP = {
-        hashtag : ['__ec_donutHashtagChart'],
-        view    : ['__ec_donutChart_view'],
-        retweet : ['__ec_donutChart_retweet'],
-    };
-
-    function _snapshotAll(){
-        _ecSnapshots={};
-        Object.entries(EC_ID_MAP).forEach(([wk,containerId])=>{
-            const inst=window[wk]; if(!inst||inst.isDisposed?.()) return;
-            try{ _ecSnapshots[containerId]=inst.getDataURL({type:'png',pixelRatio:window.devicePixelRatio||2,backgroundColor:'#ffffff'}); }
-            catch(e){}
-        });
-    }
-    function _snapshotTab(tabKey){
-        _ecSnapshots={};
-        (TAB_EC_MAP[tabKey]||[]).forEach(wk=>{
-            const containerId=EC_ID_MAP[wk]; if(!containerId) return;
-            const inst=window[wk]; if(!inst||inst.isDisposed?.()) return;
-            try{ _ecSnapshots[containerId]=inst.getDataURL({type:'png',pixelRatio:window.devicePixelRatio||2,backgroundColor:'#ffffff'}); }
-            catch(e){}
+    function _resizeCharts(){
+        ['__ec_donutHashtagChart','__ec_donutChart_view','__ec_donutChart_retweet'].forEach(k=>{
+            try{ if(window[k]&&!window[k].isDisposed()) window[k].resize(); }catch(e){}
         });
     }
 
-    /* ── onClone: bersihkan cloned doc untuk capture bersih ── */
-    function _onClone(clonedDoc){
-        /* 1. Sembunyikan elemen yang tidak perlu di output */
-        clonedDoc.querySelectorAll([
-            '.do-panel-overlay','.do-panel','.do-detail-panel','#ovCustomTT',
-            '.spin-ring','.spinner-state','.export-toast',
-            '.chart-loading:not(.hidden)',
-            '[data-html2canvas-ignore]',
-        ].join(',')).forEach(el=>{
-            el.style.cssText+='display:none!important;visibility:hidden!important;opacity:0!important;height:0!important;min-height:0!important;overflow:hidden!important;';
-        });
-
-        /* 2. Sembunyikan tab panel yang TIDAK aktif */
-        clonedDoc.querySelectorAll('.tme-tab-panel:not(.active)').forEach(el=>{
-            el.style.cssText+='display:none!important;height:0!important;min-height:0!important;overflow:hidden!important;';
-        });
-
-        /* 3. Matikan SEMUA animasi di cloned doc */
-        const freezeStyle=clonedDoc.createElement('style');
-        freezeStyle.textContent=[
-            '*,*::before,*::after{',
-            '  animation:none!important;',
-            '  animation-duration:0.001ms!important;',
-            '  animation-play-state:paused!important;',
-            '  transition:none!important;',
-            '}',
-            '.fade-up,.fade-up-d1,.fade-up-d2,',
-            '[style*="fadeUp"],[style*="animation"]{',
-            '  opacity:1!important;transform:none!important;',
-            '}',
-        ].join('');
-        clonedDoc.head.appendChild(freezeStyle);
-
-        /* 4. Ganti avatar cross-origin dengan initial letter */
-        clonedDoc.querySelectorAll('.tme-post-av,.do-panel-avatar,.do-dp2-avatar-lg').forEach(wrapper=>{
-            wrapper.querySelectorAll('img').forEach(img=>{ img.style.display='none'; });
-            if(!wrapper.querySelector('.__ini')){
-                const initial=((wrapper.textContent||'').trim()[0]||'X').toUpperCase();
-                const sp=clonedDoc.createElement('span'); sp.className='__ini';
-                sp.textContent=initial;
-                sp.style.cssText='font-size:13px;font-weight:700;color:#fff;line-height:1;';
-                wrapper.appendChild(sp);
-            }
-            if(!wrapper.style.background) wrapper.style.background='linear-gradient(135deg,#038047,#05a85e)';
-        });
-        clonedDoc.querySelectorAll('.tme-post-thumb').forEach(wrapper=>{
-            wrapper.querySelectorAll('img').forEach(img=>{ img.style.display='none'; });
-            wrapper.style.background='linear-gradient(135deg,#273B4A,#374151)';
-        });
-
-        /* 5. Paksa semua elemen konten visible & opacity 1 */
-        clonedDoc.querySelectorAll([
-            '.card','.card-body','.card-header','.row','[class*="col-"]',
-            '.tme-tab-panel.active','.ht-list','.ht-item',
-            '.tme-post-list','.tme-post','.donut-stack-wrap','.donut-breakdown-list',
-            '.donut-breakdown-item','#pageExportArea','#ovTabsBar',
-            '.kpi-card-hover','.kpi-icon-bg',
-        ].join(',')).forEach(el=>{
-            el.style.opacity='1';
-            el.style.transform='none';
-            el.style.visibility='visible';
-            el.style.animationPlayState='paused';
-        });
-
-        /* 6. ★ Inject ECharts snapshot sebagai <img> ★ */
-        Object.entries(_ecSnapshots).forEach(([containerId,dataUrl])=>{
-            const container=clonedDoc.getElementById(containerId); if(!container) return;
-            container.innerHTML='';
-            const img=clonedDoc.createElement('img');
-            img.src=dataUrl;
-            img.style.cssText='width:100%;height:100%;display:block;object-fit:contain;';
-            container.appendChild(img);
-            container.style.cssText+='display:block!important;opacity:1!important;visibility:visible!important;';
-        });
-    }
-
-    /* ── _doCapture: capture elemen dengan animasi mati total ── */
-    async function _doCapture(el, isCard, skipSnapshot=false){
-        if(!skipSnapshot) _snapshotAll();
-
-        /* Matikan animasi di live DOM SEBELUM ukur height */
-        _killAnimations();
-
-        /* Tunggu browser reflow setelah animasi dimatikan */
-        await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-        await new Promise(r=>setTimeout(r,250));
-
-        /* Ukur full height SETELAH animasi berhenti, agar tidak terpotong */
-        const captureH = Math.max(
-            el.scrollHeight,
-            el.offsetHeight,
-            el.getBoundingClientRect().height
-        );
-
-        let canvas;
-        try{
-            canvas=await html2canvas(el,{
-                scale:2,
-                useCORS:true,
-                allowTaint:true,
-                backgroundColor:isCard?'#ffffff':'#f1f5f9',
-                logging:false,
-                removeContainer:true,
-                imageTimeout:8000,
-                onclone:d=>_onClone(d),
-                ignoreElements:e=>e.hasAttribute('data-html2canvas-ignore'),
-                x:0,
-                y:0,
-                width:el.offsetWidth,
-                height:captureH,
-                scrollX:0,
-                scrollY:0,
-            });
-        }finally{
-            _restoreAnimations();
-        }
-        return canvas;
-    }
-
-    /* ── PDF helpers ── */
     function _drawHeader(pdf,pW,pH,label,page,total){
         pdf.setFillColor(3,128,71); pdf.rect(0,0,pW,11,'F');
         pdf.setTextColor(255,255,255); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
@@ -1123,12 +947,14 @@ const OVExport = (() => {
         pdf.setFontSize(7); pdf.setFont('helvetica','normal'); pdf.text('Generated: '+now,pW-10,7.5,{align:'right'});
         pdf.setFontSize(7); pdf.setTextColor(148,163,184); pdf.text(`Halaman ${page} / ${total}`,pW/2,pH-3,{align:'center'});
     }
+
     function _addCanvas(pdf,canvas,margin,pW,pH){
         const uw=pW-margin*2, uh=pH-14-10;
         const ratio=Math.min(uw/canvas.width, uh/canvas.height);
         const dw=canvas.width*ratio, dh=canvas.height*ratio;
         pdf.addImage(canvas.toDataURL('image/png'),'PNG',margin+(uw-dw)/2,14+(uh-dh)/2,dw,dh);
     }
+
     function _sliceIntoPages(pdf,canvas,margin,pW,pH,label,startPageNum,totalPages){
         const uw=pW-margin*2, uh=pH-14-10;
         const ratio=uw/canvas.width;
@@ -1145,28 +971,48 @@ const OVExport = (() => {
             pdf.addImage(slice.toDataURL('image/png'),'PNG',margin,14,uw,dstH);
             srcY+=srcSlice; pg++;
         }
-        return pg; /* return next page number */
+        return pg;
     }
 
-    /* ══════════════════════════════════════════════
-       run() — export semua 3 tab ke PDF / image
-    ══════════════════════════════════════════════ */
+    // ── Core capture — sama persis dengan Media Statistic ──
+    async function _captureArea(el, isCard){
+        _resizeCharts();
+        await new Promise(r=>setTimeout(r,300));
+        _freeze();
+        await new Promise(r=>setTimeout(r,400));
+        try{
+            return await html2canvas(el,{
+                scale:2,
+                useCORS:true,
+                allowTaint:false,
+                backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
+                logging:false,
+                removeContainer:true,
+                windowHeight: el.scrollHeight,
+                height: el.scrollHeight,
+                ignoreElements: e=>e.hasAttribute('data-html2canvas-ignore'),
+            });
+        }finally{
+            _unfreeze();
+        }
+    }
+
+    // ── run(): export semua 3 tab ──
     async function run(type,btn){
         if(!window.html2canvas){ _toast('html2canvas tidak tersedia','error'); return; }
         if(type==='pdf'&&!window.jspdf?.jsPDF){ _toast('jsPDF tidak tersedia','error'); return; }
 
         const btnPdf=_$('pageExportPdfBtn'), btnImg=_$('pageExportImgBtn');
         _btnState(btnPdf,true); _btnState(btnImg,true);
-        _toast(type==='pdf'?'Menyiapkan PDF semua tab…':'Mengambil gambar tab aktif…','default',99999);
+        _toast(type==='pdf'?'Menyiapkan PDF…':'Mengambil gambar…','default',99999);
 
         const originalTab=TAB_TYPES.find(t=>_$('tab-'+t)?.classList.contains('active'))||'hashtag';
         const area=_$('pageExportArea');
         const stamp=new Date().toISOString().slice(0,10).replace(/-/g,'');
 
         try{
-            /* ── IMAGE: capture tab aktif saja ── */
             if(type==='image'){
-                const canvas=await _doCapture(area,false);
+                const canvas=await _captureArea(area,false);
                 const link=document.createElement('a');
                 link.download=`x_overview_${OV_PID}_${stamp}.png`;
                 link.href=canvas.toDataURL('image/png');
@@ -1175,52 +1021,47 @@ const OVExport = (() => {
                 return;
             }
 
-            /* ── PDF: capture semua 3 tab secara berurutan ── */
             const TAB_ORDER=[
                 {key:'hashtag', label:'Top Topics'},
                 {key:'view',    label:'Most Viewed'},
                 {key:'retweet', label:'Most Retweeted'},
             ];
 
-            /* Step 1 — pastikan semua tab sudah di-load datanya */
+            // Load semua tab dulu
             _toast('Memuat semua tab…','default',99999);
             for(const {key} of TAB_ORDER){
                 if(!OVTab._loaded[key]){
                     OVTab._loaded[key]=true;
                     await OVData.loadTab(key);
-                    await new Promise(r=>setTimeout(r,600));
+                    await new Promise(r=>setTimeout(r,800));
                 }
             }
 
-            /* Step 2 — capture tiap tab satu per satu */
+            // Capture tiap tab
             const canvases=[];
             for(let i=0;i<TAB_ORDER.length;i++){
                 const {key,label}=TAB_ORDER[i];
                 _toast(`Mengambil tab ${i+1}/3: ${label}…`,'default',99999);
 
-                /* Aktifkan tab tanpa animasi scroll */
                 TAB_TYPES.forEach(x=>{
                     _$('tab-'+x)?.classList.toggle('active',x===key);
                     _$('panel-'+x)?.classList.toggle('active',x===key);
                 });
 
-                /* Resize chart tab ini agar dimensi benar */
-                (TAB_EC_MAP[key]||[]).forEach(wk=>{
+                // Resize chart tab aktif
+                const tabEcKeys={hashtag:['__ec_donutHashtagChart'],view:['__ec_donutChart_view'],retweet:['__ec_donutChart_retweet']};
+                (tabEcKeys[key]||[]).forEach(wk=>{
                     try{ if(window[wk]&&!window[wk].isDisposed()) window[wk].resize(); }catch(e){}
                 });
 
-                /* Tunggu render selesai */
-                await new Promise(r=>setTimeout(r,800));
+                // Tunggu render
+                await new Promise(r=>setTimeout(r,600));
 
-                /* Snapshot HANYA chart tab aktif */
-                _snapshotTab(key);
-
-                /* Capture dengan animasi mati */
-                const canvas=await _doCapture(area, false, true); /* skipSnapshot=true */
+                const canvas=await _captureArea(area,false);
                 canvases.push({label:`X Overview — ${label}`, canvas});
             }
 
-            /* Step 3 — hitung total halaman */
+            // Build PDF
             const {jsPDF}=window.jspdf;
             const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
             const pW=pdf.internal.pageSize.getWidth(), pH=pdf.internal.pageSize.getHeight(), M=10;
@@ -1232,7 +1073,6 @@ const OVExport = (() => {
                 totalPages+=Math.max(1, Math.ceil((canvas.height*ratio)/usableH));
             });
 
-            /* Step 4 — build PDF dengan slicing */
             let pageNum=1, firstPage=true;
             canvases.forEach(({label,canvas})=>{
                 if(!firstPage) pdf.addPage(); firstPage=false;
@@ -1244,10 +1084,9 @@ const OVExport = (() => {
 
         }catch(err){
             console.error('[OVExport.run]',err);
-            _restoreAnimations();
+            _unfreeze();
             _toast('Export gagal: '+err.message,'error');
         }finally{
-            /* Kembalikan ke tab semula */
             TAB_TYPES.forEach(x=>{
                 _$('tab-'+x)?.classList.toggle('active',x===originalTab);
                 _$('panel-'+x)?.classList.toggle('active',x===originalTab);
@@ -1256,16 +1095,14 @@ const OVExport = (() => {
         }
     }
 
-    /* ══════════════════════════════════════════════
-       runCard() — export satu card saja
-    ══════════════════════════════════════════════ */
+    // ── runCard() ──
     const _cardLabels={
         'hashtag-list':'Top Topics / Hashtags','hashtag-donut':'Distribusi Top Topics',
         'donut-view':'Distribusi Most Viewed','donut-retweet':'Distribusi Most Retweeted',
         'list-view':'Top Tweets by Views','list-retweet':'Top Tweets by Retweets'
     };
     function _cardFilename(k){
-        const map={'hashtag-list':'top-topics-list','hashtag-donut':'top-topics-donut','donut-view':'distribusi-most-viewed','donut-retweet':'distribusi-most-retweeted','list-view':'top-tweets-by-view','list-retweet':'top-tweets-by-retweet'};
+        const map={'hashtag-list':'top-topics-list','hashtag-donut':'top-topics-donut','donut-view':'distribusi-most-viewed','donut-retweet':'distribusi-most-retweeted','list-view':'top-tweets-by-view','list-retweet':'top-tweets-by-retweets'};
         return `x_overview_${map[k]||k}_${OV_PID}_${new Date().toISOString().slice(0,10).replace(/-/g,'')}`;
     }
 
@@ -1276,10 +1113,13 @@ const OVExport = (() => {
         try{
             const area=document.getElementById(areaId);
             if(!area) throw new Error('Area #'+areaId+' tidak ditemukan');
-            const canvas=await _doCapture(area, true);
+            _resizeCharts();
+            await new Promise(r=>setTimeout(r,220));
+            const canvas=await _captureArea(area,true);
             const fname=_cardFilename(cardKey), label=_cardLabels[cardKey]||cardKey;
             if(type==='image'){
-                const link=document.createElement('a'); link.download=fname+'.png'; link.href=canvas.toDataURL('image/png'); link.click();
+                const link=document.createElement('a');
+                link.download=fname+'.png'; link.href=canvas.toDataURL('image/png'); link.click();
                 _toast('Gambar berhasil diunduh!','success');
             }else{
                 const {jsPDF}=window.jspdf;

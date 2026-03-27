@@ -756,29 +756,122 @@ const FBWCExport = (() => {
         };
     }
 
-    async function _capture(areaId, bgColor) {
-        const area = document.getElementById(areaId);
-        if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
-        window.scrollTo({ top: 0 });
-        const wcSnapshot = _getWCSnapshot();
-        area.querySelectorAll('.kpi-card-hover,.ht-item,.card,[class*="col-"]')
-            .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; });
-        _freeze();
-        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        await new Promise(r => setTimeout(r, 400));
-        try {
-            return await html2canvas(area, {
-                scale: 2, useCORS: true, allowTaint: true,
-                backgroundColor: bgColor || '#f1f5f8', logging: false, removeContainer: true,
-                scrollX: 0, scrollY: 0,
-                width: area.offsetWidth, height: area.scrollHeight,
-                onclone: _makeOnClone(wcSnapshot),
-            });
-        } finally {
-            _unfreeze();
+async function _capture(areaId, bgColor) {
+    const area = document.getElementById(areaId);
+    if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+
+    window.scrollTo({ top: 0 });
+
+    // 1. Resize chart dulu supaya snapshot akurat
+    try {
+        if (wcChart && !wcChart.isDisposed()) {
+            const ch = _$('wordCloudChart');
+            const r  = ch?.getBoundingClientRect();
+            if (r?.width > 0) wcChart.resize({ width: r.width, height: r.height });
         }
+    } catch(e) {}
+
+    await new Promise(r => setTimeout(r, 200));
+
+    // 2. Ambil snapshot PNG dari canvas ECharts
+    let wcSnapshot = null;
+    try {
+        if (wcChart && !wcChart.isDisposed()) {
+            wcSnapshot = wcChart.getDataURL({ type:'png', pixelRatio:2, backgroundColor:'#ffffff' });
+        }
+    } catch(e) { console.warn('[FBWCExport] snapshot gagal:', e); }
+
+    // 3. DOM swap: ganti canvas chart → <img>
+    const wcDiv     = _$('wordCloudChart');
+    let swapImg     = null;
+    let placeholder = null;
+
+    if (wcDiv && wcSnapshot) {
+        placeholder = document.createElement('div');
+        placeholder.id = '__fbwc_placeholder';
+
+        swapImg = document.createElement('img');
+        swapImg.id  = '__fbwc_swap';
+        swapImg.src = wcSnapshot;
+        swapImg.style.cssText = 'width:100%;height:520px;object-fit:contain;display:block;';
+
+        wcDiv.parentNode.insertBefore(placeholder, wcDiv);
+        wcDiv.parentNode.insertBefore(swapImg, placeholder);
+        wcDiv.style.display = 'none';
     }
 
+    // 4. Freeze animasi
+    area.querySelectorAll('.kpi-card-hover,.ht-item,.card,[class*="col-"]')
+        .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; });
+
+    _freeze();
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    let canvas;
+    try {
+        canvas = await html2canvas(area, {
+            scale           : 2,
+            useCORS         : true,
+            allowTaint      : false,       // ← false untuk Safari
+            backgroundColor : bgColor || '#f1f5f8',
+            logging         : false,
+            removeContainer : true,
+            scrollX         : 0,
+            scrollY         : 0,
+            width           : area.offsetWidth,
+            height          : area.scrollHeight,
+            onclone         : _makeOnClone(),
+        });
+    } finally {
+        // 5. Restore DOM — selalu jalan meski error
+        swapImg?.remove();
+        placeholder?.remove();
+        if (wcDiv) wcDiv.style.display = 'block';
+        _unfreeze();
+    }
+
+    return canvas;
+}
+
+// onclone sekarang cukup freeze + hide elemen — chart sudah di-swap di DOM asli
+function _makeOnClone() {
+    return (clonedDoc) => {
+        const s = clonedDoc.createElement('style');
+        s.textContent = `
+            *, *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+                animation-play-state: paused !important;
+            }
+            [data-html2canvas-ignore] { display: none !important; }
+            .sk-block { animation: none !important; background: #e2e8f0 !important; }
+            .kpi-card-hover { transform: none !important; filter: none !important; }
+            .spinner-state, #wcLoading, .spin-ring { display: none !important; }
+            .sent-tabs { display: none !important; }
+            .export-toast { display: none !important; }
+        `;
+        clonedDoc.head.appendChild(s);
+
+        // Sembunyikan elemen noise
+        clonedDoc.querySelectorAll(
+            '#wcLoading, #topicLoading, .spinner-state, .spin-ring, .export-toast, .sent-tabs'
+        ).forEach(el => { el.style.display = 'none'; });
+
+        // Freeze & visible semua elemen konten
+        clonedDoc.querySelectorAll(
+            '.card, .kpi-card-hover, [class*="col-"], .ht-item, .ht-list, #topicContent, #pageExportArea'
+        ).forEach(el => {
+            el.style.opacity    = '1';
+            el.style.transform  = 'none';
+            el.style.visibility = 'visible';
+            el.style.animation  = 'none';
+        });
+
+        // Pastikan topicContent visible
+        const tc = clonedDoc.getElementById('topicContent');
+        if (tc) tc.style.display = 'block';
+    };
+}
     function _pdfHeader(pdf, title) {
         const pW = pdf.internal.pageSize.getWidth();
         pdf.setFillColor(3, 128, 71);

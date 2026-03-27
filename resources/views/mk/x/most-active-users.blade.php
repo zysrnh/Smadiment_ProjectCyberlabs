@@ -1225,14 +1225,6 @@ const MAUExport = (() => {
     clearTimeout(_timer);_timer=setTimeout(()=>t.classList.remove('show'),dur);
   }
   function _btnState(btn,loading){ if(!btn)return; btn.disabled=loading; btn.classList.toggle('exporting',loading); }
-    function _freeze() {
-        if(document.getElementById('__s_freeze')) return;
-        const s = document.createElement('style'); s.id = '__s_freeze';
-        s.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
-        document.head.appendChild(s);
-    }
-    function _unfreeze() { document.getElementById('__s_freeze')?.remove(); }
-     
   function _donutSnap(){
     try{ if(!donutInst||donutInst.isDisposed())return null; const ch=$('donutChart'); if(!ch||ch.style.display==='none')return null; return donutInst.getDataURL({type:'png',pixelRatio:2,backgroundColor:'#ffffff'}); }catch(e){return null;}
   }
@@ -1250,7 +1242,7 @@ const MAUExport = (() => {
     window.scrollTo({top:0});const snap=_donutSnap();
     area.querySelectorAll('.fade-up,.fade-up-d1,.fade-up-d2,.fade-up-d3,.fade-up-d4,.kpi-card-hover,.ht-item,.card,[class*="col-"]').forEach(e=>{e.style.opacity='1';e.style.transform='none';e.style.visibility='visible';});
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-    const captureP=html2canvas(area,{scale:2,useCORS:true,allowTaint:true,backgroundColor:bgColor||'#f1f5f9',logging:false,removeContainer:true,scrollX:0,scrollY:0,width:area.offsetWidth,height:area.scrollHeight,onclone:_makeOnClone(snap)});
+    const captureP=html2canvas(area,{scale:2,useCORS:true,allowTaint:true,backgroundColor:bgColor||'#f1f5f9',logging:false,removeContainer:true,scrollX:0,scrollY:0,windowWidth:document.documentElement.scrollWidth,windowHeight:area.scrollHeight,width:area.offsetWidth,height:area.scrollHeight,onclone:_makeOnClone(snap)});
     const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('Capture timeout')),15000));
     return Promise.race([captureP,timeout]);
   }

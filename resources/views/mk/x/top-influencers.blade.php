@@ -667,14 +667,6 @@ const XIExport = (() => {
         btn.disabled = loading;
         btn.classList.toggle('exporting', loading);
     }
-    function _freeze() {
-        if(document.getElementById('__s_freeze')) return;
-        const s = document.createElement('style'); s.id = '__s_freeze';
-        s.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
-        document.head.appendChild(s);
-    }
-    function _unfreeze() { document.getElementById('__s_freeze')?.remove(); }
-     
 
     function _getDonutSnapshot() {
         try {
@@ -741,10 +733,7 @@ const XIExport = (() => {
 
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-        _freeze(); await new Promise(r=>setTimeout(r,400));
-        let capturePromise;
-        try { capturePromise = await html2canvas(area, {
-
+        const capturePromise = html2canvas(area, {
             scale:           2,
             useCORS:         true,
             allowTaint:      true,
@@ -753,11 +742,12 @@ const XIExport = (() => {
             removeContainer: true,
             scrollX:         0,
             scrollY:         0,
+            windowWidth:     document.documentElement.scrollWidth,
+            windowHeight:    area.scrollHeight,
             width:           area.offsetWidth,
             height:          area.scrollHeight,
             onclone:         _makeOnClone(donutSnapshot),
-        
-        }); } finally { _unfreeze(); }
+        });
 
         const timeout = new Promise((_,reject) =>
             setTimeout(() => reject(new Error('Capture timeout — cek console')), 15000)
