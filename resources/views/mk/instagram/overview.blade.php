@@ -961,6 +961,53 @@ const IGExport = (() => {
             } catch(e){ console.warn('[IGExport] snapshot failed:',key,e); }
         });
     }
+async function _swapEChartsIn(el) {
+    const swaps = [];
+    const entries = [
+        ['__ec_donutHashtagChart',  'donutHashtagChart'],
+        ['__ec_donutChart-like',    'donutChart-like'],
+        ['__ec_donutChart-comment', 'donutChart-comment'],
+    ];
+    for (const [key, containerId] of entries) {
+        const container = document.getElementById(containerId);
+        if (!container || !el.contains(container)) continue;
+        if (container.style.display === 'none') continue;
+        const inst = window[key];
+        if (!inst || inst.isDisposed?.()) continue;
+        try {
+            const dataUrl = inst.getDataURL({
+                type: 'png',
+                pixelRatio: window.devicePixelRatio || 2,
+                backgroundColor: '#ffffff',
+            });
+            if (!dataUrl) continue;
+            const rect = container.getBoundingClientRect();
+            const h    = Math.round(rect.height) || container.offsetHeight || 320;
+            const placeholder = document.createElement('div');
+            placeholder.dataset.swapFor = containerId;
+            placeholder.style.display   = 'none';
+            const img = document.createElement('img');
+            img.src           = dataUrl;
+            img.style.cssText = `width:100%;height:${h}px;object-fit:contain;display:block;background:#fff;`;
+            container.parentNode.insertBefore(placeholder, container);
+            container.parentNode.insertBefore(img, placeholder);
+            container.style.display = 'none';
+            swaps.push({ container, placeholder, img });
+        } catch(e) {
+            console.warn('[IGExport] swapIn failed:', key, e);
+        }
+    }
+    return swaps;
+}
+
+function _swapEChartsOut(swaps) {
+    swaps.forEach(({ container, placeholder, img }) => {
+        try { img.remove(); }         catch(e) {}
+        try { placeholder.remove(); } catch(e) {}
+        container.style.display = 'block';
+    });
+}
+
 
     function _onClone(clonedDoc) {
         clonedDoc.querySelectorAll(
@@ -999,35 +1046,36 @@ const IGExport = (() => {
             el.style.opacity='1'; el.style.transform='none'; el.style.visibility='visible';
         });
 
-        Object.entries(_ecSnapshots).forEach(([containerId,dataUrl]) => {
-            const container=clonedDoc.getElementById(containerId); if(!container) return;
-            container.innerHTML='';
-            const img=clonedDoc.createElement('img');
-            img.src=dataUrl; img.style.cssText='width:100%;height:100%;display:block;object-fit:contain;';
-            container.appendChild(img);
-            container.style.cssText += 'display:block!important;opacity:1!important;visibility:visible!important;';
+        
+      
+    }
+
+   async function _doCapture(el, isCard, skipSnapshot=false) {
+    const swaps = await _swapEChartsIn(el);
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    await new Promise(r => setTimeout(r, 200));
+    let canvas;
+    try {
+        canvas = await html2canvas(el, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
+            logging: false,
+            removeContainer: true,
+            imageTimeout: 15000,
+            scrollX: 0,
+            scrollY: -window.scrollY,
+            width: el.offsetWidth,
+            height: el.scrollHeight,
+            onclone: d => _onClone(d),
+            ignoreElements: e => e.hasAttribute('data-html2canvas-ignore'),
         });
+    } finally {
+        _swapEChartsOut(swaps);
     }
-
-    async function _doCapture(el, isCard, skipSnapshot=false) {
-        if(!skipSnapshot) _preSnapshot();
-        _freeze();
-        await new Promise(r => requestAnimationFrame(()=>requestAnimationFrame(r)));
-        await new Promise(r => setTimeout(r, 400));
-        let canvas;
-        try {
-            canvas = await html2canvas(el, {
-                scale:2, useCORS:true, allowTaint:true,
-                backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
-                logging:false, removeContainer:true, imageTimeout:0,
-                onclone: d => _onClone(d),
-                ignoreElements: e => e.hasAttribute('data-html2canvas-ignore'),
-                x:0, y:0, width:el.offsetWidth, height:el.scrollHeight,
-            });
-        } finally { _unfreeze(); }
-        return canvas;
-    }
-
+    return canvas;
+}
     function _drawHeader(pdf, pW, pH, label, page, total) {
         /* Instagram gradient: pakai merah-ke-ungu */
         pdf.setFillColor(230,104,60); pdf.rect(0,0,pW,11,'F');
@@ -1087,7 +1135,7 @@ const IGExport = (() => {
                 });
                 await new Promise(r=>setTimeout(r,150));
 
-                _snapshotForTab(key);
+        
                 const canvas=await _doCapture(area, false, true);
                 canvases.push({label, canvas});
             }
