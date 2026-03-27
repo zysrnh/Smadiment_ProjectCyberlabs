@@ -788,115 +788,161 @@ const IMEExport = (() => {
     function _unfreeze() { document.getElementById('__ime_freeze')?.remove(); }
 
     /* ── Pre-snapshot ECharts donut (stored di window.__donutEChart) ── */
-    function _preSnapshot() {
-        _ecSnapshots = {};
-        const inst = window.__donutEChart;
-        if (!inst || inst.isDisposed?.()) return;
-        try {
-            _ecSnapshots['donutChart'] = inst.getDataURL({
-                type           : 'png',
-                pixelRatio     : window.devicePixelRatio || 2,
-                backgroundColor: '#ffffff',
-            });
-        } catch (e) { console.warn('[IMEExport] snapshot failed:', e); }
-    }
+   /* ── Pre-snapshot ECharts: ambil dataURL sebelum html2canvas ── */
+function _preSnapshot() {
+    _ecSnapshots = {};
+    const inst = window.__donutEChart;
+    if (!inst || inst.isDisposed?.()) return;
 
-    /* ── onclone: bersihkan DOM clone sebelum html2canvas render ── */
-    function _onClone(clonedDoc) {
-        /* 1. Sembunyikan elemen yang tidak perlu */
-        clonedDoc.querySelectorAll(
-            '.do-panel-overlay,.do-panel,.do-detail-panel,' +
-            '#donutCustomTT,#imePanelOverlay,#imeSntPanel,' +
-            '.spin-ring,.spinner-state,.export-toast,.chart-loading,' +
-            '[data-html2canvas-ignore]'
-        ).forEach(el => {
-            el.style.cssText += 'display:none!important;visibility:hidden!important;' +
-                                'opacity:0!important;height:0!important;overflow:hidden!important;';
-        });
-
-        /* 2. Sembunyikan tab panel yang tidak aktif */
-        clonedDoc.querySelectorAll('.tme-tab-panel:not(.active)').forEach(el => {
-            el.style.cssText += 'display:none!important;height:0!important;overflow:hidden!important;';
-        });
-
-        /* 3. Ganti avatar cross-origin dengan initial letter */
-        clonedDoc.querySelectorAll('.tme-post-av,.do-panel-avatar,.do-dp2-avatar-lg').forEach(wrapper => {
-            wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
-            if (!wrapper.querySelector('.__ini')) {
-                const txt     = (wrapper.textContent || '').trim();
-                const initial = txt ? txt[0].toUpperCase() : 'I';
-                const sp      = clonedDoc.createElement('span');
-                sp.className  = '__ini';
-                sp.textContent = initial;
-                sp.style.cssText = 'font-size:13px;font-weight:700;color:#fff;line-height:1;';
-                wrapper.appendChild(sp);
-            }
-            if (!wrapper.style.background)
-                wrapper.style.background = 'linear-gradient(135deg,#e6683c,#cc2366)';
-        });
-
-        /* 4. Sembunyikan gambar post di detail panel (cross-origin) */
-        clonedDoc.querySelectorAll('.do-dp2-img-wrap img').forEach(img => {
-            img.style.display = 'none';
-        });
-
-        /* 5. Stop animasi & pastikan elemen terlihat */
-        clonedDoc.querySelectorAll('*').forEach(el => {
-            el.style.animationPlayState = 'paused';
-            el.style.animation          = 'none';
-            el.style.transition         = 'none';
-        });
-        clonedDoc.querySelectorAll(
-            '.card,.card-body,.card-header,.row,[class*="col-"],' +
-            '.tme-tab-panel.active,.tme-post-list,.tme-post,' +
-            '#pageExportArea'
-        ).forEach(el => {
-            el.style.opacity    = '1';
-            el.style.transform  = 'none';
-            el.style.visibility = 'visible';
-        });
-
-        /* 6. ★ Ganti ECharts <canvas> dengan <img> dari snapshot ★ */
-        if (_ecSnapshots['donutChart']) {
-            const container = clonedDoc.getElementById('donutChart');
-            if (container) {
-                container.innerHTML = '';
-                const img       = clonedDoc.createElement('img');
-                img.src         = _ecSnapshots['donutChart'];
-                img.style.cssText = 'width:100%;height:100%;display:block;object-fit:contain;';
-                container.appendChild(img);
-                container.style.cssText += 'display:block!important;opacity:1!important;visibility:visible!important;';
-            }
+    // Coba via ECharts API dulu
+    try {
+        const url = inst.getDataURL({ type:'png', pixelRatio:2, backgroundColor:'#ffffff' });
+        if (url && url !== 'data:,' && url.length > 100) {
+            _ecSnapshots['donutChart'] = url;
+            return;
         }
-    }
+    } catch(e) { console.warn('[IMEExport] getDataURL gagal:', e); }
 
-    /* ── Core capture (freeze → snapshot → html2canvas → unfreeze) ── */
-    async function _doCapture(el, isCard) {
-        _preSnapshot();
-        _freeze();
-        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        await new Promise(r => setTimeout(r, 400));
-        let canvas;
-        try {
-            canvas = await html2canvas(el, {
-                scale          : 2,
-                useCORS        : true,
-                allowTaint     : true,
-                backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
-                logging        : false,
-                removeContainer: true,
-                imageTimeout   : 0,
-                onclone        : d => _onClone(d),
-                ignoreElements : e => e.hasAttribute('data-html2canvas-ignore'),
-                x              : 0,
-                y              : 0,
-                width          : el.offsetWidth,
-                height         : el.scrollHeight,
-            });
-        } finally { _unfreeze(); }
-        return canvas;
-    }
+    // Fallback: copy langsung dari DOM canvas (Safari-safe)
+    const container = document.getElementById('donutChart');
+    if (!container) return;
+    const echartsCanvas = container.querySelector('canvas');
+    if (!echartsCanvas) return;
+    try {
+        const off = document.createElement('canvas');
+        off.width  = echartsCanvas.width;
+        off.height = echartsCanvas.height;
+        const ctx  = off.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, off.width, off.height);
+        ctx.drawImage(echartsCanvas, 0, 0);
+        const url = off.toDataURL('image/png');
+        if (url && url !== 'data:,' && url.length > 100)
+            _ecSnapshots['donutChart'] = url;
+    } catch(e2) { console.warn('[IMEExport] fallback canvas gagal:', e2); }
+}
 
+/* ── Swap ECharts canvas → <img> di DOM asli (Safari-safe) ── */
+function _swapChartsIn(el) {
+    const swaps = [];
+    const container = document.getElementById('donutChart');
+    if (!container || !el.contains(container)) return swaps;
+    if (container.style.display === 'none') return swaps;
+    if (!_ecSnapshots['donutChart']) return swaps;
+
+    const h = container.offsetHeight || 480;
+    const w = container.offsetWidth  || 600;
+
+    const placeholder = document.createElement('div');
+    placeholder.dataset.swapFor = 'donutChart';
+
+    const img = document.createElement('img');
+    img.src = _ecSnapshots['donutChart'];
+    img.style.cssText = `width:${w}px;height:${h}px;object-fit:contain;display:block;background:#fff;`;
+
+    container.parentNode.insertBefore(placeholder, container);
+    container.parentNode.insertBefore(img, placeholder);
+    container.style.display = 'none';
+
+    swaps.push({ container, placeholder, img });
+    return swaps;
+}
+
+function _swapChartsOut(swaps) {
+    swaps.forEach(({ container, placeholder, img }) => {
+        try { img.remove(); }         catch(e) {}
+        try { placeholder.remove(); } catch(e) {}
+        container.style.display = 'block';
+    });
+}
+
+/* ── onclone: bersihkan DOM clone ── */
+function _onClone(clonedDoc) {
+    clonedDoc.querySelectorAll(
+        '.do-panel-overlay,.do-panel,.do-detail-panel,' +
+        '#donutCustomTT,#imePanelOverlay,#imeSntPanel,' +
+        '.spin-ring,.spinner-state,.export-toast,.chart-loading,' +
+        '[data-html2canvas-ignore]'
+    ).forEach(el => {
+        el.style.cssText += 'display:none!important;visibility:hidden!important;' +
+                            'opacity:0!important;height:0!important;overflow:hidden!important;';
+    });
+
+    clonedDoc.querySelectorAll('.tme-tab-panel:not(.active)').forEach(el => {
+        el.style.cssText += 'display:none!important;height:0!important;overflow:hidden!important;';
+    });
+
+    clonedDoc.querySelectorAll('.tme-post-av,.do-panel-avatar,.do-dp2-avatar-lg').forEach(wrapper => {
+        wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
+        if (!wrapper.querySelector('.__ini')) {
+            const sp = clonedDoc.createElement('span');
+            sp.className  = '__ini';
+            sp.textContent = 'I';
+            sp.style.cssText = 'font-size:13px;font-weight:700;color:#fff;line-height:1;';
+            wrapper.appendChild(sp);
+        }
+        if (!wrapper.style.background)
+            wrapper.style.background = 'linear-gradient(135deg,#e6683c,#cc2366)';
+    });
+
+    clonedDoc.querySelectorAll('.do-dp2-img-wrap img').forEach(img => {
+        img.style.display = 'none';
+    });
+
+    clonedDoc.querySelectorAll('*').forEach(el => {
+        el.style.animationPlayState = 'paused';
+        el.style.animation          = 'none';
+        el.style.transition         = 'none';
+    });
+
+    clonedDoc.querySelectorAll(
+        '.card,.card-body,.card-header,.row,[class*="col-"],' +
+        '.tme-tab-panel.active,.tme-post-list,.tme-post,' +
+        '#pageExportArea'
+    ).forEach(el => {
+        el.style.opacity    = '1';
+        el.style.transform  = 'none';
+        el.style.visibility = 'visible';
+    });
+}
+
+/* ── Core capture: swap dulu di DOM asli, baru html2canvas ── */
+async function _doCapture(el, isCard) {
+    _preSnapshot();
+
+    // Freeze visual
+    el.querySelectorAll('.card,.kpi-card-hover,[class*="col-"],.tme-post')
+      .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; });
+
+    // Swap ECharts canvas → img di DOM asli
+    const swaps = _swapChartsIn(el);
+
+    // Safari butuh extra frame
+    await new Promise(r => setTimeout(r, 300));
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    let canvas;
+    try {
+        canvas = await html2canvas(el, {
+            scale          : 2,
+            useCORS        : true,
+            allowTaint     : true,
+            backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
+            logging        : false,
+            removeContainer: true,
+            imageTimeout   : 0,
+            onclone        : d => _onClone(d),
+            ignoreElements : e => e.hasAttribute('data-html2canvas-ignore'),
+            x              : 0,
+            y              : 0,
+            width          : el.offsetWidth,
+            height         : el.scrollHeight,
+        });
+    } finally {
+        _swapChartsOut(swaps);
+    }
+    return canvas;
+}
     /* ── PDF header ── */
     function _drawHeader(pdf, pW, pH, label, page, total) {
         pdf.setFillColor(3, 128, 71);

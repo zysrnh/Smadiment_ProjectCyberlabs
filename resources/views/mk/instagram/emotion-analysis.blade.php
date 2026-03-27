@@ -621,21 +621,115 @@ const IGExport = (() => {
     };
 
     /* ── Pre-capture semua ECharts via getDataURL SEBELUM html2canvas ── */
-    function _preSnapshot() {
-        _ecSnapshots = {};
-        Object.entries(EC_ID_MAP).forEach(([key, containerId]) => {
-            const inst = window[key];
-            if (!inst || inst.isDisposed?.()) return;
-            try {
-                _ecSnapshots[containerId] = inst.getDataURL({
-                    type           : 'png',
-                    pixelRatio     : window.devicePixelRatio || 2,
-                    backgroundColor: '#ffffff',
-                });
-            } catch (e) { console.warn('[IGExport] ECharts snapshot failed:', key, e); }
-        });
-    }
+    /* ── Pre-snapshot dengan fallback DOM canvas (Safari-safe) ── */
+function _preSnapshot() {
+    _ecSnapshots = {};
+    Object.entries(EC_ID_MAP).forEach(([key, containerId]) => {
+        const inst = window[key];
+        const container = document.getElementById(containerId);
+        if (!container) return;
 
+        // Coba via ECharts API dulu
+        if (inst && !inst.isDisposed?.()) {
+            try {
+                const url = inst.getDataURL({ type:'png', pixelRatio:2, backgroundColor:'#ffffff' });
+                if (url && url !== 'data:,' && url.length > 100) {
+                    _ecSnapshots[containerId] = url;
+                    return;
+                }
+            } catch(e) { console.warn('[IGExport] getDataURL gagal:', key, e); }
+        }
+
+        // Fallback: copy langsung dari DOM canvas (Safari-safe)
+        const echartsCanvas = container.querySelector('canvas');
+        if (!echartsCanvas) return;
+        try {
+            const off = document.createElement('canvas');
+            off.width  = echartsCanvas.width;
+            off.height = echartsCanvas.height;
+            const ctx  = off.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, off.width, off.height);
+            ctx.drawImage(echartsCanvas, 0, 0);
+            const url = off.toDataURL('image/png');
+            if (url && url !== 'data:,' && url.length > 100)
+                _ecSnapshots[containerId] = url;
+        } catch(e2) { console.warn('[IGExport] fallback canvas gagal:', containerId, e2); }
+    });
+}
+
+/* ── Swap ECharts containers → <img> di DOM asli (Safari-safe) ── */
+function _swapChartsIn(el) {
+    const swaps = [];
+    Object.entries(_ecSnapshots).forEach(([containerId, dataUrl]) => {
+        const container = document.getElementById(containerId);
+        if (!container || !el.contains(container)) return;
+        if (container.style.display === 'none') return;
+
+        const h = container.offsetHeight || 300;
+        const w = container.offsetWidth  || 600;
+
+        const placeholder = document.createElement('div');
+        placeholder.dataset.swapFor = containerId;
+
+        const img = document.createElement('img');
+        img.src = dataUrl;
+        img.style.cssText = `width:${w}px;height:${h}px;object-fit:contain;display:block;background:#fff;`;
+
+        container.parentNode.insertBefore(placeholder, container);
+        container.parentNode.insertBefore(img, placeholder);
+        container.style.display = 'none';
+
+        swaps.push({ container, placeholder, img });
+    });
+    return swaps;
+}
+
+function _swapChartsOut(swaps) {
+    swaps.forEach(({ container, placeholder, img }) => {
+        try { img.remove(); }         catch(e) {}
+        try { placeholder.remove(); } catch(e) {}
+        container.style.display = 'block';
+    });
+}
+
+/* ── Core capture: swap dulu di DOM asli, baru html2canvas ── */
+async function _doCapture(el, isCard) {
+    _preSnapshot();
+
+    // Freeze visual elemen
+    el.querySelectorAll('.card,.kpi-card-hover,[class*="col-"],.fea-post')
+      .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; });
+
+    // Swap ECharts canvas → img di DOM asli
+    const swaps = _swapChartsIn(el);
+
+    // Safari butuh extra frame
+    await new Promise(r => setTimeout(r, 300));
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    let canvas;
+    try {
+        canvas = await html2canvas(el, {
+            scale          : 2,
+            useCORS        : true,
+            allowTaint     : true,
+            backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
+            logging        : false,
+            removeContainer: true,
+            imageTimeout   : 0,
+            onclone        : d => _onClone(d),
+            ignoreElements : e => e.hasAttribute('data-html2canvas-ignore'),
+            x              : 0,
+            y              : 0,
+            width          : el.offsetWidth,
+            height         : el.scrollHeight,
+        });
+    } finally {
+        _swapChartsOut(swaps);
+    }
+    return canvas;
+}
     /* ════════════════════════════
        onclone callback
     ════════════════════════════ */

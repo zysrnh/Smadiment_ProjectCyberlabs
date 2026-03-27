@@ -81,18 +81,10 @@
                 $isTiktokActive    = request()->routeIs($tiktokRoutes);
                 $isTopicActive     = request()->routeIs($topicRoutes);
 
-                // Build query string preserving project_id + date range
+                // Build query string preserving project_id ONLY
                 $qsParts = [];
                 if (!empty($currentProjectId)) {
                     $qsParts[] = 'project_id=' . $currentProjectId;
-                }
-                $sidebarStartDate = request()->get('start_date');
-                $sidebarEndDate   = request()->get('end_date');
-                if ($sidebarStartDate) {
-                    $qsParts[] = 'start_date=' . $sidebarStartDate;
-                }
-                if ($sidebarEndDate) {
-                    $qsParts[] = 'end_date=' . $sidebarEndDate;
                 }
                 $qs = !empty($qsParts) ? '?' . implode('&', $qsParts) : '';
             @endphp
@@ -413,9 +405,9 @@ function changeProject(projectId, projectName) {
     localStorage.setItem('selected_project_id', projectId);
     const url = new URL(window.location.href);
     url.searchParams.set('project_id', projectId);
-    // Preserve existing dates — if not in URL, check sessionStorage, else use defaults
+    // Preserve existing dates if in URL, otherwise use GLOBAL storage or defaults
     if (!url.searchParams.get('start_date')) {
-        const saved = sessionStorage.getItem('smadiment_start_date');
+        const saved = localStorage.getItem('smadiment_g_start');
         if (saved) {
             url.searchParams.set('start_date', saved);
         } else {
@@ -426,7 +418,7 @@ function changeProject(projectId, projectName) {
         }
     }
     if (!url.searchParams.get('end_date')) {
-        const saved = sessionStorage.getItem('smadiment_end_date');
+        const saved = localStorage.getItem('smadiment_g_end');
         if (saved) {
             url.searchParams.set('end_date', saved);
         } else {

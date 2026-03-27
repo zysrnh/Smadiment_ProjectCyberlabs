@@ -180,9 +180,9 @@
             const d = new Date(str); return isNaN(d) ? fallback : d;
         }
 
-        // Priority: URL params > sessionStorage > defaults
-        const initStart = params.get('start_date') || sessionStorage.getItem('smadiment_start_date');
-        const initEnd   = params.get('end_date')   || sessionStorage.getItem('smadiment_end_date');
+        // Priority: URL params > localStorage (Global) > Server default
+        const initStart = params.get('start_date') || localStorage.getItem('smadiment_g_start');
+        const initEnd   = params.get('end_date')   || localStorage.getItem('smadiment_g_end');
         if (initStart && initEnd) {
             startDate = parseOrDefault(initStart, new Date(today.getFullYear(), today.getMonth(), 1));
             endDate   = parseOrDefault(initEnd, today);
@@ -190,9 +190,7 @@
             startDate = new Date(today.getFullYear(), today.getMonth(), 1);
             endDate   = new Date(today);
         }
-        // Always save current dates to sessionStorage
-        sessionStorage.setItem('smadiment_start_date', fmt(startDate));
-        sessionStorage.setItem('smadiment_end_date', fmt(endDate));
+        // Removed: localStorage.setItem overwrite here. Only save on explicit APPLY.
 
         viewMonth1 = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
         viewMonth2 = new Date(viewMonth1.getFullYear(), viewMonth1.getMonth() + 1, 1);
@@ -289,9 +287,9 @@
         }
 
         function applyAndReload() {
-            // Save to sessionStorage
-            sessionStorage.setItem('smadiment_start_date', fmt(startDate));
-            sessionStorage.setItem('smadiment_end_date', fmt(endDate));
+            // Save to Global storage
+            localStorage.setItem('smadiment_g_start', fmt(startDate));
+            localStorage.setItem('smadiment_g_end', fmt(endDate));
 
             const url = new URL(window.location.href);
             url.searchParams.set('start_date', fmt(startDate));

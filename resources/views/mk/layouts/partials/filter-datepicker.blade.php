@@ -239,41 +239,47 @@ const DPicker = (()=>{
         return new Date(s);
     }
     function init(){
+        const params = new URLSearchParams(window.location.search);
+        const urlS = params.get('start_date');
+        const urlE = params.get('end_date');
+
+        const urlP = params.get('project_id');
+        // IF REQUIRED PARAMS MISSING: This is likely a first entry from sidebar.
+        // Recover from storage then redirect to keep state synchronized.
+        if(!urlS || !urlE || !urlP) {
+            const gs = localStorage.getItem('smadiment_g_start');
+            const ge = localStorage.getItem('smadiment_g_end');
+            const gp = localStorage.getItem('selected_project_id');
+            let needsRedirect = false;
+            
+            if(!urlS && gs) { params.set('start_date', gs); needsRedirect = true; }
+            if(!urlE && ge) { params.set('end_date', ge);   needsRedirect = true; }
+            if(!urlP && gp) { params.set('project_id', gp); needsRedirect = true; }
+
+            if(needsRedirect) {
+                window.location.search = params.toString();
+                return; // Wait for redirect
+            }
+        }
+
         const si=_dpEl('hiddenStartDate'),ei=_dpEl('hiddenEndDate');
-        // Priority: hidden input (from URL) > localStorage > default
-        const startVal = si?.value || localStorage.getItem('smadiment_start_date');
-        const endVal   = ei?.value || localStorage.getItem('smadiment_end_date');
-        ds=startVal?parseLocal(startVal):(()=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-6);return d;})();
-        de=endVal?parseLocal(endVal):(()=>{const d=new Date();d.setHours(0,0,0,0);return d;})();
-        // Save to localStorage for cross-tab persistence
-        localStorage.setItem('smadiment_start_date', fmt(ds));
-        localStorage.setItem('smadiment_end_date', fmt(de));
+        // Final fallback to 7 days if somehow storage is empty
+        ds=urlS?parseLocal(urlS):(()=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-6);return d;})();
+        de=urlE?parseLocal(urlE):(()=>{const d=new Date();d.setHours(0,0,0,0);return d;})();
+
         // Sync hidden inputs and display with resolved dates
         if(si) si.value = fmt(ds);
         if(ei) ei.value = fmt(de);
         const dd = _dpEl('doDateDisplay');
         if(dd) dd.textContent = fmt(ds) + ' – ' + fmt(de);
+
         m1=new Date(ds);m2=new Date(ds);m2.setMonth(m2.getMonth()+1);
         render();
         _dpEl('doDateTrigger')?.addEventListener('click',open);
         document.querySelectorAll('.do-dp-preset').forEach(b=>b.addEventListener('click',onPreset));
         document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
-        // Listen for cross-tab date changes
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'smadiment_start_date' || e.key === 'smadiment_end_date') {
-                const newStart = localStorage.getItem('smadiment_start_date');
-                const newEnd   = localStorage.getItem('smadiment_end_date');
-                if (newStart && newEnd) {
-                    ds = parseLocal(newStart); de = parseLocal(newEnd);
-                    const dd = _dpEl('doDateDisplay');
-                    if (dd) dd.textContent = fmt(ds) + ' \u2013 ' + fmt(de);
-                    const si = _dpEl('hiddenStartDate'), ei = _dpEl('hiddenEndDate');
-                    if (si) si.value = fmt(ds); if (ei) ei.value = fmt(de);
-                    m1 = new Date(ds); m2 = new Date(ds); m2.setMonth(m2.getMonth()+1);
-                    render();
-                }
-            }
-        });
+        // Inter-page syncing removed as per user request ("tiap halaman masing masing")
+        // Only use storage on initial entry (handled in init above)
         _dpEl('doProject')?.addEventListener('change',function(){
             _dpEl('hiddenProjectId').value=this.value;
             // Ensure dates are set before submit
@@ -288,14 +294,6 @@ const DPicker = (()=>{
         _dpEl('hiddenStartDate').value=fmt(ds);
         _dpEl('hiddenEndDate').value=fmt(de);
         _dpEl('doDateDisplay').textContent=fmt(ds)+' – '+fmt(de);
-        // Save to localStorage (shared across all tabs)
-        localStorage.setItem('smadiment_start_date', fmt(ds));
-        localStorage.setItem('smadiment_end_date', fmt(de));
-        // Sync global datepicker display (header)
-        const gdpLabel = document.getElementById('gdpTriggerLabel');
-        if (gdpLabel) gdpLabel.textContent = fmt(ds) + ' – ' + fmt(de);
-        const gdpDisp = document.getElementById('gdpDisplay');
-        if (gdpDisp) gdpDisp.textContent = fmt(ds) + ' – ' + fmt(de);
         close();
         _dpEl('doFilterForm').submit();
     }
