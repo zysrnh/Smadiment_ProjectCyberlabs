@@ -21,7 +21,15 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\RememberSelectedProject::class,
         ]);
 
-        // ✅ Redirect guests
+        // ✅ Redirect authenticated users (away from guest-only routes like /login)
+        $middleware->redirectUsersTo(function ($request) {
+            if ($request->is('admin/*')) {
+                return route('admin.dashboard');
+            }
+            return route('mk.dashboard');
+        });
+
+        // ✅ Redirect guests (to login)
         $middleware->redirectGuestsTo(function ($request) {
             if (!$request->expectsJson()) {
                 session()->flash('warning', 'Sesi Anda telah habis. Silahkan login kembali.');

@@ -469,96 +469,482 @@ const OVDetail={
     close(){_$('ovDetailPanel')?.classList.remove('show')},
     killIframe(){const b=_$('ovDetailBody');if(b)b.querySelectorAll('iframe').forEach(f=>{f.src='';f.remove()})}
 };
-
-/* ════════════════════════════════════════════════════════
-   OVExport — TikTok (sync X/YT/FB/IG: _snapshotForTab + skipSnapshot)
-   Note: TikTok ECharts key prefix = __echart_ (bukan __ec_)
-════════════════════════════════════════════════════════ */
-const OVExport=(() => {
+const OVExport = (() => {
     'use strict';
-    let _toastTimer=null, _ecSnapshots={};
+    let _toastTimer = null;
 
-    function _toast(msg,type='default',duration=3200){const t=_$('exportToast'),m=_$('exportToastMsg'),ico=_$('exportToastIcon');if(!t||!m)return;m.textContent=msg;t.className='export-toast show '+(type!=='default'?type:'');ico.className='ph '+({success:'ph-check-circle',error:'ph-x-circle',default:'ph-spinner'}[type]||'ph-spinner');clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>t.classList.remove('show'),duration)}
-    function _btnState(btn,loading){if(!btn)return;btn.disabled=loading;btn.classList.toggle('exporting',loading)}
-    function _freeze(){if(document.getElementById('__tt_freeze'))return;const s=document.createElement('style');s.id='__tt_freeze';s.textContent='*{animation:none!important;transition:none!important;animation-play-state:paused!important;}';document.head.appendChild(s)}
-    function _unfreeze(){document.getElementById('__tt_freeze')?.remove()}
-
-    /* TikTok ECharts key prefix sekarang: __ec_ (sama dgn IG/FB/YT) */
-    const EC_ID_MAP={
-        '__ec_donutHashtagChart' :'donutHashtagChart',
-        '__ec_donutChart-view'   :'donutChart-view',
-        '__ec_donutChart-like'   :'donutChart-like',
-        '__ec_donutChart-comment':'donutChart-comment',
-        '__ec_donutChart-share'  :'donutChart-share',
-    };
-    const TAB_EC_MAP={
-        hashtag:[['__ec_donutHashtagChart','donutHashtagChart']],
-        view   :[['__ec_donutChart-view',  'donutChart-view']],
-        like   :[['__ec_donutChart-like',  'donutChart-like']],
-        comment:[['__ec_donutChart-comment','donutChart-comment']],
-        share  :[['__ec_donutChart-share', 'donutChart-share']],
-    };
-
-    function _snapshotForTab(tabKey){_ecSnapshots={};(TAB_EC_MAP[tabKey]||[]).forEach(([key,containerId])=>{const inst=window[key];if(!inst||inst.isDisposed?.())return;try{_ecSnapshots[containerId]=inst.getDataURL({type:'png',pixelRatio:window.devicePixelRatio||2,backgroundColor:'#ffffff'})}catch(e){console.warn('[OVExport] snap tab fail:',key,e)}})}
-    function _preSnapshot(){_ecSnapshots={};Object.entries(EC_ID_MAP).forEach(([key,containerId])=>{const inst=window[key];if(!inst||inst.isDisposed?.())return;try{_ecSnapshots[containerId]=inst.getDataURL({type:'png',pixelRatio:window.devicePixelRatio||2,backgroundColor:'#ffffff'})}catch(e){}})}
-
-    function _onClone(clonedDoc){
-        clonedDoc.querySelectorAll('.do-panel-overlay,.do-panel,.do-detail-panel,#ovCustomTT,.spin-ring,.spinner-state,.export-toast,.chart-loading,[data-html2canvas-ignore]').forEach(el=>{el.style.cssText+='display:none!important;visibility:hidden!important;opacity:0!important;height:0!important;overflow:hidden!important;'});
-        clonedDoc.querySelectorAll('.tme-tab-panel:not(.active)').forEach(el=>{el.style.cssText+='display:none!important;height:0!important;overflow:hidden!important;'});
-        clonedDoc.querySelectorAll('.tme-post-av,.do-panel-avatar,.do-dp2-avatar-lg').forEach(wrapper=>{wrapper.querySelectorAll('img').forEach(img=>{img.style.display='none'});if(!wrapper.querySelector('.__ini')){const txt=(wrapper.textContent||'').trim(),initial=txt?txt[0].toUpperCase():'T';const sp=clonedDoc.createElement('span');sp.className='__ini';sp.textContent=initial;sp.style.cssText='font-size:13px;font-weight:700;color:#fff;line-height:1;';wrapper.appendChild(sp)}if(!wrapper.style.background)wrapper.style.background='linear-gradient(135deg,#010101,#69C9D0)'});
-        clonedDoc.querySelectorAll('.tme-post-thumb').forEach(wrapper=>{wrapper.querySelectorAll('img').forEach(img=>{img.style.display='none'});wrapper.querySelectorAll('.tme-post-thumb-play').forEach(p=>{p.style.display='none'});wrapper.style.background='linear-gradient(135deg,#273B4A,#374151)'});
-        clonedDoc.querySelectorAll('.do-dp2-media iframe').forEach(f=>{f.style.cssText+='display:none!important;'});
-        clonedDoc.querySelectorAll('*').forEach(el=>{el.style.animationPlayState='paused';el.style.animation='none';el.style.transition='none'});
-        clonedDoc.querySelectorAll('.card,.card-body,.card-header,.row,[class*="col-"],.tme-tab-panel.active,.ht-list,.ht-item,.tme-post-list,.tme-post,.donut-stack-wrap,.donut-breakdown-list,#pageExportArea,#ovTabsBar').forEach(el=>{el.style.opacity='1';el.style.transform='none';el.style.visibility='visible'});
-        Object.entries(_ecSnapshots).forEach(([containerId,dataUrl])=>{const container=clonedDoc.getElementById(containerId);if(!container)return;container.innerHTML='';const img=clonedDoc.createElement('img');img.src=dataUrl;img.style.cssText='width:100%;height:100%;display:block;object-fit:contain;';container.appendChild(img);container.style.cssText+='display:block!important;opacity:1!important;visibility:visible!important;'});
+    function _toast(msg, type = 'default', duration = 3200) {
+        const t   = _$('exportToast'),
+              m   = _$('exportToastMsg'),
+              ico = _$('exportToastIcon');
+        if (!t || !m) return;
+        m.textContent = msg;
+        t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
+        ico.className = 'ph ' + ({ success:'ph-check-circle', error:'ph-x-circle', default:'ph-spinner' }[type] || 'ph-spinner');
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
     }
 
-    async function _doCapture(el,isCard,skipSnapshot=false){if(!skipSnapshot)_preSnapshot();_freeze();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));await new Promise(r=>setTimeout(r,400));let canvas;try{canvas=await html2canvas(el,{scale:2,useCORS:true,allowTaint:true,backgroundColor:isCard?'#ffffff':'#f1f5f9',logging:false,removeContainer:true,imageTimeout:0,onclone:d=>_onClone(d),ignoreElements:e=>e.hasAttribute('data-html2canvas-ignore'),x:0,y:0,width:el.offsetWidth,height:el.scrollHeight})}finally{_unfreeze()}return canvas}
+    function _btnState(btn, on) {
+        if (!btn) return;
+        btn.disabled = on;
+        btn.classList.toggle('exporting', on);
+    }
 
-    function _drawHeader(pdf,pW,pH,label,page,total){pdf.setFillColor(3,128,71);pdf.rect(0,0,pW,11,'F');pdf.setTextColor(255,255,255);pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.text('SMADIMENT — '+(label||'TikTok Overview'),10,7.5);const now=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});pdf.setFontSize(7);pdf.setFont('helvetica','normal');pdf.text('Generated: '+now,pW-10,7.5,{align:'right'});pdf.setFontSize(7);pdf.setTextColor(148,163,184);pdf.text(`Halaman ${page} / ${total}`,pW/2,pH-3,{align:'center'})}
-    function _addCanvas(pdf,canvas,margin,pW,pH){const uw=pW-margin*2,uh=pH-14-10,ratio=Math.min(uw/canvas.width,uh/canvas.height),dw=canvas.width*ratio,dh=canvas.height*ratio;pdf.addImage(canvas.toDataURL('image/png'),'PNG',margin+(uw-dw)/2,14+(uh-dh)/2,dw,dh)}
+    /* ── Expand chart containers agar tidak terpotong ── */
+    function _expandChartContainers(scopeEl) {
+        const restores = [];
+        ['.chart-container', '.donut-chart-area', '.donut-stack-wrap',
+         '[id^="donutChart-"]', '#donutHashtagChart'].forEach(sel => {
+            scopeEl.querySelectorAll(sel).forEach(el => {
+                const sh   = el.scrollHeight;
+                const ch   = parseInt(window.getComputedStyle(el).height || '0');
+                const orig = el.style.height;
+                if (sh > ch) { el.style.height = sh + 'px'; restores.push({ el, orig }); }
+            });
+        });
+        scopeEl.querySelectorAll('.card-body').forEach(el => {
+            const orig = el.style.overflow;
+            el.style.overflow = 'visible';
+            restores.push({ el, prop: 'overflow', orig });
+        });
+        return restores;
+    }
 
-    async function run(type,btn){
-        if(!window.html2canvas){_toast('html2canvas tidak tersedia','error');return}
-        if(type==='pdf'&&!window.jspdf?.jsPDF){_toast('jsPDF tidak tersedia','error');return}
-        const btnPdf=_$('pageExportPdfBtn'),btnImg=_$('pageExportImgBtn');
-        _btnState(btnPdf,true);_btnState(btnImg,true);
-        _toast(type==='pdf'?'Menyiapkan PDF semua tab…':'Mengambil gambar…','default',99999);
-        const originalTab=['hashtag','view','like','comment','share'].find(t=>_$('tab-'+t)?.classList.contains('active'))||'hashtag';
-        try{
-            const area=_$('pageExportArea'),stamp=new Date().toISOString().slice(0,10).replace(/-/g,'');
-            if(type==='image'){const canvas=await _doCapture(area,false);const link=document.createElement('a');link.download=`tiktok_overview_${OV_PID}_${stamp}.png`;link.href=canvas.toDataURL('image/png');link.click();_toast('Gambar berhasil diunduh!','success');return}
-            const {jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});const pW=pdf.internal.pageSize.getWidth(),pH=pdf.internal.pageSize.getHeight(),M=10,uw=pW-M*2,uh=pH-14-10;
-            const TAB_ORDER=[{key:'hashtag',label:'Top Hashtags'},{key:'view',label:'Most Viewed'},{key:'like',label:'Most Liked'},{key:'comment',label:'Most Comments'},{key:'share',label:'Most Shares'}];
-            const canvases=[];
-            for(let i=0;i<TAB_ORDER.length;i++){
-                const {key,label}=TAB_ORDER[i];
-                _toast(`Mengambil tab ${i+1}/5: ${label}…`,'default',99999);
-                OVTab.show(key);
-                await new Promise(r=>setTimeout(r,1000));
-                (TAB_EC_MAP[key]||[]).forEach(([wk])=>{try{if(window[wk]&&!window[wk].isDisposed())window[wk].resize()}catch(e){}});
-                await new Promise(r=>setTimeout(r,150));
-                _snapshotForTab(key);
-                const canvas=await _doCapture(area,false,true);
-                canvases.push({label,canvas});
+    function _restoreChartContainers(restores) {
+        restores.forEach(({ el, prop, orig }) => {
+            if (prop) el.style[prop] = orig;
+            else      el.style.height = orig;
+        });
+    }
+
+    /* ── Helper: tunggu ECharts benar-benar selesai render ── */
+    function _waitEChartsFinished(instance, ms = 2500) {
+        return new Promise(resolve => {
+            let done = false;
+            const finish = () => { if (!done) { done = true; resolve(); } };
+            const t = setTimeout(finish, ms);
+            try {
+                instance.on('finished', () => { clearTimeout(t); finish(); });
+            } catch(e) { clearTimeout(t); finish(); }
+        });
+    }
+
+    /* ── Swap charts ke <img> sebelum html2canvas ── */
+    async function _swapChartsIn(el) {
+        const swaps = [];
+
+        /* ── 1. ApexCharts ── */
+        for (const id of Object.keys(Charts)) {
+            const container = _$(id);
+            if (!container || !el.contains(container)) continue;
+            const computed = window.getComputedStyle(container);
+            if (computed.display === 'none' || computed.visibility === 'hidden') continue;
+            const chart = Charts[id];
+            if (!chart) continue;
+            try {
+                const { imgURI } = await chart.dataURI();
+                if (!imgURI) continue;
+                const h = Math.max(
+                    container.scrollHeight,
+                    container.offsetHeight,
+                    parseInt(computed.height) || 0,
+                    280
+                );
+                const img = document.createElement('img');
+                img.src = imgURI;
+                img.style.cssText = `width:100%;height:${h}px;object-fit:contain;display:block;background:#fff;flex-shrink:0;`;
+                const placeholder = document.createElement('div');
+                placeholder.dataset.swapApex = id;
+                placeholder.style.display = 'none';
+                container.parentNode.insertBefore(placeholder, container);
+                container.parentNode.insertBefore(img, placeholder);
+                container.style.display = 'none';
+                swaps.push({ container, placeholder, img });
+            } catch(e) { console.warn('[OVExport] ApexCharts swap failed:', id, e); }
+        }
+
+        /* ── 2. ECharts — pakai getDataURL() bukan SVG serializer ── */
+        const ecMap = {
+            'donutHashtagChart' : '__ec_donutHashtagChart',
+            'donutChart-view'   : '__ec_donutChart-view',
+            'donutChart-like'   : '__ec_donutChart-like',
+            'donutChart-comment': '__ec_donutChart-comment',
+            'donutChart-share'  : '__ec_donutChart-share',
+        };
+
+        for (const [id, wKey] of Object.entries(ecMap)) {
+            const container = _$(id);
+            if (!container || !el.contains(container)) continue;
+            const computed = window.getComputedStyle(container);
+            if (computed.display === 'none' || computed.visibility === 'hidden') continue;
+
+            const ecInst = window[wKey];
+            if (!ecInst || (typeof ecInst.isDisposed === 'function' && ecInst.isDisposed())) continue;
+
+            try {
+                /* Matikan animasi & tunggu frame terakhir selesai */
+                ecInst.setOption({ animation: false }, { silent: true, replaceMerge: [] });
+                await _waitEChartsFinished(ecInst, 1500);
+                await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+                const rect = container.getBoundingClientRect();
+                const h = Math.max(Math.round(rect.height), container.scrollHeight, container.offsetHeight, 300);
+
+                /* getDataURL() — synchronous, tidak perlu blob URL */
+                const dataUrl = ecInst.getDataURL({
+                    type             : 'png',
+                    pixelRatio       : 2,
+                    backgroundColor  : '#ffffff',
+                    excludeComponents: ['toolbox'],
+                });
+                if (!dataUrl || dataUrl === 'data:,') continue;
+
+                const img = document.createElement('img');
+                img.src = dataUrl;
+                img.style.cssText = `width:100%;height:${h}px;object-fit:contain;display:block;background:#fff;flex-shrink:0;`;
+
+                const placeholder = document.createElement('div');
+                placeholder.dataset.swapEc = id;
+                placeholder.style.display = 'none';
+
+                container.parentNode.insertBefore(placeholder, container);
+                container.parentNode.insertBefore(img, placeholder);
+                container.style.display = 'none';
+                swaps.push({ container, placeholder, img, ecInst });
+            } catch(e) { console.warn('[OVExport] ECharts swap failed:', id, e); }
+        }
+
+        return swaps;
+    }
+
+    function _swapChartsOut(swaps) {
+        swaps.forEach(({ container, placeholder, img, ecInst }) => {
+            try { img.remove(); }         catch(e) {}
+            try { placeholder.remove(); } catch(e) {}
+            container.style.display = 'block';
+            /* Kembalikan animasi ECharts */
+            if (ecInst) {
+                try { ecInst.setOption({ animation: true }, { silent: true }); } catch(e) {}
             }
-            let totalPages=0;canvases.forEach(({canvas})=>{const ratio=uw/canvas.width;totalPages+=Math.max(1,Math.ceil((canvas.height*ratio)/uh))});
-            let pageNum=1,firstPage=true;
-            canvases.forEach(({label,canvas})=>{const ratio=uw/canvas.width,sliceH=uh/ratio;let srcY=0;while(srcY<canvas.height){if(!firstPage)pdf.addPage();firstPage=false;_drawHeader(pdf,pW,pH,`TikTok Overview — ${label}`,pageNum,totalPages);const srcSlice=Math.min(sliceH,canvas.height-srcY),dstH=srcSlice*ratio;const slice=document.createElement('canvas');slice.width=canvas.width;slice.height=Math.ceil(srcSlice);slice.getContext('2d').drawImage(canvas,0,srcY,canvas.width,srcSlice,0,0,canvas.width,srcSlice);pdf.addImage(slice.toDataURL('image/png'),'PNG',M,14,uw,dstH);srcY+=srcSlice;pageNum++}});
-            pdf.save(`tiktok_overview_${OV_PID}_${stamp}.pdf`);_toast(`PDF ${totalPages} halaman berhasil diunduh!`,'success');
-        }catch(err){console.error('[OVExport.run]',err);_toast('Export gagal: '+err.message,'error')}
-        finally{OVTab.show(originalTab);_btnState(btnPdf,false);_btnState(btnImg,false)}
+        });
     }
 
-    const _cardLabels={'hashtag-list':'Top Hashtags','hashtag-donut':'Distribusi Top Hashtags','donut-view':'Distribusi Most Viewed','donut-like':'Distribusi Most Liked','donut-comment':'Distribusi Most Comments','donut-share':'Distribusi Most Shares','list-view':'Top Videos by Views','list-like':'Top Videos by Likes','list-comment':'Top Videos by Comments','list-share':'Top Videos by Shares','bar-view':'Chart Most Viewed','bar-like':'Chart Most Liked','bar-comment':'Chart Most Comments','bar-share':'Chart Most Shares','eng':'Engagement Comparison'};
-    function _cardFilename(k){const map={'hashtag-list':'top-hashtags','hashtag-donut':'hashtag-distribusi','donut-view':'distribusi-most-viewed','donut-like':'distribusi-most-liked','donut-comment':'distribusi-most-comments','donut-share':'distribusi-most-shares','list-view':'top-videos-by-view','list-like':'top-videos-by-like','list-comment':'top-videos-by-comment','list-share':'top-videos-by-share','bar-view':'chart-most-viewed','bar-like':'chart-most-liked','bar-comment':'chart-most-comments','bar-share':'chart-most-shares','eng':'engagement-comparison'};const stamp=new Date().toISOString().slice(0,10).replace(/-/g,'');return `tiktok_${map[k]||k}_${OV_PID}_${stamp}`}
+    function _onClone(clonedDoc) {
+        clonedDoc.querySelectorAll(
+            '.do-panel-overlay,.do-panel,.do-detail-panel,' +
+            '#ovCustomTT,#ovPanelOverlay,#ovSntPanel,' +
+            '.spin-ring,.spinner-state,.export-toast,.chart-loading,' +
+            '[data-html2canvas-ignore]'
+        ).forEach(el => { el.style.cssText += 'display:none!important;visibility:hidden!important;'; });
 
-    async function runCard(areaId,cardKey,type,btn){if(!window.html2canvas){_toast('html2canvas tidak tersedia','error');return}if(type==='pdf'&&!window.jspdf?.jsPDF){_toast('jsPDF tidak tersedia','error');return}_btnState(btn,true);_toast(type==='pdf'?'Menyiapkan PDF…':'Mengambil gambar…','default',99999);try{const area=document.getElementById(areaId);if(!area)throw new Error('Area #'+areaId+' tidak ditemukan');const canvas=await _doCapture(area,true);const fname=_cardFilename(cardKey),label=_cardLabels[cardKey]||cardKey;if(type==='image'){const link=document.createElement('a');link.download=fname+'.png';link.href=canvas.toDataURL('image/png');link.click();_toast('Gambar berhasil diunduh!','success')}else{const {jsPDF}=window.jspdf;const landscape=canvas.width>canvas.height*1.2;const pdf=new jsPDF({orientation:landscape?'landscape':'portrait',unit:'mm',format:'a4'});const pW=pdf.internal.pageSize.getWidth(),pH=pdf.internal.pageSize.getHeight(),M=10,uw=pW-M*2,uh=pH-14-10;const fitsOne=(canvas.height*(uw/canvas.width))<=uh;if(fitsOne){_drawHeader(pdf,pW,pH,label,1,1);_addCanvas(pdf,canvas,M,pW,pH)}else{const ratio=uw/canvas.width,sliceH=uh/ratio,total=Math.ceil((canvas.height*ratio)/uh);let srcY=0,pg=1;while(srcY<canvas.height){if(pg>1)pdf.addPage();_drawHeader(pdf,pW,pH,label,pg,total);const srcSlice=Math.min(sliceH,canvas.height-srcY),dstH=srcSlice*ratio;const slice=document.createElement('canvas');slice.width=canvas.width;slice.height=Math.ceil(srcSlice);slice.getContext('2d').drawImage(canvas,0,srcY,canvas.width,srcSlice,0,0,canvas.width,srcSlice);pdf.addImage(slice.toDataURL('image/png'),'PNG',M,14,uw,dstH);srcY+=srcSlice;pg++}}pdf.save(fname+'.pdf');_toast('PDF berhasil diunduh!','success')}}catch(err){console.error('[OVExport.runCard]',err);_toast('Export gagal: '+err.message,'error')}finally{_btnState(btn,false)}}
+        clonedDoc.querySelectorAll('.tme-tab-panel:not(.active)').forEach(el => {
+            el.style.cssText += 'display:none!important;height:0!important;overflow:hidden!important;';
+        });
 
-    return {run,runCard};
+        clonedDoc.querySelectorAll('.do-dp2-media iframe, iframe').forEach(f => {
+            f.style.cssText += 'display:none!important;';
+        });
+
+        clonedDoc.querySelectorAll('.tme-post-av,.do-panel-avatar,.do-dp2-avatar-lg').forEach(wrapper => {
+            wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
+            if (!wrapper.style.background) wrapper.style.background = 'linear-gradient(135deg,#010101,#69C9D0)';
+        });
+
+        clonedDoc.querySelectorAll('.tme-post-thumb').forEach(wrapper => {
+            wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
+            wrapper.querySelectorAll('.tme-post-thumb-play').forEach(p => { p.style.display = 'none'; });
+            wrapper.style.background = 'linear-gradient(135deg,#273B4A,#374151)';
+        });
+
+        clonedDoc.querySelectorAll('*').forEach(el => {
+            el.style.animationPlayState = 'paused';
+            el.style.animation  = 'none';
+            el.style.transition = 'none';
+        });
+
+        clonedDoc.querySelectorAll(
+            '.card,.card-body,.card-header,.row,[class*="col-"],' +
+            '.tme-tab-panel.active,.ht-list,.ht-item,' +
+            '.tme-post-list,.tme-post,' +
+            '.donut-stack-wrap,.donut-chart-area,.donut-breakdown-list,' +
+            '#pageExportArea,#ovTabsBar'
+        ).forEach(el => {
+            el.style.opacity    = '1';
+            el.style.transform  = 'none';
+            el.style.visibility = 'visible';
+            el.style.overflow   = 'visible';
+        });
+
+        clonedDoc.querySelectorAll('.chart-container,.donut-chart-area').forEach(el => {
+            el.style.overflow = 'visible';
+            el.style.height   = 'auto';
+        });
+    }
+
+    async function _doCapture(el, isCard) {
+        window.scrollTo(0, 0);
+
+        /* 1. Force semua kartu visible (hapus animasi opacity/transform) */
+        el.querySelectorAll('.card,.kpi-card-hover,[class*="col-"],.tme-post,.ht-item,.donut-breakdown-item')
+          .forEach(e => {
+              e.style.opacity    = '1';
+              e.style.transform  = 'none';
+              e.style.visibility = 'visible';
+          });
+
+        /* 2. Expand container agar chart tidak terpotong */
+        const restores = _expandChartContainers(el);
+
+        /* 3. Tunggu layout settle */
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, 200));
+
+        /* 4. Swap chart ke <img> — tunggu semua selesai */
+        const swaps = await _swapChartsIn(el);
+
+        /* 5. Tunggu browser layout ulang setelah swap */
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, 400));
+
+        /* 6. Pastikan semua <img> hasil swap sudah decoded */
+        const swapImgs = swaps.map(s => s.img).filter(Boolean);
+        await Promise.allSettled(swapImgs.map(img =>
+            img.complete ? Promise.resolve() : new Promise(r => {
+                img.onload = img.onerror = r;
+                setTimeout(r, 5000);
+            })
+        ));
+
+        /* 7. Satu frame lagi biar browser flush paint */
+        await new Promise(r => requestAnimationFrame(r));
+
+        const totalH = el.scrollHeight;
+        let canvas;
+        try {
+            canvas = await html2canvas(el, {
+                scale          : isCard ? 2 : 1.5,
+                useCORS        : true,
+                allowTaint     : false,
+                backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
+                logging        : false,
+                removeContainer: true,
+                imageTimeout   : 10000,
+                scrollX        : 0,
+                scrollY        : 0,
+                width          : el.offsetWidth,
+                height         : totalH,
+                onclone        : d => _onClone(d),
+                /* Skip external img yang bukan data:/blob: dan bukan hasil swap kita */
+                ignoreElements : e =>
+                    e.hasAttribute('data-html2canvas-ignore') ||
+                    (e.tagName === 'IMG'
+                        && e.src
+                        && !e.src.startsWith('data:')
+                        && !e.src.startsWith('blob:')
+                        && !swapImgs.includes(e)),
+            });
+        } finally {
+            _swapChartsOut(swaps);
+            _restoreChartContainers(restores);
+        }
+        return canvas;
+    }
+
+    function _drawHeader(pdf, pW, pH, label, page, total) {
+        pdf.setFillColor(3, 128, 71); pdf.rect(0, 0, pW, 11, 'F');
+        pdf.setTextColor(255, 255, 255); pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
+        pdf.text('SMADIMENT — ' + (label || 'TikTok Overview'), 10, 7.5);
+        const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+        pdf.text('Generated: ' + now, pW - 10, 7.5, { align: 'right' });
+        pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+        pdf.text(`Halaman ${page} / ${total}`, pW / 2, pH - 3, { align: 'center' });
+    }
+
+    function _fitCanvas(pdf, canvas, margin, pW, pH) {
+        const uw = pW - margin * 2, uh = pH - 14 - 10;
+        const r  = Math.min(uw / canvas.width, uh / canvas.height);
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG',
+            margin + (uw - canvas.width  * r) / 2,
+            14     + (uh - canvas.height * r) / 2,
+            canvas.width * r, canvas.height * r);
+    }
+
+    function _sliceCanvas(pdf, canvas, margin, pW, pH, labelFn) {
+        const uw = pW - margin * 2, uh = pH - 14 - 10;
+        const ratio = uw / canvas.width, sliceH = uh / ratio;
+        const total = Math.max(1, Math.ceil((canvas.height * ratio) / uh));
+        let srcY = 0, pg = 1;
+        while (srcY < canvas.height) {
+            if (pg > 1) pdf.addPage();
+            _drawHeader(pdf, pW, pH, labelFn(), pg, total);
+            const srcSlice = Math.min(sliceH, canvas.height - srcY);
+            const slice    = document.createElement('canvas');
+            slice.width    = canvas.width; slice.height = Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice);
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, uw, srcSlice * ratio);
+            srcY += srcSlice; pg++;
+        }
+    }
+
+    function _stamp() { return new Date().toISOString().slice(0, 10).replace(/-/g, ''); }
+
+    async function run(type, btn) {
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error');       return; }
+
+        const btnPdf = _$('pageExportPdfBtn'), btnImg = _$('pageExportImgBtn');
+        _btnState(btnPdf, true); _btnState(btnImg, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF semua tab…' : 'Mengambil gambar…', 'default', 99999);
+
+        const originalTab = ['hashtag','view','like','comment','share']
+            .find(t => _$('tab-'+t)?.classList.contains('active')) || 'hashtag';
+        const area  = _$('pageExportArea');
+        const stamp = _stamp();
+
+        try {
+            if (type === 'image') {
+                const canvas = await _doCapture(area, false);
+                const link   = document.createElement('a');
+                link.download = `tiktok_overview_${OV_PID}_${stamp}.png`;
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+                return;
+            }
+
+            const TAB_ORDER = [
+                { key:'hashtag', label:'Top Hashtags'  },
+                { key:'view',    label:'Most Viewed'   },
+                { key:'like',    label:'Most Liked'    },
+                { key:'comment', label:'Most Comments' },
+                { key:'share',   label:'Most Shares'   },
+            ];
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+            const pW  = pdf.internal.pageSize.getWidth();
+            const pH  = pdf.internal.pageSize.getHeight();
+            const M   = 10;
+            let firstPage = true;
+
+            for (let i = 0; i < TAB_ORDER.length; i++) {
+                const { key, label } = TAB_ORDER[i];
+                _toast(`Mengambil tab ${i+1}/5: ${label}…`, 'default', 99999);
+                OVTab.show(key);
+                /* Tunggu lebih lama — beri waktu chart re-render setelah tab switch */
+                await new Promise(r => setTimeout(r, 1500));
+                window.scrollTo(0, 0);
+                await new Promise(r => setTimeout(r, 100));
+
+                const canvas = await _doCapture(area, false);
+                const uw = pW - M * 2, uh = pH - 14 - 10;
+                const ratio  = uw / canvas.width, sliceH = uh / ratio;
+                const pages  = Math.max(1, Math.ceil((canvas.height * ratio) / uh));
+                let srcY = 0, pg = 1;
+
+                while (srcY < canvas.height) {
+                    if (!firstPage) pdf.addPage();
+                    firstPage = false;
+                    _drawHeader(pdf, pW, pH, `TikTok Overview — ${label}`, pg, pages);
+                    const srcSlice = Math.min(sliceH, canvas.height - srcY);
+                    const slice    = document.createElement('canvas');
+                    slice.width    = canvas.width; slice.height = Math.ceil(srcSlice);
+                    slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice);
+                    pdf.addImage(slice.toDataURL('image/png'), 'PNG', M, 14, uw, srcSlice * ratio);
+                    srcY += srcSlice; pg++;
+                }
+            }
+
+            pdf.save(`tiktok_overview_${OV_PID}_${stamp}.pdf`);
+            _toast('PDF berhasil diunduh!', 'success');
+
+        } catch(err) {
+            console.error('[OVExport.run]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            OVTab.show(originalTab);
+            _btnState(btnPdf, false); _btnState(btnImg, false);
+        }
+    }
+
+    const _cardLabels = {
+        'hashtag-list'  : 'Top Hashtags',
+        'hashtag-donut' : 'Distribusi Top Hashtags',
+        'donut-view'    : 'Distribusi Most Viewed',
+        'donut-like'    : 'Distribusi Most Liked',
+        'donut-comment' : 'Distribusi Most Comments',
+        'donut-share'   : 'Distribusi Most Shares',
+        'list-view'     : 'Top Videos by Views',
+        'list-like'     : 'Top Videos by Likes',
+        'list-comment'  : 'Top Videos by Comments',
+        'list-share'    : 'Top Videos by Shares',
+    };
+
+    function _cardFilename(k) {
+        const map = {
+            'hashtag-list'  : 'top-hashtags',
+            'hashtag-donut' : 'hashtag-distribusi',
+            'donut-view'    : 'distribusi-most-viewed',
+            'donut-like'    : 'distribusi-most-liked',
+            'donut-comment' : 'distribusi-most-comments',
+            'donut-share'   : 'distribusi-most-shares',
+            'list-view'     : 'top-videos-by-view',
+            'list-like'     : 'top-videos-by-like',
+            'list-comment'  : 'top-videos-by-comment',
+            'list-share'    : 'top-videos-by-share',
+        };
+        return `tiktok_${map[k] || k}_${OV_PID}_${_stamp()}`;
+    }
+
+    async function runCard(areaId, cardKey, type, btn) {
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error');       return; }
+
+        _btnState(btn, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+
+        try {
+            const area = document.getElementById(areaId);
+            if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+
+            const canvas = await _doCapture(area, true);
+            const fname  = _cardFilename(cardKey);
+            const label  = _cardLabels[cardKey] || cardKey;
+
+            if (type === 'image') {
+                const link    = document.createElement('a');
+                link.download = fname + '.png';
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const landscape = canvas.width > canvas.height * 1.2;
+                const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+                const pW  = pdf.internal.pageSize.getWidth();
+                const pH  = pdf.internal.pageSize.getHeight();
+                const M   = 10, uw = pW - M * 2, uh = pH - 14 - 10;
+
+                if ((canvas.height * (uw / canvas.width)) <= uh) {
+                    _drawHeader(pdf, pW, pH, label, 1, 1);
+                    _fitCanvas(pdf, canvas, M, pW, pH);
+                } else {
+                    _sliceCanvas(pdf, canvas, M, pW, pH, () => label);
+                }
+                pdf.save(fname + '.pdf');
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(err) {
+            console.error('[OVExport.runCard]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally { _btnState(btn, false); }
+    }
+
+    return { run, runCard };
 })();
-
-/* ── INIT ── */
+  
 document.addEventListener('DOMContentLoaded',()=>{
     if(!OVCfg.pid)return;
     OVTab._loaded.hashtag=true;OVData.loadHashtags();

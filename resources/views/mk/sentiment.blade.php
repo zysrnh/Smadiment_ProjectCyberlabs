@@ -572,15 +572,12 @@
           crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
-  <script>
+ <script>
     'use strict';
 
-    /* ══ SAFARI DETECTION ══
-       Must be first — everything below branches on this flag.
-    */
+    /* ══ SAFARI DETECTION ══ */
     const _isSafari = (function () {
       const ua = navigator.userAgent;
-      // True Safari: has "Safari" but NOT "Chrome" and NOT "Android"
       return /^((?!chrome|android).)*safari/i.test(ua);
     })();
 
@@ -597,10 +594,9 @@
     const pct    = (v,t) => t > 0 ? ((v/t)*100).toFixed(1)+'%' : '0%';
     const emptyHtml = msg => `<div class="chart-empty"><i class="ph ph-warning-circle"></i><span>${msg}</span></div>`;
 
-    /* ── SAFARI: wait for DOM paint + optional extra tick ── */
+    /* ── SAFARI: wait for DOM paint ── */
     function _rafReady(fn, extraMs = 0) {
       if (_isSafari) {
-        // Safari needs an extra rAF + optional setTimeout to flush layout
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             if (extraMs > 0) setTimeout(fn, extraMs);
@@ -612,23 +608,22 @@
       }
     }
 
-    /* ── SAFARI: force explicit px size on a chart DOM node ──
-       Safari flex children can report 0 offsetHeight even when
-       the parent has an explicit height. We read the parent's
-       inline style and stamp it on the child before init.
-    */
+    /* ── SAFARI: force explicit px size on chart DOM node ── */
     function _ensureDim(dom) {
       if (!dom) return;
-      if (dom.offsetHeight > 0 && dom.offsetWidth > 0) return; // already fine
-      // Walk up to find the first ancestor with explicit inline height
+      if (dom.offsetHeight > 0 && dom.offsetWidth > 0) return;
+      // SAFARI FIX: cek computed style juga, bukan hanya inline style
       let el = dom.parentElement;
       while (el) {
-        const h = parseInt(el.style.height);
-        if (h > 0) { dom.style.height = h + 'px'; break; }
+        const inlineH = parseInt(el.style.height);
+        if (inlineH > 0) { dom.style.height = inlineH + 'px'; break; }
+        const computedH = parseInt(getComputedStyle(el).height);
+        if (computedH > 0) { dom.style.height = computedH + 'px'; break; }
         el = el.parentElement;
       }
-      if (!dom.style.height) dom.style.height = '300px'; // safe fallback
-      if (!dom.offsetWidth)  dom.style.width  = '100%';
+      if (!dom.style.height) dom.style.height = '300px';
+      const computedW = parseInt(getComputedStyle(dom.parentElement || dom).width);
+      if (!dom.offsetWidth) dom.style.width = (computedW > 0 ? computedW : 400) + 'px';
     }
 
     /* ── ECHARTS REGISTRY ── */
@@ -639,20 +634,23 @@
         const dom = document.getElementById(id);
         if (!dom) return null;
 
-        // SAFARI FIX: ensure container has real pixel dimensions before init
+        // SAFARI FIX: pastikan dimensi ada sebelum init
         _ensureDim(dom);
 
         const w = dom.offsetWidth  || (dom.parentElement ? dom.parentElement.offsetWidth  : 400);
         const h = dom.offsetHeight || (dom.parentElement ? dom.parentElement.offsetHeight : 300);
 
         const c = echarts.init(dom, null, {
-          // SAFARI FIX: SVG renderer is more reliable on Safari/WebKit
           renderer: _isSafari ? 'svg' : 'canvas',
           width:  w > 0 ? w : undefined,
           height: h > 0 ? h : undefined,
           devicePixelRatio: _isSafari ? 1 : (window.devicePixelRatio || 1),
         });
         this._i[id] = c;
+
+        // SAFARI FIX: force resize setelah init
+        if (_isSafari) setTimeout(() => { try { c.resize(); } catch(e){} }, 80);
+
         return c;
       },
       disposeAll() {
@@ -661,7 +659,7 @@
       }
     };
 
-    /* ── RESIZE HANDLER: prefer ResizeObserver (Safari 13.1+), fallback window ── */
+    /* ── RESIZE HANDLER ── */
     (function _setupResize() {
       const resizeAll = () => {
         Object.values(SNTCharts._i).forEach(c => {
@@ -706,7 +704,6 @@
         return;
       }
       try {
-        // SAFARI FIX: wait for fonts before charting to avoid 0-height flash
         if (document.fonts && document.fonts.ready) await document.fonts.ready;
 
         const res  = await fetch(`/mk/api/sentiment/totals?project_id=${SNTCfg.pid}&start_date=${SNTCfg.sd}&end_date=${SNTCfg.ed}&media=${SNTCfg.media}`);
@@ -716,7 +713,6 @@
         SNTData.byMedia = data.by_media || [];
         SNTData.trend   = data.trend    || [];
 
-        // SAFARI FIX: give browser time to finish layout before rendering charts
         _rafReady(renderAll, _isSafari ? 120 : 0);
       } catch(err) {
         console.error('loadSentiment error:', err);
@@ -798,7 +794,6 @@
           label:{ show:true, position:'top', fontFamily:"'Poppins',sans-serif", fontWeight:'700', fontSize:11, color:'#64748b', formatter: p => numK(p.value) }
         }]
       });
-      // SAFARI FIX: force a resize after setOption to fix any 0-dimension init
       if (_isSafari) setTimeout(() => { try { chart.resize(); } catch(e){} }, 60);
     }
 
@@ -1000,7 +995,7 @@
       const el = document.getElementById('chTrend');
       if (!el) return;
 
-      // SAFARI FIX: ensure the element has explicit height before ApexCharts mounts
+      // SAFARI FIX: ensure element has explicit height before ApexCharts mounts
       if (_isSafari && el.offsetHeight < 10) el.style.height = '380px';
 
       _apexTrend = new ApexCharts(el, {
@@ -1009,7 +1004,7 @@
           fontFamily: 'inherit',
           background: 'transparent',
           toolbar: { show: false },
-          // SAFARI FIX: disable complex animations; Safari SVG gradient can freeze
+          // SAFARI FIX: disable animasi di Safari
           animations: {
             enabled: !_isSafari,
             easing: 'linear',
@@ -1049,7 +1044,7 @@
           },
           axisBorder: { show:false }, axisTicks: { show:false }
         },
-        // SAFARI FIX: use solid fill instead of gradient; Safari SVG gradient causes blank chart
+        // SAFARI FIX: gunakan solid fill, bukan gradient
         fill: _isSafari
           ? { opacity: 0.15, type: 'solid' }
           : { opacity: 0.30 },
@@ -1068,7 +1063,7 @@
       });
       _apexTrend.render();
 
-      // SAFARI FIX: force layout recalculation after render
+      // SAFARI FIX: force layout recalculation setelah render
       if (_isSafari) {
         setTimeout(() => {
           try { _apexTrend.updateOptions({}, false, false, false); } catch(e) {}
@@ -1177,277 +1172,320 @@
       init() { loadSentiment(); loadTimeData(); }
     };
 
-    document.addEventListener('DOMContentLoaded', () => SNTPage.init());
+    // SAFARI FIX: delay init agar layout selesai dulu
+    document.addEventListener('DOMContentLoaded', () => {
+      if (_isSafari) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setTimeout(() => SNTPage.init(), 120);
+          });
+        });
+      } else {
+        SNTPage.init();
+      }
+    });
 
     /* ══════════════════════════════════════════════════════════
-       SNTExport v2 — 2-Page PDF Split (no slice, scale-to-fit)
+       SNTExport v2 — 2-Page PDF Split
     ══════════════════════════════════════════════════════════ */
-    const SNTExport = (() => {
-      'use strict';
- 
-      let _toastTimer = null;
-      let _freezeStyle = null;
- 
-      /* ── Toast ── */
-      function _toast(msg, type = 'default', duration = 3200) {
-        const t   = document.getElementById('exportToast');
-        const m   = document.getElementById('exportToastMsg');
-        const ico = document.getElementById('exportToastIcon');
+const SNTExport = (() => {
+    'use strict';
+
+    let _toastTimer = null;
+
+    function _toast(msg, type = 'default', duration = 3200) {
+        const t   = document.getElementById('exportToast'),
+              m   = document.getElementById('exportToastMsg'),
+              ico = document.getElementById('exportToastIcon');
         if (!t || !m) return;
         m.textContent = msg;
         t.className   = 'export-toast show' + (type !== 'default' ? ' ' + type : '');
         ico.className = 'ph ' + ({ success:'ph-check-circle', error:'ph-x-circle', default:'ph-spinner' }[type] || 'ph-spinner');
         clearTimeout(_toastTimer);
         _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
-      }
- 
-      function _btnState(btns, loading) {
+    }
+
+    function _btnState(btns, loading) {
         [].concat(btns).forEach(b => { if (!b) return; b.disabled = loading; b.classList.toggle('exporting', loading); });
-      }
- 
-      /* ── Freeze CSS animations ── */
-      function _freeze() {
-        if (_freezeStyle) return;
-        _freezeStyle = document.createElement('style');
-        _freezeStyle.id = '__snt_freeze__';
-        _freezeStyle.textContent = `
-          #pageExportArea .fade-up,#pageExportArea [class*="fade-up"]{animation:none!important;opacity:1!important;transform:none!important;}
-          #pageExportArea .sk-block,#pageExportArea .snt-skel,#pageExportArea .snt-skel-overlay{animation:none!important;display:none!important;}
-          #pageExportArea .kpi-card-hover::before{display:none!important;}
-          #pageExportArea .spin-ring{animation:none!important;}
-        `;
-        document.head.appendChild(_freezeStyle);
-        Object.values(SNTCharts._i || {}).forEach(ec => {
-          if (!ec || ec.isDisposed()) return;
-          try { ec.setOption({ animation: false }, false); } catch(e) {}
+    }
+
+    /* ── Tunggu ECharts selesai render ── */
+    function _waitEChartsFinished(instance, ms = 2500) {
+        return new Promise(resolve => {
+            let done = false;
+            const finish = () => { if (!done) { done = true; resolve(); } };
+            const t = setTimeout(finish, ms);
+            try { instance.on('finished', () => { clearTimeout(t); finish(); }); }
+            catch(e) { clearTimeout(t); finish(); }
         });
-      }
- 
-      function _unfreeze() {
-        if (_freezeStyle) { _freezeStyle.remove(); _freezeStyle = null; }
-        Object.values(SNTCharts._i || {}).forEach(ec => {
-          if (!ec || ec.isDisposed()) return;
-          try { ec.setOption({ animation: true }, false); } catch(e) {}
-        });
-        if (typeof _apexTrend !== 'undefined' && _apexTrend) {
-          try {
-            _apexTrend.updateOptions({
-              fill: _isSafari ? { opacity: .15, type: 'solid' } : { opacity: .3 },
-              chart: { animations: { enabled: !_isSafari } }
-            }, false, false, false);
-          } catch(e) {}
-        }
-      }
- 
-      /* ─────────────────────────────────────────────────────
-         STEP 1: Snapshot semua chart ke dataURL
-         Harus dilakukan SEBELUM modifikasi DOM apapun.
-      ───────────────────────────────────────────────────── */
-      async function _snapshotAllCharts() {
-        const snapshots = {}; // { elementId: dataUrl }
- 
-        /* ── ECharts instances ── */
-        const ecIds = [
-          'chOverview', 'chSovTotal', 'chMass', 'chSocial',
-          'chByType', 'chByPlat', 'chMassPie', 'chSocialPie',
-          'chWeekday', 'chHour'
-        ];
-        for (const id of ecIds) {
-          const ec = SNTCharts._i[id];
-          if (!ec || ec.isDisposed()) continue;
-          try {
-            ec.setOption({ animation: false }, false);
-            ec.resize();
-            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-            snapshots[id] = ec.getDataURL({
-              type          : 'png',
-              pixelRatio    : _isSafari ? 1 : (window.devicePixelRatio || 2),
-              backgroundColor: '#ffffff',
-            });
-          } catch(e) {
-            console.warn('[SNTExport] EC snapshot fail:', id, e);
-          }
-        }
- 
-        /* ── ApexCharts trend ── */
-        if (typeof _apexTrend !== 'undefined' && _apexTrend) {
-          try {
-            // Solid fill agar dataURI tidak blank di Safari
-            _apexTrend.updateOptions({
-              fill: { opacity: 1, type: 'solid' },
-              chart: { animations: { enabled: false } }
-            }, false, false, false);
-            await new Promise(r => setTimeout(r, _isSafari ? 600 : 350));
-            const result = await _apexTrend.dataURI({ scale: _isSafari ? 1 : 2 });
-            if (result?.imgURI) snapshots['chTrend'] = result.imgURI;
-          } catch(e) {
-            console.warn('[SNTExport] ApexCharts snapshot fail:', e);
-          }
-        }
- 
-        return snapshots;
-      }
- 
-      /* ─────────────────────────────────────────────────────
-         STEP 2: Ganti elemen chart di LIVE DOM dengan <img>
-         Return array restore-info untuk mengembalikan elemen asli.
-      ───────────────────────────────────────────────────── */
-      function _replaceChartsWithImages(snapshots) {
-        const restores = [];
- 
-        function _swap(id, styleOverride) {
-          const el = document.getElementById(id);
-          if (!el || !snapshots[id]) return;
-          const img = document.createElement('img');
-          img.src   = snapshots[id];
-          img.style.cssText = styleOverride || 'width:100%;height:100%;display:block;object-fit:contain;';
-          const parent  = el.parentNode;
-          const nextSib = el.nextSibling;
-          if (!parent) return;
-          parent.replaceChild(img, el);
-          restores.push({ el, img, parent, nextSib });
-        }
- 
-        const ecIds = [
-          'chOverview', 'chSovTotal', 'chMass', 'chSocial',
-          'chByType', 'chByPlat', 'chMassPie', 'chSocialPie',
-          'chWeekday', 'chHour'
-        ];
-        ecIds.forEach(id => _swap(id, 'width:100%;height:100%;display:block;object-fit:contain;min-height:200px;'));
-        _swap('chTrend', 'width:100%;height:380px;display:block;object-fit:contain;');
- 
-        return restores;
-      }
- 
-      /* ─────────────────────────────────────────────────────
-         STEP 3: Sembunyikan elemen UI noise di live DOM
-      ───────────────────────────────────────────────────── */
-      function _hideUIElements() {
-        const selectors = [
-          '[data-html2canvas-ignore]',
-          '.page-export-bar',
-          '.chart-loading',
-          '.snt-skel',
-          '.snt-skel-overlay',
-          '#sntPopup',
-          '#sntPanelOverlay',
-          '#sntPlatPicker',
-          '#sntDetailPanel',
-          '.export-toast',
-        ];
-        const hidden = [];
-        selectors.forEach(sel => {
-          document.querySelectorAll(sel).forEach(el => {
-            const prev = el.style.display;
-            hidden.push({ el, prev });
-            el.style.display = 'none';
-          });
-        });
-        return () => hidden.forEach(({ el, prev }) => { el.style.display = prev; });
-      }
- 
-      /* ─────────────────────────────────────────────────────
-         STEP 4: Restore elemen ke DOM
-      ───────────────────────────────────────────────────── */
-      function _restoreElements(restores) {
-        for (const { el, img, parent, nextSib } of restores) {
-          try {
-            if (img.parentNode === parent) {
-              parent.replaceChild(el, img);
-            } else if (nextSib && nextSib.parentNode === parent) {
-              parent.insertBefore(el, nextSib);
-            } else {
-              parent.appendChild(el);
-            }
-          } catch(e) {
-            console.warn('[SNTExport] restore failed:', e);
-          }
-        }
-      }
- 
-      /* ─────────────────────────────────────────────────────
-         Core capture — Safari-safe, tanpa onclone
-      ───────────────────────────────────────────────────── */
-      async function _capture(areaEl, bgColor) {
-        /* 1. Scroll ke atas */
-        window.scrollTo({ top: 0 });
-        await new Promise(r => setTimeout(r, 150));
- 
-        /* 2. Snapshot semua chart sebelum apapun berubah */
-        const snapshots = await _snapshotAllCharts();
- 
-        /* 3. Ganti chart di live DOM dengan <img> */
-        const domRestores = _replaceChartsWithImages(snapshots);
- 
-        /* 4. Sembunyikan elemen UI */
-        const restoreUI = _hideUIElements();
- 
-        /* 5. Freeze animasi */
-        _freeze();
- 
-        /* 6. Tunggu browser repaint */
-        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        await new Promise(r => setTimeout(r, _isSafari ? 600 : 350));
- 
-        let canvas;
+    }
+
+    /* ── Snapshot satu ECharts instance ── */
+    async function _getEChartSnapshot(instance) {
+        if (!instance || instance.isDisposed?.()) return null;
         try {
-          canvas = await html2canvas(areaEl, {
-            scale           : _isSafari ? 1.5 : 2,
-            useCORS         : true,
-            allowTaint      : false,
-            backgroundColor : bgColor || '#ffffff',
-            logging         : false,
-            removeContainer : true,
-            imageTimeout    : 0,
-            /* TIDAK pakai onclone — itu yang bikin blank di Safari */
-          });
+            instance.setOption({ animation: false }, { silent: true });
+            await _waitEChartsFinished(instance, 1500);
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+            const dataUrl = instance.getDataURL({
+                type: 'png',
+                pixelRatio: 2,
+                backgroundColor: '#ffffff',
+                excludeComponents: ['toolbox'],
+            });
+            return (dataUrl && dataUrl !== 'data:,') ? dataUrl : null;
+        } catch(e) {
+            console.warn('[SNTExport] echarts snapshot failed:', e);
+            return null;
         } finally {
-          /* 7. Restore semua perubahan DOM */
-          _restoreElements(domRestores);
-          restoreUI();
-          _unfreeze();
- 
-          /* 8. Restore ApexCharts ke state normal */
-          if (typeof _apexTrend !== 'undefined' && _apexTrend) {
-            try {
-              _apexTrend.updateOptions({
-                fill: _isSafari ? { opacity: .15, type: 'solid' } : { opacity: .3 },
-                chart: { animations: { enabled: !_isSafari } }
-              }, false, false, false);
-            } catch(e) {}
-          }
+            try { instance.setOption({ animation: true }, { silent: true }); } catch(e) {}
         }
- 
-        return canvas;
-      }
- 
-      /* ── PDF helper ── */
-      function _stamp() { return new Date().toISOString().slice(0, 10).replace(/-/g, ''); }
- 
-      function _drawHeader(pdf, pW, pH, label, page, total) {
+    }
+
+    /* ── Snapshot semua ECharts yang ada di SNTCharts._i ── */
+    async function _getAllEChartSnapshots(el) {
+        const snaps = {};
+        const ids = ['chOverview','chSovTotal','chMass','chSocial','chByType','chByPlat','chMassPie','chSocialPie','chWeekday','chHour'];
+        for (const id of ids) {
+            const container = document.getElementById(id);
+            if (!container || (el && !el.contains(container))) continue;
+            const instance = SNTCharts._i[id];
+            if (!instance || instance.isDisposed?.()) continue;
+            const snap = await _getEChartSnapshot(instance);
+            if (snap) snaps[id] = snap;
+        }
+        return snaps;
+    }
+
+    /* ── Snapshot ApexCharts trend ── */
+    async function _getApexSnapshot() {
+        if (typeof _apexTrend === 'undefined' || !_apexTrend) return null;
+        try {
+            _apexTrend.updateOptions({
+                fill: { opacity: 1, type: 'solid' },
+                chart: { animations: { enabled: false } }
+            }, false, false, false);
+            await new Promise(r => setTimeout(r, 400));
+            const result = await _apexTrend.dataURI({ scale: 2 });
+            return result?.imgURI || null;
+        } catch(e) {
+            console.warn('[SNTExport] Apex snapshot failed:', e);
+            return null;
+        } finally {
+            try {
+                _apexTrend.updateOptions({
+                    fill: _isSafari ? { opacity: 0.15, type: 'solid' } : { opacity: 0.30 },
+                    chart: { animations: { enabled: !_isSafari } }
+                }, false, false, false);
+            } catch(e) {}
+        }
+    }
+
+    /* ── onclone: cleanup + inject semua snapshots ── */
+    function _makeOnClone(ecSnaps, apexSnap) {
+        return (clonedDoc) => {
+            /* Freeze semua animasi */
+            const s = clonedDoc.createElement('style');
+            s.textContent = `
+                *, *::before, *::after {
+                    animation: none !important;
+                    transition: none !important;
+                    animation-play-state: paused !important;
+                }
+                [data-html2canvas-ignore] { display: none !important; }
+                .sk-block,.snt-skel,.snt-skel-overlay { animation: none !important; background: #e2e8f0 !important; display: none !important; }
+                .kpi-card-hover { transform: none !important; filter: none !important; opacity: 1 !important; }
+                .kpi-card-hover::before { display: none !important; }
+                .chart-loading { display: none !important; }
+                .export-toast  { display: none !important; }
+                .page-export-bar { display: none !important; }
+                .spin-ring { animation: none !important; }
+            `;
+            clonedDoc.head.appendChild(s);
+
+            /* Sembunyikan elemen noise */
+            clonedDoc.querySelectorAll(
+                '#sntPopup,.do-panel-overlay,#sntPanelOverlay,#sntPlatPicker,' +
+                '#sntDetailPanel,.export-toast,[data-html2canvas-ignore],' +
+                '.page-export-bar,.chart-loading,.snt-skel,.snt-skel-overlay'
+            ).forEach(el => {
+                el.style.cssText += 'display:none!important;visibility:hidden!important;';
+            });
+
+            /* Sembunyikan iframe */
+            clonedDoc.querySelectorAll('iframe').forEach(f => {
+                f.style.cssText += 'display:none!important;';
+            });
+
+            /* Force visible semua card */
+            clonedDoc.querySelectorAll(
+                '.card,.card-body,.card-header,.row,[class*="col-"],' +
+                '.kpi-card-hover,#pageExportArea,#exportPage1,#exportPage2'
+            ).forEach(el => {
+                el.style.opacity    = '1';
+                el.style.transform  = 'none';
+                el.style.visibility = 'visible';
+                el.style.filter     = 'none';
+            });
+
+            /* Force visible KPI values */
+            ['valNeg','valPos','valNeu','valTot'].forEach(id => {
+                const el = clonedDoc.getElementById(id);
+                if (el) { el.style.opacity = '1'; el.style.visibility = 'visible'; }
+            });
+
+            /* ★ Inject ECharts snapshots ── kunci Safari ── */
+            for (const [id, dataUrl] of Object.entries(ecSnaps || {})) {
+                const container = clonedDoc.getElementById(id);
+                if (!container || !dataUrl) continue;
+                const orig = document.getElementById(id);
+                const h = orig ? Math.max(orig.scrollHeight, orig.offsetHeight, 240) : 280;
+                container.innerHTML = '';
+                const img = clonedDoc.createElement('img');
+                img.src = dataUrl;
+                img.style.cssText = `width:100%;height:${h}px;display:block;object-fit:contain;background:#fff;`;
+                container.appendChild(img);
+                container.style.cssText += 'display:block!important;opacity:1!important;visibility:visible!important;overflow:visible!important;';
+
+                /* Fix parent container height */
+                const parent = container.parentElement;
+                if (parent) {
+                    parent.style.height   = 'auto';
+                    parent.style.minHeight = h + 'px';
+                    parent.style.overflow = 'visible';
+                }
+            }
+
+            /* ★ Inject ApexCharts trend snapshot ── */
+            if (apexSnap) {
+                const apexEl = clonedDoc.getElementById('chTrend');
+                if (apexEl) {
+                    apexEl.innerHTML = '';
+                    apexEl.style.cssText = 'display:block!important;width:100%;height:380px;opacity:1!important;visibility:visible!important;';
+                    const img = clonedDoc.createElement('img');
+                    img.src = apexSnap;
+                    img.style.cssText = 'width:100%;height:380px;object-fit:contain;display:block;background:#fff;';
+                    apexEl.appendChild(img);
+
+                    /* Fix parent height */
+                    const parent = apexEl.parentElement;
+                    if (parent) {
+                        parent.style.height   = 'auto';
+                        parent.style.minHeight = '380px';
+                        parent.style.overflow = 'visible';
+                    }
+                }
+            }
+        };
+    }
+
+    /* ── Core capture: snapshot dulu, baru html2canvas ── */
+    async function _doCapture(el, bg, ecSnaps, apexSnap) {
+        window.scrollTo(0, 0);
+        await new Promise(r => setTimeout(r, 80));
+
+        /* Force visible */
+        el.querySelectorAll('.card,.kpi-card-hover,[class*="col-"]')
+          .forEach(e => {
+              e.style.opacity    = '1';
+              e.style.transform  = 'none';
+              e.style.visibility = 'visible';
+          });
+
+        /* Decode semua snapshot sebelum html2canvas */
+        const allSnaps = [
+            ...Object.values(ecSnaps || {}),
+            apexSnap
+        ].filter(Boolean);
+
+        await Promise.allSettled(allSnaps.map(src =>
+            new Promise(resolve => {
+                const img = new Image();
+                img.onload = img.onerror = resolve;
+                setTimeout(resolve, 4000);
+                img.src = src;
+            })
+        ));
+
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, 200));
+
+        return await html2canvas(el, {
+            scale          : 2,
+            useCORS        : true,
+            allowTaint     : false,
+            backgroundColor: bg || '#f1f5f9',
+            logging        : false,
+            removeContainer: true,
+            imageTimeout   : 10000,
+            scrollX        : 0,
+            scrollY        : 0,
+            width          : el.offsetWidth,
+            height         : el.scrollHeight,
+            onclone        : d => _makeOnClone(ecSnaps, apexSnap)(d),
+            ignoreElements : e =>
+                e.hasAttribute('data-html2canvas-ignore') ||
+                ['exportToast','sntPopup','sntPanelOverlay','sntPlatPicker'].includes(e.id) ||
+                (e.tagName === 'IMG'
+                    && e.src
+                    && !e.src.startsWith('data:')
+                    && !e.src.startsWith('blob:')),
+        });
+    }
+
+    const _stamp = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
+
+    function _drawHeader(pdf, pW, pH, label, page, total) {
         pdf.setFillColor(3, 128, 71);
         pdf.rect(0, 0, pW, 11, 'F');
         pdf.setTextColor(255, 255, 255);
         pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
         pdf.text('SMADIMENT — Sentiment Analysis' + (label ? '  ·  ' + label : ''), 10, 7.5);
-        const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        const now = new Date().toLocaleDateString('id-ID', {
+            day:'2-digit', month:'short', year:'numeric',
+            hour:'2-digit', minute:'2-digit',
+        });
         pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
         pdf.text('Generated: ' + now, pW - 10, 7.5, { align: 'right' });
         pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
         pdf.text(`Halaman ${page} / ${total}`, pW / 2, pH - 3, { align: 'center' });
-      }
- 
-      function _fitCanvas(pdf, canvas, margin, pW, pH) {
-        const uw = pW - margin * 2;
-        const uh = pH - 14 - 8;
-        const r  = Math.min(uw / canvas.width, uh / canvas.height);
-        const dw = canvas.width * r;
-        const dh = canvas.height * r;
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG',
-          margin + (uw - dw) / 2, 14, dw, dh);
-      }
- 
-      const _cardLabels = {
+    }
+
+    function _addCanvasAsPage(pdf, canvas, margin, pW, pH, label, page, total) {
+        _drawHeader(pdf, pW, pH, label, page, total);
+        const usableW = pW - margin * 2, usableH = pH - 14 - 8;
+        const ratio   = Math.min(usableW / canvas.width, usableH / canvas.height);
+        const dw = canvas.width * ratio, dh = canvas.height * ratio;
+        pdf.addImage(
+            canvas.toDataURL('image/png'), 'PNG',
+            margin + (usableW - dw) / 2, 14,
+            dw, dh
+        );
+    }
+
+    function _paginate(pdf, canvas, margin, pW, pH, label) {
+        const uw = pW - margin * 2, uh = pH - 14 - 8;
+        const ratio  = uw / canvas.width, sliceH = uh / ratio;
+        const total  = Math.max(1, Math.ceil((canvas.height * ratio) / uh));
+        let srcY = 0, pg = 1;
+        while (srcY < canvas.height) {
+            if (pg > 1) pdf.addPage();
+            _drawHeader(pdf, pW, pH, label, pg, total);
+            const srcSlice = Math.min(sliceH, canvas.height - srcY);
+            const slice    = document.createElement('canvas');
+            slice.width    = canvas.width;
+            slice.height   = Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(
+                canvas, 0, srcY, canvas.width, srcSlice,
+                0, 0,           canvas.width, srcSlice
+            );
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, uw, srcSlice * ratio);
+            srcY += srcSlice; pg++;
+        }
+        return total;
+    }
+
+    const _cardLabels = {
         overview  : 'Total Mentions by Sentiments',
         sov       : 'Share of Voice',
         mass      : 'Sentiments in Mass Media',
@@ -1459,151 +1497,119 @@
         trend     : 'Sentiment Trends',
         weekday   : 'Sentiments by Weekday',
         hour      : 'Sentiments by Hour',
-      };
- 
-      /* ════════════
-         Export single card
-      ════════════ */
-      async function runCard(areaId, cardKey, type, btn) {
+    };
+
+    /* ── Per-card export ── */
+    async function runCard(areaId, cardKey, type, btn) {
         if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
-        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
- 
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error');       return; }
+
         _btnState(btn, true);
         _toast(type === 'pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
- 
+
         try {
-          const area = document.getElementById(areaId);
-          if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
- 
-          const canvas = await _capture(area, '#ffffff');
-          const label  = _cardLabels[cardKey] || cardKey;
-          const fname  = `sentiment_${cardKey}_${OV_PID}_${_stamp()}`;
- 
-          if (type === 'image') {
-            const a = document.createElement('a');
-            a.download = fname + '.png';
-            a.href     = canvas.toDataURL('image/png');
-            a.click();
-            _toast('Gambar berhasil diunduh!', 'success');
-          } else {
-            const { jsPDF } = window.jspdf;
-            const landscape = canvas.width > canvas.height * 1.2;
-            const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
-            const pW  = pdf.internal.pageSize.getWidth();
-            const pH  = pdf.internal.pageSize.getHeight();
-            _drawHeader(pdf, pW, pH, label, 1, 1);
-            _fitCanvas(pdf, canvas, 10, pW, pH);
-            pdf.save(fname + '.pdf');
-            _toast('PDF berhasil diunduh!', 'success');
-          }
+            const area = document.getElementById(areaId);
+            if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+
+            /* Snapshot hanya chart yang ada di dalam card ini */
+            const ecSnaps   = await _getAllEChartSnapshots(area);
+            const apexSnap  = area.contains(document.getElementById('chTrend'))
+                ? await _getApexSnapshot()
+                : null;
+
+            const canvas = await _doCapture(area, '#ffffff', ecSnaps, apexSnap);
+            const fname  = `sentiment_${cardKey}_${OV_PID}_${_stamp()}`;
+            const label  = _cardLabels[cardKey] || cardKey;
+
+            if (type === 'image') {
+                const a    = document.createElement('a');
+                a.download = fname + '.png';
+                a.href     = canvas.toDataURL('image/png');
+                a.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const landscape = canvas.width > canvas.height * 1.2;
+                const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit:'mm', format:'a4' });
+                const pW  = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
+                const M   = 10, uw = pW - M * 2, uh = pH - 14 - 8;
+                const fitsOne = (canvas.height * (uw / canvas.width)) <= uh;
+
+                if (fitsOne) {
+                    _addCanvasAsPage(pdf, canvas, M, pW, pH, label, 1, 1);
+                } else {
+                    _paginate(pdf, canvas, M, pW, pH, label);
+                }
+                pdf.save(fname + '.pdf');
+                _toast('PDF berhasil diunduh!', 'success');
+            }
         } catch(err) {
-          console.error('[SNTExport.runCard]', err);
-          _toast('Export gagal: ' + err.message, 'error');
-        } finally {
-          _btnState(btn, false);
-        }
-      }
- 
-      /* ════════════
-         Export full page (2-page PDF)
-      ════════════ */
-      async function run(type, btn) {
+            console.error('[SNTExport.runCard]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally { _btnState(btn, false); }
+    }
+
+    /* ── Export seluruh halaman (2-page PDF) ── */
+    async function run(type, btn) {
         if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
-        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
- 
-        const btnPdf = document.getElementById('pageExportPdfBtn');
-        const btnImg = document.getElementById('pageExportImgBtn');
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error');       return; }
+
+        const btnPdf = document.getElementById('pageExportPdfBtn'),
+              btnImg = document.getElementById('pageExportImgBtn');
         _btnState([btnPdf, btnImg], true);
         _toast(type === 'pdf' ? 'Menyiapkan PDF 2 halaman…' : 'Mengambil gambar halaman…', 'default', 99999);
- 
+
         try {
-          window.scrollTo({ top: 0 });
-          await new Promise(r => setTimeout(r, 150));
- 
-          const stamp = _stamp();
- 
-          if (type === 'image') {
-            const area = document.getElementById('pageExportArea');
-            if (!area) throw new Error('pageExportArea tidak ditemukan');
-            const canvas = await _capture(area, '#f1f5f9');
-            const a = document.createElement('a');
-            a.download = `sentiment_analysis_${OV_PID}_${stamp}.png`;
-            a.href     = canvas.toDataURL('image/png');
-            a.click();
-            _toast('Gambar berhasil diunduh!', 'success');
-            return;
-          }
- 
-          /* ── PDF: capture page 1 & page 2 secara terpisah ── */
-          const pg1 = document.getElementById('exportPage1');
-          const pg2 = document.getElementById('exportPage2');
-          if (!pg1 || !pg2) throw new Error('Wrapper #exportPage1 / #exportPage2 tidak ditemukan');
- 
-          /* Snapshot semua chart sekali sebelum capture page 1 maupun 2 */
-          const snapshots = await _snapshotAllCharts();
-          const restoreUI = _hideUIElements();
-          _freeze();
-          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-          await new Promise(r => setTimeout(r, _isSafari ? 600 : 350));
- 
-          let canvas1, canvas2;
-          try {
-            /* Page 1 */
-            _toast('Menangkap Halaman 1…', 'default', 99999);
-            const dom1 = _replaceChartsWithImages(snapshots);
-            canvas1 = await html2canvas(pg1, {
-              scale: _isSafari ? 1.5 : 2, useCORS: true, allowTaint: false,
-              backgroundColor: '#f1f5f9', logging: false, removeContainer: true, imageTimeout: 0,
-            });
-            _restoreElements(dom1);
- 
-            /* Page 2 */
-            _toast('Menangkap Halaman 2…', 'default', 99999);
-            const dom2 = _replaceChartsWithImages(snapshots);
-            canvas2 = await html2canvas(pg2, {
-              scale: _isSafari ? 1.5 : 2, useCORS: true, allowTaint: false,
-              backgroundColor: '#f1f5f9', logging: false, removeContainer: true, imageTimeout: 0,
-            });
-            _restoreElements(dom2);
-          } finally {
-            restoreUI();
-            _unfreeze();
-            if (typeof _apexTrend !== 'undefined' && _apexTrend) {
-              try {
-                _apexTrend.updateOptions({
-                  fill: _isSafari ? { opacity: .15, type: 'solid' } : { opacity: .3 },
-                  chart: { animations: { enabled: !_isSafari } }
-                }, false, false, false);
-              } catch(e) {}
+            window.scrollTo({ top: 0 });
+            const stamp = _stamp();
+
+            /* Ambil semua snapshots sekali sebelum capture */
+            _toast('Menyiapkan snapshot charts…', 'default', 99999);
+            const ecSnaps  = await _getAllEChartSnapshots(null); /* null = semua */
+            const apexSnap = await _getApexSnapshot();
+
+            if (type === 'image') {
+                const area = document.getElementById('pageExportArea');
+                if (!area) throw new Error('pageExportArea tidak ditemukan');
+                const canvas = await _doCapture(area, '#f1f5f9', ecSnaps, apexSnap);
+                const a      = document.createElement('a');
+                a.download   = `sentiment_analysis_${OV_PID}_${stamp}.png`;
+                a.href       = canvas.toDataURL('image/png');
+                a.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+                return;
             }
-          }
- 
-          /* Build PDF */
-          const { jsPDF } = window.jspdf;
-          const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-          const pW  = pdf.internal.pageSize.getWidth();
-          const pH  = pdf.internal.pageSize.getHeight();
- 
-          _drawHeader(pdf, pW, pH, 'KPI & Overview Charts', 1, 2);
-          _fitCanvas(pdf, canvas1, 10, pW, pH);
- 
-          pdf.addPage();
-          _drawHeader(pdf, pW, pH, 'SOV, Trend & Time Analysis', 2, 2);
-          _fitCanvas(pdf, canvas2, 10, pW, pH);
- 
-          pdf.save(`sentiment_analysis_${OV_PID}_${stamp}.pdf`);
-          _toast('PDF 2 halaman berhasil diunduh!', 'success');
- 
+
+            /* PDF: 2 halaman terpisah */
+            const pg1El = document.getElementById('exportPage1'),
+                  pg2El = document.getElementById('exportPage2');
+            if (!pg1El || !pg2El) throw new Error('Wrapper #exportPage1 / #exportPage2 tidak ditemukan.');
+
+            _toast('Menangkap Halaman 1…', 'default', 99999);
+            const canvas1 = await _doCapture(pg1El, '#f1f5f9', ecSnaps, apexSnap);
+
+            _toast('Menangkap Halaman 2…', 'default', 99999);
+            const canvas2 = await _doCapture(pg2El, '#f1f5f9', ecSnaps, apexSnap);
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+            const pW  = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
+            _addCanvasAsPage(pdf, canvas1, 10, pW, pH, 'KPI & Overview Charts', 1, 2);
+            pdf.addPage();
+            _addCanvasAsPage(pdf, canvas2, 10, pW, pH, 'SOV, Trend & Time Analysis', 2, 2);
+            pdf.save(`sentiment_analysis_${OV_PID}_${stamp}.pdf`);
+            _toast('PDF 2 halaman berhasil diunduh!', 'success');
+
         } catch(err) {
-          console.error('[SNTExport.run]', err);
-          _toast('Export gagal: ' + err.message, 'error');
+            console.error('[SNTExport.run]', err);
+            _toast('Export gagal: ' + err.message, 'error');
         } finally {
-          _btnState([btnPdf, btnImg], false);
+            _btnState([btnPdf, btnImg], false);
         }
-      }
- 
-      return { run, runCard };
-    })();
+    }
+
+    return { run, runCard };
+})();
     /* ══════════════════════════════════════════════════════
        SENTIMENT MENTION POPUP
     ══════════════════════════════════════════════════════ */

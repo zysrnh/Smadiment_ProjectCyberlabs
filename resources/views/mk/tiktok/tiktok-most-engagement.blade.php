@@ -1478,17 +1478,9 @@ const TMEDetail = {
         wrap.replaceWith(div);
     }
 };
-
-/* ══════════════════════════════════════════════════════
-   EXPORT MODULE — TikTok Most Engagement v2 (sync dengan X Overview)
-   Fix: ECharts pre-snapshot, _onClone, freeze, PDF all-tabs
-   Note: ECharts instance disimpan di window.__donutEChart
-         TikTok punya 4 tab: view, like, comment, share
-══════════════════════════════════════════════════════ */
 const TMEExport = (() => {
     'use strict';
-    let _toastTimer  = null;
-    let _ecSnapshots = {};
+    let _toastTimer = null;
 
     /* ── Toast ── */
     function _toast(msg, type = 'default', duration = 3200) {
@@ -1498,140 +1490,224 @@ const TMEExport = (() => {
         if (!t || !m) return;
         m.textContent = msg;
         t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
-        ico.className = 'ph ' + ({ success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' }[type] || 'ph-spinner');
+        ico.className = 'ph ' + ({ success:'ph-check-circle', error:'ph-x-circle', default:'ph-spinner' }[type] || 'ph-spinner');
         clearTimeout(_toastTimer);
         _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
     }
 
-    /* ── Button state ── */
     function _btnState(btn, loading) {
         if (!btn) return;
         btn.disabled = loading;
         btn.classList.toggle('exporting', loading);
     }
 
-    /* ── Freeze / unfreeze animations ── */
-    function _freeze() {
-        if (document.getElementById('__tme_freeze')) return;
-        const s = document.createElement('style');
-        s.id = '__tme_freeze';
-        s.textContent = '*{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
-        document.head.appendChild(s);
+    /* ── Tunggu ECharts selesai render ── */
+    function _waitEChartsFinished(instance, ms = 2500) {
+        return new Promise(resolve => {
+            let done = false;
+            const finish = () => { if (!done) { done = true; resolve(); } };
+            const t = setTimeout(finish, ms);
+            try {
+                instance.on('finished', () => { clearTimeout(t); finish(); });
+            } catch(e) { clearTimeout(t); finish(); }
+        });
     }
-    function _unfreeze() { document.getElementById('__tme_freeze')?.remove(); }
 
-    /* ── Pre-snapshot ECharts donut (stored di window.__donutEChart) ── */
-    function _preSnapshot() {
-        _ecSnapshots = {};
+    /* ── Ambil snapshot ECharts donut sebagai data: URI ── */
+    async function _getDonutSnapshot() {
         const inst = window.__donutEChart;
-        if (!inst || inst.isDisposed?.()) return;
+        if (!inst || inst.isDisposed?.()) return null;
         try {
-            _ecSnapshots['donutChart'] = inst.getDataURL({
-                type           : 'png',
-                pixelRatio     : window.devicePixelRatio || 2,
-                backgroundColor: '#ffffff',
+            /* Matikan animasi, tunggu frame terakhir */
+            inst.setOption({ animation: false }, { silent: true });
+            await _waitEChartsFinished(inst, 1500);
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+            const dataUrl = inst.getDataURL({
+                type            : 'png',
+                pixelRatio      : 2,
+                backgroundColor : '#ffffff',
+                excludeComponents: ['toolbox'],
             });
-        } catch (e) { console.warn('[TMEExport] snapshot failed:', e); }
-    }
-
-    /* ── onclone: bersihkan DOM clone sebelum html2canvas render ── */
-    function _onClone(clonedDoc) {
-        /* 1. Sembunyikan elemen yang tidak perlu */
-        clonedDoc.querySelectorAll(
-            '.do-panel-overlay,.do-panel,.do-detail-panel,' +
-            '#donutCustomTT,#tmePanelOverlay,#tmeSntPanel,' +
-            '.spin-ring,.spinner-state,.export-toast,.chart-loading,' +
-            '[data-html2canvas-ignore]'
-        ).forEach(el => {
-            el.style.cssText += 'display:none!important;visibility:hidden!important;' +
-                                'opacity:0!important;height:0!important;overflow:hidden!important;';
-        });
-
-        /* 2. Sembunyikan tab panel yang tidak aktif */
-        clonedDoc.querySelectorAll('.tme-tab-panel:not(.active)').forEach(el => {
-            el.style.cssText += 'display:none!important;height:0!important;overflow:hidden!important;';
-        });
-
-        /* 3. Ganti avatar & thumbnail cross-origin dengan placeholder */
-        clonedDoc.querySelectorAll('.tme-post-av,.do-panel-avatar,.do-dp2-avatar-lg').forEach(wrapper => {
-            wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
-            if (!wrapper.querySelector('.__ini')) {
-                const txt     = (wrapper.textContent || '').trim();
-                const initial = txt ? txt[0].toUpperCase() : 'T';
-                const sp      = clonedDoc.createElement('span');
-                sp.className  = '__ini';
-                sp.textContent = initial;
-                sp.style.cssText = 'font-size:13px;font-weight:700;color:#fff;line-height:1;';
-                wrapper.appendChild(sp);
-            }
-            if (!wrapper.style.background)
-                wrapper.style.background = 'linear-gradient(135deg,#010101,#69C9D0)';
-        });
-        clonedDoc.querySelectorAll('.tme-post-thumb').forEach(wrapper => {
-            wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
-            wrapper.querySelectorAll('.tme-post-thumb-play').forEach(p => { p.style.display = 'none'; });
-            wrapper.style.background = 'linear-gradient(135deg,#273B4A,#374151)';
-        });
-        /* Sembunyikan iframe TikTok di detail panel */
-        clonedDoc.querySelectorAll('.do-dp2-media iframe').forEach(f => {
-            f.style.cssText += 'display:none!important;';
-        });
-
-        /* 4. Stop animasi & pastikan elemen terlihat */
-        clonedDoc.querySelectorAll('*').forEach(el => {
-            el.style.animationPlayState = 'paused';
-            el.style.animation          = 'none';
-            el.style.transition         = 'none';
-        });
-        clonedDoc.querySelectorAll(
-            '.card,.card-body,.card-header,.row,[class*="col-"],' +
-            '.tme-tab-panel.active,.tme-post-list,.tme-post,' +
-            '#pageExportArea'
-        ).forEach(el => {
-            el.style.opacity    = '1';
-            el.style.transform  = 'none';
-            el.style.visibility = 'visible';
-        });
-
-        /* 5. ★ Ganti ECharts <canvas> dengan <img> dari snapshot ★ */
-        if (_ecSnapshots['donutChart']) {
-            const container = clonedDoc.getElementById('donutChart');
-            if (container) {
-                container.innerHTML = '';
-                const img       = clonedDoc.createElement('img');
-                img.src         = _ecSnapshots['donutChart'];
-                img.style.cssText = 'width:100%;height:100%;display:block;object-fit:contain;';
-                container.appendChild(img);
-                container.style.cssText += 'display:block!important;opacity:1!important;visibility:visible!important;';
-            }
+            return (dataUrl && dataUrl !== 'data:,') ? dataUrl : null;
+        } catch(e) {
+            console.warn('[TMEExport] donut snapshot failed:', e);
+            return null;
+        } finally {
+            try { inst.setOption({ animation: true }, { silent: true }); } catch(e) {}
         }
     }
 
-    /* ── Core capture (freeze → snapshot → html2canvas → unfreeze) ── */
-    async function _doCapture(el, isCard) {
-        _preSnapshot();
-        _freeze();
-        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        await new Promise(r => setTimeout(r, 400));
-        let canvas;
-        try {
-            canvas = await html2canvas(el, {
-                scale          : 2,
-                useCORS        : true,
-                allowTaint     : true,
-                backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
-                logging        : false,
-                removeContainer: true,
-                imageTimeout   : 0,
-                onclone        : d => _onClone(d),
-                ignoreElements : e => e.hasAttribute('data-html2canvas-ignore'),
-                x              : 0,
-                y              : 0,
-                width          : el.offsetWidth,
-                height         : el.scrollHeight,
+    /* ── Ambil snapshot semua ApexCharts yang visible ── */
+    async function _getApexSnapshots(el) {
+        const snaps = {};
+        for (const id of Object.keys(Charts)) {
+            const container = _$(id);
+            if (!container || !el.contains(container)) continue;
+            const computed = window.getComputedStyle(container);
+            if (computed.display === 'none' || computed.visibility === 'hidden') continue;
+            const chart = Charts[id];
+            if (!chart) continue;
+            try {
+                const { imgURI } = await chart.dataURI();
+                if (imgURI) snaps[id] = imgURI;
+            } catch(e) { console.warn('[TMEExport] ApexCharts snapshot failed:', id, e); }
+        }
+        return snaps;
+    }
+
+    /* ── onclone: bersihkan DOM + inject snapshots ── */
+    function _makeOnClone(donutSnap, apexSnaps, apexHeights) {
+        return (clonedDoc) => {
+            const s = clonedDoc.createElement('style');
+            s.textContent = `
+                *, *::before, *::after {
+                    animation: none !important;
+                    transition: none !important;
+                    animation-play-state: paused !important;
+                }
+                [data-html2canvas-ignore] { display: none !important; }
+                .sk-block { animation: none !important; background: #e2e8f0 !important; }
+                .kpi-card-hover { transform: none !important; filter: none !important; opacity: 1 !important; }
+                .chart-loading { display: none !important; }
+                .export-toast  { display: none !important; }
+            `;
+            clonedDoc.head.appendChild(s);
+
+            /* Sembunyikan elemen noise */
+            clonedDoc.querySelectorAll(
+                '.do-panel-overlay,.do-panel,.do-detail-panel,' +
+                '#donutCustomTT,#tmePanelOverlay,#tmeSntPanel,' +
+                '.spin-ring,.spinner-state,.export-toast,.chart-loading,' +
+                '[data-html2canvas-ignore]'
+            ).forEach(el => {
+                el.style.cssText += 'display:none!important;visibility:hidden!important;';
             });
-        } finally { _unfreeze(); }
-        return canvas;
+
+            /* Sembunyikan tab panel tidak aktif */
+            clonedDoc.querySelectorAll('.tme-tab-panel:not(.active)').forEach(el => {
+                el.style.cssText += 'display:none!important;height:0!important;overflow:hidden!important;';
+            });
+
+            /* Sembunyikan iframe TikTok */
+            clonedDoc.querySelectorAll('.do-dp2-media iframe, iframe').forEach(f => {
+                f.style.cssText += 'display:none!important;';
+            });
+
+            /* Ganti avatar cross-origin dengan placeholder */
+            clonedDoc.querySelectorAll('.tme-post-av,.do-panel-avatar,.do-dp2-avatar-lg').forEach(wrapper => {
+                wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
+                if (!wrapper.style.background)
+                    wrapper.style.background = 'linear-gradient(135deg,#010101,#69C9D0)';
+            });
+            clonedDoc.querySelectorAll('.tme-post-thumb').forEach(wrapper => {
+                wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
+                wrapper.querySelectorAll('.tme-post-thumb-play').forEach(p => { p.style.display = 'none'; });
+                wrapper.style.background = 'linear-gradient(135deg,#273B4A,#374151)';
+            });
+
+            /* Force visible */
+            clonedDoc.querySelectorAll(
+                '.card,.card-body,.card-header,.row,[class*="col-"],' +
+                '.tme-tab-panel.active,.tme-post-list,.tme-post,' +
+                '#pageExportArea'
+            ).forEach(el => {
+                el.style.opacity    = '1';
+                el.style.transform  = 'none';
+                el.style.visibility = 'visible';
+                el.style.overflow   = 'visible';
+            });
+
+            /* ★ Ganti ECharts donut canvas dengan <img> snapshot ── kunci Safari ── */
+            if (donutSnap) {
+                const container = clonedDoc.getElementById('donutChart');
+                if (container) {
+                    container.innerHTML = '';
+                    const img = clonedDoc.createElement('img');
+                    img.src = donutSnap;
+                    img.style.cssText = 'width:100%;height:100%;display:block;object-fit:contain;';
+                    container.appendChild(img);
+                    container.style.cssText += 'display:block!important;opacity:1!important;visibility:visible!important;overflow:visible!important;';
+                }
+            }
+
+            /* ★ Ganti ApexCharts canvas dengan <img> snapshot ── */
+            for (const [id, imgURI] of Object.entries(apexSnaps || {})) {
+                const container = clonedDoc.getElementById(id);
+                if (!container) continue;
+                const h = apexHeights[id] || 280;
+                container.innerHTML = '';
+                const img = clonedDoc.createElement('img');
+                img.src = imgURI;
+                img.style.cssText = `width:100%;height:${h}px;display:block;object-fit:contain;background:#fff;`;
+                container.appendChild(img);
+                container.style.cssText += 'display:block!important;opacity:1!important;visibility:visible!important;';
+            }
+        };
+    }
+
+    /* ── Core capture: snapshot dulu, baru html2canvas ── */
+    async function _doCapture(el, isCard) {
+        window.scrollTo(0, 0);
+        await new Promise(r => setTimeout(r, 80));
+
+        /* Force visible semua kartu (hapus fade-up state) */
+        el.querySelectorAll('.card,.kpi-card-hover,[class*="col-"],.tme-post,.tme-post-list')
+          .forEach(e => {
+              e.style.opacity    = '1';
+              e.style.transform  = 'none';
+              e.style.visibility = 'visible';
+          });
+
+        /* Ambil semua snapshots SEBELUM html2canvas */
+        const donutSnap  = await _getDonutSnapshot();
+        const apexSnaps  = await _getApexSnapshots(el);
+
+        /* Catat tinggi aktual tiap ApexCharts container */
+        const apexHeights = {};
+        for (const id of Object.keys(apexSnaps)) {
+            const c = _$(id);
+            apexHeights[id] = c ? Math.max(c.scrollHeight, c.offsetHeight, 280) : 280;
+        }
+
+        /* Decode semua snapshot image sebelum html2canvas */
+        const allSnaps = [donutSnap, ...Object.values(apexSnaps)].filter(Boolean);
+        await Promise.allSettled(allSnaps.map(src =>
+            new Promise(resolve => {
+                const img = new Image();
+                img.onload = img.onerror = resolve;
+                setTimeout(resolve, 4000);
+                img.src = src;
+            })
+        ));
+
+        /* Satu frame lagi biar browser flush layout */
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, 200));
+
+        const totalH = el.scrollHeight;
+
+        return await html2canvas(el, {
+            scale          : 2,
+            useCORS        : true,
+            allowTaint     : false,          /* false = Safari-safe */
+            backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
+            logging        : false,
+            removeContainer: true,
+            imageTimeout   : 10000,
+            scrollX        : 0,
+            scrollY        : 0,
+            width          : el.offsetWidth,
+            height         : totalH,
+            onclone        : d => _makeOnClone(donutSnap, apexSnaps, apexHeights)(d),
+            /* Skip external img yg bukan data: / blob: */
+            ignoreElements : e =>
+                e.hasAttribute('data-html2canvas-ignore') ||
+                (e.tagName === 'IMG'
+                    && e.src
+                    && !e.src.startsWith('data:')
+                    && !e.src.startsWith('blob:')),
+        });
     }
 
     /* ── PDF header ── */
@@ -1642,8 +1718,8 @@ const TMEExport = (() => {
         pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
         pdf.text('SMADIMENT — ' + (label || 'TikTok Most Engagement'), 10, 7.5);
         const now = new Date().toLocaleDateString('id-ID', {
-            day: '2-digit', month: 'short', year: 'numeric',
-            hour: '2-digit', minute: '2-digit',
+            day:'2-digit', month:'short', year:'numeric',
+            hour:'2-digit', minute:'2-digit',
         });
         pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
         pdf.text('Generated: ' + now, pW - 10, 7.5, { align: 'right' });
@@ -1651,7 +1727,6 @@ const TMEExport = (() => {
         pdf.text(`Halaman ${page} / ${total}`, pW / 2, pH - 3, { align: 'center' });
     }
 
-    /* ── Tambahkan canvas ke halaman PDF (fit-in-page) ── */
     function _addCanvas(pdf, canvas, margin, pW, pH) {
         const uw = pW - margin * 2, uh = pH - 14 - 10;
         const ratio = Math.min(uw / canvas.width, uh / canvas.height);
@@ -1659,12 +1734,11 @@ const TMEExport = (() => {
         pdf.addImage(
             canvas.toDataURL('image/png'), 'PNG',
             margin + (uw - dw) / 2,
-            14   + (uh - dh) / 2,
+            14     + (uh - dh) / 2,
             dw, dh
         );
     }
 
-    /* ── Paginate canvas panjang ── */
     function _paginate(pdf, canvas, margin, pW, pH, labelFn) {
         const uw = pW - margin * 2, uh = pH - 14 - 10;
         const ratio  = uw / canvas.width, sliceH = uh / ratio;
@@ -1673,7 +1747,7 @@ const TMEExport = (() => {
         while (srcY < canvas.height) {
             if (pg > 1) pdf.addPage();
             _drawHeader(pdf, pW, pH, labelFn(), pg, total);
-            const srcSlice = Math.min(sliceH, canvas.height - srcY), dstH = srcSlice * ratio;
+            const srcSlice = Math.min(sliceH, canvas.height - srcY);
             const slice    = document.createElement('canvas');
             slice.width    = canvas.width;
             slice.height   = Math.ceil(srcSlice);
@@ -1681,18 +1755,18 @@ const TMEExport = (() => {
                 canvas, 0, srcY, canvas.width, srcSlice,
                 0, 0,           canvas.width, srcSlice
             );
-            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, uw, dstH);
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, uw, srcSlice * ratio);
             srcY += srcSlice; pg++;
         }
         return total;
     }
 
-    /* ════════════════════════════════════════════
-       run — Export seluruh halaman (semua 4 tab)
-    ════════════════════════════════════════════ */
+    const _stamp = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
+
+    /* ── Export seluruh halaman (semua 4 tab) ── */
     async function run(type, btn) {
-        if (!window.html2canvas)       { _toast('html2canvas tidak tersedia', 'error'); return; }
-        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error');       return; }
 
         const btnPdf = _$('pageExportPdfBtn'), btnImg = _$('pageExportImgBtn');
         _btnState(btnPdf, true); _btnState(btnImg, true);
@@ -1701,10 +1775,10 @@ const TMEExport = (() => {
         const originalTab = ['view','like','comment','share']
             .find(t => _$('tab-' + t)?.classList.contains('active')) || 'view';
         const area  = _$('pageExportArea');
-        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const stamp = _stamp();
 
         try {
-            /* ── Image: capture tab aktif saja ── */
+            /* Image: capture tab aktif saja */
             if (type === 'image') {
                 const canvas = await _doCapture(area, false);
                 const link   = document.createElement('a');
@@ -1715,45 +1789,40 @@ const TMEExport = (() => {
                 return;
             }
 
-            /* ── PDF: capture semua 4 tab ── */
-            const { jsPDF }  = window.jspdf;
-            const TAB_ORDER  = [
-                { key: 'view',    label: 'Most Viewed'    },
-                { key: 'like',    label: 'Most Liked'     },
-                { key: 'comment', label: 'Most Comments'  },
-                { key: 'share',   label: 'Most Shares'    },
+            /* PDF: capture semua 4 tab */
+            const TAB_ORDER = [
+                { key:'view',    label:'Most Viewed'   },
+                { key:'like',    label:'Most Liked'    },
+                { key:'comment', label:'Most Comments' },
+                { key:'share',   label:'Most Shares'   },
             ];
 
-            const canvases = [];
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+            const pW  = pdf.internal.pageSize.getWidth();
+            const pH  = pdf.internal.pageSize.getHeight();
+            const M   = 10, uw = pW - M * 2, uh = pH - 14 - 10;
+            let firstPage = true;
+
             for (let i = 0; i < TAB_ORDER.length; i++) {
                 const { key, label } = TAB_ORDER[i];
                 _toast(`Mengambil tab ${i + 1}/4: ${label}…`, 'default', 99999);
                 TMETab.show(key);
-                await new Promise(r => setTimeout(r, 900));
-                canvases.push({ label, canvas: await _doCapture(area, false) });
-            }
+                /* Lebih lama — beri waktu chart re-render setelah tab switch */
+                await new Promise(r => setTimeout(r, 1500));
+                window.scrollTo(0, 0);
+                await new Promise(r => setTimeout(r, 100));
 
-            /* Hitung total halaman */
-            const pdf   = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            const pW    = pdf.internal.pageSize.getWidth();
-            const pH    = pdf.internal.pageSize.getHeight();
-            const M     = 10, uw = pW - M * 2, uh = pH - 14 - 10;
-            let totalPg = 0;
-            canvases.forEach(({ canvas }) => {
-                const ratio = uw / canvas.width;
-                totalPg += Math.max(1, Math.ceil((canvas.height * ratio) / uh));
-            });
+                const canvas = await _doCapture(area, false);
+                const ratio  = uw / canvas.width, sliceH = uh / ratio;
+                const pages  = Math.max(1, Math.ceil((canvas.height * ratio) / uh));
+                let srcY = 0, pg = 1;
 
-            /* Build PDF */
-            let pageNum = 1, firstPage = true;
-            canvases.forEach(({ label, canvas }) => {
-                const ratio   = uw / canvas.width, sliceH = uh / ratio;
-                let srcY = 0;
                 while (srcY < canvas.height) {
                     if (!firstPage) pdf.addPage();
                     firstPage = false;
-                    _drawHeader(pdf, pW, pH, `TikTok Most Engagement — ${label}`, pageNum, totalPg);
-                    const srcSlice = Math.min(sliceH, canvas.height - srcY), dstH = srcSlice * ratio;
+                    _drawHeader(pdf, pW, pH, `TikTok Most Engagement — ${label}`, pg, pages);
+                    const srcSlice = Math.min(sliceH, canvas.height - srcY);
                     const slice    = document.createElement('canvas');
                     slice.width    = canvas.width;
                     slice.height   = Math.ceil(srcSlice);
@@ -1761,15 +1830,15 @@ const TMEExport = (() => {
                         canvas, 0, srcY, canvas.width, srcSlice,
                         0, 0,           canvas.width, srcSlice
                     );
-                    pdf.addImage(slice.toDataURL('image/png'), 'PNG', M, 14, uw, dstH);
-                    srcY += srcSlice; pageNum++;
+                    pdf.addImage(slice.toDataURL('image/png'), 'PNG', M, 14, uw, srcSlice * ratio);
+                    srcY += srcSlice; pg++;
                 }
-            });
+            }
 
             pdf.save(`tiktok_engagement_${TME_PID}_${stamp}.pdf`);
-            _toast(`PDF ${totalPg} halaman berhasil diunduh!`, 'success');
+            _toast('PDF berhasil diunduh!', 'success');
 
-        } catch (err) {
+        } catch(err) {
             console.error('[TMEExport.run]', err);
             _toast('Export gagal: ' + err.message, 'error');
         } finally {
@@ -1778,9 +1847,7 @@ const TMEExport = (() => {
         }
     }
 
-    /* ════════════════════════════════════════════
-       runCard — Export per-card
-    ════════════════════════════════════════════ */
+    /* ── Export per-card ── */
     const _cardLabels = {
         'donut'        : 'Distribusi Views — Top 5',
         'eng'          : 'Engagement Comparison',
@@ -1807,13 +1874,12 @@ const TMEExport = (() => {
             'bar-comment'  : 'chart-most-comments',
             'bar-share'    : 'chart-most-shares',
         };
-        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        return `tiktok_engagement_${map[k] || k}_${TME_PID}_${stamp}`;
+        return `tiktok_engagement_${map[k] || k}_${TME_PID}_${_stamp()}`;
     }
 
     async function runCard(areaId, cardKey, type, btn) {
-        if (!window.html2canvas)       { _toast('html2canvas tidak tersedia', 'error'); return; }
-        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error');       return; }
 
         _btnState(btn, true);
         _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
@@ -1833,11 +1899,11 @@ const TMEExport = (() => {
                 link.click();
                 _toast('Gambar berhasil diunduh!', 'success');
             } else {
-                const { jsPDF }  = window.jspdf;
-                const landscape  = canvas.width > canvas.height * 1.2;
-                const pdf        = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
-                const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
-                const M  = 10, uw = pW - M * 2, uh = pH - 14 - 10;
+                const { jsPDF } = window.jspdf;
+                const landscape = canvas.width > canvas.height * 1.2;
+                const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit:'mm', format:'a4' });
+                const pW  = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
+                const M   = 10, uw = pW - M * 2, uh = pH - 14 - 10;
                 const fitsOne = (canvas.height * (uw / canvas.width)) <= uh;
 
                 if (fitsOne) {
@@ -1849,17 +1915,15 @@ const TMEExport = (() => {
                 pdf.save(fname + '.pdf');
                 _toast('PDF berhasil diunduh!', 'success');
             }
-        } catch (err) {
+        } catch(err) {
             console.error('[TMEExport.runCard]', err);
             _toast('Export gagal: ' + err.message, 'error');
-        } finally {
-            _btnState(btn, false);
-        }
+        } finally { _btnState(btn, false); }
     }
 
     return { run, runCard };
 })();
-/* ══ INIT ══ */
+  
 document.addEventListener('DOMContentLoaded', () => {
     TMEData.loadAll();
     document.addEventListener('keydown', e => { if(e.key==='Escape') TMEPanel.close(); });

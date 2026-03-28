@@ -5,7 +5,7 @@
 @section('styles')
 <style>
 /* ══════════════════════════════════════════════════════
-   DESIGN TOKENS — mirrored from TikTok Most Engagement
+   DESIGN TOKENS
 ══════════════════════════════════════════════════════ */
 :root {
     --primary        : #038047;
@@ -430,9 +430,7 @@
 .kpi-card-hover:hover .kpi-icon-bg i { animation: kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both !important; display: inline-block !important; }
 .kpi-card-hover:active { transform: translateY(-2px) scale(1.01) !important; transition-duration: .08s !important; }
 
-/* ══════════════════════════════════════════════════════
-   EXPORT STYLES
-══════════════════════════════════════════════════════ */
+/* ══ EXPORT STYLES ══ */
 .page-export-bar {
     display:flex; align-items:center; justify-content:space-between;
     flex-wrap:wrap; gap:10px;
@@ -452,7 +450,7 @@
     width:32px; height:32px; border-radius:var(--radius-sm);
     font-size:16px; cursor:pointer;
     transition:all .15s ease; border:1.5px solid transparent;
-    font-family:inherit;
+    font-family:inherit; background:transparent; padding:0; line-height:1;
 }
 .page-export-btn-pdf { background:#fff3f3; color:#dc2626; border-color:#fca5a5; }
 .page-export-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
@@ -472,7 +470,7 @@
     width:28px; height:28px; border-radius:var(--radius-sm);
     font-size:14px; cursor:pointer; flex-shrink:0;
     transition:all .14s ease; border:1px solid transparent;
-    font-family:inherit; background:transparent;
+    font-family:inherit; background:transparent; padding:0; line-height:1;
 }
 .card-exp-btn-pdf { color:#dc2626; border-color:#fca5a5; background:#fff3f3; }
 .card-exp-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
@@ -525,10 +523,8 @@
     const YME_ED  = '{{ $endDate }}';
 </script>
 
-{{-- Filter (reuse same partial as TikTok) --}}
 @include('mk.layouts.partials.filter-datepicker')
 
-{{-- ════ PAGE EXPORT WRAPPER ════ --}}
 <div id="pageExportArea">
 
 {{-- ══ KPI Cards ══ --}}
@@ -605,21 +601,13 @@
         </span>
     </div>
     <div class="page-export-bar-right">
-        <button type="button"
-                class="page-export-btn page-export-btn-pdf"
-                id="pageExportPdfBtn"
-                onclick="YMEExport.run('pdf', this)"
-                title="Export halaman sebagai PDF">
-            <i class="ph ph-file-pdf export-icon"></i>
-            <span class="export-spinner"></span>
+        <button type="button" class="page-export-btn page-export-btn-pdf" id="pageExportPdfBtn"
+                onclick="YMEExport.run('pdf', this)" title="Export halaman sebagai PDF">
+            <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
         </button>
-        <button type="button"
-                class="page-export-btn page-export-btn-img"
-                id="pageExportImgBtn"
-                onclick="YMEExport.run('image', this)"
-                title="Export halaman sebagai PNG">
-            <i class="ph ph-image export-icon"></i>
-            <span class="export-spinner"></span>
+        <button type="button" class="page-export-btn page-export-btn-img" id="pageExportImgBtn"
+                onclick="YMEExport.run('image', this)" title="Export halaman sebagai PNG">
+            <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
         </button>
     </div>
 </div>
@@ -667,7 +655,7 @@
                     </div>
                 </div>
             </div>
-            </div>{{-- /card-export-donut --}}
+            </div>
         </div>
     </div>
 </div>
@@ -693,7 +681,6 @@
 @endphp
 <div class="yme-tab-panel {{ $tp === 'view' ? 'active' : '' }}" id="panel-{{ $tp }}">
 
-    {{-- Post List Card --}}
     <div class="card mb-3" style="animation:fadeUp .38s ease-out .2s both;">
         <div id="card-export-list-{{ $tp }}">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -730,10 +717,9 @@
         </div>
         <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
         <div id="pag-{{ $tp }}"></div>
-        </div>{{-- /card-export-list --}}
+        </div>
     </div>
 
-    {{-- Bar Chart Card --}}
     <div class="card mb-3" style="animation:fadeUp .38s ease-out .25s both;">
         <div id="card-export-bar-{{ $tp }}">
         <div class="card-header d-flex align-items-center justify-content-between">
@@ -770,10 +756,9 @@
                 <div id="bar-{{ $tp }}" style="width:100%;height:280px;display:none;"></div>
             </div>
         </div>
-        </div>{{-- /card-export-bar --}}
+        </div>
     </div>
 
-    {{-- Engagement comparison — view tab only --}}
     @if($tp === 'view')
     <div class="card mb-3" style="animation:fadeUp .38s ease-out .30s both;">
         <div id="card-export-eng">
@@ -814,23 +799,21 @@
                 <div id="bar-eng" style="width:100%;height:280px;display:none;"></div>
             </div>
         </div>
-        </div>{{-- /card-export-eng --}}
+        </div>
     </div>
     @endif
 
 </div>
 @endforeach
 
-{{-- /pageExportArea --}}
-</div>
+</div>{{-- /pageExportArea --}}
 
-{{-- ══ Export Toast ══ --}}
 <div class="export-toast" id="exportToast">
     <i class="ph ph-check-circle" id="exportToastIcon"></i>
     <span id="exportToastMsg">Exporting…</span>
 </div>
 
-{{-- ══ Slide Panel (drawer) ══ --}}
+{{-- ══ Slide Panel ══ --}}
 <div class="do-panel-overlay" id="ymePanelOverlay" onclick="YMEPanel.close()"></div>
 <div class="do-panel" id="ymeSntPanel">
     <div class="do-panel-header">
@@ -859,7 +842,6 @@
 @endsection
 
 @section('scripts')
-{{-- ══ Export dependencies ══ --}}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
@@ -1094,7 +1076,6 @@ const YMEData = {
         const v=parseInt(item.num_views||item.view_cnt||item.views||item.freq||0);
         const l=parseInt(item.num_likes||item.likes||0);
         const c=parseInt(item.num_comments||item.comments||0);
-        const sentLbl={pos:'Positive',neg:'Negative',neu:'Neutral'}[sent];
         const enc=encodeURIComponent(JSON.stringify(item));
         const vCls=type==='view'?' yme-metric--primary':'';
         const lCls=type==='like'?' yme-metric--primary':'';
@@ -1114,7 +1095,6 @@ const YMEData = {
                     <span class="yme-metric${vCls}"><i class="ph ph-eye me-1"></i>${numF(v)}</span>
                     <span class="yme-metric${lCls}"><i class="ph ph-thumbs-up me-1"></i>${numF(l)}</span>
                     <span class="yme-metric${cCls}"><i class="ph ph-chat-circle me-1"></i>${numF(c)}</span>
-                     
                 </div>
             </div>
             ${thumbHtml}
@@ -1129,7 +1109,10 @@ const YMEData = {
         const values=items.map(it=>this._metric(it,type));
         const opts={
             chart:{ type:'bar', height:280, fontFamily:'inherit', background:'transparent', toolbar:{show:false}, zoom:{enabled:false},
-                events:{ mounted:()=>hideLd('loading-bar-'+type), click:(_,ctx,cfg)=>{ const item=items[cfg.dataPointIndex]; if(item){ YMEPanel.open(Store[type],type,'YouTube'); YMEDetail.open(item,type); } } }
+                events:{
+                    mounted:()=>hideLd('loading-bar-'+type),
+                    click:(_,ctx,cfg)=>{ const item=items[cfg.dataPointIndex]; if(item){ YMEPanel.open(Store[type],type,'YouTube'); YMEDetail.open(item,type); } }
+                }
             },
             series:[{ name:{view:'Views',like:'Likes',comment:'Comments'}[type], data:values }],
             colors:[color],
@@ -1170,19 +1153,10 @@ const YMEData = {
         window.__ymeDonutChart=chart;
         window.addEventListener('resize',()=>{ try{ chart.resize(); }catch(e){} });
 
-        const pieData=top5.map((it,i)=>{
-            const name=this._getName(it);
-            const val=this._metric(it,type);
-            const content=dec((it.content||it.caption||it.title||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim());
-            const words=content?content.slice(0,120).split(' '):[];
-            const lines=[]; let cur='';
-            words.forEach(w=>{ if((cur+' '+w).trim().length>42){ lines.push(cur.trim()); cur=w; } else{ cur=(cur+' '+w).trim(); } });
-            if(cur) lines.push(cur);
-        return {
-    name, value:val, _content:content,
-    itemStyle:{ color:DONUT_COLORS[i] },
-};
-        });
+        const pieData=top5.map((it,i)=>({
+            name: this._getName(it), value: this._metric(it,type),
+            itemStyle:{ color:DONUT_COLORS[i] },
+        }));
 
         const option={
             backgroundColor:'transparent', animation:true, animationDuration:1000, animationEasing:'cubicOut', animationDelay:idx=>idx*80,
@@ -1225,6 +1199,7 @@ const YMEData = {
         chart.setOption(option);
         chart.on('click',p=>{ const item=top5[p.dataIndex]; if(item){ YMEPanel.open(Store[type].length?Store[type]:top5,type,'YouTube'); YMEDetail.open(item,type); } });
 
+        /* Custom tooltip */
         let _ttEl=document.getElementById('ymeDonutCustomTT');
         if(!_ttEl){
             _ttEl=document.createElement('div');
@@ -1335,7 +1310,6 @@ const YMEPanel = {
     _render(items,type){
         const list=_$('ymePanelList'); if(!list) return;
         if(!items?.length){ list.innerHTML='<div class="do-panel-loading"><div class="do-panel-spinner"></div>Tidak ada data</div>'; return; }
-        const color=YMECfg.colors[type]||YMECfg.primary;
         const metLbl={view:'Views',like:'Likes',comment:'Komentar'}[type];
         list.innerHTML=items.slice(0,100).map(item=>{
             const name=YMEData._getName(item), av=YMEData._getAvatar(item);
@@ -1443,12 +1417,7 @@ const YMEDetail = {
     },
     _killIframe(){
         const body=_$('ymeDetailBody');
-        if(body){
-            body.querySelectorAll('iframe').forEach(f=>{
-                f.src='';
-                f.remove();
-            });
-        }
+        if(body){ body.querySelectorAll('iframe').forEach(f=>{ f.src=''; f.remove(); }); }
     },
     close(){
         this._killIframe();
@@ -1457,15 +1426,18 @@ const YMEDetail = {
 };
 
 /* ══════════════════════════════════════════════════════
-   EXPORT MODULE — YouTube Most Engagement v2 (sync dengan X Overview)
-   Fix: ECharts pre-snapshot, _onClone, freeze, PDF all-tabs
-   Note: ECharts instance disimpan di window.__ymeDonutChart
+   EXPORT MODULE v3 — fix Chrome + Safari
+   Perubahan utama vs versi lama:
+   1. _swapChartsIn/Out: swap ECharts canvas → <img> di DOM asli (lebih reliable dari onClone)
+   2. _snapshotApex: snapshot semua ApexCharts via dataURI() sebelum capture
+   3. Safari fallback: salin DOM canvas langsung jika getDataURL gagal
+   4. Tidak pakai _freeze global (ApexCharts butuh render selesai dulu)
+   5. _onClone: cleanup panel, avatar, iframe saja (chart sudah dihandle swap)
 ══════════════════════════════════════════════════════ */
 const YMEExport = (() => {
     'use strict';
-    let _toastTimer  = null;
-    let _ecSnapshots = {};
-
+    let _toastTimer = null;
+ 
     /* ── Toast ── */
     function _toast(msg, type = 'default', duration = 3200) {
         const t   = _$('exportToast'),
@@ -1474,217 +1446,266 @@ const YMEExport = (() => {
         if (!t || !m) return;
         m.textContent = msg;
         t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
-        ico.className = 'ph ' + ({ success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' }[type] || 'ph-spinner');
+        ico.className = 'ph ' + ({ success:'ph-check-circle', error:'ph-x-circle', default:'ph-spinner' }[type] || 'ph-spinner');
         clearTimeout(_toastTimer);
         _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
     }
-
+ 
     /* ── Button state ── */
-    function _btnState(btn, loading) {
+    function _btnState(btn, on) {
         if (!btn) return;
-        btn.disabled = loading;
-        btn.classList.toggle('exporting', loading);
+        btn.disabled = on;
+        btn.classList.toggle('exporting', on);
     }
-
-    /* ── Freeze / unfreeze animations ── */
-    function _freeze() {
-        if (document.getElementById('__yme_freeze')) return;
-        const s = document.createElement('style');
-        s.id = '__yme_freeze';
-        s.textContent = '*{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
-        document.head.appendChild(s);
+ 
+    /* ══════════════════════════════════════════════════════
+       ★ _swapChartsIn
+         — ApexCharts: dataURI() → <img> swap
+         — ECharts (donut): SVG serializer → blob → canvas → dataURL
+           (sama persis pola IGExport — bukan canvas DOM fallback)
+    ══════════════════════════════════════════════════════ */
+    async function _swapChartsIn(el) {
+        const swaps = [];
+ 
+        /* ── ApexCharts (bar-view, bar-like, bar-comment, bar-eng) ── */
+        for (const id of Object.keys(Charts)) {
+            const container = _$(id);
+            if (!container || !el.contains(container) || container.style.display === 'none') continue;
+            const chart = Charts[id];
+            if (!chart) continue;
+            try {
+                const { imgURI } = await chart.dataURI();
+                if (!imgURI) continue;
+                const h = Math.round(container.getBoundingClientRect().height) || container.offsetHeight || 280;
+                const placeholder = document.createElement('div');
+                placeholder.dataset.swapFor = id;
+                placeholder.style.display = 'none';
+                const img = document.createElement('img');
+                img.src = imgURI;
+                img.style.cssText = `width:100%;height:${h}px;object-fit:contain;display:block;background:#fff;`;
+                container.parentNode.insertBefore(placeholder, container);
+                container.parentNode.insertBefore(img, placeholder);
+                container.style.display = 'none';
+                swaps.push({ container, placeholder, img });
+            } catch(e) { console.warn('[YMEExport] ApexCharts swap failed:', id, e); }
+        }
+ 
+        /* ── ECharts donut (SVG renderer) ── */
+        const donutContainer = _$('donutChart');
+        if (donutContainer && el.contains(donutContainer) && donutContainer.style.display !== 'none') {
+            const svgEl = donutContainer.querySelector('svg');
+            if (svgEl) {
+                try {
+                    const rect  = donutContainer.getBoundingClientRect();
+                    const w     = Math.round(rect.width)  || donutContainer.offsetWidth  || 800;
+                    const h     = Math.round(rect.height) || donutContainer.offsetHeight || 480;
+                    const svgStr  = new XMLSerializer().serializeToString(svgEl);
+                    const blob    = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+                    const blobUrl = URL.createObjectURL(blob);
+                    const dataUrl = await new Promise(resolve => {
+                        const image  = new Image();
+                        const canvas = document.createElement('canvas');
+                        canvas.width  = w * 2;
+                        canvas.height = h * 2;
+                        const ctx = canvas.getContext('2d');
+                        image.onload = () => {
+                            ctx.scale(2, 2);
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(0, 0, w, h);
+                            ctx.drawImage(image, 0, 0, w, h);
+                            URL.revokeObjectURL(blobUrl);
+                            resolve(canvas.toDataURL('image/png'));
+                        };
+                        image.onerror = () => { URL.revokeObjectURL(blobUrl); resolve(null); };
+                        setTimeout(() => resolve(null), 4000);
+                        image.src = blobUrl;
+                    });
+                    if (dataUrl) {
+                        const placeholder = document.createElement('div');
+                        placeholder.dataset.swapFor = 'donutChart';
+                        placeholder.style.display = 'none';
+                        const img = document.createElement('img');
+                        img.src = dataUrl;
+                        img.style.cssText = `width:100%;height:${h}px;object-fit:contain;display:block;background:#fff;`;
+                        donutContainer.parentNode.insertBefore(placeholder, donutContainer);
+                        donutContainer.parentNode.insertBefore(img, placeholder);
+                        donutContainer.style.display = 'none';
+                        swaps.push({ container: donutContainer, placeholder, img });
+                    }
+                } catch(e) { console.warn('[YMEExport] ECharts donut swap failed:', e); }
+            }
+        }
+ 
+        return swaps;
     }
-    function _unfreeze() { document.getElementById('__yme_freeze')?.remove(); }
-
-    /* ── Pre-snapshot ECharts donut (stored di window.__ymeDonutChart) ── */
-    function _preSnapshot() {
-        _ecSnapshots = {};
-        const inst = window.__ymeDonutChart;
-        if (!inst || inst.isDisposed?.()) return;
-        try {
-            _ecSnapshots['donutChart'] = inst.getDataURL({
-                type           : 'png',
-                pixelRatio     : window.devicePixelRatio || 2,
-                backgroundColor: '#ffffff',
-            });
-        } catch (e) { console.warn('[YMEExport] snapshot failed:', e); }
+ 
+    /* ── Restore semua swap ── */
+    function _swapChartsOut(swaps) {
+        swaps.forEach(({ container, placeholder, img }) => {
+            try { img.remove(); }         catch(e) {}
+            try { placeholder.remove(); } catch(e) {}
+            container.style.display = 'block';
+        });
     }
-
-    /* ── onclone: bersihkan DOM clone sebelum html2canvas render ── */
+ 
+    /* ══════════════════════════════════════════════════════
+       ★ _onClone — cleanup sebelum html2canvas render
+    ══════════════════════════════════════════════════════ */
     function _onClone(clonedDoc) {
-        /* 1. Sembunyikan elemen yang tidak perlu */
+        /* Sembunyikan panel, tooltip, spinner, toolbar */
         clonedDoc.querySelectorAll(
             '.do-panel-overlay,.do-panel,.do-detail-panel,' +
             '#ymeDonutCustomTT,#ymePanelOverlay,#ymeSntPanel,' +
             '.spin-ring,.spinner-state,.export-toast,.chart-loading,' +
             '[data-html2canvas-ignore]'
         ).forEach(el => {
-            el.style.cssText += 'display:none!important;visibility:hidden!important;' +
-                                'opacity:0!important;height:0!important;overflow:hidden!important;';
+            el.style.cssText += 'display:none!important;visibility:hidden!important;';
         });
-
-        /* 2. Sembunyikan tab panel yang tidak aktif */
+ 
+        /* Sembunyikan tab panel tidak aktif */
         clonedDoc.querySelectorAll('.yme-tab-panel:not(.active)').forEach(el => {
             el.style.cssText += 'display:none!important;height:0!important;overflow:hidden!important;';
         });
-
-        /* 3. Ganti avatar cross-origin dengan initial letter */
-        clonedDoc.querySelectorAll('.yme-post-av,.do-panel-avatar,.do-dp2-avatar-lg').forEach(wrapper => {
-            wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
-            if (!wrapper.querySelector('.__ini')) {
-                const txt     = (wrapper.textContent || '').trim();
-                const initial = txt ? txt[0].toUpperCase() : 'Y';
-                const sp      = clonedDoc.createElement('span');
-                sp.className  = '__ini';
-                sp.textContent = initial;
-                sp.style.cssText = 'font-size:13px;font-weight:700;color:#fff;line-height:1;';
-                wrapper.appendChild(sp);
-            }
-            if (!wrapper.style.background)
-                wrapper.style.background = 'linear-gradient(135deg,#FF0000,#cc0000)';
-        });
-
-        /* 4. Sembunyikan thumbnail & play button cross-origin di post list */
-        clonedDoc.querySelectorAll('.yme-post-thumb').forEach(wrapper => {
-            wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
-            wrapper.querySelectorAll('.yme-post-thumb-play').forEach(p => { p.style.display = 'none'; });
-            wrapper.style.background = 'linear-gradient(135deg,#cc0000,#990000)';
-        });
-
-        /* 5. Sembunyikan iframe YouTube di detail panel */
-        clonedDoc.querySelectorAll('.do-dp2-yt-embed iframe,.do-dp2-yt-thumb,.do-dp2-yt-embed').forEach(el => {
+ 
+        /* Sembunyikan iframe YouTube */
+        clonedDoc.querySelectorAll('.do-dp2-yt-embed,.do-dp2-yt-embed iframe,.do-dp2-yt-thumb').forEach(el => {
             el.style.cssText += 'display:none!important;';
         });
-
-        /* 6. Stop animasi & pastikan elemen terlihat */
+ 
+        /* Ganti avatar cross-origin dengan placeholder */
+        clonedDoc.querySelectorAll('.yme-post-av,.do-panel-avatar,.do-dp2-avatar-lg').forEach(wrapper => {
+            wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
+        });
+ 
+        /* Sembunyikan thumbnail cross-origin */
+        clonedDoc.querySelectorAll('.yme-post-thumb img').forEach(img => { img.style.display = 'none'; });
+        clonedDoc.querySelectorAll('.yme-post-thumb-play').forEach(el => { el.style.display = 'none'; });
+ 
+        /* Stop animasi */
         clonedDoc.querySelectorAll('*').forEach(el => {
             el.style.animationPlayState = 'paused';
-            el.style.animation          = 'none';
-            el.style.transition         = 'none';
+            el.style.animation  = 'none';
+            el.style.transition = 'none';
         });
+ 
+        /* Paksa elemen terlihat */
         clonedDoc.querySelectorAll(
             '.card,.card-body,.card-header,.row,[class*="col-"],' +
-            '.yme-tab-panel.active,.yme-post-list,.yme-post,' +
-            '#pageExportArea'
+            '.yme-tab-panel.active,.yme-post-list,.yme-post,#pageExportArea'
         ).forEach(el => {
             el.style.opacity    = '1';
             el.style.transform  = 'none';
             el.style.visibility = 'visible';
         });
-
-        /* 7. ★ Ganti ECharts <canvas> dengan <img> dari snapshot ★ */
-        if (_ecSnapshots['donutChart']) {
-            const container = clonedDoc.getElementById('donutChart');
-            if (container) {
-                container.innerHTML = '';
-                const img       = clonedDoc.createElement('img');
-                img.src         = _ecSnapshots['donutChart'];
-                img.style.cssText = 'width:100%;height:100%;display:block;object-fit:contain;';
-                container.appendChild(img);
-                container.style.cssText += 'display:block!important;opacity:1!important;visibility:visible!important;';
-            }
-        }
     }
-
-    /* ── Core capture (freeze → snapshot → html2canvas → unfreeze) ── */
+ 
+    /* ══════════════════════════════════════════════════════
+       ★ _doCapture — swap charts → capture → restore
+    ══════════════════════════════════════════════════════ */
     async function _doCapture(el, isCard) {
-        _preSnapshot();
-        _freeze();
+        /* Paksa elemen visible */
+        el.querySelectorAll('.kpi-card-hover,.yme-post,.card,[class*="col-"]')
+          .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; });
+ 
+        /* Swap charts ke <img> */
+        const swaps = await _swapChartsIn(el);
+ 
+        /* Beri browser waktu composite */
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        await new Promise(r => setTimeout(r, 400));
+        await new Promise(r => setTimeout(r, 250));
+ 
         let canvas;
         try {
             canvas = await html2canvas(el, {
-                scale          : 2,
+                scale          : isCard ? 2 : 1.5,
                 useCORS        : true,
-                allowTaint     : true,
+                allowTaint     : false,          /* Safari-safe */
                 backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
                 logging        : false,
                 removeContainer: true,
-                imageTimeout   : 0,
-                onclone        : d => _onClone(d),
-                ignoreElements : e => e.hasAttribute('data-html2canvas-ignore'),
-                x              : 0,
-                y              : 0,
+                imageTimeout   : 8000,           /* tidak hang di Safari */
+                scrollX        : 0,
+                scrollY        : -window.scrollY,
                 width          : el.offsetWidth,
                 height         : el.scrollHeight,
+                onclone        : d => _onClone(d),
+                /* Skip semua <img> yang bukan data URI — cegah cross-origin block */
+                ignoreElements : e =>
+                    e.hasAttribute('data-html2canvas-ignore') ||
+                    (e.tagName === 'IMG' && e.src && !e.src.startsWith('data:')),
             });
-        } finally { _unfreeze(); }
+        } finally {
+            /* Restore selalu, meski error */
+            _swapChartsOut(swaps);
+        }
         return canvas;
     }
-
-    /* ── PDF header ── */
+ 
+    /* ── PDF helpers ── */
     function _drawHeader(pdf, pW, pH, label, page, total) {
-        pdf.setFillColor(3, 128, 71);
-        pdf.rect(0, 0, pW, 11, 'F');
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
+        pdf.setFillColor(3, 128, 71); pdf.rect(0, 0, pW, 11, 'F');
+        pdf.setTextColor(255, 255, 255); pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
         pdf.text('SMADIMENT — ' + (label || 'YouTube Most Engagement'), 10, 7.5);
-        const now = new Date().toLocaleDateString('id-ID', {
-            day: '2-digit', month: 'short', year: 'numeric',
-            hour: '2-digit', minute: '2-digit',
-        });
+        const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
         pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
         pdf.text('Generated: ' + now, pW - 10, 7.5, { align: 'right' });
         pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
         pdf.text(`Halaman ${page} / ${total}`, pW / 2, pH - 3, { align: 'center' });
     }
-
-    /* ── Tambahkan canvas ke halaman PDF (fit-in-page) ── */
-    function _addCanvas(pdf, canvas, margin, pW, pH) {
+ 
+    function _fitCanvas(pdf, canvas, margin, pW, pH) {
         const uw = pW - margin * 2, uh = pH - 14 - 10;
-        const ratio = Math.min(uw / canvas.width, uh / canvas.height);
-        const dw = canvas.width * ratio, dh = canvas.height * ratio;
+        const r  = Math.min(uw / canvas.width, uh / canvas.height);
         pdf.addImage(
             canvas.toDataURL('image/png'), 'PNG',
-            margin + (uw - dw) / 2,
-            14   + (uh - dh) / 2,
-            dw, dh
+            margin + (uw - canvas.width  * r) / 2,
+            14     + (uh - canvas.height * r) / 2,
+            canvas.width * r, canvas.height * r
         );
     }
-
-    /* ── Paginate canvas panjang ── */
-    function _paginate(pdf, canvas, margin, pW, pH, labelFn) {
+ 
+    function _sliceCanvas(pdf, canvas, margin, pW, pH, labelFn) {
         const uw = pW - margin * 2, uh = pH - 14 - 10;
-        const ratio  = uw / canvas.width, sliceH = uh / ratio;
+        const ratio  = uw / canvas.width;
+        const sliceH = uh / ratio;
         const total  = Math.max(1, Math.ceil((canvas.height * ratio) / uh));
         let srcY = 0, pg = 1;
         while (srcY < canvas.height) {
             if (pg > 1) pdf.addPage();
             _drawHeader(pdf, pW, pH, labelFn(), pg, total);
-            const srcSlice = Math.min(sliceH, canvas.height - srcY), dstH = srcSlice * ratio;
+            const srcSlice = Math.min(sliceH, canvas.height - srcY);
             const slice    = document.createElement('canvas');
             slice.width    = canvas.width;
             slice.height   = Math.ceil(srcSlice);
             slice.getContext('2d').drawImage(
-                canvas, 0, srcY, canvas.width, srcSlice,
-                0, 0,           canvas.width, srcSlice
+                canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice
             );
-            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, uw, dstH);
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, uw, srcSlice * ratio);
             srcY += srcSlice; pg++;
         }
-        return total;
     }
-
+ 
+    function _stamp() { return new Date().toISOString().slice(0, 10).replace(/-/g, ''); }
+ 
     /* ════════════════════════════════════════════
-       run — Export seluruh halaman (semua 3 tab)
+       run — Export seluruh halaman (3 tab)
     ════════════════════════════════════════════ */
     async function run(type, btn) {
-        if (!window.html2canvas)       { _toast('html2canvas tidak tersedia', 'error'); return; }
-        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
-
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error');       return; }
+ 
         const btnPdf = _$('pageExportPdfBtn'), btnImg = _$('pageExportImgBtn');
         _btnState(btnPdf, true); _btnState(btnImg, true);
         _toast(type === 'pdf' ? 'Menyiapkan PDF semua tab…' : 'Mengambil gambar…', 'default', 99999);
-
-        const originalTab = ['view','like','comment']
-            .find(t => _$('tab-' + t)?.classList.contains('active')) || 'view';
+ 
+        const originalTab = ['view','like','comment'].find(t => _$('tab-'+t)?.classList.contains('active')) || 'view';
         const area  = _$('pageExportArea');
-        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-
+        const stamp = _stamp();
+ 
         try {
-            /* ── Image: capture tab aktif saja ── */
             if (type === 'image') {
+                window.scrollTo({ top: 0 });
+                await new Promise(r => setTimeout(r, 200));
                 const canvas = await _doCapture(area, false);
                 const link   = document.createElement('a');
                 link.download = `youtube_engagement_${YME_PID}_${stamp}.png`;
@@ -1693,61 +1714,60 @@ const YMEExport = (() => {
                 _toast('Gambar berhasil diunduh!', 'success');
                 return;
             }
-
-            /* ── PDF: capture semua 3 tab ── */
-            const { jsPDF }  = window.jspdf;
-            const TAB_ORDER  = [
-                { key: 'view',    label: 'Most Viewed'    },
-                { key: 'like',    label: 'Most Liked'     },
-                { key: 'comment', label: 'Most Comments'  },
+ 
+            /* PDF: capture semua 3 tab */
+            const TAB_ORDER = [
+                { key:'view',    label:'Most Viewed'   },
+                { key:'like',    label:'Most Liked'    },
+                { key:'comment', label:'Most Comments' },
             ];
-
-            const canvases = [];
+ 
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+            const pW  = pdf.internal.pageSize.getWidth();
+            const pH  = pdf.internal.pageSize.getHeight();
+            const M   = 10;
+            const uw  = pW - M * 2;
+            const uh  = pH - 14 - 10;
+ 
+            /* Hitung total halaman dulu */
+            let firstPage = true;
+ 
             for (let i = 0; i < TAB_ORDER.length; i++) {
                 const { key, label } = TAB_ORDER[i];
-                _toast(`Mengambil tab ${i + 1}/3: ${label}…`, 'default', 99999);
+                _toast(`Mengambil tab ${i+1}/3: ${label}…`, 'default', 99999);
                 YMETab.show(key);
-                await new Promise(r => setTimeout(r, 900));
-                canvases.push({ label, canvas: await _doCapture(area, false) });
-            }
-
-            /* Hitung total halaman */
-            const pdf   = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            const pW    = pdf.internal.pageSize.getWidth();
-            const pH    = pdf.internal.pageSize.getHeight();
-            const M     = 10, uw = pW - M * 2, uh = pH - 14 - 10;
-            let totalPg = 0;
-            canvases.forEach(({ canvas }) => {
-                const ratio = uw / canvas.width;
-                totalPg += Math.max(1, Math.ceil((canvas.height * ratio) / uh));
-            });
-
-            /* Build PDF */
-            let pageNum = 1, firstPage = true;
-            canvases.forEach(({ label, canvas }) => {
-                const ratio   = uw / canvas.width, sliceH = uh / ratio;
-                let srcY = 0;
+                /* Tunggu data & chart render */
+                await new Promise(r => setTimeout(r, 1200));
+                window.scrollTo({ top: 0 });
+                await new Promise(r => setTimeout(r, 150));
+ 
+                const canvas = await _doCapture(area, false);
+                const ratio  = uw / canvas.width;
+                const sliceH = uh / ratio;
+                const pages  = Math.max(1, Math.ceil((canvas.height * ratio) / uh));
+                let srcY = 0, pg = 1;
+ 
                 while (srcY < canvas.height) {
                     if (!firstPage) pdf.addPage();
                     firstPage = false;
-                    _drawHeader(pdf, pW, pH, `YouTube Most Engagement — ${label}`, pageNum, totalPg);
-                    const srcSlice = Math.min(sliceH, canvas.height - srcY), dstH = srcSlice * ratio;
+                    _drawHeader(pdf, pW, pH, `YouTube Most Engagement — ${label}`, pg, pages);
+                    const srcSlice = Math.min(sliceH, canvas.height - srcY);
                     const slice    = document.createElement('canvas');
                     slice.width    = canvas.width;
                     slice.height   = Math.ceil(srcSlice);
                     slice.getContext('2d').drawImage(
-                        canvas, 0, srcY, canvas.width, srcSlice,
-                        0, 0,           canvas.width, srcSlice
+                        canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice
                     );
-                    pdf.addImage(slice.toDataURL('image/png'), 'PNG', M, 14, uw, dstH);
-                    srcY += srcSlice; pageNum++;
+                    pdf.addImage(slice.toDataURL('image/png'), 'PNG', M, 14, uw, srcSlice * ratio);
+                    srcY += srcSlice; pg++;
                 }
-            });
-
+            }
+ 
             pdf.save(`youtube_engagement_${YME_PID}_${stamp}.pdf`);
-            _toast(`PDF ${totalPg} halaman berhasil diunduh!`, 'success');
-
-        } catch (err) {
+            _toast('PDF berhasil diunduh!', 'success');
+ 
+        } catch(err) {
             console.error('[YMEExport.run]', err);
             _toast('Export gagal: ' + err.message, 'error');
         } finally {
@@ -1755,7 +1775,7 @@ const YMEExport = (() => {
             _btnState(btnPdf, false); _btnState(btnImg, false);
         }
     }
-
+ 
     /* ════════════════════════════════════════════
        runCard — Export per-card
     ════════════════════════════════════════════ */
@@ -1769,7 +1789,7 @@ const YMEExport = (() => {
         'bar-like'     : 'Chart Most Liked',
         'bar-comment'  : 'Chart Most Comments',
     };
-
+ 
     function _cardFilename(k) {
         const map = {
             'donut'        : 'distribusi-views-top5',
@@ -1781,25 +1801,24 @@ const YMEExport = (() => {
             'bar-like'     : 'chart-most-liked',
             'bar-comment'  : 'chart-most-comments',
         };
-        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        return `youtube_engagement_${map[k] || k}_${YME_PID}_${stamp}`;
+        return `youtube_engagement_${map[k]||k}_${YME_PID}_${_stamp()}`;
     }
-
+ 
     async function runCard(areaId, cardKey, type, btn) {
-        if (!window.html2canvas)       { _toast('html2canvas tidak tersedia', 'error'); return; }
-        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
-
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error');       return; }
+ 
         _btnState(btn, true);
         _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
-
+ 
         try {
             const area = document.getElementById(areaId);
             if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
-
+ 
             const canvas = await _doCapture(area, true);
             const fname  = _cardFilename(cardKey);
             const label  = _cardLabels[cardKey] || cardKey;
-
+ 
             if (type === 'image') {
                 const link    = document.createElement('a');
                 link.download = fname + '.png';
@@ -1807,36 +1826,37 @@ const YMEExport = (() => {
                 link.click();
                 _toast('Gambar berhasil diunduh!', 'success');
             } else {
-                const { jsPDF }  = window.jspdf;
-                const landscape  = canvas.width > canvas.height * 1.2;
-                const pdf        = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
-                const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
-                const M  = 10, uw = pW - M * 2, uh = pH - 14 - 10;
-                const fitsOne = (canvas.height * (uw / canvas.width)) <= uh;
-
-                if (fitsOne) {
+                const { jsPDF } = window.jspdf;
+                const landscape = canvas.width > canvas.height * 1.2;
+                const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit:'mm', format:'a4' });
+                const pW  = pdf.internal.pageSize.getWidth();
+                const pH  = pdf.internal.pageSize.getHeight();
+                const M   = 10;
+                const uw  = pW - M * 2;
+                const uh  = pH - 14 - 10;
+ 
+                if ((canvas.height * (uw / canvas.width)) <= uh) {
                     _drawHeader(pdf, pW, pH, label, 1, 1);
-                    _addCanvas(pdf, canvas, M, pW, pH);
+                    _fitCanvas(pdf, canvas, M, pW, pH);
                 } else {
-                    _paginate(pdf, canvas, M, pW, pH, () => label);
+                    _sliceCanvas(pdf, canvas, M, pW, pH, () => label);
                 }
                 pdf.save(fname + '.pdf');
                 _toast('PDF berhasil diunduh!', 'success');
             }
-        } catch (err) {
+        } catch(err) {
             console.error('[YMEExport.runCard]', err);
             _toast('Export gagal: ' + err.message, 'error');
-        } finally {
-            _btnState(btn, false);
-        }
+        } finally { _btnState(btn, false); }
     }
-
+ 
     return { run, runCard };
 })();
+ 
 /* ══ INIT ══ */
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', () => {
     YMEData.loadAll();
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape') YMEPanel.close(); });
+    document.addEventListener('keydown', e => { if(e.key==='Escape') YMEPanel.close(); });
 });
 </script>
 @endsection

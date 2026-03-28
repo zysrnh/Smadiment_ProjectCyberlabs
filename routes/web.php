@@ -22,7 +22,7 @@ use App\Http\Controllers\MK\AllPlatformAiController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('user.login');
+    return view('welcome');
 });
 
 Route::prefix('user')->name('user.')->group(function () {

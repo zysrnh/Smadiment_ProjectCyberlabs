@@ -322,7 +322,6 @@
 @endsection
 
 @section('scripts')
-  {{-- Export dependencies --}}
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
           crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
@@ -335,7 +334,7 @@
     'use strict';
 
     /* ══════════════════════════════════════════════════
-       TMApp — core logic
+       TMApp — tidak berubah
     ══════════════════════════════════════════════════ */
     const TMApp = (() => {
       const _urlP = new URLSearchParams(window.location.search);
@@ -351,7 +350,9 @@
 
       const $ = id => document.getElementById(id);
       const nF = n => parseInt(n || 0).toLocaleString('id-ID');
-      function getPrimary() { return getComputedStyle(document.documentElement).getPropertyValue('--bs-primary').trim() || '#4361EE'; }
+      function getPrimary() {
+        return getComputedStyle(document.documentElement).getPropertyValue('--bs-primary').trim() || '#4361EE';
+      }
 
       function init() {
         if (!projectId) { _showEmpty('Pilih project dari sidebar terlebih dahulu.'); return; }
@@ -428,7 +429,7 @@
           _topic: t,
         }));
         if (wordCloudInst) wordCloudInst.dispose();
-        wordCloudInst = echarts.init(chartDiv, null, { renderer:'canvas', devicePixelRatio:window.devicePixelRatio || 1 });
+        wordCloudInst = echarts.init(chartDiv, null, { renderer:'canvas', devicePixelRatio: window.devicePixelRatio || 1 });
         wordCloudInst.setOption({
           tooltip: {
             show:true, trigger:'item',
@@ -447,11 +448,22 @@
             drawOutOfBound:false, layoutAnimation:true,
             textStyle:{ fontFamily:'Poppins, Inter, sans-serif', fontWeight:'bold', color:()=>colors[Math.floor(Math.random()*colors.length)] },
             emphasis:{ focus:'self', textStyle:{ textShadowBlur:10, textShadowColor:'rgba(0,0,0,0.35)' } },
-            data:wordData,
+            data: wordData,
           }],
         }, true);
+        // Enable click on word cloud word
+        wordCloudInst.off('click');
+        wordCloudInst.on('click', function(params) {
+          if (params && params.name) {
+            const topic = encodeURIComponent(params.name);
+            window.location.href = `/mk/topic-detail?topic=${topic}`;
+          }
+        });
         let rtimer;
-        window.addEventListener('resize', () => { clearTimeout(rtimer); rtimer=setTimeout(()=>{ if(wordCloudInst) wordCloudInst.resize(); }, 250); });
+        window.addEventListener('resize', () => {
+          clearTimeout(rtimer);
+          rtimer = setTimeout(() => { if (wordCloudInst) wordCloudInst.resize(); }, 250);
+        });
       }
 
       function _renderBar(topics) {
@@ -482,7 +494,7 @@
         if (!ctx) return;
         if (pieChartInst) pieChartInst.destroy();
         const top    = topics.slice(0, 10);
-        const others = topics.slice(10).reduce((s,t)=>s+t.count,0);
+        const others = topics.slice(10).reduce((s,t)=>s+t.count, 0);
         const labels = [...top.map(t=>t.name)];
         const data   = [...top.map(t=>t.count)];
         if (others > 0) { labels.push('Others'); data.push(others); }
@@ -504,26 +516,36 @@
         const listEl      = $('topicList');
         const viewAllWrap = $('viewAllWrap');
         if (!listEl) return;
-        if (!topics.length) { listEl.innerHTML=`<div class="tm-empty"><i class="ph ph-folder-open"></i><span>Tidak ada topik</span></div>`; viewAllWrap.style.display='none'; return; }
-        listEl.innerHTML = topics.slice(0, 10).map((t,i) => {
+        if (!topics.length) {
+          listEl.innerHTML = `<div class="tm-empty"><i class="ph ph-folder-open"></i><span>Tidak ada topik</span></div>`;
+          viewAllWrap.style.display = 'none';
+          return;
+        }
+        listEl.innerHTML = topics.slice(0, 10).map((t, i) => {
           const rank = i + 1;
-          return `<div class="topic-item"><span class="topic-rank${rank<=3?' top-3':''}">#${rank}</span><span class="topic-name">${t.name}</span><span class="topic-count">${nF(t.count)}</span></div>`;
+          const topicUrl = `/mk/topic-detail?topic=${encodeURIComponent(t.name)}`;
+          return `<div class="topic-item" style="cursor:pointer" onclick="window.location.href='${topicUrl}'"><span class="topic-rank${rank<=3?' top-3':''}">#${rank}</span><span class="topic-name">${t.name}</span><span class="topic-count">${nF(t.count)}</span></div>`;
         }).join('');
         viewAllWrap.style.display = topics.length > 10 ? '' : 'none';
       }
 
       function openModal() {
         const overlay = $('tmModalOverlay'), listEl = $('modalTopicList');
-        listEl.innerHTML = topicsData.map((t,i) => {
+        listEl.innerHTML = topicsData.map((t, i) => {
           const rank = i + 1;
-          return `<div class="topic-item" data-name="${t.name.toLowerCase()}"><span class="topic-rank${rank<=3?' top-3':''}">#${rank}</span><span class="topic-name">${t.name}</span><span class="topic-count">${nF(t.count)}</span></div>`;
+          const topicUrl = `/mk/topic-detail?topic=${encodeURIComponent(t.name)}`;
+          return `<div class="topic-item" data-name="${t.name.toLowerCase()}" style="cursor:pointer" onclick="window.location.href='${topicUrl}'"><span class="topic-rank${rank<=3?' top-3':''}">#${rank}</span><span class="topic-name">${t.name}</span><span class="topic-count">${nF(t.count)}</span></div>`;
         }).join('');
         overlay.classList.add('active');
         document.body.style.overflow = 'hidden';
         setTimeout(() => $('modalSearch')?.focus(), 100);
       }
-      function closeModal() { $('tmModalOverlay').classList.remove('active'); document.body.style.overflow=''; if($('modalSearch'))$('modalSearch').value=''; }
-      function closeModalOnOverlay(e) { if (e.target.id==='tmModalOverlay') closeModal(); }
+      function closeModal() {
+        $('tmModalOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+        if ($('modalSearch')) $('modalSearch').value = '';
+      }
+      function closeModalOnOverlay(e) { if (e.target.id === 'tmModalOverlay') closeModal(); }
 
       function _showEmpty(msg) {
         const html = `<div class="tm-empty"><i class="ph ph-warning-circle"></i><span>${msg}</span></div>`;
@@ -543,36 +565,43 @@
     })();
 
     /* ════════════════════════════════════════════════════════
-       WCExport — Export Module
+       WCExport — Safari-compatible
+       
+       Pendekatan: ganti elemen di LIVE DOM (bukan onclone).
+       Safari tidak bisa render canvas via html2canvas.
+       Solusi: replace canvas/echarts-div → <img> di DOM nyata,
+       jalankan html2canvas, lalu restore elemen asli.
     ════════════════════════════════════════════════════════ */
     const WCExport = (() => {
       const _urlP     = new URLSearchParams(window.location.search);
       const _pid      = _urlP.get('project_id') || '';
       let _toastTimer = null;
 
-      function _toast(msg, type='default', duration=3200) {
-        const t=document.getElementById('exportToast'), m=document.getElementById('exportToastMsg'), ico=document.getElementById('exportToastIcon');
-        if(!t||!m) return;
+      /* ── Toast ── */
+      function _toast(msg, type = 'default', duration = 3200) {
+        const t   = document.getElementById('exportToast');
+        const m   = document.getElementById('exportToastMsg');
+        const ico = document.getElementById('exportToastIcon');
+        if (!t || !m) return;
         m.textContent = msg;
-        t.className   = 'export-toast show '+(type!=='default'?type:'');
-        const icons   = { success:'ph-check-circle', error:'ph-x-circle', default:'ph-spinner' };
-        ico.className = 'ph '+(icons[type]||icons.default);
+        t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
+        ico.className = 'ph ' + ({ success:'ph-check-circle', error:'ph-x-circle', default:'ph-spinner' }[type] || 'ph-spinner');
         clearTimeout(_toastTimer);
-        _toastTimer   = setTimeout(()=>t.classList.remove('show'), duration);
+        _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
       }
 
       function _btnState(btn, loading) {
-        if(!btn) return;
+        if (!btn) return;
         btn.disabled = loading;
         btn.classList.toggle('exporting', loading);
       }
 
-      /* ── Freeze / unfreeze semua animasi ── */
+      /* ── Freeze CSS animations ── */
       let _freezeStyle = null;
-      function _freezeAnimations() {
+      function _freeze() {
         if (_freezeStyle) return;
         _freezeStyle = document.createElement('style');
-        _freezeStyle.id = '__export_freeze__';
+        _freezeStyle.id = '__wc_freeze__';
         _freezeStyle.textContent = `
           *, *::before, *::after {
             animation-play-state: paused !important;
@@ -581,229 +610,335 @@
             transition-duration: 0s !important;
             transition-delay: 0s !important;
           }
-          .fade-up, .fade-up-d1, .fade-up-d2, .fade-up-d3 {
-            opacity: 1 !important;
-            transform: none !important;
-            animation: none !important;
+          .fade-up,.fade-up-d1,.fade-up-d2,.fade-up-d3 {
+            opacity:1!important; transform:none!important; animation:none!important;
           }
-          .sk-block {
-            animation: none !important;
-            background: #e2e8f0 !important;
-          }
+          .sk-block { animation:none!important; background:#e2e8f0!important; }
         `;
         document.head.appendChild(_freezeStyle);
       }
-
-      function _unfreezeAnimations() {
+      function _unfreeze() {
         if (_freezeStyle) { _freezeStyle.remove(); _freezeStyle = null; }
       }
 
-      function _resizeAll() {
-        const { wordCloudInst, barChartInst, pieChartInst } = TMApp.getInsts();
-        if(wordCloudInst) { try{ wordCloudInst.resize(); }catch(e){} }
-        if(barChartInst)  { try{ barChartInst.resize();  }catch(e){} }
-        if(pieChartInst)  { try{ pieChartInst.resize();  }catch(e){} }
-      }
-
-      /* ── Snapshot ECharts word cloud → dataURL ── */
+      /* ─────────────────────────────────────────────────────
+         _getWCSnapshot()
+         Ambil dataURL dari ECharts word cloud.
+         Harus dipanggil SEBELUM freeze/replace DOM.
+      ───────────────────────────────────────────────────── */
       async function _getWCSnapshot() {
         const { wordCloudInst } = TMApp.getInsts();
         if (!wordCloudInst || wordCloudInst.isDisposed()) return null;
         try {
           wordCloudInst.setOption({ animation: false });
           wordCloudInst.resize();
-          await new Promise(r => setTimeout(r, 700));
+          /* Tunggu word cloud selesai layout */
+          await new Promise(r => setTimeout(r, 900));
           return wordCloudInst.getDataURL({ type:'png', pixelRatio:2, backgroundColor:'#ffffff' });
         } catch(e) {
-          console.warn('[WCExport] snapshot failed', e);
+          console.warn('[WCExport] WC snapshot failed:', e);
           return null;
         }
       }
 
-      /* ── onclone handler — ganti canvas ECharts dengan img snapshot ── */
-      function _makeOnClone(wcSnapshot) {
-        return (clonedDoc) => {
-          /* Inject style freeze ke clone */
-          const s = clonedDoc.createElement('style');
-          s.textContent = `
-            *, *::before, *::after { animation: none !important; transition: none !important; }
-            .fade-up, .fade-up-d1, .fade-up-d2, .fade-up-d3 { opacity: 1 !important; transform: none !important; }
-            [data-html2canvas-ignore] { display: none !important; }
-            .chart-view:not(.active) { display: none !important; }
-          `;
-          clonedDoc.head.appendChild(s);
+      /* ─────────────────────────────────────────────────────
+         _replaceCanvasesWithImages()
+         Ganti canvas/div chart di LIVE DOM dengan <img>.
+         Kembalikan array {node, parent, nextSibling}
+         supaya bisa di-restore setelah capture.
+      ───────────────────────────────────────────────────── */
+      function _replaceCanvasesWithImages(wcSnapshot, currentChart) {
+        const replacements = [];
 
-          /* Sembunyikan loading/spinner */
-        clonedDoc.querySelectorAll('.tm-loading, .tm-spinner, #wordCloudLoading, .wordcloud-hint, .export-toast, .tm-modal-overlay, #viewAllWrap')
-  .forEach(el => { el.style.display = 'none'; el.style.visibility = 'hidden'; });
+        function _replace(originalEl, dataUrl, styleOverride) {
+          if (!originalEl || !originalEl.parentNode) return;
+          const img = document.createElement('img');
+          img.src = dataUrl;
+          img.style.cssText = styleOverride || 'width:100%;height:100%;display:block;object-fit:contain;';
+          const nextSib = originalEl.nextSibling;
+          const parent  = originalEl.parentNode;
+          parent.replaceChild(img, originalEl);
+          replacements.push({ original: originalEl, replacement: img, parent, nextSib });
+        }
 
-          /* Force semua topic-item & card visible */
-          clonedDoc.querySelectorAll('.topic-item, .card, .fade-up, .fade-up-d1, .fade-up-d2, .fade-up-d3, [class*="col-"]')
-            .forEach(el => { el.style.opacity='1'; el.style.transform='none'; el.style.visibility='visible'; });
-
-          /* KUNCI: Ganti ECharts canvas dengan img dari snapshot */
-          const wcDiv = clonedDoc.getElementById('wordCloudChart');
-          if (wcDiv) {
-            wcDiv.innerHTML = '';
-            wcDiv.style.cssText = 'display:block!important;position:absolute;top:0;left:0;width:100%;height:100%;';
-            if (wcSnapshot) {
-              const img = clonedDoc.createElement('img');
-              img.src = wcSnapshot;
-              img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
-              wcDiv.appendChild(img);
-            }
+        /* 1. Word cloud (ECharts) */
+        if (currentChart === 'wordcloud') {
+          const wcDiv = document.getElementById('wordCloudChart');
+          if (wcDiv && wcSnapshot) {
+            _replace(wcDiv, wcSnapshot, 'width:100%;height:100%;position:absolute;top:0;left:0;display:block;object-fit:contain;');
           }
-        };
+        }
+
+        /* 2. Bar chart (Chart.js canvas) */
+        if (currentChart === 'bar') {
+          const barCanvas = document.getElementById('barChart');
+          if (barCanvas) {
+            try {
+              const dataUrl = barCanvas.toDataURL('image/png');
+              _replace(barCanvas, dataUrl, 'width:100%;height:100%;display:block;');
+            } catch(e) { console.warn('[WCExport] bar canvas toDataURL failed:', e); }
+          }
+        }
+
+        /* 3. Pie chart (Chart.js canvas) */
+        if (currentChart === 'pie') {
+          const pieCanvas = document.getElementById('pieChart');
+          if (pieCanvas) {
+            try {
+              const dataUrl = pieCanvas.toDataURL('image/png');
+              _replace(pieCanvas, dataUrl, 'width:100%;height:100%;display:block;');
+            } catch(e) { console.warn('[WCExport] pie canvas toDataURL failed:', e); }
+          }
+        }
+
+        return replacements;
       }
 
+      /* ─────────────────────────────────────────────────────
+         _restoreElements()
+         Kembalikan elemen asli ke DOM.
+      ───────────────────────────────────────────────────── */
+      function _restoreElements(replacements) {
+        for (const { original, replacement, parent, nextSib } of replacements) {
+          try {
+            if (replacement.parentNode === parent) {
+              parent.replaceChild(original, replacement);
+            } else if (nextSib && nextSib.parentNode === parent) {
+              parent.insertBefore(original, nextSib);
+            } else {
+              parent.appendChild(original);
+            }
+          } catch(e) {
+            console.warn('[WCExport] restore failed:', e);
+          }
+        }
+      }
+
+      /* ─────────────────────────────────────────────────────
+         _hideIgnoredElements()
+         Sembunyikan elemen data-html2canvas-ignore & UI noise
+         di live DOM, return restore function.
+      ───────────────────────────────────────────────────── */
+      function _hideUIElements() {
+        const selectors = [
+          '[data-html2canvas-ignore]',
+          '.wordcloud-hint',
+          '#wordCloudLoading',
+          '.tm-loading',
+          '.tm-spinner',
+          '.export-toast',
+          '.tm-modal-overlay',
+          '#viewAllWrap',
+        ];
+        const hidden = [];
+        selectors.forEach(sel => {
+          document.querySelectorAll(sel).forEach(el => {
+            if (el.style.display !== 'none') {
+              hidden.push({ el, prev: el.style.display });
+              el.style.display = 'none';
+            }
+          });
+        });
+        return () => hidden.forEach(({ el, prev }) => { el.style.display = prev; });
+      }
+
+      /* ─────────────────────────────────────────────────────
+         _capture() — inti export, Safari-compatible
+      ───────────────────────────────────────────────────── */
       async function _capture(areaId, bgColor) {
         const area = document.getElementById(areaId);
-        if(!area) throw new Error('Area #'+areaId+' tidak ditemukan');
+        if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+
+        const { currentChart } = TMApp.getInsts();
 
         /* 1. Scroll ke atas */
         window.scrollTo({ top: 0 });
+        await new Promise(r => setTimeout(r, 200));
 
-        /* 2. Snapshot word cloud SEBELUM freeze */
-        const wcSnapshot = await _getWCSnapshot();
+        /* 2. Ambil snapshot word cloud (async, sebelum modifikasi DOM) */
+        const wcSnapshot = (currentChart === 'wordcloud') ? await _getWCSnapshot() : null;
 
-        /* 3. Freeze animasi + resize chart */
-        _freezeAnimations();
-        _resizeAll();
+        /* 3. Ganti canvas/div di live DOM dengan <img> */
+        const domReplacements = _replaceCanvasesWithImages(wcSnapshot, currentChart);
 
-        /* 4. Tunggu repaint */
-        await new Promise(r => setTimeout(r, 500));
+        /* 4. Sembunyikan elemen UI yang tidak perlu */
+        const restoreUI = _hideUIElements();
 
+        /* 5. Freeze animasi */
+        _freeze();
+
+        /* 6. Tunggu browser repaint (Safari butuh lebih lama) */
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, 400));
+
+        let canvas;
         try {
-          const canvas = await html2canvas(area, {
+          canvas = await html2canvas(area, {
             scale           : 2,
             useCORS         : true,
             allowTaint      : false,
             backgroundColor : bgColor || '#f1f5f9',
             logging         : false,
             removeContainer : true,
-            scrollX         : 0,
-            scrollY         : 0,
-            width           : area.offsetWidth,
+            /* TIDAK pakai onclone — itu yang bikin blank di Safari */
+            /* windowHeight & height dari scrollHeight area */
+            windowHeight    : area.scrollHeight,
             height          : area.scrollHeight,
-            onclone         : _makeOnClone(wcSnapshot),
           });
-          return canvas;
         } finally {
-          _unfreezeAnimations();
-          /* Restore animasi ECharts */
+          /* 7. Restore semua perubahan DOM */
+          _restoreElements(domReplacements);
+          restoreUI();
+          _unfreeze();
+
+          /* 8. Restore ECharts animation */
           const { wordCloudInst } = TMApp.getInsts();
           if (wordCloudInst && !wordCloudInst.isDisposed()) {
-            try { wordCloudInst.setOption({ animation: true }); } catch(e){}
+            try { wordCloudInst.setOption({ animation: true }); } catch(e) {}
           }
         }
+
+        return canvas;
       }
 
+      /* ── PDF header ── */
       function _drawHeader(doc, pW, margin, subtitle) {
-    doc.setFillColor(3, 128, 71);
+        doc.setFillColor(3, 128, 71);
         doc.rect(0, 0, pW, 11, 'F');
-        doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
-        doc.text('SMADIMENT — Word Cloud'+(subtitle?' · '+subtitle:''), margin, 7.5);
-        const now = new Date().toLocaleDateString('id-ID',{ day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
-        doc.setFontSize(7); doc.setFont('helvetica','normal');
-        doc.text('Generated: '+now, pW-margin, 7.5, { align:'right' });
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+        doc.text('SMADIMENT — Word Cloud' + (subtitle ? ' · ' + subtitle : ''), margin, 7.5);
+        const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+        doc.text('Generated: ' + now, pW - margin, 7.5, { align: 'right' });
       }
 
-      async function _paginateCanvas(pdf, canvas, margin) {
-        const pW      = pdf.internal.pageSize.getWidth();
-        const pH      = pdf.internal.pageSize.getHeight();
-        const usableW = pW - margin * 2;
-        const usableH = pH - margin * 2 - 14;
-        const ratio   = usableW / canvas.width;
-        const sliceH  = usableH / ratio;
-        let srcY = 0, pageNum = 0;
+      /* ── Fit canvas ke satu halaman ── */
+      function _fitCanvas(pdf, canvas, margin) {
+        const pW = pdf.internal.pageSize.getWidth();
+        const pH = pdf.internal.pageSize.getHeight();
+        const uw = pW - margin * 2;
+        const uh = pH - 14 - 10;
+        const r  = Math.min(uw / canvas.width, uh / canvas.height);
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG',
+          margin + (uw - canvas.width * r) / 2, 14, canvas.width * r, canvas.height * r);
+      }
 
+      /* ── Paginasi canvas (untuk konten panjang) ── */
+      async function _paginateCanvas(pdf, canvas, margin) {
+        const pW = pdf.internal.pageSize.getWidth();
+        const pH = pdf.internal.pageSize.getHeight();
+        const uw = pW - margin * 2;
+        const uh = pH - 14 - 10;
+        const ratio = uw / canvas.width;
+        const sliceH = uh / ratio;
+        let srcY = 0, pageNum = 0;
         while (srcY < canvas.height) {
           if (pageNum > 0) { pdf.addPage(); _drawHeader(pdf, pW, margin); }
           const srcSlice = Math.min(sliceH, canvas.height - srcY);
-          const dstH     = srcSlice * ratio;
-          const slice    = document.createElement('canvas');
-          slice.width    = canvas.width;
-          slice.height   = Math.ceil(srcSlice);
+          const dstH = srcSlice * ratio;
+          const slice = document.createElement('canvas');
+          slice.width = canvas.width;
+          slice.height = Math.ceil(srcSlice);
           slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice);
-          pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
-          pdf.setFontSize(7); pdf.setTextColor(148,163,184);
-          pdf.text(`Halaman ${pageNum+1}`, pW/2, pH-3, { align:'center' });
+          pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, uw, dstH);
+          pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+          pdf.text(`Halaman ${pageNum + 1}`, pW / 2, pH - 3, { align: 'center' });
           srcY += srcSlice; pageNum++;
         }
       }
 
-      /* ── Export full page ── */
+      const _stamp = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
+
+      /* ════════════
+         Export full page
+      ════════════ */
       async function run(type, btn) {
-        if(!window.html2canvas)                  { _toast('html2canvas tidak tersedia','error'); return; }
-        if(type==='pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
 
         const btnPdf = document.getElementById('pageExportPdfBtn');
         const btnImg = document.getElementById('pageExportImgBtn');
         _btnState(btnPdf, true); _btnState(btnImg, true);
-        _toast(type==='pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
 
         try {
           const canvas = await _capture('pageExportArea', '#f1f5f9');
-          const stamp  = new Date().toISOString().slice(0,10).replace(/-/g,'');
-
+          const stamp  = _stamp();
           if (type === 'image') {
-            const link = document.createElement('a');
-            link.download = `wordcloud_${_pid}_${stamp}.png`;
-            link.href     = canvas.toDataURL('image/png');
-            link.click();
+            const a = document.createElement('a');
+            a.download = `wordcloud_${_pid}_${stamp}.png`;
+            a.href = canvas.toDataURL('image/png');
+            a.click();
             _toast('Gambar berhasil diunduh!', 'success');
           } else {
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-            _drawHeader(pdf, pdf.internal.pageSize.getWidth(), 10);
-            await _paginateCanvas(pdf, canvas, 10);
+            const pW  = pdf.internal.pageSize.getWidth();
+            const pH  = pdf.internal.pageSize.getHeight();
+            const uw  = pW - 20;
+            const uh  = pH - 14 - 10;
+            _drawHeader(pdf, pW, 10, 'Full Page');
+            if ((canvas.height * (uw / canvas.width)) <= uh) {
+              _fitCanvas(pdf, canvas, 10);
+            } else {
+              await _paginateCanvas(pdf, canvas, 10);
+            }
             pdf.save(`wordcloud_${_pid}_${stamp}.pdf`);
             _toast('PDF berhasil diunduh!', 'success');
           }
         } catch(err) {
           console.error('[WCExport.run]', err);
-          _toast('Export gagal: '+err.message, 'error');
+          _toast('Export gagal: ' + err.message, 'error');
         } finally {
           _btnState(btnPdf, false); _btnState(btnImg, false);
         }
       }
 
-      /* ── Export single card ── */
+      /* ════════════
+         Export single card
+      ════════════ */
       async function runCard(areaId, cardKey, type, btn) {
-        if(!window.html2canvas)                  { _toast('html2canvas tidak tersedia','error'); return; }
-        if(type==='pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
 
         _btnState(btn, true);
-        _toast(type==='pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
 
-        const stamp      = new Date().toISOString().slice(0,10).replace(/-/g,'');
+        const stamp      = _stamp();
         const cardLabels = { chart:'Topic Visualization', topiclist:'Topic Details' };
-        const cardFiles  = { chart:'topic-chart',         topiclist:'topic-list'   };
+        const cardFiles  = { chart:'topic-chart', topiclist:'topic-list' };
         const label      = cardLabels[cardKey] || cardKey;
-        const fname      = `wordcloud_${cardFiles[cardKey]||cardKey}_${_pid}_${stamp}`;
+        const fname      = `wordcloud_${cardFiles[cardKey] || cardKey}_${_pid}_${stamp}`;
 
         try {
           const canvas = await _capture(areaId, '#ffffff');
-
           if (type === 'image') {
-            const link = document.createElement('a');
-            link.download = fname+'.png';
-            link.href     = canvas.toDataURL('image/png');
-            link.click();
+            const a = document.createElement('a');
+            a.download = fname + '.png';
+            a.href = canvas.toDataURL('image/png');
+            a.click();
             _toast('Gambar berhasil diunduh!', 'success');
           } else {
             const { jsPDF } = window.jspdf;
-            const landscape = canvas.width > canvas.height;
-            const pdf = new jsPDF({ orientation:landscape?'landscape':'portrait', unit:'mm', format:'a4' });
+            const landscape = canvas.width > canvas.height * 1.3;
+            const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit:'mm', format:'a4' });
             const pW  = pdf.internal.pageSize.getWidth();
+            const pH  = pdf.internal.pageSize.getHeight();
+            const uw  = pW - 20;
+            const uh  = pH - 14 - 10;
             _drawHeader(pdf, pW, 10, label);
-            await _paginateCanvas(pdf, canvas, 10);
-            pdf.save(fname+'.pdf');
+            if ((canvas.height * (uw / canvas.width)) <= uh) {
+              _fitCanvas(pdf, canvas, 10);
+            } else {
+              await _paginateCanvas(pdf, canvas, 10);
+            }
+            pdf.save(fname + '.pdf');
             _toast('PDF berhasil diunduh!', 'success');
           }
         } catch(err) {
           console.error('[WCExport.runCard]', err);
-          _toast('Export gagal: '+err.message, 'error');
+          _toast('Export gagal: ' + err.message, 'error');
         } finally {
           _btnState(btn, false);
         }
