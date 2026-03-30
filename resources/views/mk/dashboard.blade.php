@@ -985,7 +985,7 @@
     const _es = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     const numK = n => {
         n = parseInt(n||0);
-        return n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n);
+        return n.toLocaleString('id-ID'); // Format full (misal: 12.350)
     };
     function getPrimary() {
         return getComputedStyle(document.documentElement).getPropertyValue('--bs-primary').trim() || '#4361EE';
@@ -995,6 +995,17 @@
        DOM READY
     ════════════════════════════════════════════════════════ */
     document.addEventListener('DOMContentLoaded', function () {
+        // ── AUTO-SYNC WITH GLOBAL DATEPICKER ──
+        const params = new URLSearchParams(window.location.search);
+        const lsStart = localStorage.getItem('smadiment_g_start');
+        const lsEnd   = localStorage.getItem('smadiment_g_end');
+        
+        if (!params.get('start_date') && lsStart && lsEnd) {
+            params.set('start_date', lsStart);
+            params.set('end_date', lsEnd);
+            window.location.search = params.toString(); // Auto-redirect to sync
+            return;
+        }
 
         // Date label
         const el = _$('mkDateLabel');
@@ -1226,23 +1237,21 @@
         },
         dataLabels: {
             enabled:   totalPoints <= 31,
-            enabledOnSeries: [0], /* Tampilkan hanya di seri Total agar tidak numpuk berantakan */
             formatter: v => v > 0 ? numK(v) : '',
             offsetY: -10,
             style: { 
-                fontSize: '10px', 
+                fontSize: '9px', 
                 fontFamily: 'inherit', 
-                fontWeight: '700',
-                colors: ['#4680ff']
+                fontWeight: '800',
             },
             background: { 
                 enabled: true, 
                 foreColor: '#fff', 
-                borderRadius: 4, 
-                padding: 4, 
-                opacity: 1, 
+                borderRadius: 3, 
+                padding: 3, 
+                opacity: 0.9, 
                 borderWidth: 0,
-                dropShadow: { enabled: true, top: 1, left: 1, blur: 2, color: '#000', opacity: 0.2 } 
+                dropShadow: { enabled: true, top: 1, left: 1, blur: 2, color: '#000', opacity: 0.15 } 
             },
         },
         xaxis: {
@@ -1756,12 +1765,16 @@ const DashExport = (() => {
             if (platform === 'all') {
                 const all = ['doc','twit','fb','instagram','youtube','tiktok'];
                 const res = await Promise.allSettled(all.map(p => _fetchOne(p, pid, sd, ed)));
-                return res.flatMap(r => r.status==='fulfilled' ? r.value : []);
+                const items = res.flatMap(r => r.status==='fulfilled' ? r.value : []);
+                items.sort((a,b)=>new Date(b.date_created||b.created_at||0)-new Date(a.date_created||a.created_at||0));
+                return items;
             }
             if (platform === 'social') {
                 const s = ['twit','fb','instagram','youtube','tiktok'];
                 const res = await Promise.allSettled(s.map(p => _fetchOne(p, pid, sd, ed)));
-                return res.flatMap(r => r.status==='fulfilled' ? r.value : []);
+                const items = res.flatMap(r => r.status==='fulfilled' ? r.value : []);
+                items.sort((a,b)=>new Date(b.date_created||b.created_at||0)-new Date(a.date_created||a.created_at||0));
+                return items;
             }
             return _fetchOne(platform, pid, sd, ed);
         }
@@ -1956,7 +1969,18 @@ const DashExport = (() => {
             const panel = _$('dashDetailPanel'), body = _$('dashDetailBody'), title = _$('dashDetailTitle');
             if (!panel || !body) return;
 
-            const meta = DashCfg.platMeta[platform] || { label: platform, color: '#4361EE' };
+            let truePlat = item._platform || platform;
+            if (truePlat === 'all' || truePlat === 'doc' || !truePlat) {
+                const url = String(item.url || item.link || '').toLowerCase();
+                const has = (s) => url.includes(s);
+                if (has('tiktok.com')) truePlat = 'tiktok';
+                else if (has('youtube.com') || has('youtu.be')) truePlat = 'youtube';
+                else if (has('instagram.com')) truePlat = 'instagram';
+                else if (has('facebook.com') || has('fb.watch')) truePlat = 'fb';
+                else if (has('twitter.com') || has('x.com')) truePlat = 'twit';
+            }
+            platform = truePlat;
+            const meta = DashCfg.platMeta[platform] || { label: platform==='all'?'All Media':platform, color: '#4361EE' };
             const SM2  = { '1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg' };
             const raw  = String(item.class_sentiment||item.sentiment||'0').toLowerCase();
             const sent = SM2[raw] || 'neu';
@@ -2180,9 +2204,6 @@ if (dt) {
             let actionBtns = '';
 
         if (platform === 'doc') {
-                const pubRaw = (item.publisher || item.source_name || '').trim();
-                const pubDisplay = pubRaw.replace(/^www\./, '');
-
                 if (isDirectArticleUrl && sourceUrl) {
                     actionBtns = `
                     <div class="do-dp2-actions">
@@ -2190,23 +2211,12 @@ if (dt) {
                             <i class="ph ph-newspaper"></i> Baca Artikel Asli
                         </a>
                     </div>`;
-                } else if (publisherHomepage) {
-                    actionBtns = `
-                    <div class="do-dp2-actions">
-                        <a href="${_es(publisherHomepage)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link-news">
-                            <i class="ph ph-globe"></i> Kunjungi ${_es(pubDisplay || 'Publisher')}
-                        </a>
-                        <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:7px 10px;font-size:10px;color:#0369a1;display:flex;align-items:center;gap:6px;">
-                            <i class="ph ph-info" style="font-size:12px;flex-shrink:0;"></i>
-                            <span>URL artikel spesifik tidak tersedia. Tombol di atas membuka halaman utama publisher.</span>
-                        </div>
-                    </div>`;
                 } else {
                     actionBtns = `
                     <div class="do-dp2-actions">
-                        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:9px 12px;font-size:11px;color:#92400e;display:flex;align-items:flex-start;gap:7px;">
-                            <i class="ph ph-warning" style="font-size:14px;flex-shrink:0;margin-top:1px;"></i>
-                            <span>URL artikel tidak tersedia dari sistem.</span>
+                        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:9px 12px;font-size:11px;color:#991b1b;display:flex;align-items:flex-start;gap:7px;line-height:1.4;">
+                            <i class="ph ph-warning-circle" style="font-size:14px;flex-shrink:0;margin-top:1px;"></i>
+                            <span>Link artikel spesifik tidak tersedia dari sumber data.</span>
                         </div>
                     </div>`;
                 }
@@ -2267,9 +2277,9 @@ if (dt) {
        (patch DashPanel.open to expose _curPid globally)
     ════════════════════════════════════════════════════════ */
     const _origPanelOpen = DashPanel.open.bind(DashPanel);
-    DashPanel.open = function(platform, sentiment, projectId) {
+    DashPanel.open = function(platform, sentiment, projectId, sdOverride, edOverride) {
         if (projectId) window.__dashCurrentPid = projectId;
-        return _origPanelOpen(platform, sentiment, projectId);
+        return _origPanelOpen(platform, sentiment, projectId, sdOverride, edOverride);
     };
 
     /* Platform picker — dismiss on outside click */

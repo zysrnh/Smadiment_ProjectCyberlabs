@@ -232,13 +232,13 @@
 
         /* ══ SOV Card — matches Mention layout ══ */
         .do-sov-body {
-            display:flex; align-items:stretch; min-height:240px;
+            display:flex; align-items:stretch; min-height:280px;
         }
         .do-sov-chart {
             flex:1; display:flex; align-items:center;
-            justify-content:center; padding:16px; min-width:0;
+            justify-content:center; padding:8px 16px; min-width:0;
         }
-        #chSovPie { width:100% !important; max-width:270px; height:220px !important; }
+        #chSovPie { width:100% !important; height:280px !important; }
 
         .do-sov-stats {
             width:190px; flex-shrink:0;
@@ -752,7 +752,7 @@
                         <div class="do-mention-stats">
                             <div class="do-mstat-label">Breakdown</div>
                             <div class="do-mstat-row" id="statNewsRow">
-                                <span class="do-mstat-name"><span style="background:#0284c7;"></span>Mass Media</span>
+                                <span class="do-mstat-name"><span style="background:#0284c7;"></span>Online News</span>
                                 <div class="do-mstat-val-row">
                                     <span class="do-mstat-val" id="mentionNewsVal">—</span>
                                     <span class="do-mstat-pct" id="mentionNewsPct" style="color:#0284c7;"></span>
@@ -813,7 +813,7 @@
                         <div class="d-flex align-items-center gap-2">
                             <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-pulse f-18 text-primary"></i></div>
                             <div>
-                                <h6 class="mb-0">Sentiment Score</h6>
+                                <h6 class="mb-0">Mention Trend</h6>
                                 <small class="text-muted" id="sntSubtitle">Klik pada garis untuk lihat mentions per sentimen</small>
                             </div>
                         </div>
@@ -969,7 +969,7 @@
             'Instagram':'#e1306c','YouTube':'#ff0000','TikTok':'#111827',
         },
         platMeta: {
-            doc:       { label:'Mass Media',   color:'#0284c7' },
+            doc:       { label:'Online News',  color:'#0284c7' },
             twit:      { label:'X / Twitter',  color:'#1d9bf0' },
             fb:        { label:'Facebook',      color:'#1877f2' },
             instagram: { label:'Instagram',     color:'#e1306c' },
@@ -979,7 +979,7 @@
             social:    { label:'Social Media',  color:'#038047' },
         },
         mediaKeyMap: {
-            'Mass Media':'doc','Online News':'doc',
+            'Online News':'doc','Mass Media':'doc',
             'X (Twitter)':'twit','Facebook':'fb',
             'Instagram':'instagram','YouTube':'youtube','TikTok':'tiktok',
         },
@@ -990,7 +990,10 @@ const numFmt = n => {
   const num = parseInt(n||0);
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 };
-const numK = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1).replace('.',',')+' M':n>=1000?(n/1000).toFixed(1).replace('.',',')+' k':String(n); };
+    const numK = n => { 
+        n = parseInt(n || 0);
+        return n.toLocaleString('id-ID'); // Format full (misal: 10.354)
+    };
     const esc    = s  => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     const emptyHtml = m => `<div class="do-empty"><i class="ph ph-warning-circle"></i><span class="do-empty-txt">${m||'Tidak ada data'}</span></div>`;
 
@@ -1132,24 +1135,82 @@ const numK = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1).replace('
         }
         async function _fetchPage(platform,page){
             const isMulti=['all','social'].includes(platform), size=isMulti?PAGE_MULTI:PAGE_SINGLE, start=page*size;
-            if(platform==='all'){ const plats=['doc','twit','fb','instagram','youtube','tiktok']; const res=await Promise.allSettled(plats.map(p=>_fetchOnePage(p,start,size))); return{items:res.flatMap(r=>r.status==='fulfilled'?r.value.items:[]),hasMore:res.some(r=>r.status==='fulfilled'&&r.value.hasMore)}; }
-            if(platform==='social'){ const plats=['twit','fb','instagram','youtube','tiktok']; const res=await Promise.allSettled(plats.map(p=>_fetchOnePage(p,start,size))); return{items:res.flatMap(r=>r.status==='fulfilled'?r.value.items:[]),hasMore:res.some(r=>r.status==='fulfilled'&&r.value.hasMore)}; }
+            if(isMulti){
+                const plats = platform === 'all' ? ['doc','twit','fb','instagram','youtube','tiktok'] : ['twit','fb','instagram','youtube','tiktok'];
+                const res = await Promise.allSettled(plats.map(p => _fetchOnePage(p,start,size)));
+                const all = res.flatMap(r => r.status==='fulfilled' ? r.value.items : []);
+                
+                // Urutkan berdasarkan tanggal terbaru agar tidak didominasi satu platform
+                all.sort((a, b) => {
+                    const da = new Date(a.date_created || a.created_at || 0).getTime();
+                    const db = new Date(b.date_created || b.created_at || 0).getTime();
+                    return db - da;
+                });
+                
+                return { items: all, hasMore: res.some(r => r.status==='fulfilled' && r.value.hasMore) };
+            }
             return _fetchOnePage(platform,start,size);
         }
         async function _fetchOnePage(platform,start,size){
             const sd=_overrideSd||DOCfg.sd, ed=_overrideEd||DOCfg.ed;
             const fetchRows=size+1, q=`project_id=${DOCfg.pid}&start_date=${sd}&end_date=${ed}&rows=${fetchRows}&start=${start}`;
-            if(platform==='youtube'){ for(const sub of['postbylike','postbyview','postbydate','postbycomment',null]){ try{ const url=sub?`/mk/api/news/ytb-top-status?${q}&sub=${sub}`:`/mk/api/news/ytb-top-status?${q}`; const r=await fetch(url); if(!r.ok) continue; const raw=_extractItems(await r.json()); if(raw.length>0) return{items:raw.slice(0,size).map(i=>({...i,_platform:'youtube'})),hasMore:raw.length>size}; }catch(e){continue;} } return{items:[],hasMore:false}; }
-            if(platform==='instagram'){ for(const sub of['postbylike','postbycomment','postbydate',null]){ try{ const url=sub?`/mk/api/news/ig-top-status?${q}&sub=${sub}`:`/mk/api/news/ig-top-status?${q}`; const r=await fetch(url); if(!r.ok) continue; const raw=_extractItems(await r.json()); if(raw.length>0) return{items:raw.slice(0,size).map(i=>({...i,_platform:'instagram'})),hasMore:raw.length>size}; }catch(e){continue;} } return{items:[],hasMore:false}; }
-            const eps={ doc:`/mk/api/news/mentions?${q}`, twit:`/mk/api/x/most-status?${q}&media=all&mention_type=view_all`, fb:`/mk/api/news/fb-top-status?${q}&sub=fblike`, tiktok:`/mk/api/news/tiktok-top-status?${q}&sub=postbylike` };
+            
+            if(platform==='youtube'){ 
+                for(const sub of['postbylike','postbyview','postbydate','postbycomment',null]){ 
+                    try{ 
+                        const url=sub?`/mk/api/news/ytb-top-status?${q}&sub=${sub}`:`/mk/api/news/ytb-top-status?${q}`; 
+                        const r=await fetch(url); if(!r.ok) continue; 
+                        const raw=_extractItems(await r.json()); 
+                        if(raw.length>0) return{items:raw.slice(0,size).map(i=>({...i,_platform:'youtube'})),hasMore:raw.length>size}; 
+                    }catch(e){continue;} 
+                } 
+                return{items:[],hasMore:false}; 
+            }
+            
+            if(platform==='instagram'){ 
+                for(const sub of['postbylike','postbycomment','postbydate',null]){ 
+                    try{ 
+                        const url=sub?`/mk/api/news/ig-top-status?${q}&sub=${sub}`:`/mk/api/news/ig-top-status?${q}`; 
+                        const r=await fetch(url); if(!r.ok) continue; 
+                        const raw=_extractItems(await r.json()); 
+                        if(raw.length>0) return{items:raw.slice(0,size).map(i=>({...i,_platform:'instagram'})),hasMore:raw.length>size}; 
+                    }catch(e){continue;} 
+                } 
+                return{items:[],hasMore:false}; 
+            }
+            
+            const eps={ 
+                doc:    `/mk/api/news/mentions?${q}`, 
+                twit:   `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`, 
+                fb:     `/mk/api/news/fb-top-status?${q}&sub=fblike`, 
+                tiktok: `/mk/api/news/tiktok-top-status?${q}&sub=postbylike` 
+            };
             const url=eps[platform]; if(!url) return{items:[],hasMore:false};
             const ctrl=new AbortController(), tid=setTimeout(()=>ctrl.abort(),30000);
+            
             try {
-                const r=await fetch(url,{signal:ctrl.signal}); clearTimeout(tid); if(!r.ok) return{items:[],hasMore:false};
+                const r=await fetch(url,{signal:ctrl.signal}); clearTimeout(tid); 
+                if(!r.ok) return{items:[],hasMore:false};
                 let raw=_extractItems(await r.json());
-                if(platform==='twit'&&raw.length===0){ try{ const r2=await fetch(`/mk/api/news/mentions?${q}&media_type=twit`); raw=_extractItems(await r2.json()).filter(m=>['twit','rt'].includes(String(m.media_type||'').toLowerCase())||['twit','rt'].includes(String(m.tcode||'').toLowerCase())); }catch(e2){} }
-                if(platform==='doc'){ const hasMeta=raw.some(m=>m.tcode||m.media_type); if(hasMeta){ const filtered=raw.filter(m=>{ const tc=String(m.tcode||'').toLowerCase(),mt=String(m.media_type||'').toLowerCase(); return !tc||!mt||tc==='berita'||mt==='berita'||mt==='doc'||mt==='news'||mt==='online'||mt==='article'; }); if(filtered.length>0) raw=filtered; } }
-                return{items:raw.slice(0,size).map(i=>({...i,_platform:platform})),hasMore:raw.length>size};
+                
+                if(platform==='twit' && raw.length===0){ 
+                    try{ 
+                        const r2=await fetch(`/mk/api/news/mentions?${q}&media_type=twit`); 
+                        raw=_extractItems(await r2.json()); 
+                    }catch(e2){} 
+                }
+                
+                if(platform==='doc'){ 
+                    // Filter yang lebih longgar agar data mass media tidak gampang hilang
+                    const filtered = raw.filter(m => {
+                        const tc = String(m.tcode || '').toLowerCase();
+                        const mt = String(m.media_type || '').toLowerCase();
+                        return !tc || !mt || tc==='berita' || mt==='berita' || mt==='doc' || mt==='news' || mt==='online' || mt==='article' || tc==='null' || mt==='null';
+                    });
+                    if(filtered.length > 0) raw = filtered;
+                }
+                
+                return { items: raw.slice(0,size).map(i => ({...i, _platform:platform})), hasMore: raw.length > size };
             } catch(e){ clearTimeout(tid); return{items:[],hasMore:false}; }
         }
         function _lmHtml(){ return `<div id="_doLMWrap" style="padding:11px 14px;text-align:center;background:var(--slate-50);border-top:1px dashed var(--slate-200);"><button id="_doLMBtn" onclick="DOPanel.loadMore()" style="display:inline-flex;align-items:center;gap:5px;padding:6px 20px;background:var(--primary);color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:filter .14s;" onmouseover="this.style.filter='brightness(1.12)'" onmouseout="this.style.filter=''"><i class="ph ph-arrow-circle-down" style="font-size:13px;"></i> Muat Lebih Banyak</button></div>`; }
@@ -1172,8 +1233,9 @@ const numK = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1).replace('
             return `<div class="do-panel-item" onclick="DODetail.openEncoded('${enc}','${plat}')"><div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div><div class="do-panel-item-body"><div class="do-panel-author">${esc(dName)}</div>${handle?`<div class="do-panel-handle">${esc(handle)}</div>`:''}<div class="do-panel-text">${esc(text||'(tidak ada konten)')}</div><div class="do-panel-footer"><span class="do-sent-badge do-sent-badge--${sentCls}">${sentLbl}</span><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span><span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>${dt?`<span style="margin-left:auto;">${dt}</span>`:''}</div></div></div>`;
         }
         function _render(list,items,platform,accentColor){
+            window._doCurrentSelection=items; window._doCurrentPlatform=platform;
             if(!items.length) list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:var(--slate-400);font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`;
-            else list.innerHTML=items.map(it=>_renderItem(it,platform,accentColor)).join('');
+            else list.innerHTML=items.map((it)=>_renderItem(it,platform,accentColor)).join('');
             if(_hasMore) list.insertAdjacentHTML('beforeend',_lmHtml());
         }
         return{open,close,closeByOverlay,showPlatPicker,openPlatform,filterSent,loadMore,refresh};
@@ -1187,43 +1249,61 @@ const numK = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1).replace('
         open(item,platform){
             const panel=$('doDetailPanel'),body=$('doDetailBody'),title=$('doDetailTitle');
             if(!panel||!body) return;
-            const meta=DOCfg.platMeta[platform]||{label:platform,color:DOCfg.primary};
+            
+            let truePlat = item._platform || platform;
+            if(truePlat==='all' || truePlat==='doc' || !truePlat){
+                const url = String(item.url||item.link||'').toLowerCase();
+                const has=(s)=>url.includes(s);
+                if(has('tiktok.com')) truePlat='tiktok';
+                else if(has('youtube.com')||has('youtu.be')) truePlat='youtube';
+                else if(has('instagram.com')) truePlat='instagram';
+                else if(has('facebook.com')||has('fb.watch')) truePlat='fb';
+                else if(has('twitter.com')||has('x.com')) truePlat='twit';
+            }
+            const meta=DOCfg.platMeta[truePlat]||DOCfg.platMeta[platform]||{label:truePlat==='all'?'All Media':truePlat,color:DOCfg.primary};
+            
             const SENT_MAP={pos:'Positif',neg:'Negatif',neu:'Netral'};
             const SENT_BGS={pos:'do-dp2-sent--pos',neg:'do-dp2-sent--neg',neu:'do-dp2-sent--neu'};
             const rawS=String(item.class_sentiment||item.sentiment||'0').toLowerCase();
             const sent={'1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg'}[rawS]||'neu';
-            const rawName=(()=>{ if(platform==='fb') return item.from_name||item.page_name||null; if(platform==='instagram') return item.username||null; if(platform==='tiktok') return item.author_nickname||item.nickname||item.author?.nickname||null; if(platform==='youtube') return item.channel_title||item.channel_name||item.snippet?.channelTitle||null; if(platform==='twit') return item.name||item.user?.name||item.author_name||null; return null; })();
-            const name=(rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'Unknown').trim();
-            const handle=((platform==='instagram'?item.username:'')||item.author_scr_name||item.screen_name||item.username||'').trim();
+            
+            let name = (item.author_name || item.screen_name || item.publisher || item.source_name || item.name || item.author_nickname || item.nickname || item.username || '').trim();
+            if(!name || name.toLowerCase()==='unknown'){
+                name = (item.author_scr_name || item.author?.unique_id || item.author?.nickname || 'User').trim();
+            }
+            
+            const handle=((truePlat==='instagram'?item.username:'')||item.author_scr_name||item.screen_name||item.username||item.unique_id||'').trim();
             const content=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
             const av=(item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||item.thumbnail||'').trim();
             const dt=item.date_created||item.created_at||'';
             title.textContent=name;
-            const words=name.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
-            const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||name[0]||'?')).toUpperCase();
+            const ini=(name[0]||'?').toUpperCase();
             const avHtml=(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.parentElement.textContent='${ini}';">`:ini;
             let dtFmt='';
             if(dt){ try{dtFmt=new Date(dt).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){dtFmt=dt.split('T')[0];} }
             let mediaHtml='';
-            if(platform==='youtube'){
+            if(truePlat==='youtube'){
                 const ytId=((item.url||item.link||'').match(/[?&]v=([a-zA-Z0-9_-]{11})/)||[])[1]||(item.url||'').match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)?.[1]||(item.url||'').match(/shorts\/([a-zA-Z0-9_-]{11})/)?.[1]||item.video_id||item.youtube_id||'';
                 const thumb=item.thumbnail||item.thumbnail_url||item.image_url||item.media_url||(ytId?`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`:'');
-                if(ytId){ const eId=`yt_${ytId}_${Date.now()}`; mediaHtml=`<div class="do-dp2-media do-dp2-media--video" id="${eId}" style="position:relative;cursor:pointer;border-radius:6px;overflow:hidden;background:#000;" onclick="document.getElementById('${eId}').innerHTML='<iframe width=\\'100%\\' height=\\'280\\' src=\\'https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1\\' frameborder=\\'0\\' allow=\\'accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture\\' allowfullscreen></iframe>'"><img src="${thumb}" style="width:100%;height:220px;object-fit:cover;display:block;" onerror="this.src='https://img.youtube.com/vi/${ytId}/mqdefault.jpg'"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25);"><div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.4);"><i class="ph ph-play-fill" style="font-size:22px;color:#fff;margin-left:3px;"></i></div></div></div>`; }
+                if(ytId){ 
+                    const eId=`yt_${ytId}_${Date.now()}`; 
+                    mediaHtml=`<div class="do-dp2-media do-dp2-media--video" id="${eId}" style="position:relative;cursor:pointer;border-radius:6px;overflow:hidden;background:#000;" onclick="document.getElementById('${eId}').innerHTML='<iframe width=\\'100%\\' height=\\'280\\' src=\\'https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1\\' frameborder=\\'0\\' allow=\\'accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture\\' allowfullscreen></iframe>'"><img src="${esc(thumb)}" style="width:100%;height:220px;object-fit:cover;display:block;" onerror="this.src='https://img.youtube.com/vi/${ytId}/mqdefault.jpg'"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25);"><div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.4);"><i class="ph ph-play-fill" style="font-size:22px;color:#fff;margin-left:3px;"></i></div></div></div>`; 
+                }
                 else if(thumb){ mediaHtml=`<div class="do-dp2-media"><img src="${esc(thumb)}" onerror="this.parentElement.style.display='none'" style="border-radius:6px;width:100%;max-height:220px;object-fit:cover;"></div>`; }
-            } else if(platform==='tiktok'){
+            } else if(truePlat==='tiktok'){
                 const tid=((item.url||item.link||'').match(/\/video\/(\d+)/)||[])[1]||item.video_id||item.aweme_id||'';
                 const thumb=item.thumbnail||item.cover||item.image_url||item.video_cover||item.media_url||'';
                 if(tid){ const eId=`tt_${tid}_${Date.now()}`; mediaHtml=`<div id="${eId}" style="position:relative;cursor:pointer;background:#111827;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;height:260px;" onclick="DODetail.loadTikTokEmbed('${eId}','${tid}')">${thumb?`<img src="${esc(thumb)}" style="position:absolute;width:100%;height:100%;object-fit:cover;opacity:.65;pointer-events:none;">`:''}  <div style="position:relative;z-index:2;width:56px;height:56px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.6);"><i class="ph ph-play-fill" style="font-size:24px;color:#111827;margin-left:3px;"></i></div><div style="position:absolute;bottom:8px;right:8px;background:#111827;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.5px;">TIKTOK</div></div>`; }
-                else if(thumb){ mediaHtml=`<div class="do-dp2-media"><img src="${esc(thumb)}" onerror="this.parentElement.style.display='none'" style="border-radius:6px;max-height:320px;object-fit:cover;width:100%;display:block;"></div>`; }
-            } else if(platform==='instagram'){
-                const thumb=item.image_url||item.thumbnail||item.media_url||item.picture||item.display_url||'';
-                const isVid=(item.media_type||'').toLowerCase()==='video'||(item.product_type||'').toLowerCase()==='igtv'||(item.product_type||'').toLowerCase()==='reels';
+                else if(thumb){ mediaHtml=`<div class="do-dp2-media"><img src="${esc(thumb)}" onerror="this.parentElement.style.display='none'" style="border-radius:6px;max-height:320px;object_fit:cover;width:100%;display:block;"></div>`; }
+            } else if(truePlat==='instagram'){
+                const thumb=item.image_url||item.media_url||item.display_url||item.thumbnail||item.thumbnail_url||'';
+                const isVid=(item.media_type||'').toLowerCase()==='video'||(item.product_type||'').toLowerCase()==='igtv'||(item.product_type||'').toLowerCase()==='reels'||String(item.item_type||'').includes('video');
                 if(thumb) mediaHtml=`<div class="do-dp2-media" style="position:relative;border-radius:6px;overflow:hidden;background:#f3f4f6;"><img src="${esc(thumb)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:320px;object-fit:cover;display:block;">${isVid?`<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);border-radius:6px;"><div style="width:44px;height:44px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:20px;color:#e1306c;margin-left:3px;"></i></div></div>`:''}</div>`;
-            } else if(platform==='fb'){
+            } else if(truePlat==='fb'){
                 const imgUrl=item.image_url||item.thumbnail||item.media_url||item.picture||item.display_url||item.story_img||'';
                 const isVid=(item.type||'').includes('video')||!!item.video_id;
                 if(imgUrl) mediaHtml=`<div class="do-dp2-media" style="position:relative;border-radius:6px;overflow:hidden;background:#f3f4f6;"><img src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:320px;object-fit:cover;display:block;">${isVid?`<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);border-radius:6px;"><div style="width:44px;height:44px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:20px;color:#1877f2;margin-left:3px;"></i></div></div>`:''}</div>`;
-            } else if(platform==='twit'){
+            } else if(truePlat==='twit'){
                 const imgUrl=item.image_url||item.media_url||item.thumbnail||item.display_url||item.media?.media_url||'';
                 const isVid=String(item.media_type||'').toLowerCase()==='video'||String(item.type||'').toLowerCase()==='video';
                 if(imgUrl) mediaHtml=`<div class="do-dp2-media" style="position:relative;border-radius:6px;overflow:hidden;background:#f3f4f6;"><img src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:320px;object-fit:cover;display:block;">${isVid?`<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);border-radius:6px;"><div style="width:44px;height:44px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:20px;color:#1d9bf0;margin-left:3px;"></i></div></div>`:''}</div>`;
@@ -1239,19 +1319,49 @@ const numK = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1).replace('
                 tiktok:[['Play',item.views||item.play_count||0],['Like',item.likes||item.digg_count||0],['Share',item.shares||item.share_count||0]],
                 doc:[['Read',item.num_views||0],['Share',item.num_share||0],['Comment',item.num_comments||0]]
             };
-            const stats=statsMap[platform]||[];
+            const stats=statsMap[truePlat]||statsMap[platform]||[];
             const statsHtml=stats.some(s=>parseInt(s[1])>0)?`<div class="do-dp2-stats">${stats.map(([l,v])=>`<div class="do-dp2-stat"><div class="do-dp2-stat-val">${parseInt(v||0).toLocaleString()}</div><div class="do-dp2-stat-lbl">${l}</div></div>`).join('')}</div>`:'';
             const handleDisp=handle&&!handle.replace('@','').toLowerCase().startsWith(name.toLowerCase().slice(0,4))?(handle.startsWith('@')?handle:'@'+handle):'';
             let sourceUrl=item.url||item.link||item.post_url||item.article_url||item.source_url||item.permalink||item.news_url||item.article_link||item.full_url||item.web_url||item.source||item.original_url||'';
+            
             if(!sourceUrl){
-                if(platform==='twit'){ const ao=(()=>{ if(typeof item.author==='object'&&item.author) return item.author; try{return JSON.parse(item.author||'{}');}catch(e){return{};} })(); const scr=(item.author_scr_name||item.screen_name||ao?.scr_name||ao?.username||'').replace(/^@/,''); const sid=item.sub_id||item.tweet_id||item.id_str||item.id||''; if(scr&&sid) sourceUrl=`https://twitter.com/${scr}/status/${sid}`; else if(scr) sourceUrl=`https://twitter.com/${scr}`; }
-                else if(platform==='instagram'){ const sc=item.shortcode||item.code||item.media_id||''; if(sc) sourceUrl=`https://www.instagram.com/p/${sc}/`; else if(item.username) sourceUrl=`https://www.instagram.com/${item.username}/`; }
-                else if(platform==='youtube'){ const yi=item.video_id||item.youtube_id||item.id||''; if(yi) sourceUrl=`https://www.youtube.com/watch?v=${yi}`; else if(item.channel_id) sourceUrl=`https://www.youtube.com/channel/${item.channel_id}`; }
-                else if(platform==='tiktok'){ const ti=item.video_id||item.aweme_id||item.id||''; const ni=item.author_nickname||item.nickname||item.unique_id||item.author?.unique_id||''; if(ti&&ni) sourceUrl=`https://www.tiktok.com/@${ni}/video/${ti}`; else if(ti) sourceUrl=`https://vm.tiktok.com/${ti}`; }
-                else if(platform==='fb'){ const pi=item.post_id||item.story_id||item.id||''; const pn=item.page_name||item.from_name||item.username||''; if(pn&&pi) sourceUrl=`https://www.facebook.com/${pn}/posts/${pi}`; }
-                else if(platform==='doc'){ sourceUrl=item.url||item.link||item.article_url||item.source_url||item.news_url||item.permalink||item.web_url||item.full_url||item.original_url||item.source||item.reference||item.href||''; if(!sourceUrl){ const raw=(item.author_scr_name||item.screen_name||item.publisher||item.source_name||item.name||'').replace(/^@/,'').trim(); if(raw){ const domain=raw.includes('.')?raw:raw+'.com'; sourceUrl=`https://${domain}`; } } }
+                if(truePlat==='twit'){ 
+                    const ao=(()=>{ if(typeof item.author==='object'&&item.author) return item.author; try{return JSON.parse(item.author||'{}');}catch(e){return{};} })(); 
+                    const scr=(item.author_scr_name||item.screen_name||ao?.scr_name||ao?.username||'').replace(/^@/,''); 
+                    const sid=item.sub_id||item.tweet_id||item.id_str||item.id||''; 
+                    if(scr&&sid) sourceUrl=`https://twitter.com/${scr}/status/${sid}`; else if(scr) sourceUrl=`https://twitter.com/${scr}`; 
+                }
+                else if(truePlat==='instagram'){ 
+                    const sc=item.shortcode||item.code||item.media_id||''; 
+                    if(sc) sourceUrl=`https://www.instagram.com/p/${sc}/`; else if(item.username) sourceUrl=`https://www.instagram.com/${item.username}/`; 
+                }
+                else if(truePlat==='youtube'){ 
+                    const yi=item.video_id||item.youtube_id||item.id||''; 
+                    if(yi) sourceUrl=`https://www.youtube.com/watch?v=${yi}`; else if(item.channel_id) sourceUrl=`https://www.youtube.com/channel/${item.channel_id}`; 
+                }
+                else if(truePlat==='tiktok'){ 
+                    const ti=item.video_id||item.aweme_id||item.id||''; 
+                    const ni=item.author_nickname||item.nickname||item.unique_id||item.author?.unique_id||''; 
+                    if(ti&&ni) sourceUrl=`https://www.tiktok.com/@${ni}/video/${ti}`; else if(ti) sourceUrl=`https://vm.tiktok.com/${ti}`; 
+                }
+                else if(truePlat==='fb'){ 
+                    const pi=item.post_id||item.story_id||item.id||''; 
+                    const pn=item.page_name||item.from_name||item.username||''; 
+                    if(pn&&pi) sourceUrl=`https://www.facebook.com/${pn}/posts/${pi}`; 
+                }
             }
-            const sourceBtnHtml=sourceUrl?`<a href="${esc(sourceUrl)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out"></i> Lihat ${meta.label} Asli</a>`:'';
+
+            let sourceBtnHtml = '';
+            if (sourceUrl) {
+                sourceBtnHtml = `<a href="${esc(sourceUrl)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out"></i> Lihat ${meta.label} Asli</a>`;
+            } else {
+                sourceBtnHtml = `
+                    <div style="margin-top:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px 12px;font-size:11px;color:#991b1b;display:flex;align-items:flex-start;gap:7px;line-height:1.4;">
+                        <i class="ph ph-warning-circle" style="font-size:15px;flex-shrink:0;"></i>
+                        <span>Link artikel spesifik tidak tersedia dari sumber data.</span>
+                    </div>`;
+            }
+
             body.innerHTML=`
                 <div class="do-dp2-avatar-row">
                     <div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
@@ -1268,6 +1378,10 @@ const numK = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1).replace('
                 ${statsHtml}
                 ${sourceBtnHtml}`;
             panel.classList.add('show');
+        },
+        openDetail(idx){
+            const item = (window._doCurrentSelection||[])[idx];
+            if(item) this.open(item, (window._doCurrentPlatform||'all'));
         },
         close(){ $('doDetailPanel')?.classList.remove('show'); document.querySelectorAll('.do-detail-panel iframe').forEach(iframe=>{iframe.src=iframe.src;}); },
         loadTikTokEmbed(embedId,videoIdOrUrl){
@@ -1324,6 +1438,64 @@ const numK = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1).replace('
             h+='</tbody></table>'; body.innerHTML=h;
         },
 
+        async loadSentLine(){
+            const r=await fetch(`/mk/api/sentiment-timeline?project_id=${DOCfg.pid}&start_date=${DOCfg.sd}&end_date=${DOCfg.ed}`);
+            const d=await r.json();
+            const body=$('sentimentBody');
+            if(!d.success||!d.dates||!d.dates.length){ body.innerHTML=emptyHtml('Chart'); return; }
+            if(window._doApexSent){ try{window._doApexSent.destroy();}catch(e){} }
+            body.innerHTML='<div id="apexSent" style="width:100%;height:320px;"></div>';
+            
+            const totalPoints = d.dates.length;
+            const labels=d.dates.map(dt=>{
+                try{ const dParts=dt.split('T')[0].split('-'); const date=new Date(dParts[0],dParts[1]-1,dParts[2]); 
+                    return totalPoints > 31 ? date.toLocaleDateString('id-ID',{day:'numeric',month:'short'}) : `${date.getDate()}/${date.getMonth()+1}`;
+                }catch(e){return dt;}
+            });
+
+            const opt={
+                chart:{ type:'area', height:320, toolbar:{show:false}, animations:{enabled:true}, fontFamily:'inherit',
+                    events:{ click:(_e,_ctx,cfg)=>{ 
+                        if(cfg.dataPointIndex>=0){ 
+                            const mapping={0:'all',1:'pos',2:'neu',3:'neg'}; 
+                            DODetail.openPlatform('all',mapping[cfg.seriesIndex||0]||'all',cfg.dataPointIndex); 
+                        } 
+                    } }
+                },
+                series:[
+                    {name:'Total',data:d.values||[]},
+                    {name:'Positive',data:d.sentiment?.positive||[]},
+                    {name:'Neutral',data:d.sentiment?.neutral||[]},
+                    {name:'Negative',data:d.sentiment?.negative||[]}
+                ],
+                colors:['#4680ff','#10B981','#94A3B8','#EF4444'],
+                stroke:{curve:'smooth',width:2.5},
+                fill:{type:'solid',opacity:0.25},
+                markers:{size:totalPoints<=31?5:0,hover:{size:7}},
+                dataLabels:{
+                    enabled: totalPoints <= 31,
+                    formatter: v => v > 0 ? numK(v) : '',
+                    offsetY: -8,
+                    style: { fontSize: '10px', fontWeight: '800', fontFamily: 'inherit' },
+                    background: { enabled: true, foreColor: '#fff', borderRadius: 3, padding: 3, opacity: 0.9, borderWidth: 0 }
+                },
+                xaxis:{
+                    categories:labels,
+                    labels:{ 
+                        rotate:-45, rotateAlways:totalPoints>12, style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'},
+                        hideOverlappingLabels: true
+                    },
+                    axisBorder:{show:false}, axisTicks:{show:false}
+                },
+                yaxis:{ labels:{ formatter:v=>numK(v), style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'} } },
+                grid:{ borderColor:'rgba(226,232,240,.6)', strokeDashArray:4 },
+                legend:{ position:'bottom', horizontalAlign:'left', fontSize:'11px', fontWeight:700, labels:{colors:'#64748B'}, markers:{width:8,height:8,radius:50}, itemMargin:{horizontal:12,vertical:5} },
+                tooltip:{ shared:false, intersect:true, y:{formatter:v=>v.toLocaleString()+' mentions'} }
+            };
+            window._doApexSent=new ApexCharts($('apexSent'),opt);
+            window._doApexSent.render();
+        },
+
         async loadMentions(){
             const r=await fetch(`/mk/api/mention-counts?project_id=${DOCfg.pid}&start_date=${DOCfg.sd}&end_date=${DOCfg.ed}`);
             const d=await r.json();
@@ -1346,7 +1518,7 @@ const numK = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1).replace('
                 const chart=DOCharts.make('chMentionPie');
                 if(chart){
                     const primary=getPrimary(), totalAll=total;
-                    const labels=['Mass Media','Social Media'], counts=[news,social], colors=['#0284c7',primary];
+                    const labels=['Online News','Social Media'], counts=[news,social], colors=['#0284c7',primary];
                     chart.setOption({
                         animation:true,animationDuration:800,animationEasing:'cubicOut',backgroundColor:'transparent',
                         tooltip:{...EC_TT,trigger:'item',confine:true,formatter:p=>{const pct=totalAll>0?(p.value/totalAll*100):0;return`<div style="font-weight:700;font-size:13px;margin-bottom:5px;">${p.name}</div><div style="display:flex;justify-content:space-between;gap:20px;margin-top:4px;"><span style="color:#94a3b8;">Mentions</span><span style="font-weight:700;">${numFmt(p.value)}</span></div><div style="display:flex;justify-content:space-between;gap:20px;margin-top:3px;"><span style="color:#94a3b8;">Share</span><span style="font-weight:700;color:#34d399;">${pct<1&&pct>0?'<1':pct.toFixed(1)}%</span></div>`;}},
@@ -1385,7 +1557,7 @@ return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
                             data:labels.map((lb,i)=>({name:lb,value:counts[i],itemStyle:{color:colors[i]}}))
                         }],graphic:[]
                     },true);
-                    chart.on('click',p=>{ if(p.name==='Mass Media') DOPanel.open('doc','all'); else DOPanel.showPlatPicker(window.innerWidth/2,window.innerHeight/2,'all'); });
+                    chart.on('click',p=>{ if(p.name==='Online News') DOPanel.open('doc','all'); else DOPanel.showPlatPicker(window.innerWidth/2,window.innerHeight/2,'all'); });
                     chart.on('mouseover',p=>{if(p.componentType==='series') chart.getDom().style.cursor='pointer';});
                     chart.on('mouseout',()=>{chart.getDom().style.cursor='default';});
                 }
@@ -1447,48 +1619,47 @@ return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
                 animation:true,animationDuration:800,animationEasing:'cubicOut',backgroundColor:'transparent',
                 tooltip:{...EC_TT,trigger:'item',confine:true,formatter:p=>{
                     const pct=totalAll>0?(p.value/totalAll*100):0;
-                    return`<div style="font-weight:700;font-size:13px;margin-bottom:5px;">${p.name}</div>
+                    const displayName=p.name.replace('X (Twitter)','X').replace('Mass Media','Online News');
+                    return`<div style="font-weight:700;font-size:13px;margin-bottom:5px;">${displayName}</div>
                            <div style="display:flex;justify-content:space-between;gap:20px;margin-top:4px;"><span style="color:#94a3b8;">Mentions</span><span style="font-weight:700;">${numFmt(p.value)}</span></div>
                            <div style="display:flex;justify-content:space-between;gap:20px;margin-top:3px;"><span style="color:#94a3b8;">Share</span><span style="font-weight:700;color:#34d399;">${pct<1&&pct>0?'<1':pct.toFixed(1)}%</span></div>`;
                 }},
                 legend:{show:false},
                 series:[{
-                    type:'pie',radius:['38%','58%'],center:['50%','50%'],
+                    type:'pie',radius:['32%','52%'],center:['50%','50%'],
                     avoidLabelOverlap:true,
-                    minAngle:15,                          // ← segment kecil tetap kelihatan
-                    itemStyle:{borderColor:'#fff',borderWidth:3,borderRadius:5},
+                    minAngle:5,
+                    padAngle:2,
+                    itemStyle:{borderColor:'#fff',borderWidth:4,borderRadius:5},
                     label:{
-                        show:true,alignTo:'edge',edgeDistance:8,lineHeight:16,
-                        fontFamily:'inherit',fontSize:11,
-                       formatter:p=>{
-    const pc=totalAll>0?(p.value/totalAll*100):0;
-    // Hapus baris: if(pc<1) return'';
-    const shortName=p.name.replace('X (Twitter)','X').replace('Online News','News').replace('Mass Media','News');
-return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
-},
+                        show:true,
+                        fontFamily:'inherit',
+                        distanceToLabelLine:3,
+                        formatter:p=>{
+                            const pc=totalAll>0?(p.value/totalAll*100):0;
+                            const shortName=p.name.replace('X (Twitter)','X').replace('Mass Media','Online News');
+                            return `{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
+                        },
                         rich:{
-                            name:{fontWeight:'700',fontSize:10,color:'#1a202c',lineHeight:16},
-                            pct:{fontWeight:'700',fontSize:10,color:primary,lineHeight:14,backgroundColor:'#edf7f3',borderRadius:4,padding:[1,4]}
+                            name:{fontWeight:'700',fontSize:10,color:'#1a202c',lineHeight:15},
+                            pct:{fontWeight:'800',fontSize:10,color:primary,lineHeight:13,backgroundColor:'#edf7f3',borderRadius:4,padding:[1,4]}
                         }
                     },
                     labelLine:{
-                        show:true,length:6,length2:8,smooth:.4,
-                            minTurnAngle:5,   // ← tambahkan ini
-
-                        showAbove:true,                  // ← label line di atas segment kecil
-                        lineStyle:{color:'#c4cdd8',width:1.2}
+                        show:true,
+                        length:12,
+                        length2:18,
+                        smooth:0.4,
+                        maxSurfaceAngle:80,
+                        lineStyle:{color:'#94a3b8',width:1.6}
+                    },
+                    labelLayout:{
+                        hideOverlap:true,
+                        moveOverlap:'shiftY'
                     },
                     emphasis:{
-                        scale:true,scaleSize:8,          // ← hover lebih dramatis untuk segment kecil
-                        itemStyle:{shadowBlur:14,shadowColor:'rgba(0,0,0,.18)'},
-                        label:{show:true,fontFamily:'inherit',formatter:p=>{
-                            const pc=totalAll>0?p.value/totalAll*100:0;
-                            return`{n|${p.name}}\n{v|${numK(p.value)}}\n{p|${pc.toFixed(1)}%}`;
-                        },rich:{
-                            n:{fontSize:10,color:'#94A3B8',fontWeight:'600',lineHeight:14},
-                            v:{fontSize:15,color:'#0F172A',fontWeight:'700',lineHeight:20},
-                            p:{fontSize:10,color:primary,fontWeight:'800',lineHeight:14}
-                        }}
+                        scale:true,scaleSize:5,
+                        itemStyle:{shadowBlur:12,shadowColor:'rgba(0,0,0,.2)'}
                     },
                     data:labels.map((lb,i)=>({name:lb,value:counts[i],itemStyle:{color:colors[i]}}))
                 }],
@@ -1543,7 +1714,12 @@ return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
                 }
                 mainEl.style.display='block';
                 mainEl.innerHTML='';
-                const labels=dates.map(dt=>{ try{ const d2=new Date(dt+'T00:00:00'); return`${d2.getDate()}/${d2.getMonth()+1}`; }catch(e){return dt;} });
+                const labels=dates.map(dt=>{
+                    try {
+                        const d2 = new Date(dt + 'T00:00:00');
+                        return d2.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+                    } catch (e) { return dt; }
+                });
                 const toNum=arr=>arr.map(v=>Number(v||0));
                 const seriesArr=[
                     {name:'Total',    data:toNum(valTotal)},
@@ -1574,28 +1750,60 @@ return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
                         },
                     },
                     series:seriesArr,
+                    stroke:{curve:'smooth',width:2.5},
+                    grid: {
+                        borderColor: '#F1F5F9',
+                        strokeDashArray: 4,
+                        padding: { left: 10, right: 10 }
+                    },
+                    markers:{
+                        size: 6,
+                        strokeWidth: 2,
+                        strokeColors: '#fff',
+                        hover: { size: 8 }
+                    },
+                    dataLabels:{
+                        enabled:true,
+                        formatter:v=>v>0?numK(v):'',
+                        offsetY:-8,
+                        style:{fontSize:'9px',fontFamily:'inherit',fontWeight:'800'},
+                        background:{
+                            enabled:true,
+                            foreColor:'#fff',
+                            padding:3,
+                            borderRadius:3,
+                            borderWidth:0,
+                            opacity:0.9,
+                            dropShadow:{enabled:true,top:1,left:1,blur:2,color:'#000',opacity:0.15}
+                        }
+                    },
                     xaxis:{
                         categories:labels,
-                        labels:{rotate:n>20?-45:0,style:{colors:'#94A3B8',fontSize:'11px',fontFamily:'inherit'}},
+                        labels:{
+                            show: true,
+                            rotate: n > 12 ? -45 : 0,
+                            rotateAlways: n > 12,
+                            hideOverlappingLabels: false,
+                            showDuplicates: false,
+                            style:{colors:'#94A3B8',fontSize:'11px',fontFamily:'inherit'}
+                        },
                         axisBorder:{show:false},axisTicks:{show:false}
                     },
                     yaxis:{
-                        labels:{formatter:v=>numFmt(v),style:{colors:'#94A3B8',fontSize:'10px',fontFamily:'inherit'}},
+                        labels:{formatter:v=>numK(v),style:{colors:'#94A3B8',fontSize:'10px',fontFamily:'inherit'}},
                         axisBorder:{show:false},axisTicks:{show:false}
                     },
                     colors:['#4680ff','#10B981','#94A3B8','#EF4444'],
-                    fill:{opacity:0.3},
-                    stroke:{curve:'smooth',width:2.5},
-                    markers:{size:5,strokeWidth:2,strokeColors:'#fff',hover:{size:7}},
-                    dataLabels:{
-                        enabled:true,
-                        formatter:v=>v>0?numFmt(v):'',
-                        style:{fontSize:'10px',fontFamily:'inherit',fontWeight:'700'},
-                        background:{enabled:true,foreColor:'#fff',borderRadius:3,borderWidth:0,padding:3,opacity:0.92,dropShadow:{enabled:true,top:1,left:0,blur:2,color:'#000',opacity:0.10}},
-                        offsetY:-6
+                    fill:{
+                        type: 'solid',
+                        opacity: 0.3 // Matching dashboard look
                     },
                     legend:{position:'bottom',horizontalAlign:'left',labels:{colors:'#94A3B8'}},
-                    tooltip:{shared:false,y:{formatter:v=>numFmt(v)+' mentions'}}
+                    tooltip:{
+                        shared:false,
+                        intersect:true,
+                        y:{formatter:v=>numFmt(v)+' mentions'}
+                    }
                 };
                 this._apexSentiment=new ApexCharts(mainEl,opts);
                 this._apexSentiment.render();
@@ -1824,7 +2032,19 @@ return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
 
     /* ══ Init ══ */
     document.addEventListener('mousedown',e=>{ const pp=$('doPlatPicker'); if(pp?.classList.contains('show')&&!pp.contains(e.target)) pp.classList.remove('show'); });
-    document.addEventListener('DOMContentLoaded',()=>{
+    document.addEventListener('DOMContentLoaded',function(){
+        // ── AUTO-SYNC WITH GLOBAL DATEPICKER ──
+        const params = new URLSearchParams(window.location.search);
+        const lsStart = localStorage.getItem('smadiment_g_start');
+        const lsEnd   = localStorage.getItem('smadiment_g_end');
+        
+        if (!params.get('start_date') && lsStart && lsEnd) {
+            params.set('start_date', lsStart);
+            params.set('end_date', lsEnd);
+            window.location.search = params.toString(); // Auto-redirect to sync
+            return;
+        }
+
         DOLoader.init();
         document.addEventListener('keydown',e=>{ if(e.key==='Escape') DOPanel.close(); });
     });

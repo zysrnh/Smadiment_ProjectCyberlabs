@@ -948,7 +948,7 @@ function apxBase(colors, series, categories, height=340, onPointClick) {
       hover:{ filter:{ type:'lighten', value:0.1 } },
       active:{ filter:{ type:'darken', value:0.35 } }
     }
-  }; 
+  };
   return opts;
 }
 

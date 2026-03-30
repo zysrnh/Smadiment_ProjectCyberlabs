@@ -361,79 +361,87 @@
             $rawProjects = $mk->listProjects(0, 100);
             $projects    = array_values($rawProjects);
 
+            $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
+            $endDate   = $request->query('end_date',   now()->toDateString());
+
             $dateRange = [
-                'start' => now()->subDays(6)->toDateString(),
-                'end'   => now()->toDateString(),
+                'start' => $startDate,
+                'end'   => $endDate,
             ];
 
             foreach ($projects as &$project) {
                 try {
-                    // ── 1. ALL count: pakai sentimentTotal ──────────────────────
-                    $sentimentData = $mk->sentimentTotal(
-                        $project['id'],
-                        $dateRange['start'],
-                        $dateRange['end'],
-                        0,
-                        23
-                    );
-                    $norm     = $this->normalizeSentimentTotal($sentimentData);
-                    $allCount = $norm['positive'] + $norm['neutral'] + $norm['negative'];
+                    $ck = "admin_dash_stats_v2_{$project['id']}_{$dateRange['start']}_{$dateRange['end']}";
+                    $statsData = \Illuminate\Support\Facades\Cache::remember($ck, 600, function () use ($mk, $project, $dateRange) {
+                        // ── 1. ALL count: pakai sentimentTotal ──────────────────────
+                        $sentimentData = $mk->sentimentTotal(
+                            $project['id'],
+                            $dateRange['start'],
+                            $dateRange['end'],
+                            0,
+                            23
+                        );
+                        $norm     = $this->normalizeSentimentTotal($sentimentData);
+                        $allCount = $norm['positive'] + $norm['neutral'] + $norm['negative'];
 
-                    // ── 2. Per-platform: coba projectStats, fallback 0 ──────────
-                    $platformStats = [];
-                    $platforms = [
-                        'news'   => 'onlinenews',
-                        'twit'   => 'twit',
-                        'fb'     => 'fb',
-                        'ig'     => 'ig',
-                        'yt'     => 'yt',
-                        'tiktok' => 'tiktok',
-                    ];
+                        // ── 2. Per-platform: coba projectStats, fallback 0 ──────────
+                        $platformStats = [];
+                        $platforms = [
+                            'news'   => 'onlinenews',
+                            'twit'   => 'twit',
+                            'fb'     => 'fb',
+                            'ig'     => 'ig',
+                            'yt'     => 'yt',
+                            'tiktok' => 'tiktok',
+                        ];
 
-                    foreach ($platforms as $key => $apiParam) {
-                        try {
-                            $stat = $mk->projectStats(
-                                $project['id'],
-                                $apiParam,
-                                $dateRange['start'],
-                                $dateRange['end'],
-                                0,
-                                23,
-                                'volumetotal'
-                            );
-                            $platformStats[$key] = $this->extractTotal($stat);
-                        } catch (\Exception $e) {
-                            Log::warning("projectStats failed for {$apiParam}", [
-                                'project' => $project['id'],
-                                'error'   => $e->getMessage(),
-                            ]);
-                            $platformStats[$key] = 0;
+                        foreach ($platforms as $key => $apiParam) {
+                            try {
+                                $stat = $mk->projectStats(
+                                    $project['id'],
+                                    $apiParam,
+                                    $dateRange['start'],
+                                    $dateRange['end'],
+                                    0,
+                                    23,
+                                    'volumetotal'
+                                );
+                                $platformStats[$key] = $this->extractTotal($stat);
+                            } catch (\Exception $e) {
+                                \Illuminate\Support\Facades\Log::warning("projectStats failed for {$apiParam}", [
+                                    'project' => $project['id'],
+                                    'error'   => $e->getMessage(),
+                                ]);
+                                $platformStats[$key] = 0;
+                            }
                         }
-                    }
 
-                    // ── 3. Jika semua platform 0, estimasi dari sentimentTotal ──
-                    $platformSum = array_sum($platformStats);
-                    if ($platformSum === 0 && $allCount > 0) {
-                        $platformStats['news']   = (int) round($allCount * 0.15);
-                        $platformStats['twit']   = (int) round($allCount * 0.45);
-                        $platformStats['fb']     = (int) round($allCount * 0.15);
-                        $platformStats['ig']     = (int) round($allCount * 0.10);
-                        $platformStats['yt']     = (int) round($allCount * 0.10);
-                        $platformStats['tiktok'] = (int) round($allCount * 0.05);
+                        // ── 3. Jika semua platform 0, estimasi dari sentimentTotal ──
+                        $platformSum = array_sum($platformStats);
+                        if ($platformSum === 0 && $allCount > 0) {
+                            $platformStats['news']   = (int) round($allCount * 0.15);
+                            $platformStats['twit']   = (int) round($allCount * 0.45);
+                            $platformStats['fb']     = (int) round($allCount * 0.15);
+                            $platformStats['ig']     = (int) round($allCount * 0.10);
+                            $platformStats['yt']     = (int) round($allCount * 0.10);
+                            $platformStats['tiktok'] = (int) round($allCount * 0.05);
 
-                        Log::info("Using estimated platform breakdown for project {$project['id']}", [
-                            'all'   => $allCount,
-                            'stats' => $platformStats,
-                        ]);
-                    }
+                            \Illuminate\Support\Facades\Log::info("Using estimated platform breakdown for project {$project['id']}", [
+                                'all'   => $allCount,
+                                'stats' => $platformStats,
+                            ]);
+                        }
 
-                    $project['stats'] = array_merge(['all' => $allCount], $platformStats);
+                        return array_merge(['all' => $allCount], $platformStats);
+                    });
+
+                    $project['stats'] = $statsData;
 
                     // ── 4. Timeline 7 hari terakhir ─────────────────────────────
                     $project['timeline'] = $this->extractDailyTimeline($project['id'], $mk);
 
-                    Log::info("✅ Stats loaded for project {$project['id']}", [
-                        'all'   => $allCount,
+                    \Illuminate\Support\Facades\Log::info("✅ Stats loaded for project {$project['id']}", [
+                        'all'   => $project['stats']['all'],
                         'stats' => $project['stats'],
                     ]);
 
