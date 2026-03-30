@@ -979,20 +979,22 @@ const MSTab = {
 function makeEDoughnut(domId,labels,values,colors,onClickFns,subtitles){
   const total=values.reduce((a,b)=>a+b,0);
   const chart=MSCharts.make(domId);if(!chart)return null;
-  const seriesData=labels.map((label,i)=>({name:label,value:values[i],subtitle:subtitles?subtitles[i]:'',itemStyle:{color:colors[i],borderColor:'#fff',borderWidth:3}}));
+  const seriesData=labels.map((label,i)=>({name:label,value:values[i],subtitle:subtitles?subtitles[i]:'',itemStyle:{color:colors[i],borderColor:'#fff',borderWidth:4,borderRadius:5}}));
   chart.setOption({animation:true,animationDuration:800,animationEasing:'cubicOut',backgroundColor:'transparent',
-    tooltip:{trigger:'item',backgroundColor:'#1e293b',borderColor:'#334155',borderWidth:1,padding:[10,14],textStyle:{color:'#fff',fontFamily:"'Poppins',sans-serif",fontSize:12},extraCssText:'border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.28);',
-      formatter:params=>{const pct=total>0?((params.value/total)*100).toFixed(1):'0.0';const sub=params.data.subtitle?`<br><span style="color:#94a3b8;font-size:11px;">${params.data.subtitle}</span>`:'';return`<div style="font-weight:700;margin-bottom:5px;">${params.name}${sub}</div><div style="display:flex;justify-content:space-between;gap:18px;margin-top:4px;"><span style="color:#94a3b8;">Mentions</span><span style="font-weight:700;">${numFmt(params.value)}</span></div><div style="display:flex;justify-content:space-between;gap:18px;margin-top:3px;"><span style="color:#94a3b8;">Share</span><span style="font-weight:700;color:#34d399;">${pct}%</span></div>`;}},
+    tooltip:{trigger:'item',backgroundColor:'#1e293b',borderColor:'#334155',borderWidth:1,padding:[9,13],textStyle:{color:'#fff',fontFamily:'inherit',fontSize:12},extraCssText:'border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.3);',
+      formatter:params=>{const pct=total>0?((params.value/total)*100):0;const sub=params.data.subtitle?`<br><span style="color:#94a3b8;font-size:11px;">${params.data.subtitle}</span>`:'';const displayName=params.name.replace('Mass Media','Online News').replace('X (Twitter)','X');return`<div style="font-weight:700;font-size:13px;margin-bottom:5px;">${displayName}${sub}</div><div style="display:flex;justify-content:space-between;gap:20px;margin-top:4px;"><span style="color:#94a3b8;">Mentions</span><span style="font-weight:700;">${numFmt(params.value)}</span></div><div style="display:flex;justify-content:space-between;gap:20px;margin-top:3px;"><span style="color:#94a3b8;">Share</span><span style="font-weight:700;color:#34d399;">${pct<1&&pct>0?'<1':pct.toFixed(1)}%</span></div>`;}},
     legend:{show:false},
-    series:[{type:'pie',radius:['38%','54%'],center:['50%','52%'],avoidLabelOverlap:true,minAngle:5,itemStyle:{borderRadius:6},
-      label:{show:true,alignTo:'none',lineHeight:17,fontFamily:"'Poppins',sans-serif",fontSize:11,color:'#374151',
-    formatter:params=>{const pct2=total>0?Math.round((params.value/total)*100)+'%':'0%';const name=params.name.length>11?params.name.slice(0,10)+'…':params.name;const sub=params.data.subtitle?(params.data.subtitle.length>11?params.data.subtitle.slice(0,10)+'…':params.data.subtitle):'';return sub?`{name|${name}}\n{sub|${sub}}\n{eng|${numK(params.value)}} {pct|${pct2}}`:`{name|${name}}\n{eng|${numK(params.value)}} {pct|${pct2}}`;},
-        rich:{name:{fontWeight:'700',fontSize:12,color:'#1a202c',lineHeight:19},sub:{fontWeight:'400',fontSize:10.5,color:'#64748b',lineHeight:16},eng:{fontWeight:'700',fontSize:11,color:'#4361EE',lineHeight:16,backgroundColor:'#eff2fe',borderRadius:4,padding:[1,5]},pct:{fontWeight:'600',fontSize:10,color:'#64748b',lineHeight:16}}},
-      labelLine:{show:true,length:12,length2:16,smooth:.4,minTurnAngle:130,lineStyle:{color:'#c4cdd8',width:1.2,type:'solid'},showAbove:false},
-      emphasis:{scale:true,scaleSize:5,itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,.12)'}},data:seriesData}],
+    series:[{type:'pie',radius:['36%','54%'],center:['50%','52%'],avoidLabelOverlap:true,minAngle:5,padAngle:2,
+      itemStyle:{borderRadius:5},
+      label:{show:true,alignTo:'labelLine',fontFamily:'inherit',fontSize:11,color:'#374151',distanceToLabelLine:5,
+        formatter:params=>{const pc=total>0?(params.value/total)*100:0;const rawName=String(params.name).split('\n')[0].replace(/ \d+(\.\d+)?%$/, '').replace('X (Twitter)','X').replace('Mass Media','Online News');const name=rawName.length>12?rawName.slice(0,11)+'…':rawName;return `{name|${name}}\n{pct|${pc<1&&pc>0?'<1':Math.round(pc)}%}`;},
+        rich:{name:{fontWeight:'700',fontSize:11,color:'#1a202c',lineHeight:16},pct:{fontWeight:'700',fontSize:10,color:'#038047',lineHeight:14,backgroundColor:'#edf7f3',borderRadius:4,padding:[2,4]}}},
+      labelLine:{show:true,length:12,length2:22,smooth:0.4,maxSurfaceAngle:80,lineStyle:{color:'#94a3b8',width:1.6}},
+      labelLayout:{hideOverlap:true,moveOverlap:'shiftY'},
+      emphasis:{scale:true,scaleSize:5,itemStyle:{shadowBlur:12,shadowColor:'rgba(0,0,0,.2)'}},data:seriesData}],
     graphic:[
-      {type:'text',left:'center',top:'47%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 22px 'Poppins',sans-serif",textAlign:'center'}},
-      {type:'text',left:'center',top:'55%',z:100,style:{text:'TOTAL',fill:'#94a3b8',font:"600 9px 'Poppins',sans-serif",textAlign:'center',letterSpacing:2}},
+      {type:'text',left:'center',top:'47%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 22px inherit",textAlign:'center'}},
+      {type:'text',left:'center',top:'55%',z:100,style:{text:'TOTAL',fill:'#94a3b8',font:"700 9px inherit",textAlign:'center',letterSpacing:2}},
     ]});
   if(onClickFns){chart.on('click',params=>{const fn=onClickFns[params.dataIndex];if(typeof fn==='function'){const rect=chart.getDom().getBoundingClientRect();fn(rect.left+rect.width/2,rect.top+rect.height/2);}});}
   chart.on('mouseover',()=>{if(onClickFns)chart.getDom().style.cursor='pointer';});
@@ -1330,7 +1332,48 @@ const MSDetail = {
     const stats=statsMap[platform]||[];
     const statsHtml=stats.some(s=>parseInt(s[1])>0)?`<div class="do-dp2-stats">${stats.map(([l,v])=>`<div class="do-dp2-stat"><div class="do-dp2-stat-val">${parseInt(v||0).toLocaleString()}</div><div class="do-dp2-stat-lbl">${l}</div></div>`).join('')}</div>`:'';
     const handleDisp=handle&&handle.replace('@','').toLowerCase()!==name.toLowerCase().slice(0,handle.replace('@','').length)?(handle.startsWith('@')?handle:'@'+handle):'';
-    body.innerHTML=`<div class="do-dp2-avatar-row"><div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div><div><div class="do-dp2-name">${esc(name)}</div>${handleDisp?`<div class="do-dp2-handle">${esc(handleDisp)}</div>`:''}<span class="do-dp2-plat-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span></div></div>${dtFmt?`<div class="do-dp2-meta">${dtFmt}</div>`:''}<div class="do-dp2-sent ${SBGS[sent]}">${SLBL[sent]}</div>${mediaHtml}${content?`<div class="do-dp2-content">${esc(content)}</div>`:''}${statsHtml}`;
+    
+    let sourceUrl=item.url||item.link||item.post_url||item.article_url||item.source_url||item.permalink||item.news_url||item.article_link||item.full_url||item.web_url||item.source||item.original_url||'';
+    
+    if(!sourceUrl){
+        if(platform==='twit'){ 
+            const ao=(()=>{ if(typeof item.author==='object'&&item.author) return item.author; try{return JSON.parse(item.author||'{}');}catch(e){return{};} })(); 
+            const scr=(item.author_scr_name||item.screen_name||ao?.scr_name||ao?.username||'').replace(/^@/,''); 
+            const sid=item.sub_id||item.tweet_id||item.id_str||item.id||''; 
+            if(scr&&sid) sourceUrl=`https://twitter.com/${scr}/status/${sid}`; else if(scr) sourceUrl=`https://twitter.com/${scr}`; 
+        }
+        else if(platform==='ig'){ 
+            const sc=item.shortcode||item.code||item.media_id||''; 
+            if(sc) sourceUrl=`https://www.instagram.com/p/${sc}/`; else if(item.username) sourceUrl=`https://www.instagram.com/${item.username}/`; 
+        }
+        else if(platform==='yt'){ 
+            const yi=item.video_id||item.youtube_id||item.id||''; 
+            if(yi) sourceUrl=`https://www.youtube.com/watch?v=${yi}`; else if(item.channel_id) sourceUrl=`https://www.youtube.com/channel/${item.channel_id}`; 
+        }
+        else if(platform==='tiktok'){ 
+            const ti=item.video_id||item.aweme_id||item.id||''; 
+            const ni=item.author_nickname||item.nickname||item.unique_id||item.author?.unique_id||''; 
+            if(ti&&ni) sourceUrl=`https://www.tiktok.com/@${ni}/video/${ti}`; else if(ti) sourceUrl=`https://vm.tiktok.com/${ti}`; 
+        }
+        else if(platform==='fb'){ 
+            const pi=item.post_id||item.story_id||item.id||''; 
+            const pn=item.page_name||item.from_name||item.username||''; 
+            if(pn&&pi) sourceUrl=`https://www.facebook.com/${pn}/posts/${pi}`; 
+        }
+    }
+
+    let sourceBtnHtml = '';
+    if (sourceUrl) {
+        sourceBtnHtml = `<a href="${esc(sourceUrl)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out"></i> Lihat ${meta.label} Asli</a>`;
+    } else {
+        sourceBtnHtml = `
+            <div style="margin-top:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px 12px;font-size:11px;color:#991b1b;display:flex;align-items:flex-start;gap:7px;line-height:1.4;">
+                <i class="ph ph-warning-circle" style="font-size:15px;flex-shrink:0;"></i>
+                <span>Link artikel spesifik tidak tersedia dari sumber data.</span>
+            </div>`;
+    }
+
+    body.innerHTML=`<div class="do-dp2-avatar-row"><div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div><div><div class="do-dp2-name">${esc(name)}</div>${handleDisp?`<div class="do-dp2-handle">${esc(handleDisp)}</div>`:''}<span class="do-dp2-plat-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span></div></div>${dtFmt?`<div class="do-dp2-meta">${dtFmt}</div>`:''}<div class="do-dp2-sent ${SBGS[sent]}">${SLBL[sent]}</div>${mediaHtml}${content?`<div class="do-dp2-content">${esc(content)}</div>`:''}${statsHtml}${sourceBtnHtml}`;
     panel.classList.add('show');
   },
   close(){ const panel=document.getElementById('msDetailPanel');if(!panel)return;panel.classList.remove('show');panel.querySelectorAll('iframe').forEach(f=>{try{f.src=f.src;}catch(e){}});}

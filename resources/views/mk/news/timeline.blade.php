@@ -823,7 +823,8 @@ const MTExport=(() => {
             return await html2canvas(area,{
                 scale:2,useCORS:true,allowTaint:false,
                 backgroundColor:'#f1f5f8',logging:false,removeContainer:true,
-                height:area.scrollHeight,
+                windowWidth:document.documentElement.scrollWidth,
+                windowHeight:area.scrollHeight,height:area.scrollHeight,
                 onclone: d => _onClone(d),
                 ignoreElements:el=>el.hasAttribute('data-html2canvas-ignore')||['pageExportPdfBtn','pageExportImgBtn','pageExportCsvBtn'].includes(el.id)
             });
