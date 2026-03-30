@@ -1462,7 +1462,11 @@ const DashExport = (() => {
             logging        : false,
             removeContainer: true,
             onclone        : d => _onClone(d),
-            ignoreElements : e => e.hasAttribute('data-html2canvas-ignore')
+            ignoreElements : e => e.hasAttribute('data-html2canvas-ignore'),
+            x      : 0,
+            y      : 0,
+            width  : el.offsetWidth,
+            height : el.offsetHeight || el.scrollHeight,
         });
     }
 
@@ -1478,7 +1482,10 @@ const DashExport = (() => {
             ignoreElements : e =>
                 e.hasAttribute('data-html2canvas-ignore') ||
                 e.id === 'pageExportPdfBtn' ||
-                e.id === 'pageExportImgBtn'
+                e.id === 'pageExportImgBtn',
+            windowWidth    : document.documentElement.scrollWidth,
+            windowHeight   : el.scrollHeight,
+            height         : el.scrollHeight,
         });
     }
 
