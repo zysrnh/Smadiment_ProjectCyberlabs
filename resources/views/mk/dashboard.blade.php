@@ -1218,18 +1218,48 @@
             { name: 'Negative', data: tl.sentiment?.negative || [] },
         ],
         colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
+        markers: {
+            size:         totalPoints <= 31 ? 6 : 3,
+            strokeWidth:  2,
+            strokeColors: '#fff',
+            hover:        { size: 8 }
+        },
+        dataLabels: {
+            enabled:   totalPoints <= 31,
+            enabledOnSeries: [0], /* Tampilkan hanya di seri Total agar tidak numpuk berantakan */
+            formatter: v => v > 0 ? numK(v) : '',
+            offsetY: -10,
+            style: { 
+                fontSize: '10px', 
+                fontFamily: 'inherit', 
+                fontWeight: '700',
+                colors: ['#4680ff']
+            },
+            background: { 
+                enabled: true, 
+                foreColor: '#fff', 
+                borderRadius: 4, 
+                padding: 4, 
+                opacity: 1, 
+                borderWidth: 0,
+                dropShadow: { enabled: true, top: 1, left: 1, blur: 2, color: '#000', opacity: 0.2 } 
+            },
+        },
         xaxis: {
             categories: labels,
+            type:       'category',
             axisBorder: { show: false },
             axisTicks:  { show: false },
-            tickAmount: totalPoints,                          /* ← semua label tampil */
+            tickPlacement: 'on',
             labels: {
                 rotate:                   -45,
-                rotateAlways:             totalPoints > SCROLL_THRESHOLD,
-                hideOverlappingLabels:    false,              /* ← matikan, sudah scroll */
+                rotateAlways:             totalPoints > 12,
+                hideOverlappingLabels:    false,
+                showDuplicates:           false,
+                trim:                     false,
                 style: {
                     fontFamily: 'inherit',
-                    fontSize:   totalPoints > SCROLL_THRESHOLD ? '10px' : '11px',
+                    fontSize:   '10px',
                     fontWeight: 600,
                     colors:     '#94A3B8',
                 }
@@ -1245,19 +1275,6 @@
         },
         fill:    { opacity: 0.3 },
         stroke:  { curve: 'smooth', width: 2.5 },
-        markers: {
-            size:         showLabels ? 5 : 3,
-            strokeWidth:  2,
-            strokeColors: '#fff',
-            hover:        { size: 7 }
-        },
-        dataLabels: {
-            enabled:   showLabels,                           /* ← hide kalau > 31 titik */
-            formatter: v => v > 0 ? numK(v) : '',
-            style: { fontSize:'10px', fontFamily:'inherit', fontWeight:'700' },
-            background: { enabled:true, foreColor:'#fff', borderRadius:3, borderWidth:0, padding:3, opacity:0.92, dropShadow:{enabled:true,top:1,left:0,blur:2,color:'#000',opacity:0.10} },
-            offsetY: -6,
-        },
         grid: {
             borderColor:    'rgba(226,232,240,.55)',
             strokeDashArray: 3,
@@ -2086,29 +2103,38 @@ if (dt) {
             let publisherHomepage = '';
             let isDirectArticleUrl = false;
 
-            if (platform === 'doc') {
-                // Try all possible direct article URL fields
-                sourceUrl = (item.url && item.url !== 'null' ? item.url : '')
-                          || item.link || item.article_url || item.source_url
-                          || item.news_url || item.permalink || item.web_url
-                          || item.full_url || item.original_url || item.reference
-                          || item.href || '';
+         if (platform === 'doc') {
+    const _cleanUrl = v => (v && typeof v === 'string'
+        && v !== 'null' && v !== 'undefined' && v.trim() !== ''
+        && v.startsWith('http')) ? v.trim() : '';
 
-                // Clean up empty/null strings
-                if (sourceUrl && (sourceUrl === 'null' || sourceUrl === 'undefined' || sourceUrl.trim() === '')) {
-                    sourceUrl = '';
-                }
+    sourceUrl = _cleanUrl(item.url)
+        || _cleanUrl(item.link)
+        || _cleanUrl(item.article_url)
+        || _cleanUrl(item.source_url)
+        || _cleanUrl(item.news_url)
+        || _cleanUrl(item.permalink)
+        || _cleanUrl(item.web_url)
+        || _cleanUrl(item.full_url)
+        || _cleanUrl(item.original_url)
+        || _cleanUrl(item.reference)
+        || _cleanUrl(item.href)
+        || _cleanUrl(item.canonical_url)
+        || _cleanUrl(item.post_url)
+        || '';
 
-                if (sourceUrl) {
-                    isDirectArticleUrl = true;
-                } else {
-                    // Fallback: construct publisher homepage from publisher field
-                    const pub = (item.publisher || item.source_name || item.name || '').replace(/^@/, '').trim();
-                    if (pub) {
-                        publisherHomepage = 'https://' + (pub.includes('.') ? pub : pub + '.com');
-                    }
-                }
-            } else if (platform === 'twit') {
+    if (sourceUrl) {
+        isDirectArticleUrl = true;
+    } else {
+        const pub = (item.publisher || item.source_name || item.name || '').replace(/^@/, '').trim();
+        if (pub) {
+            const domain = pub.includes('.') ? pub : pub.toLowerCase().replace(/\s+/g, '') + '.com';
+            publisherHomepage = 'https://' + domain.replace(/^https?:\/\//, '');
+        }
+        isDirectArticleUrl = false;
+    }
+}
+         else if (platform === 'twit') {
                 // Try direct URL first (contentJson often has the real tweet URL)
                 const cj = (() => { try { return JSON.parse(item.contentJson||'{}'); } catch(e){ return {}; }})();
                 sourceUrl = cj?.url || item.url || '';
@@ -2153,33 +2179,38 @@ if (dt) {
             /* ── Build action buttons ── */
             let actionBtns = '';
 
-            if (platform === 'doc') {
-                const articleTitle = _es(item.title || content.slice(0, 80) || '');
-                const pub = _es((item.publisher || '').trim());
+        if (platform === 'doc') {
+                const pubRaw = (item.publisher || item.source_name || '').trim();
+                const pubDisplay = pubRaw.replace(/^www\./, '');
 
                 if (isDirectArticleUrl && sourceUrl) {
-                    // Direct article URL available
                     actionBtns = `
                     <div class="do-dp2-actions">
                         <a href="${_es(sourceUrl)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link-news">
                             <i class="ph ph-newspaper"></i> Baca Artikel Asli
                         </a>
-                         
                     </div>`;
                 } else if (publisherHomepage) {
-                   
-                } else {
-                    // No URL at all
                     actionBtns = `
                     <div class="do-dp2-actions">
-                        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:9px 12px;font-size:11px;color:#92400e;display:flex;align-items:flex-start;gap:7px;margin-bottom:2px;">
+                        <a href="${_es(publisherHomepage)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link-news">
+                            <i class="ph ph-globe"></i> Kunjungi ${_es(pubDisplay || 'Publisher')}
+                        </a>
+                        <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:7px 10px;font-size:10px;color:#0369a1;display:flex;align-items:center;gap:6px;">
+                            <i class="ph ph-info" style="font-size:12px;flex-shrink:0;"></i>
+                            <span>URL artikel spesifik tidak tersedia. Tombol di atas membuka halaman utama publisher.</span>
+                        </div>
+                    </div>`;
+                } else {
+                    actionBtns = `
+                    <div class="do-dp2-actions">
+                        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:9px 12px;font-size:11px;color:#92400e;display:flex;align-items:flex-start;gap:7px;">
                             <i class="ph ph-warning" style="font-size:14px;flex-shrink:0;margin-top:1px;"></i>
                             <span>URL artikel tidak tersedia dari sistem.</span>
                         </div>
-                        
                     </div>`;
                 }
-            } else if (sourceUrl) {
+            }else if (sourceUrl) {
                 // Social platforms: primary "Lihat asli" + secondary overview
                 actionBtns = `
                 <div class="do-dp2-actions">

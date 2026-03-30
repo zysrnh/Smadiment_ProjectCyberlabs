@@ -165,19 +165,26 @@
                 for ($i = 6; $i >= 0; $i--) {
                     $date    = now()->subDays($i);
                     $dateStr = $date->format('Y-m-d');
-
                     $dateLabel = $date->format('d') . '. ' . $date->format('M');
 
-                    $ck = "sent_{$projectId}_{$dateStr}_{$dateStr}";
-                    $normalized = \Illuminate\Support\Facades\Cache::remember($ck, 600, function () use ($mk, $projectId, $dateStr) {
-                        $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $dateStr, 0, 23);
-                        return $this->normalizeSentimentTotal($sentimentData);
-                    });
+                    $pos = 0; $neu = 0; $neg = 0; $total = 0;
 
-                    $pos   = $normalized['positive'];
-                    $neu   = $normalized['neutral'];
-                    $neg   = $normalized['negative'];
-                    $total = $pos + $neu + $neg;
+                    try {
+                        $ck = "sent_{$projectId}_{$dateStr}_{$dateStr}";
+                        $normalized = \Illuminate\Support\Facades\Cache::remember($ck, 600, function () use ($mk, $projectId, $dateStr) {
+                            $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $dateStr, 0, 23);
+                            return $this->normalizeSentimentTotal($sentimentData);
+                        });
+
+                        $pos   = $normalized['positive'];
+                        $neu   = $normalized['neutral'];
+                        $neg   = $normalized['negative'];
+                        $total = $pos + $neu + $neg;
+                    } catch (\Exception $e) {
+                        Log::warning("Failed to fetch sentiment for project {$projectId} on {$dateStr}", [
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
 
                     $timeline['dates'][]                 = $dateLabel;
                     $timeline['values'][]                = $total;
@@ -260,16 +267,24 @@
                         $dateStr   = $current->format('Y-m-d');
                         $dateLabel = $current->format('d') . ' ' . $current->format('M');
 
-                        $ck = "sent_{$projectId}_{$dateStr}_{$dateStr}";
-                        $normalized = \Illuminate\Support\Facades\Cache::remember($ck, 600, function () use ($mk, $projectId, $dateStr) {
-                            $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $dateStr, 0, 23);
-                            return $this->normalizeSentimentTotal($sentimentData);
-                        });
+                        $pos = 0; $neu = 0; $neg = 0; $total = 0;
 
-                        $pos   = $normalized['positive'];
-                        $neu   = $normalized['neutral'];
-                        $neg   = $normalized['negative'];
-                        $total = $pos + $neu + $neg;
+                        try {
+                            $ck = "sent_{$projectId}_{$dateStr}_{$dateStr}";
+                            $normalized = \Illuminate\Support\Facades\Cache::remember($ck, 600, function () use ($mk, $projectId, $dateStr) {
+                                $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $dateStr, 0, 23);
+                                return $this->normalizeSentimentTotal($sentimentData);
+                            });
+
+                            $pos   = $normalized['positive'];
+                            $neu   = $normalized['neutral'];
+                            $neg   = $normalized['negative'];
+                            $total = $pos + $neu + $neg;
+                        } catch (\Exception $e) {
+                            Log::warning("Timeline: failed for {$projectId} on {$dateStr}", [
+                                'error' => $e->getMessage()
+                            ]);
+                        }
 
                         $timeline['dates'][]                 = $dateLabel;
                         $timeline['dates_start'][]           = $dateStr;
