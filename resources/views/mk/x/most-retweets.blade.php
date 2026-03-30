@@ -779,14 +779,14 @@ const Detail = {
 ══════════════════════════════════════════════════════ */
 const XExport = (() => {
     let _toastTimer = null;
+    let _ecSnapshots = {};
 
     function _toast(msg, type = 'default', duration = 3200) {
         const t = _$('exportToast'), m = _$('exportToastMsg'), ico = _$('exportToastIcon');
         if (!t || !m) return;
         m.textContent = msg;
         t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
-        const icons   = { success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' };
-        ico.className = 'ph ' + (icons[type] || icons.default);
+        ico.className = 'ph ' + ({ success:'ph-check-circle', error:'ph-x-circle', default:'ph-spinner' }[type] || 'ph-spinner');
         clearTimeout(_toastTimer);
         _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
     }
@@ -796,124 +796,157 @@ const XExport = (() => {
         btn.disabled = loading;
         btn.classList.toggle('exporting', loading);
     }
-    function _freeze() {
-        if(document.getElementById('__s_freeze')) return;
-        const s = document.createElement('style'); s.id = '__s_freeze';
-        s.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
-        document.head.appendChild(s);
-    }
-    function _unfreeze() { document.getElementById('__s_freeze')?.remove(); }
-     
 
-    /* ── Snapshot ECharts donut → dataURL ── */
-    async function _getDonutSnapshot() {
+    /* ── Pre-snapshot ECharts donut → dataURL (Safari-safe) ── */
+    function _preSnapshot() {
+        _ecSnapshots = {};
         const donutEl = _$('donutChart');
-        if (!donutEl || typeof echarts === 'undefined') return null;
+        if (!donutEl || typeof echarts === 'undefined') return;
+
+        const inst = echarts.getInstanceByDom(donutEl);
+        if (!inst || inst.isDisposed?.()) return;
+
+        // Coba via ECharts API dulu
         try {
-            const inst = echarts.getInstanceByDom(donutEl);
-            if (!inst || inst.isDisposed()) return null;
             inst.setOption({ animation: false });
             inst.resize();
-            await new Promise(r => setTimeout(r, 600));
-            return inst.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: '#ffffff' });
-        } catch(e) {
-            console.warn('[XExport] donut snapshot failed', e);
-            return null;
-        }
-    }
-
-    /* ── onclone: replace ECharts canvas dengan img snapshot ── */
-    function _makeOnClone(donutSnapshot) {
-        return (clonedDoc) => {
-            /* Inject freeze style */
-            const s = clonedDoc.createElement('style');
-            s.textContent = `
-                *, *::before, *::after { animation: none !important; transition: none !important; }
-                .fade-up, .fade-up-d1, .fade-up-d2, .fade-up-d3,
-                .fade-up-d4 { opacity: 1 !important; transform: none !important; }
-                [data-html2canvas-ignore] { display: none !important; }
-                .do-panel-overlay, .do-panel, #panelOverlay, #sntPanel { display: none !important; }
-                .chart-loading { display: none !important; }
-                .sk-block { animation: none !important; background: #e2e8f0 !important; }
-            `;
-            clonedDoc.head.appendChild(s);
-
-            /* Sembunyikan elemen non-export */
-            clonedDoc.querySelectorAll(
-                '.do-panel-overlay,.do-panel,.export-toast,.chart-loading,.spin-ring'
-            ).forEach(el => { el.style.display = 'none'; el.style.visibility = 'hidden'; });
-
-            /* Force semua card/row visible */
-            clonedDoc.querySelectorAll(
-                '.card,.tme-post,[class*="col-"],.row,#pageExportArea,.kpi-card-hover'
-            ).forEach(el => {
-                el.style.opacity = '1';
-                el.style.transform = 'none';
-                el.style.visibility = 'visible';
-                el.style.animation = 'none';
-                el.style.transition = 'none';
-            });
-
-            /* KUNCI: Ganti ECharts donut canvas dengan img */
-            const donutDiv = clonedDoc.getElementById('donutChart');
-            if (donutDiv) {
-                donutDiv.innerHTML = '';
-                donutDiv.style.cssText = 'display:block!important;width:100%;height:340px;';
-                if (donutSnapshot) {
-                    const img = clonedDoc.createElement('img');
-                    img.src = donutSnapshot;
-                    img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
-                    donutDiv.appendChild(img);
-                }
+            const url = inst.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: '#ffffff' });
+            if (url && url !== 'data:,' && url.length > 100) {
+                _ecSnapshots['donutChart'] = url;
+                return;
             }
-        };
+        } catch(e) { console.warn('[XExport] getDataURL gagal:', e); }
+
+        // Fallback: copy langsung dari DOM canvas (Safari-safe)
+        const echartsCanvas = donutEl.querySelector('canvas');
+        if (!echartsCanvas) return;
+        try {
+            const off = document.createElement('canvas');
+            off.width  = echartsCanvas.width;
+            off.height = echartsCanvas.height;
+            const ctx  = off.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, off.width, off.height);
+            ctx.drawImage(echartsCanvas, 0, 0);
+            const url = off.toDataURL('image/png');
+            if (url && url !== 'data:,' && url.length > 100)
+                _ecSnapshots['donutChart'] = url;
+        } catch(e2) { console.warn('[XExport] fallback canvas gagal:', e2); }
     }
 
-    /* ── Core capture ── */
-    async function _capture(areaId, bgColor) {
-        const area = document.getElementById(areaId);
-        if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+    /* ── Swap ECharts canvas → <img> di DOM asli sebelum capture ── */
+    function _swapChartsIn(el) {
+        const swaps = [];
+        const container = _$('donutChart');
+        if (!container || !el.contains(container)) return swaps;
+        if (container.style.display === 'none') return swaps;
+        if (!_ecSnapshots['donutChart']) return swaps;
 
-        /* 1. Scroll ke atas */
-        window.scrollTo({ top: 0 });
+        const h = container.offsetHeight || 340;
+        const w = container.offsetWidth  || 600;
 
-        /* 2. Snapshot donut SEBELUM freeze */
-        const donutSnapshot = await _getDonutSnapshot();
+        const placeholder = document.createElement('div');
+        placeholder.dataset.swapFor = 'donutChart';
 
-        /* 3. Force visible semua fade-up di live DOM */
-        area.querySelectorAll('.fade-up,.fade-up-d1,.fade-up-d2,.fade-up-d3,.fade-up-d4,.tme-post,.kpi-card-hover').forEach(e => {
-            e.style.opacity = '1';
-            e.style.transform = 'none';
+        const img = document.createElement('img');
+        img.src = _ecSnapshots['donutChart'];
+        img.style.cssText = `width:${w}px;height:${h}px;object-fit:contain;display:block;background:#fff;`;
+
+        container.parentNode.insertBefore(placeholder, container);
+        container.parentNode.insertBefore(img, placeholder);
+        container.style.display = 'none';
+
+        swaps.push({ container, placeholder, img });
+        return swaps;
+    }
+
+    function _swapChartsOut(swaps) {
+        swaps.forEach(({ container, placeholder, img }) => {
+            try { img.remove(); }         catch(e) {}
+            try { placeholder.remove(); } catch(e) {}
+            container.style.display = 'block';
+            // Restore animasi ECharts
+            try {
+                const inst = echarts.getInstanceByDom(container);
+                if (inst && !inst.isDisposed?.()) inst.setOption({ animation: true });
+            } catch(e) {}
+        });
+    }
+
+    /* ── onclone: bersihkan DOM clone ── */
+    function _onClone(clonedDoc) {
+        // Inject freeze style
+        const s = clonedDoc.createElement('style');
+        s.textContent = `
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+            .fade-up,.fade-up-d1,.fade-up-d2,.fade-up-d3,.fade-up-d4
+                { opacity:1!important; transform:none!important; }
+            [data-html2canvas-ignore] { display:none!important; }
+            .do-panel-overlay,.do-panel,#panelOverlay,#sntPanel { display:none!important; }
+            .chart-loading { display:none!important; }
+            .sk-block { animation:none!important; background:#e2e8f0!important; }
+        `;
+        clonedDoc.head.appendChild(s);
+
+        // Sembunyikan elemen non-export
+        clonedDoc.querySelectorAll(
+            '.do-panel-overlay,.do-panel,.export-toast,.chart-loading,.spin-ring'
+        ).forEach(el => {
+            el.style.display = 'none';
+            el.style.visibility = 'hidden';
+        });
+
+        // Force semua card/row visible
+        clonedDoc.querySelectorAll(
+            '.card,.tme-post,[class*="col-"],.row,#pageExportArea,.kpi-card-hover'
+        ).forEach(el => {
+            el.style.opacity    = '1';
+            el.style.transform  = 'none';
+            el.style.visibility = 'visible';
+            el.style.animation  = 'none';
+            el.style.transition = 'none';
+        });
+    }
+
+    /* ── Core capture: swap dulu di DOM asli, baru html2canvas ── */
+    async function _doCapture(el, isCard) {
+        _preSnapshot();
+
+        // Force visible semua fade-up di live DOM
+        el.querySelectorAll(
+            '.fade-up,.fade-up-d1,.fade-up-d2,.fade-up-d3,.fade-up-d4,.tme-post,.kpi-card-hover'
+        ).forEach(e => {
+            e.style.opacity    = '1';
+            e.style.transform  = 'none';
             e.style.visibility = 'visible';
         });
 
-        /* 4. Tunggu repaint */
-        await new Promise(r => setTimeout(r, 400));
+        // Swap ECharts canvas → img di DOM asli
+        const swaps = _swapChartsIn(el);
+
+        // Safari butuh extra frame setelah swap
+        await new Promise(r => setTimeout(r, 300));
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
         let canvas;
         try {
-            canvas = await html2canvas(area, {
-                scale:           2,
-                useCORS:         true,
-                allowTaint:      false,
-                backgroundColor: bgColor || '#f1f5f9',
-                logging:         false,
+            canvas = await html2canvas(el, {
+                scale          : 2,
+                useCORS        : true,
+                allowTaint     : true,
+                backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
+                logging        : false,
                 removeContainer: true,
-                scrollX:         0,
-                scrollY:         0,
-                width:           area.offsetWidth,
-                height:          area.scrollHeight,
-                onclone:         _makeOnClone(donutSnapshot),
+                imageTimeout   : 0,
+                scrollX        : 0,
+                scrollY        : 0,
+                width          : el.offsetWidth,
+                height         : el.scrollHeight,
+                onclone        : d => _onClone(d),
+                ignoreElements : e => e.hasAttribute('data-html2canvas-ignore'),
             });
         } finally {
-            /* Restore ECharts animation */
-            const donutEl = _$('donutChart');
-            if (donutEl && typeof echarts !== 'undefined') {
-                try {
-                    const inst = echarts.getInstanceByDom(donutEl);
-                    if (inst && !inst.isDisposed()) inst.setOption({ animation: true });
-                } catch(e) {}
-            }
+            _swapChartsOut(swaps);
         }
         return canvas;
     }
@@ -924,7 +957,7 @@ const XExport = (() => {
         pdf.setTextColor(255, 255, 255);
         pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
         pdf.text('SMADIMENT — ' + (label || 'X Most Retweets'), margin, 7.5);
-        const now = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
         pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
         pdf.text('Generated: ' + now, pW - margin, 7.5, { align: 'right' });
     }
@@ -951,7 +984,7 @@ const XExport = (() => {
     }
 
     const _cardLabels = {
-        donut:     'Top 5 Most Retweeted',
+        donut    : 'Top 5 Most Retweeted',
         tweetlist: 'Ranked Tweets by Retweets',
     };
 
@@ -963,7 +996,10 @@ const XExport = (() => {
         _toast(type === 'pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
 
         try {
-            const canvas = await _capture(areaId, '#ffffff');
+            const area = document.getElementById(areaId);
+            if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+
+            const canvas = await _doCapture(area, true);
             const stamp  = new Date().toISOString().slice(0, 10).replace(/-/g, '');
             const fname  = `x_${cardKey}_${CFG.pid}_${stamp}`;
 
@@ -996,13 +1032,12 @@ const XExport = (() => {
         if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
         if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia',       'error'); return; }
 
-        const btnPdf = _$('pageExportPdfBtn');
-        const btnImg = _$('pageExportImgBtn');
+        const btnPdf = _$('pageExportPdfBtn'), btnImg = _$('pageExportImgBtn');
         _btnState(btnPdf, true); _btnState(btnImg, true);
         _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
 
         try {
-            const canvas = await _capture('pageExportArea', '#f1f5f9');
+            const canvas = await _doCapture(_$('pageExportArea'), false);
             const stamp  = new Date().toISOString().slice(0, 10).replace(/-/g, '');
             if (type === 'image') {
                 const link = document.createElement('a');
@@ -1030,7 +1065,6 @@ const XExport = (() => {
 
     return { run, runCard };
 })();
-
 /* ══ INIT ══ */
 document.addEventListener('DOMContentLoaded', () => {
     loadData();

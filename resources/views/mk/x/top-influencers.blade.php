@@ -394,8 +394,8 @@ function renderDonut() {
     }));
     const total = data.reduce((s,d)=>s+d.value,0);
     if(donutInst){ try{ donutInst.dispose(); }catch(e){} }
-    donutInst = echarts.init(ch, null, { renderer:'canvas' });
-    donutInst.setOption({
+donutInst = echarts.init(ch, null, { renderer:'svg' });
+  donutInst.setOption({
         backgroundColor: 'transparent',
         animation: true, animationDuration:700,
         tooltip:{
@@ -668,6 +668,7 @@ const XIExport = (() => {
         btn.classList.toggle('exporting', loading);
     }
 
+    /* ── Pre-snapshot ECharts sebelum html2canvas ── */
     function _getDonutSnapshot() {
         try {
             if(!donutInst || donutInst.isDisposed()) return null;
@@ -677,32 +678,48 @@ const XIExport = (() => {
         } catch(e) { return null; }
     }
 
+    /* ── onclone: freeze animasi + inject snapshot ── */
     function _makeOnClone(donutSnapshot) {
         return (clonedDoc) => {
+            // Freeze semua animasi
             const s = clonedDoc.createElement('style');
             s.textContent = `
-                *, *::before, *::after { animation:none!important; transition:none!important; }
-                .fade-up,.fade-up-d1,.fade-up-d2,.fade-up-d3,.fade-up-d4 { opacity:1!important; transform:none!important; }
-                [data-html2canvas-ignore] { display:none!important; }
-                .do-panel-overlay,.do-panel,#panelOverlay,#sntPanel { display:none!important; }
-                .chart-loading,.spinner-state,.spin-ring { display:none!important; }
-                .sk-block { animation:none!important; background:#e2e8f0!important; }
-                .kpi-card-hover { transform:none!important; filter:none!important; }
-                .sent-tabs { display:none!important; }
+                *, *::before, *::after {
+                    animation: none !important;
+                    transition: none !important;
+                    animation-play-state: paused !important;
+                }
+                .fade-up, .fade-up-d1, .fade-up-d2, .fade-up-d3, .fade-up-d4 {
+                    opacity: 1 !important;
+                    transform: none !important;
+                    visibility: visible !important;
+                }
+                .sk-block { animation: none !important; background: #e2e8f0 !important; }
+                [data-html2canvas-ignore] { display: none !important; }
+                .do-panel-overlay, .do-panel,
+                #panelOverlay, #sntPanel { display: none !important; }
+                .chart-loading, .spinner-state, .spin-ring { display: none !important; }
+                .kpi-card-hover { transform: none !important; filter: none !important; }
+                .sent-tabs { display: none !important; }
             `;
             clonedDoc.head.appendChild(s);
 
-            clonedDoc.querySelectorAll('.do-panel-overlay,.do-panel,.chart-loading,.spinner-state,.export-toast,.sent-tabs')
-                .forEach(el => { el.style.display = 'none'; });
+            // Sembunyikan elemen yang tidak perlu
+            clonedDoc.querySelectorAll(
+                '.do-panel-overlay, .do-panel, .chart-loading, .spinner-state, .export-toast, .sent-tabs'
+            ).forEach(el => { el.style.display = 'none'; });
 
-            clonedDoc.querySelectorAll('.card,.kpi-card-hover,.ht-item,.ht-list,[class*="col-"],.row,#pageExportArea')
-                .forEach(el => {
-                    el.style.opacity    = '1';
-                    el.style.transform  = 'none';
-                    el.style.visibility = 'visible';
-                    el.style.animation  = 'none';
-                });
+            // Freeze elemen visual
+            clonedDoc.querySelectorAll(
+                '.card, .kpi-card-hover, .ht-item, .ht-list, [class*="col-"], .row, #pageExportArea'
+            ).forEach(el => {
+                el.style.opacity    = '1';
+                el.style.transform  = 'none';
+                el.style.visibility = 'visible';
+                el.style.animation  = 'none';
+            });
 
+            // Inject snapshot donut chart
             const donutDiv = clonedDoc.getElementById('donutChart');
             if (donutDiv) {
                 donutDiv.innerHTML = '';
@@ -717,45 +734,83 @@ const XIExport = (() => {
         };
     }
 
-    async function _capture(areaId, bgColor) {
-        const area = document.getElementById(areaId);
-        if(!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+    /* ── Core capture — Safari-safe ── */
+async function _capture(areaId, bgColor) {
+    const area = document.getElementById(areaId);
+    if(!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
 
-        window.scrollTo({ top: 0 });
-        const donutSnapshot = _getDonutSnapshot();
+    try { if(donutInst && !donutInst.isDisposed()) donutInst.resize(); } catch(e) {}
+    await new Promise(r => setTimeout(r, 300));
 
-        area.querySelectorAll('.fade-up,.fade-up-d1,.fade-up-d2,.fade-up-d3,.fade-up-d4,.kpi-card-hover,.ht-item,.card,[class*="col-"]')
-            .forEach(e => {
-                e.style.opacity    = '1';
-                e.style.transform  = 'none';
-                e.style.visibility = 'visible';
-            });
+    // Ambil SVG langsung dari DOM (karena renderer:svg)
+    const donutDiv   = _$('donutChart');
+    const donutSvgEl = donutDiv?.querySelector('svg');
+    let swapImg      = null;
+    let placeholder  = null;
 
-        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    if(donutDiv && donutSvgEl) {
+        // Serialize SVG → data URL
+        const svgStr  = new XMLSerializer().serializeToString(donutSvgEl);
+        const svgB64  = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
 
-        const capturePromise = html2canvas(area, {
-            scale:           2,
-            useCORS:         true,
-            allowTaint:      true,
-            backgroundColor: bgColor || '#f1f5f9',
-            logging:         false,
-            removeContainer: true,
-            scrollX:         0,
-            scrollY:         0,
-            windowWidth:     document.documentElement.scrollWidth,
-            windowHeight:    area.scrollHeight,
-            width:           area.offsetWidth,
-            height:          area.scrollHeight,
-            onclone:         _makeOnClone(donutSnapshot),
-        });
+        // Swap div chart → <img>
+        placeholder = document.createElement('div');
+        placeholder.id = '__donut_placeholder';
 
-        const timeout = new Promise((_,reject) =>
-            setTimeout(() => reject(new Error('Capture timeout — cek console')), 15000)
-        );
+        swapImg = document.createElement('img');
+        swapImg.id  = '__donut_img_swap';
+        swapImg.src = svgB64;
+        swapImg.style.cssText = 'width:100%;height:340px;object-fit:contain;display:block;';
 
-        return Promise.race([capturePromise, timeout]);
+        donutDiv.parentNode.insertBefore(placeholder, donutDiv);
+        donutDiv.parentNode.insertBefore(swapImg, placeholder);
+        donutDiv.style.display = 'none';
     }
 
+    // Freeze animasi
+    area.querySelectorAll(
+        '.fade-up,.fade-up-d1,.fade-up-d2,.fade-up-d3,.fade-up-d4,.kpi-card-hover,.ht-item,.card,[class*="col-"]'
+    ).forEach(e => {
+        e.style.opacity    = '1';
+        e.style.transform  = 'none';
+        e.style.visibility = 'visible';
+    });
+
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    window.scrollTo({ top: 0, left: 0 });
+
+    let canvas;
+    try {
+        const capturePromise = html2canvas(area, {
+            scale           : 2,
+            useCORS         : true,
+            allowTaint      : false,
+            backgroundColor : bgColor || '#f1f5f9',
+            logging         : false,
+            removeContainer : true,
+            scrollX         : 0,
+            scrollY         : 0,
+            windowWidth     : document.documentElement.scrollWidth,
+            windowHeight    : area.scrollHeight,
+            width           : area.offsetWidth,
+            height          : area.scrollHeight,
+            onclone         : _makeOnClone(),
+        });
+
+        const timeout = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Capture timeout')), 15000)
+        );
+
+        canvas = await Promise.race([capturePromise, timeout]);
+    } finally {
+        // Restore DOM
+        swapImg?.remove();
+        placeholder?.remove();
+        if(donutDiv) donutDiv.style.display = 'block';
+    }
+
+    return canvas;
+}
     function _drawHeader(pdf, label) {
         const pW = pdf.internal.pageSize.getWidth();
         pdf.setFillColor(3, 128, 71);
@@ -763,7 +818,9 @@ const XIExport = (() => {
         pdf.setTextColor(255, 255, 255);
         pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
         pdf.text('SMADIMENT — ' + (label || 'X Top Influencers'), 10, 7.5);
-        const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        const now = new Date().toLocaleDateString('id-ID', {
+            day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+        });
         pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
         pdf.text('Generated: ' + now, pW - 10, 7.5, { align: 'right' });
     }
@@ -810,7 +867,10 @@ const XIExport = (() => {
                 _toast('Gambar berhasil diunduh!', 'success');
             } else {
                 const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit:'mm', format:'a4' });
+                const pdf = new jsPDF({
+                    orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+                    unit:'mm', format:'a4'
+                });
                 _drawHeader(pdf, meta.label);
                 _paginatePdf(pdf, canvas, meta.label);
                 pdf.save(fname + '.pdf');
@@ -858,7 +918,6 @@ const XIExport = (() => {
 
     return { run, runCard };
 })();
-
 /* ══ INIT ══ */
 document.addEventListener('DOMContentLoaded', () => {
     if(CFG.pid) loadData();

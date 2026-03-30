@@ -667,7 +667,8 @@ const FMEData={
         loadEl.style.display='none';chartEl.style.display='block';if(emptyEl)emptyEl.style.display='none';
         if(window.__donutEChart){try{window.__donutEChart.dispose();}catch(e){}}
         if(typeof echarts==='undefined'){chartEl.innerHTML='<div class="chart-empty"><i class="ph ph-chart-donut"></i><span>ECharts not loaded</span></div>';return;}
-        const chart=echarts.init(chartEl,null,{renderer:'canvas'});window.__donutEChart=chart;window.addEventListener('resize',()=>{try{chart.resize();}catch(e){}});
+const chart=echarts.init(chartEl,null,{renderer:'svg'});
+      window.__donutEChart=chart;window.addEventListener('resize',()=>{try{chart.resize();}catch(e){}});
         const pieData=top5.map((it,i)=>{const name=this._getName(it),val=this._metric(it,type);const content=dec((it.content||it.caption||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim());return{name,value:val,_content:content,itemStyle:{color:DONUT_COLORS[i]}};});
         chart.setOption({
             backgroundColor:'transparent',tooltip:{show:false},animation:true,animationDuration:1000,animationEasing:'cubicOut',animationDelay:idx=>idx*80,
@@ -746,365 +747,285 @@ const FMEDetail={
 ══════════════════════════════════════════════════════ */
 const FMEExport = (() => {
     'use strict';
-    let _toastTimer  = null;
-    let _ecSnapshots = {};
+    let _toastTimer = null;
 
-    /* ── Toast ── */
-    function _toast(msg, type = 'default', duration = 3200) {
-        const t   = _$('exportToast'),
-              m   = _$('exportToastMsg'),
-              ico = _$('exportToastIcon');
-        if (!t || !m) return;
-        m.textContent = msg;
-        t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
-        ico.className = 'ph ' + ({ success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' }[type] || 'ph-spinner');
-        clearTimeout(_toastTimer);
-        _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+    function _toast(msg, type='default', duration=3200) {
+        const t=_$('exportToast'), m=_$('exportToastMsg'), ico=_$('exportToastIcon');
+        if(!t||!m) return;
+        m.textContent=msg; t.className='export-toast show '+(type!=='default'?type:'');
+        ico.className='ph '+({success:'ph-check-circle',error:'ph-x-circle',default:'ph-spinner'}[type]||'ph-spinner');
+        clearTimeout(_toastTimer); _toastTimer=setTimeout(()=>t.classList.remove('show'),duration);
+    }
+    function _btnState(btn,loading){ if(!btn)return; btn.disabled=loading; btn.classList.toggle('exporting',loading); }
+
+    // Swap semua ECharts SVG → <img> di DOM asli
+    function _swapChartsIn(el) {
+        const swaps = [];
+        ['donutChart'].forEach(id => {
+            const container = document.getElementById(id);
+            if(!container || !el.contains(container)) return;
+            if(container.style.display==='none') return;
+            const svgEl = container.querySelector('svg');
+            if(!svgEl) return;
+            try {
+                const svgStr = new XMLSerializer().serializeToString(svgEl);
+                const b64    = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
+                const h      = container.offsetHeight || 480;
+
+                const placeholder = document.createElement('div');
+                placeholder.dataset.swapFor = id;
+
+                const img = document.createElement('img');
+                img.dataset.swapImg = id;
+                img.src = b64;
+                img.style.cssText = `width:100%;height:${h}px;object-fit:contain;display:block;`;
+
+                container.parentNode.insertBefore(placeholder, container);
+                container.parentNode.insertBefore(img, placeholder);
+                container.style.display = 'none';
+
+                swaps.push({ container, placeholder, img });
+            } catch(e) { console.warn('[FMEExport] swap failed:', id, e); }
+        });
+        return swaps;
     }
 
-    /* ── Button state ── */
-    function _btnState(btn, loading) {
-        if (!btn) return;
-        btn.disabled = loading;
-        btn.classList.toggle('exporting', loading);
+    function _swapChartsOut(swaps) {
+        swaps.forEach(({ container, placeholder, img }) => {
+            try { img.remove(); } catch(e) {}
+            try { placeholder.remove(); } catch(e) {}
+            container.style.display = 'block';
+        });
     }
 
-    /* ── Freeze / unfreeze animations ── */
-    function _freeze() {
-        if (document.getElementById('__fme_freeze')) return;
-        const s = document.createElement('style');
-        s.id = '__fme_freeze';
-        s.textContent = '*{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
-        document.head.appendChild(s);
-    }
-    function _unfreeze() { document.getElementById('__fme_freeze')?.remove(); }
-
-    /* ── Pre-snapshot ECharts donut (stored di window.__donutEChart) ── */
-    function _preSnapshot() {
-        _ecSnapshots = {};
-        const inst = window.__donutEChart;
-        if (!inst || inst.isDisposed?.()) return;
-        try {
-            _ecSnapshots['donutChart'] = inst.getDataURL({
-                type           : 'png',
-                pixelRatio     : window.devicePixelRatio || 2,
-                backgroundColor: '#ffffff',
-            });
-        } catch (e) { console.warn('[FMEExport] snapshot failed:', e); }
-    }
-
-    /* ── onclone: bersihkan DOM clone sebelum html2canvas render ── */
     function _onClone(clonedDoc) {
-        /* 1. Sembunyikan elemen yang tidak perlu */
+        // Sembunyikan elemen tidak perlu
         clonedDoc.querySelectorAll(
             '.do-panel-overlay,.do-panel,.do-detail-panel,' +
             '#donutCustomTT,#fmePanelOverlay,#fmeSntPanel,' +
             '.spin-ring,.spinner-state,.export-toast,.chart-loading,' +
             '[data-html2canvas-ignore]'
-        ).forEach(el => {
-            el.style.cssText += 'display:none!important;visibility:hidden!important;' +
-                                'opacity:0!important;height:0!important;overflow:hidden!important;';
-        });
+        ).forEach(el => { el.style.cssText += 'display:none!important;'; });
 
-        /* 2. Sembunyikan tab panel yang tidak aktif */
+        // Sembunyikan tab panel tidak aktif
         clonedDoc.querySelectorAll('.tme-tab-panel:not(.active)').forEach(el => {
             el.style.cssText += 'display:none!important;height:0!important;overflow:hidden!important;';
         });
 
-        /* 3. Ganti avatar cross-origin dengan initial letter */
-        clonedDoc.querySelectorAll('.tme-post-av,.do-panel-avatar,.do-dp2-avatar-lg').forEach(wrapper => {
-            wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
-            if (!wrapper.querySelector('.__ini')) {
-                const txt     = (wrapper.textContent || '').trim();
-                const initial = txt ? txt[0].toUpperCase() : 'F';
-                const sp      = clonedDoc.createElement('span');
-                sp.className  = '__ini';
-                sp.textContent = initial;
-                sp.style.cssText = 'font-size:13px;font-weight:700;color:#fff;line-height:1;';
-                wrapper.appendChild(sp);
-            }
-            if (!wrapper.style.background)
-                wrapper.style.background = 'linear-gradient(135deg,#1877f2,#0f5cbf)';
-        });
-
-        /* 4. Stop animasi & pastikan elemen terlihat */
+        // Freeze animasi
         clonedDoc.querySelectorAll('*').forEach(el => {
             el.style.animationPlayState = 'paused';
-            el.style.animation          = 'none';
-            el.style.transition         = 'none';
+            el.style.animation  = 'none';
+            el.style.transition = 'none';
         });
+
+        // Pastikan elemen konten visible
         clonedDoc.querySelectorAll(
             '.card,.card-body,.card-header,.row,[class*="col-"],' +
             '.tme-tab-panel.active,.tme-post-list,.tme-post,' +
-            '#pageExportArea'
+            '.kpi-card-hover,#pageExportArea'
         ).forEach(el => {
             el.style.opacity    = '1';
             el.style.transform  = 'none';
             el.style.visibility = 'visible';
         });
-
-        /* 5. ★ Ganti ECharts <canvas> dengan <img> dari snapshot ★ */
-        if (_ecSnapshots['donutChart']) {
-            const container = clonedDoc.getElementById('donutChart');
-            if (container) {
-                container.innerHTML = '';
-                const img       = clonedDoc.createElement('img');
-                img.src         = _ecSnapshots['donutChart'];
-                img.style.cssText = 'width:100%;height:100%;display:block;object-fit:contain;';
-                container.appendChild(img);
-                container.style.cssText += 'display:block!important;opacity:1!important;visibility:visible!important;';
-            }
-        }
     }
 
-    /* ── Core capture (freeze → snapshot → html2canvas → unfreeze) ── */
     async function _doCapture(el, isCard) {
-        _preSnapshot();
-        _freeze();
+        // Freeze visual elemen
+        el.querySelectorAll('.kpi-card-hover,.tme-post,.card,[class*="col-"]')
+          .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; });
+
+        // Swap chart SVG → img
+        const swaps = _swapChartsIn(el);
+
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        await new Promise(r => setTimeout(r, 400));
+
         let canvas;
         try {
             canvas = await html2canvas(el, {
-                scale          : 2,
-                useCORS        : true,
-                allowTaint     : true,
-                backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
-                logging        : false,
-                removeContainer: true,
-                imageTimeout   : 0,
-                onclone        : d => _onClone(d),
-                ignoreElements : e => e.hasAttribute('data-html2canvas-ignore'),
-                x              : 0,
-                y              : 0,
-                width          : el.offsetWidth,
-                height         : el.scrollHeight,
+                scale           : 2,
+                useCORS         : true,
+                allowTaint      : false,
+                backgroundColor : isCard ? '#ffffff' : '#f1f5f9',
+                logging         : false,
+                removeContainer : true,
+                imageTimeout    : 0,
+                x               : 0,
+                y               : 0,
+                width           : el.offsetWidth,
+                height          : el.scrollHeight,
+                onclone         : d => _onClone(d),
+                ignoreElements  : e => e.hasAttribute('data-html2canvas-ignore'),
             });
-        } finally { _unfreeze(); }
+        } finally {
+            _swapChartsOut(swaps);
+        }
         return canvas;
     }
 
-    /* ── PDF header ── */
     function _drawHeader(pdf, pW, pH, label, page, total) {
-        pdf.setFillColor(3, 128, 71);
-        pdf.rect(0, 0, pW, 11, 'F');
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
-        pdf.text('SMADIMENT — ' + (label || 'Facebook Most Engagement'), 10, 7.5);
-        const now = new Date().toLocaleDateString('id-ID', {
-            day: '2-digit', month: 'short', year: 'numeric',
-            hour: '2-digit', minute: '2-digit',
-        });
-        pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
-        pdf.text('Generated: ' + now, pW - 10, 7.5, { align: 'right' });
-        pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
-        pdf.text(`Halaman ${page} / ${total}`, pW / 2, pH - 3, { align: 'center' });
+        pdf.setFillColor(3,128,71); pdf.rect(0,0,pW,11,'F');
+        pdf.setTextColor(255,255,255); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
+        pdf.text('SMADIMENT — '+(label||'Facebook Most Engagement'), 10, 7.5);
+        const now=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+        pdf.setFontSize(7); pdf.setFont('helvetica','normal');
+        pdf.text('Generated: '+now, pW-10, 7.5, {align:'right'});
+        pdf.setFontSize(7); pdf.setTextColor(148,163,184);
+        pdf.text(`Halaman ${page} / ${total}`, pW/2, pH-3, {align:'center'});
     }
 
-    /* ── Tambahkan canvas ke halaman PDF (fit-in-page) ── */
     function _addCanvas(pdf, canvas, margin, pW, pH) {
-        const uw = pW - margin * 2, uh = pH - 14 - 10;
-        const ratio = Math.min(uw / canvas.width, uh / canvas.height);
-        const dw = canvas.width * ratio, dh = canvas.height * ratio;
-        pdf.addImage(
-            canvas.toDataURL('image/png'), 'PNG',
-            margin + (uw - dw) / 2,
-            14   + (uh - dh) / 2,
-            dw, dh
-        );
+        const uw=pW-margin*2, uh=pH-14-10;
+        const ratio=Math.min(uw/canvas.width, uh/canvas.height);
+        const dw=canvas.width*ratio, dh=canvas.height*ratio;
+        pdf.addImage(canvas.toDataURL('image/png'),'PNG', margin+(uw-dw)/2, 14+(uh-dh)/2, dw, dh);
     }
 
-    /* ── Paginate canvas panjang ── */
     function _paginate(pdf, canvas, margin, pW, pH, labelFn) {
-        const uw = pW - margin * 2, uh = pH - 14 - 10;
-        const ratio  = uw / canvas.width, sliceH = uh / ratio;
-        const total  = Math.max(1, Math.ceil((canvas.height * ratio) / uh));
-        let srcY = 0, pg = 1;
-        while (srcY < canvas.height) {
-            if (pg > 1) pdf.addPage();
-            _drawHeader(pdf, pW, pH, labelFn(), pg, total);
-            const srcSlice = Math.min(sliceH, canvas.height - srcY), dstH = srcSlice * ratio;
-            const slice    = document.createElement('canvas');
-            slice.width    = canvas.width;
-            slice.height   = Math.ceil(srcSlice);
-            slice.getContext('2d').drawImage(
-                canvas, 0, srcY, canvas.width, srcSlice,
-                0, 0,           canvas.width, srcSlice
-            );
-            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, uw, dstH);
-            srcY += srcSlice; pg++;
+        const uw=pW-margin*2, uh=pH-14-10;
+        const ratio=uw/canvas.width, sliceH=uh/ratio;
+        const total=Math.max(1,Math.ceil((canvas.height*ratio)/uh));
+        let srcY=0, pg=1;
+        while(srcY<canvas.height){
+            if(pg>1) pdf.addPage();
+            _drawHeader(pdf,pW,pH,labelFn(),pg,total);
+            const srcSlice=Math.min(sliceH,canvas.height-srcY), dstH=srcSlice*ratio;
+            const slice=document.createElement('canvas');
+            slice.width=canvas.width; slice.height=Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(canvas,0,srcY,canvas.width,srcSlice,0,0,canvas.width,srcSlice);
+            pdf.addImage(slice.toDataURL('image/png'),'PNG',margin,14,uw,dstH);
+            srcY+=srcSlice; pg++;
         }
         return total;
     }
 
-    /* ════════════════════════════════════════════
-       run — Export seluruh halaman (semua 3 tab)
-    ════════════════════════════════════════════ */
     async function run(type, btn) {
-        if (!window.html2canvas)       { _toast('html2canvas tidak tersedia', 'error'); return; }
-        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+        if(!window.html2canvas){ _toast('html2canvas tidak tersedia','error'); return; }
+        if(type==='pdf'&&!window.jspdf?.jsPDF){ _toast('jsPDF tidak tersedia','error'); return; }
 
-        const btnPdf = _$('pageExportPdfBtn'), btnImg = _$('pageExportImgBtn');
-        _btnState(btnPdf, true); _btnState(btnImg, true);
-        _toast(type === 'pdf' ? 'Menyiapkan PDF semua tab…' : 'Mengambil gambar…', 'default', 99999);
+        const btnPdf=_$('pageExportPdfBtn'), btnImg=_$('pageExportImgBtn');
+        _btnState(btnPdf,true); _btnState(btnImg,true);
+        _toast(type==='pdf'?'Menyiapkan PDF semua tab…':'Mengambil gambar…','default',99999);
 
-        const originalTab = ['like','share','comment']
-            .find(t => _$('tab-' + t)?.classList.contains('active')) || 'like';
-        const area  = _$('pageExportArea');
-        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const originalTab=['like','share','comment'].find(t=>_$('tab-'+t)?.classList.contains('active'))||'like';
+        const area=_$('pageExportArea');
+        const stamp=new Date().toISOString().slice(0,10).replace(/-/g,'');
 
         try {
-            /* ── Image: capture tab aktif saja ── */
-            if (type === 'image') {
-                const canvas = await _doCapture(area, false);
-                const link   = document.createElement('a');
-                link.download = `facebook_engagement_${FME_PID}_${stamp}.png`;
-                link.href     = canvas.toDataURL('image/png');
-                link.click();
-                _toast('Gambar berhasil diunduh!', 'success');
-                return;
+            if(type==='image'){
+                const canvas=await _doCapture(area,false);
+                const link=document.createElement('a');
+                link.download=`facebook_engagement_${FME_PID}_${stamp}.png`;
+                link.href=canvas.toDataURL('image/png'); link.click();
+                _toast('Gambar berhasil diunduh!','success'); return;
             }
 
-            /* ── PDF: capture semua 3 tab ── */
-            const { jsPDF }  = window.jspdf;
-            const TAB_ORDER  = [
-                { key: 'like',    label: 'Most Liked'    },
-                { key: 'share',   label: 'Most Shared'   },
-                { key: 'comment', label: 'Most Comments' },
+            const {jsPDF}=window.jspdf;
+            const TAB_ORDER=[
+                {key:'like',    label:'Most Liked'},
+                {key:'share',   label:'Most Shared'},
+                {key:'comment', label:'Most Comments'},
             ];
-
-            const canvases = [];
-            for (let i = 0; i < TAB_ORDER.length; i++) {
-                const { key, label } = TAB_ORDER[i];
-                _toast(`Mengambil tab ${i + 1}/3: ${label}…`, 'default', 99999);
+            const canvases=[];
+            for(let i=0;i<TAB_ORDER.length;i++){
+                const {key,label}=TAB_ORDER[i];
+                _toast(`Mengambil tab ${i+1}/3: ${label}…`,'default',99999);
                 FMETab.show(key);
-                await new Promise(r => setTimeout(r, 900));
-                canvases.push({ label, canvas: await _doCapture(area, false) });
+                await new Promise(r=>setTimeout(r,800));
+                canvases.push({label, canvas: await _doCapture(area,false)});
             }
 
-            /* Hitung total halaman */
-            const pdf   = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            const pW    = pdf.internal.pageSize.getWidth();
-            const pH    = pdf.internal.pageSize.getHeight();
-            const M     = 10, uw = pW - M * 2, uh = pH - 14 - 10;
-            let totalPg = 0;
-            canvases.forEach(({ canvas }) => {
-                const ratio = uw / canvas.width;
-                totalPg += Math.max(1, Math.ceil((canvas.height * ratio) / uh));
+            const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+            const pW=pdf.internal.pageSize.getWidth(), pH=pdf.internal.pageSize.getHeight(), M=10;
+            const uw=pW-M*2, uh=pH-14-10;
+
+            let totalPg=0;
+            canvases.forEach(({canvas})=>{
+                totalPg+=Math.max(1,Math.ceil((canvas.height*(uw/canvas.width))/uh));
             });
 
-            /* Build PDF */
-            let pageNum = 1, firstPage = true;
-            canvases.forEach(({ label, canvas }) => {
-                const ratio   = uw / canvas.width, sliceH = uh / ratio;
-                let srcY = 0;
-                while (srcY < canvas.height) {
-                    if (!firstPage) pdf.addPage();
-                    firstPage = false;
-                    _drawHeader(pdf, pW, pH, `Facebook Most Engagement — ${label}`, pageNum, totalPg);
-                    const srcSlice = Math.min(sliceH, canvas.height - srcY), dstH = srcSlice * ratio;
-                    const slice    = document.createElement('canvas');
-                    slice.width    = canvas.width;
-                    slice.height   = Math.ceil(srcSlice);
-                    slice.getContext('2d').drawImage(
-                        canvas, 0, srcY, canvas.width, srcSlice,
-                        0, 0,           canvas.width, srcSlice
-                    );
-                    pdf.addImage(slice.toDataURL('image/png'), 'PNG', M, 14, uw, dstH);
-                    srcY += srcSlice; pageNum++;
+            let pageNum=1, firstPage=true;
+            canvases.forEach(({label,canvas})=>{
+                const ratio=uw/canvas.width, sliceH=uh/ratio;
+                let srcY=0;
+                while(srcY<canvas.height){
+                    if(!firstPage) pdf.addPage(); firstPage=false;
+                    _drawHeader(pdf,pW,pH,`Facebook Most Engagement — ${label}`,pageNum,totalPg);
+                    const srcSlice=Math.min(sliceH,canvas.height-srcY), dstH=srcSlice*ratio;
+                    const slice=document.createElement('canvas');
+                    slice.width=canvas.width; slice.height=Math.ceil(srcSlice);
+                    slice.getContext('2d').drawImage(canvas,0,srcY,canvas.width,srcSlice,0,0,canvas.width,srcSlice);
+                    pdf.addImage(slice.toDataURL('image/png'),'PNG',M,14,uw,dstH);
+                    srcY+=srcSlice; pageNum++;
                 }
             });
-
             pdf.save(`facebook_engagement_${FME_PID}_${stamp}.pdf`);
-            _toast(`PDF ${totalPg} halaman berhasil diunduh!`, 'success');
+            _toast(`PDF ${totalPg} halaman berhasil diunduh!`,'success');
 
-        } catch (err) {
-            console.error('[FMEExport.run]', err);
-            _toast('Export gagal: ' + err.message, 'error');
+        } catch(err){
+            console.error('[FMEExport.run]',err); _toast('Export gagal: '+err.message,'error');
         } finally {
-            FMETab.show(originalTab);
-            _btnState(btnPdf, false); _btnState(btnImg, false);
+            FMETab.show(originalTab); _btnState(btnPdf,false); _btnState(btnImg,false);
         }
     }
 
-    /* ════════════════════════════════════════════
-       runCard — Export per-card
-    ════════════════════════════════════════════ */
-    const _cardLabels = {
-        'donut'        : 'Distribusi Likes — Top 5',
-        'eng'          : 'Engagement Comparison',
-        'list-like'    : 'Top Posts by Likes',
-        'list-share'   : 'Top Posts by Shares',
-        'list-comment' : 'Top Posts by Comments',
-        'bar-like'     : 'Chart Most Liked',
-        'bar-share'    : 'Chart Most Shared',
-        'bar-comment'  : 'Chart Most Comments',
+    const _cardLabels={
+        'donut'        :'Distribusi Likes — Top 5',
+        'eng'          :'Engagement Comparison',
+        'list-like'    :'Top Posts by Likes',
+        'list-share'   :'Top Posts by Shares',
+        'list-comment' :'Top Posts by Comments',
+        'bar-like'     :'Chart Most Liked',
+        'bar-share'    :'Chart Most Shared',
+        'bar-comment'  :'Chart Most Comments',
     };
-
-    function _cardFilename(k) {
-        const map = {
-            'donut'        : 'distribusi-likes-top5',
-            'eng'          : 'engagement-comparison',
-            'list-like'    : 'top-posts-by-like',
-            'list-share'   : 'top-posts-by-share',
-            'list-comment' : 'top-posts-by-comment',
-            'bar-like'     : 'chart-most-liked',
-            'bar-share'    : 'chart-most-shared',
-            'bar-comment'  : 'chart-most-comments',
+    function _cardFilename(k){
+        const map={
+            'donut':'distribusi-likes-top5','eng':'engagement-comparison',
+            'list-like':'top-posts-by-like','list-share':'top-posts-by-share',
+            'list-comment':'top-posts-by-comment','bar-like':'chart-most-liked',
+            'bar-share':'chart-most-shared','bar-comment':'chart-most-comments',
         };
-        const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        return `facebook_engagement_${map[k] || k}_${FME_PID}_${stamp}`;
+        return `facebook_engagement_${map[k]||k}_${FME_PID}_${new Date().toISOString().slice(0,10).replace(/-/g,'')}`;
     }
 
     async function runCard(areaId, cardKey, type, btn) {
-        if (!window.html2canvas)       { _toast('html2canvas tidak tersedia', 'error'); return; }
-        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
-
-        _btnState(btn, true);
-        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
-
+        if(!window.html2canvas){ _toast('html2canvas tidak tersedia','error'); return; }
+        if(type==='pdf'&&!window.jspdf?.jsPDF){ _toast('jsPDF tidak tersedia','error'); return; }
+        _btnState(btn,true); _toast(type==='pdf'?'Menyiapkan PDF…':'Mengambil gambar…','default',99999);
         try {
-            const area = document.getElementById(areaId);
-            if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
-
-            const canvas = await _doCapture(area, true);
-            const fname  = _cardFilename(cardKey);
-            const label  = _cardLabels[cardKey] || cardKey;
-
-            if (type === 'image') {
-                const link    = document.createElement('a');
-                link.download = fname + '.png';
-                link.href     = canvas.toDataURL('image/png');
-                link.click();
-                _toast('Gambar berhasil diunduh!', 'success');
+            const area=document.getElementById(areaId);
+            if(!area) throw new Error('Area #'+areaId+' tidak ditemukan');
+            const canvas=await _doCapture(area,true);
+            const fname=_cardFilename(cardKey), label=_cardLabels[cardKey]||cardKey;
+            if(type==='image'){
+                const link=document.createElement('a'); link.download=fname+'.png';
+                link.href=canvas.toDataURL('image/png'); link.click();
+                _toast('Gambar berhasil diunduh!','success');
             } else {
-                const { jsPDF }  = window.jspdf;
-                const landscape  = canvas.width > canvas.height * 1.2;
-                const pdf        = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
-                const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
-                const M  = 10, uw = pW - M * 2, uh = pH - 14 - 10;
-                const fitsOne = (canvas.height * (uw / canvas.width)) <= uh;
-
-                if (fitsOne) {
-                    _drawHeader(pdf, pW, pH, label, 1, 1);
-                    _addCanvas(pdf, canvas, M, pW, pH);
+                const {jsPDF}=window.jspdf;
+                const pdf=new jsPDF({
+                    orientation: canvas.width>canvas.height*1.2?'landscape':'portrait',
+                    unit:'mm', format:'a4'
+                });
+                const pW=pdf.internal.pageSize.getWidth(), pH=pdf.internal.pageSize.getHeight(), M=10;
+                const uw=pW-M*2, uh=pH-14-10;
+                if((canvas.height*(uw/canvas.width))<=uh){
+                    _drawHeader(pdf,pW,pH,label,1,1); _addCanvas(pdf,canvas,M,pW,pH);
                 } else {
-                    _paginate(pdf, canvas, M, pW, pH, () => label);
+                    _paginate(pdf,canvas,M,pW,pH,()=>label);
                 }
-                pdf.save(fname + '.pdf');
-                _toast('PDF berhasil diunduh!', 'success');
+                pdf.save(fname+'.pdf'); _toast('PDF berhasil diunduh!','success');
             }
-        } catch (err) {
-            console.error('[FMEExport.runCard]', err);
-            _toast('Export gagal: ' + err.message, 'error');
-        } finally {
-            _btnState(btn, false);
-        }
+        } catch(err){
+            console.error('[FMEExport.runCard]',err); _toast('Export gagal: '+err.message,'error');
+        } finally { _btnState(btn,false); }
     }
 
     return { run, runCard };
 })();
-
+  
 document.addEventListener('DOMContentLoaded',()=>{FMEData.loadAll();document.addEventListener('keydown',e=>{if(e.key==='Escape')FMEPanel.close();});});
 </script>
 @endsection

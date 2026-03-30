@@ -32,6 +32,7 @@
 .sent-tab.active{background:#fff;color:var(--primary);box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .sent-tab.tab-pos.active{color:#16a34a}
 .sent-tab.tab-neg.active{color:#dc2626}
+.sent-tab.tab-neu.active{color:#b45309}
 .sent-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
 .ht-list{display:flex;flex-direction:column}
@@ -124,7 +125,7 @@
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                 <p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p>
                 <h3 class="mb-0 text-white f-w-300" id="kpiTopics"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
-                <p class="mb-0 mt-2 text-white text-opacity-75 f-12"  id="kpiTopicsSub"><i class="ph ph-hash me-1"></i>Loading…</p>
+                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopicsSub"><i class="ph ph-hash me-1"></i>Loading…</p>
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-hash"></i></div></div></div></div>
         </div>
     </div>
@@ -271,15 +272,11 @@ let allTopics = [], filtered = [], curPage = 1, curSent = 'all', curMode = 'hash
 const PP = 15;
 let wcChart = null;
 
-/* ══ Stopwords (YouTube-specific, tidak berubah) ══ */
+/* ══ Stopwords ══ */
 const SW = new Set(['the','a','an','and','or','but','in','on','at','to','for','of','with','is','are','was','were','be','been','have','has','had','do','does','did','will','would','could','should','may','might','this','that','these','those','i','you','he','she','we','they','it','my','your','his','her','our','their','me','him','us','them','dari','dan','ke','di','yang','dengan','untuk','ini','itu','ada','tidak','bisa','akan','juga','sudah','pada','atau','dalam','oleh','karena','kita','anda','kami','mereka','ya','jadi','tapi','kalau','aja','saja','pun','lebih','seperti','masih','harus','kali','video','youtube','channel','watch','subscribe','like','comment','share','link','click','here','now','new','how','what','why','when','where','who','all','get','let','amp','via','http','https','www','com','co','id','nih','yuk','yg','nya','si','loh','deh','sih','dong','kok','udah','sama','mau','apa','kalo','gimana','banget','guys','ep','eps','full','part','official','ft','feat','cover','live']);
 
-/* ══════════════════════════════════════════════════════
-   SENTIMENT KEYWORDS — extended dari IG (EN + ID)
-   Menggantikan list lama yang terlalu pendek
-══════════════════════════════════════════════════════ */
+/* ══ Sentiment Keywords ══ */
 const NEG_SET = new Set([
-    /* ── EN ── */
     'bad','worst','worse','hate','hated','hating','sad','sadness','fail','failed','failing','failure',
     'lose','lost','losing','loss','loser','angry','anger','furious','rage','raging',
     'terrible','horrible','awful','dreadful','disgusting','poor','dead','death','die','died','dying',
@@ -293,9 +290,9 @@ const NEG_SET = new Set([
     'drug','drugs','addict','addiction','accident','accidents',
     'flood','earthquake','landslide','wildfire','tornado','hurricane','tsunami',
     'crash','explosion','explode','exploded','rape','raped','robbery','robbed','theft','steal','stealing','stolen',
-    'illegal','unlawful','criminal','arrested','arrest','imprisoned','prison','jail','guilty','convicted','sentenced',
+    'illegal','unlawful','arrested','arrest','imprisoned','prison','jail','guilty','convicted','sentenced',
     'banned','suspended','fired','dismissed','resign','resigned','resignation',
-    'shutdown','collapse','collapsed','bankrupt','broke','broken','damage','damaged','destroy','destroyed',
+    'shutdown','collapse','collapsed','broke','broken','damage','damaged','destroy','destroyed',
     'penalty','punish','punished','shame','shameful','disgrace','disgraced','humiliate','humiliated',
     'embarrass','embarrassed','betrayal','betrayed','betray','deceive','deceived','deception',
     'oppression','oppressed','oppress','exploit','exploited','exploitation',
@@ -304,18 +301,17 @@ const NEG_SET = new Set([
     'poverty','starving','starvation','homeless','neglect','neglected',
     'cheat','cheated','cheating','bribe','bribery','toxic','poisoned','poisonous',
     'polluted','pollution','contaminate','contaminated','infected','infection','diseased','pandemic','epidemic',
-    'protest','protests','protesting','unrest','conflict','war','warfare','battle','battles','fighting',
+    'protest','protests','protesting','unrest','conflict','warfare','battle','battles','fighting',
     'vandalism','vandalize','arson','looting','chaos','anarchy','anarchist',
     'threat','threatened','threatening','dangerous','danger','hazard','hazardous',
-    'racist','racism','racist','sexist','sexism','bigot','bigotry','xenophobia','xenophobic',
-    'bully','bullied','bullying','cyberbully','cyberbullying','harass',
-    'crisis','crises','emergency','critical','catastrophic','devastating','devasted',
-    'fake','counterfeit','forgery','forged','plagiarism','plagiarize',
-    /* ── ID ── */
+    'racist','racism','sexist','sexism','bigot','bigotry','xenophobia','xenophobic',
+    'bully','bullied','bullying','cyberbully','cyberbullying',
+    'crises','emergency','critical','catastrophic','devastating',
+    'counterfeit','forgery','forged','plagiarism','plagiarize',
     'buruk','terburuk','benci','membenci','sedih','kesedihan','gagal','kegagalan',
     'kalah','kekalahan','marah','kemarahan','murka','amarah','geram','berang',
     'parah','mengerikan','menakutkan','menjijikkan','mati','kematian','meninggal',
-    'tewas','wafat','bunuh','membunuh','pembunuhan','bunuhdiri','bunuh diri',
+    'tewas','wafat','bunuh','membunuh','pembunuhan','bunuhdiri',
     'korupsi','koruptor','korup','kejahatan','kriminal','penipuan','penipu','curang','kecurangan',
     'bohong','berbohong','pembohong','dusta','fitnah','hoaks','palsu','menyesatkan',
     'manipulasi','memanipulasi','pelecehan','peleceh','kekerasan','brutal','sadis','kejam',
@@ -323,38 +319,37 @@ const NEG_SET = new Set([
     'skandal','krisis','bencana','malapetaka','musibah','celaka','petaka',
     'salah','rusak','hancur','menghancurkan','kehancuran','kerusakan',
     'sakit','penyakit','derita','menderita','sengsara','nestapa','duka','cemas',
-    'narkoba','narkotika','obat-terlarang','pecandu',
+    'narkoba','narkotika','pecandu',
     'kecelakaan','tabrakan','ledakan','meledak','kebakaran','kebanjiran','banjir',
-    'gempa','longsor','tsunami','puting beliung',
+    'gempa','longsor','tsunami',
     'pemerkosaan','memperkosa','perampokan','merampok','pencurian','mencuri','dicuri',
-    'korupsi','pungutan liar','pungli','suap','menyuap','gratifikasi',
-    'ilegal','melanggar hukum','ditangkap','penangkapan','dipenjara','penjara',
+    'pungli','suap','menyuap','gratifikasi',
+    'ilegal','ditangkap','penangkapan','dipenjara','penjara',
     'divonis','vonis','hukuman','dihukum','terdakwa','tersangka','pidana',
     'dilarang','dicabut','dibekukan','disita','dirampas','dihapus','ditolak',
-    'dipecat','pemecatan','mengundurkan diri','pengunduran diri',
+    'dipecat','pemecatan',
     'bangkrut','pailit','rugi','kerugian','kebangkrutan',
     'malu','memalukan','aib','tercela','terhina','penghinaan',
     'pengkhianatan','mengkhianati','berkhianat','menipu','tipu',
     'penindasan','menindas','tertindas','eksploitasi','mengeksploitasi','diskriminasi',
-    'pelecehan','melecehkan','intimidasi','mengintimidasi',
+    'melecehkan','intimidasi','mengintimidasi',
     'depresi','kecemasan','panik','trauma','stres','tertekan',
     'kemiskinan','miskin','melarat','kelaparan','gelandangan','tunawisma','terlantar',
     'terbuang','dikucilkan','diabaikan','ditelantarkan',
     'beracun','racun','tercemar','pencemaran','polusi','terinfeksi','wabah','pandemi','epidemi',
     'protes','demonstrasi','demo','bentrok','konflik','pertikaian','pertengkaran',
     'ancaman','mengancam','berbahaya','bahaya','darurat','kritis',
-    'rasis','rasisme','rasis','diskriminatif','bully','perundungan','intimidasi',
+    'rasis','rasisme','diskriminatif','perundungan',
     'gelap','suram','kelam','muram','galau','resah','gundah','khawatir','takut',
     'gagalkan','kacau','kekacauan','anarki','perusakan','merusak','vandalisme',
-    'pemalsuan','palsu','tiruan','plagiat','curang',
+    'pemalsuan','tiruan','plagiat',
     'penjahat','bajingan','brengsek','laknat','terkutuk','terlaknat',
     'dipermalukan','dicerca','dicaci','dimaki','dihujat','hujatan',
     'sampah','limbah','jorok','kotor','busuk','najis',
-    'susah','sulit','kesulitan','hambatan','masalah besar','keterpurukan',
+    'susah','sulit','kesulitan','hambatan','keterpurukan',
 ]);
 
 const POS_SET = new Set([
-    /* ── EN ── */
     'win','won','winning','winner','best','good','great','love','loved','loving','happy','happiness',
     'success','successful','succeed','succeeded','amazing','excellent','awesome','superb','outstanding',
     'celebrate','celebrated','celebration','proud','pride','champion','champions','championship',
@@ -367,7 +362,7 @@ const POS_SET = new Set([
     'smart','intelligent','genius','innovative','innovation','creative','creativity',
     'talented','talent','skilled','skill','expert','master','professional','professionalism',
     'improve','improved','improvement','advance','advanced','upgrade','upgraded',
-    'build','built','building','develop','developed','development','grow','grew','grown',
+    'build','built','building','develop','developed','development','grew','grown',
     'rise','risen','rising','boost','boosted','boosting',
     'help','helped','helping','support','supported','supporting',
     'care','caring','cared','kind','kindness','generous','generosity',
@@ -383,66 +378,55 @@ const POS_SET = new Set([
     'safe','safety','secure','security','protect','protected','protection',
     'fair','fairness','justice','just','righteous','honest','honesty','integrity',
     'clean','transparent','transparency','accountable','accountability',
-    /* ── ID ── */
-    'menang','kemenangan','juara','kejuaraan','terbaik','unggulan','unggul',
-    'baik','bagus','keren','hebat','luar biasa','luarbiasa','fantastis','menakjubkan','luar biasa',
+    'menang','kemenangan','juara','kejuaraan','terbaik','unggulan',
+    'baik','bagus','keren','hebat','luarbiasa','fantastis','menakjubkan',
     'cinta','mencintai','kasih','sayang','menyayangi','peduli','kepedulian',
     'senang','kesenangan','bahagia','kebahagiaan','gembira','ria','ceria','sukacita',
     'sukses','kesuksesan','berhasil','keberhasilan','prestasi','berprestasi','meraih','diraih',
     'bangga','kebanggaan','semangat','antusias','optimis','positif',
-    'harapan','berharap','optimisme','impian','cita-cita','mimpi',
+    'harapan','berharap','optimisme','impian','mimpi',
     'inspirasi','menginspirasi','terinspirasi','motivasi','memotivasi','termotivasi',
     'indah','cantik','tampan','elok','molek','permai','menawan','memesona',
     'cemerlang','brilian','cerdas','pandai','pintar','jenius','berbakat','bakat',
     'maju','kemajuan','berkembang','perkembangan','pertumbuhan','tumbuh','meningkat','peningkatan',
-    'inovatif','inovasi','kreatif','kreativitas','solusi','ide cemerlang',
+    'inovatif','inovasi','kreatif','kreativitas','solusi',
     'ahli','pakar','profesional','berpengalaman','kompeten','kompetensi','terampil','keahlian',
     'damai','kedamaian','harmonis','harmoni','rukun','kerukunan',
     'sejahtera','kesejahteraan','makmur','kemakmuran','merdeka','kebebasan',
     'sehat','kesehatan','bugar','kebugaran','kuat','kekuatan','tangguh',
     'berani','keberanian','gagah','perkasa',
-    'gotong royong','bersatu','kebersamaan','solidaritas','kerjasama','kompak','bersama',
-    'syukur','bersyukur','terima kasih','berkah','karunia','anugerah','rezeki',
+    'bersatu','kebersamaan','solidaritas','kerjasama','kompak','bersama',
+    'syukur','bersyukur','berkah','karunia','anugerah','rezeki',
     'penghargaan','apresiasi','diapresiasi','dihargai','diakui','pengakuan',
     'terpercaya','amanah','jujur','kejujuran','integritas','transparan','keterbukaan',
     'adil','keadilan','merata','pemerataan',
     'bersih','kebersihan','rapi','kerapian','tertib','ketertiban',
     'aman','keamanan','terlindungi','perlindungan',
     'diresmikan','diluncurkan','terpilih','dipercaya','dianugerahi',
-    'rekor','bersejarah','berhasil','lolos','lulus','diterima','diterima',
-    'viral','populer','hits','trending','booming','digemari','favorit',
-    'spesial','istimewa','premium','berkualitas','terjamin',
-    'peringkat','rangking','nomor satu','terdepan','terbaik',
+    'rekor','bersejarah','lolos','lulus','diterima',
+    'populer','hits','booming','digemari','favorit',
+    'spesial','istimewa','berkualitas','terjamin',
+    'peringkat','rangking','terdepan',
 ]);
 
-/*
- * getSent — scoring (pakai .includes), konsisten dengan IG, X
- * Analisis dari nama topic/hashtag/keyword.
- * Default tie → 'neutral' (YouTube konten lebih banyak netral)
- */
 function getSent(name) {
     const clean  = name.toLowerCase().replace(/^[#@]+/, '');
     const tokens = clean.split(/[\s_\-\.\/\\|&]+/).filter(Boolean);
-
     let negScore = 0, posScore = 0;
     for (const tok of tokens) {
         if (NEG_SET.has(tok)) negScore++;
         if (POS_SET.has(tok)) posScore++;
     }
     if (tokens.length === 1 && clean.length > 4) {
-        for (const kw of NEG_SET) {
-            if (kw.length >= 4 && clean.includes(kw)) negScore += 0.5;
-        }
-        for (const kw of POS_SET) {
-            if (kw.length >= 4 && clean.includes(kw)) posScore += 0.5;
-        }
+        for (const kw of NEG_SET) { if (kw.length >= 4 && clean.includes(kw)) negScore += 0.5; }
+        for (const kw of POS_SET) { if (kw.length >= 4 && clean.includes(kw)) posScore += 0.5; }
     }
     if (negScore > posScore) return 'negative';
     if (posScore > negScore) return 'positive';
     return 'neutral';
 }
 
-/* ══ Ekstraksi hashtag & keyword dari raw posts (tidak berubah) ══ */
+/* ══ Extract helpers ══ */
 function extractHashtags(posts) {
     const c = {};
     posts.forEach(p => {
@@ -467,89 +451,61 @@ function extractKeywords(posts) {
                 c[w] = (c[w]||0) + 1;
             });
     });
-    return Object.entries(c)
-        .filter(([,v]) => v >= 2)
-        .sort((a,b)=>b[1]-a[1])
-        .slice(0, 150)
-        .map(([name,size]) => ({name,size}));
+    return Object.entries(c).filter(([,v])=>v>=2).sort((a,b)=>b[1]-a[1]).slice(0,150).map(([name,size])=>({name,size}));
 }
 
-/* ══════════════════════════════════════════════════════
-   LOAD DATA — 4-step fallback chain (tidak berubah)
-══════════════════════════════════════════════════════ */
+/* ══ Load Data — 4-step fallback ══ */
 async function loadData() {
     if (!CFG.pid) { showEmpty(); return; }
 
-    /* Step 1 — PRELOADED_RAW */
     if (Array.isArray(PRELOADED_RAW) && PRELOADED_RAW.length >= 3) {
         const data = PRELOADED_RAW
             .map(t => ({ name:String(t.hashtag||t.name||'').trim(), size:+(t.size||t.total_volume||t.appearances||1) }))
             .filter(t => t.name && t.size > 0);
         if (data.length >= 3) {
             const isKw = data.filter(t=>!t.name.startsWith('#')).length > data.length * 0.5;
-            buildTopics(data, isKw ? 'keyword' : 'hashtag');
-            return;
+            buildTopics(data, isKw ? 'keyword' : 'hashtag'); return;
         }
     }
 
-    /* Step 2 — trending-topics API */
     try {
         const r = await fetch(`/mk/api/youtube/trending-topics?project_id=${CFG.pid}&start_date=${CFG.sd}&end_date=${CFG.ed}`);
         const j = await r.json();
         if (j.success && j.data?.hashtags?.length >= 3) {
-            const data = j.data.hashtags
-                .map(t => ({ name:(t.hashtag||t.name||'').trim(), size:+(t.size||1) }))
-                .filter(t => t.name && t.size > 0);
-            if (data.length >= 3) {
-                const isKw = data.filter(t=>!t.name.startsWith('#')).length > data.length * 0.5;
-                buildTopics(data, isKw ? 'keyword' : 'hashtag');
-                return;
-            }
+            const data = j.data.hashtags.map(t=>({name:(t.hashtag||t.name||'').trim(),size:+(t.size||1)})).filter(t=>t.name&&t.size>0);
+            if (data.length >= 3) { const isKw=data.filter(t=>!t.name.startsWith('#')).length>data.length*.5; buildTopics(data,isKw?'keyword':'hashtag'); return; }
         }
     } catch(e) { console.warn('[YTWC] Step 2 failed:', e.message); }
 
-    /* Step 3 — fetch raw posts → extract client-side */
     try {
         const r     = await fetch(`/mk/api/youtube/most-engagement?project_id=${CFG.pid}&start_date=${CFG.sd}&end_date=${CFG.ed}&sub=postbyview&rows=500`);
         const j     = await r.json();
         const posts = (j.success && Array.isArray(j.data)) ? j.data : [];
-
         if (posts.length) {
             window._rawPosts    = posts;
             const hashtags      = extractHashtags(posts);
             const keywords      = extractKeywords(posts);
             window._hashtagData = hashtags;
             window._keywordData = keywords;
-
-            if (hashtags.length >= 5) {
-                buildTopics(hashtags, 'hashtag');
-            } else if (keywords.length >= 3) {
-                const merged = [
-                    ...hashtags.map(t => ({name:t.name, size:t.size*3})),
-                    ...keywords,
-                ].sort((a,b)=>b.size-a.size);
-                buildTopics(merged, keywords.length > hashtags.length ? 'keyword' : 'hashtag');
-            } else {
-                showEmpty();
-            }
+            if (hashtags.length >= 5) { buildTopics(hashtags,'hashtag'); }
+            else if (keywords.length >= 3) {
+                const merged = [...hashtags.map(t=>({name:t.name,size:t.size*3})),...keywords].sort((a,b)=>b.size-a.size);
+                buildTopics(merged, keywords.length>hashtags.length?'keyword':'hashtag');
+            } else { showEmpty(); }
             return;
         }
     } catch(e) { console.warn('[YTWC] Step 3 failed:', e.message); }
 
-    /* Step 4 — empty */
     showEmpty();
 }
 
 function buildTopics(data, mode) {
     curMode = mode;
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-    _$('wcSubtitle').textContent = mode === 'keyword'
+    document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+    _$('wcSubtitle').textContent = mode==='keyword'
         ? 'Keyword dari judul video — klik untuk cari di YouTube'
         : 'Klik hashtag untuk cari di YouTube';
-    /* ★ getSent sekarang pakai scoring, bukan token exact-match ★ */
-    allTopics = data
-        .map(t => ({ name: String(t.name||''), size: t.size, sent: getSent(String(t.name||'')) }))
-        .filter(t => t.name);
+    allTopics = data.map(t=>({name:String(t.name||''),size:t.size,sent:getSent(String(t.name||''))})).filter(t=>t.name);
     if (!allTopics.length) { showEmpty(); return; }
     applyFilter();
 }
@@ -557,16 +513,16 @@ function buildTopics(data, mode) {
 function switchMode(mode) {
     if (mode === curMode) return;
     if (mode === 'hashtag') {
-        const ht = window._hashtagData || (window._rawPosts ? extractHashtags(window._rawPosts) : []);
+        const ht = window._hashtagData||(window._rawPosts?extractHashtags(window._rawPosts):[]);
         if (ht.length) { window._hashtagData=ht; buildTopics(ht,'hashtag'); }
     } else {
-        const kw = window._keywordData || (window._rawPosts ? extractKeywords(window._rawPosts) : []);
+        const kw = window._keywordData||(window._rawPosts?extractKeywords(window._rawPosts):[]);
         if (kw.length) { window._keywordData=kw; buildTopics(kw,'keyword'); }
     }
 }
 
 function applyFilter() {
-    filtered = curSent === 'all' ? [...allTopics] : allTopics.filter(t => t.sent === curSent);
+    filtered = curSent==='all' ? [...allTopics] : allTopics.filter(t=>t.sent===curSent);
     curPage  = 1;
     updateKpi(); renderWC(); renderList();
 }
@@ -594,13 +550,9 @@ function showEmpty() {
     });
 }
 
-/* ══════════════════════════════════════════════════════
-   WORD CLOUD RENDER
-   ★ Tambahan: warna per sentimen aktif (konsisten dengan IG & X)
-══════════════════════════════════════════════════════ */
+/* ══ Word Cloud Render ══ */
 function renderWC() {
     const ld=_$('wcLoading'), ch=_$('wordCloudChart'), em=_$('wcEmpty');
-
     if (!filtered.length) {
         if(ld) ld.style.display='none';
         if(em) em.style.display='flex';
@@ -608,62 +560,29 @@ function renderWC() {
         return;
     }
     if(em) em.style.display='none';
-
-    /* Normalize 30–100 */
     const raw=filtered.slice(0,150);
     const maxV=Math.max(...raw.map(t=>t.size),1), minV=Math.min(...raw.map(t=>t.size),1), span=maxV-minV||1;
-    const data=raw.map(t=>({ name:t.name.replace(/^#/,''), value:Math.round(30+((t.size-minV)/span)*70) }));
-
+    const data=raw.map(t=>({name:t.name.replace(/^#/,''),value:Math.round(30+((t.size-minV)/span)*70)}));
     if(wcChart){try{wcChart.dispose();}catch(e){}wcChart=null;}
-
     requestAnimationFrame(()=>{
         if(ld) ld.style.display='none';
         const rect=ch.getBoundingClientRect();
-        if(rect.width===0||rect.height===0){
-            if(ld) ld.style.display='flex';
-            setTimeout(()=>renderWC(),120);
-            return;
-        }
-
+        if(rect.width===0||rect.height===0){ if(ld)ld.style.display='flex'; setTimeout(()=>renderWC(),120); return; }
         wcChart=echarts.init(ch,null,{renderer:'canvas',width:rect.width,height:rect.height});
-
-        /* ★ Warna berdasarkan tab sentimen aktif — konsisten dengan IG & X ★ */
-        const colorsBySent = {
-            positive: ['#16a34a','#22c55e','#4ade80','#15803d','#166534','#bbf7d0'],
-            negative: ['#dc2626','#ef4444','#f87171','#b91c1c','#991b1b','#fecaca'],
-            neutral:  ['#f59e0b','#d97706','#fbbf24','#b45309','#fcd34d','#78716c'],
-            all:      ['#16a34a','#2563eb','#f59e0b','#ef4444','#9333ea','#14b8a6','#0ea5e9','#d97706'],
+        const colorsBySent={
+            positive:['#16a34a','#22c55e','#4ade80','#15803d','#166534','#bbf7d0'],
+            negative:['#dc2626','#ef4444','#f87171','#b91c1c','#991b1b','#fecaca'],
+            neutral: ['#f59e0b','#d97706','#fbbf24','#b45309','#fcd34d','#78716c'],
+            all:     ['#16a34a','#2563eb','#f59e0b','#ef4444','#9333ea','#14b8a6','#0ea5e9','#d97706'],
         };
-        const colorPool = colorsBySent[curSent] || colorsBySent.all;
-
+        const colorPool=colorsBySent[curSent]||colorsBySent.all;
         wcChart.setOption({
             backgroundColor:'transparent',
-            series:[{
-                type:'wordCloud',
-                shape:'circle',
-                left:'center', top:'center',
-                width:'100%',  height:'100%',
-                sizeRange:[22,90],
-                rotationRange:[-60,60],
-                rotationStep:15,
-                gridSize:6,
-                drawOutOfBound:false,
-                layoutAnimation:true,
-                textStyle:{
-                    fontFamily:'inherit',
-                    fontWeight:'600',
-                    color: () => colorPool[Math.floor(Math.random() * colorPool.length)],
-                },
-                emphasis:{focus:'self',textStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,.20)'}},
-                data,
-            }]
+            series:[{type:'wordCloud',shape:'circle',left:'center',top:'center',width:'100%',height:'100%',sizeRange:[22,90],rotationRange:[-60,60],rotationStep:15,gridSize:6,drawOutOfBound:false,layoutAnimation:true,
+                textStyle:{fontFamily:'inherit',fontWeight:'600',color:()=>colorPool[Math.floor(Math.random()*colorPool.length)]},
+                emphasis:{focus:'self',textStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,.20)'}},data}]
         });
-
-        wcChart.on('click', p =>
-            window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(p.name)}`, '_blank', 'noopener,noreferrer')
-        );
-
-        /* ResizeObserver */
+        wcChart.on('click',p=>window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(p.name)}`,'_blank','noopener,noreferrer'));
         if(window._ytwcRO){try{window._ytwcRO.disconnect();}catch(e){}}
         if(typeof ResizeObserver!=='undefined'){
             window._ytwcRO=new ResizeObserver(()=>{
@@ -676,7 +595,7 @@ function renderWC() {
     });
 }
 
-/* ══ Top Topics list — warna ht-name per sentimen ══ */
+/* ══ Top Topics List ══ */
 function renderList() {
     const ld=_$('topicLoading'),ct=_$('topicContent'),em=_$('topicEmpty'),list=_$('topicList'),pg=_$('pagArea');
     if(!filtered.length){if(ld)ld.style.display='none';if(em)em.style.display='flex';if(ct)ct.style.display='none';return;}
@@ -686,18 +605,10 @@ function renderList() {
     list.innerHTML='';
     items.forEach((h,i)=>{
         const rk=start+i+1, rc=rk<=3?` ht-rank--${rk}`:'', pct=Math.round((h.size/mx)*100);
-        /* ★ Warna nama berdasarkan sentimen — konsisten dengan IG ★ */
-        const sentColor = h.sent==='positive' ? '#16a34a' : h.sent==='negative' ? '#dc2626' : h.sent==='neutral' ? '#d97706' : 'var(--primary)';
+        const sentColor=h.sent==='positive'?'#16a34a':h.sent==='negative'?'#dc2626':'#d97706';
         const el=document.createElement('div'); el.className='ht-item';
-        el.innerHTML=`
-            <div class="ht-rank${rc}">${rk}</div>
-            <div class="ht-name" style="color:${sentColor};">${esc(h.name)}</div>
-            <div class="ht-bar-wrap"><div class="ht-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,${sentColor},${sentColor}88);"></div></div>
-            <div class="ht-count">${numF(h.size)}</div>`;
-        el.onclick=()=>window.open(
-            `https://www.youtube.com/results?search_query=${encodeURIComponent(h.name.replace(/^#/,''))}`,
-            '_blank','noopener,noreferrer'
-        );
+        el.innerHTML=`<div class="ht-rank${rc}">${rk}</div><div class="ht-name" style="color:${sentColor};">${esc(h.name)}</div><div class="ht-bar-wrap"><div class="ht-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,${sentColor},${sentColor}88);"></div></div><div class="ht-count">${numF(h.size)}</div>`;
+        el.onclick=()=>window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(h.name.replace(/^#/,''))}`,'_blank','noopener,noreferrer');
         list.appendChild(el);
     });
     if(pg){
@@ -718,150 +629,286 @@ function renderList() {
 
 function goPage(p){curPage=p;renderList();_$('topicList')?.scrollIntoView({behavior:'smooth',block:'nearest'});}
 
-/* ══ EXPORT (Safari Safe) ══ */
+/* ══════════════════════════════════════════════════════
+   EXPORT MODULE — sama persis dengan IG (chrome + safari)
+   Hanya label & filename yang berbeda (YouTube)
+══════════════════════════════════════════════════════ */
 const YTWCExport = (() => {
-    'use strict'; let _timer = null; const PID = OV_PID;
+    'use strict';
+    let _timer = null;
+    const PID  = OV_PID;
 
+    /* ── Toast ── */
     function _toast(msg, type = 'default', dur = 3200) {
         const t = _$('exportToast'), m = _$('exportToastMsg'), ico = _$('exportToastIcon');
         if (!t || !m) return;
-        m.textContent = msg; t.className = 'export-toast show' + (type!=='default'?' '+type:'');
-        if (ico) ico.className = 'ph ' + ({success:'ph-check-circle',error:'ph-x-circle',default:'ph-spinner'}[type]||'ph-spinner');
-        clearTimeout(_timer); _timer = setTimeout(() => t.classList.remove('show'), dur);
-    }
-    function _btnState(btn, on) { if(btn){ btn.disabled = on; btn.classList.toggle('exporting', on); } }
-
-    function _getWCSnapshot() {
-        if (!wcChart) return null;
-        try { return wcChart.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: '#ffffff' }); } catch(e) { return null; }
-    }
-    function _freeze() {
-        const s = document.createElement('style'); s.id = '__wc_freeze';
-        s.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}';
-        document.head.appendChild(s);
-    }
-    function _unfreeze() { document.getElementById('__wc_freeze')?.remove(); }
-
-    function _makeOnClone(wcSnapshot) {
-        return (clonedDoc) => {
-            const s = clonedDoc.createElement('style');
-            s.textContent = `
-                *, *::before, *::after { animation:none!important; transition:none!important; }
-                [data-html2canvas-ignore] { display:none!important; }
-                .sk-block { animation:none!important; background:#e2e8f0!important; }
-                .kpi-card-hover { transform:none!important; filter:none!important; }
-                .spinner-state, #wcLoading, .spin-ring { display:none!important; }
-                .sent-tabs, .mode-toggle-wrap { display:none!important; }`;
-            clonedDoc.head.appendChild(s);
-            clonedDoc.querySelectorAll('#wcLoading,#topicLoading,.spinner-state,.spin-ring,.export-toast,.sent-tabs,.mode-toggle-wrap')
-                .forEach(e => { e.style.display = 'none'; });
-            clonedDoc.querySelectorAll('.card,.kpi-card-hover,[class*="col-"],.ht-item,.ht-list,#topicContent')
-                .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; e.style.animation='none'; });
-            
-            const tc = clonedDoc.getElementById('topicContent');
-            if (tc) tc.style.display = 'block';
-
-            const wcDiv = clonedDoc.getElementById('wordCloudChart');
-            if (wcDiv && wcSnapshot) {
-                wcDiv.innerHTML = '';
-                wcDiv.style.cssText = 'display:block!important;width:100%;height:460px;';
-                const img = clonedDoc.createElement('img');
-                img.src = wcSnapshot;
-                img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
-                wcDiv.appendChild(img);
-            }
-        };
+        m.textContent = msg;
+        t.className   = 'export-toast show' + (type !== 'default' ? ' ' + type : '');
+        const icoCls  = { success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' };
+        if (ico) ico.className = 'ph ' + (icoCls[type] || icoCls.default);
+        clearTimeout(_timer);
+        _timer = setTimeout(() => t.classList.remove('show'), dur);
     }
 
-    async function _capture(areaId, bgColor) {
-        const area = document.getElementById(areaId);
-        if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
-        window.scrollTo({ top: 0 });
-        const snapshot = _getWCSnapshot();
-        area.querySelectorAll('.kpi-card-hover,.ht-item,.card,[class*="col-"]')
-            .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; });
-        _freeze();
-        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        await new Promise(r => setTimeout(r, 400));
+    function _btnState(btn, on) {
+        if (!btn) return;
+        btn.disabled = on;
+        btn.classList.toggle('exporting', on);
+    }
+
+    /* ── Chart-swap: ganti ECharts canvas → <img> sebelum html2canvas ── */
+    function _swapChartsIn(el) {
+        const swaps    = [];
+        const container = document.getElementById('wordCloudChart');
+        if (!container || !el.contains(container)) return swaps;
+        if (container.style.display === 'none') return swaps;
+
+        const echartsCanvas = container.querySelector('canvas');
+        if (!echartsCanvas) return swaps;
+
+        let dataUrl = null;
+
+        /* Coba via ECharts API dulu */
         try {
-            return await html2canvas(area, {
-                scale: 2, useCORS: true, allowTaint: true,
-                backgroundColor: bgColor || '#f1f5f8', logging: false, removeContainer: true,
-                scrollX: 0, scrollY: 0,
-                width: area.offsetWidth, height: area.scrollHeight,
-                onclone: _makeOnClone(snapshot)
-            });
-        } finally { _unfreeze(); }
+            if (wcChart && !wcChart.isDisposed()) {
+                dataUrl = wcChart.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: '#ffffff' });
+            }
+        } catch(e) { console.warn('[YTWCExport] getDataURL gagal:', e); }
+
+        /* Fallback: salin DOM canvas langsung (Safari-safe) */
+        if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 100) {
+            try {
+                const off = document.createElement('canvas');
+                off.width  = echartsCanvas.width;
+                off.height = echartsCanvas.height;
+                const ctx  = off.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, off.width, off.height);
+                ctx.drawImage(echartsCanvas, 0, 0);
+                dataUrl = off.toDataURL('image/png');
+            } catch(e2) { console.warn('[YTWCExport] fallback canvas gagal:', e2); }
+        }
+
+        if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 100) return swaps;
+
+        const h   = container.offsetHeight || 520;
+        const w   = container.offsetWidth  || echartsCanvas.width || 800;
+
+        const placeholder = document.createElement('div');
+        placeholder.dataset.swapFor = 'wordCloudChart';
+
+        const img       = document.createElement('img');
+        img.dataset.swapImg = 'wordCloudChart';
+        img.src         = dataUrl;
+        img.style.cssText = `width:${w}px;height:${h}px;object-fit:contain;display:block;background:#fff;`;
+
+        container.parentNode.insertBefore(placeholder, container);
+        container.parentNode.insertBefore(img, placeholder);
+        container.style.display = 'none';
+
+        swaps.push({ container, placeholder, img });
+        return swaps;
     }
 
-    function _hdr(pdf, title) {
-        const pW = pdf.internal.pageSize.getWidth();
+    function _swapChartsOut(swaps) {
+        swaps.forEach(({ container, placeholder, img }) => {
+            try { img.remove(); }         catch(e) {}
+            try { placeholder.remove(); } catch(e) {}
+            container.style.display = 'block';
+        });
+    }
+
+    /* ── onClone: bersihkan animasi & sembunyikan elemen tak perlu ── */
+    function _onClone(clonedDoc) {
+        clonedDoc.querySelectorAll(
+            '#wcLoading,#topicLoading,.spinner-state,.spin-ring,' +
+            '.export-toast,.sent-tabs,[data-html2canvas-ignore]'
+        ).forEach(el => { el.style.cssText += 'display:none!important;'; });
+
+        clonedDoc.querySelectorAll('*').forEach(el => {
+            el.style.animationPlayState = 'paused';
+            el.style.animation  = 'none';
+            el.style.transition = 'none';
+        });
+
+        clonedDoc.querySelectorAll(
+            '.card,.card-body,.card-header,.row,[class*="col-"],' +
+            '.kpi-card-hover,.ht-item,.ht-list,#topicContent,#pageExportArea'
+        ).forEach(el => {
+            el.style.opacity    = '1';
+            el.style.transform  = 'none';
+            el.style.visibility = 'visible';
+        });
+
+        const tc = clonedDoc.getElementById('topicContent');
+        if (tc) tc.style.display = 'block';
+    }
+
+    /* ── Capture utama (Chrome + Safari) ── */
+    async function _doCapture(el, isCard) {
+        el.querySelectorAll('.kpi-card-hover,.ht-item,.card,[class*="col-"]')
+          .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; });
+
+        const swaps = _swapChartsIn(el);
+
+        /* Safari butuh jeda sebelum composite */
+        await new Promise(r => setTimeout(r, 300));
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+        let canvas;
+        try {
+            canvas = await html2canvas(el, {
+                scale           : 2,
+                useCORS         : true,
+                allowTaint      : true,        // wajib untuk Safari cross-origin canvas
+                backgroundColor : isCard ? '#ffffff' : '#f1f5f8',
+                logging         : false,
+                removeContainer : true,
+                imageTimeout    : 0,
+                x               : 0,
+                y               : 0,
+                width           : el.offsetWidth,
+                height          : el.scrollHeight,
+                onclone         : d => _onClone(d),
+                ignoreElements  : e => e.hasAttribute('data-html2canvas-ignore'),
+            });
+        } finally {
+            _swapChartsOut(swaps);
+        }
+        return canvas;
+    }
+
+    /* ── PDF helpers ── */
+    function _drawHeader(pdf, pW, pH, label, page, total) {
         pdf.setFillColor(3, 128, 71); pdf.rect(0, 0, pW, 11, 'F');
         pdf.setTextColor(255, 255, 255); pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
-        pdf.text('SMADIMENT — ' + title, 10, 7.5);
+        pdf.text('SMADIMENT — ' + (label || 'YouTube Word Cloud'), 10, 7.5);
         const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
         pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
         pdf.text('Generated: ' + now, pW - 10, 7.5, { align: 'right' });
+        pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+        pdf.text(`Halaman ${page} / ${total}`, pW / 2, pH - 3, { align: 'center' });
     }
 
-    async function _pag(pdf, cv) {
-        const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
-        const m = 10, uW = pW - m*2, uH = pH - m*2 - 14, ratio = uW / cv.width, sH = uH / ratio;
-        let sy = 0, pg = 0;
-        while (sy < cv.height) {
-            if (pg > 0) { pdf.addPage(); _hdr(pdf, 'YouTube Word Cloud'); }
-            const ss = Math.min(sH, cv.height - sy), dH = ss * ratio;
-            const sl = document.createElement('canvas'); sl.width = cv.width; sl.height = Math.ceil(ss);
-            sl.getContext('2d').drawImage(cv, 0, sy, cv.width, ss, 0, 0, cv.width, ss);
-            pdf.addImage(sl.toDataURL('image/png'), 'PNG', m, 14, uW, dH);
-            pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
-            pdf.text(`Halaman ${pg + 1}`, pW / 2, pH - 3, { align: 'center' });
-            sy += ss; pg++;
+    function _addCanvas(pdf, canvas, margin, pW, pH) {
+        const uw = pW - margin*2, uh = pH - 14 - 10;
+        const ratio = Math.min(uw / canvas.width, uh / canvas.height);
+        const dw = canvas.width * ratio, dh = canvas.height * ratio;
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin + (uw-dw)/2, 14 + (uh-dh)/2, dw, dh);
+    }
+
+    function _paginate(pdf, canvas, margin, pW, pH, labelFn) {
+        const uw = pW - margin*2, uh = pH - 14 - 10;
+        const ratio = uw / canvas.width, sliceH = uh / ratio;
+        const total = Math.max(1, Math.ceil((canvas.height * ratio) / uh));
+        let srcY = 0, pg = 1;
+        while (srcY < canvas.height) {
+            if (pg > 1) pdf.addPage();
+            _drawHeader(pdf, pW, pH, labelFn(), pg, total);
+            const srcSlice = Math.min(sliceH, canvas.height - srcY), dstH = srcSlice * ratio;
+            const slice = document.createElement('canvas');
+            slice.width = canvas.width; slice.height = Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice);
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, uw, dstH);
+            srcY += srcSlice; pg++;
         }
+        return total;
     }
 
-    const _stamp = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    function _stamp() { return new Date().toISOString().slice(0, 10).replace(/-/g, ''); }
 
+    /* ── Export seluruh halaman ── */
     async function run(type, btn) {
         if (!window.html2canvas) { _toast('html2canvas tidak tersedia', 'error'); return; }
         if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
-        const bP = _$('pageExportPdfBtn'), bI = _$('pageExportImgBtn');
-        _btnState(bP, true); _btnState(bI, true);
+
+        const bPdf = _$('pageExportPdfBtn'), bImg = _$('pageExportImgBtn');
+        _btnState(bPdf, true); _btnState(bImg, true);
         _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+
         try {
-            const cv = await _capture('pageExportArea', '#f1f5f8'), st = _stamp();
+            const area   = _$('pageExportArea');
+            if (!area) throw new Error('pageExportArea tidak ditemukan');
+            window.scrollTo({ top: 0 });
+            await new Promise(r => setTimeout(r, 200));
+
+            const canvas = await _doCapture(area, false);
+            const stamp  = _stamp();
+
             if (type === 'image') {
-                const a = document.createElement('a'); a.download = `youtube_wordcloud_${PID}_${st}.png`;
-                a.href = cv.toDataURL('image/png'); a.click(); _toast('Gambar berhasil diunduh!', 'success');
+                const a = document.createElement('a');
+                a.download = `youtube_wordcloud_${PID}_${stamp}.png`;
+                a.href = canvas.toDataURL('image/png'); a.click();
+                _toast('Gambar berhasil diunduh!', 'success');
             } else {
-                const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-                _hdr(pdf, 'YouTube Word Cloud'); await _pag(pdf, cv); pdf.save(`youtube_wordcloud_${PID}_${st}.pdf`);
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight(), M = 10;
+                const uw = pW - M*2, uh = pH - 14 - 10;
+                if ((canvas.height * (uw / canvas.width)) <= uh) {
+                    _drawHeader(pdf, pW, pH, 'YouTube Word Cloud', 1, 1);
+                    _addCanvas(pdf, canvas, M, pW, pH);
+                } else {
+                    _paginate(pdf, canvas, M, pW, pH, () => 'YouTube Word Cloud');
+                }
+                pdf.save(`youtube_wordcloud_${PID}_${stamp}.pdf`);
                 _toast('PDF berhasil diunduh!', 'success');
             }
-        } catch(e) { console.error('[YTWCExport]', e); _toast('Export gagal: ' + e.message, 'error'); }
-        finally { _btnState(bP, false); _btnState(bI, false); }
+        } catch(err) {
+            console.error('[YTWCExport.run]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            _btnState(bPdf, false); _btnState(bImg, false);
+        }
+    }
+
+    /* ── Export per-card ── */
+    const _cardLabels = {
+        wordcloud : 'YouTube Word Cloud',
+        topics    : 'YouTube Top Topics',
+    };
+    function _cardFilename(k) {
+        const map = { wordcloud: 'word-cloud', topics: 'top-topics' };
+        return `youtube_${map[k]||k}_${PID}_${_stamp()}`;
     }
 
     async function runCard(areaId, cardKey, type, btn) {
         if (!window.html2canvas) { _toast('html2canvas tidak tersedia', 'error'); return; }
         if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
-        _btnState(btn, true); _toast(type === 'pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar…', 'default', 99999);
+        _btnState(btn, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar…', 'default', 99999);
         try {
-            const cv = await _capture(areaId, '#ffffff'), st = _stamp();
-            const labels = { wordcloud: 'word-cloud', topics: 'top-topics' };
-            const titles = { wordcloud: 'YouTube Word Cloud', topics: 'YouTube Top Topics' };
-            const fname = `youtube_${labels[cardKey] || cardKey}_${PID}_${st}`;
+            const area = document.getElementById(areaId);
+            if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+            const canvas = await _doCapture(area, true);
+            const fname  = _cardFilename(cardKey);
+            const label  = _cardLabels[cardKey] || cardKey;
+
             if (type === 'image') {
-                const a = document.createElement('a'); a.download = fname + '.png';
-                a.href = cv.toDataURL('image/png'); a.click(); _toast('Gambar berhasil diunduh!', 'success');
+                const a = document.createElement('a');
+                a.download = fname + '.png'; a.href = canvas.toDataURL('image/png'); a.click();
+                _toast('Gambar berhasil diunduh!', 'success');
             } else {
-                const { jsPDF } = window.jspdf, landscape = cv.width > cv.height;
-                const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
-                _hdr(pdf, titles[cardKey] || 'YouTube Word Cloud'); await _pag(pdf, cv); pdf.save(fname + '.pdf');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation : canvas.width > canvas.height * 1.2 ? 'landscape' : 'portrait',
+                    unit: 'mm', format: 'a4'
+                });
+                const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight(), M = 10;
+                const uw = pW - M*2, uh = pH - 14 - 10;
+                if ((canvas.height * (uw / canvas.width)) <= uh) {
+                    _drawHeader(pdf, pW, pH, label, 1, 1);
+                    _addCanvas(pdf, canvas, M, pW, pH);
+                } else {
+                    _paginate(pdf, canvas, M, pW, pH, () => label);
+                }
+                pdf.save(fname + '.pdf');
                 _toast('PDF berhasil diunduh!', 'success');
             }
-        } catch(e) { console.error('[YTWCExport.runCard]', e); _toast('Export gagal: ' + e.message, 'error'); }
-        finally { _btnState(btn, false); }
+        } catch(err) {
+            console.error('[YTWCExport.runCard]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally { _btnState(btn, false); }
     }
 
     return { run, runCard };
@@ -871,10 +918,10 @@ const YTWCExport = (() => {
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
     window.addEventListener('resize', () => {
-        if(!wcChart) return;
-        const ch=_$('wordCloudChart'); if(!ch) return;
-        const r=ch.getBoundingClientRect();
-        try{ if(r.width>0&&r.height>0) wcChart.resize({width:r.width,height:r.height}); else wcChart.resize(); }catch(e){}
+        if (!wcChart) return;
+        const ch = _$('wordCloudChart'); if (!ch) return;
+        const r  = ch.getBoundingClientRect();
+        try { if (r.width > 0 && r.height > 0) wcChart.resize({ width: r.width, height: r.height }); else wcChart.resize(); } catch(e) {}
     });
     document.querySelectorAll('.sent-tab').forEach(btn => btn.addEventListener('click', () => {
         document.querySelectorAll('.sent-tab').forEach(b => b.classList.remove('active'));

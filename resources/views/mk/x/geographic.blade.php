@@ -36,7 +36,6 @@
     --shadow-lg      : 0 10px 30px rgba(15,23,42,.12);
 }
 
-/* Safari-safe: hindari animation pada container chart */
 @keyframes fadeUp        { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 @keyframes shimmer       { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
 @keyframes spin          { to{transform:rotate(360deg)} }
@@ -86,24 +85,14 @@ body { background: var(--bg); }
 .donut-leg-item:hover { border-color: var(--primary); background: var(--primary-lt); color: var(--primary); }
 .donut-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-/* Safari-safe chart container: pakai visibility:hidden/visible bukan display:none/block untuk canvas */
 .chart-container { position: relative; }
 .chart-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: #fff; z-index: 2; transition: opacity .3s; }
 .chart-loading.hidden { opacity: 0; pointer-events: none; }
 .chart-empty { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--slate-400); font-size: 12px; font-weight: 600; }
 .chart-empty i { font-size: 34px; color: var(--slate-300); display: block; }
 
-/* Safari-safe: jangan sembunyikan canvas pakai display:none, gunakan visibility atau opacity */
-.geo-chart-wrap {
-    position: relative;
-    width: 100%;
-}
-/* Canvas/echarts container selalu ada di DOM, cukup opacity untuk hide */
-.geo-chart-inner {
-    width: 100%;
-    height: 100%;
-    /* Safari: min-height harus explicit agar canvas punya dimensi */
-}
+.geo-chart-wrap { position: relative; width: 100%; }
+.geo-chart-inner { width: 100%; height: 100%; }
 
 .do-panel-overlay { position: fixed; inset: 0; z-index: 9000; background: rgba(15,23,42,.45); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); display: none; }
 .do-panel-overlay.show   { display: block; animation: overlayIn .22s ease-out; }
@@ -179,7 +168,6 @@ body { background: var(--bg); }
 .location-item-count { font-size: 11px; color: var(--slate-400); font-weight: 600; margin-top: 1px; }
 .location-item-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-/* Loading overlay pakai opacity agar canvas tetap ada di DOM (Safari safe) */
 .map-loading-overlay {
     position: absolute; inset: 0; z-index: 10;
     background: #f8fafc;
@@ -363,11 +351,6 @@ body { background: var(--bg); }
     </div>
 
     {{-- ══ ECharts Donut ══ --}}
-    {{--
-        SAFARI FIX #1: Container donut SELALU ada di DOM dengan height/width explicit.
-        Jangan pakai display:none pada #geoDonutChart.
-        Gunakan loading overlay di atasnya (opacity), bukan hide canvas-nya.
-    --}}
     <div class="row mb-3">
         <div class="col-12">
             <div class="card">
@@ -389,7 +372,6 @@ body { background: var(--bg); }
                     </div>
                 </div>
                 <div class="card-body">
-                    {{-- Safari Fix: wrapper relative, canvas selalu ada, overlay di atas --}}
                     <div style="position:relative; width:100%; height:480px;">
                         <div id="geoDonutChart" style="width:100%;height:480px;"></div>
                         <div class="map-loading-overlay" id="geoDonutLoading">
@@ -423,7 +405,6 @@ body { background: var(--bg); }
         </div>
         <div class="map-with-panel">
             <div class="map-area" style="position:relative;">
-                {{-- Safari Fix: div map selalu ada, ukuran explicit --}}
                 <div id="geoBuzzerMap" style="width:100%;height:500px;"></div>
                 <div class="map-loading-overlay" id="geoBuzzerMapLoading">
                     <div class="spin-ring"></div>
@@ -575,7 +556,6 @@ body { background: var(--bg); }
             </div>
             <div style="padding:16px 18px 18px;display:flex;flex-direction:column;align-items:center;">
                 <div class="spinner-state" id="loadingChartSentiment" style="width:100%;padding:28px 0;"><div class="spin-ring"></div><span>Loading…</span></div>
-                {{-- Safari Fix: pakai wrapper div dengan explicit size, canvas append ke sini --}}
                 <div id="chartSentimentDonut" style="position:relative;width:180px;height:180px;display:none;"></div>
                 <div id="chartSentimentLegend" style="width:100%;max-width:260px;margin-top:14px;display:flex;flex-direction:column;gap:8px;"></div>
             </div>
@@ -655,103 +635,53 @@ body { background: var(--bg); }
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
-
 <script>
 'use strict';
 
-// Province/location name normalization map
 function normalizeProvinceName(name) {
     if (!name) return '';
     const map = {
-        'DKI JAKARTA': 'DKI Jakarta',
-        'JAKARTA': 'DKI Jakarta',
-        'JAWA BARAT': 'Jawa Barat',
-        'JABAR': 'Jawa Barat',
-        'JAWA TENGAH': 'Jawa Tengah',
-        'JATENG': 'Jawa Tengah',
-        'JAWA TIMUR': 'Jawa Timur',
-        'JATIM': 'Jawa Timur',
-        'BANTEN': 'Banten',
-        'DI YOGYAKARTA': 'DI Yogyakarta',
-        'YOGYAKARTA': 'DI Yogyakarta',
-        'BALI': 'Bali',
-        'SUMATERA UTARA': 'Sumatera Utara',
-        'SUMUT': 'Sumatera Utara',
-        'SUMATERA BARAT': 'Sumatera Barat',
-        'SUMBAR': 'Sumatera Barat',
-        'SUMATERA SELATAN': 'Sumatera Selatan',
-        'SUMSEL': 'Sumatera Selatan',
-        'RIAU': 'Riau',
-        'KEPULAUAN RIAU': 'Kepulauan Riau',
-        'KEPRI': 'Kepulauan Riau',
-        'JAMBI': 'Jambi',
-        'BENGKULU': 'Bengkulu',
-        'LAMPUNG': 'Lampung',
-        'BANGKA BELITUNG': 'Bangka Belitung',
-        'BABEL': 'Bangka Belitung',
-        'KALIMANTAN BARAT': 'Kalimantan Barat',
-        'KALBAR': 'Kalimantan Barat',
-        'KALIMANTAN TENGAH': 'Kalimantan Tengah',
-        'KALTENG': 'Kalimantan Tengah',
-        'KALIMANTAN SELATAN': 'Kalimantan Selatan',
-        'KALSEL': 'Kalimantan Selatan',
-        'KALIMANTAN TIMUR': 'Kalimantan Timur',
-        'KALTIM': 'Kalimantan Timur',
-        'KALIMANTAN UTARA': 'Kalimantan Utara',
-        'KALTARA': 'Kalimantan Utara',
-        'SULAWESI UTARA': 'Sulawesi Utara',
-        'SULUT': 'Sulawesi Utara',
-        'SULAWESI TENGAH': 'Sulawesi Tengah',
-        'SULTENG': 'Sulawesi Tengah',
-        'SULAWESI SELATAN': 'Sulawesi Selatan',
-        'SULSEl': 'Sulawesi Selatan',
-        'SULAWESI TENGGARA': 'Sulawesi Tenggara',
-        'SULTRA': 'Sulawesi Tenggara',
-        'GORONTALO': 'Gorontalo',
-        'SULAWESI BARAT': 'Sulawesi Barat',
-        'SULBAR': 'Sulawesi Barat',
-        'MALUKU': 'Maluku',
-        'MALUKU UTARA': 'Maluku Utara',
-        'PAPUA': 'Papua',
-        'PAPUA BARAT': 'Papua Barat',
-        'PAPUA TENGAH': 'Papua Tengah',
-        'PAPUA PEGUNUNGAN': 'Papua Pegunungan',
-        'PAPUA SELATAN': 'Papua Selatan',
-        'PAPUA BARAT DAYA': 'Papua Barat Daya',
+        'DKI JAKARTA':'DKI Jakarta','JAKARTA':'DKI Jakarta',
+        'JAWA BARAT':'Jawa Barat','JABAR':'Jawa Barat',
+        'JAWA TENGAH':'Jawa Tengah','JATENG':'Jawa Tengah',
+        'JAWA TIMUR':'Jawa Timur','JATIM':'Jawa Timur',
+        'BANTEN':'Banten','DI YOGYAKARTA':'DI Yogyakarta','YOGYAKARTA':'DI Yogyakarta',
+        'BALI':'Bali','SUMATERA UTARA':'Sumatera Utara','SUMUT':'Sumatera Utara',
+        'SUMATERA BARAT':'Sumatera Barat','SUMBAR':'Sumatera Barat',
+        'SUMATERA SELATAN':'Sumatera Selatan','SUMSEL':'Sumatera Selatan',
+        'RIAU':'Riau','KEPULAUAN RIAU':'Kepulauan Riau','KEPRI':'Kepulauan Riau',
+        'JAMBI':'Jambi','BENGKULU':'Bengkulu','LAMPUNG':'Lampung',
+        'BANGKA BELITUNG':'Bangka Belitung','BABEL':'Bangka Belitung',
+        'KALIMANTAN BARAT':'Kalimantan Barat','KALBAR':'Kalimantan Barat',
+        'KALIMANTAN TENGAH':'Kalimantan Tengah','KALTENG':'Kalimantan Tengah',
+        'KALIMANTAN SELATAN':'Kalimantan Selatan','KALSEL':'Kalimantan Selatan',
+        'KALIMANTAN TIMUR':'Kalimantan Timur','KALTIM':'Kalimantan Timur',
+        'KALIMANTAN UTARA':'Kalimantan Utara','KALTARA':'Kalimantan Utara',
+        'SULAWESI UTARA':'Sulawesi Utara','SULUT':'Sulawesi Utara',
+        'SULAWESI TENGAH':'Sulawesi Tengah','SULTENG':'Sulawesi Tengah',
+        'SULAWESI SELATAN':'Sulawesi Selatan','SULSEL':'Sulawesi Selatan',
+        'SULAWESI TENGGARA':'Sulawesi Tenggara','SULTRA':'Sulawesi Tenggara',
+        'GORONTALO':'Gorontalo','SULAWESI BARAT':'Sulawesi Barat','SULBAR':'Sulawesi Barat',
+        'MALUKU':'Maluku','MALUKU UTARA':'Maluku Utara',
+        'PAPUA':'Papua','PAPUA BARAT':'Papua Barat','PAPUA TENGAH':'Papua Tengah',
+        'PAPUA PEGUNUNGAN':'Papua Pegunungan','PAPUA SELATAN':'Papua Selatan',
+        'PAPUA BARAT DAYA':'Papua Barat Daya',
     };
-    let key = String(name).trim().toUpperCase();
+    const key = String(name).trim().toUpperCase();
     return map[key] || name;
 }
-/* ══════════════════════════════════════════════════════
-   SAFARI-SAFE HELPERS
-   Masalah utama Safari dengan chart:
-   1. echarts.init() / Chart.js pada container display:none → dimensi 0×0
-   2. Leaflet.invalidateSize() perlu dipanggil setelah container visible
-   3. requestAnimationFrame tidak cukup — Safari butuh setTimeout minimal 1 frame
-   4. IntersectionObserver callback bisa terlambat di Safari
-   Solusi: gunakan _safeInit() yang memastikan container sudah visible & berukuran
-══════════════════════════════════════════════════════ */
 
-/**
- * Safari-safe: tunggu sampai element benar-benar punya dimensi > 0
- * sebelum inisialisasi chart. Retry max 20x tiap 80ms.
- */
 function _waitForSize(el, cb, maxTry) {
     maxTry = maxTry || 20;
     var tries = 0;
     function check() {
-        var w = el.offsetWidth, h = el.offsetHeight;
-        if (w > 0 && h > 0) { cb(); return; }
-        tries++;
-        if (tries >= maxTry) { cb(); return; } // fallback tetap jalankan
+        if (el.offsetWidth > 0 && el.offsetHeight > 0) { cb(); return; }
+        if (++tries >= maxTry) { cb(); return; }
         setTimeout(check, 80);
     }
     check();
 }
 
-/**
- * Sembunyikan loading overlay dengan fade, lalu hapus dari flow
- */
 function _hideOverlay(id) {
     var el = document.getElementById(id);
     if (!el) return;
@@ -780,42 +710,28 @@ const XGeo = {
     _allLocations   : [],
 
     init() {
-        /* ── Safari Fix: pakai requestAnimationFrame + setTimeout combo ── */
-        /* Pastikan DOM fully painted sebelum observe */
         var self = this;
-        window.addEventListener('load', function() {
-            requestAnimationFrame(function() {
-                setTimeout(function() { self._initObserver(); }, 100);
-            });
-        });
-        /* Fallback: kalau load sudah terlambat, langsung init */
-        if (document.readyState === 'complete') {
-            requestAnimationFrame(function() {
-                setTimeout(function() { self._initObserver(); }, 100);
-            });
+        function start() {
+            requestAnimationFrame(function() { setTimeout(function() { self._initObserver(); }, 100); });
         }
+        if (document.readyState === 'complete') { start(); }
+        else { window.addEventListener('load', start); }
         self._loadDonut();
     },
 
     _initObserver() {
         var self = this;
-        /* ── Safari Fix: IntersectionObserver dengan threshold rendah ── */
         var obs = new IntersectionObserver(function(entries) {
             entries.forEach(function(e) {
                 if (!e.isIntersecting) return;
-                var el  = e.target;
-                var sec = el.dataset.lazy;
+                var el = e.target, sec = el.dataset.lazy;
                 if (!sec || self._loaded.has(sec)) return;
                 self._loaded.add(sec);
                 obs.unobserve(el);
-                /* Safari Fix: delay kecil agar browser selesai layout */
                 setTimeout(function() { self._load(sec, el); }, 60);
             });
         }, { rootMargin: '200px', threshold: 0 });
-
-        document.querySelectorAll('[data-lazy]').forEach(function(el) {
-            obs.observe(el);
-        });
+        document.querySelectorAll('[data-lazy]').forEach(function(el) { obs.observe(el); });
     },
 
     async _load(sec, el) {
@@ -867,17 +783,17 @@ const XGeo = {
 
     _loadStats(result) {
         var rows = this.parseGeoRows(result), total = this.parseGeoTotal(result), top = rows[0];
-        var set = (id,v) => { var e = _$(id); if(e) e.textContent = v; };
-        var sub = (id,h) => { var e = _$(id); if(e) e.innerHTML = h; };
+        var set = (id,v) => { var e=_$(id); if(e) e.textContent=v; };
+        var sub = (id,h) => { var e=_$(id); if(e) e.innerHTML=h; };
         set('kpiCountries', rows.length); set('kpiUsers', numF(total));
         sub('kpiCountriesSub', '<i class="ph ph-globe me-1"></i>' + rows.length + ' countries detected');
         sub('kpiUsersSub', '<i class="ph ph-users me-1"></i>' + numK(total) + ' total identified');
         if (top) {
-                set('kpiTopCountry', normalizeProvinceName(top.name) || 'N/A');
-                sub('kpiTopCountrySub', '<i class="ph ph-chart-bar me-1"></i>' + numF(top.count) + ' users');
-                var provs = Object.entries(top.detail || {}).sort((a,b) => b[1]-a[1]);
-                set('kpiTopProvince', provs.length ? normalizeProvinceName(provs[0][0]) : 'N/A');
-                if (provs.length) sub('kpiTopProvinceSub', '<i class="ph ph-buildings me-1"></i>' + numF(provs[0][1]) + ' users');
+            set('kpiTopCountry', normalizeProvinceName(top.name) || 'N/A');
+            sub('kpiTopCountrySub', '<i class="ph ph-chart-bar me-1"></i>' + numF(top.count) + ' users');
+            var provs = Object.entries(top.detail || {}).sort((a,b) => b[1]-a[1]);
+            set('kpiTopProvince', provs.length ? normalizeProvinceName(provs[0][0]) : 'N/A');
+            if (provs.length) sub('kpiTopProvinceSub', '<i class="ph ph-buildings me-1"></i>' + numF(provs[0][1]) + ' users');
         } else { set('kpiTopCountry','N/A'); set('kpiTopProvince','N/A'); }
     },
 
@@ -893,109 +809,55 @@ const XGeo = {
             return;
         }
 
-        var top5 = [...rows].sort((a,b) => parseInt(b.count||0) - parseInt(a.count||0)).slice(0,5);
-        var total = top5.reduce((s,r) => s + parseInt(r.count||0), 0);
+        var top5 = [...rows].sort((a,b) => parseInt(b.count||0)-parseInt(a.count||0)).slice(0,5);
+        var total = top5.reduce((s,r) => s+parseInt(r.count||0), 0);
 
-        if (legEl) legEl.innerHTML = top5.map((r,i) => {
-            var n = r.name || 'Unknown', sn = n.length > 22 ? n.slice(0,21)+'…' : n;
-            return '<div class="donut-leg-item"><span class="donut-dot" style="background:' + DONUT_COLORS[i] + ';"></span>' + esc(sn) + ' · ' + numF(r.count) + '</div>';
+        if (legEl) legEl.innerHTML = top5.map(function(r,i) {
+            var n = r.name||'Unknown', sn = n.length>22 ? n.slice(0,21)+'…' : n;
+            return '<div class="donut-leg-item"><span class="donut-dot" style="background:'+DONUT_COLORS[i]+';"></span>'+esc(sn)+' · '+numF(r.count)+'</div>';
         }).join('');
 
-        if (typeof echarts === 'undefined') {
+        if (typeof echarts === 'undefined') { _hideOverlay('geoDonutLoading'); return; }
+
+        _waitForSize(chartEl, function() {
             _hideOverlay('geoDonutLoading');
-            return;
-        }
-
-        /* ── Safari Fix: pastikan container punya ukuran sebelum init echarts ── */
-        _waitForSize(chartEl, () => {
-            _hideOverlay('geoDonutLoading');
-
-            if (window.__geoDonutChart) {
-                try { window.__geoDonutChart.dispose(); } catch(e) {}
-            }
-
+            if (window.__geoDonutChart) { try { window.__geoDonutChart.dispose(); } catch(e) {} }
             var chart = echarts.init(chartEl, null, { renderer: 'canvas' });
             window.__geoDonutChart = chart;
-
-            /* Safari Fix: resize listener dengan debounce */
-            var _resizeTimer;
-            window.addEventListener('resize', function() {
-                clearTimeout(_resizeTimer);
-                _resizeTimer = setTimeout(function() {
-                    try { if (!chart.isDisposed()) chart.resize(); } catch(e) {}
-                }, 150);
+            var _rt; window.addEventListener('resize', function() {
+                clearTimeout(_rt); _rt = setTimeout(function() { try { if(!chart.isDisposed()) chart.resize(); } catch(e){} }, 150);
             });
-
-            var pieData = top5.map((row,i) => ({
-                name: row.name || 'Unknown',
-                value: parseInt(row.count || 0),
-                _pos: parseInt(row.pos || 0),
-                _neg: parseInt(row.neg || 0),
-                _net: parseInt(row.net || 0),
-                itemStyle: { color: DONUT_COLORS[i] },
-            }));
-
+            var pieData = top5.map(function(row,i) {
+                return { name:row.name||'Unknown', value:parseInt(row.count||0),
+                    _pos:parseInt(row.pos||0), _neg:parseInt(row.neg||0), _net:parseInt(row.net||0),
+                    itemStyle:{color:DONUT_COLORS[i]} };
+            });
             chart.setOption({
-                backgroundColor: 'transparent',
-                tooltip: { show: false },
-                animation: true,
-                animationDuration: 1000,
-                animationEasing: 'cubicOut',
-                animationDelay: idx => idx * 80,
-                series: [{
-                    type: 'pie',
-                    radius: ['38%','62%'],
-                    center: ['50%','50%'],
-                    avoidLabelOverlap: true,
-                    selectedMode: false,
-                    minAngle: 8,
-                    itemStyle: { borderColor: '#fff', borderWidth: 3 },
-                    label: {
-                        show: true,
-                        position: 'outside',
-                        alignTo: 'edge',
-                        edgeDistance: 20,
-                        lineHeight: 18,
-                        fontSize: 11,
-                        fontFamily: 'inherit',
-                        color: '#334155',
-                        fontWeight: '500',
-                        formatter: function(p) {
-                            var row = top5[p.dataIndex];
-                            var pos = parseInt(row.pos||0), neg = parseInt(row.neg||0), net = parseInt(row.net||0);
-                            return '{title|' + p.name + '}\n{pos|+' + numK(pos) + '}  {neg|-' + numK(neg) + '}  {neu|~' + numK(net) + '}\n({val|' + numF(p.value) + '} users, {pct|' + p.percent.toFixed(1) + '%})';
+                backgroundColor:'transparent', animation:true, animationDuration:1000,
+                animationEasing:'cubicOut', animationDelay:function(idx){return idx*80;},
+                series:[{ type:'pie', radius:['38%','62%'], center:['50%','50%'],
+                    avoidLabelOverlap:true, selectedMode:false, minAngle:8,
+                    itemStyle:{borderColor:'#fff',borderWidth:3},
+                    label:{ show:true, position:'outside', alignTo:'edge', edgeDistance:20, lineHeight:18,
+                        fontSize:11, fontFamily:'inherit', color:'#334155', fontWeight:'500',
+                        formatter:function(p){
+                            var row=top5[p.dataIndex], pos=parseInt(row.pos||0), neg=parseInt(row.neg||0), net=parseInt(row.net||0);
+                            return '{title|'+p.name+'}\n{pos|+'+numK(pos)+'}  {neg|-'+numK(neg)+'}  {neu|~'+numK(net)+'}\n({val|'+numF(p.value)+'} users, {pct|'+p.percent.toFixed(1)+'%})';
                         },
-                        rich: {
-                            title: { fontSize:11, fontWeight:'700', color:'#1e293b', lineHeight:18 },
-                            val:   { fontSize:11, fontWeight:'700', color:'#038047' },
-                            pct:   { fontSize:11, fontWeight:'600', color:'#64748b' },
-                            pos:   { fontSize:10, fontWeight:'700', color:'#22c55e' },
-                            neg:   { fontSize:10, fontWeight:'700', color:'#ef4444' },
-                            neu:   { fontSize:10, fontWeight:'600', color:'#94a3b8' },
-                        }
-                    },
-                    labelLine: { show:true, length:18, length2:24, smooth:0.3, lineStyle:{ width:1.5, color:'#94A3B8' } },
-                    emphasis: {
-                        scale: false,
-                        itemStyle: { shadowBlur:0, shadowColor:'transparent', borderWidth:3, borderColor:'#fff', opacity:1 },
-                        labelLine: { lineStyle: { width:2.5, color:'#273B4A' } },
-                        label: { show:true }
-                    },
-                    select: { disabled: true },
-                    data: pieData,
-                }],
-                graphic: [
-                    { type:'text', left:'center', top:'46%', z:100, style:{ text:numK(total), fill:'#0f172a', font:"800 28px inherit", textAlign:'center' } },
-                    { type:'text', left:'center', top:'54%', z:100, style:{ text:'TOTAL USERS', fill:'#94a3b8', font:"600 9px inherit", textAlign:'center' } },
+                        rich:{ title:{fontSize:11,fontWeight:'700',color:'#1e293b',lineHeight:18},
+                            val:{fontSize:11,fontWeight:'700',color:'#038047'}, pct:{fontSize:11,fontWeight:'600',color:'#64748b'},
+                            pos:{fontSize:10,fontWeight:'700',color:'#22c55e'}, neg:{fontSize:10,fontWeight:'700',color:'#ef4444'},
+                            neu:{fontSize:10,fontWeight:'600',color:'#94a3b8'} }},
+                    labelLine:{show:true,length:18,length2:24,smooth:0.3,lineStyle:{width:1.5,color:'#94A3B8'}},
+                    emphasis:{scale:false,itemStyle:{borderWidth:3,borderColor:'#fff'},label:{show:true}},
+                    select:{disabled:true}, data:pieData }],
+                graphic:[
+                    {type:'text',left:'center',top:'46%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 28px inherit",textAlign:'center'}},
+                    {type:'text',left:'center',top:'54%',z:100,style:{text:'TOTAL USERS',fill:'#94a3b8',font:"600 9px inherit",textAlign:'center'}}
                 ]
             });
+            chart.on('click', function(p) { var row=top5[p.dataIndex]; if(row) GeoPanel.openLocation(row); });
 
-            chart.on('click', function(p) {
-                var row = top5[p.dataIndex];
-                if (row) GeoPanel.openLocation(row);
-            });
-
-            /* Custom tooltip */
             var _ttEl = document.getElementById('geoCustomTT');
             if (!_ttEl) {
                 _ttEl = document.createElement('div');
@@ -1004,185 +866,102 @@ const XGeo = {
                 document.body.appendChild(_ttEl);
             }
             var _ttTimer = null;
-
             chart.on('mouseover', function(p) {
                 if (p.componentType !== 'series') return;
-                var row = top5[p.dataIndex], color = DONUT_COLORS[p.dataIndex];
-                var pos = parseInt(row.pos||0), neg = parseInt(row.neg||0), net = parseInt(row.net||0);
+                var row=top5[p.dataIndex], color=DONUT_COLORS[p.dataIndex];
+                var pos=parseInt(row.pos||0), neg=parseInt(row.neg||0), net=parseInt(row.net||0);
                 clearTimeout(_ttTimer);
-                _ttEl.innerHTML = '<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;"><span style="width:9px;height:9px;border-radius:50%;background:' + color + ';flex-shrink:0;display:inline-block;"></span><b style="font-size:12.5px;">' + esc(p.name) + '</b></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:7px;"><div style="text-align:center;background:#f0fdf4;border-radius:4px;padding:4px;"><div style="font-weight:800;color:#22c55e;">' + numF(pos) + '</div><div style="font-size:9px;color:#64748b;text-transform:uppercase;">Pos</div></div><div style="text-align:center;background:#f8fafc;border-radius:4px;padding:4px;"><div style="font-weight:800;color:#94a3b8;">' + numF(net) + '</div><div style="font-size:9px;color:#64748b;text-transform:uppercase;">Neu</div></div><div style="text-align:center;background:#fef2f2;border-radius:4px;padding:4px;"><div style="font-weight:800;color:#ef4444;">' + numF(neg) + '</div><div style="font-size:9px;color:#64748b;text-transform:uppercase;">Neg</div></div></div><div style="display:flex;align-items:center;gap:8px;"><b style="font-size:13px;">' + numF(p.value) + ' users</b><span style="color:' + color + ';font-weight:700;">' + p.percent.toFixed(1) + '%</span></div>';
+                _ttEl.innerHTML = '<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;"><span style="width:9px;height:9px;border-radius:50%;background:'+color+';flex-shrink:0;display:inline-block;"></span><b style="font-size:12.5px;">'+esc(p.name)+'</b></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:7px;"><div style="text-align:center;background:#f0fdf4;border-radius:4px;padding:4px;"><div style="font-weight:800;color:#22c55e;">'+numF(pos)+'</div><div style="font-size:9px;color:#64748b;text-transform:uppercase;">Pos</div></div><div style="text-align:center;background:#f8fafc;border-radius:4px;padding:4px;"><div style="font-weight:800;color:#94a3b8;">'+numF(net)+'</div><div style="font-size:9px;color:#64748b;text-transform:uppercase;">Neu</div></div><div style="text-align:center;background:#fef2f2;border-radius:4px;padding:4px;"><div style="font-weight:800;color:#ef4444;">'+numF(neg)+'</div><div style="font-size:9px;color:#64748b;text-transform:uppercase;">Neg</div></div></div><div style="display:flex;align-items:center;gap:8px;"><b style="font-size:13px;">'+numF(p.value)+' users</b><span style="color:'+color+';font-weight:700;">'+p.percent.toFixed(1)+'%</span></div>';
                 _ttEl.style.display = 'block';
-                requestAnimationFrame(function() {
-                    _ttEl.style.opacity = '1';
-                    _ttEl.style.transform = 'translateY(0) scale(1)';
-                });
+                requestAnimationFrame(function() { _ttEl.style.opacity='1'; _ttEl.style.transform='translateY(0) scale(1)'; });
             });
-
             chart.on('mouseout', function() {
-                _ttEl.style.opacity = '0';
-                _ttEl.style.transform = 'translateY(6px) scale(.97)';
-                _ttTimer = setTimeout(function() { _ttEl.style.display = 'none'; }, 180);
+                _ttEl.style.opacity='0'; _ttEl.style.transform='translateY(6px) scale(.97)';
+                _ttTimer = setTimeout(function(){ _ttEl.style.display='none'; }, 180);
             });
-
             chartEl.addEventListener('mousemove', function(e) {
-                if (_ttEl.style.display === 'none') return;
-                var vw = window.innerWidth, vh = window.innerHeight;
-                var tw = _ttEl.offsetWidth + 16, th = _ttEl.offsetHeight + 16;
-                var x = e.clientX + 18, y = e.clientY - 10;
-                if (x + tw > vw) x = e.clientX - tw;
-                if (y + th > vh) y = e.clientY - th;
-                _ttEl.style.left = x + 'px';
-                _ttEl.style.top  = y + 'px';
+                if (_ttEl.style.display==='none') return;
+                var vw=window.innerWidth, vh=window.innerHeight;
+                var tw=_ttEl.offsetWidth+16, th=_ttEl.offsetHeight+16;
+                var x=e.clientX+18, y=e.clientY-10;
+                if (x+tw>vw) x=e.clientX-tw; if (y+th>vh) y=e.clientY-th;
+                _ttEl.style.left=x+'px'; _ttEl.style.top=y+'px';
             });
         });
     },
 
-    /* ── Leaflet Map renderer ── */
     renderMap(elementId, rows, getMarkerProps) {
         var mapEl = document.getElementById(elementId);
-        if (!mapEl) return { map: null, markerRefs: [] };
-
-        /* ── Safari Fix: invalidate existing map jika ada ── */
+        if (!mapEl) return { map:null, markerRefs:[] };
         if (window._leafletMaps[elementId]) {
             try { window._leafletMaps[elementId].remove(); } catch(e) {}
             delete window._leafletMaps[elementId];
         }
-
-        var map = L.map(elementId, {
-            center: [-2.5, 118], zoom: 5,
-            scrollWheelZoom: false,
-            preferCanvas: true,
-            /* Safari Fix: zoomAnimation false mencegah blank tile di Safari */
-            zoomAnimation: true,
-            fadeAnimation: true,
-        });
+        var map = L.map(elementId, { center:[-2.5,118], zoom:5, scrollWheelZoom:false, preferCanvas:true, zoomAnimation:true, fadeAnimation:true });
         window._leafletMaps[elementId] = map;
-
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap, © CARTO',
-            subdomains: 'abcd',
-            maxZoom: 19,
-            crossOrigin: true,
-            /* Safari Fix: detectRetina untuk HiDPI display di macOS/iOS */
-            detectRetina: true,
+            attribution:'© OpenStreetMap, © CARTO', subdomains:'abcd', maxZoom:19,
+            crossOrigin:true, detectRetina:true
         }).addTo(map);
 
-        /* Scroll overlay */
         var overlay = document.createElement('div');
         overlay.className = 'map-scroll-overlay';
         overlay.innerHTML = '<div class="map-scroll-hint"><svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;"><rect x="5" y="2" width="14" height="20" rx="7"/><line x1="12" y1="6" x2="12" y2="10"/></svg>Use Ctrl + Scroll to zoom</div>';
         mapEl.style.position = 'relative';
         mapEl.appendChild(overlay);
-
         mapEl.addEventListener('wheel', function(e) {
             if (!e.ctrlKey) {
-                overlay.classList.add('visible');
-                clearTimeout(overlay._t);
-                overlay._t = setTimeout(function() { overlay.classList.remove('visible'); }, 1800);
-            } else {
-                map.scrollWheelZoom.enable();
-                overlay.classList.remove('visible');
-            }
+                overlay.classList.add('visible'); clearTimeout(overlay._t);
+                overlay._t = setTimeout(function(){ overlay.classList.remove('visible'); }, 1800);
+            } else { map.scrollWheelZoom.enable(); overlay.classList.remove('visible'); }
         });
-        map.on('zoomend', function() {
-            setTimeout(function() { map.scrollWheelZoom.disable(); }, 300);
-        });
+        map.on('zoomend', function() { setTimeout(function(){ map.scrollWheelZoom.disable(); }, 300); });
+        setTimeout(function() { try { map.invalidateSize({animate:false}); } catch(e){} }, 300);
 
-        /* ── Safari Fix: invalidateSize setelah map fully visible ── */
-        setTimeout(function() {
-            try { map.invalidateSize({ animate: false }); } catch(e) {}
-        }, 300);
+        if (!rows.length) return { map:map, markerRefs:[] };
 
-        if (!rows.length) return { map: map, markerRefs: [] };
-
-        var maxCount = Math.max.apply(null, rows.map(function(p) { return parseInt(p.count||0); }));
+        var maxCount = Math.max.apply(null, rows.map(function(p){ return parseInt(p.count||0); }));
         var markerRefs = [];
 
         rows.forEach(function(p) {
-            var lat = parseFloat(p.latitude || 0), lng = parseFloat(p.longitude || 0);
-            if (lat === 0 && lng === 0) { markerRefs.push(null); return; }
-            var props = getMarkerProps(p);
-            var color = props.color, count = props.count, popup = props.popup;
-
-            if (count >= 10) {
-                var r = Math.min(Math.max(Math.sqrt(count) * 2500, 5000), 50000);
-                L.circle([lat, lng], {
-                    radius: r,
-                    fillColor: color, color: color,
-                    weight: 1, opacity: .3,
-                    fillOpacity: Math.min(.15 + (count / maxCount) * .45, .6)
-                }).addTo(map);
+            var lat=parseFloat(p.latitude||0), lng=parseFloat(p.longitude||0);
+            if (lat===0 && lng===0) { markerRefs.push(null); return; }
+            var props=getMarkerProps(p), color=props.color, count=props.count, popup=props.popup;
+            if (count>=10) {
+                var r=Math.min(Math.max(Math.sqrt(count)*2500,5000),50000);
+                L.circle([lat,lng],{radius:r,fillColor:color,color:color,weight:1,opacity:.3,fillOpacity:Math.min(.15+(count/maxCount)*.45,.6)}).addTo(map);
             }
-
-            var pin = L.marker([lat, lng], {
-                icon: L.divIcon({
-                    className: '',
-                    html: '<div style="width:12px;height:12px;background:' + color + ';border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,.4);"></div>',
-                    iconSize: [12, 12],
-                    iconAnchor: [6, 6]
-                })
-            }).addTo(map).bindPopup(popup);
-            markerRefs.push({ marker: pin, lat: lat, lng: lng });
-
-            var label = count > 999 ? (count/1000).toFixed(1)+'k' : String(count);
-            L.marker([lat, lng], {
-                icon: L.divIcon({
-                    className: '',
-                    html: '<div style="font-family:inherit;font-size:10px;font-weight:800;color:#fff;background:' + color + ';padding:2px 7px;border-radius:3px;border:1.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);white-space:nowrap;">' + label + '</div>',
-                    iconSize: [36, 18],
-                    iconAnchor: [18, 24]
-                }),
-                interactive: false
-            }).addTo(map);
+            var pin=L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div style="width:12px;height:12px;background:'+color+';border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,.4);"></div>',iconSize:[12,12],iconAnchor:[6,6]})}).addTo(map).bindPopup(popup);
+            markerRefs.push({marker:pin,lat:lat,lng:lng});
+            var label=count>999?(count/1000).toFixed(1)+'k':String(count);
+            L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div style="font-family:inherit;font-size:10px;font-weight:800;color:#fff;background:'+color+';padding:2px 7px;border-radius:3px;border:1.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);white-space:nowrap;">'+label+'</div>',iconSize:[36,18],iconAnchor:[18,24]}),interactive:false}).addTo(map);
         });
-
-        return { map: map, markerRefs: markerRefs };
+        return { map:map, markerRefs:markerRefs };
     },
 
     buildLocationPanel(listId, rows, mapResult, defaultColor, useSentiment) {
-        var listEl = _$(listId);
-        if (!listEl) return;
-        var map = mapResult.map, markerRefs = mapResult.markerRefs;
-        var valid = rows.filter(function(p) {
-            return !(parseFloat(p.latitude||0) === 0 && parseFloat(p.longitude||0) === 0);
-        });
-        if (!valid.length) {
-            listEl.innerHTML = '<div style="padding:24px 14px;font-size:12px;color:var(--slate-400);text-align:center;font-weight:600;">No location data</div>';
-            return;
-        }
-        var sorted = [...valid].sort((a,b) => parseInt(b.count||0) - parseInt(a.count||0));
-        listEl.innerHTML = sorted.slice(0,8).map(function(p, rank) {
-            var name = p.name || 'Unknown', count = parseInt(p.count || 0);
-            var color = defaultColor || '#038047';
+        var listEl=_$(listId); if (!listEl) return;
+        var map=mapResult.map, markerRefs=mapResult.markerRefs;
+        var valid=rows.filter(function(p){ return !(parseFloat(p.latitude||0)===0&&parseFloat(p.longitude||0)===0); });
+        if (!valid.length) { listEl.innerHTML='<div style="padding:24px 14px;font-size:12px;color:var(--slate-400);text-align:center;font-weight:600;">No location data</div>'; return; }
+        var sorted=[...valid].sort((a,b)=>parseInt(b.count||0)-parseInt(a.count||0));
+        listEl.innerHTML=sorted.slice(0,8).map(function(p,rank){
+            var name=p.name||'Unknown', count=parseInt(p.count||0), color=defaultColor||'#038047';
             if (useSentiment) {
-                var pos = parseInt(p.pos||0), neg = parseInt(p.neg||0), net = parseInt(p.net||0);
-                if (pos > neg && pos > net) color = '#22c55e';
-                else if (neg > pos && neg > net) color = '#ef4444';
-                else color = '#64748b';
+                var pos=parseInt(p.pos||0), neg=parseInt(p.neg||0), net=parseInt(p.net||0);
+                if (pos>neg&&pos>net) color='#22c55e'; else if (neg>pos&&neg>net) color='#ef4444'; else color='#64748b';
             }
-            var rkCls = rank < 3 ? ' location-item-rank--' + (rank+1) : '';
-            var lbl   = count > 999 ? (count/1000).toFixed(1)+'k' : count;
-            return '<div class="location-item" data-rank="' + rank + '">' +
-                '<div class="location-item-rank' + rkCls + '">' + (rank+1) + '</div>' +
-                '<div class="location-item-info">' +
-                '<div class="location-item-name" title="' + esc(name) + '">' + esc(name) + '</div>' +
-                '<div class="location-item-count">' + lbl + ' ' + (useSentiment ? 'mentions' : 'users') + '</div>' +
-                '</div>' +
-                '<div class="location-item-dot" style="background:' + color + ';"></div>' +
-                '</div>';
+            var rkCls=rank<3?' location-item-rank--'+(rank+1):'', lbl=count>999?(count/1000).toFixed(1)+'k':count;
+            return '<div class="location-item" data-rank="'+rank+'"><div class="location-item-rank'+rkCls+'">'+(rank+1)+'</div><div class="location-item-info"><div class="location-item-name" title="'+esc(name)+'">'+esc(name)+'</div><div class="location-item-count">'+lbl+' '+(useSentiment?'mentions':'users')+'</div></div><div class="location-item-dot" style="background:'+color+';"></div></div>';
         }).join('');
-
-        listEl.querySelectorAll('.location-item').forEach(function(item, i) {
-            item.addEventListener('click', function() {
-                var p = sorted[i];
-                var lat = parseFloat(p.latitude||0), lng = parseFloat(p.longitude||0);
-                if (lat === 0 && lng === 0) return;
-                if (map) map.flyTo([lat, lng], 8, { animate: true, duration: 1 });
-                var ref = markerRefs.find(function(r) {
-                    return r && Math.abs(r.lat - lat) < .001 && Math.abs(r.lng - lng) < .001;
-                });
-                if (ref) setTimeout(function() { ref.marker.openPopup(); }, 800);
-                listEl.querySelectorAll('.location-item').forEach(function(el) { el.classList.remove('active'); });
+        listEl.querySelectorAll('.location-item').forEach(function(item,i){
+            item.addEventListener('click',function(){
+                var p=sorted[i], lat=parseFloat(p.latitude||0), lng=parseFloat(p.longitude||0);
+                if (lat===0&&lng===0) return;
+                if (map) map.flyTo([lat,lng],8,{animate:true,duration:1});
+                var ref=markerRefs.find(function(r){ return r&&Math.abs(r.lat-lat)<.001&&Math.abs(r.lng-lng)<.001; });
+                if (ref) setTimeout(function(){ ref.marker.openPopup(); },800);
+                listEl.querySelectorAll('.location-item').forEach(function(el){ el.classList.remove('active'); });
                 item.classList.add('active');
             });
         });
@@ -1190,252 +969,170 @@ const XGeo = {
 
     async loadGeoBuzzerMap(card) {
         try {
-            var r      = await fetch('/mk/api/geo-users?project_id=' + this.projectId + '&start_date=' + this.startDate + '&end_date=' + this.endDate);
-            var result = await r.json();
-            var rows   = this.parseGeoRows(result);
-            var mapEl  = _$('geoBuzzerMap');
+            var r=await fetch('/mk/api/geo-users?project_id='+this.projectId+'&start_date='+this.startDate+'&end_date='+this.endDate);
+            var result=await r.json(), rows=this.parseGeoRows(result), mapEl=_$('geoBuzzerMap');
             if (!mapEl) return;
-
-            /* Safari Fix: tunggu element visible dan berukuran */
-            var self = this;
-            _waitForSize(mapEl, function() {
-                var markers = self.renderMap('geoBuzzerMap', rows, function(p) {
-                    return {
-                        color: '#038047',
-                        count: parseInt(p.count || 0),
-                        popup: '<div style="font-family:inherit;text-align:center;padding:8px;min-width:140px;"><div style="font-weight:700;font-size:15px;color:#0f172a;margin-bottom:6px;">' + esc(p.name||'Unknown') + '</div><div style="font-size:24px;font-weight:800;color:#038047;">' + numF(p.count) + '</div><div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;font-weight:700;">buzzers</div></div>'
-                    };
+            var self=this;
+            _waitForSize(mapEl,function(){
+                var markers=self.renderMap('geoBuzzerMap',rows,function(p){
+                    return { color:'#038047', count:parseInt(p.count||0),
+                        popup:'<div style="font-family:inherit;text-align:center;padding:8px;min-width:140px;"><div style="font-weight:700;font-size:15px;color:#0f172a;margin-bottom:6px;">'+esc(p.name||'Unknown')+'</div><div style="font-size:24px;font-weight:800;color:#038047;">'+numF(p.count)+'</div><div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;font-weight:700;">buzzers</div></div>' };
                 });
-                self.buildLocationPanel('geoBuzzerList', rows, markers, '#038047', false);
-                _hideOverlay('geoBuzzerMapLoading');
-                card.dataset.loaded = 'true';
+                self.buildLocationPanel('geoBuzzerList',rows,markers,'#038047',false);
+                _hideOverlay('geoBuzzerMapLoading'); card.dataset.loaded='true';
             });
-        } catch(e) { console.error('Buzzer map err:', e); _hideOverlay('geoBuzzerMapLoading'); }
+        } catch(e) { console.error('Buzzer map err:',e); _hideOverlay('geoBuzzerMapLoading'); }
     },
 
     async loadGeoUserMap(card) {
-        var result = await this.fetchGeoUser();
-        var rows   = this.parseGeoRows(result);
-        var mapEl  = _$('geoMap');
+        var result=await this.fetchGeoUser(), rows=this.parseGeoRows(result), mapEl=_$('geoMap');
         if (!mapEl) return;
-        var self = this;
-        _waitForSize(mapEl, function() {
-            var markers = self.renderMap('geoMap', rows, function(p) {
-                return {
-                    color: '#038047',
-                    count: parseInt(p.count || 0),
-                    popup: '<div style="font-family:inherit;text-align:center;padding:8px;min-width:140px;"><div style="font-weight:700;font-size:15px;color:#0f172a;margin-bottom:6px;">' + esc(p.name||'Unknown') + '</div><div style="font-size:24px;font-weight:800;color:#038047;">' + numF(p.count) + '</div><div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;font-weight:700;">users</div></div>'
-                };
+        var self=this;
+        _waitForSize(mapEl,function(){
+            var markers=self.renderMap('geoMap',rows,function(p){
+                return { color:'#038047', count:parseInt(p.count||0),
+                    popup:'<div style="font-family:inherit;text-align:center;padding:8px;min-width:140px;"><div style="font-weight:700;font-size:15px;color:#0f172a;margin-bottom:6px;">'+esc(p.name||'Unknown')+'</div><div style="font-size:24px;font-weight:800;color:#038047;">'+numF(p.count)+'</div><div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;font-weight:700;">users</div></div>' };
             });
-            self.buildLocationPanel('geoUserList', rows, markers, '#038047', false);
-            _hideOverlay('geoMapLoading');
-            card.dataset.loaded = 'true';
+            self.buildLocationPanel('geoUserList',rows,markers,'#038047',false);
+            _hideOverlay('geoMapLoading'); card.dataset.loaded='true';
         });
     },
 
     async loadGeoSentimentMap(card) {
-        var result = await this.fetchGeoSentiment();
-        var rows   = this.parseGeoRows(result);
-        var mapEl  = _$('geoSentimentMap');
+        var result=await this.fetchGeoSentiment(), rows=this.parseGeoRows(result), mapEl=_$('geoSentimentMap');
         if (!mapEl) return;
-        var self = this;
-        _waitForSize(mapEl, function() {
-            var markers = self.renderMap('geoSentimentMap', rows, function(p) {
-                var count = parseInt(p.count||0), pos = parseInt(p.pos||0), neg = parseInt(p.neg||0), net = parseInt(p.net||0), safe = count || 1;
-                var color = '#64748b', sentiment = 'Neutral';
-                if (pos > neg && pos > net) { color = '#22c55e'; sentiment = 'Positive'; }
-                else if (neg > pos && neg > net) { color = '#ef4444'; sentiment = 'Negative'; }
-                return {
-                    color: color, count: count,
-                    popup: '<div style="font-family:inherit;text-align:center;padding:8px;min-width:200px;"><div style="font-weight:700;font-size:15px;color:#0f172a;margin-bottom:6px;">' + esc(p.name||'Unknown') + '</div><div style="display:inline-block;padding:3px 10px;background:' + color + '20;border-radius:20px;margin-bottom:8px;"><span style="font-size:10px;font-weight:800;color:' + color + ';text-transform:uppercase;">' + sentiment + '</span></div><div style="font-size:24px;font-weight:800;color:' + color + ';">' + numF(count) + '</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;border-top:1px solid #e2e8f0;padding-top:10px;"><div style="text-align:center;background:#f0fdf4;border-radius:5px;padding:5px;"><div style="font-size:14px;font-weight:800;color:#22c55e;">' + pos + '</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;">Pos</div><div style="font-size:8px;color:#94a3b8;">' + ((pos/safe)*100).toFixed(1) + '%</div></div><div style="text-align:center;background:#f8fafc;border-radius:5px;padding:5px;"><div style="font-size:14px;font-weight:800;color:#94a3b8;">' + net + '</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;">Neu</div><div style="font-size:8px;color:#94a3b8;">' + ((net/safe)*100).toFixed(1) + '%</div></div><div style="text-align:center;background:#fef2f2;border-radius:5px;padding:5px;"><div style="font-size:14px;font-weight:800;color:#ef4444;">' + neg + '</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;">Neg</div><div style="font-size:8px;color:#94a3b8;">' + ((neg/safe)*100).toFixed(1) + '%</div></div></div></div>'
-                };
+        var self=this;
+        _waitForSize(mapEl,function(){
+            var markers=self.renderMap('geoSentimentMap',rows,function(p){
+                var count=parseInt(p.count||0), pos=parseInt(p.pos||0), neg=parseInt(p.neg||0), net=parseInt(p.net||0), safe=count||1;
+                var color='#64748b', sentiment='Neutral';
+                if (pos>neg&&pos>net){color='#22c55e';sentiment='Positive';}
+                else if (neg>pos&&neg>net){color='#ef4444';sentiment='Negative';}
+                return { color:color, count:count,
+                    popup:'<div style="font-family:inherit;text-align:center;padding:8px;min-width:200px;"><div style="font-weight:700;font-size:15px;color:#0f172a;margin-bottom:6px;">'+esc(p.name||'Unknown')+'</div><div style="display:inline-block;padding:3px 10px;background:'+color+'20;border-radius:20px;margin-bottom:8px;"><span style="font-size:10px;font-weight:800;color:'+color+';text-transform:uppercase;">'+sentiment+'</span></div><div style="font-size:24px;font-weight:800;color:'+color+';">'+numF(count)+'</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;border-top:1px solid #e2e8f0;padding-top:10px;"><div style="text-align:center;background:#f0fdf4;border-radius:5px;padding:5px;"><div style="font-size:14px;font-weight:800;color:#22c55e;">'+pos+'</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;">Pos</div><div style="font-size:8px;color:#94a3b8;">'+((pos/safe)*100).toFixed(1)+'%</div></div><div style="text-align:center;background:#f8fafc;border-radius:5px;padding:5px;"><div style="font-size:14px;font-weight:800;color:#94a3b8;">'+net+'</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;">Neu</div><div style="font-size:8px;color:#94a3b8;">'+((net/safe)*100).toFixed(1)+'%</div></div><div style="text-align:center;background:#fef2f2;border-radius:5px;padding:5px;"><div style="font-size:14px;font-weight:800;color:#ef4444;">'+neg+'</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;">Neg</div><div style="font-size:8px;color:#94a3b8;">'+((neg/safe)*100).toFixed(1)+'%</div></div></div></div>' };
             });
-            self.buildLocationPanel('geoSentimentList', rows, markers, null, true);
-            _hideOverlay('geoSentimentMapLoading');
-            card.dataset.loaded = 'true';
+            self.buildLocationPanel('geoSentimentList',rows,markers,null,true);
+            _hideOverlay('geoSentimentMapLoading'); card.dataset.loaded='true';
         });
     },
 
     async loadChartCountries(card) {
-        var result = await this.fetchGeoUser(), rows = this.parseGeoRows(result);
-        var ldEl = _$('loadingChartCountries'), el = _$('chartCountries');
+        var result=await this.fetchGeoUser(), rows=this.parseGeoRows(result);
+        var ldEl=_$('loadingChartCountries'), el=_$('chartCountries');
         if (!el) return;
-        if (!rows.length) { if(ldEl) ldEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--slate-400);font-size:12px;">No data</div>'; return; }
-        var colors = ['#038047','#059669','#0891b2','#7c3aed','#db2777','#ea580c'];
-        var top = rows.slice(0,6), max = parseInt(top[0]?.count) || 1;
-        el.innerHTML = top.map(function(row, i) {
-            var count = parseInt(row.count), pct = Math.max(Math.round((Math.log(count+1)/Math.log(max+1))*100), 6);
-            return '<div class="country-bar-row"><div class="country-bar-header"><span class="country-bar-name">' + esc(row.name) + '</span><span class="country-bar-count">' + numF(count) + '</span></div><div class="country-bar-track"><div class="country-bar-fill" data-pct="' + pct + '" style="background:' + colors[i % colors.length] + ';"></div></div></div>';
+        if (!rows.length) { if(ldEl) ldEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--slate-400);font-size:12px;">No data</div>'; return; }
+        var colors=['#038047','#059669','#0891b2','#7c3aed','#db2777','#ea580c'];
+        var top=rows.slice(0,6), max=parseInt(top[0]?.count)||1;
+        el.innerHTML=top.map(function(row,i){
+            var count=parseInt(row.count), pct=Math.max(Math.round((Math.log(count+1)/Math.log(max+1))*100),6);
+            return '<div class="country-bar-row"><div class="country-bar-header"><span class="country-bar-name">'+esc(row.name)+'</span><span class="country-bar-count">'+numF(count)+'</span></div><div class="country-bar-track"><div class="country-bar-fill" data-pct="'+pct+'" style="background:'+colors[i%colors.length]+';"></div></div></div>';
         }).join('');
-        if (ldEl) ldEl.style.display = 'none';
-        el.style.display = 'block';
-        requestAnimationFrame(function() {
-            el.querySelectorAll('.country-bar-fill').forEach(function(b) { b.style.width = b.dataset.pct + '%'; });
-        });
+        if(ldEl) ldEl.style.display='none'; el.style.display='block';
+        requestAnimationFrame(function(){ el.querySelectorAll('.country-bar-fill').forEach(function(b){ b.style.width=b.dataset.pct+'%'; }); });
     },
 
     async loadChartProvinces(card) {
-        var result = await this.fetchGeoUser(), rows = this.parseGeoRows(result);
-        var ldEl = _$('loadingChartProvinces'), el = _$('chartProvinces');
+        var result=await this.fetchGeoUser(), rows=this.parseGeoRows(result);
+        var ldEl=_$('loadingChartProvinces'), el=_$('chartProvinces');
         if (!el) return;
-        var top = rows[0];
-        if (!top?.detail) { if(ldEl) ldEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--slate-400);font-size:12px;">No province data</div>'; return; }
-        var subEl = _$('provSubtitle');
-            if (subEl) subEl.textContent = normalizeProvinceName(top.name) + ' provinces';
-            var provinces = Object.entries(top.detail)
-                .filter(([k]) => k && !k.startsWith('\u0000') && k.trim())
-                .map(([name, count]) => ({ name: normalizeProvinceName(name), count: parseInt(count) }))
-                .sort((a,b) => b.count - a.count)
-                .slice(0,8);
-        var max = provinces[0]?.count || 1;
-        el.innerHTML = provinces.map(function(p) {
-            var pct = Math.round((p.count / max) * 100);
-                return '<div class="prov-bar-row"><div class="prov-bar-header"><span class="prov-bar-name">' + esc(p.name) + '</span><span class="prov-bar-count">' + numF(p.count) + '</span></div><div class="prov-bar-track"><div class="prov-bar-fill" data-pct="' + pct + '"></div></div></div>';
+        var top=rows[0];
+        if (!top?.detail) { if(ldEl) ldEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--slate-400);font-size:12px;">No province data</div>'; return; }
+        var subEl=_$('provSubtitle'); if(subEl) subEl.textContent=normalizeProvinceName(top.name)+' provinces';
+        var provinces=Object.entries(top.detail)
+            .filter(([k])=>k&&!k.startsWith('\u0000')&&k.trim())
+            .map(([name,count])=>({name:normalizeProvinceName(name),count:parseInt(count)}))
+            .sort((a,b)=>b.count-a.count).slice(0,8);
+        var max=provinces[0]?.count||1;
+        el.innerHTML=provinces.map(function(p){
+            var pct=Math.round((p.count/max)*100);
+            return '<div class="prov-bar-row"><div class="prov-bar-header"><span class="prov-bar-name">'+esc(p.name)+'</span><span class="prov-bar-count">'+numF(p.count)+'</span></div><div class="prov-bar-track"><div class="prov-bar-fill" data-pct="'+pct+'"></div></div></div>';
         }).join('');
-        if (ldEl) ldEl.style.display = 'none';
-        el.style.display = 'block';
-        requestAnimationFrame(function() {
-            el.querySelectorAll('.prov-bar-fill').forEach(function(b) { b.style.width = b.dataset.pct + '%'; });
-        });
+        if(ldEl) ldEl.style.display='none'; el.style.display='block';
+        requestAnimationFrame(function(){ el.querySelectorAll('.prov-bar-fill').forEach(function(b){ b.style.width=b.dataset.pct+'%'; }); });
     },
 
     async loadChartSentimentSmall(card) {
-        var result = await this.fetchGeoSentiment(), rows = this.parseGeoRows(result);
-        var pos = 0, neg = 0, net = 0;
-        rows.forEach(function(r) { pos += parseInt(r.pos||0); neg += parseInt(r.neg||0); net += parseInt(r.net||0); });
-        var total = pos + neg + net || 1;
-        var ldEl = _$('loadingChartSentiment'), canvasEl = _$('chartSentimentDonut'), legendEl = _$('chartSentimentLegend');
-        if (ldEl) ldEl.style.display = 'none';
-        if (canvasEl) canvasEl.style.display = 'block';
-
-        /* Safari Fix: create canvas element dan append ke container, bukan inject langsung */
-        _waitForSize(canvasEl, function() {
-            var canvas = document.createElement('canvas');
-            canvas.width  = 180;
-            canvas.height = 180;
-            canvas.style.cssText = 'width:180px;height:180px;display:block;';
-            canvasEl.innerHTML = '';
-            canvasEl.appendChild(canvas);
-
-            /* Safari Fix: requestAnimationFrame sebelum getContext */
-            requestAnimationFrame(function() {
-                var ctx = canvas.getContext('2d');
-                if (!ctx) return;
-                new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Positive','Neutral','Negative'],
-                        datasets: [{
-                            data: [pos, net, neg],
-                            backgroundColor: ['#22c55e','#94a3b8','#ef4444'],
-                            borderColor: '#fff',
-                            borderWidth: 3,
-                            hoverOffset: 6
-                        }]
-                    },
-                    options: {
-                        responsive: false,
-                        cutout: '62%',
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(ctx2) {
-                                        return ' ' + ctx2.label + ': ' + ctx2.parsed.toLocaleString() + ' (' + ((ctx2.parsed/total)*100).toFixed(1) + '%)';
-                                    }
-                                }
-                            }
-                        },
-                        animation: { duration: 800 }
-                    }
+        var result=await this.fetchGeoSentiment(), rows=this.parseGeoRows(result);
+        var pos=0, neg=0, net=0;
+        rows.forEach(function(r){ pos+=parseInt(r.pos||0); neg+=parseInt(r.neg||0); net+=parseInt(r.net||0); });
+        var total=pos+neg+net||1;
+        var ldEl=_$('loadingChartSentiment'), canvasEl=_$('chartSentimentDonut'), legendEl=_$('chartSentimentLegend');
+        if(ldEl) ldEl.style.display='none';
+        if(canvasEl) canvasEl.style.display='block';
+        _waitForSize(canvasEl,function(){
+            var canvas=document.createElement('canvas');
+            canvas.width=180; canvas.height=180;
+            canvas.style.cssText='width:180px;height:180px;display:block;';
+            canvasEl.innerHTML=''; canvasEl.appendChild(canvas);
+            requestAnimationFrame(function(){
+                var ctx=canvas.getContext('2d'); if(!ctx) return;
+                new Chart(ctx,{
+                    type:'doughnut',
+                    data:{labels:['Positive','Neutral','Negative'],datasets:[{data:[pos,net,neg],backgroundColor:['#22c55e','#94a3b8','#ef4444'],borderColor:'#fff',borderWidth:3,hoverOffset:6}]},
+                    options:{responsive:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){ return ' '+c.label+': '+c.parsed.toLocaleString()+' ('+((c.parsed/total)*100).toFixed(1)+'%)'; }}}},animation:{duration:800}}
                 });
             });
         });
-
-        if (legendEl) legendEl.innerHTML = [
-            { label:'Positive', val:pos, color:'#22c55e' },
-            { label:'Neutral',  val:net, color:'#94a3b8' },
-            { label:'Negative', val:neg, color:'#ef4444' },
-        ].map(function(item) {
-            return '<div style="display:flex;align-items:center;gap:8px;"><div style="width:9px;height:9px;border-radius:50%;background:' + item.color + ';flex-shrink:0;"></div><span style="font-size:12px;font-weight:700;color:#1e293b;flex:1;">' + item.label + '</span><span style="font-size:12px;font-weight:700;color:#1e293b;">' + numF(item.val) + '</span><span style="font-size:11px;color:#94a3b8;width:40px;text-align:right;font-weight:600;">' + ((item.val/total)*100).toFixed(1) + '%</span></div>';
+        if(legendEl) legendEl.innerHTML=[{label:'Positive',val:pos,color:'#22c55e'},{label:'Neutral',val:net,color:'#94a3b8'},{label:'Negative',val:neg,color:'#ef4444'}].map(function(item){
+            return '<div style="display:flex;align-items:center;gap:8px;"><div style="width:9px;height:9px;border-radius:50%;background:'+item.color+';flex-shrink:0;"></div><span style="font-size:12px;font-weight:700;color:#1e293b;flex:1;">'+item.label+'</span><span style="font-size:12px;font-weight:700;color:#1e293b;">'+numF(item.val)+'</span><span style="font-size:11px;color:#94a3b8;width:40px;text-align:right;font-weight:600;">'+((item.val/total)*100).toFixed(1)+'%</span></div>';
         }).join('');
     },
 
     async loadTopLocations(card) {
-        var ldEl = _$('loadingTopLocations'), tblEl = _$('topLocationsTable');
-        var locs = [];
+        var ldEl=_$('loadingTopLocations'), tblEl=_$('topLocationsTable'), locs=[];
         try {
-            var r = await fetch('/mk/api/x/top-locations?project_id=' + this.projectId + '&start_date=' + this.startDate + '&end_date=' + this.endDate);
-            if (r.ok) {
-                var result = await r.json();
-                if (result.success && Array.isArray(result.data)) {
-                    locs = result.data.filter(function(l) {
-                        var n = (l.name || l.location || '').trim();
-                        return n && n !== 'Unknown' && !n.startsWith('\u0000');
-                    }).map(function(l) {
-                            return { name: normalizeProvinceName(l.name || l.location || 'Unknown'), count: parseInt(l.count || l.total || 0) };
-                    });
+            var r=await fetch('/mk/api/x/top-locations?project_id='+this.projectId+'&start_date='+this.startDate+'&end_date='+this.endDate);
+            if(r.ok){
+                var result=await r.json();
+                if(result.success&&Array.isArray(result.data)){
+                    locs=result.data.filter(function(l){ var n=(l.name||l.location||'').trim(); return n&&n!=='Unknown'&&!n.startsWith('\u0000'); })
+                        .map(function(l){ return {name:normalizeProvinceName(l.name||l.location||'Unknown'),count:parseInt(l.count||l.total||0)}; });
                 }
             }
-        } catch(e) { console.warn('top-loc api missing', e); }
-
+        } catch(e) { console.warn('top-loc api missing',e); }
         if (!locs.length) {
-            var geo  = await this.fetchGeoUser(), rows = this.parseGeoRows(geo);
-            rows.forEach(function(country) {
-                var cName = (country.name || '').trim();
-                var hasProvinces = country.detail && typeof country.detail === 'object' && Object.keys(country.detail).length > 0;
-                if (hasProvinces) {
-                    Object.entries(country.detail)
-                        .filter(([k]) => k && !k.startsWith('\u0000') && k.trim())
-                            .forEach(function([name, val]) {
-                                var count = typeof val === 'number' ? val : parseInt(val?.count || 0);
-                                if (count > 0) locs.push({ name: normalizeProvinceName(name.trim()), count });
-                            });
-                } else if (cName && cName !== 'Unknown') {
-                        locs.push({ name: normalizeProvinceName(cName), count: parseInt(country.count || 0) });
-                }
+            var geo=await this.fetchGeoUser(), rows=this.parseGeoRows(geo);
+            rows.forEach(function(country){
+                var cName=(country.name||'').trim();
+                var hasProvinces=country.detail&&typeof country.detail==='object'&&Object.keys(country.detail).length>0;
+                if(hasProvinces){
+                    Object.entries(country.detail).filter(([k])=>k&&!k.startsWith('\u0000')&&k.trim())
+                        .forEach(function([name,val]){ var count=typeof val==='number'?val:parseInt(val?.count||0); if(count>0) locs.push({name:normalizeProvinceName(name.trim()),count}); });
+                } else if(cName&&cName!=='Unknown'){ locs.push({name:normalizeProvinceName(cName),count:parseInt(country.count||0)}); }
             });
-            locs.sort((a,b) => b.count - a.count);
+            locs.sort((a,b)=>b.count-a.count);
         }
-
-        if (ldEl) ldEl.style.display = 'none';
-        if (!locs.length) {
-            if (tblEl) tblEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--slate-400);font-size:12px;">No data available</div>';
-            return;
-        }
-        this._allLocations = locs;
-        if (locs.length > 10) {
-            var btnWrap = _$('topLocBtnWrap');
-            if (btnWrap && !btnWrap.querySelector('.view-all-btn')) {
-                btnWrap.insertAdjacentHTML('afterbegin', '<button class="view-all-btn" onclick="XGeo.openModal()">View All<svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;margin-left:4px;"><path d="M9 18l6-6-6-6"/></svg></button>');
+        if(ldEl) ldEl.style.display='none';
+        if(!locs.length){ if(tblEl) tblEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--slate-400);font-size:12px;">No data available</div>'; return; }
+        this._allLocations=locs;
+        if(locs.length>10){
+            var btnWrap=_$('topLocBtnWrap');
+            if(btnWrap&&!btnWrap.querySelector('.view-all-btn')){
+                btnWrap.insertAdjacentHTML('afterbegin','<button class="view-all-btn" onclick="XGeo.openModal()">View All<svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;margin-left:4px;"><path d="M9 18l6-6-6-6"/></svg></button>');
             }
         }
-        if (tblEl) tblEl.innerHTML = this._buildTable(locs.slice(0,10), 0);
+        if(tblEl) tblEl.innerHTML=this._buildTable(locs.slice(0,10),0);
     },
 
-    _buildTable(items, offset) {
-            return '<table class="geo-tbl" style="margin-top:8px;"><thead><tr><th style="width:40px;">#</th><th>Location</th><th style="text-align:right;">Authors</th></tr></thead><tbody>' +
-                items.map(function(loc, i) {
-                    return '<tr><td class="geo-tbl-rank">' + (offset+i+1) + '</td><td class="geo-tbl-name">' + esc(normalizeProvinceName(loc.name)) + '</td><td class="geo-tbl-num">' + numF(loc.count) + '</td></tr>';
-                }).join('') +
-                '</tbody></table>';
+    _buildTable(items,offset) {
+        return '<table class="geo-tbl" style="margin-top:8px;"><thead><tr><th style="width:40px;">#</th><th>Location</th><th style="text-align:right;">Authors</th></tr></thead><tbody>'+
+            items.map(function(loc,i){ return '<tr><td class="geo-tbl-rank">'+(offset+i+1)+'</td><td class="geo-tbl-name">'+esc(normalizeProvinceName(loc.name))+'</td><td class="geo-tbl-num">'+numF(loc.count)+'</td></tr>'; }).join('')+
+            '</tbody></table>';
     },
 
     openModal() {
-        var modal = _$('geoLocModal'), body = _$('geoLocModalBody');
-        if (!modal || !body) return;
-        body.innerHTML = this._buildTable(this._allLocations, 0);
-        modal.classList.add('open');
-        document.body.style.overflow = 'hidden';
-        var self = this;
-        this._escHandler = function(e) { if (e.key === 'Escape') self.closeModal(); };
-        document.addEventListener('keydown', this._escHandler);
+        var modal=_$('geoLocModal'), body=_$('geoLocModalBody');
+        if(!modal||!body) return;
+        body.innerHTML=this._buildTable(this._allLocations,0);
+        modal.classList.add('open'); document.body.style.overflow='hidden';
+        var self=this;
+        this._escHandler=function(e){ if(e.key==='Escape') self.closeModal(); };
+        document.addEventListener('keydown',this._escHandler);
     },
     closeModal() {
-        var modal = _$('geoLocModal');
-        if (modal) modal.classList.remove('open');
-        document.body.style.overflow = '';
-        if (this._escHandler) document.removeEventListener('keydown', this._escHandler);
+        var modal=_$('geoLocModal'); if(modal) modal.classList.remove('open');
+        document.body.style.overflow='';
+        if(this._escHandler) document.removeEventListener('keydown',this._escHandler);
     },
 };
 
@@ -1445,66 +1142,48 @@ const XGeo = {
 const GeoPanel = {
     open(rows, title, dotColor) {
         GeoDetail.close();
-        _$('geoPanelDot').style.background    = dotColor || '#038047';
-        _$('geoPanelTitle').textContent        = title || 'X Geographic';
-        _$('geoPanelMeta').textContent         = XGeo.startDate + ' – ' + XGeo.endDate;
-        var ov = _$('geoPanelOverlay'), pn = _$('geoSntPanel');
+        _$('geoPanelDot').style.background=dotColor||'#038047';
+        _$('geoPanelTitle').textContent=title||'X Geographic';
+        _$('geoPanelMeta').textContent=XGeo.startDate+' – '+XGeo.endDate;
+        var ov=_$('geoPanelOverlay'), pn=_$('geoSntPanel');
         ov.classList.remove('hiding'); pn.classList.remove('hiding');
         ov.classList.add('show'); pn.classList.add('show');
         this._render(rows);
     },
     openLocation(row) {
-        var pos = parseInt(row.pos||0), neg = parseInt(row.neg||0), net = parseInt(row.net||0);
-        var color = '#64748b';
-        if (pos > neg && pos > net) color = '#22c55e';
-        else if (neg > pos && neg > net) color = '#ef4444';
-        this.open([row], 'X — ' + (row.name || 'Unknown'), color);
-        GeoDetail.openLocation(row, color);
+        var pos=parseInt(row.pos||0), neg=parseInt(row.neg||0), net=parseInt(row.net||0);
+        var color='#64748b';
+        if(pos>neg&&pos>net) color='#22c55e'; else if(neg>pos&&neg>net) color='#ef4444';
+        this.open([row],'X — '+(row.name||'Unknown'),color);
+        GeoDetail.openLocation(row,color);
     },
     close() {
         GeoDetail.close();
-        var ov = _$('geoPanelOverlay'), pn = _$('geoSntPanel');
+        var ov=_$('geoPanelOverlay'), pn=_$('geoSntPanel');
         pn.classList.add('hiding'); ov.classList.add('hiding');
-        setTimeout(function() {
-            pn.classList.remove('show','hiding');
-            ov.classList.remove('show','hiding');
-        }, 240);
+        setTimeout(function(){ pn.classList.remove('show','hiding'); ov.classList.remove('show','hiding'); },240);
     },
     _render(rows) {
-        var list = _$('geoPanelList');
-        if (!list) return;
-        if (!rows?.length) {
-            list.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:#94A3B8;font-size:13px;font-weight:600;">No data</div>';
-            return;
-        }
-        list.innerHTML = rows.slice(0,100).map(function(row) {
-            var name = row.name || 'Unknown', count = parseInt(row.count||0);
-            var pos = parseInt(row.pos||0), neg = parseInt(row.neg||0), net = parseInt(row.net||0);
-            var sent = pos>neg&&pos>net ? 'pos' : neg>pos&&neg>net ? 'neg' : 'neu';
-            var color = '#64748b';
-            if (sent === 'pos') color = '#22c55e';
-            else if (sent === 'neg') color = '#ef4444';
-            var sentLbl = { pos:'Pos', neg:'Neg', neu:'Neu' }[sent];
-            var enc = encodeURIComponent(JSON.stringify(row));
-            return '<div class="do-panel-item" data-item="' + esc(enc) + '" onclick="GeoPanel._click(this)">' +
-                '<div class="do-panel-avatar" style="background:linear-gradient(135deg,' + color + ',' + color + '99);"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z"/></svg></div>' +
-                '<div class="do-panel-item-body">' +
-                '<div class="do-panel-author">' + esc(name) + '</div>' +
-                '<div class="do-panel-text">' + numF(pos) + ' pos · ' + numF(net) + ' neu · ' + numF(neg) + ' neg</div>' +
-                '<div class="do-panel-footer"><span class="do-sent-badge do-sent-badge--' + sent + '">' + sentLbl + '</span><span>' + numF(count) + ' users</span><span style="margin-left:auto;">X (Twitter)</span></div>' +
-                '</div></div>';
+        var list=_$('geoPanelList'); if(!list) return;
+        if(!rows?.length){ list.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:#94A3B8;font-size:13px;font-weight:600;">No data</div>'; return; }
+        list.innerHTML=rows.slice(0,100).map(function(row){
+            var name=row.name||'Unknown', count=parseInt(row.count||0);
+            var pos=parseInt(row.pos||0), neg=parseInt(row.neg||0), net=parseInt(row.net||0);
+            var sent=pos>neg&&pos>net?'pos':neg>pos&&neg>net?'neg':'neu';
+            var color=sent==='pos'?'#22c55e':sent==='neg'?'#ef4444':'#64748b';
+            var sentLbl={pos:'Pos',neg:'Neg',neu:'Neu'}[sent];
+            var enc=encodeURIComponent(JSON.stringify(row));
+            return '<div class="do-panel-item" data-item="'+esc(enc)+'" onclick="GeoPanel._click(this)"><div class="do-panel-avatar" style="background:linear-gradient(135deg,'+color+','+color+'99);"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z"/></svg></div><div class="do-panel-item-body"><div class="do-panel-author">'+esc(name)+'</div><div class="do-panel-text">'+numF(pos)+' pos · '+numF(net)+' neu · '+numF(neg)+' neg</div><div class="do-panel-footer"><span class="do-sent-badge do-sent-badge--'+sent+'">'+sentLbl+'</span><span>'+numF(count)+' users</span><span style="margin-left:auto;">X (Twitter)</span></div></div></div>';
         }).join('');
     },
     _click(el) {
         try {
-            var raw = el.dataset.item.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"');
-            var row = JSON.parse(decodeURIComponent(raw));
-            var color = '#64748b';
-            var pos = parseInt(row.pos||0), neg = parseInt(row.neg||0), net = parseInt(row.net||0);
-            if (pos > neg && pos > net) color = '#22c55e';
-            else if (neg > pos && neg > net) color = '#ef4444';
-            GeoDetail.openLocation(row, color);
-        } catch(e) { console.warn(e); }
+            var raw=el.dataset.item.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"');
+            var row=JSON.parse(decodeURIComponent(raw));
+            var color='#64748b', pos=parseInt(row.pos||0), neg=parseInt(row.neg||0), net=parseInt(row.net||0);
+            if(pos>neg&&pos>net) color='#22c55e'; else if(neg>pos&&neg>net) color='#ef4444';
+            GeoDetail.openLocation(row,color);
+        } catch(e){ console.warn(e); }
     }
 };
 
@@ -1513,35 +1192,33 @@ const GeoPanel = {
 ══════════════════════════════════════════════════════ */
 const GeoDetail = {
     openLocation(row, color) {
-        var panel = _$('geoDetailPanel'), body = _$('geoDetailBody'), title = _$('geoDetailTitle');
-        if (!panel || !body) return;
-        var name = row.name || 'Unknown', count = parseInt(row.count||0);
-        var pos = parseInt(row.pos||0), neg = parseInt(row.neg||0), net = parseInt(row.net||0), safe = count || 1;
-        var sent = pos>neg&&pos>net ? 'pos' : neg>pos&&neg>net ? 'neg' : 'neu';
-        var sentLbl = { pos:'Positive', neg:'Negative', neu:'Neutral' }[sent];
-        if (title) title.textContent = name;
-        body.innerHTML =
-            '<div class="do-dp2-avatar-row"><div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,' + color + ',' + color + '99);"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z"/></svg></div>' +
-            '<div><div class="do-dp2-name">' + esc(name) + '</div><div class="do-dp2-handle">Geographic Region</div><span class="do-dp2-plat-badge" style="background:' + color + '18;color:' + color + ';">X (Twitter)</span></div></div>' +
-            '<div class="do-dp2-sent do-dp2-sent--' + sent + '">' + sentLbl + ' dominant</div>' +
-            '<div class="do-dp2-stats">' +
-            '<div class="do-dp2-stat"><div class="do-dp2-stat-val">' + numF(count) + '</div><div class="do-dp2-stat-lbl">Total Users</div></div>' +
-            '<div class="do-dp2-stat"><div class="do-dp2-stat-val" style="color:#22c55e;">' + numF(pos) + '</div><div class="do-dp2-stat-lbl">Positive</div></div>' +
-            '<div class="do-dp2-stat"><div class="do-dp2-stat-val" style="color:#ef4444;">' + numF(neg) + '</div><div class="do-dp2-stat-lbl">Negative</div></div>' +
-            '</div>' +
-            '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px;">' +
-            '<div style="background:#f0fdf4;border-radius:6px;padding:8px;text-align:center;border:1px solid #bbf7d0;"><div style="font-size:13px;font-weight:800;color:#22c55e;">' + ((pos/safe)*100).toFixed(1) + '%</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;margin-top:2px;">Positive</div></div>' +
-            '<div style="background:#f8fafc;border-radius:6px;padding:8px;text-align:center;border:1px solid #e2e8f0;"><div style="font-size:13px;font-weight:800;color:#94a3b8;">' + ((net/safe)*100).toFixed(1) + '%</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;margin-top:2px;">Neutral</div></div>' +
-            '<div style="background:#fef2f2;border-radius:6px;padding:8px;text-align:center;border:1px solid #fecaca;"><div style="font-size:13px;font-weight:800;color:#ef4444;">' + ((neg/safe)*100).toFixed(1) + '%</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;margin-top:2px;">Negative</div></div>' +
-            '</div>' +
-            '<div style="font-size:11px;color:#94a3b8;font-weight:600;text-align:center;padding:8px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;"><i class="ph ph-map-pin me-1"></i>' + esc(name) + ' · ' + numF(count) + ' total mentions tracked</div>';
+        var panel=_$('geoDetailPanel'), body=_$('geoDetailBody'), title=_$('geoDetailTitle');
+        if(!panel||!body) return;
+        var name=row.name||'Unknown', count=parseInt(row.count||0);
+        var pos=parseInt(row.pos||0), neg=parseInt(row.neg||0), net=parseInt(row.net||0), safe=count||1;
+        var sent=pos>neg&&pos>net?'pos':neg>pos&&neg>net?'neg':'neu';
+        var sentLbl={pos:'Positive',neg:'Negative',neu:'Neutral'}[sent];
+        if(title) title.textContent=name;
+        body.innerHTML=
+            '<div class="do-dp2-avatar-row"><div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,'+color+','+color+'99);"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 12-8 12S4 15.25 4 10a8 8 0 0 1 8-8z"/></svg></div>'+
+            '<div><div class="do-dp2-name">'+esc(name)+'</div><div class="do-dp2-handle">Geographic Region</div><span class="do-dp2-plat-badge" style="background:'+color+'18;color:'+color+';">X (Twitter)</span></div></div>'+
+            '<div class="do-dp2-sent do-dp2-sent--'+sent+'">'+sentLbl+' dominant</div>'+
+            '<div class="do-dp2-stats"><div class="do-dp2-stat"><div class="do-dp2-stat-val">'+numF(count)+'</div><div class="do-dp2-stat-lbl">Total Users</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val" style="color:#22c55e;">'+numF(pos)+'</div><div class="do-dp2-stat-lbl">Positive</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val" style="color:#ef4444;">'+numF(neg)+'</div><div class="do-dp2-stat-lbl">Negative</div></div></div>'+
+            '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px;"><div style="background:#f0fdf4;border-radius:6px;padding:8px;text-align:center;border:1px solid #bbf7d0;"><div style="font-size:13px;font-weight:800;color:#22c55e;">'+((pos/safe)*100).toFixed(1)+'%</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;margin-top:2px;">Positive</div></div><div style="background:#f8fafc;border-radius:6px;padding:8px;text-align:center;border:1px solid #e2e8f0;"><div style="font-size:13px;font-weight:800;color:#94a3b8;">'+((net/safe)*100).toFixed(1)+'%</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;margin-top:2px;">Neutral</div></div><div style="background:#fef2f2;border-radius:6px;padding:8px;text-align:center;border:1px solid #fecaca;"><div style="font-size:13px;font-weight:800;color:#ef4444;">'+((neg/safe)*100).toFixed(1)+'%</div><div style="font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700;margin-top:2px;">Negative</div></div></div>'+
+            '<div style="font-size:11px;color:#94a3b8;font-weight:600;text-align:center;padding:8px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0;"><i class="ph ph-map-pin me-1"></i>'+esc(name)+' · '+numF(count)+' total mentions tracked</div>';
         panel.classList.add('show');
     },
-    close() { var p = _$('geoDetailPanel'); if(p) p.classList.remove('show'); },
+    close() { var p=_$('geoDetailPanel'); if(p) p.classList.remove('show'); },
 };
 
 /* ══════════════════════════════════════════════════════
-   XGeoExport
+   XGeoExport — Safari-safe
+   ✅ allowTaint:false everywhere
+   ✅ _freeze / _unfreeze animations
+   ✅ Pre-swap live DOM (ECharts + Leaflet + Chart.js)
+      sebelum html2canvas — sama persis pola XExport
+   ✅ Tainted canvas fallback untuk Leaflet
+   ✅ _onClone sederhana (tidak perlu inject chart karena sudah pre-swap)
 ══════════════════════════════════════════════════════ */
 const XGeoExport = (() => {
     'use strict';
@@ -1549,9 +1226,10 @@ const XGeoExport = (() => {
     let _toastTimer = null;
     const PID = '{{ $projectId ?? "0" }}';
 
+    /* ── Toast ── */
     function _toast(msg, type, duration) {
         type = type || 'default'; duration = duration || 3200;
-        var t = _$('exportToast'), m = _$('exportToastMsg'), ico = _$('exportToastIcon');
+        var t=_$('exportToast'), m=_$('exportToastMsg'), ico=_$('exportToastIcon');
         if (!t || !m) return;
         m.textContent = msg;
         t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
@@ -1561,15 +1239,38 @@ const XGeoExport = (() => {
         _toastTimer = setTimeout(function() { t.classList.remove('show'); }, duration);
     }
 
+    /* ── Button state ── */
     function _btnState(btn, loading) {
         if (!btn) return;
         btn.disabled = loading;
         btn.classList.toggle('exporting', loading);
     }
 
-    /* ── Tunggu ECharts selesai render ── */
+    /* ── FREEZE / UNFREEZE — semua animasi berhenti saat capture ── */
+    function _freeze() {
+        if (document.getElementById('__geo_freeze')) return;
+        var s = document.createElement('style');
+        s.id = '__geo_freeze';
+        s.textContent = [
+            '*,*::before,*::after{',
+            '  animation:none!important;',
+            '  transition:none!important;',
+            '  animation-play-state:paused!important;',
+            '}',
+            '.kpi-card-hover{transform:none!important;filter:none!important;opacity:1!important;}',
+            '.kpi-card-hover::before{display:none!important;}',
+            '.sk-block,.sk-line{animation:none!important;background:#e2e8f0!important;}',
+        ].join('\n');
+        document.head.appendChild(s);
+    }
+    function _unfreeze() {
+        var s = document.getElementById('__geo_freeze');
+        if (s) s.remove();
+    }
+
+    /* ── ECharts: tunggu selesai render lalu getDataURL ── */
     function _waitEChartsFinished(instance, ms) {
-        ms = ms || 2500;
+        ms = ms || 2000;
         return new Promise(function(resolve) {
             var done = false;
             var finish = function() { if (!done) { done = true; resolve(); } };
@@ -1579,7 +1280,6 @@ const XGeoExport = (() => {
         });
     }
 
-    /* ── Snapshot ECharts donut ── */
     async function _getDonutSnapshot() {
         var inst = window.__geoDonutChart;
         if (!inst || inst.isDisposed?.()) return null;
@@ -1587,12 +1287,7 @@ const XGeoExport = (() => {
             inst.setOption({ animation: false }, { silent: true });
             await _waitEChartsFinished(inst, 1500);
             await new Promise(function(r) { requestAnimationFrame(function() { requestAnimationFrame(r); }); });
-            var dataUrl = inst.getDataURL({
-                type: 'png',
-                pixelRatio: 2,
-                backgroundColor: '#ffffff',
-                excludeComponents: ['toolbox'],
-            });
+            var dataUrl = inst.getDataURL({ type:'png', pixelRatio:2, backgroundColor:'#ffffff', excludeComponents:['toolbox'] });
             return (dataUrl && dataUrl !== 'data:,') ? dataUrl : null;
         } catch(e) {
             console.warn('[XGeoExport] donut snapshot failed:', e);
@@ -1602,126 +1297,237 @@ const XGeoExport = (() => {
         }
     }
 
-    /* ── Snapshot Leaflet maps sebagai PNG via canvas ── */
+    /* ── Leaflet: serialize SVG tile layer ke blob URL → canvas ──
+       FIXED: allowTaint:false + tainted-canvas fallback          */
     async function _getLeafletSnapshot(mapId) {
         var mapEl = document.getElementById(mapId);
         if (!mapEl) return null;
+
         try {
-            /* Invalidate size dulu */
             var lmap = window._leafletMaps[mapId];
             if (lmap) {
                 lmap.invalidateSize({ animate: false });
-                await new Promise(function(r) { setTimeout(r, 200); });
+                /* Tunggu semua tile selesai load */
+                await new Promise(function(resolve) {
+                    var imgs    = Array.from(lmap.getContainer().querySelectorAll('img'));
+                    var pending = imgs.filter(function(i) { return !i.complete; });
+                    if (!pending.length) { setTimeout(resolve, 300); return; }
+                    var done = 0;
+                    var check = function() { if (++done >= pending.length) setTimeout(resolve, 200); };
+                    pending.forEach(function(img) {
+                        img.addEventListener('load',  check, { once: true });
+                        img.addEventListener('error', check, { once: true });
+                    });
+                    setTimeout(resolve, 3000); /* hard timeout */
+                });
             }
+
             var canvas = await html2canvas(mapEl, {
-                scale: 2,
-                useCORS: true,
-                allowTaint: false,
+                scale          : 1.5,
+                useCORS        : true,
+                allowTaint     : false, /* ✅ FIXED: false agar tidak tainted di Safari */
                 backgroundColor: '#e8f0e8',
-                logging: false,
+                logging        : false,
                 removeContainer: true,
-                imageTimeout: 8000,
-                ignoreElements: function(e) {
+                imageTimeout   : 15000,
+                ignoreElements : function(e) {
                     return e.classList.contains('map-scroll-overlay') ||
-                           e.classList.contains('map-loading-overlay');
+                           e.classList.contains('map-loading-overlay') ||
+                           e.classList.contains('leaflet-control-zoom');
                 },
             });
-            return canvas.toDataURL('image/png');
+
+            /* ✅ Tainted canvas fallback — Safari throws SecurityError di toDataURL */
+            try {
+                return canvas.toDataURL('image/png');
+            } catch(secErr) {
+                console.warn('[XGeoExport] canvas tainted, using placeholder:', mapId, secErr);
+                return _makeMapFallback(mapEl, mapId);
+            }
         } catch(e) {
             console.warn('[XGeoExport] leaflet snapshot failed:', mapId, e);
+            return _makeMapFallback(mapEl, mapId);
+        }
+    }
+
+    /* ── Fallback placeholder saat map tidak bisa di-capture ── */
+    function _makeMapFallback(mapEl, mapId) {
+        var w = (mapEl ? mapEl.offsetWidth  : 0) || 700;
+        var h = (mapEl ? mapEl.offsetHeight : 0) || 500;
+        var fb = document.createElement('canvas');
+        fb.width = w * 2; fb.height = h * 2;
+        var ctx = fb.getContext('2d');
+        ctx.scale(2, 2);
+        ctx.fillStyle = '#e8f0e8';
+        ctx.fillRect(0, 0, w, h);
+        /* Grid lines */
+        ctx.strokeStyle = '#c8d8c8'; ctx.lineWidth = 0.5;
+        for (var x = 0; x < w; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+        for (var y = 0; y < h; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+        /* Label */
+        ctx.fillStyle = '#64748b'; ctx.font = 'bold 13px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('📍 ' + mapId.replace('geo','').replace('Map','') + ' Map', w / 2, h / 2 - 14);
+        ctx.font = '11px sans-serif'; ctx.fillStyle = '#94a3b8';
+        ctx.fillText('(Peta tidak dapat di-capture di browser ini)', w / 2, h / 2 + 10);
+        try { return fb.toDataURL('image/png'); } catch(e) { return null; }
+    }
+
+    /* ── Chart.js: langsung ambil dari <canvas> element ── */
+    async function _getChartJsSnapshot(containerId) {
+        var container = document.getElementById(containerId);
+        if (!container) return null;
+        var canvas = container.querySelector('canvas');
+        if (!canvas) return null;
+        try {
+            return canvas.toDataURL('image/png');
+        } catch(e) {
+            console.warn('[XGeoExport] Chart.js snapshot failed:', e);
             return null;
         }
     }
 
-    /* ── onclone: cleanup + inject semua snapshots ── */
-    function _makeOnClone(snaps) {
-        return function(clonedDoc) {
-            /* Freeze semua animasi */
-            var s = clonedDoc.createElement('style');
-            s.textContent = [
-                '*, *::before, *::after {',
-                '  animation: none !important;',
-                '  transition: none !important;',
-                '  animation-play-state: paused !important;',
-                '}',
-                '[data-html2canvas-ignore] { display: none !important; }',
-                '.sk-block, .sk-line { animation: none !important; background: #e2e8f0 !important; }',
-                '.kpi-card-hover { transform: none !important; filter: none !important; opacity: 1 !important; }',
-                '.kpi-card-hover::before { display: none !important; }',
-                '.map-loading-overlay, .chart-loading, .spinner-state { display: none !important; }',
-                '.export-toast, .page-export-bar { display: none !important; }',
-                '.map-scroll-overlay { display: none !important; }',
-                '.location-list { max-height: none !important; overflow: visible !important; }',
-            ].join('\n');
-            clonedDoc.head.appendChild(s);
+    /* ══════════════════════════════════════════════════════
+       PRE-SWAP: inject snapshot sebagai <img> ke live DOM
+       sebelum html2canvas dipanggil — pola persis XExport
+    ══════════════════════════════════════════════════════ */
+    async function _preSwapCharts(el, snaps) {
+        var swaps = [];
 
-            /* Sembunyikan panel dan overlay */
-            clonedDoc.querySelectorAll(
-                '#geoPanelOverlay,#geoSntPanel,.do-panel-overlay,.do-panel,' +
-                '#geoLocModal,.geo-modal-overlay,#geoCustomTT,' +
-                '.map-scroll-overlay,.map-loading-overlay,' +
-                '.export-toast,[data-html2canvas-ignore],.page-export-bar'
-            ).forEach(function(el) {
-                el.style.cssText += 'display:none!important;visibility:hidden!important;opacity:0!important;height:0!important;overflow:hidden!important;';
-            });
+        /* ECharts donut */
+        var donutEl = document.getElementById('geoDonutChart');
+        if (donutEl && el.contains(donutEl) && snaps['geoDonutChart']) {
+            var origH = donutEl.offsetHeight || 480;
+            var ph    = document.createElement('div');
+            ph.dataset.swapFor = 'geoDonutChart'; ph.style.display = 'none';
+            var img = document.createElement('img');
+            img.src = snaps['geoDonutChart'];
+            img.style.cssText = 'width:100%;height:' + origH + 'px;object-fit:contain;display:block;background:#fff;flex-shrink:0;';
+            donutEl.parentNode.insertBefore(ph, donutEl);
+            donutEl.parentNode.insertBefore(img, ph);
+            donutEl.style.display = 'none';
+            swaps.push({ container: donutEl, placeholder: ph, img: img });
+        }
 
-            /* Force visible semua card */
-            clonedDoc.querySelectorAll(
-                '.card,.card-body,.card-header,.row,[class*="col-"],' +
-                '.geo-card,.map-with-panel,.map-area,.location-panel,' +
-                '.charts-row,#pageExportArea,#exportPage1,#exportPage2,#exportPage3'
-            ).forEach(function(el) {
-                el.style.opacity    = '1';
-                el.style.transform  = 'none';
-                el.style.visibility = 'visible';
-                el.style.filter     = 'none';
-            });
+        /* Leaflet maps */
+        ['geoBuzzerMap', 'geoMap', 'geoSentimentMap'].forEach(function(mapId) {
+            var mapEl = document.getElementById(mapId);
+            if (!mapEl || !el.contains(mapEl) || !snaps[mapId]) return;
+            var origW = mapEl.offsetWidth  || 700;
+            var origH = mapEl.offsetHeight || 500;
+            var ph    = document.createElement('div');
+            ph.dataset.swapFor = mapId; ph.style.display = 'none';
+            var img = document.createElement('img');
+            img.src = snaps[mapId];
+            /* object-fit:fill → gambar mengisi area persis, tanpa letterbox */
+            img.style.cssText = [
+                'display:block',
+                'width:'   + origW + 'px',
+                'height:'  + origH + 'px',
+                'object-fit:fill',
+                'flex-shrink:0',
+                'background:#e8f0e8',
+            ].join(';') + ';';
+            mapEl.parentNode.insertBefore(ph, mapEl);
+            mapEl.parentNode.insertBefore(img, ph);
+            mapEl.style.display = 'none';
+            swaps.push({ container: mapEl, placeholder: ph, img: img });
+        });
 
-            /* Sembunyikan loading state */
-            ['geoDonutLoading','loadingChartCountries','loadingChartProvinces',
-             'loadingChartSentiment','loadingTopLocations'].forEach(function(id) {
-                var el = clonedDoc.getElementById(id);
-                if (el) el.style.display = 'none';
-            });
+        /* Chart.js sentiment donut */
+        var chartSentEl = document.getElementById('chartSentimentDonut');
+        if (chartSentEl && el.contains(chartSentEl) && snaps['chartSentimentCanvas']) {
+            var origW2 = chartSentEl.offsetWidth  || 180;
+            var origH2 = chartSentEl.offsetHeight || 180;
+            var ph2    = document.createElement('div');
+            ph2.dataset.swapFor = 'chartSentimentDonut'; ph2.style.display = 'none';
+            var img2 = document.createElement('img');
+            img2.src = snaps['chartSentimentCanvas'];
+            img2.style.cssText = 'width:' + origW2 + 'px;height:' + origH2 + 'px;object-fit:contain;display:block;flex-shrink:0;';
+            chartSentEl.parentNode.insertBefore(ph2, chartSentEl);
+            chartSentEl.parentNode.insertBefore(img2, ph2);
+            chartSentEl.style.display = 'none';
+            swaps.push({ container: chartSentEl, placeholder: ph2, img: img2 });
+        }
 
-            /* Force visible charts */
-            ['chartCountries','chartProvinces','chartSentimentDonut',
-             'chartSentimentLegend','topLocationsTable'].forEach(function(id) {
-                var el = clonedDoc.getElementById(id);
-                if (el) { el.style.display = 'block'; el.style.opacity = '1'; }
-            });
-
-            /* ★ Inject semua snapshots ── kunci Safari ── */
-            Object.entries(snaps || {}).forEach(function(entry) {
-                var id = entry[0], dataUrl = entry[1];
-                if (!dataUrl) return;
-                var container = clonedDoc.getElementById(id);
-                if (!container) return;
-                var orig = document.getElementById(id);
-                var h = orig ? Math.max(orig.scrollHeight, orig.offsetHeight, 240) : 300;
-                container.innerHTML = '';
-                var img = clonedDoc.createElement('img');
-                img.src = dataUrl;
-                img.style.cssText = 'width:100%;height:' + h + 'px;display:block;object-fit:contain;background:#fff;border-radius:4px;';
-                container.appendChild(img);
-                container.style.cssText += 'display:block!important;opacity:1!important;visibility:visible!important;overflow:visible!important;';
-                /* Fix parent container */
-                var parent = container.parentElement;
-                if (parent) {
-                    parent.style.height    = 'auto';
-                    parent.style.minHeight = h + 'px';
-                    parent.style.overflow  = 'visible';
-                }
-            });
-        };
+        return swaps;
     }
 
-    /* ── Core capture: snapshot dulu, baru html2canvas ── */
+    /* POST-SWAP: kembalikan DOM ke kondisi semula */
+    function _postSwapCharts(swaps) {
+        (swaps || []).forEach(function(s) {
+            try { s.img.remove(); }         catch(e) {}
+            try { s.placeholder.remove(); } catch(e) {}
+            s.container.style.display = 'block';
+        });
+    }
+
+    /* ── onClone: bersih, tidak perlu inject chart karena sudah pre-swap ── */
+    function _onClone(clonedDoc) {
+        var s = clonedDoc.createElement('style');
+        s.textContent = [
+            '*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}',
+            '[data-html2canvas-ignore]{display:none!important;}',
+            '.sk-block,.sk-line{animation:none!important;background:#e2e8f0!important;}',
+            '.kpi-card-hover{transform:none!important;filter:none!important;opacity:1!important;}',
+            '.kpi-card-hover::before{display:none!important;}',
+            '.map-loading-overlay,.chart-loading,.spinner-state{display:none!important;}',
+            '.export-toast,.page-export-bar{display:none!important;}',
+            '.map-scroll-overlay{display:none!important;}',
+            '.location-list{max-height:none!important;overflow:visible!important;}',
+        ].join('\n');
+        clonedDoc.head.appendChild(s);
+
+        /* Sembunyikan panel dan overlay */
+        clonedDoc.querySelectorAll([
+            '#geoPanelOverlay','#geoSntPanel','.do-panel-overlay','.do-panel',
+            '#geoLocModal','.geo-modal-overlay','#geoCustomTT',
+            '.map-scroll-overlay','.map-loading-overlay',
+            '.export-toast','[data-html2canvas-ignore]','.page-export-bar'
+        ].join(',')).forEach(function(e) {
+            e.style.cssText += 'display:none!important;visibility:hidden!important;';
+        });
+
+        /* Force visible semua card content */
+        clonedDoc.querySelectorAll([
+            '.card','.card-body','.card-header','.row','[class*="col-"]',
+            '.geo-card','.map-with-panel','.map-area','.location-panel',
+            '.charts-row','#pageExportArea','#exportPage1','#exportPage2','#exportPage3',
+            '.kpi-card-hover'
+        ].join(',')).forEach(function(e) {
+            e.style.opacity    = '1';
+            e.style.transform  = 'none';
+            e.style.visibility = 'visible';
+            e.style.filter     = 'none';
+        });
+
+        /* Sembunyikan loading states */
+        ['geoDonutLoading','loadingChartCountries','loadingChartProvinces',
+         'loadingChartSentiment','loadingTopLocations'].forEach(function(id) {
+            var e = clonedDoc.getElementById(id);
+            if (e) e.style.display = 'none';
+        });
+
+        /* Force visible output areas */
+        ['chartCountries','chartProvinces','chartSentimentDonut',
+         'chartSentimentLegend','topLocationsTable'].forEach(function(id) {
+            var e = clonedDoc.getElementById(id);
+            if (e) { e.style.display = 'block'; e.style.opacity = '1'; }
+        });
+    }
+
+    /* ══════════════════════════════════════════════════════
+       _doCapture — UPDATED:
+       1. Pre-swap semua charts di live DOM
+       2. Freeze animations
+       3. html2canvas dengan allowTaint:false
+       4. Unfreeze + post-swap di finally
+    ══════════════════════════════════════════════════════ */
     async function _doCapture(el, bg, snaps) {
         window.scrollTo(0, 0);
         await new Promise(function(r) { setTimeout(r, 80); });
 
-        /* Force visible */
+        /* Force visible sebelum capture */
         el.querySelectorAll('.card,.kpi-card-hover,.geo-card,[class*="col-"]')
           .forEach(function(e) {
               e.style.opacity    = '1';
@@ -1729,68 +1535,72 @@ const XGeoExport = (() => {
               e.style.visibility = 'visible';
           });
 
-        /* Decode semua snapshot dulu sebelum html2canvas */
-        var allUrls = Object.values(snaps || {}).filter(Boolean);
-        await Promise.allSettled(allUrls.map(function(src) {
-            return new Promise(function(resolve) {
-                var img = new Image();
-                img.onload = img.onerror = resolve;
-                setTimeout(resolve, 5000);
-                img.src = src;
-            });
-        }));
+        /* ✅ Pre-swap semua charts ke <img> di live DOM */
+        var swaps = await _preSwapCharts(el, snaps || {});
 
         await new Promise(function(r) { requestAnimationFrame(function() { requestAnimationFrame(r); }); });
+        await new Promise(function(r) { setTimeout(r, 150); });
+
+        /* ✅ Freeze animations */
+        _freeze();
         await new Promise(function(r) { setTimeout(r, 200); });
 
-        return html2canvas(el, {
-            scale          : 2,
-            useCORS        : true,
-            allowTaint     : false,
-            backgroundColor: bg || '#f1f5f9',
-            logging        : false,
-            removeContainer: true,
-            imageTimeout   : 12000,
-            scrollX        : 0,
-            scrollY        : 0,
-            width          : el.offsetWidth,
-            height         : el.scrollHeight,
-            onclone        : _makeOnClone(snaps),
-            ignoreElements : function(e) {
-                return e.hasAttribute('data-html2canvas-ignore') ||
-                    e.classList.contains('map-scroll-overlay') ||
-                    e.classList.contains('map-loading-overlay') ||
-                    ['geoCustomTT','exportToast','geoSntPanel',
-                     'geoPanelOverlay','geoLocModal'].includes(e.id) ||
-                    /* Skip cross-origin img yang bukan data: / blob: */
-                    (e.tagName === 'IMG' && e.src &&
-                     !e.src.startsWith('data:') && !e.src.startsWith('blob:'));
-            },
-        });
+        var canvas;
+        try {
+            canvas = await html2canvas(el, {
+                scale          : 2,
+                useCORS        : true,
+                allowTaint     : false, /* ✅ FIXED */
+                backgroundColor: bg || '#f1f5f9',
+                logging        : false,
+                removeContainer: true,
+                imageTimeout   : 12000,
+                scrollX        : 0,
+                scrollY        : 0,
+                width          : el.offsetWidth,
+                height         : el.scrollHeight,
+                onclone        : _onClone,
+                ignoreElements : function(e) {
+                    if (e.hasAttribute('data-html2canvas-ignore')) return true;
+                    if (e.classList.contains('map-scroll-overlay'))  return true;
+                    if (e.classList.contains('map-loading-overlay')) return true;
+                    if (['geoCustomTT','exportToast','geoSntPanel','geoPanelOverlay','geoLocModal'].includes(e.id)) return true;
+                    /*
+                     * ✅ Skip cross-origin <img> yang bukan blob/data
+                     * (tile Leaflet tidak perlu di-skip karena sudah diganti <img data: di pre-swap)
+                     */
+                    if (e.tagName === 'IMG' && e.src &&
+                        !e.src.startsWith('data:') && !e.src.startsWith('blob:')) return true;
+                    return false;
+                },
+            });
+        } finally {
+            /* ✅ Selalu unfreeze + restore DOM */
+            _unfreeze();
+            _postSwapCharts(swaps);
+        }
+        return canvas;
     }
 
-    /* ── Kumpulkan semua snapshots sebelum capture ── */
+    /* ── Kumpulkan SEMUA snapshots sebelum capture ── */
     async function _gatherSnapshots() {
         var snaps = {};
-
         _toast('Menyiapkan snapshot charts…', 'default', 99999);
 
         /* ECharts donut */
-        var donutSnap = await _getDonutSnapshot();
-        if (donutSnap) snaps['geoDonutChart'] = donutSnap;
+        var ds = await _getDonutSnapshot();
+        if (ds) snaps['geoDonutChart'] = ds;
 
         /* Leaflet maps */
         var mapIds = ['geoBuzzerMap', 'geoMap', 'geoSentimentMap'];
         for (var i = 0; i < mapIds.length; i++) {
-            var id   = mapIds[i];
-                var snap = await _getLeafletSnapshot(id);
-                // Always use snapshot for Safari to avoid 'gepeng' map in export
-                if (snap && (navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'))) {
-                    snaps[id] = snap;
-                } else if (snap && !snaps[id]) {
-                    snaps[id] = snap;
-                }
+            var ms = await _getLeafletSnapshot(mapIds[i]);
+            if (ms) snaps[mapIds[i]] = ms;
         }
+
+        /* ✅ Chart.js canvas */
+        var cs = await _getChartJsSnapshot('chartSentimentDonut');
+        if (cs) snaps['chartSentimentCanvas'] = cs;
 
         return snaps;
     }
@@ -1801,13 +1611,10 @@ const XGeoExport = (() => {
         pdf.setFillColor(3, 128, 71);
         pdf.rect(0, 0, pW, 11, 'F');
         pdf.setTextColor(255, 255, 255);
-        pdf.setFontSize(9); pdf.setFont('helvetica','bold');
+        pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
         pdf.text('SMADIMENT — Location Map' + (label ? '  ·  ' + label : ''), 10, 7.5);
-        var now = new Date().toLocaleDateString('id-ID', {
-            day:'2-digit', month:'short', year:'numeric',
-            hour:'2-digit', minute:'2-digit'
-        });
-        pdf.setFontSize(7); pdf.setFont('helvetica','normal');
+        var now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
         pdf.text('Generated: ' + now, pW - 10, 7.5, { align: 'right' });
         pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
         pdf.text('Halaman ' + page + ' / ' + total, pW / 2, pH - 3, { align: 'center' });
@@ -1815,40 +1622,31 @@ const XGeoExport = (() => {
 
     function _addCanvasAsPage(pdf, canvas, margin, pW, pH, label, page, total) {
         _drawHeader(pdf, pW, pH, label, page, total);
-        var usableW = pW - margin * 2;
-        var usableH = pH - 14 - 8;
-        var ratio   = Math.min(usableW / canvas.width, usableH / canvas.height);
-        var dw = canvas.width  * ratio;
-        var dh = canvas.height * ratio;
-        pdf.addImage(
-            canvas.toDataURL('image/png'), 'PNG',
-            margin + (usableW - dw) / 2, 14,
-            dw, dh
-        );
+        var uw = pW - margin * 2, uh = pH - 14 - 8;
+        var ratio = Math.min(uw / canvas.width, uh / canvas.height);
+        var dw = canvas.width * ratio, dh = canvas.height * ratio;
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin + (uw - dw) / 2, 14, dw, dh);
     }
 
     function _paginate(pdf, canvas, margin, pW, pH, label) {
         var uw = pW - margin * 2, uh = pH - 14 - 8;
-        var ratio  = uw / canvas.width, sliceH = uh / ratio;
-        var total  = Math.max(1, Math.ceil((canvas.height * ratio) / uh));
+        var ratio = uw / canvas.width, sliceH = uh / ratio;
+        var total = Math.max(1, Math.ceil((canvas.height * ratio) / uh));
         var srcY = 0, pg = 1;
         while (srcY < canvas.height) {
             if (pg > 1) pdf.addPage();
             _drawHeader(pdf, pW, pH, label, pg, total);
             var srcSlice = Math.min(sliceH, canvas.height - srcY);
-            var slice    = document.createElement('canvas');
-            slice.width  = canvas.width;
-            slice.height = Math.ceil(srcSlice);
-            slice.getContext('2d').drawImage(
-                canvas, 0, srcY, canvas.width, srcSlice,
-                0, 0,           canvas.width, srcSlice
-            );
+            var slice = document.createElement('canvas');
+            slice.width = canvas.width; slice.height = Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice);
             pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, uw, srcSlice * ratio);
             srcY += srcSlice; pg++;
         }
         return total;
     }
 
+    /* Pastikan semua lazy sections sudah di-load sebelum capture */
     async function _ensureAllLoaded() {
         var pending = Array.from(document.querySelectorAll('[data-lazy]'))
             .filter(function(el) { return !XGeo._loaded.has(el.dataset.lazy); });
@@ -1858,11 +1656,11 @@ const XGeoExport = (() => {
             try { await XGeo._load(sec, lazy); } catch(e) { console.warn('lazy:', sec, e); }
             await new Promise(function(r) { setTimeout(r, 100); });
         }
-        /* Invalidate semua Leaflet setelah load */
+        /* Invalidate semua Leaflet map setelah load */
         Object.values(window._leafletMaps || {}).forEach(function(m) {
             try { m.invalidateSize({ animate: false }); } catch(e) {}
         });
-        await new Promise(function(r) { setTimeout(r, 400); });
+        await new Promise(function(r) { setTimeout(r, 600); });
     }
 
     const _cardLabels = {
@@ -1888,16 +1686,14 @@ const XGeoExport = (() => {
             var area = document.getElementById(areaId);
             if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
 
-            /* Snapshot hanya chart yang relevan di dalam card ini */
+            /* Snapshot hanya untuk chart yang ada di dalam card ini */
             var snaps = {};
 
-            /* Donut */
             if (area.contains(document.getElementById('geoDonutChart'))) {
                 var ds = await _getDonutSnapshot();
                 if (ds) snaps['geoDonutChart'] = ds;
             }
 
-            /* Leaflet maps yang ada di dalam card */
             var mapIds = ['geoBuzzerMap', 'geoMap', 'geoSentimentMap'];
             for (var i = 0; i < mapIds.length; i++) {
                 var mapEl = document.getElementById(mapIds[i]);
@@ -1907,30 +1703,34 @@ const XGeoExport = (() => {
                 }
             }
 
+            var chartSentEl = document.getElementById('chartSentimentDonut');
+            if (chartSentEl && area.contains(chartSentEl)) {
+                var cs = await _getChartJsSnapshot('chartSentimentDonut');
+                if (cs) snaps['chartSentimentCanvas'] = cs;
+            }
+
             var canvas = await _doCapture(area, '#ffffff', snaps);
             var fname  = 'location_map_' + cardKey + '_' + PID + '_' + _stamp();
             var label  = _cardLabels[cardKey] || cardKey;
 
             if (type === 'image') {
                 var a = document.createElement('a');
-                a.download = fname + '.png';
-                a.href     = canvas.toDataURL('image/png');
-                a.click();
+                a.download = fname + '.png'; a.href = canvas.toDataURL('image/png'); a.click();
                 _toast('Gambar berhasil diunduh!', 'success');
             } else {
                 var { jsPDF } = window.jspdf;
                 var landscape = canvas.width > canvas.height * 1.2;
                 var pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit:'mm', format:'a4' });
                 var pW  = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
-                var M   = 10, uw = pW - M * 2, uh = pH - 14 - 8;
-                var fitsOne = (canvas.height * (uw / canvas.width)) <= uh;
-                if (fitsOne) { _addCanvasAsPage(pdf, canvas, M, pW, pH, label, 1, 1); }
-                else         { _paginate(pdf, canvas, M, pW, pH, label); }
+                var M = 10, uw = pW - M * 2, uh = pH - 14 - 8;
+                if ((canvas.height * (uw / canvas.width)) <= uh) { _addCanvasAsPage(pdf, canvas, M, pW, pH, label, 1, 1); }
+                else { _paginate(pdf, canvas, M, pW, pH, label); }
                 pdf.save(fname + '.pdf');
                 _toast('PDF berhasil diunduh!', 'success');
             }
         } catch(err) {
             console.error('[XGeoExport.runCard]', err);
+            _unfreeze();
             _toast('Export gagal: ' + err.message, 'error');
         } finally { _btnState(btn, false); }
     }
@@ -1946,8 +1746,6 @@ const XGeoExport = (() => {
 
         try {
             window.scrollTo({ top: 0 });
-
-            /* Pastikan semua section sudah di-load */
             await _ensureAllLoaded();
 
             /* Kumpulkan semua snapshots */
@@ -1958,13 +1756,12 @@ const XGeoExport = (() => {
                 var canvas = await _doCapture(_$('pageExportArea'), '#f1f5f9', snaps);
                 var a = document.createElement('a');
                 a.download = 'location_map_' + PID + '_' + stamp + '.png';
-                a.href     = canvas.toDataURL('image/png');
-                a.click();
+                a.href     = canvas.toDataURL('image/png'); a.click();
                 _toast('Gambar berhasil diunduh!', 'success');
                 return;
             }
 
-            /* PDF: 3 halaman */
+            /* PDF: capture tiap halaman secara terpisah */
             var pg1El = _$('exportPage1'), pg2El = _$('exportPage2'), pg3El = _$('exportPage3');
             if (!pg1El || !pg2El || !pg3El) throw new Error('Wrapper exportPage tidak ditemukan.');
 
@@ -1990,6 +1787,7 @@ const XGeoExport = (() => {
 
         } catch(err) {
             console.error('[XGeoExport.run]', err);
+            _unfreeze();
             _toast('Export gagal: ' + err.message, 'error');
         } finally {
             _btnState(btnPdf, false); _btnState(btnImg, false);
@@ -1998,6 +1796,7 @@ const XGeoExport = (() => {
 
     return { run, runCard };
 })();
+
 /* ══ INIT ══ */
 document.addEventListener('DOMContentLoaded', function() {
     XGeo.init();

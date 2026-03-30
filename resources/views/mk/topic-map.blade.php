@@ -927,7 +927,6 @@
             const pH  = pdf.internal.pageSize.getHeight();
             const uw  = pW - 20;
             const uh  = pH - 14 - 10;
-            _drawHeader(pdf, pW, 10, label);
             if ((canvas.height * (uw / canvas.width)) <= uh) {
               _fitCanvas(pdf, canvas, 10);
             } else {

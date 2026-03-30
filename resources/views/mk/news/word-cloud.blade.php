@@ -638,6 +638,8 @@ const WCExport = (() => {
                 backgroundColor : '#f1f5f9',
                 logging         : false,
                 removeContainer : true,
+                windowWidth     : document.documentElement.scrollWidth,
+                windowHeight    : area.scrollHeight,
                 height          : area.scrollHeight,
                 onclone         : (clonedDoc) => {
                     /* Pada dokumen clone: matikan semua animasi + fix opacity */

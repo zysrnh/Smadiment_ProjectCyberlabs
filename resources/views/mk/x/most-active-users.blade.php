@@ -830,7 +830,7 @@ function renderDonut() {
   }));
   const total = data.reduce((s,d)=>s+d.value, 0);
   if (donutInst) { try { donutInst.dispose(); } catch(e){} }
-  donutInst = echarts.init(ch, null, { renderer:'canvas' });
+donutInst = echarts.init(ch, null, { renderer:'svg' });
   donutInst.setOption({
     backgroundColor: 'transparent',
     animation: true, animationDuration:700,
@@ -1215,72 +1215,192 @@ function printTable(){
    EXPORT
 ══════════════════════════════════════════════════════ */
 const MAUExport = (() => {
-  let _timer=null;
-  function _toast(msg,type='default',dur=3200){
-    const t=$('exportToast'),m=$('exportToastMsg'),ico=$('exportToastIcon');
-    if(!t||!m)return;
+  let _timer = null;
+
+  function _toast(msg, type='default', dur=3200) {
+    const t=$('exportToast'), m=$('exportToastMsg'), ico=$('exportToastIcon');
+    if(!t||!m) return;
     m.textContent=msg; t.className='export-toast show '+(type!=='default'?type:'');
     const icons={success:'ph-check-circle',error:'ph-x-circle',default:'ph-spinner'};
     ico.className='ph '+(icons[type]||icons.default);
-    clearTimeout(_timer);_timer=setTimeout(()=>t.classList.remove('show'),dur);
+    clearTimeout(_timer); _timer=setTimeout(()=>t.classList.remove('show'),dur);
   }
-  function _btnState(btn,loading){ if(!btn)return; btn.disabled=loading; btn.classList.toggle('exporting',loading); }
-  function _donutSnap(){
-    try{ if(!donutInst||donutInst.isDisposed())return null; const ch=$('donutChart'); if(!ch||ch.style.display==='none')return null; return donutInst.getDataURL({type:'png',pixelRatio:2,backgroundColor:'#ffffff'}); }catch(e){return null;}
-  }
-  function _makeOnClone(snap){ return clonedDoc=>{
-    const s=clonedDoc.createElement('style');
-    s.textContent=`*,*::before,*::after{animation:none!important;transition:none!important;}[data-html2canvas-ignore]{display:none!important;}.do-panel-overlay,.do-panel,#panelOverlay,#sntPanel{display:none!important;}.sk-block{animation:none!important;background:#e2e8f0!important;}.kpi-card-hover{transform:none!important;filter:none!important;}.fade-up,.fade-up-d1,.fade-up-d2,.fade-up-d3,.fade-up-d4{opacity:1!important;transform:none!important;}.spin-ring,.spinner-state{display:none!important;}`;
-    clonedDoc.head.appendChild(s);
-    clonedDoc.querySelectorAll('.do-panel-overlay,.do-panel,.export-toast').forEach(el=>{el.style.display='none';});
-    clonedDoc.querySelectorAll('.card,.kpi-card-hover,.ht-item,.ht-list,[class*="col-"],.row,#pageExportArea').forEach(el=>{el.style.opacity='1';el.style.transform='none';el.style.visibility='visible';el.style.animation='none';});
-    const dd=clonedDoc.getElementById('donutChart');
-    if(dd){dd.innerHTML='';dd.style.cssText='display:block!important;width:100%;height:340px;';if(snap){const img=clonedDoc.createElement('img');img.src=snap;img.style.cssText='width:100%;height:100%;object-fit:contain;display:block;';dd.appendChild(img);}}
-  };}
-  async function _capture(areaId,bgColor){
-    const area=document.getElementById(areaId);if(!area)throw new Error('Area #'+areaId+' not found');
-    window.scrollTo({top:0});const snap=_donutSnap();
-    area.querySelectorAll('.fade-up,.fade-up-d1,.fade-up-d2,.fade-up-d3,.fade-up-d4,.kpi-card-hover,.ht-item,.card,[class*="col-"]').forEach(e=>{e.style.opacity='1';e.style.transform='none';e.style.visibility='visible';});
-    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-    const captureP=html2canvas(area,{scale:2,useCORS:true,allowTaint:true,backgroundColor:bgColor||'#f1f5f9',logging:false,removeContainer:true,scrollX:0,scrollY:0,windowWidth:document.documentElement.scrollWidth,windowHeight:area.scrollHeight,width:area.offsetWidth,height:area.scrollHeight,onclone:_makeOnClone(snap)});
-    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('Capture timeout')),15000));
-    return Promise.race([captureP,timeout]);
-  }
-  function _drawHeader(pdf,label){
-    const pW=pdf.internal.pageSize.getWidth();pdf.setFillColor(3,128,71);pdf.rect(0,0,pW,11,'F');pdf.setTextColor(255,255,255);pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.text('X Analytics — '+(label||'Most Active Users'),10,7.5);const now=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});pdf.setFontSize(7);pdf.setFont('helvetica','normal');pdf.text('Generated: '+now,pW-10,7.5,{align:'right'});
-  }
-  function _paginate(pdf,canvas,label){
-    const pW=pdf.internal.pageSize.getWidth(),pH=pdf.internal.pageSize.getHeight();const margin=10,usableW=pW-margin*2,usableH=pH-margin*2-14;const ratio=usableW/canvas.width,sliceH=usableH/ratio;let srcY=0,pg=0;
-    while(srcY<canvas.height){if(pg>0){pdf.addPage();_drawHeader(pdf,label);}const srcSlice=Math.min(sliceH,canvas.height-srcY);const slice=document.createElement('canvas');slice.width=canvas.width;slice.height=Math.ceil(srcSlice);slice.getContext('2d').drawImage(canvas,0,srcY,canvas.width,srcSlice,0,0,canvas.width,srcSlice);pdf.addImage(slice.toDataURL('image/png'),'PNG',margin,14,usableW,srcSlice*ratio);pdf.setFontSize(7);pdf.setTextColor(148,163,184);pdf.text(`Page ${pg+1}`,pW/2,pH-3,{align:'center'});srcY+=srcSlice;pg++;}
-  }
-  const _cardMeta={donut:{label:'Top 5 Engagement Share',file:'engagement-share'},list:{label:'Top Contributors',file:'top-contributors'}};
-  const _stamp=()=>new Date().toISOString().slice(0,10).replace(/-/g,'');
-  async function runCard(areaId,cardKey,type,btn){
-    if(!window.html2canvas){_toast('html2canvas not available','error');return;}
-    if(type==='pdf'&&!window.jspdf?.jsPDF){_toast('jsPDF not available','error');return;}
-    _btnState(btn,true);_toast(type==='pdf'?'Preparing PDF…':'Capturing image…','default',99999);
-    try{
-      const canvas=await _capture(areaId,'#ffffff');const meta=_cardMeta[cardKey]||{label:cardKey,file:cardKey};const fname=`x_active_${meta.file}_${MSCfg.pid}_${_stamp()}`;
-      if(type==='image'){const a=document.createElement('a');a.download=fname+'.png';a.href=canvas.toDataURL('image/png');a.click();_toast('Image downloaded!','success');}
-      else{const{jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:canvas.width>canvas.height?'landscape':'portrait',unit:'mm',format:'a4'});_drawHeader(pdf,meta.label);_paginate(pdf,canvas,meta.label);pdf.save(fname+'.pdf');_toast('PDF downloaded!','success');}
-    }catch(err){console.error('[MAUExport.runCard]',err);_toast('Export failed: '+err.message,'error');}
-    finally{_btnState(btn,false);}
-  }
-  async function run(type,btn){
-    if(!window.html2canvas){_toast('html2canvas not available','error');return;}
-    if(type==='pdf'&&!window.jspdf?.jsPDF){_toast('jsPDF not available','error');return;}
-    const btnPdf=$('pageExportPdfBtn'),btnImg=$('pageExportImgBtn');
-    _btnState(btnPdf,true);_btnState(btnImg,true);_toast(type==='pdf'?'Preparing PDF…':'Capturing image…','default',99999);
-    try{
-      const canvas=await _capture('pageExportArea','#f1f5f9');const stamp=_stamp();
-      if(type==='image'){const a=document.createElement('a');a.download=`x_active_users_${MSCfg.pid}_${stamp}.png`;a.href=canvas.toDataURL('image/png');a.click();_toast('Image downloaded!','success');}
-      else{const{jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});_drawHeader(pdf,'Most Active Users');_paginate(pdf,canvas,'Most Active Users');pdf.save(`x_active_users_${MSCfg.pid}_${stamp}.pdf`);_toast('PDF downloaded!','success');}
-    }catch(err){console.error('[MAUExport]',err);_toast('Export failed: '+err.message,'error');}
-    finally{_btnState(btnPdf,false);_btnState(btnImg,false);}
-  }
-  return{run,runCard};
-})();
 
+  function _btnState(btn,loading){ if(!btn)return; btn.disabled=loading; btn.classList.toggle('exporting',loading); }
+
+  function _freeze() {
+    if(document.getElementById('__mau_freeze')) return;
+    const s=document.createElement('style'); s.id='__mau_freeze';
+    s.textContent='*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}.kpi-card-hover,.fade-up,.fade-up-d1,.fade-up-d2,.fade-up-d3,.fade-up-d4{opacity:1!important;transform:none!important;}.sk-block{animation:none!important;background:#e2e8f0!important;}';
+    document.head.appendChild(s);
+  }
+  function _unfreeze(){ document.getElementById('__mau_freeze')?.remove(); }
+
+  function _resizeCharts() {
+    try{ if(donutInst&&!donutInst.isDisposed()) donutInst.resize(); }catch(e){}
+  }
+
+  function _drawHeader(pdf, label) {
+    const pW=pdf.internal.pageSize.getWidth();
+    pdf.setFillColor(3,128,71); pdf.rect(0,0,pW,11,'F');
+    pdf.setTextColor(255,255,255); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
+    pdf.text('X Analytics — '+(label||'Most Active Users'),10,7.5);
+    const now=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    pdf.setFontSize(7); pdf.setFont('helvetica','normal');
+    pdf.text('Generated: '+now,pW-10,7.5,{align:'right'});
+  }
+
+  function _paginate(pdf, canvas, label) {
+    const pW=pdf.internal.pageSize.getWidth(), pH=pdf.internal.pageSize.getHeight();
+    const margin=10, usableW=pW-margin*2, usableH=pH-margin*2-14;
+    const ratio=usableW/canvas.width, sliceH=usableH/ratio;
+    let srcY=0, pg=0;
+    while(srcY<canvas.height) {
+      if(pg>0){ pdf.addPage(); _drawHeader(pdf,label); }
+      const srcSlice=Math.min(sliceH,canvas.height-srcY);
+      const slice=document.createElement('canvas');
+      slice.width=canvas.width; slice.height=Math.ceil(srcSlice);
+      slice.getContext('2d').drawImage(canvas,0,srcY,canvas.width,srcSlice,0,0,canvas.width,srcSlice);
+      pdf.addImage(slice.toDataURL('image/png'),'PNG',margin,14,usableW,srcSlice*ratio);
+      pdf.setFontSize(7); pdf.setTextColor(148,163,184);
+      pdf.text(`Page ${pg+1}`,pW/2,pH-3,{align:'center'});
+      srcY+=srcSlice; pg++;
+    }
+  }
+
+  // ── Core capture — sama dengan Media Statistic yang works ──
+  async function _capture(areaId, bgColor) {
+    const area=document.getElementById(areaId);
+    if(!area) throw new Error('Area #'+areaId+' not found');
+
+    window.scrollTo({top:0});
+    _resizeCharts();
+    await new Promise(r=>setTimeout(r,300));
+
+    // Paksa semua elemen visible sebelum freeze
+    area.querySelectorAll('.fade-up,.fade-up-d1,.fade-up-d2,.fade-up-d3,.fade-up-d4,.kpi-card-hover,.card,[class*="col-"]').forEach(e=>{
+      e.style.opacity='1';
+      e.style.transform='none';
+      e.style.visibility='visible';
+    });
+
+    _freeze();
+    await new Promise(r=>setTimeout(r,400));
+
+    try{
+      return await html2canvas(area, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,       // SAFARI: wajib false
+        backgroundColor: bgColor||'#f1f5f9',
+        logging: false,
+        removeContainer: true,
+        windowHeight: area.scrollHeight,
+        height: area.scrollHeight,
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        ignoreElements: e => e.hasAttribute('data-html2canvas-ignore'),
+        onclone: (clonedDoc) => {
+          // Freeze di clone
+          const s=clonedDoc.createElement('style');
+          s.textContent='*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}[data-html2canvas-ignore]{display:none!important;}.kpi-card-hover,.fade-up,.fade-up-d1,.fade-up-d2,.fade-up-d3,.fade-up-d4{opacity:1!important;transform:none!important;}.sk-block{animation:none!important;background:#e2e8f0!important;}';
+          clonedDoc.head.appendChild(s);
+
+          // Sembunyikan panel & noise
+          clonedDoc.querySelectorAll([
+            '.do-panel-overlay','.do-panel','#panelOverlay','#sntPanel',
+            '.export-toast','.spin-ring','.spinner-state',
+            '[data-html2canvas-ignore]'
+          ].join(',')).forEach(el=>{
+            el.style.cssText+='display:none!important;visibility:hidden!important;';
+          });
+
+          // Paksa konten visible
+          clonedDoc.querySelectorAll([
+            '.card','.card-body','.kpi-card-hover','[class*="col-"]',
+            '.ht-item','.ht-list','#pageExportArea',
+            '.fade-up','.fade-up-d1','.fade-up-d2','.fade-up-d3','.fade-up-d4'
+          ].join(',')).forEach(el=>{
+            el.style.opacity='1';
+            el.style.transform='none';
+            el.style.visibility='visible';
+          });
+        },
+      });
+    } finally {
+      _unfreeze();
+    }
+  }
+
+  const _cardMeta = {
+    donut: { label:'Top 5 Engagement Share', file:'engagement-share' },
+    list:  { label:'Top Contributors',       file:'top-contributors'  },
+  };
+  const _stamp = () => new Date().toISOString().slice(0,10).replace(/-/g,'');
+
+  async function runCard(areaId, cardKey, type, btn) {
+    if(!window.html2canvas){ _toast('html2canvas not available','error'); return; }
+    if(type==='pdf'&&!window.jspdf?.jsPDF){ _toast('jsPDF not available','error'); return; }
+    _btnState(btn,true);
+    _toast(type==='pdf'?'Preparing PDF…':'Capturing image…','default',99999);
+    try{
+      const canvas=await _capture(areaId,'#ffffff');
+      const meta=_cardMeta[cardKey]||{label:cardKey,file:cardKey};
+      const fname=`x_active_${meta.file}_${MSCfg.pid}_${_stamp()}`;
+      if(type==='image'){
+        const a=document.createElement('a');
+        a.download=fname+'.png'; a.href=canvas.toDataURL('image/png'); a.click();
+        _toast('Image downloaded!','success');
+      } else {
+        const {jsPDF}=window.jspdf;
+        const landscape=canvas.width>canvas.height*1.2;
+        const pdf=new jsPDF({orientation:landscape?'landscape':'portrait',unit:'mm',format:'a4'});
+        _drawHeader(pdf,meta.label);
+        _paginate(pdf,canvas,meta.label);
+        pdf.save(fname+'.pdf');
+        _toast('PDF downloaded!','success');
+      }
+    } catch(err) {
+      console.error('[MAUExport.runCard]',err);
+      _toast('Export failed: '+err.message,'error');
+    } finally {
+      _btnState(btn,false);
+    }
+  }
+
+  async function run(type, btn) {
+    if(!window.html2canvas){ _toast('html2canvas not available','error'); return; }
+    if(type==='pdf'&&!window.jspdf?.jsPDF){ _toast('jsPDF not available','error'); return; }
+    const btnPdf=$('pageExportPdfBtn'), btnImg=$('pageExportImgBtn');
+    _btnState(btnPdf,true); _btnState(btnImg,true);
+    _toast(type==='pdf'?'Preparing PDF…':'Capturing image…','default',99999);
+    try{
+      const canvas=await _capture('pageExportArea','#f1f5f9');
+      const stamp=_stamp();
+      if(type==='image'){
+        const a=document.createElement('a');
+        a.download=`x_active_users_${MSCfg.pid}_${stamp}.png`;
+        a.href=canvas.toDataURL('image/png'); a.click();
+        _toast('Image downloaded!','success');
+      } else {
+        const {jsPDF}=window.jspdf;
+        const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+        _drawHeader(pdf,'Most Active Users');
+        _paginate(pdf,canvas,'Most Active Users');
+        pdf.save(`x_active_users_${MSCfg.pid}_${stamp}.pdf`);
+        _toast('PDF downloaded!','success');
+      }
+    } catch(err) {
+      console.error('[MAUExport]',err);
+      _unfreeze();
+      _toast('Export failed: '+err.message,'error');
+    } finally {
+      _btnState(btnPdf,false); _btnState(btnImg,false);
+    }
+  }
+
+  return { run, runCard };
+})();
 /* ══════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════ */
