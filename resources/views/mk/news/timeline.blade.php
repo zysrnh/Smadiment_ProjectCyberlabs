@@ -312,7 +312,7 @@ body.is-exporting .exp-icon {
 
 {{-- Charts Row --}}
 <div class="row">
-    <div class="col-lg-8 col-12">
+    <div class="col-lg-7 col-12">
         <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
             <div id="card-export-trend">
                 <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -337,7 +337,7 @@ body.is-exporting .exp-icon {
             </div>
         </div>
     </div>
-    <div class="col-lg-4 col-12">
+    <div class="col-lg-5 col-12">
         <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
             <div id="card-export-dist">
                 <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -455,7 +455,7 @@ const PLAT = {
 const PLAT_KEYS = Object.keys(PLAT);
 const _$   = id => document.getElementById(id);
 const numF = n  => parseInt(n||0).toLocaleString('id-ID');
-const numK = n  => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':String(n); };
+const numK = n  => parseInt(n||0).toLocaleString('id-ID');
 const esc  = s  => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const Store = { all:[], doc:[], twit:[], fb:[], ig:[], ytb:[], tiktok:[] };
 let _activeTab='all', _page=1, _trendChart=null, _barChart=null;
@@ -499,15 +499,17 @@ const _mtCache={};
 async function _mtFetchOne(platform,pid,sd,ed){
     const cKey=pid+'_'+platform+'_'+sd+'_'+ed;
     if(_mtCache[cKey]) return _mtCache[cKey];
-    const q='project_id='+pid+'&start_date='+sd+'&end_date='+ed+'&rows=500&start=0';
+    const rws = (platform === 'doc' || platform === 'twit') ? 5000 : 500;
+    const q='project_id='+pid+'&start_date='+sd+'&end_date='+ed+'&rows='+rws+'&start=0';
     if(platform==='ig'){for(const sub of['postbylike','postbycomment','postbydate','']){try{const r=await fetch('/mk/api/news/ig-top-status?'+q+(sub?'&sub='+sub:''));const d=await r.json();const items=Array.isArray(d&&d.data)?d.data:(Array.isArray(d)?d:[]);if(items.length>0){_mtCache[cKey]=items.map(i=>{i._platform=platform;return i;});return _mtCache[cKey];}}catch(e){continue;}}return[];}
-    const eps={doc:'/mk/api/news/mentions?'+q,twit:'/mk/api/x/most-status?'+q+'&media=all&mention_type=view_all',fb:'/mk/api/news/fb-top-status?'+q+'&sub=fblike',ytb:'/mk/api/news/ytb-top-status?'+q,tiktok:'/mk/api/news/tiktok-top-status?'+q+'&sub=postbylike'};
+    const eps={doc:'/mk/api/news/mentions?'+q,twit:'/mk/api/news/mentions?'+q+'&media_type=twit',fb:'/mk/api/news/fb-top-status?'+q+'&sub=fblike',ytb:'/mk/api/news/ytb-top-status?'+q,tiktok:'/mk/api/news/tiktok-top-status?'+q+'&sub=postbylike'};
     const url=eps[platform];if(!url)return[];
     const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),30000);
     try{const r=await fetch(url,{signal:ctrl.signal});clearTimeout(tid);if(!r.ok)return[];const d=await r.json();
     let items=[];if(Array.isArray(d?.data?.data))items=d.data.data;else if(Array.isArray(d?.data))items=d.data;else if(Array.isArray(d?.statuses))items=d.statuses;else if(Array.isArray(d?.results))items=d.results;else if(Array.isArray(d?.posts))items=d.posts;else if(Array.isArray(d))items=d;
     if(platform==='doc')items=items.filter(m=>{const tc=String(m.tcode||'').toLowerCase(),mt=String(m.media_type||'').toLowerCase();return tc==='berita'||mt==='berita'||mt==='doc'||mt==='news'||mt==='online'||mt==='article';});
-    items=items.map(i=>{i._platform=platform;return i;});_mtCache[cKey]=items;return items;}catch(e){clearTimeout(tid);return[];}
+    items=items.map(i=>{i._platform=platform;return i;});
+    _mtCache[cKey]=items;return items;}catch(e){clearTimeout(tid);return[];}
 }
 
 /* ════ DATA MODULE ════ */
@@ -545,18 +547,20 @@ const MTData={
         el.style.display='block';if(ld)ld.classList.add('hidden');
         const seriesArr=PLAT_KEYS.map(k=>({name:PLAT[k].label,data:datasets[k]})).filter(s=>s.data.some(v=>v>0));
         const colorsArr=seriesArr.map(s=>{const k=PLAT_KEYS.find(k=>PLAT[k].label===s.name);return k?PLAT[k].color:'#94a3b8';});
-        const showLabels=dates.length<=20;
+        const showLabels=true;
         _trendChart=new ApexCharts(el,{
             chart:{type:'area',height:340,fontFamily:'inherit',background:'transparent',toolbar:{show:false},
-                events:{click:(e,ctx,cfg)=>{if(cfg&&cfg.seriesIndex>=0&&seriesArr[cfg.seriesIndex]){const s=seriesArr[cfg.seriesIndex];const pk=PLAT_KEYS.find(k=>PLAT[k].label===s.name);if(pk&&Store[pk].length)MTPanelNew.open(Store[pk],pk);}else if(Store.all.length)MTPanelNew.open(Store.all,'all');}}},
+                events:{click:(e,ctx,cfg)=>{
+                    if(e&&e.target&&e.target.closest&&e.target.closest('.apexcharts-legend')) return;
+                    if(cfg&&cfg.seriesIndex>=0&&seriesArr[cfg.seriesIndex]){const s=seriesArr[cfg.seriesIndex];const pk=PLAT_KEYS.find(k=>PLAT[k].label===s.name);if(pk&&Store[pk].length)MTPanelNew.open(Store[pk],pk);}else if(Store.all.length)MTPanelNew.open(Store.all,'all');}}},
             series:seriesArr,colors:colorsArr,
             xaxis:{categories:xLabels,axisBorder:{show:false},axisTicks:{show:false},labels:{style:{fontFamily:'inherit',fontSize:'11px',fontWeight:600,colors:'#94A3B8'}}},
             yaxis:{labels:{formatter:v=>numK(v),style:{fontFamily:'inherit',fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},axisBorder:{show:false},axisTicks:{show:false}},
             fill:{opacity:0.3},stroke:{curve:'smooth',width:2.5},
-            markers:{size:showLabels?5:0,strokeWidth:2,strokeColors:'#fff',hover:{size:7}},
-            dataLabels:{enabled:showLabels,formatter:v=>v>0?numK(v):'',style:{fontSize:'10px',fontFamily:'inherit',fontWeight:'700'},background:{enabled:true,borderRadius:3,borderWidth:0,padding:3,opacity:0.9},offsetY:-6},
+            markers:{size:dates.length<=32?3:0,strokeWidth:1,strokeColors:'#fff',hover:{size:5}},
+            dataLabels:{enabled:showLabels,formatter:v=>v>0?numF(v):'',style:{fontSize:'9px',fontFamily:'inherit',fontWeight:'700'},background:{enabled:true,borderRadius:3,borderWidth:0,padding:3,opacity:0.9},offsetY:-5},
             grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}}},
-            legend:{position:'bottom',horizontalAlign:'left',fontFamily:'inherit',fontSize:'11px',fontWeight:'600',labels:{colors:'#94A3B8'},markers:{width:9,height:9,radius:50},itemMargin:{horizontal:14,vertical:4}},
+            legend:{position:'bottom',horizontalAlign:'left',fontFamily:'inherit',fontSize:'11px',fontWeight:'600',labels:{colors:'#94A3B8'},markers:{width:9,height:9,radius:50},itemMargin:{horizontal:14,vertical:4},onItemClick:{toggleDataSeries:true}},
             tooltip:{shared:false,intersect:true,style:{fontFamily:'inherit',fontSize:'12px'},y:{formatter:v=>numF(v)+' mentions'}},
         });
         _trendChart.render();
@@ -572,11 +576,11 @@ const MTData={
         window.addEventListener('resize',()=>{try{_barChart.resize();}catch(e){}});
         _barChart.setOption({animation:true,animationDuration:500,animationEasing:'cubicOut',backgroundColor:'transparent',
             tooltip:{trigger:'item',backgroundColor:'rgba(15,23,42,.92)',borderColor:'transparent',borderRadius:8,padding:[8,12],textStyle:{color:'#e2e8f0',fontFamily:'inherit',fontSize:12},formatter:p=>'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+p.color+';margin-right:6px;"></span>'+esc(p.name)+' <b style="margin-left:8px;">'+numF(p.value)+'</b> <span style="color:#94a3b8;font-size:10px;">('+((p.value/total)*100).toFixed(1)+'%)</span>'},
-            grid:{top:10,right:16,bottom:28,left:80},
-            xAxis:{type:'value',axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}},axisLabel:{fontSize:10,color:'#94a3b8',formatter:numK}},
+            grid:{top:10,right:30,bottom:28,left:80},
+            xAxis:{type:'value',axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}},axisLabel:{fontSize:10,color:'#94a3b8',formatter:numF}},
             yAxis:{type:'category',data:platData.map(d=>d.name).reverse(),axisLine:{show:false},axisTick:{show:false},axisLabel:{fontSize:11,fontWeight:600,color:'#64748b'}},
-            series:[{type:'bar',data:platData.map(d=>({value:d.value,itemStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:d.color},{offset:1,color:d.color+'99'}]}}})).reverse(),barWidth:18,borderRadius:[0,6,6,0],label:{show:true,position:'right',formatter:p=>numF(p.value),fontSize:10,fontWeight:800,color:'#64748b'}}],
-            graphic:[{type:'text',left:'center',bottom:4,z:100,style:{text:'Total: '+numF(total),fill:'#94a3b8',font:'600 10px inherit',textAlign:'center'}}]
+            series:[{type:'bar',data:platData.map(d=>({value:d.value,itemStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:d.color},{offset:1,color:d.color+'99'}]}}})).reverse(),barWidth:18,borderRadius:[0,6,6,0],label:{show:true,position:'right',formatter:p=>numF(p.value),fontSize:10,fontWeight:700,color:'#fff',backgroundColor:'inherit',padding:[3,6],borderRadius:4,distance:6}}],
+            graphic:[]
         });
         _barChart.on('click',p=>{const pk=PLAT_KEYS.find(k=>PLAT[k].label===p.name);if(pk&&Store[pk].length)MTPanelNew.open(Store[pk],pk);});
         if(ld)ld.classList.add('hidden');requestAnimationFrame(()=>{_barChart.resize();});

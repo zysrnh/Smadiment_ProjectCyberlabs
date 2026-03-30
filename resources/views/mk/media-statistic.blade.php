@@ -987,7 +987,7 @@ function makeEDoughnut(domId,labels,values,colors,onClickFns,subtitles){
     series:[{type:'pie',radius:['36%','54%'],center:['50%','52%'],avoidLabelOverlap:true,minAngle:5,padAngle:2,
       itemStyle:{borderRadius:5},
       label:{show:true,alignTo:'labelLine',fontFamily:'inherit',fontSize:11,color:'#374151',distanceToLabelLine:5,
-        formatter:params=>{const pc=total>0?(params.value/total)*100:0;const rawName=String(params.name).split('\n')[0].replace(/ \d+(\.\d+)?%$/, '').replace('X (Twitter)','X').replace('Mass Media','Online News');const name=rawName.length>12?rawName.slice(0,11)+'…':rawName;return `{name|${name}}\n{pct|${pc<1&&pc>0?'<1':Math.round(pc)}%}`;},
+        formatter:params=>{const pc=total>0?(params.value/total)*100:0;const rawName=String(params.name).split('\n')[0].replace(/ \d+(\.\d+)?%$/, '').replace('X (Twitter)','X').replace('Mass Media','Online News');const name=rawName.length>12?rawName.slice(0,11)+'…':rawName;return `{name|${name}}\n{pct|${Math.round(pc)}%}`;},
         rich:{name:{fontWeight:'700',fontSize:11,color:'#1a202c',lineHeight:16},pct:{fontWeight:'700',fontSize:10,color:'#038047',lineHeight:14,backgroundColor:'#edf7f3',borderRadius:4,padding:[2,4]}}},
       labelLine:{show:true,length:12,length2:22,smooth:0.4,maxSurfaceAngle:80,lineStyle:{color:'#94a3b8',width:1.6}},
       labelLayout:{hideOverlap:true,moveOverlap:'shiftY'},
