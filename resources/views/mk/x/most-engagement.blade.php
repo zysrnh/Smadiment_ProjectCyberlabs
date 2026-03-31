@@ -1152,7 +1152,7 @@ const XMVData = {
         if(window.__xmvDonutChart) { try{ window.__xmvDonutChart.dispose(); }catch(e){} }
         if(typeof echarts === 'undefined') { chartEl.innerHTML='<div class="chart-empty"><i class="ph ph-chart-donut"></i><span>ECharts not loaded</span></div>'; return; }
 
-const chart = echarts.init(chartEl, null, {renderer:'svg'});
+const chart = echarts.init(chartEl, null, {renderer:'canvas'});
       window.__xmvDonutChart = chart;
         window.addEventListener('resize', ()=>{ try{ chart.resize(); }catch(e){} });
 

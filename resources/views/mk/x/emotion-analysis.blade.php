@@ -858,6 +858,32 @@ const FEAChart = {
                 {type:'text',left:'center',top:'54%',z:100,style:{text:'TOTAL TWEETS',fill:'#94a3b8',font:'600 9px inherit',textAlign:'center'}}
             ]
         });
+        /* hover tooltip */
+        let _tt = document.getElementById('feaDonutTT');
+        if (!_tt) {
+            _tt = document.createElement('div'); _tt.id = 'feaDonutTT';
+            _tt.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;background:#1e293b;color:#fff;border:1px solid #334155;border-radius:6px;padding:10px 14px;max-width:240px;font-size:12px;line-height:1.5;display:none;box-shadow:0 8px 24px rgba(0,0,0,.32);font-family:inherit;opacity:0;transform:translateY(6px) scale(.97);transition:opacity .18s ease,transform .18s ease;';
+            document.body.appendChild(_tt);
+        }
+        let _ttTimer = null;
+        chart.on('mouseover', p => {
+            if (p.componentType !== 'series') return;
+            const color = DONUT_COLORS[p.dataIndex]; clearTimeout(_ttTimer);
+            _tt.innerHTML = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;"><span style="width:9px;height:9px;border-radius:50%;background:${color};display:inline-block;"></span><b>${esc(p.name)}</b></div><div style="display:flex;align-items:center;gap:8px;"><b style="font-size:13px;">${numF(p.value)} tweets</b><span style="color:${color};font-weight:700;">${p.percent.toFixed(1)}%</span></div>`;
+            _tt.style.display = 'block';
+            requestAnimationFrame(() => { _tt.style.opacity='1'; _tt.style.transform='translateY(0) scale(1)'; });
+        });
+        chart.on('mouseout', () => {
+            _tt.style.opacity='0'; _tt.style.transform='translateY(6px) scale(.97)';
+            _ttTimer = setTimeout(() => { _tt.style.display='none'; }, 180);
+        });
+        chartEl.addEventListener('mousemove', e => {
+            if (_tt.style.display==='none') return;
+            const vw=window.innerWidth, vh=window.innerHeight, tw=_tt.offsetWidth+16, th=_tt.offsetHeight+16;
+            let x=e.clientX+18, y=e.clientY-10;
+            if (x+tw>vw) x=e.clientX-tw; if (y+th>vh) y=e.clientY-th;
+            _tt.style.left=x+'px'; _tt.style.top=y+'px';
+        });
         chart.on('click', p=>{
             const x=top5[p.dataIndex];
             if(x) FEAPanel.open(allTweets.filter(t=>(t.emotion||'').toLowerCase()===x.emo), x.emo);

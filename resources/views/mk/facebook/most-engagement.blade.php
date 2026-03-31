@@ -667,7 +667,7 @@ const FMEData={
         loadEl.style.display='none';chartEl.style.display='block';if(emptyEl)emptyEl.style.display='none';
         if(window.__donutEChart){try{window.__donutEChart.dispose();}catch(e){}}
         if(typeof echarts==='undefined'){chartEl.innerHTML='<div class="chart-empty"><i class="ph ph-chart-donut"></i><span>ECharts not loaded</span></div>';return;}
-const chart=echarts.init(chartEl,null,{renderer:'svg'});
+const chart=echarts.init(chartEl,null,{renderer:'canvas'});
       window.__donutEChart=chart;window.addEventListener('resize',()=>{try{chart.resize();}catch(e){}});
         const pieData=top5.map((it,i)=>{const name=this._getName(it),val=this._metric(it,type);const content=dec((it.content||it.caption||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim());return{name,value:val,_content:content,itemStyle:{color:DONUT_COLORS[i]}};});
         chart.setOption({
@@ -758,35 +758,49 @@ const FMEExport = (() => {
     }
     function _btnState(btn,loading){ if(!btn)return; btn.disabled=loading; btn.classList.toggle('exporting',loading); }
 
-    // Swap semua ECharts SVG → <img> di DOM asli
-    function _swapChartsIn(el) {
+    // Swap ECharts canvas → <img> di DOM asli (supports canvas & SVG renderer)
+    async function _swapChartsIn(el) {
         const swaps = [];
-        ['donutChart'].forEach(id => {
-            const container = document.getElementById(id);
-            if(!container || !el.contains(container)) return;
-            if(container.style.display==='none') return;
-            const svgEl = container.querySelector('svg');
-            if(!svgEl) return;
-            try {
-                const svgStr = new XMLSerializer().serializeToString(svgEl);
-                const b64    = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
-                const h      = container.offsetHeight || 480;
+        const container = document.getElementById('donutChart');
+        if (!container || !el.contains(container) || container.style.display === 'none') return swaps;
+        const inst = window.__donutEChart;
+        try {
+            const rect = container.getBoundingClientRect();
+            const w = Math.round(rect.width) || container.offsetWidth || 400;
+            const h = Math.round(rect.height) || container.offsetHeight || 480;
+            let dataUrl = null;
 
-                const placeholder = document.createElement('div');
-                placeholder.dataset.swapFor = id;
+            /* Canvas renderer → getDataURL() langsung */
+            const canvasEl = container.querySelector('canvas');
+            if (canvasEl && inst && !inst.isDisposed?.()) {
+                try {
+                    dataUrl = inst.getDataURL({ type:'png', pixelRatio:2, backgroundColor:'#ffffff', excludeComponents:['toolbox'] });
+                    if (dataUrl === 'data:,') dataUrl = null;
+                } catch(e) { dataUrl = null; }
+            }
 
-                const img = document.createElement('img');
-                img.dataset.swapImg = id;
-                img.src = b64;
-                img.style.cssText = `width:100%;height:${h}px;object-fit:contain;display:block;`;
+            /* SVG renderer fallback */
+            if (!dataUrl) {
+                const svgEl = container.querySelector('svg');
+                if (svgEl) {
+                    const svgStr = new XMLSerializer().serializeToString(svgEl);
+                    const b64 = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
+                    dataUrl = b64;
+                }
+            }
 
-                container.parentNode.insertBefore(placeholder, container);
-                container.parentNode.insertBefore(img, placeholder);
-                container.style.display = 'none';
+            if (!dataUrl) return swaps;
 
-                swaps.push({ container, placeholder, img });
-            } catch(e) { console.warn('[FMEExport] swap failed:', id, e); }
-        });
+            const placeholder = document.createElement('div');
+            placeholder.dataset.swapFor = 'donutChart';
+            const img = document.createElement('img');
+            img.src = dataUrl;
+            img.style.cssText = `width:100%;height:${h}px;object-fit:contain;display:block;background:#fff;`;
+            container.parentNode.insertBefore(placeholder, container);
+            container.parentNode.insertBefore(img, placeholder);
+            container.style.display = 'none';
+            swaps.push({ container, placeholder, img });
+        } catch(e) { console.warn('[FMEExport] swap failed:', e); }
         return swaps;
     }
 
@@ -836,8 +850,8 @@ const FMEExport = (() => {
         el.querySelectorAll('.kpi-card-hover,.tme-post,.card,[class*="col-"]')
           .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; });
 
-        // Swap chart SVG → img
-        const swaps = _swapChartsIn(el);
+        // Swap chart canvas/SVG → img
+        const swaps = await _swapChartsIn(el);
 
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
@@ -1018,17 +1032,6 @@ const FMEExport = (() => {
                 }
                 pdf.save(fname+'.pdf'); _toast('PDF berhasil diunduh!','success');
             }
-        } catch(err){
-            console.error('[FMEExport.runCard]',err); _toast('Export gagal: '+err.message,'error');
-        } finally { _btnState(btn,false); }
-    }
-
-    return { run, runCard };
-})();
-  
-document.addEventListener('DOMContentLoaded',()=>{FMEData.loadAll();document.addEventListener('keydown',e=>{if(e.key==='Escape')FMEPanel.close();});});
-</script>
-@endsection }
         } catch(err){
             console.error('[FMEExport.runCard]',err); _toast('Export gagal: '+err.message,'error');
         } finally { _btnState(btn,false); }

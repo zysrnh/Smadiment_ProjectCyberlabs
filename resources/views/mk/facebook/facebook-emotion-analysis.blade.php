@@ -528,9 +528,36 @@ const FEAChart={
         window._feaRadarChart=chart;
         chart.setOption({animation:true,animationDuration:800,backgroundColor:'transparent',tooltip:{show:true,backgroundColor:'#1e293b',borderColor:'#334155',borderWidth:1,padding:[10,14],textStyle:{color:'#fff',fontFamily:'inherit',fontSize:12},formatter:params=>{if(!params.data)return '';const vals=params.data.value||[];return `<div style="min-width:180px;"><div style="font-weight:700;font-size:12px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.12);">Emotion Distribution</div>${EMOTIONS.map((e,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${EMO_COLORS[e]};"></span><span style="font-size:12px;color:#94a3b8;">${e.charAt(0).toUpperCase()+e.slice(1)}</span></div><span style="font-size:12px;font-weight:700;">${numF(vals[i]||0)}</span></div>`).join('')}</div>`;}},radar:{indicator:EMOTIONS.map(e=>({name:e.charAt(0).toUpperCase()+e.slice(1),max})),shape:'polygon',radius:'62%',center:['50%','50%'],axisName:{fontFamily:'inherit',fontSize:11,fontWeight:'700',color:'#475569'},splitLine:{lineStyle:{color:'#e2e8f0'}},axisLine:{lineStyle:{color:'#e2e8f0'}},splitArea:{show:true,areaStyle:{color:['rgba(248,250,252,0.8)','#fff']}}},series:[{type:'radar',data:[{value:EMOTIONS.map(e=>counts[e]||0),name:'Emotion',areaStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:1,colorStops:[{offset:0,color:'rgba(3,128,71,0.2)'},{offset:1,color:'rgba(3,128,71,0.05)'}]}},lineStyle:{color:'#038047',width:2.5},symbol:'circle',symbolSize:6,itemStyle:{color:EMOTIONS.map(e=>EMO_COLORS[e]),borderColor:'#fff',borderWidth:2}}]}]});
         chart.on('click',params=>{if(!params.name)return;const emo=params.name.toLowerCase();if(EMOTIONS.includes(emo))FEAPanel.open(allPosts.filter(p=>p.emotion===emo),emo);});},
-    renderDonut(){const loadEl=_$('donutLoading'),chartEl=_$('donutChart'),emptyEl=_$('donutEmpty');if(!loadEl||!chartEl)return;const counts=getEmoCounts();const sorted=EMOTIONS.map(e=>({emo:e,count:counts[e]||0})).sort((a,b)=>b.count-a.count);const top5=sorted.slice(0,5).filter(x=>x.count>0);if(!top5.length){loadEl.style.display='none';if(emptyEl)emptyEl.style.display='flex';return;}const total=top5.reduce((s,x)=>s+x.count,0);const legEl=_$('donutLegend');if(legEl)legEl.innerHTML=top5.map((x,i)=>`<div class="donut-leg-item"><span class="donut-dot" style="background:${DONUT_COLORS[i]};"></span>${x.emo.charAt(0).toUpperCase()+x.emo.slice(1)} · ${numF(x.count)}</div>`).join('');loadEl.style.display='none';if(emptyEl)emptyEl.style.display='none';if(window.__feaDonut){try{window.__feaDonut.dispose();}catch(e){}}chartEl.style.display='block';const chart=echarts.init(chartEl,null,{renderer:'svg'});window.__feaDonut=chart;
+    renderDonut(){const loadEl=_$('donutLoading'),chartEl=_$('donutChart'),emptyEl=_$('donutEmpty');if(!loadEl||!chartEl)return;const counts=getEmoCounts();const sorted=EMOTIONS.map(e=>({emo:e,count:counts[e]||0})).sort((a,b)=>b.count-a.count);const top5=sorted.slice(0,5).filter(x=>x.count>0);if(!top5.length){loadEl.style.display='none';if(emptyEl)emptyEl.style.display='flex';return;}const total=top5.reduce((s,x)=>s+x.count,0);const legEl=_$('donutLegend');if(legEl)legEl.innerHTML=top5.map((x,i)=>`<div class="donut-leg-item"><span class="donut-dot" style="background:${DONUT_COLORS[i]};"></span>${x.emo.charAt(0).toUpperCase()+x.emo.slice(1)} · ${numF(x.count)}</div>`).join('');loadEl.style.display='none';if(emptyEl)emptyEl.style.display='none';if(window.__feaDonut){try{window.__feaDonut.dispose();}catch(e){}}chartEl.style.display='block';const chart=echarts.init(chartEl,null,{renderer:'canvas'});window.__feaDonut=chart;
 window.addEventListener('resize',()=>{try{chart.resize();}catch(e){}});
         chart.setOption({backgroundColor:'transparent',animation:true,animationDuration:1000,series:[{type:'pie',radius:['38%','62%'],center:['50%','50%'],avoidLabelOverlap:true,minAngle:8,itemStyle:{borderColor:'#fff',borderWidth:3},label:{show:true,position:'outside',alignTo:'edge',edgeDistance:20,lineHeight:18,fontSize:11,fontFamily:'inherit',color:'#334155',fontWeight:'500',formatter:p=>`{title|${p.name}}\n({val|${numF(p.value)}} posts, {pct|${p.percent.toFixed(1)}%})`,rich:{title:{fontSize:11,fontWeight:'700',color:'#1e293b',lineHeight:18},val:{fontSize:11,fontWeight:'700',color:'#038047'},pct:{fontSize:11,fontWeight:'600',color:'#64748b'}}},labelLine:{show:true,length:18,length2:24,smooth:.3,lineStyle:{width:1.5,color:'#94A3B8'}},emphasis:{scale:false,itemStyle:{borderWidth:3,borderColor:'#fff'},label:{show:true}},data:top5.map((x,i)=>({name:x.emo.charAt(0).toUpperCase()+x.emo.slice(1),value:x.count,_emo:x.emo,itemStyle:{color:DONUT_COLORS[i]}}))}],graphic:[{type:'text',left:'center',top:'46%',z:100,style:{text:numK(total),fill:'#0f172a',font:'800 28px inherit',textAlign:'center'}},{type:'text',left:'center',top:'54%',z:100,style:{text:'TOTAL POSTS',fill:'#94a3b8',font:'600 9px inherit',textAlign:'center'}}]});
+        /* hover tooltip */
+        let _tt = document.getElementById('feaDonutTT');
+        if (!_tt) {
+            _tt = document.createElement('div');
+            _tt.id = 'feaDonutTT';
+            _tt.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;background:#1e293b;color:#fff;border:1px solid #334155;border-radius:6px;padding:10px 14px;max-width:240px;font-size:12px;line-height:1.5;display:none;box-shadow:0 8px 24px rgba(0,0,0,.32);font-family:inherit;opacity:0;transform:translateY(6px) scale(.97);transition:opacity .18s ease,transform .18s ease;';
+            document.body.appendChild(_tt);
+        }
+        let _ttTimer = null;
+        chart.on('mouseover', p => {
+            if (p.componentType !== 'series') return;
+            const color = DONUT_COLORS[p.dataIndex]; clearTimeout(_ttTimer);
+            _tt.innerHTML = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;"><span style="width:9px;height:9px;border-radius:50%;background:${color};display:inline-block;"></span><b>${esc(p.name)}</b></div><div style="display:flex;align-items:center;gap:8px;"><b style="font-size:13px;">${numF(p.value)} posts</b><span style="color:${color};font-weight:700;">${p.percent.toFixed(1)}%</span></div>`;
+            _tt.style.display = 'block';
+            requestAnimationFrame(() => { _tt.style.opacity='1'; _tt.style.transform='translateY(0) scale(1)'; });
+        });
+        chart.on('mouseout', () => {
+            _tt.style.opacity='0'; _tt.style.transform='translateY(6px) scale(.97)';
+            _ttTimer = setTimeout(() => { _tt.style.display='none'; }, 180);
+        });
+        chartEl.addEventListener('mousemove', e => {
+            if (_tt.style.display==='none') return;
+            const vw=window.innerWidth, vh=window.innerHeight, tw=_tt.offsetWidth+16, th=_tt.offsetHeight+16;
+            let x=e.clientX+18, y=e.clientY-10;
+            if (x+tw>vw) x=e.clientX-tw; if (y+th>vh) y=e.clientY-th;
+            _tt.style.left=x+'px'; _tt.style.top=y+'px';
+        });
         chart.on('click',p=>{const x=top5[p.dataIndex];if(x)FEAPanel.open(allPosts.filter(post=>post.emotion===x.emo),x.emo);});},
     renderTrends(){hideLd('trendsLoading');if(!allPosts.length)return;this._trendsItems=allPosts;const tb=_$('trendsBadge');if(tb)tb.textContent=numK(allPosts.length)+' posts';this._doRenderTrends(allPosts,this._trendsType);},
     _doRenderTrends(posts,type){const dateMap={};posts.forEach(p=>{const d=(p.date_created||'').substring(0,10);if(!d)return;if(!dateMap[d]){dateMap[d]={};EMOTIONS.forEach(e=>dateMap[d][e]=0);}dateMap[d][p.emotion]=(dateMap[d][p.emotion]||0)+1;});const dates=Object.keys(dateMap).sort();if(!dates.length)return;
@@ -618,43 +645,52 @@ const FBExport = (() => {
         }
     }
 
-    /* ── 2. ECharts → PNG via Blob + Canvas (Safari-safe) ── */
-    const eChartIds = ['donutChart', 'radarChart'];
-    for (const id of eChartIds) {
+    /* ── 2. ECharts → PNG (canvas renderer via getDataURL, SVG via blob fallback) ── */
+    for (const [id, inst] of [['donutChart', window.__feaDonut], ['radarChart', window._feaRadarChart]]) {
         const container = document.getElementById(id);
-        if (!container || !el.contains(container)) continue;
-        if (container.style.display === 'none') continue;
-        const svgEl = container.querySelector('svg');
-        if (!svgEl) continue;
+        if (!container || !el.contains(container) || container.style.display === 'none') continue;
 
         try {
             const rect = container.getBoundingClientRect();
             const w    = Math.round(rect.width)  || container.offsetWidth  || 400;
             const h    = Math.round(rect.height) || container.offsetHeight || 300;
+            let dataUrl = null;
 
-            const svgStr = new XMLSerializer().serializeToString(svgEl);
-            const blob   = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
-            const blobUrl = URL.createObjectURL(blob);
+            /* Canvas renderer → getDataURL() langsung */
+            const canvasEl = container.querySelector('canvas');
+            if (canvasEl && inst && !inst.isDisposed?.()) {
+                try {
+                    dataUrl = inst.getDataURL({ type:'png', pixelRatio:2, backgroundColor:'#ffffff', excludeComponents:['toolbox'] });
+                    if (dataUrl === 'data:,') dataUrl = null;
+                } catch(e) { dataUrl = null; }
+            }
 
-            const dataUrl = await new Promise(resolve => {
-                const image  = new Image();
-                const canvas = document.createElement('canvas');
-                canvas.width  = w * 2;
-                canvas.height = h * 2;
-                const ctx = canvas.getContext('2d');
-
-                image.onload = () => {
-                    ctx.scale(2, 2);
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, w, h);
-                    ctx.drawImage(image, 0, 0, w, h);
-                    URL.revokeObjectURL(blobUrl);
-                    resolve(canvas.toDataURL('image/png'));
-                };
-                image.onerror = () => { URL.revokeObjectURL(blobUrl); resolve(null); };
-                setTimeout(() => resolve(null), 3000);
-                image.src = blobUrl;
-            });
+            /* SVG renderer → blob → canvas fallback */
+            if (!dataUrl) {
+                const svgEl = container.querySelector('svg');
+                if (svgEl) {
+                    const svgStr  = new XMLSerializer().serializeToString(svgEl);
+                    const blob    = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+                    const blobUrl = URL.createObjectURL(blob);
+                    dataUrl = await new Promise(resolve => {
+                        const image  = new Image();
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w * 2; canvas.height = h * 2;
+                        const ctx = canvas.getContext('2d');
+                        image.onload = () => {
+                            ctx.scale(2, 2);
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(0, 0, w, h);
+                            ctx.drawImage(image, 0, 0, w, h);
+                            URL.revokeObjectURL(blobUrl);
+                            resolve(canvas.toDataURL('image/png'));
+                        };
+                        image.onerror = () => { URL.revokeObjectURL(blobUrl); resolve(null); };
+                        setTimeout(() => resolve(null), 3000);
+                        image.src = blobUrl;
+                    });
+                }
+            }
 
             if (!dataUrl) continue;
 
@@ -876,18 +912,6 @@ const FBExport = (() => {
                 }
                 pdf.save(fname + '.pdf');
                 _toast('PDF berhasil diunduh!', 'success');
-            }
-        } catch(err) {
-            console.error('[FBExport.runCard]', err);
-            _toast('Export gagal: ' + err.message, 'error');
-        } finally { _btnState(btn, false); }
-    }
- 
-    return { run, runCard };
-})();
-document.addEventListener('DOMContentLoaded',()=>{FEAData.loadAll();document.addEventListener('keydown',e=>{if(e.key==='Escape')FEAPanel.close();});});
-</script>
-@endsection     _toast('PDF berhasil diunduh!', 'success');
             }
         } catch(err) {
             console.error('[FBExport.runCard]', err);
