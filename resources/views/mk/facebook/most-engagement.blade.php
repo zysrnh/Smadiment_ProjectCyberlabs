@@ -1028,4 +1028,15 @@ const FMEExport = (() => {
   
 document.addEventListener('DOMContentLoaded',()=>{FMEData.loadAll();document.addEventListener('keydown',e=>{if(e.key==='Escape')FMEPanel.close();});});
 </script>
+@endsection }
+        } catch(err){
+            console.error('[FMEExport.runCard]',err); _toast('Export gagal: '+err.message,'error');
+        } finally { _btnState(btn,false); }
+    }
+
+    return { run, runCard };
+})();
+  
+document.addEventListener('DOMContentLoaded',()=>{FMEData.loadAll();document.addEventListener('keydown',e=>{if(e.key==='Escape')FMEPanel.close();});});
+</script>
 @endsection

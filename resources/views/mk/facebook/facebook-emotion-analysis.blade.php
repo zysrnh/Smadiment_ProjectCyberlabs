@@ -887,4 +887,16 @@ const FBExport = (() => {
 })();
 document.addEventListener('DOMContentLoaded',()=>{FEAData.loadAll();document.addEventListener('keydown',e=>{if(e.key==='Escape')FEAPanel.close();});});
 </script>
+@endsection     _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(err) {
+            console.error('[FBExport.runCard]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally { _btnState(btn, false); }
+    }
+ 
+    return { run, runCard };
+})();
+document.addEventListener('DOMContentLoaded',()=>{FEAData.loadAll();document.addEventListener('keydown',e=>{if(e.key==='Escape')FEAPanel.close();});});
+</script>
 @endsection

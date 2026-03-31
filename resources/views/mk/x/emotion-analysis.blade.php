@@ -838,7 +838,7 @@ const FEAChart = {
                 label:{
                     show:true, position:'outside', alignTo:'edge', edgeDistance:20,
                     lineHeight:18, fontSize:11, fontFamily:'inherit', color:'#334155', fontWeight:'500',
-                    formatter:p=>`{title|${p.name}}\n({val|${numF(p.value)}} tweets, {pct|${p.percent.toFixed(1)}%})`,
+                    formatter: p => `{title|${p.name}}\n(${numF(p.value)} tweets,  ${p.percent.toFixed(1)}%)`,
                     rich:{
                         title:{ fontSize:11, fontWeight:'700', color:'#1e293b', lineHeight:18 },
                         val:{ fontSize:11, fontWeight:'700', color:'#038047' },

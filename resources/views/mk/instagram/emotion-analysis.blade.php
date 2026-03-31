@@ -888,4 +888,13 @@ const IGExport = (() => {
 })();
   document.addEventListener('DOMContentLoaded',()=>{FEAData.loadAll();document.addEventListener('keydown',e=>{if(e.key==='Escape')FEAPanel.close();});});
 </script>
+@endsection console.error('[IGExport.runCard]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally { _btnState(btn, false); }
+    }
+
+    return { run, runCard };
+})();
+  document.addEventListener('DOMContentLoaded',()=>{FEAData.loadAll();document.addEventListener('keydown',e=>{if(e.key==='Escape')FEAPanel.close();});});
+</script>
 @endsection

@@ -1199,4 +1199,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', e => { if(e.key==='Escape') OVPanel.close(); });
 });
 </script>
+@endsection{ run, runCard };
+})();
+  
+/* ── INIT ── */
+document.addEventListener('DOMContentLoaded', () => {
+    if (!OVCfg.pid) return;
+    OVTab._loaded.hashtag=true; OVData.loadHashtags();
+    OVData.loadEngagement('like').then(()=>{ OVTab._loaded.like=true; });
+    document.addEventListener('keydown', e => { if(e.key==='Escape') OVPanel.close(); });
+});
+</script>
 @endsection
