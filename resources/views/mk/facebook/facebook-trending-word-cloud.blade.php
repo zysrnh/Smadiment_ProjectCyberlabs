@@ -86,13 +86,27 @@
 .export-toast.error{background:#991b1b}
 
 /* ══ Word Cloud Container ══ */
-.wordcloud-container{position:relative;width:100%;height:520px}
+.wordcloud-container{
+    position:relative;
+    width:100%;
+    height:600px;
+    background:#fff;
+    border-radius:var(--radius);
+    overflow:hidden;
+}
 .wordcloud-container #wcLoading,
-.wordcloud-container #wcEmpty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
-.wordcloud-container #wcLoading{background:#fff;z-index:2}
+.wordcloud-container #wcEmpty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:3}
+.wordcloud-container #wcLoading{background:#fff;z-index:3}
 .wordcloud-container #wcEmpty{color:var(--slate-400);font-size:12px;font-weight:600}
 .wordcloud-container #wcEmpty i{font-size:34px;color:var(--slate-300)}
-#wordCloudChart{width:100%!important;height:100%!important;display:block}
+#wordCloudChart{
+    width:100%!important;
+    height:100%!important;
+    display:block;
+    position:absolute;
+    top:0;left:0;
+    z-index:1;
+}
 </style>
 @endsection
 
@@ -544,11 +558,16 @@ function renderWC() {
 
     if (em) em.style.display = 'none';
 
-    const raw  = filtered.slice(0, 400);
+    const raw  = filtered.slice(0, 100);
+
+    const sizes    = raw.map(t => t.size);
+    const maxSize  = Math.max(...sizes);
+    const minSize  = Math.min(...sizes);
 
     const data = raw.map(t => ({
-        name:  t.name.replace(/^#/, ''),
-        value: Math.sqrt(t.size),
+        name  : t.name.replace(/^#/, ''),
+        value : Math.pow((t.size - minSize) / (maxSize - minSize || 1), 0.5) * 1200 + 200,
+        _orig : t.size,
     }));
 
     if (wcChart) { try { wcChart.dispose(); } catch(e) {} wcChart = null; }
@@ -578,29 +597,46 @@ function renderWC() {
 
         wcChart.setOption({
             backgroundColor: 'transparent',
+            tooltip: {
+                show: true,
+                trigger: 'item',
+                backgroundColor: '#fff',
+                borderColor: '#E2E8F0',
+                borderWidth: 1,
+                padding: [10, 14],
+                textStyle: { color: '#0F172A', fontSize: 12, fontFamily: 'inherit' },
+                shadowBlur: 20,
+                shadowColor: 'rgba(0,0,0,.10)',
+                shadowOffsetY: 4,
+                formatter: p => `
+                    <div style="font-family:inherit;min-width:130px;text-align:center;">
+                        <div style="font-weight:700;font-size:14px;color:#0F172A;margin-bottom:4px;">${p.name}</div>
+                        <div style="font-size:11px;color:#64748B;">${numF(p.data._orig || 0)} mentions</div>
+                    </div>`,
+            },
             series: [{
-                type:            'wordCloud',
-                shape:           'square',
-                left:            'center',
-                top:             'center',
-                width:           '100%',
-                height:          '100%',
-                sizeRange:       [16, 160],
-                rotationRange:   [-45, 45],
-                rotationStep:    15,
-                gridSize:        4,
-                drawOutOfBound:  true,
+                type: 'wordCloud',
+                shape:  'circle',
+                left:   'center',
+                top:    'center',
+                width:  '98%',
+                height: '98%',
+                sizeRange: [16, 72],
+                rotationRange: [-45, 45],
+                rotationStep:  45,
+                gridSize: 8,
+                drawOutOfBound:  false,
                 layoutAnimation: true,
                 textStyle: {
-                    fontFamily: 'inherit',
-                    fontWeight: '800',
+                    fontFamily: 'Poppins, Inter, sans-serif',
+                    fontWeight: 'bold',
                     color: function () {
                         return colorPool[Math.floor(Math.random() * colorPool.length)];
                     }
                 },
                 emphasis: {
-                    focus:     'self',
-                    textStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,.20)' }
+                    focus: 'self',
+                    textStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.35)' }
                 },
                 data
             }]
