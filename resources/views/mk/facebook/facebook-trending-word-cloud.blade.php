@@ -544,14 +544,11 @@ function renderWC() {
 
     if (em) em.style.display = 'none';
 
-    const raw  = filtered.slice(0, 150);
-    const maxV = Math.max(...raw.map(t => t.size), 1);
-    const minV = Math.min(...raw.map(t => t.size), 1);
-    const span = maxV - minV || 1;
+    const raw  = filtered.slice(0, 400);
 
     const data = raw.map(t => ({
         name:  t.name.replace(/^#/, ''),
-        value: Math.round(30 + ((t.size - minV) / span) * 70),
+        value: Math.sqrt(t.size),
     }));
 
     if (wcChart) { try { wcChart.dispose(); } catch(e) {} wcChart = null; }
@@ -583,20 +580,20 @@ function renderWC() {
             backgroundColor: 'transparent',
             series: [{
                 type:            'wordCloud',
-                shape:           'circle',
+                shape:           'square',
                 left:            'center',
                 top:             'center',
                 width:           '100%',
                 height:          '100%',
-                sizeRange:       [22, 90],
-                rotationRange:   [-60, 60],
+                sizeRange:       [16, 160],
+                rotationRange:   [-45, 45],
                 rotationStep:    15,
-                gridSize:        6,
-                drawOutOfBound:  false,
+                gridSize:        4,
+                drawOutOfBound:  true,
                 layoutAnimation: true,
                 textStyle: {
                     fontFamily: 'inherit',
-                    fontWeight: '600',
+                    fontWeight: '800',
                     color: function () {
                         return colorPool[Math.floor(Math.random() * colorPool.length)];
                     }

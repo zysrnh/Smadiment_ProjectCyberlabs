@@ -26,7 +26,7 @@
 .chart-empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--slate-400);font-size:12px;font-weight:600}
 .chart-empty i{font-size:34px;color:var(--slate-300);display:block}
 
-/* ══ Sentiment Filter Tabs — sama persis dengan IG ══ */
+/* ══ Sentiment Filter Tabs ══ */
 .sent-tabs{display:flex;gap:2px;background:var(--slate-100);border:1px solid var(--slate-200);border-radius:var(--radius-sm);padding:2px}
 .sent-tab{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 14px;border-radius:4px;border:none;background:transparent;font-size:12px;font-weight:600;color:var(--slate-500);cursor:pointer;transition:background .13s,color .13s;white-space:nowrap}
 .sent-tab:hover{background:#fff;color:var(--slate-800)}
@@ -85,13 +85,27 @@
 .export-toast.error{background:#991b1b}
 
 /* ══ Word Cloud Container ══ */
-.wordcloud-container{position:relative;width:100%;height:520px}
+.wordcloud-container{
+    position:relative;
+    width:100%;
+    height:600px; /* lebih tinggi agar kata punya ruang */
+    background:#fff;
+    border-radius:var(--radius);
+    overflow:hidden;
+}
 .wordcloud-container #wcLoading,
-.wordcloud-container #wcEmpty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
-.wordcloud-container #wcLoading{background:#fff;z-index:2}
+.wordcloud-container #wcEmpty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:3}
+.wordcloud-container #wcLoading{background:#fff;z-index:3}
 .wordcloud-container #wcEmpty{color:var(--slate-400);font-size:12px;font-weight:600}
 .wordcloud-container #wcEmpty i{font-size:34px;color:var(--slate-300)}
-#wordCloudChart{width:100%!important;height:100%!important;display:block}
+#wordCloudChart{
+    width:100%!important;
+    height:100%!important;
+    display:block;
+    position:absolute;
+    top:0;left:0;
+    z-index:1;
+}
 </style>
 @endsection
 
@@ -206,7 +220,6 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                        {{-- Sentiment Filter Tabs — ditambahkan sama seperti IG --}}
                         <div class="sent-tabs" data-html2canvas-ignore="true">
                             <button class="sent-tab active" data-s="all">Semua</button>
                             <button class="sent-tab tab-pos" data-s="positive"><span class="sent-dot" style="background:#16a34a;"></span>Positif</button>
@@ -241,7 +254,7 @@
                         </div>
                     </div>
                 </div>
-            </div>{{-- /card-export-wc --}}
+            </div>
         </div>
     </div>
 
@@ -278,14 +291,13 @@
                 <div id="topicEmpty" style="display:none;" class="chart-empty">
                     <i class="ph ph-hash"></i><span>Tidak ada data</span>
                 </div>
-            </div>{{-- /card-export-topics --}}
+            </div>
         </div>
     </div>
 </div>
 
 </div>{{-- /pageExportArea --}}
 
-{{-- Export Toast --}}
 <div class="export-toast" id="exportToast">
     <i class="ph ph-check-circle" id="exportToastIcon"></i>
     <span id="exportToastMsg">Exporting…</span>
@@ -313,11 +325,8 @@ let allTopics = [], filtered = [], curPage = 1, curSent = 'all';
 const PP = 15;
 let wcChart = null;
 
-/* ══════════════════════════════════════════════════════
-   SENTIMENT KEYWORDS — extended dari IG (EN + ID)
-══════════════════════════════════════════════════════ */
+/* ══ Sentiment Keywords ══ */
 const NEG_SET = new Set([
-    /* ── EN ── */
     'bad','worst','worse','hate','hated','hating','sad','sadness','fail','failed','failing','failure',
     'lose','lost','losing','loss','loser','angry','anger','furious','rage','raging',
     'terrible','horrible','awful','dreadful','disgusting','poor','dead','death','die','died','dying',
@@ -331,9 +340,9 @@ const NEG_SET = new Set([
     'drug','drugs','addict','addiction','accident','accidents',
     'flood','earthquake','landslide','wildfire','tornado','hurricane','tsunami',
     'crash','explosion','explode','exploded','rape','raped','robbery','robbed','theft','steal','stealing','stolen',
-    'illegal','unlawful','criminal','arrested','arrest','imprisoned','prison','jail','guilty','convicted','sentenced',
+    'illegal','unlawful','arrested','arrest','imprisoned','prison','jail','guilty','convicted','sentenced',
     'banned','suspended','fired','dismissed','resign','resigned','resignation',
-    'shutdown','collapse','collapsed','bankrupt','broke','broken','damage','damaged','destroy','destroyed',
+    'shutdown','collapse','collapsed','broke','broken','damage','damaged','destroy','destroyed',
     'penalty','punish','punished','shame','shameful','disgrace','disgraced','humiliate','humiliated',
     'embarrass','embarrassed','betrayal','betrayed','betray','deceive','deceived','deception',
     'oppression','oppressed','oppress','exploit','exploited','exploitation',
@@ -342,18 +351,17 @@ const NEG_SET = new Set([
     'poverty','starving','starvation','homeless','neglect','neglected',
     'cheat','cheated','cheating','bribe','bribery','toxic','poisoned','poisonous',
     'polluted','pollution','contaminate','contaminated','infected','infection','diseased','pandemic','epidemic',
-    'protest','protests','protesting','unrest','conflict','war','warfare','battle','battles','fighting',
+    'protest','protests','protesting','unrest','conflict','warfare','battle','battles','fighting',
     'vandalism','vandalize','arson','looting','chaos','anarchy','anarchist',
     'threat','threatened','threatening','dangerous','danger','hazard','hazardous',
-    'racist','racism','racist','sexist','sexism','bigot','bigotry','xenophobia','xenophobic',
-    'bully','bullied','bullying','cyberbully','cyberbullying','harass',
-    'crisis','crises','emergency','critical','catastrophic','devastating','devasted',
-    'fake','counterfeit','forgery','forged','plagiarism','plagiarize',
-    /* ── ID ── */
+    'racist','racism','sexist','sexism','bigot','bigotry','xenophobia','xenophobic',
+    'bully','bullied','bullying','cyberbully','cyberbullying',
+    'emergency','critical','catastrophic','devastating',
+    'counterfeit','forgery','forged','plagiarism','plagiarize',
     'buruk','terburuk','benci','membenci','sedih','kesedihan','gagal','kegagalan',
     'kalah','kekalahan','marah','kemarahan','murka','amarah','geram','berang',
     'parah','mengerikan','menakutkan','menjijikkan','mati','kematian','meninggal',
-    'tewas','wafat','bunuh','membunuh','pembunuhan','bunuhdiri','bunuh diri',
+    'tewas','wafat','bunuh','membunuh','pembunuhan',
     'korupsi','koruptor','korup','kejahatan','kriminal','penipuan','penipu','curang','kecurangan',
     'bohong','berbohong','pembohong','dusta','fitnah','hoaks','palsu','menyesatkan',
     'manipulasi','memanipulasi','pelecehan','peleceh','kekerasan','brutal','sadis','kejam',
@@ -361,38 +369,36 @@ const NEG_SET = new Set([
     'skandal','krisis','bencana','malapetaka','musibah','celaka','petaka',
     'salah','rusak','hancur','menghancurkan','kehancuran','kerusakan',
     'sakit','penyakit','derita','menderita','sengsara','nestapa','duka','cemas',
-    'narkoba','narkotika','obat-terlarang','pecandu',
-    'kecelakaan','tabrakan','ledakan','meledak','kebakaran','kebanjiran','banjir',
-    'gempa','longsor','tsunami','puting beliung',
+    'narkoba','narkotika','pecandu',
+    'kecelakaan','tabrakan','ledakan','meledak','kebakaran','banjir',
+    'gempa','longsor','tsunami',
     'pemerkosaan','memperkosa','perampokan','merampok','pencurian','mencuri','dicuri',
-    'korupsi','pungutan liar','pungli','suap','menyuap','gratifikasi',
-    'ilegal','melanggar hukum','ditangkap','penangkapan','dipenjara','penjara',
+    'pungli','suap','menyuap','gratifikasi',
+    'ilegal','ditangkap','penangkapan','dipenjara','penjara',
     'divonis','vonis','hukuman','dihukum','terdakwa','tersangka','pidana',
     'dilarang','dicabut','dibekukan','disita','dirampas','dihapus','ditolak',
-    'dipecat','pemecatan','mengundurkan diri','pengunduran diri',
-    'bangkrut','pailit','rugi','kerugian','kebangkrutan',
+    'dipecat','pemecatan',
+    'bangkrut','pailit','rugi','kerugian',
     'malu','memalukan','aib','tercela','terhina','penghinaan',
     'pengkhianatan','mengkhianati','berkhianat','menipu','tipu',
     'penindasan','menindas','tertindas','eksploitasi','mengeksploitasi','diskriminasi',
-    'pelecehan','melecehkan','intimidasi','mengintimidasi',
     'depresi','kecemasan','panik','trauma','stres','tertekan',
     'kemiskinan','miskin','melarat','kelaparan','gelandangan','tunawisma','terlantar',
     'terbuang','dikucilkan','diabaikan','ditelantarkan',
     'beracun','racun','tercemar','pencemaran','polusi','terinfeksi','wabah','pandemi','epidemi',
     'protes','demonstrasi','demo','bentrok','konflik','pertikaian','pertengkaran',
     'ancaman','mengancam','berbahaya','bahaya','darurat','kritis',
-    'rasis','rasisme','rasis','diskriminatif','bully','perundungan','intimidasi',
+    'rasis','rasisme','diskriminatif','perundungan','intimidasi',
     'gelap','suram','kelam','muram','galau','resah','gundah','khawatir','takut',
-    'gagalkan','kacau','kekacauan','anarki','perusakan','merusak','vandalisme',
-    'pemalsuan','palsu','tiruan','plagiat','curang',
-    'penjahat','bajingan','brengsek','laknat','terkutuk','terlaknat',
+    'kacau','kekacauan','anarki','perusakan','merusak','vandalisme',
+    'pemalsuan','tiruan','plagiat',
+    'penjahat','bajingan','brengsek','laknat','terkutuk',
     'dipermalukan','dicerca','dicaci','dimaki','dihujat','hujatan',
     'sampah','limbah','jorok','kotor','busuk','najis',
-    'susah','sulit','kesulitan','hambatan','masalah besar','keterpurukan',
+    'susah','sulit','kesulitan','hambatan','keterpurukan',
 ]);
 
 const POS_SET = new Set([
-    /* ── EN ── */
     'win','won','winning','winner','best','good','great','love','loved','loving','happy','happiness',
     'success','successful','succeed','succeeded','amazing','excellent','awesome','superb','outstanding',
     'celebrate','celebrated','celebration','proud','pride','champion','champions','championship',
@@ -421,58 +427,48 @@ const POS_SET = new Set([
     'safe','safety','secure','security','protect','protected','protection',
     'fair','fairness','justice','just','righteous','honest','honesty','integrity',
     'clean','transparent','transparency','accountable','accountability',
-    /* ── ID ── */
     'menang','kemenangan','juara','kejuaraan','terbaik','unggulan','unggul',
-    'baik','bagus','keren','hebat','luar biasa','luarbiasa','fantastis','menakjubkan','luar biasa',
+    'baik','bagus','keren','hebat','fantastis','menakjubkan',
     'cinta','mencintai','kasih','sayang','menyayangi','peduli','kepedulian',
     'senang','kesenangan','bahagia','kebahagiaan','gembira','ria','ceria','sukacita',
     'sukses','kesuksesan','berhasil','keberhasilan','prestasi','berprestasi','meraih','diraih',
     'bangga','kebanggaan','semangat','antusias','optimis','positif',
-    'harapan','berharap','optimisme','impian','cita-cita','mimpi',
+    'harapan','berharap','optimisme','impian','mimpi',
     'inspirasi','menginspirasi','terinspirasi','motivasi','memotivasi','termotivasi',
-    'indah','cantik','tampan','elok','molek','permai','menawan','memesona',
+    'indah','cantik','tampan','elok','menawan','memesona',
     'cemerlang','brilian','cerdas','pandai','pintar','jenius','berbakat','bakat',
     'maju','kemajuan','berkembang','perkembangan','pertumbuhan','tumbuh','meningkat','peningkatan',
-    'inovatif','inovasi','kreatif','kreativitas','solusi','ide cemerlang',
+    'inovatif','inovasi','kreatif','kreativitas','solusi',
     'ahli','pakar','profesional','berpengalaman','kompeten','kompetensi','terampil','keahlian',
     'damai','kedamaian','harmonis','harmoni','rukun','kerukunan',
     'sejahtera','kesejahteraan','makmur','kemakmuran','merdeka','kebebasan',
     'sehat','kesehatan','bugar','kebugaran','kuat','kekuatan','tangguh',
     'berani','keberanian','gagah','perkasa',
-    'gotong royong','bersatu','kebersamaan','solidaritas','kerjasama','kompak','bersama',
-    'syukur','bersyukur','terima kasih','berkah','karunia','anugerah','rezeki',
+    'bersatu','kebersamaan','solidaritas','kerjasama','kompak','bersama',
+    'syukur','bersyukur','berkah','karunia','anugerah','rezeki',
     'penghargaan','apresiasi','diapresiasi','dihargai','diakui','pengakuan',
     'terpercaya','amanah','jujur','kejujuran','integritas','transparan','keterbukaan',
     'adil','keadilan','merata','pemerataan',
     'bersih','kebersihan','rapi','kerapian','tertib','ketertiban',
     'aman','keamanan','terlindungi','perlindungan',
     'diresmikan','diluncurkan','terpilih','dipercaya','dianugerahi',
-    'rekor','bersejarah','berhasil','lolos','lulus','diterima','diterima',
+    'rekor','bersejarah','lolos','lulus','diterima',
     'viral','populer','hits','trending','booming','digemari','favorit',
     'spesial','istimewa','premium','berkualitas','terjamin',
-    'peringkat','rangking','nomor satu','terdepan','terbaik',
+    'terdepan',
 ]);
 
-/*
- * getSent — pakai scoring (Sama dengan TikTok & IG).
- * Lebih akurat untuk kata majemuk / hashtag panjang.
- */
 function getSent(name) {
     const clean  = name.toLowerCase().replace(/^[#@]+/, '');
     const tokens = clean.split(/[\s_\-\.\/\\|&]+/).filter(Boolean);
-
     let negScore = 0, posScore = 0;
     for (const tok of tokens) {
         if (NEG_SET.has(tok)) negScore++;
         if (POS_SET.has(tok)) posScore++;
     }
     if (tokens.length === 1 && clean.length > 4) {
-        for (const kw of NEG_SET) {
-            if (kw.length >= 4 && clean.includes(kw)) negScore += 0.5;
-        }
-        for (const kw of POS_SET) {
-            if (kw.length >= 4 && clean.includes(kw)) posScore += 0.5;
-        }
+        for (const kw of NEG_SET) { if (kw.length >= 4 && clean.includes(kw)) negScore += 0.5; }
+        for (const kw of POS_SET) { if (kw.length >= 4 && clean.includes(kw)) posScore += 0.5; }
     }
     if (negScore > posScore) return 'negative';
     if (posScore > negScore) return 'positive';
@@ -487,11 +483,7 @@ async function loadData() {
         if (!j.success || !j.data?.top_topics?.length) { showEmpty(); return; }
         allTopics = j.data.top_topics.map(t => {
             const name = String(t.name || '').trim();
-            return {
-                name,
-                size: t.total_volume || t.appearances || 100,
-                sent: getSent(name),
-            };
+            return { name, size: t.total_volume || t.appearances || 100, sent: getSent(name) };
         }).filter(t => t.name);
         applyFilter();
     } catch(e) { console.error(e); showEmpty(); }
@@ -530,10 +522,14 @@ function showEmpty() {
     _$('wcEmpty').style.display      = 'flex';
     _$('topicLoading').style.display = 'none';
     _$('topicEmpty').style.display   = 'flex';
-    ['kpiTopics','kpiVolume','kpiPos','kpiNeg','kpiNeu'].forEach(id => { const e = _$(id); if (e) e.textContent = '0'; });
+    ['kpiTopics','kpiVolume','kpiPos','kpiNeg','kpiNeu'].forEach(id => {
+        const e = _$(id); if (e) e.textContent = '0';
+    });
 }
 
-/* ══ Word Cloud — warna per sentimen sama dengan IG ══ */
+/* ══════════════════════════════════════════════════════════
+   renderWC — mengikuti tampilan kode 2 (besar, jelas, berwarna)
+══════════════════════════════════════════════════════════ */
 function renderWC() {
     const ld = _$('wcLoading');
     const ch = _$('wordCloudChart');
@@ -548,15 +544,29 @@ function renderWC() {
 
     if (em) em.style.display = 'none';
 
-    const raw  = filtered.slice(0, 150);
-    const maxV = Math.max(...raw.map(t => t.size), 1);
-    const minV = Math.min(...raw.map(t => t.size), 1);
-    const span = maxV - minV || 1;
+    /*
+     * ★ KUNCI 1: Batasi jumlah topic agar masing-masing kata punya ruang lebih besar.
+     *   Semakin sedikit kata → masing-masing kata semakin besar.
+     *   60 adalah sweet-spot untuk container ~600px.
+     */
+    const raw = filtered.slice(0, 100);
 
-    const data = raw.map(t => ({
-        name:  t.name.replace(/^#/, ''),
-        value: Math.round(30 + ((t.size - minV) / span) * 70),
-    }));
+    /*
+     * ★ KUNCI 2: Normalisasi value dengan log scale.
+     *   Log scale membuat distribusi lebih merata — kata dengan count sangat besar
+     *   tidak mendominasi terlalu jauh dibanding kata kecil.
+     *   Formula: log(size+1) dinormalisasi ke range 0-1, lalu dikali factor besar.
+     */
+    // ★ Ganti normalisasi: dari log scale → sqrt scale (seperti Global)
+const sizes    = raw.map(t => t.size);
+const maxSize  = Math.max(...sizes);
+const minSize  = Math.min(...sizes);
+
+const data = raw.map(t => ({
+    name  : t.name.replace(/^#/, ''),
+    value : Math.pow((t.size - minSize) / (maxSize - minSize || 1), 0.5) * 1200 + 200,
+    _orig : t.size,
+}));
 
     if (wcChart) { try { wcChart.dispose(); } catch(e) {} wcChart = null; }
 
@@ -575,52 +585,86 @@ function renderWC() {
             height:   rect.height,
         });
 
-        /* Warna berdasarkan filter sentimen aktif — sama dengan IG */
+        /* Palet warna — lebih cerah dan variatif seperti kode 2 */
         const colorsBySent = {
-            positive: ['#16a34a','#22c55e','#4ade80','#15803d','#166534','#bbf7d0'],
-            negative: ['#dc2626','#ef4444','#f87171','#b91c1c','#991b1b','#fecaca'],
-            neutral:  ['#f59e0b','#d97706','#fbbf24','#b45309','#fcd34d','#78716c'],
-            all:      ['#16a34a','#2563eb','#f59e0b','#ef4444','#9333ea','#14b8a6','#0284c7','#1d9bf0'],
+            positive: ['#16a34a','#22c55e','#4ade80','#15803d','#166534','#059669','#34d399'],
+            negative: ['#dc2626','#ef4444','#f87171','#b91c1c','#991b1b','#e11d48','#fb7185'],
+            neutral:  ['#f59e0b','#d97706','#fbbf24','#b45309','#ea580c','#fb923c','#fcd34d'],
+            all:      [
+                '#ef4444','#f97316','#eab308','#22c55e','#14b8a6',
+                '#3b82f6','#8b5cf6','#ec4899','#06b6d4','#84cc16',
+                '#f43f5e','#a855f7','#0ea5e9','#10b981','#f59e0b',
+            ],
         };
         const colorPool = colorsBySent[curSent] || colorsBySent.all;
 
         wcChart.setOption({
             backgroundColor: 'transparent',
+            tooltip: {
+                show: true,
+                trigger: 'item',
+                backgroundColor: '#fff',
+                borderColor: '#E2E8F0',
+                borderWidth: 1,
+                padding: [10, 14],
+                textStyle: { color: '#0F172A', fontSize: 12, fontFamily: 'inherit' },
+                shadowBlur: 20,
+                shadowColor: 'rgba(0,0,0,.10)',
+                shadowOffsetY: 4,
+                formatter: p => `
+                    <div style="font-family:inherit;min-width:130px;text-align:center;">
+                        <div style="font-weight:700;font-size:14px;color:#0F172A;margin-bottom:4px;">${p.name}</div>
+                        <div style="font-size:11px;color:#64748B;">${numF(p.data._orig || 0)} mentions</div>
+                    </div>`,
+            },
             series: [{
-                type:            'wordCloud',
-                shape:           'circle',
-                left:            'center',
-                top:             'center',
-                width:           '100%',
-                height:          '100%',
-                sizeRange:       [22, 90],
-                rotationRange:   [-60, 60],
-                rotationStep:    15,
-                gridSize:        6,
-                drawOutOfBound:  false,
-layoutAnimation: false,
-                textStyle: {
-                    fontFamily: 'inherit',
-                    fontWeight: '600',
-                    color: function () {
-                        return colorPool[Math.floor(Math.random() * colorPool.length)];
-                    },
-                },
-                emphasis: {
-                    focus:     'self',
-                    textStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,.20)' },
-                },
-                data,
-            }],
+    type: 'wordCloud',
+
+    shape:  'circle',
+    left:   'center',
+    top:    'center',
+    width:  '98%',
+    height: '98%',
+
+    // ★ Samakan sizeRange dengan Global
+    sizeRange: [16, 72],
+
+    // ★ Samakan rotation dengan Global
+    rotationRange: [-45, 45],
+    rotationStep:  45,
+
+    // ★ gridSize kecil agar kata lebih rapat & proporsional (seperti Global)
+    gridSize: 8,
+
+    drawOutOfBound:  false,
+    layoutAnimation: true,
+
+    textStyle: {
+        // ★ Samakan font dengan Global
+        fontFamily: 'Poppins, Inter, sans-serif',
+        fontWeight: 'bold',
+        color: function() {
+            return colorPool[Math.floor(Math.random() * colorPool.length)];
+        },
+    },
+
+    emphasis: {
+        focus: 'self',
+        textStyle: {
+            shadowBlur:  10,
+            shadowColor: 'rgba(0,0,0,0.35)',
+        },
+    },
+
+    data,
+}],
         });
 
-        /* Klik → buka pencarian X */
         wcChart.on('click', p => {
             const q = encodeURIComponent(p.name);
             window.open(`https://www.x.com/search?q=${q}`, '_blank', 'noopener,noreferrer');
         });
 
-        /* ResizeObserver */
         if (window._xwcResizeObserver) window._xwcResizeObserver.disconnect();
         if (typeof ResizeObserver !== 'undefined') {
             window._xwcResizeObserver = new ResizeObserver(() => {
@@ -636,7 +680,7 @@ layoutAnimation: false,
     });
 }
 
-/* ══ Top Topics — warna ht-name per sentimen sama dengan IG ══ */
+/* ══ Top Topics ══ */
 function renderList() {
     const ld   = _$('topicLoading'), ct = _$('topicContent'), em = _$('topicEmpty');
     const list = _$('topicList'),    pg = _$('pagArea');
@@ -654,7 +698,6 @@ function renderList() {
         const rk  = start + i + 1;
         const rc  = rk <= 3 ? ` ht-rank--${rk}` : '';
         const pct = Math.round((h.size / mx) * 100);
-        /* Warna nama berdasarkan sentimen — sama dengan IG */
         const sentColor = h.sent === 'positive' ? '#16a34a' : h.sent === 'negative' ? '#dc2626' : h.sent === 'neutral' ? '#d97706' : 'var(--primary)';
         const el  = document.createElement('div');
         el.className = 'ht-item';
@@ -695,7 +738,7 @@ function goPage(p) {
     _$('topicList')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-/* ══ Export Module — disederhanakan mengikuti pola IG ══ */
+/* ══ Export Module ══ */
 const XWCExport = (() => {
     'use strict';
     let _timer = null;
@@ -714,44 +757,36 @@ const XWCExport = (() => {
 
     function _btnState(btn,on){ if(!btn)return; btn.disabled=on; btn.classList.toggle('exporting',on); }
 
-    // ── Snapshot WC dengan retry — Safari butuh ini ──
-async function _getWCSnapshot() {
-    if(!wcChart) return null;
-    const ch = _$('wordCloudChart');
-
-    try {
-        const rect = ch ? ch.getBoundingClientRect() : null;
-        if(rect && rect.width > 0) wcChart.resize({width:rect.width, height:rect.height});
-    } catch(e){}
-
-    // Tunggu render settle (lebih pendek karena layoutAnimation: false)
-    await new Promise(r => setTimeout(r, 500));
-
-    // Retry 3x
-    for(let i = 0; i < 3; i++) {
+    async function _getWCSnapshot() {
+        if(!wcChart) return null;
+        const ch = _$('wordCloudChart');
         try {
-            const url = wcChart.getDataURL({
-                type: 'png',
-                pixelRatio: Math.min(window.devicePixelRatio || 2, 2),
-                backgroundColor: '#ffffff',
-                excludeComponents: ['toolbox'],
-            });
-            if(url && url.startsWith('data:image/png') && url.length > 5000) return url;
+            const rect = ch ? ch.getBoundingClientRect() : null;
+            if(rect && rect.width > 0) wcChart.resize({width:rect.width, height:rect.height});
+        } catch(e){}
+        await new Promise(r => setTimeout(r, 600));
+        for(let i = 0; i < 3; i++) {
+            try {
+                const url = wcChart.getDataURL({
+                    type: 'png',
+                    pixelRatio: Math.min(window.devicePixelRatio || 2, 2),
+                    backgroundColor: '#ffffff',
+                    excludeComponents: ['toolbox'],
+                });
+                if(url && url.startsWith('data:image/png') && url.length > 5000) return url;
+            } catch(e) {}
+            await new Promise(r => setTimeout(r, 300));
+        }
+        try {
+            const canvas = ch ? ch.querySelector('canvas') : null;
+            if(canvas) {
+                const url = canvas.toDataURL('image/png');
+                if(url && url.length > 5000) return url;
+            }
         } catch(e) {}
-        await new Promise(r => setTimeout(r, 300));
+        return null;
     }
 
-    // Fallback langsung dari canvas DOM
-    try {
-        const canvas = ch ? ch.querySelector('canvas') : null;
-        if(canvas) {
-            const url = canvas.toDataURL('image/png');
-            if(url && url.length > 5000) return url;
-        }
-    } catch(e) {}
-
-    return null;
-}
     function _freeze(){
         if(document.getElementById('__wc_freeze')) return;
         const s=document.createElement('style'); s.id='__wc_freeze';
@@ -760,167 +795,93 @@ async function _getWCSnapshot() {
     }
     function _unfreeze(){ document.getElementById('__wc_freeze')?.remove(); }
 
-    function _makeOnClone(wcSnapshot) {
-        return (clonedDoc) => {
-            // 1. Inject freeze style
-            const s=clonedDoc.createElement('style');
-            s.textContent='*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}[data-html2canvas-ignore]{display:none!important;}.sk-block{animation:none!important;background:#e2e8f0!important;}.kpi-card-hover{transform:none!important;filter:none!important;}';
-            clonedDoc.head.appendChild(s);
-
-            // 2. Sembunyikan elemen noise
-            clonedDoc.querySelectorAll([
-                '#wcLoading','#topicLoading','.spinner-state','.spin-ring',
-                '.export-toast','.sent-tabs','.mode-toggle-wrap',
-                '[data-html2canvas-ignore]'
-            ].join(',')).forEach(e=>{
-                e.style.cssText+='display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;';
-            });
-
-            // 3. Paksa semua konten visible
-            clonedDoc.querySelectorAll([
-                '.card','.card-body','.card-header','.kpi-card-hover',
-                '[class*="col-"]','.ht-item','.ht-list','#topicContent',
-                '#pageExportArea','#card-export-wc','#card-export-topics'
-            ].join(',')).forEach(e=>{
-                e.style.opacity='1';
-                e.style.transform='none';
-                e.style.visibility='visible';
-                e.style.animationPlayState='paused';
-            });
-
-            // 4. Tampilkan topicContent
-            const tc=clonedDoc.getElementById('topicContent');
-            if(tc) tc.style.display='block';
-
-            // 5. ★ KUNCI: Inject WC snapshot sebagai <img> ★
-            const wcDiv=clonedDoc.getElementById('wordCloudChart');
-            if(wcDiv){
-                wcDiv.innerHTML='';
-                wcDiv.style.cssText='display:block!important;width:100%;height:460px;opacity:1!important;visibility:visible!important;';
-                if(wcSnapshot&&wcSnapshot.startsWith('data:image')){
-                    const img=clonedDoc.createElement('img');
-                    img.src=wcSnapshot;
-                    img.style.cssText='width:100%;height:100%;object-fit:contain;display:block;';
-                    wcDiv.appendChild(img);
-                } else {
-                    // Fallback: placeholder jika snapshot gagal
-                    wcDiv.style.cssText+='background:#f8fafc;display:flex;align-items:center;justify-content:center;';
-                    const ph=clonedDoc.createElement('div');
-                    ph.style.cssText='color:#94a3b8;font-size:12px;font-weight:600;';
-                    ph.textContent='Word Cloud';
-                    wcDiv.appendChild(ph);
-                }
-                // Pastikan parent container juga full height
-                const container=clonedDoc.querySelector('.wordcloud-container');
-                if(container) container.style.cssText='height:460px!important;overflow:visible!important;';
-            }
-
-            // 6. Sembunyikan canvas ECharts mentah yang mungkin masih ada
-            clonedDoc.querySelectorAll('#wordCloudChart canvas').forEach(c=>{
-                c.style.display='none';
-            });
-        };
-    }
-
-async function _capture(areaId, bgColor) {
-    const area = document.getElementById(areaId);
-    if(!area) throw new Error('Area #'+areaId+' tidak ditemukan');
-
-    window.scrollTo({top:0});
-
-    // 1. Ambil snapshot dulu
-    const snapshot = await _getWCSnapshot();
-
-    // 2. ★ SAFARI FIX: Replace canvas dengan <img> di LIVE DOM sebelum html2canvas ★
-    const wcDiv = _$('wordCloudChart');
-    let originalContent = null;
-    let originalStyle = null;
-
-    if(wcDiv && snapshot) {
-        // Simpan state asli
-        originalContent = wcDiv.innerHTML;
-        originalStyle = wcDiv.getAttribute('style') || '';
-
-        // Replace dengan img di live DOM
+    function _replaceWCWithImage(snapshot) {
+        const wcDiv = _$('wordCloudChart');
+        if (!wcDiv || !snapshot) return null;
+        const originalHTML  = wcDiv.innerHTML;
+        const originalStyle = wcDiv.getAttribute('style') || '';
         wcDiv.innerHTML = '';
         const img = document.createElement('img');
         img.src = snapshot;
-        img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
+        img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;position:absolute;top:0;left:0;';
         wcDiv.appendChild(img);
         wcDiv.style.display = 'block';
-
-        // Tunggu img load
-        await new Promise(r => {
-            img.onload = r;
-            img.onerror = r;
-            setTimeout(r, 1000); // timeout fallback
-        });
+        return { originalHTML, originalStyle };
     }
 
-    _freeze();
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-    await new Promise(r => setTimeout(r, 300));
+    function _restoreWC(saved) {
+        if (!saved) return;
+        const wcDiv = _$('wordCloudChart');
+        if (!wcDiv) return;
+        wcDiv.innerHTML = saved.originalHTML;
+        wcDiv.setAttribute('style', saved.originalStyle);
+        renderWC();
+    }
 
-    const captureH = Math.max(area.scrollHeight, area.offsetHeight);
-
-    let canvas;
-    try {
-        canvas = await html2canvas(area, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: false,
-            backgroundColor: bgColor || '#f1f5f8',
-            logging: false,
-            removeContainer: true,
-            imageTimeout: 15000,
-            width: area.offsetWidth,
-            height: captureH,
-            scrollX: 0,
-            scrollY: -window.scrollY,
-            ignoreElements: e => e.hasAttribute('data-html2canvas-ignore'),
-            onclone: (clonedDoc) => {
-                // Freeze di clone
-                const s = clonedDoc.createElement('style');
-                s.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;animation-play-state:paused!important;}[data-html2canvas-ignore]{display:none!important;}.kpi-card-hover{transform:none!important;filter:none!important;}';
-                clonedDoc.head.appendChild(s);
-
-                // Sembunyikan noise
-                clonedDoc.querySelectorAll([
-                    '#wcLoading','#topicLoading','.spinner-state','.spin-ring',
-                    '.export-toast','.sent-tabs','[data-html2canvas-ignore]'
-                ].join(',')).forEach(e => {
-                    e.style.cssText += 'display:none!important;';
-                });
-
-                // Paksa konten visible
-                clonedDoc.querySelectorAll([
-                    '.card','.card-body','.kpi-card-hover','[class*="col-"]',
-                    '.ht-item','.ht-list','#topicContent','#pageExportArea'
-                ].join(',')).forEach(e => {
-                    e.style.opacity = '1';
-                    e.style.transform = 'none';
-                    e.style.visibility = 'visible';
-                });
-
-                const tc = clonedDoc.getElementById('topicContent');
-                if(tc) tc.style.display = 'block';
-            },
+    function _hideUIEls() {
+        const sels = ['[data-html2canvas-ignore]','.sent-tabs','#wcLoading','#topicLoading','.spinner-state','.spin-ring','.export-toast'];
+        const hidden = [];
+        sels.forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => {
+                if (getComputedStyle(el).display !== 'none') {
+                    hidden.push({ el, prev: el.style.display });
+                    el.style.display = 'none';
+                }
+            });
         });
-    } finally {
-        _unfreeze();
+        return () => hidden.forEach(({ el, prev }) => { el.style.display = prev; });
+    }
 
-        // 3. ★ Restore live DOM ke state semula ★
-        if(wcDiv && originalContent !== null) {
-            wcDiv.innerHTML = originalContent;
-            wcDiv.setAttribute('style', originalStyle);
-            // Re-init wcChart karena canvas-nya sudah di-replace
-            renderWC();
+    async function _capture(areaId, bgColor) {
+        const area = document.getElementById(areaId);
+        if(!area) throw new Error('Area #'+areaId+' tidak ditemukan');
+        window.scrollTo({top:0});
+        await new Promise(r => setTimeout(r, 200));
+        const snapshot = await _getWCSnapshot();
+        const wcSaved  = _replaceWCWithImage(snapshot);
+        if (wcSaved) {
+            const img = _$('wordCloudChart')?.querySelector('img');
+            if (img) await new Promise(r => { img.onload = r; img.onerror = r; setTimeout(r, 1000); });
         }
+        const restoreUI = _hideUIEls();
+        _freeze();
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, 300));
+        const captureH = Math.max(area.scrollHeight, area.offsetHeight);
+        let canvas;
+        try {
+            canvas = await html2canvas(area, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: false,
+                backgroundColor: bgColor || '#f1f5f8',
+                logging: false,
+                removeContainer: true,
+                imageTimeout: 15000,
+                width: area.offsetWidth,
+                height: captureH,
+                scrollX: 0,
+                scrollY: -window.scrollY,
+                onclone: (clonedDoc) => {
+                    const s = clonedDoc.createElement('style');
+                    s.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;}[data-html2canvas-ignore]{display:none!important;}.kpi-card-hover{transform:none!important;filter:none!important;}';
+                    clonedDoc.head.appendChild(s);
+                    clonedDoc.querySelectorAll('[data-html2canvas-ignore],.sent-tabs,#wcLoading,#topicLoading,.spinner-state,.export-toast').forEach(e => {
+                        e.style.cssText += 'display:none!important;';
+                    });
+                    clonedDoc.querySelectorAll('.card,.card-body,.kpi-card-hover,[class*="col-"],.ht-item,#topicContent,#pageExportArea').forEach(e => {
+                        e.style.opacity = '1'; e.style.transform = 'none'; e.style.visibility = 'visible';
+                    });
+                    const tc = clonedDoc.getElementById('topicContent');
+                    if(tc) tc.style.display = 'block';
+                },
+            });
+        } finally {
+            _unfreeze(); restoreUI(); _restoreWC(wcSaved);
+        }
+        return canvas;
     }
 
-    return canvas;
-}
-  
     function _pdfHeader(pdf,title){
         const pW=pdf.internal.pageSize.getWidth();
         pdf.setFillColor(3,128,71); pdf.rect(0,0,pW,11,'F');
@@ -1014,6 +975,7 @@ async function _capture(areaId, bgColor) {
 
     return {run,runCard};
 })();
+
 /* ══ Init ══ */
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
