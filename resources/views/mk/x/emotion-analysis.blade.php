@@ -826,7 +826,7 @@ const FEAChart = {
         if(emptyEl) emptyEl.style.display='none';
         if(window.__feaDonut){ try{window.__feaDonut.dispose();}catch(e){} }
         chartEl.style.display='block';
-        const chart = echarts.init(chartEl, null, {renderer:'svg'});
+        const chart = echarts.init(chartEl, null, {renderer:'canvas'});
         window.__feaDonut = chart;
         window.addEventListener('resize',()=>{ try{chart.resize();}catch(e){} });
         chart.setOption({
@@ -838,7 +838,7 @@ const FEAChart = {
                 label:{
                     show:true, position:'outside', alignTo:'edge', edgeDistance:20,
                     lineHeight:18, fontSize:11, fontFamily:'inherit', color:'#334155', fontWeight:'500',
-                    formatter: p => `{title|${p.name}}\n(${numF(p.value)} tweets,  ${p.percent.toFixed(1)}%)`,
+                    formatter: p => `{title|${p.name}}\n({val|${numF(p.value)}} tweets, {pct|${p.percent.toFixed(1)}%})`,
                     rich:{
                         title:{ fontSize:11, fontWeight:'700', color:'#1e293b', lineHeight:18 },
                         val:{ fontSize:11, fontWeight:'700', color:'#038047' },
@@ -1259,30 +1259,52 @@ const XExport = (() => {
         Object.values(_ApxInst).forEach(c=>{ try{c.updateOptions({});}catch(e){} });
     }
     async function _swapEChartsIn(el){
-        const swaps=[], ids=['donutChart','radarChart'];
-        for(const id of ids){
+        const swaps=[];
+        /* ── Map: chart DOM id → ECharts instance ── */
+        const ecMap = {
+            donutChart: window.__feaDonut,
+            radarChart: window._feaRadarChart,
+        };
+        for(const [id, inst] of Object.entries(ecMap)){
             const container=document.getElementById(id);
             if(!container||!el.contains(container)||container.style.display==='none') continue;
-            const svgEl=container.querySelector('svg'); if(!svgEl) continue;
             try{
                 const rect=container.getBoundingClientRect();
                 const w=Math.round(rect.width)||container.offsetWidth||400;
                 const h=Math.round(rect.height)||container.offsetHeight||300;
-                const svgStr=new XMLSerializer().serializeToString(svgEl);
-                const blob=new Blob([svgStr],{type:'image/svg+xml;charset=utf-8'});
-                const blobUrl=URL.createObjectURL(blob);
-                const dataUrl=await new Promise(resolve=>{
-                    const img=new Image();
-                    img.onload=()=>{
-                        const c2=document.createElement('canvas'); c2.width=w*2; c2.height=h*2;
-                        const ctx=c2.getContext('2d'); ctx.scale(2,2);
-                        ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h);
-                        ctx.drawImage(img,0,0,w,h);
-                        URL.revokeObjectURL(blobUrl); resolve(c2.toDataURL('image/png'));
-                    };
-                    img.onerror=()=>{ URL.revokeObjectURL(blobUrl); resolve(null); };
-                    img.src=blobUrl; setTimeout(()=>resolve(null),3000);
-                });
+                let dataUrl=null;
+
+                /* Canvas renderer → getDataURL() langsung */
+                const canvasEl=container.querySelector('canvas');
+                if(canvasEl && inst && !inst.isDisposed?.()) {
+                    try{
+                        dataUrl = inst.getDataURL({ type:'png', pixelRatio:2, backgroundColor:'#ffffff', excludeComponents:['toolbox'] });
+                        if(dataUrl==='data:,') dataUrl=null;
+                    }catch(e){ dataUrl=null; }
+                }
+
+                /* SVG renderer → blob → canvas fallback */
+                if(!dataUrl){
+                    const svgEl=container.querySelector('svg');
+                    if(svgEl){
+                        const svgStr=new XMLSerializer().serializeToString(svgEl);
+                        const blob=new Blob([svgStr],{type:'image/svg+xml;charset=utf-8'});
+                        const blobUrl=URL.createObjectURL(blob);
+                        dataUrl=await new Promise(resolve=>{
+                            const img=new Image();
+                            img.onload=()=>{
+                                const c2=document.createElement('canvas'); c2.width=w*2; c2.height=h*2;
+                                const ctx=c2.getContext('2d'); ctx.scale(2,2);
+                                ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h);
+                                ctx.drawImage(img,0,0,w,h);
+                                URL.revokeObjectURL(blobUrl); resolve(c2.toDataURL('image/png'));
+                            };
+                            img.onerror=()=>{ URL.revokeObjectURL(blobUrl); resolve(null); };
+                            img.src=blobUrl; setTimeout(()=>resolve(null),3000);
+                        });
+                    }
+                }
+
                 if(!dataUrl) continue;
                 const ph=document.createElement('div'); ph.dataset.swapFor=id; ph.style.display='none';
                 const imgEl=document.createElement('img');
