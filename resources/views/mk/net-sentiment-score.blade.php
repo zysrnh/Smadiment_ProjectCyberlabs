@@ -142,9 +142,6 @@
 .nss-brk-nss-val { font-size:22px; font-weight:800; letter-spacing:-1px; color:var(--do-primary); }
 .nss-formula-eq { background:var(--do-slate-50); border-top:1px solid var(--do-slate-200); padding:8px 16px; font-size:10px; font-weight:600; color:var(--do-slate-400); text-align:center; letter-spacing:.2px; font-family:'Courier New',monospace; }
 
-/* ══ Skeleton ══ */
-.sk-block { border-radius:4px; background:linear-gradient(90deg,var(--do-slate-100) 25%,var(--do-slate-200) 50%,var(--do-slate-100) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
-
 /* ══════════════════════════════════════════════════════
    EXPORT STYLES
 ══════════════════════════════════════════════════════ */
@@ -321,10 +318,8 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
-                        <h3 class="mb-0 text-white f-w-300" id="statPos">
-                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctPos">—</p>
+                        <h3 class="mb-0 text-white f-w-300" id="statPos">—</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctPos"><i class="ph ph-chart-line-up me-1"></i> Loading…</p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
                         <div class="kpi-icon-bg"><i class="ph ph-thumbs-up"></i></div>
@@ -339,10 +334,8 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
-                        <h3 class="mb-0 text-white f-w-300" id="statNeu">
-                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu">—</p>
+                        <h3 class="mb-0 text-white f-w-300" id="statNeu">—</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu"><i class="ph ph-chart-line-up me-1"></i> Loading…</p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
                         <div class="kpi-icon-bg"><i class="ph ph-minus-circle"></i></div>
@@ -357,10 +350,8 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
-                        <h3 class="mb-0 text-white f-w-300" id="statNeg">
-                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg">—</p>
+                        <h3 class="mb-0 text-white f-w-300" id="statNeg">—</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg"><i class="ph ph-chart-line-up me-1"></i> Loading…</p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
                         <div class="kpi-icon-bg"><i class="ph ph-thumbs-down"></i></div>
@@ -545,9 +536,9 @@
         </div>
         <div class="do-panel-tabs">
             <button class="do-panel-tab active" data-s="all" onclick="NSSPanel.filterSent('all')">Semua</button>
-            <button class="do-panel-tab neg"    data-s="neg" onclick="NSSPanel.filterSent('neg')">Neg</button>
             <button class="do-panel-tab pos"    data-s="pos" onclick="NSSPanel.filterSent('pos')">Pos</button>
             <button class="do-panel-tab neu"    data-s="neu" onclick="NSSPanel.filterSent('neu')">Neu</button>
+            <button class="do-panel-tab neg"    data-s="neg" onclick="NSSPanel.filterSent('neg')">Neg</button>
         </div>
     </div>
     <div class="do-panel-list" id="nssPanelList"></div>
@@ -657,7 +648,12 @@ function updateBreakdown(pos,neu,neg,nss){
 
 /* ── Data loader ── */
 async function loadNSS(){
-    if(!NSS_PID)return;
+    if(!NSS_PID){
+        ['statPos','statNeu','statNeg'].forEach(id=>{const el=$(id);if(el)el.textContent='—';});
+        ['pctPos','pctNeu','pctNeg'].forEach(id=>{const el=$(id);if(el)el.innerHTML='<i class="ph ph-warning-circle me-1"></i>No Project';});
+        const badge=$('nssBadgeMain'); if(badge) badge.textContent='No Project';
+        return;
+    }
     try{
         const media=document.querySelector('.nss-media-menu-item.active')?.dataset.m||'all';
         const res=await fetch(`/mk/api/sentiment/totals?project_id=${NSS_PID}&start_date=${NSS_SD}&end_date=${NSS_ED}&media=${media}`);
@@ -667,10 +663,15 @@ async function loadNSS(){
         const pos=parseInt(t.pos)||0,neg=parseInt(t.neg)||0,neu=parseInt(t.neu)||0;
         const tot=pos+neg+neu,posneg=pos+neg,nss=posneg===0?0:((pos-neg)/posneg*100);
         countUp($('statPos'),pos); countUp($('statNeu'),neu); countUp($('statNeg'),neg);
-        $('pctPos').textContent=pct(pos,tot); $('pctNeu').textContent=pct(neu,tot); $('pctNeg').textContent=pct(neg,tot);
+        $('pctPos').innerHTML=`<i class="ph ph-chart-line-up me-1"></i>${pct(pos,tot)}`; $('pctNeu').innerHTML=`<i class="ph ph-chart-line-up me-1"></i>${pct(neu,tot)}`; $('pctNeg').innerHTML=`<i class="ph ph-chart-line-up me-1"></i>${pct(neg,tot)}`;
         $('legPos').textContent=numFmt(pos)+' Positive'; $('legNeu').textContent=numFmt(neu)+' Neutral'; $('legNeg').textContent=numFmt(neg)+' Negative';
         updateBreakdown(pos,neu,neg,nss); renderGauge(nss); renderDist(pos,neu,neg);
-    }catch(err){console.error('loadNSS:',err);}
+    }catch(err){
+        console.error('loadNSS:',err);
+        ['statPos','statNeu','statNeg'].forEach(id=>{const el=$(id);if(el)el.innerHTML='<span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:600;">Error</span>';});
+        ['pctPos','pctNeu','pctNeg'].forEach(id=>{const el=$(id);if(el)el.innerHTML='<i class="ph ph-warning-circle me-1"></i>Gagal memuat';});
+        const badge=$('nssBadgeMain'); if(badge) badge.textContent='Error';
+    }
 }
 
 /* ══ Media Dropdown ══ */
@@ -773,10 +774,11 @@ const NSSPanel=(()=>{
         }catch(e){return[];}
     }
 
-    function _render(list,items){
+    function _render(list,items, showAll = false){
         if(!items.length){list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:var(--do-slate-400);font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`;return;}
         const SHOW=80;
-        list.innerHTML=items.slice(0,SHOW).map(item=>{
+        const visibleItems = showAll ? items : items.slice(0,SHOW);
+        list.innerHTML=visibleItems.map(item=>{
             const plat=item._platform||'doc';
             const meta=PLAT_META[plat]||{label:plat,color:getPrimary()};
             const sent=_normSent(item);
@@ -812,10 +814,20 @@ const NSSPanel=(()=>{
                 </div>
             </div>`;
         }).join('');
-        if(items.length>SHOW) list.insertAdjacentHTML('beforeend',`<div style="padding:9px;text-align:center;font-size:11px;font-weight:600;color:var(--do-slate-400);background:var(--do-slate-50);border-top:1px dashed var(--do-slate-200);">+${(items.length-SHOW).toLocaleString()} mentions lainnya</div>`);
+        if(!showAll && items.length>SHOW) {
+             const btnWrap = document.createElement('div');
+             btnWrap.style.padding = '16px';
+             btnWrap.style.textAlign = 'center';
+             btnWrap.style.borderTop = '1px dashed rgba(0,0,0,.08)';
+             btnWrap.style.background = '#f8fafc';
+             btnWrap.innerHTML = `<button onclick="NSSPanel.showAll()" style="background:#038047;color:#fff;border:none;padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(3,128,71,.2);" onmouseover="this.style.background='#026136';this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#038047';this.style.transform='none';">Muat Lebih Banyak</button>`;
+             list.appendChild(btnWrap);
+        }
     }
 
-    return{open,close,closeByOverlay,filterSent,get _cache(){return _cache;},set _cache(v){_cache=v;}};
+    function showAll() { _render($('nssPanelList'), _filtered, true); }
+
+    return{open,close,closeByOverlay,filterSent,showAll,get _cache(){return _cache;},set _cache(v){_cache=v;}};
 })();
 
 /* ══════════════════════════════════════════════════════
@@ -873,10 +885,6 @@ const NSSExport = (() => {
         _freezeStyle = document.createElement('style');
         _freezeStyle.id = '__nss_freeze__';
         _freezeStyle.textContent = `
-            #nssExportArea .sk-block {
-                background: #e2e8f0 !important;
-                animation: none !important;
-            }
             #nssExportArea .kpi-card-hover::before {
                 display: none !important;
             }

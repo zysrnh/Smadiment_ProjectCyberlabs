@@ -249,7 +249,7 @@
                 <div class="card h-100 text-white kpi-card-hover" style="background:#4680ff;animation:fadeUp .38s ease-out both;">
                     <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Articles</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiArticles"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiArticles">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiArticlesSub"><i class="ph ph-chart-line-up me-1"></i>Loading…</p>
                     </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-newspaper"></i></div></div></div></div>
                 </div>
@@ -258,7 +258,7 @@
                 <div class="card h-100 text-white kpi-card-hover" style="background:#10B981;animation:fadeUp .38s ease-out .05s both;">
                     <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Publishers</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiPublishers"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiPublishers">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPublishersSub"><i class="ph ph-globe me-1"></i>Loading…</p>
                     </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-globe"></i></div></div></div></div>
                 </div>
@@ -583,7 +583,15 @@
             EC.donut.on('mouseover', p => { EC.donut.getDom().style.cursor = 'pointer'; if (p.componentType !== 'series') return; const d = pieData[p.dataIndex], color = d.itemStyle.color; clearTimeout(_ttTimer); _ttEl.innerHTML = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;"><span style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span><b style="font-size:12.5px;">${esc(p.name)}</b></div><div style="display:flex;align-items:center;gap:10px;"><b style="font-size:13px;color:${color};">${numF(p.value)} articles</b><span style="color:#94a3b8;">${p.percent.toFixed(1)}%</span></div>`; _ttEl.style.display = 'block'; requestAnimationFrame(() => { _ttEl.style.opacity = '1'; _ttEl.style.transform = 'translateY(0) scale(1)'; }); });
             EC.donut.on('mouseout', () => { EC.donut.getDom().style.cursor = 'default'; _ttEl.style.opacity = '0'; _ttEl.style.transform = 'translateY(6px) scale(.97)'; _ttTimer = setTimeout(() => { _ttEl.style.display = 'none'; }, 180); });
             chartEl.addEventListener('mousemove', e => { if (_ttEl.style.display === 'none') return; const vw = window.innerWidth, vh = window.innerHeight, tw = _ttEl.offsetWidth + 16, th = _ttEl.offsetHeight + 16; let x = e.clientX + 18, y = e.clientY - 10; if (x + tw > vw) x = e.clientX - tw; if (y + th > vh) y = e.clientY - th; _ttEl.style.left = x + 'px'; _ttEl.style.top = y + 'px'; });
-            EC.donut.on('click', p => { const d = pieData[p.dataIndex]; if (d?.domain) TpPanel.open(d.domain); });
+            EC.donut.on('click', p => {
+                const d = pieData[p.dataIndex];
+                if (!d) return;
+                if (d.isOthers && d.restData?.length) {
+                    TpPanel.openOthers(d.restData, d.name);
+                } else if (d.domain) {
+                    TpPanel.open(d.domain);
+                }
+            });
         }
 
         /* ══════════════════════════════════════
@@ -609,39 +617,106 @@
             const cleanDomain = domain.replace(/^www\./, '').toLowerCase();
             const parts = cleanDomain.split('.');
             const baseDomain = parts.slice(-2).join('.');
-            const isBase = (cleanDomain === baseDomain);
-            const getHost = a => {
-                const raw = (a.publisher || a.source_name || a.hostname || '').replace(/^www\./, '').toLowerCase().trim();
-                if (raw) return raw;
-                try { return new URL((a.url || a.link || '').startsWith('http') ? (a.url || a.link || '') : 'https://' + (a.url || a.link || '')).hostname.replace(/^www\./, '').toLowerCase(); } catch { return ''; }
+            // Also build name variant: "liputan6.com" -> "liputan6"
+            const nameVariant = baseDomain.split('.')[0].toLowerCase();
+
+            const _matchesDomain = a => {
+                // 1. Check publisher / source_name / hostname field
+                const raw = (a.publisher || a.source_name || a.hostname || '').toLowerCase().trim();
+                const rawClean = raw.replace(/^www\./, '');
+                if (rawClean === cleanDomain || rawClean === baseDomain) return true;
+                // 2. Partial match on publisher name (e.g. "Liputan 6" vs "liputan6.com")
+                const rawNoSpace = rawClean.replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+                const nameNoSpace = nameVariant.replace(/[^a-z0-9]/g, '');
+                if (nameNoSpace.length >= 4 && rawNoSpace.includes(nameNoSpace)) return true;
+                // 3. Check hostname from URL
+                try {
+                    const urlStr = (a.url || a.link || '');
+                    if (urlStr) {
+                        const u = new URL(urlStr.startsWith('http') ? urlStr : 'https://' + urlStr);
+                        const h = u.hostname.replace(/^www\./, '').toLowerCase();
+                        if (h === cleanDomain || h === baseDomain || h.endsWith('.' + baseDomain)) return true;
+                    }
+                } catch {}
+                // 4. URL string contains baseDomain
+                const urlLow = (a.url || a.link || '').toLowerCase();
+                if (urlLow && urlLow.includes(baseDomain)) return true;
+                return false;
             };
-            const BATCH = 500; let allItems = [], start = 0, maxBatches = 6;
+
+            const isSocial = m => {
+                const mt = String(m.media_type || '').toLowerCase();
+                const mtid = String(m.media_type_id || '').toLowerCase();
+                const id = String(m.id || '');
+                const url = String(m.url || m.link || '').toLowerCase();
+                if (['twit','twitter','fb','facebook','ig','instagram','yt','youtube','tiktok'].includes(mt)) return true;
+                if (['2','3','4','5','6'].includes(mtid)) return true;
+                if (/^(tw|fb|in|yt)-/.test(id)) return true;
+                if (/twitter\.com|x\.com|facebook\.com|instagram\.com|youtube\.com|tiktok\.com/.test(url)) return true;
+                return false;
+            };
+
+            // First, try fetching with publisher filter appended (server may support it)
+            const BATCH = 500;
+            let allMatched = [], start = 0, maxBatches = 20;
+
             while (maxBatches-- > 0) {
                 let batch = [];
                 try {
-                    const res = await fetch(`/mk/api/news/mentions?project_id=${TpCfg.pid}&start_date=${TpCfg.sd}&end_date=${TpCfg.ed}&rows=${BATCH}&start=${start}`);
+                    const res = await fetch(
+                        `/mk/api/news/mentions?project_id=${TpCfg.pid}&start_date=${TpCfg.sd}&end_date=${TpCfg.ed}&rows=${BATCH}&start=${start}&publisher=${encodeURIComponent(cleanDomain)}`
+                    );
                     if (!res.ok) break;
                     const data = await res.json();
                     batch = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
                 } catch (e) { break; }
                 if (!batch.length) break;
-                batch = batch.filter(m => { const mt = String(m.media_type || '').toLowerCase(), mtid = String(m.media_type_id || '').toLowerCase(), id = String(m.id || ''), url = String(m.url || m.link || '').toLowerCase(); if (['twit', 'twitter', 'fb', 'facebook', 'ig', 'instagram', 'yt', 'youtube', 'tiktok'].includes(mt)) return false; if (['2', '3', '4', '5', '6'].includes(mtid)) return false; if (/^(tw|fb|in|yt)-/.test(id)) return false; if (/twitter\.com|x\.com|facebook\.com|instagram\.com|youtube\.com|tiktok\.com/.test(url)) return false; return true; });
-                allItems = allItems.concat(batch); start += BATCH;
-                const exact = allItems.filter(a => getHost(a) === cleanDomain);
-                if (exact.length >= 100) break;
+                const news = batch.filter(m => !isSocial(m));
+                const matched = news.filter(_matchesDomain);
+                allMatched = allMatched.concat(matched);
+                start += BATCH;
+                if (batch.length < BATCH) break;
+                // If server doesn't support publisher filter, matched would be much less than batch
+                // If we got a decent ratio, keep going; otherwise fall back to generic fetch
+                if (news.length > 0 && matched.length === 0 && start === BATCH) break; // server ignored filter
+            }
+
+            // If publisher-filtered fetch worked, return
+            if (allMatched.length > 0) return allMatched;
+
+            // Fallback: generic fetch without publisher filter, scan all
+            allMatched = []; start = 0; maxBatches = 16;
+            while (maxBatches-- > 0) {
+                let batch = [];
+                try {
+                    const res = await fetch(
+                        `/mk/api/news/mentions?project_id=${TpCfg.pid}&start_date=${TpCfg.sd}&end_date=${TpCfg.ed}&rows=${BATCH}&start=${start}`
+                    );
+                    if (!res.ok) break;
+                    const data = await res.json();
+                    batch = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
+                } catch (e) { break; }
+                if (!batch.length) break;
+                const news = batch.filter(m => !isSocial(m));
+                allMatched = allMatched.concat(news.filter(_matchesDomain));
+                start += BATCH;
                 if (batch.length < BATCH) break;
             }
-            const exact = allItems.filter(a => getHost(a) === cleanDomain);
-            if (exact.length) return exact;
-            if (isBase) { const sub = allItems.filter(a => { const h = getHost(a); return h === baseDomain || h.endsWith('.' + baseDomain); }); if (sub.length) return sub; }
-            return allItems.filter(a => (a.url || a.link || '').toLowerCase().includes(baseDomain));
+            return allMatched;
         }
+
 
         /* ══════════════════════════════════════
            SLIDE PANEL
         ══════════════════════════════════════ */
         const TpPanel = {
+            _showAll: false,
+            _curDomain: null,
+            _curItems: [],
+
             async open(domain) {
+                this._showAll = false;
+                this._curDomain = domain;
                 _panelDomain = domain; TpDetail.close();
                 _$('tpPanelDot').style.background = RED;
                 _$('tpPanelTitle').textContent = shortDomain(domain);
@@ -649,20 +724,68 @@
                 const ov = _$('tpPanelOverlay'), pn = _$('tpSntPanel');
                 ov.classList.remove('hiding'); pn.classList.remove('hiding'); ov.classList.add('show'); pn.classList.add('show');
                 const list = _$('tpPanelList');
-                list.innerHTML = '<div class="do-panel-loading"><div class="do-panel-spinner"></div>Loading articles…</div>';
+                list.innerHTML = '<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat artikel…<br><small style="font-weight:500;font-size:10px;color:var(--slate-300);">Mungkin butuh beberapa detik</small></span></div>';
                 try {
                     const key = `${TpCfg.pid}_${domain}_${TpCfg.sd}_${TpCfg.ed}`;
                     if (!_artCache[key]) _artCache[key] = await fetchArticles(domain);
                     _panelItems = _artCache[key] || [];
+                    this._curItems = _panelItems;
                     this._render(list, _panelItems, domain);
                 } catch (err) { list.innerHTML = `<div class="do-panel-loading" style="color:var(--slate-400);"><i class="ph ph-warning-circle" style="font-size:28px;"></i>Failed to load: ${esc(err.message)}</div>`; }
             },
+
+            async openOthers(restData, label) {
+                this._showAll = false;
+                this._curDomain = '__others__';
+                TpDetail.close();
+                _$('tpPanelDot').style.background = '#94a3b8';
+                _$('tpPanelTitle').textContent = label || 'Other Publishers';
+                _$('tpPanelMeta').textContent = TpCfg.sd + ' – ' + TpCfg.ed;
+                const ov = _$('tpPanelOverlay'), pn = _$('tpSntPanel');
+                ov.classList.remove('hiding'); pn.classList.remove('hiding'); ov.classList.add('show'); pn.classList.add('show');
+                const list = _$('tpPanelList');
+                list.innerHTML = '<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat artikel Others…<br><small style="font-weight:500;font-size:10px;color:var(--slate-300);">Mungkin butuh beberapa detik</small></span></div>';
+                try {
+                    const cacheKey = `${TpCfg.pid}___others___${TpCfg.sd}_${TpCfg.ed}`;
+                    if (!_artCache[cacheKey]) {
+                        // Fetch articles for top-N others in parallel (limit to avoid too many requests)
+                        const top = [...restData].sort((a, b) => (b.count || 0) - (a.count || 0)).slice(0, 30);
+                        const results = await Promise.allSettled(
+                            top.map(p => fetchArticles(p.domain).catch(() => []))
+                        );
+                        const all = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+                        // Sort by date desc
+                        all.sort((a, b) => {
+                            const da = new Date(a.date_created || a.publish_date || 0);
+                            const db = new Date(b.date_created || b.publish_date || 0);
+                            return db - da;
+                        });
+                        _artCache[cacheKey] = all;
+                    }
+                    this._curItems = _artCache[cacheKey];
+                    this._render(list, this._curItems, '__others__');
+                } catch (err) {
+                    list.innerHTML = `<div class="do-panel-loading" style="color:var(--slate-400);"><i class="ph ph-warning-circle" style="font-size:28px;"></i>Failed to load: ${esc(err.message)}</div>`;
+                }
+            },
+
+            _showAllOthers() { this._render(_$('tpPanelList'), this._curItems, '__others__', true); },
+
+
             close() { TpDetail.close(); const ov = _$('tpPanelOverlay'), pn = _$('tpSntPanel'); pn.classList.add('hiding'); ov.classList.add('hiding'); setTimeout(() => { pn.classList.remove('show', 'hiding'); ov.classList.remove('show', 'hiding'); }, 240); },
-            _render(list, items, domain) {
-                if (!items.length) { list.innerHTML = `<div class="do-panel-loading" style="color:var(--slate-400);text-align:center;gap:8px;"><i class="ph ph-folder-open" style="font-size:32px;"></i><span>No articles found for <b>${esc(shortDomain(domain))}</b></span><small style="font-size:10px;">Domain not found in API results for this period</small></div>`; return; }
-                const SHOW = 60, fav = `https://www.google.com/s2/favicons?sz=64&domain=${shortDomain(domain)}`;
-                list.innerHTML = items.slice(0, SHOW).map(a => {
+
+            _render(list, items, domain, showAll) {
+                const isOthers = domain === '__others__';
+                if (!items.length) { list.innerHTML = `<div class="do-panel-loading" style="color:var(--slate-400);text-align:center;gap:8px;"><i class="ph ph-folder-open" style="font-size:32px;"></i><span>No articles found</span><small style="font-size:10px;">${isOthers ? 'No articles for other publishers' : 'Domain not found in API results for this period'}</small></div>`; return; }
+                const SHOW = 60;
+                const visible = showAll ? items : items.slice(0, SHOW);
+                list.innerHTML = visible.map(a => {
                     const pub = (a.publisher || a.source_name || a.hostname || domain).replace(/^www\./, '').trim();
+                    // For Others: use article's own publisher domain for favicon
+                    const artDomain = isOthers
+                        ? (() => { try { const u=new URL((a.url||a.link||'').startsWith('http')?(a.url||a.link||''):'https://'+(a.url||a.link||'')); return u.hostname.replace(/^www\./,'').toLowerCase(); } catch { return pub.toLowerCase(); } })()
+                        : shortDomain(domain);
+                    const fav = `https://www.google.com/s2/favicons?sz=64&domain=${artDomain}`;
                     const title = (a.title || '').trim(), text = (a.content || a.description || a.summary || '').replace(/<[^>]*>/g, '').trim().slice(0, 130);
                     const dt = (a.date_created || a.publish_date || '').split('T')[0], url = a.url || a.link || '';
                     const views = parseInt(a.num_views || a.views || 0) || 0;
@@ -670,8 +793,10 @@
                     const sent = sentRaw === '1' || sentRaw === 'positive' || sentRaw === 'positif' ? 'pos' : sentRaw === '-1' || sentRaw === 'negative' || sentRaw === 'negatif' ? 'neg' : 'neu';
                     const sentLbl = { pos: 'Pos', neg: 'Neg', neu: 'Neu' }[sent];
                     const enc = esc(encodeURIComponent(JSON.stringify(a)));
-                    const ini = (shortDomain(domain)[0] || 'N').toUpperCase();
-                    return `<div class="do-panel-item" data-item="${enc}" data-domain="${esc(domain)}" onclick="TpPanel._click(this)">
+                    const ini = (artDomain[0] || 'N').toUpperCase();
+                    // Store actual domain in data-domain for detail panel
+                    const itemDomain = isOthers ? artDomain : domain;
+                    return `<div class="do-panel-item" data-item="${enc}" data-domain="${esc(itemDomain)}" onclick="TpPanel._click(this)">
                         <div class="do-panel-avatar" style="background:#EF4444;"><img src="${fav}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';"></div>
                         <div class="do-panel-item-body">
                             <div class="do-panel-author">${esc(pub)}</div>
@@ -685,8 +810,16 @@
                         </div>
                     </div>`;
                 }).join('');
-                if (items.length > SHOW) list.insertAdjacentHTML('beforeend', `<div style="padding:9px;text-align:center;font-size:11px;font-weight:600;color:var(--slate-400);background:var(--slate-50);border-top:1px dashed var(--slate-200);">+${(items.length - SHOW).toLocaleString()} more articles</div>`);
+                if (!showAll && items.length > SHOW) {
+                    const btnWrap = document.createElement('div');
+                    btnWrap.style.cssText = 'padding:16px;text-align:center;border-top:1px dashed rgba(0,0,0,.08);background:#f8fafc;';
+                    btnWrap.innerHTML = `<button onclick="TpPanel._showAllArticles()" style="background:#038047;color:#fff;border:none;padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(3,128,71,.2);" onmouseover="this.style.background='#026136';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#038047';this.style.transform='none'">Muat Lebih Banyak</button>`;
+                    list.appendChild(btnWrap);
+                }
             },
+
+            _showAllArticles() { this._render(_$('tpPanelList'), this._curItems, this._curDomain, true); },
+
             _click(el) { try { const raw = el.dataset.item.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"'); const item = JSON.parse(decodeURIComponent(raw)); TpDetail.open(item, el.dataset.domain || _panelDomain); } catch (e) { console.warn('[TpPanel._click]', e); } }
         };
 

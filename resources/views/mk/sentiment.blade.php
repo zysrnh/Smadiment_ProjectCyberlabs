@@ -165,22 +165,22 @@
   <div class="row mb-3">
     <div class="col-md-6 col-xl-3">
       <div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d1" style="cursor:pointer;" onclick="SNTPopup.openSentiment('neg')">
-        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Negative</p><h3 class="mb-0 text-white f-w-300" id="valNeg"><span class="sk-block" style="width:80px;height:24px;display:inline-block;background:rgba(255,255,255,.18);"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg">—</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div></div></div>
+        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Negative</p><h3 class="mb-0 text-white f-w-300" id="valNeg">—</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg"><i class="ph ph-chart-line-up me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div></div></div>
       </div>
     </div>
     <div class="col-md-6 col-xl-3">
       <div class="card h-100 bg-success text-white kpi-card-hover fade-up fade-up-d2" style="cursor:pointer;" onclick="SNTPopup.openSentiment('pos')">
-        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Positive</p><h3 class="mb-0 text-white f-w-300" id="valPos"><span class="sk-block" style="width:80px;height:24px;display:inline-block;background:rgba(255,255,255,.18);"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctPos">—</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div></div></div>
+        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Positive</p><h3 class="mb-0 text-white f-w-300" id="valPos">—</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctPos"><i class="ph ph-chart-line-up me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div></div></div>
       </div>
     </div>
     <div class="col-md-6 col-xl-3">
       <div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d3" style="cursor:pointer;" onclick="SNTPopup.openSentiment('neu')">
-        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Neutral</p><h3 class="mb-0 text-white f-w-300" id="valNeu"><span class="sk-block" style="width:80px;height:24px;display:inline-block;background:rgba(255,255,255,.18);"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu">—</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-meh"></i></div></div></div></div>
+        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Neutral</p><h3 class="mb-0 text-white f-w-300" id="valNeu">—</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu"><i class="ph ph-chart-line-up me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-meh"></i></div></div></div></div>
       </div>
     </div>
     <div class="col-md-6 col-xl-3">
       <div class="card h-100 bg-primary text-white kpi-card-hover fade-up fade-up-d4">
-        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p><h3 class="mb-0 text-white f-w-300" id="valTot"><span class="sk-block" style="width:80px;height:24px;display:inline-block;background:rgba(255,255,255,.18);"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12">{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} – {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div></div></div>
+        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p><h3 class="mb-0 text-white f-w-300" id="valTot">—</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph ph-list-numbers me-1"></i>{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} – {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div></div></div>
       </div>
     </div>
   </div>
@@ -433,7 +433,7 @@
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div class="d-flex align-items-center gap-2">
             <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-trend-up f-18 text-primary"></i></div>
-            <div><h6 class="mb-0">Sentiment Trends in All Media</h6><small class="text-muted">Tren harian Total / Positive / Neutral / Negative — <strong>klik chart untuk lihat mentions</strong></small></div>
+            <div><h6 class="mb-0">Sentiment Trends in All Media</h6><small class="text-muted">Tren harian Total / Positive / Neutral / Negative</small></div>
           </div>
           <div class="d-flex align-items-center gap-2">
             <button class="btn btn-outline-secondary btn-sm" onclick="SNTCsv.copyTrend()" title="Copy CSV"><i class="ph ph-copy me-1"></i>CSV</button>
@@ -542,9 +542,12 @@
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
         <div class="sntp-sent-tabs" id="sntPopSentTabs">
           <button class="sntp-sent-tab active" data-s="all" onclick="SNTPopup.filterSent('all')">Semua</button>
-          <button class="sntp-sent-tab neg" data-s="neg" onclick="SNTPopup.filterSent('neg')">Neg</button>
-          <button class="sntp-sent-tab pos" data-s="pos" onclick="SNTPopup.filterSent('pos')">Pos</button>
-          <button class="sntp-sent-tab neu" data-s="neu" onclick="SNTPopup.filterSent('neu')">Neu</button>
+           <button class="sntp-sent-tab pos" data-s="pos" onclick="SNTPopup.filterSent('pos')">Pos</button>
+           <button class="sntp-sent-tab neu" data-s="neu" onclick="SNTPopup.filterSent('neu')">Neu</button>
+         
+           <button class="sntp-sent-tab neg" data-s="neg" onclick="SNTPopup.filterSent('neg')">Neg</button>
+         
+         
         </div>
       </div>
     </div>
@@ -700,6 +703,8 @@
     ═══════════════════════════════════════════════════════ */
     async function loadSentiment() {
       if (!SNTCfg.pid) {
+        ['valNeg','valPos','valNeu','valTot'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='—';});
+        ['pctNeg','pctPos','pctNeu'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<i class="ph ph-warning-circle me-1"></i>No Project';});
         ['skOverview','skSovTotal','skMass','skSocial','skByType','skByPlat','skMassPie','skSocialPie','skTrend','skWeekday','skHour'].forEach(hideSk);
         return;
       }
@@ -716,6 +721,8 @@
         _rafReady(renderAll, _isSafari ? 120 : 0);
       } catch(err) {
         console.error('loadSentiment error:', err);
+        ['valNeg','valPos','valNeu','valTot'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:600;">Error</span>';});
+        ['pctNeg','pctPos','pctNeu'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<i class="ph ph-warning-circle me-1"></i>Gagal memuat';});
         ['skOverview','skSovTotal','skMass','skSocial','skByType','skByPlat','skMassPie','skSocialPie'].forEach(hideSk);
       }
     }
@@ -748,9 +755,9 @@
       document.getElementById('valPos').textContent = numFmt(pos);
       document.getElementById('valNeu').textContent = numFmt(neu);
       document.getElementById('valTot').textContent = numFmt(tot);
-      document.getElementById('pctNeg').textContent = pct(neg, tot);
-      document.getElementById('pctPos').textContent = pct(pos, tot);
-      document.getElementById('pctNeu').textContent = pct(neu, tot);
+      document.getElementById('pctNeg').innerHTML = `<i class="ph ph-chart-line-up me-1"></i>${pct(neg, tot)}`;
+      document.getElementById('pctPos').innerHTML = `<i class="ph ph-chart-line-up me-1"></i>${pct(pos, tot)}`;
+      document.getElementById('pctNeu').innerHTML = `<i class="ph ph-chart-line-up me-1"></i>${pct(neu, tot)}`;
       renderOverviewBar();
       renderSovDoughnut('chSovTotal', ['Negative','Positive','Neutral'], [neg,pos,neu], ['#ef4444','#2FC6F6','#94a3b8'], true);
       hideSk('skSovTotal');
@@ -1777,8 +1784,7 @@ const SNTExport = (() => {
         list.insertAdjacentHTML('beforeend',html);
         this._renderedCount=start+chunk.length;
         if(items.length>this._renderedCount){
-          const left=items.length-this._renderedCount, next=Math.min(limit,left);
-          list.insertAdjacentHTML('beforeend',`<div id="sntPopLoadMoreBtn" style="padding:10px;"><button class="btn btn-light-primary btn-sm w-100 d-flex justify-content-center align-items-center gap-2" style="font-weight:600;background:#f8fafc;color:#475569;border:1px dashed #cbd5e1;border-radius:6px;min-height:36px;" onclick="SNTPopup.loadMore()">Muat ${next} lagi <span style="font-weight:400;opacity:0.8;">(${left.toLocaleString()} tersisa)</span> <i class="ph ph-caret-down"></i></button></div>`);
+          list.insertAdjacentHTML('beforeend',`<div id="sntPopLoadMoreBtn" style="padding:11px 14px;text-align:center;background:var(--slate-50);border-top:1px dashed var(--slate-200);"><button id="_doLMBtn" onclick="SNTPopup.loadMore()" style="width:100%;border:none;background:var(--primary);color:#fff;border-radius:var(--radius-sm);padding:8px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;transition:filter .14s;" onmouseover="this.style.filter='brightness(1.12)'" onmouseout="this.style.filter=''"><i class="ph ph-arrow-circle-down" style="font-size:13px;"></i> Muat Lebih Banyak</button></div>`);
         }
       },
       _onItemClick(el) {

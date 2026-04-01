@@ -305,7 +305,7 @@ body { background: var(--bg); }
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Countries</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiCountries"><span class="sk-block" style="width:70px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiCountries">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCountriesSub"><i class="ph ph-globe me-1"></i>Loading…</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-globe"></i></div></div>
@@ -317,7 +317,7 @@ body { background: var(--bg); }
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Users</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiUsers"><span class="sk-block" style="width:70px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiUsers">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiUsersSub"><i class="ph ph-users me-1"></i>Loading…</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-users"></i></div></div>
@@ -329,7 +329,7 @@ body { background: var(--bg); }
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Top Country</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiTopCountry" style="font-size:1.1rem;"><span class="sk-block" style="width:90px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiTopCountry" style="font-size:1.1rem;">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopCountrySub"><i class="ph ph-map-pin me-1"></i>Loading…</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-map-pin"></i></div></div>
@@ -341,7 +341,7 @@ body { background: var(--bg); }
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Top Province</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiTopProvince" style="font-size:1.1rem;"><span class="sk-block" style="width:90px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiTopProvince" style="font-size:1.1rem;">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopProvinceSub"><i class="ph ph-buildings me-1"></i>Loading…</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-buildings"></i></div></div>
@@ -751,10 +751,20 @@ const XGeo = {
 
     async fetchGeoUser() {
         if (this._geoUserCache) return this._geoUserCache;
-        var j = await (await fetch('/mk/api/x/geo-user?project_id=' + this.projectId + '&start_date=' + this.startDate + '&end_date=' + this.endDate)).json();
-        this._geoUserCache = j;
-        this._loadStats(j);
-        return j;
+        try {
+            var res = await fetch('/mk/api/x/geo-user?project_id=' + this.projectId + '&start_date=' + this.startDate + '&end_date=' + this.endDate);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            var j = await res.json();
+            if (j.error) throw new Error(j.error);
+            this._geoUserCache = j;
+            this._loadStats(j);
+            return j;
+        } catch (err) {
+            console.error('fetchGeoUser:', err);
+            ['kpiCountries','kpiUsers','kpiTopCountry','kpiTopProvince'].forEach(id=>{var el=_$(id);if(el)el.innerHTML='<span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:600;">Error</span>';});
+            ['kpiCountriesSub','kpiUsersSub','kpiTopCountrySub','kpiTopProvinceSub'].forEach(id=>{var el=_$(id);if(el)el.innerHTML='<i class="ph ph-warning-circle me-1"></i>Gagal memuat';});
+            throw err;
+        }
     },
     async fetchGeoSentiment() {
         if (this._sentimentCache) return this._sentimentCache;
