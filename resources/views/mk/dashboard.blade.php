@@ -504,6 +504,15 @@
         const PROJECT_TIMELINES = {};
         // Base URL for Data Overview page
         const DATA_OVERVIEW_URL = '{{ route("mk.data-overview") }}';
+        const KPI_DATA = {
+    projects : {{ $projectCount }},
+    mentions : {{ $totalMentions }},
+    positive : {{ $totalPositive }},
+    negative : {{ $totalNegative }},
+    posPct   : '{{ $totalMentions > 0 ? round($totalPositive / $totalMentions * 100, 1) : 0 }}% of total',
+    negPct   : '{{ $totalMentions > 0 ? round($totalNegative / $totalMentions * 100, 1) : 0 }}% of total',
+    hasData  : {{ $totalMentions > 0 ? 'true' : 'false' }},
+};
     </script>
 
     {{-- ════ PAGE EXPORT WRAPPER — wraps everything visible on the dashboard ════ --}}
@@ -511,85 +520,86 @@
 
     {{-- ══ KPI Cards ══ --}}
 <div class="row g-3 mb-3">
-        <div class="col-md-6 col-xl-3">
-            <div class="card bg-primary text-white fade-up fade-up-d1">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="mb-1 text-white text-opacity-75 f-12">My Projects</p>
-                            <h3 class="mb-0 text-white f-w-300">{{ $projectCount }}</h3>
-                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                                <i class="ph ph-circle-dashed me-1"></i>Active monitoring
-                            </p>
-                        </div>
-                        <div class="flex-shrink-0 ms-3">
-                            <div class="kpi-icon-bg"><i class="ph ph-folder-open"></i></div>
-                        </div>
-                    </div>
+       <div class="col-md-6 col-xl-3">
+    <div class="card bg-primary text-white fade-up fade-up-d1">
+        <div class="card-body">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="mb-1 text-white text-opacity-75 f-12">My Projects</p>
+                    <h3 class="mb-0 text-white f-w-300" id="kpiProjects" style="transition:opacity .3s ease;">—</h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
+                        <i class="ph ph-circle-dashed me-1"></i>Active monitoring
+                    </p>
+                </div>
+                <div class="flex-shrink-0 ms-3">
+                    <div class="kpi-icon-bg"><i class="ph ph-folder-open"></i></div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
-        <div class="col-md-6 col-xl-3">
-            <div class="card bg-success text-white fade-up fade-up-d2">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
-                            <h3 class="mb-0 text-white f-w-300">{{ number_format($totalMentions) }}</h3>
-                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                                <i class="ph ph-chart-line-up me-1"></i>Across all projects
-                            </p>
-                        </div>
-                        <div class="flex-shrink-0 ms-3">
-                            <div class="kpi-icon-bg"><i class="ph ph-activity"></i></div>
-                        </div>
-                    </div>
+<div class="col-md-6 col-xl-3">
+    <div class="card bg-success text-white fade-up fade-up-d2">
+        <div class="card-body">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
+                    <h3 class="mb-0 text-white f-w-300" id="kpiMentions" style="transition:opacity .3s ease;">—</h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
+                        <i class="ph ph-chart-line-up me-1"></i>Across all projects
+                    </p>
+                </div>
+                <div class="flex-shrink-0 ms-3">
+                    <div class="kpi-icon-bg"><i class="ph ph-activity"></i></div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
-        <div class="col-md-6 col-xl-3">
-            <div class="card bg-warning text-white fade-up fade-up-d3">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
-                            <h3 class="mb-0 text-white f-w-300">{{ number_format($totalPositive) }}</h3>
-                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                                <i class="ph ph-trend-up me-1"></i>
-                                @if($totalMentions > 0){{ round($totalPositive / $totalMentions * 100, 1) }}% of total
-                                @else No data @endif
-                            </p>
-                        </div>
-                        <div class="flex-shrink-0 ms-3">
-                            <div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div>
-                        </div>
-                    </div>
+<div class="col-md-6 col-xl-3">
+    <div class="card bg-warning text-white fade-up fade-up-d3">
+        <div class="card-body">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
+                    <h3 class="mb-0 text-white f-w-300" id="kpiPositive" style="transition:opacity .3s ease;">—</h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPositiveSub">
+                        <i class="ph ph-trend-up me-1"></i>—
+                    </p>
+                </div>
+                <div class="flex-shrink-0 ms-3">
+                    <div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
-        <div class="col-md-6 col-xl-3">
-            <div class="card bg-danger text-white fade-up fade-up-d4">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
-                            <h3 class="mb-0 text-white f-w-300">{{ number_format($totalNegative) }}</h3>
-                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                                <i class="ph ph-trend-down me-1"></i>
-                                @if($totalMentions > 0){{ round($totalNegative / $totalMentions * 100, 1) }}% of total
-                                @else No data @endif
-                            </p>
-                        </div>
-                        <div class="flex-shrink-0 ms-3">
-                            <div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div>
-                        </div>
-                    </div>
+<div class="col-md-6 col-xl-3">
+    <div class="card bg-danger text-white fade-up fade-up-d4">
+        <div class="card-body">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
+                    <h3 class="mb-0 text-white f-w-300" id="kpiNegative" style="transition:opacity .3s ease;">—</h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNegativeSub">
+                        <i class="ph ph-trend-down me-1"></i>—
+                    </p>
+                </div>
+                <div class="flex-shrink-0 ms-3">
+                    <div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+       
+ 
+
+         
     </div>
 
     {{-- ══ Page Export Toolbar ══ --}}
@@ -994,64 +1004,54 @@
     /* ════════════════════════════════════════════════════════
        DOM READY
     ════════════════════════════════════════════════════════ */
-    document.addEventListener('DOMContentLoaded', function () {
-        // ── AUTO-SYNC WITH GLOBAL DATEPICKER ──
-        const params = new URLSearchParams(window.location.search);
-        const lsStart = localStorage.getItem('smadiment_g_start');
-        const lsEnd   = localStorage.getItem('smadiment_g_end');
-        
-        if (!params.get('start_date') && lsStart && lsEnd) {
-            params.set('start_date', lsStart);
-            params.set('end_date', lsEnd);
-            window.location.search = params.toString(); // Auto-redirect to sync
-            return;
-        }
+   document.addEventListener('DOMContentLoaded', function () {
+    // ── AUTO-SYNC WITH GLOBAL DATEPICKER ──
+    const params = new URLSearchParams(window.location.search);
+    const lsStart = localStorage.getItem('smadiment_g_start');
+    const lsEnd   = localStorage.getItem('smadiment_g_end');
+    
+    if (!params.get('start_date') && lsStart && lsEnd) {
+        params.set('start_date', lsStart);
+        params.set('end_date', lsEnd);
+        window.location.search = params.toString();
+        return;
+    }
 
-        // Date label
-        const el = _$('mkDateLabel');
-        if (el) el.textContent = new Date().toLocaleDateString('en-US', {
-            weekday:'short', day:'numeric', month:'short', year:'numeric'
-        });
-
-        // Scroll-to-top
-        const scrollBtn = _$('scrollTopBtn');
-        window.addEventListener('scroll', () =>
-            scrollBtn.classList.toggle('visible', window.scrollY > 300),
-        { passive: true });
-
-        // Sidebar search
-        const searchInput = _$('sidebarSearch');
-        if (searchInput) {
-            searchInput.addEventListener('input', function () {
-                const q = this.value.toLowerCase().trim();
-                document.querySelectorAll('.proj-item').forEach(item => {
-                    item.style.display = (!q || item.dataset.name.includes(q)) ? '' : 'none';
-                });
-            });
-        }
-
-        // Sidebar click → scroll + highlight card
-        document.querySelectorAll('.proj-item').forEach(function (item) {
-            item.addEventListener('click', function () {
-                const card = _$('proj-card-' + item.dataset.id);
-                document.querySelectorAll('.proj-item').forEach(el => el.classList.remove('active-sidebar'));
-                item.classList.add('active-sidebar');
-                if (!card) return;
-                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                card.classList.add('highlighted');
-                setTimeout(() => card.classList.remove('highlighted'), 2000);
-            });
-        });
-
-        // Swap skeleton → cards
-        const skel  = _$('skeletonWrap');
-        const cards = _$('actualCards');
-        if (skel)  skel.style.display  = 'none';
-        if (cards) cards.style.display = 'block';
-
-        initLazyCharts();
+    // Date label
+    const el = _$('mkDateLabel');
+    if (el) el.textContent = new Date().toLocaleDateString('en-US', {
+        weekday:'short', day:'numeric', month:'short', year:'numeric'
     });
 
+    // ── KPI Animated Fill ──
+    const fmt = n => parseInt(n || 0).toLocaleString('id-ID');
+    const kpiEls = [_$('kpiProjects'), _$('kpiMentions'), _$('kpiPositive'), _$('kpiNegative')];
+    kpiEls.forEach(el => { if (el) el.style.opacity = '0'; });
+
+    setTimeout(() => {
+        const kpiProjects = _$('kpiProjects');
+        const kpiMentions = _$('kpiMentions');
+        const kpiPositive = _$('kpiPositive');
+        const kpiNegative = _$('kpiNegative');
+        const kpiPosSub   = _$('kpiPositiveSub');
+        const kpiNegSub   = _$('kpiNegativeSub');
+
+        if (kpiProjects) { kpiProjects.textContent = fmt(KPI_DATA.projects); kpiProjects.style.opacity = '1'; }
+        if (kpiMentions) { kpiMentions.textContent = fmt(KPI_DATA.mentions); kpiMentions.style.opacity = '1'; }
+        if (kpiPositive) { kpiPositive.textContent = fmt(KPI_DATA.positive); kpiPositive.style.opacity = '1'; }
+        if (kpiNegative) { kpiNegative.textContent = fmt(KPI_DATA.negative); kpiNegative.style.opacity = '1'; }
+
+        if (kpiPosSub) kpiPosSub.innerHTML =
+            `<i class="ph ph-trend-up me-1"></i>${KPI_DATA.hasData ? KPI_DATA.posPct : 'No data'}`;
+        if (kpiNegSub) kpiNegSub.innerHTML =
+            `<i class="ph ph-trend-down me-1"></i>${KPI_DATA.hasData ? KPI_DATA.negPct : 'No data'}`;
+    }, 400);
+
+    // Scroll-to-top
+    const scrollBtn = _$('scrollTopBtn');
+    window.addEventListener('scroll', () =>
+        scrollBtn.classList.toggle('visible', window.scrollY > 300),
+    { passive: true });
     /* ════════════════════════════════════════════════════════
        LAZY CHART INIT
     ════════════════════════════════════════════════════════ */
