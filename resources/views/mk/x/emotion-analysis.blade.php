@@ -235,28 +235,32 @@
 <div class="row g-3 mb-3">
     @php
         $kpiCards = [
-            ['id'=>'kpiJoy',   'label'=>'Joy',   'icon'=>'ph-smiley',       'bg'=>'bg-warning', 'sub'=>'Emosi paling positif'],
-            ['id'=>'kpiTrust', 'label'=>'Trust', 'icon'=>'ph-handshake',    'bg'=>'bg-success', 'sub'=>'Kepercayaan & rasa aman'],
-            ['id'=>'kpiAnger', 'label'=>'Anger', 'icon'=>'ph-fire',         'bg'=>'bg-danger',  'sub'=>'Ekspresi amarah'],
-            ['id'=>'kpiTotal', 'label'=>'Total', 'icon'=>'ph-chart-line-up','bg'=>'bg-primary', 'sub'=>'Total tweet dianalisis'],
+            ['id'=>'kpiJoy',          'label'=>'Joy',          'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>', 'bg'=>'#F59E0B', 'sub'=>'Emosi paling positif'],
+            ['id'=>'kpiTrust',        'label'=>'Trust',        'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>', 'bg'=>'#10B981', 'sub'=>'Kepercayaan & aman'],
+            ['id'=>'kpiFear',         'label'=>'Fear',         'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="M8 12s2-2 4-2 4 2 4 2"/></svg>', 'bg'=>'#6366F1', 'sub'=>'Kekhawatiran & takut'],
+            ['id'=>'kpiSurprise',     'label'=>'Surprise',     'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="16" r="3"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>', 'bg'=>'#3B82F6', 'sub'=>'Ekspresi terkejut'],
+            ['id'=>'kpiSadness',      'label'=>'Sadness',      'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>', 'bg'=>'#8B5CF6', 'sub'=>'Rasa sedih & kecewa'],
+            ['id'=>'kpiDisgust',      'label'=>'Disgust',      'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16 16-1.5-2-1.5 2-1.5-2-1.5 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>', 'bg'=>'#A855F7', 'sub'=>'Ketidaksukaan/jijik'],
+            ['id'=>'kpiAnger',        'label'=>'Anger',        'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="m8 9 2-1"/><path d="m16 9-2-1"/></svg>', 'bg'=>'#EF4444', 'sub'=>'Ekspresi amarah'],
+            ['id'=>'kpiAnticipation', 'label'=>'Anticipation', 'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 15h6"/><path d="M8 9s1.5-2 4-2 4 2 4 2"/><line x1="11" y1="10" x2="11.01" y2="10"/><line x1="13" y1="10" x2="13.01" y2="10"/></svg>', 'bg'=>'#F97316', 'sub'=>'Ekspektasi & harap'],
         ];
-        $delays = ['.00s','.05s','.10s','.15s'];
+        $delays = ['.00s','.02s','.04s','.06s','.08s','.10s','.12s','.14s'];
     @endphp
     @foreach($kpiCards as $ki => $kc)
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 {{ $kc['bg'] }} text-white kpi-card-hover"
-             style="animation:fadeUp .38s ease-out {{ $delays[$ki] }} both;">
+        <div class="card h-100 text-white kpi-card-hover"
+             style="background:{{ $kc['bg'] }};animation:fadeUp .38s ease-out {{ $delays[$ki] }} both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">{{ $kc['label'] }}</p>
-                        <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">-</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                            <i class="ph-fill {{ $kc['icon'] }} me-1"></i>{{ $kc['sub'] }}
+                            {!! str_replace('width="24" height="24"', 'width="12" height="12" style="vertical-align:text-bottom;margin-right:4px;"', $kc['icon']) !!}{{ $kc['sub'] }}
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph {{ $kc['icon'] }}"></i></div>
+                        <div class="kpi-icon-bg">{!! $kc['icon'] !!}</div>
                     </div>
                 </div>
             </div>
@@ -332,7 +336,7 @@
                 </div>
                 <div class="card-body">
                     <div style="height:300px;position:relative;">
-                        <div class="chart-loading" id="radarLoading"><div class="spin-ring"></div><span>Loading…</span></div>
+                        <div class="chart-loading" id="radarLoading"><div class="spin-ring"></div><span>-</span></div>
                         <div id="radarChart" style="width:100%;height:300px;display:none;"></div>
                     </div>
                 </div>
@@ -348,7 +352,7 @@
                         <div><h6 class="mb-0">Distribusi Emosi</h6><small class="text-muted">Jumlah tweet per emosi — klik bar untuk lihat tweets</small></div>
                     </div>
                     <div class="d-flex align-items-center gap-1">
-                        <span class="badge bg-light-primary text-primary me-1" id="barBadge">—</span>
+                        <span class="badge bg-light-primary text-primary me-1" id="barBadge">-</span>
                         <div data-html2canvas-ignore="true" class="d-flex gap-1">
                             <button class="card-exp-btn card-exp-btn-pdf" onclick="XExport.runCard('card-export-bar','bar','pdf',this)"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
                             <button class="card-exp-btn card-exp-btn-img" onclick="XExport.runCard('card-export-bar','bar','image',this)"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
@@ -357,7 +361,7 @@
                 </div>
                 <div class="card-body">
                     <div style="height:300px;position:relative;">
-                        <div class="chart-loading" id="barLoading"><div class="spin-ring"></div><span>Loading…</span></div>
+                        <div class="chart-loading" id="barLoading"><div class="spin-ring"></div><span>-</span></div>
                         <div id="barChart" style="width:100%;height:300px;display:none;"></div>
                     </div>
                 </div>
@@ -379,7 +383,7 @@
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <span class="badge bg-light-primary text-primary" id="trendsBadge">—</span>
+                    <span class="badge bg-light-primary text-primary" id="trendsBadge">-</span>
                     <div class="fea-toggle-group" id="trendsTypeToggle">
                         <button class="fea-toggle-btn" data-type="line" onclick="FEAChart.setTrendsType('line')">Line</button>
                         <button class="fea-toggle-btn active" data-type="area" onclick="FEAChart.setTrendsType('area')">Area</button>
@@ -392,7 +396,7 @@
             </div>
             <div class="card-body">
                 <div style="height:300px;position:relative;">
-                    <div class="chart-loading" id="trendsLoading"><div class="spin-ring"></div><span>Loading…</span></div>
+                    <div class="chart-loading" id="trendsLoading"><div class="spin-ring"></div><span>-</span></div>
                     <div id="trendsChart" style="width:100%;height:300px;display:none;"></div>
                 </div>
                 {{-- Note banner: ditampilkan oleh JS jika fallback aktif --}}
@@ -412,14 +416,15 @@
 
 {{-- Emotion Tabs --}}
 <div class="fea-tabs mb-2">
-    <button class="fea-tab-btn active" id="tab-all" onclick="FEATab.show('all',this)">
-        <i class="ph ph-squares-four"></i>Semua <span class="fea-tab-chip" id="chip-all">—</span>
-    </button>
-    @foreach(['joy','trust','fear','surprise','sadness','disgust','anger','anticipation'] as $emo)
-    <button class="fea-tab-btn" id="tab-{{ $emo }}" onclick="FEATab.show('{{ $emo }}',this)">
-        {{ ucfirst($emo) }} <span class="fea-tab-chip" id="chip-{{ $emo }}">—</span>
-    </button>
-    @endforeach
+    <button class="fea-tab-btn active" id="tab-all" onclick="FEATab.show('all',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>Semua <span class="fea-tab-chip" id="chip-all">-</span></button>
+    <button class="fea-tab-btn" id="tab-joy" onclick="FEATab.show('joy',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Joy <span class="fea-tab-chip" id="chip-joy">-</span></button>
+    <button class="fea-tab-btn" id="tab-trust" onclick="FEATab.show('trust',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>Trust <span class="fea-tab-chip" id="chip-trust">-</span></button>
+    <button class="fea-tab-btn" id="tab-fear" onclick="FEATab.show('fear',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="M8 12s2-2 4-2 4 2 4 2"/></svg>Fear <span class="fea-tab-chip" id="chip-fear">-</span></button>
+    <button class="fea-tab-btn" id="tab-surprise" onclick="FEATab.show('surprise',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="16" r="3"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Surprise <span class="fea-tab-chip" id="chip-surprise">-</span></button>
+    <button class="fea-tab-btn" id="tab-sadness" onclick="FEATab.show('sadness',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Sadness <span class="fea-tab-chip" id="chip-sadness">-</span></button>
+    <button class="fea-tab-btn" id="tab-disgust" onclick="FEATab.show('disgust',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="m16 16-1.5-2-1.5 2-1.5-2-1.5 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Disgust <span class="fea-tab-chip" id="chip-disgust">-</span></button>
+    <button class="fea-tab-btn" id="tab-anger" onclick="FEATab.show('anger',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="m8 9 2-1"/><path d="m16 9-2-1"/></svg>Anger <span class="fea-tab-chip" id="chip-anger">-</span></button>
+    <button class="fea-tab-btn" id="tab-anticipation" onclick="FEATab.show('anticipation',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M9 15h6"/><path d="M8 9s1.5-2 4-2 4 2 4 2"/><line x1="11" y1="10" x2="11.01" y2="10"/><line x1="13" y1="10" x2="13.01" y2="10"/></svg>Anticipation <span class="fea-tab-chip" id="chip-anticipation">-</span></button>
 </div>
 
 
@@ -432,7 +437,7 @@
                 <div><h6 class="mb-0">Data Tweet</h6><small class="text-muted">Klik tweet untuk lihat detail</small></div>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-light-primary text-primary" id="listBadge">—</span>
+                <span class="badge bg-light-primary text-primary" id="listBadge">-</span>
                 <div data-html2canvas-ignore="true" class="d-flex gap-1">
                     <button class="card-exp-btn card-exp-btn-pdf" onclick="XExport.runCard('card-export-posts','posts','pdf',this)"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
                     <button class="card-exp-btn card-exp-btn-img" onclick="XExport.runCard('card-export-posts','posts','image',this)"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
@@ -601,10 +606,10 @@ const FEAData = {
     },
     _updateKPIs() {
         const c = getEmoCounts();
-        _$('kpiJoy').textContent   = numF(c.joy||0);
-        _$('kpiTrust').textContent = numF(c.trust||0);
-        _$('kpiAnger').textContent = numF(c.anger||0);
-        _$('kpiTotal').textContent = numF(getTotalPosts());
+        EMOTIONS.forEach(e => {
+            const el = _$('kpi' + e.charAt(0).toUpperCase() + e.slice(1));
+            if(el) el.textContent = numF(c[e]||0);
+        });
     },
     _updateChips() {
         const c  = getEmoCounts();
@@ -1036,12 +1041,9 @@ const FEAChart = {
                 axisBorder: { show: false },
                 axisTicks: { show: false },
                 labels: {
+                    show: true,
                     rotate: labelRotate,
-                    style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' },
-                    ...(displayDates.length > 30
-                        ? { formatter: (v, i) => (i % Math.ceil(displayDates.length / 15) === 0) ? v : '' }
-                        : {}
-                    )
+                    style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' }
                 }
             },
             yaxis: {
@@ -1053,19 +1055,16 @@ const FEAChart = {
                 axisTicks: { show: false },
                 min: 0
             },
-            /* Stroke: sembunyikan untuk bar chart */
             stroke: isSinglePoint ? { show: false } : { curve: 'smooth', width: 2 },
-            /* Fill */
             fill: isSinglePoint
                 ? { type: 'solid', opacity: 1 }
                 : type === 'area'
                     ? { type: 'gradient', gradient: { opacityFrom: .25, opacityTo: .03, shadeIntensity: .1 } }
                     : { type: 'solid', opacity: 1 },
-            /* Markers */
             markers: isSinglePoint
                 ? { size: 0 }
-                : { size: displayDates.length <= 14 ? 5 : 0, strokeWidth: 2, strokeColors: '#fff', hover: { size: 7 } },
-            /* Bar options */
+                : { size: 4, strokeWidth: 2, strokeColors: '#fff', hover: { size: 7 } },
+            /* Bar options / DataLabels */
             ...(isSinglePoint ? {
                 plotOptions: {
                     bar: {
@@ -1078,7 +1077,7 @@ const FEAChart = {
                 dataLabels: { enabled: false }
             } : {
                 dataLabels: {
-                    enabled: type === 'area', // Nyala buat AREA doang
+                    enabled: type === 'area',
                     offsetY: -6,
                     style: { fontSize: '9px', fontWeight: '800', colors: EMO_COLORS_ARR },
                     background: {
@@ -1112,9 +1111,10 @@ const FEAChart = {
                 onItemHover:  { highlightDataSeries: true }
             },
             tooltip: {
-                shared: !isSinglePoint,
-                intersect: isSinglePoint,
+                shared: false,
+                intersect: true,
                 style: { fontFamily: 'inherit', fontSize: '12px' },
+                x: { show: true },
                 y: { formatter: v => numF(v) + ' tweets' }
             }
         });

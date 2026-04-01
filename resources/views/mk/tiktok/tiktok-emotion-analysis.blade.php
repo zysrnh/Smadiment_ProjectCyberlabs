@@ -549,32 +549,34 @@
 <div class="row g-3 mb-3">
             @php
                 $kpiCards = [
-                    ['id' => 'kpiJoy',   'label' => 'Joy',   'icon' => 'ph-smiley',       'bg' => 'bg-warning', 'sub' => 'Emosi paling positif'],
-                    ['id' => 'kpiTrust', 'label' => 'Trust', 'icon' => 'ph-handshake',    'bg' => 'bg-success', 'sub' => 'Kepercayaan & rasa aman'],
-                    ['id' => 'kpiAnger', 'label' => 'Anger', 'icon' => 'ph-fire',         'bg' => 'bg-danger',  'sub' => 'Ekspresi amarah'],
-                    ['id' => 'kpiTotal', 'label' => 'Total', 'icon' => 'ph-chart-line-up','bg' => 'bg-primary', 'sub' => 'Total post dianalisis'],
+                    ['id'=>'kpiJoy',          'label'=>'Joy',          'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>', 'bg'=>'#F59E0B', 'sub'=>'Emosi paling positif'],
+                    ['id'=>'kpiTrust',        'label'=>'Trust',        'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>', 'bg'=>'#10B981', 'sub'=>'Kepercayaan & aman'],
+                    ['id'=>'kpiFear',         'label'=>'Fear',         'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="M8 12s2-2 4-2 4 2 4 2"/></svg>', 'bg'=>'#6366F1', 'sub'=>'Kekhawatiran & takut'],
+                    ['id'=>'kpiSurprise',     'label'=>'Surprise',     'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="16" r="3"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>', 'bg'=>'#3B82F6', 'sub'=>'Ekspresi terkejut'],
+                    ['id'=>'kpiSadness',      'label'=>'Sadness',      'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>', 'bg'=>'#8B5CF6', 'sub'=>'Rasa sedih & kecewa'],
+                    ['id'=>'kpiDisgust',      'label'=>'Disgust',      'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16 16-1.5-2-1.5 2-1.5-2-1.5 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>', 'bg'=>'#A855F7', 'sub'=>'Ketidaksukaan/jijik'],
+                    ['id'=>'kpiAnger',        'label'=>'Anger',        'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="m8 9 2-1"/><path d="m16 9-2-1"/></svg>', 'bg'=>'#EF4444', 'sub'=>'Ekspresi amarah'],
+                    ['id'=>'kpiAnticipation', 'label'=>'Anticipation', 'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 15h6"/><path d="M8 9s1.5-2 4-2 4 2 4 2"/><line x1="11" y1="10" x2="11.01" y2="10"/><line x1="13" y1="10" x2="13.01" y2="10"/></svg>', 'bg'=>'#F97316', 'sub'=>'Ekspektasi & harap'],
                 ];
-                $delays = ['.00s','.05s','.10s','.15s'];
+                $delays = ['.00s','.02s','.04s','.06s','.08s','.10s','.12s','.14s'];
             @endphp
             @foreach($kpiCards as $ki => $kc)
                 <div class="col-md-6 col-xl-3">
-<div class="card h-100 {{ $kc['bg'] }} text-white kpi-card-hover"
+<div class="card h-100 text-white kpi-card-hover"
                          onmouseenter="this.style.transform='translateY(-6px) scale(1.025)';this.style.boxShadow='0 20px 40px rgba(0,0,0,.25)';this.style.filter='brightness(1.07)';this.style.transition='transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s ease,filter .25s ease';"
                          onmouseleave="this.style.transform='';this.style.boxShadow='';this.style.filter='';"
-                         style="animation:fadeUp .38s ease-out {{ $delays[$ki] }} both;">
+                         style="background:{{ $kc['bg'] }}; animation:fadeUp .38s ease-out {{ $delays[$ki] }} both;">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <div class="flex-grow-1">
                                     <p class="mb-1 text-white text-opacity-75 f-12">{{ $kc['label'] }}</p>
-                                    <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">
-                                        <div class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></div>
-                                    </h3>
+                                    <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">-</h3>
                                     <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                                        <i class="ph {{ $kc['icon'] }} me-1"></i>{{ $kc['sub'] }}
+                                        {!! str_replace('width="24" height="24"', 'width="12" height="12" style="vertical-align:text-bottom;margin-right:4px;"', $kc['icon']) !!}{{ $kc['sub'] }}
                                     </p>
                                 </div>
                                 <div class="flex-shrink-0 ms-3">
-                                    <div class="kpi-icon-bg"><i class="ph {{ $kc['icon'] }}"></i></div>
+                                    <div class="kpi-icon-bg">{!! $kc['icon'] !!}</div>
                                 </div>
                             </div>
                         </div>
@@ -674,7 +676,7 @@
                     </div>
                     <div class="card-body">
                         <div class="chart-container" id="radarWrap" style="height:300px;">
-                            <div class="chart-loading" id="radarLoading"><div class="spin-ring"></div><span>Loading…</span></div>
+                            <div class="chart-loading" id="radarLoading"><div class="spin-ring"></div><span>-</span></div>
                             <div id="radarChart" style="width:100%;height:300px;display:none;"></div>
                         </div>
                     </div>
@@ -695,7 +697,7 @@
                             </div>
                         </div>
                         <div class="d-flex align-items-center gap-1">
-                            <span class="badge bg-light-primary text-primary me-1" id="barBadge">—</span>
+                            <span class="badge bg-light-primary text-primary me-1" id="barBadge">-</span>
                             <div data-html2canvas-ignore="true" class="d-flex gap-1">
                                 <button class="card-exp-btn card-exp-btn-pdf" onclick="TikTokExport.runCard('card-export-bar','bar','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
                                 <button class="card-exp-btn card-exp-btn-img" onclick="TikTokExport.runCard('card-export-bar','bar','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
@@ -704,7 +706,7 @@
                     </div>
                     <div class="card-body">
                         <div class="chart-container" id="barWrap" style="height:300px;">
-                            <div class="chart-loading" id="barLoading"><div class="spin-ring"></div><span>Loading…</span></div>
+                            <div class="chart-loading" id="barLoading"><div class="spin-ring"></div><span>-</span></div>
                             <div id="barChart" style="width:100%;height:300px;display:none;"></div>
                         </div>
                     </div>
@@ -729,7 +731,7 @@
                             </div>
                         </div>
                         <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-light-primary text-primary" id="trendsBadge">—</span>
+                            <span class="badge bg-light-primary text-primary" id="trendsBadge">-</span>
                             <div class="fea-toggle-group" id="trendsTypeToggle">
                                 <button class="fea-toggle-btn active" data-type="line" onclick="FEAChart.setTrendsType('line')">Line</button>
                                 <button class="fea-toggle-btn"        data-type="area" onclick="FEAChart.setTrendsType('area')">Area</button>
@@ -742,7 +744,7 @@
                     </div>
                     <div class="card-body">
                         <div class="chart-container" id="trendsWrap" style="height:300px;">
-                            <div class="chart-loading" id="trendsLoading"><div class="spin-ring"></div><span>Loading…</span></div>
+                            <div class="chart-loading" id="trendsLoading"><div class="spin-ring"></div><span>-</span></div>
                             <div id="trendsChart" style="width:100%;height:300px;display:none;"></div>
                         </div>
                     </div>
@@ -754,15 +756,15 @@
         {{-- ══ Emotion Tabs + Post List ══ --}}
         <div class="d-flex align-items-center justify-content-between gap-2 mb-2" style="flex-wrap:wrap;">
             <div class="fea-tabs flex-grow-1 mb-0" style="min-width:0;">
-                <button class="fea-tab-btn active" id="tab-all"          onclick="FEATab.show('all',this)"><i class="ph ph-squares-four"></i>Semua <span class="fea-tab-chip" id="chip-all">—</span></button>
-                <button class="fea-tab-btn"         id="tab-joy"          onclick="FEATab.show('joy',this)">Joy <span class="fea-tab-chip" id="chip-joy">—</span></button>
-                <button class="fea-tab-btn"         id="tab-trust"        onclick="FEATab.show('trust',this)">Trust <span class="fea-tab-chip" id="chip-trust">—</span></button>
-                <button class="fea-tab-btn"         id="tab-fear"         onclick="FEATab.show('fear',this)">Fear <span class="fea-tab-chip" id="chip-fear">—</span></button>
-                <button class="fea-tab-btn"         id="tab-surprise"     onclick="FEATab.show('surprise',this)">Surprise <span class="fea-tab-chip" id="chip-surprise">—</span></button>
-                <button class="fea-tab-btn"         id="tab-sadness"      onclick="FEATab.show('sadness',this)">Sadness <span class="fea-tab-chip" id="chip-sadness">—</span></button>
-                <button class="fea-tab-btn"         id="tab-disgust"      onclick="FEATab.show('disgust',this)">Disgust <span class="fea-tab-chip" id="chip-disgust">—</span></button>
-                <button class="fea-tab-btn"         id="tab-anger"        onclick="FEATab.show('anger',this)">Anger <span class="fea-tab-chip" id="chip-anger">—</span></button>
-                <button class="fea-tab-btn"         id="tab-anticipation" onclick="FEATab.show('anticipation',this)">Anticipation <span class="fea-tab-chip" id="chip-anticipation">—</span></button>
+                <button class="fea-tab-btn active" id="tab-all"          onclick="FEATab.show('all',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>Semua <span class="fea-tab-chip" id="chip-all">-</span></button>
+                <button class="fea-tab-btn"         id="tab-joy"          onclick="FEATab.show('joy',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Joy <span class="fea-tab-chip" id="chip-joy">-</span></button>
+                <button class="fea-tab-btn"         id="tab-trust"        onclick="FEATab.show('trust',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>Trust <span class="fea-tab-chip" id="chip-trust">-</span></button>
+                <button class="fea-tab-btn"         id="tab-fear"         onclick="FEATab.show('fear',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="M8 12s2-2 4-2 4 2 4 2"/></svg>Fear <span class="fea-tab-chip" id="chip-fear">-</span></button>
+                <button class="fea-tab-btn"         id="tab-surprise"     onclick="FEATab.show('surprise',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="16" r="3"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Surprise <span class="fea-tab-chip" id="chip-surprise">-</span></button>
+                <button class="fea-tab-btn"         id="tab-sadness"      onclick="FEATab.show('sadness',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Sadness <span class="fea-tab-chip" id="chip-sadness">-</span></button>
+                <button class="fea-tab-btn"         id="tab-disgust"      onclick="FEATab.show('disgust',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="m16 16-1.5-2-1.5 2-1.5-2-1.5 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Disgust <span class="fea-tab-chip" id="chip-disgust">-</span></button>
+                <button class="fea-tab-btn"         id="tab-anger"        onclick="FEATab.show('anger',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="m8 9 2-1"/><path d="m16 9-2-1"/></svg>Anger <span class="fea-tab-chip" id="chip-anger">-</span></button>
+                <button class="fea-tab-btn"         id="tab-anticipation" onclick="FEATab.show('anticipation',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M9 15h6"/><path d="M8 9s1.5-2 4-2 4 2 4 2"/><line x1="11" y1="10" x2="11.01" y2="10"/><line x1="13" y1="10" x2="13.01" y2="10"/></svg>Anticipation <span class="fea-tab-chip" id="chip-anticipation">-</span></button>
             </div>
         </div>
 
@@ -784,7 +786,7 @@
                         <option value="100" selected>Top 100</option>
                         <option value="200">Top 200</option>
                     </select>
-                    <span class="badge bg-light-primary text-primary" id="listBadge">Loading…</span>
+                    <span class="badge bg-light-primary text-primary" id="listBadge">-</span>
                     <div data-html2canvas-ignore="true" class="d-flex gap-1">
                         <button class="card-exp-btn card-exp-btn-pdf" onclick="TikTokExport.runCard('card-export-posts','posts','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
                         <button class="card-exp-btn card-exp-btn-img" onclick="TikTokExport.runCard('card-export-posts','posts','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
@@ -979,7 +981,10 @@
 
             async loadAll() {
                 if (!FEACfg.pid) {
-                    ['kpiJoy','kpiTrust','kpiAnger','kpiTotal'].forEach(id => { const el = _$(id); if (el) el.textContent = '—'; });
+                    EMOTIONS.forEach(id => {
+                        const el = _$('kpi' + id.charAt(0).toUpperCase() + id.slice(1));
+                        if (el) el.textContent = '—';
+                    });
                     if (_$('listEl')) _$('listEl').innerHTML = emptyHtml('Pilih project terlebih dahulu');
                     return;
                 }
@@ -1028,10 +1033,10 @@
 
             _updateKPIs() {
                 const counts = getEmoCounts();
-                const kv = _$('kpiJoy');   if (kv) kv.textContent  = numF(counts.joy   || 0);
-                const kt = _$('kpiTrust'); if (kt) kt.textContent  = numF(counts.trust || 0);
-                const ka = _$('kpiAnger'); if (ka) ka.textContent  = numF(counts.anger || 0);
-                const kto= _$('kpiTotal'); if (kto) kto.textContent= numF(allPosts.length);
+                EMOTIONS.forEach(e => {
+                    const el = _$('kpi' + e.charAt(0).toUpperCase() + e.slice(1));
+                    if (el) el.textContent = numF(counts[e] || 0);
+                });
             },
 
             _updateChips() {
@@ -1359,33 +1364,20 @@
 
                 const seriesData = EMOTIONS.map(e => ({ name:e.charAt(0).toUpperCase()+e.slice(1), data:dates.map(d=>dateMap[d][e]||0) }));
 
-                makeApex('trendsChart', {
-                    chart: {
-                        type: type==='area'?'area':'line', height:300,
-                        fontFamily:'inherit', background:'transparent', toolbar:{ show:false }, zoom:{ enabled:false },
-                        events: {
-                            mounted: () => hideLd('trendsLoading'),
-                            markerClick: (e,ctx,{seriesIndex,dataPointIndex}) => {
-                                const emo=EMOTIONS[seriesIndex], date=dates[dataPointIndex]; if (!emo) return;
-                                const emoPosts=allPosts.filter(p=>p.emotion===emo&&(p.date_created||'').substring(0,10)===date);
-                                FEAPanel.open(emoPosts.length?emoPosts:allPosts.filter(p=>p.emotion===emo),emo);
-                            },
-                            legendClick: (ctx,seriesIndex) => {
-                                const emo=EMOTIONS[seriesIndex]; if (!emo) return;
-                                FEAPanel.open(allPosts.filter(p=>p.emotion===emo),emo);
-                            }
-                        }
+                makeApex('trendsChart',{chart:{type:type==='area'?'area':'line',height:300,fontFamily:'inherit',background:'transparent',toolbar:{show:false},zoom:{enabled:false},events:{
+                    mounted:()=>hideLd('trendsLoading'),
+                    markerClick:(e,ctx,{seriesIndex,dataPointIndex})=>{
+                        const emo=EMOTIONS[seriesIndex],date=dates[dataPointIndex];if(!emo)return;
+                        const pool=allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo&&(p.date_created||'').substring(0,10)===date);
+                        FEAPanel.open(pool.length?pool:allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo),emo);
                     },
-                    series: seriesData, colors: EMO_COLORS_ARR,
-                    xaxis: { categories:dates, axisBorder:{ show:false }, axisTicks:{ show:false }, labels:{ style:{ fontSize:'10px', fontWeight:600, colors:'#94A3B8' } } },
-                    yaxis: { labels:{ formatter:v=>numK(v), style:{ fontSize:'10px', fontWeight:600, colors:'#94A3B8' } }, axisBorder:{ show:false }, axisTicks:{ show:false } },
-                    stroke: { curve:'smooth', width:2 },
-                    fill:   type==='area' ? { type:'gradient', gradient:{ opacityFrom:.35, opacityTo:.05, shadeIntensity:.1 } } : { type:'solid', opacity:1 },
-                    markers: { size:0, hover:{ size:5 } },
-                    grid:  { borderColor:'rgba(226,232,240,.55)', strokeDashArray:3, xaxis:{ lines:{ show:false } }, padding:{ top:10, right:8, bottom:0, left:4 } },
-                    legend:{ position:'bottom', horizontalAlign:'left', fontSize:'11px', fontFamily:'inherit', fontWeight:600, markers:{ width:8, height:8, radius:4 }, itemMargin:{ horizontal:12, vertical:4 }, offsetY:4 },
-                    tooltip:{ shared:true, intersect:false, style:{ fontFamily:'inherit', fontSize:'12px' }, y:{ formatter:v=>numF(v)+' posts' } },
-                });
+                    dataPointSelection:(e,ctx,cfg)=>{
+                        const emo=EMOTIONS[cfg.seriesIndex],date=dates[cfg.dataPointIndex];if(!emo)return;
+                        const pool=allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo&&(p.date_created||'').substring(0,10)===date);
+                        FEAPanel.open(pool.length?pool:allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo),emo);
+                    },
+                    mouseMove:(e,ctx,cfg)=>{const el=ctx?.el;if(el)el.style.cursor=(cfg.dataPointIndex>=0||cfg.seriesIndex>=0)?'pointer':'default';}
+                }},series:seriesData,colors:EMO_COLORS_ARR,xaxis:{categories:dates,axisBorder:{show:false},axisTicks:{show:false},labels:{show:true,style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'}}},yaxis:{labels:{formatter:v=>numK(v),style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},axisBorder:{show:false},axisTicks:{show:false}},stroke:{curve:'smooth',width:2},fill:type==='area'?{type:'gradient',gradient:{opacityFrom:.35,opacityTo:.05,shadeIntensity:.1}}:{type:'solid',opacity:1},markers:{size:4,strokeWidth:2,strokeColors:'#fff',hover:{size:7}},grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}},padding:{top:10,right:8,bottom:0,left:4}},legend:{position:'bottom',horizontalAlign:'left',fontSize:'11px',fontFamily:'inherit',fontWeight:600,markers:{width:8,height:8,radius:4},itemMargin:{horizontal:12,vertical:4},offsetY:4},tooltip:{shared:false,intersect:true,style:{fontFamily:'inherit',fontSize:'12px'},x:{show:true},y:{formatter:v=>numF(v)+' posts'}}});
             }
         };
 
