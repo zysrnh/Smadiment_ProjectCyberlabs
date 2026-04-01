@@ -434,7 +434,6 @@
         }
         .do-dp2-link:hover { filter: brightness(1.1); color: #fff; }
         .do-dp2-link i    { font-size: 13px; }
-        /* secondary (outline) link variant */
         .do-dp2-link-sec {
             display: flex; align-items: center; justify-content: center; gap: 6px;
             padding: 8px 14px; background: transparent; color: var(--dash-primary);
@@ -444,7 +443,6 @@
         }
         .do-dp2-link-sec:hover { background: var(--dash-primary-lt); color: var(--dash-primary); }
         .do-dp2-link-sec i { font-size: 13px; }
-        /* news-specific green link */
         .do-dp2-link-news {
             display: flex; align-items: center; justify-content: center; gap: 6px;
             padding: 9px 14px; background: #0284c7; color: #fff;
@@ -502,104 +500,98 @@
         const END_DATE        = '{{ $endDate }}';
         const CSRF_TOKEN      = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
         const PROJECT_TIMELINES = {};
-        // Base URL for Data Overview page
         const DATA_OVERVIEW_URL = '{{ route("mk.data-overview") }}';
         const KPI_DATA = {
-    projects : {{ $projectCount }},
-    mentions : {{ $totalMentions }},
-    positive : {{ $totalPositive }},
-    negative : {{ $totalNegative }},
-    posPct   : '{{ $totalMentions > 0 ? round($totalPositive / $totalMentions * 100, 1) : 0 }}% of total',
-    negPct   : '{{ $totalMentions > 0 ? round($totalNegative / $totalMentions * 100, 1) : 0 }}% of total',
-    hasData  : {{ $totalMentions > 0 ? 'true' : 'false' }},
-};
+            projects : {{ $projectCount }},
+            mentions : {{ $totalMentions }},
+            positive : {{ $totalPositive }},
+            negative : {{ $totalNegative }},
+            posPct   : '{{ $totalMentions > 0 ? round($totalPositive / $totalMentions * 100, 1) : 0 }}% of total',
+            negPct   : '{{ $totalMentions > 0 ? round($totalNegative / $totalMentions * 100, 1) : 0 }}% of total',
+            hasData  : {{ $totalMentions > 0 ? 'true' : 'false' }},
+        };
     </script>
 
-    {{-- ════ PAGE EXPORT WRAPPER — wraps everything visible on the dashboard ════ --}}
+    {{-- ════ PAGE EXPORT WRAPPER ════ --}}
     <div id="pageExportArea">
 
     {{-- ══ KPI Cards ══ --}}
-<div class="row g-3 mb-3">
-       <div class="col-md-6 col-xl-3">
-    <div class="card bg-primary text-white fade-up fade-up-d1">
-        <div class="card-body">
-            <div class="d-flex align-items-center">
-                <div class="flex-grow-1">
-                    <p class="mb-1 text-white text-opacity-75 f-12">My Projects</p>
-                    <h3 class="mb-0 text-white f-w-300" id="kpiProjects" style="transition:opacity .3s ease;">—</h3>
-                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                        <i class="ph ph-circle-dashed me-1"></i>Active monitoring
-                    </p>
-                </div>
-                <div class="flex-shrink-0 ms-3">
-                    <div class="kpi-icon-bg"><i class="ph ph-folder-open"></i></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="col-md-6 col-xl-3">
-    <div class="card bg-success text-white fade-up fade-up-d2">
-        <div class="card-body">
-            <div class="d-flex align-items-center">
-                <div class="flex-grow-1">
-                    <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
-                    <h3 class="mb-0 text-white f-w-300" id="kpiMentions" style="transition:opacity .3s ease;">—</h3>
-                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                        <i class="ph ph-chart-line-up me-1"></i>Across all projects
-                    </p>
-                </div>
-                <div class="flex-shrink-0 ms-3">
-                    <div class="kpi-icon-bg"><i class="ph ph-activity"></i></div>
+    <div class="row g-3 mb-3">
+        <div class="col-md-6 col-xl-3">
+            <div class="card bg-primary text-white fade-up fade-up-d1">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">My Projects</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiProjects" style="transition:opacity .3s ease;">—</h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
+                                <i class="ph ph-circle-dashed me-1"></i>Active monitoring
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3">
+                            <div class="kpi-icon-bg"><i class="ph ph-folder-open"></i></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<div class="col-md-6 col-xl-3">
-    <div class="card bg-warning text-white fade-up fade-up-d3">
-        <div class="card-body">
-            <div class="d-flex align-items-center">
-                <div class="flex-grow-1">
-                    <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
-                    <h3 class="mb-0 text-white f-w-300" id="kpiPositive" style="transition:opacity .3s ease;">—</h3>
-                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPositiveSub">
-                        <i class="ph ph-trend-up me-1"></i>—
-                    </p>
-                </div>
-                <div class="flex-shrink-0 ms-3">
-                    <div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="col-md-6 col-xl-3">
-    <div class="card bg-danger text-white fade-up fade-up-d4">
-        <div class="card-body">
-            <div class="d-flex align-items-center">
-                <div class="flex-grow-1">
-                    <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
-                    <h3 class="mb-0 text-white f-w-300" id="kpiNegative" style="transition:opacity .3s ease;">—</h3>
-                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNegativeSub">
-                        <i class="ph ph-trend-down me-1"></i>—
-                    </p>
-                </div>
-                <div class="flex-shrink-0 ms-3">
-                    <div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card bg-success text-white fade-up fade-up-d2">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiMentions" style="transition:opacity .3s ease;">—</h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
+                                <i class="ph ph-chart-line-up me-1"></i>Across all projects
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3">
+                            <div class="kpi-icon-bg"><i class="ph ph-activity"></i></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-       
- 
+        <div class="col-md-6 col-xl-3">
+            <div class="card bg-warning text-white fade-up fade-up-d3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiPositive" style="transition:opacity .3s ease;">—</h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPositiveSub">
+                                <i class="ph ph-trend-up me-1"></i>—
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3">
+                            <div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-         
+        <div class="col-md-6 col-xl-3">
+            <div class="card bg-danger text-white fade-up fade-up-d4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiNegative" style="transition:opacity .3s ease;">—</h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNegativeSub">
+                                <i class="ph ph-trend-down me-1"></i>—
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3">
+                            <div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- ══ Page Export Toolbar ══ --}}
@@ -722,21 +714,16 @@
                             $neg   = $sent['negative'] ?? 0;
                         @endphp
 
-                        {{-- ══ Project card wrapper ══ --}}
                         <div class="card lazy-card mb-3"
                              id="proj-card-{{ $id }}"
                              data-project-id="{{ $id }}"
                              data-loaded="false">
 
-                            {{-- ██ EXPORT WRAPPER — captures everything below ██ --}}
                             <div id="dashboardExportArea-{{ $id }}"
                                  style="background:#fff;border-radius:8px;overflow:hidden;">
 
-                                {{-- Card Header --}}
                                 <div class="card-header">
                                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-
-                                        {{-- Left: icon + title --}}
                                         <div class="d-flex align-items-center gap-2">
                                             <div class="avtar avtar-xs bg-light-success rounded-circle">
                                                 <i class="ph ph-pulse f-18 text-success"></i>
@@ -747,15 +734,11 @@
                                             </div>
                                         </div>
 
-                                        {{-- Right: action buttons (excluded from export canvas) --}}
                                         <div class="d-flex gap-1 flex-wrap" data-html2canvas-ignore="true">
-                                            {{-- Overview --}}
                                             <a href="{{ route('mk.data-overview') }}?project_id={{ $id }}&start_date={{ $startDate }}&end_date={{ $endDate }}"
                                                class="btn btn-primary btn-sm">
                                                 <i class="ph ph-chart-bar me-1"></i>Overview
                                             </a>
-
-                                            {{-- Export PDF --}}
                                             <button type="button"
                                                     class="btn btn-outline-danger btn-sm export-btn"
                                                     id="btn-pdf-{{ $id }}"
@@ -764,8 +747,6 @@
                                                 <i class="ph ph-file-pdf export-icon"></i>
                                                 <span class="export-spinner"></span>
                                             </button>
-
-                                            {{-- Export Image --}}
                                             <button type="button"
                                                     class="btn btn-outline-secondary btn-sm export-btn"
                                                     id="btn-img-{{ $id }}"
@@ -777,7 +758,6 @@
                                         </div>
                                     </div>
 
-                                    {{-- Badge row --}}
                                     <div class="d-flex gap-2 mt-3 flex-wrap">
                                         <span class="badge bg-light-primary text-primary">
                                             <i class="ph ph-calendar-blank me-1"></i>
@@ -794,10 +774,7 @@
                                     </div>
                                 </div>
 
-                                {{-- Card Body --}}
                                 <div class="card-body">
-
-                                    {{-- Stats Row --}}
                                     <div class="row g-2 mb-3">
                                         <div class="col-6 col-lg-3">
                                             <div class="stat-chip clickable p-2 rounded-2 text-center"
@@ -833,7 +810,6 @@
                                         </div>
                                     </div>
 
-                                    {{-- Chart Header --}}
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <small class="text-muted fw-semibold text-uppercase"
                                                style="letter-spacing:.5px;font-size:11px;">
@@ -845,26 +821,19 @@
                                         </small>
                                     </div>
 
-                                    {{-- Chart --}}
-                                    {{-- Chart --}}
-<div class="chart-container" id="chart-wrap-{{ $id }}">
-    <div class="chart-loading" id="chart-loading-{{ $id }}">
-        <div class="spin-ring"></div>
-        <span>Loading chart...</span>
-    </div>
-    {{-- ← tambah scroll-wrapper --}}
-    <div id="chart-scroll-{{ $id }}" style="overflow-x:auto;overflow-y:hidden;width:100%;-webkit-overflow-scrolling:touch;">
-        <div id="chart-{{ $id }}" style="width:100%;height:280px;display:none;cursor:pointer;"></div>
-    </div>
-</div>
+                                    <div class="chart-container" id="chart-wrap-{{ $id }}">
+                                        <div class="chart-loading" id="chart-loading-{{ $id }}">
+                                            <div class="spin-ring"></div>
+                                            <span>Loading chart...</span>
+                                        </div>
+                                        <div id="chart-scroll-{{ $id }}" style="overflow-x:auto;overflow-y:hidden;width:100%;-webkit-overflow-scrolling:touch;">
+                                            <div id="chart-{{ $id }}" style="width:100%;height:280px;display:none;cursor:pointer;"></div>
+                                        </div>
+                                    </div>
                                 </div>
-                                {{-- /card-body --}}
 
                             </div>
-                            {{-- /dashboardExportArea --}}
-
                         </div>
-                        {{-- /proj-card --}}
 
                         <div class="lazy-sentinel"
                              data-target="proj-card-{{ $id }}"
@@ -888,7 +857,7 @@
             </div>
         </div>
     </div>
-    {{-- ════ /pageExportArea ════ --}}
+    {{-- /pageExportArea --}}
     </div>
 
     {{-- Scroll-to-top --}}
@@ -897,13 +866,13 @@
         <i class="ph ph-arrow-up"></i>
     </button>
 
-    {{-- ══ Export Toast ══ --}}
+    {{-- Export Toast --}}
     <div class="export-toast" id="exportToast">
         <i class="ph ph-check-circle" id="exportToastIcon"></i>
         <span id="exportToastMsg">Exporting…</span>
     </div>
 
-    {{-- ══ Slide Panel (mentions drawer) ══ --}}
+    {{-- Slide Panel --}}
     <div class="do-panel-overlay" id="dashPanelOverlay" onclick="DashPanel.closeByOverlay()"></div>
     <div class="do-panel" id="dashSntPanel">
         <div class="do-panel-header">
@@ -918,14 +887,15 @@
             </div>
             <div class="do-panel-tabs">
                 <button class="do-panel-tab active" data-s="all" onclick="DashPanel.filterSent('all')">Semua</button>
+                 <button class="do-panel-tab pos"    data-s="pos" onclick="DashPanel.filterSent('pos')">Pos</button>
+                   <button class="do-panel-tab neu"    data-s="neu" onclick="DashPanel.filterSent('neu')">Neu</button>
                 <button class="do-panel-tab neg"    data-s="neg" onclick="DashPanel.filterSent('neg')">Neg</button>
-                <button class="do-panel-tab pos"    data-s="pos" onclick="DashPanel.filterSent('pos')">Pos</button>
-                <button class="do-panel-tab neu"    data-s="neu" onclick="DashPanel.filterSent('neu')">Neu</button>
+               
+              
             </div>
         </div>
         <div class="do-panel-list" id="dashPanelList"></div>
 
-        {{-- Detail sub-panel --}}
         <div class="do-detail-panel" id="dashDetailPanel">
             <div class="do-dp2-header">
                 <button class="do-dp2-back" onclick="DashDetail.close()">
@@ -963,13 +933,10 @@
 @endsection
 
 @section('scripts')
-    {{-- ══ Export dependencies (html2canvas + jsPDF) ══ --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-    {{-- ══ ApexCharts ══ --}}
     <script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
 
     <script>
@@ -993,10 +960,7 @@
 
     const _$ = id => document.getElementById(id);
     const _es = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    const numK = n => {
-        n = parseInt(n||0);
-        return n.toLocaleString('id-ID'); // Format full (misal: 12.350)
-    };
+    const numK = n => { n = parseInt(n||0); return n.toLocaleString('id-ID'); };
     function getPrimary() {
         return getComputedStyle(document.documentElement).getPropertyValue('--bs-primary').trim() || '#4361EE';
     }
@@ -1004,54 +968,89 @@
     /* ════════════════════════════════════════════════════════
        DOM READY
     ════════════════════════════════════════════════════════ */
-   document.addEventListener('DOMContentLoaded', function () {
-    // ── AUTO-SYNC WITH GLOBAL DATEPICKER ──
-    const params = new URLSearchParams(window.location.search);
-    const lsStart = localStorage.getItem('smadiment_g_start');
-    const lsEnd   = localStorage.getItem('smadiment_g_end');
-    
-    if (!params.get('start_date') && lsStart && lsEnd) {
-        params.set('start_date', lsStart);
-        params.set('end_date', lsEnd);
-        window.location.search = params.toString();
-        return;
-    }
+    document.addEventListener('DOMContentLoaded', function () {
 
-    // Date label
-    const el = _$('mkDateLabel');
-    if (el) el.textContent = new Date().toLocaleDateString('en-US', {
-        weekday:'short', day:'numeric', month:'short', year:'numeric'
+        // ── AUTO-SYNC WITH GLOBAL DATEPICKER ──
+        const params = new URLSearchParams(window.location.search);
+        const lsStart = localStorage.getItem('smadiment_g_start');
+        const lsEnd   = localStorage.getItem('smadiment_g_end');
+        if (!params.get('start_date') && lsStart && lsEnd) {
+            params.set('start_date', lsStart);
+            params.set('end_date', lsEnd);
+            window.location.search = params.toString();
+            return;
+        }
+
+        // ── Date label ──
+        const el = _$('mkDateLabel');
+        if (el) el.textContent = new Date().toLocaleDateString('en-US', {
+            weekday:'short', day:'numeric', month:'short', year:'numeric'
+        });
+
+        // ── KPI Animated Fill ──
+        const fmt = n => parseInt(n || 0).toLocaleString('id-ID');
+        const kpiEls = [_$('kpiProjects'), _$('kpiMentions'), _$('kpiPositive'), _$('kpiNegative')];
+        kpiEls.forEach(el => { if (el) el.style.opacity = '0'; });
+
+        setTimeout(() => {
+            const kpiProjects = _$('kpiProjects');
+            const kpiMentions = _$('kpiMentions');
+            const kpiPositive = _$('kpiPositive');
+            const kpiNegative = _$('kpiNegative');
+            const kpiPosSub   = _$('kpiPositiveSub');
+            const kpiNegSub   = _$('kpiNegativeSub');
+
+            if (kpiProjects) { kpiProjects.textContent = fmt(KPI_DATA.projects); kpiProjects.style.opacity = '1'; }
+            if (kpiMentions) { kpiMentions.textContent = fmt(KPI_DATA.mentions); kpiMentions.style.opacity = '1'; }
+            if (kpiPositive) { kpiPositive.textContent = fmt(KPI_DATA.positive); kpiPositive.style.opacity = '1'; }
+            if (kpiNegative) { kpiNegative.textContent = fmt(KPI_DATA.negative); kpiNegative.style.opacity = '1'; }
+
+            if (kpiPosSub) kpiPosSub.innerHTML =
+                `<i class="ph ph-trend-up me-1"></i>${KPI_DATA.hasData ? KPI_DATA.posPct : 'No data'}`;
+            if (kpiNegSub) kpiNegSub.innerHTML =
+                `<i class="ph ph-trend-down me-1"></i>${KPI_DATA.hasData ? KPI_DATA.negPct : 'No data'}`;
+        }, 400);
+
+        // ── Scroll-to-top ──
+        const scrollBtn = _$('scrollTopBtn');
+        window.addEventListener('scroll', () =>
+            scrollBtn.classList.toggle('visible', window.scrollY > 300),
+        { passive: true });
+
+        // ── Sidebar search ──
+        const searchInput = _$('sidebarSearch');
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
+                const q = this.value.toLowerCase().trim();
+                document.querySelectorAll('.proj-item').forEach(item => {
+                    item.style.display = (!q || item.dataset.name.includes(q)) ? '' : 'none';
+                });
+            });
+        }
+
+        // ── Sidebar click → scroll + highlight card ──
+        document.querySelectorAll('.proj-item').forEach(function (item) {
+            item.addEventListener('click', function () {
+                const card = _$('proj-card-' + item.dataset.id);
+                document.querySelectorAll('.proj-item').forEach(el => el.classList.remove('active-sidebar'));
+                item.classList.add('active-sidebar');
+                if (!card) return;
+                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                card.classList.add('highlighted');
+                setTimeout(() => card.classList.remove('highlighted'), 2000);
+            });
+        });
+
+        // ── Swap skeleton → cards ──
+        const skel  = _$('skeletonWrap');
+        const cards = _$('actualCards');
+        if (skel)  skel.style.display  = 'none';
+        if (cards) cards.style.display = 'block';
+
+        // ── Init lazy charts ──
+        initLazyCharts();
     });
 
-    // ── KPI Animated Fill ──
-    const fmt = n => parseInt(n || 0).toLocaleString('id-ID');
-    const kpiEls = [_$('kpiProjects'), _$('kpiMentions'), _$('kpiPositive'), _$('kpiNegative')];
-    kpiEls.forEach(el => { if (el) el.style.opacity = '0'; });
-
-    setTimeout(() => {
-        const kpiProjects = _$('kpiProjects');
-        const kpiMentions = _$('kpiMentions');
-        const kpiPositive = _$('kpiPositive');
-        const kpiNegative = _$('kpiNegative');
-        const kpiPosSub   = _$('kpiPositiveSub');
-        const kpiNegSub   = _$('kpiNegativeSub');
-
-        if (kpiProjects) { kpiProjects.textContent = fmt(KPI_DATA.projects); kpiProjects.style.opacity = '1'; }
-        if (kpiMentions) { kpiMentions.textContent = fmt(KPI_DATA.mentions); kpiMentions.style.opacity = '1'; }
-        if (kpiPositive) { kpiPositive.textContent = fmt(KPI_DATA.positive); kpiPositive.style.opacity = '1'; }
-        if (kpiNegative) { kpiNegative.textContent = fmt(KPI_DATA.negative); kpiNegative.style.opacity = '1'; }
-
-        if (kpiPosSub) kpiPosSub.innerHTML =
-            `<i class="ph ph-trend-up me-1"></i>${KPI_DATA.hasData ? KPI_DATA.posPct : 'No data'}`;
-        if (kpiNegSub) kpiNegSub.innerHTML =
-            `<i class="ph ph-trend-down me-1"></i>${KPI_DATA.hasData ? KPI_DATA.negPct : 'No data'}`;
-    }, 400);
-
-    // Scroll-to-top
-    const scrollBtn = _$('scrollTopBtn');
-    window.addEventListener('scroll', () =>
-        scrollBtn.classList.toggle('visible', window.scrollY > 300),
-    { passive: true });
     /* ════════════════════════════════════════════════════════
        LAZY CHART INIT
     ════════════════════════════════════════════════════════ */
@@ -1127,549 +1126,441 @@
        RENDER CHART
     ════════════════════════════════════════════════════════ */
     function renderProjectChart(projectId) {
-    const chartEl  = _$('chart-' + projectId);
-    const wrapEl   = _$('chart-wrap-' + projectId);
-    const loadEl   = _$('chart-loading-' + projectId);
-    const tl       = PROJECT_TIMELINES[String(projectId)] || null;
+        const chartEl  = _$('chart-' + projectId);
+        const wrapEl   = _$('chart-wrap-' + projectId);
+        const loadEl   = _$('chart-loading-' + projectId);
+        const tl       = PROJECT_TIMELINES[String(projectId)] || null;
 
-    if (!chartEl || !wrapEl || typeof ApexCharts === 'undefined') return;
+        if (!chartEl || !wrapEl || typeof ApexCharts === 'undefined') return;
 
-    if (!tl || !tl.dates || tl.dates.length === 0) {
-        if (loadEl) loadEl.remove();
-        wrapEl.innerHTML = '<div class="chart-empty"><i class="ph ph-chart-line"></i><span>No data for selected range</span></div>';
-        return;
-    }
-
-    chartEl.style.display = 'block';
-
-    /* ── Safari-safe label parse ── */
-    const totalPoints      = tl.dates.length;
-    const SCROLL_THRESHOLD = 31;
-
-    const labels = tl.dates.map(dt => {
-        try {
-            const datePart = String(dt || '').split(/[T\s]/)[0];
-            const parts    = datePart.split('-');
-            if (parts.length !== 3) return dt;
-            const year  = parseInt(parts[0], 10);
-            const month = parseInt(parts[1], 10);
-            const day   = parseInt(parts[2], 10);
-            if (isNaN(year) || isNaN(month) || isNaN(day)) return dt;
-            const d = new Date(year, month - 1, day);
-            /* > 31 hari tampilkan "15 Jan", ≤ 31 hari tampilkan "15/1" */
-            return totalPoints > SCROLL_THRESHOLD
-                ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
-                : `${d.getDate()}/${d.getMonth() + 1}`;
-        } catch (e) { return dt; }
-    });
-
-    /* ── Scroll setup ── */
-    const containerW  = chartEl.parentElement?.offsetWidth || 600;
-    const chartWidth  = totalPoints > SCROLL_THRESHOLD
-        ? Math.max(totalPoints * 42, containerW)
-        : containerW;
-
-    const scrollWrap = _$('chart-scroll-' + projectId);
-    if (scrollWrap) {
-        if (totalPoints > SCROLL_THRESHOLD) {
-            scrollWrap.style.overflowX = 'auto';
-            /* Hint "geser" — hanya inject sekali */
-            if (!scrollWrap.dataset.hinted) {
-                scrollWrap.dataset.hinted = '1';
-                const hint = document.createElement('div');
-                hint.style.cssText = 'text-align:right;font-size:10px;color:#94A3B8;font-weight:600;padding:2px 4px 4px;';
-                hint.innerHTML = '<i class="ph ph-arrows-left-right" style="font-size:11px;vertical-align:middle;"></i> Geser untuk lihat semua';
-                scrollWrap.parentElement?.insertBefore(hint, scrollWrap);
-            }
-        } else {
-            scrollWrap.style.overflowX = 'hidden';
+        if (!tl || !tl.dates || tl.dates.length === 0) {
+            if (loadEl) loadEl.remove();
+            wrapEl.innerHTML = '<div class="chart-empty"><i class="ph ph-chart-line"></i><span>No data for selected range</span></div>';
+            return;
         }
-    }
 
-    chartEl.style.width    = chartWidth + 'px';
-    chartEl.style.minWidth = chartWidth + 'px';
+        chartEl.style.display = 'block';
 
-    const showLabels = totalPoints <= 31; /* dataLabels hanya kalau tidak padat */
+        const totalPoints      = tl.dates.length;
+        const SCROLL_THRESHOLD = 31;
 
-    const options = {
-        chart: {
-            type:       'area',
-            height:     280,
-            width:      chartWidth,   /* ← dynamic */
-            fontFamily: 'inherit',
-            background: 'transparent',
-            toolbar:    { show: false },
-            animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 1000 } },
-            events: {
-                click: (_e, _ctx, cfg) => {
-                    let sdStr = null, edStr = null;
-                    if (cfg && typeof cfg.dataPointIndex !== 'undefined' && cfg.dataPointIndex >= 0) {
-                        if (tl.dates_start && tl.dates_start[cfg.dataPointIndex]) sdStr = tl.dates_start[cfg.dataPointIndex];
-                        if (tl.dates_end   && tl.dates_end[cfg.dataPointIndex])   edStr = tl.dates_end[cfg.dataPointIndex];
-                    }
-                    if (cfg && cfg.seriesIndex >= 0) {
-                        const mapping = {0:'all', 1:'pos', 2:'neu', 3:'neg'};
-                        DashPanel.open('all', mapping[cfg.seriesIndex] || 'all', projectId, sdStr, edStr);
-                    } else {
-                        DashPanel.open('all', 'all', projectId, sdStr, edStr);
-                    }
-                },
-                mounted: function () {
-                    if (loadEl) {
-                        loadEl.classList.add('hidden');
-                        setTimeout(() => { try { loadEl.remove(); } catch (e) {} }, 260);
-                    }
-                },
-            },
-        },
-        series: [
-            { name: 'Total',    data: tl.values || [] },
-            { name: 'Positive', data: tl.sentiment?.positive || [] },
-            { name: 'Neutral',  data: tl.sentiment?.neutral  || [] },
-            { name: 'Negative', data: tl.sentiment?.negative || [] },
-        ],
-        colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
-        markers: {
-            size:         totalPoints <= 31 ? 6 : 3,
-            strokeWidth:  2,
-            strokeColors: '#fff',
-            hover:        { size: 8 }
-        },
-        dataLabels: {
-            enabled:   totalPoints <= 31,
-            formatter: v => v > 0 ? numK(v) : '',
-            offsetY: -10,
-            style: { 
-                fontSize: '9px', 
-                fontFamily: 'inherit', 
-                fontWeight: '800',
-            },
-            background: { 
-                enabled: true, 
-                foreColor: '#fff', 
-                borderRadius: 3, 
-                padding: 3, 
-                opacity: 0.9, 
-                borderWidth: 0,
-                dropShadow: { enabled: true, top: 1, left: 1, blur: 2, color: '#000', opacity: 0.15 } 
-            },
-        },
-        xaxis: {
-            categories: labels,
-            type:       'category',
-            axisBorder: { show: false },
-            axisTicks:  { show: false },
-            tickPlacement: 'on',
-            labels: {
-                rotate:                   -45,
-                rotateAlways:             totalPoints > 12,
-                hideOverlappingLabels:    false,
-                showDuplicates:           false,
-                trim:                     false,
-                style: {
-                    fontFamily: 'inherit',
-                    fontSize:   '10px',
-                    fontWeight: 600,
-                    colors:     '#94A3B8',
+        const labels = tl.dates.map(dt => {
+            try {
+                const datePart = String(dt || '').split(/[T\s]/)[0];
+                const parts    = datePart.split('-');
+                if (parts.length !== 3) return dt;
+                const year  = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10);
+                const day   = parseInt(parts[2], 10);
+                if (isNaN(year) || isNaN(month) || isNaN(day)) return dt;
+                const d = new Date(year, month - 1, day);
+                return totalPoints > SCROLL_THRESHOLD
+                    ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+                    : `${d.getDate()}/${d.getMonth() + 1}`;
+            } catch (e) { return dt; }
+        });
+
+        const containerW  = chartEl.parentElement?.offsetWidth || 600;
+        const chartWidth  = totalPoints > SCROLL_THRESHOLD
+            ? Math.max(totalPoints * 42, containerW)
+            : containerW;
+
+        const scrollWrap = _$('chart-scroll-' + projectId);
+        if (scrollWrap) {
+            if (totalPoints > SCROLL_THRESHOLD) {
+                scrollWrap.style.overflowX = 'auto';
+                if (!scrollWrap.dataset.hinted) {
+                    scrollWrap.dataset.hinted = '1';
+                    const hint = document.createElement('div');
+                    hint.style.cssText = 'text-align:right;font-size:10px;color:#94A3B8;font-weight:600;padding:2px 4px 4px;';
+                    hint.innerHTML = '<i class="ph ph-arrows-left-right" style="font-size:11px;vertical-align:middle;"></i> Geser untuk lihat semua';
+                    scrollWrap.parentElement?.insertBefore(hint, scrollWrap);
                 }
+            } else {
+                scrollWrap.style.overflowX = 'hidden';
             }
-        },
-        yaxis: {
-            labels: {
-                formatter: v => numK(v),
-                style: { fontFamily:'inherit', fontSize:'10px', fontWeight:600, colors:'#94A3B8' }
+        }
+
+        chartEl.style.width    = chartWidth + 'px';
+        chartEl.style.minWidth = chartWidth + 'px';
+
+        const options = {
+            chart: {
+                type:       'area',
+                height:     280,
+                width:      chartWidth,
+                fontFamily: 'inherit',
+                background: 'transparent',
+                toolbar:    { show: false },
+                animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 1000 } },
+                events: {
+                    click: (_e, _ctx, cfg) => {
+                        let sdStr = null, edStr = null;
+                        if (cfg && typeof cfg.dataPointIndex !== 'undefined' && cfg.dataPointIndex >= 0) {
+                            if (tl.dates_start && tl.dates_start[cfg.dataPointIndex]) sdStr = tl.dates_start[cfg.dataPointIndex];
+                            if (tl.dates_end   && tl.dates_end[cfg.dataPointIndex])   edStr = tl.dates_end[cfg.dataPointIndex];
+                        }
+                        if (cfg && cfg.seriesIndex >= 0) {
+                            const mapping = {0:'all', 1:'pos', 2:'neu', 3:'neg'};
+                            DashPanel.open('all', mapping[cfg.seriesIndex] || 'all', projectId, sdStr, edStr);
+                        } else {
+                            DashPanel.open('all', 'all', projectId, sdStr, edStr);
+                        }
+                    },
+                    mounted: function () {
+                        if (loadEl) {
+                            loadEl.classList.add('hidden');
+                            setTimeout(() => { try { loadEl.remove(); } catch (e) {} }, 260);
+                        }
+                    },
+                },
             },
-            axisBorder: { show: false },
-            axisTicks:  { show: false }
-        },
-        fill:    { opacity: 0.3 },
-        stroke:  { curve: 'smooth', width: 2.5 },
-        grid: {
-            borderColor:    'rgba(226,232,240,.55)',
-            strokeDashArray: 3,
-            xaxis: { lines: { show: false } }
-        },
-        legend: {
-            position:        'bottom',
-            horizontalAlign: 'left',
-            fontFamily:      'inherit',
-            fontSize:        '11px',
-            fontWeight:      '600',
-            labels:          { colors: '#94A3B8' },
-            markers:         { width:9, height:9, radius:50 },
-            itemMargin:      { horizontal:14, vertical:4 }
-        },
-        tooltip: {
-            shared:    false,
-            intersect: true,
-            style:     { fontFamily:'inherit', fontSize:'12px' },
-            y:         { formatter: v => v ? v.toLocaleString('id-ID') + ' mentions' : '0 mentions' }
-        },
-    };
+            series: [
+                { name: 'Total',    data: tl.values || [] },
+                { name: 'Positive', data: tl.sentiment?.positive || [] },
+                { name: 'Neutral',  data: tl.sentiment?.neutral  || [] },
+                { name: 'Negative', data: tl.sentiment?.negative || [] },
+            ],
+            colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
+            markers: {
+                size:         totalPoints <= 31 ? 6 : 3,
+                strokeWidth:  2,
+                strokeColors: '#fff',
+                hover:        { size: 8 }
+            },
+            dataLabels: {
+                enabled:   totalPoints <= 31,
+                formatter: v => v > 0 ? numK(v) : '',
+                offsetY: -10,
+                style: { fontSize: '9px', fontFamily: 'inherit', fontWeight: '800' },
+                background: {
+                    enabled: true, foreColor: '#fff', borderRadius: 3, padding: 3,
+                    opacity: 0.9, borderWidth: 0,
+                    dropShadow: { enabled: true, top: 1, left: 1, blur: 2, color: '#000', opacity: 0.15 }
+                },
+            },
+            xaxis: {
+                categories: labels,
+                type:       'category',
+                axisBorder: { show: false },
+                axisTicks:  { show: false },
+                tickPlacement: 'on',
+                labels: {
+                    rotate:                -45,
+                    rotateAlways:          totalPoints > 12,
+                    hideOverlappingLabels: false,
+                    showDuplicates:        false,
+                    trim:                  false,
+                    style: { fontFamily: 'inherit', fontSize: '10px', fontWeight: 600, colors: '#94A3B8' }
+                }
+            },
+            yaxis: {
+                labels: {
+                    formatter: v => numK(v),
+                    style: { fontFamily:'inherit', fontSize:'10px', fontWeight:600, colors:'#94A3B8' }
+                },
+                axisBorder: { show: false },
+                axisTicks:  { show: false }
+            },
+            fill:    { opacity: 0.3 },
+            stroke:  { curve: 'smooth', width: 2.5 },
+            grid: {
+                borderColor:     'rgba(226,232,240,.55)',
+                strokeDashArray: 3,
+                xaxis: { lines: { show: false } }
+            },
+            legend: {
+                position:        'bottom',
+                horizontalAlign: 'left',
+                fontFamily:      'inherit',
+                fontSize:        '11px',
+                fontWeight:      '600',
+                labels:          { colors: '#94A3B8' },
+                markers:         { width:9, height:9, radius:50 },
+                itemMargin:      { horizontal:14, vertical:4 }
+            },
+            tooltip: {
+                shared:    false,
+                intersect: true,
+                style:     { fontFamily:'inherit', fontSize:'12px' },
+                y:         { formatter: v => v ? v.toLocaleString('id-ID') + ' mentions' : '0 mentions' }
+            },
+        };
 
-    const prevKey = '__apexInst_' + projectId;
-    if (window[prevKey]) { try { window[prevKey].destroy(); } catch (e) {} }
+        const prevKey = '__apexInst_' + projectId;
+        if (window[prevKey]) { try { window[prevKey].destroy(); } catch (e) {} }
 
-    chartEl.innerHTML = '';
-    const inst = new ApexCharts(chartEl, options);
-    window[prevKey] = inst;
-    inst.render();
+        chartEl.innerHTML = '';
+        const inst = new ApexCharts(chartEl, options);
+        window[prevKey] = inst;
+        inst.render();
 
-    /* Resize listener — hanya kalau tidak scroll mode */
-    if (totalPoints <= SCROLL_THRESHOLD) {
-        window.addEventListener('resize', () => {
-            const i = window['__apexInst_' + projectId];
-            if (i) {
-                const w = chartEl.parentElement?.offsetWidth || 600;
-                try { i.updateOptions({ chart: { width: w } }, false, false); } catch(e) {}
-            }
+        if (totalPoints <= SCROLL_THRESHOLD) {
+            window.addEventListener('resize', () => {
+                const i = window['__apexInst_' + projectId];
+                if (i) {
+                    const w = chartEl.parentElement?.offsetWidth || 600;
+                    try { i.updateOptions({ chart: { width: w } }, false, false); } catch(e) {}
+                }
+            });
+        }
+
+        chartEl.addEventListener('click', e => {
+            const t    = e.target;
+            const skip = t.classList.contains('apexcharts-marker')
+                      || t.closest('.apexcharts-datalabels')
+                      || t.closest('.apexcharts-legend');
+            if (!skip) DashPanel.open('all', 'all', projectId);
         });
     }
-
-    chartEl.addEventListener('click', e => {
-        const t    = e.target;
-        const skip = t.classList.contains('apexcharts-marker')
-                  || t.closest('.apexcharts-datalabels')
-                  || t.closest('.apexcharts-legend');
-        if (!skip) DashPanel.open('all', 'all', projectId);
-    });
-}
 
     /* ════════════════════════════════════════════════════════
        DASH EXPORT MODULE
     ════════════════════════════════════════════════════════ */
-    /* ══════════════════════════════════════════════════════
-   DashExport — FIXED
-   Ganti seluruh blok const DashExport = (() => { ... })();
+    const DashExport = (() => {
+        let _toastTimer = null;
 
-   Fix:
-   1. _freeze / _unfreeze — matikan fadeUp, shimmer, pulseP
-      agar KPI cards tidak transparan di screenshot
-   2. onclone — paksa semua konten visible, hide panel/overlay,
-      paksa .lazy-card opacity:1 transform:none
-   3. _capture per-project: pakai offsetHeight bukan scrollHeight
-   4. Page export: sama, + freeze sebelum capture
-══════════════════════════════════════════════════════ */
-const DashExport = (() => {
+        function _toast(msg, type = 'default', duration = 3200) {
+            const t = _$('exportToast'), m = _$('exportToastMsg'), ico = _$('exportToastIcon');
+            if (!t || !m) return;
+            m.textContent = msg;
+            t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
+            const icons = { success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' };
+            ico.className = 'ph ' + (icons[type] || icons.default);
+            clearTimeout(_toastTimer);
+            _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+        }
 
-    let _toastTimer = null;
+        function _btnState(btn, loading) {
+            if (!btn) return;
+            btn.disabled = loading;
+            btn.classList.toggle('exporting', loading);
+        }
 
-    /* ════════════════════════════
-       Toast & button state
-    ════════════════════════════ */
-    function _toast(msg, type = 'default', duration = 3200) {
-        const t = _$('exportToast'), m = _$('exportToastMsg'), ico = _$('exportToastIcon');
-        if (!t || !m) return;
-        m.textContent = msg;
-        t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
-        const icons = { success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' };
-        ico.className = 'ph ' + (icons[type] || icons.default);
-        clearTimeout(_toastTimer);
-        _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
-    }
+        let _freezeStyle = null;
+        function _freeze() {
+            if (_freezeStyle) return;
+            _freezeStyle = document.createElement('style');
+            _freezeStyle.id = '__dash_freeze__';
+            _freezeStyle.textContent = `
+                #pageExportArea .lazy-card,
+                #pageExportArea .fade-up,
+                #pageExportArea [class*="fade-up"] {
+                    animation: none !important; opacity: 1 !important; transform: none !important;
+                }
+                #pageExportArea .sk-block { animation: none !important; background: #e2e8f0 !important; }
+                #pageExportArea .proj-status-dot { animation: none !important; box-shadow: 0 0 0 3px rgba(67,97,238,.15) !important; }
+                #pageExportArea .spin-ring { animation: none !important; }
+                #pageExportArea [data-html2canvas-ignore],
+                #pageExportArea .page-export-bar,
+                #pageExportArea .scroll-top-btn,
+                #pageExportArea .chart-loading.hidden { display: none !important; }
+            `;
+            document.head.appendChild(_freezeStyle);
+        }
+        function _unfreeze() {
+            if (_freezeStyle) { _freezeStyle.remove(); _freezeStyle = null; }
+        }
 
-    function _btnState(btn, loading) {
-        if (!btn) return;
-        btn.disabled = loading;
-        btn.classList.toggle('exporting', loading);
-    }
-
-    /* ════════════════════════════
-       Freeze: matikan animasi secara targeted
-       (tidak pakai global *{animation:none} karena
-       Bootstrap KPI cards bisa menghilang)
-    ════════════════════════════ */
-    let _freezeStyle = null;
-
-    function _freeze() {
-        if (_freezeStyle) return;
-        _freezeStyle = document.createElement('style');
-        _freezeStyle.id = '__dash_freeze__';
-        _freezeStyle.textContent = `
-            /* Paksa lazy-card ke posisi final */
-            #pageExportArea .lazy-card,
-            #pageExportArea .fade-up,
-            #pageExportArea [class*="fade-up"] {
-                animation: none !important;
-                opacity: 1 !important;
-                transform: none !important;
-            }
-            /* Stop shimmer skeleton */
-            #pageExportArea .sk-block {
-                animation: none !important;
-                background: #e2e8f0 !important;
-            }
-            /* Stop pulse dot */
-            #pageExportArea .proj-status-dot {
-                animation: none !important;
-                box-shadow: 0 0 0 3px rgba(67,97,238,.15) !important;
-            }
-            /* Stop spin-ring */
-            #pageExportArea .spin-ring {
-                animation: none !important;
-            }
-            /* Hide elemen yang tidak perlu */
-            #pageExportArea [data-html2canvas-ignore],
-            #pageExportArea .page-export-bar,
-            #pageExportArea .scroll-top-btn,
-            #pageExportArea .chart-loading.hidden {
-                display: none !important;
-            }
-        `;
-        document.head.appendChild(_freezeStyle);
-    }
-
-    function _unfreeze() {
-        if (_freezeStyle) { _freezeStyle.remove(); _freezeStyle = null; }
-    }
-
-    /* ════════════════════════════
-       onclone — paksa semua konten visible
-    ════════════════════════════ */
-    function _onClone(clonedDoc) {
-        /* Sembunyikan panel/overlay/toast */
-        clonedDoc.querySelectorAll(
-            '#dashPanelOverlay, #dashSntPanel, .do-panel-overlay, .do-panel,' +
-            '#dashPlatPicker, .do-plat-picker,' +
-            '.export-toast, .scroll-top-btn,' +
-            '[data-html2canvas-ignore], .page-export-bar'
-        ).forEach(el => {
-            el.style.cssText += 'display:none!important;visibility:hidden!important;';
-        });
-
-        /* Stop animasi */
-        clonedDoc.querySelectorAll('*').forEach(el => {
-            el.style.animationPlayState = 'paused';
-            el.style.animation  = 'none';
-            el.style.transition = 'none';
-        });
-
-        /* Paksa semua card visible */
-        clonedDoc.querySelectorAll(
-            '.lazy-card, .card, .card-body, .card-header,' +
-            '.row, [class*="col-"], #pageExportArea, #actualCards'
-        ).forEach(el => {
-            el.style.opacity    = '1';
-            el.style.transform  = 'none';
-            el.style.visibility = 'visible';
-        });
-
-        /* Paksa chart container visible */
-        clonedDoc.querySelectorAll('[id^="chart-"]').forEach(el => {
-            el.style.display    = 'block';
-            el.style.opacity    = '1';
-            el.style.visibility = 'visible';
-        });
-
-        /* Hilangkan chart-loading yang masih tampil */
-        clonedDoc.querySelectorAll('.chart-loading').forEach(el => {
-            el.style.display = 'none';
-        });
-
-        /* Hilangkan skeleton yang masih tampil */
-        clonedDoc.querySelectorAll('#skeletonWrap').forEach(el => {
-            el.style.display = 'none';
-        });
-
-        /* Pastikan actualCards visible */
-        const ac = clonedDoc.getElementById('actualCards');
-        if (ac) ac.style.display = 'block';
-    }
-
-    /* ════════════════════════════
-       Capture helpers
-    ════════════════════════════ */
-    async function _captureEl(el, bg) {
-        return html2canvas(el, {
-            scale          : 2,
-            useCORS        : true,
-            allowTaint     : false,
-            backgroundColor: bg || '#ffffff',
-            logging        : false,
-            removeContainer: true,
-            onclone        : d => _onClone(d),
-            ignoreElements : e => e.hasAttribute('data-html2canvas-ignore'),
-            x      : 0,
-            y      : 0,
-            width  : el.offsetWidth,
-            height : el.offsetHeight || el.scrollHeight,
-        });
-    }
-
-    async function _captureArea(el, bg) {
-        return html2canvas(el, {
-            scale          : 2,
-            useCORS        : true,
-            allowTaint     : false,
-            backgroundColor: bg || '#f1f5f9',
-            logging        : false,
-            removeContainer: true,
-            onclone        : d => _onClone(d),
-            ignoreElements : e =>
-                e.hasAttribute('data-html2canvas-ignore') ||
-                e.id === 'pageExportPdfBtn' ||
-                e.id === 'pageExportImgBtn',
-            windowWidth    : document.documentElement.scrollWidth,
-            windowHeight   : el.scrollHeight,
-            height         : el.scrollHeight,
-        });
-    }
-
-    /* ════════════════════════════
-       Filename
-    ════════════════════════════ */
-    function _filename(projectId) {
-        const card  = _$('proj-card-' + projectId);
-        const title = card?.querySelector('h6')?.textContent?.trim() || ('project-' + projectId);
-        const safe  = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48);
-        const d     = new Date();
-        const stamp = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
-        return `${safe}_${stamp}`;
-    }
-
-    /* ════════════════════════════
-       PDF builder (slice)
-    ════════════════════════════ */
-    function _buildPdf(canvas, headerColor, headerText, landscape) {
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
-        const pW  = pdf.internal.pageSize.getWidth();
-        const pH  = pdf.internal.pageSize.getHeight();
-        const margin   = 12;
-        const usableW  = pW - margin * 2;
-        const usableH  = pH - 14 - 6;
-        const ratio    = usableW / canvas.width;
-        const sliceH   = usableH / ratio;
-        const total    = Math.max(1, Math.ceil((canvas.height * ratio) / usableH));
-
-        const _hdr = (page) => {
-            const [r, g, b] = headerColor;
-            pdf.setFillColor(r, g, b);
-            pdf.rect(0, 0, pW, 11, 'F');
-            pdf.setTextColor(255, 255, 255);
-            pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
-            pdf.text(headerText, margin, 7.5);
-            const now = new Date().toLocaleDateString('id-ID', {
-                day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        function _onClone(clonedDoc) {
+            clonedDoc.querySelectorAll(
+                '#dashPanelOverlay, #dashSntPanel, .do-panel-overlay, .do-panel,' +
+                '#dashPlatPicker, .do-plat-picker,' +
+                '.export-toast, .scroll-top-btn,' +
+                '[data-html2canvas-ignore], .page-export-bar'
+            ).forEach(el => {
+                el.style.cssText += 'display:none!important;visibility:hidden!important;';
             });
-            pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
-            pdf.text('Generated: ' + now, pW - margin, 7.5, { align: 'right' });
-            pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
-            pdf.text(`Halaman ${page} / ${total}`, pW / 2, pH - 3, { align: 'center' });
-        };
-
-        let srcY = 0, page = 1;
-        while (srcY < canvas.height) {
-            if (page > 1) pdf.addPage();
-            _hdr(page);
-            const srcSlice = Math.min(sliceH, canvas.height - srcY);
-            const dstH     = srcSlice * ratio;
-            const slice    = document.createElement('canvas');
-            slice.width  = canvas.width;
-            slice.height = Math.ceil(srcSlice);
-            slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice);
-            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
-            srcY += srcSlice; page++;
+            clonedDoc.querySelectorAll('*').forEach(el => {
+                el.style.animationPlayState = 'paused';
+                el.style.animation  = 'none';
+                el.style.transition = 'none';
+            });
+            clonedDoc.querySelectorAll(
+                '.lazy-card, .card, .card-body, .card-header,' +
+                '.row, [class*="col-"], #pageExportArea, #actualCards'
+            ).forEach(el => {
+                el.style.opacity    = '1';
+                el.style.transform  = 'none';
+                el.style.visibility = 'visible';
+            });
+            clonedDoc.querySelectorAll('[id^="chart-"]').forEach(el => {
+                el.style.display    = 'block';
+                el.style.opacity    = '1';
+                el.style.visibility = 'visible';
+            });
+            clonedDoc.querySelectorAll('.chart-loading').forEach(el => { el.style.display = 'none'; });
+            clonedDoc.querySelectorAll('#skeletonWrap').forEach(el => { el.style.display = 'none'; });
+            const ac = clonedDoc.getElementById('actualCards');
+            if (ac) ac.style.display = 'block';
         }
-        return pdf;
-    }
 
-    /* ════════════════════════════
-       run — per-project export
-    ════════════════════════════ */
-    async function run(projectId, type, btn) {
-        if (!window.html2canvas)                    { _toast('html2canvas not loaded', 'error'); return; }
-        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF not loaded', 'error'); return; }
+        async function _captureEl(el, bg) {
+            return html2canvas(el, {
+                scale: 2, useCORS: true, allowTaint: false,
+                backgroundColor: bg || '#ffffff', logging: false, removeContainer: true,
+                onclone: d => _onClone(d),
+                ignoreElements: e => e.hasAttribute('data-html2canvas-ignore'),
+                x: 0, y: 0, width: el.offsetWidth, height: el.offsetHeight || el.scrollHeight,
+            });
+        }
 
-        _btnState(btn, true);
-        _toast(type === 'pdf' ? 'Generating PDF…' : 'Capturing image…', 'default', 99999);
+        async function _captureArea(el, bg) {
+            return html2canvas(el, {
+                scale: 2, useCORS: true, allowTaint: false,
+                backgroundColor: bg || '#f1f5f9', logging: false, removeContainer: true,
+                onclone: d => _onClone(d),
+                ignoreElements: e =>
+                    e.hasAttribute('data-html2canvas-ignore') ||
+                    e.id === 'pageExportPdfBtn' || e.id === 'pageExportImgBtn',
+                windowWidth: document.documentElement.scrollWidth,
+                windowHeight: el.scrollHeight, height: el.scrollHeight,
+            });
+        }
 
-        try {
-            const area = _$('dashboardExportArea-' + projectId);
-            if (!area) throw new Error('Export area not found for project ' + projectId);
+        function _filename(projectId) {
+            const card  = _$('proj-card-' + projectId);
+            const title = card?.querySelector('h6')?.textContent?.trim() || ('project-' + projectId);
+            const safe  = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48);
+            const d     = new Date();
+            const stamp = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+            return `${safe}_${stamp}`;
+        }
 
-            _freeze();
-            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-            await new Promise(r => setTimeout(r, 300));
+        function _buildPdf(canvas, headerColor, headerText, landscape) {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+            const pW  = pdf.internal.pageSize.getWidth();
+            const pH  = pdf.internal.pageSize.getHeight();
+            const margin  = 12;
+            const usableW = pW - margin * 2;
+            const usableH = pH - 14 - 6;
+            const ratio   = usableW / canvas.width;
+            const sliceH  = usableH / ratio;
+            const total   = Math.max(1, Math.ceil((canvas.height * ratio) / usableH));
 
-            let canvas;
-            try   { canvas = await _captureEl(area, '#ffffff'); }
-            finally { _unfreeze(); }
+            const _hdr = (page) => {
+                const [r, g, b] = headerColor;
+                pdf.setFillColor(r, g, b);
+                pdf.rect(0, 0, pW, 11, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
+                pdf.text(headerText, margin, 7.5);
+                const now = new Date().toLocaleDateString('id-ID', {
+                    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+                pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+                pdf.text('Generated: ' + now, pW - margin, 7.5, { align: 'right' });
+                pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+                pdf.text(`Halaman ${page} / ${total}`, pW / 2, pH - 3, { align: 'center' });
+            };
 
-            const fname = _filename(projectId);
-
-            if (type === 'image') {
-                const link     = document.createElement('a');
-                link.download  = fname + '.png';
-                link.href      = canvas.toDataURL('image/png');
-                link.click();
-                _toast('Image downloaded!', 'success');
-            } else {
-                const landscape = canvas.width > canvas.height * 1.3;
-                const pdf = _buildPdf(canvas, [67, 97, 238], 'SMADIMENT — Dashboard Export', landscape);
-                pdf.save(fname + '.pdf');
-                _toast('PDF downloaded!', 'success');
+            let srcY = 0, page = 1;
+            while (srcY < canvas.height) {
+                if (page > 1) pdf.addPage();
+                _hdr(page);
+                const srcSlice = Math.min(sliceH, canvas.height - srcY);
+                const dstH     = srcSlice * ratio;
+                const slice    = document.createElement('canvas');
+                slice.width  = canvas.width;
+                slice.height = Math.ceil(srcSlice);
+                slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice);
+                pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
+                srcY += srcSlice; page++;
             }
-        } catch (err) {
-            console.error('[DashExport]', err);
-            _unfreeze();
-            _toast('Export failed: ' + err.message, 'error');
-        } finally {
-            _btnState(btn, false);
+            return pdf;
         }
-    }
 
-    /* ════════════════════════════
-       runPage — full page export
-    ════════════════════════════ */
-    async function runPage(type, btn) {
-        if (!window.html2canvas)                    { _toast('html2canvas not loaded', 'error'); return; }
-        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF not loaded', 'error'); return; }
+        async function run(projectId, type, btn) {
+            if (!window.html2canvas)                    { _toast('html2canvas not loaded', 'error'); return; }
+            if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF not loaded', 'error'); return; }
 
-        const btnPdf = _$('pageExportPdfBtn'), btnImg = _$('pageExportImgBtn');
-        _btnState(btnPdf, true); _btnState(btnImg, true);
-        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar halaman…', 'default', 99999);
+            _btnState(btn, true);
+            _toast(type === 'pdf' ? 'Generating PDF…' : 'Capturing image…', 'default', 99999);
 
-        try {
-            const area = _$('pageExportArea');
-            if (!area) throw new Error('pageExportArea not found');
+            try {
+                const area = _$('dashboardExportArea-' + projectId);
+                if (!area) throw new Error('Export area not found for project ' + projectId);
 
-            window.scrollTo({ top: 0 });
-            _freeze();
-            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-            await new Promise(r => setTimeout(r, 400));
+                _freeze();
+                await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+                await new Promise(r => setTimeout(r, 300));
 
-            let canvas;
-            try   { canvas = await _captureArea(area, '#f1f5f9'); }
-            finally { _unfreeze(); }
+                let canvas;
+                try   { canvas = await _captureEl(area, '#ffffff'); }
+                finally { _unfreeze(); }
 
-            const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+                const fname = _filename(projectId);
 
-            if (type === 'image') {
-                const link    = document.createElement('a');
-                link.download = `smadiment_dashboard_${stamp}.png`;
-                link.href     = canvas.toDataURL('image/png');
-                link.click();
-                _toast('Gambar halaman berhasil diunduh!', 'success');
-            } else {
-                const pdf = _buildPdf(canvas, [67, 97, 238], 'SMADIMENT — Dashboard Full Export', false);
-                pdf.save(`smadiment_dashboard_${stamp}.pdf`);
-                _toast('PDF halaman berhasil diunduh!', 'success');
+                if (type === 'image') {
+                    const link    = document.createElement('a');
+                    link.download = fname + '.png';
+                    link.href     = canvas.toDataURL('image/png');
+                    link.click();
+                    _toast('Image downloaded!', 'success');
+                } else {
+                    const landscape = canvas.width > canvas.height * 1.3;
+                    const pdf = _buildPdf(canvas, [67, 97, 238], 'SMADIMENT — Dashboard Export', landscape);
+                    pdf.save(fname + '.pdf');
+                    _toast('PDF downloaded!', 'success');
+                }
+            } catch (err) {
+                console.error('[DashExport]', err);
+                _unfreeze();
+                _toast('Export failed: ' + err.message, 'error');
+            } finally {
+                _btnState(btn, false);
             }
-        } catch (err) {
-            console.error('[DashExport.runPage]', err);
-            _unfreeze();
-            _toast('Export gagal: ' + err.message, 'error');
-        } finally {
-            _btnState(btnPdf, false); _btnState(btnImg, false);
         }
-    }
 
-    return { run, runPage };
-})();
+        async function runPage(type, btn) {
+            if (!window.html2canvas)                    { _toast('html2canvas not loaded', 'error'); return; }
+            if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF not loaded', 'error'); return; }
+
+            const btnPdf = _$('pageExportPdfBtn'), btnImg = _$('pageExportImgBtn');
+            _btnState(btnPdf, true); _btnState(btnImg, true);
+            _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar halaman…', 'default', 99999);
+
+            try {
+                const area = _$('pageExportArea');
+                if (!area) throw new Error('pageExportArea not found');
+
+                window.scrollTo({ top: 0 });
+                _freeze();
+                await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+                await new Promise(r => setTimeout(r, 400));
+
+                let canvas;
+                try   { canvas = await _captureArea(area, '#f1f5f9'); }
+                finally { _unfreeze(); }
+
+                const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+
+                if (type === 'image') {
+                    const link    = document.createElement('a');
+                    link.download = `smadiment_dashboard_${stamp}.png`;
+                    link.href     = canvas.toDataURL('image/png');
+                    link.click();
+                    _toast('Gambar halaman berhasil diunduh!', 'success');
+                } else {
+                    const pdf = _buildPdf(canvas, [67, 97, 238], 'SMADIMENT — Dashboard Full Export', false);
+                    pdf.save(`smadiment_dashboard_${stamp}.pdf`);
+                    _toast('PDF halaman berhasil diunduh!', 'success');
+                }
+            } catch (err) {
+                console.error('[DashExport.runPage]', err);
+                _unfreeze();
+                _toast('Export gagal: ' + err.message, 'error');
+            } finally {
+                _btnState(btnPdf, false); _btnState(btnImg, false);
+            }
+        }
+
+        return { run, runPage };
+    })();
 
     /* ════════════════════════════════════════════════════════
-       DASH PANEL — slide-in drawer
+       DASH PANEL
     ════════════════════════════════════════════════════════ */
     const DashPanel = (() => {
         let _cache = {}, _allItems = [], _filtered = [];
@@ -1715,9 +1606,11 @@ const DashExport = (() => {
             DashDetail.close();
             _$('dashPanelDot').style.background  = meta.color;
             _$('dashPanelTitle').textContent      = meta.label + (platform==='all' ? ' — All Platforms' : '');
-            
-            const titleDate = sdOverride ? (sdOverride === edOverride ? sdOverride : sdOverride + ' – ' + edOverride) : (DashCfg.sd + ' – ' + DashCfg.ed);
-            _$('dashPanelMeta').textContent       = titleDate;
+
+            const titleDate = sdOverride
+                ? (sdOverride === edOverride ? sdOverride : sdOverride + ' – ' + edOverride)
+                : (DashCfg.sd + ' – ' + DashCfg.ed);
+            _$('dashPanelMeta').textContent = titleDate;
 
             document.querySelectorAll('#dashSntPanel .do-panel-tab').forEach(t =>
                 t.classList.toggle('active', t.dataset.s === _curSent)
@@ -1743,7 +1636,11 @@ const DashExport = (() => {
         function close() {
             const overlay = _$('dashPanelOverlay'), panel = _$('dashSntPanel');
             panel.classList.add('hiding'); overlay.classList.add('hiding');
-            setTimeout(() => { panel.classList.remove('show','hiding'); overlay.classList.remove('show','hiding'); DashDetail.close(); }, 240);
+            setTimeout(() => {
+                panel.classList.remove('show','hiding');
+                overlay.classList.remove('show','hiding');
+                DashDetail.close();
+            }, 240);
         }
         function closeByOverlay() { close(); }
 
@@ -1814,7 +1711,7 @@ const DashExport = (() => {
                 else if (Array.isArray(d?.statuses))     items = d.statuses;
                 else if (Array.isArray(d?.tweets))       items = d.tweets;
                 else if (Array.isArray(d?.results))      items = d.results;
-                else if (Array.isArray(d?.posts))        items = d.posts;
+                else if (Array.isArray(d?.posts))         items = d.posts;
                 else if (Array.isArray(d))               items = d;
                 else if (d?.data && typeof d.data==='object' && !Array.isArray(d.data)) {
                     const vals = Object.values(d.data);
@@ -1839,126 +1736,116 @@ const DashExport = (() => {
             } catch (e) { clearTimeout(tid); return []; }
         }
 
-       function _render(list, items, platform, accentColor) {
-    if (!items.length) {
-        list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`;
-        return;
-    }
+        function _render(list, items, platform, accentColor) {
+            if (!items.length) {
+                list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`;
+                return;
+            }
 
-    const PAGE = 10;
-    let _page = 0;
+            const PAGE = 10;
+            let _page = 0;
 
-    function _renderItems(arr) {
-        return arr.map(item => {
-            const plat = item._platform || platform;
-            const meta = DashCfg.platMeta[plat] || { label: plat, color: accentColor };
-            const rawName = (() => {
-                if (plat==='fb')        return item.from_name||item.page_name||null;
-                if (plat==='instagram') return item.username||item.user_name||null;
-                if (plat==='tiktok')    return item.author_nickname||item.nickname||item.author?.nickname||null;
-                if (plat==='youtube')   return item.channel_title||item.channel_name||item.snippet?.channelTitle||null;
-                if (plat==='twit') {
-                    const ao = typeof item.author==='object' ? item.author : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
-                    return item.name||ao?.name||ao?.scr_name||item.author_name||null;
+            function _renderItems(arr) {
+                return arr.map(item => {
+                    const plat = item._platform || platform;
+                    const meta = DashCfg.platMeta[plat] || { label: plat, color: accentColor };
+                    const rawName = (() => {
+                        if (plat==='fb')        return item.from_name||item.page_name||null;
+                        if (plat==='instagram') return item.username||item.user_name||null;
+                        if (plat==='tiktok')    return item.author_nickname||item.nickname||item.author?.nickname||null;
+                        if (plat==='youtube')   return item.channel_title||item.channel_name||item.snippet?.channelTitle||null;
+                        if (plat==='twit') {
+                            const ao = typeof item.author==='object' ? item.author : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
+                            return item.name||ao?.name||ao?.scr_name||item.author_name||null;
+                        }
+                        return null;
+                    })();
+                    const name  = (rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'Unknown').trim();
+                    const isNum = /^\d{10,}$/.test(name);
+                    const dName = isNum ? `User ${name.slice(-4)}` : name;
+                    const rawH = (() => {
+                        if (plat==='instagram') return item.username||'';
+                        if (plat==='twit') {
+                            const ao = typeof item.author==='object' ? item.author : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
+                            return item.screen_name||item.author_scr_name||ao?.scr_name||ao?.username||'';
+                        }
+                        return item.author_scr_name||item.screen_name||item.username||'';
+                    })().trim();
+                    const handle = (() => {
+                        if (!rawH) return '';
+                        const w = ['twit','instagram','tiktok'].includes(plat) ? (rawH.startsWith('@') ? rawH : '@'+rawH) : rawH;
+                        return w.replace(/^@/,'').toLowerCase()===dName.toLowerCase() ? '' : w;
+                    })();
+                    const text  = (item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,150);
+                    const ao    = (() => { if (typeof item.author==='object'&&item.author) return item.author; try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
+                    const av    = (item.avatar_url||item.profile_image_url||ao?.image||item.author_image||item.profile_image||item.thumbnail||'').trim();
+                    const dt    = (item.date_created||item.created_at||'').split('T')[0];
+                    const sent  = _normSent(item);
+                    const sentLbl = sent==='pos'?'Pos':sent==='neg'?'Neg':'Neu';
+                    const words = dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
+                    const ini   = (words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||dName[0]||'?')).toUpperCase().replace(/['"]/g,'');
+                    const avHtml = (av&&av.startsWith('http')) ? `<img src="${_es(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">` : ini;
+                    const sentBadge = `do-sent-badge--${sent}`;
+                    const enc = encodeURIComponent(JSON.stringify(item));
+                    return `<div class="do-panel-item" onclick="DashDetail.openEncoded('${enc}','${plat}')">
+                        <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
+                        <div class="do-panel-item-body">
+                            <div class="do-panel-author">${_es(dName)}</div>
+                            ${handle ? `<div class="do-panel-handle">${_es(handle)}</div>` : ''}
+                            <div class="do-panel-text">${_es(text||'(tidak ada konten)')}</div>
+                            <div class="do-panel-footer">
+                                <span class="do-sent-badge ${sentBadge}">${sentLbl}</span>
+                                <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
+                                <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
+                                ${dt ? `<span style="margin-left:auto;">${dt}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+
+            function _renderLoadMore() {
+                const shown     = (_page + 1) * PAGE;
+                const remaining = items.length - shown;
+                if (remaining <= 0) {
+                    return `<div style="padding:9px;text-align:center;font-size:10px;color:#94A3B8;font-weight:600;border-top:1px dashed #E2E8F0;">
+                        ✓ Semua ${items.length.toLocaleString()} mentions sudah dimuat
+                    </div>`;
                 }
-                return null;
-            })();
-            const name  = (rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'Unknown').trim();
-            const isNum = /^\d{10,}$/.test(name);
-            const dName = isNum ? `User ${name.slice(-4)}` : name;
-            const rawH = (() => {
-                if (plat==='instagram') return item.username||'';
-                if (plat==='twit') {
-                    const ao = typeof item.author==='object' ? item.author : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
-                    return item.screen_name||item.author_scr_name||ao?.scr_name||ao?.username||'';
-                }
-                return item.author_scr_name||item.screen_name||item.username||'';
-            })().trim();
-            const handle = (() => {
-                if (!rawH) return '';
-                const w = ['twit','instagram','tiktok'].includes(plat) ? (rawH.startsWith('@') ? rawH : '@'+rawH) : rawH;
-                return w.replace(/^@/,'').toLowerCase()===dName.toLowerCase() ? '' : w;
-            })();
-            const text  = (item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,150);
-            const ao    = (() => { if (typeof item.author==='object'&&item.author) return item.author; try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
-            const av    = (item.avatar_url||item.profile_image_url||ao?.image||item.author_image||item.profile_image||item.thumbnail||'').trim();
-            const dt    = (item.date_created||item.created_at||'').split('T')[0];
-            const sent  = _normSent(item);
-            const sentLbl = sent==='pos'?'Pos':sent==='neg'?'Neg':'Neu';
-            const words = dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
-            const ini   = (words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||dName[0]||'?')).toUpperCase().replace(/['"]/g,'');
-            const avHtml = (av&&av.startsWith('http')) ? `<img src="${_es(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">` : ini;
-            const sentBadge = `do-sent-badge--${sent}`;
-            const enc = encodeURIComponent(JSON.stringify(item));
-            return `<div class="do-panel-item" onclick="DashDetail.openEncoded('${enc}','${plat}')">
-                <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
-                <div class="do-panel-item-body">
-                    <div class="do-panel-author">${_es(dName)}</div>
-                    ${handle ? `<div class="do-panel-handle">${_es(handle)}</div>` : ''}
-                    <div class="do-panel-text">${_es(text||'(tidak ada konten)')}</div>
-                    <div class="do-panel-footer">
-                        <span class="do-sent-badge ${sentBadge}">${sentLbl}</span>
-                        <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
-                        <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
-                        ${dt ? `<span style="margin-left:auto;">${dt}</span>` : ''}
-                    </div>
-                </div>
-            </div>`;
-        }).join('');
-    }
+                return `<div id="_dashLMWrap" style="padding:11px 14px;text-align:center;background:#F8FAFC;border-top:1px dashed #E2E8F0;">
+                    <button id="_dashLMBtn" onclick="window.__dashLoadMore()"
+                        style="display:inline-flex;align-items:center;gap:5px;padding:6px 20px;
+                        background:var(--dash-primary);color:#fff;border:none;border-radius:5px;
+                        font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;"
+                        onmouseover="this.style.filter='brightness(1.12)'"
+                        onmouseout="this.style.filter=''">
+                        <i class="ph ph-arrow-circle-down" style="font-size:13px;"></i>
+                        Muat ${Math.min(remaining, PAGE).toLocaleString()} lagi
+                        <span style="opacity:.7;font-weight:500;">(sisa ${remaining.toLocaleString()})</span>
+                    </button>
+                </div>`;
+            }
 
-    function _renderLoadMore() {
-        const shown = (_page + 1) * PAGE;
-        const remaining = items.length - shown;
-        if (remaining <= 0) {
-            return `<div style="padding:9px;text-align:center;font-size:10px;color:#94A3B8;font-weight:600;border-top:1px dashed #E2E8F0;">
-                ✓ Semua ${items.length.toLocaleString()} mentions sudah dimuat
-            </div>`;
+            list.innerHTML = _renderItems(items.slice(0, PAGE)) + _renderLoadMore();
+
+            window.__dashLoadMore = function() {
+                const btn = document.getElementById('_dashLMBtn');
+                if (btn) { btn.textContent = 'Memuat…'; btn.disabled = true; }
+                setTimeout(() => {
+                    _page++;
+                    const batch = items.slice(_page * PAGE, (_page + 1) * PAGE);
+                    document.getElementById('_doLMWrap')?.remove();
+                    document.getElementById('_dashLMWrap')?.remove();
+                    list.insertAdjacentHTML('beforeend', _renderItems(batch) + _renderLoadMore());
+                }, 80);
+            };
         }
-        return `<div id="_dashLMWrap" style="padding:11px 14px;text-align:center;background:#F8FAFC;border-top:1px dashed #E2E8F0;">
-            <button id="_dashLMBtn" onclick="window.__dashLoadMore()"
-                style="display:inline-flex;align-items:center;gap:5px;padding:6px 20px;
-                background:var(--dash-primary);color:#fff;border:none;border-radius:5px;
-                font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;"
-                onmouseover="this.style.filter='brightness(1.12)'"
-                onmouseout="this.style.filter=''">
-                <i class="ph ph-arrow-circle-down" style="font-size:13px;"></i>
-                Muat ${Math.min(remaining, PAGE).toLocaleString()} lagi
-                <span style="opacity:.7;font-weight:500;">(sisa ${remaining.toLocaleString()})</span>
-            </button>
-        </div>`;
-    }
-
-    /* Initial render — first page */
-    const firstBatch = items.slice(0, PAGE);
-    list.innerHTML = _renderItems(firstBatch) + _renderLoadMore();
-
-    /* Load more handler */
-    window.__dashLoadMore = function() {
-        const btn = document.getElementById('_dashLMBtn');
-        if (btn) { btn.textContent = 'Memuat…'; btn.disabled = true; }
-
-        setTimeout(() => {
-            _page++;
-            const start = _page * PAGE;
-            const batch = items.slice(start, start + PAGE);
-
-            /* Remove the load-more wrapper */
-            document.getElementById('_doLMWrap')?.remove();
-            document.getElementById('_dashLMWrap')?.remove();
-
-            /* Append new items */
-            list.insertAdjacentHTML('beforeend', _renderItems(batch) + _renderLoadMore());
-        }, 80);
-    };
-}
 
         return { open, close, closeByOverlay, showPlatPicker, openPlatform, filterSent };
     })();
 
     /* ════════════════════════════════════════════════════════
-       DASH DETAIL — sub-panel
-       ★ UPDATED: added direct article link + Data Overview shortcut
+       DASH DETAIL
     ════════════════════════════════════════════════════════ */
     const DashDetail = {
         openEncoded(enc, plat) {
@@ -1973,13 +1860,14 @@ const DashExport = (() => {
             if (truePlat === 'all' || truePlat === 'doc' || !truePlat) {
                 const url = String(item.url || item.link || '').toLowerCase();
                 const has = (s) => url.includes(s);
-                if (has('tiktok.com')) truePlat = 'tiktok';
-                else if (has('youtube.com') || has('youtu.be')) truePlat = 'youtube';
-                else if (has('instagram.com')) truePlat = 'instagram';
-                else if (has('facebook.com') || has('fb.watch')) truePlat = 'fb';
-                else if (has('twitter.com') || has('x.com')) truePlat = 'twit';
+                if (has('tiktok.com'))                            truePlat = 'tiktok';
+                else if (has('youtube.com') || has('youtu.be'))   truePlat = 'youtube';
+                else if (has('instagram.com'))                    truePlat = 'instagram';
+                else if (has('facebook.com') || has('fb.watch'))  truePlat = 'fb';
+                else if (has('twitter.com') || has('x.com'))      truePlat = 'twit';
             }
             platform = truePlat;
+
             const meta = DashCfg.platMeta[platform] || { label: platform==='all'?'All Media':platform, color: '#4361EE' };
             const SM2  = { '1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg' };
             const raw  = String(item.class_sentiment||item.sentiment||'0').toLowerCase();
@@ -2004,13 +1892,6 @@ const DashExport = (() => {
             const av      = (item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||item.thumbnail||'').trim();
             const dt      = item.date_created||item.created_at||'';
 
-            // ── Resolve the current project ID stored by DashPanel ──
-            const currentPid = (() => {
-                // walk up from current panel to find which project is active
-                // DashPanel stores _curPid internally; we read it via closure-held var
-                return window.__dashCurrentPid || '';
-            })();
-
             title.textContent = name;
 
             const words  = name.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
@@ -2020,40 +1901,33 @@ const DashExport = (() => {
                 : ini;
 
             let dtFmt = '';
-// ✅ Safari-safe date format untuk detail panel
-if (dt) {
-    try {
-        // Normalize: "2024-01-15 10:30:00" → "2024-01-15T10:30:00"
-        const normalized = String(dt).trim().replace(' ', 'T');
-        const parts = normalized.split(/[T\-\:\.Z]/);
-        // parts: [yyyy, MM, dd, HH, mm, ss]
-        const year  = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1;
-        const day   = parseInt(parts[2], 10);
-        const hour  = parseInt(parts[3] || '0', 10);
-        const min   = parseInt(parts[4] || '0', 10);
+            if (dt) {
+                try {
+                    const normalized = String(dt).trim().replace(' ', 'T');
+                    const parts = normalized.split(/[T\-\:\.Z]/);
+                    const year  = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1;
+                    const day   = parseInt(parts[2], 10);
+                    const hour  = parseInt(parts[3] || '0', 10);
+                    const min   = parseInt(parts[4] || '0', 10);
+                    if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+                        const d = new Date(year, month, day, hour, min);
+                        dtFmt = d.toLocaleDateString('id-ID', {
+                            weekday: 'long', day: '2-digit', month: 'long',
+                            year: 'numeric', hour: '2-digit', minute: '2-digit'
+                        });
+                    } else { dtFmt = dt.split(/[T\s]/)[0]; }
+                } catch (e) { dtFmt = dt.split(/[T\s]/)[0]; }
+            }
 
-        if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
-            const d = new Date(year, month, day, hour, min);
-            dtFmt = d.toLocaleDateString('id-ID', {
-                weekday: 'long', day: '2-digit', month: 'long',
-                year: 'numeric', hour: '2-digit', minute: '2-digit'
-            });
-        } else {
-            dtFmt = dt.split(/[T\s]/)[0];
-        }
-    } catch (e) {
-        dtFmt = dt.split(/[T\s]/)[0];
-    }
-}
-            /* ── Media embed per platform ── */
+            /* Media embed */
             let mediaHtml = '';
             if (platform === 'youtube') {
                 let ytId = ((item.url||'').match(/[?&]v=([a-zA-Z0-9_-]{11})/)||
                               (item.url||'').match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)||
                               (item.url||'').match(/shorts\/([a-zA-Z0-9_-]{11})/)||[])[1]
                            || (item.video_id||item.youtube_id||'');
-                if(!ytId && item.id) { const strId = String(item.id); if(strId.length === 11) ytId = strId; }
+                if (!ytId && item.id) { const strId = String(item.id); if(strId.length === 11) ytId = strId; }
                 const thumb = item.thumbnail||item.thumbnail_url||item.image_url||(ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
                 if (ytId) {
                     const eid = `yt_${ytId}_${Date.now()}`;
@@ -2099,7 +1973,7 @@ if (dt) {
                 }
             }
 
-            /* ── Stats ── */
+            /* Stats */
             const statsMap = {
                 twit:      [['Retweet',item.num_retweeted||item.retweet_count||0],['Like',item.num_likes||item.favorite_count||0],['Quote',item.num_quote||0]],
                 fb:        [['Like',item.likes||item.num_likes||0],['Share',item.shares||item.share_count||0],['Comment',item.num_comments||0]],
@@ -2117,49 +1991,20 @@ if (dt) {
             const handleDisp = handle && !handle.replace('@','').toLowerCase().startsWith(name.toLowerCase().slice(0,4))
                 ? (handle.startsWith('@') ? handle : '@'+handle) : '';
 
-            /* ════════════════════════════════════════════════════
-               ★ SOURCE URL — resolve direct link per platform
-               For Online News (doc): url field is often null in API,
-               fallback to publisher homepage.
-               For social: build canonical URL from IDs.
-            ════════════════════════════════════════════════════ */
-            let sourceUrl = '';
-            let publisherHomepage = '';
-            let isDirectArticleUrl = false;
+            /* Source URL */
+            let sourceUrl = '', isDirectArticleUrl = false;
 
-         if (platform === 'doc') {
-    const _cleanUrl = v => (v && typeof v === 'string'
-        && v !== 'null' && v !== 'undefined' && v.trim() !== ''
-        && v.startsWith('http')) ? v.trim() : '';
-
-    sourceUrl = _cleanUrl(item.url)
-        || _cleanUrl(item.link)
-        || _cleanUrl(item.article_url)
-        || _cleanUrl(item.source_url)
-        || _cleanUrl(item.news_url)
-        || _cleanUrl(item.permalink)
-        || _cleanUrl(item.web_url)
-        || _cleanUrl(item.full_url)
-        || _cleanUrl(item.original_url)
-        || _cleanUrl(item.reference)
-        || _cleanUrl(item.href)
-        || _cleanUrl(item.canonical_url)
-        || _cleanUrl(item.post_url)
-        || '';
-
-    if (sourceUrl) {
-        isDirectArticleUrl = true;
-    } else {
-        const pub = (item.publisher || item.source_name || item.name || '').replace(/^@/, '').trim();
-        if (pub) {
-            const domain = pub.includes('.') ? pub : pub.toLowerCase().replace(/\s+/g, '') + '.com';
-            publisherHomepage = 'https://' + domain.replace(/^https?:\/\//, '');
-        }
-        isDirectArticleUrl = false;
-    }
-}
-         else if (platform === 'twit') {
-                // Try direct URL first (contentJson often has the real tweet URL)
+            if (platform === 'doc') {
+                const _cleanUrl = v => (v && typeof v === 'string'
+                    && v !== 'null' && v !== 'undefined' && v.trim() !== ''
+                    && v.startsWith('http')) ? v.trim() : '';
+                sourceUrl = _cleanUrl(item.url)||_cleanUrl(item.link)||_cleanUrl(item.article_url)
+                    ||_cleanUrl(item.source_url)||_cleanUrl(item.news_url)||_cleanUrl(item.permalink)
+                    ||_cleanUrl(item.web_url)||_cleanUrl(item.full_url)||_cleanUrl(item.original_url)
+                    ||_cleanUrl(item.reference)||_cleanUrl(item.href)||_cleanUrl(item.canonical_url)
+                    ||_cleanUrl(item.post_url)||'';
+                isDirectArticleUrl = !!sourceUrl;
+            } else if (platform === 'twit') {
                 const cj = (() => { try { return JSON.parse(item.contentJson||'{}'); } catch(e){ return {}; }})();
                 sourceUrl = cj?.url || item.url || '';
                 if (!sourceUrl || sourceUrl.includes('pbs.twimg.com') || sourceUrl.includes('t.co')) {
@@ -2192,49 +2037,31 @@ if (dt) {
                 else if (pname)        sourceUrl = `https://www.facebook.com/${pname}`;
             }
 
-            /* ════════════════════════════════════════════════════
-               ★ DATA OVERVIEW URL
-            ════════════════════════════════════════════════════ */
-            const pid = window.__dashCurrentPid || '';
-            const overviewUrl = pid
-                ? `${DATA_OVERVIEW_URL}?project_id=${encodeURIComponent(pid)}&start_date=${encodeURIComponent(DashCfg.sd)}&end_date=${encodeURIComponent(DashCfg.ed)}`
-                : DATA_OVERVIEW_URL;
-
-            /* ── Build action buttons ── */
+            /* Action buttons */
             let actionBtns = '';
-
-        if (platform === 'doc') {
+            if (platform === 'doc') {
                 if (isDirectArticleUrl && sourceUrl) {
-                    actionBtns = `
-                    <div class="do-dp2-actions">
+                    actionBtns = `<div class="do-dp2-actions">
                         <a href="${_es(sourceUrl)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link-news">
                             <i class="ph ph-newspaper"></i> Baca Artikel Asli
                         </a>
                     </div>`;
                 } else {
-                    actionBtns = `
-                    <div class="do-dp2-actions">
+                    actionBtns = `<div class="do-dp2-actions">
                         <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:9px 12px;font-size:11px;color:#991b1b;display:flex;align-items:flex-start;gap:7px;line-height:1.4;">
                             <i class="ph ph-warning-circle" style="font-size:14px;flex-shrink:0;margin-top:1px;"></i>
                             <span>Link artikel spesifik tidak tersedia dari sumber data.</span>
                         </div>
                     </div>`;
                 }
-            }else if (sourceUrl) {
-                // Social platforms: primary "Lihat asli" + secondary overview
-                actionBtns = `
-                <div class="do-dp2-actions">
+            } else if (sourceUrl) {
+                actionBtns = `<div class="do-dp2-actions">
                     <a href="${_es(sourceUrl)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link">
                         <i class="ph ph-arrow-square-out"></i> Lihat ${_es(meta.label)} Asli
                     </a>
-                     
                 </div>`;
             } else {
-                // No direct URL available, only show overview link
-                actionBtns = `
-                <div class="do-dp2-actions">
-                   
-                </div>`;
+                actionBtns = `<div class="do-dp2-actions"></div>`;
             }
 
             body.innerHTML = `
@@ -2273,8 +2100,7 @@ if (dt) {
     };
 
     /* ════════════════════════════════════════════════════════
-       Track current project ID for DashDetail to use
-       (patch DashPanel.open to expose _curPid globally)
+       Track current project ID
     ════════════════════════════════════════════════════════ */
     const _origPanelOpen = DashPanel.open.bind(DashPanel);
     DashPanel.open = function(platform, sentiment, projectId, sdOverride, edOverride) {

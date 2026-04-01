@@ -604,7 +604,7 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
-                                <h3 class="mb-0 text-white f-w-300" id="kpiTotal"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+<h3 class="mb-0 text-white f-w-300" id="kpiTotal">—</h3>
                                 <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub"><i class="ph ph-chart-line-up me-1"></i>Loading…</p>
                             </div>
                             <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chat-dots"></i></div></div>
@@ -618,7 +618,7 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">Online News</p>
-                                <h3 class="mb-0 text-white f-w-300" id="kpiNews"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+<h3 class="mb-0 text-white f-w-300" id="kpiNews">—</h3>
                                 <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNewsSub"><i class="ph ph-newspaper me-1"></i>Loading…</p>
                             </div>
                             <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-newspaper"></i></div></div>
@@ -632,7 +632,7 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">Social Media</p>
-                                <h3 class="mb-0 text-white f-w-300" id="kpiSocial"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+<h3 class="mb-0 text-white f-w-300" id="kpiSocial">—</h3>
                                 <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiSocialSub"><i class="ph ph-share-network me-1"></i>Loading…</p>
                             </div>
                             <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-share-network"></i></div></div>
@@ -646,7 +646,7 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">Platforms Active</p>
-                                <h3 class="mb-0 text-white f-w-300" id="kpiPlatforms"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+<h3 class="mb-0 text-white f-w-300" id="kpiPlatforms">—</h3>
                                 <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPlatformsSub"><i class="ph ph-circles-four me-1"></i>Loading…</p>
                             </div>
                             <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-circles-four"></i></div></div>
@@ -831,10 +831,7 @@
                             <span style="font-size:13px;font-weight:600;color:var(--slate-400);">Loading chart…</span>
                         </div>
                         <div id="chSentiment" style="display:none;"></div>
-                        <div class="snt-hint" id="sntHint" style="display:none;">
-                            <i class="ph ph-arrows-left-right"></i>
-                            <span>Geser kiri–kanan untuk melihat semua data</span>
-                        </div>
+                       
                     </div>
                 </div>
             </div>
@@ -899,9 +896,9 @@
             <div class="do-panel-meta"><i class="ph ph-magnifying-glass" style="font-size:11px;"></i><span id="doPanelMeta">—</span></div>
             <div class="do-panel-tabs">
                 <button class="do-panel-tab active" data-s="all" onclick="DOPanel.filterSent('all')">Semua</button>
+              <button class="do-panel-tab pos"    data-s="pos" onclick="DOPanel.filterSent('pos')">Pos</button>
+                              <button class="do-panel-tab neu"    data-s="neu" onclick="DOPanel.filterSent('neu')">Neu</button>
                 <button class="do-panel-tab neg"    data-s="neg" onclick="DOPanel.filterSent('neg')">Neg</button>
-                <button class="do-panel-tab pos"    data-s="pos" onclick="DOPanel.filterSent('pos')">Pos</button>
-                <button class="do-panel-tab neu"    data-s="neu" onclick="DOPanel.filterSent('neu')">Neu</button>
             </div>
         </div>
         <div class="do-panel-list" id="doPanelList"></div>
@@ -1696,22 +1693,12 @@ return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
                 const hintEl=$('sntHint'), n=dates.length;
                 const PX_PER_POINT=45, MIN_WIDTH=600;
                 const containerW=mainEl.parentElement?.offsetWidth||800;
-                const needsScroll=n>20;
-                const chartWidth=needsScroll?Math.max(MIN_WIDTH,n*PX_PER_POINT):containerW;
+              const needsScroll = false;
+const chartWidth = containerW;
                 const oldWrap=$('sntScrollWrap');
                 if(oldWrap) oldWrap.replaceWith(mainEl);
-                if(needsScroll){
-                    const wrap=document.createElement('div');
-                    wrap.id='sntScrollWrap';
-                    wrap.style.cssText='overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;width:100%;scrollbar-width:thin;scrollbar-color:#CBD5E1 transparent;';
-                    mainEl.parentElement.insertBefore(wrap,mainEl);
-                    wrap.appendChild(mainEl);
-                    mainEl.style.width=chartWidth+'px';
-                    if(hintEl) hintEl.style.display='flex';
-                } else {
-                    mainEl.style.width='';
-                    if(hintEl) hintEl.style.display='none';
-                }
+               mainEl.style.width = '';
+
                 mainEl.style.display='block';
                 mainEl.innerHTML='';
                 const labels=dates.map(dt=>{
@@ -1727,84 +1714,86 @@ return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
                     {name:'Neutral',  data:toNum(valNeu)  },
                     {name:'Negative', data:toNum(valNeg)  },
                 ];
-                const opts={
-                    chart:{
-                        type:'area',height:350,width:chartWidth,
-                        animations:{enabled:true,easing:'linear',dynamicAnimation:{speed:1000}},
-                        toolbar:{show:false},fontFamily:'inherit',
-                        events:{
-                            click:(_e,_ctx,cfg)=>{
-                                let sd=null,ed=null;
-                                if(cfg&&typeof cfg.dataPointIndex!=='undefined'&&cfg.dataPointIndex>=0){
-                                    sd=dates[cfg.dataPointIndex];
-                                    ed=datesEnd[cfg.dataPointIndex]||sd;
-                                }
-                                if(cfg&&cfg.seriesIndex>=0){
-                                    const sentMap={Total:'all',Positive:'pos',Neutral:'neu',Negative:'neg'};
-                                    DOPanel.open('all',sentMap[seriesArr[cfg.seriesIndex]?.name]||'all',sd,ed);
-                                } else {
-                                    DOPanel.open('all','all',sd,ed);
-                                }
-                            },
-                            mounted:()=>{ if(skEl){skEl.style.display='none';setTimeout(()=>{try{skEl.remove();}catch(e){}},260);} },
-                        },
-                    },
-                    series:seriesArr,
-                    stroke:{curve:'smooth',width:2.5},
-                    grid: {
-                        borderColor: '#F1F5F9',
-                        strokeDashArray: 4,
-                        padding: { left: 10, right: 10 }
-                    },
-                    markers:{
-                        size: 6,
-                        strokeWidth: 2,
-                        strokeColors: '#fff',
-                        hover: { size: 8 }
-                    },
-                    dataLabels:{
-                        enabled:true,
-                        formatter:v=>v>0?numK(v):'',
-                        offsetY:-8,
-                        style:{fontSize:'9px',fontFamily:'inherit',fontWeight:'800'},
-                        background:{
-                            enabled:true,
-                            foreColor:'#fff',
-                            padding:3,
-                            borderRadius:3,
-                            borderWidth:0,
-                            opacity:0.9,
-                            dropShadow:{enabled:true,top:1,left:1,blur:2,color:'#000',opacity:0.15}
-                        }
-                    },
-                    xaxis:{
-                        categories:labels,
-                        labels:{
-                            show: true,
-                            rotate: n > 12 ? -45 : 0,
-                            rotateAlways: n > 12,
-                            hideOverlappingLabels: false,
-                            showDuplicates: false,
-                            style:{colors:'#94A3B8',fontSize:'11px',fontFamily:'inherit'}
-                        },
-                        axisBorder:{show:false},axisTicks:{show:false}
-                    },
-                    yaxis:{
-                        labels:{formatter:v=>numK(v),style:{colors:'#94A3B8',fontSize:'10px',fontFamily:'inherit'}},
-                        axisBorder:{show:false},axisTicks:{show:false}
-                    },
-                    colors:['#4680ff','#10B981','#94A3B8','#EF4444'],
-                    fill:{
-                        type: 'solid',
-                        opacity: 0.3 // Matching dashboard look
-                    },
-                    legend:{position:'bottom',horizontalAlign:'left',labels:{colors:'#94A3B8'}},
-                    tooltip:{
-                        shared:false,
-                        intersect:true,
-                        y:{formatter:v=>numFmt(v)+' mentions'}
-                    }
-                };
+              const opts = {
+    chart: {
+        type: 'area',
+        height: 350,
+        // HAPUS width: chartWidth — biarkan ApexCharts auto
+        animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 1000 } },
+        toolbar: { show: false },
+        fontFamily: 'inherit',
+        events: {
+            click: (_e, _ctx, cfg) => {
+                let sd = null, ed = null;
+                if (cfg && typeof cfg.dataPointIndex !== 'undefined' && cfg.dataPointIndex >= 0) {
+                    sd = dates[cfg.dataPointIndex];
+                    ed = datesEnd[cfg.dataPointIndex] || sd;
+                }
+                if (cfg && cfg.seriesIndex >= 0) {
+                    const sentMap = { Total: 'all', Positive: 'pos', Neutral: 'neu', Negative: 'neg' };
+                    DOPanel.open('all', sentMap[seriesArr[cfg.seriesIndex]?.name] || 'all', sd, ed);
+                } else {
+                    DOPanel.open('all', 'all', sd, ed);
+                }
+            },
+            mounted: () => {
+                if (skEl) { skEl.style.display = 'none'; setTimeout(() => { try { skEl.remove(); } catch (e) {} }, 260); }
+            },
+        },
+    },
+    series: seriesArr,
+    stroke: { curve: 'smooth', width: 2.5 },
+    grid: {
+        borderColor: '#F1F5F9',
+        strokeDashArray: 4,
+        padding: { left: 10, right: 10 }
+    },
+ markers: {
+        size: n <= 31 ? 5 : 3,
+        strokeWidth: 2,
+        strokeColors: '#fff',
+        hover: { size: 6 }
+    },
+dataLabels: {
+        enabled: n <= 31,
+        formatter: v => v > 0 ? numK(v) : '',
+        offsetY: -8,
+        style: { fontSize: '9px', fontFamily: 'inherit', fontWeight: '800' },
+        background: {
+            enabled: true, foreColor: '#fff', padding: 3,
+            borderRadius: 3, borderWidth: 0, opacity: 0.9,
+            dropShadow: { enabled: true, top: 1, left: 1, blur: 2, color: '#000', opacity: 0.15 }
+        }
+    },
+ xaxis: {
+    categories: labels,
+    labels: {
+        show: true,
+        rotate: -45,
+        rotateAlways: true,
+        hideOverlappingLabels: false,  // jangan sembunyikan, biarkan semua tampil
+        showDuplicates: false,
+        trim: false,
+        style: { colors: '#94A3B8', fontSize: '10px', fontFamily: 'inherit' }
+    },
+    axisBorder: { show: false },
+    axisTicks: { show: false },
+    // HAPUS tickAmount sama sekali
+},
+    yaxis: {
+        labels: { formatter: v => numK(v), style: { colors: '#94A3B8', fontSize: '10px', fontFamily: 'inherit' } },
+        axisBorder: { show: false },
+        axisTicks: { show: false }
+    },
+    colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
+    fill: { type: 'solid', opacity: 0.3 },
+    legend: { position: 'bottom', horizontalAlign: 'left', labels: { colors: '#94A3B8' } },
+    tooltip: {
+        shared: false,
+        intersect: true,
+        y: { formatter: v => numFmt(v) + ' mentions' }
+    }
+};
                 this._apexSentiment=new ApexCharts(mainEl,opts);
                 this._apexSentiment.render();
             } catch(err){

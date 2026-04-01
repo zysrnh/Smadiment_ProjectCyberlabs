@@ -325,11 +325,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Mass Media</p>
-                        <h3 class="mb-0 text-white f-w-300" id="valMass">
-                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                            <i class="ph ph-arrow-square-out me-1"></i>Klik untuk lihat detail
+                        <h3 class="mb-0 text-white f-w-300" id="valMass">—</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="subMass">
+                            <i class="ph ph-arrow-square-out me-1"></i>Loading…
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -346,11 +344,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Social Media</p>
-                        <h3 class="mb-0 text-white f-w-300" id="valSocial">
-                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                            <i class="ph ph-arrow-square-out me-1"></i>Klik untuk lihat detail
+                        <h3 class="mb-0 text-white f-w-300" id="valSocial">—</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="subSocial">
+                            <i class="ph ph-arrow-square-out me-1"></i>Loading…
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -366,11 +362,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
-                        <h3 class="mb-0 text-white f-w-300" id="valTotal">
-                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                            <i class="ph ph-chat-dots me-1"></i>Mass Media + Social Media
+                        <h3 class="mb-0 text-white f-w-300" id="valTotal">—</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="subTotal">
+                            <i class="ph ph-chat-dots me-1"></i>Loading…
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -620,8 +614,7 @@
             </div>
             <div class="apx-click-hint" data-html2canvas-ignore="true">
                 <i class="ph ph-cursor-click"></i>
-                <span>Klik pada titik data atau nama legend untuk melihat detail mentions</span>
-            </div>
+             </div>
         </div>
     </div>
 
@@ -654,8 +647,7 @@
             </div>
             <div class="apx-click-hint" data-html2canvas-ignore="true">
                 <i class="ph ph-cursor-click"></i>
-                <span>Klik pada titik data untuk melihat detail artikel Online News</span>
-            </div>
+             </div>
         </div>
     </div>
 
@@ -1004,7 +996,7 @@ function makeEDoughnut(domId,labels,values,colors,onClickFns,subtitles){
 
 /* ══ LOAD MENTION BY PLATFORM ══ */
 async function loadMentionByPlatform(){
-  if(!MSCfg.pid){ ['valMass','valSocial','valTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<span style="font-size:13px;color:#94a3b8;">—</span>'}); ['skBar','skSovMass','skSovPlat','skBarRace'].forEach(hideSk); return; }
+  if(!MSCfg.pid){ ['valMass','valSocial','valTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<span style="font-size:13px;color:#94a3b8;">—</span>'}); ['subMass','subSocial','subTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<i class="ph ph-warning-circle me-1"></i>No Project';}); ['skBar','skSovMass','skSovPlat','skBarRace'].forEach(hideSk); return; }
   try{
     const res=await fetch(`/mk/api/media-statistic/mention-by-platform?project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}`);
     const d=await res.json();
@@ -1012,6 +1004,9 @@ async function loadMentionByPlatform(){
     document.getElementById('valMass').textContent   =numFmt(d.mass_total||0);
     document.getElementById('valSocial').textContent =numFmt(d.social_total||0);
     document.getElementById('valTotal').textContent  =numFmt(d.grand_total||0);
+    document.getElementById('subMass').innerHTML = '<i class="ph ph-arrow-square-out me-1"></i>Klik untuk lihat detail';
+    document.getElementById('subSocial').innerHTML = '<i class="ph ph-arrow-square-out me-1"></i>Klik untuk lihat detail';
+    document.getElementById('subTotal').innerHTML = '<i class="ph ph-chat-dots me-1"></i>Mass Media + Social Media';
     const platforms=d.platforms||[];
     const pcMap={doc:'pcDoc',twit:'pcTwit',twitter:'pcTwit',fb:'pcFb',facebook:'pcFb',ig:'pcIg',instagram:'pcIg',yt:'pcYt',youtube:'pcYt',tiktok:'pcTt'};
     platforms.forEach(p=>{const key=labelToKey[p.label]||'';const elId=pcMap[key];if(elId){const e=document.getElementById(elId);if(e)e.textContent=numFmt(p.count||0);}});
@@ -1059,6 +1054,7 @@ async function loadMentionByPlatform(){
   }catch(err){
     console.error('loadMentionByPlatform:',err);
     ['valMass','valSocial','valTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<span style="font-size:12px;color:#dc2626;font-weight:600;">Error</span>';});
+    ['subMass','subSocial','subTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<i class="ph ph-warning-circle me-1"></i>Gagal memuat';});
     ['skBar','skSovMass','skSovPlat','skBarRace'].forEach(hideSk);
   }
 }
