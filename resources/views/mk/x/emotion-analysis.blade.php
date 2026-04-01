@@ -250,11 +250,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">{{ $kc['label'] }}</p>
-                        <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">
-                            <div class="sk-block" style="height:28px;width:90px;background:rgba(255,255,255,.2);"></div>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                            <i class="ph {{ $kc['icon'] }} me-1"></i>{{ $kc['sub'] }}
+                            <i class="ph-fill {{ $kc['icon'] }} me-1"></i>{{ $kc['sub'] }}
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -434,7 +432,7 @@
                 <div><h6 class="mb-0">Data Tweet</h6><small class="text-muted">Klik tweet untuk lihat detail</small></div>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-light-primary text-primary" id="listBadge">Loading…</span>
+                <span class="badge bg-light-primary text-primary" id="listBadge">—</span>
                 <div data-html2canvas-ignore="true" class="d-flex gap-1">
                     <button class="card-exp-btn card-exp-btn-pdf" onclick="XExport.runCard('card-export-posts','posts','pdf',this)"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
                     <button class="card-exp-btn card-exp-btn-img" onclick="XExport.runCard('card-export-posts','posts','image',this)"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>

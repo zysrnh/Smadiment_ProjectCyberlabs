@@ -415,8 +415,8 @@
         <div class="card-body"><div class="d-flex align-items-center">
           <div class="flex-grow-1">
             <p class="mb-1 text-white text-opacity-75 f-12">Total Users</p>
-            <h3 class="mb-0 text-white f-w-300" id="kpiTotal"><span class="sk-block" style="width:70px;height:22px;display:inline-block;"></span></h3>
-            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub"><i class="ph ph-users me-1"></i>Loading…</p>
+            <h3 class="mb-0 text-white f-w-300" id="kpiTotal">—</h3>
+            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub"><i class="ph-fill ph-users me-1"></i>—</p>
           </div>
           <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-users"></i></div></div>
         </div></div>
@@ -427,8 +427,8 @@
         <div class="card-body"><div class="d-flex align-items-center">
           <div class="flex-grow-1">
             <p class="mb-1 text-white text-opacity-75 f-12">Total Interactions</p>
-            <h3 class="mb-0 text-white f-w-300" id="kpiEng"><span class="sk-block" style="width:70px;height:22px;display:inline-block;"></span></h3>
-            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiEngSub"><i class="ph ph-chart-bar me-1"></i>Loading…</p>
+            <h3 class="mb-0 text-white f-w-300" id="kpiEng">—</h3>
+            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiEngSub"><i class="ph-fill ph-chart-bar me-1"></i>—</p>
           </div>
           <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div>
         </div></div>
@@ -439,8 +439,8 @@
         <div class="card-body"><div class="d-flex align-items-center">
           <div class="flex-grow-1">
             <p class="mb-1 text-white text-opacity-75 f-12">Top Account</p>
-            <h3 class="mb-0 text-white f-w-300" id="kpiTopAcc" style="font-size:1rem;"><span class="sk-block" style="width:70px;height:22px;display:inline-block;"></span></h3>
-            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopAccSub"><i class="ph ph-crown me-1"></i>Loading…</p>
+            <h3 class="mb-0 text-white f-w-300" id="kpiTopAcc" style="font-size:1rem;">—</h3>
+            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopAccSub"><i class="ph-fill ph-crown me-1"></i>—</p>
           </div>
           <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-crown"></i></div></div>
         </div></div>
@@ -451,8 +451,8 @@
         <div class="card-body"><div class="d-flex align-items-center">
           <div class="flex-grow-1">
             <p class="mb-1 text-white text-opacity-75 f-12">Avg Followers</p>
-            <h3 class="mb-0 text-white f-w-300" id="kpiAvgFol"><span class="sk-block" style="width:70px;height:22px;display:inline-block;"></span></h3>
-            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiAvgFolSub"><i class="ph ph-trend-up me-1"></i>Loading…</p>
+            <h3 class="mb-0 text-white f-w-300" id="kpiAvgFol">—</h3>
+            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiAvgFolSub"><i class="ph-fill ph-trend-up me-1"></i>—</p>
           </div>
           <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-trend-up"></i></div></div>
         </div></div>
@@ -534,7 +534,7 @@
               </div>
             </div>
             <div class="d-flex align-items-center gap-2">
-              <span class="badge bg-light-primary text-primary" id="badgeTotal">Loading…</span>
+              <span class="badge bg-light-primary text-primary" id="badgeTotal">—</span>
               <div class="d-flex gap-1" data-html2canvas-ignore="true">
                 <button class="card-exp-btn card-exp-btn-pdf"
                         onclick="MAUExport.runCard('card-export-list','list','pdf',this)" title="Export PDF">

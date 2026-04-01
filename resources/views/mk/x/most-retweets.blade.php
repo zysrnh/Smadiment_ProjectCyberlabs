@@ -222,11 +222,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Tweets</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiTotal">
-                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiTotal">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub">
-                            <i class="ph ph-file-text me-1"></i>Loading…
+                            <i class="ph ph-file-text me-1"></i>—
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -242,11 +240,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Unique Authors</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiAuthors">
-                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiAuthors">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiAuthorsSub">
-                            <i class="ph ph-users me-1"></i>Loading…
+                            <i class="ph ph-users me-1"></i>—
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -262,11 +258,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Retweets</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiRt">
-                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiRt">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiRtSub">
-                            <i class="ph ph-repeat me-1"></i>Loading…
+                            <i class="ph ph-repeat me-1"></i>—
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -282,11 +276,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Highest Retweet</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiHighest">
-                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiHighest">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiHighestSub">
-                            <i class="ph ph-trophy me-1"></i>Loading…
+                            <i class="ph ph-trophy me-1"></i>—
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">

@@ -137,8 +137,8 @@
         <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .00s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                 <p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p>
-                <h3 class="mb-0 text-white f-w-300" id="kpiTopics"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
-                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopicsSub"><i class="ph ph-hash me-1"></i>Loading…</p>
+                <h3 class="mb-0 text-white f-w-300" id="kpiTopics">—</h3>
+                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopicsSub"><i class="ph-fill ph-hash me-1"></i>—</p>
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-hash"></i></div></div></div></div>
         </div>
     </div>
@@ -146,8 +146,8 @@
         <div class="card h-100 bg-info text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                 <p class="mb-1 text-white text-opacity-75 f-12">Total Volume</p>
-                <h3 class="mb-0 text-white f-w-300" id="kpiVolume"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
-                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiVolumeSub"><i class="ph ph-chart-bar me-1"></i>Loading…</p>
+                <h3 class="mb-0 text-white f-w-300" id="kpiVolume">—</h3>
+                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiVolumeSub"><i class="ph-fill ph-chart-bar me-1"></i>—</p>
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div></div></div>
         </div>
     </div>
@@ -155,8 +155,8 @@
         <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                 <p class="mb-1 text-white text-opacity-75 f-12">Positif</p>
-                <h3 class="mb-0 text-white f-w-300" id="kpiPos"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
-                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPosSub"><i class="ph ph-smiley me-1"></i>Loading…</p>
+                <h3 class="mb-0 text-white f-w-300" id="kpiPos">—</h3>
+                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPosSub"><i class="ph-fill ph-smiley me-1"></i>—</p>
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div></div></div>
         </div>
     </div>
@@ -164,8 +164,8 @@
         <div class="card h-100 bg-danger text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .15s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                 <p class="mb-1 text-white text-opacity-75 f-12">Negatif</p>
-                <h3 class="mb-0 text-white f-w-300" id="kpiNeg"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
-                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNegSub"><i class="ph ph-smiley-sad me-1"></i>Loading…</p>
+                <h3 class="mb-0 text-white f-w-300" id="kpiNeg">—</h3>
+                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNegSub"><i class="ph-fill ph-smiley-sad me-1"></i>—</p>
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div></div></div>
         </div>
     </div>
@@ -173,8 +173,8 @@
         <div class="card h-100 text-white kpi-card-hover" style="background-color:#b45309; animation:fadeUp .38s ease-out .20s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                 <p class="mb-1 text-white text-opacity-75 f-12">Netral</p>
-                <h3 class="mb-0 text-white f-w-300" id="kpiNeu"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
-                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNeuSub"><i class="ph ph-smiley-blank me-1"></i>Loading…</p>
+                <h3 class="mb-0 text-white f-w-300" id="kpiNeu">—</h3>
+                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNeuSub"><i class="ph-fill ph-smiley-blank me-1"></i>—</p>
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-blank"></i></div></div></div></div>
         </div>
     </div>
@@ -226,7 +226,7 @@
                             <button class="sent-tab tab-neg" data-s="negative"><span class="sent-dot" style="background:#dc2626;"></span>Negatif</button>
                             <button class="sent-tab tab-neu" data-s="neutral"><span class="sent-dot" style="background:#b45309;"></span>Netral</button>
                         </div>
-                        <span class="badge bg-light-primary text-primary" id="badgeWC">Loading…</span>
+                        <span class="badge bg-light-primary text-primary" id="badgeWC">—</span>
                         <div data-html2canvas-ignore="true" class="d-flex gap-1">
                             <button class="card-exp-btn card-exp-btn-pdf"
                                     onclick="XWCExport.runCard('card-export-wc','wordcloud','pdf',this)"

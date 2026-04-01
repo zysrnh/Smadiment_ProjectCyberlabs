@@ -413,11 +413,11 @@
     <div class="stats-grid" data-lazy="active-users-stats">
         <div class="stat-card">
             <div class="stat-label">Total Active Users</div>
-            <div id="totalActiveUsers" class="stat-value"><div class="skeleton-number-inline"></div></div>
+            <div id="totalActiveUsers" class="stat-value">—</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Top Contributor</div>
-            <div id="topContributor" class="stat-value stat-value-small"><div class="skeleton-number-inline"></div></div>
+            <div id="topContributor" class="stat-value stat-value-small">—</div>
         </div>
     </div>
 
@@ -455,11 +455,11 @@
     <div class="stats-grid" data-lazy="sentiment-stats">
         <div class="stat-card">
             <div class="stat-label">Positive</div>
-            <div id="sentimentPositive" class="stat-value" style="color: #22c55e;"><div class="skeleton-number-inline"></div></div>
+            <div id="sentimentPositive" class="stat-value" style="color: #22c55e;">—</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Negative</div>
-            <div id="sentimentNegative" class="stat-value" style="color: #ef4444;"><div class="skeleton-number-inline"></div></div>
+            <div id="sentimentNegative" class="stat-value" style="color: #ef4444;">—</div>
         </div>
     </div>
 
@@ -498,11 +498,11 @@
     <div class="stats-grid" data-lazy="reach-stats">
         <div class="stat-card">
             <div class="stat-label">Total Estimated Reach</div>
-            <div id="totalReach" class="stat-value"><div class="skeleton-number-inline"></div></div>
+            <div id="totalReach" class="stat-value">—</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Highest Range</div>
-            <div id="highestRange" class="stat-value stat-value-small"><div class="skeleton-number-inline"></div></div>
+            <div id="highestRange" class="stat-value stat-value-small">—</div>
         </div>
     </div>
 

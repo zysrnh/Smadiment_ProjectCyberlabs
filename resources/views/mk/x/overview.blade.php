@@ -213,18 +213,57 @@
 
     {{-- ══ KPI Row ══ --}}
     <div class="row mb-3">
-        <div class="col-md-6">
+        {{-- Card: Total Posts --}}
+        <div class="col-md-6 col-xl-3">
             <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d1"
                  style="background:linear-gradient(135deg,#038047,#05a85e);">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">Total Posts</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiPosts">—</h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPostsSub">
+                                <i class="ph-fill ph-files me-1"></i>—
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3">
+                            <div class="kpi-icon-bg"><i class="ph ph-files"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{-- Card: Total Topics --}}
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d2"
+                 style="background:linear-gradient(135deg,#EF4444,#dc2626);">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiTopics">—</h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopicsSub">
+                                <i class="ph-fill ph-hash me-1"></i>—
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3">
+                            <div class="kpi-icon-bg"><i class="ph ph-hash"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{-- Card: Total Views --}}
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d3"
+                 style="background:linear-gradient(135deg,#06B6D4,#0891b2);">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
                             <p class="mb-1 text-white text-opacity-75 f-12">Total Views</p>
-                            <h3 class="mb-0 text-white f-w-300" id="kpiViews">
-                                <span class="sk-block" style="width:100px;height:28px;display:inline-block;"></span>
-                            </h3>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiViews">—</h3>
                             <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiViewsSub">
-                                <i class="ph ph-eye me-1"></i>Loading…
+                                <i class="ph-fill ph-eye me-1"></i>—
                             </p>
                         </div>
                         <div class="flex-shrink-0 ms-3">
@@ -234,18 +273,17 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d2"
-                 style="background:linear-gradient(135deg,#06B6D4,#0891b2);">
+        {{-- Card: Total Retweets --}}
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d4"
+                 style="background:linear-gradient(135deg,#F59E0B,#d97706);">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
                             <p class="mb-1 text-white text-opacity-75 f-12">Total Retweets</p>
-                            <h3 class="mb-0 text-white f-w-300" id="kpiRt">
-                                <span class="sk-block" style="width:100px;height:28px;display:inline-block;"></span>
-                            </h3>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiRt">—</h3>
                             <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiRtSub">
-                                <i class="ph ph-repeat me-1"></i>Loading…
+                                <i class="ph-fill ph-repeat me-1"></i>—
                             </p>
                         </div>
                         <div class="flex-shrink-0 ms-3">
@@ -297,33 +335,8 @@
     {{-- ══ Panel: Top Topics (Hashtag) ══ --}}
     <div class="tme-tab-panel active" id="panel-hashtag">
 
-        {{-- Hashtag List Card --}}
-        <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
-            <div id="card-export-hashtag-list">
-                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-hash f-18 text-primary"></i></div>
-                        <div><h6 class="mb-0">Top Topics / Hashtags</h6><small class="text-muted">Klik untuk lihat tweet terkait</small></div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-light-primary text-primary" id="badgeHashtag">Loading…</span>
-                        <div class="d-flex gap-1" data-html2canvas-ignore="true">
-                            <button class="card-exp-btn card-exp-btn-pdf" onclick="OVExport.runCard('card-export-hashtag-list','hashtag-list','pdf',this)" title="PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
-                            <button class="card-exp-btn card-exp-btn-img" onclick="OVExport.runCard('card-export-hashtag-list','hashtag-list','image',this)" title="PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
-                        </div>
-                    </div>
-                </div>
-                <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>Memuat topics…</span></div>
-                <div id="hashtagContent" style="display:none;">
-                    <div id="hashtagList" class="ht-list"></div>
-                    <div id="pag-hashtag"></div>
-                </div>
-                <div id="hashtagEmpty" style="display:none;" class="chart-empty" style="padding:40px 0;"><i class="ph ph-hash"></i><span>Tidak ada data topics</span></div>
-            </div>
-        </div>
-
         {{-- Donut + Breakdown (stacked dalam 1 card) --}}
-        <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
+        <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
             <div id="card-export-hashtag-donut">
                 <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div class="d-flex align-items-center gap-2">
@@ -351,6 +364,31 @@
                     </div>
                 </div>
                 <div style="height:8px;"></div>
+            </div>
+        </div>
+
+        {{-- Hashtag List Card --}}
+        <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
+            <div id="card-export-hashtag-list">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-hash f-18 text-primary"></i></div>
+                        <div><h6 class="mb-0">Top Topics / Hashtags</h6><small class="text-muted">Klik untuk lihat tweet terkait</small></div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-light-primary text-primary" id="badgeHashtag">Loading…</span>
+                        <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                            <button class="card-exp-btn card-exp-btn-pdf" onclick="OVExport.runCard('card-export-hashtag-list','hashtag-list','pdf',this)" title="PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                            <button class="card-exp-btn card-exp-btn-img" onclick="OVExport.runCard('card-export-hashtag-list','hashtag-list','image',this)" title="PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                        </div>
+                    </div>
+                </div>
+                <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>Memuat topics…</span></div>
+                <div id="hashtagContent" style="display:none;">
+                    <div id="hashtagList" class="ht-list"></div>
+                    <div id="pag-hashtag"></div>
+                </div>
+                <div id="hashtagEmpty" style="display:none;" class="chart-empty" style="padding:40px 0;"><i class="ph ph-hash"></i><span>Tidak ada data topics</span></div>
             </div>
         </div>
 
@@ -533,6 +571,8 @@ const OVData = {
             if (topics.length) {
                 Store.hashtag=topics; Pag.hashtag=1;
                 if(bd) bd.textContent=topics.length+' topics';
+                const ts=_$('kpiTopics'); if(ts) ts.textContent=numF(topics.length);
+                const tss=_$('kpiTopicsSub'); if(tss) tss.innerHTML=`<i class="ph-fill ph-hash me-1"></i>Analisis ${topics.length} topik`;
                 const ch=_$('chip-hashtag'); if(ch) ch.textContent=topics.length;
                 this._renderHashtagList(topics);
                 this._renderDonutHashtag(topics);
@@ -627,10 +667,12 @@ const OVData = {
         let tv=0,tr=0; items.forEach(i=>{tv+=parseInt(i.view_cnt||0);tr+=parseInt(i.rt||0)});
         const n=items.length, av=v=>n?Math.round(v/n):0;
         const el=(id,v)=>{const e=_$(id);if(e)e.textContent=numF(v)};
+        el('kpiPosts', n);
+        const ps=_$('kpiPostsSub'); if(ps) ps.innerHTML=`<i class="ph-fill ph-files me-1"></i>${numF(n)} Tweets collected`;
         el('kpiViews',tv);
-        const vs=_$('kpiViewsSub'); if(vs) vs.innerHTML=`<i class="ph ph-chart-line-up me-1"></i>Avg ${numF(av(tv))} / tweet · ${n} tweets`;
+        const vs=_$('kpiViewsSub'); if(vs) vs.innerHTML=`<i class="ph-fill ph-eye me-1"></i>Avg ${numF(av(tv))}/tweet`;
         el('kpiRt',tr);
-        const rs=_$('kpiRtSub'); if(rs) rs.innerHTML=`<i class="ph ph-chart-line-up me-1"></i>Avg ${numF(av(tr))} / tweet · ${n} tweets`;
+        const rs=_$('kpiRtSub'); if(rs) rs.innerHTML=`<i class="ph-fill ph-repeat me-1"></i>Avg ${numF(av(tr))}/tweet`;
     },
 
     reloadAll() {

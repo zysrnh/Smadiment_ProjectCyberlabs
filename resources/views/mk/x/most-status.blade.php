@@ -1407,19 +1407,19 @@
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-label">Total Posts</div>
-            <div id="totalPosts" class="stat-value">0</div>
+            <div id="totalPosts" class="stat-value">—</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Total Views</div>
-            <div id="totalViews" class="stat-value">0</div>
+            <div id="totalViews" class="stat-value">—</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Avg. Views per Post</div>
-            <div id="avgViews" class="stat-value">0</div>
+            <div id="avgViews" class="stat-value">—</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Top Post Views</div>
-            <div id="topViews" class="stat-value">0</div>
+            <div id="topViews" class="stat-value">—</div>
         </div>
     </div>
 
