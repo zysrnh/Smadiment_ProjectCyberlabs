@@ -325,9 +325,7 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Mass Media</p>
-                        <h3 class="mb-0 text-white f-w-300" id="valMass">
-                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="valMass">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
                             <i class="ph ph-arrow-square-out me-1"></i>Klik untuk lihat detail
                         </p>
@@ -346,9 +344,7 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Social Media</p>
-                        <h3 class="mb-0 text-white f-w-300" id="valSocial">
-                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="valSocial">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
                             <i class="ph ph-arrow-square-out me-1"></i>Klik untuk lihat detail
                         </p>
@@ -366,9 +362,7 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
-                        <h3 class="mb-0 text-white f-w-300" id="valTotal">
-                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="valTotal">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
                             <i class="ph ph-chat-dots me-1"></i>Mass Media + Social Media
                         </p>

@@ -285,7 +285,7 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Likes</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub"><i class="ph ph-chart-line-up me-1"></i>Loadingâ€¦</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-heart"></i></div></div>
@@ -299,7 +299,7 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Comments</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiCmts"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiCmts">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCmtsSub"><i class="ph ph-chart-line-up me-1"></i>Loadingâ€¦</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chat-circle"></i></div></div>
@@ -313,7 +313,7 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Posts</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiPosts"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiPosts">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPostsSub"><i class="ph ph-chart-line-up me-1"></i>Loadingâ€¦</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-images"></i></div></div>

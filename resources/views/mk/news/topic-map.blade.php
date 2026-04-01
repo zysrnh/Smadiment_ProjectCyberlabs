@@ -549,9 +549,7 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiTopics">
-                            <span class="sk-block" style="width:70px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiTopics">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopicsSub">
                             <i class="ph ph-chart-line-up me-1"></i>Loadingâ€¦
                         </p>
@@ -569,9 +567,7 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Articles</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiArts">
-                            <span class="sk-block" style="width:70px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiArts">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiArtsSub">
                             <i class="ph ph-newspaper me-1"></i>Loadingâ€¦
                         </p>
@@ -589,9 +585,7 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Top Topic</p>
-                        <h3 class="mb-0 text-white f-w-300 f-16" id="kpiTop" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                            <span class="sk-block" style="width:100px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300 f-16" id="kpiTop" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopSub">
                             <i class="ph ph-trophy me-1"></i>Loadingâ€¦
                         </p>
@@ -609,9 +603,7 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Publishers Found</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiPubs">
-                            <span class="sk-block" style="width:70px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiPubs">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPubsSub">
                             <i class="ph ph-globe me-1"></i>Loadingâ€¦
                         </p>

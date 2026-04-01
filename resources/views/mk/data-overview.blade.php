@@ -604,7 +604,7 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
-                                <h3 class="mb-0 text-white f-w-300" id="kpiTotal"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                                <h3 class="mb-0 text-white f-w-300" id="kpiTotal">—</h3>
                                 <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub"><i class="ph ph-chart-line-up me-1"></i>Loadingâ€¦</p>
                             </div>
                             <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chat-dots"></i></div></div>
@@ -618,7 +618,7 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">Online News</p>
-                                <h3 class="mb-0 text-white f-w-300" id="kpiNews"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                                <h3 class="mb-0 text-white f-w-300" id="kpiNews">—</h3>
                                 <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNewsSub"><i class="ph ph-newspaper me-1"></i>Loadingâ€¦</p>
                             </div>
                             <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-newspaper"></i></div></div>
@@ -632,7 +632,7 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">Social Media</p>
-                                <h3 class="mb-0 text-white f-w-300" id="kpiSocial"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                                <h3 class="mb-0 text-white f-w-300" id="kpiSocial">—</h3>
                                 <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiSocialSub"><i class="ph ph-share-network me-1"></i>Loadingâ€¦</p>
                             </div>
                             <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-share-network"></i></div></div>
@@ -646,7 +646,7 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">Platforms Active</p>
-                                <h3 class="mb-0 text-white f-w-300" id="kpiPlatforms"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                                <h3 class="mb-0 text-white f-w-300" id="kpiPlatforms">—</h3>
                                 <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPlatformsSub"><i class="ph ph-circles-four me-1"></i>Loadingâ€¦</p>
                             </div>
                             <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-circles-four"></i></div></div>

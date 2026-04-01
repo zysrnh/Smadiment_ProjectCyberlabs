@@ -85,22 +85,22 @@
 <div class="row mb-3">
     <div class="col-md-6 col-xl-3">
         <div class="card h-100 bg-primary text-white kpi-card-hover fade-up fade-up-d1">
-            <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Views</p><h3 class="mb-0 text-white f-w-300" id="kpiViews"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiViewsSub"><i class="ph ph-chart-line-up me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-eye"></i></div></div></div></div>
+            <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Views</p><h3 class="mb-0 text-white f-w-300" id="kpiViews">�</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiViewsSub"><i class="ph ph-chart-line-up me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-eye"></i></div></div></div></div>
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
         <div class="card h-100 bg-success text-white kpi-card-hover fade-up fade-up-d2">
-            <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Likes</p><h3 class="mb-0 text-white f-w-300" id="kpiLikes"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub"><i class="ph ph-heart me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-thumbs-up"></i></div></div></div></div>
+            <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Likes</p><h3 class="mb-0 text-white f-w-300" id="kpiLikes">�</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub"><i class="ph ph-heart me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-thumbs-up"></i></div></div></div></div>
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
         <div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d3">
-            <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Comments</p><h3 class="mb-0 text-white f-w-300" id="kpiComments"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCommentsSub"><i class="ph ph-chat-circle me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chat-circle"></i></div></div></div></div>
+            <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Comments</p><h3 class="mb-0 text-white f-w-300" id="kpiComments">�</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCommentsSub"><i class="ph ph-chat-circle me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chat-circle"></i></div></div></div></div>
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
         <div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d4">
-            <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Shares</p><h3 class="mb-0 text-white f-w-300" id="kpiShares"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiSharesSub"><i class="ph ph-share-network me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-share-network"></i></div></div></div></div>
+            <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Shares</p><h3 class="mb-0 text-white f-w-300" id="kpiShares">�</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiSharesSub"><i class="ph ph-share-network me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-share-network"></i></div></div></div></div>
         </div>
     </div>
 </div>

@@ -305,7 +305,7 @@ body { background: var(--bg); }
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Countries</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiCountries"><span class="sk-block" style="width:70px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiCountries">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCountriesSub"><i class="ph ph-globe me-1"></i>Loadingâ€¦</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-globe"></i></div></div>
@@ -317,7 +317,7 @@ body { background: var(--bg); }
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Users</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiUsers"><span class="sk-block" style="width:70px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiUsers">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiUsersSub"><i class="ph ph-users me-1"></i>Loadingâ€¦</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-users"></i></div></div>
@@ -329,7 +329,7 @@ body { background: var(--bg); }
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Top Country</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiTopCountry" style="font-size:1.1rem;"><span class="sk-block" style="width:90px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiTopCountry" style="font-size:1.1rem;">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopCountrySub"><i class="ph ph-map-pin me-1"></i>Loadingâ€¦</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-map-pin"></i></div></div>
@@ -341,7 +341,7 @@ body { background: var(--bg); }
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Top Province</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiTopProvince" style="font-size:1.1rem;"><span class="sk-block" style="width:90px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiTopProvince" style="font-size:1.1rem;">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopProvinceSub"><i class="ph ph-buildings me-1"></i>Loadingâ€¦</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-buildings"></i></div></div>
