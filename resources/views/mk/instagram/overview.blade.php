@@ -216,7 +216,7 @@
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Likes</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes"><span class="sk-block" style="width:90px;height:28px;display:inline-block;"></span></h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub"><i class="ph ph-heart me-1"></i>Loadingâ€¦</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-heart"></i></div></div>
@@ -228,7 +228,7 @@
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Comments</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiComments">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiComments"><span class="sk-block" style="width:90px;height:28px;display:inline-block;"></span></h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCommentsSub"><i class="ph ph-chat-circle me-1"></i>Loadingâ€¦</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chat-circle"></i></div></div>
@@ -240,7 +240,7 @@
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Engagement</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiEng">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiEng"><span class="sk-block" style="width:90px;height:28px;display:inline-block;"></span></h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiEngSub"><i class="ph ph-chart-bar me-1"></i>Loadingâ€¦</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div>
@@ -252,7 +252,7 @@
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Posts</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiPosts">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiPosts"><span class="sk-block" style="width:90px;height:28px;display:inline-block;"></span></h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPostsSub"><i class="ph ph-image me-1"></i>Loadingâ€¦</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-image"></i></div></div>

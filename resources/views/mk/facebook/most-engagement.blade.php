@@ -280,7 +280,7 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Likes</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub"><i class="ph ph-chart-line-up me-1"></i>Loadingâ€¦</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-thumbs-up"></i></div></div>
@@ -294,7 +294,7 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Shares</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiShares">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiShares"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiSharesSub"><i class="ph ph-chart-line-up me-1"></i>Loadingâ€¦</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-share-network"></i></div></div>
@@ -308,7 +308,7 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Comments</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiCmts">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiCmts"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCmtsSub"><i class="ph ph-chart-line-up me-1"></i>Loadingâ€¦</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chat-circle"></i></div></div>

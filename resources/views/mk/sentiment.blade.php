@@ -165,22 +165,22 @@
   <div class="row mb-3">
     <div class="col-md-6 col-xl-3">
       <div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d1" style="cursor:pointer;" onclick="SNTPopup.openSentiment('neg')">
-        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Negative</p><h3 class="mb-0 text-white f-w-300" id="valNeg">�</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg">—</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div></div></div>
+        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Negative</p><h3 class="mb-0 text-white f-w-300" id="valNeg"><span class="sk-block" style="width:80px;height:24px;display:inline-block;background:rgba(255,255,255,.18);"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg">—</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div></div></div>
       </div>
     </div>
     <div class="col-md-6 col-xl-3">
       <div class="card h-100 bg-success text-white kpi-card-hover fade-up fade-up-d2" style="cursor:pointer;" onclick="SNTPopup.openSentiment('pos')">
-        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Positive</p><h3 class="mb-0 text-white f-w-300" id="valPos">�</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctPos">—</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div></div></div>
+        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Positive</p><h3 class="mb-0 text-white f-w-300" id="valPos"><span class="sk-block" style="width:80px;height:24px;display:inline-block;background:rgba(255,255,255,.18);"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctPos">—</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div></div></div>
       </div>
     </div>
     <div class="col-md-6 col-xl-3">
       <div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d3" style="cursor:pointer;" onclick="SNTPopup.openSentiment('neu')">
-        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Neutral</p><h3 class="mb-0 text-white f-w-300" id="valNeu">�</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu">—</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-meh"></i></div></div></div></div>
+        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Neutral</p><h3 class="mb-0 text-white f-w-300" id="valNeu"><span class="sk-block" style="width:80px;height:24px;display:inline-block;background:rgba(255,255,255,.18);"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu">—</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-meh"></i></div></div></div></div>
       </div>
     </div>
     <div class="col-md-6 col-xl-3">
       <div class="card h-100 bg-primary text-white kpi-card-hover fade-up fade-up-d4">
-        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p><h3 class="mb-0 text-white f-w-300" id="valTot">�</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12">{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} – {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div></div></div>
+        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p><h3 class="mb-0 text-white f-w-300" id="valTot"><span class="sk-block" style="width:80px;height:24px;display:inline-block;background:rgba(255,255,255,.18);"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12">{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} – {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div></div></div>
       </div>
     </div>
   </div>

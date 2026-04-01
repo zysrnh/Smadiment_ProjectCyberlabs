@@ -249,7 +249,7 @@
                 <div class="card h-100 text-white kpi-card-hover" style="background:#4680ff;animation:fadeUp .38s ease-out both;">
                     <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Articles</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiArticles">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiArticles"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiArticlesSub"><i class="ph ph-chart-line-up me-1"></i>Loadingâ€¦</p>
                     </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-newspaper"></i></div></div></div></div>
                 </div>
@@ -258,7 +258,7 @@
                 <div class="card h-100 text-white kpi-card-hover" style="background:#10B981;animation:fadeUp .38s ease-out .05s both;">
                     <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Publishers</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiPublishers">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiPublishers"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPublishersSub"><i class="ph ph-globe me-1"></i>Loadingâ€¦</p>
                     </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-globe"></i></div></div></div></div>
                 </div>

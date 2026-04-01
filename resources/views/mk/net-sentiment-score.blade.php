@@ -321,7 +321,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
-                        <h3 class="mb-0 text-white f-w-300" id="statPos">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="statPos">
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                        </h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctPos">â€”</p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -337,7 +339,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
-                        <h3 class="mb-0 text-white f-w-300" id="statNeu">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="statNeu">
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                        </h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu">â€”</p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -353,7 +357,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
-                        <h3 class="mb-0 text-white f-w-300" id="statNeg">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="statNeg">
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                        </h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg">â€”</p>
                     </div>
                     <div class="flex-shrink-0 ms-3">

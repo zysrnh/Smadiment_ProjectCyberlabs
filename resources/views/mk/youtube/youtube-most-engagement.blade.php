@@ -535,7 +535,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Views</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiViews">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiViews">
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                        </h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiViewsSub">
                             <i class="ph ph-chart-line-up me-1"></i>Loadingâ€¦
                         </p>
@@ -553,7 +555,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Likes</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes">
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                        </h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub">
                             <i class="ph ph-chart-line-up me-1"></i>Loadingâ€¦
                         </p>
@@ -571,7 +575,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Comments</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiCmts">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiCmts">
+                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
+                        </h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCmtsSub">
                             <i class="ph ph-chart-line-up me-1"></i>Loadingâ€¦
                         </p>

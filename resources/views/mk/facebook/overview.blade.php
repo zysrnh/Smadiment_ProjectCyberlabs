@@ -216,7 +216,7 @@
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Likes</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes">�</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes"><span class="sk-block" style="width:90px;height:28px;display:inline-block;"></span></h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub"><i class="ph ph-thumbs-up me-1"></i>Loading…</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-thumbs-up"></i></div></div>
@@ -229,7 +229,7 @@
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Shares</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiShares">�</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiShares"><span class="sk-block" style="width:90px;height:28px;display:inline-block;"></span></h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiSharesSub"><i class="ph ph-share-network me-1"></i>Loading…</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-share-network"></i></div></div>
@@ -242,7 +242,7 @@
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Comments</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiComments">�</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiComments"><span class="sk-block" style="width:90px;height:28px;display:inline-block;"></span></h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCommentsSub"><i class="ph ph-chat-circle me-1"></i>Loading…</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chat-circle"></i></div></div>
@@ -255,7 +255,7 @@
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Engagement</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiEng">�</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiEng"><span class="sk-block" style="width:90px;height:28px;display:inline-block;"></span></h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiEngSub"><i class="ph ph-chart-bar me-1"></i>Loading…</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div>
@@ -1189,17 +1189,6 @@ const OVExport = (() => {
     }
 
     return { run, runCard };
-})();
-  
-/* ── INIT ── */
-document.addEventListener('DOMContentLoaded', () => {
-    if (!OVCfg.pid) return;
-    OVTab._loaded.hashtag=true; OVData.loadHashtags();
-    OVData.loadEngagement('like').then(()=>{ OVTab._loaded.like=true; });
-    document.addEventListener('keydown', e => { if(e.key==='Escape') OVPanel.close(); });
-});
-</script>
-@endsection{ run, runCard };
 })();
   
 /* ── INIT ── */
