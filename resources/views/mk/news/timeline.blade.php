@@ -242,7 +242,7 @@ body.is-exporting .exp-icon {
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiTotal"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiTotal">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub"><i class="ph ph-chart-line-up me-1"></i>Loading...</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-newspaper"></i></div></div>
@@ -257,7 +257,7 @@ body.is-exporting .exp-icon {
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiPos"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiPos">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPosSub"><i class="ph ph-chart-line-up me-1"></i>Loading...</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div>
@@ -272,7 +272,7 @@ body.is-exporting .exp-icon {
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiNeu"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiNeu">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNeuSub"><i class="ph ph-chart-line-up me-1"></i>Loading...</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-minus-circle"></i></div></div>
@@ -287,7 +287,7 @@ body.is-exporting .exp-icon {
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiNeg"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiNeg">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNegSub"><i class="ph ph-chart-line-up me-1"></i>Loading...</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div>
@@ -363,13 +363,13 @@ body.is-exporting .exp-icon {
 
 {{-- Platform Tabs --}}
 <div class="mt-tabs">
-    <button class="mt-tab-btn active" id="tab-all"    onclick="MTTab.show('all')"><i class="ph ph-globe"></i> All <span class="mt-tab-chip" id="chip-all">-</span></button>
-    <button class="mt-tab-btn"        id="tab-doc"    onclick="MTTab.show('doc')"><i class="ph ph-newspaper"></i> News <span class="mt-tab-chip" id="chip-doc">-</span></button>
-    <button class="mt-tab-btn"        id="tab-twit"   onclick="MTTab.show('twit')"><i class="ph ph-x-logo"></i> Twitter <span class="mt-tab-chip" id="chip-twit">-</span></button>
-    <button class="mt-tab-btn"        id="tab-fb"     onclick="MTTab.show('fb')"><i class="ph ph-facebook-logo"></i> Facebook <span class="mt-tab-chip" id="chip-fb">-</span></button>
-    <button class="mt-tab-btn"        id="tab-ig"     onclick="MTTab.show('ig')"><i class="ph ph-instagram-logo"></i> Instagram <span class="mt-tab-chip" id="chip-ig">-</span></button>
-    <button class="mt-tab-btn"        id="tab-ytb"    onclick="MTTab.show('ytb')"><i class="ph ph-youtube-logo"></i> YouTube <span class="mt-tab-chip" id="chip-ytb">-</span></button>
-    <button class="mt-tab-btn"        id="tab-tiktok" onclick="MTTab.show('tiktok')"><i class="ph ph-tiktok-logo"></i> TikTok <span class="mt-tab-chip" id="chip-tiktok">-</span></button>
+    <button class="mt-tab-btn active" id="tab-all"    onclick="MTTab.show('all')"><i class="ph ph-globe"></i> All</button>
+    <button class="mt-tab-btn"        id="tab-doc"    onclick="MTTab.show('doc')"><i class="ph ph-newspaper"></i> News</button>
+    <button class="mt-tab-btn"        id="tab-twit"   onclick="MTTab.show('twit')"><i class="ph ph-x-logo"></i> Twitter</button>
+    <button class="mt-tab-btn"        id="tab-fb"     onclick="MTTab.show('fb')"><i class="ph ph-facebook-logo"></i> Facebook</button>
+    <button class="mt-tab-btn"        id="tab-ig"     onclick="MTTab.show('ig')"><i class="ph ph-instagram-logo"></i> Instagram</button>
+    <button class="mt-tab-btn"        id="tab-ytb"    onclick="MTTab.show('ytb')"><i class="ph ph-youtube-logo"></i> YouTube</button>
+    <button class="mt-tab-btn"        id="tab-tiktok" onclick="MTTab.show('tiktok')"><i class="ph ph-tiktok-logo"></i> TikTok</button>
 </div>
 
 {{-- Mentions List --}}
@@ -458,7 +458,7 @@ const numF = n  => parseInt(n||0).toLocaleString('id-ID');
 const numK = n  => parseInt(n||0).toLocaleString('id-ID');
 const esc  = s  => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const Store = { all:[], doc:[], twit:[], fb:[], ig:[], ytb:[], tiktok:[] };
-let _activeTab='all', _page=1, _trendChart=null, _barChart=null;
+let _activeTab='all', _page=1, _trendChart=null, _barChart=null, _trendRaw=[];
 
 /* ── Normalise sentiment ── */
 function _normSent(item) {
@@ -472,11 +472,13 @@ function _normSent(item) {
 
 /* ── Normalise item ── */
 function _normItem(item, platform) {
-    let ao={},cj={};
-    if(typeof item.author==='object'&&item.author) ao=item.author;
-    else if(typeof item.author==='string'&&item.author.startsWith('{')) { try{ao=JSON.parse(item.author);}catch(e){} }
-    if(typeof item.contentJson==='string'&&item.contentJson.startsWith('{')) { try{cj=JSON.parse(item.contentJson);}catch(e){} }
-    else if(typeof item.contentJson==='object'&&item.contentJson) cj=item.contentJson;
+    let cj={};
+    try {
+        if(item.content_json) {
+            cj = (typeof item.content_json === 'string') ? JSON.parse(item.content_json) : item.content_json;
+        }
+    } catch(e){cj={};}
+    const ao=item.author_object ? (typeof item.author_object==='string'?JSON.parse(item.author_object):item.author_object) : (cj.user||{});
     const name=(ao.name||item.author_name||item.name||item.from_name||item.page_name||item.channel_title||item.author_nickname||item.publisher||item.source_name||'').replace(/<[^>]*>/g,'').trim()||'Unknown';
     const handle=(item.author_scr_name||item.screen_name||ao.scr_name||item.username||'').trim();
     const av=(item.avatar_url||item.profile_image_url||item.author_image||ao.image||(cj.user&&cj.user.image?cj.user.image:'')||item.profile_image||'').trim();
@@ -497,17 +499,17 @@ const MTTab={show(type){_activeTab=type;_page=1;PLAT_KEYS.concat(['all']).forEac
 /* ── Fetch cache ── */
 const _mtCache={};
 async function _mtFetchOne(platform,pid,sd,ed){
-    const cKey=pid+'_'+platform+'_'+sd+'_'+ed;
+    const cleanSd = String(sd).trim().replace(/\s+/g,'-'), cleanEd = String(ed).trim().replace(/\s+/g,'-');
+    const cKey=pid+'_'+platform+'_'+cleanSd+'_'+cleanEd;
     if(_mtCache[cKey]) return _mtCache[cKey];
-    const rws = (platform === 'doc' || platform === 'twit') ? 5000 : 500;
-    const q='project_id='+pid+'&start_date='+sd+'&end_date='+ed+'&rows='+rws+'&start=0';
+    const rws = 500;
+    const q='project_id='+pid+'&start_date='+cleanSd+'&end_date='+cleanEd+'&rows='+rws+'&start=0';
     if(platform==='ig'){for(const sub of['postbylike','postbycomment','postbydate','']){try{const r=await fetch('/mk/api/news/ig-top-status?'+q+(sub?'&sub='+sub:''));const d=await r.json();const items=Array.isArray(d&&d.data)?d.data:(Array.isArray(d)?d:[]);if(items.length>0){_mtCache[cKey]=items.map(i=>{i._platform=platform;return i;});return _mtCache[cKey];}}catch(e){continue;}}return[];}
     const eps={doc:'/mk/api/news/mentions?'+q,twit:'/mk/api/news/mentions?'+q+'&media_type=twit',fb:'/mk/api/news/fb-top-status?'+q+'&sub=fblike',ytb:'/mk/api/news/ytb-top-status?'+q,tiktok:'/mk/api/news/tiktok-top-status?'+q+'&sub=postbylike'};
     const url=eps[platform];if(!url)return[];
     const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),30000);
     try{const r=await fetch(url,{signal:ctrl.signal});clearTimeout(tid);if(!r.ok)return[];const d=await r.json();
     let items=[];if(Array.isArray(d?.data?.data))items=d.data.data;else if(Array.isArray(d?.data))items=d.data;else if(Array.isArray(d?.statuses))items=d.statuses;else if(Array.isArray(d?.results))items=d.results;else if(Array.isArray(d?.posts))items=d.posts;else if(Array.isArray(d))items=d;
-    if(platform==='doc')items=items.filter(m=>{const tc=String(m.tcode||'').toLowerCase(),mt=String(m.media_type||'').toLowerCase();return tc==='berita'||mt==='berita'||mt==='doc'||mt==='news'||mt==='online'||mt==='article';});
     items=items.map(i=>{i._platform=platform;return i;});
     _mtCache[cKey]=items;return items;}catch(e){clearTimeout(tid);return[];}
 }
@@ -516,14 +518,57 @@ async function _mtFetchOne(platform,pid,sd,ed){
 const MTData={
     async loadAll(){
         if(!MTCfg.pid){_$('listContainer').innerHTML='<div class="chart-empty" style="padding:40px"><i class="ph ph-folder-open"></i><span>Pilih project terlebih dahulu</span></div>';return;}
+        
+        const ctn = _$('listContainer'), ld = _$('listLoading');
+        if(ctn) ctn.innerHTML = '<div style="padding:100px; text-align:center;"><div class="loading-spinner mb-2"></div><div class="text-slate-400 text-sm">Menyiapkan data timeline...</div></div>';
+        if(ld) ld.classList.remove('hidden');
+
+        // 1. Fetch Trend Data for Charts & KPIs
+        try {
+            const cleanSd = String(MTCfg.sd).trim().replace(/\s+/g,'-'), cleanEd = String(MTCfg.ed).trim().replace(/\s+/g,'-');
+            const tRes = await fetch(`/mk/api/media-statistic/trend-mentions?project_id=${MTCfg.pid}&start_date=${cleanSd}&end_date=${cleanEd}`);
+            const tJson = await tRes.json();
+            _trendRaw = tJson.data || [];
+            this._updateKPIsFromTrend(_trendRaw);
+            this._renderTrend();
+            this._renderBar();
+        } catch(e) { console.warn("Trend fetch failed", e); }
+
+        // 2. Fetch Mentions for List (Original Logic)
         const results=await Promise.allSettled(PLAT_KEYS.map(k=>_mtFetchOne(k,MTCfg.pid,MTCfg.sd,MTCfg.ed)));
-        PLAT_KEYS.forEach((k,i)=>{const raw=results[i].status==='fulfilled'?results[i].value:[];Store[k]=raw.map(it=>_normItem(it,k));this._updateChip(k,Store[k].length);});
+        PLAT_KEYS.forEach((k,i)=>{
+            const raw=results[i].status==='fulfilled'?results[i].value:[];
+            Store[k]=raw.map(it=>_normItem(it,k));
+        });
         Store.all=PLAT_KEYS.reduce((acc,k)=>acc.concat(Store[k]),[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-        this._updateChip('all',Store.all.length);this._updateKPIs();this._renderTrend();this._renderBar();this._renderList();
-        _$('listBadge').textContent=Store.all.length+' mentions';
+        
+        this._renderList();
+        if(_$('listBadge')) _$('listBadge').textContent='';
+    },
+    _updateKPIsFromTrend(raw){
+        let total = 0;
+        const platTotals = {};
+        raw.forEach(p => {
+            let key = p.key;
+            if(key==='twitter') key='twit';
+            if(key==='facebook') key='fb';
+            if(key==='instagram') key='ig';
+            if(key==='youtube') key='ytb';
+            
+            let pSum = 0;
+            (p.data || []).forEach(d => pSum += (d.count || 0));
+            platTotals[key] = pSum;
+            total += pSum;
+        });
+        
+        _$('kpiTotal').textContent = numF(total);
+        _$('dotTotalVal').textContent = numK(total);
+        
+        Object.keys(platTotals).forEach(k => this._updateChip(k, platTotals[k]));
+        this._updateChip('all', total);
     },
     reload(){this.loadAll();},
-    _updateChip(key,count){const el=_$('chip-'+key);if(el)el.textContent=count;},
+    _updateChip(key,count){},
     _updateKPIs(){
         const all=Store.all,pos=all.filter(m=>m.sentiment==='pos').length,neg=all.filter(m=>m.sentiment==='neg').length,neu=all.length-pos-neg;
         const pct=v=>all.length>0?((v/all.length)*100).toFixed(1):'0.0';
@@ -537,17 +582,68 @@ const MTData={
     },
     _renderTrend(){
         const el=_$('trendChart'),ld=_$('trendLoading');if(!el)return;
-        const start=new Date(MTCfg.sd),end=new Date(MTCfg.ed),dates=[];
-        for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1))dates.push(d.toISOString().split('T')[0]);
-        if(!dates.length||!Store.all.length){if(ld)ld.classList.add('hidden');return;}
-        const xLabels=dates.map(d=>{const dt=new Date(d+'T00:00:00');return dt.getDate()+'/'+(dt.getMonth()+1);});
-        const datasets={};PLAT_KEYS.forEach(k=>{datasets[k]=new Array(dates.length).fill(0);});
-        Store.all.forEach(m=>{const day=(m.date||'').split('T')[0].split(' ')[0];const idx=dates.indexOf(day);if(idx>=0&&datasets[m._platform])datasets[m._platform][idx]++;});
+        const parseDate = s => {
+            if(!s) return null;
+            const clean = String(s).trim().split('T')[0].split(' ')[0].replace(/\//g,'-');
+            if(/^\d{4}-\d{2}-\d{2}$/.test(clean)) return clean;
+            try {
+                const d = new Date(s.replace(/-/g,'/'));
+                if(!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+            } catch(e) {}
+            return null;
+        };
+        const startISO = parseDate(MTCfg.sd), endISO = parseDate(MTCfg.ed);
+        if(!startISO || !endISO){ if(ld)ld.classList.add('hidden'); return; }
+        
+        const dates = [];
+        let curr = new Date(startISO + 'T00:00:00');
+        const stop = new Date(endISO + 'T00:00:00');
+        while(curr <= stop) {
+            const y = curr.getFullYear(), m = String(curr.getMonth()+1).padStart(2,'0'), d = String(curr.getDate()).padStart(2,'0');
+            dates.push(`${y}-${m}-${d}`);
+            curr.setDate(curr.getDate() + 1);
+        }
+
+        const hasTrendData = (_trendRaw && _trendRaw.length > 0);
+        if(!dates.length || (!hasTrendData && !Store.all.length)){ 
+            if(ld)ld.classList.add('hidden'); 
+            return; 
+        }
+
+        const xLabels=dates.map(ds=>{
+            const [y,m,d] = ds.split('-');
+            return parseInt(d)+'/'+parseInt(m);
+        });
+        const datasets={}; PLAT_KEYS.forEach(k=>{datasets[k]=new Array(dates.length).fill(0);});
+        
+        if(hasTrendData) {
+            _trendRaw.forEach(p => {
+                let key = p.key;
+                if(key==='twitter') key='twit';
+                if(key==='facebook') key='fb';
+                if(key==='instagram') key='ig';
+                if(key==='youtube') key='ytb';
+                
+                if(datasets[key]) {
+                    (p.data || []).forEach(pt => {
+                        const idx = dates.indexOf(pt.date);
+                        if(idx >= 0) datasets[key][idx] = pt.count || 0;
+                    });
+                }
+            });
+        } else {
+            Store.all.forEach(m => {
+                const day = parseDate(m.date);
+                const idx = dates.indexOf(day);
+                if(idx >= 0 && datasets[m._platform]) datasets[m._platform][idx]++;
+            });
+        }
+
         if(_trendChart){try{_trendChart.destroy();}catch(e){}_trendChart=null;}
         el.style.display='block';if(ld)ld.classList.add('hidden');
+
         const seriesArr=PLAT_KEYS.map(k=>({name:PLAT[k].label,data:datasets[k]})).filter(s=>s.data.some(v=>v>0));
         const colorsArr=seriesArr.map(s=>{const k=PLAT_KEYS.find(k=>PLAT[k].label===s.name);return k?PLAT[k].color:'#94a3b8';});
-        const showLabels=true;
         _trendChart=new ApexCharts(el,{
             chart:{type:'area',height:340,fontFamily:'inherit',background:'transparent',toolbar:{show:false},
                 events:{click:(e,ctx,cfg)=>{
@@ -558,18 +654,38 @@ const MTData={
             yaxis:{labels:{formatter:v=>numK(v),style:{fontFamily:'inherit',fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},axisBorder:{show:false},axisTicks:{show:false}},
             fill:{opacity:0.3},stroke:{curve:'smooth',width:2.5},
             markers:{size:dates.length<=32?3:0,strokeWidth:1,strokeColors:'#fff',hover:{size:5}},
-            dataLabels:{enabled:showLabels,formatter:v=>v>0?numF(v):'',style:{fontSize:'9px',fontFamily:'inherit',fontWeight:'700'},background:{enabled:true,borderRadius:3,borderWidth:0,padding:3,opacity:0.9},offsetY:-5},
+            dataLabels:{enabled:true,formatter:v=>v>10?numF(v):'',style:{fontSize:'9px',fontFamily:'inherit',fontWeight:'700'},background:{enabled:true,borderRadius:3,borderWidth:0,padding:3,opacity:0.9},offsetY:-5},
             grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}}},
             legend:{position:'bottom',horizontalAlign:'left',fontFamily:'inherit',fontSize:'11px',fontWeight:'600',labels:{colors:'#94A3B8'},markers:{width:9,height:9,radius:50},itemMargin:{horizontal:14,vertical:4},onItemClick:{toggleDataSeries:true}},
             tooltip:{shared:false,intersect:true,style:{fontFamily:'inherit',fontSize:'12px'},y:{formatter:v=>numF(v)+' mentions'}},
         });
         _trendChart.render();
-        const fmtB=d=>{const dt=new Date(d+'T00:00:00');return dt.getDate()+' '+dt.toLocaleString('id-ID',{month:'short'});};
+        const fmtB=ds=>{
+            const [y,m,d] = ds.split('-');
+            const dt = new Date(y, m-1, d);
+            return parseInt(d)+' '+dt.toLocaleString('id-ID',{month:'short'});
+        };
         _$('trendBadge').textContent=fmtB(dates[0])+' - '+fmtB(dates[dates.length-1]);
     },
     _renderBar(){
         const el=_$('barChart'),ld=_$('barLoading');if(!el)return;
-        const platData=PLAT_KEYS.map(k=>({name:PLAT[k].label,value:Store[k].length,color:PLAT[k].color,key:k})).sort((a,b)=>b.value-a.value);
+        
+        let platData = [];
+        if(_trendRaw && _trendRaw.length > 0) {
+            platData = _trendRaw.map(p => {
+                let key = p.key;
+                if(key==='twitter') key='twit';
+                if(key==='facebook') key='fb';
+                if(key==='instagram') key='ig';
+                if(key==='youtube') key='ytb';
+                
+                let sum = 0; (p.data || []).forEach(d => sum += (d.count || 0));
+                return { name: PLAT[key]?.label || p.label, value: sum, color: PLAT[key]?.color || p.color, key: key };
+            }).sort((a,b)=>b.value-a.value);
+        } else {
+            platData = PLAT_KEYS.map(k=>({name:PLAT[k].label,value:Store[k].length,color:PLAT[k].color,key:k})).sort((a,b)=>b.value-a.value);
+        }
+
         const total=platData.reduce((s,d)=>s+d.value,0);if(!total){if(ld)ld.classList.add('hidden');return;}
         if(_barChart){try{_barChart.dispose();}catch(e){}}
         el.style.display='block';_barChart=echarts.init(el,null,{renderer:'canvas'});

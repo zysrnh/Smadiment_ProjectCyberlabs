@@ -71,9 +71,9 @@
 
 /* ══ KPI Cards ══ */
 .kpi-icon-bg {
-    width:48px; height:48px; border-radius:12px;
+    width:52px; height:52px; border-radius:12px;
     display:flex; align-items:center; justify-content:center;
-    background:rgba(255,255,255,.2); font-size:24px; color:#fff; flex-shrink:0;
+    background:rgba(255,255,255,.35); font-size:32px; color:#fff; flex-shrink:0;
 }
 .kpi-card-hover {
     will-change:transform,box-shadow;
@@ -549,11 +549,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiTopics">
-                            <span class="sk-block" style="width:70px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiTopics">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopicsSub">
-                            <i class="ph ph-chart-line-up me-1"></i>Loading…
+                            <i class="ph ph-chart-line-up me-1"></i>—
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -569,11 +567,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Articles</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiArts">
-                            <span class="sk-block" style="width:70px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiArts">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiArtsSub">
-                            <i class="ph ph-newspaper me-1"></i>Loading…
+                            <i class="ph ph-newspaper me-1"></i>—
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -587,13 +583,11 @@
         <div class="card h-100 text-white kpi-card-hover" style="background:#F59E0B;animation:fadeUp .38s ease-out .10s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
+                    <div class="flex-grow-1" style="min-width:0;">
                         <p class="mb-1 text-white text-opacity-75 f-12">Top Topic</p>
-                        <h3 class="mb-0 text-white f-w-300 f-16" id="kpiTop" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                            <span class="sk-block" style="width:100px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300 f-16" id="kpiTop" style="word-break:break-word;line-height:1.2;">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopSub">
-                            <i class="ph ph-trophy me-1"></i>Loading…
+                            <i class="ph ph-trophy me-1"></i>—
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -609,11 +603,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Publishers Found</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiPubs">
-                            <span class="sk-block" style="width:70px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiPubs">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPubsSub">
-                            <i class="ph ph-globe me-1"></i>Loading…
+                            <i class="ph ph-globe me-1"></i>—
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -948,13 +940,14 @@ function updateKPIs() {
     const el  = (id,v) => { const e=$(id); if(e) e.textContent=v; };
     const sub = (id,v) => { const e=$(id); if(e) e.innerHTML=v; };
     el('kpiTopics', D.raw.length);
-    sub('kpiTopicsSub', `<i class="ph ph-chart-bar me-1"></i>Sum weight ${numF(total)}`);
+    sub('kpiTopicsSub', `<i class="ph-fill ph-chart-bar me-1"></i>Sum weight ${numF(total)}`);
     el('kpiArts', D.arts.length);
-    sub('kpiArtsSub', `<i class="ph ph-newspaper me-1"></i>${NTM_SD} – ${NTM_ED}`);
+    sub('kpiArtsSub', `<i class="ph-fill ph-newspaper me-1"></i>${String(NTM_SD).replace(/\s+/g,'-')} – ${String(NTM_ED).replace(/\s+/g,'-')}`);
     el('kpiTop', top.topic||'—');
-    sub('kpiTopSub', top.count ? `<i class="ph ph-trophy me-1"></i>${numF(top.count)} articles / mentions` : '');
+    const topLbl = top.count === 1 ? 'article' : 'articles';
+    sub('kpiTopSub', top.count ? `<i class="ph-fill ph-trophy me-1"></i>${numF(top.count)} ${topLbl}` : '<i class="ph-fill ph-trophy me-1"></i>—');
     el('kpiPubs', pubCount||D.allPubs.length);
-    sub('kpiPubsSub', `<i class="ph ph-globe me-1"></i>Unique online publishers`);
+    sub('kpiPubsSub', `<i class="ph-fill ph-globe me-1"></i>Unique online publishers`);
     const bl=$('badgeList'); if(bl) bl.textContent=D.raw.length+' topics';
 }
 
@@ -1064,7 +1057,7 @@ window.ntmRender = function() {
     $('ntmLoading').style.display='none';
     $('ntmMapWrap').style.display='block';
     $('ntmEmpty').style.display='none';
-    $('ntmMapMeta').textContent=`${D.raw.length} topics · ${CFG.s} to ${CFG.e}`;
+    $('ntmMapMeta').textContent=`${D.raw.length} topics · ${String(CFG.s).replace(/\s+/g,'-')} to ${String(CFG.e).replace(/\s+/g,'-')}`;
     doMap(D.fil);
 };
 
