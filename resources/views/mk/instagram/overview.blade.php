@@ -211,54 +211,36 @@
 
     {{-- ══ KPI Row ══ --}}
     <div class="row mb-3">
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100 bg-primary text-white kpi-card-hover fade-up fade-up-d1">
-                <div class="card-body"><div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Total Likes</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes"><span class="sk-block" style="width:90px;height:28px;display:inline-block;"></span></h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub"><i class="ph ph-heart me-1"></i>Loading…</p>
+        @php
+            $kpiCards = [
+                ['id' => 'kpiEng',      'label' => 'Total Engagement', 'icon' => 'ph-chart-bar',          'bg' => '#EF4444', 'sub' => 'kpiEngSub'],
+                ['id' => 'kpiLikes',    'label' => 'Total Likes',      'icon' => 'ph-heart',              'bg' => '#10B981', 'sub' => 'kpiLikesSub'],
+                ['id' => 'kpiComments', 'label' => 'Total Comments',   'icon' => 'ph-chat-circle-dots', 'bg' => '#F59E0B', 'sub' => 'kpiCommentsSub'],
+                ['id' => 'kpiPosts',    'label' => 'Total Posts',      'icon' => 'ph-image',              'bg' => '#273B4A', 'sub' => 'kpiPostsSub'],
+            ];
+            $delays = ['d1','d2','d3','d4'];
+        @endphp
+        @foreach($kpiCards as $ki => $kc)
+            <div class="col-md-6 col-xl-3">
+                <div class="card h-100 text-white kpi-card-hover fade-up fade-up-{{ $delays[$ki] }}"
+                     style="background:{{ $kc['bg'] }};">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <p class="mb-1 text-white text-opacity-75 f-12">{{ $kc['label'] }}</p>
+                                <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">-</h3>
+                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="{{ $kc['sub'] }}">
+                                    <i class="ph {{ $kc['icon'] }} me-1" style="vertical-align:text-bottom;"></i>-
+                                </p>
+                            </div>
+                            <div class="flex-shrink-0 ms-3">
+                                <div class="kpi-icon-bg"><i class="ph {{ $kc['icon'] }}"></i></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-heart"></i></div></div>
-                </div></div>
+                </div>
             </div>
-        </div>
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100 bg-success text-white kpi-card-hover fade-up fade-up-d2">
-                <div class="card-body"><div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Total Comments</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiComments"><span class="sk-block" style="width:90px;height:28px;display:inline-block;"></span></h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCommentsSub"><i class="ph ph-chat-circle me-1"></i>Loading…</p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chat-circle"></i></div></div>
-                </div></div>
-            </div>
-        </div>
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d3">
-                <div class="card-body"><div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Total Engagement</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiEng"><span class="sk-block" style="width:90px;height:28px;display:inline-block;"></span></h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiEngSub"><i class="ph ph-chart-bar me-1"></i>Loading…</p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div>
-                </div></div>
-            </div>
-        </div>
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d4">
-                <div class="card-body"><div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Total Posts</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiPosts"><span class="sk-block" style="width:90px;height:28px;display:inline-block;"></span></h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPostsSub"><i class="ph ph-image me-1"></i>Loading…</p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-image"></i></div></div>
-                </div></div>
-            </div>
-        </div>
+        @endforeach
     </div>
 
     {{-- ══ Page Export Toolbar ══ --}}
@@ -282,45 +264,21 @@
 
     {{-- ══ Tabs ══ --}}
     <div class="tme-tabs" id="ovTabsBar">
-        <button class="tme-tab-btn active" id="tab-hashtag" onclick="OVTab.show('hashtag')">
-            <i class="ph ph-hash"></i> Top Hashtags <span class="tme-tab-chip" id="chip-hashtag">—</span>
-        </button>
-        <button class="tme-tab-btn" id="tab-like" onclick="OVTab.show('like')">
+        <button class="tme-tab-btn active" id="tab-like" onclick="OVTab.show('like')">
             <i class="ph ph-heart"></i> Most Liked <span class="tme-tab-chip" id="chip-like">—</span>
         </button>
         <button class="tme-tab-btn" id="tab-comment" onclick="OVTab.show('comment')">
             <i class="ph ph-chat-circle"></i> Most Comments <span class="tme-tab-chip" id="chip-comment">—</span>
         </button>
+        <button class="tme-tab-btn" id="tab-hashtag" onclick="OVTab.show('hashtag')">
+            <i class="ph ph-hash"></i> Top Hashtags <span class="tme-tab-chip" id="chip-hashtag">—</span>
+        </button>
     </div>
 
     {{-- ══ Panel: Top Hashtags ══ --}}
-    <div class="tme-tab-panel active" id="panel-hashtag">
+    <div class="tme-tab-panel" id="panel-hashtag">
 
         <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
-            <div id="card-export-hashtag-list">
-                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-hash f-18 text-primary"></i></div>
-                        <div><h6 class="mb-0">Top Hashtags</h6><small class="text-muted">Klik untuk lihat post terkait</small></div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-light-primary text-primary" id="badgeHashtag">Loading…</span>
-                        <div class="d-flex gap-1" data-html2canvas-ignore="true">
-                            <button class="card-exp-btn card-exp-btn-pdf" onclick="IGExport.runCard('card-export-hashtag-list','hashtag-list','pdf',this)" title="PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
-                            <button class="card-exp-btn card-exp-btn-img" onclick="IGExport.runCard('card-export-hashtag-list','hashtag-list','image',this)" title="PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
-                        </div>
-                    </div>
-                </div>
-                <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>Memuat hashtag…</span></div>
-                <div id="hashtagContent" style="display:none;">
-                    <div id="hashtagList" class="ht-list"></div>
-                    <div id="pag-hashtag"></div>
-                </div>
-                <div id="hashtagEmpty" style="display:none;" class="chart-empty" style="padding:40px 0;"><i class="ph ph-hash"></i><span>Tidak ada data hashtag</span></div>
-            </div>
-        </div>
-
-        <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
             <div id="card-export-hashtag-donut">
                 <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div class="d-flex align-items-center gap-2">
@@ -336,7 +294,7 @@
                     <div class="donut-stack-wrap">
                         <div class="donut-chart-area">
                             <div class="chart-container" style="width:100%;max-width:420px;">
-                                <div class="chart-loading" id="loadingDonutHashtag"><div class="spin-ring"></div><span>Loading…</span></div>
+                                <div class="chart-loading" id="loadingDonutHashtag"><div class="spin-ring"></div><span>—</span></div>
                                 <div id="donutHashtagChart" style="width:100%;height:320px;display:none;"></div>
                             </div>
                         </div>
@@ -344,6 +302,30 @@
                     </div>
                 </div>
                 <div style="height:8px;"></div>
+            </div>
+        </div>
+
+        <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
+            <div id="card-export-hashtag-list">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-hash f-18 text-primary"></i></div>
+                        <div><h6 class="mb-0">Top Hashtags</h6><small class="text-muted">Klik untuk lihat post terkait</small></div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-light-primary text-primary" id="badgeHashtag">—</span>
+                        <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                            <button class="card-exp-btn card-exp-btn-pdf" onclick="IGExport.runCard('card-export-hashtag-list','hashtag-list','pdf',this)" title="PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                            <button class="card-exp-btn card-exp-btn-img" onclick="IGExport.runCard('card-export-hashtag-list','hashtag-list','image',this)" title="PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                        </div>
+                    </div>
+                </div>
+                <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>—</span></div>
+                <div id="hashtagContent" style="display:none;">
+                    <div id="hashtagList" class="ht-list"></div>
+                    <div id="pag-hashtag"></div>
+                </div>
+                <div id="hashtagEmpty" style="display:none;" class="chart-empty" style="padding:40px 0;"><i class="ph ph-hash"></i><span>Tidak ada data hashtag</span></div>
             </div>
         </div>
 
@@ -355,7 +337,7 @@
         $tpIcons = ['like' => 'ph-heart', 'comment' => 'ph-chat-circle'];
         $tpIcon  = $tpIcons[$tp];
     @endphp
-    <div class="tme-tab-panel" id="panel-{{ $tp }}">
+    <div class="tme-tab-panel {{ $tp === 'like' ? 'active' : '' }}" id="panel-{{ $tp }}">
 
         <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
             <div id="card-export-donut-{{ $tp }}">
@@ -373,7 +355,7 @@
                     <div class="donut-stack-wrap">
                         <div class="donut-chart-area">
                             <div class="chart-container" style="width:100%;max-width:420px;">
-                                <div class="chart-loading" id="loadingDonut-{{ $tp }}"><div class="spin-ring"></div><span>Loading chart…</span></div>
+                                <div class="chart-loading" id="loadingDonut-{{ $tp }}"><div class="spin-ring"></div><span>—</span></div>
                                 <div id="donutChart-{{ $tp }}" style="width:100%;height:320px;display:none;"></div>
                                 <div id="donutEmpty-{{ $tp }}" style="display:none;" class="chart-empty"><i class="ph ph-chart-donut"></i><span>No data</span></div>
                             </div>
@@ -399,14 +381,14 @@
                             <option value="50">Top 50</option>
                             <option value="100" selected>Top 100</option>
                         </select>
-                        <span class="badge bg-light-primary text-primary" id="badge-{{ $tp }}">Loading…</span>
+                        <span class="badge bg-light-primary text-primary" id="badge-{{ $tp }}">—</span>
                         <div class="d-flex gap-1" data-html2canvas-ignore="true">
                             <button class="card-exp-btn card-exp-btn-pdf" onclick="IGExport.runCard('card-export-list-{{ $tp }}','list-{{ $tp }}','pdf',this)" title="PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
                             <button class="card-exp-btn card-exp-btn-img" onclick="IGExport.runCard('card-export-list-{{ $tp }}','list-{{ $tp }}','image',this)" title="PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
                         </div>
                     </div>
                 </div>
-                <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
+                <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>—</div></div>
                 <div id="pag-{{ $tp }}"></div>
             </div>
         </div>
@@ -461,11 +443,11 @@ const OVCfg    = {
     sd     : OV_SD,
     ed     : OV_ED,
     primary: '#038047',
-    colors : { like:'#e6683c', comment:'#F59E0B', hashtag:'#038047' },
+    colors : { likes:'#10B981', comment:'#F59E0B', engagement:'#EF4444', post:'#273B4A', hashtag:'#038047' },
     perPage: 10,
 };
-const DONUT_COLORS = ['#038047','#273B4A','#F59E0B','#06B6D4','#EF4444'];
-const TAB_TYPES    = ['hashtag','like','comment'];
+const DONUT_COLORS = ['#EF4444','#F59E0B','#10B981','#273B4A','#06B6D4'];
+const TAB_TYPES    = ['like','comment','hashtag'];
 
 const _$   = id => document.getElementById(id);
 const numF = n  => parseInt(n||0).toLocaleString('id-ID');
@@ -488,14 +470,14 @@ window.addEventListener('resize', () => {
 ════════════════════════════ */
 const OVTab = {
     _loaded: { hashtag:false, like:false, comment:false },
-    show(t) {
-        TAB_TYPES.forEach(x => {
-            _$('tab-'+x)?.classList.toggle('active', x===t);
-            _$('panel-'+x)?.classList.toggle('active', x===t);
+    show(type) {
+        TAB_TYPES.forEach(t => {
+            _$('tab-'+t)?.classList.toggle('active', t===type);
+            _$('panel-'+t)?.classList.toggle('active', t===type);
         });
-        if (!this._loaded[t]) { this._loaded[t]=true; OVData.loadTab(t); }
-        else if (t!=='hashtag' && Store[t].length) OVData._renderDonut(t, Store[t]);
-        if (t!=='hashtag') setTimeout(()=>{ _$('ovTabsBar')?.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 80);
+        if (!this._loaded[type]) { this._loaded[type]=true; OVData.loadTab(type); }
+        else if (type!=='hashtag' && Store[type].length) OVData._renderDonut(type, Store[type]);
+        setTimeout(()=>{ _$('ovTabsBar')?.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 80);
     },
     reset() { this._loaded = { hashtag:false, like:false, comment:false }; }
 };
@@ -590,16 +572,20 @@ const OVData = {
     },
 
     _updateKpi(items) {
-        let tl=0,tc=0; items.forEach(i=>{ tl+=parseInt(i.num_likes||i.likes||0); tc+=parseInt(i.num_comments||i.comments||0); });
+        let tl=0,tc=0;
+        items.forEach(i=>{
+            tl+=parseInt(i.like_count||i.likes||i.num_likes||i.freq||0);
+            tc+=parseInt(i.comment_count||i.comments||i.num_comments||0);
+        });
         const n=items.length, av=v=>n?Math.round(v/n):0;
         const el=(id,v)=>{ const e=_$(id); if(e) e.textContent=numF(v); };
-        const sub=(id,v)=>{ const e=_$(id); if(e) e.innerHTML=`<i class="ph ph-chart-line-up me-1"></i>Avg ${numF(av(v))} / post · ${n} posts`; };
-        el('kpiLikes',tl);    sub('kpiLikesSub',tl);
-        el('kpiComments',tc); sub('kpiCommentsSub',tc);
+        const sub=(id,v,icon)=>{ const e=_$(id); if(e) e.innerHTML=`<i class="ph ${icon} me-1" style="vertical-align:text-bottom;"></i>Avg ${numF(av(v))} / post &middot; ${n} posts`; };
+        el('kpiLikes',   tl); sub('kpiLikesSub',   tl,'ph-heart');
+        el('kpiComments',tc); sub('kpiCommentsSub',tc,'ph-chat-circle-dots');
         el('kpiEng',tl+tc);
-        const eS=_$('kpiEngSub'); if(eS) eS.innerHTML=`<i class="ph ph-chart-bar me-1"></i>Likes+Comments · ${n} posts`;
+        const eS=_$('kpiEngSub'); if(eS) eS.innerHTML=`<i class="ph ph-chart-bar me-1" style="vertical-align:text-bottom;"></i>Total Engagement &middot; ${n} posts`;
         el('kpiPosts',n);
-        const pS=_$('kpiPostsSub'); if(pS) pS.innerHTML=`<i class="ph ph-image me-1"></i>Dari periode ${OVCfg.sd} s/d ${OVCfg.ed}`;
+        const pS=_$('kpiPostsSub'); if(pS) pS.innerHTML=`<i class="ph ph-image me-1" style="vertical-align:text-bottom;"></i>${n} Posts collected`;
     },
 
     reloadTab(t) { Store[t]=[]; Pag[t]=1; this.loadEngagement(t); },
@@ -664,11 +650,11 @@ const OVData = {
                 ${dt?`<div class="tme-post-date">${dt}</div>`:''}
                 ${content?`<div class="tme-post-text">${esc(content)}</div>`:''}
                 <div class="tme-post-stats">
-                    <span class="tme-metric${lC}"><i class="ph ph-heart me-1"></i>${numF(l)}</span>
-                    <span class="tme-metric${cC}"><i class="ph ph-chat-circle me-1"></i>${numF(c)}</span>
+                    <span class="tme-metric${lC}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.84-8.84 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>${numF(l)}</span>
+                    <span class="tme-metric${cC}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${numF(c)}</span>
                     <span class="tme-metric" style="font-weight:800;">∑ ${numF(total)}</span>
                     <span class="tme-sent tme-sent--${sent}">${sL}</span>
-                    ${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="tme-view-link" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out me-1"></i>Lihat</a>`:''}
+                    ${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="tme-view-link" onclick="event.stopPropagation()"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Lihat</a>`:''}
                 </div>
             </div>
         </div>`;
@@ -741,7 +727,7 @@ const OVData = {
                 avoidLabelOverlap:true, selectedMode:false, minAngle:8,
                 itemStyle:{borderColor:'#fff',borderWidth:3},
                 label:{
-                    show:true, position:'outside', alignTo:'edge', edgeDistance:16,
+                    show:true, position:'outside', alignTo:'edge', edgeDistance:20,
                     lineHeight:16, fontSize:11, fontFamily:'inherit', color:'#334155', fontWeight:'600',
                     formatter: p => {
                         const nm=getNameFn(data[p.dataIndex]);
@@ -753,7 +739,7 @@ const OVData = {
                         pct:  {fontSize:10,fontWeight:'700',color:'#038047',lineHeight:14}
                     }
                 },
-                labelLine:{show:true,length:12,length2:16,smooth:0.3,lineStyle:{width:1.5,color:'#94A3B8'}},
+                labelLine:{show:true,length:15,length2:15,smooth:0.3,lineStyle:{width:1.5,color:'#94A3B8'}},
                 emphasis:{
                     scale:true, scaleSize:5,
                     itemStyle:{shadowBlur:12,shadowColor:'rgba(0,0,0,.15)',borderWidth:3,borderColor:'#fff'},
@@ -762,8 +748,8 @@ const OVData = {
                 data:pd
             }],
             graphic:[
-                {type:'text',left:'center',top:'44%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 26px inherit",textAlign:'center'}},
-                {type:'text',left:'center',top:'53%',z:100,style:{text:'TOTAL '+(titleLabel||metricLabel).toUpperCase(),fill:'#94a3b8',font:"600 9px inherit",textAlign:'center'}}
+                {type:'text',left:'center',top:'43%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 24px inherit",textAlign:'center'}},
+                {type:'text',left:'center',top:'54%',z:100,style:{text:'TOTAL '+(titleLabel||metricLabel).toUpperCase(),fill:'#94a3b8',font:"700 8px inherit",textAlign:'center'}}
             ]
         });
         chart.on('click', p => { const d=data[p.dataIndex]; if(d&&onClickFn) onClickFn(d); });
@@ -1236,8 +1222,10 @@ function _swapEChartsOut(swaps) {
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', () => {
     if (!OVCfg.pid) return;
-    OVTab._loaded.hashtag=true; OVData.loadHashtags();
-    OVData.loadEngagement('like').then(()=>{ OVTab._loaded.like=true; });
+    OVData.loadEngagement('like').then(()=>{ 
+        OVTab._loaded.like=true; 
+        OVTab.show('like');
+    });
     document.addEventListener('keydown', e => { if(e.key==='Escape') OVPanel.close(); });
 });
 </script>

@@ -213,86 +213,36 @@
 
     {{-- ══ KPI Row ══ --}}
     <div class="row mb-3">
-        {{-- Card: Total Posts --}}
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d1"
-                 style="background:linear-gradient(135deg,#038047,#05a85e);">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="mb-1 text-white text-opacity-75 f-12">Total Posts</p>
-                            <h3 class="mb-0 text-white f-w-300" id="kpiPosts">—</h3>
-                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPostsSub">
-                                <i class="ph-fill ph-files me-1"></i>—
-                            </p>
-                        </div>
-                        <div class="flex-shrink-0 ms-3">
-                            <div class="kpi-icon-bg"><i class="ph ph-files"></i></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {{-- Card: Total Topics --}}
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d2"
-                 style="background:linear-gradient(135deg,#EF4444,#dc2626);">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p>
-                            <h3 class="mb-0 text-white f-w-300" id="kpiTopics">—</h3>
-                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopicsSub">
-                                <i class="ph-fill ph-hash me-1"></i>—
-                            </p>
-                        </div>
-                        <div class="flex-shrink-0 ms-3">
-                            <div class="kpi-icon-bg"><i class="ph ph-hash"></i></div>
+        @php
+            $kpiCards = [
+                ['id' => 'kpiViews',  'label' => 'Total Views',    'icon' => 'ph-eye',              'bg' => '#EF4444', 'sub' => 'kpiViewsSub'],
+                ['id' => 'kpiRt',     'label' => 'Total Retweets', 'icon' => 'ph-repeat',           'bg' => '#1D9BF0', 'sub' => 'kpiRtSub'],
+                ['id' => 'kpiPosts',  'label' => 'Total Posts',    'icon' => 'ph-chat-circle-dots', 'bg' => '#10B981', 'sub' => 'kpiPostsSub'],
+                ['id' => 'kpiTopics', 'label' => 'Total Topics',   'icon' => 'ph-hash',             'bg' => '#273B4A', 'sub' => 'kpiTopicsSub'],
+            ];
+            $delays = ['d1','d2','d3','d4'];
+        @endphp
+        @foreach($kpiCards as $ki => $kc)
+            <div class="col-md-6 col-xl-3">
+                <div class="card h-100 text-white kpi-card-hover fade-up fade-up-{{ $delays[$ki] }}"
+                     style="background:{{ $kc['bg'] }};">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <p class="mb-1 text-white text-opacity-75 f-12">{{ $kc['label'] }}</p>
+                                <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">-</h3>
+                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="{{ $kc['sub'] }}">
+                                    <i class="ph {{ $kc['icon'] }} me-1" style="vertical-align:text-bottom;"></i>-
+                                </p>
+                            </div>
+                            <div class="flex-shrink-0 ms-3">
+                                <div class="kpi-icon-bg"><i class="ph {{ $kc['icon'] }}"></i></div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        {{-- Card: Total Views --}}
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d3"
-                 style="background:linear-gradient(135deg,#06B6D4,#0891b2);">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="mb-1 text-white text-opacity-75 f-12">Total Views</p>
-                            <h3 class="mb-0 text-white f-w-300" id="kpiViews">—</h3>
-                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiViewsSub">
-                                <i class="ph-fill ph-eye me-1"></i>—
-                            </p>
-                        </div>
-                        <div class="flex-shrink-0 ms-3">
-                            <div class="kpi-icon-bg"><i class="ph ph-eye"></i></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {{-- Card: Total Retweets --}}
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d4"
-                 style="background:linear-gradient(135deg,#F59E0B,#d97706);">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="mb-1 text-white text-opacity-75 f-12">Total Retweets</p>
-                            <h3 class="mb-0 text-white f-w-300" id="kpiRt">—</h3>
-                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiRtSub">
-                                <i class="ph-fill ph-repeat me-1"></i>—
-                            </p>
-                        </div>
-                        <div class="flex-shrink-0 ms-3">
-                            <div class="kpi-icon-bg"><i class="ph ph-repeat"></i></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        @endforeach
     </div>
 
     {{-- ══ Page Export Toolbar ══ --}}
@@ -510,10 +460,10 @@ const OVCfg    = {
     sd     : OV_SD,
     ed     : OV_ED,
     primary: '#038047',
-    colors : { view:'#038047', retweet:'#06B6D4', hashtag:'#038047' },
+    colors : { view:'#EF4444', retweet:'#1D9BF0', post:'#10B981', hashtag:'#273B4A' },
     perPage: 10,
 };
-const DONUT_COLORS = ['#038047','#273B4A','#F59E0B','#06B6D4','#EF4444'];
+const DONUT_COLORS = ['#EF4444','#1D9BF0','#10B981','#273B4A','#06B6D4'];
 const TAB_TYPES    = ['hashtag', 'view', 'retweet'];
 
 const _$  = id => document.getElementById(id);
@@ -572,7 +522,7 @@ const OVData = {
                 Store.hashtag=topics; Pag.hashtag=1;
                 if(bd) bd.textContent=topics.length+' topics';
                 const ts=_$('kpiTopics'); if(ts) ts.textContent=numF(topics.length);
-                const tss=_$('kpiTopicsSub'); if(tss) tss.innerHTML=`<i class="ph-fill ph-hash me-1"></i>Analisis ${topics.length} topik`;
+                const tss=_$('kpiTopicsSub'); if(tss) tss.innerHTML=`<i class="ph ph-hash me-1" style="vertical-align:text-bottom;"></i>Analisis ${topics.length} topik`;
                 const ch=_$('chip-hashtag'); if(ch) ch.textContent=topics.length;
                 this._renderHashtagList(topics);
                 this._renderDonutHashtag(topics);
@@ -667,12 +617,15 @@ const OVData = {
         let tv=0,tr=0; items.forEach(i=>{tv+=parseInt(i.view_cnt||0);tr+=parseInt(i.rt||0)});
         const n=items.length, av=v=>n?Math.round(v/n):0;
         const el=(id,v)=>{const e=_$(id);if(e)e.textContent=numF(v)};
+        const sub=(id,icon,v,txt)=> {
+            const e=_$(id); if(e) e.innerHTML=`<i class="ph ${icon} me-1" style="vertical-align:text-bottom;"></i>Avg ${numF(av(v))} / ${txt} &middot; ${numF(n)} tweets`;
+        };
+        el('kpiViews',tv); sub('kpiViewsSub', 'ph-eye', tv, 'tweet');
+        el('kpiRt',tr);    sub('kpiRtSub', 'ph-repeat', tr, 'tweet');
         el('kpiPosts', n);
-        const ps=_$('kpiPostsSub'); if(ps) ps.innerHTML=`<i class="ph-fill ph-files me-1"></i>${numF(n)} Tweets collected`;
-        el('kpiViews',tv);
-        const vs=_$('kpiViewsSub'); if(vs) vs.innerHTML=`<i class="ph-fill ph-eye me-1"></i>Avg ${numF(av(tv))}/tweet`;
-        el('kpiRt',tr);
-        const rs=_$('kpiRtSub'); if(rs) rs.innerHTML=`<i class="ph-fill ph-repeat me-1"></i>Avg ${numF(av(tr))}/tweet`;
+        const ps=_$('kpiPostsSub'); if(ps) ps.innerHTML=`<i class="ph ph-chat-circle-dots me-1" style="vertical-align:text-bottom;"></i>${numF(n)} Tweets collected`;
+        el('kpiTopics', Store.hashtag.length || 0);
+        const tss=_$('kpiTopicsSub'); if(tss) tss.innerHTML=`<i class="ph ph-hash me-1" style="vertical-align:text-bottom;"></i>Top ${Store.hashtag.length} Active Topics`;
     },
 
     reloadAll() {

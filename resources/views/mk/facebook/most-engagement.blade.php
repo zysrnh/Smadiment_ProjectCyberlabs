@@ -275,13 +275,17 @@
 {{-- ══ KPI Cards ══ --}}
 <div class="row mb-3">
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#EF4444;animation:fadeUp .38s ease-out both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Likes</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub"><i class="ph ph-chart-line-up me-1"></i>Loading…</p>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes">
+                            <span class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></span>
+                        </h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub">
+                            <i class="ph ph-thumbs-up me-1" style="vertical-align:text-bottom;"></i>—
+                        </p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-thumbs-up"></i></div></div>
                 </div>
@@ -289,29 +293,37 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#1D9BF0;animation:fadeUp .38s ease-out .05s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Total Shares</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiShares"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiSharesSub"><i class="ph ph-chart-line-up me-1"></i>Loading…</p>
+                        <p class="mb-1 text-white text-opacity-75 f-12">Total Comments</p>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiCmts">
+                            <span class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></span>
+                        </h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCmtsSub">
+                            <i class="ph ph-chat-circle me-1" style="vertical-align:text-bottom;"></i>—
+                        </p>
                     </div>
-                    <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-share-network"></i></div></div>
+                    <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chat-circle"></i></div></div>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 bg-warning text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#10B981;animation:fadeUp .38s ease-out .1s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Total Comments</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiCmts"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCmtsSub"><i class="ph ph-chart-line-up me-1"></i>Loading…</p>
+                        <p class="mb-1 text-white text-opacity-75 f-12">Total Shares</p>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiShares">
+                            <span class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></span>
+                        </h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiSharesSub">
+                            <i class="ph ph-share-network me-1" style="vertical-align:text-bottom;"></i>—
+                        </p>
                     </div>
-                    <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chat-circle"></i></div></div>
+                    <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-share-network"></i></div></div>
                 </div>
             </div>
         </div>
@@ -366,7 +378,7 @@
             </div>
             <div class="card-body">
                 <div class="chart-container" style="height:480px;" id="donutWrap">
-                    <div class="chart-loading" id="donutLoading"><div class="spin-ring"></div><span>Loading chart…</span></div>
+                    <div class="chart-loading" id="donutLoading"><div class="spin-ring"></div><span>—</span></div>
                     <div id="donutChart" style="width:100%;height:480px;display:none;"></div>
                     <div id="donutEmpty" style="display:none;" class="chart-empty"><i class="ph ph-chart-donut"></i><span>No data</span></div>
                 </div>
@@ -402,7 +414,7 @@
                 <select class="tme-rows-sel" id="rows-{{ $tp }}" onchange="FMEData.reloadTab('{{ $tp }}')">
                     <option value="10">Top 10</option><option value="20">Top 20</option><option value="50">Top 50</option><option value="100" selected>Top 100</option>
                 </select>
-                <span class="badge bg-light-primary text-primary" id="badge-{{ $tp }}">Loading…</span>
+                <span class="badge bg-light-primary text-primary" id="badge-{{ $tp }}">—</span>
                 <div class="d-flex gap-1" data-html2canvas-ignore="true">
                     <button class="card-exp-btn card-exp-btn-pdf"
                             onclick="FMEExport.runCard('card-export-list-{{ $tp }}','list-{{ $tp }}','pdf',this)" title="Export PDF">
@@ -415,7 +427,7 @@
                 </div>
             </div>
         </div>
-        <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
+        <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>—</div></div>
         <div id="pag-{{ $tp }}"></div>
         </div>{{-- /card-export-list --}}
     </div>
@@ -534,7 +546,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
 <script>
 'use strict';
-const FMECfg={pid:FME_PID,sd:FME_SD,ed:FME_ED,primary:'#038047',colors:{like:'#1877f2',share:'#10B981',comment:'#F59E0B'},perPage:10};
+const FMECfg={pid:FME_PID,sd:FME_SD,ed:FME_ED,primary:'#038047',colors:{like:'#EF4444',comment:'#1D9BF0',share:'#10B981'},perPage:10};
 const DONUT_COLORS=['#038047','#273B4A','#F59E0B','#06B6D4','#EF4444'];
 const _$=id=>document.getElementById(id);
 const numF=n=>parseInt(n||0).toLocaleString('id-ID');
@@ -570,7 +582,7 @@ const FMEData={
         const subMap={like:'fblike',share:'fbshare',comment:'fbcomment'};
         const rows=parseInt(_$('rows-'+type)?.value||'100');
         const listEl=_$('list-'+type);
-        if(listEl)listEl.innerHTML=`<div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div>`;
+        if(listEl)listEl.innerHTML=`<div class="spinner-state"><div class="spin-ring"></div>—</div>`;
         try{
             const res=await fetch(`/mk/api/facebook/most-engagement?project_id=${FMECfg.pid}&start_date=${FMECfg.sd}&end_date=${FMECfg.ed}&sub=${subMap[type]}&rows=${rows}`);
             const json=await res.json();
@@ -589,10 +601,13 @@ const FMEData={
     _metric(item,type){const keys={like:['likes','num_likes'],share:['shares','num_shares'],comment:['comments','num_comments']};return(keys[type]||['likes']).reduce((v,k)=>v||parseInt(item[k]||0),0);},
     _updateKPIs(items){
         let l=0,s=0,c=0;items.forEach(i=>{l+=parseInt(i.likes||i.num_likes||0);s+=parseInt(i.shares||i.num_shares||0);c+=parseInt(i.comments||i.num_comments||0);});
-        const n=items.length,avg=val=>n?Math.round(val/n):0;
+        const n=items.length,tot=l+s+c,avg=val=>n?Math.round(val/n):0;
         const el=(id,val)=>{const e=_$(id);if(e)e.textContent=numF(val);};
-        const sub=(id,val)=>{const e=_$(id);if(e)e.innerHTML=`<i class="ph ph-chart-line-up me-1"></i>Avg ${numF(avg(val))} / post &middot; ${n} posts`;};
-        el('kpiLikes',l);sub('kpiLikesSub',l);el('kpiShares',s);sub('kpiSharesSub',s);el('kpiCmts',c);sub('kpiCmtsSub',c);
+        const sub=(id,val,ico="ph-trend-up")=>{const e=_$(id);if(e)e.innerHTML=`<i class="ph ${ico} me-1"></i>Avg ${numF(avg(val))} / post &middot; ${n} posts`;};
+        el('kpiEng',tot);sub('kpiEngSub',tot,'ph-chart-bar');
+        el('kpiLikes',l);sub('kpiLikesSub',l,'ph-thumbs-up');
+        el('kpiShares',s);sub('kpiSharesSub',s,'ph-share-network');
+        el('kpiCmts',c);sub('kpiCmtsSub',c,'ph-chat-circle');
     },
     _getName(item){const n=(item.name||item.author_name||item.page_name||'').replace(/<[^>]*>/g,'').trim();if(n&&n!=='Unknown')return n;return'Facebook Post';},
     _getAvatar(item){return(item.avatar_url||item.profile_url||item.profile_picture||'').trim();},
@@ -633,12 +648,12 @@ const FMEData={
                 ${dt?`<div class="tme-post-date">${dt}</div>`:''}
                 ${content?`<div class="tme-post-text">${esc(content)}</div>`:''}
                 <div class="tme-post-stats">
-                    <span class="tme-metric${lCls}"><i class="ph ph-thumbs-up me-1"></i>${numF(l)}</span>
-                    <span class="tme-metric${sCls}"><i class="ph ph-share-network me-1"></i>${numF(s)}</span>
-                    <span class="tme-metric${cCls}"><i class="ph ph-chat-circle me-1"></i>${numF(c)}</span>
+                    <span class="tme-metric${lCls}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>${numF(l)}</span>
+                    <span class="tme-metric${sCls}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>${numF(s)}</span>
+                    <span class="tme-metric${cCls}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${numF(c)}</span>
                     <span class="tme-metric" style="font-weight:800;">∑ ${numF(total)}</span>
                     <span class="tme-sent tme-sent--${sent}">${sentLbl}</span>
-                    ${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="tme-view-link" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out me-1"></i>Lihat</a>`:''}
+                    ${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="tme-view-link" onclick="event.stopPropagation()"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Lihat</a>`:''}
                 </div>
             </div>
         </div>`;
@@ -669,16 +684,15 @@ const FMEData={
         if(typeof echarts==='undefined'){chartEl.innerHTML='<div class="chart-empty"><i class="ph ph-chart-donut"></i><span>ECharts not loaded</span></div>';return;}
 const chart=echarts.init(chartEl,null,{renderer:'canvas'});
       window.__donutEChart=chart;window.addEventListener('resize',()=>{try{chart.resize();}catch(e){}});
-        const pieData=top5.map((it,i)=>{const name=this._getName(it),val=this._metric(it,type);const content=dec((it.content||it.caption||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim());return{name,value:val,_content:content,itemStyle:{color:DONUT_COLORS[i]}};});
         chart.setOption({
             backgroundColor:'transparent',tooltip:{show:false},animation:true,animationDuration:1000,animationEasing:'cubicOut',animationDelay:idx=>idx*80,
-            series:[{type:'pie',radius:['38%','62%'],center:['50%','50%'],avoidLabelOverlap:true,selectedMode:false,minAngle:8,itemStyle:{borderColor:'#fff',borderWidth:3},
+            series:[{type:'pie',radius:['40%','65%'],center:['50%','50%'],avoidLabelOverlap:true,selectedMode:false,minAngle:8,itemStyle:{borderColor:'#fff',borderWidth:3},
                 label:{show:true,position:'outside',alignTo:'edge',edgeDistance:20,lineHeight:18,fontSize:11,fontFamily:'inherit',color:'#334155',fontWeight:'500',
                     formatter:p=>{const it=top5[p.dataIndex];const content=dec((it.content||it.caption||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim());const words=content?content.slice(0,120).split(' '):[];const lines=[];let cur='';words.forEach(w=>{if((cur+' '+w).trim().length>42){lines.push(cur.trim());cur=w;}else{cur=(cur+' '+w).trim();}});if(cur)lines.push(cur);const body=lines.join('\n');return`{title|${p.name}}\n${body?body+'\n':''}({val|${numF(p.value)}} ${metLbl}, {pct|${p.percent.toFixed(1)}%})`;},
                     rich:{title:{fontSize:11,fontWeight:'700',color:'#1e293b',lineHeight:18},val:{fontSize:11,fontWeight:'700',color:'#038047'},pct:{fontSize:11,fontWeight:'600',color:'#64748b'}}
                 },labelLine:{show:true,length:18,length2:24,smooth:0.3,lineStyle:{width:1.5,color:'#94A3B8'}},emphasis:{scale:false,itemStyle:{borderWidth:3,borderColor:'#fff'},label:{show:true}},select:{disabled:true},data:pieData,
             }],
-            graphic:[{type:'text',left:'center',top:'46%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 28px inherit",textAlign:'center'}},{type:'text',left:'center',top:'54%',z:100,style:{text:'TOTAL '+metLbl.toUpperCase(),fill:'#94a3b8',font:"600 9px inherit",textAlign:'center'}}]
+            graphic:[{type:'text',left:'center',top:'44%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 28px inherit",textAlign:'center'}},{type:'text',left:'center',top:'53%',z:100,style:{text:'TOTAL '+metLbl.toUpperCase(),fill:'#94a3b8',font:"600 9px inherit",textAlign:'center'}}]
         });
         chart.on('click',p=>{const item=top5[p.dataIndex];if(item){FMEPanel.open(Store[type].length?Store[type]:top5,type,'Facebook');FMEDetail.open(item,type);}});
         let _ttEl=document.getElementById('donutCustomTT');if(!_ttEl){_ttEl=document.createElement('div');_ttEl.id='donutCustomTT';_ttEl.style.cssText=`position:fixed;z-index:9999;pointer-events:none;background:#1e293b;color:#fff;border:1px solid #334155;border-radius:6px;padding:10px 14px;max-width:280px;font-size:12px;line-height:1.5;display:none;box-shadow:0 8px 24px rgba(0,0,0,.32);font-family:inherit;opacity:0;transform:translateY(6px) scale(.97);transition:opacity .18s ease,transform .18s ease;`;document.body.appendChild(_ttEl);}

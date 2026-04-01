@@ -217,7 +217,7 @@
 {{-- KPI --}}
 <div class="row mb-3">
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-primary text-white kpi-card-hover fade-up fade-up-d1">
+        <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d1" style="background:#10B981;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -235,7 +235,7 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-success text-white kpi-card-hover fade-up fade-up-d2">
+        <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d2" style="background:#F59E0B;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -253,7 +253,7 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d3">
+        <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d3" style="background:#1D9BF0;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -271,7 +271,7 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d4">
+        <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d4" style="background:#EF4444;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -298,7 +298,7 @@
                 <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div class="d-flex align-items-center gap-2">
                         <div class="avtar avtar-xs bg-light-primary rounded">
-                            <i class="ph ph-chart-donut f-18 text-primary"></i>
+                            <i class="ph ph-chart-donut f-18" style="color:#1D9BF0;"></i>
                         </div>
                         <div>
                             <h6 class="mb-0">Top 5 Most Retweeted</h6>
@@ -346,7 +346,7 @@
                 <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div class="d-flex align-items-center gap-2">
                         <div class="avtar avtar-xs bg-light-primary rounded">
-                            <i class="ph ph-repeat f-18 text-primary"></i>
+                            <i class="ph ph-repeat f-18" style="color:#1D9BF0;"></i>
                         </div>
                         <div>
                             <h6 class="mb-0">Ranked Tweets by Retweets</h6>
@@ -425,7 +425,7 @@
 'use strict';
 
 const CFG = { pid: OV_PID, sd: OV_SD, ed: OV_ED };
-const DONUT_COLORS = ['#038047','#273B4A','#F59E0B','#06B6D4','#EF4444'];
+const DONUT_COLORS = ['#1D9BF0','#10B981','#F59E0B','#EF4444','#273B4A'];
 
 /* ══ UTILS ══ */
 const _$    = id => document.getElementById(id);
@@ -605,7 +605,7 @@ function renderDonut() {
         tooltip: { show: false },
         series: [{
             type: 'pie',
-            radius: ['38%', '62%'],
+            radius: ['40%', '65%'],
             center: ['50%', '50%'],
             avoidLabelOverlap: true,
             selectedMode: false,
@@ -624,7 +624,7 @@ function renderDonut() {
                 formatter: p => `{title|${p.name}}\n{val|${numF(p.value)}} RT ({pct|${p.percent.toFixed(1)}%})`,
                 rich: {
                     title: { fontSize: 11, fontWeight: '700', color: '#1e293b', lineHeight: 16 },
-                    val:   { fontSize: 11, fontWeight: '700', color: '#038047' },
+                    val:   { fontSize: 11, fontWeight: '700', color: '#1D9BF0' },
                     pct:   { fontSize: 11, fontWeight: '600', color: '#64748b' }
                 }
             },
@@ -633,8 +633,8 @@ function renderDonut() {
             data: pd
         }],
         graphic: [
-            { type: 'text', left: 'center', top: '46%', z: 100, style: { text: numK(total), fill: '#0f172a', font: "800 24px inherit", textAlign: 'center' } },
-            { type: 'text', left: 'center', top: '55%', z: 100, style: { text: 'TOTAL RT',  fill: '#94a3b8', font: "600 9px inherit",  textAlign: 'center' } }
+            { type: 'text', left: 'center', top: '44%', z: 100, style: { text: numK(total), fill: '#0f172a', font: "800 24px inherit", textAlign: 'center' } },
+            { type: 'text', left: 'center', top: '53%', z: 100, style: { text: 'TOTAL RT',  fill: '#94a3b8', font: "600 9px inherit",  textAlign: 'center' } }
         ]
     });
     chart.on('click', p => {

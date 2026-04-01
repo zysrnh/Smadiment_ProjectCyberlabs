@@ -244,26 +244,26 @@
 <div id="pageExportArea">
 
 {{-- KPI --}}
-<div class="row">
+<div class="row g-3 mb-3">
     @php
         $kpiCards = [
-            ['id'=>'kpiJoy','label'=>'Joy','icon'=>'ph-smiley','bg'=>'bg-warning','sub'=>'Emosi paling positif'],
-            ['id'=>'kpiTrust','label'=>'Trust','icon'=>'ph-handshake','bg'=>'bg-success','sub'=>'Kepercayaan & rasa aman'],
-            ['id'=>'kpiAnger','label'=>'Anger','icon'=>'ph-fire','bg'=>'bg-danger','sub'=>'Ekspresi amarah'],
-            ['id'=>'kpiTotal','label'=>'Total','icon'=>'ph-chart-line-up','bg'=>'bg-primary','sub'=>'Total post dianalisis'],
+            ['id'=>'kpiJoy',   'label'=>'Joy',   'icon'=>'ph-smiley',     'color'=>'#F59E0B', 'sub'=>'Emosi paling positif'],
+            ['id'=>'kpiTrust', 'label'=>'Trust', 'icon'=>'ph-handshake',  'color'=>'#10B981', 'sub'=>'Kepercayaan & rasa aman'],
+            ['id'=>'kpiAnger', 'label'=>'Anger', 'icon'=>'ph-fire',       'color'=>'#EF4444', 'sub'=>'Ekspresi amarah'],
+            ['id'=>'kpiTotal', 'label'=>'Total', 'icon'=>'ph-chart-line-up', 'color'=>'#1877f2', 'sub'=>'Total post dianalisis'],
         ];
         $delays = ['.00s','.05s','.10s','.15s'];
     @endphp
     @foreach($kpiCards as $ki => $kc)
     <div class="col-md-6 col-xl-3">
-        <div class="card {{ $kc['bg'] }} text-white kpi-card-hover" style="animation:fadeUp .38s ease-out {{ $delays[$ki] }} both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:{{ $kc['color'] }}; animation:fadeUp .38s ease-out {{ $delays[$ki] }} both;">
             <div class="card-body"><div class="d-flex align-items-center">
                 <div class="flex-grow-1">
                     <p class="mb-1 text-white text-opacity-75 f-12">{{ $kc['label'] }}</p>
-                    <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}"><div class="sk-block" style="height:28px;width:90px;background:rgba(255,255,255,.2);"></div></h3>
-                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph {{ $kc['icon'] }} me-1"></i>{{ $kc['sub'] }}</p>
+                    <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">—</h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph-fill {{ $kc['icon'] }} me-1"></i>{{ $kc['sub'] }}</p>
                 </div>
-                <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph {{ $kc['icon'] }}"></i></div></div>
+                <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph-fill {{ $kc['icon'] }}"></i></div></div>
             </div></div>
         </div>
     </div>
@@ -304,7 +304,7 @@
             </div>
         </div>
         <div class="card-body"><div style="height:420px;position:relative;">
-            <div class="chart-loading" id="donutLoading"><div class="spin-ring"></div><span>Loading chart…</span></div>
+            <div class="chart-loading" id="donutLoading"><div class="spin-ring"></div><span>—</span></div>
             <div id="donutChart" style="width:100%;height:420px;display:none;"></div>
             <div id="donutEmpty" style="display:none;" class="chart-empty"><i class="ph ph-chart-donut"></i><span>No data</span></div>
         </div></div>
@@ -314,7 +314,7 @@
 
 {{-- Radar + Bar --}}
 <div class="row">
-    <div class="col-xl-5"><div class="card" style="animation:fadeUp .38s ease-out .20s both;">
+    <div class="col-xl-5"><div class="card h-100" style="animation:fadeUp .38s ease-out .20s both;">
         <div id="card-export-radar">
         <div class="card-header d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-polygon f-18 text-primary"></i></div><div><h6 class="mb-0">Emotion Radar</h6><small class="text-muted">Plutchik wheel distribution</small></div></div>
@@ -326,10 +326,10 @@
                 </div>
             </div>
         </div>
-        <div class="card-body"><div class="chart-container" style="height:300px;"><div class="chart-loading" id="radarLoading"><div class="spin-ring"></div><span>Loading…</span></div><div id="radarChart" style="width:100%;height:300px;display:none;"></div></div></div>
+        <div class="card-body"><div class="chart-container" style="height:300px;"><div class="chart-loading" id="radarLoading"><div class="spin-ring"></div><span>—</span></div><div id="radarChart" style="width:100%;height:300px;display:none;"></div></div></div>
         </div>{{-- /card-export-radar --}}
     </div></div>
-    <div class="col-xl-7"><div class="card" style="animation:fadeUp .38s ease-out .22s both;">
+    <div class="col-xl-7"><div class="card h-100" style="animation:fadeUp .38s ease-out .22s both;">
         <div id="card-export-bar">
         <div class="card-header d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-bar f-18 text-primary"></i></div><div><h6 class="mb-0">Distribusi Emosi</h6><small class="text-muted">Jumlah post per emosi Plutchik</small></div></div>
@@ -341,7 +341,7 @@
                 </div>
             </div>
         </div>
-        <div class="card-body"><div class="chart-container" style="height:300px;"><div class="chart-loading" id="barLoading"><div class="spin-ring"></div><span>Loading…</span></div><div id="barChart" style="width:100%;height:300px;display:none;"></div></div></div>
+        <div class="card-body"><div class="chart-container" style="height:300px;"><div class="chart-loading" id="barLoading"><div class="spin-ring"></div><span>—</span></div><div id="barChart" style="width:100%;height:300px;display:none;"></div></div></div>
         </div>{{-- /card-export-bar --}}
     </div></div>
 </div>
@@ -363,7 +363,7 @@
             </div>
         </div>
     </div>
-    <div class="card-body"><div class="chart-container" style="height:300px;"><div class="chart-loading" id="trendsLoading"><div class="spin-ring"></div><span>Loading…</span></div><div id="trendsChart" style="width:100%;height:300px;display:none;"></div></div></div>
+    <div class="card-body"><div class="chart-container" style="height:300px;"><div class="chart-loading" id="trendsLoading"><div class="spin-ring"></div><span>—</span></div><div id="trendsChart" style="width:100%;height:300px;display:none;"></div></div></div>
     </div>{{-- /card-export-trends --}}
 </div></div></div>
 
@@ -387,14 +387,14 @@
         <div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-brain f-18 text-primary"></i></div><div><h6 class="mb-0">Data Postingan</h6><small class="text-muted">Klik post untuk lihat detail</small></div></div>
         <div class="d-flex align-items-center gap-2">
             <select class="fea-rows-sel" id="rowsSel" onchange="FEAData.reload()"><option value="50">Top 50</option><option value="100" selected>Top 100</option><option value="200">Top 200</option></select>
-            <span class="badge bg-light-primary text-primary" id="listBadge">Loading…</span>
+            <span class="badge bg-light-primary text-primary" id="listBadge">—</span>
             <div data-html2canvas-ignore="true" class="d-flex gap-1">
                 <button class="card-exp-btn card-exp-btn-pdf" onclick="FBExport.runCard('card-export-posts','posts','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
                 <button class="card-exp-btn card-exp-btn-img" onclick="FBExport.runCard('card-export-posts','posts','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
             </div>
         </div>
     </div>
-    <div id="listEl" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
+    <div id="listEl" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>—</div></div>
     <div id="pagEl"></div>
     </div>{{-- /card-export-posts --}}
 </div>

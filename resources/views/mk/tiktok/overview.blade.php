@@ -81,29 +81,39 @@
 
 <div id="pageExportArea">
 
-{{-- KPI --}}
-<div class="row mb-3">
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-primary text-white kpi-card-hover fade-up fade-up-d1">
-            <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Views</p><h3 class="mb-0 text-white f-w-300" id="kpiViews"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiViewsSub"><i class="ph ph-chart-line-up me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-eye"></i></div></div></div></div>
-        </div>
+    {{-- ══ KPI Row ══ --}}
+    <div class="row mb-3">
+        @php
+            $kpiCards = [
+                ['id' => 'kpiViews',    'label' => 'Total Views',    'icon' => 'ph-eye',              'bg' => '#EF4444', 'sub' => 'kpiViewsSub'],
+                ['id' => 'kpiLikes',    'label' => 'Total Likes',    'icon' => 'ph-thumbs-up',      'bg' => '#10B981', 'sub' => 'kpiLikesSub'],
+                ['id' => 'kpiComments', 'label' => 'Total Comments', 'icon' => 'ph-chat-circle-dots', 'bg' => '#F59E0B', 'sub' => 'kpiCommentsSub'],
+                ['id' => 'kpiShares',   'label' => 'Total Shares',   'icon' => 'ph-share-network',    'bg' => '#273B4A', 'sub' => 'kpiSharesSub'],
+            ];
+            $delays = ['d1','d2','d3','d4'];
+        @endphp
+        @foreach($kpiCards as $ki => $kc)
+            <div class="col-md-6 col-xl-3">
+                <div class="card h-100 text-white kpi-card-hover fade-up fade-up-{{ $delays[$ki] }}"
+                     style="background:{{ $kc['bg'] }};">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <p class="mb-1 text-white text-opacity-75 f-12">{{ $kc['label'] }}</p>
+                                <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">-</h3>
+                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="{{ $kc['sub'] }}">
+                                    <i class="ph {{ $kc['icon'] }} me-1" style="vertical-align:text-bottom;"></i>-
+                                </p>
+                            </div>
+                            <div class="flex-shrink-0 ms-3">
+                                <div class="kpi-icon-bg"><i class="ph {{ $kc['icon'] }}"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
     </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-success text-white kpi-card-hover fade-up fade-up-d2">
-            <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Likes</p><h3 class="mb-0 text-white f-w-300" id="kpiLikes"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub"><i class="ph ph-heart me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-thumbs-up"></i></div></div></div></div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d3">
-            <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Comments</p><h3 class="mb-0 text-white f-w-300" id="kpiComments"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCommentsSub"><i class="ph ph-chat-circle me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chat-circle"></i></div></div></div></div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d4">
-            <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Shares</p><h3 class="mb-0 text-white f-w-300" id="kpiShares"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiSharesSub"><i class="ph ph-share-network me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-share-network"></i></div></div></div></div>
-        </div>
-    </div>
-</div>
 
 {{-- Export Toolbar --}}
 <div class="page-export-bar" data-html2canvas-ignore="true">
@@ -119,65 +129,13 @@
 
 {{-- Tabs --}}
 <div class="tme-tabs" id="ovTabsBar">
-    <button class="tme-tab-btn active" id="tab-hashtag" onclick="OVTab.show('hashtag')"><i class="ph ph-hash"></i> Top Hashtags <span class="tme-tab-chip" id="chip-hashtag">—</span></button>
-    <button class="tme-tab-btn" id="tab-view"    onclick="OVTab.show('view')"><i class="ph ph-eye"></i> Most Viewed <span class="tme-tab-chip" id="chip-view">—</span></button>
+    <button class="tme-tab-btn active" id="tab-view"    onclick="OVTab.show('view')"><i class="ph ph-eye"></i> Most Viewed <span class="tme-tab-chip" id="chip-view">—</span></button>
     <button class="tme-tab-btn" id="tab-like"    onclick="OVTab.show('like')"><i class="ph ph-thumbs-up"></i> Most Liked <span class="tme-tab-chip" id="chip-like">—</span></button>
     <button class="tme-tab-btn" id="tab-comment" onclick="OVTab.show('comment')"><i class="ph ph-chat-circle"></i> Most Comments <span class="tme-tab-chip" id="chip-comment">—</span></button>
     <button class="tme-tab-btn" id="tab-share"   onclick="OVTab.show('share')"><i class="ph ph-share-network"></i> Most Shares <span class="tme-tab-chip" id="chip-share">—</span></button>
+    <button class="tme-tab-btn" id="tab-hashtag" onclick="OVTab.show('hashtag')"><i class="ph ph-hash"></i> Top Hashtags <span class="tme-tab-chip" id="chip-hashtag">—</span></button>
 </div>
 
-{{-- Hashtag Panel --}}
-<div class="tme-tab-panel active" id="panel-hashtag">
-
-    <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
-        <div id="card-export-hashtag-list">
-            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-hash f-18 text-primary"></i></div>
-                    <div><h6 class="mb-0">Top Hashtags</h6><small class="text-muted">Klik untuk lihat video terkait</small></div>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-light-primary text-primary" id="badgeHashtag">Loading…</span>
-                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
-                        <button class="card-exp-btn card-exp-btn-pdf" onclick="OVExport.runCard('card-export-hashtag-list','hashtag-list','pdf',this)"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
-                        <button class="card-exp-btn card-exp-btn-img" onclick="OVExport.runCard('card-export-hashtag-list','hashtag-list','image',this)"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
-                    </div>
-                </div>
-            </div>
-            <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>Memuat hashtag…</span></div>
-            <div id="hashtagContent" style="display:none;"><div id="hashtagList" class="ht-list"></div><div id="pag-hashtag"></div></div>
-            <div id="hashtagEmpty" style="display:none;" class="chart-empty"><i class="ph ph-hash"></i><span>Tidak ada data hashtag</span></div>
-        </div>
-    </div>
-
-    <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
-        <div id="card-export-hashtag-donut">
-            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-donut f-18 text-primary"></i></div>
-                    <div><h6 class="mb-0">Distribusi — Top 5 Hashtags</h6><small class="text-muted">Proporsi penggunaan hashtag teratas</small></div>
-                </div>
-                <div class="d-flex gap-1" data-html2canvas-ignore="true">
-                    <button class="card-exp-btn card-exp-btn-pdf" onclick="OVExport.runCard('card-export-hashtag-donut','hashtag-donut','pdf',this)"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
-                    <button class="card-exp-btn card-exp-btn-img" onclick="OVExport.runCard('card-export-hashtag-donut','hashtag-donut','image',this)"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
-                </div>
-            </div>
-            <div class="card-body pb-0">
-                <div class="donut-stack-wrap">
-                    <div class="donut-chart-area">
-                        <div class="chart-container" style="width:100%;max-width:420px;">
-                            <div class="chart-loading" id="loadingDonutHashtag"><div class="spin-ring"></div><span>Loading…</span></div>
-                            <div id="donutHashtagChart" style="width:100%;height:320px;display:none;"></div>
-                        </div>
-                    </div>
-                    <div class="donut-breakdown-list" id="donutHashtagBreakdown" style="display:none;"></div>
-                </div>
-            </div>
-            <div style="height:8px;"></div>
-        </div>
-    </div>
-
-</div>
 
 {{-- Engagement Panels --}}
 @foreach(['view','like','comment','share'] as $tp)
@@ -185,7 +143,7 @@
     $panelLabels=['view'=>'Most Viewed','like'=>'Most Liked','comment'=>'Most Comments','share'=>'Most Shares'];
     $panelIcons=['view'=>'ph-eye','like'=>'ph-thumbs-up','comment'=>'ph-chat-circle','share'=>'ph-share-network'];
 @endphp
-<div class="tme-tab-panel" id="panel-{{ $tp }}">
+<div class="tme-tab-panel {{ $tp === 'view' ? 'active' : '' }}" id="panel-{{ $tp }}">
 
     <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
         <div id="card-export-donut-{{ $tp }}">
@@ -239,6 +197,59 @@
 </div>
 @endforeach
 
+{{-- Hashtag Panel --}}
+<div class="tme-tab-panel" id="panel-hashtag">
+
+    <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
+        <div id="card-export-hashtag-donut">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-donut f-18 text-primary"></i></div>
+                    <div><h6 class="mb-0">Distribusi — Top 5 Hashtags</h6><small class="text-muted">Proporsi penggunaan hashtag teratas</small></div>
+                </div>
+                <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                    <button class="card-exp-btn card-exp-btn-pdf" onclick="OVExport.runCard('card-export-hashtag-donut','hashtag-donut','pdf',this)"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                    <button class="card-exp-btn card-exp-btn-img" onclick="OVExport.runCard('card-export-hashtag-donut','hashtag-donut','image',this)"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                </div>
+            </div>
+            <div class="card-body pb-0">
+                <div class="donut-stack-wrap">
+                    <div class="donut-chart-area">
+                        <div class="chart-container" style="width:100%;max-width:420px;">
+                            <div class="chart-loading" id="loadingDonutHashtag"><div class="spin-ring"></div><span>Loading…</span></div>
+                            <div id="donutHashtagChart" style="width:100%;height:320px;display:none;"></div>
+                        </div>
+                    </div>
+                    <div class="donut-breakdown-list" id="donutHashtagBreakdown" style="display:none;"></div>
+                </div>
+            </div>
+            <div style="height:8px;"></div>
+        </div>
+    </div>
+
+    <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
+        <div id="card-export-hashtag-list">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-hash f-18 text-primary"></i></div>
+                    <div><h6 class="mb-0">Top Hashtags</h6><small class="text-muted">Klik untuk lihat video terkait</small></div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-light-primary text-primary" id="badgeHashtag">Loading…</span>
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf" onclick="OVExport.runCard('card-export-hashtag-list','hashtag-list','pdf',this)"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-img" onclick="OVExport.runCard('card-export-hashtag-list','hashtag-list','image',this)"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                    </div>
+                </div>
+            </div>
+            <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>Memuat hashtag…</span></div>
+            <div id="hashtagContent" style="display:none;"><div id="hashtagList" class="ht-list"></div><div id="pag-hashtag"></div></div>
+            <div id="hashtagEmpty" style="display:none;" class="chart-empty"><i class="ph ph-hash"></i><span>Tidak ada data hashtag</span></div>
+        </div>
+    </div>
+
+</div>
+
 </div>{{-- /pageExportArea --}}
 
 <div class="export-toast" id="exportToast"><i class="ph ph-check-circle" id="exportToastIcon"></i><span id="exportToastMsg">Exporting…</span></div>
@@ -263,8 +274,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
 <script>
 'use strict';
-const OVCfg={pid:OV_PID,sd:OV_SD,ed:OV_ED,primary:'#038047',colors:{view:'#038047',like:'#10B981',comment:'#F59E0B',share:'#06B6D4',hashtag:'#038047'},perPage:10};
-const DONUT_COLORS=['#038047','#273B4A','#F59E0B','#06B6D4','#EF4444'];
+const OVCfg={pid:OV_PID,sd:OV_SD,ed:OV_ED,primary:'#038047',colors:{view:'#EF4444',like:'#10B981',comment:'#F59E0B',share:'#273B4A',hashtag:'#038047'},perPage:10};
+const DONUT_COLORS=['#EF4444','#10B981','#F59E0B','#273B4A','#06B6D4'];
 const _$=id=>document.getElementById(id);
 const numF=n=>parseInt(n||0).toLocaleString('id-ID');
 const numK=n=>{n=parseInt(n||0);return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':String(n)};
@@ -285,13 +296,13 @@ window.addEventListener('resize', () => {
 const OVTab={
     _loaded:{hashtag:false,view:false,like:false,comment:false,share:false},
     show(type){
-        ['hashtag','view','like','comment','share'].forEach(t=>{
+        ['view','like','comment','share','hashtag'].forEach(t=>{
             _$('tab-'+t)?.classList.toggle('active',t===type);
             _$('panel-'+t)?.classList.toggle('active',t===type);
         });
         if(!this._loaded[type]){this._loaded[type]=true;OVData.loadTab(type)}
         else if(type!=='hashtag'&&Store[type].length){OVData._renderDonut(type,Store[type])}
-        if(type!=='hashtag')setTimeout(()=>{_$('ovTabsBar')?.scrollIntoView({behavior:'smooth',block:'nearest'})},80);
+        setTimeout(()=>{_$('ovTabsBar')?.scrollIntoView({behavior:'smooth',block:'nearest'})},80);
     },
     reset(){this._loaded={hashtag:false,view:false,like:false,comment:false,share:false}}
 };
@@ -346,7 +357,22 @@ const OVData={
             this._renderList(type);this._renderBar(type,items.slice(0,10));this._renderDonut(type,items);
         }catch(e){console.error('[OV]',e);if(ls)ls.innerHTML=`<div class="chart-empty" style="padding:40px;"><i class="ph ph-warning"></i><span>Gagal memuat: ${esc(e.message)}</span></div>`;hideLd('loadingBar-'+type);hideLd('loadingDonut-'+type)}
     },
-    _updateKpi(items){let tv=0,tl=0,tc=0,ts=0;items.forEach(i=>{tv+=parseInt(i.view_cnt||i.views||i.freq||0);tl+=parseInt(i.likes||i.num_likes||0);tc+=parseInt(i.comments||i.num_comments||0);ts+=parseInt(i.shares||i.num_shares||0)});const n=items.length,avg=v=>n?Math.round(v/n):0;const el=(id,v)=>{const e=_$(id);if(e)e.textContent=numF(v)};const sub=(id,v)=>{const e=_$(id);if(e)e.innerHTML=`<i class="ph ph-chart-line-up me-1"></i>Avg ${numF(avg(v))} / video &middot; ${n} videos`};el('kpiViews',tv);sub('kpiViewsSub',tv);el('kpiLikes',tl);sub('kpiLikesSub',tl);el('kpiComments',tc);sub('kpiCommentsSub',tc);el('kpiShares',ts);sub('kpiSharesSub',ts)},
+    _updateKpi(items) {
+        let tv=0,tl=0,tc=0,ts=0;
+        items.forEach(i=>{
+            tv+=parseInt(i.view_cnt||i.views||i.freq||0);
+            tl+=parseInt(i.like_cnt||i.likes||i.num_likes||0);
+            tc+=parseInt(i.comment_cnt||i.comments||i.num_comments||0);
+            ts+=parseInt(i.share_cnt||i.shares||i.num_shares||0);
+        });
+        const n=items.length, av=v=>n?Math.round(v/n):0;
+        const el=(id,v)=>{ const e=_$(id); if(e) e.textContent=numF(v); };
+        const sub=(id,v,icon)=>{ const e=_$(id); if(e) e.innerHTML=`<i class="ph ${icon} me-1" style="vertical-align:text-bottom;"></i>Avg ${numF(av(v))} / video &middot; ${n} videos`; };
+        el('kpiViews',tv);   sub('kpiViewsSub',  tv,'ph-eye');
+        el('kpiLikes',tl);   sub('kpiLikesSub',  tl,'ph-thumbs-up');
+        el('kpiComments',tc);sub('kpiCommentsSub',tc,'ph-chat-circle-dots');
+        el('kpiShares',ts);  sub('kpiSharesSub',ts,'ph-share-network');
+    },
     reloadTab(type){Store[type]=[];Pag[type]=1;this.loadEngagement(type)},
     _noProject(type){const el=_$('list-'+type);if(el)el.innerHTML=`<div class="chart-empty" style="padding:40px;"><i class="ph ph-folder-open"></i><span>Pilih project terlebih dahulu</span></div>`;hideLd('loadingBar-'+type);hideLd('loadingDonut-'+type)},
     _metric(item,type){const k={view:['view_cnt','views','freq'],like:['likes','num_likes'],comment:['comments','num_comments'],share:['shares','num_shares']};return(k[type]||['view_cnt']).reduce((v,f)=>v||parseInt(item[f]||0),0)},
@@ -374,7 +400,7 @@ const OVData={
         const sL={pos:'Positive',neg:'Negative',neu:'Neutral'}[sent],enc=encodeURIComponent(JSON.stringify(item));
         const vC=type==='view'?' tme-metric--primary':'',lC=type==='like'?' tme-metric--primary':'',cC=type==='comment'?' tme-metric--amber':'',sC=type==='share'?' tme-metric--cyan':'';
         const thH=(thumb&&thumb.startsWith('http'))?`<div class="tme-post-thumb"><img src="${esc(thumb)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'tme-post-thumb-ph\\'>🎵</div>'"><div class="tme-post-thumb-play"><i class="ph ph-play-fill"></i></div></div>`:`<div class="tme-post-thumb"><div class="tme-post-thumb-ph">🎵</div></div>`;
-        return `<div class="tme-post" data-item="${esc(enc)}"><div class="tme-post-rank tme-post-rank${rkC}">${rank}</div><div class="tme-post-av" style="background:linear-gradient(135deg,${color},${color}99);">${avH}</div><div class="tme-post-body"><div class="tme-post-author">${esc(name)}</div>${dt?`<div class="tme-post-date">${dt}</div>`:''}${content?`<div class="tme-post-text">${esc(content)}</div>`:''}<div class="tme-post-stats"><span class="tme-metric${vC}"><i class="ph ph-eye me-1"></i>${numF(v)}</span><span class="tme-metric${lC}"><i class="ph ph-thumbs-up me-1"></i>${numF(l)}</span><span class="tme-metric${cC}"><i class="ph ph-chat-circle me-1"></i>${numF(c)}</span><span class="tme-metric${sC}"><i class="ph ph-share-network me-1"></i>${numF(s)}</span><span class="tme-metric" style="font-weight:800;">∑ ${numF(total)}</span><span class="tme-sent tme-sent--${sent}">${sL}</span>${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="tme-view-link" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out me-1"></i>Lihat</a>`:''}</div></div>${thH}</div>`;
+        return `<div class="tme-post" data-item="${esc(enc)}"><div class="tme-post-rank tme-post-rank${rkC}">${rank}</div><div class="tme-post-av" style="background:linear-gradient(135deg,${color},${color}99);">${avH}</div><div class="tme-post-body"><div class="tme-post-author">${esc(name)}</div>${dt?`<div class="tme-post-date">${dt}</div>`:''}${content?`<div class="tme-post-text">${esc(content)}</div>`:''}<div class="tme-post-stats"><span class="tme-metric${vC}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>${numF(v)}</span><span class="tme-metric${lC}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>${numF(l)}</span><span class="tme-metric${cC}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${numF(c)}</span><span class="tme-metric${sC}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>${numF(s)}</span><span class="tme-metric" style="font-weight:800;">∑ ${numF(total)}</span><span class="tme-sent tme-sent--${sent}">${sL}</span>${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="tme-view-link" onclick="event.stopPropagation()"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Lihat</a>`:''}</div></div>${thH}</div>`;
     },
     _renderBar(type,items){
         const barEl=_$('bar-'+type),ld=_$('loadingBar-'+type);if(!barEl||!items.length||typeof ApexCharts==='undefined'){hideLd('loadingBar-'+type);return}
@@ -945,11 +971,13 @@ const OVExport = (() => {
     return { run, runCard };
 })();
   
-document.addEventListener('DOMContentLoaded',()=>{
-    if(!OVCfg.pid)return;
-    OVTab._loaded.hashtag=true;OVData.loadHashtags();
-    OVData.loadEngagement('view').then(()=>{OVTab._loaded.view=true});
-    document.addEventListener('keydown',e=>{if(e.key==='Escape')OVPanel.close()});
+document.addEventListener('DOMContentLoaded', () => {
+    if (!OVCfg.pid) return;
+    OVData.loadEngagement('view').then(()=>{ 
+        OVTab._loaded.view=true; 
+        OVTab.show('view');
+    });
+    document.addEventListener('keydown', e => { if(e.key==='Escape') OVPanel.close(); });
 });
 </script>
 @endsection

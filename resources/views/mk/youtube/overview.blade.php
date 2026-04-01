@@ -218,58 +218,38 @@
 
     {{-- ══ KPI Row ══ --}}
     <div class="row mb-3">
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d1"
-                 style="background:linear-gradient(135deg,#038047,#05a85e);">
-                <div class="card-body"><div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Total Views</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiViews"><span class="sk-block" style="width:90px;height:28px;display:inline-block;"></span></h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiViewsSub"><i class="ph ph-eye me-1"></i>Loading…</p>
+        @php
+            $kpiCards = [
+                ['id' => 'kpiViews',    'label' => 'Total Views',      'icon' => 'ph-eye',                'bg' => '#EF4444', 'sub' => 'kpiViewsSub'],
+                ['id' => 'kpiLikes',    'label' => 'Total Likes',      'icon' => 'ph-thumbs-up',        'bg' => '#10B981', 'sub' => 'kpiLikesSub'],
+                ['id' => 'kpiComments', 'label' => 'Total Comments',   'icon' => 'ph-chat-circle-dots', 'bg' => '#F59E0B', 'sub' => 'kpiCommentsSub'],
+                ['id' => 'kpiEng',      'label' => 'Total Engagement', 'icon' => 'ph-chart-bar',          'bg' => '#273B4A', 'sub' => 'kpiEngSub'],
+            ];
+            $delays = ['d1','d2','d3','d4'];
+        @endphp
+        @foreach($kpiCards as $ki => $kc)
+            <div class="col-md-6 col-xl-3">
+                <div class="card h-100 text-white kpi-card-hover fade-up fade-up-{{ $delays[$ki] }}"
+                     style="background:{{ $kc['bg'] }};">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <p class="mb-1 text-white text-opacity-75 f-12">{{ $kc['label'] }}</p>
+                                <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">
+                                    <span class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></span>
+                                </h3>
+                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="{{ $kc['sub'] }}">
+                                    <i class="ph {{ $kc['icon'] }} me-1" style="vertical-align:text-bottom;"></i>—
+                                </p>
+                            </div>
+                            <div class="flex-shrink-0 ms-3">
+                                <div class="kpi-icon-bg"><i class="ph {{ $kc['icon'] }}"></i></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-eye"></i></div></div>
-                </div></div>
+                </div>
             </div>
-        </div>
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d2"
-                 style="background:linear-gradient(135deg,#10B981,#059669);">
-                <div class="card-body"><div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Total Likes</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes"><span class="sk-block" style="width:90px;height:28px;display:inline-block;"></span></h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub"><i class="ph ph-thumbs-up me-1"></i>Loading…</p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-thumbs-up"></i></div></div>
-                </div></div>
-            </div>
-        </div>
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d3"
-                 style="background:linear-gradient(135deg,#F59E0B,#d97706);">
-                <div class="card-body"><div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Total Comments</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiComments"><span class="sk-block" style="width:90px;height:28px;display:inline-block;"></span></h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCommentsSub"><i class="ph ph-chat-circle me-1"></i>Loading…</p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chat-circle"></i></div></div>
-                </div></div>
-            </div>
-        </div>
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d4"
-                 style="background:linear-gradient(135deg,#EF4444,#dc2626);">
-                <div class="card-body"><div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Total Engagement</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiEng"><span class="sk-block" style="width:90px;height:28px;display:inline-block;"></span></h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiEngSub"><i class="ph ph-chart-bar me-1"></i>Loading…</p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div>
-                </div></div>
-            </div>
-        </div>
+        @endforeach
     </div>
 
     {{-- ══ Page Export Toolbar ══ --}}
@@ -315,30 +295,6 @@
     <div class="tme-tab-panel active" id="panel-hashtag">
 
         <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
-            <div id="card-export-hashtag-list">
-                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-hash f-18 text-primary"></i></div>
-                        <div><h6 class="mb-0">Top Hashtags</h6><small class="text-muted">Klik untuk lihat video terkait</small></div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-light-primary text-primary" id="badgeHashtag">Loading…</span>
-                        <div class="d-flex gap-1" data-html2canvas-ignore="true">
-                            <button class="card-exp-btn card-exp-btn-pdf" onclick="YTExport.runCard('card-export-hashtag-list','hashtag-list','pdf',this)" title="PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
-                            <button class="card-exp-btn card-exp-btn-img" onclick="YTExport.runCard('card-export-hashtag-list','hashtag-list','image',this)" title="PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
-                        </div>
-                    </div>
-                </div>
-                <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>Memuat hashtag…</span></div>
-                <div id="hashtagContent" style="display:none;">
-                    <div id="hashtagList" class="ht-list"></div>
-                    <div id="pag-hashtag"></div>
-                </div>
-                <div id="hashtagEmpty" style="display:none;" class="chart-empty" style="padding:40px 0;"><i class="ph ph-hash"></i><span>Tidak ada data hashtag</span></div>
-            </div>
-        </div>
-
-        <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
             <div id="card-export-hashtag-donut">
                 <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div class="d-flex align-items-center gap-2">
@@ -362,6 +318,30 @@
                     </div>
                 </div>
                 <div style="height:8px;"></div>
+            </div>
+        </div>
+
+        <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
+            <div id="card-export-hashtag-list">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-hash f-18 text-primary"></i></div>
+                        <div><h6 class="mb-0">Top Hashtags</h6><small class="text-muted">Klik untuk lihat video terkait</small></div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-light-primary text-primary" id="badgeHashtag">Loading…</span>
+                        <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                            <button class="card-exp-btn card-exp-btn-pdf" onclick="YTExport.runCard('card-export-hashtag-list','hashtag-list','pdf',this)" title="PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                            <button class="card-exp-btn card-exp-btn-img" onclick="YTExport.runCard('card-export-hashtag-list','hashtag-list','image',this)" title="PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                        </div>
+                    </div>
+                </div>
+                <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>Memuat hashtag…</span></div>
+                <div id="hashtagContent" style="display:none;">
+                    <div id="hashtagList" class="ht-list"></div>
+                    <div id="pag-hashtag"></div>
+                </div>
+                <div id="hashtagEmpty" style="display:none;" class="chart-empty" style="padding:40px 0;"><i class="ph ph-hash"></i><span>Tidak ada data hashtag</span></div>
             </div>
         </div>
 
@@ -479,10 +459,10 @@ const OVCfg    = {
     sd     : OV_SD,
     ed     : OV_ED,
     primary: '#038047',
-    colors : { view:'#038047', like:'#10B981', comment:'#F59E0B', hashtag:'#038047' },
+    colors : { view:'#EF4444', like:'#10B981', comment:'#F59E0B', engagement:'#273B4A', hashtag:'#038047' },
     perPage: 10,
 };
-const DONUT_COLORS = ['#038047','#273B4A','#F59E0B','#06B6D4','#EF4444'];
+const DONUT_COLORS = ['#EF4444','#10B981','#F59E0B','#273B4A','#06B6D4'];
 const TAB_TYPES    = ['hashtag','view','like','comment'];
 
 const _$   = id => document.getElementById(id);
@@ -495,6 +475,7 @@ const hideLd = id => { const e=_$(id); if(e&&e.classList.contains('chart-loading
 const Store = { view:[], like:[], comment:[], hashtag:[] };
 const Pag   = { view:1,  like:1,  comment:1,  hashtag:1  };
 let allPostsRaw = [];
+let _kpiFetched = false;
 
 window.addEventListener('resize', () => {
     ['__ec_donutHashtagChart','__ec_donutChart-view','__ec_donutChart-like','__ec_donutChart-comment']
@@ -506,14 +487,14 @@ window.addEventListener('resize', () => {
 ════════════════════════════ */
 const OVTab = {
     _loaded: { hashtag:false, view:false, like:false, comment:false },
-    show(t) {
-        TAB_TYPES.forEach(x => {
-            _$('tab-'+x)?.classList.toggle('active', x===t);
-            _$('panel-'+x)?.classList.toggle('active', x===t);
+    show(type){
+        TAB_TYPES.forEach(t=>{
+            _$('tab-'+t)?.classList.toggle('active',t===type);
+            _$('panel-'+t)?.classList.toggle('active',t===type);
         });
-        if (!this._loaded[t]) { this._loaded[t]=true; OVData.loadTab(t); }
-        else if (t!=='hashtag' && Store[t].length) OVData._renderDonut(t, Store[t]);
-        if (t!=='hashtag') setTimeout(()=>{ _$('ovTabsBar')?.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 80);
+        if(!this._loaded[type]){this._loaded[type]=true;OVData.loadTab(type)}
+        else if(type!=='hashtag'&&Store[type].length){OVData._renderDonut(type,Store[type])}
+        setTimeout(()=>{_$('ovTabsBar')?.scrollIntoView({behavior:'smooth',block:'nearest'})},80);
     },
     reset() { this._loaded = { hashtag:false, view:false, like:false, comment:false }; }
 };
@@ -524,6 +505,10 @@ const OVTab = {
 const OVData = {
     async loadTab(t) {
         if (!OVCfg.pid) { this._noProject(t); return; }
+        if (!_kpiFetched) {
+            _kpiFetched = true;
+            this.loadEngagement('view'); // Background load for KPIs
+        }
         if (t === 'hashtag') { await this.loadHashtags(); return; }
         await this.loadEngagement(t);
     },
@@ -618,21 +603,33 @@ const OVData = {
     },
 
     _updateKpi(items) {
-        let tv=0,tl=0,tc=0;
-        items.forEach(i=>{ tv+=parseInt(i.num_views||i.view_cnt||i.views||i.freq||0); tl+=parseInt(i.num_likes||i.likes||0); tc+=parseInt(i.num_comments||i.comments||0); });
+        let tv=0,tl=0,tc=0,te=0;
+        items.forEach(i=>{
+            const v = parseInt(i.num_views||i.view_cnt||i.num_view||i.view_count||i.views||i.freq||i.frequency||i.doc_count||i.total_views||0);
+            const l = parseInt(i.num_likes||i.likes||i.num_like||i.like_count||i.total_likes||0);
+            const c = parseInt(i.num_comments||i.comments||i.num_comment||i.comment_count||i.total_comments||0);
+            tv += v; tl += l; tc += c;
+            te += parseInt(i.engagement || (v + l + c) || 0);
+        });
         const n=items.length, av=v=>n?Math.round(v/n):0;
         const el=(id,v)=>{ const e=_$(id); if(e) e.textContent=numF(v); };
-        const sub=(id,v,icon,lbl)=>{ const e=_$(id); if(e) e.innerHTML=`<i class="ph ${icon} me-1"></i>Avg ${numF(av(v))} / video · ${n} videos`; };
-        el('kpiViews',tv);   sub('kpiViewsSub',  tv, 'ph-chart-line-up');
-        el('kpiLikes',tl);   sub('kpiLikesSub',  tl, 'ph-chart-line-up');
-        el('kpiComments',tc);sub('kpiCommentsSub',tc,'ph-chart-line-up');
-        el('kpiEng',tv+tl+tc);
-        const eS=_$('kpiEngSub'); if(eS) eS.innerHTML=`<i class="ph ph-chart-bar me-1"></i>Views+Likes+Comments · ${n} videos`;
+        const sub=(id,v,icon)=>{ const e=_$(id); if(e) e.innerHTML=`<i class="ph ${icon} me-1" style="vertical-align:text-bottom;"></i>Avg ${numF(av(v))} / video &middot; ${n} videos`; };
+        el('kpiViews',   tv); sub('kpiViewsSub',   tv,'ph-eye');
+        el('kpiLikes',   tl); sub('kpiLikesSub',   tl,'ph-thumbs-up');
+        el('kpiComments',tc); sub('kpiCommentsSub',tc,'ph-chat-circle-dots');
+        el('kpiEng',     te); sub('kpiEngSub',     te,'ph-chart-bar');
     },
 
     reloadTab(t) { Store[t]=[]; Pag[t]=1; this.loadEngagement(t); },
     _noProject(t) { const ls=_$('list-'+t); if(ls) ls.innerHTML=`<div class="chart-empty" style="padding:40px;"><i class="ph ph-folder-open"></i><span>Pilih project terlebih dahulu</span></div>`; hideLd('loadingDonut-'+t); },
-    _metric(item,type) { const k={view:['num_views','view_cnt','views','freq'],like:['num_likes','likes'],comment:['num_comments','comments']}; return (k[type]||['num_views']).reduce((v,f)=>v||parseInt(item[f]||0),0); },
+    _metric(item,type) {
+        const k = {
+            view: ['num_views','view_cnt','num_view','view_count','views','freq','frequency','doc_count','total_views'],
+            like: ['num_likes','likes','num_like','like_count','total_likes'],
+            comment: ['num_comments','comments','num_comment','comment_count','total_comments']
+        };
+        return (k[type]||['num_views']).reduce((v,f)=>v||parseInt(item[f]||0),0);
+    },
     _getName(item) { const n=(item.title||item.name||item.author_scr_name||item.author_name||'').replace(/<[^>]*>/g,'').trim(); return n||'YouTube Video'; },
     _getAvatar(item) { return (item.avatar_url||item.author_avatar||item.profile_image||item.author_image||'').trim(); },
     _getThumb(item)  { return (item.thumbnail_url||item.thumbnail||item.cover_url||item.image||'').trim(); },
@@ -702,12 +699,12 @@ const OVData = {
                 ${dt?`<div class="tme-post-date">${dt}</div>`:''}
                 ${content?`<div class="tme-post-text">${esc(content)}</div>`:''}
                 <div class="tme-post-stats">
-                    <span class="tme-metric${vC}"><i class="ph ph-eye me-1"></i>${numF(v)}</span>
-                    <span class="tme-metric${lC}"><i class="ph ph-thumbs-up me-1"></i>${numF(l)}</span>
-                    <span class="tme-metric${cC}"><i class="ph ph-chat-circle me-1"></i>${numF(c)}</span>
+                    <span class="tme-metric${vC}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>${numF(v)}</span>
+                    <span class="tme-metric${lC}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>${numF(l)}</span>
+                    <span class="tme-metric${cC}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${numF(c)}</span>
                     <span class="tme-metric" style="font-weight:800;">∑ ${numF(total)}</span>
                     <span class="tme-sent tme-sent--${sent}">${sL}</span>
-                    ${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="tme-view-link" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out me-1"></i>Lihat</a>`:''}
+                    ${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="tme-view-link" onclick="event.stopPropagation()"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Lihat</a>`:''}
                 </div>
             </div>
             ${thH}
@@ -766,7 +763,7 @@ const OVData = {
         const ek=windowKey||('__ec_'+chartEl.id);
         if(window[ek]){ try{window[ek].dispose()}catch(e){} }
         if(typeof echarts==='undefined'){ chartEl.innerHTML='<div class="chart-empty"><i class="ph ph-chart-donut"></i><span>ECharts not loaded</span></div>'; return; }
-const chart=echarts.init(chartEl, null, {renderer:'svg'});
+const chart=echarts.init(chartEl, null, {renderer:'canvas'});
       window[ek]=chart;
         window.addEventListener('resize',()=>{ try{chart.resize()}catch(e){} });
         const pd=data.map((d,i)=>({
@@ -1348,8 +1345,7 @@ const YTExport = (() => {
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', () => {
     if (!OVCfg.pid) return;
-    OVTab._loaded.hashtag=true; OVData.loadHashtags();
-    OVData.loadEngagement('view').then(()=>{ OVTab._loaded.view=true; });
+    OVTab.show('hashtag');
     document.addEventListener('keydown', e => { if(e.key==='Escape') OVPanel.close(); });
 });
 </script>

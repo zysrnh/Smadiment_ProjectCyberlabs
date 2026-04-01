@@ -530,7 +530,7 @@
 {{-- ══ KPI Cards ══ --}}
 <div class="row mb-3">
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#EF4444;animation:fadeUp .38s ease-out both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -550,7 +550,7 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#1D9BF0;animation:fadeUp .38s ease-out .05s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -570,7 +570,7 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 bg-warning text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#10B981;animation:fadeUp .38s ease-out .10s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -858,7 +858,7 @@ const YMECfg = {
     sd     : YME_SD,
     ed     : YME_ED,
     primary: '#038047',
-    colors : { view:'#038047', like:'#10B981', comment:'#F59E0B' },
+    colors : { view:'#EF4444', like:'#1D9BF0', comment:'#10B981' },
     perPage: 10,
 };
 const DONUT_COLORS = ['#038047','#273B4A','#F59E0B','#06B6D4','#EF4444'];

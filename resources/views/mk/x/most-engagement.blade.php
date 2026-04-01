@@ -493,7 +493,7 @@
 
 @if(!$projectId)
 <div class="alert-warning-custom">
-    <i class="ph ph-warning" style="font-size:18px;"></i>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
     <span>No project selected. Please select a project from the sidebar to view most viewed posts.</span>
 </div>
 @else
@@ -503,78 +503,38 @@
 
 {{-- ══ KPI Cards ══ --}}
 <div class="row mb-3">
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out both;">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Total Posts</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiPosts">—</h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPostsSub">
-                            <i class="ph ph-chart-line-up me-1"></i>—
-                        </p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph ph-files"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Total Views</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiViews">—</h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiViewsSub">
-                            <i class="ph ph-chart-line-up me-1"></i>—
-                        </p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph ph-eye"></i></div>
+    @php
+        $kpiCards = [
+            ['id' => 'kpiPosts',   'label' => 'Total Posts',      'icon' => '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>', 'bg' => '#EF4444', 'subId' => 'kpiPostsSub'],
+            ['id' => 'kpiViews',   'label' => 'Total Views',      'icon' => '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>', 'bg' => '#1D9BF0', 'subId' => 'kpiViewsSub'],
+            ['id' => 'kpiRetweets','label' => 'Total Retweets',   'icon' => '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>', 'bg' => '#10B981', 'subId' => 'kpiRetweetsSub'],
+            ['id' => 'kpiAvg',     'label' => 'Avg. Views / Post', 'icon' => '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>', 'bg' => '#273B4A', 'subId' => 'kpiAvgSub'],
+        ];
+        $delays = ['.00s','.05s','.10s','.15s'];
+    @endphp
+    @foreach($kpiCards as $ki => $kc)
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 text-white kpi-card-hover"
+                 style="background:{{ $kc['bg'] }};animation:fadeUp .38s ease-out {{ $delays[$ki] }} both;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">{{ $kc['label'] }}</p>
+                            <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">
+                                <span class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></span>
+                            </h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="{{ $kc['subId'] }}">
+                                {!! str_replace('width="24" height="24"', 'width="12" height="12" style="vertical-align:text-bottom;margin-right:4px;"', $kc['icon']) !!}—
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3">
+                            <div class="kpi-icon-bg">{!! $kc['icon'] !!}</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-warning text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Total Retweets</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiRetweets">—</h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiRetweetsSub">
-                            <i class="ph ph-chart-line-up me-1"></i>—
-                        </p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph ph-repeat"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-danger text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .15s both;">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Avg. Views / Post</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiAvg">—</h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiAvgSub">
-                            <i class="ph ph-chart-line-up me-1"></i>—
-                        </p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph ph-chart-line-up"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    @endforeach
 </div>
 
 {{-- ══ Page Export Toolbar ══ --}}
@@ -681,7 +641,7 @@ $panelCfg = [
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
                 <div class="avtar avtar-xs bg-light-primary rounded">
-                    <i class="ph {{ $cfg['icon'] }} f-18 text-primary"></i>
+                    <i class="ph {{ $cfg['icon'] }} f-18" style="color:var(--primary);"></i>
                 </div>
                 <div>
                     <h6 class="mb-0">Top Posts — {{ $cfg['label'] }}</h6>
@@ -1018,7 +978,7 @@ const XMVData = {
         return r.includes('pos')?'pos':r.includes('neg')?'neg':'neu';
     },
     _emptyHtml(msg) {
-        return `<div class="chart-empty" style="padding:40px 20px;"><i class="ph ph-folder-open"></i><span>${esc(msg)}</span></div>`;
+        return `<div class="chart-empty" style="padding:40px 20px;"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-2" style="opacity:.5;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span>${esc(msg)}</span></div>`;
     },
     _formatDate(ds) {
         if(!ds) return '';
@@ -1049,12 +1009,12 @@ const XMVData = {
     _pagHtml(type,page,pages,total,from,to) {
         if(pages<=1) return '';
         let btns='', r=2;
-        btns += `<button class="xmv-pag-btn" ${page<=1?'disabled':''} onclick="XMVData.goPage('${type}',${page-1})"><i class="ph ph-caret-left"></i></button>`;
+        btns += `<button class="xmv-pag-btn" ${page<=1?'disabled':''} onclick="XMVData.goPage('${type}',${page-1})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>`;
         for(let i=1;i<=pages;i++){
             if(i===1||i===pages||(i>=page-r&&i<=page+r)) btns+=`<button class="xmv-pag-btn${i===page?' is-active':''}" onclick="XMVData.goPage('${type}',${i})">${i}</button>`;
             else if(i===page-r-1||i===page+r+1) btns+=`<span class="xmv-pag-btn" style="cursor:default;opacity:.4;">…</span>`;
         }
-        btns += `<button class="xmv-pag-btn" ${page>=pages?'disabled':''} onclick="XMVData.goPage('${type}',${page+1})"><i class="ph ph-caret-right"></i></button>`;
+        btns += `<button class="xmv-pag-btn" ${page>=pages?'disabled':''} onclick="XMVData.goPage('${type}',${page+1})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>`;
         return `<div class="xmv-pagination"><span class="xmv-pag-info">Menampilkan ${from}–${to} dari ${total} posts</span><div class="xmv-pag-controls">${btns}</div></div>`;
     },
 
@@ -1088,11 +1048,11 @@ const XMVData = {
                 ${dt?`<div class="xmv-post-date">${dt}</div>`:''}
                 ${content?`<div class="xmv-post-text">${esc(content)}</div>`:''}
                 <div class="xmv-post-stats">
-                    <span class="xmv-metric${vCls}"><i class="ph ph-eye me-1"></i>${numF(v)}</span>
-                    <span class="xmv-metric${rtCls}"><i class="ph ph-repeat me-1"></i>${numF(rt)}</span>
-                    <span class="xmv-metric${fCls}"><i class="ph ph-users me-1"></i>${numK(flw)}</span>
+                    <span class="xmv-metric${vCls}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>${numF(v)}</span>
+                    <span class="xmv-metric${rtCls}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>${numF(rt)}</span>
+                    <span class="xmv-metric${fCls}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>${numK(flw)}</span>
                     <span class="xmv-sent xmv-sent--${sent}">${sentLbl}</span>
-                    ${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="xmv-view-link" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out me-1"></i>View</a>`:''}
+                    ${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="xmv-view-link" onclick="event.stopPropagation()"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>View</a>`:''}
                 </div>
             </div>
         </div>`;

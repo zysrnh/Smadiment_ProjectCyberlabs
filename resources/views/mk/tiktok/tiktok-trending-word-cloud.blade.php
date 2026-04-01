@@ -132,47 +132,47 @@
 {{-- KPI --}}
 <div class="row mb-3 g-3">
     <div class="col-sm-6 col-xl">
-        <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .00s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#EF4444;animation:fadeUp .38s ease-out .00s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                 <p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p>
-                <h3 class="mb-0 text-white f-w-300" id="kpiTopics"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
-                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopicsSub"><i class="ph ph-hash me-1"></i>Loading…</p>
+                <h3 class="mb-0 text-white f-w-300" id="kpiTopics">-</h3>
+                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopicsSub"><i class="ph ph-hash me-1"></i>-</p>
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-hash"></i></div></div></div></div>
         </div>
     </div>
     <div class="col-sm-6 col-xl">
-        <div class="card h-100 bg-info text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#1D9BF0;animation:fadeUp .38s ease-out .05s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                 <p class="mb-1 text-white text-opacity-75 f-12">Total Volume</p>
-                <h3 class="mb-0 text-white f-w-300" id="kpiVolume"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
-                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiVolumeSub"><i class="ph ph-chart-bar me-1"></i>Loading…</p>
+                <h3 class="mb-0 text-white f-w-300" id="kpiVolume">-</h3>
+                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiVolumeSub"><i class="ph ph-chart-bar me-1"></i>-</p>
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div></div></div>
         </div>
     </div>
     <div class="col-sm-6 col-xl">
-        <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#10B981;animation:fadeUp .38s ease-out .10s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                 <p class="mb-1 text-white text-opacity-75 f-12">Positif</p>
-                <h3 class="mb-0 text-white f-w-300" id="kpiPos"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
-                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPosSub"><i class="ph ph-smiley me-1"></i>Loading…</p>
+                <h3 class="mb-0 text-white f-w-300" id="kpiPos">-</h3>
+                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPosSub"><i class="ph ph-smiley me-1"></i>-</p>
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div></div></div>
         </div>
     </div>
     <div class="col-sm-6 col-xl">
-        <div class="card h-100 bg-danger text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .15s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#273B4A;animation:fadeUp .38s ease-out .15s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                 <p class="mb-1 text-white text-opacity-75 f-12">Negatif</p>
-                <h3 class="mb-0 text-white f-w-300" id="kpiNeg"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
-                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNegSub"><i class="ph ph-smiley-sad me-1"></i>Loading…</p>
+                <h3 class="mb-0 text-white f-w-300" id="kpiNeg">-</h3>
+                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNegSub"><i class="ph ph-smiley-sad me-1"></i>-</p>
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div></div></div>
         </div>
     </div>
     <div class="col-sm-6 col-xl">
-        <div class="card h-100 text-white kpi-card-hover" style="background-color:#b45309; animation:fadeUp .38s ease-out .20s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background-color:#F59E0B; animation:fadeUp .38s ease-out .20s both;">
             <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                 <p class="mb-1 text-white text-opacity-75 f-12">Netral</p>
-                <h3 class="mb-0 text-white f-w-300" id="kpiNeu"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3>
-                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNeuSub"><i class="ph ph-smiley-blank me-1"></i>Loading…</p>
+                <h3 class="mb-0 text-white f-w-300" id="kpiNeu">-</h3>
+                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNeuSub"><i class="ph ph-smiley-blank me-1"></i>-</p>
             </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-blank"></i></div></div></div></div>
         </div>
     </div>
@@ -576,10 +576,10 @@ function renderWC() {
 
         /* ★ Warna berdasarkan tab sentimen aktif ★ */
         const colorsBySent = {
-            positive: ['#16a34a','#22c55e','#4ade80','#15803d','#166534','#bbf7d0'],
-            negative: ['#dc2626','#ef4444','#f87171','#b91c1c','#991b1b','#fecaca'],
-            neutral:  ['#f59e0b','#d97706','#fbbf24','#b45309','#fcd34d','#78716c'],
-            all:      ['#038047','#2563eb','#f59e0b','#ef4444','#9333ea','#14b8a6','#2FC6F6','#d97706'],
+            positive: ['#10B981','#059669','#34d399','#065f46','#064e3b','#a7f3d0'],
+            negative: ['#273B4A','#475569','#64748B','#1E293B','#334155','#94A3B8'],
+            neutral:  ['#F59E0B','#d97706','#fbbf24','#92400e','#78350f','#fef3c7'],
+            all:      ['#EF4444','#1D9BF0','#10B981','#273B4A','#F59E0B','#8b5cf6','#06b6d4','#ec4899'],
         };
         const colorPool = colorsBySent[curSent] || colorsBySent.all;
 
@@ -670,7 +670,7 @@ function renderList() {
         const rc  = rk <= 3 ? ` ht-rank--${rk}` : '';
         const pct = Math.round((h.size / mx) * 100);
         /* ★ Warna berdasarkan sentimen ★ */
-        const sentColor = h.sent === 'positive' ? '#16a34a' : h.sent === 'negative' ? '#dc2626' : h.sent === 'neutral' ? '#d97706' : 'var(--primary)';
+        const sentColor = h.sent === 'positive' ? '#10B981' : h.sent === 'negative' ? '#273B4A' : h.sent === 'neutral' ? '#F59E0B' : '#EF4444';
         const el  = document.createElement('div');
         el.className = 'ht-item';
         el.innerHTML = `
