@@ -1221,7 +1221,7 @@ const MSPanel = (() => {
   ══════════════════════════════════════════════════════ */
   function _render(list,items,platform,color,showAll=false){
     if(!items.length){list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:#94a3b8;font-size:12px;font-weight:600;">Tidak ada mention periode ini.</div>`;return;}
-    const SHOW=60;
+    const SHOW=60; const meta=MSCfg.platMeta[platform]||{label:platform,color};
     const visibleItems = showAll ? items : items.slice(0,SHOW);
     list.innerHTML=visibleItems.map(item=>{
       const rawName=(()=>{if(platform==='fb')return item.from_name||item.page_name||null;if(platform==='ig')return item.username||item.user_name||null;if(platform==='tiktok')return item.author_nickname||item.nickname||item.author_name||null;if(platform==='yt')return item.channel_title||item.channel_name||item.author_name||null;return null;})();
