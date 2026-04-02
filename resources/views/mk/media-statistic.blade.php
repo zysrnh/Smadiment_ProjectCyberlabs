@@ -736,7 +736,6 @@
     <div class="do-panel-header">
         <div class="do-panel-dot" id="msPanelDot"></div>
         <span class="do-panel-title" id="msPanelTitle">Mentions</span>
-        <span class="do-panel-count" id="msPanelCount">…</span>
         <button class="do-panel-close" onclick="MSPanel.close()"><i class="ph ph-x"></i></button>
     </div>
     <div class="do-panel-actions">
@@ -1184,12 +1183,12 @@ const MSPanel = (() => {
   async function open(platform,x,y){
     _curPlat=platform;const meta=MSCfg.platMeta[platform]||{label:platform,color:'#4361EE'};
     MSDetail.close();
-    _$('msPanelDot').style.background=meta.color;_$('msPanelTitle').textContent=meta.label;_$('msPanelMeta').textContent=MSCfg.sd+' – '+MSCfg.ed;_$('msPanelCount').textContent='…';
+    _$('msPanelDot').style.background=meta.color;_$('msPanelTitle').textContent=meta.label;_$('msPanelMeta').textContent=MSCfg.sd+' – '+MSCfg.ed;
     const list=_$('msPanelList');list.innerHTML=`<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat mentions…</span></div>`;
     const overlay=_$('msPanelOverlay'),panel=_$('msSntPanel');
     overlay.classList.remove('hiding');panel.classList.remove('hiding');overlay.classList.add('show');panel.classList.add('show');
-    try{ const key=`${MSCfg.pid}_${platform}_${MSCfg.sd}_${MSCfg.ed}`;if(!_cache[key])_cache[key]=await _fetch(platform);_items=_cache[key];_$('msPanelCount').textContent=_items.length.toLocaleString();_render(list,_items,platform,meta.color); }
-    catch(err){ list.innerHTML=`<div class="do-panel-loading" style="color:#94a3b8;"><i class="ph ph-warning-circle" style="font-size:28px;color:#e2e8f0;"></i>Gagal memuat data</div>`;_$('msPanelCount').textContent='0'; }
+    try{ const key=`${MSCfg.pid}_${platform}_${MSCfg.sd}_${MSCfg.ed}`;if(!_cache[key])_cache[key]=await _fetch(platform);_items=_cache[key];_render(list,_items,platform,meta.color); }
+    catch(err){ list.innerHTML=`<div class="do-panel-loading" style="color:#94a3b8;"><i class="ph ph-warning-circle" style="font-size:28px;color:#e2e8f0;"></i>Gagal memuat data</div>`; }
   }
   function close(){ const overlay=_$('msPanelOverlay'),panel=_$('msSntPanel');panel.classList.add('hiding');overlay.classList.add('hiding');setTimeout(()=>{panel.classList.remove('show','hiding');overlay.classList.remove('show','hiding');MSDetail.close();},240); }
   function closeByOverlay(){ close(); }
@@ -1220,10 +1219,11 @@ const MSPanel = (() => {
      - Footer dibagi dua: kiri (badge+platform+tgl), kanan (link icon)
      - onclick link pakai event.stopPropagation() agar detail panel tidak ikut terbuka
   ══════════════════════════════════════════════════════ */
-  function _render(list,items,platform,color){
+  function _render(list,items,platform,color,showAll=false){
     if(!items.length){list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:#94a3b8;font-size:12px;font-weight:600;">Tidak ada mention periode ini.</div>`;return;}
-    const SHOW=60;const meta=MSCfg.platMeta[platform]||{label:platform,color};
-    list.innerHTML=items.slice(0,SHOW).map(item=>{
+    const SHOW=60;
+    const visibleItems = showAll ? items : items.slice(0,SHOW);
+    list.innerHTML=visibleItems.map(item=>{
       const rawName=(()=>{if(platform==='fb')return item.from_name||item.page_name||null;if(platform==='ig')return item.username||item.user_name||null;if(platform==='tiktok')return item.author_nickname||item.nickname||item.author_name||null;if(platform==='yt')return item.channel_title||item.channel_name||item.author_name||null;return null;})();
       const name=(rawName||item.author_name||item.channel_name||item.publisher||item.source_name||item.name||item.author_scr_name||item.screen_name||item.username||'Tidak diketahui').trim();
       const dName=/^\d{8,}$/.test(name)?`User ${name.slice(-4)}`:name;
@@ -1266,9 +1266,22 @@ const MSPanel = (() => {
         </div>
       </div>`;
     }).join('');
-    if(items.length>SHOW)list.insertAdjacentHTML('beforeend',`<div style="padding:9px 14px;text-align:center;font-size:11px;font-weight:600;color:#94a3b8;background:#F8FAFC;border-top:1px dashed #E2E8F0;">+${(items.length-SHOW).toLocaleString()} mentions lainnya</div>`);
+    if(!showAll && items.length>SHOW){
+        const btnHtml=`<div style="padding:16px;text-align:center;background:#f8fafc;border-top:1px dashed #e2e8f0;">
+            <button onclick="MSPanel.showMore()" style="background:#038047;color:#fff;border:none;padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(3,128,71,.2);" 
+                onmouseover="this.style.background='#026136';this.style.transform='translateY(-1px)';" 
+                onmouseout="this.style.background='#038047';this.style.transform='none';">Muat Lebih Banyak</button>
+        </div>`;
+        list.insertAdjacentHTML('beforeend',btnHtml);
+    }
   }
-  return{open,close,closeByOverlay,showPlatPicker,openPlatform};
+  function showMore(){
+    const list=_$('msPanelList');
+    if(!list || !_items.length) return;
+    const meta=MSCfg.platMeta[_curPlat]||{label:_curPlat,color:'#4361EE'};
+    _render(list,_items,_curPlat,meta.color,true);
+  }
+  return{open,close,closeByOverlay,showPlatPicker,openPlatform,showMore};
 })();
 
 /* ══ DETAIL SUB-PANEL ══ */

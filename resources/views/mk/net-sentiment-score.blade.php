@@ -526,7 +526,6 @@
     <div class="do-panel-header">
         <div class="do-panel-dot"    id="nssPanelDot"></div>
         <span class="do-panel-title" id="nssPanelTitle">Mentions</span>
-        <span class="do-panel-count" id="nssPanelCount">…</span>
         <button class="do-panel-close" onclick="NSSPanel.close()"><i class="ph ph-x"></i></button>
     </div>
     <div class="do-panel-actions">
@@ -711,7 +710,6 @@ const NSSPanel=(()=>{
         const media=document.querySelector('.nss-media-menu-item.active')?.dataset.m||'all';
         $('nssPanelDot').style.background=color;
         $('nssPanelTitle').textContent=label;
-        $('nssPanelCount').textContent='…';
         $('nssPanelMeta').textContent=NSS_SD+' – '+NSS_ED;
         document.querySelectorAll('#nssSntPanel .do-panel-tab').forEach(t=>t.classList.toggle('active',t.dataset.s===_curSent));
         const list=$('nssPanelList');
@@ -724,11 +722,9 @@ const NSSPanel=(()=>{
             if(!_cache[key]) _cache[key]=await _fetchAll(media);
             _allItems=_cache[key];
             _filtered=_filterBySent(_allItems,_curSent);
-            $('nssPanelCount').textContent=_filtered.length.toLocaleString();
             _render(list,_filtered);
         }catch(err){
             list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:var(--do-slate-400);font-size:13px;">Gagal memuat data<br><small>${esc(err.message)}</small></div>`;
-            $('nssPanelCount').textContent='0';
         }
     }
 
@@ -742,7 +738,6 @@ const NSSPanel=(()=>{
         _curSent=sent;
         document.querySelectorAll('#nssSntPanel .do-panel-tab').forEach(t=>t.classList.toggle('active',t.dataset.s===sent));
         _filtered=_filterBySent(_allItems,sent);
-        $('nssPanelCount').textContent=_filtered.length.toLocaleString();
         _render($('nssPanelList'),_filtered);
     }
     function _filterBySent(items,sent){return sent==='all'?items:items.filter(i=>_normSent(i)===sent);}

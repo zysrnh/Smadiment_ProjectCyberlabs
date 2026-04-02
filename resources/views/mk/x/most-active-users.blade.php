@@ -411,7 +411,7 @@
   {{-- ── KPI Cards ── --}}
   <div class="row mb-3">
     <div class="col-md-6 col-xl-3">
-      <div class="card h-100 bg-primary text-white kpi-card-hover fade-up fade-up-d1">
+      <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d1" style="background:#1D9BF0;">
         <div class="card-body"><div class="d-flex align-items-center">
           <div class="flex-grow-1">
             <p class="mb-1 text-white text-opacity-75 f-12">Total Users</p>
@@ -423,7 +423,7 @@
       </div>
     </div>
     <div class="col-md-6 col-xl-3">
-      <div class="card h-100 bg-success text-white kpi-card-hover fade-up fade-up-d2">
+      <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d2" style="background:#10B981;">
         <div class="card-body"><div class="d-flex align-items-center">
           <div class="flex-grow-1">
             <p class="mb-1 text-white text-opacity-75 f-12">Total Interactions</p>
@@ -435,7 +435,7 @@
       </div>
     </div>
     <div class="col-md-6 col-xl-3">
-      <div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d3">
+      <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d3" style="background:#F59E0B;">
         <div class="card-body"><div class="d-flex align-items-center">
           <div class="flex-grow-1">
             <p class="mb-1 text-white text-opacity-75 f-12">Top Account</p>
@@ -447,7 +447,7 @@
       </div>
     </div>
     <div class="col-md-6 col-xl-3">
-      <div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d4">
+      <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d4" style="background:#273B4A;">
         <div class="card-body"><div class="d-flex align-items-center">
           <div class="flex-grow-1">
             <p class="mb-1 text-white text-opacity-75 f-12">Avg Followers</p>
