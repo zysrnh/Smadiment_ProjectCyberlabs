@@ -1525,20 +1525,34 @@ const numFmt = n => {
                             avoidLabelOverlap:true,minAngle:6,
                             itemStyle:{borderColor:'#fff',borderWidth:3,borderRadius:5},
                             label:{
-                                show:true,alignTo:'edge',edgeDistance:8,lineHeight:16,
-                                fontFamily:'inherit',fontSize:11,
+                                show:true,
+                                fontFamily:'inherit',
+                                alignTo:'edge',
+                                edgeDistance:'5%',
+                                distanceToLabelLine:4,
                                 formatter:p=>{
                                     const pc=totalAll>0?(p.value/totalAll*100):0;
-                                    if(pc<1) return'';
                                     const shortName=p.name.replace('Mass ','').replace('Social ','Soc.');
-return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
+                                    return `{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
                                 },
                                 rich:{
-                                    name:{fontWeight:'700',fontSize:10,color:'#1a202c',lineHeight:16},
-                                    pct:{fontWeight:'700',fontSize:10,color:primary,lineHeight:14,backgroundColor:'#edf7f3',borderRadius:4,padding:[1,4]}
+                                    name:{fontWeight:'700',fontSize:10,color:'#374151',lineHeight:16},
+                                    pct:{fontWeight:'800',fontSize:10,color:primary,lineHeight:14,backgroundColor:'#f0faf5',borderRadius:4,padding:[1,5]}
                                 }
                             },
-                            labelLine:{show:true,length:8,length2:10,smooth:.4,showAbove:true,lineStyle:{color:'#c4cdd8',width:1.2}},
+                            labelLine:{
+                                show:true,
+                                length:12,
+                                length2:16,
+                                smooth:0.3,
+                                minTurnAngle:120,
+                                maxSurfaceAngle:70,
+                                lineStyle:{
+                                    color:'#CBD5E1',
+                                    width:1.2,
+                                    cap:'round'
+                                }
+                            },
                             emphasis:{
                                 scale:true,scaleSize:6,
                                 itemStyle:{shadowBlur:14,shadowColor:'rgba(0,0,0,.18)'},
@@ -1623,42 +1637,62 @@ return`{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
                 }},
                 legend:{show:false},
                 series:[{
-                    type:'pie',radius:['32%','52%'],center:['50%','50%'],
+                    type:'pie',
+                    /* Donat lebih besar dan center lebih ke kiri agar label punya ruang */
+                    radius:['34%','54%'],
+                    center:['50%','52%'],
                     avoidLabelOverlap:true,
                     minAngle:5,
                     padAngle:2,
-                    itemStyle:{borderColor:'#fff',borderWidth:4,borderRadius:5},
+                    itemStyle:{borderColor:'#fff',borderWidth:3,borderRadius:6},
                     label:{
                         show:true,
                         fontFamily:'inherit',
-                        distanceToLabelLine:3,
+                        alignTo:'edge',
+                        edgeDistance:'8%',
+                        distanceToLabelLine:4,
                         formatter:p=>{
                             const pc=totalAll>0?(p.value/totalAll*100):0;
-                            const shortName=p.name.replace('X (Twitter)','X').replace('Mass Media','Online News');
+                            const shortName=p.name
+                                .replace('X (Twitter)','X')
+                                .replace('Mass Media','Online News')
+                                .replace('Online News','O.News');
                             return `{name|${shortName}}\n{pct|${Math.round(pc)}%}`;
                         },
                         rich:{
-                            name:{fontWeight:'700',fontSize:10,color:'#1a202c',lineHeight:15},
-                            pct:{fontWeight:'800',fontSize:10,color:primary,lineHeight:13,backgroundColor:'#edf7f3',borderRadius:4,padding:[1,4]}
+                            name:{fontWeight:'700',fontSize:10,color:'#374151',lineHeight:16},
+                            pct:{fontWeight:'800',fontSize:10,color:primary,lineHeight:14,
+                                backgroundColor:'#f0faf5',borderRadius:4,padding:[1,5]}
                         }
                     },
                     labelLine:{
                         show:true,
-                        length:12,
-                        length2:18,
-                        smooth:0.4,
-                        maxSurfaceAngle:80,
-                        lineStyle:{color:'#94a3b8',width:1.6}
+                        length:25,
+                        length2:30,
+                        smooth:0.6,
+                        lineStyle:{
+                            color:'#CBD5E1',
+                            width:1.2,
+                            cap:'round'
+                        }
                     },
                     labelLayout:{
                         hideOverlap:true,
-                        moveOverlap:'shiftY'
+                        moveOverlap:'shiftY',
+                        draggable:false
                     },
                     emphasis:{
                         scale:true,scaleSize:5,
-                        itemStyle:{shadowBlur:12,shadowColor:'rgba(0,0,0,.2)'}
+                        itemStyle:{shadowBlur:16,shadowColor:'rgba(0,0,0,.15)'},
+                        label:{show:true}
                     },
-                    data:labels.map((lb,i)=>({name:lb,value:counts[i],itemStyle:{color:colors[i]}}))
+                    data:labels.map((lb,i)=>({
+                        name:lb,
+                        value:counts[i],
+                        itemStyle:{color:colors[i]},
+                        /* Item dengan value 0 tetap tersembunyi sepenuhnya */
+                        label:counts[i]===0?{show:false}:{}
+                    }))
                 }],
                 graphic:[]
             },true);
