@@ -152,7 +152,7 @@
     </div>
   </div>
   <div class="col-md-4">
-    <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d2" style="background:#10B981;">
+    <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d2" style="background:#4CAF50;">
       <div class="card-body">
         <div class="d-flex align-items-center">
           <div class="flex-grow-1">

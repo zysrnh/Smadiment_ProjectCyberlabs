@@ -255,7 +255,7 @@
                 </div>
             </div>
             <div class="col-md-6 col-xl-4">
-                <div class="card h-100 text-white kpi-card-hover" style="background:#10B981;animation:fadeUp .38s ease-out .05s both;">
+                <div class="card h-100 text-white kpi-card-hover" style="background:#4CAF50;animation:fadeUp .38s ease-out .05s both;">
                     <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Publishers</p>
                         <h3 class="mb-0 text-white f-w-300" id="kpiPublishers">—</h3>

@@ -239,7 +239,6 @@ body.is-exporting .exp-icon {
         <div class="col-md-6 col-xl-3">
             <div class="card h-100 text-white kpi-card-hover" style="background:#06B6D4;animation:fadeUp .38s ease-out both;">
                 <div class="card-body">
-                    <span class="kpi-dot-num"><span class="kpi-pulse-dot"></span><span id="dotPosVal">–</span></span>
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
                             <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
@@ -253,9 +252,8 @@ body.is-exporting .exp-icon {
         </div>
         {{-- 2. Neutral --}}
         <div class="col-md-6 col-xl-3">
-            <div class="card h-100 text-white kpi-card-hover" style="background:#10B981;animation:fadeUp .38s ease-out .05s both;">
+            <div class="card h-100 text-white kpi-card-hover" style="background:#4CAF50;animation:fadeUp .38s ease-out .05s both;">
                 <div class="card-body">
-                    <span class="kpi-dot-num"><span class="kpi-pulse-dot"></span><span id="dotNeuVal">–</span></span>
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
                             <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
@@ -271,7 +269,6 @@ body.is-exporting .exp-icon {
         <div class="col-md-6 col-xl-3">
             <div class="card h-100 text-white kpi-card-hover" style="background:#F59E0B;animation:fadeUp .38s ease-out .10s both;">
                 <div class="card-body">
-                    <span class="kpi-dot-num"><span class="kpi-pulse-dot"></span><span id="dotNegVal">–</span></span>
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
                             <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
@@ -287,7 +284,6 @@ body.is-exporting .exp-icon {
         <div class="col-md-6 col-xl-3">
             <div class="card h-100 text-white kpi-card-hover" style="background:#038047;animation:fadeUp .38s ease-out .15s both;">
                 <div class="card-body">
-                    <span class="kpi-dot-num"><span class="kpi-pulse-dot"></span><span id="dotTotalVal">–</span></span>
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
                             <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
@@ -583,8 +579,6 @@ const MTData={
         _$('kpiPos').textContent=numF(pos);_$('kpiPosSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(pos)+'% of total';
         _$('kpiNeu').textContent=numF(neu);_$('kpiNeuSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(neu)+'% of total';
         _$('kpiNeg').textContent=numF(neg);_$('kpiNegSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(neg)+'% of total';
-        /* dot badges */
-        _$('dotTotalVal').textContent=numK(all.length);_$('dotPosVal').textContent=numK(pos);_$('dotNeuVal').textContent=numK(neu);_$('dotNegVal').textContent=numK(neg);
     },
     _renderTrend(){
         const el=_$('trendChart'),ld=_$('trendLoading');if(!el)return;

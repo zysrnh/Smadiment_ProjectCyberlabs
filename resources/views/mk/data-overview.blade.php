@@ -5,14 +5,14 @@
 @section('styles')
     <style>
         :root {
-            --primary: #038047;
-            --primary-rgb: 3, 128, 71;
-            --primary-lt: rgba(3, 128, 71, .10);
+            --primary: #4CAF50;
+            --primary-rgb: 76, 175, 80;
+            --primary-lt: rgba(76, 175, 80, .10);
             --dark: #273B4A;
             --white: #FFFFFF;
             --bg: #F1F5F8;
-            --green: #038047;
-            --green-light: #E8F5EE;
+            --green: #4CAF50;
+            --green-light: #E8F5E9;
             --red: #EF4444;
             --red-light: #FEF2F2;
             --amber: #F59E0B;
@@ -599,13 +599,13 @@
         {{-- ══ KPI Cards ══ --}}
         <div class="row mb-3">
             <div class="col-md-6 col-xl-3">
-                <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out both;">
+                <div class="card h-100 text-white kpi-card-hover" style="background:#06B6D4;animation:fadeUp .38s ease-out both;">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
 <h3 class="mb-0 text-white f-w-300" id="kpiTotal">—</h3>
-                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub"><i class="ph ph-chart-line-up me-1"></i>Loading…</p>
+                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub"><i class="ph ph-chart-line-up me-1"></i>Loading...</p>
                             </div>
                             <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chat-dots"></i></div></div>
                         </div>
@@ -613,13 +613,13 @@
                 </div>
             </div>
             <div class="col-md-6 col-xl-3">
-                <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
+                <div class="card h-100 text-white kpi-card-hover" style="background:#4CAF50;animation:fadeUp .38s ease-out .05s both;">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">Online News</p>
 <h3 class="mb-0 text-white f-w-300" id="kpiNews">—</h3>
-                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNewsSub"><i class="ph ph-newspaper me-1"></i>Loading…</p>
+                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNewsSub"><i class="ph ph-newspaper me-1"></i>Loading...</p>
                             </div>
                             <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-newspaper"></i></div></div>
                         </div>
@@ -627,13 +627,13 @@
                 </div>
             </div>
             <div class="col-md-6 col-xl-3">
-                <div class="card h-100 bg-warning text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
+                <div class="card h-100 text-white kpi-card-hover" style="background:#F59E0B;animation:fadeUp .38s ease-out .10s both;">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">Social Media</p>
 <h3 class="mb-0 text-white f-w-300" id="kpiSocial">—</h3>
-                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiSocialSub"><i class="ph ph-share-network me-1"></i>Loading…</p>
+                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiSocialSub"><i class="ph ph-share-network me-1"></i>Loading...</p>
                             </div>
                             <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-share-network"></i></div></div>
                         </div>
@@ -641,13 +641,13 @@
                 </div>
             </div>
             <div class="col-md-6 col-xl-3">
-                <div class="card h-100 bg-danger text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .15s both;">
+                <div class="card h-100 text-white kpi-card-hover" style="background:#038047;animation:fadeUp .38s ease-out .15s both;">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">Platforms Active</p>
 <h3 class="mb-0 text-white f-w-300" id="kpiPlatforms">—</h3>
-                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPlatformsSub"><i class="ph ph-circles-four me-1"></i>Loading…</p>
+                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPlatformsSub"><i class="ph ph-circles-four me-1"></i>Loading...</p>
                             </div>
                             <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-circles-four"></i></div></div>
                         </div>
