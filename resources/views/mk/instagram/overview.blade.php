@@ -727,7 +727,7 @@ const OVData = {
                 avoidLabelOverlap:true, selectedMode:false, minAngle:8,
                 itemStyle:{borderColor:'#fff',borderWidth:3},
                 label:{
-                    show:true, position:'outside', alignTo:'edge', edgeDistance:20,
+                    show:true, position:'outside', alignTo:'edge', edgeDistance:16,
                     lineHeight:16, fontSize:11, fontFamily:'inherit', color:'#334155', fontWeight:'600',
                     formatter: p => {
                         const nm=getNameFn(data[p.dataIndex]);
@@ -739,7 +739,7 @@ const OVData = {
                         pct:  {fontSize:10,fontWeight:'700',color:'#038047',lineHeight:14}
                     }
                 },
-                labelLine:{show:true,length:15,length2:15,smooth:0.3,lineStyle:{width:1.5,color:'#94A3B8'}},
+                labelLine:{show:true,length:12,length2:16,smooth:0.3,lineStyle:{width:1.5,color:'#94A3B8'}},
                 emphasis:{
                     scale:true, scaleSize:5,
                     itemStyle:{shadowBlur:12,shadowColor:'rgba(0,0,0,.15)',borderWidth:3,borderColor:'#fff'},
@@ -748,8 +748,8 @@ const OVData = {
                 data:pd
             }],
             graphic:[
-                {type:'text',left:'center',top:'43%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 24px inherit",textAlign:'center'}},
-                {type:'text',left:'center',top:'54%',z:100,style:{text:'TOTAL '+(titleLabel||metricLabel).toUpperCase(),fill:'#94a3b8',font:"700 8px inherit",textAlign:'center'}}
+                {type:'text',left:'center',top:'44%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 26px inherit",textAlign:'center'}},
+                {type:'text',left:'center',top:'53%',z:100,style:{text:'TOTAL '+(titleLabel||metricLabel).toUpperCase(),fill:'#94a3b8',font:"600 9px inherit",textAlign:'center'}}
             ]
         });
         chart.on('click', p => { const d=data[p.dataIndex]; if(d&&onClickFn) onClickFn(d); });

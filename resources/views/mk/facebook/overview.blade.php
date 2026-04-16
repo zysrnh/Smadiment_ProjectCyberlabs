@@ -693,7 +693,7 @@ const OVData = {
         el.innerHTML=data.map((d,i)=>{
             const val=getValFn(d), pct=total>0?((val/total)*100).toFixed(1):0,
                   barW=Math.round((val/maxVal)*100), color=DONUT_COLORS[i],
-name=getNameFn(d), shortName=name.length>50?name.slice(0,49)+'…':name;
+                  name=getNameFn(d), shortName=name.length>30?name.slice(0,29)+'…':name;
             return `<div class="donut-breakdown-item" data-idx="${i}">
                 <div class="donut-breakdown-rank">${i+1}</div>
                 <div class="donut-breakdown-dot" style="background:${color};"></div>
@@ -738,7 +738,7 @@ name=getNameFn(d), shortName=name.length>50?name.slice(0,49)+'…':name;
                     lineHeight:16, fontSize:11, fontFamily:'inherit', color:'#334155', fontWeight:'600',
                     formatter: p => {
                         const nm=getNameFn(data[p.dataIndex]);
-const short=nm.length>50?nm.slice(0,49)+'…':nm;
+                        const short=nm.length>18?nm.slice(0,17)+'…':nm;
                         return `{title|${short}}\n{pct|${p.percent.toFixed(1)}%}`;
                     },
                     rich:{

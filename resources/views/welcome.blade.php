@@ -458,7 +458,7 @@
 <!-- NAV -->
 <nav id="nav">
   <div class="nav-logo">
-    <img src="{{ asset('images/SMADIMENT 2025 _ Logo-03.png') }}" alt="SMADIMENT">
+    <img src="{{ asset('images/SMADIMENT 2025-Putih.png') }}" alt="SMADIMENT">
   </div>
   <div class="nav-right">
     <a href="#fitur">Fitur</a>
@@ -854,7 +854,7 @@
 <footer>
   <div class="foot-inner">
     <div class="foot-top">
-      <img src="{{ asset('images/SMADIMENT 2025 _ Logo-03.png') }}" alt="SMADIMENT">
+      <img src="{{ asset('images/SMADIMENT 2025- warna.png') }}" alt="SMADIMENT">
       <ul class="foot-links">
         <li><a href="#fitur">Fitur</a></li>
         <li><a href="#cara-kerja">Cara Kerja</a></li>

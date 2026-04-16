@@ -2328,4 +2328,4 @@ public function tiktokTopStatusAll(
         return [];
     }
 }
-}   
+}

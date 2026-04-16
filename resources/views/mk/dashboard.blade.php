@@ -1222,23 +1222,23 @@
                 { name: 'Negative', data: tl.sentiment?.negative || [] },
             ],
             colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
-            markers: {
-                size:         totalPoints <= 31 ? 6 : 3,
-                strokeWidth:  2,
-                strokeColors: '#fff',
-                hover:        { size: 8 }
-            },
-            dataLabels: {
-                enabled:   totalPoints <= 31,
-                formatter: v => v > 0 ? numK(v) : '',
-                offsetY: -10,
-                style: { fontSize: '9px', fontFamily: 'inherit', fontWeight: '800' },
-                background: {
-                    enabled: true, foreColor: '#fff', borderRadius: 3, padding: 3,
-                    opacity: 0.9, borderWidth: 0,
-                    dropShadow: { enabled: true, top: 1, left: 1, blur: 2, color: '#000', opacity: 0.15 }
-                },
-            },
+          markers: {
+    size: totalPoints <= 31 ? 6 : 3,   // ← dari 14 ke 31, dan fallback 3 bukan 0
+    strokeWidth: 2,
+    strokeColors: '#fff',
+    hover: { size: 8 }
+},
+dataLabels: {
+    enabled: totalPoints <= 31,         // ← dari 14 ke 31
+    formatter: v => v > 0 ? numK(v) : '',
+    offsetY: -8,
+    style: { fontSize: '9px', fontFamily: 'inherit', fontWeight: '800' },
+    background: {
+        enabled: true, foreColor: '#fff', padding: 3,
+        borderRadius: 3, borderWidth: 0, opacity: 0.9,
+        dropShadow: { enabled: true, top: 1, left: 1, blur: 2, color: '#000', opacity: 0.15 }  // ← tambah ini
+    }
+},
             xaxis: {
                 categories: labels,
                 type:       'category',

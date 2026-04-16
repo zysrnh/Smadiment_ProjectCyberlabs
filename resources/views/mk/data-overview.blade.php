@@ -1648,8 +1648,7 @@ const numFmt = n => {
                     label:{
                         show:true,
                         fontFamily:'inherit',
-                        alignTo:'edge',
-                        edgeDistance:'8%',
+                        alignTo:'labelLine',
                         distanceToLabelLine:4,
                         formatter:p=>{
                             const pc=totalAll>0?(p.value/totalAll*100):0;
@@ -1667,9 +1666,9 @@ const numFmt = n => {
                     },
                     labelLine:{
                         show:true,
-                        length:25,
-                        length2:30,
-                        smooth:0.6,
+                        length:15,
+                        length2:25,
+                        smooth:0.4,
                         lineStyle:{
                             color:'#CBD5E1',
                             width:1.2,

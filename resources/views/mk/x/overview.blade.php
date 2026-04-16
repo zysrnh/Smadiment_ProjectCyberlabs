@@ -216,7 +216,7 @@
         @php
             $kpiCards = [
                 ['id' => 'kpiViews',  'label' => 'Total Views',    'icon' => 'ph-eye',              'bg' => '#EF4444', 'sub' => 'kpiViewsSub'],
-                ['id' => 'kpiRt',     'label' => 'Total Retweets', 'icon' => 'ph-repeat',           'bg' => '#1D9BF0', 'sub' => 'kpiRtSub'],
+                ['id' => 'kpiRt',     'label' => 'Total Retweets', 'icon' => 'ph-repeat',           'bg' => '#F59E0B', 'sub' => 'kpiRtSub'],
                 ['id' => 'kpiPosts',  'label' => 'Total Posts',    'icon' => 'ph-chat-circle-dots', 'bg' => '#10B981', 'sub' => 'kpiPostsSub'],
                 ['id' => 'kpiTopics', 'label' => 'Total Topics',   'icon' => 'ph-hash',             'bg' => '#273B4A', 'sub' => 'kpiTopicsSub'],
             ];
@@ -460,10 +460,10 @@ const OVCfg    = {
     sd     : OV_SD,
     ed     : OV_ED,
     primary: '#038047',
-    colors : { view:'#EF4444', retweet:'#1D9BF0', post:'#10B981', hashtag:'#273B4A' },
+    colors : { view:'#EF4444', retweet:'#F59E0B', post:'#10B981', hashtag:'#273B4A' },
     perPage: 10,
 };
-const DONUT_COLORS = ['#EF4444','#1D9BF0','#10B981','#273B4A','#06B6D4'];
+const DONUT_COLORS = ['#EF4444','#F59E0B','#10B981','#273B4A','#06B6D4'];
 const TAB_TYPES    = ['hashtag', 'view', 'retweet'];
 
 const _$  = id => document.getElementById(id);

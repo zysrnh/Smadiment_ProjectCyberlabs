@@ -3,47 +3,51 @@
 namespace App\Http\Controllers\MK;
 
 use App\Http\Controllers\Controller;
+use App\Services\MK\PlatformDataService;
 use App\Services\MediaKernelsClient;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * AllPlatformAiController (refactored)
+ *
+ * Responsibilities:
+ *  1. Resolve the list of project IDs the authenticated user may access.
+ *  2. Delegate all heavy lifting to PlatformDataService.
+ *  3. Return a clean JSON response.
+ *  4. Proxy Gemini AI requests.
+ *
+ * It contains NO platform-specific fetch logic — that lives entirely in
+ * PlatformDataService.
+ */
 class AllPlatformAiController extends Controller
 {
-    protected MediaKernelsClient $client;
+    public function __construct(
+        private readonly PlatformDataService $platformService,
+        private readonly MediaKernelsClient  $client,
+    ) {}
 
-    public function __construct(MediaKernelsClient $client)
-    {
-        $this->client = $client;
-    }
+    // =========================================================================
+    // PAGE
+    // =========================================================================
 
-    private function getAllProjects(): array
-    {
-        $user = Auth::user();
-        $assignedProjectIds = $user->assignedProjectIds();
-        $rawProjects = $this->client->listProjects(0, 100);
-        $allProjects = array_values($rawProjects);
-
-        return array_values(array_filter($allProjects, function ($project) use ($assignedProjectIds) {
-            return in_array($project['id'] ?? null, $assignedProjectIds);
-        }));
-    }
-
-    /* ─── Page ─── */
     public function page(Request $request)
     {
         try {
-            $projects  = $this->getAllProjects();
+            $projects  = $this->getAssignedProjects();
             $projectId = $request->query('project_id');
 
+            // Auto-redirect to first project when none is selected.
             if (!$projectId && count($projects) > 0) {
                 $projectId = $projects[0]['id'] ?? null;
                 if ($projectId) {
                     return redirect()->route('mk.all-ai-analysis', [
                         'project_id' => $projectId,
                         'start_date' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
-                        'end_date'   => $request->query('end_date', now()->format('Y-m-d')),
+                        'end_date'   => $request->query('end_date',   now()->format('Y-m-d')),
                     ]);
                 }
             }
@@ -51,11 +55,13 @@ class AllPlatformAiController extends Controller
             return view('mk.ai.all-platform')->with([
                 'projectId' => $projectId,
                 'startDate' => $request->query('start_date', now()->subDays(6)->format('Y-m-d')),
-                'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
+                'endDate'   => $request->query('end_date',   now()->format('Y-m-d')),
                 'projects'  => $projects,
             ]);
-        } catch (\Exception $e) {
-            Log::error('All-platform AI page error', ['error' => $e->getMessage()]);
+
+        } catch (\Throwable $e) {
+            Log::error('AllPlatformAi page error', ['error' => $e->getMessage()]);
+
             return view('mk.ai.all-platform')->with([
                 'projectId' => null,
                 'startDate' => now()->subDays(6)->format('Y-m-d'),
@@ -65,383 +71,264 @@ class AllPlatformAiController extends Controller
         }
     }
 
-    /* ─── Data endpoint — fetches ALL platforms concurrently ─── */
-    public function data(Request $request)
+    // =========================================================================
+    // DATA — multi-project aggregation endpoint
+    // =========================================================================
+
+    /**
+     * GET /mk/api/all-ai/data
+     *
+     * Query params:
+     *   project_id   – optional; if omitted, all assigned projects are used.
+     *   project_ids  – optional comma-separated list of IDs.
+     *   start_date
+     *   end_date
+     */
+    public function data(Request $request): JsonResponse
     {
         try {
-            $projectId = $request->query('project_id');
             $startDate = $request->query('start_date');
             $endDate   = $request->query('end_date');
 
-            if (!$projectId) {
-                return response()->json(['success' => false, 'error' => 'Project ID required'], 400);
+            $projectIds = $this->resolveProjectIds($request);
+
+            if (empty($projectIds)) {
+                return response()->json(['success' => false, 'error' => 'No accessible projects found.'], 400);
             }
 
-            // Fetch data from all platforms concurrently
-            // Keep it light: only top 15-20 items per platform
-            $newsData    = $this->fetchNews($projectId, $startDate, $endDate);
-            $twitterData = $this->fetchTwitter($projectId, $startDate, $endDate);
-            $fbData      = $this->fetchFacebook($projectId, $startDate, $endDate);
-            $igData      = $this->fetchInstagram($projectId, $startDate, $endDate);
-            $ytData      = $this->fetchYoutube($projectId, $startDate, $endDate);
-            $ttData      = $this->fetchTiktok($projectId, $startDate, $endDate);
-
-            // Sentiment totals
-            $sentimentRaw = $this->client->sentimentTotal($projectId, $startDate, $endDate);
-            $sentiment    = $this->parseSentimentAll($sentimentRaw);
-
-            // Build combined dataset
-            $lines = $this->buildDataset(
-                $projectId, $startDate, $endDate, $sentiment,
-                $newsData, $twitterData, $fbData, $igData, $ytData, $ttData
-            );
+            // Delegate entirely to the service layer.
+            $result = $this->platformService->aggregateAll($projectIds, $startDate, $endDate);
 
             return response()->json([
                 'success' => true,
                 'data'    => [
-                    'dataset' => implode("\n", $lines),
-                    'summary' => [
-                        'news'      => count($newsData),
-                        'twitter'   => count($twitterData),
-                        'facebook'  => count($fbData),
-                        'instagram' => count($igData),
-                        'youtube'   => count($ytData),
-                        'tiktok'    => count($ttData),
-                        'sentiment' => $sentiment,
-                    ],
+                    'summary'  => $result['summary'],
+                    'projects' => $result['projects'],
+                    'dataset'  => $result['dataset'],
+
+                    // Pre-built text dataset for the AI prompt (backward-compat).
+                    'text_dataset' => $this->buildTextDataset($result),
                 ],
             ]);
-        } catch (\Exception $e) {
-            Log::error('All-platform AI data error', ['error' => $e->getMessage()]);
+
+        } catch (\Throwable $e) {
+            Log::error('AllPlatformAi data error', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
 
-    /* ─── Proxy (reuses Gemini logic) ─── */
-    public function proxy(Request $request)
+    // =========================================================================
+    // PROXY — Gemini AI
+    // =========================================================================
+
+    public function proxy(Request $request): JsonResponse
     {
         try {
             $apiKey = env('GEMINI_API_KEY');
             if (!$apiKey) {
-                return response()->json(['error' => 'GEMINI_API_KEY belum diset di .env'], 500);
+                return response()->json(['error' => 'GEMINI_API_KEY is not configured.'], 500);
             }
 
             $messages  = $request->input('messages', []);
             $system    = $request->input('system', '');
-            $maxTokens = (int) $request->input('max_tokens', 2000);
+            $maxTokens = (int) $request->input('max_tokens', 8192);
 
             if (empty($messages)) {
-                return response()->json(['error' => 'Messages tidak boleh kosong'], 400);
+                return response()->json(['error' => 'messages must not be empty.'], 400);
             }
 
-            $contents   = [];
-            $firstAdded = false;
-
-            foreach ($messages as $msg) {
-                $role    = $msg['role'] === 'assistant' ? 'model' : 'user';
-                $content = $msg['content'];
-
-                if (!$firstAdded && $role === 'user' && !empty($system)) {
-                    $content    = $system . "\n\n---\n\n" . $content;
-                    $firstAdded = true;
-                }
-
-                $contents[] = [
-                    'role'  => $role,
-                    'parts' => [['text' => $content]],
-                ];
-            }
-
-            $models = [
-                'gemini-2.5-flash',
-                'gemini-2.5-pro',
-                'gemini-2.0-flash',
-                'gemini-2.0-flash-lite',
-                'gemini-flash-latest',
-            ];
-
-            $text      = '';
-            $usedModel = '';
-
-            foreach ($models as $model) {
-                $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
-                try {
-                    $response = Http::withHeaders(['Content-Type' => 'application/json'])
-                        ->timeout(60)
-                        ->post($endpoint, [
-                            'contents'         => $contents,
-                            'generationConfig' => [
-                                'maxOutputTokens' => $maxTokens,
-                                'temperature'     => 0.7,
-                            ],
-                        ]);
-
-                    if (in_array($response->status(), [429, 404])) continue;
-                    if ($response->failed()) continue;
-
-                    $data = $response->json();
-                    $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
-
-                    if (!empty($text)) {
-                        $usedModel = $model;
-                        break;
-                    }
-                } catch (\Exception $e) {
-                    continue;
-                }
-            }
+            [$text, $usedModel] = $this->callGemini($apiKey, $messages, $system, $maxTokens);
 
             if (empty($text)) {
-                return response()->json(['error' => 'Semua model Gemini sedang tidak tersedia atau quota habis.'], 429);
+                return response()->json(['error' => 'All Gemini models are unavailable or quota exhausted.'], 429);
             }
 
             return response()->json([
                 'content' => [['type' => 'text', 'text' => $text]],
                 'model'   => $usedModel,
             ]);
-        } catch (\Exception $e) {
-            Log::error('All-platform AI proxy error', ['error' => $e->getMessage()]);
+
+        } catch (\Throwable $e) {
+            Log::error('AllPlatformAi proxy error', ['error' => $e->getMessage()]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    /* ════════════════════════════════════════════════════════
-       PRIVATE FETCHERS — lightweight, max 15 items each
-    ════════════════════════════════════════════════════════ */
+    // =========================================================================
+    // PRIVATE HELPERS
+    // =========================================================================
 
-    private function fetchNews(string $pid, ?string $sd, ?string $ed): array
+    /**
+     * Resolve the list of project IDs to aggregate.
+     *
+     * Priority:
+     *  1. `project_ids` (comma-separated) query param.
+     *  2. `project_id` (single) query param.
+     *  3. All projects assigned to the authenticated user.
+     */
+    private function resolveProjectIds(Request $request): array
     {
-        try {
-            $raw = $this->client->articles($pid, 'doc', $sd, $ed, 0, 23, 0, 15, true);
-            $items = is_array($raw) ? $raw : ($raw['data'] ?? []);
-            $result = [];
-            foreach (array_slice($items, 0, 15) as $a) {
-                if (!is_array($a)) continue;
-                $result[] = [
-                    'title'     => substr(strip_tags($a['title'] ?? ''), 0, 120),
-                    'publisher' => substr($a['publisher'] ?? $a['hostname'] ?? '', 0, 40),
-                    'date'      => substr($a['date_created'] ?? '', 0, 10),
-                    'sentiment' => $this->normSent($a),
-                    'content'   => substr(strip_tags($a['content'] ?? ''), 0, 150),
-                ];
-            }
-            return $result;
-        } catch (\Exception $e) { return []; }
-    }
-
-    private function fetchTwitter(string $pid, ?string $sd, ?string $ed): array
-    {
-        try {
-            $raw = $this->client->mostStatus($pid, 'twitter', $sd, $ed, 0, 23, 15, 'postbyview');
-            $items = is_array($raw) ? $raw : ($raw['data'] ?? []);
-            $result = [];
-            foreach (array_slice($items, 0, 15) as $item) {
-                if (!is_array($item)) continue;
-                $tcode = strtolower($item['tcode'] ?? '');
-                if ($tcode && !in_array($tcode, ['twit', 'twitter', 'tw-view', 'tw-retweet', 'tw-like', 'tw-reply', ''])) continue;
-                $author = $item['author']['scr_name'] ?? $item['name'] ?? '';
-                $result[] = [
-                    'author'    => $author,
-                    'content'   => substr(strip_tags($item['content'] ?? ''), 0, 150),
-                    'views'     => (int) ($item['view_cnt'] ?? $item['freq'] ?? 0),
-                    'rt'        => (int) ($item['rt'] ?? 0),
-                    'date'      => substr($item['date_created'] ?? '', 0, 10),
-                    'sentiment' => $this->normSent($item),
-                ];
-            }
-            return $result;
-        } catch (\Exception $e) { return []; }
-    }
-
-    private function fetchFacebook(string $pid, ?string $sd, ?string $ed): array
-    {
-        try {
-            $raw = $this->client->fbTopStatus($pid, $sd, $ed, 'fblike', 0, 23, 15);
-            $items = is_array($raw) ? $raw : ($raw['data'] ?? []);
-            $result = [];
-            foreach (array_slice($items, 0, 15) as $item) {
-                if (!is_array($item)) continue;
-                $result[] = [
-                    'author'    => $item['from_name'] ?? $item['page_name'] ?? '',
-                    'content'   => substr(strip_tags($item['content'] ?? $item['message'] ?? ''), 0, 150),
-                    'likes'     => (int) ($item['likes'] ?? $item['freq'] ?? 0),
-                    'shares'    => (int) ($item['shares'] ?? 0),
-                    'comments'  => (int) ($item['comments'] ?? 0),
-                    'date'      => substr($item['date_created'] ?? '', 0, 10),
-                    'sentiment' => $this->normSent($item),
-                ];
-            }
-            return $result;
-        } catch (\Exception $e) { return []; }
-    }
-
-    private function fetchInstagram(string $pid, ?string $sd, ?string $ed): array
-    {
-        try {
-            $raw = $this->client->igTopStatus($pid, $sd, $ed, 'postbylike', 0, 23, 15);
-            $items = is_array($raw) ? $raw : ($raw['data'] ?? []);
-            $result = [];
-            foreach (array_slice($items, 0, 15) as $item) {
-                if (!is_array($item)) continue;
-                $result[] = [
-                    'author'    => $item['username'] ?? $item['user_name'] ?? '',
-                    'content'   => substr(strip_tags($item['content'] ?? $item['caption'] ?? ''), 0, 150),
-                    'likes'     => (int) ($item['num_likes'] ?? $item['likes'] ?? 0),
-                    'comments'  => (int) ($item['num_comments'] ?? $item['comments'] ?? 0),
-                    'date'      => substr($item['date_created'] ?? '', 0, 10),
-                    'sentiment' => $this->normSent($item),
-                ];
-            }
-            return $result;
-        } catch (\Exception $e) { return []; }
-    }
-
-    private function fetchYoutube(string $pid, ?string $sd, ?string $ed): array
-    {
-        try {
-            $raw = $this->client->ytbTopStatus($pid, $sd, $ed, 'postbyview', 0, 23, 15);
-            $items = is_array($raw) ? $raw : ($raw['data'] ?? []);
-            $result = [];
-            foreach (array_slice($items, 0, 15) as $item) {
-                if (!is_array($item)) continue;
-                $result[] = [
-                    'channel'   => $item['channel_title'] ?? $item['channel_name'] ?? '',
-                    'title'     => substr(strip_tags($item['title'] ?? $item['content'] ?? ''), 0, 120),
-                    'views'     => (int) ($item['num_views'] ?? $item['view_cnt'] ?? 0),
-                    'likes'     => (int) ($item['num_likes'] ?? $item['likes'] ?? 0),
-                    'comments'  => (int) ($item['num_comments'] ?? $item['comments'] ?? 0),
-                    'date'      => substr($item['date_created'] ?? '', 0, 10),
-                    'sentiment' => $this->normSent($item),
-                ];
-            }
-            return $result;
-        } catch (\Exception $e) { return []; }
-    }
-
-    private function fetchTiktok(string $pid, ?string $sd, ?string $ed): array
-    {
-        try {
-            $raw = $this->client->tiktokTopStatus($pid, $sd, $ed, 'postbylike', 0, 23, 15);
-            $items = is_array($raw) ? $raw : ($raw['data'] ?? []);
-            $result = [];
-            foreach (array_slice($items, 0, 15) as $item) {
-                if (!is_array($item)) continue;
-                $result[] = [
-                    'author'    => $item['author_nickname'] ?? $item['nickname'] ?? '',
-                    'content'   => substr(strip_tags($item['content'] ?? $item['desc'] ?? ''), 0, 150),
-                    'views'     => (int) ($item['play_count'] ?? $item['num_views'] ?? $item['freq'] ?? 0),
-                    'likes'     => (int) ($item['digg_count'] ?? $item['num_likes'] ?? $item['likes'] ?? 0),
-                    'comments'  => (int) ($item['comment_count'] ?? $item['num_comments'] ?? 0),
-                    'shares'    => (int) ($item['share_count'] ?? $item['shares'] ?? 0),
-                    'date'      => substr($item['date_created'] ?? '', 0, 10),
-                    'sentiment' => $this->normSent($item),
-                ];
-            }
-            return $result;
-        } catch (\Exception $e) { return []; }
-    }
-
-    /* ════════════════════════════════════════════════════════
-       HELPERS
-    ════════════════════════════════════════════════════════ */
-
-    private function normSent(array $item): string
-    {
-        $s = strtolower($item['sentiment_str'] ?? $item['sentiment'] ?? $item['class_sentiment'] ?? '');
-        if (str_contains($s, 'pos') || $s === '1') return 'positive';
-        if (str_contains($s, 'neg') || $s === '-1' || $s === '2') return 'negative';
-        return 'neutral';
-    }
-
-    private function parseSentimentAll(mixed $raw): array
-    {
-        $pos = 0; $neg = 0; $neu = 0;
-        if (isset($raw['pos'], $raw['neg'], $raw['net'])) {
-            $pos = (int) $raw['pos'];
-            $neg = (int) $raw['neg'];
-            $neu = (int) $raw['net'];
-        } elseif (isset($raw['bymedia'])) {
-            foreach ($raw['bymedia'] as $media => $d) {
-                $pos += (int) ($d['pos'] ?? 0);
-                $neg += (int) ($d['neg'] ?? 0);
-                $neu += (int) ($d['net'] ?? 0);
-            }
+        // Multiple IDs supplied explicitly.
+        if ($request->has('project_ids')) {
+            $ids = array_filter(array_map('trim', explode(',', $request->query('project_ids'))));
+            if (!empty($ids)) return $this->filterAssigned($ids);
         }
-        return compact('pos', 'neg', 'neu');
+
+        // Single ID supplied.
+        if ($projectId = $request->query('project_id')) {
+            return $this->filterAssigned([$projectId]);
+        }
+
+        // Fall back to ALL assigned projects.
+        return array_column($this->getAssignedProjects(), 'id');
     }
 
-    private function buildDataset(
-        string $pid, ?string $sd, ?string $ed, array $sentiment,
-        array $news, array $twitter, array $fb, array $ig, array $yt, array $tt
-    ): array {
-        $total = ($sentiment['pos'] + $sentiment['neg'] + $sentiment['neu']) ?: 1;
-        $pPos  = round($sentiment['pos'] / $total * 100);
-        $pNeg  = round($sentiment['neg'] / $total * 100);
-        $pNeu  = round($sentiment['neu'] / $total * 100);
+    /**
+     * Return only IDs the current user is actually assigned to.
+     */
+    private function filterAssigned(array $ids): array
+    {
+        $assigned = array_column($this->getAssignedProjects(), 'id');
+        return array_values(array_intersect($ids, $assigned));
+    }
 
+    /**
+     * Load all projects assigned to the authenticated user.
+     */
+    private function getAssignedProjects(): array
+    {
+        $user               = Auth::user();
+        $assignedProjectIds = $user->assignedProjectIds();
+        $rawProjects        = $this->client->listProjects(0, 100);
+
+        return array_values(array_filter(
+            array_values($rawProjects),
+            fn ($p) => in_array($p['id'] ?? null, $assignedProjectIds)
+        ));
+    }
+
+    /**
+     * Build a human-readable text block from the aggregated result.
+     * Used as context for the Gemini AI prompt.
+     */
+    private function buildTextDataset(array $result): string
+    {
+        $s     = $result['summary'];
         $lines = [];
-        $lines[] = "=== DATA SEMUA PLATFORM — PROJECT {$pid} ===";
-        $lines[] = "Periode: {$sd} s/d {$ed}";
-        $lines[] = "Platform yang dicakup: News, X/Twitter, Facebook, Instagram, YouTube, TikTok";
-        $lines[] = "Sentimen Global: Positif {$pPos}% ({$sentiment['pos']}) | Negatif {$pNeg}% ({$sentiment['neg']}) | Netral {$pNeu}% ({$sentiment['neu']})";
-        $lines[] = "Data per platform: News=" . count($news) . ", Twitter=" . count($twitter)
-            . ", Facebook=" . count($fb) . ", Instagram=" . count($ig)
-            . ", YouTube=" . count($yt) . ", TikTok=" . count($tt);
 
-        // News
-        if (!empty($news)) {
-            $lines[] = "\n--- ONLINE NEWS (" . count($news) . " artikel) ---";
-            foreach ($news as $i => $a) {
-                $lines[] = "[N" . ($i+1) . "] \"{$a['title']}\" | {$a['publisher']} | {$a['date']} | {$a['sentiment']}";
-                if ($a['content']) $lines[] = "   \"{$a['content']}\"";
+        $lines[] = '=== AGGREGATED MULTI-PLATFORM DATASET ===';
+        $lines[] = "Projects: {$s['project_count']}";
+        $lines[] = "Total Mentions: {$s['total_mentions']}";
+        $lines[] = "Sentiment — Positive: {$s['pct_positive']}% ({$s['total_positive']}) | "
+                 . "Negative: {$s['pct_negative']}% ({$s['total_negative']}) | "
+                 . "Neutral: {$s['pct_neutral']}% ({$s['total_neutral']})";
+        $lines[] = '';
+
+        // Per-project summary.
+        foreach ($result['projects'] as $proj) {
+            $pid  = $proj['project_id'];
+            $cnt  = implode(', ', array_map(
+                fn ($k, $v) => "{$k}={$v}",
+                array_keys($proj['counts']),
+                array_values($proj['counts'])
+            ));
+            $pos  = $proj['sentiment']['positive'];
+            $neg  = $proj['sentiment']['negative'];
+            $neu  = $proj['sentiment']['neutral'];
+            $lines[] = "[Project {$pid}] Items: {$cnt} | Pos:{$pos} Neg:{$neg} Neu:{$neu}";
+        }
+
+        $lines[] = '';
+
+        // Flat dataset — grouped by platform for readability.
+        $byPlatform = [];
+        foreach ($result['dataset'] as $item) {
+            $byPlatform[$item['platform']][] = $item;
+        }
+
+        foreach ($byPlatform as $platform => $items) {
+            $lines[] = "--- " . strtoupper($platform) . " (" . count($items) . " items) ---";
+            foreach ($items as $i => $item) {
+                $m       = $item['metrics'];
+                $metrics = "likes={$m['likes']} views={$m['views']} comments={$m['comments']} shares={$m['shares']}";
+                $lines[] = "[" . ($i + 1) . "] @{$item['author']} | {$item['date']} | {$item['sentiment']} | {$metrics}";
+                if ($item['content']) $lines[] = "   \"{$item['content']}\"";
+            }
+            $lines[] = '';
+        }
+
+        $lines[] = '=== END DATASET ===';
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * Call Gemini API with a model fallback chain.
+     *
+     * @return array{string, string} [responseText, modelUsed]
+     */
+    private function callGemini(string $apiKey, array $messages, string $system, int $maxTokens): array
+    {
+        // Build Gemini-compatible contents array.
+        $contents   = [];
+        $firstAdded = false;
+
+        foreach ($messages as $msg) {
+            $role    = $msg['role'] === 'assistant' ? 'model' : 'user';
+            $content = $msg['content'];
+
+            // Prepend system prompt to the first user message.
+            if (!$firstAdded && $role === 'user' && $system !== '') {
+                $content    = $system . "\n\n---\n\n" . $content;
+                $firstAdded = true;
+            }
+
+            $contents[] = ['role' => $role, 'parts' => [['text' => $content]]];
+        }
+
+        $models = [
+            'gemini-2.5-flash',
+            'gemini-2.5-pro',
+            'gemini-2.0-flash',
+            'gemini-2.0-flash-lite',
+            'gemini-flash-latest',
+        ];
+
+        foreach ($models as $model) {
+            $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+
+            try {
+                $response = Http::withHeaders(['Content-Type' => 'application/json'])
+                    ->timeout(60)
+                    ->post($endpoint, [
+                        'contents'         => $contents,
+                        'generationConfig' => [
+                            'maxOutputTokens' => $maxTokens,
+                            'temperature'     => 0.7,
+                        ],
+                    ]);
+
+                if (in_array($response->status(), [404, 429])) {
+                    Log::warning("Gemini {$model} skipped", ['status' => $response->status()]);
+                    continue;
+                }
+
+                if ($response->failed()) {
+                    Log::warning("Gemini {$model} failed", ['status' => $response->status()]);
+                    continue;
+                }
+
+                $text = $response->json('candidates.0.content.parts.0.text', '');
+                if ($text !== '') {
+                    Log::info("Gemini OK", ['model' => $model]);
+                    return [$text, $model];
+                }
+
+            } catch (\Throwable $e) {
+                Log::warning("Gemini {$model} exception", ['error' => $e->getMessage()]);
             }
         }
 
-        // Twitter
-        if (!empty($twitter)) {
-            $lines[] = "\n--- X / TWITTER (" . count($twitter) . " tweets) ---";
-        foreach ($twitter as $i => $t) {
-                $lines[] = "[T" . ($i+1) . "] @{$t['author']} | {$t['views']} views, {$t['rt']} RT | {$t['date']} | {$t['sentiment']}";
-                if ($t['content']) $lines[] = "   \"{$t['content']}\"";
-            }
-        }
-
-        // Facebook
-        if (!empty($fb)) {
-            $lines[] = "\n--- FACEBOOK (" . count($fb) . " posts) ---";
-            foreach ($fb as $i => $p) {
-                $lines[] = "[F" . ($i+1) . "] {$p['author']} | {$p['likes']}L {$p['shares']}S {$p['comments']}C | {$p['date']} | {$p['sentiment']}";
-                if ($p['content']) $lines[] = "   \"{$p['content']}\"";
-            }
-        }
-
-        // Instagram
-        if (!empty($ig)) {
-            $lines[] = "\n--- INSTAGRAM (" . count($ig) . " posts) ---";
-            foreach ($ig as $i => $p) {
-                $lines[] = "[I" . ($i+1) . "] @{$p['author']} | {$p['likes']}L {$p['comments']}C | {$p['date']} | {$p['sentiment']}";
-                if ($p['content']) $lines[] = "   \"{$p['content']}\"";
-            }
-        }
-
-        // YouTube
-        if (!empty($yt)) {
-            $lines[] = "\n--- YOUTUBE (" . count($yt) . " videos) ---";
-            foreach ($yt as $i => $v) {
-                $lines[] = "[Y" . ($i+1) . "] {$v['channel']} | \"{$v['title']}\" | {$v['views']}V {$v['likes']}L {$v['comments']}C | {$v['date']} | {$v['sentiment']}";
-            }
-        }
-
-        // TikTok
-        if (!empty($tt)) {
-            $lines[] = "\n--- TIKTOK (" . count($tt) . " posts) ---";
-            foreach ($tt as $i => $p) {
-                $lines[] = "[K" . ($i+1) . "] {$p['author']} | {$p['views']}V {$p['likes']}L {$p['comments']}C {$p['shares']}S | {$p['date']} | {$p['sentiment']}";
-                if ($p['content']) $lines[] = "   \"{$p['content']}\"";
-            }
-        }
-
-        $lines[] = "\n=== AKHIR DATASET ===";
-        return $lines;
+        return ['', ''];
     }
 }
