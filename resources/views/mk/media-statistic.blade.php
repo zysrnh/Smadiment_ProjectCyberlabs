@@ -227,7 +227,31 @@
 .do-panel-link-btn:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
 .do-panel-link-btn i { font-size:12px; pointer-events:none; }
 
-/* Platform picker */
+/* ══ Mention Card (Matching Data Overview) ══ */
+.do-mention-body { display:flex; align-items:stretch; min-height:240px; }
+.do-mention-chart { flex:1; display:flex; align-items:center; justify-content:center; padding:16px; min-width:0; }
+.do-mention-stats { width:170px; flex-shrink:0; border-left:1px solid var(--slate-200); padding:16px 14px; display:flex; flex-direction:column; justify-content:center; gap:12px; }
+
+/* ══ SOV Card (Matching Data Overview) ══ */
+.do-sov-body { display:flex; align-items:stretch; min-height:280px; }
+.do-sov-chart { flex:1; display:flex; align-items:center; justify-content:center; padding:8px 16px; min-width:0; }
+.do-sov-stats { width:190px; flex-shrink:0; border-left:1px solid var(--slate-200); padding:14px 13px; display:flex; flex-direction:column; justify-content:flex-start; gap:0; overflow-y:auto; max-height:280px; }
+.do-sov-stats::-webkit-scrollbar { width:3px; }
+.do-sov-stats::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
+
+/* ══ Shared stat styles ══ */
+.do-mstat-label { font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
+.do-mstat-row { display:flex; flex-direction:column; gap:2px; cursor:pointer; border-radius:var(--radius-sm); padding:6px 7px; margin:0 -7px; transition:background .13s; }
+.do-mstat-row:hover { background:var(--primary-lt); }
+.do-mstat-name { font-size:11px; font-weight:600; color:var(--slate-500); display:flex; align-items:center; gap:5px; }
+.do-mstat-name span { display:inline-block; width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.do-mstat-val-row { display:flex; align-items:baseline; gap:6px; }
+.do-mstat-val { font-size:17px; font-weight:800; letter-spacing:-.5px; color:var(--slate-900); line-height:1.1; }
+.do-mstat-pct { font-size:11px; font-weight:700; line-height:1.1; }
+.do-mstat-divider { height:1px; background:var(--slate-100); margin:8px 0; }
+.do-mstat-total-lbl { font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.4px; }
+.do-mstat-total-val { font-size:20px; font-weight:800; letter-spacing:-1px; color:var(--primary); line-height:1.1; }
+
 .do-plat-picker { position:fixed; z-index:999999; background:#fff; border:1px solid var(--slate-200); border-radius:var(--radius); box-shadow:var(--shadow-lg); padding:5px; min-width:175px; font-family:inherit; display:none; animation:fadeUp .14s ease-out; }
 .do-plat-picker.show { display:block; }
 .do-plat-picker-head { padding:4px 9px 7px; font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--slate-100); margin-bottom:3px; }
@@ -320,18 +344,18 @@
 <div class="row g-3 mb-3">
     <div class="col-md-6 col-xl-3">
         <div class="card h-100 bg-success text-white kpi-card-hover clickable" style="animation:fadeUp .38s ease-out both;"
-             onclick="MSPanel.open('doc', event.clientX, event.clientY)">
+             onclick="MSPanel.openSentiment('pos', event.clientX, event.clientY)">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Mass Media</p>
-                        <h3 class="mb-0 text-white f-w-300" id="valMass">—</h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="subMass">
-                            <i class="ph ph-arrow-square-out me-1"></i>Loading…
+                        <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
+                        <h3 class="mb-0 text-white f-w-300" id="valPos">—</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctPos">
+                            <i class="ph ph-chart-line-up me-1"></i>Loading…
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph ph-newspaper"></i></div>
+                        <div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div>
                     </div>
                 </div>
             </div>
@@ -339,36 +363,37 @@
     </div>
     <div class="col-md-6 col-xl-3">
         <div class="card h-100 bg-warning text-white kpi-card-hover clickable" style="animation:fadeUp .38s ease-out .05s both;"
-             onclick="MSPanel.showPlatPicker(event.clientX, event.clientY)">
+             onclick="MSPanel.openSentiment('neu', event.clientX, event.clientY)">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Social Media</p>
-                        <h3 class="mb-0 text-white f-w-300" id="valSocial">—</h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="subSocial">
-                            <i class="ph ph-arrow-square-out me-1"></i>Loading…
+                        <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
+                        <h3 class="mb-0 text-white f-w-300" id="valNeu">—</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu">
+                            <i class="ph ph-chart-line-up me-1"></i>Loading…
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph ph-users"></i></div>
+                        <div class="kpi-icon-bg"><i class="ph ph-smiley-meh"></i></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-danger text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
+        <div class="card h-100 bg-danger text-white kpi-card-hover clickable" style="animation:fadeUp .38s ease-out .10s both;"
+             onclick="MSPanel.openSentiment('neg', event.clientX, event.clientY)">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
-                        <h3 class="mb-0 text-white f-w-300" id="valTotal">—</h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="subTotal">
-                            <i class="ph ph-chat-dots me-1"></i>Loading…
+                        <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
+                        <h3 class="mb-0 text-white f-w-300" id="valNeg">—</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg">
+                            <i class="ph ph-chart-line-up me-1"></i>Loading…
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph ph-chat-dots"></i></div>
+                        <div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div>
                     </div>
                 </div>
             </div>
@@ -379,16 +404,14 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Periode Data</p>
-                        <h3 class="mb-0 text-white f-w-300" style="font-size:16px;">
-                            {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}
-                        </h3>
+                        <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
+                        <h3 class="mb-0 text-white f-w-300" id="valTotal">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                            <i class="ph ph-calendar-blank me-1"></i>s/d {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+                            <i class="ph ph-calendar-blank me-1"></i>{{ \Carbon\Carbon::parse($startDate)->format('d M') }} – {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph ph-calendar-blank"></i></div>
+                        <div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div>
                     </div>
                 </div>
             </div>
@@ -489,10 +512,10 @@
                 </div>
             </div>
         </div>
-        <div class="ms-sov-body">
-            <div style="position:relative;height:280px;width:100%;">
-                <div id="chSovMass" style="width:100%;height:100%;"></div>
-                <div class="sk-block" style="position:absolute;inset:0;border-radius:6px;" id="skSovMass"></div>
+        <div class="card-body" id="sovBodyMass" style="display:none; padding:16px 18px; flex-direction:column; align-items:center;">
+             <div class="ms-ch ms-ch-280" style="width:100%; max-width:400px; margin:0 auto;">
+                <div id="chSovMass"></div>
+                <div class="sk-block sk-overlay" id="skSovMass"></div>
             </div>
         </div>
     </div>
@@ -519,10 +542,10 @@
                 </div>
             </div>
         </div>
-        <div class="ms-sov-body">
-            <div style="position:relative;height:340px;width:100%;">
-                <div id="chSovPlat" style="width:100%;height:100%;"></div>
-                <div class="sk-block" style="position:absolute;inset:0;border-radius:6px;" id="skSovPlat"></div>
+        <div class="card-body" id="sovBodyPlat" style="display:none; padding:16px 18px; flex-direction:column; align-items:center;">
+            <div class="ms-ch" style="height:340px; width:100%; max-width:500px; margin:0 auto;">
+                <div id="chSovPlat"></div>
+                <div class="sk-block sk-overlay" id="skSovPlat"></div>
             </div>
         </div>
     </div>
@@ -970,21 +993,21 @@ const MSTab = {
 function makeEDoughnut(domId,labels,values,colors,onClickFns,subtitles){
   const total=values.reduce((a,b)=>a+b,0);
   const chart=MSCharts.make(domId);if(!chart)return null;
-  const seriesData=labels.map((label,i)=>({name:label,value:values[i],subtitle:subtitles?subtitles[i]:'',itemStyle:{color:colors[i],borderColor:'#fff',borderWidth:4,borderRadius:5}}));
+  const seriesData=labels.map((label,i)=>({name:label,value:values[i],subtitle:subtitles?subtitles[i]:'',itemStyle:{color:colors[i],borderColor:'#fff',borderWidth:3,borderRadius:5}}));
   chart.setOption({animation:true,animationDuration:800,animationEasing:'cubicOut',backgroundColor:'transparent',
     tooltip:{trigger:'item',backgroundColor:'#1e293b',borderColor:'#334155',borderWidth:1,padding:[9,13],textStyle:{color:'#fff',fontFamily:'inherit',fontSize:12},extraCssText:'border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.3);',
       formatter:params=>{const pct=total>0?((params.value/total)*100):0;const sub=params.data.subtitle?`<br><span style="color:#94a3b8;font-size:11px;">${params.data.subtitle}</span>`:'';const displayName=params.name.replace('Mass Media','Online News').replace('X (Twitter)','X');return`<div style="font-weight:700;font-size:13px;margin-bottom:5px;">${displayName}${sub}</div><div style="display:flex;justify-content:space-between;gap:20px;margin-top:4px;"><span style="color:#94a3b8;">Mentions</span><span style="font-weight:700;">${numFmt(params.value)}</span></div><div style="display:flex;justify-content:space-between;gap:20px;margin-top:3px;"><span style="color:#94a3b8;">Share</span><span style="font-weight:700;color:#34d399;">${pct<1&&pct>0?'<1':pct.toFixed(1)}%</span></div>`;}},
     legend:{show:false},
-    series:[{type:'pie',radius:['36%','54%'],center:['50%','52%'],avoidLabelOverlap:true,minAngle:5,padAngle:2,
+    series:[{type:'pie',radius:['40%','60%'],center:['50%','50%'],avoidLabelOverlap:true,minAngle:15,padAngle:2,
       itemStyle:{borderRadius:5},
       label:{show:true,alignTo:'labelLine',fontFamily:'inherit',fontSize:11,color:'#374151',distanceToLabelLine:5,
-        formatter:params=>{const pc=total>0?(params.value/total)*100:0;const rawName=String(params.name).split('\n')[0].replace(/ \d+(\.\d+)?%$/, '').replace('X (Twitter)','X').replace('Mass Media','Online News');const name=rawName.length>12?rawName.slice(0,11)+'…':rawName;return `{name|${name}}\n{pct|${Math.round(pc)}%}`;},
-        rich:{name:{fontWeight:'700',fontSize:11,color:'#1a202c',lineHeight:16},pct:{fontWeight:'700',fontSize:10,color:'#038047',lineHeight:14,backgroundColor:'#edf7f3',borderRadius:4,padding:[2,4]}}},
-      labelLine:{show:true,length:12,length2:22,smooth:0.4,maxSurfaceAngle:80,lineStyle:{color:'#94a3b8',width:1.6}},
-      labelLayout:{hideOverlap:true,moveOverlap:'shiftY'},
+        formatter:params=>{const pc=total>0?(params.value/total)*100:0;const rawName=String(params.name).split('\n')[0].replace(/ \d+(\.\d+)?%$/, '').replace('X (Twitter)','X').replace('Mass Media','Online News');const name=rawName.length>10?rawName.slice(0,9)+'…':rawName;return `{name|${name}}\n{pct|${Math.round(pc)}%}`;},
+        rich:{name:{fontWeight:'700',fontSize:10,color:'#1a202c',lineHeight:16},pct:{fontWeight:'800',fontSize:10,color:'#038047',lineHeight:14,backgroundColor:'#edf7f3',borderRadius:4,padding:[2,4]}}},
+      labelLine:{show:true,length:12,length2:16,smooth:0.4,lineStyle:{color:'#94a3b8',width:1.4}},
+      labelLayout:{hideOverlap:false,moveOverlap:'shiftY'},
       emphasis:{scale:true,scaleSize:5,itemStyle:{shadowBlur:12,shadowColor:'rgba(0,0,0,.2)'}},data:seriesData}],
     graphic:[
-      {type:'text',left:'center',top:'47%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 22px inherit",textAlign:'center'}},
+      {type:'text',left:'center',top:'47%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 20px inherit",textAlign:'center'}},
       {type:'text',left:'center',top:'55%',z:100,style:{text:'TOTAL',fill:'#94a3b8',font:"700 9px inherit",textAlign:'center',letterSpacing:2}},
     ]});
   if(onClickFns){chart.on('click',params=>{const fn=onClickFns[params.dataIndex];if(typeof fn==='function'){const rect=chart.getDom().getBoundingClientRect();fn(rect.left+rect.width/2,rect.top+rect.height/2);}});}
@@ -995,17 +1018,29 @@ function makeEDoughnut(domId,labels,values,colors,onClickFns,subtitles){
 
 /* ══ LOAD MENTION BY PLATFORM ══ */
 async function loadMentionByPlatform(){
-  if(!MSCfg.pid){ ['valMass','valSocial','valTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<span style="font-size:13px;color:#94a3b8;">—</span>'}); ['subMass','subSocial','subTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<i class="ph ph-warning-circle me-1"></i>No Project';}); ['skBar','skSovMass','skSovPlat','skBarRace'].forEach(hideSk); return; }
+  if(!MSCfg.pid){ ['valPos','valNeu','valNeg','valTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<span style="font-size:13px;color:#94a3b8;">—</span>'}); ['pctPos','pctNeu','pctNeg'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<i class="ph ph-warning-circle me-1"></i>No Project';}); ['skBar','skSovMass','skSovPlat','skBarRace'].forEach(hideSk); return; }
   try{
-    const res=await fetch(`/mk/api/media-statistic/mention-by-platform?project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}`);
-    const d=await res.json();
+    const [resPlat, resSent] = await Promise.all([
+      fetch(`/mk/api/media-statistic/mention-by-platform?project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}`),
+      fetch(`/mk/api/sentiment/totals?project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}`)
+    ]);
+    const d=await resPlat.json();
+    const s=await resSent.json();
+
     if(d.error) throw new Error(d.error);
-    document.getElementById('valMass').textContent   =numFmt(d.mass_total||0);
-    document.getElementById('valSocial').textContent =numFmt(d.social_total||0);
-    document.getElementById('valTotal').textContent  =numFmt(d.grand_total||0);
-    document.getElementById('subMass').innerHTML = '<i class="ph ph-arrow-square-out me-1"></i>Klik untuk lihat detail';
-    document.getElementById('subSocial').innerHTML = '<i class="ph ph-arrow-square-out me-1"></i>Klik untuk lihat detail';
-    document.getElementById('subTotal').innerHTML = '<i class="ph ph-chat-dots me-1"></i>Mass Media + Social Media';
+    
+    /* Update Sentiment KPIs */
+    const sent = s.totals || {pos:0, neu:0, neg:0};
+    const totalSent = (sent.pos||0) + (sent.neu||0) + (sent.neg||0) || 1;
+    document.getElementById('valPos').textContent = numFmt(sent.pos);
+    document.getElementById('valNeu').textContent = numFmt(sent.neu);
+    document.getElementById('valNeg').textContent = numFmt(sent.neg);
+    document.getElementById('valTotal').textContent = numFmt(totalSent);
+    
+    document.getElementById('pctPos').innerHTML = `<i class="ph ph-trend-up me-1"></i>${(sent.pos/totalSent*100).toFixed(1)}% Share`;
+    document.getElementById('pctNeu').innerHTML = `<i class="ph ph-minus me-1"></i>${(sent.neu/totalSent*100).toFixed(1)}% Share`;
+    document.getElementById('pctNeg').innerHTML = `<i class="ph ph-trend-down me-1"></i>${(sent.neg/totalSent*100).toFixed(1)}% Share`;
+
     const platforms=d.platforms||[];
     const pcMap={doc:'pcDoc',twit:'pcTwit',twitter:'pcTwit',fb:'pcFb',facebook:'pcFb',ig:'pcIg',instagram:'pcIg',yt:'pcYt',youtube:'pcYt',tiktok:'pcTt'};
     platforms.forEach(p=>{const key=labelToKey[p.label]||'';const elId=pcMap[key];if(elId){const e=document.getElementById(elId);if(e)e.textContent=numFmt(p.count||0);}});
@@ -1026,10 +1061,16 @@ async function loadMentionByPlatform(){
       }
     } else { document.getElementById('chBar').innerHTML=emptyHtml('Tidak ada data mention'); }
     hideSk('skSovMass');
+    const sovBodyMass = document.getElementById('sovBodyMass');
+    if(sovBodyMass) sovBodyMass.style.display = 'flex';
     makeEDoughnut('chSovMass',['Mass Media','Social Media'],[d.mass_total||0,d.social_total||0],['#0284c7','#10B981'],[(x,y)=>MSPanel.open('doc',x,y),(x,y)=>MSPanel.showPlatPicker(x,y)],null);
+
     hideSk('skSovPlat');
+    const sovBodyPlat = document.getElementById('sovBodyPlat');
+    if(sovBodyPlat) sovBodyPlat.style.display = 'flex';
     const nz=platforms.filter(p=>p.count>0);const pList=nz.length?nz:platforms;
-    makeEDoughnut('chSovPlat',pList.map(p=>p.label),pList.map(p=>p.count||0),pList.map(p=>MSCfg.platColors[p.label]||'#4361EE'),pList.map(p=>{const k=labelToKey[p.label];return k?(x,y)=>MSPanel.open(k,x,y):null;}),pList.map(p=>{const gt=d.grand_total||1;return((p.count||0)/gt*100).toFixed(1)+'%';}));
+    const totalPlat = d.grand_total||1;
+    makeEDoughnut('chSovPlat',pList.map(p=>p.label),pList.map(p=>p.count||0),pList.map(p=>MSCfg.platColors[p.label]||'#4361EE'),pList.map(p=>{const k=labelToKey[p.label];return k?(x,y)=>MSPanel.open(k,x,y):null;}),pList.map(p=>{return((p.count||0)/totalPlat*100).toFixed(1)+'%';}));
     hideSk('skBarRace');
     if(platforms.length){
       const grandTotal=d.grand_total||1;
@@ -1052,8 +1093,8 @@ async function loadMentionByPlatform(){
     } else { const bd=document.getElementById('chBarRace');if(bd)bd.innerHTML=emptyHtml('Tidak ada data mention'); }
   }catch(err){
     console.error('loadMentionByPlatform:',err);
-    ['valMass','valSocial','valTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<span style="font-size:12px;color:#dc2626;font-weight:600;">Error</span>';});
-    ['subMass','subSocial','subTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<i class="ph ph-warning-circle me-1"></i>Gagal memuat';});
+    ['valPos','valNeu','valNeg','valTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<span style="font-size:12px;color:#dc2626;font-weight:600;">Error</span>';});
+    ['pctPos','pctNeu','pctNeg'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<i class="ph ph-warning-circle me-1"></i>Gagal memuat';});
     ['skBar','skSovMass','skSovPlat','skBarRace'].forEach(hideSk);
   }
 }
@@ -1179,6 +1220,7 @@ const MSPanel = (() => {
   const _ns=item=>SENT_MAP[String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim()]||'neu';
   const _$=id=>document.getElementById(id);
   function showPlatPicker(x,y){ const pp=_$('msPlatPicker');if(!pp)return;const pw=180,ph=250,vw=window.innerWidth,vh=window.innerHeight;let left=x+10,top=y-10;if(left+pw>vw-8)left=x-pw-10;if(top+ph>vh-8)top=vh-ph-8;if(top<8)top=8;pp.style.left=left+'px';pp.style.top=top+'px';pp.classList.add('show'); }
+  function openSentiment(type,x,y){ open(type==='pos'?'positive':(type==='neg'?'negative':'neutral'),x,y); }
   function openPlatform(platform){ _$('msPlatPicker')?.classList.remove('show'); open(platform,window.innerWidth-500,80); }
   async function open(platform,x,y){
     _curPlat=platform;const meta=MSCfg.platMeta[platform]||{label:platform,color:'#4361EE'};

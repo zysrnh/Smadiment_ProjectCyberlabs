@@ -797,11 +797,10 @@
                     <div id="sovSkel" style="padding:16px;">
                         <div class="sk-block" style="height:200px;border-radius:6px;"></div>
                     </div>
-                    <div class="do-sov-body" id="sovBody" style="display:none;">
-                        <div class="do-sov-chart">
-                            <div id="chSovPie"></div>
+                    <div class="card-body" id="sovBody" style="display:none; padding:16px 18px; flex-direction:column; align-items:center;">
+                        <div style="width:100%; max-width:450px; height:280px; position:relative; margin:0 auto;">
+                            <div id="chSovPie" style="width:100%; height:100%;"></div>
                         </div>
-                        <!-- Breakdown SOV stats dihilangkan agar % kecil lebih terlihat -->
                     </div>
                 </div>
             </div>
@@ -1597,35 +1596,8 @@ const numFmt = n => {
             const colors=data.map((m,i)=>_resolveColor(m.media)||fallbackColors[i%fallbackColors.length]);
             const primary=getPrimary();
 
-            /* ── Breakdown panel (kanan) ── */
-            const statsEl=$('sovStats');
-            if(statsEl){
-                let h=`<div class="do-mstat-label" style="margin-bottom:8px;">Breakdown</div>`;
-                data.forEach((m,i)=>{
-                    const cnt=m.total||0;
-                    const pct=totalAll>0?(cnt/totalAll*100).toFixed(1)+'%':'';
-                    const color=colors[i];
-                    const key=_resolveKey(m.media)||'all';
-                    h+=`<div class="do-mstat-row" onclick="DOPanel.open('${key}','all')" title="${esc(m.media)}: ${numFmt(cnt)} mentions (${pct})">
-                        <span class="do-mstat-name">
-                            <span style="background:${color};"></span>${esc(m.media)}
-                        </span>
-                        <div class="do-mstat-val-row">
-                            <span class="do-mstat-val">${numFmt(cnt)}</span>
-                            <span class="do-mstat-pct" style="color:${color};">${pct}</span>
-                        </div>
-                    </div>`;
-                });
-                h+=`<div class="do-mstat-divider"></div>
-                    <div class="do-mstat-row" onclick="DOPanel.open('all','all')">
-                        <span class="do-mstat-total-lbl">Total</span>
-                        <span class="do-mstat-total-val">${numFmt(totalAll)}</span>
-                    </div>`;
-                statsEl.innerHTML=h;
-            }
-
-            /* ── Donut chart (kiri) ── */
-            const chart=DOCharts.make('chSovPie'); if(!chart) return;
+            /* Render chart */
+                    const chart=DOCharts.make('chSovPie'); if(!chart) return;
             chart.setOption({
                 animation:true,animationDuration:800,animationEasing:'cubicOut',backgroundColor:'transparent',
                 tooltip:{...EC_TT,trigger:'item',confine:true,formatter:p=>{
@@ -1639,17 +1611,17 @@ const numFmt = n => {
                 series:[{
                     type:'pie',
                     /* Donat lebih besar dan center lebih ke kiri agar label punya ruang */
-                    radius:['34%','54%'],
-                    center:['50%','52%'],
+                    radius:['40%','60%'],
+                    center:['50%','50%'],
                     avoidLabelOverlap:true,
-                    minAngle:5,
+                    minAngle:15,
                     padAngle:2,
-                    itemStyle:{borderColor:'#fff',borderWidth:3,borderRadius:6},
+                    itemStyle:{borderColor:'#fff',borderWidth:2,borderRadius:6},
                     label:{
                         show:true,
                         fontFamily:'inherit',
                         alignTo:'labelLine',
-                        distanceToLabelLine:4,
+                        distanceToLabelLine:5,
                         formatter:p=>{
                             const pc=totalAll>0?(p.value/totalAll*100):0;
                             const shortName=p.name
@@ -1666,8 +1638,8 @@ const numFmt = n => {
                     },
                     labelLine:{
                         show:true,
-                        length:15,
-                        length2:25,
+                        length:12,
+                        length2:16,
                         smooth:0.4,
                         lineStyle:{
                             color:'#CBD5E1',
