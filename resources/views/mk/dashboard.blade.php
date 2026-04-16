@@ -1820,8 +1820,7 @@ dataLabels: {
                         onmouseover="this.style.filter='brightness(1.12)'"
                         onmouseout="this.style.filter=''">
                         <i class="ph ph-arrow-circle-down" style="font-size:13px;"></i>
-                        Muat ${Math.min(remaining, PAGE).toLocaleString()} lagi
-                        <span style="opacity:.7;font-weight:500;">(sisa ${remaining.toLocaleString()})</span>
+                        Muat lagi
                     </button>
                 </div>`;
             }
