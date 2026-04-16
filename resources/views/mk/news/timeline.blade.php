@@ -234,68 +234,72 @@ body.is-exporting .exp-icon {
 <div id="pageExportArea">
 
 {{-- KPI Cards with dot number badge --}}
-<div class="row mb-3">
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#4680ff;animation:fadeUp .38s ease-out both;">
-            <div class="card-body">
-                <span class="kpi-dot-num"><span class="kpi-pulse-dot"></span><span id="dotTotalVal">–</span></span>
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiTotal">—</h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub"><i class="ph ph-chart-line-up me-1"></i>Loading...</p>
+    <div class="row mb-3">
+        {{-- 1. Positive --}}
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 text-white kpi-card-hover" style="background:#06B6D4;animation:fadeUp .38s ease-out both;">
+                <div class="card-body">
+                    <span class="kpi-dot-num"><span class="kpi-pulse-dot"></span><span id="dotPosVal">–</span></span>
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiPos">—</h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPosSub"><i class="ph ph-chart-line-up me-1"></i>Loading...</p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div>
                     </div>
-                    <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-newspaper"></i></div></div>
+                </div>
+            </div>
+        </div>
+        {{-- 2. Neutral --}}
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 text-white kpi-card-hover" style="background:#10B981;animation:fadeUp .38s ease-out .05s both;">
+                <div class="card-body">
+                    <span class="kpi-dot-num"><span class="kpi-pulse-dot"></span><span id="dotNeuVal">–</span></span>
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiNeu">—</h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNeuSub"><i class="ph ph-chart-line-up me-1"></i>Loading...</p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-meh"></i></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{-- 3. Negative --}}
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 text-white kpi-card-hover" style="background:#F59E0B;animation:fadeUp .38s ease-out .10s both;">
+                <div class="card-body">
+                    <span class="kpi-dot-num"><span class="kpi-pulse-dot"></span><span id="dotNegVal">–</span></span>
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiNeg">—</h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNegSub"><i class="ph ph-smiley-sad"></i>Loading...</p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{-- 4. Total --}}
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 text-white kpi-card-hover" style="background:#038047;animation:fadeUp .38s ease-out .15s both;">
+                <div class="card-body">
+                    <span class="kpi-dot-num"><span class="kpi-pulse-dot"></span><span id="dotTotalVal">–</span></span>
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiTotal">—</h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub"><i class="ph ph-chart-bar me-1"></i>Loading...</p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#10B981;animation:fadeUp .38s ease-out .05s both;">
-            <div class="card-body">
-                <span class="kpi-dot-num"><span class="kpi-pulse-dot"></span><span id="dotPosVal">–</span></span>
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiPos">—</h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPosSub"><i class="ph ph-chart-line-up me-1"></i>Loading...</p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#94A3B8;animation:fadeUp .38s ease-out .10s both;">
-            <div class="card-body">
-                <span class="kpi-dot-num"><span class="kpi-pulse-dot"></span><span id="dotNeuVal">–</span></span>
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiNeu">—</h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNeuSub"><i class="ph ph-chart-line-up me-1"></i>Loading...</p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-minus-circle"></i></div></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#EF4444;animation:fadeUp .38s ease-out .15s both;">
-            <div class="card-body">
-                <span class="kpi-dot-num"><span class="kpi-pulse-dot"></span><span id="dotNegVal">–</span></span>
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiNeg">—</h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNegSub"><i class="ph ph-chart-line-up me-1"></i>Loading...</p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 {{-- Page Export Toolbar --}}
 <div class="page-export-bar" data-html2canvas-ignore="true">
@@ -543,7 +547,9 @@ const MTData={
         Store.all=PLAT_KEYS.reduce((acc,k)=>acc.concat(Store[k]),[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
         
         this._renderList();
+        this._updateKPIs();
         if(_$('listBadge')) _$('listBadge').textContent='';
+        if(ld) ld.classList.add('hidden');
     },
     _updateKPIsFromTrend(raw){
         let total = 0;

@@ -544,14 +544,14 @@
 {{-- ══ KPI Cards ══ --}}
 <div class="row mb-3">
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#4680ff;animation:fadeUp .38s ease-out both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#06B6D4;animation:fadeUp .38s ease-out both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p>
                         <h3 class="mb-0 text-white f-w-300" id="kpiTopics">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopicsSub">
-                            <i class="ph ph-chart-line-up me-1"></i>—
+                            <i class="ph ph-squares-four me-1"></i>Sum weight
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -569,7 +569,7 @@
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Articles</p>
                         <h3 class="mb-0 text-white f-w-300" id="kpiArts">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiArtsSub">
-                            <i class="ph ph-newspaper me-1"></i>—
+                            <i class="ph ph-newspaper me-1"></i>Loading...
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -587,7 +587,7 @@
                         <p class="mb-1 text-white text-opacity-75 f-12">Top Topic</p>
                         <h3 class="mb-0 text-white f-w-300 f-16" id="kpiTop" style="word-break:break-word;line-height:1.2;">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopSub">
-                            <i class="ph ph-trophy me-1"></i>—
+                            <i class="ph ph-trophy me-1"></i>Most mentioned
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -598,14 +598,14 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#8B5CF6;animation:fadeUp .38s ease-out .15s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#038047;animation:fadeUp .38s ease-out .15s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Publishers Found</p>
                         <h3 class="mb-0 text-white f-w-300" id="kpiPubs">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPubsSub">
-                            <i class="ph ph-globe me-1"></i>—
+                            <i class="ph ph-globe me-1"></i>Unique online publishers
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">

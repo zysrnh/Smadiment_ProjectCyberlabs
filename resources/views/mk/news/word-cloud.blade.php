@@ -138,7 +138,7 @@
    {{-- ══ KPI Cards ══ --}}
 <div class="row mb-3">
   <div class="col-md-4">
-    <div class="card h-100 text-white fade-up fade-up-d1" style="background:#4680ff;">
+    <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d1" style="background:#06B6D4;">
       <div class="card-body">
         <div class="d-flex align-items-center">
           <div class="flex-grow-1">
@@ -152,7 +152,7 @@
     </div>
   </div>
   <div class="col-md-4">
-    <div class="card h-100 text-white fade-up fade-up-d2" style="background:#10B981;">
+    <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d2" style="background:#10B981;">
       <div class="card-body">
         <div class="d-flex align-items-center">
           <div class="flex-grow-1">
@@ -166,7 +166,7 @@
     </div>
   </div>
   <div class="col-md-4">
-    <div class="card h-100 text-white fade-up fade-up-d3" style="background:#F59E0B;">
+    <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d3" style="background:#F59E0B;">
       <div class="card-body">
         <div class="d-flex align-items-center">
           <div class="flex-grow-1">

@@ -135,51 +135,57 @@
   {{-- ════ PAGE EXPORT WRAPPER ════ --}}
   <div id="pageExportArea">
 
- {{-- ══ KPI Cards ══ --}}
-<div class="row mb-3">
-  <div class="col-md-4">
-    <div class="card h-100 text-white fade-up fade-up-d1" style="background:#4680ff;">
-      <div class="card-body">
-        <div class="d-flex align-items-center">
-          <div class="flex-grow-1">
-            <p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p>
-            <h3 class="mb-0 text-white f-w-300" id="statTotalTopics">—</h3>
-            <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph ph-circle-dashed me-1"></i>Unique topics</p>
+  {{-- ══ KPI Cards ══ --}}
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out both;">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+              <p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p>
+              <h3 class="mb-0 text-white f-w-300" id="statTotalTopics">—</h3>
+              <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph ph-hash me-1"></i>Unique topics</p>
+            </div>
+            <div class="flex-shrink-0 ms-3">
+              <div class="kpi-icon-bg"><i class="ph ph-hash"></i></div>
+            </div>
           </div>
-          <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-hash"></i></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+              <p class="mb-1 text-white text-opacity-75 f-12">Top Topic</p>
+              <h3 class="mb-0 text-white f-w-300" id="statTopTopic" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px;">—</h3>
+              <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph ph-trend-up me-1"></i>Most mentioned</p>
+            </div>
+            <div class="flex-shrink-0 ms-3">
+              <div class="kpi-icon-bg"><i class="ph ph-star"></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+              <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
+              <h3 class="mb-0 text-white f-w-300" id="statTotalMentions">—</h3>
+              <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph ph-chat-dots me-1"></i>Across all topics</p>
+            </div>
+            <div class="flex-shrink-0 ms-3">
+              <div class="kpi-icon-bg"><i class="ph ph-activity"></i></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-  <div class="col-md-4">
-    <div class="card h-100 text-white fade-up fade-up-d2" style="background:#10B981;">
-      <div class="card-body">
-        <div class="d-flex align-items-center">
-          <div class="flex-grow-1">
-            <p class="mb-1 text-white text-opacity-75 f-12">Top Topic</p>
-            <h3 class="mb-0 text-white f-w-300" id="statTopTopic" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px;">—</h3>
-            <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph ph-trend-up me-1"></i>Most mentioned</p>
-          </div>
-          <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-star"></i></div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="card h-100 text-white fade-up fade-up-d3" style="background:#F59E0B;">
-      <div class="card-body">
-        <div class="d-flex align-items-center">
-          <div class="flex-grow-1">
-            <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
-            <h3 class="mb-0 text-white f-w-300" id="statTotalMentions">—</h3>
-            <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph ph-chat-dots me-1"></i>Across all topics</p>
-          </div>
-          <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-activity"></i></div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
   {{-- ══ Page Export Toolbar ══ --}}
   <div class="page-export-bar" data-html2canvas-ignore="true">
