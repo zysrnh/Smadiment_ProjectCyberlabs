@@ -688,44 +688,53 @@
                 return false;
             };
 
-            const BATCH = 2000;
-            let allMatched = [], start = 0, maxBatches = 8;
+            // First, try fetching with publisher filter appended (server may support it)
+            const BATCH = 500;
+            let allMatched = [], start = 0, maxBatches = 20;
 
             while (maxBatches-- > 0) {
                 let batch = [];
                 try {
                     const res = await fetch(
-                        `/mk/api/news/articles?project_id=${TpCfg.pid}&start_date=${TpCfg.sd}&end_date=${TpCfg.ed}&rows=${BATCH}&start=${start}&media=doc`
+                        `/mk/api/news/mentions?project_id=${TpCfg.pid}&start_date=${TpCfg.sd}&end_date=${TpCfg.ed}&rows=${BATCH}&start=${start}&publisher=${encodeURIComponent(cleanDomain)}`
                     );
                     if (!res.ok) break;
                     const data = await res.json();
                     batch = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
                 } catch (e) { break; }
-                
                 if (!batch.length) break;
-                
                 const news = batch.filter(m => !isSocial(m));
                 const matched = news.filter(_matchesDomain);
-                newMatched = newMatched.concat(matched);
-                
-                start += batch.length;
-                
-                if (batch.length < 500) break; // server has no more data
-                if (newMatched.length >= 60) break; // we have enough articles for this click
+                allMatched = allMatched.concat(matched);
+                start += BATCH;
+                if (batch.length < BATCH) break;
+                // If server doesn't support publisher filter, matched would be much less than batch
+                // If we got a decent ratio, keep going; otherwise fall back to generic fetch
+                if (news.length > 0 && matched.length === 0 && start === BATCH) break; // server ignored filter
             }
 
-            _fetchOffsets[domain] = start;
-            
-            if (resume) {
-                const key = `${TpCfg.pid}_${domain}_${TpCfg.sd}_${TpCfg.ed}`;
-                const existing = _artCache[key] || [];
-                const existIds = new Set(existing.map(a => a.id || a.url));
-                const uniqueNew = newMatched.filter(a => !existIds.has(a.id || a.url));
-                _artCache[key] = existing.concat(uniqueNew);
-                return _artCache[key];
-            } else {
-                return newMatched;
+            // If publisher-filtered fetch worked, return
+            if (allMatched.length > 0) return allMatched;
+
+            // Fallback: generic fetch without publisher filter, scan all
+            allMatched = []; start = 0; maxBatches = 16;
+            while (maxBatches-- > 0) {
+                let batch = [];
+                try {
+                    const res = await fetch(
+                        `/mk/api/news/mentions?project_id=${TpCfg.pid}&start_date=${TpCfg.sd}&end_date=${TpCfg.ed}&rows=${BATCH}&start=${start}`
+                    );
+                    if (!res.ok) break;
+                    const data = await res.json();
+                    batch = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
+                } catch (e) { break; }
+                if (!batch.length) break;
+                const news = batch.filter(m => !isSocial(m));
+                allMatched = allMatched.concat(news.filter(_matchesDomain));
+                start += BATCH;
+                if (batch.length < BATCH) break;
             }
+            return allMatched;
         }
 
 
@@ -771,35 +780,19 @@
                 try {
                     const cacheKey = `${TpCfg.pid}___others___${TpCfg.sd}_${TpCfg.ed}`;
                     if (!_artCache[cacheKey]) {
-                        const topDomains = [...restData].sort((a, b) => (b.count || 0) - (a.count || 0)).slice(0, 40).map(p => (p.domain||'').replace(/^www\./,'').toLowerCase().trim());
-                        
-                        try {
-                            const res = await fetch(`/mk/api/news/articles?project_id=${TpCfg.pid}&start_date=${TpCfg.sd}&end_date=${TpCfg.ed}&rows=5000&start=0&media=doc&scan=5000`);
-                            if (res.ok) {
-                                const data = await res.json();
-                                let batch = Array.isArray(data.data) ? data.data : [];
-                                
-                                // inline isSocial filter
-                                const news = batch.filter(m => {
-                                    const mt = String(m.media_type || '').toLowerCase();
-                                    const mtid = String(m.media_type_id || '').toLowerCase();
-                                    if (['twit','twitter','fb','facebook','ig','instagram','yt','youtube','tiktok'].includes(mt)) return false;
-                                    if (['2','3','4','5','6'].includes(mtid)) return false;
-                                    return true;
-                                });
-                                
-                                const allMatched = news.filter(a => {
-                                    const pub = (a.publisher || a.hostname || a.source_name || '').replace(/^www\./,'').toLowerCase().trim();
-                                    return topDomains.some(td => pub === td || pub.includes(td));
-                                });
-                                
-                                _artCache[cacheKey] = allMatched;
-                            } else {
-                                _artCache[cacheKey] = [];
-                            }
-                        } catch (e) {
-                            _artCache[cacheKey] = [];
-                        }
+                        // Fetch articles for top-N others in parallel (limit to avoid too many requests)
+                        const top = [...restData].sort((a, b) => (b.count || 0) - (a.count || 0)).slice(0, 30);
+                        const results = await Promise.allSettled(
+                            top.map(p => fetchArticles(p.domain).catch(() => []))
+                        );
+                        const all = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+                        // Sort by date desc
+                        all.sort((a, b) => {
+                            const da = new Date(a.date_created || a.publish_date || 0);
+                            const db = new Date(b.date_created || b.publish_date || 0);
+                            return db - da;
+                        });
+                        _artCache[cacheKey] = all;
                     }
                     this._curItems = _artCache[cacheKey];
                     this._render(list, this._curItems, '__others__');
@@ -852,27 +845,8 @@
                 if (!showAll && items.length > SHOW) {
                     const btnWrap = document.createElement('div');
                     btnWrap.style.cssText = 'padding:16px;text-align:center;border-top:1px dashed rgba(0,0,0,.08);background:#f8fafc;';
-                    btnWrap.innerHTML = `<button onclick="TpPanel._showAllArticles()" style="background:#038047;color:#fff;border:none;padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(3,128,71,.2);" onmouseover="this.style.background='#026136';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#038047';this.style.transform='none'">Tampilkan Semua yang Dimuat (${items.length})</button>`;
+                    btnWrap.innerHTML = `<button onclick="TpPanel._showAllArticles()" style="background:#038047;color:#fff;border:none;padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(3,128,71,.2);" onmouseover="this.style.background='#026136';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#038047';this.style.transform='none'">Muat Lebih Banyak</button>`;
                     list.appendChild(btnWrap);
-                } else if (showAll && !isOthers) {
-                    const btnWrap = document.createElement('div');
-                    btnWrap.style.cssText = 'padding:16px;text-align:center;border-top:1px dashed rgba(0,0,0,.08);background:#f8fafc;';
-                    btnWrap.innerHTML = `<button id="btnFetchServer" onclick="TpPanel._fetchMoreServer()" style="background:var(--primary-lt);color:var(--primary);border:1px solid rgba(0,0,0,0.05);padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;" onmouseover="this.style.background='var(--primary)';this.style.color='#fff'" onmouseout="this.style.background='var(--primary-lt)';this.style.color='var(--primary)'"><i class="ph ph-magnifying-glass-plus" style="font-size:16px;"></i> Cari Lebih Banyak di Server</button>`;
-                    list.appendChild(btnWrap);
-                }
-            },
-
-            async _fetchMoreServer() {
-                const btn = document.getElementById('btnFetchServer');
-                if(btn){ btn.disabled = true; btn.innerHTML = '<div class="do-panel-spinner" style="width:14px;height:14px;border-width:2px;border-top-color:currentColor;"></div> <span style="transform:translateY(1px);">Pencarian Mendalam...</span>'; }
-                try {
-                    await fetchArticles(this._curDomain, true);
-                    const key = `${TpCfg.pid}_${this._curDomain}_${TpCfg.sd}_${TpCfg.ed}`;
-                    this._curItems = _artCache[key] || [];
-                    this._render(_$('tpPanelList'), this._curItems, this._curDomain, true);
-                } catch(e) {
-                    console.error(e);
-                    if(btn) { btn.disabled = false; btn.innerHTML = '<i class="ph ph-warning-circle"></i> Gagal, Coba Lagi'; }
                 }
             },
 
