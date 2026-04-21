@@ -798,20 +798,21 @@
                                         </div>
                                         <div class="col-6 col-lg-3">
                                             <div class="stat-chip clickable p-2 rounded-2 text-center"
-                                                 style="background:var(--slate-50);"
-                                                 onclick="DashPanel.open('all','neu','{{ $id }}')">
-                                                <small class="text-muted d-block mb-1 f-10 fw-semibold text-uppercase">Neutral</small>
-                                                <h6 class="mb-0 text-muted">{{ number_format($neu) }}</h6>
-                                            </div>
-                                        </div>
-                                        <div class="col-6 col-lg-3">
-                                            <div class="stat-chip clickable p-2 rounded-2 text-center"
                                                  style="background:var(--red-light);"
                                                  onclick="DashPanel.open('all','neg','{{ $id }}')">
                                                 <small class="text-muted d-block mb-1 f-10 fw-semibold text-uppercase">Negative</small>
                                                 <h6 class="mb-0 text-danger">{{ number_format($neg) }}</h6>
                                             </div>
                                         </div>
+                                        <div class="col-6 col-lg-3">
+                                            <div class="stat-chip clickable p-2 rounded-2 text-center"
+                                                 style="background:var(--slate-50);"
+                                                 onclick="DashPanel.open('all','neu','{{ $id }}')">
+                                                <small class="text-muted d-block mb-1 f-10 fw-semibold text-uppercase">Neutral</small>
+                                                <h6 class="mb-0 text-muted">{{ number_format($neu) }}</h6>
+                                            </div>
+                                        </div>
+                                        
                                     </div>
 
                                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -892,8 +893,8 @@
             <div class="do-panel-tabs">
                 <button class="do-panel-tab active" data-s="all" onclick="DashPanel.filterSent('all')">Semua</button>
                  <button class="do-panel-tab pos"    data-s="pos" onclick="DashPanel.filterSent('pos')">Pos</button>
-                   <button class="do-panel-tab neu"    data-s="neu" onclick="DashPanel.filterSent('neu')">Neu</button>
-                <button class="do-panel-tab neg"    data-s="neg" onclick="DashPanel.filterSent('neg')">Neg</button>
+                 <button class="do-panel-tab neg"    data-s="neg" onclick="DashPanel.filterSent('neg')">Neg</button>
+                 <button class="do-panel-tab neu"    data-s="neu" onclick="DashPanel.filterSent('neu')">Neu</button>
                
               
             </div>

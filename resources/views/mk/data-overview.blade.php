@@ -896,8 +896,8 @@
             <div class="do-panel-tabs">
                 <button class="do-panel-tab active" data-s="all" onclick="DOPanel.filterSent('all')">Semua</button>
               <button class="do-panel-tab pos"    data-s="pos" onclick="DOPanel.filterSent('pos')">Pos</button>
-                              <button class="do-panel-tab neu"    data-s="neu" onclick="DOPanel.filterSent('neu')">Neu</button>
-                <button class="do-panel-tab neg"    data-s="neg" onclick="DOPanel.filterSent('neg')">Neg</button>
+              <button class="do-panel-tab neg"    data-s="neg" onclick="DOPanel.filterSent('neg')">Neg</button>
+              <button class="do-panel-tab neu"    data-s="neu" onclick="DOPanel.filterSent('neu')">Neu</button>
             </div>
         </div>
         <div class="do-panel-list" id="doPanelList"></div>
@@ -1461,8 +1461,8 @@ const numFmt = n => {
                 series:[
                     {name:'Total',data:d.values||[]},
                     {name:'Positive',data:d.sentiment?.positive||[]},
-                    {name:'Neutral',data:d.sentiment?.neutral||[]},
                     {name:'Negative',data:d.sentiment?.negative||[]}
+                    {name:'Neutral',data:d.sentiment?.neutral||[]},
                 ],
                 colors:['#4680ff','#10B981','#94A3B8','#EF4444'],
                 stroke:{curve:'smooth',width:2.5},
