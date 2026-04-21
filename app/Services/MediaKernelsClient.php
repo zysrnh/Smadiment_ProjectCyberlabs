@@ -2324,7 +2324,7 @@ public function tiktokTopStatusAll(
         return is_array($json) ? $json : [];
 
     } catch (\Exception $e) {
-        Log::error('tiktokTopStatusAll error', ['error' => $e->getMessage()]);
+           Log::error('tiktokTopStatusAll error', ['error' => $e->getMessage()]);
         return [];
     }
 }

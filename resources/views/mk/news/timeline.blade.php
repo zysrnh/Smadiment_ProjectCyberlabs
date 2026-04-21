@@ -237,7 +237,7 @@ body.is-exporting .exp-icon {
     <div class="row mb-3">
         {{-- 1. Positive --}}
         <div class="col-md-6 col-xl-3">
-            <div class="card h-100 text-white kpi-card-hover" style="background:#06B6D4;animation:fadeUp .38s ease-out both;">
+            <div class="card h-100 text-white kpi-card-hover" style="cursor:pointer;background:#06B6D4;animation:fadeUp .38s ease-out both;" onclick="if(typeof Store!=='undefined' && Store.all.length){MTPanelNew.open(Store.all,'all');MTPanelNew.filterSent('pos');}">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
@@ -250,24 +250,10 @@ body.is-exporting .exp-icon {
                 </div>
             </div>
         </div>
-        {{-- 2. Neutral --}}
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100 text-white kpi-card-hover" style="background:#4CAF50;animation:fadeUp .38s ease-out .05s both;">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
-                            <h3 class="mb-0 text-white f-w-300" id="kpiNeu">—</h3>
-                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNeuSub"><i class="ph ph-chart-line-up me-1"></i>Loading...</p>
-                        </div>
-                        <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-meh"></i></div></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        
         {{-- 3. Negative --}}
         <div class="col-md-6 col-xl-3">
-            <div class="card h-100 text-white kpi-card-hover" style="background:#F59E0B;animation:fadeUp .38s ease-out .10s both;">
+            <div class="card h-100 text-white kpi-card-hover" style="cursor:pointer;background:#F59E0B;animation:fadeUp .38s ease-out .10s both;" onclick="if(typeof Store!=='undefined' && Store.all.length){MTPanelNew.open(Store.all,'all');MTPanelNew.filterSent('neg');}">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
@@ -280,9 +266,24 @@ body.is-exporting .exp-icon {
                 </div>
             </div>
         </div>
+        {{-- 2. Neutral --}}
+        <div class="col-md-6 col-xl-3">
+            <div class="card h-100 text-white kpi-card-hover" style="cursor:pointer;background:#4CAF50;animation:fadeUp .38s ease-out .05s both;" onclick="if(typeof Store!=='undefined' && Store.all.length){MTPanelNew.open(Store.all,'all');MTPanelNew.filterSent('neu');}">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiNeu">—</h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNeuSub"><i class="ph ph-chart-line-up me-1"></i>Loading...</p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-meh"></i></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
         {{-- 4. Total --}}
         <div class="col-md-6 col-xl-3">
-            <div class="card h-100 text-white kpi-card-hover" style="background:#038047;animation:fadeUp .38s ease-out .15s both;">
+            <div class="card h-100 text-white kpi-card-hover" style="cursor:pointer;background:#038047;animation:fadeUp .38s ease-out .15s both;" onclick="if(typeof Store!=='undefined' && Store.all.length){MTPanelNew.open(Store.all,'all');}">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
@@ -409,8 +410,8 @@ body.is-exporting .exp-icon {
         <div class="do-panel-meta"><i class="ph ph-magnifying-glass" style="font-size:11px;"></i><span id="mtPanelMeta">–</span></div>
         <div class="do-panel-tabs">
             <button class="do-panel-tab active" data-s="all" onclick="MTPanelNew.filterSent('all')">Semua</button>
-            <button class="do-panel-tab neg"    data-s="neg" onclick="MTPanelNew.filterSent('neg')">Neg</button>
             <button class="do-panel-tab pos"    data-s="pos" onclick="MTPanelNew.filterSent('pos')">Pos</button>
+            <button class="do-panel-tab neg"    data-s="neg" onclick="MTPanelNew.filterSent('neg')">Neg</button>
             <button class="do-panel-tab neu"    data-s="neu" onclick="MTPanelNew.filterSent('neu')">Neu</button>
         </div>
     </div>
@@ -563,8 +564,8 @@ const MTData={
             total += pSum;
         });
         
-        _$('kpiTotal').textContent = numF(total);
-        _$('dotTotalVal').textContent = numK(total);
+        if(_$('kpiTotal')) _$('kpiTotal').textContent = numF(total);
+        if(_$('dotTotalVal')) _$('dotTotalVal').textContent = numK(total);
         
         Object.keys(platTotals).forEach(k => this._updateChip(k, platTotals[k]));
         this._updateChip('all', total);
@@ -575,10 +576,14 @@ const MTData={
         const all=Store.all,pos=all.filter(m=>m.sentiment==='pos').length,neg=all.filter(m=>m.sentiment==='neg').length,neu=all.length-pos-neg;
         const pct=v=>all.length>0?((v/all.length)*100).toFixed(1):'0.0';
         const platCount=PLAT_KEYS.map(k=>Store[k].length).filter(v=>v>0).length;
-        _$('kpiTotal').textContent=numF(all.length);_$('kpiTotalSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+platCount+' platforms';
-        _$('kpiPos').textContent=numF(pos);_$('kpiPosSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(pos)+'% of total';
-        _$('kpiNeu').textContent=numF(neu);_$('kpiNeuSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(neu)+'% of total';
-        _$('kpiNeg').textContent=numF(neg);_$('kpiNegSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(neg)+'% of total';
+        if(_$('kpiTotal')) _$('kpiTotal').textContent=numF(all.length);
+        if(_$('kpiTotalSub')) _$('kpiTotalSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+platCount+' platforms';
+        if(_$('kpiPos')) _$('kpiPos').textContent=numF(pos);
+        if(_$('kpiPosSub')) _$('kpiPosSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(pos)+'% of total';
+        if(_$('kpiNeu')) _$('kpiNeu').textContent=numF(neu);
+        if(_$('kpiNeuSub')) _$('kpiNeuSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(neu)+'% of total';
+        if(_$('kpiNeg')) _$('kpiNeg').textContent=numF(neg);
+        if(_$('kpiNegSub')) _$('kpiNegSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(neg)+'% of total';
     },
     _renderTrend(){
         const el=_$('trendChart'),ld=_$('trendLoading');if(!el)return;

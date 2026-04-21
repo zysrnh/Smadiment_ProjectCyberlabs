@@ -110,6 +110,34 @@
         .stat-chip.clickable:hover  { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
         .stat-chip.clickable:active { transform: translateY(0); }
 
+        /* ══ KPI Hover ══ */
+        .kpi-card-hover {
+            will-change: transform, box-shadow;
+            transition: transform .25s cubic-bezier(.34,1.56,.64,1) !important,
+                        box-shadow .25s ease !important, filter .25s ease !important;
+            cursor: pointer; position: relative !important; overflow: hidden !important;
+        }
+        .kpi-card-hover::before {
+            content: ''; position: absolute; top: 0; bottom: 0; left: -100%;
+            width: 60%; background: linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
+            pointer-events: none; z-index: 1; transition: none;
+        }
+        @keyframes kpiShimmer { 100% { left: 150%; } }
+        @keyframes kpiIconBounce {
+            0%   { transform: scale(1); }
+            50%  { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+        .kpi-card-hover:hover {
+            transform: translateY(-6px) scale(1.025) !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,.25) !important;
+            filter: brightness(1.07) !important;
+        }
+        .kpi-card-hover:hover::before { animation: kpiShimmer .6s ease forwards; }
+        .kpi-card-hover:hover .kpi-icon-bg { background: rgba(255,255,255,.35) !important; transition: background .2s ease !important; }
+        .kpi-card-hover:hover .kpi-icon-bg i { animation: kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both !important; display: inline-block !important; }
+        .kpi-card-hover:active { transform: translateY(-2px) scale(1.01) !important; transition-duration: .08s !important; }
+
         /* ══ Chart Area ══ */
         .chart-container { height: 280px; position: relative; }
         .chart-loading {
@@ -505,10 +533,13 @@
             projects : {{ $projectCount }},
             mentions : {{ $totalMentions }},
             positive : {{ $totalPositive }},
+            neutral  : {{ $totalNeutral }},
             negative : {{ $totalNegative }},
             posPct   : '{{ $totalMentions > 0 ? round($totalPositive / $totalMentions * 100, 1) : 0 }}% of total',
             negPct   : '{{ $totalMentions > 0 ? round($totalNegative / $totalMentions * 100, 1) : 0 }}% of total',
+            neuPct   : '{{ $totalMentions > 0 ? round($totalNeutral / $totalMentions * 100, 1) : 0 }}% of total',
             hasData  : {{ $totalMentions > 0 ? 'true' : 'false' }},
+            allPids  : @json(collect($projects)->pluck('id'))
         };
     </script>
 
@@ -519,7 +550,7 @@
     <div class="row g-3 mb-3">
         {{-- 1. Positive --}}
         <div class="col-md-6 col-xl-3">
-            <div class="card text-white fade-up fade-up-d1" style="background:#06B6D4;">
+            <div class="card text-white fade-up fade-up-d1 kpi-card-hover" style="background:#06B6D4;" onclick="DashPanel.open('all','pos','ALL_PROJECTS')">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
@@ -537,29 +568,9 @@
             </div>
         </div>
 
-        {{-- 2. Total Mentions --}}
+                {{-- 3. Negative --}}
         <div class="col-md-6 col-xl-3">
-            <div class="card text-white fade-up fade-up-d2" style="background:#4CAF50;">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
-                            <h3 class="mb-0 text-white f-w-300" id="kpiMentions" style="transition:opacity .3s ease;">—</h3>
-                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                                <i class="ph ph-activity me-1"></i>Across all projects
-                            </p>
-                        </div>
-                        <div class="flex-shrink-0 ms-3">
-                            <div class="kpi-icon-bg"><i class="ph ph-activity"></i></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- 3. Negative --}}
-        <div class="col-md-6 col-xl-3">
-            <div class="card text-white fade-up fade-up-d3" style="background:#F59E0B;">
+            <div class="card text-white fade-up fade-up-d3 kpi-card-hover" style="background:#F59E0B;" onclick="DashPanel.open('all','neg','ALL_PROJECTS')">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
@@ -577,20 +588,42 @@
             </div>
         </div>
 
-        {{-- 4. My Projects --}}
+
+        {{-- 2. Neutral --}}
         <div class="col-md-6 col-xl-3">
-            <div class="card text-white fade-up fade-up-d4" style="background:#038047;">
+            <div class="card text-white fade-up fade-up-d2 kpi-card-hover" style="background:#4CAF50;" onclick="DashPanel.open('all','neu','ALL_PROJECTS')">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
-                            <p class="mb-1 text-white text-opacity-75 f-12">My Projects</p>
-                            <h3 class="mb-0 text-white f-w-300" id="kpiProjects" style="transition:opacity .3s ease;">—</h3>
-                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                                <i class="ph ph-folder-open me-1"></i>Active monitoring
+                            <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiNeutral" style="transition:opacity .3s ease;">—</h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNeutralSub">
+                                <i class="ph ph-smiley-meh me-1"></i>0% of total
                             </p>
                         </div>
                         <div class="flex-shrink-0 ms-3">
-                            <div class="kpi-icon-bg"><i class="ph ph-folder-open"></i></div>
+                            <div class="kpi-icon-bg"><i class="ph ph-smiley-meh"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        {{-- 4. Total Mentions --}}
+        <div class="col-md-6 col-xl-3">
+            <div class="card text-white fade-up fade-up-d4 kpi-card-hover" style="background:#038047;" onclick="DashPanel.open('all','all','ALL_PROJECTS')">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiMentions" style="transition:opacity .3s ease;">—</h3>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
+                                <i class="ph ph-activity me-1"></i>Across all projects
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0 ms-3">
+                            <div class="kpi-icon-bg"><i class="ph ph-activity"></i></div>
                         </div>
                     </div>
                 </div>
@@ -782,26 +815,26 @@
                                     <div class="row g-2 mb-3">
                                         <div class="col-6 col-lg-3">
                                             <div class="stat-chip clickable p-2 rounded-2 text-center"
-                                                 style="background:var(--dash-primary-lt);"
+                                                 style="background:#ebf0ff;"
                                                  onclick="DashPanel.open('all','all','{{ $id }}')">
                                                 <small class="text-muted d-block mb-1 f-10 fw-semibold text-uppercase">Total</small>
-                                                <h6 class="mb-0" style="color:var(--dash-primary);">{{ number_format($total) }}</h6>
+                                                <h6 class="mb-0" style="color:#4680ff;">{{ number_format($total) }}</h6>
                                             </div>
                                         </div>
                                         <div class="col-6 col-lg-3">
                                             <div class="stat-chip clickable p-2 rounded-2 text-center"
-                                                 style="background:var(--green-light);"
+                                                 style="background:#e6f8f1;"
                                                  onclick="DashPanel.open('all','pos','{{ $id }}')">
                                                 <small class="text-muted d-block mb-1 f-10 fw-semibold text-uppercase">Positive</small>
-                                                <h6 class="mb-0 text-success">{{ number_format($pos) }}</h6>
+                                                <h6 class="mb-0" style="color:#10B981;">{{ number_format($pos) }}</h6>
                                             </div>
                                         </div>
                                         <div class="col-6 col-lg-3">
                                             <div class="stat-chip clickable p-2 rounded-2 text-center"
-                                                 style="background:var(--red-light);"
+                                                 style="background:#fee2e2;"
                                                  onclick="DashPanel.open('all','neg','{{ $id }}')">
                                                 <small class="text-muted d-block mb-1 f-10 fw-semibold text-uppercase">Negative</small>
-                                                <h6 class="mb-0 text-danger">{{ number_format($neg) }}</h6>
+                                                <h6 class="mb-0" style="color:#EF4444;">{{ number_format($neg) }}</h6>
                                             </div>
                                         </div>
                                         <div class="col-6 col-lg-3">
@@ -809,7 +842,7 @@
                                                  style="background:var(--slate-50);"
                                                  onclick="DashPanel.open('all','neu','{{ $id }}')">
                                                 <small class="text-muted d-block mb-1 f-10 fw-semibold text-uppercase">Neutral</small>
-                                                <h6 class="mb-0 text-muted">{{ number_format($neu) }}</h6>
+                                                <h6 class="mb-0" style="color:#94A3B8;">{{ number_format($neu) }}</h6>
                                             </div>
                                         </div>
                                         
@@ -994,24 +1027,27 @@
 
         // ── KPI Animated Fill ──
         const fmt = n => parseInt(n || 0).toLocaleString('id-ID');
-        const kpiEls = [_$('kpiProjects'), _$('kpiMentions'), _$('kpiPositive'), _$('kpiNegative')];
+        const kpiEls = [_$('kpiMentions'), _$('kpiPositive'), _$('kpiNeutral'), _$('kpiNegative')];
         kpiEls.forEach(el => { if (el) el.style.opacity = '0'; });
 
         setTimeout(() => {
-            const kpiProjects = _$('kpiProjects');
             const kpiMentions = _$('kpiMentions');
             const kpiPositive = _$('kpiPositive');
+            const kpiNeutral  = _$('kpiNeutral');
             const kpiNegative = _$('kpiNegative');
             const kpiPosSub   = _$('kpiPositiveSub');
+            const kpiNeuSub   = _$('kpiNeutralSub');
             const kpiNegSub   = _$('kpiNegativeSub');
 
-            if (kpiProjects) { kpiProjects.textContent = fmt(KPI_DATA.projects); kpiProjects.style.opacity = '1'; }
             if (kpiMentions) { kpiMentions.textContent = fmt(KPI_DATA.mentions); kpiMentions.style.opacity = '1'; }
             if (kpiPositive) { kpiPositive.textContent = fmt(KPI_DATA.positive); kpiPositive.style.opacity = '1'; }
+            if (kpiNeutral)  { kpiNeutral.textContent  = fmt(KPI_DATA.neutral);  kpiNeutral.style.opacity  = '1'; }
             if (kpiNegative) { kpiNegative.textContent = fmt(KPI_DATA.negative); kpiNegative.style.opacity = '1'; }
 
             if (kpiPosSub) kpiPosSub.innerHTML =
                 `<i class="ph ph-trend-up me-1"></i>${KPI_DATA.hasData ? KPI_DATA.posPct : 'No data'}`;
+            if (kpiNeuSub) kpiNeuSub.innerHTML =
+                `<i class="ph ph-minus me-1"></i>${KPI_DATA.hasData ? KPI_DATA.neuPct : 'No data'}`;
             if (kpiNegSub) kpiNegSub.innerHTML =
                 `<i class="ph ph-trend-down me-1"></i>${KPI_DATA.hasData ? KPI_DATA.negPct : 'No data'}`;
         }, 400);
@@ -1223,10 +1259,10 @@
             series: [
                 { name: 'Total',    data: tl.values || [] },
                 { name: 'Positive', data: tl.sentiment?.positive || [] },
-                { name: 'Neutral',  data: tl.sentiment?.neutral  || [] },
                 { name: 'Negative', data: tl.sentiment?.negative || [] },
+                { name: 'Neutral',  data: tl.sentiment?.neutral  || [] },
             ],
-            colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
+            colors: ['#4680ff', '#10B981', '#EF4444', '#94A3B8'],
           markers: {
     size: totalPoints <= 31 ? 6 : 3,   // ← dari 14 ke 31, dan fallback 3 bukan 0
     strokeWidth: 2,
@@ -1664,6 +1700,14 @@ dataLabels: {
         }
 
         async function _fetchAll(platform, pid, sd, ed) {
+            if (pid === 'ALL_PROJECTS') {
+                const pids = KPI_DATA.allPids || [];
+                const res = await Promise.allSettled(pids.map(id => _fetchAll(platform, id, sd, ed)));
+                const items = res.flatMap(r => r.status==='fulfilled' ? r.value : []);
+                items.sort((a,b)=>new Date(b.date_created||b.created_at||0)-new Date(a.date_created||a.created_at||0));
+                return items;
+            }
+
             if (platform === 'all') {
                 const all = ['doc','twit','fb','instagram','youtube','tiktok'];
                 const res = await Promise.allSettled(all.map(p => _fetchOne(p, pid, sd, ed)));

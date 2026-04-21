@@ -132,7 +132,7 @@
 
     <div class="row mb-3 g-3">
         <div class="col-sm-6 col-xl">
-            <div class="card h-100 text-white kpi-card-hover" style="background:#EF4444;animation:fadeUp .38s ease-out .00s both;">
+            <div class="card h-100 text-white kpi-card-hover" style="background:#06B6D4;animation:fadeUp .38s ease-out .00s both;">
                 <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
                     <p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p>
                     <h3 class="mb-0 text-white f-w-300" id="kpiTopics">—</h3>
@@ -141,36 +141,27 @@
             </div>
         </div>
         <div class="col-sm-6 col-xl">
-            <div class="card h-100 text-white kpi-card-hover" style="background:#1D9BF0;animation:fadeUp .38s ease-out .05s both;">
+            <div class="card h-100 text-white kpi-card-hover" style="background:#F59E0B;animation:fadeUp .38s ease-out .05s both;">
                 <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
-                    <p class="mb-1 text-white text-opacity-75 f-12">Total Volume</p>
-                    <h3 class="mb-0 text-white f-w-300" id="kpiVolume">—</h3>
-                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiVolumeSub"><i class="ph ph-chart-bar me-1"></i>—</p>
-                </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div></div></div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl">
-            <div class="card h-100 text-white kpi-card-hover" style="background:#10B981;animation:fadeUp .38s ease-out .10s both;">
-                <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
-                    <p class="mb-1 text-white text-opacity-75 f-12">Positif</p>
+                    <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
                     <h3 class="mb-0 text-white f-w-300" id="kpiPos">—</h3>
                     <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPosSub"><i class="ph ph-smiley me-1"></i>—</p>
                 </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div></div></div>
             </div>
         </div>
         <div class="col-sm-6 col-xl">
-            <div class="card h-100 text-white kpi-card-hover" style="background:#273B4A;animation:fadeUp .38s ease-out .15s both;">
+            <div class="card h-100 text-white kpi-card-hover" style="background:#4CAF50;animation:fadeUp .38s ease-out .10s both;">
                 <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
-                    <p class="mb-1 text-white text-opacity-75 f-12">Negatif</p>
+                    <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
                     <h3 class="mb-0 text-white f-w-300" id="kpiNeg">—</h3>
                     <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNegSub"><i class="ph ph-smiley-sad me-1"></i>—</p>
                 </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div></div></div>
             </div>
         </div>
         <div class="col-sm-6 col-xl">
-            <div class="card h-100 text-white kpi-card-hover" style="background-color:#F59E0B; animation:fadeUp .38s ease-out .20s both;">
+            <div class="card h-100 text-white kpi-card-hover" style="background-color:#038047; animation:fadeUp .38s ease-out .15s both;">
                 <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1">
-                    <p class="mb-1 text-white text-opacity-75 f-12">Netral</p>
+                    <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
                     <h3 class="mb-0 text-white f-w-300" id="kpiNeu">—</h3>
                     <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNeuSub"><i class="ph ph-smiley-blank me-1"></i>—</p>
                 </div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-blank"></i></div></div></div></div>
@@ -214,9 +205,9 @@
                         {{-- Sentiment Filter Tabs --}}
                         <div class="sent-tabs" data-html2canvas-ignore="true">
                             <button class="sent-tab active" data-s="all">Semua</button>
-                            <button class="sent-tab tab-pos" data-s="positive"><span class="sent-dot" style="background:#16a34a;"></span>Positif</button>
-                            <button class="sent-tab tab-neg" data-s="negative"><span class="sent-dot" style="background:#dc2626;"></span>Negatif</button>
-                            <button class="sent-tab tab-neu" data-s="neutral"><span class="sent-dot" style="background:#b45309;"></span>Netral</button>
+                            <button class="sent-tab tab-pos" data-s="positive"><span class="sent-dot" style="background:#16a34a;"></span>Positive</button>
+                            <button class="sent-tab tab-neg" data-s="negative"><span class="sent-dot" style="background:#dc2626;"></span>Negative</button>
+                            <button class="sent-tab tab-neu" data-s="neutral"><span class="sent-dot" style="background:#b45309;"></span>Neutral</button>
                         </div>
                         <span class="badge bg-light-primary text-primary" id="badgeWC">—</span>
                         <div data-html2canvas-ignore="true" class="d-flex gap-1">
@@ -524,8 +515,6 @@ function updateKpi() {
     const el  = (id, v) => { const e = _$(id); if (e) e.textContent = numF(v); };
     el('kpiTopics', n);
     _$('kpiTopicsSub').innerHTML = `<i class="ph ph-hash me-1"></i>${numF(n)} trending topics`;
-    el('kpiVolume', vol);
-    _$('kpiVolumeSub').innerHTML = `<i class="ph ph-chart-bar me-1"></i>Avg ${numF(n ? Math.round(vol/n) : 0)} / topic`;
     el('kpiPos', pos);
     _$('kpiPosSub').innerHTML = `<i class="ph ph-smiley me-1"></i>${n ? (pos/n*100).toFixed(1) : 0}% of topics`;
     el('kpiNeg', neg);
@@ -540,7 +529,7 @@ function showEmpty() {
     _$('wcEmpty').style.display      = 'flex';
     _$('topicLoading').style.display = 'none';
     _$('topicEmpty').style.display   = 'flex';
-    ['kpiTopics','kpiVolume','kpiPos','kpiNeg','kpiNeu'].forEach(id => { const e = _$(id); if (e) e.textContent = '0'; });
+    ['kpiTopics','kpiPos','kpiNeg','kpiNeu'].forEach(id => { const e = _$(id); if (e) e.textContent = '0'; });
 }
 
 /* ══ Word Cloud ══ */

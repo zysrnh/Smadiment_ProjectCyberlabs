@@ -275,7 +275,7 @@
 {{-- ══ KPI Cards ══ --}}
 <div class="row mb-3">
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#EF4444;animation:fadeUp .38s ease-out both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#06B6D4;animation:fadeUp .38s ease-out both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -293,7 +293,7 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#1D9BF0;animation:fadeUp .38s ease-out .05s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#F59E0B;animation:fadeUp .38s ease-out .05s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -311,7 +311,7 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#10B981;animation:fadeUp .38s ease-out .1s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#4CAF50;animation:fadeUp .38s ease-out .1s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -677,6 +677,7 @@ const FMEData={
         const loadEl=_$('donutLoading'),chartEl=_$('donutChart'),emptyEl=_$('donutEmpty');if(!loadEl||!chartEl)return;
         if(!items.length){loadEl.style.display='none';if(emptyEl)emptyEl.style.display='flex';return;}
         const top5=items.slice(0,5),total=top5.reduce((s,it)=>s+this._metric(it,type),0);
+        const pieData=top5.map((it,i)=>({name:this._getName(it),value:this._metric(it,type),itemStyle:{color:DONUT_COLORS[i]}}));
         const metLbl={like:'Likes',share:'Shares',comment:'Comments'}[type];
         const legEl=_$('donutLegend');if(legEl)legEl.innerHTML=top5.map((it,i)=>{const n=this._getName(it),sn=n.length>22?n.slice(0,21)+'…':n;return`<div class="donut-leg-item"><span class="donut-dot" style="background:${DONUT_COLORS[i]};"></span>${sn} · ${numF(this._metric(it,type))}</div>`;}).join('');
         loadEl.style.display='none';chartEl.style.display='block';if(emptyEl)emptyEl.style.display='none';

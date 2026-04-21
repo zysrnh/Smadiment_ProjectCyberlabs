@@ -164,8 +164,8 @@
 .do-panel-count { background:var(--primary); color:#fff; border-radius:10px; padding:1px 9px; font-size:11px; font-weight:800; flex-shrink:0; }
 .do-panel-close { width:28px; height:28px; border-radius:var(--radius-sm); border:1px solid var(--slate-200); background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--slate-500); font-size:16px; transition:all .14s; flex-shrink:0; }
 .do-panel-close:hover { background:var(--red); border-color:var(--red); color:#fff; }
-.do-panel-actions { display:flex; align-items:center; gap:7px; padding:7px 12px; border-bottom:1px solid var(--slate-200); background:#fff; flex-shrink:0; }
-.do-panel-meta  { flex:1; font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.5px; display:flex; align-items:center; gap:5px; overflow:hidden; }
+.do-panel-actions { display:flex; align-items:center; gap:7px; padding:7px 12px; border-bottom:1px solid var(--slate-200); background:#fff; flex-shrink:0; flex-wrap:wrap; }
+.do-panel-meta  { flex:1; font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.5px; display:flex; align-items:center; gap:5px; overflow:hidden; min-width:100px; }
 .do-panel-list { overflow-y:auto; flex:1; padding:2px 0; min-height:0; }
 .do-panel-list::-webkit-scrollbar { width:4px; }
 .do-panel-list::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
@@ -215,7 +215,7 @@
 .do-dp2-link { display:flex; align-items:center; justify-content:center; gap:6px; padding:9px 14px; background:var(--primary); color:#fff; border-radius:var(--radius); font-size:12px; font-weight:700; text-decoration:none; transition:filter .14s; margin-top:4px; }
 .do-dp2-link:hover { filter:brightness(1.1); color:#fff; }
 
-/* ══ Direct Link Button (panel item footer) ══ */
+/* ══ Direct Link Button ══ */
 .do-panel-link-btn {
     display:inline-flex; align-items:center; justify-content:center;
     width:22px; height:22px; border-radius:4px; flex-shrink:0;
@@ -227,37 +227,23 @@
 .do-panel-link-btn:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
 .do-panel-link-btn i { font-size:12px; pointer-events:none; }
 
-/* ══ Mention Card (Matching Data Overview) ══ */
-.do-mention-body { display:flex; align-items:stretch; min-height:240px; }
-.do-mention-chart { flex:1; display:flex; align-items:center; justify-content:center; padding:16px; min-width:0; }
-.do-mention-stats { width:170px; flex-shrink:0; border-left:1px solid var(--slate-200); padding:16px 14px; display:flex; flex-direction:column; justify-content:center; gap:12px; }
-
-/* ══ SOV Card (Matching Data Overview) ══ */
-.do-sov-body { display:flex; align-items:stretch; min-height:280px; }
-.do-sov-chart { flex:1; display:flex; align-items:center; justify-content:center; padding:8px 16px; min-width:0; }
-.do-sov-stats { width:190px; flex-shrink:0; border-left:1px solid var(--slate-200); padding:14px 13px; display:flex; flex-direction:column; justify-content:flex-start; gap:0; overflow-y:auto; max-height:280px; }
-.do-sov-stats::-webkit-scrollbar { width:3px; }
-.do-sov-stats::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
-
-/* ══ Shared stat styles ══ */
-.do-mstat-label { font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
-.do-mstat-row { display:flex; flex-direction:column; gap:2px; cursor:pointer; border-radius:var(--radius-sm); padding:6px 7px; margin:0 -7px; transition:background .13s; }
-.do-mstat-row:hover { background:var(--primary-lt); }
-.do-mstat-name { font-size:11px; font-weight:600; color:var(--slate-500); display:flex; align-items:center; gap:5px; }
-.do-mstat-name span { display:inline-block; width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-.do-mstat-val-row { display:flex; align-items:baseline; gap:6px; }
-.do-mstat-val { font-size:17px; font-weight:800; letter-spacing:-.5px; color:var(--slate-900); line-height:1.1; }
-.do-mstat-pct { font-size:11px; font-weight:700; line-height:1.1; }
-.do-mstat-divider { height:1px; background:var(--slate-100); margin:8px 0; }
-.do-mstat-total-lbl { font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.4px; }
-.do-mstat-total-val { font-size:20px; font-weight:800; letter-spacing:-1px; color:var(--primary); line-height:1.1; }
-
+/* ══ Platform Picker ══ */
 .do-plat-picker { position:fixed; z-index:999999; background:#fff; border:1px solid var(--slate-200); border-radius:var(--radius); box-shadow:var(--shadow-lg); padding:5px; min-width:175px; font-family:inherit; display:none; animation:fadeUp .14s ease-out; }
 .do-plat-picker.show { display:block; }
 .do-plat-picker-head { padding:4px 9px 7px; font-size:10px; font-weight:700; color:var(--slate-400); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--slate-100); margin-bottom:3px; }
 .do-plat-btn { display:flex; align-items:center; gap:7px; padding:7px 10px; border-radius:var(--radius-sm); font-size:12px; font-weight:600; cursor:pointer; background:transparent; border:none; font-family:inherit; width:100%; text-align:left; color:var(--slate-700); transition:background .12s; }
 .do-plat-btn:hover { background:var(--primary-lt); color:var(--primary); }
 .do-plat-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-left:auto; }
+
+/* ══ Sentiment Tabs (MSPanel) ══ */
+.sntp-sent-tabs { display:flex; background:var(--slate-100); border:1px solid var(--slate-200); border-radius:var(--radius-sm); padding:2px; gap:2px; }
+.sntp-sent-tab  { padding:3px 9px; border-radius:3px; border:none; background:transparent; font-size:11px; font-weight:700; cursor:pointer; transition:all .13s; color:var(--slate-500); white-space:nowrap; font-family:inherit; }
+.sntp-sent-tab:hover { background:#fff; }
+.sntp-sent-tab.active { background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+.sntp-sent-tab.active[data-s="all"] { color:var(--primary); }
+.sntp-sent-tab.neg.active { color:#ef4444; }
+.sntp-sent-tab.pos.active { color:#0ea5e9; }
+.sntp-sent-tab.neu.active { color:var(--slate-500); }
 
 /* ══ EXPORT STYLES ══ */
 .page-export-bar {
@@ -344,7 +330,7 @@
 <div class="row g-3 mb-3">
     <div class="col-md-6 col-xl-3">
         <div class="card h-100 bg-success text-white kpi-card-hover clickable" style="animation:fadeUp .38s ease-out both;"
-             onclick="MSPanel.openSentiment('pos', event.clientX, event.clientY)">
+             onclick="MSPanel.openSentiment('pos')">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -361,28 +347,9 @@
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 bg-warning text-white kpi-card-hover clickable" style="animation:fadeUp .38s ease-out .05s both;"
-             onclick="MSPanel.openSentiment('neu', event.clientX, event.clientY)">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
-                        <h3 class="mb-0 text-white f-w-300" id="valNeu">—</h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu">
-                            <i class="ph ph-chart-line-up me-1"></i>Loading…
-                        </p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph ph-smiley-meh"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
+<div class="col-md-6 col-xl-3">
         <div class="card h-100 bg-danger text-white kpi-card-hover clickable" style="animation:fadeUp .38s ease-out .10s both;"
-             onclick="MSPanel.openSentiment('neg', event.clientX, event.clientY)">
+             onclick="MSPanel.openSentiment('neg')">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -399,6 +366,26 @@
             </div>
         </div>
     </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100 bg-warning text-white kpi-card-hover clickable" style="animation:fadeUp .38s ease-out .05s both;"
+             onclick="MSPanel.openSentiment('neu')">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
+                        <h3 class="mb-0 text-white f-w-300" id="valNeu">—</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu">
+                            <i class="ph ph-chart-line-up me-1"></i>Loading…
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-smiley-meh"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <div class="col-md-6 col-xl-3">
         <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .15s both;">
             <div class="card-body">
@@ -765,6 +752,14 @@
         <div class="do-panel-meta">
             <i class="ph ph-magnifying-glass" style="font-size:11px;"></i>
             <span id="msPanelMeta">—</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+            <div class="sntp-sent-tabs" id="msPanelSentTabs">
+                <button class="sntp-sent-tab active" data-s="all" onclick="MSPanel.filterSent('all')">Semua</button>
+                <button class="sntp-sent-tab pos"    data-s="pos" onclick="MSPanel.filterSent('pos')">Pos</button>
+                <button class="sntp-sent-tab neg"    data-s="neg" onclick="MSPanel.filterSent('neg')">Neg</button>
+                <button class="sntp-sent-tab neu"    data-s="neu" onclick="MSPanel.filterSent('neu')">Neu</button>
+            </div>
         </div>
     </div>
     <div class="do-panel-list" id="msPanelList"></div>
@@ -1213,117 +1208,321 @@ async function loadWeekHour(){
   }catch(e){ hideSk('skHour');document.getElementById('chHour').innerHTML=emptyHtml('Data tidak tersedia'); }
 }
 
-/* ══ SLIDE PANEL ══ */
+/* ══════════════════════════════════════════════════════
+   SLIDE PANEL — FIXED: openSentiment + filterSent
+══════════════════════════════════════════════════════ */
 const MSPanel = (() => {
-  let _cache={}, _items=[], _curPlat=null;
-  const SENT_MAP={'1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg'};
-  const _ns=item=>SENT_MAP[String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim()]||'neu';
-  const _$=id=>document.getElementById(id);
-  function showPlatPicker(x,y){ const pp=_$('msPlatPicker');if(!pp)return;const pw=180,ph=250,vw=window.innerWidth,vh=window.innerHeight;let left=x+10,top=y-10;if(left+pw>vw-8)left=x-pw-10;if(top+ph>vh-8)top=vh-ph-8;if(top<8)top=8;pp.style.left=left+'px';pp.style.top=top+'px';pp.classList.add('show'); }
-  function openSentiment(type,x,y){ open(type==='pos'?'positive':(type==='neg'?'negative':'neutral'),x,y); }
-  function openPlatform(platform){ _$('msPlatPicker')?.classList.remove('show'); open(platform,window.innerWidth-500,80); }
-  async function open(platform,x,y){
-    _curPlat=platform;const meta=MSCfg.platMeta[platform]||{label:platform,color:'#4361EE'};
-    MSDetail.close();
-    _$('msPanelDot').style.background=meta.color;_$('msPanelTitle').textContent=meta.label;_$('msPanelMeta').textContent=MSCfg.sd+' – '+MSCfg.ed;
-    const list=_$('msPanelList');list.innerHTML=`<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat mentions…</span></div>`;
-    const overlay=_$('msPanelOverlay'),panel=_$('msSntPanel');
-    overlay.classList.remove('hiding');panel.classList.remove('hiding');overlay.classList.add('show');panel.classList.add('show');
-    try{ const key=`${MSCfg.pid}_${platform}_${MSCfg.sd}_${MSCfg.ed}`;if(!_cache[key])_cache[key]=await _fetch(platform);_items=_cache[key];_render(list,_items,platform,meta.color); }
-    catch(err){ list.innerHTML=`<div class="do-panel-loading" style="color:#94a3b8;"><i class="ph ph-warning-circle" style="font-size:28px;color:#e2e8f0;"></i>Gagal memuat data</div>`; }
+  let _cache = {}, _allItems = [], _curPlat = null, _curSent = 'all';
+
+  const SENT_MAP = {
+    '1':'pos','positive':'pos','positif':'pos',
+    '-1':'neg','2':'neg','negative':'neg','negatif':'neg'
+  };
+  const _ns  = item => SENT_MAP[String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim()] || 'neu';
+  const _$   = id   => document.getElementById(id);
+
+  /* ── Sync active tab button ── */
+  function _syncTabs(sent) {
+    document.querySelectorAll('#msPanelSentTabs .sntp-sent-tab')
+      .forEach(b => b.classList.toggle('active', b.dataset.s === sent));
   }
-  function close(){ const overlay=_$('msPanelOverlay'),panel=_$('msSntPanel');panel.classList.add('hiding');overlay.classList.add('hiding');setTimeout(()=>{panel.classList.remove('show','hiding');overlay.classList.remove('show','hiding');MSDetail.close();},240); }
-  function closeByOverlay(){ close(); }
-  async function _fetch(platform){
-    const q=`project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}&rows=500&start=0`;
-    if(platform==='ig'){for(const sub of['postbylike','postbycomment','postbydate','']){try{const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),15000);const res=await fetch(`/mk/api/news/ig-top-status?${q}${sub?'&sub='+sub:''}`,{signal:ctrl.signal});clearTimeout(tid);if(!res.ok)continue;const d=await res.json();let items=[];if(Array.isArray(d?.data?.data))items=d.data.data;else if(Array.isArray(d?.data))items=d.data;else if(Array.isArray(d?.statuses))items=d.statuses;else if(Array.isArray(d))items=d;if(items.length>0)return items;}catch(e){continue;}} return[];}
-    if(platform==='yt'){for(const sub of['postbylike','postbyview','postbydate','postbycomment','']){try{const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),15000);const res=await fetch(`/mk/api/news/ytb-top-status?${q}${sub?'&sub='+sub:''}`,{signal:ctrl.signal});clearTimeout(tid);if(!res.ok)continue;const d=await res.json();let items=[];if(Array.isArray(d?.data?.data))items=d.data.data;else if(Array.isArray(d?.data))items=d.data;else if(Array.isArray(d?.statuses))items=d.statuses;else if(Array.isArray(d?.results))items=d.results;else if(Array.isArray(d?.posts))items=d.posts;else if(Array.isArray(d))items=d;else if(d?.data&&typeof d.data==='object'&&!Array.isArray(d.data)){const vals=Object.values(d.data);if(vals.length&&typeof vals[0]==='object')items=vals;}if(items.length>0)return items;}catch(e){continue;}} return[];}
-    const eps={doc:`/mk/api/news/mentions?${q}`,twit:`/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,fb:`/mk/api/news/fb-top-status?${q}&sub=fblike`,tiktok:`/mk/api/news/tiktok-top-status?${q}&sub=postbylike`};
-    const url=eps[platform];if(!url)throw new Error('Platform tidak dikenali');
-    const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),30000);
-    const res=await fetch(url,{signal:ctrl.signal});clearTimeout(tid);if(!res.ok)throw new Error('HTTP '+res.status);
-    const d=await res.json();
-    let items=[];
-    if(Array.isArray(d?.data?.data))items=d.data.data;
-    else if(Array.isArray(d?.data))items=d.data;
-    else if(Array.isArray(d?.statuses))items=d.statuses;
-    else if(Array.isArray(d?.results))items=d.results;
-    else if(Array.isArray(d?.posts))items=d.posts;
-    else if(Array.isArray(d))items=d;
-    else if(d?.data&&typeof d.data==='object'&&!Array.isArray(d.data)){const vals=Object.values(d.data);if(vals.length&&typeof vals[0]==='object')items=vals;}
-    if(platform==='doc')items=items.filter(m=>{const tc=String(m.tcode||'').toLowerCase(),mt=String(m.media_type||'').toLowerCase();return tc==='berita'||mt==='berita'||mt==='doc'||mt==='news'||mt==='online'||mt==='article';});
+
+  /* ── Filter + re-render sesuai sentimen aktif ── */
+  function filterSent(sent) {
+    _curSent = sent;
+    _syncTabs(sent);
+    const list = _$('msPanelList');
+    if (!list) return;
+    const meta    = MSCfg.platMeta[_curPlat] || { label: _curPlat || 'All', color: '#4361EE' };
+    const items   = _curSent === 'all' ? _allItems : _allItems.filter(i => _ns(i) === _curSent);
+    _render(list, items, _curPlat, meta.color, false, true);
+  }
+
+  /* ── Buka panel dari klik KPI Sentiment ── */
+  async function openSentiment(type) {
+    const sentKey    = type; // 'pos' | 'neg' | 'neu'
+    const sentColors = { pos:'#10B981', neg:'#EF4444', neu:'#F59E0B' };
+    const sentLabels = { pos:'Positive Mentions', neg:'Negative Mentions', neu:'Neutral Mentions' };
+
+    _curPlat = 'all';
+    _curSent = sentKey;
+
+    _$('msPanelDot').style.background = sentColors[sentKey] || '#4361EE';
+    _$('msPanelTitle').textContent     = sentLabels[sentKey] || 'Mentions';
+    _$('msPanelMeta').textContent      = MSCfg.sd + ' – ' + MSCfg.ed;
+    _syncTabs(sentKey);
+
+    const list    = _$('msPanelList');
+    const overlay = _$('msPanelOverlay'), panel = _$('msSntPanel');
+    list.innerHTML = `<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat mentions…</span></div>`;
+    overlay.classList.remove('hiding'); panel.classList.remove('hiding');
+    overlay.classList.add('show');      panel.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    try {
+      const cacheKey = `${MSCfg.pid}_all_${MSCfg.sd}_${MSCfg.ed}`;
+      if (!_cache[cacheKey]) _cache[cacheKey] = await _fetchAll();
+      _allItems = _cache[cacheKey];
+      const filtered = _allItems.filter(i => _ns(i) === sentKey);
+      _render(list, filtered, 'all', sentColors[sentKey] || '#4361EE', false, true);
+    } catch(err) {
+      list.innerHTML = `<div class="do-panel-loading" style="color:#94a3b8;"><i class="ph ph-warning-circle" style="font-size:28px;"></i>Gagal memuat data</div>`;
+    }
+  }
+
+  function showPlatPicker(x, y) {
+    const pp = _$('msPlatPicker'); if (!pp) return;
+    const pw=180, ph=250, vw=window.innerWidth, vh=window.innerHeight;
+    let left=x+10, top=y-10;
+    if (left+pw > vw-8) left = x-pw-10;
+    if (top+ph  > vh-8) top  = vh-ph-8;
+    if (top < 8) top = 8;
+    pp.style.left = left+'px'; pp.style.top = top+'px';
+    pp.classList.add('show');
+  }
+
+  function openPlatform(platform) {
+    _$('msPlatPicker')?.classList.remove('show');
+    open(platform, window.innerWidth - 500, 80);
+  }
+
+  async function open(platform, x, y) {
+    _curPlat = platform;
+    _curSent = 'all';
+    _syncTabs('all');
+    MSDetail.close();
+
+    const meta = MSCfg.platMeta[platform] || { label: platform, color: '#4361EE' };
+    _$('msPanelDot').style.background = meta.color;
+    _$('msPanelTitle').textContent    = meta.label;
+    _$('msPanelMeta').textContent     = MSCfg.sd + ' – ' + MSCfg.ed;
+
+    const list    = _$('msPanelList');
+    const overlay = _$('msPanelOverlay'), panel = _$('msSntPanel');
+    list.innerHTML = `<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat mentions…</span></div>`;
+    overlay.classList.remove('hiding'); panel.classList.remove('hiding');
+    overlay.classList.add('show');      panel.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    try {
+      const key = `${MSCfg.pid}_${platform}_${MSCfg.sd}_${MSCfg.ed}`;
+      if (!_cache[key]) _cache[key] = await _fetch(platform);
+      _allItems = _cache[key];
+      _render(list, _allItems, platform, meta.color);
+    } catch(err) {
+      list.innerHTML = `<div class="do-panel-loading" style="color:#94a3b8;"><i class="ph ph-warning-circle" style="font-size:28px;"></i>Gagal memuat data</div>`;
+    }
+  }
+
+  function close() {
+    const overlay = _$('msPanelOverlay'), panel = _$('msSntPanel');
+    panel.classList.add('hiding'); overlay.classList.add('hiding');
+    document.body.style.overflow = '';
+    setTimeout(() => {
+      panel.classList.remove('show','hiding');
+      overlay.classList.remove('show','hiding');
+      MSDetail.close();
+    }, 240);
+  }
+
+  function closeByOverlay() { close(); }
+
+  /* ── Fetch semua platform sekaligus ── */
+  async function _fetchAll() {
+    const platforms = ['doc','twit','fb','ig','yt','tiktok'];
+    const results   = await Promise.allSettled(platforms.map(p => _fetch(p)));
+    let merged = [];
+    results.forEach((r, i) => {
+      if (r.status === 'fulfilled') {
+        r.value.forEach(item => { if (!item._type) item._type = platforms[i]; });
+        merged = merged.concat(r.value);
+      }
+    });
+    merged.sort((a, b) =>
+      (b.date_created||b.created_at||'').localeCompare(a.date_created||a.created_at||'')
+    );
+    return merged;
+  }
+
+  async function _fetch(platform) {
+    const q = `project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}&rows=500&start=0`;
+
+    if (platform === 'ig') {
+      for (const sub of ['postbylike','postbycomment','postbydate','']) {
+        try {
+          const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 15000);
+          const res = await fetch(`/mk/api/news/ig-top-status?${q}${sub?'&sub='+sub:''}`, { signal: ctrl.signal });
+          clearTimeout(tid); if (!res.ok) continue;
+          const d = await res.json();
+          let items = [];
+          if (Array.isArray(d?.data?.data))   items = d.data.data;
+          else if (Array.isArray(d?.data))     items = d.data;
+          else if (Array.isArray(d?.statuses)) items = d.statuses;
+          else if (Array.isArray(d))           items = d;
+          if (items.length > 0) return items;
+        } catch(e) { continue; }
+      }
+      return [];
+    }
+
+    if (platform === 'yt') {
+      for (const sub of ['postbylike','postbyview','postbydate','postbycomment','']) {
+        try {
+          const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 15000);
+          const res = await fetch(`/mk/api/news/ytb-top-status?${q}${sub?'&sub='+sub:''}`, { signal: ctrl.signal });
+          clearTimeout(tid); if (!res.ok) continue;
+          const d = await res.json();
+          let items = [];
+          if (Array.isArray(d?.data?.data))    items = d.data.data;
+          else if (Array.isArray(d?.data))      items = d.data;
+          else if (Array.isArray(d?.statuses))  items = d.statuses;
+          else if (Array.isArray(d?.results))   items = d.results;
+          else if (Array.isArray(d?.posts))     items = d.posts;
+          else if (Array.isArray(d))            items = d;
+          else if (d?.data && typeof d.data === 'object' && !Array.isArray(d.data)) {
+            const vals = Object.values(d.data);
+            if (vals.length && typeof vals[0] === 'object') items = vals;
+          }
+          if (items.length > 0) return items;
+        } catch(e) { continue; }
+      }
+      return [];
+    }
+
+    const eps = {
+      doc    : `/mk/api/news/mentions?${q}`,
+      twit   : `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,
+      fb     : `/mk/api/news/fb-top-status?${q}&sub=fblike`,
+      tiktok : `/mk/api/news/tiktok-top-status?${q}&sub=postbylike`,
+    };
+    const url = eps[platform]; if (!url) throw new Error('Platform tidak dikenali');
+    const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 30000);
+    const res = await fetch(url, { signal: ctrl.signal }); clearTimeout(tid);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const d = await res.json();
+
+    let items = [];
+    if (Array.isArray(d?.data?.data))    items = d.data.data;
+    else if (Array.isArray(d?.data))     items = d.data;
+    else if (Array.isArray(d?.statuses)) items = d.statuses;
+    else if (Array.isArray(d?.results))  items = d.results;
+    else if (Array.isArray(d?.posts))    items = d.posts;
+    else if (Array.isArray(d))           items = d;
+    else if (d?.data && typeof d.data === 'object' && !Array.isArray(d.data)) {
+      const vals = Object.values(d.data);
+      if (vals.length && typeof vals[0] === 'object') items = vals;
+    }
+
+    if (platform === 'doc') items = items.filter(m => {
+      const tc = String(m.tcode||'').toLowerCase(), mt = String(m.media_type||'').toLowerCase();
+      return tc === 'berita' || mt === 'berita' || mt === 'doc' || mt === 'news' || mt === 'online' || mt === 'article';
+    });
+
     return items;
   }
 
-  /* ══════════════════════════════════════════════════════
-     _render — UPDATED: direct link icon di setiap item
-     - Tambah: const url = (item.url||item.link||'').trim()
-     - Footer dibagi dua: kiri (badge+platform+tgl), kanan (link icon)
-     - onclick link pakai event.stopPropagation() agar detail panel tidak ikut terbuka
-  ══════════════════════════════════════════════════════ */
-  function _render(list,items,platform,color,showAll=false){
-    if(!items.length){list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:#94a3b8;font-size:12px;font-weight:600;">Tidak ada mention periode ini.</div>`;return;}
-    const SHOW=60; const meta=MSCfg.platMeta[platform]||{label:platform,color};
-    const visibleItems = showAll ? items : items.slice(0,SHOW);
-    list.innerHTML=visibleItems.map(item=>{
-      const rawName=(()=>{if(platform==='fb')return item.from_name||item.page_name||null;if(platform==='ig')return item.username||item.user_name||null;if(platform==='tiktok')return item.author_nickname||item.nickname||item.author_name||null;if(platform==='yt')return item.channel_title||item.channel_name||item.author_name||null;return null;})();
-      const name=(rawName||item.author_name||item.channel_name||item.publisher||item.source_name||item.name||item.author_scr_name||item.screen_name||item.username||'Tidak diketahui').trim();
-      const dName=/^\d{8,}$/.test(name)?`User ${name.slice(-4)}`:name;
-      const rawH=((platform==='ig'?item.username:'')||item.author_scr_name||item.screen_name||item.username||'').trim();
-      const handle=(()=>{if(!rawH)return'';const w=['twit','ig','tiktok'].includes(platform)?(rawH.startsWith('@')?rawH:'@'+rawH):rawH;return w.replace(/^@/,'').toLowerCase()===dName.toLowerCase()?'':w;})();
-      const text=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,155);
-      const av=(item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||item.thumbnail||'').trim();
-      /* ── URL untuk direct link ── */
-      const url=(item.url||item.link||'').trim();
-      const words=dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
-      const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||dName[0]||'?')).toUpperCase().replace(/['"]/g,'');
-      const avHtml=(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">`:ini;
-      const sent=_ns(item);
-      const dt=(item.date_created||item.created_at||'').split('T')[0];
-      const enc=encodeURIComponent(JSON.stringify(item));
-      /* ── Link icon HTML (hanya jika ada url) ── */
-      const linkBtn=url
-        ?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer"
-              onclick="event.stopPropagation()"
-              title="Buka di tab baru"
-              class="do-panel-link-btn">
-            <i class="ph ph-arrow-square-out"></i>
-          </a>`
-        :'';
-      return`<div class="do-panel-item" onclick="MSDetail.openEncoded('${enc}','${platform}')">
-        <div class="do-panel-avatar" style="background:linear-gradient(135deg,${color},${color}99);">${avHtml}</div>
+  function _render(list, items, platform, color, showAll=false, skipScroll=false) {
+    if (!skipScroll) list.scrollTop = 0;
+    if (!items.length) {
+      list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94a3b8;font-size:12px;font-weight:600;">Tidak ada mention${_curSent !== 'all' ? ' untuk filter ini' : ' periode ini'}.</div>`;
+      return;
+    }
+
+    /* Untuk panel "all" (dari KPI), tiap item punya _type */
+    const getPlat = item => item._type || platform;
+
+    const SHOW = 60;
+    const visibleItems = showAll ? items : items.slice(0, SHOW);
+
+    list.innerHTML = visibleItems.map(item => {
+      const plat      = getPlat(item);
+      const meta      = MSCfg.platMeta[plat] || MSCfg.platMeta[platform] || { label: platform, color };
+      const itemColor = meta.color;
+
+      const rawName = (()=>{
+        if (plat==='fb')     return item.from_name || item.page_name || null;
+        if (plat==='ig')     return item.username || item.user_name || null;
+        if (plat==='tiktok') return item.author_nickname || item.nickname || item.author_name || null;
+        if (plat==='yt')     return item.channel_title || item.channel_name || item.author_name || null;
+        return null;
+      })();
+      const name  = (rawName || item.author_name || item.channel_name || item.publisher ||
+                     item.source_name || item.name || item.author_scr_name ||
+                     item.screen_name || item.username || 'Tidak diketahui').trim();
+      const dName = /^\d{8,}$/.test(name) ? `User ${name.slice(-4)}` : name;
+
+      const rawH  = ((plat==='ig'?item.username:'')||item.author_scr_name||item.screen_name||item.username||'').trim();
+      const handle = (()=>{
+        if (!rawH) return '';
+        const w = ['twit','ig','tiktok'].includes(plat) ? (rawH.startsWith('@')?rawH:'@'+rawH) : rawH;
+        return w.replace(/^@/,'').toLowerCase() === dName.toLowerCase() ? '' : w;
+      })();
+
+      const text = (item.content||item.caption||item.description||item.title||item.text||'')
+                    .replace(/<[^>]*>/g,'').trim().slice(0,155);
+      const url  = (item.url||item.link||'').trim();
+      const av   = (item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||item.thumbnail||'').trim();
+
+      const words = dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
+      const ini   = (words.length>=2 ? (words[0][0]+words[words.length-1][0]) : (words[0]?.[0]||dName[0]||'?'))
+                     .toUpperCase().replace(/['"]/g,'');
+      const avHtml = (av && av.startsWith('http'))
+        ? `<img src="${esc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">`
+        : ini;
+
+      const sent = _ns(item);
+      const dt   = (item.date_created||item.created_at||'').split('T')[0];
+      const enc  = encodeURIComponent(JSON.stringify(item));
+
+      const linkBtn = url
+        ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer"
+               onclick="event.stopPropagation()" title="Buka di tab baru"
+               class="do-panel-link-btn">
+             <i class="ph ph-arrow-square-out"></i>
+           </a>`
+        : '';
+
+      return `<div class="do-panel-item" onclick="MSDetail.openEncoded('${enc}','${plat}')">
+        <div class="do-panel-avatar" style="background:linear-gradient(135deg,${itemColor},${itemColor}99);">${avHtml}</div>
         <div class="do-panel-item-body">
           <div class="do-panel-author">${esc(dName)}</div>
-          ${handle?`<div class="do-panel-handle">${esc(handle)}</div>`:''}
+          ${handle ? `<div class="do-panel-handle">${esc(handle)}</div>` : ''}
           <div class="do-panel-text">${esc(text||'(tidak ada konten)')}</div>
           <div class="do-panel-footer" style="justify-content:space-between;flex-wrap:nowrap;">
             <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0;">
               <span class="do-sent-badge do-sent-badge--${sent}">${sent==='pos'?'Pos':sent==='neg'?'Neg':'Neu'}</span>
-              <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${color};flex-shrink:0;"></span>
-              <span style="font-size:10px;font-weight:600;color:${color};">${meta.label}</span>
-              ${dt?`<span style="font-size:10px;color:var(--slate-400);">${dt}</span>`:''}
+              <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${itemColor};flex-shrink:0;"></span>
+              <span style="font-size:10px;font-weight:600;color:${itemColor};">${meta.label}</span>
+              ${dt ? `<span style="font-size:10px;color:var(--slate-400);">${dt}</span>` : ''}
             </div>
             ${linkBtn}
           </div>
         </div>
       </div>`;
     }).join('');
-    if(!showAll && items.length>SHOW){
-        const btnHtml=`<div style="padding:16px;text-align:center;background:#f8fafc;border-top:1px dashed #e2e8f0;">
-            <button onclick="MSPanel.showMore()" style="background:#038047;color:#fff;border:none;padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(3,128,71,.2);" 
-                onmouseover="this.style.background='#026136';this.style.transform='translateY(-1px)';" 
-                onmouseout="this.style.background='#038047';this.style.transform='none';">Muat Lebih Banyak</button>
-        </div>`;
-        list.insertAdjacentHTML('beforeend',btnHtml);
+
+    if (!showAll && items.length > SHOW) {
+      list.insertAdjacentHTML('beforeend', `
+        <div style="padding:16px;text-align:center;background:#f8fafc;border-top:1px dashed #e2e8f0;">
+          <button onclick="MSPanel.showMore()"
+            style="background:#038047;color:#fff;border:none;padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(3,128,71,.2);"
+            onmouseover="this.style.background='#026136';this.style.transform='translateY(-1px)';"
+            onmouseout="this.style.background='#038047';this.style.transform='none';">
+            Muat Lebih Banyak
+          </button>
+        </div>`);
     }
   }
-  function showMore(){
-    const list=_$('msPanelList');
-    if(!list || !_items.length) return;
-    const meta=MSCfg.platMeta[_curPlat]||{label:_curPlat,color:'#4361EE'};
-    _render(list,_items,_curPlat,meta.color,true);
+
+  function showMore() {
+    const list = _$('msPanelList');
+    if (!list || !_allItems.length) return;
+    const meta  = MSCfg.platMeta[_curPlat] || { label: _curPlat || 'All', color: '#4361EE' };
+    const items = _curSent === 'all' ? _allItems : _allItems.filter(i => _ns(i) === _curSent);
+    _render(list, items, _curPlat, meta.color, true, true);
   }
-  return{open,close,closeByOverlay,showPlatPicker,openPlatform,showMore};
+
+  return { open, close, closeByOverlay, showPlatPicker, openPlatform, openSentiment, filterSent, showMore };
 })();
 
 /* ══ DETAIL SUB-PANEL ══ */
@@ -1352,7 +1551,6 @@ const MSDetail = {
         if(!ytId && item.video_id) ytId = item.video_id;
         if(!ytId && item.yt_id) ytId = item.yt_id;
         if(!ytId && item.id){ const m=String(item.id).match(/(?:yt-|youtube-)?([A-Za-z0-9_-]{11})$/); if(m) ytId=m[1]; }
-        
         const imgUrl = item.thumbnail || item.image_url || item.picture || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
         if(ytId){
             mediaHtml=`<div class="do-dp2-media" style="cursor:pointer;position:relative;background:#000;aspect-ratio:16/9;border-radius:var(--radius);overflow:hidden;" onclick="openVidModal('yt', '${ytId}')">
@@ -1544,8 +1742,7 @@ const MSExport = (() => {
         document.head.appendChild(s);
     }
     function _unfreeze() { document.getElementById('__s_freeze')?.remove(); }
-     
- 
+
     function _resizeAllCharts() {
         Object.values(MSCharts._i).forEach(c=>{try{if(!c.isDisposed())c.resize();}catch(e){}});
         if(APX.trend)  try{APX.trend.updateOptions({});}catch(e){}
@@ -1553,7 +1750,7 @@ const MSExport = (() => {
     }
  
     function _drawPdfHeader(pdf, pW, margin, label) {
-     pdf.setFillColor(3, 128, 71);
+        pdf.setFillColor(3, 128, 71);
         pdf.rect(0, 0, pW, 11, 'F');
         pdf.setTextColor(255, 255, 255);
         pdf.setFontSize(9); pdf.setFont('helvetica','bold');
@@ -1563,49 +1760,36 @@ const MSExport = (() => {
         pdf.text('Generated: '+now, pW-margin, 7.5, { align:'right' });
     }
  
-    /* ── Split canvas menjadi tepat `numPages` halaman ── */
     function _splitCanvas(pdf, canvas, margin, pW, pH, label, numPages) {
         const usableW  = pW - margin * 2;
         const sliceH   = Math.ceil(canvas.height / numPages);
- 
         for (let page = 0; page < numPages; page++) {
             if (page > 0) pdf.addPage();
             _drawPdfHeader(pdf, pW, margin, label);
- 
             const srcY     = page * sliceH;
             const srcSlice = Math.min(sliceH, canvas.height - srcY);
             if (srcSlice <= 0) break;
- 
             const ratio = usableW / canvas.width;
             const dstH  = srcSlice * ratio;
- 
             const slice = document.createElement('canvas');
             slice.width  = canvas.width;
             slice.height = Math.ceil(srcSlice);
-            slice.getContext('2d').drawImage(
-                canvas,
-                0, srcY, canvas.width, srcSlice,
-                0, 0,    canvas.width, srcSlice
-            );
- 
+            slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice);
             pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, dstH);
             pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
             pdf.text(`Halaman ${page + 1} / ${numPages}`, pW / 2, pH - 3, { align:'center' });
         }
     }
  
-    /* ── Fit canvas ke 1 halaman (scale to fit, tidak terpotong) ── */
     function _fitCanvas(pdf, canvas, margin, pW, pH, label) {
         _drawPdfHeader(pdf, pW, margin, label);
- 
         const usableW = pW - margin * 2;
-        const usableH = pH - margin * 2 - 18; // 14 header + 4 footer
+        const usableH = pH - margin * 2 - 18;
         const ratio   = Math.min(usableW / canvas.width, usableH / canvas.height);
         const dstW    = canvas.width  * ratio;
         const dstH    = canvas.height * ratio;
-        const x       = margin + (usableW - dstW) / 2;   // tengah horizontal
-        const y       = 14 + (usableH - dstH) / 2;       // tengah vertikal
- 
+        const x       = margin + (usableW - dstW) / 2;
+        const y       = 14 + (usableH - dstH) / 2;
         pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, dstW, dstH);
         pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
         pdf.text('Halaman 1 / 1', pW / 2, pH - 3, { align:'center' });
@@ -1616,22 +1800,19 @@ const MSExport = (() => {
         await new Promise(r => setTimeout(r, 350));
         _resizeAllCharts();
         _freeze(); await new Promise(r=>setTimeout(r,400));
-        try { _freeze(); await new Promise(r=>setTimeout(r,400));
-        try { return await html2canvas(areaEl, {
-
-
-            scale:           2,
-            useCORS:         true,
-            allowTaint:      false,
-            backgroundColor: '#f1f5f9',
-            logging:         false,
-            removeContainer: true,
-            windowHeight:    areaEl.scrollHeight,
-            height:          areaEl.scrollHeight,
-            ignoreElements:  el => el.hasAttribute('data-html2canvas-ignore'),
-        
-        
-        }); } finally { _unfreeze(); } } finally { _unfreeze(); }
+        try {
+            return await html2canvas(areaEl, {
+                scale:           2,
+                useCORS:         true,
+                allowTaint:      false,
+                backgroundColor: '#f1f5f9',
+                logging:         false,
+                removeContainer: true,
+                windowHeight:    areaEl.scrollHeight,
+                height:          areaEl.scrollHeight,
+                ignoreElements:  el => el.hasAttribute('data-html2canvas-ignore'),
+            });
+        } finally { _unfreeze(); }
     }
  
     async function _captureCard(areaId) {
@@ -1640,20 +1821,17 @@ const MSExport = (() => {
         _resizeAllCharts();
         await new Promise(r => setTimeout(r, 220));
         _freeze(); await new Promise(r=>setTimeout(r,400));
-        try { _freeze(); await new Promise(r=>setTimeout(r,400));
-        try { return await html2canvas(area, {
-
-
-            scale:           2,
-            useCORS:         true,
-            allowTaint:      false,
-            backgroundColor: '#ffffff',
-            logging:         false,
-            removeContainer: true,
-            ignoreElements:  el => el.hasAttribute('data-html2canvas-ignore'),
-        
-        
-        }); } finally { _unfreeze(); } } finally { _unfreeze(); }
+        try {
+            return await html2canvas(area, {
+                scale:           2,
+                useCORS:         true,
+                allowTaint:      false,
+                backgroundColor: '#ffffff',
+                logging:         false,
+                removeContainer: true,
+                ignoreElements:  el => el.hasAttribute('data-html2canvas-ignore'),
+            });
+        } finally { _unfreeze(); }
     }
  
     const _cardLabels = {
@@ -1677,7 +1855,6 @@ const MSExport = (() => {
         return `media_stat_${slug[cardKey]||cardKey}_${PID}_${stamp}`;
     }
  
-    /* ── Export per-card: 1 halaman, fit to page ── */
     async function runCard(areaId, cardKey, type, btn) {
         if(!window.html2canvas)           { _toast('html2canvas tidak tersedia','error'); return; }
         if(type==='pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
@@ -1693,12 +1870,10 @@ const MSExport = (() => {
                 _toast('Gambar berhasil diunduh!', 'success');
             } else {
                 const { jsPDF } = window.jspdf;
-                /* orientasi otomatis berdasarkan rasio canvas */
                 const landscape = canvas.width > canvas.height;
                 const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit:'mm', format:'a4' });
                 const pW  = pdf.internal.pageSize.getWidth();
                 const pH  = pdf.internal.pageSize.getHeight();
-                /* fit seluruh card ke 1 halaman, tidak terpotong */
                 _fitCanvas(pdf, canvas, 10, pW, pH, label);
                 pdf.save(fname+'.pdf');
                 _toast('PDF berhasil diunduh!', 'success');
@@ -1711,7 +1886,6 @@ const MSExport = (() => {
         }
     }
  
-    /* ── Export full page: tepat 2 halaman ── */
     async function run(type, btn) {
         if(!window.html2canvas)           { _toast('html2canvas tidak tersedia','error'); return; }
         if(type==='pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia','error'); return; }
@@ -1733,7 +1907,6 @@ const MSExport = (() => {
                 const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
                 const pW  = pdf.internal.pageSize.getWidth();
                 const pH  = pdf.internal.pageSize.getHeight();
-                /* split tepat 2 halaman */
                 _splitCanvas(pdf, canvas, 10, pW, pH, 'Media Statistic', 2);
                 pdf.save(`media_statistic_${PID}_${stamp}.pdf`);
                 _toast('PDF 2 halaman berhasil diunduh!', 'success');
@@ -1767,7 +1940,9 @@ const MSPage = {
 };
 
 document.addEventListener('mousedown',e=>{const pp=document.getElementById('msPlatPicker');if(pp?.classList.contains('show')&&!pp.contains(e.target))pp.classList.remove('show');});
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const vm=document.getElementById('vidViewModal'); if(vm&&vm.style.display!=='none'){closeVidModal();return;} MSPanel.close(); } });
 document.addEventListener('DOMContentLoaded',()=>MSPage.init());
+
 /* ══ MEDIA VIEWER MODAL ══ */
 function openVidModal(type, id) {
     const m = document.getElementById('vidViewModal');
@@ -1785,7 +1960,6 @@ function openVidModal(type, id) {
         w.style.margin = '0 auto';
     }
     w.innerHTML = `<iframe src="${url}" style="width:100%;height:100%;border:none;border-radius:12px;display:block;" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
-    
     m.style.display = 'flex';
     requestAnimationFrame(() => {
         m.style.opacity = '1';
@@ -1798,20 +1972,7 @@ function closeVidModal() {
     if(!m) return;
     m.style.opacity = '0';
     m.querySelector('.video-modal-content').style.transform = 'scale(0.95)';
-    setTimeout(() => {
-        m.style.display = 'none';
-        if(w) w.innerHTML = '';
-    }, 200);
+    setTimeout(() => { m.style.display = 'none'; if(w) w.innerHTML = ''; }, 200);
 }
-
-document.addEventListener('keydown', e => { 
-    if(e.key==='Escape') {
-        const vm = document.getElementById('vidViewModal');
-        if(vm && vm.style.display !== 'none') {
-            closeVidModal();
-        }
-    }
-});
-
 </script>
-@endsectionu
+@endsection

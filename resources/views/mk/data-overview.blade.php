@@ -1461,10 +1461,10 @@ const numFmt = n => {
                 series:[
                     {name:'Total',data:d.values||[]},
                     {name:'Positive',data:d.sentiment?.positive||[]},
-                    {name:'Negative',data:d.sentiment?.negative||[]}
-                    {name:'Neutral',data:d.sentiment?.neutral||[]},
+                    {name:'Negative',data:d.sentiment?.negative||[]},
+                    {name:'Neutral',data:d.sentiment?.neutral||[]}
                 ],
-                colors:['#4680ff','#10B981','#94A3B8','#EF4444'],
+                colors:['#4680ff','#10B981','#EF4444','#94A3B8'],
                 stroke:{curve:'smooth',width:2.5},
                 fill:{type:'solid',opacity:0.25},
                 markers:{size:totalPoints<=31?5:0,hover:{size:7}},
@@ -1716,8 +1716,8 @@ const chartWidth = containerW;
                 const seriesArr=[
                     {name:'Total',    data:toNum(valTotal)},
                     {name:'Positive', data:toNum(valPos)  },
-                    {name:'Neutral',  data:toNum(valNeu)  },
                     {name:'Negative', data:toNum(valNeg)  },
+                    {name:'Neutral',  data:toNum(valNeu)  },
                 ];
               const opts = {
     chart: {
@@ -1790,7 +1790,7 @@ dataLabels: {
         axisBorder: { show: false },
         axisTicks: { show: false }
     },
-    colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
+colors: ['#4680ff', '#10B981', '#EF4444', '#94A3B8'],
     fill: { type: 'solid', opacity: 0.3 },
     legend: { position: 'bottom', horizontalAlign: 'left', labels: { colors: '#94A3B8' } },
     tooltip: {

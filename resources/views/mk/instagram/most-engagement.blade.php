@@ -280,17 +280,13 @@
 {{-- ══ KPI Cards ══ --}}
 <div class="row mb-3">
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#EF4444;animation:fadeUp .38s ease-out .01s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#06B6D4;animation:fadeUp .38s ease-out .01s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Likes</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes">
-                            <span class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></span>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub">
-                            <i class="ph ph-heart me-1" style="vertical-align:text-bottom;"></i>—
-                        </p>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes">-</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub"><i class="ph ph-heart me-1" style="vertical-align:text-bottom;"></i>-</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-heart"></i></div></div>
                 </div>
@@ -298,17 +294,13 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#1D9BF0;animation:fadeUp .38s ease-out .02s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#F59E0B;animation:fadeUp .38s ease-out .02s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Comments</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiCmts">
-                            <span class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></span>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCmtsSub">
-                            <i class="ph ph-chat-circle me-1" style="vertical-align:text-bottom;"></i>—
-                        </p>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiCmts">-</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCmtsSub"><i class="ph ph-chat-circle me-1" style="vertical-align:text-bottom;"></i>-</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chat-circle"></i></div></div>
                 </div>
@@ -316,17 +308,13 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#10B981;animation:fadeUp .38s ease-out .03s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#4CAF50;animation:fadeUp .38s ease-out .03s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Posts</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiPosts">
-                            <span class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></span>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPostsSub">
-                            <i class="ph ph-image me-1" style="vertical-align:text-bottom;"></i>—
-                        </p>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiPosts">-</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPostsSub"><i class="ph ph-image me-1" style="vertical-align:text-bottom;"></i>-</p>
                     </div>
                     <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-image"></i></div></div>
                 </div>

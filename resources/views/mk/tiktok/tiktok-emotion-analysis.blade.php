@@ -545,45 +545,73 @@
         {{-- ════ PAGE EXPORT WRAPPER ════ --}}
         <div id="pageExportArea">
 
-        {{-- ══ KPI Cards ══ --}}
-<div class="row g-3 mb-3">
-            @php
-                $kpiCards = [
-                    ['id'=>'kpiJoy',          'label'=>'Joy',          'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>', 'bg'=>'#F59E0B', 'sub'=>'Emosi paling positif'],
-                    ['id'=>'kpiTrust',        'label'=>'Trust',        'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>', 'bg'=>'#10B981', 'sub'=>'Kepercayaan & aman'],
-                    ['id'=>'kpiFear',         'label'=>'Fear',         'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="M8 12s2-2 4-2 4 2 4 2"/></svg>', 'bg'=>'#6366F1', 'sub'=>'Kekhawatiran & takut'],
-                    ['id'=>'kpiSurprise',     'label'=>'Surprise',     'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="16" r="3"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>', 'bg'=>'#3B82F6', 'sub'=>'Ekspresi terkejut'],
-                    ['id'=>'kpiSadness',      'label'=>'Sadness',      'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>', 'bg'=>'#8B5CF6', 'sub'=>'Rasa sedih & kecewa'],
-                    ['id'=>'kpiDisgust',      'label'=>'Disgust',      'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16 16-1.5-2-1.5 2-1.5-2-1.5 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>', 'bg'=>'#A855F7', 'sub'=>'Ketidaksukaan/jijik'],
-                    ['id'=>'kpiAnger',        'label'=>'Anger',        'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="m8 9 2-1"/><path d="m16 9-2-1"/></svg>', 'bg'=>'#EF4444', 'sub'=>'Ekspresi amarah'],
-                    ['id'=>'kpiAnticipation', 'label'=>'Anticipation', 'icon'=>'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 15h6"/><path d="M8 9s1.5-2 4-2 4 2 4 2"/><line x1="11" y1="10" x2="11.01" y2="10"/><line x1="13" y1="10" x2="13.01" y2="10"/></svg>', 'bg'=>'#F97316', 'sub'=>'Ekspektasi & harap'],
-                ];
-                $delays = ['.00s','.02s','.04s','.06s','.08s','.10s','.12s','.14s'];
-            @endphp
-            @foreach($kpiCards as $ki => $kc)
-                <div class="col-md-6 col-xl-3">
-<div class="card h-100 text-white kpi-card-hover"
-                         onmouseenter="this.style.transform='translateY(-6px) scale(1.025)';this.style.boxShadow='0 20px 40px rgba(0,0,0,.25)';this.style.filter='brightness(1.07)';this.style.transition='transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s ease,filter .25s ease';"
-                         onmouseleave="this.style.transform='';this.style.boxShadow='';this.style.filter='';"
-                         style="background:{{ $kc['bg'] }}; animation:fadeUp .38s ease-out {{ $delays[$ki] }} both;">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <div class="flex-grow-1">
-                                    <p class="mb-1 text-white text-opacity-75 f-12">{{ $kc['label'] }}</p>
-                                    <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">-</h3>
-                                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                                        {!! str_replace('width="24" height="24"', 'width="12" height="12" style="vertical-align:text-bottom;margin-right:4px;"', $kc['icon']) !!}{{ $kc['sub'] }}
-                                    </p>
-                                </div>
-                                <div class="flex-shrink-0 ms-3">
-                                    <div class="kpi-icon-bg">{!! $kc['icon'] !!}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        {{-- KPI — 4 Rotating Cards --}}
+<style>
+.kpi-rot-wrap{position:relative;overflow:hidden;}
+.kpi-rot-set{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;transition:opacity .4s ease,transform .4s ease;}
+.kpi-rot-set.hidden{position:absolute;top:0;left:0;width:100%;opacity:0;pointer-events:none;transform:translateY(8px);}
+.kpi-rot-set.visible{opacity:1;transform:translateY(0);}
+.kpi-rot-dots{display:flex;justify-content:center;gap:6px;margin-top:8px;}
+.kpi-rot-dot{width:6px;height:6px;border-radius:50%;background:var(--slate-300);transition:background .3s,width .3s;cursor:pointer;border:none;padding:0;}
+.kpi-rot-dot.active{background:var(--primary);width:18px;border-radius:3px;}
+.kpi-rot-progress{position:absolute;bottom:0;left:0;height:2px;background:rgba(255,255,255,.55);border-radius:0 0 var(--radius) 0;animation:kpiRotProg 3s linear forwards;}
+@keyframes kpiRotProg{from{width:0}to{width:100%}}
+@media(max-width:768px){.kpi-rot-set{grid-template-columns:repeat(2,1fr);}}
+</style>
+@php
+$rotCards=[
+    [0,'kpiJoy',         'Joy',          '#06B6D4','ph-smiley',       'Emosi paling positif'],
+    [0,'kpiTrust',       'Trust',        '#F59E0B','ph-shield-check', 'Kepercayaan & aman'],
+    [0,'kpiFear',        'Fear',         '#4CAF50','ph-smiley-nervous','Kekhawatiran & takut'],
+    [0,'kpiSurprise',    'Surprise',     '#038047','ph-smiley-wink',  'Ekspresi terkejut'],
+    [1,'kpiSadness',     'Sadness',      '#06B6D4','ph-smiley-sad',   'Rasa sedih & kecewa'],
+    [1,'kpiDisgust',     'Disgust',      '#F59E0B','ph-smiley-meh',   'Ketidaksukaan/jijik'],
+    [1,'kpiAnger',       'Anger',        '#4CAF50','ph-smiley-x-eyes','Ekspresi amarah'],
+    [1,'kpiAnticipation','Anticipation', '#038047','ph-smiley-blank', 'Ekspektasi & harap'],
+];
+@endphp
+<div class="kpi-rot-wrap mb-3" id="kpiRotWrap">
+    <div class="kpi-rot-set visible" id="kpiSet0">
+        @foreach($rotCards as $rc) @if($rc[0]===0)
+        <div class="card h-100 text-white kpi-card-hover" style="background:{{$rc[3]}};animation:fadeUp .38s ease-out both;position:relative;overflow:hidden;">
+            <div class="kpi-rot-progress"></div>
+            <div class="card-body"><div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="mb-1 text-white text-opacity-75 f-12">{{$rc[2]}}</p>
+                    <h3 class="mb-0 text-white f-w-300" id="{{$rc[1]}}">-</h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph {{$rc[4]}} me-1"></i>{{$rc[5]}}</p>
                 </div>
-            @endforeach
+                <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph {{$rc[4]}}"></i></div></div>
+            </div></div>
         </div>
+        @endif @endforeach
+    </div>
+    <div class="kpi-rot-set hidden" id="kpiSet1">
+        @foreach($rotCards as $rc) @if($rc[0]===1)
+        <div class="card h-100 text-white kpi-card-hover" style="background:{{$rc[3]}};position:relative;overflow:hidden;">
+            <div class="card-body"><div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="mb-1 text-white text-opacity-75 f-12">{{$rc[2]}}</p>
+                    <h3 class="mb-0 text-white f-w-300" id="{{$rc[1]}}">-</h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph {{$rc[4]}} me-1"></i>{{$rc[5]}}</p>
+                </div>
+                <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph {{$rc[4]}}"></i></div></div>
+            </div></div>
+        </div>
+        @endif @endforeach
+    </div>
+</div>
+<div class="kpi-rot-dots mb-3">
+    <button class="kpi-rot-dot active" onclick="KPIRot.goTo(0)" title="Joy · Trust · Fear · Surprise"></button>
+    <button class="kpi-rot-dot" onclick="KPIRot.goTo(1)" title="Sadness · Disgust · Anger · Anticipation"></button>
+</div>
+<script>
+const KPIRot=(()=>{const SETS=2,INTERVAL=3000;let cur=0,timer=null;
+function goTo(idx){const sets=document.querySelectorAll('.kpi-rot-set');sets.forEach((s,i)=>{s.classList.toggle('visible',i===idx);s.classList.toggle('hidden',i!==idx);});document.querySelectorAll('.kpi-rot-dot').forEach((d,i)=>d.classList.toggle('active',i===idx));cur=idx;sets[idx].querySelectorAll('.kpi-rot-progress').forEach(p=>{p.style.animation='none';p.offsetHeight;p.style.animation=`kpiRotProg ${INTERVAL}ms linear forwards`;});}
+function next(){goTo((cur+1)%SETS);}function start(){stop();timer=setInterval(next,INTERVAL);goTo(0);}function stop(){clearInterval(timer);}
+const wrap=document.getElementById('kpiRotWrap');if(wrap){wrap.addEventListener('mouseenter',stop);wrap.addEventListener('mouseleave',()=>{timer=setInterval(next,INTERVAL);});}
+document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})();
+</script>
 
         {{-- ══ Page Export Toolbar ══ --}}
         <div class="page-export-bar" data-html2canvas-ignore="true">

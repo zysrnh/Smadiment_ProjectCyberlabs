@@ -563,24 +563,6 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#4CAF50;animation:fadeUp .38s ease-out .05s both;">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Total Articles</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiArts">—</h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiArtsSub">
-                            <i class="ph ph-newspaper me-1"></i>Loading...
-                        </p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph ph-newspaper"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
         <div class="card h-100 text-white kpi-card-hover" style="background:#F59E0B;animation:fadeUp .38s ease-out .10s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
@@ -593,6 +575,25 @@
                     </div>
                     <div class="flex-shrink-0 ms-3">
                         <div class="kpi-icon-bg"><i class="ph ph-trophy"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+       
+    </div>
+    <div class="col-md-6 col-xl-3">
+         <div class="card h-100 text-white kpi-card-hover" style="background:#4CAF50;animation:fadeUp .38s ease-out .05s both;">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Total Articles</p>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiArts">—</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiArtsSub">
+                            <i class="ph ph-newspaper me-1"></i>Loading...
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-newspaper"></i></div>
                     </div>
                 </div>
             </div>

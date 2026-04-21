@@ -151,6 +151,20 @@
       </div>
     </div>
   </div>
+   <div class="col-md-4">
+    <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d3" style="background:#F59E0B;">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="flex-grow-1">
+            <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
+            <h3 class="mb-0 text-white f-w-300" id="statTotalMentions">—</h3>
+            <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph ph-chat-dots me-1"></i>Across all topics</p>
+          </div>
+          <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-activity"></i></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="col-md-4">
     <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d2" style="background:#4CAF50;">
       <div class="card-body">
@@ -161,20 +175,6 @@
             <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph ph-trend-up me-1"></i>Most mentioned</p>
           </div>
           <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-star"></i></div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d3" style="background:#F59E0B;">
-      <div class="card-body">
-        <div class="d-flex align-items-center">
-          <div class="flex-grow-1">
-            <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
-            <h3 class="mb-0 text-white f-w-300" id="statTotalMentions">—</h3>
-            <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph ph-chat-dots me-1"></i>Across all topics</p>
-          </div>
-          <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-activity"></i></div></div>
         </div>
       </div>
     </div>

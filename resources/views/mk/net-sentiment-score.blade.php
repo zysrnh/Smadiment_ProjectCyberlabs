@@ -328,6 +328,22 @@
             </div>
         </div>
     </div>
+	<div class="col-md-6 col-xl-4">
+        <div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d3" onclick="NSSPanel.open('neg')">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
+                        <h3 class="mb-0 text-white f-w-300" id="statNeg">—</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg"><i class="ph ph-chart-line-up me-1"></i> Loading…</p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-thumbs-down"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="col-md-6 col-xl-4">
         <div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d2" onclick="NSSPanel.open('neu')">
             <div class="card-body">
@@ -344,22 +360,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-xl-4">
-        <div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d3" onclick="NSSPanel.open('neg')">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
-                        <h3 class="mb-0 text-white f-w-300" id="statNeg">—</h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg"><i class="ph ph-chart-line-up me-1"></i> Loading…</p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph ph-thumbs-down"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 </div>
 
 {{-- ══ MAIN GRID ══ --}}
@@ -536,8 +537,8 @@
         <div class="do-panel-tabs">
             <button class="do-panel-tab active" data-s="all" onclick="NSSPanel.filterSent('all')">Semua</button>
             <button class="do-panel-tab pos"    data-s="pos" onclick="NSSPanel.filterSent('pos')">Pos</button>
-            <button class="do-panel-tab neu"    data-s="neu" onclick="NSSPanel.filterSent('neu')">Neu</button>
             <button class="do-panel-tab neg"    data-s="neg" onclick="NSSPanel.filterSent('neg')">Neg</button>
+            <button class="do-panel-tab neu"    data-s="neu" onclick="NSSPanel.filterSent('neu')">Neu</button>
         </div>
     </div>
     <div class="do-panel-list" id="nssPanelList"></div>

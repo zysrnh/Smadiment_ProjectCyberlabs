@@ -215,10 +215,10 @@
     <div class="row mb-3">
         @php
             $kpiCards = [
-                ['id' => 'kpiViews',  'label' => 'Total Views',    'icon' => 'ph-eye',              'bg' => '#EF4444', 'sub' => 'kpiViewsSub'],
+                ['id' => 'kpiViews',  'label' => 'Total Views',    'icon' => 'ph-eye',              'bg' => '#06B6D4', 'sub' => 'kpiViewsSub'],
                 ['id' => 'kpiRt',     'label' => 'Total Retweets', 'icon' => 'ph-repeat',           'bg' => '#F59E0B', 'sub' => 'kpiRtSub'],
-                ['id' => 'kpiPosts',  'label' => 'Total Posts',    'icon' => 'ph-chat-circle-dots', 'bg' => '#10B981', 'sub' => 'kpiPostsSub'],
-                ['id' => 'kpiTopics', 'label' => 'Total Topics',   'icon' => 'ph-hash',             'bg' => '#273B4A', 'sub' => 'kpiTopicsSub'],
+                ['id' => 'kpiPosts',  'label' => 'Total Posts',    'icon' => 'ph-chat-circle-dots', 'bg' => '#4CAF50', 'sub' => 'kpiPostsSub'],
+                ['id' => 'kpiTopics', 'label' => 'Total Topics',   'icon' => 'ph-hash',             'bg' => '#038047', 'sub' => 'kpiTopicsSub'],
             ];
             $delays = ['d1','d2','d3','d4'];
         @endphp
