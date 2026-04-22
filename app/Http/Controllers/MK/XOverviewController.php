@@ -1498,35 +1498,73 @@
             }
 
             try {
-                $data = $this->client->topInfluencers(
+                $response = $this->client->topInfluencers(
                     (string) $projectId,
                     $startDate,
                     $endDate,
                     $startTime,
-                    $endTime
+                    $endTime,
+                    '',
+                    200
                 );
 
-                Log::info('topInfluencersData raw', [
+                // Handle jika response berbungkus 'data' atau array langsung
+                $rawData = $response['data'] ?? $response ?? [];
+                if (!is_array($rawData)) $rawData = [];
+
+                Log::info('topInfluencersData processed', [
                     'project_id' => $projectId,
-                    'sub'        => $sub,
-                    'count'      => count($data),
-                    'sample'     => count($data) > 0 ? array_slice($data[0], 0, 5) : [],
+                    'total_raw'  => count($rawData),
                 ]);
 
                 $influencers = [];
 
-                foreach ($data as $item) {
+                foreach ($rawData as $item) {
                     if (!is_array($item)) continue;
 
                     // Data user ada di dalam 'info'
                     $info = $item['info'] ?? [];
 
-                    // Screen name
-                    $screenName = $info['screen_name'] ?? ltrim($item['name'] ?? '', '@');
+                    // ── Filter platform: skip jika bukan Twitter ──────────────
+                    $platform = strtolower($item['media'] ?? $item['platform'] ?? $item['tcode'] ?? '');
+                    if ($platform && !in_array($platform, ['twitter', 'twit', 'x', ''])) {
+                        continue;
+                    }
+
+                    // Screen name — ambil dari info dulu, fallback dari item['name']
+                    $screenName = $info['screen_name'] ?? '';
+
+                    // Jika tidak ada di info, coba dari item['name']
+                    if (!$screenName) {
+                        $rawName = ltrim($item['name'] ?? '', '@');
+
+                        // ── Filter: skip YouTube Channel ID (format UC + 22 karakter alfanumerik) ──
+                        if (preg_match('/^UC[A-Za-z0-9_-]{20,}$/', $rawName)) {
+                            Log::debug('topInfluencersData: skipped YouTube channel ID', [
+                                'author_id' => $item['author_id'] ?? '',
+                                'name'      => $rawName,
+                            ]);
+                            continue;
+                        }
+
+                        // ── Filter: skip raw ID yang bukan Twitter username ──
+                        // Twitter username: max 15 char, hanya huruf/angka/underscore
+                        if (strlen($rawName) > 50 || preg_match('/[^A-Za-z0-9_]/', $rawName) && !strpos($rawName, '.')) {
+                            continue;
+                        }
+
+                        $screenName = $rawName;
+                    }
+
                     if (!$screenName) continue;
 
-                    // Display name
-                    $displayName = $info['name'] ?? $item['name'] ?? ('@' . $screenName);
+                    // Display name — jangan tampilkan raw channel ID sebagai nama
+                    $rawDisplayName = $info['name'] ?? $item['name'] ?? '';
+                    // Jika display name terlihat seperti YouTube channel ID, gunakan screen_name saja
+                    if (preg_match('/^UC[A-Za-z0-9_-]{20,}$/', $rawDisplayName)) {
+                        $rawDisplayName = '';
+                    }
+                    $displayName = $rawDisplayName ?: ('@' . $screenName);
 
                     // Counts — total = RT + Reply Count dari API
                     $total    = (int) ($item['total']    ?? 0);
