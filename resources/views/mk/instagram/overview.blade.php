@@ -14,11 +14,11 @@
 @keyframes overlayOut{from{opacity:1}to{opacity:0}}
 @keyframes kpiIconBounce{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.25) rotate(-10deg)}60%{transform:scale(1.1) rotate(6deg)}}
 @keyframes kpiShimmer{0%{left:-100%}100%{left:150%}}
-.fade-up{animation:fadeUp .38s ease-out both}
+.fade-up{animation:fadeUp .4s cubic-bezier(.16,1,.3,1) both}
 .fade-up-d1{animation-delay:.05s}.fade-up-d2{animation-delay:.10s}.fade-up-d3{animation-delay:.15s}.fade-up-d4{animation-delay:.20s}
-.kpi-icon-bg{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.2);font-size:24px;color:#fff;flex-shrink:0}
+.kpi-icon-bg{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.2);font-size:28px;color:#fff;flex-shrink:0}
 .sk-block{border-radius:4px;background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
-.spin-ring{width:26px;height:26px;border:2.5px solid var(--slate-100);border-top-color:var(--primary);border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0;aspect-ratio:1/1}
+.spin-ring{display:block!important;width:28px!important;height:28px!important;min-width:28px!important;min-height:28px!important;border:3px solid rgba(3,128,71,.15);border-top-color:var(--primary);border-radius:50%;animation:spin .75s linear infinite;flex-shrink:0!important;aspect-ratio:1/1!important;box-sizing:border-box}
 .spinner-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:12px;color:var(--slate-400);font-size:12px;font-weight:600}
 .kpi-card-hover{will-change:transform,box-shadow;cursor:default;position:relative!important;overflow:hidden!important;transition:transform .25s cubic-bezier(.34,1.56,.64,1)!important,box-shadow .25s ease!important,filter .25s ease!important}
 .kpi-card-hover::before{content:'';position:absolute;top:0;bottom:0;left:-100%;width:60%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);pointer-events:none;z-index:1}
@@ -129,7 +129,7 @@
 .do-sent-badge{padding:1px 6px;border-radius:3px;font-size:9px;font-weight:800;text-transform:uppercase}
 .do-sent-badge--pos{background:#dbeafe;color:#1d4ed8}.do-sent-badge--neg{background:#fee2e2;color:#991b1b}.do-sent-badge--neu{background:var(--slate-100);color:var(--slate-500)}
 .do-panel-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--slate-400);font-size:13px;font-weight:600}
-.do-panel-spinner{width:28px;height:28px;border:2.5px solid var(--slate-100);border-top-color:var(--primary);border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0;aspect-ratio:1/1}
+.do-panel-spinner{display:block!important;width:28px!important;height:28px!important;min-width:28px!important;min-height:28px!important;border:3px solid rgba(3,128,71,.15);border-top-color:var(--primary);border-radius:50%;animation:spin .75s linear infinite;flex-shrink:0!important;aspect-ratio:1/1!important;box-sizing:border-box}
 .do-detail-panel{position:absolute;inset:0;background:#fff;z-index:5;display:none;flex-direction:column;animation:slideInRight .2s cubic-bezier(.4,0,.2,1)}
 .do-detail-panel.show{display:flex}
 .do-dp2-header{display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--slate-50);border-bottom:1px solid var(--slate-200);flex-shrink:0}
@@ -169,7 +169,7 @@
 .page-export-btn-img{background:var(--primary-lt);color:var(--primary);border-color:rgba(3,128,71,.3)}
 .page-export-btn-img:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
 .page-export-btn:disabled{opacity:.55;cursor:not-allowed;pointer-events:none}
-.page-export-btn .export-spinner{width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .65s linear infinite;display:none;flex-shrink:0;aspect-ratio:1/1}
+.page-export-btn .export-spinner{width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .65s linear infinite;display:none}
 .page-export-btn.exporting .export-spinner{display:inline-block}
 .page-export-btn.exporting .export-icon{display:none}
 .card-exp-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:var(--radius-sm);font-size:14px;cursor:pointer;flex-shrink:0;transition:all .14s ease;border:1px solid transparent;font-family:inherit;background:transparent}
@@ -178,7 +178,7 @@
 .card-exp-btn-img{color:var(--primary);border-color:rgba(3,128,71,.3);background:var(--primary-lt)}
 .card-exp-btn-img:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
 .card-exp-btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
-.card-exp-btn .export-spinner{width:11px;height:11px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .65s linear infinite;display:none;flex-shrink:0;aspect-ratio:1/1}
+.card-exp-btn .export-spinner{width:11px;height:11px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .65s linear infinite;display:none}
 .card-exp-btn.exporting .export-spinner{display:inline-block}
 .card-exp-btn.exporting .export-icon{display:none}
 .export-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--slate-900);color:#fff;border-radius:var(--radius);padding:10px 18px;font-size:12px;font-weight:600;box-shadow:var(--shadow-lg);z-index:99999;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;display:flex;align-items:center;gap:8px;white-space:nowrap}
@@ -213,11 +213,11 @@
     <div class="row mb-3">
         @php
             $kpiCards = [
-                ['id' => 'kpiEng',      'label' => 'Total Engagement', 'icon' => 'ph-chart-bar',          'bg' => '#EF4444', 'sub' => 'kpiEngSub'],
-                ['id' => 'kpiLikes',    'label' => 'Total Likes',      'icon' => 'ph-heart',              'bg' => '#10B981', 'sub' => 'kpiLikesSub'],
-                ['id' => 'kpiComments', 'label' => 'Total Comments',   'icon' => 'ph-chat-circle-dots', 'bg' => '#F59E0B', 'sub' => 'kpiCommentsSub'],
-                ['id' => 'kpiPosts',    'label' => 'Total Posts',      'icon' => 'ph-image',              'bg' => '#273B4A', 'sub' => 'kpiPostsSub'],
-            ];
+    ['id' => 'kpiEng',      'label' => 'Total Engagement', 'icon' => 'ph-chart-bar',        'bg' => '#06B6D4', 'sub' => 'kpiEngSub'],
+    ['id' => 'kpiLikes',    'label' => 'Total Likes',      'icon' => 'ph-heart',            'bg' => '#F59E0B', 'sub' => 'kpiLikesSub'],
+    ['id' => 'kpiComments', 'label' => 'Total Comments',   'icon' => 'ph-chat-circle-dots', 'bg' => '#4CAF50', 'sub' => 'kpiCommentsSub'],
+    ['id' => 'kpiPosts',    'label' => 'Total Posts',      'icon' => 'ph-image',            'bg' => '#038047', 'sub' => 'kpiPostsSub'],
+];
             $delays = ['d1','d2','d3','d4'];
         @endphp
         @foreach($kpiCards as $ki => $kc)
@@ -294,7 +294,7 @@
                     <div class="donut-stack-wrap">
                         <div class="donut-chart-area">
                             <div class="chart-container" style="width:100%;max-width:420px;">
-                                <div class="chart-loading" id="loadingDonutHashtag"><div class="spin-ring"></div><span>—</span></div>
+                                <div class="chart-loading" id="loadingDonutHashtag"><div class="spin-ring"></div><span>Loading...</span></div>
                                 <div id="donutHashtagChart" style="width:100%;height:320px;display:none;"></div>
                             </div>
                         </div>
@@ -320,7 +320,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>—</span></div>
+                <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>Loading...</span></div>
                 <div id="hashtagContent" style="display:none;">
                     <div id="hashtagList" class="ht-list"></div>
                     <div id="pag-hashtag"></div>
@@ -355,7 +355,7 @@
                     <div class="donut-stack-wrap">
                         <div class="donut-chart-area">
                             <div class="chart-container" style="width:100%;max-width:420px;">
-                                <div class="chart-loading" id="loadingDonut-{{ $tp }}"><div class="spin-ring"></div><span>—</span></div>
+                                <div class="chart-loading" id="loadingDonut-{{ $tp }}"><div class="spin-ring"></div><span>Loading...</span></div>
                                 <div id="donutChart-{{ $tp }}" style="width:100%;height:320px;display:none;"></div>
                                 <div id="donutEmpty-{{ $tp }}" style="display:none;" class="chart-empty"><i class="ph ph-chart-donut"></i><span>No data</span></div>
                             </div>
@@ -388,7 +388,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>—</div></div>
+                <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div><span>Loading...</span></div></div>
                 <div id="pag-{{ $tp }}"></div>
             </div>
         </div>
@@ -552,7 +552,7 @@ const OVData = {
         const subMap = { like:'postbylike', comment:'postbycomment' };
         const rows   = parseInt(_$('rows-'+type)?.value||'100');
         const ls=_$('list-'+type);
-        if(ls) ls.innerHTML=`<div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div>`;
+        if(ls) ls.innerHTML=`<div class="spinner-state"><div class="spin-ring"></div><span>Loading...</span></div>`;
         try {
             const r = await fetch(`${API_BASE}/most-viewed-posts?project_id=${OVCfg.pid}&start_date=${OVCfg.sd}&end_date=${OVCfg.ed}&sub=${subMap[type]}&rows=${rows}`);
             const j = await r.json();
@@ -812,7 +812,7 @@ const OVPanel = {
     },
     _render(items,type) {
         const list=_$('ovPanelList'); if(!list) return;
-        if(!items?.length){ list.innerHTML='<div class="do-panel-loading"><div class="do-panel-spinner"></div>Tidak ada data</div>'; return; }
+        if(!items?.length){ list.innerHTML='<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Loading...</span></div>'; return; }
         const ml={like:'Likes',comment:'Komentar'}[type]||'Likes';
         list.innerHTML=items.slice(0,100).map(item=>{
             const nm=OVData._getName(item), av=OVData._getAvatar(item), cl=OVData._getColor(item),
