@@ -319,6 +319,18 @@ const totalEng = u => curSub==='rt_all'
 const _getInit = n => { if(!n||n==='Unknown')return'?'; const p=n.trim().split(/\s+/); return p.length===1?p[0].substring(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase(); };
 const _avUrl   = u => { const a=u.profile_image||u.profile_image_url||''; if(a)return a; const h=u.screen_name||u.username||''; return h?`https://unavatar.io/twitter/${h}`:''; };
 
+// NEW: Helper pembersih nama (Emoji & Channel ID)
+const _cleanName = (n, h) => {
+    if(!n) return h ? '@'+h : 'Unknown';
+    // Strip Emoji
+    let s = n.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E6}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F018}-\u{1F270}\u{1F300}-\u{1F5FF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+    s = s.trim();
+    // Cek jika masih berupa Channel ID (UC...) atau kosong setelah strip
+    const isID = /^UC[A-Za-z0-9_\-]{22}$/.test(s);
+    if(!s || isID) return h ? '@'+h : 'User';
+    return s;
+};
+
 let Store=[], curPage=1, curSub='rt';
 const PP = 15;
 let donutInst = null;
@@ -371,7 +383,7 @@ function updateKpi() {
     _$('kpiEngSub').innerHTML    = `<i class="ph ph-chart-bar me-1"></i>${cfg.engSub}`;
     if(n){
         const top=Store[0];
-        _$('kpiTopAcc').textContent   = top.name||('@'+(top.screen_name||''));
+        _$('kpiTopAcc').textContent   = _cleanName(top.name, top.screen_name);
         _$('kpiTopAccSub').innerHTML  = `<i class="ph ph-crown me-1"></i>${numF(totalEng(top))} engagements`;
         const avgF = Math.round(Store.reduce((s,u)=>s+parseInt(u.followers_count||u.author_followers_count||0),0)/n);
         _$('kpiAvgFol').textContent  = numK(avgF);
@@ -387,7 +399,7 @@ function renderDonut() {
     if(!top5.length){ ld.style.display='none'; em.style.display='flex'; return; }
     ld.style.display='none'; ch.style.display='block';
     const data  = top5.map((u,i)=>({
-        name: u.name||('@'+(u.screen_name||'')),
+        name: _cleanName(u.name, u.screen_name),
         value: totalEng(u),
         uname: u.screen_name||u.username||'',
         itemStyle: { color:DONUT_COLORS[i], borderColor:'#fff', borderWidth:3 }
@@ -434,7 +446,7 @@ rich:{
         }
     });
     window.addEventListener('resize', ()=>{ try{ donutInst.resize(); }catch(e){} });
-    lg.innerHTML = top5.map((u,i)=>`<span class="donut-leg-item" onclick="Panel.open(Store[${i}])"><span class="donut-dot" style="background:${DONUT_COLORS[i]}"></span>${esc((u.name||u.screen_name||'').substring(0,15))}</span>`).join('');
+    lg.innerHTML = top5.map((u,i)=>`<span class="donut-leg-item" onclick="Panel.open(Store[${i}])"><span class="donut-dot" style="background:${DONUT_COLORS[i]}"></span>${esc(_cleanName(Store[i].name, Store[i].screen_name).substring(0,15))}</span>`).join('');
 }
 
 /* ══ USER LIST ══ */
@@ -450,7 +462,8 @@ function renderList() {
     items.forEach((u,i)=>{
         const rk=start+i+1, rc=rk<=3?` ht-rank--${rk}`:'';
         const pct = Math.round((totalEng(u)/mx)*100);
-        const name=u.name||u.screen_name||'Unknown', uname=u.screen_name||u.username||'';
+        const uname=u.screen_name||u.username||'';
+        const name=_cleanName(u.name, uname);
         const src=_avUrl(u), init=_getInit(name);
         const avH = src
             ? `<img src="${esc(src)}" onerror="this.src='/assets/images/user/dummy.jpg'" alt="">`
@@ -495,7 +508,7 @@ const Panel = (() => {
         _u=user; _mentions=[]; _hasMore=false; _apiStart=0; _pg=1;
         if(_abort) try{ _abort.abort(); }catch(e){}
         _abort = new AbortController();
-        const name = user.name||user.screen_name||'Influencer';
+        const name = _cleanName(user.name, user.screen_name);
         _$('panelTitle').textContent = name+' — Profile';
         _$('panelBody').innerHTML    = _profileHTML(user)+'<div id="upMentions"><div class="up-loading"><div class="spin-ring"></div><span>Memuat tweets…</span></div></div>';
         _$('panelOverlay').classList.remove('hiding'); _$('panelOverlay').classList.add('show');
@@ -524,7 +537,7 @@ const Panel = (() => {
         } catch(e) { if(e.name!=='AbortError'){ console.error(e); _renderMentions(); } }
     }
     function _profileHTML(u) {
-        const name=u.name||u.screen_name||'Unknown', uname=u.screen_name||u.username||'', src=_avUrl(u), init=_getInit(name);
+        const name=_cleanName(u.name, u.screen_name), uname=u.screen_name||u.username||'', src=_avUrl(u), init=_getInit(name);
         const fol=parseInt(u.followers_count||u.author_followers_count||0), rt=parseInt(u.retweets||0), rep=parseInt(u.replies||0), tot=parseInt(u.total||0)||rt+rep;
         const avH=src
             ? `<img src="${esc(src)}" class="up-av" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="${esc(name)}"><div class="up-av-fb" style="display:none;">${esc(init)}</div>`

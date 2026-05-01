@@ -1,553 +1,481 @@
-<!doctype html>
-<html lang="id">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>@yield('title', 'SMADIMENT - Admin Dashboard')</title>
+@extends('admin.layouts.app')
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+@section('title', 'Admin Dashboard')
 
-  <style>
-    :root {
-      --primary-green: #038047;
-      --dark-blue: #273B4A;
-      --white: #FFFFFF;
-      --light-gray: #F1F5F8;
-      --text-dark: #273B4A;
-    }
+@section('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+<style>
+* { box-sizing: border-box; }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+:root {
+  --green:       #038047;
+  --green-dk:    #025a35;
+  --green-light: #E8F5E9;
+  --dark:        #1E293B;
+  --mid:         #475569;
+  --muted:       #94A3B8;
+  --border:      #E2E8F0;
+  --bg:          #F8FAFC;
+  --white:       #FFFFFF;
+  --r:           8px;
+  --font:        'Poppins', sans-serif;
+  --sh-sm:       0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+  --sh-md:       0 4px 14px rgba(15, 23, 42, .08);
+  --sh-lg:       0 10px 30px rgba(15, 23, 42, .12);
 
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: #273B4A;
-      color: var(--text-dark);
-      line-height: 1.6;
-      min-height: 100vh;
-    }
+  --c-news:  #3B82F6;
+  --c-twit:  #1DA1F2;
+  --c-fb:    #1877F2;
+  --c-ig:    #E1306C;
+  --c-yt:    #FF0000;
+  --c-tt:    #111827;
+}
 
-    /* Sidebar Navigation */
-    .sidebar {
-      position: fixed;
-      left: 0;
-      top: 0;
-      width: 280px;
-      height: 100vh;
-      background: var(--white);
-      border-right: 3px solid var(--light-gray);
-      padding: 32px 24px;
-      z-index: 100;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-    }
+/* ══ Topbar ══════════════════════════════════════ */
+.adm-topbar {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 24px; gap: 12px; flex-wrap: wrap;
+}
+.adm-page-title {
+  font-family: var(--font); font-size: 24px; font-weight: 700;
+  color: #fff; margin: 0 0 4px;
+}
+.adm-page-sub {
+  font-family: var(--font); font-size: 14px; color: rgba(255,255,255,0.7);
+  margin: 0; font-weight: 500;
+}
+.adm-date-pill {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px; background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;
+  font-family: var(--font); font-size: 13px; font-weight: 600; color: #fff;
+}
 
-    .logo {
-      margin-bottom: 48px;
-    }
+/* ══ Summary Strip ═══════════════════════════════ */
+.summary-strip {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;
+}
+.sum-card {
+  border-radius: 12px; padding: 20px; display: flex; align-items: center;
+  justify-content: space-between; box-shadow: var(--sh-md);
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s ease, filter .25s ease;
+  cursor: pointer; position: relative; overflow: hidden; color: #fff;
+}
+.sum-card::before {
+  content: ''; position: absolute; top: 0; bottom: 0; left: -100%;
+  width: 60%; background: linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
+  pointer-events: none; z-index: 1;
+}
+.sum-card:hover {
+  transform: translateY(-6px) scale(1.025); box-shadow: 0 20px 40px rgba(0,0,0,.25); filter: brightness(1.07);
+}
+.sum-card:hover::before { animation: kpiShimmer .6s ease forwards; }
+@keyframes kpiShimmer { 100% { left: 150%; } }
 
-    .logo h1 {
-      font-size: 32px;
-      font-weight: 900;
-      color: var(--primary-green);
-      letter-spacing: -1px;
-      margin-bottom: 8px;
-    }
+.sum-info { display: flex; flex-direction: column; z-index: 2; flex: 1; }
+.sum-lbl { font-family: var(--font); font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.75); margin-bottom: 4px; }
+.sum-val { font-family: var(--font); font-size: 28px; font-weight: 600; color: #fff; line-height: 1; margin: 4px 0; }
+.sum-sub { font-family: var(--font); font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 8px; display: flex; align-items: center; gap: 4px; }
 
-    .logo p {
-      font-size: 13px;
-      color: var(--dark-blue);
-      font-weight: 600;
-    }
+.sum-icon {
+  width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.2); flex-shrink: 0; z-index: 2; font-size: 24px; color: #fff; transition: background .2s ease;
+}
+.sum-card:hover .sum-icon { background: rgba(255,255,255,.35); }
+.sum-card:hover .sum-icon i { animation: kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both; }
+@keyframes kpiIconBounce { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
 
-    .nav-section {
-      margin-bottom: 32px;
-      flex: 1;
-    }
+/* ══ Two-column Main ═════════════════════════════ */
+.adm-main { display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; }
 
-    .nav-label {
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--dark-blue);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
-      padding-left: 12px;
-    }
+/* ══ Left Sidebar ════════════════════════════════ */
+.proj-sidebar {
+  background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: var(--sh-sm); overflow: hidden; position: sticky; top: 24px;
+}
+.proj-sidebar-head {
+  display: flex; align-items: center; justify-content: space-between; padding: 16px 20px;
+  border-bottom: 1px solid var(--border); background: var(--white);
+}
+.proj-sidebar-title {
+  font-family: var(--font); font-size: 15px; font-weight: 600; color: var(--dark);
+  display: flex; align-items: center; gap: 8px;
+}
+.proj-sidebar-title i { color: var(--muted); font-size: 18px; }
+.proj-sidebar-badge {
+  background: var(--green); color: #fff; padding: 4px 10px; border-radius: 99px;
+  font-family: var(--font); font-size: 12px; font-weight: 600;
+}
+.proj-list { padding: 0; max-height: 600px; overflow-y: auto; }
+.proj-list::-webkit-scrollbar { width: 4px; }
+.proj-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+.proj-item {
+  display: flex; align-items: center; gap: 12px; padding: 16px 20px;
+  border-bottom: 1px solid var(--bg); cursor: pointer; transition: all .15s ease;
+}
+.proj-item:last-child { border-bottom: none; }
+.proj-item:hover { background: var(--bg); }
+.proj-item.hl { background: var(--green-light); border-left: 3px solid var(--green); }
+.proj-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+  flex-shrink: 0; box-shadow: 0 0 0 3px var(--green-light); animation: pulseP 2.5s infinite;
+}
+@keyframes pulseP { 0%,100% { box-shadow: 0 0 0 3px var(--green-light) } 50% { box-shadow: 0 0 0 6px transparent } }
+.proj-info { flex: 1; min-width: 0; }
+.proj-name {
+  display: block; font-family: var(--font); font-size: 14px; font-weight: 500;
+  color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.proj-meta {
+  display: block; font-family: var(--font); font-size: 12px; color: var(--muted); margin-top: 4px;
+}
+.proj-arr { color: var(--muted); transition: color .15s; flex-shrink: 0; font-size: 16px; }
+.proj-item:hover .proj-arr { color: var(--green); }
 
-    .nav-item {
-      padding: 14px 16px;
-      margin-bottom: 6px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-dark);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: all 0.2s;
-    }
+/* ══ Charts Column ═══════════════════════════════ */
+.charts-col { display: flex; flex-direction: column; gap: 24px; }
 
-    .nav-item:hover {
-      background: var(--light-gray);
-      color: var(--primary-green);
-      transform: translateX(4px);
-    }
+/* ══ Chart Card ══════════════════════════════════ */
+.chart-card {
+  background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: var(--sh-sm); padding: 0; transition: border-color .3s, box-shadow .3s; overflow: hidden;
+}
+.chart-card.hl { border-color: var(--green); box-shadow: 0 0 0 3px rgba(3,128,71,.09), var(--sh-md); }
 
-    .nav-item.active {
-      background: var(--primary-green);
-      color: var(--white);
-    }
+.card-hd {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--white); flex-wrap: wrap;
+}
+.card-hd-left { display: flex; align-items: center; gap: 12px; }
+.card-hd-dot {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--green-light);
+  color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+}
+.card-title { font-family: var(--font); font-size: 15px; font-weight: 600; color: var(--dark); margin: 0 0 2px; }
+.card-sub { font-family: var(--font); font-size: 12px; color: var(--muted); font-weight: 500; }
+.card-actions { display: flex; align-items: center; gap: 6px; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
+  background: var(--green); color: #fff; border-radius: 6px; font-family: var(--font);
+  font-size: 12px; font-weight: 600; text-decoration: none; box-shadow: var(--sh-sm);
+  transition: all .18s; border: 1px solid var(--green);
+}
+.btn-primary:hover { filter: brightness(0.9); transform: translateY(-1px); color:#fff; }
+.btn-primary i { font-size: 16px; }
+.btn-icon {
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  background: var(--white); border: 1px solid var(--border); border-radius: 6px;
+  color: var(--mid); text-decoration: none; transition: all .18s; font-size: 16px;
+}
+.btn-icon:hover { background: var(--bg); border-color: var(--muted); color: var(--dark); transform: translateY(-1px); }
 
-    .nav-icon {
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--light-gray);
-      border-radius: 8px;
-      color: var(--primary-green);
-    }
+.card-bd { padding: 20px; }
 
-    .nav-icon svg {
-      width: 18px;
-      height: 18px;
-      stroke: currentColor;
-      fill: none;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
+/* ══ STATS PILLS ══════════════════════════════════ */
+.stats-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 20px; overflow-x: auto; scrollbar-width: none;
+}
+.stats-row::-webkit-scrollbar { display: none; }
+.stat-pill {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+  background: var(--white); border: 1px solid var(--border); border-radius: 8px;
+  flex-shrink: 0;
+}
+.stat-pill.all-pill { border-color: var(--green); background: var(--green-light); }
+.stat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.stat-info { display: flex; flex-direction: column; gap: 2px; }
+.stat-val { font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--dark); line-height: 1; }
+.stat-lbl { font-family: var(--font); font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
 
-    .nav-item.active .nav-icon {
-      background: rgba(255, 255, 255, 0.2);
-      color: var(--white);
-    }
+.card-divider { height: 1px; background: var(--border); margin-bottom: 20px; }
+.chart-wrap { height: 260px; position: relative; }
 
-    /* User Profile Section */
-    .user-profile {
-      padding: 20px;
-      background: var(--light-gray);
-      border-radius: 12px;
-      margin-bottom: 16px;
-    }
+.empty-main {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 80px 20px; background: var(--white); border: 1px dashed var(--border);
+  border-radius: var(--r); text-align: center; gap: 12px;
+}
+.empty-main i { font-size: 48px; color: var(--muted); }
+.empty-main h3 { font-family: var(--font); font-size: 18px; font-weight: 600; color: var(--dark); margin: 0; }
+.empty-main p  { font-family: var(--font); font-size: 14px; color: var(--muted); margin: 0; }
 
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
+/* ══ Responsive ══════════════════════════════════ */
+@media (max-width: 1200px) { .summary-strip { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 1024px) { .adm-main { grid-template-columns: 1fr; } .proj-sidebar { position: static; } }
+@media (max-width: 640px) {
+  .summary-strip { grid-template-columns: repeat(2,1fr); gap: 12px; }
+  .sum-card { padding: 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .sum-icon { position: absolute; top: 16px; right: 16px; width: 40px; height: 40px; font-size: 20px; }
+  .sum-val { font-size: 24px; }
+  .chart-card { padding: 0; }
+  .card-hd { flex-direction: column; align-items: flex-start; }
+  .card-actions { width: 100%; justify-content: flex-start; }
+  .chart-wrap { height: 220px; }
+  .adm-topbar { flex-direction: column; align-items: flex-start; gap: 16px; }
+}
+</style>
+@endsection
 
-    .user-avatar {
-      width: 48px;
-      height: 48px;
-      background: var(--primary-green);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--white);
-    }
+@section('content')
 
-    .user-details h4 {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--dark-blue);
-      margin-bottom: 2px;
-    }
+{{-- ── Top Bar ── --}}
+<div class="adm-topbar">
+  <div>
+    <h1 class="adm-page-title">Dashboard</h1>
+    <p class="adm-page-sub">Monitor & manage all projects</p>
+  </div>
+  <div class="adm-date-pill">
+    <i class="ph ph-calendar-blank"></i>
+    <span id="admDateLabel"></span>
+  </div>
+</div>
 
-    .user-details p {
-      font-size: 12px;
-      color: #7A8B96;
-      font-weight: 600;
-    }
-
-    /* Logout Button */
-    .logout-form {
-      width: 100%;
-    }
-
-    .btn-logout {
-      width: 100%;
-      padding: 12px;
-      background: transparent;
-      color: #FF6B6B;
-      border: 2px solid #FF6B6B;
-      border-radius: 10px;
-      font-family: 'Poppins', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .btn-logout:hover {
-      background: #FF6B6B;
-      color: var(--white);
-    }
-
-    /* Main Content */
-    .main-content {
-      margin-left: 280px;
-      padding: 32px;
-      min-height: 100vh;
-    }
-
-    /* Top Bar */
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 32px;
-      gap: 24px;
-    }
-
-    .page-title {
-      flex: 1;
-    }
-
-    .page-title h2 {
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--white);
-      margin-bottom: 4px;
-    }
-
-    .page-subtitle {
-      font-size: 14px;
-      color: var(--light-gray);
-      font-weight: 600;
-    }
-
-    /* Section */
-    .section {
-      background: var(--white);
-      border-radius: 20px;
-      border: 2px solid var(--light-gray);
-      overflow: hidden;
-      margin-bottom: 24px;
-    }
-
-    .section-header {
-      padding: 24px 28px;
-      background: linear-gradient(135deg, var(--light-gray) 0%, #E0E8EF 100%);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .section-title {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--dark-blue);
-    }
-
-    .item-count {
-      background: var(--primary-green);
-      color: var(--white);
-      padding: 6px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .section-body {
-      padding: 28px;
-    }
-
-    /* Project Cards Grid */
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-      gap: 24px;
-    }
-
-    /* Project Card */
-    .project-card {
-      background: var(--white);
-      border: 2px solid var(--light-gray);
-      border-radius: 16px;
-      overflow: hidden;
-      transition: all 0.3s;
-    }
-
-    .project-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(3, 128, 71, 0.12);
-      border-color: var(--primary-green);
-    }
-
-    .project-header {
-      padding: 20px 24px;
-      background: linear-gradient(135deg, var(--light-gray) 0%, #E0E8EF 100%);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .project-name {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--dark-blue);
-      margin: 0;
-    }
-
-    .project-badge {
-      background: var(--primary-green);
-      color: var(--white);
-      padding: 4px 12px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    .project-body {
-      padding: 20px 24px;
-    }
-
-    .project-id {
-      font-size: 12px;
-      font-weight: 700;
-      color: #7A8B96;
-      margin-bottom: 16px;
-    }
-
-    /* Mini Chart in Card */
-    .project-chart {
-      height: 120px;
-      margin-bottom: 16px;
-      background: #FAFBFC;
-      border-radius: 8px;
-      padding: 12px;
-    }
-
-    .project-stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .stat-mini {
-      text-align: center;
-      padding: 12px;
-      background: #FAFBFC;
-      border-radius: 8px;
-      border: 1px solid var(--light-gray);
-    }
-
-    .stat-mini-label {
-      font-size: 10px;
-      font-weight: 700;
-      color: #7A8B96;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-    }
-
-    .stat-mini-value {
-      font-size: 18px;
-      font-weight: 900;
-      color: var(--dark-blue);
-    }
-
-    .project-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn-primary-custom {
-      flex: 1;
-      padding: 12px;
-      background: var(--primary-green);
-      color: var(--white);
-      border: none;
-      border-radius: 10px;
-      font-family: 'Poppins', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-      text-align: center;
-    }
-
-    .btn-primary-custom:hover {
-      background: #025a34;
-      transform: translateY(-2px);
-    }
-
-    .btn-icon {
-      width: 44px;
-      height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--light-gray);
-      color: var(--primary-green);
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-    }
-
-    .btn-icon:hover {
-      background: var(--primary-green);
-      color: var(--white);
-    }
-
-    /* Empty State */
-    .empty-state {
-      text-align: center;
-      padding: 80px 24px;
-      background: var(--white);
-      border-radius: 20px;
-      border: 2px solid var(--light-gray);
-    }
-
-    .empty-icon {
-      font-size: 72px;
-      margin-bottom: 24px;
-      opacity: 0.2;
-      font-weight: 800;
-      color: var(--dark-blue);
-    }
-
-    .empty-title {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--dark-blue);
-      margin-bottom: 8px;
-    }
-
-    .empty-text {
-      font-size: 14px;
-      font-weight: 600;
-      color: #7A8B96;
-    }
-
-    /* Responsive */
-    @media (max-width: 1200px) {
-      .projects-grid {
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-      }
-    }
-
-    @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(-100%);
-      }
-
-      .main-content {
-        margin-left: 0;
-        padding: 20px;
-      }
-
-      .projects-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
-  @yield('styles')
-</head>
-
-<body>
-
-  <!-- Sidebar Navigation -->
-  <div class="sidebar">
-    <div class="logo">
-      <h1>SMADIMENT</h1>
-      <p>Admin Dashboard</p>
+{{-- ── Summary Strip ── --}}
+<div class="summary-strip">
+  <div class="sum-card" style="background:#06B6D4;">
+    <div class="sum-info">
+      <span class="sum-lbl">Total Projects</span>
+      <span class="sum-val">{{ count($projects) }}</span>
+      <span class="sum-sub"><i class="ph ph-folder"></i>All active projects</span>
     </div>
-
-    <div class="nav-section">
-      <div class="nav-label">Main</div>
-      <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-        <span class="nav-icon">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        </span>
-        <span>Dashboard</span>
-      </a>
-      <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-  <span class="nav-icon">
-    <svg viewBox="0 0 24 24">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-    </svg>
-  </span>
-  <span>User Management</span>
-</a>
+    <div class="sum-icon"><i class="ph ph-list-bullets"></i></div>
+  </div>
+  <div class="sum-card" style="background:#4CAF50;">
+    <div class="sum-info">
+      <span class="sum-lbl">Total Items</span>
+      <span class="sum-val">{{ number_format(collect($projects)->sum(fn($p) => $p['stats']['all'] ?? 0)) }}</span>
+      <span class="sum-sub"><i class="ph ph-activity"></i>Across all items</span>
     </div>
+    <div class="sum-icon"><i class="ph ph-chart-bar"></i></div>
+  </div>
+  <div class="sum-card" style="background:#F59E0B;">
+    <div class="sum-info">
+      <span class="sum-lbl">Active Sources</span>
+      <span class="sum-val">6</span>
+      <span class="sum-sub"><i class="ph ph-broadcast"></i>Monitored platforms</span>
+    </div>
+    <div class="sum-icon"><i class="ph ph-share-network"></i></div>
+  </div>
+  <div class="sum-card" style="background:#038047;">
+    <div class="sum-info">
+      <span class="sum-lbl">Social Posts</span>
+      <span class="sum-val">{{ number_format(collect($projects)->sum(fn($p) => ($p['stats']['twit'] ?? 0) + ($p['stats']['fb'] ?? 0) + ($p['stats']['ig'] ?? 0) + ($p['stats']['yt'] ?? 0) + ($p['stats']['tiktok'] ?? 0))) }}</span>
+      <span class="sum-sub"><i class="ph ph-users"></i>From social media</span>
+    </div>
+    <div class="sum-icon"><i class="ph ph-activity"></i></div>
+  </div>
+</div>
 
-    <!-- User Profile & Logout -->
-    <div>
-      <div class="user-profile">
-        <div class="user-info">
-          <div class="user-avatar">
-            {{ strtoupper(substr(Auth::guard('admin')->user()->name, 0, 1)) }}
+{{-- ── Main 2-col ── --}}
+<div class="adm-main">
+
+  {{-- Left: Project List --}}
+  <aside class="proj-sidebar">
+    <div class="proj-sidebar-head">
+      <span class="proj-sidebar-title"><i class="ph ph-list-bullets"></i>Projects</span>
+      <span class="proj-sidebar-badge">{{ count($projects) }}</span>
+    </div>
+    <div class="proj-list">
+      @forelse($projects as $project)
+      <div class="proj-item" data-id="{{ $project['id'] }}">
+        <div class="proj-dot"></div>
+        <div class="proj-info">
+          <span class="proj-name">{{ $project['name'] ?? $project['title'] ?? 'Unnamed' }}</span>
+          <span class="proj-meta">#{{ $project['id'] }} · {{ number_format($project['stats']['all'] ?? 0) }} items</span>
+        </div>
+        <i class="ph ph-caret-right proj-arr"></i>
+      </div>
+      @empty
+      <div style="padding:32px 16px;text-align:center;font-family:var(--font);font-size:13px;color:var(--muted);">
+        No projects available
+      </div>
+      @endforelse
+    </div>
+  </aside>
+
+  {{-- Right: Chart Cards --}}
+  <div class="charts-col">
+    @forelse($projects as $project)
+    <div class="chart-card" id="card-{{ $project['id'] }}">
+
+      {{-- Card Header --}}
+      <div class="card-hd">
+        <div class="card-hd-left">
+          <div class="card-hd-dot"><i class="ph ph-pulse"></i></div>
+          <div>
+            <h3 class="card-title">{{ $project['name'] ?? $project['title'] ?? 'Unnamed Project' }}</h3>
+            <span class="card-sub">Project #{{ $project['id'] }}</span>
           </div>
-          <div class="user-details">
-            <h4>{{ Auth::guard('admin')->user()->name }}</h4>
-            <p>{{ Auth::guard('admin')->user()->email }}</p>
-          </div>
+        </div>
+        <div class="card-actions">
+          <a href="{{ route('mk.sentiment', ['project_id' => $project['id']]) }}" class="btn-primary">
+            <i class="ph ph-chart-bar"></i> Analytics
+          </a>
+          <a href="{{ route('mk.geographic', ['project_id' => $project['id']]) }}" class="btn-icon" title="Geographic">
+            <i class="ph ph-map-pin"></i>
+          </a>
+          <a href="{{ route('mk.publisher', ['project_id' => $project['id']]) }}" class="btn-icon" title="Publisher">
+            <i class="ph ph-users"></i>
+          </a>
         </div>
       </div>
 
-      <form method="POST" action="{{ route('admin.logout') }}" class="logout-form">
-        @csrf
-        <button type="submit" class="btn-logout">
-          <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16 17 21 12 16 7"/>
-            <line x1="21" y1="12" x2="9" y2="12"/>
-          </svg>
-          Logout
-        </button>
-      </form>
+      <div class="card-bd">
+        {{-- Stat Pills (display only) --}}
+        @php
+          $stats = [
+            ['key'=>'all',    'lbl'=>'All',       'color'=>'#038047'],
+            ['key'=>'news',   'lbl'=>'News',      'color'=>'#3B82F6'],
+            ['key'=>'twit',   'lbl'=>'Twitter',   'color'=>'#1DA1F2'],
+            ['key'=>'fb',     'lbl'=>'Facebook',  'color'=>'#1877F2'],
+            ['key'=>'ig',     'lbl'=>'Instagram', 'color'=>'#E1306C'],
+            ['key'=>'yt',     'lbl'=>'YouTube',   'color'=>'#FF0000'],
+            ['key'=>'tiktok', 'lbl'=>'TikTok',    'color'=>'#111827'],
+          ];
+        @endphp
+
+        <div class="stats-row">
+          @foreach($stats as $st)
+          <div class="stat-pill {{ $st['key'] === 'all' ? 'all-pill' : '' }}">
+            <span class="stat-dot" style="background:{{ $st['color'] }}"></span>
+            <div class="stat-info">
+              <span class="stat-val">{{ number_format($project['stats'][$st['key']] ?? 0) }}</span>
+              <span class="stat-lbl">{{ $st['lbl'] }}</span>
+            </div>
+          </div>
+          @endforeach
+        </div>
+
+        <div class="card-divider"></div>
+
+        {{-- Chart --}}
+        <div class="chart-wrap">
+          <canvas id="chart-{{ $project['id'] }}"></canvas>
+        </div>
+      </div>
+
     </div>
+    @empty
+    <div class="empty-main">
+      <i class="ph ph-folder-open"></i>
+      <h3>No Projects Found</h3>
+      <p>There are no projects available at this moment.</p>
+    </div>
+    @endforelse
   </div>
 
-  <!-- Main Content -->
-  <div class="main-content">
-    @yield('content')
-  </div>
+</div>
 
-  <script>
-    // Global color palette
-    const colors = {
-      primaryGreen: '#038047',
-      darkBlue: '#273B4A',
-      white: '#FFFFFF',
-      lightGray: '#F1F5F8',
-      palette: [
-        '#038047', '#273B4A', '#FFFFFF', '#F1F5F8', '#1a5a3a',
-        '#3d5566', '#027037', '#1f4e5f', '#09b868', '#35576a'
-      ]
-    };
-  </script>
+@endsection
 
-  @yield('scripts')
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Date label
+  const now = new Date();
+  document.getElementById('admDateLabel').textContent =
+    now.toLocaleDateString('en-US', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
 
-</body>
-</html>
+  // Sidebar scroll to card
+  document.querySelectorAll('.proj-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const card = document.getElementById(`card-${el.dataset.id}`);
+      if (!card) return;
+      card.scrollIntoView({ behavior:'smooth', block:'start' });
+      card.classList.add('hl');
+      setTimeout(() => card.classList.remove('hl'), 2200);
+    });
+  });
+
+  buildCharts();
+});
+
+function buildCharts() {
+  const C = { blue:'#5AB9EA', orange:'#F59E0B', gray:'#94A3B8', red:'#F87171', white:'#FFFFFF', light:'#94A3B8', border:'#E2E8F0', dark:'#0F172A' };
+  const projects = @json($projects);
+
+  projects.forEach(project => {
+    const ctx = document.getElementById(`chart-${project.id}`);
+    if (!ctx) return;
+
+    const tl = project.timeline || {};
+    let labels = tl.dates || [];
+    let allData, posData, neuData, negData;
+
+    if (!labels.length) {
+      labels   = ['20 Feb','21 Feb','22 Feb','23 Feb','24 Feb','25 Feb','26 Feb'];
+      allData  = [520, 480, 610, 590, 720, 680, 800];
+      posData  = [210, 200, 260, 250, 300, 280, 340];
+      neuData  = [200, 185, 230, 220, 270, 255, 300];
+      negData  = [110, 95,  120, 120, 150, 145, 160];
+    } else {
+      allData = tl.values || [];
+      if (tl.sentiment?.positive) {
+        posData = tl.sentiment.positive;
+        neuData = tl.sentiment.neutral;
+        negData = tl.sentiment.negative;
+      } else {
+        posData = allData.map(v => Math.round(v * 0.42));
+        neuData = allData.map(v => Math.round(v * 0.38));
+        negData = allData.map(v => Math.round(v * 0.20));
+      }
+    }
+
+    const ds = (label, data, color, dashed = false) => ({
+      label, data,
+      borderColor: color, backgroundColor: 'transparent',
+      borderWidth: dashed ? 1.8 : 2.2,
+      borderDash: dashed ? [4,3] : [],
+      tension: 0.45,
+      pointRadius: 4, pointHoverRadius: 6,
+      pointBackgroundColor: color, pointBorderColor: C.white, pointBorderWidth: 2,
+      fill: false,
+    });
+
+    new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets: [
+        ds('New',      allData, C.blue),
+        ds('Positive', posData, C.orange),
+        ds('Neutral',  neuData, C.gray,  true),
+        ds('Negative', negData, C.red,   true),
+      ]},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        layout: { padding: { top:4, right:8, bottom:0, left:4 } },
+        plugins: {
+          legend: {
+            position:'bottom', align:'start',
+            labels: { usePointStyle:true, pointStyle:'circle', padding:16,
+              font:{ size:11, weight:'600', family:"'Poppins',sans-serif" },
+              color:C.light, boxWidth:7, boxHeight:7 }
+          },
+          tooltip: {
+            mode:'index', intersect:false,
+            backgroundColor:'#fff', titleColor:C.dark, bodyColor:C.dark,
+            borderColor:C.border, borderWidth:1, padding:12, cornerRadius:8,
+            titleFont:{ size:11,weight:'700',family:"'Poppins',sans-serif" },
+            bodyFont:{ size:11,weight:'500',family:"'Poppins',sans-serif" },
+            displayColors:true, boxWidth:7, boxHeight:7, boxPadding:5,
+            callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}` }
+          },
+        },
+        scales: {
+          x: {
+            grid:{ display:false }, border:{ display:false },
+            ticks:{ font:{size:10,weight:'500',family:"'Poppins',sans-serif"}, color:C.light, padding:6, maxRotation:0, autoSkip:true, maxTicksLimit:8 }
+          },
+          y: {
+            beginAtZero:true,
+            grid:{ color:'rgba(226,232,240,.8)', drawBorder:false, lineWidth:1 },
+            border:{ display:false },
+            ticks:{ font:{size:10,weight:'500',family:"'Poppins',sans-serif"}, color:C.light, padding:10, maxTicksLimit:5, callback:v=>v>=1000?(v/1000)+'k':v }
+          },
+        },
+        interaction:{ intersect:false, mode:'index' },
+      },
+    });
+  });
+}
+</script>
+@endsection

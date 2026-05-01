@@ -354,7 +354,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>Memuat topics…</span></div>
+                <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>Loading...</span></div>
                 <div id="hashtagContent" style="display:none;">
                     <div id="hashtagList" class="ht-list"></div>
                     <div id="pag-hashtag"></div>
@@ -426,7 +426,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
+                <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Loading...</div></div>
                 <div id="pag-{{ $tp }}"></div>
             </div>
         </div>

@@ -160,7 +160,7 @@
         <p>We're working hard to improve the user experience. Stay tuned!</p>
 
         <div class="btn-group">
-            <a href="mailto:support@smadiment.id" class="btn btn-dark">Contact Us</a>
+            
             <button onclick="location.reload()" class="btn btn-outline">Reload</button>
         </div>
     </div>

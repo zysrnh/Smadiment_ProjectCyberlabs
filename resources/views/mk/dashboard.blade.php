@@ -150,7 +150,6 @@
             width: 26px; height: 26px; border: 2.5px solid var(--slate-100);
             border-top-color: var(--dash-primary); border-radius: 50%;
             animation: spin .65s linear infinite;
-            flex-shrink: 0; aspect-ratio: 1/1; display: block;
         }
         .chart-loading span { font-size: 11px; font-weight: 600; color: var(--slate-400); }
         .chart-empty {
@@ -380,7 +379,6 @@
             width: 28px; height: 28px; border: 2.5px solid var(--slate-100);
             border-top-color: var(--dash-primary); border-radius: 50%;
             animation: spin .65s linear infinite;
-            flex-shrink: 0; aspect-ratio: 1/1;
         }
 
         /* ── Detail sub-panel ── */

@@ -14,12 +14,13 @@
 @keyframes overlayOut{from{opacity:1}to{opacity:0}}
 @keyframes kpiIconBounce{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.25) rotate(-10deg)}60%{transform:scale(1.1) rotate(6deg)}}
 @keyframes kpiShimmer{0%{left:-100%}100%{left:150%}}
-.fade-up{animation:fadeUp .38s ease-out both}
+.fade-up{animation:fadeUp .4s cubic-bezier(.16,1,.3,1) both}
 .fade-up-d1{animation-delay:.05s}.fade-up-d2{animation-delay:.10s}.fade-up-d3{animation-delay:.15s}.fade-up-d4{animation-delay:.20s}
-.kpi-icon-bg{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.2);font-size:24px;color:#fff;flex-shrink:0}
+.kpi-icon-bg{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.2);font-size:28px;color:#fff;flex-shrink:0}
 .sk-block{border-radius:4px;background:linear-gradient(90deg,var(--slate-100) 25%,var(--slate-200) 50%,var(--slate-100) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
-.spin-ring{width:26px;height:26px;border:2.5px solid var(--slate-100);border-top-color:var(--primary);border-radius:50%;animation:spin .65s linear infinite}
-.spinner-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:12px;color:var(--slate-400);font-size:12px;font-weight:600}
+.sk-card{border-radius:4px;background:linear-gradient(90deg,rgba(255,255,255,.1) 25%,rgba(255,255,255,.25) 50%,rgba(255,255,255,.1) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+.spin-ring{display:block;width:28px;height:28px;min-width:28px;min-height:28px;border:3px solid rgba(3,128,71,.15);border-top-color:var(--primary);border-radius:50%;animation:spin .75s linear infinite;flex-shrink:0;aspect-ratio:1/1;box-sizing:border-box}
+.spinner-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:12px;color:var(--slate-400);font-size:12px;font-weight:600;min-height:120px}
 .kpi-card-hover{will-change:transform,box-shadow;cursor:default;position:relative!important;overflow:hidden!important;transition:transform .25s cubic-bezier(.34,1.56,.64,1)!important,box-shadow .25s ease!important,filter .25s ease!important}
 .kpi-card-hover::before{content:'';position:absolute;top:0;bottom:0;left:-100%;width:60%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);pointer-events:none;z-index:1}
 .kpi-card-hover:hover{transform:translateY(-6px) scale(1.025)!important;box-shadow:0 20px 40px rgba(0,0,0,.25)!important;filter:brightness(1.07)!important}
@@ -136,7 +137,7 @@
 .do-sent-badge{padding:1px 6px;border-radius:3px;font-size:9px;font-weight:800;text-transform:uppercase}
 .do-sent-badge--pos{background:#dbeafe;color:#1d4ed8}.do-sent-badge--neg{background:#fee2e2;color:#991b1b}.do-sent-badge--neu{background:var(--slate-100);color:var(--slate-500)}
 .do-panel-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--slate-400);font-size:13px;font-weight:600}
-.do-panel-spinner{width:28px;height:28px;border:2.5px solid var(--slate-100);border-top-color:var(--primary);border-radius:50%;animation:spin .65s linear infinite}
+.do-panel-spinner{display:block;width:28px;height:28px;min-width:28px;min-height:28px;border:3px solid rgba(3,128,71,.15);border-top-color:var(--primary);border-radius:50%;animation:spin .75s linear infinite;flex-shrink:0;aspect-ratio:1/1;box-sizing:border-box}
 .do-detail-panel{position:absolute;inset:0;background:#fff;z-index:5;display:none;flex-direction:column;animation:slideInRight .2s cubic-bezier(.4,0,.2,1)}
 .do-detail-panel.show{display:flex}
 .do-dp2-header{display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--slate-50);border-bottom:1px solid var(--slate-200);flex-shrink:0}
@@ -236,7 +237,7 @@
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">{{ $kc['label'] }}</p>
                                 <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">
-                                    <span class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></span>
+                                    <span class="sk-card" style="height:28px;width:90px;display:block;"></span>
                                 </h3>
                                 <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="{{ $kc['sub'] }}">
                                     <i class="ph {{ $kc['icon'] }} me-1" style="vertical-align:text-bottom;"></i>—
@@ -336,7 +337,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>Memuat hashtag…</span></div>
+                <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>Loading...</span></div>
                 <div id="hashtagContent" style="display:none;">
                     <div id="hashtagList" class="ht-list"></div>
                     <div id="pag-hashtag"></div>
@@ -404,7 +405,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
+                <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Loading...</div></div>
                 <div id="pag-{{ $tp }}"></div>
             </div>
         </div>
@@ -583,7 +584,7 @@ const OVData = {
         const subMap = { view:'postbyview', like:'postbylike', comment:'postbycomment' };
         const rows   = parseInt(_$('rows-'+type)?.value||'100');
         const ls=_$('list-'+type);
-        if(ls) ls.innerHTML=`<div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div>`;
+        if(ls) ls.innerHTML=`<div class="spinner-state"><div class="spin-ring"></div>Loading...</div>`;
         try {
             const r = await fetch(`${API_BASE}/most-engagement?project_id=${OVCfg.pid}&start_date=${OVCfg.sd}&end_date=${OVCfg.ed}&sub=${subMap[type]}&rows=${rows}`);
             const j = await r.json();

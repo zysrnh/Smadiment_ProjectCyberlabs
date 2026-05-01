@@ -985,29 +985,123 @@ const MSTab = {
 };
 
 /* ══ ECharts Doughnut ══ */
-function makeEDoughnut(domId,labels,values,colors,onClickFns,subtitles){
-  const total=values.reduce((a,b)=>a+b,0);
-  const chart=MSCharts.make(domId);if(!chart)return null;
-  const seriesData=labels.map((label,i)=>({name:label,value:values[i],subtitle:subtitles?subtitles[i]:'',itemStyle:{color:colors[i],borderColor:'#fff',borderWidth:3,borderRadius:5}}));
-  chart.setOption({animation:true,animationDuration:800,animationEasing:'cubicOut',backgroundColor:'transparent',
-    tooltip:{trigger:'item',backgroundColor:'#1e293b',borderColor:'#334155',borderWidth:1,padding:[9,13],textStyle:{color:'#fff',fontFamily:'inherit',fontSize:12},extraCssText:'border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.3);',
-      formatter:params=>{const pct=total>0?((params.value/total)*100):0;const sub=params.data.subtitle?`<br><span style="color:#94a3b8;font-size:11px;">${params.data.subtitle}</span>`:'';const displayName=params.name.replace('Mass Media','Online News').replace('X (Twitter)','X');return`<div style="font-weight:700;font-size:13px;margin-bottom:5px;">${displayName}${sub}</div><div style="display:flex;justify-content:space-between;gap:20px;margin-top:4px;"><span style="color:#94a3b8;">Mentions</span><span style="font-weight:700;">${numFmt(params.value)}</span></div><div style="display:flex;justify-content:space-between;gap:20px;margin-top:3px;"><span style="color:#94a3b8;">Share</span><span style="font-weight:700;color:#34d399;">${pct<1&&pct>0?'<1':pct.toFixed(1)}%</span></div>`;}},
-    legend:{show:false},
-    series:[{type:'pie',radius:['40%','60%'],center:['50%','50%'],avoidLabelOverlap:true,minAngle:15,padAngle:2,
-      itemStyle:{borderRadius:5},
-      label:{show:true,alignTo:'labelLine',fontFamily:'inherit',fontSize:11,color:'#374151',distanceToLabelLine:5,
-        formatter:params=>{const pc=total>0?(params.value/total)*100:0;const rawName=String(params.name).split('\n')[0].replace(/ \d+(\.\d+)?%$/, '').replace('X (Twitter)','X').replace('Mass Media','Online News');const name=rawName.length>10?rawName.slice(0,9)+'…':rawName;return `{name|${name}}\n{pct|${Math.round(pc)}%}`;},
-        rich:{name:{fontWeight:'700',fontSize:10,color:'#1a202c',lineHeight:16},pct:{fontWeight:'800',fontSize:10,color:'#038047',lineHeight:14,backgroundColor:'#edf7f3',borderRadius:4,padding:[2,4]}}},
-      labelLine:{show:true,length:12,length2:16,smooth:0.4,lineStyle:{color:'#94a3b8',width:1.4}},
-      labelLayout:{hideOverlap:false,moveOverlap:'shiftY'},
-      emphasis:{scale:true,scaleSize:5,itemStyle:{shadowBlur:12,shadowColor:'rgba(0,0,0,.2)'}},data:seriesData}],
-    graphic:[
-      {type:'text',left:'center',top:'47%',z:100,style:{text:numK(total),fill:'#0f172a',font:"800 20px inherit",textAlign:'center'}},
-      {type:'text',left:'center',top:'55%',z:100,style:{text:'TOTAL',fill:'#94a3b8',font:"700 9px inherit",textAlign:'center',letterSpacing:2}},
-    ]});
-  if(onClickFns){chart.on('click',params=>{const fn=onClickFns[params.dataIndex];if(typeof fn==='function'){const rect=chart.getDom().getBoundingClientRect();fn(rect.left+rect.width/2,rect.top+rect.height/2);}});}
-  chart.on('mouseover',()=>{if(onClickFns)chart.getDom().style.cursor='pointer';});
-  chart.on('mouseout', ()=>{chart.getDom().style.cursor='default';});
+/* ══ ECharts Doughnut ══ */
+function makeEDoughnut(domId, labels, values, colors, onClickFns, subtitles) {
+  const total = values.reduce((a, b) => a + b, 0);
+  const chart = MSCharts.make(domId); if (!chart) return null;
+
+  const seriesData = labels.map((label, i) => ({
+    name     : label,
+    value    : values[i],
+    subtitle : subtitles ? subtitles[i] : '',
+    itemStyle: { color: colors[i], borderColor: '#fff', borderWidth: 3, borderRadius: 5 }
+  }));
+
+  chart.setOption({
+    animation: true, animationDuration: 800, animationEasing: 'cubicOut',
+    backgroundColor: 'transparent',
+
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: '#1e293b', borderColor: '#334155', borderWidth: 1,
+      padding: [9, 13],
+      textStyle: { color: '#fff', fontFamily: 'inherit', fontSize: 12 },
+      extraCssText: 'border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.3);',
+      formatter: params => {
+        const pct  = total > 0 ? (params.value / total * 100) : 0;
+        const sub  = params.data.subtitle
+          ? `<br><span style="color:#94a3b8;font-size:11px;">${params.data.subtitle}</span>` : '';
+        const dName = params.name
+          .replace('Mass Media', 'Online News')
+          .replace('X (Twitter)', 'X / Twitter');
+        return `<div style="font-weight:700;font-size:13px;margin-bottom:5px;">${dName}${sub}</div>
+                <div style="display:flex;justify-content:space-between;gap:20px;margin-top:4px;">
+                  <span style="color:#94a3b8;">Mentions</span>
+                  <span style="font-weight:700;">${numFmt(params.value)}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;gap:20px;margin-top:3px;">
+                  <span style="color:#94a3b8;">Share</span>
+                  <span style="font-weight:700;color:#34d399;">${pct.toFixed(1)}%</span>
+                </div>`;
+      }
+    },
+
+    legend: { show: false },
+
+    series: [{
+      type  : 'pie',
+      /* Smaller donut → more room for edge labels */
+      radius: ['32%', '50%'],
+      center: ['50%', '48%'],
+      avoidLabelOverlap: true,
+      /* minAngle:8 → even <1% slices get an arc wide enough for a label line */
+      minAngle : 8,
+      padAngle : 1.5,
+      itemStyle: { borderRadius: 5 },
+
+      label: {
+        show     : true,
+        /* alignTo:'edge' → labels are stacked neatly at left/right container edges,
+           connected by long lines — eliminates all overlap for clustered small slices */
+        alignTo      : 'edge',
+        edgeDistance : '6%',
+        fontFamily   : 'inherit',
+        distanceToLabelLine: 4,
+        formatter: params => {
+          const pc    = total > 0 ? (params.value / total * 100) : 0;
+          const rawName = String(params.name)
+            .replace('X (Twitter)', 'X / Twitter')
+            .replace('Mass Media', 'Online News');
+          /* Trim long names gracefully */
+          const name = rawName.length > 12 ? rawName.slice(0, 11) + '…' : rawName;
+          return `{name|${name}}\n{pct|${Math.round(pc)}%}`;
+        },
+        rich: {
+          name: { fontWeight: '700', fontSize: 10, color: '#1a202c', lineHeight: 16 },
+          pct : { fontWeight: '800', fontSize: 10, color: '#038047', lineHeight: 14,
+                  backgroundColor: '#edf7f3', borderRadius: 4, padding: [2, 4] }
+        }
+      },
+
+      labelLine: {
+        show       : true,
+        length     : 14,
+        length2    : 20,
+        smooth     : true,
+        lineStyle  : { color: '#94a3b8', width: 1.4 }
+      },
+
+      emphasis: {
+        scale: true, scaleSize: 5,
+        itemStyle: { shadowBlur: 12, shadowColor: 'rgba(0,0,0,.2)' }
+      },
+
+      data: seriesData
+    }],
+
+    graphic: [
+      {
+        type: 'text', left: 'center', top: '44%', z: 100,
+        style: { text: numK(total), fill: '#0f172a', font: '800 20px inherit', textAlign: 'center' }
+      },
+      {
+        type: 'text', left: 'center', top: '52%', z: 100,
+        style: { text: 'TOTAL', fill: '#94a3b8', font: '700 9px inherit', textAlign: 'center', letterSpacing: 2 }
+      }
+    ]
+  });
+
+  if (onClickFns) {
+    chart.on('click', params => {
+      const fn = onClickFns[params.dataIndex];
+      if (typeof fn === 'function') {
+        const rect = chart.getDom().getBoundingClientRect();
+        fn(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      }
+    });
+  }
+  chart.on('mouseover', () => { if (onClickFns) chart.getDom().style.cursor = 'pointer'; });
+  chart.on('mouseout',  () => { chart.getDom().style.cursor = 'default'; });
   return chart;
 }
 

@@ -189,7 +189,7 @@
                     </div>
                 </div>
             </div>
-            <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
+            <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Loading...</div></div>
             <div id="pag-{{ $tp }}"></div>
         </div>
     </div>
@@ -242,7 +242,7 @@
                     </div>
                 </div>
             </div>
-            <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>Memuat hashtag…</span></div>
+            <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>Loading</span></div>
             <div id="hashtagContent" style="display:none;"><div id="hashtagList" class="ht-list"></div><div id="pag-hashtag"></div></div>
             <div id="hashtagEmpty" style="display:none;" class="chart-empty"><i class="ph ph-hash"></i><span>Tidak ada data hashtag</span></div>
         </div>

@@ -297,11 +297,10 @@ body { background: var(--bg); }
 
     {{-- ════ HALAMAN 1 EXPORT ════ --}}
     <div id="exportPage1">
-
-    {{-- ══ KPI Cards ══ --}}
-    <div class="row mb-3">
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out both;">
+{{-- ══ KPI Cards ══ --}}
+<div class="row mb-3">
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out both;">
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Countries</p>
@@ -312,8 +311,8 @@ body { background: var(--bg); }
                 </div></div>
             </div>
         </div>
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
+     <div class="col-md-6 col-xl-3">
+        <div class="card h-100 bg-danger text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Users</p>
@@ -336,8 +335,8 @@ body { background: var(--bg); }
                 </div></div>
             </div>
         </div>
-        <div class="col-md-6 col-xl-3">
-            <div class="card h-100 bg-danger text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .15s both;">
+      <div class="col-md-6 col-xl-3">
+        <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .15s both;">
                 <div class="card-body"><div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Top Province</p>

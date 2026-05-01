@@ -1854,29 +1854,102 @@ const SNTExport = (() => {
       close(){ document.getElementById('sntDetailPanel')?.classList.remove('visible'); }
     };
 
-    /* ══ Patch Chart Click Handlers ══ */
+/* ══ Patch Chart Click Handlers ══ */
     const _origOverviewBar = renderOverviewBar;
-    window.renderOverviewBar = function(){ _origOverviewBar(); const c=SNTCharts._i['chOverview']; if(!c) return; c.on('click',p=>{ if(p.componentType!=='series') return; const sm={'Negative':'neg','Positive':'pos','Neutral':'neu'}; SNTPopup.open('all',sm[p.name]||'all'); }); c.on('mouseover',p=>{ if(p.componentType==='series') c.getDom().style.cursor='pointer'; }); c.on('mouseout',()=>{ c.getDom().style.cursor='default'; }); };
+    window.renderOverviewBar = function(){
+      _origOverviewBar();
+      const c = SNTCharts._i['chOverview']; if (!c) return;
+      c.on('click', p => {
+        if (p.componentType !== 'series') return;
+        const sm = { 'Negative':'neg', 'Positive':'pos', 'Neutral':'neu' };
+        SNTPopup.open('all', sm[p.name] || 'all');
+      });
+      c.on('mouseover', p => { if (p.componentType === 'series') c.getDom().style.cursor = 'pointer'; });
+      c.on('mouseout',  () => { c.getDom().style.cursor = 'default'; });
+    };
 
     const _origSovDoughnut = renderSovDoughnut;
-    window.renderSovDoughnut = function(domId,labels,values,colors,ready=false){ _origSovDoughnut(domId,labels,values,colors,ready); const c=SNTCharts._i[domId]; if(!c) return; c.on('click',p=>{ const sm={'Negative':'neg','Positive':'pos','Neutral':'neu'}; const sent=sm[p.name]||'all'; if(domId==='chSovTotal') SNTPopup.open('all',sent); else if(domId==='chMassPie') SNTPopup.open('doc',sent); else if(domId==='chSocialPie'){ const rect=c.getDom().getBoundingClientRect(); SNTPopup.showPlatPicker(rect.left+rect.width/2,rect.top+rect.height/2,sent); } }); c.on('mouseover',()=>{ c.getDom().style.cursor='pointer'; }); c.on('mouseout',()=>{ c.getDom().style.cursor='default'; }); };
+    window.renderSovDoughnut = function(domId, labels, values, colors, ready = false) {
+      _origSovDoughnut(domId, labels, values, colors, ready);
+      const c = SNTCharts._i[domId]; if (!c) return;
+      c.on('click', p => {
+        const sm   = { 'Negative':'neg', 'Positive':'pos', 'Neutral':'neu' };
+        const sent = sm[p.name] || 'all';
+        if      (domId === 'chSovTotal')   SNTPopup.open('all',    sent);
+        else if (domId === 'chMassPie')    SNTPopup.open('doc',    sent);
+        /* ★ Social pie → langsung buka panel social (semua platform), tidak pakai platform picker */
+        else if (domId === 'chSocialPie')  SNTPopup.open('social', sent);
+      });
+      c.on('mouseover', () => { c.getDom().style.cursor = 'pointer'; });
+      c.on('mouseout',  () => { c.getDom().style.cursor = 'default'; });
+    };
 
     const _origMassSocialBars = renderMassSocialBars;
-    window.renderMassSocialBars = function(){ _origMassSocialBars();['chMass','chSocial'].forEach(id=>{ const c=SNTCharts._i[id]; if(!c) return; const isMass=id==='chMass'; c.on('click',p=>{ if(p.componentType!=='series') return; const sm={'Negative':'neg','Positive':'pos','Neutral':'neu'}; const sent=sm[p.seriesName]||'all'; if(isMass) SNTPopup.open('doc',sent); else{const rect=c.getDom().getBoundingClientRect(); SNTPopup.showPlatPicker(rect.left+p.event.offsetX,rect.top+p.event.offsetY,sent);} }); c.on('mouseover',p=>{ if(p.componentType==='series') c.getDom().style.cursor='pointer'; }); c.on('mouseout',()=>{ c.getDom().style.cursor='default'; }); }); };
+    window.renderMassSocialBars = function() {
+      _origMassSocialBars();
+      ['chMass', 'chSocial'].forEach(id => {
+        const c      = SNTCharts._i[id]; if (!c) return;
+        const isMass = id === 'chMass';
+        c.on('click', p => {
+          if (p.componentType !== 'series') return;
+          const sm   = { 'Negative':'neg', 'Positive':'pos', 'Neutral':'neu' };
+          const sent = sm[p.seriesName] || 'all';
+          /* ★ Social bar → langsung buka panel social, tidak pakai platform picker */
+          SNTPopup.open(isMass ? 'doc' : 'social', sent);
+        });
+        c.on('mouseover', p => { if (p.componentType === 'series') c.getDom().style.cursor = 'pointer'; });
+        c.on('mouseout',  () => { c.getDom().style.cursor = 'default'; });
+      });
+    };
 
     const _origByTypePct = renderByTypePct;
-    window.renderByTypePct = function(){ _origByTypePct(); const c=SNTCharts._i['chByType']; if(!c) return; const lk={'Mass Media':'doc','X / Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'}; c.on('click',p=>{ if(p.componentType!=='series') return; const plat=lk[SNTData.byMedia[p.dataIndex]?.label]||'doc'; const sm={'Negative':'neg','Positive':'pos','Neutral':'neu'}; SNTPopup.open(plat,sm[p.seriesName]||'all'); }); c.on('mouseover',p=>{ if(p.componentType==='series') c.getDom().style.cursor='pointer'; }); c.on('mouseout',()=>{ c.getDom().style.cursor='default'; }); };
+    window.renderByTypePct = function() {
+      _origByTypePct();
+      const c  = SNTCharts._i['chByType']; if (!c) return;
+      const lk = { 'Mass Media':'doc', 'X / Twitter':'twit', 'Facebook':'fb', 'Instagram':'ig', 'YouTube':'yt', 'TikTok':'tiktok' };
+      c.on('click', p => {
+        if (p.componentType !== 'series') return;
+        const plat = lk[SNTData.byMedia[p.dataIndex]?.label] || 'doc';
+        const sm   = { 'Negative':'neg', 'Positive':'pos', 'Neutral':'neu' };
+        SNTPopup.open(plat, sm[p.seriesName] || 'all');
+      });
+      c.on('mouseover', p => { if (p.componentType === 'series') c.getDom().style.cursor = 'pointer'; });
+      c.on('mouseout',  () => { c.getDom().style.cursor = 'default'; });
+    };
 
     const _origByPlatGrouped = renderByPlatGrouped;
-    window.renderByPlatGrouped = function(){ _origByPlatGrouped(); const c=SNTCharts._i['chByPlat']; if(!c) return; c.on('click',p=>{ if(p.componentType!=='series') return; const sm={'Negative':'neg','Positive':'pos','Neutral':'neu'}; const sent=sm[p.seriesName]||'all'; const grps=['Mass Media','Social Media']; if(grps[p.dataIndex]==='Mass Media') SNTPopup.open('doc',sent); else{const rect=c.getDom().getBoundingClientRect(); SNTPopup.showPlatPicker(rect.left+rect.width/2,rect.top+p.event.offsetY,sent);} }); c.on('mouseover',p=>{ if(p.componentType==='series') c.getDom().style.cursor='pointer'; }); c.on('mouseout',()=>{ c.getDom().style.cursor='default'; }); };
+    window.renderByPlatGrouped = function() {
+      _origByPlatGrouped();
+      const c     = SNTCharts._i['chByPlat']; if (!c) return;
+      const grps  = ['Mass Media', 'Social Media'];
+      c.on('click', p => {
+        if (p.componentType !== 'series') return;
+        const sm   = { 'Negative':'neg', 'Positive':'pos', 'Neutral':'neu' };
+        const sent = sm[p.seriesName] || 'all';
+        /* ★ Social group → langsung buka panel social */
+        SNTPopup.open(grps[p.dataIndex] === 'Mass Media' ? 'doc' : 'social', sent);
+      });
+      c.on('mouseover', p => { if (p.componentType === 'series') c.getDom().style.cursor = 'pointer'; });
+      c.on('mouseout',  () => { c.getDom().style.cursor = 'default'; });
+    };
 
     const _origTimeChart = renderTimeChart;
-    window.renderTimeChart = function(domId,skelId,labels,negData,posData,neuData,totals,isHour=false){ _origTimeChart(domId,skelId,labels,negData,posData,neuData,totals,isHour); const c=SNTCharts._i[domId]; if(!c) return; c.on('click',p=>{ if(p.componentType!=='series') return; const sm={'Negative':'neg','Positive':'pos','Neutral':'neu'}; SNTPopup.open('all',sm[p.seriesName]||'all'); }); c.on('mouseover',p=>{ if(p.componentType==='series') c.getDom().style.cursor='pointer'; }); c.on('mouseout',()=>{ c.getDom().style.cursor='default'; }); };
+    window.renderTimeChart = function(domId, skelId, labels, negData, posData, neuData, totals, isHour = false) {
+      _origTimeChart(domId, skelId, labels, negData, posData, neuData, totals, isHour);
+      const c = SNTCharts._i[domId]; if (!c) return;
+      c.on('click', p => {
+        if (p.componentType !== 'series') return;
+        const sm = { 'Negative':'neg', 'Positive':'pos', 'Neutral':'neu' };
+        SNTPopup.open('all', sm[p.seriesName] || 'all');
+      });
+      c.on('mouseover', p => { if (p.componentType === 'series') c.getDom().style.cursor = 'pointer'; });
+      c.on('mouseout',  () => { c.getDom().style.cursor = 'default'; });
+    };
 
     const _origSNTPageInit = SNTPage.init.bind(SNTPage);
-    SNTPage.init = function(){ SNTPopup.init(); _origSNTPageInit(); };
+    SNTPage.init = function() { SNTPopup.init(); _origSNTPageInit(); };
 
     const _origSNTPageReload = SNTPage.reload.bind(SNTPage);
-    SNTPage.reload = function(){ SNTPopup._cache={}; _origSNTPageReload(); };
+    SNTPage.reload = function() { SNTPopup._cache = {}; _origSNTPageReload(); };
   </script>
 @endsection
