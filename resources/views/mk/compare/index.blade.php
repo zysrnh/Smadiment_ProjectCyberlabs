@@ -954,7 +954,7 @@
                     }
                     return [];
                 }
-                const eps = { doc: `/mk/api/news/mentions?${q}`, twit: `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`, fb: `/mk/api/news/fb-top-status?${q}&sub=fblike`, youtube: `/mk/api/news/ytb-top-status?${q}`, tiktok: `/mk/api/news/tiktok-top-status?${q}&sub=postbylike` };
+                const eps = { doc: `/mk/api/news/articles?${q}`, twit: `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`, fb: `/mk/api/news/fb-top-status?${q}&sub=fblike`, youtube: `/mk/api/news/ytb-top-status?${q}`, tiktok: `/mk/api/news/tiktok-top-status?${q}&sub=postbylike` };
                 const url = eps[platform]; if (!url) return [];
                 const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 30000);
                 try {
@@ -968,7 +968,7 @@
                     else if (Array.isArray(d?.results)) items = d.results;
                     else if (Array.isArray(d?.posts)) items = d.posts;
                     else if (Array.isArray(d)) items = d;
-                    if (platform === 'doc') items = items.filter(m => { const tc = String(m.tcode || '').toLowerCase(), mt = String(m.media_type || '').toLowerCase(); return tc === 'berita' || mt === 'berita' || mt === 'doc' || mt === 'news' || mt === 'online' || mt === 'article'; });
+                    // if (platform === 'doc') items = items.filter(m => { const tc = String(m.tcode || '').toLowerCase(), mt = String(m.media_type || '').toLowerCase(); return tc === 'berita' || mt === 'berita' || mt === 'doc' || mt === 'news' || mt === 'online' || mt === 'article'; });
                     return items.map(i => ({ ...i, _platform: platform }));
                 } catch (e) { clearTimeout(tid); return []; }
             }

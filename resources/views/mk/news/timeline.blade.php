@@ -506,7 +506,7 @@ async function _mtFetchOne(platform,pid,sd,ed){
     const rws = 500;
     const q='project_id='+pid+'&start_date='+cleanSd+'&end_date='+cleanEd+'&rows='+rws+'&start=0';
     if(platform==='ig'){for(const sub of['postbylike','postbycomment','postbydate','']){try{const r=await fetch('/mk/api/news/ig-top-status?'+q+(sub?'&sub='+sub:''));const d=await r.json();const items=Array.isArray(d&&d.data)?d.data:(Array.isArray(d)?d:[]);if(items.length>0){_mtCache[cKey]=items.map(i=>{i._platform=platform;return i;});return _mtCache[cKey];}}catch(e){continue;}}return[];}
-    const eps={doc:'/mk/api/news/mentions?'+q,twit:'/mk/api/news/mentions?'+q+'&media_type=twit',fb:'/mk/api/news/fb-top-status?'+q+'&sub=fblike',ytb:'/mk/api/news/ytb-top-status?'+q,tiktok:'/mk/api/news/tiktok-top-status?'+q+'&sub=postbylike'};
+    const eps={doc:'/mk/api/news/articles?'+q,twit:'/mk/api/news/mentions?'+q+'&media_type=twit',fb:'/mk/api/news/fb-top-status?'+q+'&sub=fblike',ytb:'/mk/api/news/ytb-top-status?'+q,tiktok:'/mk/api/news/tiktok-top-status?'+q+'&sub=postbylike'};
     const url=eps[platform];if(!url)return[];
     const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),30000);
     try{const r=await fetch(url,{signal:ctrl.signal});clearTimeout(tid);if(!r.ok)return[];const d=await r.json();

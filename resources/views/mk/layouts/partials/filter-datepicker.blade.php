@@ -200,9 +200,9 @@
             <button type="button" class="do-dp-preset" data-p="yesterday">Yesterday</button>
             <button type="button" class="do-dp-preset" data-p="last7">Last 7 Days</button>
             <button type="button" class="do-dp-preset" data-p="last30">Last 30 Days</button>
-            <button type="button" class="do-dp-preset" data-p="thismonth">This Month</button>
+            <button type="button" class="do-dp-preset active" data-p="thismonth">This Month</button>
             <button type="button" class="do-dp-preset" data-p="lastmonth">Last Month</button>
-            <button type="button" class="do-dp-preset active" data-p="custom">Custom Range</button>
+            <button type="button" class="do-dp-preset" data-p="custom">Custom Range</button>
         </div>
         <div class="do-dp-content">
             <div class="do-dp-header">
@@ -238,55 +238,69 @@ const DPicker = (()=>{
         if(p.length===3) return new Date(+p[0],+p[1]-1,+p[2]);
         return new Date(s);
     }
+    function thisMonthRange(){
+        const today=new Date(); today.setHours(0,0,0,0);
+        return { s: new Date(today.getFullYear(), today.getMonth(), 1), e: new Date(today) };
+    }
     function init(){
         const params = new URLSearchParams(window.location.search);
         const urlS = params.get('start_date');
         const urlE = params.get('end_date');
-
         const urlP = params.get('project_id');
-        // IF REQUIRED PARAMS MISSING: This is likely a first entry from sidebar.
-        // Recover from storage then redirect to keep state synchronized.
-        if(!urlS || !urlE || !urlP) {
-            const gs = localStorage.getItem('smadiment_g_start');
-            const ge = localStorage.getItem('smadiment_g_end');
-            const gp = localStorage.getItem('selected_project_id');
-            let needsRedirect = false;
-            
-            if(!urlS && gs) { params.set('start_date', gs); needsRedirect = true; }
-            if(!urlE && ge) { params.set('end_date', ge);   needsRedirect = true; }
-            if(!urlP && gp) { params.set('project_id', gp); needsRedirect = true; }
 
-            if(needsRedirect) {
+        /* ── Redirect dengan project_id dari storage jika belum ada ── */
+        if(!urlP) {
+            const gp = localStorage.getItem('selected_project_id');
+            if(gp) { params.set('project_id', gp); window.location.search = params.toString(); return; }
+        }
+
+        /* ── Default tanggal: pakai URL jika ada, fallback THIS MONTH ── */
+        const si=_dpEl('hiddenStartDate'),ei=_dpEl('hiddenEndDate');
+        if(urlS && urlE){
+            ds=parseLocal(urlS);
+            de=parseLocal(urlE);
+            /* Cek apakah range = this month → highlight preset */
+            const tm=thisMonthRange();
+            if(fmt(ds)===fmt(tm.s) && fmt(de)===fmt(tm.e)){
+                setActivePreset('thismonth');
+            } else {
+                setActivePreset('custom');
+            }
+        } else {
+            /* Tidak ada URL param → default ke bulan ini */
+            const tm=thisMonthRange();
+            ds=tm.s; de=tm.e;
+            setActivePreset('thismonth');
+            /* Auto-redirect agar URL sinkron */
+            if(urlP || localStorage.getItem('selected_project_id')){
+                params.set('start_date', fmt(ds));
+                params.set('end_date',   fmt(de));
+                if(!urlP && localStorage.getItem('selected_project_id'))
+                    params.set('project_id', localStorage.getItem('selected_project_id'));
                 window.location.search = params.toString();
-                return; // Wait for redirect
+                return;
             }
         }
 
-        const si=_dpEl('hiddenStartDate'),ei=_dpEl('hiddenEndDate');
-        // Final fallback to 7 days if somehow storage is empty
-        ds=urlS?parseLocal(urlS):(()=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-6);return d;})();
-        de=urlE?parseLocal(urlE):(()=>{const d=new Date();d.setHours(0,0,0,0);return d;})();
-
-        // Sync hidden inputs and display with resolved dates
         if(si) si.value = fmt(ds);
         if(ei) ei.value = fmt(de);
         const dd = _dpEl('doDateDisplay');
         if(dd) dd.textContent = fmt(ds) + ' – ' + fmt(de);
 
-        m1=new Date(ds);m2=new Date(ds);m2.setMonth(m2.getMonth()+1);
+        m1=new Date(ds); m2=new Date(ds); m2.setMonth(m2.getMonth()+1);
         render();
         _dpEl('doDateTrigger')?.addEventListener('click',open);
         document.querySelectorAll('.do-dp-preset').forEach(b=>b.addEventListener('click',onPreset));
         document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
-        // Inter-page syncing removed as per user request ("tiap halaman masing masing")
-        // Only use storage on initial entry (handled in init above)
         _dpEl('doProject')?.addEventListener('change',function(){
             _dpEl('hiddenProjectId').value=this.value;
-            // Ensure dates are set before submit
             _dpEl('hiddenStartDate').value = fmt(ds);
             _dpEl('hiddenEndDate').value = fmt(de);
             _dpEl('doFilterForm').submit();
         });
+    }
+    function setActivePreset(p){
+        document.querySelectorAll('.do-dp-preset').forEach(b=>b.classList.toggle('active', b.dataset.p===p));
     }
     function open(){_dpEl('doDpModal').classList.add('show');render();}
     function close(){_dpEl('doDpModal').classList.remove('show');}
@@ -294,23 +308,25 @@ const DPicker = (()=>{
         _dpEl('hiddenStartDate').value=fmt(ds);
         _dpEl('hiddenEndDate').value=fmt(de);
         _dpEl('doDateDisplay').textContent=fmt(ds)+' – '+fmt(de);
+        localStorage.setItem('smadiment_g_start', fmt(ds));
+        localStorage.setItem('smadiment_g_end', fmt(de));
         close();
         _dpEl('doFilterForm').submit();
     }
     function nav(dir){m1.setMonth(m1.getMonth()+dir);m2.setMonth(m2.getMonth()+dir);render();}
     function onPreset(e){
-        document.querySelectorAll('.do-dp-preset').forEach(b=>b.classList.remove('active'));
-        e.target.classList.add('active');
+        const p=e.target.dataset.p;
+        setActivePreset(p);
         const today=new Date();today.setHours(0,0,0,0);
-        switch(e.target.dataset.p){
-            case 'today':    ds=new Date(today);de=new Date(today);break;
-            case 'yesterday':ds=new Date(today);ds.setDate(today.getDate()-1);de=new Date(ds);break;
-            case 'last7':    de=new Date(today);ds=new Date(today);ds.setDate(today.getDate()-6);break;
-            case 'last30':   de=new Date(today);ds=new Date(today);ds.setDate(today.getDate()-29);break;
-            case 'thismonth':ds=new Date(today.getFullYear(),today.getMonth(),1);de=new Date(today);break;
-            case 'lastmonth':ds=new Date(today.getFullYear(),today.getMonth()-1,1);de=new Date(today.getFullYear(),today.getMonth(),0);break;
+        switch(p){
+            case 'today':     ds=new Date(today);de=new Date(today);break;
+            case 'yesterday': ds=new Date(today);ds.setDate(today.getDate()-1);de=new Date(ds);break;
+            case 'last7':     de=new Date(today);ds=new Date(today);ds.setDate(today.getDate()-6);break;
+            case 'last30':    de=new Date(today);ds=new Date(today);ds.setDate(today.getDate()-29);break;
+            case 'thismonth': {const tm=thisMonthRange();ds=tm.s;de=tm.e;break;}
+            case 'lastmonth': ds=new Date(today.getFullYear(),today.getMonth()-1,1);de=new Date(today.getFullYear(),today.getMonth(),0);break;
         }
-        if(e.target.dataset.p!=='custom'){m1=new Date(ds);m2=new Date(ds);m2.setMonth(m2.getMonth()+1);}
+        if(p!=='custom'){m1=new Date(ds);m2=new Date(ds);m2.setMonth(m2.getMonth()+1);}
         updDisp();render();
     }
     function render(){renderCal('doCal1',m1);renderCal('doCal2',m2);updDisp();}
@@ -337,8 +353,7 @@ const DPicker = (()=>{
         el.querySelectorAll('.do-cal-day:not(.dim):not(:disabled)').forEach(btn=>{
             btn.addEventListener('click',function(){
                 const d=parseLocal(this.dataset.date);
-                document.querySelectorAll('.do-dp-preset').forEach(b=>b.classList.remove('active'));
-                document.querySelector('[data-p="custom"]').classList.add('active');
+                setActivePreset('custom');
                 if(pickStart||d<ds){ds=d;de=d;pickStart=false;}
                 else{if(d>=ds)de=d;else{de=ds;ds=d;}pickStart=true;}
                 updDisp();render();

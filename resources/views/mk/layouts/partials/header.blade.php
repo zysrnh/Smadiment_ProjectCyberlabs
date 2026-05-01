@@ -170,6 +170,13 @@
 
     <script>
     (function() {
+        // Clear stale local storage dates on new sessions to enforce "This Month" default realtime
+        if (!sessionStorage.getItem('smad_sess_v2')) {
+            sessionStorage.setItem('smad_sess_v2', '1');
+            localStorage.removeItem('smadiment_g_start');
+            localStorage.removeItem('smadiment_g_end');
+        }
+
         const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
         const DAYS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
         let startDate = null, endDate = null, viewMonth1, viewMonth2, picking = 'start';
@@ -180,9 +187,9 @@
             const d = new Date(str); return isNaN(d) ? fallback : d;
         }
 
-        // Priority: URL params > localStorage (Global) > Server default
-        const initStart = params.get('start_date') || localStorage.getItem('smadiment_g_start');
-        const initEnd   = params.get('end_date')   || localStorage.getItem('smadiment_g_end');
+        // Priority: URL params > this month default (no more localStorage dates)
+        const initStart = params.get('start_date');
+        const initEnd   = params.get('end_date');
         if (initStart && initEnd) {
             startDate = parseOrDefault(initStart, new Date(today.getFullYear(), today.getMonth(), 1));
             endDate   = parseOrDefault(initEnd, today);
@@ -190,7 +197,28 @@
             startDate = new Date(today.getFullYear(), today.getMonth(), 1);
             endDate   = new Date(today);
         }
-        // Removed: localStorage.setItem overwrite here. Only save on explicit APPLY.
+
+        // Highlight correct preset
+        function detectPreset() {
+            const s=fmt(startDate), e=fmt(endDate);
+            const t=new Date(today);
+            const tm1=fmt(new Date(t.getFullYear(),t.getMonth(),1)), tme=fmt(t);
+            if(s===tm1 && e===tme) return 'thismonth';
+            const yd=new Date(t); yd.setDate(t.getDate()-1);
+            if(s===fmt(yd) && e===fmt(yd)) return 'yesterday';
+            if(s===fmt(t) && e===fmt(t)) return 'today';
+            const l7=new Date(t); l7.setDate(t.getDate()-6);
+            if(s===fmt(l7) && e===fmt(t)) return 'last7';
+            const l30=new Date(t); l30.setDate(t.getDate()-29);
+            if(s===fmt(l30) && e===fmt(t)) return 'last30';
+            const lms=new Date(t.getFullYear(),t.getMonth()-1,1), lme=new Date(t.getFullYear(),t.getMonth(),0);
+            if(s===fmt(lms) && e===fmt(lme)) return 'lastmonth';
+            return 'custom';
+        }
+        document.addEventListener('DOMContentLoaded', function(){
+            const det=detectPreset();
+            document.querySelectorAll('.gdp-preset').forEach(b=>b.classList.toggle('active',b.dataset.preset===det));
+        });
 
         viewMonth1 = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
         viewMonth2 = new Date(viewMonth1.getFullYear(), viewMonth1.getMonth() + 1, 1);
@@ -273,24 +301,19 @@
         // Sync filter datepicker on the page (if exists)
         function syncFilterDatepicker() {
             const sd = fmt(startDate), ed = fmt(endDate);
-            // Update hidden inputs
             const hsd = document.getElementById('hiddenStartDate');
             const hed = document.getElementById('hiddenEndDate');
             if (hsd) hsd.value = sd;
             if (hed) hed.value = ed;
-            // Update display text
             const dd = document.getElementById('doDateDisplay');
             if (dd) dd.textContent = sd + ' – ' + ed;
-            // Update modal display text
             const rt = document.getElementById('doDpRangeText');
             if (rt) rt.textContent = sd + ' – ' + ed;
         }
 
         function applyAndReload() {
-            // Save to Global storage
             localStorage.setItem('smadiment_g_start', fmt(startDate));
             localStorage.setItem('smadiment_g_end', fmt(endDate));
-
             const url = new URL(window.location.href);
             url.searchParams.set('start_date', fmt(startDate));
             url.searchParams.set('end_date', fmt(endDate));

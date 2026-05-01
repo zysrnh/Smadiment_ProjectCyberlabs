@@ -1740,16 +1740,41 @@ dataLabels: {
                 }
                 return [];
             }
+
+            /* ── Online News: use articles API (has proper URLs) ── */
+            if (platform === 'doc') {
+                const docQ = `project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=50&start=0&media=doc`;
+                const artUrl = `/mk/api/news/articles?${docQ}`;
+                const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
+                try {
+                    const r = await fetch(artUrl, { signal: ctrl.signal }); clearTimeout(tid);
+                    if (!r.ok) return [];
+                    const d = await r.json();
+                    let items = Array.isArray(d?.data) ? d.data : (Array.isArray(d) ? d : []);
+                    return items.map(i => ({
+                        ...i,
+                        _platform: 'doc',
+                        /* Normalise fields so panel renderer picks them up correctly */
+                        content:         i.content  || i.summary || '',
+                        title:           i.title    || 'Untitled',
+                        publisher:       i.publisher || i.name || '',
+                        source_name:     i.publisher || i.name || '',
+                        date_created:    i.date_created || '',
+                        url:             i.url || '',
+                        class_sentiment: String(i.class_sentiment ?? i.sentiment_class ?? i.sentiment ?? '0'),
+                    }));
+                } catch (e) { clearTimeout(tid); return []; }
+            }
+
             const eps = {
-                doc:     `/mk/api/news/mentions?${q}`,
                 twit:    `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,
                 fb:      `/mk/api/news/fb-top-status?${q}&sub=fblike`,
                 youtube: `/mk/api/news/ytb-top-status?${q}`,
                 tiktok:  `/mk/api/news/tiktok-top-status?${q}&sub=postbylike`,
             };
-            const twitFallback = `/mk/api/news/mentions?${q}&media_type=twit`;
+            const twitFallback = `/mk/api/news/mentions?${q}`;
             const url = eps[platform]; if (!url) return [];
-            const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 15000);
+            const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 20000);
             try {
                 const r = await fetch(url, { signal: ctrl.signal }); clearTimeout(tid);
                 if (!r.ok) return [];
@@ -1767,20 +1792,41 @@ dataLabels: {
                     if (vals.length && typeof vals[0]==='object') items = vals;
                 }
                 if (platform==='twit' && items.length===0) {
+                    /* Fallback 1: try most-retweets endpoint */
+                    try {
+                        const r1b = await fetch(`/mk/api/x/most-retweets?${q}`);
+                        if (r1b.ok) {
+                            const d1b = await r1b.json();
+                            if (Array.isArray(d1b?.data)) items = d1b.data;
+                            else if (Array.isArray(d1b)) items = d1b;
+                        }
+                    } catch(e1b) {}
+                }
+                if (platform==='twit' && items.length===0) {
+                    /* Fallback 2: try user-mentions endpoint */
+                    try {
+                        const r1c = await fetch(`/mk/api/x/user-mentions?${q}`);
+                        if (r1c.ok) {
+                            const d1c = await r1c.json();
+                            if (Array.isArray(d1c?.data)) items = d1c.data;
+                            else if (Array.isArray(d1c)) items = d1c;
+                        }
+                    } catch(e1c) {}
+                }
+                if (platform==='twit' && items.length===0) {
+                    /* Fallback 3: try mentions API with Twitter filtering */
                     try {
                         const r2 = await fetch(twitFallback);
                         const d2 = await r2.json();
                         let fb = Array.isArray(d2?.data?.data) ? d2.data.data : Array.isArray(d2?.data) ? d2.data : Array.isArray(d2) ? d2 : [];
                         items = fb.filter(m => {
                             const tc=String(m.tcode||'').toLowerCase(), mt=String(m.media_type||'').toLowerCase();
-                            return tc==='twit'||tc==='rt'||mt==='twit';
+                            const id=String(m.id||m.docid||'').toLowerCase(), url2=String(m.url||'').toLowerCase();
+                            return tc==='twit'||tc==='rt'||mt==='twit'||mt==='twitter'||mt==='x'
+                                ||id.startsWith('tw-')||url2.includes('twitter.com')||url2.includes('x.com');
                         });
                     } catch (e2) {}
                 }
-                if (platform==='doc') items = items.filter(m => {
-                    const tc=String(m.tcode||'').toLowerCase(), mt=String(m.media_type||'').toLowerCase();
-                    return tc==='berita'||mt==='berita'||mt==='doc'||mt==='news'||mt==='online'||mt==='article';
-                });
                 return items.map(i => ({ ...i, _platform: platform }));
             } catch (e) { clearTimeout(tid); return []; }
         }
@@ -1798,25 +1844,27 @@ dataLabels: {
                 return arr.map(item => {
                     const plat = item._platform || platform;
                     const meta = DashCfg.platMeta[plat] || { label: plat, color: accentColor };
+                    const ao0  = (() => { if (typeof item.author==='object'&&item.author) return item.author; try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
                     const rawName = (() => {
-                        if (plat==='fb')        return item.from_name||item.page_name||null;
+                        if (plat==='fb')        return item.from_name||item.page_name||item.author_name||ao0?.name||item.author_handle||null;
                         if (plat==='instagram') return item.username||item.user_name||null;
-                        if (plat==='tiktok')    return item.author_nickname||item.nickname||item.author?.nickname||null;
+                        if (plat==='tiktok')    return item.author_nickname||item.nickname||ao0?.nickname||null;
                         if (plat==='youtube')   return item.channel_title||item.channel_name||item.snippet?.channelTitle||null;
-                        if (plat==='twit') {
-                            const ao = typeof item.author==='object' ? item.author : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
-                            return item.name||ao?.name||ao?.scr_name||item.author_name||null;
-                        }
+                        if (plat==='twit')      return item.name||ao0?.name||ao0?.scr_name||item.author_name||item.author_scr_name||null;
                         return null;
                     })();
-                    const name  = (rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'Unknown').trim();
-                    const isNum = /^\d{10,}$/.test(name);
-                    const dName = isNum ? `User ${name.slice(-4)}` : name;
+                    let name  = (rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'').trim();
+                    /* If name is numeric ID, try to use handle/screen_name instead */
+                    if (!name || /^\d{5,}$/.test(name) || name.toLowerCase()==='unknown') {
+                        const altName = (item.author_handle||item.author_scr_name||item.screen_name||ao0?.scr_name||ao0?.username||item.username||item.nickname||'').trim();
+                        if (altName && !/^\d{5,}$/.test(altName)) name = altName;
+                        else if (!name) name = 'Unknown';
+                    }
+                    const dName = name;
                     const rawH = (() => {
                         if (plat==='instagram') return item.username||'';
                         if (plat==='twit') {
-                            const ao = typeof item.author==='object' ? item.author : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
-                            return item.screen_name||item.author_scr_name||ao?.scr_name||ao?.username||'';
+                            return item.screen_name||item.author_scr_name||ao0?.scr_name||ao0?.username||'';
                         }
                         return item.author_scr_name||item.screen_name||item.username||'';
                     })().trim();
@@ -1825,9 +1873,16 @@ dataLabels: {
                         const w = ['twit','instagram','tiktok'].includes(plat) ? (rawH.startsWith('@') ? rawH : '@'+rawH) : rawH;
                         return w.replace(/^@/,'').toLowerCase()===dName.toLowerCase() ? '' : w;
                     })();
-                    const text  = (item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,150);
-                    const ao    = (() => { if (typeof item.author==='object'&&item.author) return item.author; try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
-                    const av    = (item.avatar_url||item.profile_image_url||ao?.image||item.author_image||item.profile_image||item.thumbnail||'').trim();
+                    const text  = (() => {
+                        if (plat === 'doc') {
+                            /* For articles: show content snippet, fallback to title */
+                            const c = (item.content||'').replace(/<[^>]*>/g,'').trim();
+                            return c ? c.slice(0,150) : (item.title||'').slice(0,150);
+                        }
+                        return (item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,150);
+                    })();
+                    const artTitle = (plat === 'doc') ? (item.title||'').replace(/<[^>]*>/g,'').trim() : '';
+                    const av    = (item.avatar_url||item.profile_image_url||ao0?.image||item.author_image||item.profile_image||item.thumbnail||'').trim();
                     const dt    = (item.date_created||item.created_at||'').split('T')[0];
                     const sent  = _normSent(item);
                     const sentLbl = sent==='pos'?'Pos':sent==='neg'?'Neg':'Neu';
@@ -1836,6 +1891,27 @@ dataLabels: {
                     const avHtml = (av&&av.startsWith('http')) ? `<img src="${_es(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">` : ini;
                     const sentBadge = `do-sent-badge--${sent}`;
                     const enc = encodeURIComponent(JSON.stringify(item));
+
+                    /* For doc (Online News) items: show article title prominently */
+                    if (plat === 'doc' && artTitle) {
+                        const docUrl = (item.url||'').trim();
+                        return `<div class="do-panel-item" onclick="DashDetail.openEncoded('${enc}','${plat}')">
+                            <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);"><i class="ph ph-newspaper" style="font-size:16px;color:#fff;"></i></div>
+                            <div class="do-panel-item-body">
+                                <div class="do-panel-author" style="font-size:11px;color:#64748b;font-weight:600;">${_es(dName)}</div>
+                                <div style="font-size:12px;font-weight:700;color:#1e293b;line-height:1.35;margin:3px 0 4px;">${_es(artTitle.slice(0,100))}</div>
+                                <div class="do-panel-text" style="font-size:11px;">${_es(text||'(tidak ada konten)')}</div>
+                                <div class="do-panel-footer">
+                                    <span class="do-sent-badge ${sentBadge}">${sentLbl}</span>
+                                    <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
+                                    <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
+                                    ${docUrl ? `<a href="${_es(docUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" style="margin-left:auto;font-size:10px;font-weight:700;color:${meta.color};display:inline-flex;align-items:center;gap:3px;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'"><i class="ph ph-arrow-square-out" style="font-size:12px;"></i>Buka</a>` : ''}
+                                    ${dt ? `<span>${dt}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>`;
+                    }
+
                     return `<div class="do-panel-item" onclick="DashDetail.openEncoded('${enc}','${plat}')">
                         <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
                         <div class="do-panel-item-body">
@@ -1923,21 +1999,25 @@ dataLabels: {
             const SLBL = { pos:'Positif', neg:'Negatif', neu:'Netral' };
             const SBGS = { pos:'do-dp2-sent--pos', neg:'do-dp2-sent--neg', neu:'do-dp2-sent--neu' };
 
+            const ao2  = (() => { if (typeof item.author==='object'&&item.author) return item.author; try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
             const rawName = (() => {
-                if (platform==='fb')        return item.from_name||item.page_name||null;
+                if (platform==='fb')        return item.from_name||item.page_name||item.author_name||ao2?.name||item.author_handle||null;
                 if (platform==='instagram') return item.username||null;
-                if (platform==='tiktok')    return item.author_nickname||item.nickname||item.author?.nickname||null;
+                if (platform==='tiktok')    return item.author_nickname||item.nickname||ao2?.nickname||null;
                 if (platform==='youtube')   return item.channel_title||item.channel_name||item.snippet?.channelTitle||null;
-                if (platform==='twit') {
-                    const ao = typeof item.author==='object' ? item.author : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
-                    return item.name||ao?.name||ao?.scr_name||item.author_name||null;
-                }
+                if (platform==='twit')      return item.name||ao2?.name||ao2?.scr_name||item.author_name||item.author_scr_name||null;
                 return null;
             })();
-            const name    = (rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'Unknown').trim();
-            const handle  = ((platform==='instagram' ? item.username : '')||item.author_scr_name||item.screen_name||item.username||'').trim();
+            let name    = (rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'').trim();
+            /* If name is numeric ID, try to use handle/screen_name instead */
+            if (!name || /^\d{5,}$/.test(name) || name.toLowerCase()==='unknown') {
+                const altName = (item.author_handle||item.author_scr_name||item.screen_name||ao2?.scr_name||ao2?.username||item.username||item.nickname||'').trim();
+                if (altName && !/^\d{5,}$/.test(altName)) name = altName;
+                else if (!name) name = 'Unknown';
+            }
+            const handle  = ((platform==='instagram' ? item.username : '')||item.author_handle||item.author_scr_name||item.screen_name||ao2?.scr_name||item.username||'').trim();
             const content = (item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
-            const av      = (item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||item.thumbnail||'').trim();
+            const av      = (item.avatar_url||item.profile_image_url||ao2?.image||item.author_image||item.profile_image||item.thumbnail||'').trim();
             const dt      = item.date_created||item.created_at||'';
 
             title.textContent = name;
@@ -2076,13 +2156,18 @@ dataLabels: {
                 if (tid && nick) sourceUrl = `https://www.tiktok.com/@${nick}/video/${tid}`;
                 else if (tid)    sourceUrl = `https://vm.tiktok.com/${tid}`;
             } else if (platform === 'fb') {
-                const ao2   = typeof item.author==='object' ? item.author : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
-                const pname = item.page_name||item.from_name||ao2?.username||'';
-                const pid2  = item.post_id_s||item.post_id||item.story_id||item.docid?.replace('fb-','')||'';
-                const fbProfUrl = ao2?.profile_url || '';
-                if (fbProfUrl)         sourceUrl = fbProfUrl;
-                else if (pname&&pid2)  sourceUrl = `https://www.facebook.com/${pname}/posts/${pid2}`;
-                else if (pname)        sourceUrl = `https://www.facebook.com/${pname}`;
+                /* First check if the normalized data already has a URL */
+                const fbUrl = item.url||item.link||item.post_url||'';
+                if (fbUrl && fbUrl.startsWith('http') && (fbUrl.includes('facebook.com') || fbUrl.includes('fb.com') || fbUrl.includes('fb.watch'))) {
+                    sourceUrl = fbUrl;
+                } else {
+                    const pname = item.page_name||item.from_name||item.author_name||item.author_handle||ao2?.username||'';
+                    const pid2  = item.post_id_s||item.post_id||item.story_id||item.id||(item.docid||'').replace(/^fb-/,'')||'';
+                    const fbProfUrl = ao2?.profile_url || '';
+                    if (fbProfUrl)         sourceUrl = fbProfUrl;
+                    else if (pname&&pid2)  sourceUrl = `https://www.facebook.com/${pname}/posts/${pid2}`;
+                    else if (pname)        sourceUrl = `https://www.facebook.com/${pname}`;
+                }
             }
 
             /* Action buttons */
@@ -2112,21 +2197,42 @@ dataLabels: {
                 actionBtns = `<div class="do-dp2-actions"></div>`;
             }
 
-            body.innerHTML = `
-            <div class="do-dp2-avatar-row">
-                <div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
-                <div>
-                    <div class="do-dp2-name">${_es(name)}</div>
-                    ${handleDisp ? `<div class="do-dp2-handle">${_es(handleDisp)}</div>` : ''}
-                    <span class="do-dp2-plat-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span>
+            /* Build detail body — special layout for doc (Online News) */
+            const artTitle = (platform === 'doc') ? (item.title||'').replace(/<[^>]*>/g,'').trim() : '';
+
+            if (platform === 'doc') {
+                body.innerHTML = `
+                <div class="do-dp2-avatar-row">
+                    <div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);"><i class="ph ph-newspaper" style="font-size:22px;color:#fff;"></i></div>
+                    <div>
+                        <div class="do-dp2-name">${_es(name)}</div>
+                        <span class="do-dp2-plat-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span>
+                    </div>
                 </div>
-            </div>
-            ${dtFmt ? `<div class="do-dp2-meta">${dtFmt}</div>` : ''}
-            <div class="do-dp2-sent ${SBGS[sent]}">${SLBL[sent]}</div>
-            ${mediaHtml}
-            ${content ? `<div class="do-dp2-content">${_es(content)}</div>` : ''}
-            ${statsHtml}
-            ${actionBtns}`;
+                ${dtFmt ? `<div class="do-dp2-meta">${dtFmt}</div>` : ''}
+                <div class="do-dp2-sent ${SBGS[sent]}">${SLBL[sent]}</div>
+                ${artTitle ? `<div style="font-size:15px;font-weight:700;color:#1e293b;line-height:1.4;margin:8px 0 12px;padding:0 2px;">${_es(artTitle)}</div>` : ''}
+                ${mediaHtml}
+                ${content ? `<div class="do-dp2-content">${_es(content)}</div>` : ''}
+                ${statsHtml}
+                ${actionBtns}`;
+            } else {
+                body.innerHTML = `
+                <div class="do-dp2-avatar-row">
+                    <div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
+                    <div>
+                        <div class="do-dp2-name">${_es(name)}</div>
+                        ${handleDisp ? `<div class="do-dp2-handle">${_es(handleDisp)}</div>` : ''}
+                        <span class="do-dp2-plat-badge" style="background:${meta.color}22;color:${meta.color};">${meta.label}</span>
+                    </div>
+                </div>
+                ${dtFmt ? `<div class="do-dp2-meta">${dtFmt}</div>` : ''}
+                <div class="do-dp2-sent ${SBGS[sent]}">${SLBL[sent]}</div>
+                ${mediaHtml}
+                ${content ? `<div class="do-dp2-content">${_es(content)}</div>` : ''}
+                ${statsHtml}
+                ${actionBtns}`;
+            }
 
             panel.classList.add('show');
         },
