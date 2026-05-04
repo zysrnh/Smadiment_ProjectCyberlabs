@@ -9,14 +9,40 @@
     <div class="col-lg-4 col-xl-3 mb-4">
         <div class="card h-100 shadow-sm border-0">
             <div class="card-body text-center pt-5">
-                <div class="position-relative d-inline-flex align-items-center justify-content-center mb-3 profile-avatar-container"
-                     style="width: 130px; height: 130px; border-radius: 50%; background: var(--primary-green, #038047); color: #fff; font-size: 48px; font-weight: 800; border: 5px solid #f8fafc; box-shadow: 0 8px 16px rgba(0,0,0,0.08);">
-                    {{ strtoupper(substr(auth()->user()->name ?? 'Admin', 0, 2)) }}
-                </div>
+                <form action="{{ route('mk.profile.avatar') }}" method="POST" enctype="multipart/form-data" id="avatarForm">
+                    @csrf
+                    <div class="position-relative d-inline-flex align-items-center justify-content-center mb-3 profile-avatar-container"
+                         style="width: 130px; height: 130px; border-radius: 50%; background: var(--primary-green, #038047); color: #fff; font-size: 48px; font-weight: 800; border: 5px solid #f8fafc; box-shadow: 0 8px 16px rgba(0,0,0,0.08); overflow: hidden; cursor: pointer;"
+                         onclick="document.getElementById('avatarInput').click()">
+                        
+                        @if(auth()->user()->avatar)
+                            <img src="{{ asset(ltrim(auth()->user()->avatar, '/')) }}" 
+                                 alt="Avatar" 
+                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <span style="display:none; width:100%; height:100%; align-items:center; justify-content:center;">
+                                {{ strtoupper(substr(auth()->user()->name ?? 'Admin', 0, 2)) }}
+                            </span>
+                        @else
+                            {{ strtoupper(substr(auth()->user()->name ?? 'Admin', 0, 2)) }}
+                        @endif
+
+                        <div class="avatar-upload-overlay">
+                            <i class="ph ph-camera"></i>
+                            <span>Change</span>
+                        </div>
+                    </div>
+                    <input type="file" name="avatar" id="avatarInput" style="display: none;" accept="image/*" onchange="document.getElementById('avatarForm').submit()">
+                </form>
                 
                 @if(session('success'))
                     <div class="alert alert-success py-2 px-3 mt-2" style="font-size: 13px; border-radius: 8px;">
                         {{ session('success') }}
+                    </div>
+                @endif
+                @if(session('error'))
+                    <div class="alert alert-danger py-2 px-3 mt-2" style="font-size: 13px; border-radius: 8px;">
+                        {{ session('error') }}
                     </div>
                 @endif
                 @error('avatar')

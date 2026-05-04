@@ -472,11 +472,11 @@
   <div class="hero-inner">
     <div class="hero-badge">
       <div class="hero-badge-dot"></div>
-      <span>Smadiment Analytic Platform</span>
+      <span>Smadiment Intelligence</span>
     </div>
 
     <h1 class="hero-title">
-      Pantau. Analisis.<br><em>Ambil Keputusan.</em>
+      Understanding People,<br><em>Empowering Decisions.</em>
     </h1>
 
     <p class="hero-sub">

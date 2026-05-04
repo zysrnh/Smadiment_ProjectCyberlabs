@@ -1856,9 +1856,13 @@ dataLabels: {
                     let name  = (rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'').trim();
                     /* If name is numeric ID, try to use handle/screen_name instead */
                     if (!name || /^\d{5,}$/.test(name) || name.toLowerCase()==='unknown') {
-                        const altName = (item.author_handle||item.author_scr_name||item.screen_name||ao0?.scr_name||ao0?.username||item.username||item.nickname||'').trim();
-                        if (altName && !/^\d{5,}$/.test(altName)) name = altName;
-                        else if (!name) name = 'Unknown';
+                        const altName = (item.author_handle||item.author_scr_name||item.screen_name||ao0?.scr_name||ao0?.username||item.username||item.nickname||ao0?.name||'').trim();
+                        if (altName && !/^\d{5,}$/.test(altName)) {
+                            name = altName;
+                        } else {
+                            const lbls = { fb:'Facebook User', twit:'Twitter User', youtube:'YouTube User', instagram:'Instagram User', tiktok:'TikTok User' };
+                            name = lbls[plat] || 'Unknown User';
+                        }
                     }
                     const dName = name;
                     const rawH = (() => {
@@ -2011,9 +2015,13 @@ dataLabels: {
             let name    = (rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'').trim();
             /* If name is numeric ID, try to use handle/screen_name instead */
             if (!name || /^\d{5,}$/.test(name) || name.toLowerCase()==='unknown') {
-                const altName = (item.author_handle||item.author_scr_name||item.screen_name||ao2?.scr_name||ao2?.username||item.username||item.nickname||'').trim();
-                if (altName && !/^\d{5,}$/.test(altName)) name = altName;
-                else if (!name) name = 'Unknown';
+                const altName = (item.author_handle||item.author_scr_name||item.screen_name||ao2?.scr_name||ao2?.username||item.username||item.nickname||ao2?.name||'').trim();
+                if (altName && !/^\d{5,}$/.test(altName)) {
+                    name = altName;
+                } else {
+                    const lbls = { fb:'Facebook User', twit:'Twitter User', youtube:'YouTube User', instagram:'Instagram User', tiktok:'TikTok User' };
+                    name = lbls[platform] || 'Unknown User';
+                }
             }
             const handle  = ((platform==='instagram' ? item.username : '')||item.author_handle||item.author_scr_name||item.screen_name||ao2?.scr_name||item.username||'').trim();
             const content = (item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
@@ -2048,28 +2056,40 @@ dataLabels: {
                 } catch (e) { dtFmt = dt.split(/[T\s]/)[0]; }
             }
 
-            /* Media embed */
-            let mediaHtml = '';
+            /* Media embed & YouTube ID detection */
+            let ytId = '';
             if (platform === 'youtube') {
-                let ytId = ((item.url||'').match(/[?&]v=([a-zA-Z0-9_-]{11})/)||
-                              (item.url||'').match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)||
-                              (item.url||'').match(/shorts\/([a-zA-Z0-9_-]{11})/)||[])[1]
-                           || (item.video_id||item.youtube_id||'');
-                if (!ytId && item.id) { const strId = String(item.id); if(strId.length === 11) ytId = strId; }
-                const thumb = item.thumbnail||item.thumbnail_url||item.image_url||(ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
+                const url = item.url || item.link || item.permalink || item.original_url || '';
+                ytId = ((url).match(/[?&]v=([a-zA-Z0-9_-]{11})/)||
+                        (url).match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)||
+                        (url).match(/shorts\/([a-zA-Z0-9_-]{11})/)||
+                        (url).match(/embed\/([a-zA-Z0-9_-]{11})/)||[])[1];
+                
+                if (!ytId) {
+                    const flds = ['video_id','youtube_id','id_str','post_id','docid','id','sub_id'];
+                    for(let f of flds) {
+                        let v = item[f]; if(!v) continue;
+                        let s = String(v).replace(/^(yt[-_])/i, '');
+                        if(s.length===11) { ytId=s; break; }
+                    }
+                }
+                if (!ytId && item.snippet) ytId = item.snippet.videoId || item.snippet.resourceId?.videoId;
+
+                const thumb = item.thumbnail||item.thumbnail_url||item.image_url||item.cover||item.picture||(ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
+                
                 if (ytId) {
                     const eid = `yt_${ytId}_${Date.now()}`;
-                    mediaHtml = `<div id="${eid}" style="position:relative;cursor:pointer;border-radius:6px;overflow:hidden;background:#000;margin-bottom:10px;"
-                        onclick="document.getElementById('${eid}').innerHTML='<iframe width=\\'100%\\' height=\\'260\\' src=\\'https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1\\' frameborder=\\'0\\' allowfullscreen></iframe>'">
-                        <img src="${thumb||`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}" style="width:100%;height:200px;object-fit:cover;display:block;" onerror="this.src='https://img.youtube.com/vi/${ytId}/mqdefault.jpg'">
-                        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25);">
-                            <div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.4);">
-                                <i class="ph ph-play-fill" style="font-size:22px;color:#fff;margin-left:3px;"></i>
+                    mediaHtml = `<div id="${eid}" class="do-dp2-media" style="position:relative;cursor:pointer;background:#000;height:220px;"
+                        onclick="document.getElementById('${eid}').innerHTML='<iframe width=\\'100%\\' height=\\'220\\' src=\\'https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1\\' frameborder=\\'0\\' allowfullscreen style=\\'border-radius:6px;\\'></iframe>'; document.getElementById('${eid}').style.height='auto';">
+                        <img src="${thumb||`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.src='https://img.youtube.com/vi/${ytId}/mqdefault.jpg'">
+                        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.15);">
+                            <div style="width:52px;height:36px;background:#ff0000;border-radius:8px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.3);">
+                                <i class="ph ph-play-fill" style="font-size:20px;color:#fff;margin-left:2px;"></i>
                             </div>
                         </div>
                     </div>`;
                 } else if (thumb) {
-                    mediaHtml = `<div class="do-dp2-media"><img src="${_es(thumb)}" onerror="this.parentElement.style.display='none'" style="border-radius:6px;"></div>`;
+                    mediaHtml = `<div class="do-dp2-media"><img src="${_es(thumb)}" onerror="this.parentElement.style.display='none'"></div>`;
                 }
             } else if (platform === 'tiktok') {
                 const tid   = ((item.url||'').match(/\/video\/(\d+)/)||(item.url||'').match(/\/v\/(\d+)/)||[])[1]||(item.video_id||item.aweme_id||'');
@@ -2147,7 +2167,6 @@ dataLabels: {
                 if (shortcode)          sourceUrl = `https://www.instagram.com/p/${shortcode}/`;
                 else if (item.username) sourceUrl = `https://www.instagram.com/${item.username}/`;
             } else if (platform === 'youtube') {
-                const ytId = item.video_id||item.youtube_id||item.id||'';
                 if (ytId)                sourceUrl = `https://www.youtube.com/watch?v=${ytId}`;
                 else if (item.channel_id) sourceUrl = `https://www.youtube.com/channel/${item.channel_id}`;
             } else if (platform === 'tiktok') {

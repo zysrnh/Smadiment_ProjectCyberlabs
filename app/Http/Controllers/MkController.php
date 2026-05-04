@@ -1119,23 +1119,46 @@
     public function updateAvatar(Request $request)
     {
         $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         $user = Auth::user();
 
-        if ($request->file('avatar')) {
+        try {
             $file = $request->file('avatar');
             $filename = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
-            
-            // Simpan di public/avatars
-            $file->move(public_path('avatars'), $filename);
 
-            // Update user record
-            $user->avatar = asset('avatars/' . $filename);
+            // Simpan file baru di storage/app/public/avatars
+            $path = $file->storeAs('avatars', $filename, 'public');
+
+            // Hapus avatar lama jika ada
+            if ($user->avatar) {
+                // Ambil path relatif dari URL, contoh: /storage/avatars/xxx.jpg -> avatars/xxx.jpg
+                $oldPath = str_replace('/storage/', '', $user->avatar);
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+                }
+            }
+
+            // Update user record: URL menggunakan /storage/...
+            $user->avatar = '/storage/' . $path;
             $user->save();
-        }
 
-        return redirect()->back()->with('success', 'Profile picture updated successfully!');
+            Log::info('Avatar updated successfully', [
+                'user_id'  => $user->id,
+                'filename' => $filename,
+                'path'     => $user->avatar,
+            ]);
+
+            return redirect()->back()->with('success', 'Profile picture updated successfully!');
+
+        } catch (\Exception $e) {
+            Log::error('Avatar upload failed', [
+                'user_id' => $user->id,
+                'error'   => $e->getMessage(),
+            ]);
+
+            return redirect()->back()->with('error', 'Failed to upload profile picture. Please try again.');
+        }
     }
 }

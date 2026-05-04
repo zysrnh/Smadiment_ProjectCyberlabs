@@ -405,29 +405,20 @@ function changeProject(projectId, projectName) {
     localStorage.setItem('selected_project_id', projectId);
     const url = new URL(window.location.href);
     url.searchParams.set('project_id', projectId);
-    // Preserve existing dates if in URL, otherwise use GLOBAL storage or defaults
-    if (!url.searchParams.get('start_date')) {
-        const saved = localStorage.getItem('smadiment_g_start');
-        if (saved) {
-            url.searchParams.set('start_date', saved);
-        } else {
-            const now = new Date();
-            const y = now.getFullYear();
-            const m = String(now.getMonth() + 1).padStart(2, '0');
-            url.searchParams.set('start_date', `${y}-${m}-01`);
-        }
-    }
-    if (!url.searchParams.get('end_date')) {
-        const saved = localStorage.getItem('smadiment_g_end');
-        if (saved) {
-            url.searchParams.set('end_date', saved);
-        } else {
-            const now = new Date();
-            const y = now.getFullYear();
-            const m = String(now.getMonth() + 1).padStart(2, '0');
-            const d = String(now.getDate()).padStart(2, '0');
-            url.searchParams.set('end_date', `${y}-${m}-${d}`);
-        }
+    // Always use GLOBAL dates from localStorage (not URL params, which may be per-page)
+    const gStart = localStorage.getItem('smadiment_g_start');
+    const gEnd   = localStorage.getItem('smadiment_g_end');
+    if (gStart && gEnd) {
+        url.searchParams.set('start_date', gStart);
+        url.searchParams.set('end_date', gEnd);
+    } else {
+        // Fallback: This Month
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        url.searchParams.set('start_date', `${y}-${m}-01`);
+        url.searchParams.set('end_date', `${y}-${m}-${d}`);
     }
     window.location.href = url.toString();
 }
