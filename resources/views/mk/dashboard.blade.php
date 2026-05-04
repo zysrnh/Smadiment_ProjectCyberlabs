@@ -1982,11 +1982,14 @@ dataLabels: {
 
         open(item, platform) {
             const panel = _$('dashDetailPanel'), body = _$('dashDetailBody'), title = _$('dashDetailTitle');
-            if (!panel || !body) return;
-
+            let mediaHtml = '';
+            let ytId      = '';
+            const ao2     = (() => { if (typeof item.author==='object'&&item.author) return item.author; try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
+            
+            /* ── Platform Detection ── */
             let truePlat = item._platform || platform;
-            if (truePlat === 'all' || truePlat === 'doc' || !truePlat) {
-                const url = String(item.url || item.link || '').toLowerCase();
+            if (!truePlat || ['all', 'doc', 'news', 'web'].includes(truePlat)) {
+                const url = String(item.url || item.link || item.permalink || item.original_url || '').toLowerCase();
                 const has = (s) => url.includes(s);
                 if (has('tiktok.com'))                            truePlat = 'tiktok';
                 else if (has('youtube.com') || has('youtu.be'))   truePlat = 'youtube';
@@ -2003,7 +2006,6 @@ dataLabels: {
             const SLBL = { pos:'Positif', neg:'Negatif', neu:'Netral' };
             const SBGS = { pos:'do-dp2-sent--pos', neg:'do-dp2-sent--neg', neu:'do-dp2-sent--neu' };
 
-            const ao2  = (() => { if (typeof item.author==='object'&&item.author) return item.author; try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
             const rawName = (() => {
                 if (platform==='fb')        return item.from_name||item.page_name||item.author_name||ao2?.name||item.author_handle||null;
                 if (platform==='instagram') return item.username||null;
@@ -2013,7 +2015,6 @@ dataLabels: {
                 return null;
             })();
             let name    = (rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'').trim();
-            /* If name is numeric ID, try to use handle/screen_name instead */
             if (!name || /^\d{5,}$/.test(name) || name.toLowerCase()==='unknown') {
                 const altName = (item.author_handle||item.author_scr_name||item.screen_name||ao2?.scr_name||ao2?.username||item.username||item.nickname||ao2?.name||'').trim();
                 if (altName && !/^\d{5,}$/.test(altName)) {
@@ -2057,7 +2058,6 @@ dataLabels: {
             }
 
             /* Media embed & YouTube ID detection */
-            let ytId = '';
             if (platform === 'youtube') {
                 const url = item.url || item.link || item.permalink || item.original_url || '';
                 ytId = ((url).match(/[?&]v=([a-zA-Z0-9_-]{11})/)||
@@ -2079,44 +2079,31 @@ dataLabels: {
                 
                 if (ytId) {
                     const eid = `yt_${ytId}_${Date.now()}`;
-                    mediaHtml = `<div id="${eid}" class="do-dp2-media" style="position:relative;cursor:pointer;background:#000;height:220px;"
+                    mediaHtml = `<div id="${eid}" class="do-dp2-media" style="position:relative;cursor:pointer;background:#f1f5f9;height:220px;"
                         onclick="document.getElementById('${eid}').innerHTML='<iframe width=\\'100%\\' height=\\'220\\' src=\\'https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1\\' frameborder=\\'0\\' allowfullscreen style=\\'border-radius:6px;\\'></iframe>'; document.getElementById('${eid}').style.height='auto';">
                         <img src="${thumb||`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.src='https://img.youtube.com/vi/${ytId}/mqdefault.jpg'">
-                        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.15);">
-                            <div style="width:52px;height:36px;background:#ff0000;border-radius:8px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.3);">
-                                <i class="ph ph-play-fill" style="font-size:20px;color:#fff;margin-left:2px;"></i>
-                            </div>
-                        </div>
                     </div>`;
                 } else if (thumb) {
-                    mediaHtml = `<div class="do-dp2-media"><img src="${_es(thumb)}" onerror="this.parentElement.style.display='none'"></div>`;
+                    mediaHtml = `<div class="do-dp2-media" style="background:#f1f5f9;"><img src="${_es(thumb)}" onerror="this.parentElement.style.display='none'"></div>`;
                 }
             } else if (platform === 'tiktok') {
                 const tid   = ((item.url||'').match(/\/video\/(\d+)/)||(item.url||'').match(/\/v\/(\d+)/)||[])[1]||(item.video_id||item.aweme_id||'');
                 const thumb = item.thumbnail||item.cover||item.image_url||item.video_cover||'';
                 if (tid) {
                     const eid = `tt_${tid}_${Date.now()}`;
-                    mediaHtml = `<div id="${eid}" style="position:relative;cursor:pointer;background:#111827;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;height:240px;margin-bottom:10px;"
+                    mediaHtml = `<div id="${eid}" style="position:relative;cursor:pointer;background:#f1f5f9;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;height:240px;margin-bottom:10px;"
                         onclick="DashDetail.loadTikTok('${eid}','${tid}')">
-                        ${thumb ? `<img src="${_es(thumb)}" style="position:absolute;width:100%;height:100%;object-fit:cover;opacity:.65;pointer-events:none;">` : ''}
-                        <div style="position:relative;z-index:2;width:56px;height:56px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.6);">
-                            <i class="ph ph-play-fill" style="font-size:24px;color:#111827;margin-left:3px;"></i>
-                        </div>
+                        ${thumb ? `<img src="${_es(thumb)}" style="position:absolute;width:100%;height:100%;object-fit:cover;pointer-events:none;">` : ''}
                         <div style="position:absolute;bottom:8px;right:8px;background:#111827;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.5px;">TIKTOK</div>
                     </div>`;
                 } else if (thumb) {
-                    mediaHtml = `<div class="do-dp2-media"><img src="${_es(thumb)}" onerror="this.parentElement.style.display='none'" style="max-height:280px;object-fit:cover;width:100%;display:block;border-radius:6px;"></div>`;
+                    mediaHtml = `<div class="do-dp2-media" style="background:#f1f5f9;"><img src="${_es(thumb)}" onerror="this.parentElement.style.display='none'" style="max-height:280px;object-fit:cover;width:100%;display:block;border-radius:6px;"></div>`;
                 }
             } else {
                 const thumb   = item.image_url||item.thumbnail||item.media_url||item.picture||item.display_url||item.featured_image||'';
-                const isVideo = (item.media_type||item.type||'').toLowerCase().includes('video');
                 if (thumb) {
-                    mediaHtml = `<div class="do-dp2-media" style="position:relative;border-radius:6px;overflow:hidden;background:#f3f4f6;margin-bottom:10px;">
+                    mediaHtml = `<div class="do-dp2-media" style="position:relative;border-radius:6px;overflow:hidden;background:#f1f5f9;margin-bottom:10px;">
                         <img src="${_es(thumb)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:280px;object-fit:cover;display:block;">
-                        ${isVideo ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);">
-                            <div style="width:44px;height:44px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;">
-                                <i class="ph ph-play-fill" style="font-size:20px;color:${meta.color};margin-left:3px;"></i>
-                            </div></div>` : ''}
                     </div>`;
                 }
             }
