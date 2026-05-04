@@ -304,12 +304,6 @@
 @media(max-width:768px)  { .do-panel { width:100vw; } }
 
 /* ══ Apexcharts click hint ══ */
-.apx-click-hint {
-    display:flex; align-items:center; gap:5px;
-    font-size:10px; font-weight:600; color:var(--slate-400);
-    margin-top:4px;
-}
-.apx-click-hint i { font-size:11px; }
 </style>
 @endsection
 
@@ -429,7 +423,7 @@
 <div class="row g-2 mb-3 fade-up" id="card-export-platforms">
     @foreach([
         ['doc',    'pcDoc',  '#0284c7', 'rgba(2,132,199,.1)',    'ph-newspaper',    'Mass Media'],
-        ['twit',   'pcTwit', '#1d9bf0', 'rgba(29,155,240,.1)',   'ph-x-logo',       'X / Twitter'],
+        ['twit',   'pcTwit', '#1d9bf0', 'rgba(29,155,240,.1)',   'ph-x-logo',       'X ( Twitter )'],
         ['fb',     'pcFb',   '#1877f2', 'rgba(24,119,242,.1)',   'ph-facebook-logo','Facebook'],
         ['ig',     'pcIg',   '#e1306c', 'rgba(225,48,108,.1)',   'ph-instagram-logo','Instagram'],
         ['yt',     'pcYt',   '#ff0000', 'rgba(255,0,0,.07)',     'ph-youtube-logo', 'YouTube'],
@@ -622,9 +616,6 @@
                 <div class="sk-block sk-overlay" id="skTrend"></div>
                 <div id="chTrend" style="width:100%;height:340px;"></div>
             </div>
-            <div class="apx-click-hint" data-html2canvas-ignore="true">
-                <i class="ph ph-cursor-click"></i>
-             </div>
         </div>
     </div>
 
@@ -655,9 +646,6 @@
                 <div class="sk-block sk-overlay" id="skArticleTrend"></div>
                 <div id="chArticleTrend" style="width:100%;height:340px;"></div>
             </div>
-            <div class="apx-click-hint" data-html2canvas-ignore="true">
-                <i class="ph ph-cursor-click"></i>
-             </div>
         </div>
     </div>
 
@@ -776,7 +764,7 @@
 {{-- ══ Platform Picker ══ --}}
 <div class="do-plat-picker" id="msPlatPicker">
     <div class="do-plat-picker-head">Pilih Platform</div>
-    <button class="do-plat-btn" onclick="MSPanel.openPlatform('twit')">X / Twitter <span class="do-plat-dot" style="background:#1d9bf0;"></span></button>
+    <button class="do-plat-btn" onclick="MSPanel.openPlatform('twit')">X ( Twitter ) <span class="do-plat-dot" style="background:#1d9bf0;"></span></button>
     <button class="do-plat-btn" onclick="MSPanel.openPlatform('fb')">Facebook <span class="do-plat-dot" style="background:#1877f2;"></span></button>
     <button class="do-plat-btn" onclick="MSPanel.openPlatform('ig')">Instagram <span class="do-plat-dot" style="background:#e1306c;"></span></button>
     <button class="do-plat-btn" onclick="MSPanel.openPlatform('yt')">YouTube <span class="do-plat-dot" style="background:#ff0000;"></span></button>
@@ -833,7 +821,7 @@ const MSCfg = {
   sd  : '{{ $startDate }}',
   ed  : '{{ $endDate }}',
   platColors: {
-    'Mass Media':'#0284c7','X (Twitter)':'#1d9bf0','Facebook':'#1877f2',
+    'Mass Media':'#0284c7','X ( Twitter )':'#1d9bf0','Facebook':'#1877f2',
     'Instagram':'#e1306c','YouTube':'#ff0000','TikTok':'#111827',
     doc:'#0284c7',twit:'#1d9bf0',twitter:'#1d9bf0',
     fb:'#1877f2',facebook:'#1877f2',
@@ -843,7 +831,7 @@ const MSCfg = {
   },
   platMeta: {
     doc    : { label:'Online News',  color:'#0284c7' },
-    twit   : { label:'X / Twitter', color:'#1d9bf0' },
+    twit   : { label:'X ( Twitter )', color:'#1d9bf0' },
     fb     : { label:'Facebook',    color:'#1877f2' },
     ig     : { label:'Instagram',   color:'#e1306c' },
     yt     : { label:'YouTube',     color:'#ff0000' },
@@ -858,7 +846,11 @@ const esc       = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replac
 const hideSk    = id => { const e=document.getElementById(id); if(e) e.style.display='none'; };
 const showSk    = id => { const e=document.getElementById(id); if(e) e.style.display=''; };
 const emptyHtml = msg => `<div class="ms-empty"><i class="ph ph-warning-circle"></i><span>${msg}</span></div>`;
-const labelToKey= { 'Mass Media':'doc','X (Twitter)':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok' };
+const labelToKey= { 
+    'Mass Media':'doc', 'Online News':'doc',
+    'X ( Twitter )':'twit', 'X (Twitter)':'twit', 'X / Twitter':'twit', 'Twitter':'twit',
+    'Facebook':'fb', 'Instagram':'ig', 'YouTube':'yt', 'TikTok':'tiktok' 
+};
 
 /* ══ ECharts registry ══ */
 const MSCharts = {
@@ -1009,11 +1001,11 @@ function makeEDoughnut(domId, labels, values, colors, onClickFns, subtitles) {
       extraCssText: 'border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.3);',
       formatter: params => {
         const pct  = total > 0 ? (params.value / total * 100) : 0;
-        const sub  = params.data.subtitle
+        const sub = params.data.subtitle
           ? `<br><span style="color:#94a3b8;font-size:11px;">${params.data.subtitle}</span>` : '';
-        const dName = params.name
+        const dName = (params.name || '')
           .replace('Mass Media', 'Online News')
-          .replace('X (Twitter)', 'X / Twitter');
+          .replace('X (Twitter)', 'X ( Twitter )');
         return `<div style="font-weight:700;font-size:13px;margin-bottom:5px;">${dName}${sub}</div>
                 <div style="display:flex;justify-content:space-between;gap:20px;margin-top:4px;">
                   <span style="color:#94a3b8;">Mentions</span>
@@ -1050,7 +1042,7 @@ function makeEDoughnut(domId, labels, values, colors, onClickFns, subtitles) {
         formatter: params => {
           const pc    = total > 0 ? (params.value / total * 100) : 0;
           const rawName = String(params.name)
-            .replace('X (Twitter)', 'X / Twitter')
+            .replace('X (Twitter)', 'X ( Twitter )')
             .replace('Mass Media', 'Online News');
           /* Trim long names gracefully */
           const name = rawName.length > 12 ? rawName.slice(0, 11) + '…' : rawName;
@@ -1195,9 +1187,9 @@ async function loadTrend(){
   let trendSD,trendED;
   if(MSTrendToggle._datePickerOverride){ trendSD=MSCfg.sd; trendED=MSCfg.ed; }
   else{ const now=new Date(),off=MSTrendToggle._weekOffset;const edDate=new Date(now);edDate.setDate(now.getDate()-(7*off));const sdDate=new Date(now);sdDate.setDate(now.getDate()-(7*(off+1)));trendSD=fmtDate(sdDate);trendED=fmtDate(edDate); }
-  const platMeta={doc:{label:'Online News',color:'#0284c7'},twitter:{label:'Twitter',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
+  const platMeta={doc:{label:'Online News',color:'#0284c7'},twitter:{label:'X ( Twitter )',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
   const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];
-  const keyMap={'Online News':'doc','Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
+  const keyMap={'Online News':'doc','X ( Twitter )':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
   try{
     const res=await fetch(`/mk/api/media-statistic/trend-mentions?project_id=${MSCfg.pid}&start_date=${trendSD}&end_date=${trendED}`);
     const json=await res.json();if(json.error)throw new Error(json.error);
@@ -1301,6 +1293,7 @@ async function loadWeekHour(){
     }
   }catch(e){ hideSk('skHour');document.getElementById('chHour').innerHTML=emptyHtml('Data tidak tersedia'); }
 }
+
 
 /* ══════════════════════════════════════════════════════
    SLIDE PANEL — FIXED: openSentiment + filterSent
@@ -1567,14 +1560,11 @@ const MSPanel = (() => {
         if (plat==='twit')   return item.name || ao0?.name || ao0?.scr_name || item.author_name || item.author_scr_name || null;
         return null;
       })();
-      let name  = (rawName || item.author_name || item.channel_name || item.publisher ||
-                     item.source_name || item.name || item.author_scr_name ||
-                     item.screen_name || item.username || '').trim();
-      /* If name is numeric ID, try to use handle/screen_name instead */
-      if (!name || /^\d{5,}$/.test(name) || name.toLowerCase()==='unknown' || name==='Tidak diketahui') {
-        const altName = (item.author_handle||item.author_scr_name||item.screen_name||ao0?.scr_name||ao0?.username||item.username||item.nickname||'').trim();
-        if (altName && !/^\d{5,}$/.test(altName)) name = altName;
-        else if (!name) name = 'Tidak diketahui';
+      let name  = (rawName || item.author_name || item.channel_name || item.publisher || item.source_name || item.name || '').trim();
+      if (!name || /^\d{5,}$/.test(name) || name.toLowerCase()==='unknown' || name==='tidak diketahui') {
+        const alt = (item.author_handle||item.author_scr_name||item.screen_name||ao0?.scr_name||ao0?.username||item.username||item.nickname||'').trim();
+        if(alt && !/^\d{5,}$/.test(alt)) name = alt;
+        else if(!name) name = 'Unknown';
       }
       const dName = name;
 
@@ -1709,31 +1699,40 @@ const MSDetail = {
         if(!ytId && item.video_id) ytId = item.video_id;
         if(!ytId && item.yt_id) ytId = item.yt_id;
         if(!ytId && item.id){ const m=String(item.id).match(/(?:yt-|youtube-)?([A-Za-z0-9_-]{11})$/); if(m) ytId=m[1]; }
-        const imgUrl = item.thumbnail || item.image_url || item.picture || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
+        const thumb = item.thumbnail || item.image_url || item.picture || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
         if(ytId){
-            mediaHtml=`<div class="do-dp2-media" style="cursor:pointer;position:relative;background:#000;aspect-ratio:16/9;border-radius:var(--radius);overflow:hidden;" onclick="openVidModal('yt', '${ytId}')">
-                <img src="${esc(imgUrl)}" style="width:100%;height:100%;object-fit:cover;opacity:0.6;" onerror="this.src='https://img.youtube.com/vi/${ytId}/hqdefault.jpg'">
-                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><i class="ph ph-youtube-logo" style="font-size:48px;color:#ff0000;filter:drop-shadow(0 0 10px rgba(0,0,0,.5));"></i></div>
+            const eid = `yt_${ytId}_${Date.now()}`;
+            mediaHtml = `<div id="${eid}" class="do-dp2-media" style="position:relative;cursor:pointer;background:#f1f5f9;height:220px;"
+                onclick="document.getElementById('${eid}').innerHTML='<iframe width=\\'100%\\' height=\\'220\\' src=\\'https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1\\' frameborder=\\'0\\' allowfullscreen style=\\'border-radius:6px;\\'></iframe>'; document.getElementById('${eid}').style.height='auto';">
+                <img src="${thumb||`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.src='https://img.youtube.com/vi/${ytId}/mqdefault.jpg'">
             </div>`;
-        } else if(imgUrl) {
-            mediaHtml=`<div class="do-dp2-media"><img src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:var(--radius);"></div>`;
+        } else if(thumb) {
+            mediaHtml=`<div class="do-dp2-media" style="background:#f1f5f9;"><img src="${esc(thumb)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:var(--radius);"></div>`;
         }
     }
     else if(platform==='tiktok'){
-        let videoId=''; if(url){ const m=url.match(/\/video\/(\d+)/); if(m) videoId=m[1]; } if(!videoId&&item.id){ const m=String(item.id).match(/(\d{10,})/); if(m) videoId=m[1]; }
-        const imgUrl=item.image_url||item.thumbnail||item.media_url||item.picture||'';
-        if(videoId) {
-            mediaHtml=`<div class="do-dp2-media" style="cursor:pointer;position:relative;background:#111827;aspect-ratio:9/16;max-width:280px;margin:0 auto;border-radius:var(--radius);overflow:hidden;" onclick="openVidModal('tiktok', '${videoId}')">
-                ${imgUrl ? `<img src="${esc(imgUrl)}" style="width:100%;height:100%;object-fit:cover;opacity:0.5;" onerror="this.style.display='none'">` : ''}
-                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;"><i class="ph ph-tiktok-logo" style="font-size:42px;color:#fff;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4));margin-bottom:8px;"></i><span style="font-size:12px;font-weight:700;background:rgba(255,255,255,.2);padding:4px 10px;border-radius:20px;backdrop-filter:blur(4px);">Play Video</span></div>
+        let tid=''; 
+        if(item.video_id) tid=String(item.video_id);
+        else if(item.aweme_id) tid=String(item.aweme_id);
+        else if(url && url.match(/\/video\/(\d+)/)) tid=url.match(/\/video\/(\d+)/)[1];
+        else if(item.id) { const m=String(item.id).match(/(\d{15,})/); if(m) tid=m[1]; }
+        
+        const thumb=item.image_url||item.thumbnail||item.media_url||item.picture||'';
+        if(tid) {
+            const eid = `tt_${tid}_${Date.now()}`;
+            mediaHtml = `<div id="${eid}" style="position:relative;cursor:pointer;background:#f1f5f9;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;height:240px;margin-bottom:10px;"
+                onclick="document.getElementById('${eid}').innerHTML='<iframe src=\\'https://www.tiktok.com/embed/v2/${tid}\\' style=\\'width:100%;height:480px;border:none;display:block;\\' allow=\\'autoplay; encrypted-media; picture-in-picture\\' allowfullscreen></iframe>'; document.getElementById('${eid}').style.height='auto';">
+                ${thumb ? `<img src="${esc(thumb)}" style="position:absolute;width:100%;height:100%;object-fit:cover;pointer-events:none;">` : ''}
+                <div style="position:absolute;bottom:8px;right:8px;background:#111827;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.5px;">TIKTOK</div>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.1);"><i class="ph ph-play-circle" style="font-size:48px;color:#fff;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));"></i></div>
             </div>`;
-        } else if(imgUrl) {
-            mediaHtml=`<div class="do-dp2-media"><img src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:var(--radius);"></div>`;
+        } else if(thumb) {
+            mediaHtml=`<div class="do-dp2-media" style="background:#f1f5f9;"><img src="${esc(thumb)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:var(--radius);"></div>`;
         }
     }
     else {
-        const imgUrl=item.image_url||item.thumbnail||item.media_url||item.picture||'';
-        if(imgUrl) mediaHtml=`<div class="do-dp2-media"><img src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:var(--radius);"></div>`;
+        const thumb=item.image_url||item.thumbnail||item.media_url||item.picture||'';
+        if(thumb) mediaHtml=`<div class="do-dp2-media" style="background:#f1f5f9;"><img src="${esc(thumb)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:var(--radius);"></div>`;
     }
     const statsMap={twit:[['Retweet',item.num_retweeted||item.retweet_count||0],['Like',item.num_likes||item.favorite_count||0],['Quote',item.num_quote||0]],fb:[['Like',item.likes||item.num_likes||0],['Share',item.shares||item.share_count||0],['Comment',item.num_comments||0]],ig:[['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||item.comment_count||0],['View',item.num_views||item.views||0]],yt:[['View',item.num_views||item.views||0],['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||item.comment_count||0]],tiktok:[['Play',item.views||item.play_count||0],['Like',item.likes||item.digg_count||0],['Share',item.shares||item.share_count||0]],doc:[['Read',item.num_views||0],['Share',item.num_share||0],['Comment',item.num_comments||0]]};
     const stats=statsMap[platform]||[];
@@ -1802,26 +1801,30 @@ const MSDetail = {
     }
     panel.classList.add('show');
   },
-  close(){ const panel=document.getElementById('msDetailPanel');if(!panel)return;panel.classList.remove('show');panel.querySelectorAll('iframe').forEach(f=>{try{f.src=f.src;}catch(e){}});}
+  close(){ const panel=document.getElementById('msDetailPanel');if(!panel)return;panel.classList.remove('show');panel.querySelectorAll('iframe').forEach(f=>{try{f.src=f.src;}catch(e){}});},
+  loadTikTok(eid, tid) {
+    const el = document.getElementById(eid); if (!el) return;
+    el.innerHTML = `<iframe src="https://www.tiktok.com/embed/v2/${tid}" style="width:100%;height:480px;border:none;border-radius:6px;display:block;" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+    el.style.height = 'auto';
+  }
 };
 
-/* ══ TREND TOGGLE ══ */
 const MSTrendToggle = {
-  _mode:'daily', _trendData:null, _weekOffset:0, _datePickerOverride:false,
+  _mode:'daily', _trendData:null, _weekOffset:0, _datePickerOverride:true,
   set(mode){ if(this._mode===mode)return;this._mode=mode;document.querySelectorAll('#trendToggle .ms-toggle-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));const sub=document.getElementById('trendSubtitle');if(sub)sub.textContent=mode==='monthly'?'Total mentions per bulan':this._datePickerOverride?`${MSCfg.sd} – ${MSCfg.ed}`:'8 hari terakhir';const wng=document.getElementById('weekNavGroup');if(wng)wng.style.display=mode==='daily'&&!this._datePickerOverride?'flex':'none';if(mode==='daily'){this._weekOffset=0;this._trendData=null;}if(this._trendData)this._render(this._trendData);else loadTrend(); },
   setData(rawData){ this._trendData=rawData; },
   navWeek(dir){ const next=this._weekOffset+dir;if(next<0)return;this._weekOffset=next;this._trendData=null;loadTrend(); },
   _weekLabel(){ return this._weekOffset===0?'Minggu Ini':`Week -${this._weekOffset}`; },
   copyCSV(){if(!this._trendData){alert('Data belum tersedia');return;}const lines=this._buildCSV(this._trendData,this._mode);MSCsvModal.show('Trend Mentions — '+(this._mode==='monthly'?'Bulanan':'Harian'),lines);},
   _buildCSV(raw,mode){
-    const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];const platMeta={doc:'Online News',twitter:'Twitter',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok'};
+    const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];const platMeta={doc:'Online News',twitter:'X ( Twitter )',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok'};
     if(mode==='monthly'){const monthMap={};raw.forEach(p=>(p.data||[]).forEach(d=>{const m=d.date.slice(0,7);if(!monthMap[m])monthMap[m]={};monthMap[m][p.key]=(monthMap[m][p.key]||0)+d.count;}));const months=Object.keys(monthMap).sort();const lines=[];months.forEach(m=>platOrder.forEach(k=>{const val=monthMap[m][k]||0;if(val>0)lines.push(`${lines.length};${platMeta[k]||k};${val};${m}`);}));return lines;}
     else{const dSet=new Set();raw.forEach(p=>(p.data||[]).forEach(d=>dSet.add(d.date)));const allDates=Array.from(dSet).sort();const lines=[];allDates.forEach(date=>raw.forEach(p=>{const pt=(p.data||[]).find(x=>x.date===date);if(pt&&pt.count>0)lines.push(`${lines.length};${platMeta[p.key]||p.key};${pt.count};${date}`);}));return lines;}
   },
   _render(raw){
-    const platMetaFull={doc:{label:'Online News',color:'#0284c7'},twitter:{label:'Twitter',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
+    const platMetaFull={doc:{label:'Online News',color:'#0284c7'},twitter:{label:'X ( Twitter )',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
     const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];
-    const keyMap={'Online News':'doc','Twitter':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
+    const keyMap={'Online News':'doc','X ( Twitter )':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
     if(this._mode==='monthly'){
       const monthMap={};raw.forEach(p=>(p.data||[]).forEach(d=>{const m=d.date.slice(0,7);if(!monthMap[m])monthMap[m]={};monthMap[m][p.key]=(monthMap[m][p.key]||0)+d.count;}));
       const months=Object.keys(monthMap).sort();const xLabels=months.map(m=>{const dt=new Date(m+'-01T00:00:00');return dt.toLocaleString('id-ID',{month:'short',year:'numeric'});});
@@ -2102,8 +2105,7 @@ const MSExport = (() => {
 /* ══ INIT ══ */
 const MSPage = {
   _syncDateFilter(){
-    const today=new Date();today.setHours(0,0,0,0);const ed=new Date(MSCfg.ed+'T00:00:00');const sd=new Date(MSCfg.sd+'T00:00:00');const diff=Math.round((ed-sd)/86400000)+1;
-    MSTrendToggle._datePickerOverride=!(ed.getTime()===today.getTime()&&diff<=8);MSTrendToggle._weekOffset=0;
+    MSTrendToggle._datePickerOverride=true; MSTrendToggle._weekOffset=0;
   },
   reload(){
     MSCharts.disposeAll();_destroyApx('trend');_destroyApx('article');MSTab.reset();this._syncDateFilter();
