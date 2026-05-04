@@ -733,18 +733,16 @@ document.addEventListener('click',e=>{const w=$('nssMediaWrap');if(w&&!w.contain
 /* ══ SLIDE PANEL ══ */
 const NSSPanel=(()=>{
     let _cache={},_allItems=[],_filtered=[],_curSent='all';
-    const SENT_MAP={'1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg'};
+    const SENT_MAP={
+        '1':'pos','positive':'pos','positif':'pos','pos':'pos',
+        '-1':'neg','2':'neg','negative':'neg','negatif':'neg','neg':'neg'
+    };
     const SENT_COLORS={pos:'#0ea5e9',neg:'#EF4444',neu:'#94A3B8',all:'#4361EE'};
     const SENT_LABELS={pos:'Positive',neg:'Negative',neu:'Neutral',all:'All Mentions'};
-    const PLAT_META={
-        doc:      {label:'Online News', color:'#0284c7'},
-        twitter:  {label:'X / Twitter', color:'#1d9bf0'},
-        facebook: {label:'Facebook',    color:'#1877f2'},
-        instagram:{label:'Instagram',   color:'#e1306c'},
-        youtube:  {label:'YouTube',     color:'#ff0000'},
-        tiktok:   {label:'TikTok',      color:'#111827'},
-    };
-    function _normSent(item){const r=String(item.class_sentiment||item.sentiment||item.sentiment_str||'0').toLowerCase().trim();return SENT_MAP[r]||'neu';}
+    function _normSent(item){
+        const r=String(item.sentiment_class||item.class_sentiment||item.sentiment||item.sentiment_label||item.sentiment_str||'0').toLowerCase().trim();
+        return SENT_MAP[r]||'neu';
+    }
 
     async function open(sentiment){
         _curSent=sentiment||'all';
@@ -795,10 +793,22 @@ const NSSPanel=(()=>{
     }
     async function _fetchOne(platform){
         const q=`project_id=${NSS_PID}&start_date=${NSS_SD}&end_date=${NSS_ED}&rows=200&start=0`;
-        /* Online News: use articles API */
         if(platform==='doc'){
-          const docQ=`project_id=${NSS_PID}&start_date=${NSS_SD}&end_date=${NSS_ED}&rows=50&start=0&media=doc`;
-          try{ const res=await fetch(`/mk/api/news/articles?${docQ}`); if(!res.ok) return []; const d=await res.json(); let items=Array.isArray(d?.data)?d.data:(Array.isArray(d)?d:[]); return items.map(i=>({...i,_platform:'doc'})); }catch(e){ return []; }
+          const docQ=`project_id=${NSS_PID}&start_date=${NSS_SD}&end_date=${NSS_ED}&rows=500&start=0&media=doc`;
+          try{
+            const res=await fetch(`/mk/api/news/articles?${docQ}`);
+            if(!res.ok) return [];
+            const d=await res.json();
+            const raw=Array.isArray(d?.data)?d.data:(Array.isArray(d)?d:[]);
+            return raw.map(i=>({
+                ...i,
+                _platform:'doc',
+                content: i.content || i.summary || i.text || '',
+                title: i.title || i.subject || 'Untitled',
+                url: i.url || i.link || i.post_url || i.article_url || i.source_url || i.permalink || i.news_url || i.web_url || '',
+                class_sentiment: String(i.class_sentiment || i.sentiment_class || i.sentiment || '0')
+            }));
+          }catch(e){ return []; }
         }
         const eps={
             twitter:  `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,
@@ -932,11 +942,11 @@ const NSSDetail = {
         const handle=rawHandle&&rawHandle.toLowerCase()!==displayName.toLowerCase()?(rawHandle.startsWith('@')?rawHandle:'@'+rawHandle):'';
         const content=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
         const av=(item.avatar_url||item.profile_image_url||item.author_image||ao?.image||item.profile_image||item.thumbnail||item.picture||'').trim();
-        let url=item.url||item.link||'';
+        let url = item.url || item.link || item.post_url || item.article_url || item.source_url || item.permalink || item.news_url || item.web_url || '';
         if(!url&&plat==='twitter'){const scr=rawHandle.replace(/^@/,''),subId=item.sub_id||''; if(subId) url=`https://twitter.com/${encodeURIComponent(scr)}/status/${encodeURIComponent(subId)}`; else if(scr) url=`https://twitter.com/${encodeURIComponent(scr)}`;}
         const date=item.date_created||item.created_at||item.publish_date||'';
-        const sentRaw=String(item.class_sentiment||item.sentiment||item.sentiment_str||'0').toLowerCase().trim();
-        const sent=sentRaw==='1'||sentRaw==='positive'||sentRaw==='positif'?'pos':sentRaw==='-1'||sentRaw==='2'||sentRaw==='negative'||sentRaw==='negatif'?'neg':'neu';
+        const sentRaw=String(item.sentiment_class||item.class_sentiment||item.sentiment||item.sentiment_label||item.sentiment_str||'0').toLowerCase().trim();
+        const sent=SENT_MAP[sentRaw]||'neu';
         const sentLbl={pos:'Positive',neg:'Negative',neu:'Neutral'}[sent];
         title.textContent=displayName;
         const words=displayName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
