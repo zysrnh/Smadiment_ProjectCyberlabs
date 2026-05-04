@@ -1251,8 +1251,14 @@
     ══════════════════════════════════════════════ */
     var DOPanel = (function() {
         var PAGE_SINGLE=25, PAGE_MULTI=10;
-        var SENT_NORM={'1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg'};
-        var _normSent = function(item) { return SENT_NORM[String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim()]||'neu'; };
+        var SENT_NORM={
+            '1':'pos','positive':'pos','positif':'pos','pos':'pos',
+            '-1':'neg','2':'neg','negative':'neg','negatif':'neg','neg':'neg'
+        };
+        var _normSent = function(item) { 
+            var raw = String(item.sentiment_class||item.class_sentiment||item.sentiment||'0').toLowerCase().trim();
+            return SENT_NORM[raw]||'neu'; 
+        };
         var _allItems=[], _filtered=[], _curSent='all', _curPlat=null, _curPlatForSent='all';
         var _curPage=0, _hasMore=false, _loadingMore=false;
         var _overrideSd=null, _overrideEd=null;

@@ -1609,11 +1609,13 @@ dataLabels: {
         let _overrideSd = null, _overrideEd = null;
 
         const SENT_MAP = {
-            '1': 'pos', 'positive': 'pos', 'positif': 'pos',
-            '-1': 'neg', '2': 'neg', 'negative': 'neg', 'negatif': 'neg',
+            '1': 'pos', 'positive': 'pos', 'positif': 'pos', 'pos': 'pos',
+            '-1': 'neg', '2': 'neg', 'negative': 'neg', 'negatif': 'neg', 'neg': 'neg'
         };
-        const _normSent = item =>
-            SENT_MAP[String(item.class_sentiment || item.sentiment || '0').toLowerCase().trim()] || 'neu';
+        const _normSent = item => {
+            const raw = String(item.sentiment_class || item.class_sentiment || item.sentiment || '0').toLowerCase().trim();
+            return SENT_MAP[raw] || 'neu';
+        };
 
         function showPlatPicker(x, y, sent, pid) {
             _curPlatForSent = sent || 'all';

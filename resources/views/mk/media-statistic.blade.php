@@ -1302,10 +1302,13 @@ const MSPanel = (() => {
   let _cache = {}, _allItems = [], _curPlat = null, _curSent = 'all';
 
   const SENT_MAP = {
-    '1':'pos','positive':'pos','positif':'pos',
-    '-1':'neg','2':'neg','negative':'neg','negatif':'neg'
+    '1':'pos','positive':'pos','positif':'pos','pos':'pos',
+    '-1':'neg','2':'neg','negative':'neg','negatif':'neg','neg':'neg'
   };
-  const _ns  = item => SENT_MAP[String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim()] || 'neu';
+  const _ns  = item => {
+    const raw = String(item.sentiment_class || item.class_sentiment || item.sentiment || '0').toLowerCase().trim();
+    return SENT_MAP[raw] || 'neu';
+  };
   const _$   = id   => document.getElementById(id);
 
   /* ── Sync active tab button ── */
