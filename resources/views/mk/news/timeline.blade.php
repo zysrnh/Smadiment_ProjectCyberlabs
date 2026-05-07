@@ -463,11 +463,14 @@ let _activeTab='all', _page=1, _trendChart=null, _barChart=null, _trendRaw=[];
 
 /* ── Normalise sentiment ── */
 function _normSent(item) {
-    const MAP={'1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg'};
-    const code=String(item.class_sentiment_code||'').toLowerCase().trim();
+    const MAP={
+        '1':'pos','positive':'pos','positif':'pos','pos':'pos',
+        '-1':'neg','2':'neg','negative':'neg','negatif':'neg','neg':'neg'
+    };
+    const code=String(item.class_sentiment_code||item.sentiment_class||item.sentiment_label||item.class_sentiment||'').toLowerCase().trim();
     if(code==='pos'||code==='positive'||code==='positif') return 'pos';
     if(code==='neg'||code==='negative'||code==='negatif') return 'neg';
-    if(code) return 'neu';
+    if(code==='neu'||code==='neutral'||code==='netral')   return 'neu';
     return MAP[String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim()]||'neu';
 }
 
@@ -480,11 +483,12 @@ function _normItem(item, platform) {
         }
     } catch(e){cj={};}
     const ao=item.author_object ? (typeof item.author_object==='string'?JSON.parse(item.author_object):item.author_object) : (cj.user||{});
-    const name=(ao.name||item.author_name||item.name||item.from_name||item.page_name||item.channel_title||item.author_nickname||item.publisher||item.source_name||'').replace(/<[^>]*>/g,'').trim()||'Unknown';
+    const rawName=(ao.name||item.author_name||item.name||item.from_name||item.page_name||item.channel_title||item.author_nickname||item.publisher||item.source_name||'').replace(/<[^>]*>/g,'').trim()||'Unknown';
+    const name = /^\d{12,}$/.test(rawName) ? `User ${rawName.slice(-4)}` : rawName;
     const handle=(item.author_scr_name||item.screen_name||ao.scr_name||item.username||'').trim();
-    const av=(item.avatar_url||item.profile_image_url||item.author_image||ao.image||(cj.user&&cj.user.image?cj.user.image:'')||item.profile_image||'').trim();
+    const av=(item.avatar_url||item.profile_image_url||item.author_image||ao.image||item.thumbnail||item.image_url||item.media_url||item.picture||item.profile_image||'').trim();
     const content=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
-    let url=item.url||item.link||'';
+    let url = item.url || item.link || item.post_url || item.article_url || item.source_url || item.permalink || item.news_url || item.web_url || item.original_url || '';
     if(!url&&platform==='twit'){const scr=(handle||ao.scr_name||'').replace(/^@/,'');let tid=item.sub_id||'';if(!tid&&item.docid){const m=String(item.docid).match(/^tw-(.+)$/);if(m)tid=m[1];}if(!tid&&cj.rt_status&&cj.rt_status.id)tid=String(cj.rt_status.id);url=(scr&&tid)?'https://twitter.com/'+scr+'/status/'+tid:(scr?'https://twitter.com/'+scr:'');}
     return {_platform:platform,_raw:item,name,handle,avatar:av,content,url,sentiment:_normSent(item),date:item.date_created||item.created_at||'',
         likes:parseInt(item.num_likes||item.likes||item.favorite_count||item.like_count||0),
@@ -724,8 +728,10 @@ const MTData={
     },
     _postHtml(item,gi){
         const rank=gi+1,rkCls=rank<=3?'--'+rank:'',plat=PLAT[item._platform]||PLAT.doc;
-        const dummy='/assets/images/user/dummy.jpg';
-        const avHtml=(item.avatar&&item.avatar.indexOf('http')===0)?'<img src="'+esc(item.avatar)+'" onerror="this.src=\''+dummy+'\'">':'<img src="'+dummy+'">';
+        const av = item.avatar || '';
+        const words=item.name.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
+        const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||item.name[0]||'?')).toUpperCase();
+        const avHtml=(av&&(av.startsWith('http')))?`<img src="${esc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}'">`:ini;
         const dt=(item.date||'').split('T')[0],sentLbl={pos:'Positive',neg:'Negative',neu:'Neutral'}[item.sentiment];
         const enc=encodeURIComponent(JSON.stringify(item)),parts=[];
         if(item.views>0)parts.push('<span class="mt-metric"><i class="ph ph-eye me-1"></i>'+numF(item.views)+'</span>');
@@ -826,9 +832,7 @@ const MTPanelNew=(() => {
         _renderedCount = start + chunk.length;
 
         if (_filtered.length > _renderedCount) {
-             const left = _filtered.length - _renderedCount;
-             const next = Math.min(limit, left);
-             list.insertAdjacentHTML('beforeend', `<div id="mtPopLoadMoreBtn" style="padding:10px;"><button style="width:100%;height:32px;display:flex;align-items:center;justify-content:center;gap:6px;background:#f8fafc;color:#475569;border:1px dashed #cbd5e1;border-radius:6px;font-weight:600;cursor:pointer;" onclick="MTPanelNew.loadMore()">Muat ${next} lagi <span style="font-weight:400;opacity:0.8;">(${left.toLocaleString()} tersisa)</span> <i class="ph ph-caret-down"></i></button></div>`);
+             list.insertAdjacentHTML('beforeend', `<div id="mtPopLoadMoreBtn" style="padding:16px;text-align:center;border-top:1px dashed rgba(0,0,0,.08);background:#f8fafc;"><button style="background:#038047;color:#fff;border:none;padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(3,128,71,.2);" onmouseover="this.style.background='#026136';this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#038047';this.style.transform='none';" onclick="MTPanelNew.loadMore()">Muat Lebih Banyak</button></div>`);
         }
     }
 
@@ -844,20 +848,40 @@ const MTDetailNew={
         const panel=_$('mtDetailPanelNew'),body=_$('mtDetailBodyNew'),title=_$('mtDetailTitleNew');
         if(!panel||!body)return;
         const plat=PLAT[item._platform]||PLAT.doc;
-        const dummy='/assets/images/user/dummy.jpg';
-        const avHtml=(item.avatar&&item.avatar.indexOf('http')===0)?'<img src="'+esc(item.avatar)+'" onerror="this.src=\''+dummy+'\'">':'<img src="'+dummy+'">';
+        const av=(item.avatar||item.thumbnail||item.image_url||item.media_url||'').trim();
+        const rawName = item.name || 'Unknown';
+        const words=rawName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
+        const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||rawName[0]||'?')).toUpperCase();
+        const avHtml=(av&&(av.startsWith('http')))?`<img src="${esc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}'">`:ini;
+
         const sentLbl={pos:'Positif',neg:'Negatif',neu:'Netral'}[item.sentiment];
         const sentCls={pos:'do-dp2-sent--pos',neg:'do-dp2-sent--neg',neu:'do-dp2-sent--neu'}[item.sentiment];
         let dtFmt='';if(item.date){try{dtFmt=new Date(item.date).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){dtFmt=(item.date||'').split('T')[0];}}
         /* Media embed */
         let mediaHtml='';const url=item.url||'';
-        if(item._platform==='ytb'){
-            let vid='';if(url){const m=url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);if(m)vid=m[1];}
-            if(!vid && item._raw && item._raw.video_id) vid=item._raw.video_id; 
-            if(!vid && item._raw && item._raw.id) {const strId=String(item._raw.id); if(strId.length===11) vid=strId;}
-            if(vid){const eid='yt_'+Date.now();mediaHtml='<div id="'+eid+'" style="position:relative;cursor:pointer;border-radius:6px;overflow:hidden;background:#000;margin-bottom:10px;" onclick="MTDetailNew._playYT(\''+eid+'\',\''+vid+'\')"><img src="https://img.youtube.com/vi/'+vid+'/hqdefault.jpg" style="width:100%;height:200px;object-fit:cover;display:block;" onerror="this.src=\'https://img.youtube.com/vi/'+vid+'/mqdefault.jpg\'"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);"><div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:22px;color:#fff;margin-left:3px;"></i></div></div></div>';}
+        const imgUrl = item.image_url || item.thumbnail || item.media_url || item.picture || av || '';
+        if(item._platform==='ytb' || item._platform==='youtube'){
+            let vid='';if(url){const m=url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);if(m)vid=m[1];}
+            if(!vid && item._raw) vid=item._raw.video_id||item._raw.sub_id||item._raw.docid?.replace('yt-',''); 
+            if(!vid && item._raw && String(item._raw.id).length===11) vid=String(item._raw.id);
+            if(vid){
+                const eid='yt_'+Date.now();
+                mediaHtml='<div id="'+eid+'" style="position:relative;cursor:pointer;border-radius:6px;overflow:hidden;background:#000;margin-bottom:10px;" onclick="MTDetailNew._playYT(\''+eid+'\',\''+vid+'\')"><img src="https://img.youtube.com/vi/'+vid+'/hqdefault.jpg" style="width:100%;height:200px;object-fit:cover;display:block;" onerror="this.src=\'https://img.youtube.com/vi/'+vid+'/mqdefault.jpg\'"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);"><div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:22px;color:#fff;margin-left:3px;"></i></div></div></div>';
+            } else if(imgUrl) {
+                mediaHtml=`<div class="do-dp2-media"><img src="${esc(imgUrl)}" style="width:100%;max-height:220px;object-fit:cover;border-radius:8px;margin-bottom:10px;" onerror="this.parentElement.style.display='none'"></div>`;
+            }
         }
-        else if(item._platform==='tiktok'){let vid='';if(url){const m2=url.match(/\/video\/(\d+)/);if(m2)vid=m2[1];}if(!vid&&item._raw&&item._raw.id){const m3=String(item._raw.id).match(/(\d{10,})/);if(m3)vid=m3[1];}if(vid){const eid='tt_'+Date.now();mediaHtml='<div id="'+eid+'" style="position:relative;cursor:pointer;background:#111827;border-radius:6px;overflow:hidden;height:240px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;" onclick="MTDetailNew._playTT(\''+eid+'\',\''+vid+'\')"><div style="z-index:2;width:56px;height:56px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:24px;color:#111827;margin-left:3px;"></i></div><div style="position:absolute;bottom:8px;right:8px;background:#111827;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;">TIKTOK</div></div>';}}
+        else if(item._platform==='tiktok'){
+            let vid='';if(url){const m2=url.match(/\/video\/(\d+)/);if(m2)vid=m2[1];}
+            if(!vid&&item._raw&&item._raw.id){const m3=String(item._raw.id).match(/(\d{10,})/);if(m3)vid=m3[1];}
+            if(vid){const eid='tt_'+Date.now();mediaHtml='<div id="'+eid+'" style="position:relative;cursor:pointer;background:#111827;border-radius:6px;overflow:hidden;height:240px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;" onclick="MTDetailNew._playTT(\''+eid+'\',\''+vid+'\')"><div style="z-index:2;width:56px;height:56px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:24px;color:#111827;margin-left:3px;"></i></div><div style="position:absolute;bottom:8px;right:8px;background:#111827;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;">TIKTOK</div></div>';}
+            else if(imgUrl) {
+                mediaHtml=`<div class="do-dp2-media"><img src="${esc(imgUrl)}" style="width:100%;max-height:220px;object-fit:cover;border-radius:8px;margin-bottom:10px;" onerror="this.parentElement.style.display='none'"></div>`;
+            }
+        }
+        else if(imgUrl){
+            mediaHtml=`<div class="do-dp2-media"><img src="${esc(imgUrl)}" style="width:100%;max-height:220px;object-fit:cover;border-radius:8px;margin-bottom:10px;" onerror="this.parentElement.style.display='none'"></div>`;
+        }
         /* Stats */
         const sm={twit:[['Retweet',item.retweets],['Like',item.likes],['Comment',item.comments]],fb:[['Like',item.likes],['Share',item.shares],['Comment',item.comments]],ig:[['Like',item.likes],['Comment',item.comments],['View',item.views]],ytb:[['View',item.views],['Like',item.likes],['Comment',item.comments]],tiktok:[['Play',item.views],['Like',item.likes],['Share',item.shares]],doc:[['View',item.views],['Share',item.shares],['Comment',item.comments]]};
         const stats=sm[item._platform]||[];
