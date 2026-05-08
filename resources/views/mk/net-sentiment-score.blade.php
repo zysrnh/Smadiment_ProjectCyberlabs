@@ -744,6 +744,24 @@ const NSSPanel=(()=>{
         return SENT_MAP[r]||'neu';
     }
 
+    const _extractYtId = v => {
+        if (!v) return '';
+        const url = String(v.url || v.link || v.permalink || v.original_url || '');
+        let id = (url.match(/[?&]v=([a-zA-Z0-9_-]{11})/) ||
+                  url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/) ||
+                  url.match(/shorts\/([a-zA-Z0-9_-]{11})/) ||
+                  url.match(/embed\/([a-zA-Z0-9_-]{11})/) || [])[1];
+        if (id) return id;
+        const flds = ['video_id','youtube_id','id_str','post_id','docid','id','sub_id'];
+        for (let f of flds) {
+            let val = v[f]; if (!val) continue;
+            let s = String(val).replace(/^(yt[-_])/i, '');
+            if (s.length === 11) return s;
+        }
+        if (v.snippet) return v.snippet.videoId || v.snippet.resourceId?.videoId || '';
+        return '';
+    };
+
     async function open(sentiment){
         _curSent=sentiment||'all';
         const color=SENT_COLORS[_curSent]||getPrimary();
@@ -792,52 +810,76 @@ const NSSPanel=(()=>{
         return res.flatMap(r=>r.status==='fulfilled'?r.value:[]);
     }
     async function _fetchOne(platform){
-        const q=`project_id=${NSS_PID}&start_date=${NSS_SD}&end_date=${NSS_ED}&rows=200&start=0`;
+        const q=`project_id=${NSS_PID}&start_date=${NSS_SD}&end_date=${NSS_ED}&rows=500&start=0`;
+        const twitFallback=`/mk/api/news/mentions?${q}`;
         if(platform==='doc'){
-          const docQ=`project_id=${NSS_PID}&start_date=${NSS_SD}&end_date=${NSS_ED}&rows=500&start=0&media=doc`;
+          const docQ=`project_id=${NSS_PID}&start_date=${NSS_SD}&end_date=${NSS_ED}&rows=1000&start=0&media=doc`;
           try{
             const res=await fetch(`/mk/api/news/articles?${docQ}`);
             if(!res.ok) return [];
             const d=await res.json();
-            const raw=Array.isArray(d?.data)?d.data:(Array.isArray(d)?d:[]);
-            return raw.map(i=>({
-                ...i,
-                _platform:'doc',
-                content: i.content || i.summary || i.text || '',
-                title: i.title || i.subject || 'Untitled',
-                url: i.url || i.link || i.post_url || i.article_url || i.source_url || i.permalink || i.news_url || i.web_url || '',
-                class_sentiment: String(i.class_sentiment || i.sentiment_class || i.sentiment || '0')
-            }));
-          }catch(e){ return []; }
+            return (Array.isArray(d?.data)?d.data:(Array.isArray(d)?d:[])).map(i=>({...i,_platform:'doc'}));
+          }catch(e){return[];}
+        }
+        if(platform==='instagram'){
+            for(const sub of['postbylike','postbyview','postbycomment','postbydate','']){
+                try{
+                    const r=await fetch(`/mk/api/news/ig-top-status?${q}${sub?'&sub='+sub:''}`);
+                    const d=await r.json();
+                    const items=Array.isArray(d?.data)?d.data:(Array.isArray(d)?d:[]);
+                    if(items.length>0)return items.map(i=>({...i,_platform:'instagram'}));
+                }catch(e){continue;}
+            }
+            return[];
+        }
+        if(platform==='youtube'){
+            for(const sub of['postbylike','postbyview','postbycomment','postbydate','']){
+                try{
+                    const r=await fetch(`/mk/api/news/ytb-top-status?${q}${sub?'&sub='+sub:''}`);
+                    const d=await r.json();
+                    const items=Array.isArray(d?.data)?d.data:(Array.isArray(d)?d:[]);
+                    if(items.length>0)return items.map(i=>({...i,_platform:'youtube'}));
+                }catch(e){continue;}
+            }
+            return[];
         }
         const eps={
             twitter:  `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,
             facebook: `/mk/api/news/fb-top-status?${q}&sub=fblike`,
-            instagram:`/mk/api/news/ig-top-status?${q}`,
-            youtube:  `/mk/api/news/ytb-top-status?${q}`,
             tiktok:   `/mk/api/news/tiktok-top-status?${q}&sub=postbylike`,
         };
-        const url=eps[platform];if(!url)return[];
+        const url=eps[platform]; if(!url) return [];
+        const ctrl=new AbortController(), tid=setTimeout(()=>ctrl.abort(), 25000);
         try{
-            const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),20000);
-            const res=await fetch(url,{signal:ctrl.signal});clearTimeout(tid);
-            if(!res.ok)return[];
-            const data=await res.json();
-            let items=Array.isArray(data?.data?.data)?data.data.data:Array.isArray(data?.data)?data.data:(Array.isArray(data)?data:[]);
-            items=items.map(i=>({...i,_platform:platform}));
-            /* Twitter fallback chain */
-            if(platform==='twitter' && items.length===0){
-              for(const fbUrl of [`/mk/api/x/most-retweets?${q}`,`/mk/api/x/user-mentions?${q}`]){
-                try{ const r2=await fetch(fbUrl); if(r2.ok){ const d2=await r2.json(); const i2=Array.isArray(d2?.data)?d2.data:Array.isArray(d2)?d2:[]; if(i2.length>0){ items=i2.map(i=>({...i,_platform:'twitter'})); break; } } }catch(e){}
-              }
-              if(items.length===0){
-                try{ const r3=await fetch(`/mk/api/news/mentions?${q}`); const d3=await r3.json(); let all=Array.isArray(d3?.data?.data)?d3.data.data:Array.isArray(d3?.data)?d3.data:[];
-                  items=all.filter(m=>{const tc=String(m.tcode||'').toLowerCase(),mt=String(m.media_type||'').toLowerCase(),u2=String(m.url||'').toLowerCase(); return tc==='twit'||tc==='rt'||mt==='twit'||mt==='twitter'||mt==='x'||u2.includes('twitter.com')||u2.includes('x.com');}).map(i=>({...i,_platform:'twitter'}));
-                }catch(e){}
-              }
+            const r=await fetch(url,{signal:ctrl.signal}); clearTimeout(tid);
+            if(!r.ok){
+                if(platform==='twitter') throw new Error('Twitter fail');
+                return [];
             }
-            return items;
-        }catch(e){return[];}
+            const d=await r.json();
+            let items=[];
+            if(Array.isArray(d?.data?.data))      items=d.data.data;
+            else if(Array.isArray(d?.data))       items=d.data;
+            else if(Array.isArray(d?.statuses))   items=d.statuses;
+            else if(Array.isArray(d?.results))    items=d.results;
+            else if(Array.isArray(d?.posts))      items=d.posts;
+            else if(Array.isArray(d))             items=d;
+
+            if(platform==='twitter' && items.length===0){
+                try{
+                    const r2=await fetch(twitFallback);
+                    const d2=await r2.json();
+                    let fb=Array.isArray(d2?.data?.data)?d2.data.data:Array.isArray(d2?.data)?d2.data:Array.isArray(d2)?d2:[];
+                    items=fb.filter(m=>{
+                        const tc=String(m.tcode||'').toLowerCase(), mt=String(m.media_type||'').toLowerCase();
+                        const id=String(m.id||m.docid||'').toLowerCase(), url2=String(m.url||'').toLowerCase();
+                        return tc==='twit'||tc==='rt'||mt==='twit'||mt==='twitter'||mt==='x'
+                            ||id.startsWith('tw-')||url2.includes('twitter.com')||url2.includes('x.com');
+                    });
+                }catch(e2){}
+            }
+            return items.map(i=>({...i,_platform:platform}));
+        }catch(e){clearTimeout(tid); return[];}
     }
 
     function _render(list,items, showAll = false){
@@ -922,7 +964,7 @@ const NSSPanel=(()=>{
 
     function showAll() { _render($('nssPanelList'), _filtered, true); }
 
-    return{open,close,closeByOverlay,filterSent,showAll,get _cache(){return _cache;},set _cache(v){_cache=v;}};
+    return{open,close,closeByOverlay,filterSent,showAll,_extractYtId,get _cache(){return _cache;},set _cache(v){_cache=v;}};
 })();
 
 /* ══ DETAIL PANEL ══ */
@@ -953,10 +995,34 @@ const NSSDetail = {
         const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||displayName[0]||'?')).toUpperCase().replace(/['"]/, '');
         const avHtml=(av&&(av.startsWith('http://')||av.startsWith('https://')))?`<img src="${esc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}'">`:ini;
         let dtFmt=''; if(date){try{dtFmt=new Date(date).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){dtFmt=date.split('T')[0];}}
+        
+        /* Media embed */
         let mediaHtml='';
-        if(plat==='youtube'){let ytId=''; if(url){const m=url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/); if(m) ytId=m[1];} if(!ytId&&item.video_id) ytId=item.video_id; if(ytId) mediaHtml=`<div class="nssdp-media-wrap"><iframe style="width:100%;height:210px;border:none;display:block;border-radius:8px;" src="https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1" allowfullscreen></iframe></div>`;}
-        else if(plat==='tiktok'){let videoId=''; if(url){const m=url.match(/\/video\/(\d+)/); if(m) videoId=m[1];} if(!videoId&&item.id){const m=String(item.id).match(/(\d{10,})/); if(m) videoId=m[1];} if(videoId) mediaHtml=`<div class="nssdp-media-wrap"><iframe style="width:100%;height:480px;border:none;display:block;border-radius:8px;" src="https://www.tiktok.com/embed/v2/${videoId}" allow="autoplay" allowfullscreen></iframe></div>`; else{const imgUrl=item.image_url||item.thumbnail||item.media_url||item.picture||''; if(imgUrl) mediaHtml=`<div class="nssdp-media-wrap"><img class="nssdp-media-img" src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'"></div>`;}}
-        else{const imgUrl=item.image_url||item.thumbnail||item.media_url||item.picture||''; if(imgUrl) mediaHtml=`<div class="nssdp-media-wrap"><img class="nssdp-media-img" src="${esc(imgUrl)}" onerror="this.parentElement.style.display='none'"></div>`;}
+        const imgUrl = item.image_url||item.thumbnail||item.media_url||item.picture||item.avatar_url||'';
+        if(plat==='youtube'){
+            const vid = NSSPanel._extractYtId(item);
+            if(vid){
+                const eid='yt_'+vid+'_'+Date.now();
+                mediaHtml=`<div id="${eid}" class="nssdp-media-wrap" style="position:relative;cursor:pointer;background:#000;height:220px;"
+                    onclick="document.getElementById('${eid}').innerHTML='<iframe width=\\'100%\\' height=\\'220\\' src=\\'https://www.youtube.com/embed/${vid}?autoplay=1&controls=1\\' frameborder=\\'0\\' allowfullscreen style=\\'border-radius:6px;\\'></iframe>';">
+                    <img src="https://img.youtube.com/vi/${vid}/hqdefault.jpg" class="nssdp-media-img" style="height:100%;" onerror="this.src='https://img.youtube.com/vi/${vid}/mqdefault.jpg'">
+                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.15);">
+                        <div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.3);">
+                            <i class="ph-fill ph-play" style="font-size:24px;color:#fff;margin-left:3px;"></i>
+                        </div>
+                    </div>
+                </div>`;
+            } else if(imgUrl){
+                mediaHtml=`<div class="nssdp-media-wrap"><img src="${esc(imgUrl)}" class="nssdp-media-img" onerror="this.parentElement.style.display='none'"></div>`;
+            }
+        } else if(plat==='tiktok'){
+            let videoId=''; if(url){const m=url.match(/\/video\/(\d+)/); if(m) videoId=m[1];} if(!videoId&&item.id){const m=String(item.id).match(/(\d{10,})/); if(m) videoId=m[1];}
+            if(videoId) mediaHtml=`<div class="nssdp-media-wrap"><iframe style="width:100%;height:480px;border:none;display:block;border-radius:8px;" src="https://www.tiktok.com/embed/v2/${videoId}" allow="autoplay" allowfullscreen></iframe></div>`;
+            else if(imgUrl) mediaHtml=`<div class="nssdp-media-wrap"><img src="${esc(imgUrl)}" class="nssdp-media-img" onerror="this.parentElement.style.display='none'"></div>`;
+        } else if(imgUrl){
+            mediaHtml=`<div class="nssdp-media-wrap"><img src="${esc(imgUrl)}" class="nssdp-media-img" onerror="this.parentElement.style.display='none'"></div>`;
+        }
+
         const statsMap={twitter:[['Views',item.view_cnt||item.num_views||0],['Retweet',item.rt||item.num_retweeted||item.retweet_count||0],['Like',item.num_likes||item.favorite_count||0]],facebook:[['Like',item.likes||item.num_likes||0],['Share',item.shares||item.share_count||0],['Comment',item.num_comments||0]],instagram:[['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||item.comment_count||0],['View',item.num_views||item.views||0]],youtube:[['View',item.num_views||item.views||0],['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||0]],tiktok:[['Play',item.views||item.play_count||0],['Like',item.likes||item.digg_count||0],['Share',item.shares||item.share_count||0]],doc:[['Read',item.num_views||0],['Share',item.num_share||0],['Comment',item.num_comments||0]]};
         const stats=statsMap[plat]||[];
         const statsHtml=stats.some(s=>parseInt(s[1])>0)?`<div class="nssdp-stats-grid">${stats.map(([l,v])=>`<div class="nssdp-stat-box"><div class="nssdp-stat-val">${parseInt(v||0).toLocaleString()}</div><div class="nssdp-stat-lbl">${l}</div></div>`).join('')}</div>`:'';

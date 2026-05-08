@@ -1610,15 +1610,15 @@
                         (url).match(/embed\/([a-zA-Z0-9_-]{11})/)||[])[1];
                 
                 if (!ytId) {
-                    var flds = ['video_id','youtube_id','id_str','post_id','docid','id','sub_id'];
+                    var flds = ['video_id','youtube_id','yt_id','id_str','post_id','docid','id','sub_id'];
                     for(var i=0; i<flds.length; i++) {
-                        var f = flds[i];
-                        var v = item[f]; if(!v) continue;
+                        var f = flds[i]; var v = item[f]; if(!v) continue;
                         var s = String(v).replace(/^(yt[-_])/i, '');
                         if(s.length===11) { ytId=s; break; }
                     }
                 }
                 if (!ytId && item.snippet) ytId = item.snippet.videoId || (item.snippet.resourceId && item.snippet.resourceId.videoId);
+                if (ytId && String(ytId).includes('yt-')) ytId = String(ytId).replace(/^(yt[-_])/i, '');
 
                 var thumb = item.thumbnail||item.thumbnail_url||item.image_url||item.cover||item.picture||(ytId ? 'https://img.youtube.com/vi/'+ytId+'/hqdefault.jpg' : '');
                 
@@ -1676,8 +1676,12 @@
                     var sc=item.shortcode||item.code||item.media_id||'';
                     if(sc) sourceUrl='https://www.instagram.com/p/'+sc+'/';
                 } else if(platform==='youtube'){
-                    var yi=item.video_id||item.youtube_id||item.id||'';
-                    if(yi) sourceUrl='https://www.youtube.com/watch?v='+yi;
+                    var yi=''; if(sourceUrl){ var m=sourceUrl.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|\/vi\/)([a-zA-Z0-9_-]{11})/); if(m) yi=m[1]; }
+                    if(!yi){
+                        var flds=['video_id','youtube_id','yt_id','id_str','post_id','docid','id','sub_id'];
+                        for(var i=0;i<flds.length;i++){ var f=flds[i], v=item[f]; if(!v)continue; var s=String(v).replace(/^(yt[-_])/i,''); if(s.length===11){yi=s;break;} }
+                    }
+                    if(yi) sourceUrl='https://www.youtube.com/watch?v='+yi; else if(item.channel_id) sourceUrl='https://www.youtube.com/channel/'+item.channel_id;
                 } else if(platform==='tiktok'){
                     var ti=item.video_id||item.aweme_id||item.id||'';
                     var ni=item.author_nickname||item.nickname||item.unique_id||(item.author&&item.author.unique_id)||'';

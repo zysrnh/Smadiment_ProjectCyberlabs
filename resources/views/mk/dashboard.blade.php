@@ -1603,19 +1603,38 @@ dataLabels: {
     /* ════════════════════════════════════════════════════════
        DASH PANEL
     ════════════════════════════════════════════════════════ */
+    /* ── Shared: robust YouTube Video ID extractor ── */
+    const _extractYtId = v => {
+        if (!v) return '';
+        const url = String(v.url || v.link || v.permalink || v.original_url || v.post_url || v.article_url || v.source_url || v.web_url || '');
+        let id = (url.match(/[?&]v=([a-zA-Z0-9_-]{11})/) ||
+                  url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/) ||
+                  url.match(/shorts\/([a-zA-Z0-9_-]{11})/) ||
+                  url.match(/embed\/([a-zA-Z0-9_-]{11})/) || [])[1];
+        if (id) return id;
+        const flds = ['video_id','youtube_id','yt_id','id_str','post_id','docid','id','sub_id'];
+        for (let f of flds) {
+            let val = v[f]; if (!val) continue;
+            let s = String(val).replace(/^(yt[-_])/i, '');
+            if (s.length === 11) return s;
+        }
+        if (v.snippet) return v.snippet.videoId || v.snippet.resourceId?.videoId || '';
+        return '';
+    };
+
+    const SENT_MAP = {
+        '1': 'pos', 'positive': 'pos', 'positif': 'pos', 'pos': 'pos',
+        '-1': 'neg', '2': 'neg', 'negative': 'neg', 'negatif': 'neg', 'neg': 'neg'
+    };
+    const _normSent = item => {
+        const raw = String(item.sentiment_class || item.class_sentiment || item.sentiment || '0').toLowerCase().trim();
+        return SENT_MAP[raw] || 'neu';
+    };
+
     const DashPanel = (() => {
         let _cache = {}, _allItems = [], _filtered = [];
         let _curPlat = 'all', _curSent = 'all', _curPid = null, _curPlatForSent = 'all';
         let _overrideSd = null, _overrideEd = null;
-
-        const SENT_MAP = {
-            '1': 'pos', 'positive': 'pos', 'positif': 'pos', 'pos': 'pos',
-            '-1': 'neg', '2': 'neg', 'negative': 'neg', 'negatif': 'neg', 'neg': 'neg'
-        };
-        const _normSent = item => {
-            const raw = String(item.sentiment_class || item.class_sentiment || item.sentiment || '0').toLowerCase().trim();
-            return SENT_MAP[raw] || 'neu';
-        };
 
         function showPlatPicker(x, y, sent, pid) {
             _curPlatForSent = sent || 'all';
@@ -1730,10 +1749,24 @@ dataLabels: {
         async function _fetchOne(platform, pid, sd, ed) {
             const q = `project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=500&start=0`;
             if (platform === 'instagram') {
-                for (const sub of ['postbylike','postbydate']) {
-                    const ic = new AbortController(), it = setTimeout(() => ic.abort(), 12000);
+                for (const sub of ['postbylike','postbyview','postbycomment','postbydate']) {
+                    const ic = new AbortController(), it = setTimeout(() => ic.abort(), 15000);
                     try {
                         const r = await fetch(`/mk/api/news/ig-top-status?${q}${sub ? '&sub='+sub : ''}`, { signal: ic.signal });
+                        clearTimeout(it);
+                        const d = await r.json();
+                        const items = Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []);
+                        if (items.length > 0) return items.map(i => ({ ...i, _platform: platform }));
+                    } catch (e) { clearTimeout(it); continue; }
+                }
+                return [];
+            }
+
+            if (platform === 'youtube') {
+                for (const sub of ['postbylike','postbyview','postbycomment','postbydate','']) {
+                    const ic = new AbortController(), it = setTimeout(() => ic.abort(), 15000);
+                    try {
+                        const r = await fetch(`/mk/api/news/ytb-top-status?${q}${sub ? '&sub='+sub : ''}`, { signal: ic.signal });
                         clearTimeout(it);
                         const d = await r.json();
                         const items = Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []);
@@ -1771,15 +1804,17 @@ dataLabels: {
             const eps = {
                 twit:    `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,
                 fb:      `/mk/api/news/fb-top-status?${q}&sub=fblike`,
-                youtube: `/mk/api/news/ytb-top-status?${q}`,
                 tiktok:  `/mk/api/news/tiktok-top-status?${q}&sub=postbylike`,
             };
             const twitFallback = `/mk/api/news/mentions?${q}`;
             const url = eps[platform]; if (!url) return [];
-            const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 20000);
+            const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
             try {
                 const r = await fetch(url, { signal: ctrl.signal }); clearTimeout(tid);
-                if (!r.ok) return [];
+                if (!r.ok) {
+                    if (platform==='twit') throw new Error('Twitter Primary Fail');
+                    return [];
+                }
                 const d = await r.json();
                 let items = [];
                 if      (Array.isArray(d?.data?.data))  items = d.data.data;
@@ -1911,11 +1946,22 @@ dataLabels: {
                                     <span class="do-sent-badge ${sentBadge}">${sentLbl}</span>
                                     <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
                                     <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
-                                    ${docUrl ? `<a href="${_es(docUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" style="margin-left:auto;font-size:10px;font-weight:700;color:${meta.color};display:inline-flex;align-items:center;gap:3px;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'"><i class="ph ph-arrow-square-out" style="font-size:12px;"></i>Buka</a>` : ''}
+                                    ${docUrl ? `<a href="${_es(docUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" style="margin-left:auto;font-size:10px;font-weight:700;color:${meta.color};background:${meta.color}15;padding:2px 7px;border-radius:4px;border:1px solid ${meta.color}30;display:inline-flex;align-items:center;gap:3px;text-decoration:none;transition:all .15s;" onmouseover="this.style.background='${meta.color}';this.style.color='#fff';" onmouseout="this.style.background='${meta.color}15';this.style.color='${meta.color}';"><i class="ph ph-arrow-square-out" style="font-size:12px;"></i>Buka</a>` : ''}
                                     ${dt ? `<span>${dt}</span>` : ''}
                                 </div>
                             </div>
                         </div>`;
+                    }
+
+                    const docUrl = (item.url||item.link||item.permalink||item.original_url||item.post_url||item.article_url||item.source_url||item.web_url||'').trim();
+                    let finalUrl = docUrl;
+                    if (plat === 'youtube') {
+                        const yi = _extractYtId(item);
+                        if (yi) finalUrl = `https://www.youtube.com/watch?v=${yi}`;
+                    } else if (plat === 'tiktok') {
+                        const ti = item.video_id || item.aweme_id || item.id || '';
+                        const ni = item.author_nickname || item.nickname || '';
+                        if (ti && ni) finalUrl = `https://www.tiktok.com/@${ni}/video/${ti}`;
                     }
 
                     return `<div class="do-panel-item" onclick="DashDetail.openEncoded('${enc}','${plat}')">
@@ -1928,7 +1974,8 @@ dataLabels: {
                                 <span class="do-sent-badge ${sentBadge}">${sentLbl}</span>
                                 <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
                                 <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
-                                ${dt ? `<span style="margin-left:auto;">${dt}</span>` : ''}
+                                ${finalUrl ? `<a href="${_es(finalUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" style="margin-left:auto;font-size:10px;font-weight:700;color:${meta.color};background:${meta.color}15;padding:2px 7px;border-radius:4px;border:1px solid ${meta.color}30;display:inline-flex;align-items:center;gap:3px;text-decoration:none;transition:all .15s;" onmouseover="this.style.background='${meta.color}';this.style.color='#fff';" onmouseout="this.style.background='${meta.color}15';this.style.color='${meta.color}';"><i class="ph ph-arrow-square-out" style="font-size:12px;"></i>Buka</a>` : ''}
+                                ${dt && !finalUrl ? `<span style="margin-left:auto;">${dt}</span>` : (dt ? `<span>${dt}</span>` : '')}
                             </div>
                         </div>
                     </div>`;
@@ -2061,29 +2108,19 @@ dataLabels: {
 
             /* Media embed & YouTube ID detection */
             if (platform === 'youtube') {
-                const url = item.url || item.link || item.permalink || item.original_url || '';
-                ytId = ((url).match(/[?&]v=([a-zA-Z0-9_-]{11})/)||
-                        (url).match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)||
-                        (url).match(/shorts\/([a-zA-Z0-9_-]{11})/)||
-                        (url).match(/embed\/([a-zA-Z0-9_-]{11})/)||[])[1];
-                
-                if (!ytId) {
-                    const flds = ['video_id','youtube_id','id_str','post_id','docid','id','sub_id'];
-                    for(let f of flds) {
-                        let v = item[f]; if(!v) continue;
-                        let s = String(v).replace(/^(yt[-_])/i, '');
-                        if(s.length===11) { ytId=s; break; }
-                    }
-                }
-                if (!ytId && item.snippet) ytId = item.snippet.videoId || item.snippet.resourceId?.videoId;
-
+                ytId = _extractYtId(item);
                 const thumb = item.thumbnail||item.thumbnail_url||item.image_url||item.cover||item.picture||(ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
                 
                 if (ytId) {
                     const eid = `yt_${ytId}_${Date.now()}`;
-                    mediaHtml = `<div id="${eid}" class="do-dp2-media" style="position:relative;cursor:pointer;background:#f1f5f9;height:220px;"
+                    mediaHtml = `<div id="${eid}" class="do-dp2-media" style="position:relative;cursor:pointer;background:#000;height:220px;"
                         onclick="document.getElementById('${eid}').innerHTML='<iframe width=\\'100%\\' height=\\'220\\' src=\\'https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1\\' frameborder=\\'0\\' allowfullscreen style=\\'border-radius:6px;\\'></iframe>'; document.getElementById('${eid}').style.height='auto';">
                         <img src="${thumb||`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.src='https://img.youtube.com/vi/${ytId}/mqdefault.jpg'">
+                        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.15);">
+                            <div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.3);">
+                                <i class="ph-fill ph-play" style="font-size:24px;color:#fff;margin-left:3px;"></i>
+                            </div>
+                        </div>
                     </div>`;
                 } else if (thumb) {
                     mediaHtml = `<div class="do-dp2-media" style="background:#f1f5f9;"><img src="${_es(thumb)}" onerror="this.parentElement.style.display='none'"></div>`;
@@ -2157,6 +2194,7 @@ dataLabels: {
                 else if (item.username) sourceUrl = `https://www.instagram.com/${item.username}/`;
             } else if (platform === 'youtube') {
                 if (ytId)                sourceUrl = `https://www.youtube.com/watch?v=${ytId}`;
+                else if (item.url)       sourceUrl = item.url;
                 else if (item.channel_id) sourceUrl = `https://www.youtube.com/channel/${item.channel_id}`;
             } else if (platform === 'tiktok') {
                 const tid  = item.video_id||item.aweme_id||item.id||'';

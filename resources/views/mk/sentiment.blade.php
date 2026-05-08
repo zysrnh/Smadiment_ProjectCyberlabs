@@ -1621,6 +1621,9 @@ const SNTExport = (() => {
     /* ══════════════════════════════════════════════════════
        SENTIMENT MENTION POPUP
     ══════════════════════════════════════════════════════ */
+    /* ══════════════════════════════════════════════════════
+       SENTIMENT MENTION POPUP & DETAIL (SYNC WITH MEDIA STAT)
+    ══════════════════════════════════════════════════════ */
     const SNTPlatMeta = {
       doc:   { label:'Online News',  color:'#0284c7' }, twit: { label:'X ( Twitter )', color:'#1d9bf0' },
       fb:    { label:'Facebook',     color:'#1877f2' }, ig:   { label:'Instagram',     color:'#e1306c' },
@@ -1628,7 +1631,7 @@ const SNTExport = (() => {
       neg:   { label:'Negative',     color:'#ef4444' }, pos:  { label:'Positive',      color:'#2FC6F6' },
       neu:   { label:'Neutral',      color:'#94a3b8' },
     };
-
+    
     const sntEsc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
     const SNTPopup = {
@@ -1656,13 +1659,14 @@ const SNTExport = (() => {
         document.getElementById('sntPopTitle').textContent=title;
         document.getElementById('sntPopMeta').textContent=SNTCfg.sd+' – '+SNTCfg.ed;
         document.getElementById('sntPopCount').textContent='…';
-        this._curSent=sentiment||'all';
+        
         document.querySelectorAll('.sntp-sent-tab').forEach(b=>b.classList.toggle('active',b.dataset.s===this._curSent));
         const list=document.getElementById('sntPopList');
         list.innerHTML=`<div class="sntp-loading"><div class="sntp-spinner"></div>Memuat mentions…</div>`;
         popup.classList.remove('hiding'); popup.classList.add('show');
         if(overlay){overlay.classList.remove('hiding');overlay.classList.add('show');}
         document.body.style.overflow='hidden';
+        
         const cacheKey=`${SNTCfg.pid}_${platform}_${SNTCfg.sd}_${SNTCfg.ed}`;
         try {
           if(!this._cache[cacheKey]) this._cache[cacheKey]=await this._fetch(platform);
@@ -1674,21 +1678,6 @@ const SNTExport = (() => {
         }
       },
       openSentiment(sentiment){ this.open('all',sentiment); },
-      showPlatPicker(x,y,sentiment) {
-        const pp=document.getElementById('sntPlatPicker'); if(!pp) return;
-        pp.dataset.sentiment=sentiment||'all';
-        const pw=185,ph=240,vw=window.innerWidth,vh=window.innerHeight;
-        let left=x+10,top=y-10;
-        if(left+pw>vw-8) left=x-pw-10;
-        if(top+ph>vh-8) top=vh-ph-8;
-        if(top<8) top=8;
-        pp.style.left=left+'px'; pp.style.top=top+'px';
-        pp.classList.add('visible');
-        pp.querySelectorAll('.sntpp-btn').forEach(btn=>{
-          const plat=btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
-          if(plat) btn.setAttribute('onclick',`SNTPopup.openPlatform('${plat}','${sentiment||'all'}')`);
-        });
-      },
       openPlatform(platform,sentiment){ const pp=document.getElementById('sntPlatPicker'); if(pp) pp.classList.remove('visible'); this.open(platform,sentiment||'all'); },
       filterSent(sent) {
         this._curSent=sent;
@@ -1706,66 +1695,98 @@ const SNTExport = (() => {
         setTimeout(()=>{popup.classList.remove('show','hiding');if(overlay) overlay.classList.remove('show','hiding');document.body.style.overflow='';},240);
       },
       async _fetch(platform) {
-        const q=`project_id=${SNTCfg.pid}&start_date=${SNTCfg.sd}&end_date=${SNTCfg.ed}&rows=2000&start=0`;
-        if(platform==='social'){
-          const results=await Promise.allSettled(['twit','fb','ig','yt','tiktok'].map(p=>this._fetchOne(p,q)));
-          let merged=[]; results.forEach(r=>{if(r.status==='fulfilled') merged=merged.concat(r.value);}); return merged;
-        }
-        if(platform==='all'){
-          const results=await Promise.allSettled(['doc','twit','fb','ig','yt','tiktok'].map(p=>this._fetchOne(p,q)));
-          let merged=[]; results.forEach(r=>{if(r.status==='fulfilled') merged=merged.concat(r.value);});
-          merged.sort((a,b)=>(b.date_created||b.created_at||'').localeCompare(a.date_created||a.created_at||'')); return merged;
-        }
-        return this._fetchOne(platform,q);
+        const platforms = platform==='social' ? ['twit','fb','ig','yt','tiktok'] : platform==='all' ? ['doc','twit','fb','ig','yt','tiktok'] : [platform];
+        const results = await Promise.allSettled(platforms.map(p=>this._fetchOne(p)));
+        let merged = [];
+        results.forEach((r, i) => {
+            if (r.status === 'fulfilled') {
+                r.value.forEach(item => { if (!item._type) item._type = platforms[i]; });
+                merged = merged.concat(r.value);
+            }
+        });
+        merged.sort((a,b)=>(b.date_created||b.created_at||'').localeCompare(a.date_created||a.created_at||''));
+        return merged;
       },
-      async _fetchOne(platform,q) {
+      async _fetchOne(platform) {
+        const q=`project_id=${SNTCfg.pid}&start_date=${SNTCfg.sd}&end_date=${SNTCfg.ed}&rows=500&start=0`;
+        const _normArr = d => {
+          if (Array.isArray(d?.data?.data)) return d.data.data;
+          if (Array.isArray(d?.data)) return d.data;
+          if (Array.isArray(d?.statuses)) return d.statuses;
+          if (Array.isArray(d?.results)) return d.results;
+          if (Array.isArray(d?.posts)) return d.posts;
+          if (Array.isArray(d)) return d;
+          if (d?.data && typeof d.data === 'object' && !Array.isArray(d.data)) {
+            const vals = Object.values(d.data);
+            if (vals.length && typeof vals[0] === 'object') return vals;
+          }
+          return [];
+        };
+
         if(platform==='ig'){
-          for(const sub of ['postbylike','postbycomment','postbydate','']){
-            try{ const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),15000); const res=await fetch(`/mk/api/news/ig-top-status?${q}${sub?'&sub='+sub:''}`,{signal:ctrl.signal}); clearTimeout(tid); if(!res.ok) continue; const data=await res.json(); const items=Array.isArray(data.data)?data.data:(Array.isArray(data)?data:[]); if(items.length>0){items.forEach(it=>{if(!it._type) it._type='ig';}); return items;} }catch(e){continue;}
+          for(const sub of ['postbylike', 'postbycomment', 'postbydate', '']){
+            try{ 
+              const ctrl=new AbortController(), tid=setTimeout(()=>ctrl.abort(),15000); 
+              const res=await fetch(`/mk/api/news/ig-top-status?${q}${sub?'&sub='+sub:''}`,{signal:ctrl.signal}); 
+              clearTimeout(tid); if(!res.ok) continue; 
+              const d=await res.json(); let items = _normArr(d);
+              if(items.length>0){ items.forEach(it=>{it._type='ig';}); return items; } 
+            } catch(e){continue;}
           } return [];
         }
-        /* Online News: gunakan articles API agar dapat title, content, url yang proper */
+        if(platform==='yt'){
+          for(const sub of ['postbylike', 'postbyview', 'postbydate', 'postbycomment', '']){
+            try{ 
+              const ctrl=new AbortController(), tid=setTimeout(()=>ctrl.abort(),15000); 
+              const res=await fetch(`/mk/api/news/ytb-top-status?${q}${sub?'&sub='+sub:''}`,{signal:ctrl.signal}); 
+              clearTimeout(tid); if(!res.ok) continue; 
+              const d=await res.json(); let items = _normArr(d);
+              if(items.length>0){ items.forEach(it=>{it._type='yt';}); return items; } 
+            } catch(e){continue;}
+          } return [];
+        }
         if(platform==='doc'){
           const docQ=`project_id=${SNTCfg.pid}&start_date=${SNTCfg.sd}&end_date=${SNTCfg.ed}&rows=500&start=0&media=doc`;
           try{
-            const res = await fetch(`/mk/api/news/articles?${docQ}`);
+            const ctrl=new AbortController(), tid=setTimeout(()=>ctrl.abort(),25000);
+            const res = await fetch(`/mk/api/news/articles?${docQ}`, {signal:ctrl.signal}); clearTimeout(tid);
             if(!res.ok) return [];
             const d = await res.json();
             const raw = Array.isArray(d?.data)?d.data:(Array.isArray(d)?d:[]);
-            
             return raw.map(i => ({
-                ...i,
-                _type: 'doc',
+                ...i, _type: 'doc',
                 content: i.content || i.summary || i.text || '',
                 title: i.title || i.subject || 'Untitled',
                 publisher: i.publisher || i.name || i.source_name || '',
-                source_name: i.publisher || i.name || i.source_name || '',
-                date_created: i.date_created || i.created_at || i.publish_date || '',
-                url: i.url || i.link || i.post_url || i.article_url || i.source_url || i.permalink || i.news_url || i.article_link || i.full_url || i.web_url || i.original_url || '',
+                url: i.url || i.link || i.post_url || i.article_url || '',
                 class_sentiment: String(i.class_sentiment || i.sentiment_class || i.sentiment || '0')
             }));
           }catch(e){ return []; }
         }
-        const eps={twit:`/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,fb:`/mk/api/news/fb-top-status?${q}&sub=fblike`,yt:`/mk/api/news/ytb-top-status?${q}`,tiktok:`/mk/api/news/tiktok-top-status?${q}&sub=postbylike`};
-        const url=eps[platform]; if(!url) return [];
-        const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),30000);
-        const res=await fetch(url,{signal:ctrl.signal}); clearTimeout(tid); if(!res.ok) return [];
-        const d=await res.json(); 
         
-        let items=[];
-        if (Array.isArray(d?.data?.data))    items = d.data.data;
-        else if (Array.isArray(d?.data))     items = d.data;
-        else if (Array.isArray(d?.statuses)) items = d.statuses;
-        else if (Array.isArray(d?.results))  items = d.results;
-        else if (Array.isArray(d?.posts))    items = d.posts;
-        else if (Array.isArray(d))           items = d;
-        else if (d?.data && typeof d.data === 'object' && !Array.isArray(d.data)) {
-          const vals = Object.values(d.data);
-          if (vals.length && typeof vals[0] === 'object') items = vals;
-        }
-
-        items.forEach(it=>{ it._type=platform; });
-        return items;
+        const eps={twit:`/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,fb:`/mk/api/news/fb-top-status?${q}&sub=fblike`,tiktok:`/mk/api/news/tiktok-top-status?${q}&sub=postbylike`};
+        const url=eps[platform]; if(!url) return [];
+        const ctrl=new AbortController(), tid=setTimeout(()=>ctrl.abort(),20000);
+        try {
+          const res=await fetch(url,{signal:ctrl.signal}); clearTimeout(tid); 
+          if(!res.ok){ if(platform==='twit') throw new Error('Twitter fail'); return []; }
+          const d=await res.json(); let items = _normArr(d);
+          
+          // Twitter Fallback
+          if (platform === 'twit' && items.length === 0) {
+            try {
+              const r2 = await fetch(`/mk/api/news/mentions?${q}`);
+              const d2 = await r2.json();
+              let allM = _normArr(d2);
+              items = allM.filter(m => {
+                const tc=String(m.tcode||'').toLowerCase(), mt=String(m.media_type||'').toLowerCase(), id2=String(m.id||m.docid||'').toLowerCase(), url2=String(m.url||'').toLowerCase();
+                return tc==='twit'||tc==='rt'||mt==='twit'||mt==='twitter'||mt==='x'||id2.startsWith('tw-')||url2.includes('twitter.com')||url2.includes('x.com');
+              });
+            } catch(e2) {}
+          }
+          items.forEach(it=>{ it._type=platform; });
+          return items;
+        } catch(e) { return []; }
       },
       _normSent(item){ 
         const raw=String(item.sentiment_class||item.class_sentiment||item.sentiment||item.sentiment_label||item.sentiment_str||'0').toLowerCase().trim(); 
@@ -1778,8 +1799,8 @@ const SNTExport = (() => {
         const items=this._getFiltered();
         document.getElementById('sntPopCount').textContent=items.length.toLocaleString();
         const badge=document.getElementById('sntPopCount');
-        const bColors={neg:'#ef4444',pos:'#2FC6F6',neu:'#94a3b8',all:'var(--primary-green)'};
-        badge.style.background=bColors[this._curSent]||'var(--primary-green)';
+        const bColors={neg:'#ef4444',pos:'#2FC6F6',neu:'#94a3b8',all:'var(--primary)'};
+        if(badge) badge.style.background=bColors[this._curSent]||'var(--primary)';
         list.innerHTML=''; list.scrollTop=0;
         this._renderedCount=0;
         this.loadMore(list);
@@ -1787,161 +1808,305 @@ const SNTExport = (() => {
       loadMore(list=document.getElementById('sntPopList')) {
         const items=this._getFiltered();
         const btn=document.getElementById('sntPopLoadMoreBtn'); if(btn) btn.remove();
-        if(!items.length){list.innerHTML=`<div class="sntp-loading" style="color:#94a3b8;">Tidak ada mention untuk filter ini</div>`;return;}
-        const limit=10, start=this._renderedCount||0, chunk=items.slice(start,start+limit);
-        const getPlat=item=>{ if(item._type) return item._type; const mt=String(item.media_type||item.type||item.tcode||'').toLowerCase(); if(mt.includes('doc')||mt.includes('news')||mt.includes('berita')) return 'doc'; if(mt.includes('twit')||mt.includes('twitter')||mt.includes('x')) return 'twit'; if(mt.includes('fb')||mt.includes('facebook')) return 'fb'; if(mt.includes('ig')||mt.includes('instagram')) return 'ig'; if(mt.includes('yt')||mt.includes('youtube')) return 'yt'; if(mt.includes('tiktok')) return 'tiktok'; return this._curPlat||'doc'; };
+        if(!items.length){list.innerHTML=`<div class="sntp-loading" style="color:#94a3b8;padding:50px 20px;text-align:center;">Tidak ada mention untuk filter ini</div>`;return;}
+        
+        const limit=20, start=this._renderedCount||0, chunk=items.slice(start,start+limit);
+        const getPlat=item=>{ if(item._type) return item._type; return this._curPlat||'doc'; };
+        
         const html=chunk.map(item=>{
           const plat=getPlat(item),meta=SNTPlatMeta[plat]||{color:'#038047'},color=meta.color;
-          const rawName=(item.from_name||item.page_name||item.author_nickname||item.nickname||item.channel_title||item.channel_name||item.author_name||item.username||item.user_name||item.author_scr_name||item.screen_name||item.author?.name||item.author?.scr_name||item.publisher||item.source_name||item.name||'').trim();
-          const rawHandle=(item.author_scr_name||item.screen_name||item.author?.scr_name||item.username||item.handle||'').trim();
-          let name = rawName;
-          if(!name || name.toLowerCase()==='tidak diketahui' || name.toLowerCase()==='user' || /^\d{8,}$/.test(name)){
-            if(rawHandle && !/^\d{8,}$/.test(rawHandle)) name = rawHandle;
-            else if(name && /^\d{8,}$/.test(name)) name = `User ${name.slice(-4)}`;
-            else name = 'Tidak diketahui';
+          const ao0 = (()=>{ if(typeof item.author==='object'&&item.author) return item.author; try{return JSON.parse(item.author||'{}');}catch(e){return{};} })();
+          const rawName = (()=>{
+            if (plat==='fb')     return item.from_name || item.page_name || item.author_name || ao0?.name || item.author_handle || null;
+            if (plat==='ig')     return item.username || item.user_name || null;
+            if (plat==='tiktok') return item.author_nickname || item.nickname || ao0?.nickname || item.author_name || null;
+            if (plat==='yt')     return item.channel_title || item.channel_name || item.author_name || null;
+            if (plat==='twit')   return item.name || ao0?.name || ao0?.scr_name || item.author_name || item.author_scr_name || null;
+            return null;
+          })();
+          let name = (rawName || item.author_name || item.channel_name || item.publisher || item.source_name || item.name || '').trim();
+          if(!name || name.toLowerCase()==='tidak diketahui' || name.toLowerCase()==='unknown' || /^\d{8,}$/.test(name)){
+            const alt = (item.author_handle||item.author_scr_name||item.screen_name||ao0?.scr_name||ao0?.username||item.username||item.nickname||'').trim();
+            if(alt && !/^\d{8,}$/.test(alt)) name = alt;
+            else if(!name) name = 'Tidak diketahui';
           }
-          const displayName = name;
-          const handle=rawHandle&&rawHandle.toLowerCase()!==displayName.toLowerCase()?(['twit','ig','tiktok'].includes(plat)?(rawHandle.startsWith('@')?rawHandle:'@'+rawHandle):rawHandle):'';
-          const av=(item.avatar_url||item.profile_image_url||item.author_image||item.author?.image||item.profile_image||item.thumbnail||item.picture||'').trim();
-          const words=displayName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
-          const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||displayName[0]||'?')).toUpperCase().replace(/['"]/g,'');
+          const dName = name;
+          const rawH = ((plat==='ig'?item.username:'')||item.author_handle||item.author_scr_name||item.screen_name||ao0?.scr_name||item.username||'').trim();
+          const handle = (()=>{
+            if (!rawH) return '';
+            const w = ['twit','ig','tiktok'].includes(plat) ? (rawH.startsWith('@')?rawH:'@'+rawH) : rawH;
+            return w.replace(/^@/,'').toLowerCase() === dName.toLowerCase() ? '' : w;
+          })();
+
+          const text = (()=>{
+            if (plat === 'doc') {
+              const c = (item.content||'').replace(/<[^>]*>/g,'').trim();
+              return c ? c.slice(0,155) : (item.title||'').slice(0,155);
+            }
+            return (item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,155);
+          })();
+          const artTitle = (plat === 'doc') ? (item.title||'').replace(/<[^>]*>/g,'').trim() : '';
+          const url = (item.url||item.link||'').trim();
+          const av = (item.avatar_url||item.profile_image_url||item.author_image||ao0?.image||item.profile_image||item.thumbnail||item.picture||'').trim();
+
+          const words=dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
+          const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||dName[0]||'?')).toUpperCase().replace(/['"]/g,'');
           const avHtml=(av&&(av.startsWith('http://')||av.startsWith('https://')))?`<img src="${sntEsc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}'">`:(plat==='doc'?`<i class="ph ph-newspaper" style="font-size:14px;color:#fff;"></i>`:ini);
+          
           const sent=this._normSent(item),sentLbl={neg:'Neg',pos:'Pos',neu:'Neu'}[sent]||'Neu';
           const dt=(item.date_created||item.created_at||item.publish_date||'').split('T')[0];
           const itemData=sntEsc(JSON.stringify(item));
-          /* ── Doc artikel: tampilkan title + snippet + link buka ── */
-          if(plat==='doc'){
-            const artTitle=(item.title||'').replace(/<[^>]*>/g,'').trim();
-            const snippet=(item.content||item.description||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,150);
-            const docUrl=(item.url||item.link||'').trim();
+
+          /* Tombol original link persis Media Stat */
+          const linkBtn = url
+            ? `<a href="${sntEsc(url)}" target="_blank" rel="noopener noreferrer"
+                   onclick="event.stopPropagation()" title="Buka di tab baru"
+                   style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:4px;background:rgba(3,128,71,.08);color:var(--primary);border:1px solid rgba(3,128,71,.2);text-decoration:none;transition:all .15s;"
+                   onmouseover="this.style.background='var(--primary)';this.style.color='#fff';"
+                   onmouseout="this.style.background='rgba(3,128,71,.08)';this.style.color='var(--primary)';">
+                 <i class="ph ph-arrow-square-out" style="font-size:13px;pointer-events:none;"></i>
+               </a>`
+            : '';
+
+          /* Doc view */
+          if(plat==='doc' && artTitle){
             return `<div class="sntp-item" data-item='${itemData}' data-plat="${plat}" onclick="SNTPopup._onItemClick(this)">
               <div class="sntp-avatar" style="background:linear-gradient(135deg,${color},${color}99);">${avHtml}</div>
               <div class="sntp-item-body">
-                <div class="sntp-item-author" style="font-size:10px;color:#64748b;font-weight:500;">${sntEsc(displayName)}</div>
-                ${artTitle?`<div style="font-size:12px;font-weight:700;color:#1e293b;line-height:1.35;margin:2px 0 3px;">${sntEsc(artTitle.slice(0,100))}</div>`:''}
-                <div class="sntp-item-text">${sntEsc(snippet||artTitle||'(tidak ada konten)')}</div>
-                <div class="sntp-item-footer">
-                  <span class="sntp-sent-badge sntp-sent-badge--${sent}">${sentLbl}</span>
-                  <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0;"></span>
-                  <span style="font-size:10px;">${meta.label||''}</span>
-                  ${docUrl?`<a href="${sntEsc(docUrl)}" target="_blank" rel="noopener noreferrer" style="margin-left:auto;font-size:10px;font-weight:700;color:${color};display:inline-flex;align-items:center;gap:3px;text-decoration:none;" onclick="event.stopPropagation()" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'"><i class="ph ph-arrow-square-out" style="font-size:12px;"></i>Buka</a>`:''}
-                  ${dt?`<span>${dt}</span>`:''}
+                <div class="sntp-item-author" style="font-size:10px;color:#64748b;font-weight:600;">${sntEsc(dName)}</div>
+                <div style="font-size:12px;font-weight:700;color:#1e293b;line-height:1.35;margin:3px 0 4px;">${sntEsc(artTitle.slice(0,100))}</div>
+                <div class="sntp-item-text" style="font-size:11px;">${sntEsc(text||'(tidak ada konten)')}</div>
+                <div class="sntp-item-footer" style="justify-content:space-between;flex-wrap:nowrap;margin-top:2px;">
+                  <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+                    <span class="sntp-sent-badge sntp-sent-badge--${sent}">${sentLbl}</span>
+                    <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${color};flex-shrink:0;"></span>
+                    <span style="font-size:10px;font-weight:600;color:${color};">${meta.label}</span>
+                    ${dt?`<span style="margin-left:2px;font-size:10px;color:var(--slate-400);">${dt}</span>`:''}
+                  </div>
+                  ${linkBtn}
                 </div>
               </div>
             </div>`;
           }
-          const text=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,155);
-          const platDot=`<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0;"></span>`;
+
+          /* Social view (TIDAK ADA THUMBNAIL) */
           return `<div class="sntp-item" data-item='${itemData}' data-plat="${plat}" onclick="SNTPopup._onItemClick(this)">
             <div class="sntp-avatar" style="background:linear-gradient(135deg,${color},${color}99);">${avHtml}</div>
             <div class="sntp-item-body">
-              <div class="sntp-item-author">${sntEsc(displayName)}</div>
+              <div class="sntp-item-author">${sntEsc(dName)}</div>
               ${handle?`<div class="sntp-item-handle">${sntEsc(handle)}</div>`:''}
               <div class="sntp-item-text">${sntEsc(text||'(tidak ada konten)')}</div>
-              <div class="sntp-item-footer">
-                <span class="sntp-sent-badge sntp-sent-badge--${sent}">${sentLbl}</span>
-                ${platDot}<span style="font-size:10px;">${meta.label||''}</span>
-                ${dt?`<span style="margin-left:auto;">${dt}</span>`:''}
+              <div class="sntp-item-footer" style="justify-content:space-between;flex-wrap:nowrap;margin-top:2px;">
+                <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+                  <span class="sntp-sent-badge sntp-sent-badge--${sent}">${sentLbl}</span>
+                  <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${color};flex-shrink:0;"></span>
+                  <span style="font-size:10px;font-weight:600;color:${color};">${meta.label}</span>
+                  ${dt?`<span style="margin-left:2px;font-size:10px;color:var(--slate-400);">${dt}</span>`:''}
+                </div>
+                ${linkBtn}
               </div>
             </div>
           </div>`;
         }).join('');
+        
         list.insertAdjacentHTML('beforeend',html);
         this._renderedCount=start+chunk.length;
         if(items.length>this._renderedCount){
-          list.insertAdjacentHTML('beforeend',`<div id="sntPopLoadMoreBtn" style="padding:11px 14px;text-align:center;background:var(--slate-50);border-top:1px dashed var(--slate-200);"><button id="_doLMBtn" onclick="SNTPopup.loadMore()" style="width:100%;border:none;background:var(--primary);color:#fff;border-radius:var(--radius-sm);padding:8px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;transition:filter .14s;" onmouseover="this.style.filter='brightness(1.12)'" onmouseout="this.style.filter=''"><i class="ph ph-arrow-circle-down" style="font-size:13px;"></i> Muat Lebih Banyak</button></div>`);
+          list.insertAdjacentHTML('beforeend',`<div id="sntPopLoadMoreBtn" style="padding:16px;text-align:center;background:var(--slate-50);border-top:1px dashed var(--slate-200);"><button id="_doLMBtn" onclick="SNTPopup.loadMore()" style="background:var(--primary);color:#fff;border:none;padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(3,128,71,.2);" onmouseover="this.style.filter='brightness(1.1)';" onmouseout="this.style.filter='';">Muat Lebih Banyak</button></div>`);
         }
       },
       _onItemClick(el) {
-        try{ const raw=el.getAttribute('data-item'); const item=JSON.parse(raw.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"')); SNTDetail.open(item,el.dataset.plat||this._curPlat||'doc'); }catch(e){ console.warn('SNT Detail parse error:',e); }
+        try{ 
+            const raw = el.getAttribute('data-item'); 
+            const item = JSON.parse(raw.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g, "'")); 
+            SNTDetail.open(item, el.dataset.plat || this._curPlat || 'doc'); 
+        } catch(e){ console.warn('SNT Detail parse error:', e); }
       }
     };
 
-    /* ══════════════════════════════════════════════════════
-       DETAIL PANEL
-    ══════════════════════════════════════════════════════ */
     const SNTDetail = {
       open(item,platform) {
-        const panel=document.getElementById('sntDetailPanel'),body=document.getElementById('sntDpBody'),title=document.getElementById('sntDpTitle');
+        const panel=document.getElementById('sntDetailPanel'),body=document.getElementById('sntDpBody'),title=document.getElementById('sntDpTitle');if(!panel||!body)return;
         const meta=SNTPlatMeta[platform]||{label:platform,color:'#038047'};
-        const rawName=(item.from_name||item.page_name||item.author_nickname||item.nickname||item.channel_title||item.channel_name||item.author_name||item.username||item.user_name||item.author_scr_name||item.screen_name||item.author?.name||item.author?.scr_name||item.publisher||item.source_name||item.name||'').trim();
-        const rawHandle=(item.author_scr_name||item.screen_name||item.author?.scr_name||item.username||item.handle||'').trim();
-        let name = rawName;
-        if(!name || name.toLowerCase()==='tidak diketahui' || name.toLowerCase()==='user' || /^\d{8,}$/.test(name)){
-          if(rawHandle && !/^\d{8,}$/.test(rawHandle)) name = rawHandle;
-          else if(name && /^\d{8,}$/.test(name)) name = `User ${name.slice(-4)}`;
-          else name = 'Tidak diketahui';
+        const SM={'1':'pos','positive':'pos','positif':'pos','-1':'neg','2':'neg','negative':'neg','negatif':'neg'};
+        const sent=SM[String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim()]||'neu';
+        const SLBL={pos:'Positive',neg:'Negative',neu:'Neutral'};
+        const SBGS={pos:'sntdp-sent-badge--pos',neg:'sntdp-sent-badge--neg',neu:'sntdp-sent-badge--neu'};
+        
+        const ao3=(()=>{ if(typeof item.author==='object'&&item.author) return item.author; try{return JSON.parse(item.author||'{}');}catch(e){return{};} })();
+        const rawName=(()=>{if(platform==='fb')return item.from_name||item.page_name||item.author_name||ao3?.name||item.author_handle||null;if(platform==='ig')return item.username||null;if(platform==='tiktok')return item.author_nickname||item.nickname||ao3?.nickname||null;if(platform==='yt')return item.channel_title||item.channel_name||null;if(platform==='twit')return item.name||ao3?.name||ao3?.scr_name||item.author_name||item.author_scr_name||null;return null;})();
+        let name=(rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'').trim();
+        if(!name || /^\d{5,}$/.test(name) || name.toLowerCase()==='unknown' || name.toLowerCase()==='tidak diketahui'){
+          const altN=(item.author_handle||item.author_scr_name||item.screen_name||ao3?.scr_name||ao3?.username||item.username||item.nickname||'').trim();
+          if(altN && !/^\d{5,}$/.test(altN)) name=altN;
+          else if(!name) name='Tidak diketahui';
         }
         const displayName = name;
-        const handle=rawHandle&&rawHandle.toLowerCase()!==displayName.toLowerCase()?(rawHandle.startsWith('@')?rawHandle:'@'+rawHandle):'';
+        const handle=((platform==='ig'?item.username:'')||item.author_handle||item.author_scr_name||item.screen_name||ao3?.scr_name||item.username||'').trim();
         const content=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
-        const av=(item.avatar_url||item.profile_image_url||item.author_image||item.author?.image||item.profile_image||item.thumbnail||item.picture||'').trim();
-        let url=item.url||item.link||'';
-        if(!url&&platform==='twit'){const scr=rawHandle.replace(/^@/,''),subId=item.sub_id||''; if(subId) url=`https://twitter.com/${encodeURIComponent(scr)}/status/${encodeURIComponent(subId)}`; else if(scr) url=`https://twitter.com/${encodeURIComponent(scr)}`;}
-        const date=item.date_created||item.created_at||item.publish_date||'';
-        const sentRaw=String(item.class_sentiment||item.sentiment||item.sentiment_str||'0').toLowerCase().trim();
-        const sent=sentRaw==='1'||sentRaw==='positive'||sentRaw==='positif'?'pos':sentRaw==='-1'||sentRaw==='2'||sentRaw==='negative'||sentRaw==='negatif'?'neg':'neu';
-        const sentLbl={pos:'Positive',neg:'Negative',neu:'Neutral'}[sent];
+        const av=(item.avatar_url||item.profile_image_url||ao3?.image||item.author_image||item.profile_image||item.thumbnail||'').trim();
+        const url=item.url||item.link||'';const dt=item.date_created||item.created_at||item.publish_date||'';
         title.textContent=displayName;
         const words=displayName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
         const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||displayName[0]||'?')).toUpperCase().replace(/['"]/g,'');
-        const avHtml=(av&&(av.startsWith('http://')||av.startsWith('https://')))?`<img src="${sntEsc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}'">`:ini;
-        let dtFmt=''; if(date){try{dtFmt=new Date(date).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){dtFmt=date.split('T')[0];}}
+        const avHtml=(av&&av.startsWith('http'))?`<img src="${sntEsc(av)}" onerror="this.parentElement.textContent='${ini}';">`:ini;
+        let dtFmt='';if(dt){try{dtFmt=new Date(dt).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){dtFmt=dt.split('T')[0];}}
+        
+        // Exact Detail Media Logic dari Media Statistic
         let mediaHtml='';
         if(platform==='yt'){
-          let ytId=''; if(url){const m=url.match(/(?:v=|youtu\.be\/|embed\/|watch\?v=)([a-zA-Z0-9_-]{11})/); if(m) ytId=m[1];}
-          if(!ytId&&item.video_id) ytId=item.video_id;
-          if(!ytId&&item.id){const strId=String(item.id); if(strId.length===11) ytId=strId;}
-          if(ytId){
-            const thumb=`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`;
-            mediaHtml=`<div class="sntdp-media-wrap" style="position:relative;cursor:pointer;aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;border-radius:12px;overflow:hidden;margin-bottom:12px;" onclick="this.innerHTML='<iframe style=\\'width:100%;height:100%;border:none;\\' src=\\'https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0\\' allow=\\'autoplay; encrypted-media\\' allowfullscreen></iframe>'">
-              <img src="${thumb}" style="width:100%;height:100%;object-fit:cover;opacity:0.8;">
-              <div style="position:absolute;width:52px;height:52px;background:rgba(255,0,0,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(0,0,0,0.4);">
-                <i class="ph ph-play-fill" style="color:#fff;font-size:24px;margin-left:3px;"></i>
-              </div>
-            </div>`;
-          }
-        } else if(platform==='tiktok'){
-          let videoId=''; if(url){const m=url.match(/\/video\/(\d+)/); if(m) videoId=m[1];} if(!videoId&&item.id){const m=String(item.id).match(/(\d{10,})/); if(m) videoId=m[1];}
-          const thumb = item.image_url || item.thumbnail || item.media_url || item.picture || '';
-          if(videoId){
-            mediaHtml=`<div class="sntdp-media-wrap" style="position:relative;cursor:pointer;min-height:300px;background:#000;display:flex;align-items:center;justify-content:center;border-radius:12px;overflow:hidden;margin-bottom:12px;" onclick="this.innerHTML='<iframe style=\\'width:100%;height:480px;border:none;\\' src=\\'https://www.tiktok.com/embed/v2/${videoId}\\' allow=\\'autoplay\\' allowfullscreen></iframe>'">
-              ${thumb ? `<img src="${sntEsc(thumb)}" style="width:100%;height:100%;object-fit:cover;opacity:0.7;">` : ''}
-              <div style="position:absolute;width:52px;height:52px;background:rgba(0,0,0,0.6);border:2px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(0,0,0,0.5);">
-                <i class="ph ph-play-fill" style="color:#fff;font-size:24px;margin-left:3px;"></i>
-              </div>
-              <div style="position:absolute;bottom:10px;left:10px;color:#fff;font-size:10px;background:rgba(0,0,0,0.4);padding:2px 8px;border-radius:4px;">Klik untuk putar video TikTok</div>
-            </div>`;
-          } else if(thumb){
-            mediaHtml=`<div class="sntdp-media-wrap"><img class="sntdp-media-img" src="${sntEsc(thumb)}" onerror="this.parentElement.style.display='none'"></div>`;
-          }
-        } else {
-          const imgUrl=item.image_url||item.thumbnail||item.media_url||item.picture||'';
-          if(imgUrl) mediaHtml=`<div class="sntdp-media-wrap"><img class="sntdp-media-img" src="${sntEsc(imgUrl)}" onerror="this.parentElement.style.display='none'"></div>`;
+            let ytId=''; if(url){ const m=url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|\/vi\/)([a-zA-Z0-9_-]{11})/); if(m) ytId=m[1]; }
+            if(!ytId){
+                var flds = ['video_id','youtube_id','yt_id','id_str','post_id','docid','id','sub_id'];
+                for(var i=0; i<flds.length; i++){
+                    var f = flds[i]; var v = item[f]; if(!v) continue;
+                    var s = String(v).replace(/^(yt[-_])/i, '');
+                    if(s.length===11){ ytId=s; break; }
+                }
+            }
+            if(!ytId && item.snippet) ytId = (item.snippet.videoId || (item.snippet.resourceId && item.snippet.resourceId.videoId) || '');
+            const thumb = item.thumbnail || item.image_url || item.picture || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
+            if(ytId){
+                const eid = `yt_${ytId}_${Date.now()}`;
+                mediaHtml = `<div id="${eid}" class="sntdp-media-wrap" style="position:relative;cursor:pointer;background:#f1f5f9;height:220px;"
+                    onclick="document.getElementById('${eid}').innerHTML='<iframe width=\\'100%\\' height=\\'220\\' src=\\'https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1\\' frameborder=\\'0\\' allowfullscreen style=\\'border-radius:6px;\\'></iframe>'; document.getElementById('${eid}').style.height='auto';">
+                    <img src="${thumb||`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.src='https://img.youtube.com/vi/${ytId}/mqdefault.jpg'">
+                </div>`;
+            } else if(thumb) {
+                mediaHtml=`<div class="sntdp-media-wrap" style="background:#f1f5f9;"><img src="${sntEsc(thumb)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:var(--radius-sm);"></div>`;
+            }
         }
-        const statsMap={twit:[['Views',item.view_cnt||item.num_views||0],['Retweet',item.rt||item.num_retweeted||item.retweet_count||0],['Like',item.num_likes||item.favorite_count||0]],fb:[['Like',item.likes||item.num_likes||0],['Share',item.shares||item.share_count||0],['Comment',item.num_comments||0]],ig:[['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||item.comment_count||0],['View',item.num_views||item.views||0]],yt:[['View',item.num_views||item.views||0],['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||0]],tiktok:[['Play',item.views||item.play_count||0],['Like',item.likes||item.digg_count||0],['Share',item.shares||item.share_count||0]],doc:[['Read',item.num_views||0],['Share',item.num_share||0],['Comment',item.num_comments||0]]};
+        else if(platform==='tiktok'){
+            let tid=''; 
+            if(item.video_id) tid=String(item.video_id);
+            else if(item.aweme_id) tid=String(item.aweme_id);
+            else if(url && url.match(/\/video\/(\d+)/)) tid=url.match(/\/video\/(\d+)/)[1];
+            else if(item.id) { const m=String(item.id).match(/(\d{15,})/); if(m) tid=m[1]; }
+            
+            const thumb=item.image_url||item.thumbnail||item.media_url||item.picture||'';
+            if(tid) {
+                const eid = `tt_${tid}_${Date.now()}`;
+                mediaHtml = `<div id="${eid}" style="position:relative;cursor:pointer;background:#f1f5f9;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;height:240px;margin-bottom:10px;"
+                    onclick="document.getElementById('${eid}').innerHTML='<iframe src=\\'https://www.tiktok.com/embed/v2/${tid}\\' style=\\'width:100%;height:480px;border:none;display:block;\\' allow=\\'autoplay; encrypted-media; picture-in-picture\\' allowfullscreen></iframe>'; document.getElementById('${eid}').style.height='auto';">
+                    ${thumb ? `<img src="${sntEsc(thumb)}" style="position:absolute;width:100%;height:100%;object-fit:cover;pointer-events:none;">` : ''}
+                    <div style="position:absolute;bottom:8px;right:8px;background:#111827;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.5px;">TIKTOK</div>
+                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.1);"><i class="ph ph-play-circle" style="font-size:48px;color:#fff;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));"></i></div>
+                </div>`;
+            } else if(thumb) {
+                mediaHtml=`<div class="sntdp-media-wrap" style="background:#f1f5f9;"><img src="${sntEsc(thumb)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:var(--radius-sm);"></div>`;
+            }
+        }
+        else {
+            const thumb=item.image_url||item.thumbnail||item.media_url||item.picture||'';
+            if(thumb) mediaHtml=`<div class="sntdp-media-wrap" style="background:#f1f5f9;"><img src="${sntEsc(thumb)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:var(--radius-sm);"></div>`;
+        }
+
+        const statsMap={twit:[['Views',item.view_cnt||item.num_views||0],['Retweet',item.rt||item.num_retweeted||item.retweet_count||0],['Like',item.num_likes||item.favorite_count||0]],fb:[['Like',item.likes||item.num_likes||0],['Share',item.shares||item.share_count||0],['Comment',item.num_comments||0]],ig:[['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||item.comment_count||0],['View',item.num_views||item.views||0]],yt:[['View',item.num_views||item.views||0],['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||item.comment_count||0]],tiktok:[['Play',item.views||item.play_count||0],['Like',item.likes||item.digg_count||0],['Share',item.shares||item.share_count||0]],doc:[['Read',item.num_views||0],['Share',item.num_share||0],['Comment',item.num_comments||0]]};
         const stats=statsMap[platform]||[];
         const statsHtml=stats.some(s=>parseInt(s[1])>0)?`<div class="sntdp-stats-grid">${stats.map(([l,v])=>`<div class="sntdp-stat-box"><div class="sntdp-stat-val">${parseInt(v||0).toLocaleString()}</div><div class="sntdp-stat-lbl">${l}</div></div>`).join('')}</div>`:'';
-        body.innerHTML=`
-        <div class="sntdp-avatar-row">
-          <div class="sntdp-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
-          <div>
-            <div class="sntdp-author-name">${sntEsc(displayName)}</div>
-            ${handle?`<div class="sntdp-author-handle">${sntEsc(handle)}</div>`:''}
-            <span style="background:${meta.color}22;color:${meta.color};padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;display:inline-block;margin-top:4px;">${meta.label}</span>
-          </div>
-        </div>
-        ${dtFmt?`<div class="sntdp-meta-row"><span>${dtFmt}</span></div>`:''}
-        <span class="sntdp-sent-badge sntdp-sent-badge--${sent}">${sentLbl}</span>
-        ${mediaHtml}
-        ${content?`<div class="sntdp-content-text">${sntEsc(content)}</div>`:''}
-        ${statsHtml}
-        ${url?`<a href="${sntEsc(url)}" target="_blank" rel="noopener noreferrer" class="sntdp-link-btn"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Lihat Sumber Asli</a>`:''}`;
+        const handleDisp=handle&&handle.replace('@','').toLowerCase()!==displayName.toLowerCase().slice(0,handle.replace('@','').length)?(handle.startsWith('@')?handle:'@'+handle):'';
+        
+        let sourceUrl=item.url||item.link||item.post_url||item.article_url||item.source_url||item.permalink||item.news_url||item.article_link||item.full_url||item.web_url||item.source||item.original_url||'';
+        if(!sourceUrl){
+            if(platform==='twit'){ 
+                const ao=(()=>{ if(typeof item.author==='object'&&item.author) return item.author; try{return JSON.parse(item.author||'{}');}catch(e){return{};} })(); 
+                const scr=(item.author_scr_name||item.screen_name||ao?.scr_name||ao?.username||'').replace(/^@/,''); 
+                const sid=item.sub_id||item.tweet_id||item.id_str||item.id||''; 
+                if(scr&&sid) sourceUrl=`https://twitter.com/${scr}/status/${sid}`; else if(scr) sourceUrl=`https://twitter.com/${scr}`; 
+            }
+            else if(platform==='ig'){ 
+                const sc=item.shortcode||item.code||item.media_id||''; 
+                if(sc) sourceUrl=`https://www.instagram.com/p/${sc}/`; else if(item.username) sourceUrl=`https://www.instagram.com/${item.username}/`; 
+            }
+            else if(platform==='yt'){ 
+                let yi=''; if(url){ const m=url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|\/vi\/)([a-zA-Z0-9_-]{11})/); if(m) yi=m[1]; }
+                if(!yi){
+                    var flds = ['video_id','youtube_id','yt_id','id_str','post_id','docid','id','sub_id'];
+                    for(var i=0; i<flds.length; i++){
+                        var f = flds[i]; var v = item[f]; if(!v) continue;
+                        var s = String(v).replace(/^(yt[-_])/i, '');
+                        if(s.length===11){ yi=s; break; }
+                    }
+                }
+                if(yi) sourceUrl=`https://www.youtube.com/watch?v=${yi}`; else if(item.channel_id) sourceUrl=`https://www.youtube.com/channel/${item.channel_id}`; 
+            }
+            else if(platform==='tiktok'){ 
+                const ti=item.video_id||item.aweme_id||item.id||''; 
+                const ni=item.author_nickname||item.nickname||item.unique_id||item.author?.unique_id||''; 
+                if(ti&&ni) sourceUrl=`https://www.tiktok.com/@${ni}/video/${ti}`; else if(ti) sourceUrl=`https://vm.tiktok.com/${ti}`; 
+            }
+            else if(platform==='fb'){ 
+                const fbUrl2=item.url||item.link||item.post_url||'';
+                if(fbUrl2 && fbUrl2.startsWith('http') && (fbUrl2.includes('facebook.com')||fbUrl2.includes('fb.com')||fbUrl2.includes('fb.watch'))){
+                    sourceUrl=fbUrl2;
+                } else {
+                    const pi=item.post_id||item.story_id||item.id||(item.docid||'').replace(/^fb-/,'')||''; 
+                    const pn=item.page_name||item.from_name||item.author_name||item.author_handle||ao3?.username||''; 
+                    if(pn&&pi) sourceUrl=`https://www.facebook.com/${pn}/posts/${pi}`;
+                    else if(pn) sourceUrl=`https://www.facebook.com/${pn}`;
+                }
+            }
+        }
+
+        let sourceBtnHtml = '';
+        if (platform === 'doc') {
+            const _cleanUrl = v => (v && typeof v === 'string' && v !== 'null' && v !== 'undefined' && v.trim() !== '' && v.startsWith('http')) ? v.trim() : '';
+            const docSourceUrl = _cleanUrl(item.url)||_cleanUrl(item.link)||_cleanUrl(item.article_url)||_cleanUrl(item.source_url)||_cleanUrl(item.news_url)||_cleanUrl(item.permalink)||_cleanUrl(item.web_url)||_cleanUrl(item.full_url)||_cleanUrl(item.original_url)||'';
+            if (docSourceUrl) {
+                sourceBtnHtml = `<a href="${sntEsc(docSourceUrl)}" target="_blank" rel="noopener noreferrer" class="sntdp-link-btn" style="background:#0284c7;"><i class="ph ph-newspaper"></i> Baca Artikel Asli</a>`;
+            } else {
+                sourceBtnHtml = `<div style="margin-top:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px 12px;font-size:11px;color:#991b1b;display:flex;align-items:flex-start;gap:7px;line-height:1.4;"><i class="ph ph-warning-circle" style="font-size:15px;flex-shrink:0;"></i><span>Link artikel spesifik tidak tersedia dari sumber data.</span></div>`;
+            }
+            const artTitle = (item.title||'').replace(/<[^>]*>/g,'').trim();
+            body.innerHTML=`
+                <div class="sntdp-avatar-row">
+                    <div class="sntdp-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);"><i class="ph ph-newspaper" style="font-size:20px;color:#fff;"></i></div>
+                    <div>
+                        <div class="sntdp-author-name">${sntEsc(displayName)}</div>
+                        ${artTitle ? `<div style="font-size:13px;font-weight:700;color:#1e293b;margin-top:4px;line-height:1.35;">${sntEsc(artTitle)}</div>` : ''}
+                        <span style="background:${meta.color}22;color:${meta.color};padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;display:inline-block;margin-top:4px;">${meta.label}</span>
+                    </div>
+                </div>
+                ${dtFmt?`<div class="sntdp-meta-row"><span>${dtFmt}</span></div>`:''}
+                <div class="sntdp-sent-badge ${SBGS[sent]}">${SLBL[sent]}</div>
+                ${content?`<div class="sntdp-content-text">${sntEsc(content)}</div>`:''}
+                ${statsHtml}
+                ${sourceBtnHtml}`;
+        } else {
+            if (sourceUrl) {
+                sourceBtnHtml = `<a href="${sntEsc(sourceUrl)}" target="_blank" rel="noopener noreferrer" class="sntdp-link-btn"><i class="ph ph-arrow-square-out"></i> Lihat ${meta.label} Asli</a>`;
+            } else {
+                sourceBtnHtml = `
+                    <div style="margin-top:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px 12px;font-size:11px;color:#991b1b;display:flex;align-items:flex-start;gap:7px;line-height:1.4;">
+                        <i class="ph ph-warning-circle" style="font-size:15px;flex-shrink:0;"></i>
+                        <span>Link sumber spesifik tidak tersedia dari sumber data.</span>
+                    </div>`;
+            }
+            body.innerHTML=`
+                <div class="sntdp-avatar-row">
+                    <div class="sntdp-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
+                    <div>
+                        <div class="sntdp-author-name">${sntEsc(displayName)}</div>
+                        ${handleDisp?`<div class="sntdp-author-handle">${sntEsc(handleDisp)}</div>`:''}
+                        <span style="background:${meta.color}22;color:${meta.color};padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;display:inline-block;margin-top:4px;">${meta.label}</span>
+                    </div>
+                </div>
+                ${dtFmt?`<div class="sntdp-meta-row"><span>${dtFmt}</span></div>`:''}
+                <div class="sntdp-sent-badge ${SBGS[sent]}">${SLBL[sent]}</div>
+                ${mediaHtml}
+                ${content?`<div class="sntdp-content-text">${sntEsc(content)}</div>`:''}
+                ${statsHtml}
+                ${sourceBtnHtml}`;
+        }
         panel.classList.add('visible');
       },
-      close(){ document.getElementById('sntDetailPanel')?.classList.remove('visible'); }
+      close(){ 
+        const panel=document.getElementById('sntDetailPanel');if(!panel)return;
+        panel.classList.remove('visible');
+        panel.querySelectorAll('iframe').forEach(f=>{try{f.src=f.src;}catch(e){}});
+      }
     };
-
+	 
 /* ══ Patch Chart Click Handlers ══ */
     const _origOverviewBar = renderOverviewBar;
     window.renderOverviewBar = function(){

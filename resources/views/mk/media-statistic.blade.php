@@ -1699,9 +1699,15 @@ const MSDetail = {
     let mediaHtml='';
     if(platform==='yt'){
         let ytId=''; if(url){ const m=url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|\/vi\/)([a-zA-Z0-9_-]{11})/); if(m) ytId=m[1]; }
-        if(!ytId && item.video_id) ytId = item.video_id;
-        if(!ytId && item.yt_id) ytId = item.yt_id;
-        if(!ytId && item.id){ const m=String(item.id).match(/(?:yt-|youtube-)?([A-Za-z0-9_-]{11})$/); if(m) ytId=m[1]; }
+        if(!ytId){
+            var flds = ['video_id','youtube_id','yt_id','id_str','post_id','docid','id','sub_id'];
+            for(var i=0; i<flds.length; i++){
+                var f = flds[i]; var v = item[f]; if(!v) continue;
+                var s = String(v).replace(/^(yt[-_])/i, '');
+                if(s.length===11){ ytId=s; break; }
+            }
+        }
+        if(!ytId && item.snippet) ytId = (item.snippet.videoId || (item.snippet.resourceId && item.snippet.resourceId.videoId) || '');
         const thumb = item.thumbnail || item.image_url || item.picture || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
         if(ytId){
             const eid = `yt_${ytId}_${Date.now()}`;
@@ -1756,7 +1762,15 @@ const MSDetail = {
             if(sc) sourceUrl=`https://www.instagram.com/p/${sc}/`; else if(item.username) sourceUrl=`https://www.instagram.com/${item.username}/`; 
         }
         else if(platform==='yt'){ 
-            const yi=item.video_id||item.youtube_id||item.id||''; 
+            let yi=''; if(url){ const m=url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|\/vi\/)([a-zA-Z0-9_-]{11})/); if(m) yi=m[1]; }
+            if(!yi){
+                var flds = ['video_id','youtube_id','yt_id','id_str','post_id','docid','id','sub_id'];
+                for(var i=0; i<flds.length; i++){
+                    var f = flds[i]; var v = item[f]; if(!v) continue;
+                    var s = String(v).replace(/^(yt[-_])/i, '');
+                    if(s.length===11){ yi=s; break; }
+                }
+            }
             if(yi) sourceUrl=`https://www.youtube.com/watch?v=${yi}`; else if(item.channel_id) sourceUrl=`https://www.youtube.com/channel/${item.channel_id}`; 
         }
         else if(platform==='tiktok'){ 

@@ -463,16 +463,34 @@ let _activeTab='all', _page=1, _trendChart=null, _barChart=null, _trendRaw=[];
 
 /* ── Normalise sentiment ── */
 function _normSent(item) {
-    const MAP={
+    const MAP = {
         '1':'pos','positive':'pos','positif':'pos','pos':'pos',
         '-1':'neg','2':'neg','negative':'neg','negatif':'neg','neg':'neg'
     };
-    const code=String(item.class_sentiment_code||item.sentiment_class||item.sentiment_label||item.class_sentiment||'').toLowerCase().trim();
-    if(code==='pos'||code==='positive'||code==='positif') return 'pos';
-    if(code==='neg'||code==='negative'||code==='negatif') return 'neg';
-    if(code==='neu'||code==='neutral'||code==='netral')   return 'neu';
-    return MAP[String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim()]||'neu';
+    const code = String(item.class_sentiment_code || item.sentiment_class || item.sentiment_label || item.class_sentiment || '').toLowerCase().trim();
+    if(code === 'pos' || code === 'positive' || code === 'positif') return 'pos';
+    if(code === 'neg' || code === 'negative' || code === 'negatif') return 'neg';
+    if(code === 'neu' || code === 'neutral' || code === 'netral')   return 'neu';
+    return MAP[String(item.class_sentiment || item.sentiment || '0').toLowerCase().trim()] || 'neu';
 }
+
+const _extractYtId = v => {
+    if (!v) return '';
+    const url = String(v.url || v.link || v.permalink || v.original_url || '');
+    let id = (url.match(/[?&]v=([a-zA-Z0-9_-]{11})/) ||
+              url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/) ||
+              url.match(/shorts\/([a-zA-Z0-9_-]{11})/) ||
+              url.match(/embed\/([a-zA-Z0-9_-]{11})/) || [])[1];
+    if (id) return id;
+    const flds = ['video_id','youtube_id','id_str','post_id','docid','id','sub_id'];
+    for (let f of flds) {
+        let val = v[f]; if (!val) continue;
+        let s = String(val).replace(/^(yt[-_])/i, '');
+        if (s.length === 11) return s;
+    }
+    if (v.snippet) return v.snippet.videoId || v.snippet.resourceId?.videoId || '';
+    return '';
+};
 
 /* ── Normalise item ── */
 function _normItem(item, platform) {
@@ -502,21 +520,72 @@ function _normItem(item, platform) {
 const MTTab={show(type){_activeTab=type;_page=1;PLAT_KEYS.concat(['all']).forEach(t=>{const el=_$('tab-'+t);if(el)el.classList.toggle('active',t===type);});MTData._renderList();}};
 
 /* ── Fetch cache ── */
-const _mtCache={};
 async function _mtFetchOne(platform,pid,sd,ed){
     const cleanSd = String(sd).trim().replace(/\s+/g,'-'), cleanEd = String(ed).trim().replace(/\s+/g,'-');
     const cKey=pid+'_'+platform+'_'+cleanSd+'_'+cleanEd;
     if(_mtCache[cKey]) return _mtCache[cKey];
     const rws = 500;
     const q='project_id='+pid+'&start_date='+cleanSd+'&end_date='+cleanEd+'&rows='+rws+'&start=0';
-    if(platform==='ig'){for(const sub of['postbylike','postbycomment','postbydate','']){try{const r=await fetch('/mk/api/news/ig-top-status?'+q+(sub?'&sub='+sub:''));const d=await r.json();const items=Array.isArray(d&&d.data)?d.data:(Array.isArray(d)?d:[]);if(items.length>0){_mtCache[cKey]=items.map(i=>{i._platform=platform;return i;});return _mtCache[cKey];}}catch(e){continue;}}return[];}
-    const eps={doc:'/mk/api/news/articles?'+q,twit:'/mk/api/news/mentions?'+q+'&media_type=twit',fb:'/mk/api/news/fb-top-status?'+q+'&sub=fblike',ytb:'/mk/api/news/ytb-top-status?'+q,tiktok:'/mk/api/news/tiktok-top-status?'+q+'&sub=postbylike'};
+
+    if(platform==='ig'){
+        for(const sub of['postbylike','postbyview','postbycomment','postbydate','']){
+            try{
+                const r=await fetch('/mk/api/news/ig-top-status?'+q+(sub?'&sub='+sub:''));
+                const d=await r.json();
+                const items=Array.isArray(d&&d.data)?d.data:(Array.isArray(d)?d:[]);
+                if(items.length>0){ _mtCache[cKey]=items.map(i=>{i._platform=platform;return i;}); return _mtCache[cKey]; }
+            }catch(e){continue;}
+        }
+        return[];
+    }
+    if(platform==='ytb'){
+        for(const sub of['postbylike','postbyview','postbycomment','postbydate','']){
+            try{
+                const r=await fetch('/mk/api/news/ytb-top-status?'+q+(sub?'&sub='+sub:''));
+                const d=await r.json();
+                const items=Array.isArray(d&&d.data)?d.data:(Array.isArray(d)?d:[]);
+                if(items.length>0){ _mtCache[cKey]=items.map(i=>{i._platform=platform;return i;}); return _mtCache[cKey]; }
+            }catch(e){continue;}
+        }
+        return[];
+    }
+
+    const twitFallback='/mk/api/news/mentions?'+q;
+    const eps={doc:'/mk/api/news/articles?'+q,twit:'/mk/api/x/most-status?'+q+'&media=all&mention_type=view_all',fb:'/mk/api/news/fb-top-status?'+q+'&sub=fblike',tiktok:'/mk/api/news/tiktok-top-status?'+q+'&sub=postbylike'};
     const url=eps[platform];if(!url)return[];
     const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),30000);
-    try{const r=await fetch(url,{signal:ctrl.signal});clearTimeout(tid);if(!r.ok)return[];const d=await r.json();
-    let items=[];if(Array.isArray(d?.data?.data))items=d.data.data;else if(Array.isArray(d?.data))items=d.data;else if(Array.isArray(d?.statuses))items=d.statuses;else if(Array.isArray(d?.results))items=d.results;else if(Array.isArray(d?.posts))items=d.posts;else if(Array.isArray(d))items=d;
-    items=items.map(i=>{i._platform=platform;return i;});
-    _mtCache[cKey]=items;return items;}catch(e){clearTimeout(tid);return[];}
+    try{
+        const r=await fetch(url,{signal:ctrl.signal});clearTimeout(tid);
+        if(!r.ok){
+            if(platform==='twit') throw new Error('Twitter fail');
+            return [];
+        }
+        const d=await r.json();
+        let items=[];
+        if(Array.isArray(d?.data?.data))items=d.data.data;
+        else if(Array.isArray(d?.data))items=d.data;
+        else if(Array.isArray(d?.statuses))items=d.statuses;
+        else if(Array.isArray(d?.results))items=d.results;
+        else if(Array.isArray(d?.posts))items=d.posts;
+        else if(Array.isArray(d))items=d;
+        
+        if(platform==='twit' && items.length===0){
+            try{
+                const r2=await fetch(twitFallback);
+                const d2=await r2.json();
+                let fb=Array.isArray(d2?.data?.data)?d2.data.data:Array.isArray(d2?.data)?d2.data:Array.isArray(d2)?d2:[];
+                items=fb.filter(m=>{
+                    const tc=String(m.tcode||'').toLowerCase(), mt=String(m.media_type||'').toLowerCase();
+                    const id=String(m.id||m.docid||'').toLowerCase(), url2=String(m.url||'').toLowerCase();
+                    return tc==='twit'||tc==='rt'||mt==='twit'||mt==='twitter'||mt==='x'
+                        ||id.startsWith('tw-')||url2.includes('twitter.com')||url2.includes('x.com');
+                });
+            }catch(e2){}
+        }
+
+        items=items.map(i=>{i._platform=platform;return i;});
+        _mtCache[cKey]=items;return items;
+    }catch(e){clearTimeout(tid);return[];}
 }
 
 /* ════ DATA MODULE ════ */
@@ -861,12 +930,18 @@ const MTDetailNew={
         let mediaHtml='';const url=item.url||'';
         const imgUrl = item.image_url || item.thumbnail || item.media_url || item.picture || av || '';
         if(item._platform==='ytb' || item._platform==='youtube'){
-            let vid='';if(url){const m=url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);if(m)vid=m[1];}
-            if(!vid && item._raw) vid=item._raw.video_id||item._raw.sub_id||item._raw.docid?.replace('yt-',''); 
-            if(!vid && item._raw && String(item._raw.id).length===11) vid=String(item._raw.id);
+            const vid = _extractYtId(item._raw);
             if(vid){
-                const eid='yt_'+Date.now();
-                mediaHtml='<div id="'+eid+'" style="position:relative;cursor:pointer;border-radius:6px;overflow:hidden;background:#000;margin-bottom:10px;" onclick="MTDetailNew._playYT(\''+eid+'\',\''+vid+'\')"><img src="https://img.youtube.com/vi/'+vid+'/hqdefault.jpg" style="width:100%;height:200px;object-fit:cover;display:block;" onerror="this.src=\'https://img.youtube.com/vi/'+vid+'/mqdefault.jpg\'"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);"><div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;"><i class="ph ph-play-fill" style="font-size:22px;color:#fff;margin-left:3px;"></i></div></div></div>';
+                const eid='yt_'+vid+'_'+Date.now();
+                mediaHtml=`<div id="${eid}" style="position:relative;cursor:pointer;border-radius:6px;overflow:hidden;background:#000;margin-bottom:10px;"
+                    onclick="document.getElementById('${eid}').innerHTML='<iframe width=\\'100%\\' height=\\'260\\' src=\\'https://www.youtube.com/embed/${vid}?autoplay=1&controls=1\\' frameborder=\\'0\\' allowfullscreen style=\\'display:block;border-radius:6px;\\'></iframe>';">
+                    <img src="https://img.youtube.com/vi/${vid}/hqdefault.jpg" style="width:100%;height:200px;object-fit:cover;display:block;" onerror="this.src='https://img.youtube.com/vi/${vid}/mqdefault.jpg'">
+                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.15);">
+                        <div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.3);">
+                            <i class="ph-fill ph-play" style="font-size:24px;color:#fff;margin-left:3px;"></i>
+                        </div>
+                    </div>
+                </div>`;
             } else if(imgUrl) {
                 mediaHtml=`<div class="do-dp2-media"><img src="${esc(imgUrl)}" style="width:100%;max-height:220px;object-fit:cover;border-radius:8px;margin-bottom:10px;" onerror="this.parentElement.style.display='none'"></div>`;
             }
