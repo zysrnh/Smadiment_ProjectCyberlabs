@@ -246,8 +246,48 @@
 .do-panel-text   { font-size:11px; color:var(--do-slate-600); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px; }
 .do-panel-footer { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--do-slate-400); flex-wrap:wrap; }
 .do-sent-badge { padding:1px 6px; border-radius:3px; font-size:9px; font-weight:800; text-transform:uppercase; }
-.do-sent-badge--pos { background:#dbeafe; color:#1d4ed8; }
 .do-sent-badge--neg { background:#fee2e2; color:#991b1b; }
+
+/* ── NSS Detail Sub-Panel ── */
+#nssDetailPanel {
+    position:absolute; inset:0; z-index:100;
+    background:#fff; display:none; flex-direction:column;
+}
+#nssDetailPanel.visible { display:flex; }
+.nssdp-header { display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--do-slate-200); background:var(--do-slate-50); }
+.nssdp-back, .nssdp-close {
+    width:28px; height:28px; border-radius:var(--do-radius-sm); border:1px solid var(--do-slate-200);
+    background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    color:var(--do-slate-500); font-size:16px; transition:all .14s;
+}
+.nssdp-back:hover { background:var(--do-primary); border-color:var(--do-primary); color:#fff; }
+.nssdp-close:hover { background:var(--do-red); border-color:var(--do-red); color:#fff; }
+.nssdp-title { font-size:13px; font-weight:700; color:var(--do-slate-900); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nssdp-body { overflow-y:auto; flex:1; padding:20px 16px; }
+
+.nssdp-avatar-row { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+.nssdp-avatar-lg  { width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px; color:#fff; border:2px solid #fff; box-shadow:0 0 0 1px var(--do-slate-200); overflow:hidden; }
+.nssdp-avatar-lg img { width:100%; height:100%; object-fit:cover; }
+.nssdp-author-name { font-size:15px; font-weight:800; color:var(--do-slate-900); }
+.nssdp-author-handle { font-size:12px; color:var(--do-slate-400); margin-top:2px; }
+
+.nssdp-meta-row { display:flex; align-items:center; gap:12px; font-size:11px; color:var(--do-slate-400); margin-bottom:12px; font-weight:600; text-transform:uppercase; }
+.nssdp-sent-badge { display:inline-block; padding:3px 12px; border-radius:20px; font-size:10px; font-weight:800; text-transform:uppercase; margin-bottom:16px; }
+.nssdp-sent-badge--pos { background:#e0f2fe; color:#0369a1; }
+.nssdp-sent-badge--neg { background:#fee2e2; color:#b91c1c; }
+.nssdp-sent-badge--neu { background:#f1f5f9; color:#475569; }
+
+.nssdp-media-wrap { width:100%; border-radius:8px; overflow:hidden; background:var(--do-slate-100); margin-bottom:16px; border:1px solid var(--do-slate-200); }
+.nssdp-media-img { width:100%; max-height:400px; object-fit:contain; display:block; }
+.nssdp-content-text { font-size:13px; color:var(--do-slate-700); line-height:1.6; margin-bottom:20px; white-space:pre-wrap; }
+
+.nssdp-stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+.nssdp-stat-box { background:var(--do-slate-50); border:1px solid var(--do-slate-100); padding:10px; border-radius:8px; text-align:center; }
+.nssdp-stat-val { font-size:14px; font-weight:800; color:var(--do-slate-900); }
+.nssdp-stat-lbl { font-size:10px; font-weight:700; color:var(--do-slate-400); text-transform:uppercase; margin-top:2px; }
+
+.nssdp-link-btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:12px; background:var(--do-slate-900); color:#fff; border-radius:8px; font-size:12px; font-weight:700; text-decoration:none; transition:all .15s; }
+.nssdp-link-btn:hover { background:#000; transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.15); }
 .do-sent-badge--neu { background:var(--do-slate-100); color:var(--do-slate-500); }
 .do-panel-loading { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:12px; color:var(--do-slate-400); font-size:13px; font-weight:600; }
 .do-panel-spinner { width:28px; height:28px; border:2.5px solid var(--do-slate-100); border-top-color:var(--do-primary); border-radius:50%; animation:spin .65s linear infinite; }
@@ -310,7 +350,7 @@
             <div class="nss-media-menu-section">Filter Media</div>
             <button class="nss-media-menu-item active" data-m="all"       onclick="NSSPage.selectMedia(this)"><span class="nss-menu-dot" style="background:var(--do-primary)"></span>All Media</button>
             <button class="nss-media-menu-item"         data-m="doc"       onclick="NSSPage.selectMedia(this)"><span class="nss-menu-dot" style="background:#0284c7"></span>Mass Media (News)</button>
-            <button class="nss-media-menu-item"         data-m="twitter"   onclick="NSSPage.selectMedia(this)"><span class="nss-menu-dot" style="background:#1d9bf0"></span>X</button>
+            <button class="nss-media-menu-item"         data-m="twitter"   onclick="NSSPage.selectMedia(this)"><span class="nss-menu-dot" style="background:#1d9bf0"></span>Twitter</button>
             <button class="nss-media-menu-item"         data-m="facebook"  onclick="NSSPage.selectMedia(this)"><span class="nss-menu-dot" style="background:#1877f2"></span>Facebook</button>
             <button class="nss-media-menu-item"         data-m="instagram" onclick="NSSPage.selectMedia(this)"><span class="nss-menu-dot" style="background:#e1306c"></span>Instagram</button>
             <button class="nss-media-menu-item"         data-m="youtube"   onclick="NSSPage.selectMedia(this)"><span class="nss-menu-dot" style="background:#ff0000"></span>YouTube</button>
@@ -605,11 +645,16 @@ const NSS_ED  = '{{ $endDate }}';
 
 const PLAT_META = {
     doc:       { label: 'Online News', color: '#0284c7' },
-    twitter:   { label: 'X',           color: '#1d9bf0' },
+    twitter:   { label: 'Twitter',     color: '#1d9bf0' },
     facebook:  { label: 'Facebook',    color: '#1877f2' },
     instagram: { label: 'Instagram',   color: '#e1306c' },
     youtube:   { label: 'YouTube',     color: '#ff0000' },
     tiktok:    { label: 'TikTok',      color: '#111827' }
+};
+
+const SENT_MAP = {
+    '1':'pos','positive':'pos','positif':'pos','pos':'pos',
+    '-1':'neg','2':'neg','negative':'neg','negatif':'neg','neg':'neg'
 };
 
 const $      = id => document.getElementById(id);
@@ -726,7 +771,7 @@ async function loadNSS(){
 }
 
 /* ══ Media Dropdown ══ */
-const MEDIA_LABELS={all:'All Media',doc:'Mass Media (News)',twitter:'X',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok'};
+const MEDIA_LABELS={all:'All Media',doc:'Mass Media (News)',twitter:'Twitter',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok'};
 const NSSPage={
     toggleMenu(){const o=$('nssMediaMenu').classList.toggle('show');$('nssMediaBtn')?.classList.toggle('open',o);},
     selectMedia(el){

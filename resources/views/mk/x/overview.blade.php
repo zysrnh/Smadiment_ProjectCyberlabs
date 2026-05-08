@@ -475,6 +475,7 @@
 'use strict';
 
 const PLAT     = 'X';
+const X_LOGO   = '<svg viewBox="0 0 24 24" fill="white" width="24" height="24"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>';
 const API_BASE = '/mk/api/x';
 const OVCfg    = {
     pid    : OV_PID,
@@ -711,7 +712,7 @@ const OVData = {
         const enc=encodeURIComponent(JSON.stringify(item));
         const vC=type==='view'?' tme-metric--primary':'', rtC=type==='retweet'?' tme-metric--primary':'';
         const av=this._getAvatar(item);
-        const thH=(av&&av.startsWith('http'))?`<div class="tme-post-thumb"><img src="${esc(av)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'tme-post-thumb-ph\\'>🐦</div>'"></div>`:`<div class="tme-post-thumb"><div class="tme-post-thumb-ph">🐦</div></div>`;
+        const thH=(av&&av.startsWith('http'))?`<div class="tme-post-thumb"><img src="${esc(av)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="tme-post-thumb-ph" style="display:none">${X_LOGO}</div></div>`:`<div class="tme-post-thumb"><div class="tme-post-thumb-ph">${X_LOGO}</div></div>`;
         return `<div class="tme-post" data-item="${esc(enc)}"><div class="tme-post-rank tme-post-rank${rkC}">${rank}</div><div class="tme-post-av" style="background:linear-gradient(135deg,${color},${color}99);">${avH}</div><div class="tme-post-body"><div class="tme-post-author">${esc(name)}${scr?` <span style="color:var(--slate-400);font-weight:500;">@${esc(scr)}</span>`:''}</div>${dt?`<div class="tme-post-date">${dt}</div>`:''}${content?`<div class="tme-post-text">${esc(content)}</div>`:''}<div class="tme-post-stats"><span class="tme-metric${vC}"><i class="ph ph-eye me-1"></i>${numF(v)}</span><span class="tme-metric${rtC}"><i class="ph ph-repeat me-1"></i>${numF(rt)}</span><span class="tme-sent tme-sent--${sent}">${sL}</span>${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="tme-view-link" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out me-1"></i>Lihat</a>`:''}</div></div>${thH}</div>`;
     },
 

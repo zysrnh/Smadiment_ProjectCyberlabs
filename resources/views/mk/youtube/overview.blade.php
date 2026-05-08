@@ -642,6 +642,13 @@ const OVData = {
     },
     _avHtml(item) { const av=this._getAvatar(item),d='/assets/images/user/dummy.jpg'; return (av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.src='${d}'">`:`<img src="${d}">`; },
     _normSent(item) { const r=String(item.sentiment_str||item.sentiment||'').toLowerCase(); return r.includes('pos')?'pos':r.includes('neg')?'neg':'neu'; },
+    _getYtUrl(item) {
+        const u = item.url || item.link || item.original_url || '';
+        if (u && u.startsWith('http')) return u;
+        let vid = item.video_id || item.docid || item.sub_id || '';
+        if (vid.length > 11 && vid.includes('yt-')) vid = vid.replace('yt-', '');
+        return vid.length === 11 ? `https://www.youtube.com/watch?v=${vid}` : u;
+    },
 
     _renderList(type) {
         const items=Store[type], ls=_$('list-'+type), pg=_$('pag-'+type);
@@ -677,8 +684,8 @@ const OVData = {
     _postHtml(item,gi,type) {
         const rank=gi+1, rkC=rank<=3?'--'+rank:'', name=this._getName(item),
               color=this._getColor(item), avH=this._avHtml(item), sent=this._normSent(item);
-        const content=dec((item.content||item.title||item.caption||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim()).slice(0,200);
-        const dt=(item.date_created||'').split('T')[0], url=item.url||item.link||'';
+        const content=dec((item.content||item.title||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim()).slice(0,200);
+        const dt=(item.date_created||'').split('T')[0], url=this._getYtUrl(item);
         const v=parseInt(item.num_views||item.view_cnt||item.views||item.freq||0),
               l=parseInt(item.num_likes||item.likes||0),
               c=parseInt(item.num_comments||item.comments||0),
@@ -705,7 +712,7 @@ const OVData = {
                     <span class="tme-metric${cC}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${numF(c)}</span>
                     <span class="tme-metric" style="font-weight:800;">∑ ${numF(total)}</span>
                     <span class="tme-sent tme-sent--${sent}">${sL}</span>
-                    ${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="tme-view-link" onclick="event.stopPropagation()"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Lihat</a>`:''}
+                    ${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="tme-view-link" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out me-1"></i>Buka</a>`:''}
                 </div>
             </div>
             ${thH}
@@ -916,7 +923,7 @@ const OVDetail = {
               aH=(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.src='${d}'">`:`<img src="${d}">`;
         const handle=item.author_scr_name||item.channel_name||'';
         const raw=(item.content||item.title||item.caption||'').replace(/<[^>]*>/g,'').trim(),
-              ct=raw?dec(raw):'', url=item.url||item.link||'', dt=item.date_created||'';
+              ct=raw?dec(raw):'', url=OVData._getYtUrl(item), dt=item.date_created||'';
         const v=parseInt(item.num_views||item.view_cnt||item.views||item.freq||0),
               l=parseInt(item.num_likes||item.likes||0),
               c=parseInt(item.num_comments||item.comments||0);

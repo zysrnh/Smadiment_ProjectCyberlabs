@@ -459,6 +459,7 @@ const numF = n  => parseInt(n||0).toLocaleString('id-ID');
 const numK = n  => parseInt(n||0).toLocaleString('id-ID');
 const esc  = s  => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const Store = { all:[], doc:[], twit:[], fb:[], ig:[], ytb:[], tiktok:[] };
+const _mtCache = {};
 let _activeTab='all', _page=1, _trendChart=null, _barChart=null, _trendRaw=[];
 
 /* ── Normalise sentiment ── */
@@ -551,7 +552,7 @@ async function _mtFetchOne(platform,pid,sd,ed){
     }
 
     const twitFallback='/mk/api/news/mentions?'+q;
-    const eps={doc:'/mk/api/news/articles?'+q,twit:'/mk/api/x/most-status?'+q+'&media=all&mention_type=view_all',fb:'/mk/api/news/fb-top-status?'+q+'&sub=fblike',tiktok:'/mk/api/news/tiktok-top-status?'+q+'&sub=postbylike'};
+    const eps={doc:'/mk/api/news/articles?'+q+'&media=doc',twit:'/mk/api/x/most-status?'+q+'&media=all&mention_type=view_all',fb:'/mk/api/news/fb-top-status?'+q+'&sub=fblike',tiktok:'/mk/api/news/tiktok-top-status?'+q+'&sub=postbylike'};
     const url=eps[platform];if(!url)return[];
     const ctrl=new AbortController(),tid=setTimeout(()=>ctrl.abort(),30000);
     try{
@@ -593,9 +594,8 @@ const MTData={
     async loadAll(){
         if(!MTCfg.pid){_$('listContainer').innerHTML='<div class="chart-empty" style="padding:40px"><i class="ph ph-folder-open"></i><span>Pilih project terlebih dahulu</span></div>';return;}
         
-        const ctn = _$('listContainer'), ld = _$('listLoading');
-        if(ctn) ctn.innerHTML = '<div style="padding:100px; text-align:center;"><div class="loading-spinner mb-2"></div><div class="text-slate-400 text-sm">Menyiapkan data timeline...</div></div>';
-        if(ld) ld.classList.remove('hidden');
+        const ctn = _$('listContainer');
+        if(ctn) ctn.innerHTML = '<div class="spinner-state"><div class="spin-ring"></div><span>Memuat data...</span></div>';
 
         // 1. Fetch Trend Data for Charts & KPIs
         try {
@@ -619,7 +619,6 @@ const MTData={
         this._renderList();
         this._updateKPIs();
         if(_$('listBadge')) _$('listBadge').textContent='';
-        if(ld) ld.classList.add('hidden');
     },
     _updateKPIsFromTrend(raw){
         let total = 0;
