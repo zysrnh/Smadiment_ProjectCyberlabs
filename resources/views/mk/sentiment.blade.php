@@ -1857,17 +1857,6 @@ const SNTExport = (() => {
           const dt=(item.date_created||item.created_at||item.publish_date||'').split('T')[0];
           const itemData=sntEsc(JSON.stringify(item));
 
-          /* Tombol original link persis Media Stat */
-          const linkBtn = url
-            ? `<a href="${sntEsc(url)}" target="_blank" rel="noopener noreferrer"
-                   onclick="event.stopPropagation()" title="Buka di tab baru"
-                   style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:4px;background:rgba(3,128,71,.08);color:var(--primary);border:1px solid rgba(3,128,71,.2);text-decoration:none;transition:all .15s;"
-                   onmouseover="this.style.background='var(--primary)';this.style.color='#fff';"
-                   onmouseout="this.style.background='rgba(3,128,71,.08)';this.style.color='var(--primary)';">
-                 <i class="ph ph-arrow-square-out" style="font-size:13px;pointer-events:none;"></i>
-               </a>`
-            : '';
-
           /* Doc view */
           if(plat==='doc' && artTitle){
             return `<div class="sntp-item" data-item='${itemData}' data-plat="${plat}" onclick="SNTPopup._onItemClick(this)">
@@ -1883,7 +1872,6 @@ const SNTExport = (() => {
                     <span style="font-size:10px;font-weight:600;color:${color};">${meta.label}</span>
                     ${dt?`<span style="margin-left:2px;font-size:10px;color:var(--slate-400);">${dt}</span>`:''}
                   </div>
-                  ${linkBtn}
                 </div>
               </div>
             </div>`;
@@ -1903,7 +1891,6 @@ const SNTExport = (() => {
                   <span style="font-size:10px;font-weight:600;color:${color};">${meta.label}</span>
                   ${dt?`<span style="margin-left:2px;font-size:10px;color:var(--slate-400);">${dt}</span>`:''}
                 </div>
-                ${linkBtn}
               </div>
             </div>
           </div>`;

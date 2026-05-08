@@ -310,7 +310,7 @@
             <div class="nss-media-menu-section">Filter Media</div>
             <button class="nss-media-menu-item active" data-m="all"       onclick="NSSPage.selectMedia(this)"><span class="nss-menu-dot" style="background:var(--do-primary)"></span>All Media</button>
             <button class="nss-media-menu-item"         data-m="doc"       onclick="NSSPage.selectMedia(this)"><span class="nss-menu-dot" style="background:#0284c7"></span>Mass Media (News)</button>
-            <button class="nss-media-menu-item"         data-m="twitter"   onclick="NSSPage.selectMedia(this)"><span class="nss-menu-dot" style="background:#1d9bf0"></span>X / Twitter</button>
+            <button class="nss-media-menu-item"         data-m="twitter"   onclick="NSSPage.selectMedia(this)"><span class="nss-menu-dot" style="background:#1d9bf0"></span>X</button>
             <button class="nss-media-menu-item"         data-m="facebook"  onclick="NSSPage.selectMedia(this)"><span class="nss-menu-dot" style="background:#1877f2"></span>Facebook</button>
             <button class="nss-media-menu-item"         data-m="instagram" onclick="NSSPage.selectMedia(this)"><span class="nss-menu-dot" style="background:#e1306c"></span>Instagram</button>
             <button class="nss-media-menu-item"         data-m="youtube"   onclick="NSSPage.selectMedia(this)"><span class="nss-menu-dot" style="background:#ff0000"></span>YouTube</button>
@@ -603,6 +603,15 @@ const NSS_PID = {{ $projectId ? (int)$projectId : 'null' }};
 const NSS_SD  = '{{ $startDate }}';
 const NSS_ED  = '{{ $endDate }}';
 
+const PLAT_META = {
+    doc:       { label: 'Online News', color: '#0284c7' },
+    twitter:   { label: 'X',           color: '#1d9bf0' },
+    facebook:  { label: 'Facebook',    color: '#1877f2' },
+    instagram: { label: 'Instagram',   color: '#e1306c' },
+    youtube:   { label: 'YouTube',     color: '#ff0000' },
+    tiktok:    { label: 'TikTok',      color: '#111827' }
+};
+
 const $      = id => document.getElementById(id);
 const numFmt = n  => (parseInt(n)||0).toLocaleString('id-ID');
 const pct    = (v,t) => t>0?((v/t)*100).toFixed(1)+'%':'0%';
@@ -717,7 +726,7 @@ async function loadNSS(){
 }
 
 /* ══ Media Dropdown ══ */
-const MEDIA_LABELS={all:'All Media',doc:'Mass Media (News)',twitter:'X / Twitter',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok'};
+const MEDIA_LABELS={all:'All Media',doc:'Mass Media (News)',twitter:'X',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok'};
 const NSSPage={
     toggleMenu(){const o=$('nssMediaMenu').classList.toggle('show');$('nssMediaBtn')?.classList.toggle('open',o);},
     selectMedia(el){
@@ -930,7 +939,6 @@ const NSSPanel=(()=>{
                         <span class="do-sent-badge do-sent-badge--${sent}">${sentText}</span>
                         <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
                         <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
-                        ${docUrl?`<a href="${esc(docUrl)}" target="_blank" rel="noopener noreferrer" style="margin-left:auto;font-size:10px;font-weight:700;color:${meta.color};display:inline-flex;align-items:center;gap:3px;text-decoration:none;" onclick="event.stopPropagation()" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'"><i class="ph ph-arrow-square-out" style="font-size:12px;"></i>Buka</a>`:''}
                         ${dt?`<span>${dt}</span>`:''}
                     </div>
                 </div>
@@ -973,8 +981,7 @@ const NSSDetail = {
         let item;
         try { const raw=el.getAttribute('data-item'); item=JSON.parse(raw.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"')); } catch(e){ console.warn('NSSDetail parse error',e); return; }
         const plat=item._platform||'doc';
-        const PLAT_META2={doc:{label:'Online News',color:'#0284c7'},twitter:{label:'X / Twitter',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
-        const meta=PLAT_META2[plat]||{label:plat,color:'#4361EE'};
+        const meta=PLAT_META[plat]||{label:plat,color:'#4361EE'};
         const panel=$('nssDetailPanel'),body=$('nssDpBody'),title=$('nssDpTitle');
         if(!panel) return;
         const ao=(()=>{if(typeof item.author==='object'&&item.author) return item.author; try{return JSON.parse(item.author||'{}');}catch(e){return{};}})();
