@@ -53,18 +53,19 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 503);
         });
 
-        // ── Tangkap RuntimeException dari MediaKernelsClient (ENV belum di-set) ──
+        // ── Tangkap RuntimeException dari MediaKernelsClient (ENV belum di-set / Token bermasalah) ──
         $exceptions->render(function (\RuntimeException $e, $request) {
-            if (str_contains($e->getMessage(), 'MEDIAKERNELS') || str_contains($e->getMessage(), 'belum di-set')) {
+            $msg = $e->getMessage();
+            if (str_contains($msg, 'MEDIAKERNELS') || str_contains($msg, 'belum di-set') || str_contains($msg, 'Token tidak ditemukan')) {
                 if ($request->expectsJson()) {
                     return response()->json([
                         'success' => false,
-                        'error'   => 'Konfigurasi server belum lengkap.',
-                        'code'    => 'ENV_NOT_SET',
+                        'error'   => 'Layanan data (Media Kernels) sedang tidak tersedia.',
+                        'code'    => 'MK_API_ERROR',
                     ], 503);
                 }
                 return response()->view('errors.service-unavailable', [
-                    'errorCode' => 'ENV_NOT_SET',
+                    'errorCode' => 'MK_API_ERROR',
                 ], 503);
             }
         });

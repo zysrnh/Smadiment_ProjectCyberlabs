@@ -286,7 +286,7 @@
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div class="d-flex align-items-center gap-2">
             <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-share-network f-18 text-primary"></i></div>
-            <div><h6 class="mb-0">Sentiments in Social Media</h6><small class="text-muted">Twitter · Facebook · Instagram · YouTube · TikTok</small></div>
+            <div><h6 class="mb-0">Sentiments in Social Media</h6><small class="text-muted"> (X) Twitter · Facebook · Instagram · YouTube · TikTok</small></div>
           </div>
           <div class="d-flex align-items-center gap-2">
             <button class="btn btn-outline-secondary btn-sm" onclick="SNTCsv.copySocial()" title="CSV"><i class="ph ph-copy me-1"></i>CSV</button>

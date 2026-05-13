@@ -1,3 +1,8 @@
+@php
+    $globalStartDate = request()->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+    $globalEndDate   = request()->get('end_date', now()->format('Y-m-d'));
+@endphp
+
 <header class="pc-header">
     <div class="header-wrapper">
 
@@ -21,25 +26,23 @@
         <div class="ms-auto">
             <ul class="list-unstyled">
 
-                {{-- Date Range Picker Trigger --}}
-                @php
-                    $globalStartDate = request()->get('start_date', now()->startOfMonth()->format('Y-m-d'));
-                    $globalEndDate   = request()->get('end_date', now()->format('Y-m-d'));
-                @endphp
-                <li class="pc-h-item d-none d-md-inline-flex">
-                    <button type="button" class="pc-head-link border-0 bg-transparent" id="gdpTrigger"
-                            style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;">
+                {{-- Date Range Picker Trigger – circle icon, same size as avatar --}}
+                <li class="pc-h-item gdp-trigger-item d-none d-md-inline-flex" style="position:relative;z-index:50;">
+                    <a href="javascript:void(0);"
+                       id="gdpTrigger"
+                       onclick="GDPicker.open(); return false;"
+                       class="pc-head-link gdp-icon-btn"
+                       title="{{ $globalStartDate }} – {{ $globalEndDate }}"
+                       aria-label="Open date range picker">
                         <i class="ph ph-calendar-blank"></i>
-                        <span id="gdpTriggerLabel">{{ $globalStartDate }} – {{ $globalEndDate }}</span>
-                        <i class="ph ph-caret-down" style="font-size:11px;opacity:0.6;"></i>
-                    </button>
+                    </a>
                 </li>
 
                 {{-- User Profile --}}
                 <li class="dropdown pc-h-item header-user-profile">
                     <a class="pc-head-link dropdown-toggle arrow-none me-0"
-                    data-bs-toggle="dropdown" href="#" role="button"
-                    aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
+                       data-bs-toggle="dropdown" href="#" role="button"
+                       aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
                         @if(auth()->check() && auth()->user()->avatar)
                             <img src="{{ asset(ltrim(auth()->user()->avatar, '/')) }}"
                                  alt="User Avatar"
@@ -51,7 +54,6 @@
                         @endif
                     </a>
                     <div class="dropdown-menu dropdown-menu-end pc-h-dropdown">
-                        {{-- Dropdown Header dengan Avatar --}}
                         <div class="dropdown-header d-flex align-items-center gap-3">
                             @if(auth()->check() && auth()->user()->avatar)
                                 <img src="{{ asset(ltrim(auth()->user()->avatar, '/')) }}"
@@ -73,7 +75,7 @@
                         </a>
                         <div class="dropdown-divider"></div>
                         <a href="#" class="dropdown-item text-danger"
-                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             <i class="ph ph-sign-out"></i>
                             <span>Sign Out</span>
                         </a>
@@ -88,420 +90,529 @@
     </div>
 </header>
 
-{{-- ── Date Picker Modal ── --}}
-<div class="gdp-modal" id="gdpModal" style="position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);">
-    <div style="position:absolute;inset:0;cursor:pointer;" id="gdpOverlay"></div>
-    <div class="gdp-container" style="position:relative;background:#fff;border-radius:16px;box-shadow:0 25px 50px rgba(0,0,0,0.25);display:flex;max-width:860px;width:90%;max-height:90vh;z-index:10000;">
-        <div class="gdp-sidebar" style="width:165px;background:#f8fafc;border-right:1px solid #e2e8f0;padding:16px 10px;border-radius:16px 0 0 16px;display:flex;flex-direction:column;gap:3px;flex-shrink:0;">
-            <button type="button" class="gdp-preset" data-preset="today">Today</button>
-            <button type="button" class="gdp-preset" data-preset="yesterday">Yesterday</button>
-            <button type="button" class="gdp-preset" data-preset="last7">Last 7 Days</button>
-            <button type="button" class="gdp-preset" data-preset="last30">Last 30 Days</button>
-            <button type="button" class="gdp-preset active" data-preset="thismonth">This Month</button>
-            <button type="button" class="gdp-preset" data-preset="lastmonth">Last Month</button>
-            <button type="button" class="gdp-preset" data-preset="custom">Custom Range</button>
+{{-- =====================================================================
+     GLOBAL DATE PICKER MODAL
+     ===================================================================== --}}
+<div id="gdpModal" role="dialog" aria-modal="true" aria-label="Date Range Picker">
+    <div id="gdpOverlay" style="position:absolute;inset:0;cursor:pointer;"></div>
+    <div class="gdp-wrap">
+        <div class="gdp-sidebar">
+            <button type="button" class="gdp-preset" data-p="today">Today</button>
+            <button type="button" class="gdp-preset" data-p="yesterday">Yesterday</button>
+            <button type="button" class="gdp-preset" data-p="last7">Last 7 Days</button>
+            <button type="button" class="gdp-preset" data-p="last30">Last 30 Days</button>
+            <button type="button" class="gdp-preset" data-p="thismonth">This Month</button>
+            <button type="button" class="gdp-preset" data-p="lastmonth">Last Month</button>
+            <button type="button" class="gdp-preset" data-p="custom">Custom Range</button>
         </div>
-        <div class="gdp-content" style="flex:1;padding:22px 24px;display:flex;flex-direction:column;gap:16px;overflow:hidden;">
-            <div style="display:flex;align-items:flex-start;gap:16px;">
-                <button type="button" id="gdpPrev" style="width:34px;height:34px;border-radius:8px;background:#f8fafc;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+        <div class="gdp-body">
+            <div class="gdp-nav">
+                <button type="button" class="gdp-nav-btn" id="gdpPrev" title="Previous month">
                     <i class="ph ph-caret-left"></i>
                 </button>
-                <div style="display:flex;gap:20px;flex:1;">
-                    <div id="gdpCal1" style="flex:1;min-width:0;"></div>
-                    <div id="gdpCal2" style="flex:1;min-width:0;"></div>
+                <div class="gdp-cals">
+                    <div class="gdp-cal" id="gdpCal1"></div>
+                    <div class="gdp-cal" id="gdpCal2"></div>
                 </div>
-                <button type="button" id="gdpNext" style="width:34px;height:34px;border-radius:8px;background:#f8fafc;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+                <button type="button" class="gdp-nav-btn" id="gdpNext" title="Next month">
                     <i class="ph ph-caret-right"></i>
                 </button>
             </div>
-            <div id="gdpDisplay" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:11px 16px;text-align:center;font-size:14px;font-weight:600;">
+            <div class="gdp-display" id="gdpDisplay">
                 {{ $globalStartDate }} – {{ $globalEndDate }}
             </div>
-            <div style="display:flex;gap:10px;justify-content:flex-end;">
-                <button type="button" id="gdpCancel" class="btn btn-light">Cancel</button>
-                <button type="button" id="gdpApply" class="btn btn-primary">Apply</button>
+            <div class="gdp-footer">
+                <button type="button" class="btn btn-light btn-sm px-4" id="gdpCancel">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm px-4" id="gdpApply">Apply</button>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-.gdp-preset {
-    padding: 9px 14px; background: transparent; border: none; border-radius: 8px;
-    font-size: 13px; font-weight: 500; color: var(--bs-body-color);
-    text-align: left; cursor: pointer; transition: all 0.18s; width: 100%;
-}
-.gdp-preset:hover { background: #fff; color: var(--bs-primary); }
-.gdp-preset.active { background: var(--bs-primary); color: #fff; }
-.gdp-cal-month { font-size: 15px; font-weight: 700; text-align: center; margin-bottom: 12px; }
-.gdp-weekdays { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; margin-bottom: 6px; }
-.gdp-weekday { text-align: center; font-size: 11px; font-weight: 700; color: #64748b; padding: 6px 0; }
-.gdp-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
-.gdp-day {
-    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 500; border-radius: 7px; cursor: pointer;
-    transition: all 0.15s; border: none; background: transparent;
-}
-.gdp-day:hover:not([disabled]):not(.gdp-other) { background: #f1f5f9; }
-.gdp-day.gdp-other { color: #cbd5e1; cursor: default; pointer-events: none; }
-.gdp-day[disabled] { color: #e2e8f0; cursor: not-allowed; }
-.gdp-day.gdp-today { border: 2px solid var(--bs-primary); }
-.gdp-day.gdp-sel { background: var(--bs-primary); color: #fff; }
-.gdp-day.gdp-range { background: rgba(var(--bs-primary-rgb), 0.1); color: var(--bs-primary); }
-
-/* Perkecil ukuran judul halaman */
-.page-header h1,
-.page-header .page-title,
-h1.page-title,
-.page-title {
-    font-size: 1.4rem !important;
-    font-weight: 600 !important;
-}
-
-/* ─── 1. Efek KPI Card pada Link Avatar (Melingkar) ─── */
-.header-user-profile .pc-head-link,
-.header-user-profile .pc-head-link.show,
-.header-user-profile .pc-head-link[aria-expanded="true"] {
+/* ── GDP Trigger – circle icon (matches avatar) ── */
+#gdpTrigger.gdp-icon-btn {
     width: 56px !important;
     height: 56px !important;
     border-radius: 50% !important;
     padding: 0 !important;
     border: 3px solid #e2e8f0 !important;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.12) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,.12) !important;
     background: #f1f5f9 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     position: relative !important;
-    overflow: hidden !important; /* Shimmer tidak keluar batas */
+    overflow: hidden !important;
     opacity: 1 !important;
-    
-    /* Animasi KPI */
+    cursor: pointer !important;
     will-change: transform, box-shadow;
-    transition: transform .25s cubic-bezier(.34,1.56,.64,1), 
-                border-color 0.2s ease, 
-                box-shadow 0.25s cubic-bezier(.34,1.56,.64,1), 
-                filter .25s ease !important;
+    transition: transform .25s cubic-bezier(.34,1.56,.64,1),
+                border-color .2s,
+                box-shadow .25s,
+                filter .25s !important;
+    text-decoration: none !important;
+    color: inherit !important;
+    pointer-events: auto !important;
+}
+#gdpTrigger.gdp-icon-btn i {
+    font-size: 22px;
+    color: #475569;
+    pointer-events: none;
+    transition: color .2s, transform .25s cubic-bezier(.34,1.56,.64,1);
 }
 
-/* Layer Shimmer KPI */
-.header-user-profile .pc-head-link::before {
-    content: ''; position: absolute; top: 0; bottom: 0; left: -100%;
-    width: 60%; background: linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);
-    pointer-events: none; z-index: 10; transition: none;
-}
-@keyframes avatarKpiShimmer { 100% { left: 150%; } }
-@keyframes avatarKpiBounce {
-    0%   { transform: scale(1); }
-    50%  { transform: scale(1.15); }
-    100% { transform: scale(1); }
+/* Shimmer pseudo-element (sama seperti avatar) */
+#gdpTrigger.gdp-icon-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; left: -100%;
+    width: 60%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);
+    pointer-events: none;
+    z-index: 10;
+    transition: none;
 }
 
-/* Efek Hover Khas KPI Card */
-.header-user-profile:hover .pc-head-link,
-.header-user-profile.show .pc-head-link {
+/* Hover state */
+.gdp-trigger-item:hover #gdpTrigger.gdp-icon-btn,
+#gdpTrigger.gdp-icon-btn:hover {
     transform: translateY(-6px) scale(1.025) !important;
     border-color: var(--bs-primary, #0d6efd) !important;
-    box-shadow: 0 16px 32px rgba(13, 110, 253, 0.3) !important;
+    box-shadow: 0 16px 32px rgba(13,110,253,.3) !important;
     filter: brightness(1.05) !important;
 }
-.header-user-profile:hover .pc-head-link::before {
-    animation: avatarKpiShimmer .6s ease forwards;
+.gdp-trigger-item:hover #gdpTrigger.gdp-icon-btn i,
+#gdpTrigger.gdp-icon-btn:hover i {
+    color: var(--bs-primary, #0d6efd);
+    animation: gdpBounce .5s cubic-bezier(.34,1.56,.64,1) both;
 }
-/* Bounce icon atau gambar saat hover */
-.header-user-profile:hover .profile-avatar-img,
-.header-user-profile:hover .fallback-icon {
-    animation: avatarKpiBounce .5s cubic-bezier(.34,1.56,.64,1) both !important;
+.gdp-trigger-item:hover #gdpTrigger.gdp-icon-btn::before {
+    animation: gdpShimmer .6s ease forwards;
 }
 
-.header-user-profile:active .pc-head-link {
+/* Active press */
+#gdpTrigger.gdp-icon-btn:active {
     transform: translateY(-2px) scale(1.01) !important;
     transition-duration: .08s !important;
 }
 
-/* ─── 2. Desain Gambar & Icon di Dalam Lingkaran ─── */
-.header-user-profile .profile-avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    border-radius: 50%;
+/* ── Modal ── */
+#gdpModal {
+    position: fixed; inset: 0; z-index: 99999;
+    display: none; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }
-.header-user-profile .fallback-icon {
-    font-size: 38px;
-    color: #64748b;
-    display: block;
+#gdpModal.gdp-open { display: flex; }
+.gdp-wrap {
+    position: relative; background: #fff; border-radius: 16px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+    display: flex; width: 90%; max-width: 840px; max-height: 90vh; overflow: hidden;
+    animation: gdpIn .2s cubic-bezier(.34,1.2,.64,1) both;
 }
+@keyframes gdpIn {
+    from { opacity:0; transform:scale(.95) translateY(8px); }
+    to   { opacity:1; transform:scale(1) translateY(0); }
+}
+@keyframes gdpShimmer { 100% { left: 150%; } }
+@keyframes gdpBounce  { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
 
-/* CEGAH GAMBAR & ICON JADI PUTIH/NGILANG SAAT DIKLIK/DROPDOWN TERBUKA */
+/* Sidebar */
+.gdp-sidebar {
+    width: 160px; flex-shrink: 0; background: #f8fafc;
+    border-right: 1px solid #e2e8f0; padding: 14px 8px;
+    display: flex; flex-direction: column; gap: 2px;
+}
+.gdp-preset {
+    width: 100%; padding: 9px 12px; background: transparent; border: none;
+    border-radius: 8px; font-size: 13px; font-weight: 500; color: #475569;
+    text-align: left; cursor: pointer; transition: background .15s, color .15s; white-space: nowrap;
+}
+.gdp-preset:hover { background: #fff; color: var(--bs-primary, #0d6efd); }
+.gdp-preset.active { background: var(--bs-primary, #0d6efd); color: #fff; }
+
+/* Body */
+.gdp-body {
+    flex: 1; padding: 20px 22px; display: flex;
+    flex-direction: column; gap: 14px; overflow: auto;
+}
+.gdp-nav { display: flex; align-items: flex-start; gap: 12px; }
+.gdp-nav-btn {
+    width: 34px; height: 34px; flex-shrink: 0; border-radius: 8px;
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 14px; color: #475569; transition: background .15s;
+}
+.gdp-nav-btn:hover { background: #e2e8f0; }
+.gdp-cals { flex: 1; display: flex; gap: 18px; }
+.gdp-cal  { flex: 1; min-width: 0; }
+
+/* Calendar grid */
+.gdp-cal-title { font-size:14px; font-weight:700; text-align:center; margin-bottom:10px; color:#1e293b; }
+.gdp-weekdays  { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-bottom:4px; }
+.gdp-weekday   { text-align:center; font-size:11px; font-weight:700; color:#94a3b8; padding:4px 0; }
+.gdp-days      { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+.gdp-day {
+    aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:500; border-radius:6px; cursor:pointer;
+    transition:all .12s; border:none; background:transparent; color:#374151; padding:0;
+}
+.gdp-day:hover:not([disabled]):not(.gdp-other) { background:#f1f5f9; }
+.gdp-day.gdp-other  { color:#d1d5db; cursor:default; pointer-events:none; }
+.gdp-day[disabled]  { color:#e5e7eb; cursor:not-allowed; }
+.gdp-day.gdp-today  { border:1.5px solid var(--bs-primary,#0d6efd); }
+.gdp-day.gdp-sel    { background:var(--bs-primary,#0d6efd) !important; color:#fff !important; font-weight:600; }
+.gdp-day.gdp-range  { background:rgba(13,110,253,.1); color:var(--bs-primary,#0d6efd); }
+
+/* Display + footer */
+.gdp-display {
+    background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;
+    padding:10px 16px; text-align:center; font-size:14px; font-weight:600; color:#1e293b;
+}
+.gdp-footer { display:flex; gap:10px; justify-content:flex-end; }
+
+/* ── Avatar KPI ── */
+.header-user-profile .pc-head-link,
+.header-user-profile .pc-head-link.show,
+.header-user-profile .pc-head-link[aria-expanded="true"] {
+    width:56px !important; height:56px !important; border-radius:50% !important;
+    padding:0 !important; border:3px solid #e2e8f0 !important;
+    box-shadow:0 2px 10px rgba(0,0,0,.12) !important; background:#f1f5f9 !important;
+    display:flex !important; align-items:center !important; justify-content:center !important;
+    position:relative !important; overflow:hidden !important; opacity:1 !important;
+    will-change:transform,box-shadow;
+    transition:transform .25s cubic-bezier(.34,1.56,.64,1),border-color .2s,box-shadow .25s,filter .25s !important;
+}
+.header-user-profile .pc-head-link::before {
+    content:''; position:absolute; top:0; bottom:0; left:-100%;
+    width:60%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);
+    pointer-events:none; z-index:10; transition:none;
+}
+.header-user-profile:hover .pc-head-link,
+.header-user-profile.show .pc-head-link {
+    transform:translateY(-6px) scale(1.025) !important;
+    border-color:var(--bs-primary,#0d6efd) !important;
+    box-shadow:0 16px 32px rgba(13,110,253,.3) !important;
+    filter:brightness(1.05) !important;
+}
+.header-user-profile:hover .pc-head-link::before { animation:gdpShimmer .6s ease forwards; }
+.header-user-profile:hover .profile-avatar-img,
+.header-user-profile:hover .fallback-icon { animation:gdpBounce .5s cubic-bezier(.34,1.56,.64,1) both !important; }
+.header-user-profile:active .pc-head-link { transform:translateY(-2px) scale(1.01) !important; transition-duration:.08s !important; }
+.header-user-profile .profile-avatar-img { width:100%; height:100%; object-fit:cover; display:block; border-radius:50%; }
+.header-user-profile .fallback-icon { font-size:38px; color:#64748b; display:block; }
 .header-user-profile .pc-head-link:hover .profile-avatar-img,
-.header-user-profile .pc-head-link:focus .profile-avatar-img,
 .header-user-profile .pc-head-link.show .profile-avatar-img,
-.header-user-profile .pc-head-link[aria-expanded="true"] .profile-avatar-img {
-    opacity: 1 !important;
-    visibility: visible !important;
-    filter: none !important;
-}
+.header-user-profile .pc-head-link[aria-expanded="true"] .profile-avatar-img { opacity:1 !important; visibility:visible !important; filter:none !important; }
 .header-user-profile .pc-head-link:hover .fallback-icon,
-.header-user-profile .pc-head-link:focus .fallback-icon,
 .header-user-profile .pc-head-link.show .fallback-icon,
-.header-user-profile .pc-head-link[aria-expanded="true"] .fallback-icon {
-    color: #64748b !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-}
+.header-user-profile .pc-head-link[aria-expanded="true"] .fallback-icon { color:#64748b !important; opacity:1 !important; visibility:visible !important; }
 
-/* ─── 3. Avatar di Dropdown Menu ─── */
+/* ── Avatar dropdown ── */
 .dropdown-avatar-img {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #e2e8f0;
-    flex-shrink: 0;
-    background: #f1f5f9;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+    width:64px; height:64px; border-radius:50%; object-fit:cover;
+    border:3px solid #e2e8f0; flex-shrink:0; background:#f1f5f9; box-shadow:0 2px 10px rgba(0,0,0,.10);
 }
-.pc-h-dropdown .dropdown-header {
-    padding: 16px 16px 14px;
-    border-bottom: 1px solid #f1f5f9;
-    margin-bottom: 4px;
+.pc-h-dropdown .dropdown-header { padding:16px 16px 14px; border-bottom:1px solid #f1f5f9; margin-bottom:4px; }
+.pc-h-dropdown .dropdown-header h6 { font-size:14px; font-weight:600; line-height:1.3; margin-bottom:2px; }
+.pc-h-dropdown .dropdown-header small { font-size:12px; color:#94a3b8; }
+@media (min-width:992px) {
+    .header-user-profile:hover .dropdown-menu { display:block !important; animation:gdpDropFade .22s ease forwards; }
 }
-.pc-h-dropdown .dropdown-header h6 {
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.3;
-    margin-bottom: 2px;
-}
-.pc-h-dropdown .dropdown-header small {
-    font-size: 12px;
-    color: #94a3b8;
+@keyframes gdpDropFade { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── Page title ── */
+.page-header h1,.page-header .page-title,h1.page-title,.page-title {
+    font-size:1.4rem !important; font-weight:600 !important;
 }
 
-/* Open dropdown on hover for desktop */
-@media (min-width: 992px) {
-    .header-user-profile:hover .dropdown-menu {
-        display: block !important;
-        animation: profileDropdownFade 0.22s ease forwards;
-    }
-}
-@keyframes profileDropdownFade {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
+/* ── Mobile ── */
+@media (max-width:640px) {
+    .gdp-wrap { flex-direction:column; max-height:95vh; }
+    .gdp-sidebar { width:100%; flex-direction:row; flex-wrap:wrap; border-right:none; border-bottom:1px solid #e2e8f0; padding:10px; }
+    .gdp-preset { width:auto; }
+    .gdp-cals { flex-direction:column; }
 }
 </style>
 
 <script>
-(function() {
-    if (!sessionStorage.getItem('smad_sess_v2')) {
-        sessionStorage.setItem('smad_sess_v2', '1');
-        localStorage.removeItem('smadiment_g_start');
-        localStorage.removeItem('smadiment_g_end');
-    }
+var GDPicker = (function () {
+    'use strict';
 
-    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    const DAYS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
-    let startDate = null, endDate = null, viewMonth1, viewMonth2, picking = 'start';
-    const params = new URLSearchParams(window.location.search);
-    const today  = new Date(); today.setHours(0,0,0,0);
+    var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var DAYS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+    var LS_S   = 'smadiment_g_start';
+    var LS_E   = 'smadiment_g_end';
 
-    function parseOrDefault(str, fallback) {
-        const d = new Date(str); return isNaN(d) ? fallback : d;
-    }
+    var startDate, endDate, vm1, vm2;
+    var picking = 'start';
+    var isOpen  = false;
 
-    const globalSaved = localStorage.getItem('smadiment_g_start');
-    const globalEnd   = localStorage.getItem('smadiment_g_end');
+    var today = new Date();
+    today.setHours(0,0,0,0);
 
-    if (globalSaved && globalEnd) {
-        startDate = parseOrDefault(globalSaved, new Date(today.getFullYear(), today.getMonth(), 1));
-        endDate   = parseOrDefault(globalEnd, today);
-    } else {
-        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-        endDate   = new Date(today);
-    }
-    localStorage.setItem('smadiment_g_start', fmt(startDate));
-    localStorage.setItem('smadiment_g_end', fmt(endDate));
-
+    /* ── utils ── */
     function fmt(d) {
-        if (!d) return '';
-        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        if (!d || isNaN(d.getTime())) return '';
+        return d.getFullYear() + '-'
+             + String(d.getMonth()+1).padStart(2,'0') + '-'
+             + String(d.getDate()).padStart(2,'0');
     }
+
+    function parseLocal(s) {
+        if (!s) return null;
+        var p = s.split('-');
+        if (p.length !== 3) return null;
+        var d = new Date(+p[0], +p[1]-1, +p[2]);
+        return isNaN(d.getTime()) ? null : d;
+    }
+
     function sameDay(a, b) {
-        return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+        return a && b
+            && a.getFullYear() === b.getFullYear()
+            && a.getMonth()    === b.getMonth()
+            && a.getDate()     === b.getDate();
     }
 
-    function detectPreset() {
-        const s=fmt(startDate), e=fmt(endDate);
-        const t=new Date(today);
-        const tm1=fmt(new Date(t.getFullYear(),t.getMonth(),1)), tme=fmt(t);
-        if(s===tm1 && e===tme) return 'thismonth';
-        const yd=new Date(t); yd.setDate(t.getDate()-1);
-        if(s===fmt(yd) && e===fmt(yd)) return 'yesterday';
-        if(s===fmt(t) && e===fmt(t)) return 'today';
-        const l7=new Date(t); l7.setDate(t.getDate()-6);
-        if(s===fmt(l7) && e===fmt(t)) return 'last7';
-        const l30=new Date(t); l30.setDate(t.getDate()-29);
-        if(s===fmt(l30) && e===fmt(t)) return 'last30';
-        const lms=new Date(t.getFullYear(),t.getMonth()-1,1), lme=new Date(t.getFullYear(),t.getMonth(),0);
-        if(s===fmt(lms) && e===fmt(lme)) return 'lastmonth';
-        return 'custom';
-    }
-    document.addEventListener('DOMContentLoaded', function(){
-        const det=detectPreset();
-        document.querySelectorAll('.gdp-preset').forEach(b=>b.classList.toggle('active',b.dataset.preset===det));
-    });
-
-    viewMonth1 = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-    viewMonth2 = new Date(viewMonth1.getFullYear(), viewMonth1.getMonth() + 1, 1);
-
-    function renderAll() {
-        renderCal('gdpCal1', viewMonth1);
-        renderCal('gdpCal2', viewMonth2);
-        const label = fmt(startDate) + ' – ' + fmt(endDate);
-        document.getElementById('gdpDisplay').textContent = label;
-        const triggerLabel = document.getElementById('gdpTriggerLabel');
-        if (triggerLabel) triggerLabel.textContent = label;
+    function clamp(d) {
+        return (d && d > today) ? new Date(today) : d;
     }
 
-    function renderCal(id, month) {
-        const el = document.getElementById(id);
-        if (!el) return;
-        const y = month.getFullYear(), m = month.getMonth();
-        const first = new Date(y, m, 1).getDay();
-        const lastD = new Date(y, m+1, 0).getDate();
-        const prevLast = new Date(y, m, 0).getDate();
-
-        let html = `<div class="gdp-cal-month">${MONTHS[m]} ${y}</div>`;
-        html += `<div class="gdp-weekdays">${DAYS.map(d=>`<div class="gdp-weekday">${d}</div>`).join('')}</div>`;
-        html += `<div class="gdp-days">`;
-        for (let i=0; i<first; i++) html += `<button class="gdp-day gdp-other" disabled>${prevLast - first + 1 + i}</button>`;
-        for (let d=1; d<=lastD; d++) {
-            const date = new Date(y, m, d);
-            let cls = '';
-            if (sameDay(date, today)) cls += ' gdp-today';
-            if (sameDay(date, startDate) || sameDay(date, endDate)) cls += ' gdp-sel';
-            else if (startDate && endDate && date > startDate && date < endDate) cls += ' gdp-range';
-            html += `<button class="gdp-day${cls}" data-date="${fmt(date)}" ${date > today ? 'disabled' : ''}>${d}</button>`;
+    /* ── init ── */
+    function initDates() {
+        if (!sessionStorage.getItem('smad_sess_v3')) {
+            sessionStorage.setItem('smad_sess_v3','1');
+            localStorage.removeItem(LS_S);
+            localStorage.removeItem(LS_E);
         }
-        const lastDow = new Date(y, m+1, 0).getDay();
-        for (let i=1; i < (lastDow===6 ? 0 : 7-lastDow); i++) html += `<button class="gdp-day gdp-other" disabled>${i}</button>`;
-        html += `</div>`;
-        el.innerHTML = html;
+        var params = new URLSearchParams(window.location.search);
+        var us = params.get('start_date'), ue = params.get('end_date');
+        if (us && ue) {
+            startDate = parseLocal(us) || new Date(today.getFullYear(), today.getMonth(), 1);
+            endDate   = parseLocal(ue) || new Date(today);
+        } else {
+            startDate = parseLocal(localStorage.getItem(LS_S)) || new Date(today.getFullYear(), today.getMonth(), 1);
+            endDate   = parseLocal(localStorage.getItem(LS_E)) || new Date(today);
+        }
+        startDate = clamp(startDate);
+        endDate   = clamp(endDate);
+        if (startDate > endDate) endDate = new Date(startDate);
+        localStorage.setItem(LS_S, fmt(startDate));
+        localStorage.setItem(LS_E, fmt(endDate));
+        vm1 = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+        vm2 = new Date(vm1.getFullYear(), vm1.getMonth()+1, 1);
+    }
 
-        el.querySelectorAll('.gdp-day:not([disabled]):not(.gdp-other)').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const clicked = new Date(this.dataset.date); clicked.setHours(0,0,0,0);
-                document.querySelectorAll('.gdp-preset').forEach(b => b.classList.remove('active'));
-                document.querySelector('[data-preset="custom"]').classList.add('active');
-                if (picking === 'start' || clicked < startDate) {
-                    startDate = clicked; endDate = new Date(clicked); picking = 'end';
-                } else { endDate = clicked; picking = 'start'; }
+    /* ── move modal to <body> ── */
+    function moveToBody() {
+        var el = document.getElementById('gdpModal');
+        if (el && el.parentNode !== document.body) {
+            document.body.appendChild(el);
+        }
+    }
+
+    /* ── render calendar ── */
+    function renderCal(id, month) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var y = month.getFullYear(), m = month.getMonth();
+        var fd = new Date(y,m,1).getDay();
+        var ld = new Date(y,m+1,0).getDate();
+        var pl = new Date(y,m,0).getDate();
+        var lw = new Date(y,m+1,0).getDay();
+        var h  = '<div class="gdp-cal-title">' + MONTHS[m] + ' ' + y + '</div>';
+        h += '<div class="gdp-weekdays">' + DAYS.map(function(d){ return '<div class="gdp-weekday">'+d+'</div>'; }).join('') + '</div>';
+        h += '<div class="gdp-days">';
+        for (var i=0;i<fd;i++) h += '<button class="gdp-day gdp-other" disabled>'+(pl-fd+1+i)+'</button>';
+        for (var d=1;d<=ld;d++) {
+            var date = new Date(y,m,d);
+            var fut  = date > today;
+            var cls  = '';
+            if (sameDay(date,today)) cls += ' gdp-today';
+            if (sameDay(date,startDate)||sameDay(date,endDate)) cls += ' gdp-sel';
+            else if (startDate&&endDate&&date>startDate&&date<endDate) cls += ' gdp-range';
+            h += '<button class="gdp-day'+cls+'" data-date="'+fmt(date)+'"'+(fut?' disabled':'')+'>'+d+'</button>';
+        }
+        var fill = lw===6 ? 0 : 6-lw;
+        for (var j=1;j<=fill;j++) h += '<button class="gdp-day gdp-other" disabled>'+j+'</button>';
+        h += '</div>';
+        el.innerHTML = h;
+        el.querySelectorAll('.gdp-day:not([disabled]):not(.gdp-other)').forEach(function(btn){
+            btn.addEventListener('click', function(){
+                var clicked = parseLocal(this.getAttribute('data-date'));
+                if (!clicked) return;
+                setActive('custom');
+                if (picking==='start'||clicked<startDate) {
+                    startDate=clicked; endDate=new Date(clicked); picking='end';
+                } else { endDate=clicked; picking='start'; }
                 renderAll();
             });
         });
     }
 
-    function applyPreset(preset) {
-        const t = new Date(today);
-        switch(preset) {
-            case 'today':     startDate = new Date(t); endDate = new Date(t); break;
-            case 'yesterday': startDate = new Date(t); startDate.setDate(t.getDate()-1); endDate = new Date(startDate); break;
-            case 'last7':     endDate = new Date(t); startDate = new Date(t); startDate.setDate(t.getDate()-6); break;
-            case 'last30':    endDate = new Date(t); startDate = new Date(t); startDate.setDate(t.getDate()-29); break;
-            case 'thismonth': startDate = new Date(t.getFullYear(), t.getMonth(), 1); endDate = new Date(t); break;
-            case 'lastmonth': startDate = new Date(t.getFullYear(), t.getMonth()-1, 1); endDate = new Date(t.getFullYear(), t.getMonth(), 0); break;
-        }
-        if (preset !== 'custom') {
-            viewMonth1 = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-            viewMonth2 = new Date(viewMonth1.getFullYear(), viewMonth1.getMonth()+1, 1);
-            renderAll();
-        }
+    function renderAll() {
+        renderCal('gdpCal1', vm1);
+        renderCal('gdpCal2', vm2);
+        var lbl = fmt(startDate) + ' \u2013 ' + fmt(endDate);
+        var d   = document.getElementById('gdpDisplay');
+        /* Update trigger title attribute as tooltip */
+        var t   = document.getElementById('gdpTrigger');
+        if (d) d.textContent = lbl;
+        if (t) t.setAttribute('title', lbl);
     }
 
-    function openModal()  { const m = document.getElementById('gdpModal'); m.style.display = 'flex'; renderAll(); }
-    function closeModal() { document.getElementById('gdpModal').style.display = 'none'; }
+    /* ── presets ── */
+    function setActive(p) {
+        document.querySelectorAll('.gdp-preset').forEach(function(b){
+            b.classList.toggle('active', b.getAttribute('data-p')===p);
+        });
+    }
 
-    function syncFilterDatepicker() {
-        const urlHasDates = params.has('start_date') && params.has('end_date');
-        if (!urlHasDates) {
-            const sd = fmt(startDate), ed = fmt(endDate);
-            const hsd = document.getElementById('hiddenStartDate');
-            const hed = document.getElementById('hiddenEndDate');
-            if (hsd) hsd.value = sd;
-            if (hed) hed.value = ed;
-            const dd = document.getElementById('doDateDisplay');
-            if (dd) dd.textContent = sd + ' – ' + ed;
-            const rt = document.getElementById('doDpRangeText');
-            if (rt) rt.textContent = sd + ' – ' + ed;
+    function detectPreset() {
+        var s=fmt(startDate),e=fmt(endDate),t=today;
+        var yd=new Date(t); yd.setDate(t.getDate()-1);
+        var l7=new Date(t); l7.setDate(t.getDate()-6);
+        var l30=new Date(t); l30.setDate(t.getDate()-29);
+        var lms=new Date(t.getFullYear(),t.getMonth()-1,1);
+        var lme=new Date(t.getFullYear(),t.getMonth(),0);
+        var tms=new Date(t.getFullYear(),t.getMonth(),1);
+        if(s===fmt(t)  &&e===fmt(t))  return 'today';
+        if(s===fmt(yd) &&e===fmt(yd)) return 'yesterday';
+        if(s===fmt(l7) &&e===fmt(t))  return 'last7';
+        if(s===fmt(l30)&&e===fmt(t))  return 'last30';
+        if(s===fmt(tms)&&e===fmt(t))  return 'thismonth';
+        if(s===fmt(lms)&&e===fmt(lme))return 'lastmonth';
+        return 'custom';
+    }
+
+    function applyPreset(p) {
+        var t=today;
+        switch(p){
+            case 'today':     startDate=new Date(t);endDate=new Date(t);break;
+            case 'yesterday': startDate=new Date(t);startDate.setDate(t.getDate()-1);endDate=new Date(startDate);break;
+            case 'last7':     endDate=new Date(t);startDate=new Date(t);startDate.setDate(t.getDate()-6);break;
+            case 'last30':    endDate=new Date(t);startDate=new Date(t);startDate.setDate(t.getDate()-29);break;
+            case 'thismonth': startDate=new Date(t.getFullYear(),t.getMonth(),1);endDate=new Date(t);break;
+            case 'lastmonth': startDate=new Date(t.getFullYear(),t.getMonth()-1,1);endDate=new Date(t.getFullYear(),t.getMonth(),0);break;
+            default: return;
         }
+        vm1=new Date(startDate.getFullYear(),startDate.getMonth(),1);
+        vm2=new Date(vm1.getFullYear(),vm1.getMonth()+1,1);
+        renderAll();
+    }
+
+    /* ── open / close ── */
+    function open() {
+        if (isOpen) return;
+        moveToBody();
+        var m = document.getElementById('gdpModal');
+        if (!m) return;
+        isOpen  = true;
+        picking = 'start';
+        m.classList.add('gdp-open');
+        renderAll();
+        setActive(detectPreset());
+    }
+
+    function close() {
+        var m = document.getElementById('gdpModal');
+        if (m) m.classList.remove('gdp-open');
+        isOpen  = false;
+        picking = 'start';
     }
 
     function applyAndReload() {
-        localStorage.setItem('smadiment_g_start', fmt(startDate));
-        localStorage.setItem('smadiment_g_end', fmt(endDate));
-        const url = new URL(window.location.href);
+        localStorage.setItem(LS_S, fmt(startDate));
+        localStorage.setItem(LS_E, fmt(endDate));
+        var url = new URL(window.location.href);
         url.searchParams.set('start_date', fmt(startDate));
-        url.searchParams.set('end_date', fmt(endDate));
+        url.searchParams.set('end_date',   fmt(endDate));
         window.location.href = url.toString();
     }
 
-    // ── Global Link Interceptor ──
-    document.addEventListener('click', function(e) {
-        const link = e.target.closest('a');
-        if (!link || !link.href || !link.href.startsWith(window.location.origin)) return;
+    function updateTrigger() {
+        var el = document.getElementById('gdpTrigger');
+        if (el) el.setAttribute('title', fmt(startDate) + ' \u2013 ' + fmt(endDate));
+    }
 
-        const hrefAttr = link.getAttribute('href');
-        if (!hrefAttr || hrefAttr.startsWith('#') || hrefAttr.startsWith('javascript:')) return;
+    /* ── link interceptor ── */
+    function interceptLinks() {
+        document.addEventListener('click', function(e){
+            var link = e.target.closest('a[href]');
+            if (!link) return;
+            try {
+                var url = new URL(link.href, window.location.origin);
+                if (url.origin!==window.location.origin) return;
+                var h = link.getAttribute('href')||'';
+                if (/^javascript:/i.test(h)||h.startsWith('#')) return;
+                if (/\.(png|jpg|jpeg|gif|svg|pdf|zip|csv|xlsx)$/i.test(url.pathname)) return;
+                if (url.pathname.includes('/logout')||url.pathname.includes('/api/')) return;
+                var gs=localStorage.getItem(LS_S), ge=localStorage.getItem(LS_E);
+                if (gs&&ge){ url.searchParams.set('start_date',gs); url.searchParams.set('end_date',ge); link.href=url.toString(); }
+            } catch(err){}
+        }, true);
+    }
 
-        if (link.hasAttribute('onclick')) {
-            const onc = link.getAttribute('onclick');
-            if (onc.includes('preventDefault') || onc.includes('logout') || onc.includes('submit')) return;
-        }
+    /* ── bind all modal events ── */
+    function bindEvents() {
+        document.addEventListener('click', function(e){
+            if (e.target.closest('#gdpTrigger')) { e.preventDefault(); e.stopPropagation(); open(); }
+        }, true);
 
-        try {
-            const url = new URL(link.href);
-            if (url.pathname.match(/\.(png|jpg|jpeg|gif|svg|pdf|zip|csv|xlsx)$/i)) return;
-            if (url.pathname.includes('/logout') || url.pathname.includes('/api/')) return;
-
-            const gStart = localStorage.getItem('smadiment_g_start');
-            const gEnd   = localStorage.getItem('smadiment_g_end');
-            if (gStart && gEnd) {
-                url.searchParams.set('start_date', gStart);
-                url.searchParams.set('end_date', gEnd);
-                link.href = url.toString();
+        document.addEventListener('click', function(e){
+            if (e.target.id==='gdpOverlay')            close();
+            else if (e.target.id==='gdpCancel')        close();
+            else if (e.target.id==='gdpApply')         applyAndReload();
+            else if (e.target.closest('#gdpPrev')) {
+                vm1=new Date(vm1.getFullYear(),vm1.getMonth()-1,1);
+                vm2=new Date(vm2.getFullYear(),vm2.getMonth()-1,1);
+                renderAll();
+            } else if (e.target.closest('#gdpNext')) {
+                vm1=new Date(vm1.getFullYear(),vm1.getMonth()+1,1);
+                vm2=new Date(vm2.getFullYear(),vm2.getMonth()+1,1);
+                renderAll();
+            } else {
+                var pb = e.target.closest('.gdp-preset');
+                if (pb) { setActive(pb.getAttribute('data-p')); applyPreset(pb.getAttribute('data-p')); }
             }
-        } catch(err) {}
-    }, true);
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const trigger = document.getElementById('gdpTrigger');
-        if (trigger) trigger.addEventListener('click', openModal);
-        document.getElementById('gdpOverlay').addEventListener('click', closeModal);
-        document.getElementById('gdpCancel').addEventListener('click', closeModal);
-        document.getElementById('gdpApply').addEventListener('click', applyAndReload);
-        document.getElementById('gdpPrev').addEventListener('click', function() {
-            viewMonth1 = new Date(viewMonth1.getFullYear(), viewMonth1.getMonth()-1, 1);
-            viewMonth2 = new Date(viewMonth2.getFullYear(), viewMonth2.getMonth()-1, 1);
-            renderAll();
         });
-        document.getElementById('gdpNext').addEventListener('click', function() {
-            viewMonth1 = new Date(viewMonth1.getFullYear(), viewMonth1.getMonth()+1, 1);
-            viewMonth2 = new Date(viewMonth2.getFullYear(), viewMonth2.getMonth()+1, 1);
-            renderAll();
-        });
-        document.querySelectorAll('.gdp-preset').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.gdp-preset').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                applyPreset(this.dataset.preset);
-            });
-        });
-        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
 
-        const trigLabel = document.getElementById('gdpTriggerLabel');
-        if (trigLabel) trigLabel.textContent = fmt(startDate) + ' – ' + fmt(endDate);
+        document.addEventListener('keydown', function(e){
+            if (e.key==='Escape'&&isOpen) close();
+        });
+    }
 
-        syncFilterDatepicker();
-    });
+    function syncPage() {
+        var urlHasDates = new URLSearchParams(window.location.search).has('start_date');
+        if (!urlHasDates) {
+            var sd=fmt(startDate), ed=fmt(endDate);
+            var hsd=document.getElementById('hiddenStartDate');
+            var hed=document.getElementById('hiddenEndDate');
+            var dd =document.getElementById('doDateDisplay');
+            var rt =document.getElementById('doDpRangeText');
+            if (hsd) hsd.value=sd;
+            if (hed) hed.value=ed;
+            if (dd)  dd.textContent=sd+' \u2013 '+ed;
+            if (rt)  rt.textContent=sd+' \u2013 '+ed;
+        }
+    }
+
+    /* ── boot ── */
+    initDates();
+    updateTrigger();
+    moveToBody();
+    bindEvents();
+    interceptLinks();
+
+    function onReady() {
+        setActive(detectPreset());
+        updateTrigger();
+        syncPage();
+    }
+    if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', onReady);
+    else onReady();
+
+    return { open: open, close: close };
 })();
 </script>
