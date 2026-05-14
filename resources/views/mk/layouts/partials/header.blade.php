@@ -84,15 +84,15 @@
                             if ($remaining <= 1) {
                                 $noticeMessage = "Your trial expires <strong>tomorrow</strong>! Please renew to avoid service interruption.";
                                 $noticeType = 'danger';
-                            } elseif ($remaining <= 3) {
-                                $noticeMessage = "Only <strong>$remaining days</strong> left in your trial. Renew now to stay active.";
-                                $noticeType = 'danger';
                             } elseif ($remaining <= 7) {
-                                $noticeMessage = "Your trial ends in <strong>1 week</strong>. Consider renewing your subscription.";
+                                $noticeMessage = "Your trial ends in <strong>$remaining days</strong>. Consider renewing your subscription soon.";
                                 $noticeType = 'warning';
-                            } else {
+                            } elseif ($remaining <= 30) {
                                 $noticeMessage = "Your trial ends in <strong>$remaining days</strong>. Plan your subscription renewal.";
-                                $noticeType = 'warning';
+                                $noticeType = 'info';
+                            } else {
+                                $noticeMessage = "Your trial expires in <strong>$remaining days</strong>.";
+                                $noticeType = 'info';
                             }
                         }
                     }
@@ -105,23 +105,39 @@
                        aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
                         <i class="ph ph-bell fs-4"></i>
                         @if($hasNotification)
-                            <span class="notif-badge"></span>
+                            @php
+                                $badgeColor = '#ff9f43'; // Default warning
+                                if ($noticeType == 'danger') $badgeColor = '#ea5455';
+                                if ($noticeType == 'info')   $badgeColor = '#00cfe8';
+                            @endphp
+                            <span class="notif-badge" style="background: {{ $badgeColor }}; box-shadow: 0 0 0 2px {{ $badgeColor }}33;"></span>
                         @endif
                     </a>
                     <div class="dropdown-menu dropdown-menu-end pc-h-dropdown p-0" style="width: 320px;">
                         <div class="dropdown-header d-flex align-items-center justify-content-between py-3 px-4 border-bottom">
                             <h6 class="mb-0 fw-bold">Notifications</h6>
                             @if($hasNotification)
-                                <span class="badge {{ $noticeType == 'danger' ? 'bg-light-danger text-danger' : 'bg-light-warning text-warning' }}">
-                                    {{ $noticeType == 'danger' ? 'Urgent' : 'Reminder' }}
+                                @php
+                                    $badgeClass = 'bg-light-warning text-warning';
+                                    if ($noticeType == 'danger') $badgeClass = 'bg-light-danger text-danger';
+                                    if ($noticeType == 'info')   $badgeClass = 'bg-light-info text-info';
+                                @endphp
+                                <span class="badge {{ $badgeClass }}">
+                                    {{ $noticeType == 'danger' ? 'Urgent' : ($noticeType == 'warning' ? 'Reminder' : 'Subscription') }}
                                 </span>
                             @endif
                         </div>
                         <div class="notification-list py-2">
                             @if($isExpiring)
+                                @php
+                                    $iconClass = 'bg-light-warning text-warning';
+                                    $iconName  = 'ph-bell-ringing';
+                                    if ($noticeType == 'danger') { $iconClass = 'bg-light-danger text-danger'; $iconName = 'ph-warning-circle'; }
+                                    if ($noticeType == 'info')   { $iconClass = 'bg-light-info text-info'; $iconName = 'ph-info'; }
+                                @endphp
                                 <div class="dropdown-item d-flex align-items-start gap-3 py-3 px-4">
-                                    <div class="{{ $noticeType == 'danger' ? 'bg-light-danger text-danger' : 'bg-light-warning text-warning' }} p-2 rounded-3">
-                                        <i class="ph {{ $noticeType == 'danger' ? 'ph-warning-circle' : 'ph-bell-ringing' }} fs-4"></i>
+                                    <div class="{{ $iconClass }} p-2 rounded-3">
+                                        <i class="ph {{ $iconName }} fs-4"></i>
                                     </div>
                                     <div>
                                         <h6 class="mb-1 fw-bold" style="font-size: 14px;">Subscription Alert</h6>
@@ -352,8 +368,9 @@
     .gdp-preset { width:auto; }
     .gdp-cals { flex-direction:column; }
 }
-.bg-light-danger { background-color: rgba(220, 38, 38, 0.1) !important; color: #DC2626 !important; }
-.bg-light-warning { background-color: rgba(217, 119, 6, 0.1) !important; color: #D97706 !important; }
+.bg-light-danger { background-color: rgba(234, 84, 85, 0.1) !important; color: #ea5455 !important; }
+.bg-light-warning { background-color: rgba(255, 159, 67, 0.1) !important; color: #ff9f43 !important; }
+.bg-light-info { background-color: rgba(0, 207, 232, 0.1) !important; color: #00cfe8 !important; }
 /* Dropdown hover diatur via media query di atas */
 </style>
 

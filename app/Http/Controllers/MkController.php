@@ -1165,7 +1165,7 @@
     public function updateNoticePreference(Request $request)
     {
         $request->validate([
-            'notice_days' => 'required|integer|in:1,3,7,30',
+            'notice_days' => 'required|integer|in:1,7,30',
         ]);
 
         $user = Auth::user();

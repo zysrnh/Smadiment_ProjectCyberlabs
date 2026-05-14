@@ -112,25 +112,45 @@
       </div>
 
       <!-- Subscription & Trial -->
-      <div class="form-group">
-        <label for="trial_ends_at" class="form-label">Trial Ends At</label>
-        <input 
-          type="date" 
-          id="trial_ends_at" 
-          name="trial_ends_at" 
-          class="form-input @error('trial_ends_at') is-invalid @enderror" 
-          value="{{ old('trial_ends_at', $user->trial_ends_at ? $user->trial_ends_at->format('Y-m-d') : '') }}"
-        >
-        <div class="quick-select-days mt-2">
-          <button type="button" class="btn-quick-day" onclick="addMonths(1)">+1 Month</button>
-          <button type="button" class="btn-quick-day" onclick="addMonths(2)">+2 Months</button>
-          <button type="button" class="btn-quick-day" onclick="addMonths(3)">+3 Months</button>
+        <div class="form-group-row">
+          <div class="flex-1">
+            <label for="trial_ends_at" class="form-label">Trial Ends At</label>
+            <input 
+              type="date" 
+              id="trial_ends_at" 
+              name="trial_ends_at" 
+              class="form-input @error('trial_ends_at') is-invalid @enderror" 
+              value="{{ old('trial_ends_at', $user->trial_ends_at ? $user->trial_ends_at->format('Y-m-d') : '') }}"
+            >
+            <div class="quick-select-days mt-2">
+              <button type="button" class="btn-quick-day" onclick="addMonths(1)">+1 Month</button>
+              <button type="button" class="btn-quick-day" onclick="addMonths(2)">+2 Months</button>
+              <button type="button" class="btn-quick-day" onclick="addMonths(3)">+3 Months</button>
+            </div>
+            @error('trial_ends_at')
+            <span class="error-message">{{ $message }}</span>
+            @enderror
+            <small class="form-hint">Date when the user's trial access expires</small>
+          </div>
+          <div class="flex-1">
+            <label for="notice_days" class="form-label">Notice Reminder</label>
+            @php
+              $currentNoticeDays = 7; // Default
+              if($user->trial_ends_at && $user->subscription_notice_at) {
+                  $currentNoticeDays = $user->subscription_notice_at->diffInDays($user->trial_ends_at);
+              }
+            @endphp
+            <select name="notice_days" id="notice_days" class="form-input @error('notice_days') is-invalid @enderror">
+              <option value="7" {{ old('notice_days', $currentNoticeDays) == 7 ? 'selected' : '' }}>1 Week Before (Default)</option>
+              <option value="30" {{ old('notice_days', $currentNoticeDays) == 30 ? 'selected' : '' }}>1 Month Before</option>
+              <option value="1" {{ old('notice_days', $currentNoticeDays) == 1 ? 'selected' : '' }}>1 Day Before</option>
+            </select>
+            @error('notice_days')
+            <span class="error-message">{{ $message }}</span>
+            @enderror
+            <small class="form-hint">When to show expiration warning in user's header</small>
+          </div>
         </div>
-        @error('trial_ends_at')
-        <span class="error-message">{{ $message }}</span>
-        @enderror
-        <small class="form-hint">Date when the user's trial access expires</small>
-      </div>
       
       <!-- Project Assignment -->
       <div class="form-group">

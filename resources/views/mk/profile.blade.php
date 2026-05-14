@@ -125,7 +125,6 @@
                                 @endphp
                                 <option value="30" {{ $currentDays == 30 ? 'selected' : '' }}>1 Month Before</option>
                                 <option value="7" {{ $currentDays == 7 ? 'selected' : (!isset($currentDays) ? 'selected' : '') }}>1 Week Before (Default)</option>
-                                <option value="3" {{ $currentDays == 3 ? 'selected' : '' }}>3 Days Before</option>
                                 <option value="1" {{ $currentDays == 1 ? 'selected' : '' }}>1 Day Before</option>
                             </select>
                             <button type="submit" class="btn btn-primary px-4" style="border-radius: 0 12px 12px 0; font-weight: 700; font-size: 14px; white-space: nowrap; background: var(--primary-green, #038047); border-color: var(--primary-green, #038047);">

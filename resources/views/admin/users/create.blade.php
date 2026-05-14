@@ -100,26 +100,40 @@
       </div>
       
       <!-- Subscription & Trial -->
-      <div class="form-group">
-        <label for="trial_days" class="form-label">Trial Period (Days)</label>
-        <input 
-          type="number" 
-          id="trial_days" 
-          name="trial_days" 
-          class="form-input @error('trial_days') is-invalid @enderror" 
-          value="{{ old('trial_days') }}" 
-          placeholder="e.g. 7, 30"
-        >
-        <div class="quick-select-days mt-2">
-          <button type="button" class="btn-quick-day" onclick="setTrialDays(30)">1 Month</button>
-          <button type="button" class="btn-quick-day" onclick="setTrialDays(60)">2 Months</button>
-          <button type="button" class="btn-quick-day" onclick="setTrialDays(90)">3 Months</button>
+        <div class="form-group-row">
+          <div class="flex-1">
+            <label for="trial_days" class="form-label">Trial Period (Days)</label>
+            <input 
+              type="number" 
+              id="trial_days" 
+              name="trial_days" 
+              class="form-input @error('trial_days') is-invalid @enderror" 
+              value="{{ old('trial_days') }}" 
+              placeholder="e.g. 7, 30"
+            >
+            <div class="quick-select-days mt-2">
+              <button type="button" class="btn-quick-day" onclick="setTrialDays(30)">1 Month</button>
+              <button type="button" class="btn-quick-day" onclick="setTrialDays(60)">2 Months</button>
+              <button type="button" class="btn-quick-day" onclick="setTrialDays(90)">3 Months</button>
+            </div>
+            @error('trial_days')
+            <span class="error-message">{{ $message }}</span>
+            @enderror
+            <small class="form-hint">Number of days for trial access from today</small>
+          </div>
+          <div class="flex-1">
+            <label for="notice_days" class="form-label">Notice Reminder</label>
+            <select name="notice_days" id="notice_days" class="form-input @error('notice_days') is-invalid @enderror">
+              <option value="7" {{ old('notice_days') == 7 ? 'selected' : '' }}>1 Week Before (Default)</option>
+              <option value="30" {{ old('notice_days') == 30 ? 'selected' : '' }}>1 Month Before</option>
+              <option value="1" {{ old('notice_days') == 1 ? 'selected' : '' }}>1 Day Before</option>
+            </select>
+            @error('notice_days')
+            <span class="error-message">{{ $message }}</span>
+            @enderror
+            <small class="form-hint">When to show expiration warning in user's header</small>
+          </div>
         </div>
-        @error('trial_days')
-        <span class="error-message">{{ $message }}</span>
-        @enderror
-        <small class="form-hint">Number of days for trial access from today</small>
-      </div>
 
       <!-- Project Assignment -->
       <div class="form-group">
