@@ -1161,4 +1161,25 @@
             return redirect()->back()->with('error', 'Failed to upload profile picture. Please try again.');
         }
     }
+
+    public function updateNoticePreference(Request $request)
+    {
+        $request->validate([
+            'notice_days' => 'required|integer|in:1,3,7,30',
+        ]);
+
+        $user = Auth::user();
+
+        if (!$user->trial_ends_at) {
+            return redirect()->back()->with('error', 'Cannot set reminder: Trial end date is not set.');
+        }
+
+        $days = $request->input('notice_days');
+        $noticeDate = $user->trial_ends_at->copy()->subDays($days);
+
+        $user->subscription_notice_at = $noticeDate;
+        $user->save();
+
+        return redirect()->back()->with('success', "Notification reminder updated to {$days} days before expiry.");
+    }
 }

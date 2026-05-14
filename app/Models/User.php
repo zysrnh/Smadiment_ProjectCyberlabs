@@ -15,6 +15,8 @@ class User extends Authenticatable
         'email',
         'password',
         'avatar',
+        'trial_ends_at',
+        'subscription_notice_at',
     ];
 
     protected $hidden = [
@@ -27,6 +29,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'trial_ends_at' => 'datetime',
+            'subscription_notice_at' => 'datetime',
         ];
     }
 
@@ -54,5 +58,33 @@ class User extends Authenticatable
         return $this->projectAssignments()
             ->where('project_id', $projectId)
             ->exists();
+    }
+
+    /**
+     * 🔥 NEW: Get remaining days of trial
+     */
+    public function trialRemainingDays(): int
+    {
+        if (!$this->trial_ends_at) {
+            return 0;
+        }
+
+        if ($this->trial_ends_at->isPast()) {
+            return 0;
+        }
+
+        return (int) now()->diffInDays($this->trial_ends_at);
+    }
+
+    /**
+     * 🔥 NEW: Check if trial is active
+     */
+    public function isTrialActive(): bool
+    {
+        if (!$this->trial_ends_at) {
+            return true; // If no trial set, assume permanent access for now or handle differently
+        }
+
+        return $this->trial_ends_at->isFuture();
     }
 }

@@ -66,7 +66,7 @@
                     </div>
                 </div>
                 
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center mb-4">
                     <div style="width: 44px; height: 44px; border-radius: 12px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #475569; margin-right: 16px; flex-shrink: 0;">
                         <i class="ph ph-folders fs-4"></i>
                     </div>
@@ -75,12 +75,67 @@
                         <span class="text-muted" style="font-size: 13px;">{{ count($projects) }} Project(s) Assigned</span>
                     </div>
                 </div>
+
+                <div class="d-flex align-items-center">
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: {{ auth()->user()->trialRemainingDays() > 3 ? '#ecfdf5' : '#fff1f2' }}; display: flex; align-items: center; justify-content: center; color: {{ auth()->user()->trialRemainingDays() > 3 ? '#059669' : '#e11d48' }}; margin-right: 16px; flex-shrink: 0;">
+                        <i class="ph ph-shield-check fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1 fw-semibold text-dark" style="font-size: 14px;">Subscription</h6>
+                        @if(auth()->user()->trial_ends_at)
+                            <span class="{{ auth()->user()->trialRemainingDays() > 3 ? 'text-success' : 'text-danger' }}" style="font-size: 13px; font-weight: 600;">
+                                {{ auth()->user()->trialRemainingDays() }} Days Remaining
+                            </span>
+                            <div class="text-muted" style="font-size: 11px;">Ends on {{ auth()->user()->trial_ends_at->format('d M Y') }}</div>
+                        @else
+                            <span class="text-success" style="font-size: 13px; font-weight: 600;">Full Access</span>
+                        @endif
+                    </div>
+                </div>
             </div>
         </div>
+
     </div>
 
-    <!-- Assigned Projects List -->
+    <!-- Right Column (Settings & Projects) -->
     <div class="col-lg-8 col-xl-9 mb-4">
+        
+        <!-- Notification Settings (Horizontal Layout) -->
+        <div class="card shadow-sm border-0 mb-4" style="border-radius: 16px; overflow: hidden;">
+            <div class="card-body p-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 bg-white">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: #fffbeb; color: #d97706; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="ph ph-bell-ringing fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1 fw-bold text-dark fs-6">Notification Settings</h6>
+                        <p class="text-muted mb-0" style="font-size: 13px;">Choose when you want to receive trial expiration reminders via the notification bell.</p>
+                    </div>
+                </div>
+                <div style="min-width: 250px;">
+                    <form action="{{ route('mk.profile.notice') }}" method="POST" class="d-flex gap-2">
+                        @csrf
+                        <select name="notice_days" class="form-select" style="border-radius: 10px; font-size: 13px; font-weight: 500; border-color: #e2e8f0;">
+                            @php
+                                $currentDays = null;
+                                if(auth()->user()->subscription_notice_at && auth()->user()->trial_ends_at) {
+                                    $currentDays = auth()->user()->subscription_notice_at->diffInDays(auth()->user()->trial_ends_at);
+                                }
+                            @endphp
+                            <option value="30" {{ $currentDays == 30 ? 'selected' : '' }}>1 Month Before</option>
+                            <option value="7" {{ $currentDays == 7 ? 'selected' : (!isset($currentDays) ? 'selected' : '') }}>1 Week Before (Default)</option>
+                            <option value="3" {{ $currentDays == 3 ? 'selected' : '' }}>3 Days Before</option>
+                            <option value="1" {{ $currentDays == 1 ? 'selected' : '' }}>1 Day Before</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary px-4" style="border-radius: 10px; font-weight: 600; font-size: 13px; white-space: nowrap;">
+                            Save
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assigned Projects List -->
         <div class="card h-100 shadow-sm border-0">
             <div class="card-header bg-white border-bottom p-4 d-flex align-items-center justify-content-between">
                 <div>

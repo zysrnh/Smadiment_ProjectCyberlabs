@@ -1,7 +1,20 @@
 @php
     $globalStartDate = request()->get('start_date', now()->startOfMonth()->format('Y-m-d'));
     $globalEndDate   = request()->get('end_date', now()->format('Y-m-d'));
-@endphp
+@endphp<style>
+.notif-btn {
+    width: 56px; height: 56px; border-radius: 50%; border: 3px solid #e2e8f0; background: #f1f5f9; display: flex; align-items: center; justify-content: center; position: relative;
+    transition: all 0.2s ease-in-out;
+    color: #475569;
+}
+.notif-btn:hover {
+    background: #e2e8f0 !important;
+    border-color: #cbd5e1 !important;
+    color: #038047;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+</style>
 
 <header class="pc-header">
     <div class="header-wrapper">
@@ -36,6 +49,96 @@
                        aria-label="Open date range picker">
                         <i class="ph ph-calendar-blank"></i>
                     </a>
+                </li>
+
+                {{-- Subscription Notifications --}}
+                @php
+                    $user = auth()->user();
+                    $trialEnds = $user->trial_ends_at;
+                    $noticeAt = $user->subscription_notice_at;
+                    $remaining = $user->trialRemainingDays();
+                    
+                    $isExpiring = false;
+                    $noticeMessage = '';
+                    $noticeType = 'warning'; // warning or danger
+                    
+                    if ($trialEnds) {
+                        // Determine if we should start showing warnings
+                        $shouldShow = false;
+                        if ($noticeAt) {
+                            $shouldShow = now()->startOfDay()->greaterThanOrEqualTo(\Carbon\Carbon::parse($noticeAt)->startOfDay());
+                        } else {
+                            // Default behavior: start warning 7 days before
+                            $shouldShow = $remaining <= 7;
+                        }
+
+                        // Set message and type based on actual remaining days
+                        if ($shouldShow) {
+                            $isExpiring = true;
+                            if ($remaining <= 1) {
+                                $noticeMessage = "Your trial expires <strong>tomorrow</strong>! Please renew to avoid service interruption.";
+                                $noticeType = 'danger';
+                            } elseif ($remaining <= 3) {
+                                $noticeMessage = "Only <strong>$remaining days</strong> left in your trial. Renew now to stay active.";
+                                $noticeType = 'danger';
+                            } elseif ($remaining <= 7) {
+                                $noticeMessage = "Your trial ends in <strong>1 week</strong>. Consider renewing your subscription.";
+                                $noticeType = 'warning';
+                            } else {
+                                $noticeMessage = "Your trial ends in <strong>$remaining days</strong>. Plan your subscription renewal.";
+                                $noticeType = 'warning';
+                            }
+                        }
+                    }
+                    
+                    $hasNotification = $isExpiring;
+                @endphp
+                <li class="dropdown pc-h-item header-notification">
+                    <a class="pc-head-link dropdown-toggle arrow-none me-0 notif-btn" 
+                       data-bs-toggle="dropdown" href="#" role="button"
+                       aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
+                        <i class="ph ph-bell fs-4"></i>
+                        @if($hasNotification)
+                            <span class="position-absolute top-0 start-100 translate-middle p-2 {{ $noticeType == 'danger' ? 'bg-danger' : 'bg-warning' }} border border-light rounded-circle" style="margin-top: 15px; margin-left: -15px;">
+                                <span class="visually-hidden">New alerts</span>
+                            </span>
+                        @endif
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end pc-h-dropdown p-0" style="width: 320px;">
+                        <div class="dropdown-header d-flex align-items-center justify-content-between py-3 px-4 border-bottom">
+                            <h6 class="mb-0 fw-bold">Notifications</h6>
+                            @if($hasNotification)
+                                <span class="badge {{ $noticeType == 'danger' ? 'bg-light-danger text-danger' : 'bg-light-warning text-warning' }}">
+                                    {{ $noticeType == 'danger' ? 'Urgent' : 'Reminder' }}
+                                </span>
+                            @endif
+                        </div>
+                        <div class="notification-list py-2">
+                            @if($isExpiring)
+                                <div class="dropdown-item d-flex align-items-start gap-3 py-3 px-4">
+                                    <div class="{{ $noticeType == 'danger' ? 'bg-light-danger text-danger' : 'bg-light-warning text-warning' }} p-2 rounded-3">
+                                        <i class="ph {{ $noticeType == 'danger' ? 'ph-warning-circle' : 'ph-bell-ringing' }} fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1 fw-bold" style="font-size: 14px;">Subscription Alert</h6>
+                                        <p class="text-muted mb-0" style="font-size: 12px;">{!! $noticeMessage !!}</p>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if(!$hasNotification)
+                                <div class="text-center py-5">
+                                    <i class="ph ph-bell-slash text-muted mb-2" style="font-size: 40px;"></i>
+                                    <p class="text-muted small">No new notifications</p>
+                                </div>
+                            @endif
+                        </div>
+                        @if($hasNotification)
+                            <div class="dropdown-footer border-top text-center py-2 bg-light bg-opacity-50">
+                                <a href="{{ route('mk.profile') }}" class="text-primary fw-bold" style="font-size: 12px;">View Details</a>
+                            </div>
+                        @endif
+                    </div>
                 </li>
 
                 {{-- User Profile --}}
@@ -333,6 +436,13 @@
     .gdp-sidebar { width:100%; flex-direction:row; flex-wrap:wrap; border-right:none; border-bottom:1px solid #e2e8f0; padding:10px; }
     .gdp-preset { width:auto; }
     .gdp-cals { flex-direction:column; }
+}
+.bg-light-danger { background-color: rgba(220, 38, 38, 0.1) !important; color: #DC2626 !important; }
+.bg-light-warning { background-color: rgba(217, 119, 6, 0.1) !important; color: #D97706 !important; }
+.header-notification .pc-head-link:hover {
+    transform: translateY(-6px) scale(1.025) !important;
+    border-color: var(--bs-primary, #0d6efd) !important;
+    box-shadow: 0 16px 32px rgba(13,110,253,.3) !important;
 }
 </style>
 
