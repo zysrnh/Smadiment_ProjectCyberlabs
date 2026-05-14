@@ -73,7 +73,7 @@ class User extends Authenticatable
             return 0;
         }
 
-        return (int) now()->diffInDays($this->trial_ends_at);
+        return (int) now()->startOfDay()->diffInDays($this->trial_ends_at->startOfDay());
     }
 
     /**

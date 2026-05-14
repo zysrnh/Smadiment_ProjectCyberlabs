@@ -55,40 +55,40 @@
                 <p class="text-muted mb-3">{{ auth()->user()->email ?? 'admin@smadiment.com' }}</p>
             </div>
             
-            <div class="card-body border-top p-4" style="background: #fdfdfd; border-radius: 0 0 16px 16px;">
-                <div class="d-flex align-items-center mb-4">
-                    <div style="width: 44px; height: 44px; border-radius: 12px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #475569; margin-right: 16px; flex-shrink: 0;">
+            <div class="card-body border-top p-4" style="background: #fdfdfd; border-radius: 0 0 16px 16px; border-top: 1px solid #f1f5f9 !important;">
+                <div class="d-flex align-items-center mb-4 stat-box p-2 rounded-3">
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #475569; margin-right: 16px; flex-shrink: 0; border: 1px solid #e2e8f0;">
                         <i class="ph ph-calendar-blank fs-4"></i>
                     </div>
                     <div>
-                        <h6 class="mb-1 fw-semibold text-dark" style="font-size: 14px;">Member Since</h6>
-                        <span class="text-muted" style="font-size: 13px;">{{ auth()->user()->created_at ? auth()->user()->created_at->format('d F Y') : 'Unknown' }}</span>
+                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b !important;">Member Since</h6>
+                        <span class="text-dark fw-bold" style="font-size: 14px;">{{ auth()->user()->created_at ? auth()->user()->created_at->format('d F Y') : 'Unknown' }}</span>
                     </div>
                 </div>
                 
-                <div class="d-flex align-items-center mb-4">
-                    <div style="width: 44px; height: 44px; border-radius: 12px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #475569; margin-right: 16px; flex-shrink: 0;">
+                <div class="d-flex align-items-center mb-4 stat-box p-2 rounded-3">
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #475569; margin-right: 16px; flex-shrink: 0; border: 1px solid #e2e8f0;">
                         <i class="ph ph-folders fs-4"></i>
                     </div>
                     <div>
-                        <h6 class="mb-1 fw-semibold text-dark" style="font-size: 14px;">Total Projects</h6>
-                        <span class="text-muted" style="font-size: 13px;">{{ count($projects) }} Project(s) Assigned</span>
+                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b !important;">Total Projects</h6>
+                        <span class="text-dark fw-bold" style="font-size: 14px;">{{ count($projects) }} Assigned</span>
                     </div>
                 </div>
 
-                <div class="d-flex align-items-center">
-                    <div style="width: 44px; height: 44px; border-radius: 12px; background: {{ auth()->user()->trialRemainingDays() > 3 ? '#ecfdf5' : '#fff1f2' }}; display: flex; align-items: center; justify-content: center; color: {{ auth()->user()->trialRemainingDays() > 3 ? '#059669' : '#e11d48' }}; margin-right: 16px; flex-shrink: 0;">
+                <div class="d-flex align-items-center stat-box p-2 rounded-3">
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: {{ auth()->user()->trialRemainingDays() > 3 ? '#ecfdf5' : '#fff1f2' }}; display: flex; align-items: center; justify-content: center; color: {{ auth()->user()->trialRemainingDays() > 3 ? '#059669' : '#e11d48' }}; margin-right: 16px; flex-shrink: 0; border: 1px solid {{ auth()->user()->trialRemainingDays() > 3 ? '#a7f3d0' : '#fecaca' }};">
                         <i class="ph ph-shield-check fs-4"></i>
                     </div>
                     <div>
-                        <h6 class="mb-1 fw-semibold text-dark" style="font-size: 14px;">Subscription</h6>
+                        <h6 class="mb-1 fw-bold text-dark" style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b !important;">Subscription Status</h6>
                         @if(auth()->user()->trial_ends_at)
-                            <span class="{{ auth()->user()->trialRemainingDays() > 3 ? 'text-success' : 'text-danger' }}" style="font-size: 13px; font-weight: 600;">
+                            <span class="{{ auth()->user()->trialRemainingDays() > 3 ? 'text-success' : 'text-danger' }} fw-bold" style="font-size: 14px;">
                                 {{ auth()->user()->trialRemainingDays() }} Days Remaining
                             </span>
-                            <div class="text-muted" style="font-size: 11px;">Ends on {{ auth()->user()->trial_ends_at->format('d M Y') }}</div>
+                            <div class="text-muted" style="font-size: 12px; font-weight: 500;">Ends on {{ auth()->user()->trial_ends_at->format('d M Y') }}</div>
                         @else
-                            <span class="text-success" style="font-size: 13px; font-weight: 600;">Full Access</span>
+                            <span class="text-success fw-bold" style="font-size: 14px;">Unlimited Access</span>
                         @endif
                     </div>
                 </div>
@@ -101,50 +101,52 @@
     <div class="col-lg-8 col-xl-9 mb-4">
         
         <!-- Notification Settings (Horizontal Layout) -->
-        <div class="card shadow-sm border-0 mb-4" style="border-radius: 16px; overflow: hidden;">
-            <div class="card-body p-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 bg-white">
-                <div class="d-flex align-items-center gap-3">
-                    <div style="width: 48px; height: 48px; border-radius: 12px; background: #fffbeb; color: #d97706; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                        <i class="ph ph-bell-ringing fs-4"></i>
+        <div class="card shadow-sm border-0 mb-4" style="border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid #e2e8f0 !important;">
+            <div class="card-body p-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                <div class="d-flex align-items-center gap-4">
+                    <div style="width: 60px; height: 60px; border-radius: 16px; background: #fffbeb; color: #d97706; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.1);">
+                        <i class="ph ph-bell-ringing fs-2"></i>
                     </div>
                     <div>
-                        <h6 class="mb-1 fw-bold text-dark fs-6">Notification Settings</h6>
-                        <p class="text-muted mb-0" style="font-size: 13px;">Choose when you want to receive trial expiration reminders via the notification bell.</p>
+                        <h5 class="mb-1 fw-bold text-dark">Alert Preferences</h5>
+                        <p class="text-muted mb-0" style="font-size: 14px; max-width: 400px;">When should we notify you before your trial ends? Choose your preferred threshold.</p>
                     </div>
                 </div>
-                <div style="min-width: 250px;">
-                    <form action="{{ route('mk.profile.notice') }}" method="POST" class="d-flex gap-2">
+                <div class="flex-grow-1" style="max-width: 350px;">
+                    <form action="{{ route('mk.profile.notice') }}" method="POST">
                         @csrf
-                        <select name="notice_days" class="form-select" style="border-radius: 10px; font-size: 13px; font-weight: 500; border-color: #e2e8f0;">
-                            @php
-                                $currentDays = null;
-                                if(auth()->user()->subscription_notice_at && auth()->user()->trial_ends_at) {
-                                    $currentDays = auth()->user()->subscription_notice_at->diffInDays(auth()->user()->trial_ends_at);
-                                }
-                            @endphp
-                            <option value="30" {{ $currentDays == 30 ? 'selected' : '' }}>1 Month Before</option>
-                            <option value="7" {{ $currentDays == 7 ? 'selected' : (!isset($currentDays) ? 'selected' : '') }}>1 Week Before (Default)</option>
-                            <option value="3" {{ $currentDays == 3 ? 'selected' : '' }}>3 Days Before</option>
-                            <option value="1" {{ $currentDays == 1 ? 'selected' : '' }}>1 Day Before</option>
-                        </select>
-                        <button type="submit" class="btn btn-primary px-4" style="border-radius: 10px; font-weight: 600; font-size: 13px; white-space: nowrap;">
-                            Save
-                        </button>
+                        <div class="input-group">
+                            <select name="notice_days" class="form-select" style="border-radius: 12px 0 0 12px; font-size: 14px; font-weight: 500; border-color: #e2e8f0; height: 48px; padding-left: 16px;">
+                                @php
+                                    $currentDays = null;
+                                    if(auth()->user()->subscription_notice_at && auth()->user()->trial_ends_at) {
+                                        $currentDays = auth()->user()->subscription_notice_at->diffInDays(auth()->user()->trial_ends_at);
+                                    }
+                                @endphp
+                                <option value="30" {{ $currentDays == 30 ? 'selected' : '' }}>1 Month Before</option>
+                                <option value="7" {{ $currentDays == 7 ? 'selected' : (!isset($currentDays) ? 'selected' : '') }}>1 Week Before (Default)</option>
+                                <option value="3" {{ $currentDays == 3 ? 'selected' : '' }}>3 Days Before</option>
+                                <option value="1" {{ $currentDays == 1 ? 'selected' : '' }}>1 Day Before</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary px-4" style="border-radius: 0 12px 12px 0; font-weight: 700; font-size: 14px; white-space: nowrap; background: var(--primary-green, #038047); border-color: var(--primary-green, #038047);">
+                                Update
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
 
         <!-- Assigned Projects List -->
-        <div class="card h-100 shadow-sm border-0">
-            <div class="card-header bg-white border-bottom p-4 d-flex align-items-center justify-content-between">
+        <div class="card h-100 shadow-sm border-0" style="border-radius: 20px; overflow: hidden;">
+            <div class="card-header bg-white border-bottom p-4 d-flex align-items-center justify-content-between" style="border-bottom: 1px solid #f1f5f9 !important;">
                 <div>
-                    <h5 class="mb-1 fw-bold text-dark">Assigned Projects</h5>
-                    <p class="text-muted mb-0" style="font-size: 13px;">Projects that you currently have access to monitor and analyze.</p>
+                    <h5 class="mb-1 fw-bold text-dark">Active Project Subscriptions</h5>
+                    <p class="text-muted mb-0" style="font-size: 14px;">Monitor your assigned projects and access real-time analytics.</p>
                 </div>
-                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill" style="font-size: 14px; font-weight: 700;">
+                <div class="badge bg-primary bg-opacity-10 text-primary px-4 py-2 rounded-pill" style="font-size: 14px; font-weight: 800; border: 1px solid rgba(13, 110, 253, 0.2);">
                     {{ count($projects) }} Total
-                </span>
+                </div>
             </div>
             <div class="card-body p-4 bg-light bg-opacity-50">
                 @if(isset($projects) && count($projects) > 0)
@@ -198,38 +200,48 @@
 
 <style>
 .project-card {
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #f1f5f9 !important;
 }
 .project-card:hover {
-    border-color: #038047 !important;
-    box-shadow: 0 12px 24px rgba(3, 128, 71, 0.08) !important;
-    transform: translateY(-4px);
+    border-color: var(--primary-green, #038047) !important;
+    box-shadow: 0 20px 40px rgba(3, 128, 71, 0.1) !important;
+    transform: translateY(-8px);
 }
 .project-card:hover .pcard-indicator {
     opacity: 1;
+    width: 6px;
 }
 .pcard-btn {
     color: #475569;
     background: #f8fafc;
-    transition: all 0.2s;
+    transition: all 0.3s;
+    border-radius: 10px !important;
+    padding: 8px 16px !important;
 }
 .project-card:hover .pcard-btn {
-    background: #038047;
+    background: var(--primary-green, #038047);
     color: #fff;
+    box-shadow: 0 4px 12px rgba(3, 128, 71, 0.2);
 }
 .border-dashed {
     border-top-style: dashed !important;
-    border-top-color: #e2e8f0 !important;
+    border-top-color: #f1f5f9 !important;
 }
 
 /* Avatar Upload Overlay */
 .profile-avatar-container {
-    /* cursor: pointer; */
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.profile-avatar-container:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15) !important;
 }
 .avatar-upload-overlay {
     position: absolute;
-    inset: 5px; /* respect the border */
-    background: rgba(0,0,0,0.5);
+    inset: 0;
+    background: rgba(3, 128, 71, 0.8);
+    backdrop-filter: blur(4px);
     border-radius: 50%;
     display: flex;
     flex-direction: column;
@@ -237,21 +249,28 @@
     justify-content: center;
     color: white;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: all 0.3s ease;
     z-index: 10;
 }
 .profile-avatar-container:hover .avatar-upload-overlay {
     opacity: 1;
 }
 .avatar-upload-overlay i {
-    font-size: 24px;
-    margin-bottom: 4px;
+    font-size: 28px;
+    margin-bottom: 6px;
 }
 .avatar-upload-overlay span {
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
+}
+.stat-box {
+    transition: all 0.2s;
+}
+.stat-box:hover {
+    background: #fff !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
 </style>
 @endsection

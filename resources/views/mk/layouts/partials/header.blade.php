@@ -2,17 +2,23 @@
     $globalStartDate = request()->get('start_date', now()->startOfMonth()->format('Y-m-d'));
     $globalEndDate   = request()->get('end_date', now()->format('Y-m-d'));
 @endphp<style>
-.notif-btn {
-    width: 56px; height: 56px; border-radius: 50%; border: 3px solid #e2e8f0; background: #f1f5f9; display: flex; align-items: center; justify-content: center; position: relative;
-    transition: all 0.2s ease-in-out;
-    color: #475569;
+.circle-btn {
+    width: 56px !important; height: 56px !important; border-radius: 50% !important; padding: 0 !important; border: 3px solid #e2e8f0 !important; box-shadow: 0 2px 10px rgba(0,0,0,.08) !important; background: #f1f5f9 !important; display: flex !important; align-items: center !important; justify-content: center !important; position: relative !important; overflow: hidden !important; transition: all 0.25s cubic-bezier(.34,1.56,.64,1) !important; color: #475569 !important; text-decoration: none !important;
 }
-.notif-btn:hover {
-    background: #e2e8f0 !important;
-    border-color: #cbd5e1 !important;
-    color: #038047;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+.circle-btn:hover {
+    background: #fff !important; transform: translateY(-6px) scale(1.025) !important; border-color: #038047 !important; color: #038047 !important; box-shadow: 0 16px 32px rgba(3, 128, 71, 0.15) !important;
+}
+.circle-btn::before {
+    content: ''; position: absolute; top: 0; bottom: 0; left: -100%; width: 60%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent); pointer-events: none; z-index: 1; transition: none;
+}
+.circle-btn:hover::before { animation: gdpShimmer .6s ease forwards; }
+
+.notif-badge {
+    position: absolute; top: 12px; right: 12px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; background: #ff9f43; z-index: 10; box-shadow: 0 0 0 2px rgba(255, 159, 67, 0.2);
+}
+
+.header-notification .dropdown-menu {
+    border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border-radius: 16px; overflow: hidden; margin-top: 10px !important;
 }
 </style>
 
@@ -44,10 +50,10 @@
                     <a href="javascript:void(0);"
                        id="gdpTrigger"
                        onclick="GDPicker.open(); return false;"
-                       class="pc-head-link gdp-icon-btn"
+                       class="circle-btn"
                        title="{{ $globalStartDate }} – {{ $globalEndDate }}"
                        aria-label="Open date range picker">
-                        <i class="ph ph-calendar-blank"></i>
+                        <i class="ph ph-calendar-blank fs-4"></i>
                     </a>
                 </li>
 
@@ -94,14 +100,12 @@
                     $hasNotification = $isExpiring;
                 @endphp
                 <li class="dropdown pc-h-item header-notification">
-                    <a class="pc-head-link dropdown-toggle arrow-none me-0 notif-btn" 
+                    <a class="dropdown-toggle arrow-none me-0 circle-btn" 
                        data-bs-toggle="dropdown" href="#" role="button"
                        aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
                         <i class="ph ph-bell fs-4"></i>
                         @if($hasNotification)
-                            <span class="position-absolute top-0 start-100 translate-middle p-2 {{ $noticeType == 'danger' ? 'bg-danger' : 'bg-warning' }} border border-light rounded-circle" style="margin-top: 15px; margin-left: -15px;">
-                                <span class="visually-hidden">New alerts</span>
-                            </span>
+                            <span class="notif-badge"></span>
                         @endif
                     </a>
                     <div class="dropdown-menu dropdown-menu-end pc-h-dropdown p-0" style="width: 320px;">
@@ -121,7 +125,7 @@
                                     </div>
                                     <div>
                                         <h6 class="mb-1 fw-bold" style="font-size: 14px;">Subscription Alert</h6>
-                                        <p class="text-muted mb-0" style="font-size: 12px;">{!! $noticeMessage !!}</p>
+                                        <p class="text-muted mb-0" style="font-size: 13px; line-height: 1.5; white-space: normal;">{!! $noticeMessage !!}</p>
                                     </div>
                                 </div>
                             @endif
@@ -143,7 +147,7 @@
 
                 {{-- User Profile --}}
                 <li class="dropdown pc-h-item header-user-profile">
-                    <a class="pc-head-link dropdown-toggle arrow-none me-0"
+                    <a class="dropdown-toggle arrow-none me-0 circle-btn"
                        data-bs-toggle="dropdown" href="#" role="button"
                        aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
                         @if(auth()->check() && auth()->user()->avatar)
@@ -151,9 +155,9 @@
                                  alt="User Avatar"
                                  class="profile-avatar-img"
                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
-                            <i class="ph ph-user-circle fallback-icon" style="display:none;"></i>
+                            <i class="ph ph-user-circle fallback-icon" style="display:none; font-size:38px;"></i>
                         @else
-                            <i class="ph ph-user-circle fallback-icon"></i>
+                            <i class="ph ph-user-circle fallback-icon" style="font-size:38px;"></i>
                         @endif
                     </a>
                     <div class="dropdown-menu dropdown-menu-end pc-h-dropdown">
@@ -233,72 +237,7 @@
 </div>
 
 <style>
-/* ── GDP Trigger – circle icon (matches avatar) ── */
-#gdpTrigger.gdp-icon-btn {
-    width: 56px !important;
-    height: 56px !important;
-    border-radius: 50% !important;
-    padding: 0 !important;
-    border: 3px solid #e2e8f0 !important;
-    box-shadow: 0 2px 10px rgba(0,0,0,.12) !important;
-    background: #f1f5f9 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    position: relative !important;
-    overflow: hidden !important;
-    opacity: 1 !important;
-    cursor: pointer !important;
-    will-change: transform, box-shadow;
-    transition: transform .25s cubic-bezier(.34,1.56,.64,1),
-                border-color .2s,
-                box-shadow .25s,
-                filter .25s !important;
-    text-decoration: none !important;
-    color: inherit !important;
-    pointer-events: auto !important;
-}
-#gdpTrigger.gdp-icon-btn i {
-    font-size: 22px;
-    color: #475569;
-    pointer-events: none;
-    transition: color .2s, transform .25s cubic-bezier(.34,1.56,.64,1);
-}
-
-/* Shimmer pseudo-element (sama seperti avatar) */
-#gdpTrigger.gdp-icon-btn::before {
-    content: '';
-    position: absolute;
-    top: 0; bottom: 0; left: -100%;
-    width: 60%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);
-    pointer-events: none;
-    z-index: 10;
-    transition: none;
-}
-
-/* Hover state */
-.gdp-trigger-item:hover #gdpTrigger.gdp-icon-btn,
-#gdpTrigger.gdp-icon-btn:hover {
-    transform: translateY(-6px) scale(1.025) !important;
-    border-color: var(--bs-primary, #0d6efd) !important;
-    box-shadow: 0 16px 32px rgba(13,110,253,.3) !important;
-    filter: brightness(1.05) !important;
-}
-.gdp-trigger-item:hover #gdpTrigger.gdp-icon-btn i,
-#gdpTrigger.gdp-icon-btn:hover i {
-    color: var(--bs-primary, #0d6efd);
-    animation: gdpBounce .5s cubic-bezier(.34,1.56,.64,1) both;
-}
-.gdp-trigger-item:hover #gdpTrigger.gdp-icon-btn::before {
-    animation: gdpShimmer .6s ease forwards;
-}
-
-/* Active press */
-#gdpTrigger.gdp-icon-btn:active {
-    transform: translateY(-2px) scale(1.01) !important;
-    transition-duration: .08s !important;
-}
+/* GDP Trigger diatur via .circle-btn */
 
 /* ── Modal ── */
 #gdpModal {
@@ -375,36 +314,8 @@
 }
 .gdp-footer { display:flex; gap:10px; justify-content:flex-end; }
 
-/* ── Avatar KPI ── */
-.header-user-profile .pc-head-link,
-.header-user-profile .pc-head-link.show,
-.header-user-profile .pc-head-link[aria-expanded="true"] {
-    width:56px !important; height:56px !important; border-radius:50% !important;
-    padding:0 !important; border:3px solid #e2e8f0 !important;
-    box-shadow:0 2px 10px rgba(0,0,0,.12) !important; background:#f1f5f9 !important;
-    display:flex !important; align-items:center !important; justify-content:center !important;
-    position:relative !important; overflow:hidden !important; opacity:1 !important;
-    will-change:transform,box-shadow;
-    transition:transform .25s cubic-bezier(.34,1.56,.64,1),border-color .2s,box-shadow .25s,filter .25s !important;
-}
-.header-user-profile .pc-head-link::before {
-    content:''; position:absolute; top:0; bottom:0; left:-100%;
-    width:60%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);
-    pointer-events:none; z-index:10; transition:none;
-}
-.header-user-profile:hover .pc-head-link,
-.header-user-profile.show .pc-head-link {
-    transform:translateY(-6px) scale(1.025) !important;
-    border-color:var(--bs-primary,#0d6efd) !important;
-    box-shadow:0 16px 32px rgba(13,110,253,.3) !important;
-    filter:brightness(1.05) !important;
-}
-.header-user-profile:hover .pc-head-link::before { animation:gdpShimmer .6s ease forwards; }
-.header-user-profile:hover .profile-avatar-img,
-.header-user-profile:hover .fallback-icon { animation:gdpBounce .5s cubic-bezier(.34,1.56,.64,1) both !important; }
-.header-user-profile:active .pc-head-link { transform:translateY(-2px) scale(1.01) !important; transition-duration:.08s !important; }
+/* Avatar diatur via .circle-btn */
 .header-user-profile .profile-avatar-img { width:100%; height:100%; object-fit:cover; display:block; border-radius:50%; }
-.header-user-profile .fallback-icon { font-size:38px; color:#64748b; display:block; }
 .header-user-profile .pc-head-link:hover .profile-avatar-img,
 .header-user-profile .pc-head-link.show .profile-avatar-img,
 .header-user-profile .pc-head-link[aria-expanded="true"] .profile-avatar-img { opacity:1 !important; visibility:visible !important; filter:none !important; }
@@ -421,7 +332,11 @@
 .pc-h-dropdown .dropdown-header h6 { font-size:14px; font-weight:600; line-height:1.3; margin-bottom:2px; }
 .pc-h-dropdown .dropdown-header small { font-size:12px; color:#94a3b8; }
 @media (min-width:992px) {
-    .header-user-profile:hover .dropdown-menu { display:block !important; animation:gdpDropFade .22s ease forwards; }
+    .header-user-profile:hover .dropdown-menu,
+    .header-notification:hover .dropdown-menu { 
+        display:block !important; 
+        animation:gdpDropFade .22s ease forwards; 
+    }
 }
 @keyframes gdpDropFade { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 
@@ -439,11 +354,7 @@
 }
 .bg-light-danger { background-color: rgba(220, 38, 38, 0.1) !important; color: #DC2626 !important; }
 .bg-light-warning { background-color: rgba(217, 119, 6, 0.1) !important; color: #D97706 !important; }
-.header-notification .pc-head-link:hover {
-    transform: translateY(-6px) scale(1.025) !important;
-    border-color: var(--bs-primary, #0d6efd) !important;
-    box-shadow: 0 16px 32px rgba(13,110,253,.3) !important;
-}
+/* Dropdown hover diatur via media query di atas */
 </style>
 
 <script>
