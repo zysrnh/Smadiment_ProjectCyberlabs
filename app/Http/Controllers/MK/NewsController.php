@@ -645,40 +645,21 @@ public function articlesData(Request $request)
             return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
         }
 
-        // ✅ Loop fetch sampai semua artikel terambil dari MK API
-        $allArticles = [];
-        $offset      = $start;
-        $batchSize   = 1000; // MK API max per request
+        // Fetch single batch of 100 for stability as requested
+        $batch = $this->mkClient->articles(
+            $projectId,
+            $media,
+            $startDate,
+            $endDate,
+            0,    // sentiment_id
+            23,   // end_hour
+            $start,
+            100,  // limit to 100
+            false // no quotes
+        );
 
-        do {
-            $batch = $this->mkClient->articles(
-                $projectId,
-                $media,
-                $startDate,
-                $endDate,
-                0,          // sentiment_id (0 = all)
-                23,         // end_hour
-                $offset,    // offset
-                $batchSize, // rows per batch
-                true        // include content
-            );
-
-            $batch = is_array($batch) ? array_values($batch) : [];
-
-            if (empty($batch)) break;
-
-            $allArticles = array_merge($allArticles, $batch);
-            $offset     += count($batch);
-
-            Log::info("📄 Articles batch fetched", [
-                'offset'      => $offset,
-                'batch_count' => count($batch),
-                'total_so_far' => count($allArticles),
-            ]);
-
-        } while (count($batch) === $batchSize && count($allArticles) < $maxRows);
-
-        Log::info("✅ Total articles fetched", ['total' => count($allArticles)]);
+        $allArticles = $this->extractArray($batch);
+        Log::info("✅ Articles fetched (single batch)", ['total' => count($allArticles)]);
 
         $totalQuotesBeforeFilter = 0;
         $totalQuotesAfterFilter  = 0;

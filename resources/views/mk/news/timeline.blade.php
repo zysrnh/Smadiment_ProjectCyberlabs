@@ -1,6 +1,6 @@
 @extends('mk.layouts.app')
 
-@section('title', 'Mentions Timeline - SMADIMENT')
+@section('title', 'News Mention - SMADIMENT')
 
 @section('styles')
 <style>
@@ -214,7 +214,7 @@ body.is-exporting .exp-icon {
 @media(max-width:640px){.do-panel{width:100vw}.mt-tabs{flex-wrap:wrap}.mt-tab-btn{flex:unset;min-width:calc(50% - 4px)}}
 </style>
 @endsection
-@section('page-title', 'Mentions Timeline')
+@section('page-title', 'News Mention')
 
 @section('content')
 @php
@@ -287,9 +287,9 @@ body.is-exporting .exp-icon {
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
-                            <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
+                            <p class="mb-1 text-white text-opacity-75 f-12">Total News</p>
                             <h3 class="mb-0 text-white f-w-300" id="kpiTotal">—</h3>
-                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub"><i class="ph ph-chart-bar me-1"></i>Loading...</p>
+                            <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub"><i class="ph ph-newspaper me-1"></i>Online News Mentions</p>
                         </div>
                         <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div>
                     </div>
@@ -319,7 +319,7 @@ body.is-exporting .exp-icon {
                 <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div class="d-flex align-items-center gap-2">
                         <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-line f-18 text-primary"></i></div>
-                        <div><h6 class="mb-0">Mentions Trend</h6><small class="text-muted">Daily volume per platform</small></div>
+                        <div><h6 class="mb-0">News Trend</h6><small class="text-muted">Daily news volume</small></div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge bg-light-primary text-primary" id="trendBadge">Loading...</span>
@@ -344,7 +344,7 @@ body.is-exporting .exp-icon {
                 <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div class="d-flex align-items-center gap-2">
                         <div class="avtar avtar-xs bg-light-success rounded"><i class="ph ph-chart-bar f-18 text-success"></i></div>
-                        <div><h6 class="mb-0">Platform Distribution</h6><small class="text-muted">Total mentions per platform</small></div>
+                        <div><h6 class="mb-0">Sentiment Distribution</h6><small class="text-muted">Sentiment breakdown for news</small></div>
                     </div>
                     <div data-html2canvas-ignore="true" class="d-flex gap-1">
                         <button class="card-exp-btn card-exp-btn-pdf" onclick="MTExport.runCard('card-export-dist','distribution','pdf',this)"><i class="ph ph-file-pdf exp-icon"></i><span class="exp-spinner"></span></button>
@@ -362,7 +362,8 @@ body.is-exporting .exp-icon {
     </div>
 </div>
 
-{{-- Platform Tabs --}}
+{{-- Tabs removed to focus only on News --}}
+<div style="display:none">
 <div class="mt-tabs">
     <button class="mt-tab-btn active" id="tab-all"    onclick="MTTab.show('all')"><i class="ph ph-globe"></i> All</button>
     <button class="mt-tab-btn"        id="tab-doc"    onclick="MTTab.show('doc')"><i class="ph ph-newspaper"></i> News</button>
@@ -371,6 +372,7 @@ body.is-exporting .exp-icon {
     <button class="mt-tab-btn"        id="tab-ig"     onclick="MTTab.show('ig')"><i class="ph ph-instagram-logo"></i> Instagram</button>
     <button class="mt-tab-btn"        id="tab-ytb"    onclick="MTTab.show('ytb')"><i class="ph ph-youtube-logo"></i> YouTube</button>
     <button class="mt-tab-btn"        id="tab-tiktok" onclick="MTTab.show('tiktok')"><i class="ph ph-tiktok-logo"></i> TikTok</button>
+</div>
 </div>
 
 {{-- Mentions List --}}
@@ -460,7 +462,7 @@ const numK = n  => parseInt(n||0).toLocaleString('id-ID');
 const esc  = s  => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const Store = { all:[], doc:[], twit:[], fb:[], ig:[], ytb:[], tiktok:[] };
 const _mtCache = {};
-let _activeTab='all', _page=1, _trendChart=null, _barChart=null, _trendRaw=[];
+let _activeTab='doc', _page=1, _trendChart=null, _barChart=null, _trendRaw=[];
 
 /* ── Normalise sentiment ── */
 function _normSent(item) {
@@ -597,7 +599,7 @@ const MTData={
         const ctn = _$('listContainer');
         if(ctn) ctn.innerHTML = '<div class="spinner-state"><div class="spin-ring"></div><span>Memuat data...</span></div>';
 
-        // 1. Fetch Trend Data for Charts & KPIs
+        // 1. Fetch Trend Data
         try {
             const cleanSd = String(MTCfg.sd).trim().replace(/\s+/g,'-'), cleanEd = String(MTCfg.ed).trim().replace(/\s+/g,'-');
             const tRes = await fetch(`/mk/api/media-statistic/trend-mentions?project_id=${MTCfg.pid}&start_date=${cleanSd}&end_date=${cleanEd}`);
@@ -605,19 +607,16 @@ const MTData={
             _trendRaw = tJson.data || [];
             this._updateKPIsFromTrend(_trendRaw);
             this._renderTrend();
-            this._renderBar();
         } catch(e) { console.warn("Trend fetch failed", e); }
 
-        // 2. Fetch Mentions for List (Original Logic)
-        const results=await Promise.allSettled(PLAT_KEYS.map(k=>_mtFetchOne(k,MTCfg.pid,MTCfg.sd,MTCfg.ed)));
-        PLAT_KEYS.forEach((k,i)=>{
-            const raw=results[i].status==='fulfilled'?results[i].value:[];
-            Store[k]=raw.map(it=>_normItem(it,k));
-        });
-        Store.all=PLAT_KEYS.reduce((acc,k)=>acc.concat(Store[k]),[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+        // 2. Fetch News Mentions
+        const newsItems = await _mtFetchOne('doc', MTCfg.pid, MTCfg.sd, MTCfg.ed);
+        Store.doc = newsItems.map(it => _normItem(it, 'doc'));
+        Store.all = Store.doc; // Sync all to doc
         
         this._renderList();
         this._updateKPIs();
+        this._renderBar(); // Sentiment chart depends on Store.all
         if(_$('listBadge')) _$('listBadge').textContent='';
     },
     _updateKPIsFromTrend(raw){
@@ -691,7 +690,7 @@ const MTData={
             const [y,m,d] = ds.split('-');
             return parseInt(d)+'/'+parseInt(m);
         });
-        const datasets={}; PLAT_KEYS.forEach(k=>{datasets[k]=new Array(dates.length).fill(0);});
+        const datasets={}; PLAT_KEYS.concat(['doc']).forEach(k=>{datasets[k]=new Array(dates.length).fill(0);});
         
         if(hasTrendData) {
             _trendRaw.forEach(p => {
@@ -719,21 +718,42 @@ const MTData={
         if(_trendChart){try{_trendChart.destroy();}catch(e){}_trendChart=null;}
         el.style.display='block';if(ld)ld.classList.add('hidden');
 
-        const seriesArr=PLAT_KEYS.map(k=>({name:PLAT[k].label,data:datasets[k]})).filter(s=>s.data.some(v=>v>0));
-        const colorsArr=seriesArr.map(s=>{const k=PLAT_KEYS.find(k=>PLAT[k].label===s.name);return k?PLAT[k].color:'#94a3b8';});
+        // Process Series for News (doc)
+        const newsItems = Store.doc || [];
+        const posVals = new Array(dates.length).fill(0);
+        const negVals = new Array(dates.length).fill(0);
+        const neuVals = new Array(dates.length).fill(0);
+        const totVals = datasets['doc'] || new Array(dates.length).fill(0);
+
+        newsItems.forEach(m => {
+            const day = parseDate(m.date);
+            const idx = dates.indexOf(day);
+            if (idx >= 0) {
+                if (m.sentiment === 'pos') posVals[idx]++;
+                else if (m.sentiment === 'neg') negVals[idx]++;
+                else if (m.sentiment === 'neu') neuVals[idx]++;
+            }
+        });
+
+        const series = [
+            { name: 'Total',    data: totVals },
+            { name: 'Positive', data: posVals },
+            { name: 'Negative', data: negVals },
+            { name: 'Neutral',  data: neuVals }
+        ];
+        const colors = ['#4680ff', '#10B981', '#EF4444', '#94A3B8'];
+
         _trendChart=new ApexCharts(el,{
-            chart:{type:'area',height:340,fontFamily:'inherit',background:'transparent',toolbar:{show:false},
-                events:{click:(e,ctx,cfg)=>{
-                    if(e&&e.target&&e.target.closest&&e.target.closest('.apexcharts-legend')) return;
-                    if(cfg&&cfg.seriesIndex>=0&&seriesArr[cfg.seriesIndex]){const s=seriesArr[cfg.seriesIndex];const pk=PLAT_KEYS.find(k=>PLAT[k].label===s.name);if(pk&&Store[pk].length)MTPanelNew.open(Store[pk],pk);}else if(Store.all.length)MTPanelNew.open(Store.all,'all');}}},
-            series:seriesArr,colors:colorsArr,
+            chart:{type:'area',height:340,fontFamily:'inherit',background:'transparent',toolbar:{show:false},animations:{enabled:false}},
+            series:series,colors:colors,
             xaxis:{categories:xLabels,axisBorder:{show:false},axisTicks:{show:false},labels:{style:{fontFamily:'inherit',fontSize:'11px',fontWeight:600,colors:'#94A3B8'}}},
             yaxis:{labels:{formatter:v=>numK(v),style:{fontFamily:'inherit',fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},axisBorder:{show:false},axisTicks:{show:false}},
-            fill:{opacity:0.3},stroke:{curve:'smooth',width:2.5},
-            markers:{size:dates.length<=32?3:0,strokeWidth:1,strokeColors:'#fff',hover:{size:5}},
-            dataLabels:{enabled:true,formatter:v=>v>10?numF(v):'',style:{fontSize:'9px',fontFamily:'inherit',fontWeight:'700'},background:{enabled:true,borderRadius:3,borderWidth:0,padding:3,opacity:0.9},offsetY:-5},
+            fill:{opacity:0.3, type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05, stops: [20, 100] }},
+            stroke:{curve:'smooth',width:2.5},
+            markers:{size:dates.length<=31?5:3,strokeWidth:2,strokeColors:'#fff',hover:{size:7}},
+            dataLabels:{enabled:dates.length<=30,enabledOnSeries:[0],formatter:v=>v>0?numF(v):'',style:{fontSize:'9px',fontFamily:'inherit',fontWeight:'700'},background:{enabled:true,borderRadius:3,padding:3,opacity:0.9,borderWidth:0},offsetY:-8},
             grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}}},
-            legend:{position:'bottom',horizontalAlign:'left',fontFamily:'inherit',fontSize:'11px',fontWeight:'600',labels:{colors:'#94A3B8'},markers:{width:9,height:9,radius:50},itemMargin:{horizontal:14,vertical:4},onItemClick:{toggleDataSeries:true}},
+            legend:{position:'bottom',horizontalAlign:'left',fontFamily:'inherit',fontSize:'11px',fontWeight:'600',labels:{colors:'#94A3B8'},markers:{width:9,height:9,radius:50},itemMargin:{horizontal:14,vertical:4}},
             tooltip:{shared:false,intersect:true,style:{fontFamily:'inherit',fontSize:'12px'},y:{formatter:v=>numF(v)+' mentions'}},
         });
         _trendChart.render();
@@ -747,36 +767,44 @@ const MTData={
     _renderBar(){
         const el=_$('barChart'),ld=_$('barLoading');if(!el)return;
         
-        let platData = [];
-        if(_trendRaw && _trendRaw.length > 0) {
-            platData = _trendRaw.map(p => {
-                let key = p.key;
-                if(key==='twitter') key='twit';
-                if(key==='facebook') key='fb';
-                if(key==='instagram') key='ig';
-                if(key==='youtube') key='ytb';
-                
-                let sum = 0; (p.data || []).forEach(d => sum += (d.count || 0));
-                return { name: PLAT[key]?.label || p.label, value: sum, color: PLAT[key]?.color || p.color, key: key };
-            }).sort((a,b)=>b.value-a.value);
-        } else {
-            platData = PLAT_KEYS.map(k=>({name:PLAT[k].label,value:Store[k].length,color:PLAT[k].color,key:k})).sort((a,b)=>b.value-a.value);
-        }
+        const all = Store.all;
+        const pos = all.filter(m=>m.sentiment==='pos').length;
+        const neg = all.filter(m=>m.sentiment==='neg').length;
+        const neu = all.length - pos - neg;
+        
+        const data = [
+            { name: 'Positive', value: pos, itemStyle: { color: '#10B981' } },
+            { name: 'Neutral',  value: neu, itemStyle: { color: '#94A3B8' } },
+            { name: 'Negative', value: neg, itemStyle: { color: '#EF4444' } }
+        ].filter(d => d.value > 0);
 
-        const total=platData.reduce((s,d)=>s+d.value,0);if(!total){if(ld)ld.classList.add('hidden');return;}
+        if(!all.length){if(ld)ld.classList.add('hidden');return;}
         if(_barChart){try{_barChart.dispose();}catch(e){}}
         el.style.display='block';_barChart=echarts.init(el,null,{renderer:'canvas'});
-        window.addEventListener('resize',()=>{try{_barChart.resize();}catch(e){}});
-        _barChart.setOption({animation:true,animationDuration:500,animationEasing:'cubicOut',backgroundColor:'transparent',
-            tooltip:{trigger:'item',backgroundColor:'rgba(15,23,42,.92)',borderColor:'transparent',borderRadius:8,padding:[8,12],textStyle:{color:'#e2e8f0',fontFamily:'inherit',fontSize:12},formatter:p=>'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+p.color+';margin-right:6px;"></span>'+esc(p.name)+' <b style="margin-left:8px;">'+numF(p.value)+'</b> <span style="color:#94a3b8;font-size:10px;">('+((p.value/total)*100).toFixed(1)+'%)</span>'},
-            grid:{top:10,right:30,bottom:28,left:80},
-            xAxis:{type:'value',axisLine:{show:false},axisTick:{show:false},splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}},axisLabel:{fontSize:10,color:'#94a3b8',formatter:numF}},
-            yAxis:{type:'category',data:platData.map(d=>d.name).reverse(),axisLine:{show:false},axisTick:{show:false},axisLabel:{fontSize:11,fontWeight:600,color:'#64748b'}},
-            series:[{type:'bar',data:platData.map(d=>({value:d.value,itemStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:d.color},{offset:1,color:d.color+'99'}]}}})).reverse(),barWidth:18,borderRadius:[0,6,6,0],label:{show:true,position:'right',formatter:p=>numF(p.value),fontSize:10,fontWeight:700,color:'#fff',backgroundColor:'inherit',padding:[3,6],borderRadius:4,distance:6}}],
-            graphic:[]
+        
+        _barChart.setOption({
+            animation:false,
+            tooltip:{
+                trigger:'item', backgroundColor:'rgba(15,23,42,.95)', borderRadius:8, padding:[10,14],
+                textStyle:{color:'#fff', fontFamily:'inherit', fontSize:12},
+                formatter: p => `<div style="font-weight:700;margin-bottom:4px;">${p.name}</div>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color}"></span>
+                                    <span>${numF(p.value)} articles</span>
+                                    <span style="color:#94a3b8">(${p.percent}%)</span>
+                                </div>`
+            },
+            legend: { bottom: 0, left: 'center', itemWidth: 10, itemHeight: 10, textStyle: { fontSize: 11, fontWeight: 600, color: '#64748B' } },
+            series:[{
+                name:'Sentiment', type:'pie', radius:['45%', '70%'], avoidLabelOverlap:false,
+                itemStyle:{ borderRadius:8, borderColor:'#fff', borderWidth:2 },
+                label:{ show:false },
+                emphasis:{ label:{ show:true, fontSize:14, fontWeight:'bold', formatter: '{b}\n{d}%' } },
+                data: data
+            }]
         });
-        _barChart.on('click',p=>{const pk=PLAT_KEYS.find(k=>PLAT[k].label===p.name);if(pk&&Store[pk].length)MTPanelNew.open(Store[pk],pk);});
-        if(ld)ld.classList.add('hidden');requestAnimationFrame(()=>{_barChart.resize();});
+        if(ld)ld.classList.add('hidden');
+        window.addEventListener('resize', () => _barChart && _barChart.resize());
     },
     _getItems(){return _activeTab==='all'?Store.all:(Store[_activeTab]||[]);},
     _renderList(){
