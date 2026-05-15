@@ -81,7 +81,10 @@
                         // Set message and type based on actual remaining days
                         if ($shouldShow) {
                             $isExpiring = true;
-                            if ($remaining <= 1) {
+                            if ($remaining == 0) {
+                                $noticeMessage = "Your trial expires <strong>today</strong>! Please renew immediately to avoid service interruption.";
+                                $noticeType = 'danger';
+                            } elseif ($remaining == 1) {
                                 $noticeMessage = "Your trial expires <strong>tomorrow</strong>! Please renew to avoid service interruption.";
                                 $noticeType = 'danger';
                             } elseif ($remaining <= 7) {
@@ -115,19 +118,19 @@
                     </a>
                     <div class="dropdown-menu dropdown-menu-end pc-h-dropdown p-0" style="width: 320px;">
                         <div class="dropdown-header d-flex align-items-center justify-content-between py-3 px-4 border-bottom">
-                            <h6 class="mb-0 fw-bold">Notifications</h6>
+                            <h6 class="mb-0 fw-bold" style="font-size:15px; color:#1e293b;">Notifications</h6>
                             @if($hasNotification)
                                 @php
                                     $badgeClass = 'bg-light-warning text-warning';
                                     if ($noticeType == 'danger') $badgeClass = 'bg-light-danger text-danger';
                                     if ($noticeType == 'info')   $badgeClass = 'bg-light-info text-info';
                                 @endphp
-                                <span class="badge {{ $badgeClass }}">
-                                    {{ $noticeType == 'danger' ? 'Urgent' : ($noticeType == 'warning' ? 'Reminder' : 'Subscription') }}
+                                <span class="badge {{ $badgeClass }} px-2 py-1 rounded-2" style="font-size:11px; font-weight:700; letter-spacing:0.5px;">
+                                    {{ strtoupper($noticeType == 'danger' ? 'Urgent' : ($noticeType == 'warning' ? 'Reminder' : 'Subscription')) }}
                                 </span>
                             @endif
                         </div>
-                        <div class="notification-list py-2">
+                        <div class="notification-list">
                             @if($isExpiring)
                                 @php
                                     $iconClass = 'bg-light-warning text-warning';
@@ -135,27 +138,27 @@
                                     if ($noticeType == 'danger') { $iconClass = 'bg-light-danger text-danger'; $iconName = 'ph-warning-circle'; }
                                     if ($noticeType == 'info')   { $iconClass = 'bg-light-info text-info'; $iconName = 'ph-info'; }
                                 @endphp
-                                <div class="dropdown-item d-flex align-items-start gap-3 py-3 px-4">
-                                    <div class="{{ $iconClass }} p-2 rounded-3">
-                                        <i class="ph {{ $iconName }} fs-4"></i>
+                                <div class="d-flex align-items-start gap-3 py-4 px-4" style="background:#fff;">
+                                    <div class="{{ $iconClass }} p-2 rounded-3 d-flex align-items-center justify-content-center" style="width:42px; height:42px; flex-shrink:0;">
+                                        <i class="ph {{ $iconName }}" style="font-size: 22px;"></i>
                                     </div>
                                     <div>
-                                        <h6 class="mb-1 fw-bold" style="font-size: 14px;">Subscription Alert</h6>
-                                        <p class="text-muted mb-0" style="font-size: 13px; line-height: 1.5; white-space: normal;">{!! $noticeMessage !!}</p>
+                                        <h6 class="mb-1 fw-bold" style="font-size: 14px; color:#0f172a;">Subscription Alert</h6>
+                                        <p class="mb-0" style="font-size: 13px; line-height: 1.5; color:#64748b; white-space: normal;">{!! $noticeMessage !!}</p>
                                     </div>
                                 </div>
                             @endif
 
                             @if(!$hasNotification)
                                 <div class="text-center py-5">
-                                    <i class="ph ph-bell-slash text-muted mb-2" style="font-size: 40px;"></i>
-                                    <p class="text-muted small">No new notifications</p>
+                                    <i class="ph ph-bell-slash mb-2" style="font-size: 40px; color:#cbd5e1;"></i>
+                                    <p class="mb-0 fw-medium" style="font-size:13px; color:#94a3b8;">No new notifications</p>
                                 </div>
                             @endif
                         </div>
                         @if($hasNotification)
-                            <div class="dropdown-footer border-top text-center py-2 bg-light bg-opacity-50">
-                                <a href="{{ route('mk.profile') }}" class="text-primary fw-bold" style="font-size: 12px;">View Details</a>
+                            <div class="dropdown-footer border-top text-center py-3 bg-light bg-opacity-50" style="transition: all 0.2s;">
+                                <a href="{{ route('mk.profile') }}" class="fw-bold text-decoration-none" style="font-size: 13px; color: #038047;">View Details</a>
                             </div>
                         @endif
                     </div>

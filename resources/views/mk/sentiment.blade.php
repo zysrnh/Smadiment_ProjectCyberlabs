@@ -1059,13 +1059,18 @@
         stroke: { curve:'smooth', width:2.5 },
         markers: { size:5, strokeWidth:2, strokeColors:'#fff', hover:{ size:7 } },
         dataLabels: {
-          enabled: true,
+          enabled: xLabels.length <= 15,
           formatter: v => v > 0 ? numFmt(v) : '',
-          style: { fontSize:'10px', fontFamily:'inherit', fontWeight:'700' },
+          style: { fontSize:'8.5px', fontFamily:'inherit', fontWeight:'800' },
           background: { enabled:true, borderRadius:3, borderWidth:0, padding:3, opacity:0.9 },
           offsetY: -6,
         },
-        grid: { borderColor:'rgba(226,232,240,.55)', strokeDashArray:3, xaxis:{ lines:{ show:false } } },
+        grid: {
+          borderColor: 'rgba(226,232,240,.55)',
+          strokeDashArray: 3,
+          xaxis: { lines: { show: false } },
+          padding: { top: 15, right: 10, left: 10, bottom: 0 }
+        },
         legend: { position:'bottom', horizontalAlign:'left', fontFamily:'inherit', fontSize:'11px', fontWeight:'600', labels:{ colors:'#94A3B8' }, markers:{ width:9, height:9, radius:50 }, itemMargin:{ horizontal:14, vertical:4 } },
         tooltip: { shared:false, intersect:true, style:{ fontFamily:'inherit', fontSize:'12px' }, y:{ formatter:v => numFmt(v)+' mentions' } },
       });

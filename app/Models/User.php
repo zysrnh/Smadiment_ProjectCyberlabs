@@ -85,6 +85,6 @@ class User extends Authenticatable
             return true; // If no trial set, assume permanent access for now or handle differently
         }
 
-        return $this->trial_ends_at->isFuture();
+        return now()->lessThanOrEqualTo($this->trial_ends_at->endOfDay());
     }
 }

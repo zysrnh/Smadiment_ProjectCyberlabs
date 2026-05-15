@@ -864,7 +864,7 @@
                                             <div class="spin-ring"></div>
                                             <span>Loading chart...</span>
                                         </div>
-                                        <div id="chart-scroll-{{ $id }}" style="overflow-x:auto;overflow-y:hidden;width:100%;-webkit-overflow-scrolling:touch;">
+                                        <div id="chart-scroll-{{ $id }}" style="overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch;padding-top:10px;">
                                             <div id="chart-{{ $id }}" style="width:100%;height:280px;display:none;cursor:pointer;"></div>
                                         </div>
                                     </div>
@@ -1270,10 +1270,10 @@
     hover: { size: 8 }
 },
 dataLabels: {
-    enabled: totalPoints <= 31,         // ← dari 14 ke 31
+    enabled: totalPoints <= 15,
     formatter: v => v > 0 ? numK(v) : '',
-    offsetY: -8,
-    style: { fontSize: '9px', fontFamily: 'inherit', fontWeight: '800' },
+    offsetY: -6,
+    style: { fontSize: '8px', fontFamily: 'inherit', fontWeight: '800' },
     background: {
         enabled: true, foreColor: '#fff', padding: 3,
         borderRadius: 3, borderWidth: 0, opacity: 0.9,
@@ -1286,6 +1286,7 @@ dataLabels: {
                 axisBorder: { show: false },
                 axisTicks:  { show: false },
                 tickPlacement: 'on',
+                tooltip: { enabled: false },
                 labels: {
                     rotate:                -45,
                     rotateAlways:          totalPoints > 12,
@@ -1308,7 +1309,8 @@ dataLabels: {
             grid: {
                 borderColor:     'rgba(226,232,240,.55)',
                 strokeDashArray: 3,
-                xaxis: { lines: { show: false } }
+                xaxis: { lines: { show: false } },
+                padding: { top: 60, right: 10, left: 10, bottom: 0 }
             },
             legend: {
                 position:        'bottom',

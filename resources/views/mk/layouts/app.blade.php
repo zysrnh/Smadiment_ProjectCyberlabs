@@ -130,10 +130,9 @@
 
             @yield('content')
 
+            @include('mk.layouts.partials.footer')
         </div>
     </div>
-
-    @include('mk.layouts.partials.footer')
 
     {{-- -
     @include('mk.layouts.partials.customizer')
