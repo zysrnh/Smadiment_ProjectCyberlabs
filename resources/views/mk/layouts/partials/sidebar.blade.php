@@ -181,6 +181,7 @@
                     </a>
                 </li>
 
+                {{-- 
                 <li class="pc-item {{ request()->routeIs('mk.topic-map') ? 'active' : '' }}">
                     <a href="{{ route('mk.topic-map') }}{{ $qs }}" class="pc-link">
                         <span class="pc-micon"><i class="ph ph-globe-hemisphere-west"></i></span>
@@ -202,7 +203,6 @@
                     </a>
                 </li>
 
-                {{-- ── NEWS ── --}}
                 <li class="pc-item pc-caption">
                     <label>News</label>
                 </li>
@@ -232,12 +232,10 @@
                     </ul>
                 </li>
 
-                {{-- ── SOCIAL MEDIA ── --}}
                 <li class="pc-item pc-caption">
                     <label>Social Media</label>
                 </li>
 
-                {{-- X (Twitter) --}}
                 <li class="pc-item pc-hasmenu {{ $isXActive ? 'pc-trigger active' : '' }}">
                     <a href="#!" class="pc-link">
                         <span class="pc-micon">
@@ -274,7 +272,6 @@
                     </ul>
                 </li>
 
-                {{-- Facebook --}}
                 <li class="pc-item pc-hasmenu {{ $isFacebookActive ? 'pc-trigger active' : '' }}">
                     <a href="#!" class="pc-link">
                         <span class="pc-micon"><i class="ph ph-facebook-logo"></i></span>
@@ -300,7 +297,6 @@
                     </ul>
                 </li>
 
-                {{-- Instagram --}}
                 <li class="pc-item pc-hasmenu {{ $isInstagramActive ? 'pc-trigger active' : '' }}">
                     <a href="#!" class="pc-link">
                         <span class="pc-micon"><i class="ph ph-instagram-logo"></i></span>
@@ -326,7 +322,6 @@
                     </ul>
                 </li>
 
-                {{-- YouTube --}}
                 <li class="pc-item pc-hasmenu {{ $isYoutubeActive ? 'pc-trigger active' : '' }}">
                     <a href="#!" class="pc-link">
                         <span class="pc-micon"><i class="ph ph-youtube-logo"></i></span>
@@ -352,7 +347,6 @@
                     </ul>
                 </li>
 
-                {{-- TikTok --}}
                 <li class="pc-item pc-hasmenu {{ $isTiktokActive ? 'pc-trigger active' : '' }}">
                     <a href="#!" class="pc-link">
                         <span class="pc-micon"><i class="ph ph-tiktok-logo"></i></span>
@@ -377,6 +371,7 @@
                         </li>
                     </ul>
                 </li>
+                --}}
 
             </ul>
         </div>

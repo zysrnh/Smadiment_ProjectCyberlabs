@@ -1059,11 +1059,12 @@
         stroke: { curve:'smooth', width:2.5 },
         markers: { size:5, strokeWidth:2, strokeColors:'#fff', hover:{ size:7 } },
         dataLabels: {
-          enabled: xLabels.length <= 15,
+          enabled: xLabels.length <= 30,
+          enabledOnSeries: xLabels.length > 10 ? [0] : undefined,
           formatter: v => v > 0 ? numFmt(v) : '',
-          style: { fontSize:'8.5px', fontFamily:'inherit', fontWeight:'800' },
+          style: { fontSize:'10px', fontFamily:'inherit', fontWeight:'800' },
           background: { enabled:true, borderRadius:3, borderWidth:0, padding:3, opacity:0.9 },
-          offsetY: -6,
+          offsetY: -8,
         },
         grid: {
           borderColor: 'rgba(226,232,240,.55)',
@@ -1150,7 +1151,7 @@
             name:'Negative', type:'bar', stack:'s',
             barMaxWidth: isHour ? 16 : 56,
             data: negData.map((v,i) => ({ value:v, itemStyle:{color:'#ef4444',borderRadius:[4,4,0,0]} })),
-            label: { show:true, position:'top', fontFamily:"'Poppins',sans-serif", fontWeight:'700', fontSize: isHour ? 8 : 10, color:'#64748b', rotate: isHour ? 45 : 0, formatter:p=>totals[p.dataIndex]>0?numK(totals[p.dataIndex]):'' },
+            label: { show:true, position:'top', fontFamily:"'Poppins',sans-serif", fontWeight:'700', fontSize: isHour ? 10 : 12, color:'#64748b', rotate: isHour ? 45 : 0, formatter:p=>totals[p.dataIndex]>0?numK(totals[p.dataIndex]):'' },
             emphasis: { focus:'series' }
           }
         ]
