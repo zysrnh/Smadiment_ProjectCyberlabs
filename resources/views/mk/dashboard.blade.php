@@ -1233,7 +1233,7 @@
                 fontFamily: 'inherit',
                 background: 'transparent',
                 toolbar:    { show: false },
-                animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 1000 } },
+                animations: { enabled: false },
                 events: {
                     click: (_e, _ctx, cfg) => {
                         let sdStr = null, edStr = null;
@@ -1263,21 +1263,22 @@
                 { name: 'Neutral',  data: tl.sentiment?.neutral  || [] },
             ],
             colors: ['#4680ff', '#10B981', '#EF4444', '#94A3B8'],
-          markers: {
-    size: totalPoints <= 31 ? 6 : 3,   // ← dari 14 ke 31, dan fallback 3 bukan 0
+markers: {
+    size: totalPoints <= 31 ? 5 : 3,
     strokeWidth: 2,
     strokeColors: '#fff',
-    hover: { size: 8 }
+    hover: { size: 7 }
 },
 dataLabels: {
-    enabled: totalPoints <= 15,
+    enabled: totalPoints <= 30,
+    enabledOnSeries: totalPoints > 7 ? [0] : [0, 1, 2, 3],
     formatter: v => v > 0 ? numK(v) : '',
-    offsetY: -6,
-    style: { fontSize: '8px', fontFamily: 'inherit', fontWeight: '800' },
+    offsetY: -8,
+    style: { fontSize: '9px', fontFamily: 'inherit', fontWeight: '700' },
     background: {
         enabled: true, foreColor: '#fff', padding: 3,
         borderRadius: 3, borderWidth: 0, opacity: 0.9,
-        dropShadow: { enabled: true, top: 1, left: 1, blur: 2, color: '#000', opacity: 0.15 }  // ← tambah ini
+        dropShadow: { enabled: false }
     }
 },
             xaxis: {
@@ -1310,7 +1311,7 @@ dataLabels: {
                 borderColor:     'rgba(226,232,240,.55)',
                 strokeDashArray: 3,
                 xaxis: { lines: { show: false } },
-                padding: { top: 60, right: 10, left: 10, bottom: 0 }
+                padding: { top: 20, right: 10, left: 10, bottom: 0 }
             },
             legend: {
                 position:        'bottom',

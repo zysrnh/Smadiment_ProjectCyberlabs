@@ -3,10 +3,11 @@
     $globalEndDate   = request()->get('end_date', now()->format('Y-m-d'));
 @endphp<style>
 .circle-btn {
-    width: 56px !important; height: 56px !important; border-radius: 50% !important; padding: 0 !important; border: 3px solid #e2e8f0 !important; box-shadow: 0 2px 10px rgba(0,0,0,.08) !important; background: #f1f5f9 !important; display: flex !important; align-items: center !important; justify-content: center !important; position: relative !important; overflow: hidden !important; transition: all 0.25s cubic-bezier(.34,1.56,.64,1) !important; color: #475569 !important; text-decoration: none !important;
+    width: 56px !important; height: 56px !important; border-radius: 50% !important; padding: 0 !important; border: 3px solid #e2e8f0 !important; box-shadow: 0 4px 15px rgba(0,0,0,.12) !important; background: #f1f5f9 !important; display: flex !important; align-items: center !important; justify-content: center !important; position: relative !important; overflow: hidden !important; transition: all 0.25s cubic-bezier(.34,1.56,.64,1) !important; color: #475569 !important; text-decoration: none !important; line-height: 1 !important;
 }
+.circle-btn i { line-height: 1 !important; display: flex !important; align-items: center; justify-content: center; }
 .circle-btn:hover {
-    background: #fff !important; transform: translateY(-6px) scale(1.025) !important; border-color: #038047 !important; color: #038047 !important; box-shadow: 0 16px 32px rgba(3, 128, 71, 0.15) !important;
+    background: #fff !important; transform: translateY(-4px) !important; border-color: #038047 !important; color: #038047 !important; box-shadow: 0 15px 30px rgba(3, 128, 71, 0.2) !important;
 }
 .circle-btn::before {
     content: ''; position: absolute; top: 0; bottom: 0; left: -100%; width: 60%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent); pointer-events: none; z-index: 1; transition: none;
@@ -20,10 +21,24 @@
 .header-notification .dropdown-menu {
     border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border-radius: 16px; overflow: hidden; margin-top: 10px !important;
 }
+.pc-header, .pc-header .header-wrapper {
+    overflow: visible !important;
+}
+.profile-avatar-img {
+    width: 100% !important; height: 100% !important; object-fit: cover !important;
+    border-radius: 50% !important; display: block !important;
+}
+.user-initials-avatar {
+    width: 100%; height: 100%; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #038047, #059669);
+    color: #fff; font-size: 16px; font-weight: 800;
+    font-family: inherit; letter-spacing: 0.5px; user-select: none;
+}
 </style>
 
 <header class="pc-header">
-    <div class="header-wrapper">
+    <div class="header-wrapper ps-4 pe-4 py-2" style="min-height: 72px; display: flex; align-items: center;">
 
         {{-- [Mobile / Collapse Controls] --}}
         <div class="me-auto pc-mob-drp">
@@ -42,8 +57,8 @@
         </div>
 
         {{-- [Right Side Actions] --}}
-        <div class="ms-auto">
-            <ul class="list-unstyled">
+        <div class="ms-auto d-flex align-items-center">
+            <ul class="list-unstyled d-flex align-items-center gap-2 mb-0">
 
                 {{-- Date Range Picker Trigger – circle icon, same size as avatar --}}
                 <li class="pc-h-item gdp-trigger-item d-none d-md-inline-flex" style="position:relative;z-index:50;">
@@ -53,7 +68,7 @@
                        class="circle-btn"
                        title="{{ $globalStartDate }} – {{ $globalEndDate }}"
                        aria-label="Open date range picker">
-                        <i class="ph ph-calendar-blank fs-4"></i>
+                        <i class="ph ph-calendar-blank" style="font-size: 32px;"></i>
                     </a>
                 </li>
 
@@ -81,8 +96,8 @@
                         // Set message and type based on actual remaining days
                         if ($shouldShow) {
                             $isExpiring = true;
-                            if ($remaining == 0) {
-                                $noticeMessage = "Your trial expires <strong>today</strong>! Please renew immediately to avoid service interruption.";
+                            if ($remaining <= 0) {
+                                $noticeMessage = "Your trial has <strong>expired</strong>! Please contact admin immediately to reactivate.";
                                 $noticeType = 'danger';
                             } elseif ($remaining == 1) {
                                 $noticeMessage = "Your trial expires <strong>tomorrow</strong>! Please renew to avoid service interruption.";
@@ -106,7 +121,7 @@
                     <a class="dropdown-toggle arrow-none me-0 circle-btn" 
                        data-bs-toggle="dropdown" href="#" role="button"
                        aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
-                        <i class="ph ph-bell fs-4"></i>
+                        <i class="ph ph-bell" style="font-size: 32px;"></i>
                         @if($hasNotification)
                             @php
                                 $badgeColor = '#ff9f43'; // Default warning
@@ -169,14 +184,23 @@
                     <a class="dropdown-toggle arrow-none me-0 circle-btn"
                        data-bs-toggle="dropdown" href="#" role="button"
                        aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
-                        @if(auth()->check() && auth()->user()->avatar)
-                            <img src="{{ asset(ltrim(auth()->user()->avatar, '/')) }}"
+                        @php
+                            $authUser = auth()->user();
+                            $userName = $authUser->name ?? 'Admin';
+                            $initials = strtoupper(substr($userName, 0, 1));
+                            if (str_contains($userName, ' ')) {
+                                $parts = explode(' ', trim($userName));
+                                $initials = strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
+                            }
+                        @endphp
+                        @if($authUser->avatar)
+                            <img src="{{ asset(ltrim($authUser->avatar, '/')) }}"
                                  alt="User Avatar"
                                  class="profile-avatar-img"
-                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
-                            <i class="ph ph-user-circle fallback-icon" style="display:none; font-size:38px;"></i>
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="user-initials-avatar" style="display:none;">{{ $initials }}</div>
                         @else
-                            <i class="ph ph-user-circle fallback-icon" style="font-size:38px;"></i>
+                            <div class="user-initials-avatar">{{ $initials }}</div>
                         @endif
                     </a>
                     <div class="dropdown-menu dropdown-menu-end pc-h-dropdown">
