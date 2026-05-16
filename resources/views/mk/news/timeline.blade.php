@@ -656,120 +656,117 @@ const MTData={
         if(_$('kpiNeg')) _$('kpiNeg').textContent=numF(neg);
         if(_$('kpiNegSub')) _$('kpiNegSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(neg)+'% of total';
     },
-    _renderTrend(){
-        const el=_$('trendChart'),ld=_$('trendLoading');if(!el)return;
-        const parseDate = s => {
-            if(!s) return null;
-            const clean = String(s).trim().split('T')[0].split(' ')[0].replace(/\//g,'-');
-            if(/^\d{4}-\d{2}-\d{2}$/.test(clean)) return clean;
-            try {
-                const d = new Date(s.replace(/-/g,'/'));
-                if(!isNaN(d.getTime())) return d.toISOString().split('T')[0];
-            } catch(e) {}
-            return null;
-        };
-        const startISO = parseDate(MTCfg.sd), endISO = parseDate(MTCfg.ed);
-        if(!startISO || !endISO){ if(ld)ld.classList.add('hidden'); return; }
-        
+    _renderTrend() {
+        const el = _$('trendChart'), ld = _$('trendSkel');
+        if (!el) return;
+
+        const curr = new Date(MTCfg.sd), end = new Date(MTCfg.ed);
         const dates = [];
-        let curr = new Date(startISO + 'T00:00:00');
-        const stop = new Date(endISO + 'T00:00:00');
-        while(curr <= stop) {
+        while(curr <= end){
             const y = curr.getFullYear(), m = String(curr.getMonth()+1).padStart(2,'0'), d = String(curr.getDate()).padStart(2,'0');
             dates.push(`${y}-${m}-${d}`);
             curr.setDate(curr.getDate() + 1);
         }
 
-        const hasTrendData = (_trendRaw && _trendRaw.length > 0);
-        if(!dates.length || (!hasTrendData && !Store.all.length)){ 
-            if(ld)ld.classList.add('hidden'); 
-            return; 
-        }
+        if(!dates.length){ if(ld)ld.classList.add('hidden'); return; }
 
-        const xLabels=dates.map(ds=>{
+        const xLabels = dates.map(ds => {
             const [y,m,d] = ds.split('-');
-            return parseInt(d)+'/'+parseInt(m);
+            return parseInt(d) + '/' + parseInt(m);
         });
-        const datasets={}; PLAT_KEYS.concat(['doc']).forEach(k=>{datasets[k]=new Array(dates.length).fill(0);});
-        
-        if(hasTrendData) {
+
+        // 1. Get Total Trend from API
+        const totVals = new Array(dates.length).fill(0);
+        if(_trendRaw) {
             _trendRaw.forEach(p => {
-                let key = p.key;
-                if(key==='twitter') key='twit';
-                if(key==='facebook') key='fb';
-                if(key==='instagram') key='ig';
-                if(key==='youtube') key='ytb';
-                
-                if(datasets[key]) {
+                if(p.key === 'DOC' || p.key === 'doc') {
                     (p.data || []).forEach(pt => {
                         const idx = dates.indexOf(pt.date);
-                        if(idx >= 0) datasets[key][idx] = pt.count || 0;
+                        if(idx >= 0) totVals[idx] = pt.count || 0;
                     });
                 }
             });
-        } else {
-            Store.all.forEach(m => {
-                const day = parseDate(m.date);
-                const idx = dates.indexOf(day);
-                if(idx >= 0 && datasets[m._platform]) datasets[m._platform][idx]++;
-            });
         }
 
-        if(_trendChart){try{_trendChart.destroy();}catch(e){}_trendChart=null;}
-        el.style.display='block';if(ld)ld.classList.add('hidden');
+        // 2. Calculate Proportional Sentiment from fetched articles (Store.all)
+        const all = Store.all;
+        let pRatio = 0, nRatio = 0, uRatio = 0;
+        if(all.length > 0) {
+            const pCount = all.filter(m => m.sentiment === 'pos').length;
+            const nCount = all.filter(m => m.sentiment === 'neg').length;
+            const uCount = all.length - pCount - nCount;
+            pRatio = pCount / all.length;
+            nRatio = nCount / all.length;
+            uRatio = uCount / all.length;
+        }
 
-        // Process Series for News (doc)
-        const newsItems = Store.doc || [];
-        const posVals = new Array(dates.length).fill(0);
-        const negVals = new Array(dates.length).fill(0);
-        const neuVals = new Array(dates.length).fill(0);
-        const totVals = datasets['doc'] || new Array(dates.length).fill(0);
+        const posVals = totVals.map(v => Math.round(v * pRatio));
+        const negVals = totVals.map(v => Math.round(v * nRatio));
+        const neuVals = totVals.map(v => Math.round(v * uRatio));
 
-        newsItems.forEach(m => {
-            const day = parseDate(m.date);
-            const idx = dates.indexOf(day);
-            if (idx >= 0) {
-                if (m.sentiment === 'pos') posVals[idx]++;
-                else if (m.sentiment === 'neg') negVals[idx]++;
-                else if (m.sentiment === 'neu') neuVals[idx]++;
-            }
-        });
+        if(_trendChart){ try { _trendChart.destroy(); } catch(e){} }
+        el.innerHTML = '';
+        el.style.display = 'block';
 
-        const series = [
-            { name: 'Total',    data: totVals },
-            { name: 'Positive', data: posVals },
-            { name: 'Negative', data: negVals },
-            { name: 'Neutral',  data: neuVals }
-        ];
-        const colors = ['#4680ff', '#10B981', '#EF4444', '#94A3B8'];
+        const options = {
+            chart: {
+                type: 'area', height: 340, fontFamily: 'inherit', background: 'transparent',
+                toolbar: { show: false }, animations: { enabled: false }
+            },
+            series: [
+                { name: 'Total',    data: totVals },
+                { name: 'Positive', data: posVals },
+                { name: 'Negative', data: negVals },
+                { name: 'Neutral',  data: neuVals }
+            ],
+            colors: ['#4680ff', '#10B981', '#EF4444', '#94A3B8'],
+            fill: { opacity: 0.25, type: 'solid' },
+            stroke: { curve: 'smooth', width: 2.5 },
+            xaxis: {
+                categories: xLabels,
+                labels: { style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } },
+                axisBorder: { show: false }, axisTicks: { show: false }
+            },
+            yaxis: {
+                labels: { 
+                    formatter: v => numK(v),
+                    style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } 
+                },
+                axisBorder: { show: false }, axisTicks: { show: false }
+            },
+            markers: { size: 4, strokeWidth: 2, strokeColors: '#fff', hover: { size: 6 } },
+            dataLabels: {
+                enabled: xLabels.length <= 20,
+                enabledOnSeries: [0],
+                formatter: v => v > 0 ? numF(v) : '',
+                offsetY: -10,
+                style: { fontSize: '9px', fontWeight: '700' },
+                background: { enabled: true, padding: 3, borderRadius: 3, opacity: 0.9, borderWidth: 0 }
+            },
+            grid: { borderColor: 'rgba(226,232,240,0.5)', strokeDashArray: 3, padding: { top: 10, right: 10, bottom: 0, left: 10 } },
+            legend: { position: 'bottom', horizontalAlign: 'left', fontSize: '11px', fontWeight: 600, labels: { colors: '#94A3B8' }, markers: { width: 10, height: 10, radius: 10 } },
+            tooltip: { shared: false, intersect: true, y: { formatter: v => numF(v) + ' mentions' } }
+        };
 
-        _trendChart=new ApexCharts(el,{
-            chart:{type:'area',height:340,fontFamily:'inherit',background:'transparent',toolbar:{show:false},animations:{enabled:false}},
-            series:series,colors:colors,
-            xaxis:{categories:xLabels,axisBorder:{show:false},axisTicks:{show:false},labels:{style:{fontFamily:'inherit',fontSize:'11px',fontWeight:600,colors:'#94A3B8'}}},
-            yaxis:{labels:{formatter:v=>numK(v),style:{fontFamily:'inherit',fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},axisBorder:{show:false},axisTicks:{show:false}},
-            fill:{opacity:0.3, type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05, stops: [20, 100] }},
-            stroke:{curve:'smooth',width:2.5},
-            markers:{size:dates.length<=31?5:3,strokeWidth:2,strokeColors:'#fff',hover:{size:7}},
-            dataLabels:{enabled:dates.length<=30,enabledOnSeries:[0],formatter:v=>v>0?numF(v):'',style:{fontSize:'9px',fontFamily:'inherit',fontWeight:'700'},background:{enabled:true,borderRadius:3,padding:3,opacity:0.9,borderWidth:0},offsetY:-8},
-            grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}}},
-            legend:{position:'bottom',horizontalAlign:'left',fontFamily:'inherit',fontSize:'11px',fontWeight:'600',labels:{colors:'#94A3B8'},markers:{width:9,height:9,radius:50},itemMargin:{horizontal:14,vertical:4}},
-            tooltip:{shared:false,intersect:true,style:{fontFamily:'inherit',fontSize:'12px'},y:{formatter:v=>numF(v)+' mentions'}},
-        });
+        _trendChart = new ApexCharts(el, options);
         _trendChart.render();
-        const fmtB=ds=>{
+        
+        const fmtB = ds => {
             const [y,m,d] = ds.split('-');
             const dt = new Date(y, m-1, d);
             return parseInt(d)+' '+dt.toLocaleString('id-ID',{month:'short'});
         };
-        _$('trendBadge').textContent=fmtB(dates[0])+' - '+fmtB(dates[dates.length-1]);
+        if(_$('trendBadge')) _$('trendBadge').textContent = fmtB(dates[0])+' - '+fmtB(dates[dates.length-1]);
+        if(ld) ld.classList.add('hidden');
     },
-    _renderBar(){
-        const el=_$('barChart'),ld=_$('barLoading');if(!el)return;
+
+    _renderBar() {
+        const el = _$('barChart'), ld = _$('barLoading');
+        if(!el) return;
         
         const all = Store.all;
-        const pos = all.filter(m=>m.sentiment==='pos').length;
-        const neg = all.filter(m=>m.sentiment==='neg').length;
+        const pos = all.filter(m => m.sentiment === 'pos').length;
+        const neg = all.filter(m => m.sentiment === 'neg').length;
         const neu = all.length - pos - neg;
         
         const data = [
@@ -778,34 +775,43 @@ const MTData={
             { name: 'Negative', value: neg, itemStyle: { color: '#EF4444' } }
         ].filter(d => d.value > 0);
 
-        if(!all.length){if(ld)ld.classList.add('hidden');return;}
-        if(_barChart){try{_barChart.dispose();}catch(e){}}
-        el.style.display='block';_barChart=echarts.init(el,null,{renderer:'canvas'});
+        if(!all.length){ if(ld)ld.classList.add('hidden'); return; }
+        if(_barChart){ try { _barChart.dispose(); } catch(e){} }
+        
+        el.style.display = 'block';
+        _barChart = echarts.init(el, null, { renderer: 'canvas' });
         
         _barChart.setOption({
-            animation:false,
-            tooltip:{
-                trigger:'item', backgroundColor:'rgba(15,23,42,.95)', borderRadius:8, padding:[10,14],
-                textStyle:{color:'#fff', fontFamily:'inherit', fontSize:12},
+            animation: false,
+            tooltip: {
+                trigger: 'item', backgroundColor: '#1e293b', borderColor: '#334155', borderWidth: 1,
+                textStyle: { color: '#fff', fontSize: 12 },
                 formatter: p => `<div style="font-weight:700;margin-bottom:4px;">${p.name}</div>
                                 <div style="display:flex;align-items:center;gap:8px;">
                                     <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color}"></span>
-                                    <span>${numF(p.value)} articles</span>
+                                    <span>${numF(p.value)} mentions</span>
                                     <span style="color:#94a3b8">(${p.percent}%)</span>
                                 </div>`
             },
-            legend: { bottom: 0, left: 'center', itemWidth: 10, itemHeight: 10, textStyle: { fontSize: 11, fontWeight: 600, color: '#64748B' } },
-            series:[{
-                name:'Sentiment', type:'pie', radius:['45%', '70%'], avoidLabelOverlap:false,
-                itemStyle:{ borderRadius:8, borderColor:'#fff', borderWidth:2 },
-                label:{ show:false },
-                emphasis:{ label:{ show:true, fontSize:14, fontWeight:'bold', formatter: '{b}\n{d}%' } },
+            legend: { bottom: '0%', left: 'center', itemWidth: 10, itemHeight: 10, textStyle: { fontSize: 11, fontWeight: 600, color: '#64748B' } },
+            series: [{
+                name: 'Sentiment', type: 'pie', 
+                radius: ['35%', '55%'], center: ['50%', '45%'],
+                avoidLabelOverlap: true,
+                itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
+                label: { 
+                    show: true, position: 'outside', fontSize: 10, fontWeight: 700, color: '#64748b',
+                    formatter: '{b}\n{d}%'
+                },
+                emphasis: { label: { show: true, fontSize: 12, fontWeight: 800 } },
                 data: data
             }]
         });
-        if(ld)ld.classList.add('hidden');
+        
+        if(ld) ld.classList.add('hidden');
         window.addEventListener('resize', () => _barChart && _barChart.resize());
     },
+
     _getItems(){return _activeTab==='all'?Store.all:(Store[_activeTab]||[]);},
     _renderList(){
         const items=this._getItems(),listEl=_$('listContainer'),pagEl=_$('pagContainer');
