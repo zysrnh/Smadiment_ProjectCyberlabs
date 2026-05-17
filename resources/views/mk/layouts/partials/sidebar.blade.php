@@ -63,7 +63,7 @@
                     }
                 }
 
-                $statisticRoutes   = ['mk.media-statistic', 'mk.media-statistic.trend', 'mk.sentiment', 'mk.net-sentiment-score', 'mk.engagement', 'mk.interaction-sentiment'];
+                $statisticRoutes   = ['mk.media-statistic', 'mk.media-statistic.trend', 'mk.sentiment', 'mk.net-sentiment-score', 'mk.engagement', 'mk.interaction-sentiment', 'mk.engagement-sentiment'];
                 $newsRoutes        = ['mk.news.overview','mk.news.word-cloud','mk.news.top-publishers','mk.news.timeline','mk.news.articles','mk.news.ai-analysis','mk.news.topic-map'];
                 $xRoutes           = ['mk.x.overview','mk.x.most-status','mk.x.most-retweets','mk.x.most-engagement','mk.x.authors.demographics','mk.x.trending-topics','mk.x.top-hashtags','mk.x.trending-word-cloud','mk.x.shared-urls','mk.x.most-active-users','mk.x.top-influencers','mk.x.emotion-analysis','mk.x.ai-analysis'];
                 $facebookRoutes    = ['mk.facebook.overview','mk.facebook.trending-topics','mk.facebook.most-viewed-posts','mk.facebook.most-engagement','mk.facebook.geographic','mk.facebook.trending-word-cloud','mk.facebook.ai-analysis','mk.facebook.emotion-analysis','mk.facebook.top-hashtags','mk.facebook.authors.demographics'];
@@ -170,6 +170,9 @@
                         </li>
                         <li class="pc-item {{ request()->routeIs('mk.net-sentiment-score') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.net-sentiment-score') }}{{ $qs }}">Net Sentiment Score</a>
+                        </li>
+                        <li class="pc-item {{ request()->routeIs('mk.engagement-sentiment') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('mk.engagement-sentiment') }}{{ $qs }}">Engagement Sentiment</a>
                         </li>
                     </ul>
                 </li>

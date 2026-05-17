@@ -248,6 +248,9 @@ Route::prefix('mk')->name('mk.')->middleware(['auth', 'check.trial'])->group(fun
     Route::get('/net-sentiment-score',   [MediaStatisticController::class, 'netSentimentScorePage'])->name('net-sentiment-score');
     Route::get('/engagement',            [MediaStatisticController::class, 'engagementPage'])->name('engagement');
     Route::get('/interaction-sentiment', [MediaStatisticController::class, 'interactionSentimentPage'])->name('interaction-sentiment');
+    Route::get('/interaction_sentiment', [MediaStatisticController::class, 'interactionSentimentPage']);
+    Route::get('/engagement-sentiment',  [MediaStatisticController::class, 'engagementSentimentPage'])->name('engagement-sentiment');
+    Route::get('/engagement_sentiment',  [MediaStatisticController::class, 'engagementSentimentPage']);
     Route::get('/compare',               [CompareProjectController::class, 'index'])->name('compare.index');
     Route::get('/topic-map',             [TopicMapController::class, 'index'])->name('topic-map');
     Route::get('/trending-topic',          [TrendingTopicController::class, 'index'])->name('trending-topic');

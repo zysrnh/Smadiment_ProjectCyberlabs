@@ -34,6 +34,34 @@
 .sent-pos{background:#dcfce7;color:#15803d}
 .sent-neg{background:#fef2f2;color:#dc2626}
 .sent-neu{background:#f1f5f9;color:#64748b}
+
+/* ══ EXPORT STYLES ══ */
+.page-export-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:9px 14px; margin-bottom:20px; box-shadow:0 1px 2px rgba(0,0,0,0.05); }
+.page-export-bar-left { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:#475569; }
+.page-export-bar-left svg { width:16px; height:16px; stroke:#4361EE; fill:none; stroke-width:2.5; }
+.page-export-bar-right { display:flex; gap:8px; }
+.page-export-btn { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:6px; font-size:16px; cursor:pointer; transition:all .15s ease; border:1.5px solid transparent; font-family:inherit; }
+.page-export-btn-pdf { background:#fff3f3; color:#dc2626; border-color:#fca5a5; }
+.page-export-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.page-export-btn-img { background:rgba(67,97,238,.08); color:#4361EE; border-color:rgba(67,97,238,.2); }
+.page-export-btn-img:hover { background:#4361EE; color:#fff; border-color:#4361EE; }
+.page-export-btn:disabled { opacity:.55; cursor:not-allowed; pointer-events:none; }
+.page-export-btn .export-spinner { width:13px; height:13px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin .65s linear infinite; display:none; }
+.page-export-btn.exporting .export-spinner { display:inline-block; }
+.page-export-btn.exporting .export-icon { display:none; }
+.card-exp-btn { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:6px; font-size:14px; cursor:pointer; flex-shrink:0; transition:all .14s ease; border:1px solid transparent; font-family:inherit; background:transparent; }
+.card-exp-btn-pdf { color:#dc2626; border-color:#fca5a5; background:#fff3f3; }
+.card-exp-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.card-exp-btn-img { color:#4361EE; border-color:rgba(67,97,238,.2); background:rgba(67,97,238,.08); }
+.card-exp-btn-img:hover { background:#4361EE; color:#fff; border-color:#4361EE; }
+.card-exp-btn:disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+.card-exp-btn .export-spinner { width:11px; height:11px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin .65s linear infinite; display:none; }
+.card-exp-btn.exporting .export-spinner { display:inline-block; }
+.card-exp-btn.exporting .export-icon { display:none; }
+.export-toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:#0F172A; color:#fff; border-radius:6px; padding:10px 18px; font-size:12px; font-weight:600; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05); z-index:99999; opacity:0; pointer-events:none; transition:opacity .22s ease, transform .22s ease; display:flex; align-items:center; gap:8px; white-space:nowrap; }
+.export-toast.show    { opacity:1; transform:translateX(-50%) translateY(0); }
+.export-toast.success { background:#10B981; }
+.export-toast.error   { background:#dc2626; }
 </style>
 @endsection
 
@@ -42,7 +70,30 @@
 @section('content')
 @include('mk.layouts.partials.filter-datepicker')
 
+{{-- ════ PAGE EXPORT WRAPPER ════ --}}
 <div id="pageExportArea">
+
+{{-- ══ Page Export Toolbar ══ --}}
+<div class="page-export-bar" data-html2canvas-ignore="true">
+  <div class="page-export-bar-left">
+    <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+    <span style="font-weight:700;">Export Halaman</span>
+    <span class="badge bg-light-secondary text-muted ms-1" style="font-size:10px;">PDF 2 Hal · PNG</span>
+  </div>
+  <div class="page-export-bar-right">
+    <button type="button" class="page-export-btn page-export-btn-pdf" id="pageExportPdfBtn"
+            onclick="NVExport.run('pdf', this)" title="Export PDF 2 halaman">
+      <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+    </button>
+    <button type="button" class="page-export-btn page-export-btn-img" id="pageExportImgBtn"
+            onclick="NVExport.run('image', this)" title="Export PNG">
+      <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+    </button>
+  </div>
+</div>
+
+{{-- ════ HALAMAN 1 EXPORT ════ --}}
+<div id="exportPage1">
 
 {{-- KPI Cards - warna sama dengan Mention page --}}
 <div class="row mb-3">
@@ -97,13 +148,19 @@
 </div>
 
 {{-- Trend Chart --}}
-<div class="card mb-3 fade-up fade-up-d2">
+<div class="card mb-3 fade-up fade-up-d2" id="card-export-trend">
   <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
     <div class="d-flex align-items-center gap-2">
       <div class="avtar avtar-xs bg-light-primary rounded-circle"><i class="ph ph-chart-line f-18 text-primary"></i></div>
       <div><h6 class="mb-0">Mention Trend</h6><small class="text-muted">Tren mention berita online harian</small></div>
     </div>
-    <span class="badge bg-light-primary text-primary rounded-pill" id="trendBadge">Loading…</span>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-light-primary text-primary rounded-pill" id="trendBadge">Loading…</span>
+      <div class="d-flex gap-1" data-html2canvas-ignore="true">
+        <button class="card-exp-btn card-exp-btn-pdf" onclick="NVExport.runCard('card-export-trend','trend','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+        <button class="card-exp-btn card-exp-btn-img" onclick="NVExport.runCard('card-export-trend','trend','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+      </div>
+    </div>
   </div>
   <div class="card-body p-3">
     <div class="nv-loading" id="trendLoading"><div class="nv-spinner"></div><span>Memuat trend…</span></div>
@@ -113,12 +170,16 @@
 
 <div class="row mb-3">
   {{-- Sentiment Donut --}}
-  <div class="col-lg-5 fade-up fade-up-d3">
-    <div class="card h-100">
+  <div class="col-lg-12 fade-up fade-up-d3">
+    <div class="card h-100" id="card-export-donut">
       <div class="card-header d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-2">
           <div class="avtar avtar-xs bg-light-primary rounded-circle"><i class="ph ph-chart-donut f-18 text-primary"></i></div>
           <div><h6 class="mb-0">Sentiment Distribution</h6><small class="text-muted">Proporsi sentimen berita</small></div>
+        </div>
+        <div class="d-flex gap-1" data-html2canvas-ignore="true">
+          <button class="card-exp-btn card-exp-btn-pdf" onclick="NVExport.runCard('card-export-donut','donut','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+          <button class="card-exp-btn card-exp-btn-img" onclick="NVExport.runCard('card-export-donut','donut','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
         </div>
       </div>
       <div class="card-body p-3">
@@ -132,15 +193,29 @@
       </div>
     </div>
   </div>
+</div>
+
+</div>{{-- /exportPage1 --}}
+
+{{-- ════ HALAMAN 2 EXPORT ════ --}}
+<div id="exportPage2">
+
+<div class="row mb-3">
   {{-- Top Publishers --}}
-  <div class="col-lg-7 fade-up fade-up-d4">
-    <div class="card h-100">
+  <div class="col-lg-12 fade-up fade-up-d4">
+    <div class="card h-100" id="card-export-pub">
       <div class="card-header d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-2">
           <div class="avtar avtar-xs bg-light-primary rounded-circle"><i class="ph ph-buildings f-18 text-primary"></i></div>
           <div><h6 class="mb-0">Top Publishers</h6><small class="text-muted">Klik untuk buka website</small></div>
         </div>
-        <span class="badge bg-light-primary text-primary rounded-pill" id="pubBadge">Loading…</span>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-light-primary text-primary rounded-pill" id="pubBadge">Loading…</span>
+          <div class="d-flex gap-1" data-html2canvas-ignore="true">
+            <button class="card-exp-btn card-exp-btn-pdf" onclick="NVExport.runCard('card-export-pub','publishers','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+            <button class="card-exp-btn card-exp-btn-img" onclick="NVExport.runCard('card-export-pub','publishers','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+          </div>
+        </div>
       </div>
       <div class="card-body p-0" id="pubList" style="max-height:380px;overflow-y:auto">
         <div class="nv-loading"><div class="nv-spinner"></div><span>Memuat…</span></div>
@@ -150,27 +225,50 @@
 </div>
 
 {{-- Recent Articles --}}
-<div class="card mb-3 fade-up fade-up-d4">
+<div class="card mb-3 fade-up fade-up-d4" id="card-export-art">
   <div class="card-header d-flex align-items-center justify-content-between">
     <div class="d-flex align-items-center gap-2">
       <div class="avtar avtar-xs bg-light-primary rounded-circle"><i class="ph ph-article f-18 text-primary"></i></div>
       <div><h6 class="mb-0">Recent Articles</h6><small class="text-muted">Artikel berita terbaru</small></div>
     </div>
-    <span class="badge bg-light-primary text-primary rounded-pill" id="artBadge">Loading…</span>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-light-primary text-primary rounded-pill" id="artBadge">Loading…</span>
+      <div class="d-flex gap-1" data-html2canvas-ignore="true">
+        <button class="card-exp-btn card-exp-btn-pdf" onclick="NVExport.runCard('card-export-art','articles','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+        <button class="card-exp-btn card-exp-btn-img" onclick="NVExport.runCard('card-export-art','articles','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+      </div>
+    </div>
   </div>
   <div class="card-body p-0" id="artList">
     <div class="nv-loading"><div class="nv-spinner"></div><span>Memuat artikel…</span></div>
   </div>
 </div>
 
+</div>{{-- /exportPage2 --}}
+
+{{-- /pageExportArea --}}
+</div>
+
+{{-- Export Toast --}}
+<div class="export-toast" id="exportToast">
+  <i class="ph ph-check-circle" id="exportToastIcon"></i>
+  <span id="exportToastMsg">Exporting…</span>
 </div>
 @endsection
 
 @section('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <script>
 'use strict';
+
+/* ══ SAFARI DETECTION ══ */
+const _isSafari = (function () {
+  const ua = navigator.userAgent;
+  return /^((?!chrome|android).)*safari/i.test(ua);
+})();
 const NV = (() => {
   const _p = new URLSearchParams(location.search);
   const pid = _p.get('project_id') || '{{ $projectId }}';
@@ -358,7 +456,312 @@ const NV = (() => {
   }
 
   document.addEventListener('DOMContentLoaded',init);
-  return{init};
+  return{init, getApex() { return _apex; }, getEChart() { return _eChart; }, getProjectId() { return pid; } };
+})();
+
+/* ══════════════════════════════════════════════════════
+   NVExport — PDF & IMAGE EXPORT ENGINE (Standardized for Chrome & Safari)
+══════════════════════════════════════════════════════ */
+const NVExport = (() => {
+    function _stamp() {
+        const d = new Date();
+        return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}`;
+    }
+
+    function _toast(msg, type='success', duration=3500) {
+        const t = document.getElementById('exportToast');
+        if (!t) return;
+        const msgEl = document.getElementById('exportToastMsg');
+        const iconEl = document.getElementById('exportToastIcon');
+        if (msgEl) msgEl.textContent = msg;
+
+        t.className = 'export-toast show ' + type;
+        if (iconEl) {
+            iconEl.className = type === 'success' ? 'ph ph-check-circle' :
+                               type === 'error' ? 'ph ph-x-circle' : 'ph ph-spinner spin';
+        }
+        
+        clearTimeout(t._tm);
+        if (duration < 99999) {
+            t._tm = setTimeout(() => { t.classList.remove('show'); }, duration);
+        }
+    }
+
+    function _btnState(btn, active) {
+        const btns = Array.isArray(btn) ? btn : [btn];
+        btns.forEach(b => {
+            if (!b) return;
+            if (active) {
+                b.classList.add('exporting');
+                b.setAttribute('disabled', 'true');
+            } else {
+                b.classList.remove('exporting');
+                b.removeAttribute('disabled');
+            }
+        });
+    }
+
+    async function _getEChartSnapshot() {
+        const chart = NV.getEChart();
+        if (!chart || chart.isDisposed()) return null;
+        try {
+            chart.setOption({ animation: false });
+            const dataUrl = chart.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: '#ffffff' });
+            chart.setOption({ animation: true });
+            return dataUrl;
+        } catch(e) {
+            console.warn('[EChartSnapshot] Gagal ambil snapshot donutChart', e);
+            return null;
+        }
+    }
+
+    async function _getApexSnapshot() {
+        const chart = NV.getApex();
+        if (!chart) return null;
+        try {
+            chart.updateOptions({
+                fill: { opacity: 1, type: 'solid' },
+                chart: { animations: { enabled: false } }
+            }, false, false, false);
+            await new Promise(r => setTimeout(r, 400));
+            const result = await chart.dataURI({ scale: 2 });
+            return result?.imgURI || null;
+        } catch(e) {
+            console.warn('[ApexSnapshot] Gagal ambil snapshot trendChart', e);
+            return null;
+        } finally {
+            try {
+                chart.updateOptions({
+                    fill: { opacity: 0.2, type: 'solid' },
+                    chart: { animations: { enabled: true } }
+                }, false, false, false);
+            } catch(e) {}
+        }
+    }
+
+    async function _doCapture(element, bg, ecSnap, apexSnap) {
+        const replacements = [];
+        
+        // Replace ECharts donutChart if present in element
+        const donutDom = document.getElementById('donutChart');
+        if (donutDom && element.contains(donutDom) && ecSnap) {
+            const canvas = donutDom.querySelector('canvas');
+            if (canvas) {
+                const img = document.createElement('img');
+                img.src = ecSnap;
+                img.style.cssText = `position:absolute;top:0;left:0;width:100%;height:100%;z-index:9999;background:${bg};`;
+                canvas.parentElement.appendChild(img);
+                replacements.push({ parent: canvas.parentElement, img });
+            }
+        }
+
+        // Replace ApexCharts trendChart if present in element
+        const trendDom = document.getElementById('trendChart');
+        if (trendDom && element.contains(trendDom) && apexSnap) {
+            const chartWrap = trendDom.querySelector('.apexcharts-canvas');
+            if (chartWrap) {
+                const img = document.createElement('img');
+                img.src = apexSnap;
+                img.style.cssText = `position:absolute;top:0;left:0;width:100%;height:100%;z-index:9999;background:${bg};object-fit:contain;`;
+                chartWrap.parentElement.appendChild(img);
+                replacements.push({ parent: chartWrap.parentElement, img });
+            }
+        }
+
+        const opt = {
+            backgroundColor: bg,
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            windowWidth: 1200,
+            ignoreElements: el => el.hasAttribute('data-html2canvas-ignore') || el.classList.contains('page-export-bar')
+        };
+
+        try {
+            return await html2canvas(element, opt);
+        } finally {
+            replacements.forEach(r => { r.parent.removeChild(r.img); });
+        }
+    }
+
+    function _addCanvasAsPage(pdf, canvas, margin, pW, pH, label, curPg, totPg) {
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const uw = pW - margin * 2;
+        const uh = pH - 14 - 8;
+        const cw = canvas.width;
+        const ch = canvas.height;
+        const imgH = ch * (uw / cw);
+
+        pdf.setFillColor('#f8fafc');
+        pdf.rect(0, 0, pW, pH, 'F');
+
+        // Header
+        pdf.setFont("Helvetica", "bold");
+        pdf.setFontSize(8);
+        pdf.setTextColor('#64748b');
+        pdf.text('SMADIMENT — ONLINE NEWS OVERVIEW REPORT', margin, 10);
+        pdf.setFont("Helvetica", "normal");
+        pdf.text(new Date().toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'}), pW - margin, 10, {align:'right'});
+        
+        pdf.setDrawColor('#cbd5e1');
+        pdf.setLineWidth(0.2);
+        pdf.line(margin, 12, pW - margin, 12);
+
+        // Content
+        const xOffset = margin;
+        const yOffset = 14 + (uh - imgH) / 2;
+        pdf.addImage(imgData, 'JPEG', xOffset, yOffset, uw, imgH);
+
+        // Footer
+        pdf.line(margin, pH - 8, pW - margin, pH - 8);
+        pdf.setFontSize(7);
+        pdf.setTextColor('#94a3b8');
+        pdf.text(`Section: ${label}`, margin, pH - 5);
+        pdf.text(`Halaman ${curPg} dari ${totPg}`, pW - margin, pH - 5, {align:'right'});
+    }
+
+    function _paginate(pdf, canvas, margin, pW, pH, label) {
+        const uw = pW - margin * 2;
+        const uh = pH - 14 - 8;
+        const cw = canvas.width;
+        const ch = canvas.height;
+        const pageHInCanvas = cw * (uh / uw);
+        let remH = ch;
+        let curY = 0;
+        let pg = 1;
+
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = cw;
+        const tempCtx = tempCanvas.getContext('2d');
+
+        while (remH > 0) {
+            const hToDraw = Math.min(remH, pageHInCanvas);
+            tempCanvas.height = hToDraw;
+            tempCtx.fillStyle = '#ffffff';
+            tempCtx.fillRect(0, 0, cw, hToDraw);
+            tempCtx.drawImage(canvas, 0, curY, cw, hToDraw, 0, 0, cw, hToDraw);
+
+            if (pg > 1) pdf.addPage();
+            _addCanvasAsPage(pdf, tempCanvas, margin, pW, pH, `${label} (Part ${pg})`, pg, 'Multi');
+
+            curY += hToDraw;
+            remH -= hToDraw;
+            pg++;
+        }
+    }
+
+    const _cardLabels = {
+        trend: 'Mention Trend Chart',
+        donut: 'Sentiment Distribution',
+        publishers: 'Top Publishers',
+        articles: 'Recent Articles List'
+    };
+
+    return {
+        async runCard(areaId, cardKey, type, btn) {
+            if (!window.html2canvas) { _toast('html2canvas tidak tersedia', 'error'); return; }
+            if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+
+            _btnState(btn, true);
+            _toast(type === 'pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
+
+            try {
+                const area = document.getElementById(areaId);
+                if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+
+                const ecSnap = cardKey === 'donut' ? await _getEChartSnapshot() : null;
+                const apexSnap = cardKey === 'trend' ? await _getApexSnapshot() : null;
+
+                const canvas = await _doCapture(area, '#ffffff', ecSnap, apexSnap);
+                const fname = `news_overview_${cardKey}_${NV.getProjectId()}_${_stamp()}`;
+                const label = _cardLabels[cardKey] || cardKey;
+
+                if (type === 'image') {
+                    const a = document.createElement('a');
+                    a.download = fname + '.png';
+                    a.href = canvas.toDataURL('image/png');
+                    a.click();
+                    _toast('Gambar berhasil diunduh!', 'success');
+                } else {
+                    const { jsPDF } = window.jspdf;
+                    const landscape = canvas.width > canvas.height * 1.2;
+                    const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit:'mm', format:'a4' });
+                    const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
+                    const M = 10, uw = pW - M * 2, uh = pH - 14 - 8;
+                    const fitsOne = (canvas.height * (uw / canvas.width)) <= uh;
+
+                    if (fitsOne) {
+                        _addCanvasAsPage(pdf, canvas, M, pW, pH, label, 1, 1);
+                    } else {
+                        _paginate(pdf, canvas, M, pW, pH, label);
+                    }
+                    pdf.save(fname + '.pdf');
+                    _toast('PDF berhasil diunduh!', 'success');
+                }
+            } catch(err) {
+                console.error('[NVExport.runCard]', err);
+                _toast('Export gagal: ' + err.message, 'error');
+            } finally { _btnState(btn, false); }
+        },
+
+        async run(type, btn) {
+            if (!window.html2canvas) { _toast('html2canvas tidak tersedia', 'error'); return; }
+            if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+
+            const btnPdf = document.getElementById('pageExportPdfBtn');
+            const btnImg = document.getElementById('pageExportImgBtn');
+            _btnState([btnPdf, btnImg], true);
+            _toast(type === 'pdf' ? 'Menyiapkan PDF 2 halaman…' : 'Mengambil gambar halaman…', 'default', 99999);
+
+            try {
+                window.scrollTo({ top: 0 });
+                const stamp = _stamp();
+
+                _toast('Menyiapkan snapshot charts…', 'default', 99999);
+                const ecSnap = await _getEChartSnapshot();
+                const apexSnap = await _getApexSnapshot();
+
+                if (type === 'image') {
+                    const area = document.getElementById('pageExportArea');
+                    if (!area) throw new Error('pageExportArea tidak ditemukan');
+                    const canvas = await _doCapture(area, '#f1f5f9', ecSnap, apexSnap);
+                    const a = document.createElement('a');
+                    a.download = `news_overview_${NV.getProjectId()}_${stamp}.png`;
+                    a.href = canvas.toDataURL('image/png');
+                    a.click();
+                    _toast('Gambar berhasil diunduh!', 'success');
+                    return;
+                }
+
+                const pg1El = document.getElementById('exportPage1');
+                const pg2El = document.getElementById('exportPage2');
+                if (!pg1El || !pg2El) throw new Error('Wrapper #exportPage1 / #exportPage2 tidak ditemukan.');
+
+                _toast('Menangkap Halaman 1…', 'default', 99999);
+                const canvas1 = await _doCapture(pg1El, '#f1f5f9', ecSnap, apexSnap);
+
+                _toast('Menangkap Halaman 2…', 'default', 99999);
+                const canvas2 = await _doCapture(pg2El, '#f1f5f9', ecSnap, apexSnap);
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+                const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
+                
+                _addCanvasAsPage(pdf, canvas1, 10, pW, pH, 'News KPIs & Trend Distribution', 1, 2);
+                pdf.addPage();
+                _addCanvasAsPage(pdf, canvas2, 10, pW, pH, 'Publishers & Recent Articles', 2, 2);
+                
+                pdf.save(`news_overview_${NV.getProjectId()}_${stamp}.pdf`);
+                _toast('PDF 2 halaman berhasil diunduh!', 'success');
+            } catch(err) {
+                console.error('[NVExport.run]', err);
+                _toast('Export gagal: ' + err.message, 'error');
+            } finally {
+                _btnState([btnPdf, btnImg], false);
+            }
+        }
+    };
 })();
 </script>
 @endsection
