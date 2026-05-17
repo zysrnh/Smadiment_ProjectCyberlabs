@@ -395,7 +395,7 @@
     {{-- ══ KPI Cards ══ --}}
     <div class="row mb-3">
         <div class="col-md-6 col-xl-3">
-            <div class="card h-100 text-white kpi-card-hover" style="background:#EF4444;animation:fadeUp .38s ease-out both;">
+            <div class="card h-100 text-white kpi-card-hover" style="background:#06B6D4;animation:fadeUp .38s ease-out both;">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
@@ -409,7 +409,7 @@
             </div>
         </div>
         <div class="col-md-6 col-xl-3">
-            <div class="card h-100 text-white kpi-card-hover" style="background:#2FC6F6;animation:fadeUp .38s ease-out .05s both;">
+            <div class="card h-100 text-white kpi-card-hover" style="background:#F59E0B;animation:fadeUp .38s ease-out .05s both;">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
@@ -423,7 +423,7 @@
             </div>
         </div>
         <div class="col-md-6 col-xl-3">
-            <div class="card h-100 text-white kpi-card-hover" style="background:#94A3B8;animation:fadeUp .38s ease-out .10s both;">
+            <div class="card h-100 text-white kpi-card-hover" style="background:#4CAF50;animation:fadeUp .38s ease-out .10s both;">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
@@ -768,7 +768,9 @@ const SNTCfg = {
     platMeta: {
         doc:       { label:'Online News',  color:'#0284c7' },
         twit:      { label:'X / Twitter',  color:'#1d9bf0' },
+        twitter:   { label:'X / Twitter',  color:'#1d9bf0' },
         fb:        { label:'Facebook',      color:'#1877f2' },
+        facebook:  { label:'Facebook',      color:'#1877f2' },
         instagram: { label:'Instagram',     color:'#e1306c' },
         youtube:   { label:'YouTube',       color:'#ff0000' },
         tiktok:    { label:'TikTok',        color:'#111827' },
@@ -1082,13 +1084,15 @@ const SNTLoader = {
         const platIcons = {
             doc:       `<svg viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
             twit:      `<svg viewBox="0 0 24 24" fill="#1d9bf0" stroke="none" style="width:18px;height:18px;"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
+            twitter:   `<svg viewBox="0 0 24 24" fill="#1d9bf0" stroke="none" style="width:18px;height:18px;"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
             fb:        `<svg viewBox="0 0 24 24" fill="none" stroke="#1877f2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>`,
+            facebook:  `<svg viewBox="0 0 24 24" fill="none" stroke="#1877f2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>`,
             instagram: `<svg viewBox="0 0 24 24" fill="none" stroke="#e1306c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="#e1306c"/></svg>`,
             youtube:   `<svg viewBox="0 0 24 24" fill="none" stroke="#ff0000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>`,
             tiktok:    `<svg viewBox="0 0 24 24" fill="#111827" stroke="none" style="width:18px;height:18px;"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.77 0 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0 0 12.68 6.34 6.34 0 0 0 6.33-6.34V8.69a8.16 8.16 0 0 0 4.77 1.52V6.74a4.85 4.85 0 0 1-1-.05z"/></svg>`,
         };
-        const platBg = { doc:'rgba(2,132,199,.1)', twit:'rgba(29,155,240,.1)', fb:'rgba(24,119,242,.1)', instagram:'rgba(225,48,108,.1)', youtube:'rgba(255,0,0,.08)', tiktok:'rgba(17,24,39,.07)' };
-        const platKey = { doc:'doc', twit:'twit', fb:'fb', instagram:'instagram', youtube:'youtube', tiktok:'tiktok' };
+        const platBg = { doc:'rgba(2,132,199,.1)', twit:'rgba(29,155,240,.1)', twitter:'rgba(29,155,240,.1)', fb:'rgba(24,119,242,.1)', facebook:'rgba(24,119,242,.1)', instagram:'rgba(225,48,108,.1)', youtube:'rgba(255,0,0,.08)', tiktok:'rgba(17,24,39,.07)' };
+        const platKey = { doc:'doc', twit:'twit', twitter:'twitter', fb:'fb', facebook:'facebook', instagram:'instagram', youtube:'youtube', tiktok:'tiktok' };
 
         list.innerHTML = bm.map(m => {
             const tot = m.neg + m.pos + m.neu;

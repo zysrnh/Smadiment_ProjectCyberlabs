@@ -232,7 +232,7 @@
       <div><h6 class="mb-0">Recent Articles</h6><small class="text-muted">Artikel berita terbaru</small></div>
     </div>
     <div class="d-flex align-items-center gap-2">
-      <span class="badge bg-light-primary text-primary rounded-pill" id="artBadge">Loading…</span>
+      <span class="badge bg-light-primary text-primary rounded-pill d-none" id="artBadge">Loading…</span>
       <div class="d-flex gap-1" data-html2canvas-ignore="true">
         <button class="card-exp-btn card-exp-btn-pdf" onclick="NVExport.runCard('card-export-art','articles','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
         <button class="card-exp-btn card-exp-btn-img" onclick="NVExport.runCard('card-export-art','articles','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
@@ -277,7 +277,7 @@ const NV = (() => {
   const $ = id => document.getElementById(id);
   const nF = n => parseInt(n||0).toLocaleString('id-ID');
   const nK = n => { n=parseInt(n||0); if(n>=1e6)return(n/1e6).toFixed(1)+'M'; if(n>=1e3)return(n/1e3).toFixed(1)+'k'; return n.toString(); };
-  let _apex = null, _eChart = null, _trendTotal = 0;
+  let _apex = null, _eChart = null, _trendTotal = 0, _loadedArticles = [];
 
   async function init() {
     if (!pid) { $('trendLoading').innerHTML='<div class="nv-empty"><i class="ph ph-folder-open"></i><span>Pilih project terlebih dahulu</span></div>'; return; }
@@ -294,6 +294,8 @@ const NV = (() => {
       raw.forEach(p => { (p.data||[]).forEach(pt => { total += pt.count || 0; }); });
       _trendTotal = total;
       if ($('kpiTotal') && _trendTotal > 0) $('kpiTotal').textContent = nF(_trendTotal);
+      _updateKPIs(_loadedArticles);
+      _renderDonut(_loadedArticles);
       _renderTrend(raw);
     } catch(e) { console.warn('Trend failed', e); $('trendLoading').innerHTML='<div class="nv-empty"><i class="ph ph-warning"></i><span>Gagal memuat trend</span></div>'; }
   }
@@ -303,6 +305,7 @@ const NV = (() => {
       const r = await fetch(`/mk/api/news/articles?project_id=${pid}&start_date=${sd}&end_date=${ed}&media=doc&rows=100`);
       const j = await r.json();
       const arts = j.data || [];
+      _loadedArticles = arts;
       _updateKPIs(arts);
       _renderDonut(arts);
       _renderArticleList(arts);
@@ -325,6 +328,7 @@ const NV = (() => {
   }
 
   function _updateKPIs(arts) {
+    if (!arts || !arts.length) return;
     const pos = arts.filter(a => _getSent(a)==='pos').length;
     const neg = arts.filter(a => _getSent(a)==='neg').length;
     const neu = arts.length - pos - neg;
@@ -376,6 +380,7 @@ const NV = (() => {
   }
 
   function _renderDonut(arts) {
+    if (!arts || !arts.length) return;
     const pos=arts.filter(a=>_getSent(a)==='pos').length, neg=arts.filter(a=>_getSent(a)==='neg').length, neu=arts.length-pos-neg, tot=pos+neg+neu;
     const el=$('donutChart');
     if(!el||!tot){$('donutLoading').innerHTML='<div class="nv-empty"><i class="ph ph-chart-donut"></i><span>Tidak ada data</span></div>';return;}
@@ -383,10 +388,16 @@ const NV = (() => {
     if(_eChart)_eChart.dispose();
     _eChart=echarts.init(el,null,{renderer:'svg'});
     const displayTotal = _trendTotal > 0 ? _trendTotal : tot;
+    
+    // Scale donut segments to displayTotal
+    const posReal = tot > 0 ? Math.round((pos/tot)*displayTotal) : 0;
+    const negReal = tot > 0 ? Math.round((neg/tot)*displayTotal) : 0;
+    const neuReal = displayTotal - posReal - negReal;
+
     _eChart.setOption({
       animation:true,animationDuration:800,backgroundColor:'transparent',
       tooltip:{trigger:'item',backgroundColor:'#fff',borderColor:'#e2e8f0',borderWidth:1,padding:12,textStyle:{color:'#0f172a',fontSize:12,fontFamily:'inherit'},
-        formatter:p=>{const pc=tot>0?((p.value/tot)*100).toFixed(1):'0';return `<b>${p.name}</b><br/>Mentions: ${nF(p.value)} (${pc}%)`;}
+        formatter:p=>{const pc=displayTotal>0?((p.value/displayTotal)*100).toFixed(1):'0';return `<b>${p.name}</b><br/>Mentions: ${nF(p.value)} (${pc}%)`;}
       },
       legend:{show:false},
       series:[{
@@ -394,15 +405,15 @@ const NV = (() => {
         avoidLabelOverlap:true,minAngle:8,
         itemStyle:{borderColor:'#fff',borderWidth:3,borderRadius:5},
         label:{show:true,alignTo:'edge',edgeDistance:12,lineHeight:20,fontFamily:"'Poppins',sans-serif",fontSize:11,
-          formatter:p=>{const pc=tot>0?(p.value/tot*100):0;if(pc<2)return'';return`{name|${p.name}}\n{pct|${pc.toFixed(1)}%}`;},
+          formatter:p=>{const pc=displayTotal>0?(p.value/displayTotal*100):0;if(pc<2)return'';return`{name|${p.name}}\n{pct|${pc.toFixed(1)}%}`;},
           rich:{name:{fontWeight:'700',fontSize:11,color:'#1a202c',lineHeight:20},pct:{fontWeight:'700',fontSize:10,color:'#038047',lineHeight:17,backgroundColor:'#edf7f3',borderRadius:4,padding:[2,6]}}
         },
         labelLine:{show:true,length:16,length2:20,smooth:.3,lineStyle:{color:'#c4cdd8',width:1.2}},
         emphasis:{scale:true,scaleSize:5},
         data:[
-          {name:'Positive',value:pos,itemStyle:{color:'#10B981'}},
-          {name:'Negative',value:neg,itemStyle:{color:'#EF4444'}},
-          {name:'Neutral',value:neu,itemStyle:{color:'#94A3B8'}},
+          {name:'Positive',value:posReal,itemStyle:{color:'#10B981'}},
+          {name:'Negative',value:negReal,itemStyle:{color:'#EF4444'}},
+          {name:'Neutral',value:neuReal,itemStyle:{color:'#94A3B8'}},
         ].filter(d=>d.value>0)
       }],
       graphic:[

@@ -162,36 +162,74 @@
             ];
 
             try {
+                $days = [];
                 for ($i = 6; $i >= 0; $i--) {
                     $date    = now()->subDays($i);
                     $dateStr = $date->format('Y-m-d');
                     $dateLabel = $date->format('d') . '. ' . $date->format('M');
+                    $days[] = [
+                        'label' => $dateLabel,
+                        'date'  => $dateStr,
+                        'cache_key' => "sent_{$projectId}_{$dateStr}_{$dateStr}"
+                    ];
+                }
 
-                    $pos = 0; $neu = 0; $neg = 0; $total = 0;
+                $missingDays = [];
+                foreach ($days as $day) {
+                    if (!\Illuminate\Support\Facades\Cache::has($day['cache_key'])) {
+                        $missingDays[] = $day;
+                    }
+                }
 
-                    try {
-                        $ck = "sent_{$projectId}_{$dateStr}_{$dateStr}";
-                        $normalized = \Illuminate\Support\Facades\Cache::remember($ck, 600, function () use ($mk, $projectId, $dateStr) {
-                            $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $dateStr, 0, 23);
-                            return $this->normalizeSentimentTotal($sentimentData);
-                        });
+                if (!empty($missingDays)) {
+                    $token = $mk->getToken();
+                    $baseUrl = rtrim(config('services.mediakernels.base_url'), '/');
 
-                        $pos   = $normalized['positive'];
-                        $neu   = $normalized['neutral'];
-                        $neg   = $normalized['negative'];
-                        $total = $pos + $neu + $neg;
-                    } catch (\Exception $e) {
-                        Log::warning("Failed to fetch sentiment for project {$projectId} on {$dateStr}", [
-                            'error' => $e->getMessage(),
+                    $urls = [];
+                    foreach ($missingDays as $idx => $md) {
+                        $urls[$idx] = $baseUrl . '/sentiment_total/?' . http_build_query([
+                            'project_id' => $projectId,
+                            'start_date' => $md['date'],
+                            'start_time' => 0,
+                            'end_date'   => $md['date'],
+                            'end_time'   => 23,
+                            'token'      => $token,
                         ]);
                     }
 
-                    $timeline['dates'][]                 = $dateLabel;
+                    $responses = \Illuminate\Support\Facades\Http::pool(function ($pool) use ($urls) {
+                        foreach ($urls as $idx => $url) {
+                            $pool->as($idx)->timeout(30)->acceptJson()->get($url);
+                        }
+                    });
+
+                    foreach ($missingDays as $idx => $md) {
+                        $res = $responses[$idx] ?? null;
+                        $sentimentData = ($res && $res->successful()) ? $res->json() : [];
+                        $normalized = $this->normalizeSentimentTotal(is_array($sentimentData) ? $sentimentData : []);
+                        \Illuminate\Support\Facades\Cache::put($md['cache_key'], $normalized, 600);
+                    }
+                }
+
+                foreach ($days as $day) {
+                    $normalized = \Illuminate\Support\Facades\Cache::get($day['cache_key'], [
+                        'positive' => 0,
+                        'neutral'  => 0,
+                        'negative' => 0,
+                    ]);
+
+                    $pos   = $normalized['positive'];
+                    $neu   = $normalized['neutral'];
+                    $neg   = $normalized['negative'];
+                    $total = $pos + $neu + $neg;
+
+                    $timeline['dates'][]                 = $day['label'];
                     $timeline['values'][]                = $total;
                     $timeline['sentiment']['positive'][] = $pos;
                     $timeline['sentiment']['neutral'][]  = $neu;
                     $timeline['sentiment']['negative'][] = $neg;
                 }
+
             } catch (\Exception $e) {
                 Log::warning("Failed to fetch daily timeline for project {$projectId}", [
                     'error' => $e->getMessage(),
@@ -224,7 +262,9 @@
                 $start = new \DateTime($startDate);
                 $end   = new \DateTime($endDate);
                 $diff  = (int) $start->diff($end)->days;
-
+                
+                $ranges = [];
+                
                 if ($diff > 60) {
                     // Per minggu
                     $current = clone $start;
@@ -238,25 +278,13 @@
                         $dateStr    = $current->format('Y-m-d');
                         $weekEndStr = $weekEnd->format('Y-m-d');
                         $dateLabel  = $current->format('d') . ' ' . $current->format('M');
-
-                        $ck = "sent_{$projectId}_{$dateStr}_{$weekEndStr}";
-                        $normalized = \Illuminate\Support\Facades\Cache::remember($ck, 600, function () use ($mk, $projectId, $dateStr, $weekEndStr) {
-                            $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $weekEndStr, 0, 23);
-                            return $this->normalizeSentimentTotal($sentimentData);
-                        });
-
-                        $pos   = $normalized['positive'];
-                        $neu   = $normalized['neutral'];
-                        $neg   = $normalized['negative'];
-                        $total = $pos + $neu + $neg;
-
-                        $timeline['dates'][]                 = $dateLabel;
-                        $timeline['dates_start'][]           = $dateStr;
-                        $timeline['dates_end'][]             = $weekEndStr;
-                        $timeline['values'][]                = $total;
-                        $timeline['sentiment']['positive'][] = $pos;
-                        $timeline['sentiment']['neutral'][]  = $neu;
-                        $timeline['sentiment']['negative'][] = $neg;
+                        
+                        $ranges[] = [
+                            'label' => $dateLabel,
+                            'start' => $dateStr,
+                            'end'   => $weekEndStr,
+                            'cache_key' => "sent_{$projectId}_{$dateStr}_{$weekEndStr}"
+                        ];
 
                         $current->modify('+7 days');
                     }
@@ -266,37 +294,79 @@
                     while ($current <= $end) {
                         $dateStr   = $current->format('Y-m-d');
                         $dateLabel = $current->format('d') . ' ' . $current->format('M');
-
-                        $pos = 0; $neu = 0; $neg = 0; $total = 0;
-
-                        try {
-                            $ck = "sent_{$projectId}_{$dateStr}_{$dateStr}";
-                            $normalized = \Illuminate\Support\Facades\Cache::remember($ck, 600, function () use ($mk, $projectId, $dateStr) {
-                                $sentimentData = $mk->sentimentTotal($projectId, $dateStr, $dateStr, 0, 23);
-                                return $this->normalizeSentimentTotal($sentimentData);
-                            });
-
-                            $pos   = $normalized['positive'];
-                            $neu   = $normalized['neutral'];
-                            $neg   = $normalized['negative'];
-                            $total = $pos + $neu + $neg;
-                        } catch (\Exception $e) {
-                            Log::warning("Timeline: failed for {$projectId} on {$dateStr}", [
-                                'error' => $e->getMessage()
-                            ]);
-                        }
-
-                        $timeline['dates'][]                 = $dateLabel;
-                        $timeline['dates_start'][]           = $dateStr;
-                        $timeline['dates_end'][]             = $dateStr;
-                        $timeline['values'][]                = $total;
-                        $timeline['sentiment']['positive'][] = $pos;
-                        $timeline['sentiment']['neutral'][]  = $neu;
-                        $timeline['sentiment']['negative'][] = $neg;
+                        
+                        $ranges[] = [
+                            'label' => $dateLabel,
+                            'start' => $dateStr,
+                            'end'   => $dateStr,
+                            'cache_key' => "sent_{$projectId}_{$dateStr}_{$dateStr}"
+                        ];
 
                         $current->modify('+1 day');
                     }
                 }
+                
+                // Identify missing ranges from cache
+                $missingRanges = [];
+                foreach ($ranges as $range) {
+                    if (!\Illuminate\Support\Facades\Cache::has($range['cache_key'])) {
+                        $missingRanges[] = $range;
+                    }
+                }
+                
+                // Fetch missing ranges concurrently
+                if (!empty($missingRanges)) {
+                    $token = $mk->getToken();
+                    $baseUrl = rtrim(config('services.mediakernels.base_url'), '/');
+                    
+                    $urls = [];
+                    foreach ($missingRanges as $idx => $mr) {
+                        $urls[$idx] = $baseUrl . '/sentiment_total/?' . http_build_query([
+                            'project_id' => $projectId,
+                            'start_date' => $mr['start'],
+                            'start_time' => 0,
+                            'end_date'   => $mr['end'],
+                            'end_time'   => 23,
+                            'token'      => $token,
+                        ]);
+                    }
+                    
+                    $responses = \Illuminate\Support\Facades\Http::pool(function ($pool) use ($urls) {
+                        foreach ($urls as $idx => $url) {
+                            $pool->as($idx)->timeout(30)->acceptJson()->get($url);
+                        }
+                    });
+                    
+                    foreach ($missingRanges as $idx => $mr) {
+                        $res = $responses[$idx] ?? null;
+                        $sentimentData = ($res && $res->successful()) ? $res->json() : [];
+                        $normalized = $this->normalizeSentimentTotal(is_array($sentimentData) ? $sentimentData : []);
+                        \Illuminate\Support\Facades\Cache::put($mr['cache_key'], $normalized, 600);
+                    }
+                }
+                
+                // Build timeline from cache
+                foreach ($ranges as $range) {
+                    $normalized = \Illuminate\Support\Facades\Cache::get($range['cache_key'], [
+                        'positive' => 0,
+                        'neutral'  => 0,
+                        'negative' => 0,
+                    ]);
+                    
+                    $pos   = $normalized['positive'];
+                    $neu   = $normalized['neutral'];
+                    $neg   = $normalized['negative'];
+                    $total = $pos + $neu + $neg;
+                    
+                    $timeline['dates'][]                 = $range['label'];
+                    $timeline['dates_start'][]           = $range['start'];
+                    $timeline['dates_end'][]             = $range['end'];
+                    $timeline['values'][]                = $total;
+                    $timeline['sentiment']['positive'][] = $pos;
+                    $timeline['sentiment']['neutral'][]  = $neu;
+                    $timeline['sentiment']['negative'][] = $neg;
+                }
+                
             } catch (\Exception $e) {
                 Log::warning("Failed to fetch timeline range for project {$projectId}", [
                     'error' => $e->getMessage(),
@@ -309,48 +379,93 @@
         // ══════════════════════════════════════════════════════════════
         // 📊 DASHBOARD (User - Filtered by assigned projects)
         // ══════════════════════════════════════════════════════════════
-    public function dashboard(Request $request, MediaKernelsClient $mk)
-    {
-        $projects  = $this->getProjects($mk);
-        $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
-        $endDate   = $request->query('end_date',   now()->toDateString());
-    
-        foreach ($projects as &$project) {
-            try {
+        public function dashboard(Request $request, MediaKernelsClient $mk)
+        {
+            $projects  = $this->getProjects($mk);
+            $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
+            $endDate   = $request->query('end_date',   now()->toDateString());
+            
+            $missingProjects = [];
+            foreach ($projects as $project) {
                 $cacheKey = "dash_sent_{$project['id']}_{$startDate}_{$endDate}";
-                $norm = \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($mk, $project, $startDate, $endDate) {
-                    $sentimentData = $mk->sentimentTotal(
-                        $project['id'], $startDate, $endDate, 0, 23
-                    );
-                    return $this->normalizeSentimentTotal($sentimentData);
-                });
-    
-                $project['total_mentions']    = $norm['positive'] + $norm['neutral'] + $norm['negative'];
-                $project['sentiment_summary'] = $norm;
-    
-            } catch (\Exception $e) {
-                Log::warning("Dashboard: failed sentiment for project {$project['id']}", [
-                    'error' => $e->getMessage(),
-                ]);
-                $project['total_mentions']    = 0;
-                $project['sentiment_summary'] = ['positive'=>0,'neutral'=>0,'negative'=>0];
+                if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+                    $missingProjects[] = $project;
+                }
             }
+            
+            if (!empty($missingProjects)) {
+                try {
+                    $token = $mk->getToken();
+                    $baseUrl = rtrim(config('services.mediakernels.base_url'), '/');
+                    
+                    $urls = [];
+                    foreach ($missingProjects as $idx => $project) {
+                        $urls[$idx] = $baseUrl . '/sentiment_total/?' . http_build_query([
+                            'project_id' => $project['id'],
+                            'start_date' => $startDate,
+                            'start_time' => 0,
+                            'end_date'   => $endDate,
+                            'end_time'   => 23,
+                            'token'      => $token,
+                        ]);
+                    }
+                    
+                    $responses = \Illuminate\Support\Facades\Http::pool(function ($pool) use ($urls) {
+                        foreach ($urls as $idx => $url) {
+                            $pool->as($idx)->timeout(30)->acceptJson()->get($url);
+                        }
+                    });
+                    
+                    foreach ($missingProjects as $idx => $project) {
+                        $res = $responses[$idx] ?? null;
+                        $sentimentData = ($res && $res->successful()) ? $res->json() : [];
+                        $normalized = $this->normalizeSentimentTotal(is_array($sentimentData) ? $sentimentData : []);
+                        
+                        $cacheKey = "dash_sent_{$project['id']}_{$startDate}_{$endDate}";
+                        \Illuminate\Support\Facades\Cache::put($cacheKey, $normalized, 300);
+                    }
+                } catch (\Exception $e) {
+                    Log::warning("Dashboard parallel fetch failed, falling back", [
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+        
+            foreach ($projects as &$project) {
+                try {
+                    $cacheKey = "dash_sent_{$project['id']}_{$startDate}_{$endDate}";
+                    $norm = \Illuminate\Support\Facades\Cache::get($cacheKey, [
+                        'positive' => 0,
+                        'neutral'  => 0,
+                        'negative' => 0,
+                    ]);
+        
+                    $project['total_mentions']    = $norm['positive'] + $norm['neutral'] + $norm['negative'];
+                    $project['sentiment_summary'] = $norm;
+        
+                } catch (\Exception $e) {
+                    Log::warning("Dashboard: failed sentiment for project {$project['id']}", [
+                        'error' => $e->getMessage(),
+                    ]);
+                    $project['total_mentions']    = 0;
+                    $project['sentiment_summary'] = ['positive'=>0,'neutral'=>0,'negative'=>0];
+                }
+            }
+            unset($project);
+        
+            Log::info('📊 Dashboard (fast with parallel pooling) loaded', [
+                'user_id'        => Auth::id(),
+                'projects_count' => count($projects),
+                'start_date'     => $startDate,
+                'end_date'       => $endDate,
+            ]);
+        
+            return view('mk.dashboard', [
+                'projects'  => $projects,
+                'startDate' => $startDate,
+                'endDate'   => $endDate,
+            ]);
         }
-        unset($project);
-    
-        Log::info('📊 Dashboard (fast) loaded', [
-            'user_id'        => Auth::id(),
-            'projects_count' => count($projects),
-            'start_date'     => $startDate,
-            'end_date'       => $endDate,
-        ]);
-    
-        return view('mk.dashboard', [
-            'projects'  => $projects,
-            'startDate' => $startDate,
-            'endDate'   => $endDate,
-        ]);
-    }
     
         // ══════════════════════════════════════════════════════════════
         // 👨‍💼 ADMIN DASHBOARD
