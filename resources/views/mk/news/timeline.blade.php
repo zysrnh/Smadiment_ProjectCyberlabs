@@ -445,6 +445,12 @@ body.is-exporting .exp-icon {
 <script>
 'use strict';
 
+/* ── Safari Detection ── */
+const _isSafari = (function () {
+    const ua = navigator.userAgent;
+    return /^((?!chrome|android).)*safari/i.test(ua);
+})();
+
 /* ── Config & Globals ── */
 const MTCfg = { pid: MT_PID, sd: MT_SD, ed: MT_ED, perPage: 20 };
 const PLAT = {
@@ -458,11 +464,42 @@ const PLAT = {
 const PLAT_KEYS = Object.keys(PLAT);
 const _$   = id => document.getElementById(id);
 const numF = n  => parseInt(n||0).toLocaleString('id-ID');
-const numK = n  => parseInt(n||0).toLocaleString('id-ID');
+const numK = n  => { n = parseInt(n||0); return n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n); };
 const esc  = s  => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const Store = { all:[], doc:[], twit:[], fb:[], ig:[], ytb:[], tiktok:[] };
 const _mtCache = {};
-let _activeTab='doc', _page=1, _trendChart=null, _barChart=null, _trendRaw=[];
+let _activeTab='doc', _page=1, _trendApex=null, _trendRaw=[];
+
+/* ── ECharts Registry ── */
+const MTCharts = {
+    _i: {},
+    make(id) {
+        if (this._i[id]) { try { this._i[id].dispose(); } catch(e) {} }
+        const dom = document.getElementById(id);
+        if (!dom) return null;
+        if (dom.offsetHeight < 1 && dom.parentElement) {
+            const ph = parseInt(dom.parentElement.style.height) || 300;
+            dom.style.height = ph + 'px';
+        }
+        const c = echarts.init(dom, null, {
+            renderer: _isSafari ? 'svg' : 'canvas',
+            devicePixelRatio: _isSafari ? 1 : (window.devicePixelRatio || 1),
+        });
+        this._i[id] = c;
+        if (_isSafari) setTimeout(() => { try { c.resize(); } catch(e){} }, 80);
+        return c;
+    },
+};
+
+window.addEventListener('resize', () => {
+    Object.values(MTCharts._i).forEach(c => { try { if (!c.isDisposed()) c.resize(); } catch(e) {} });
+});
+
+const EC_TIP = {
+    backgroundColor: '#1a202c', borderColor: '#334155', borderWidth: 1,
+    padding: [10, 14], textStyle: { color: '#fff', fontFamily: "'Poppins',sans-serif", fontSize: 12 },
+    extraCssText: 'border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);',
+};
 
 /* ── Normalise sentiment ── */
 function _normSent(item) {
@@ -657,8 +694,7 @@ const MTData={
         if(_$('kpiNegSub')) _$('kpiNegSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(neg)+'% of total';
     },
     _renderTrend() {
-        const el = _$('trendChart'), ld = _$('trendSkel');
-        if (!el) return;
+        const ld = _$('trendLoading');
 
         const curr = new Date(MTCfg.sd), end = new Date(MTCfg.ed);
         const dates = [];
@@ -675,7 +711,7 @@ const MTData={
             return parseInt(d) + '/' + parseInt(m);
         });
 
-        // 1. Get Total Trend from API
+        // 1. Get Total Trend (doc only) from API
         const totVals = new Array(dates.length).fill(0);
         if(_trendRaw) {
             _trendRaw.forEach(p => {
@@ -688,7 +724,7 @@ const MTData={
             });
         }
 
-        // 2. Calculate Proportional Sentiment from fetched articles (Store.all)
+        // 2. Calculate Proportional Sentiment from fetched articles
         const all = Store.all;
         let pRatio = 0, nRatio = 0, uRatio = 0;
         if(all.length > 0) {
@@ -704,56 +740,72 @@ const MTData={
         const negVals = totVals.map(v => Math.round(v * nRatio));
         const neuVals = totVals.map(v => Math.round(v * uRatio));
 
-        if(_trendChart){ try { _trendChart.destroy(); } catch(e){} }
+        const el = _$('trendChart');
+        if (!el) return;
+
+        if (_trendApex) { try { _trendApex.destroy(); } catch(e){} _trendApex = null; }
         el.innerHTML = '';
         el.style.display = 'block';
 
-        const options = {
+        // SAFARI FIX: ensure explicit height before ApexCharts mounts
+        if (_isSafari && el.offsetHeight < 10) el.style.height = '340px';
+
+        _trendApex = new ApexCharts(el, {
             chart: {
-                type: 'area', height: 340, fontFamily: 'inherit', background: 'transparent',
-                toolbar: { show: false }, animations: { enabled: false }
+                type: 'area', height: 340,
+                fontFamily: 'inherit',
+                background: 'transparent',
+                toolbar: { show: false },
+                animations: { enabled: !_isSafari, easing: 'linear', dynamicAnimation: { speed: 1000 } },
             },
             series: [
                 { name: 'Total',    data: totVals },
                 { name: 'Positive', data: posVals },
+                { name: 'Neutral',  data: neuVals },
                 { name: 'Negative', data: negVals },
-                { name: 'Neutral',  data: neuVals }
             ],
-            colors: ['#4680ff', '#10B981', '#EF4444', '#94A3B8'],
-            fill: { opacity: 0.25, type: 'solid' },
+            colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
+            fill: _isSafari ? { opacity: 0.15, type: 'solid' } : { opacity: 0.30 },
             stroke: { curve: 'smooth', width: 2.5 },
             xaxis: {
                 categories: xLabels,
-                labels: { style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } },
-                axisBorder: { show: false }, axisTicks: { show: false }
+                axisBorder: { show: false }, axisTicks: { show: false },
+                labels: { style: { fontFamily: 'inherit', fontSize: '11px', fontWeight: 600, colors: '#94A3B8' } }
             },
             yaxis: {
-                labels: { 
+                labels: {
                     formatter: v => numK(v),
-                    style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } 
+                    style: { fontFamily: 'inherit', fontSize: '10px', fontWeight: 600, colors: '#94A3B8' }
                 },
                 axisBorder: { show: false }, axisTicks: { show: false }
             },
-            markers: { size: 4, strokeWidth: 2, strokeColors: '#fff', hover: { size: 6 } },
+            markers: { size: 5, strokeWidth: 2, strokeColors: '#fff', hover: { size: 7 } },
             dataLabels: {
-                enabled: xLabels.length <= 20,
-                enabledOnSeries: [0],
+                enabled: xLabels.length <= 30,
+                enabledOnSeries: xLabels.length > 10 ? [0] : undefined,
                 formatter: v => v > 0 ? numF(v) : '',
-                offsetY: -10,
-                style: { fontSize: '9px', fontWeight: '700' },
-                background: { enabled: true, padding: 3, borderRadius: 3, opacity: 0.9, borderWidth: 0 }
+                style: { fontSize: '10px', fontFamily: 'inherit', fontWeight: '800' },
+                background: { enabled: true, borderRadius: 3, borderWidth: 0, padding: 3, opacity: 0.9 },
+                offsetY: -8,
             },
-            grid: { borderColor: 'rgba(226,232,240,0.5)', strokeDashArray: 3, padding: { top: 10, right: 10, bottom: 0, left: 10 } },
-            legend: { position: 'bottom', horizontalAlign: 'left', fontSize: '11px', fontWeight: 600, labels: { colors: '#94A3B8' }, markers: { width: 10, height: 10, radius: 10 } },
-            tooltip: { shared: false, intersect: true, y: { formatter: v => numF(v) + ' mentions' } }
-        };
+            grid: {
+                borderColor: 'rgba(226,232,240,.55)',
+                strokeDashArray: 3,
+                xaxis: { lines: { show: false } },
+                padding: { top: 15, right: 10, left: 10, bottom: 0 }
+            },
+            legend: { position: 'bottom', horizontalAlign: 'left', fontFamily: 'inherit', fontSize: '11px', fontWeight: '600', labels: { colors: '#94A3B8' }, markers: { width: 9, height: 9, radius: 50 }, itemMargin: { horizontal: 14, vertical: 4 } },
+            tooltip: { shared: false, intersect: true, style: { fontFamily: 'inherit', fontSize: '12px' }, y: { formatter: v => numF(v) + ' mentions' } },
+        });
+        _trendApex.render();
 
-        _trendChart = new ApexCharts(el, options);
-        _trendChart.render();
+        if (_isSafari) {
+            setTimeout(() => { try { _trendApex.updateOptions({}, false, false, false); } catch(e) {} }, 250);
+        }
         
         const fmtB = ds => {
             const [y,m,d] = ds.split('-');
-            const dt = new Date(y, m-1, d);
+            const dt = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
             return parseInt(d)+' '+dt.toLocaleString('id-ID',{month:'short'});
         };
         if(_$('trendBadge')) _$('trendBadge').textContent = fmtB(dates[0])+' - '+fmtB(dates[dates.length-1]);
@@ -761,55 +813,82 @@ const MTData={
     },
 
     _renderBar() {
-        const el = _$('barChart'), ld = _$('barLoading');
-        if(!el) return;
+        const ld = _$('barLoading');
         
         const all = Store.all;
         const pos = all.filter(m => m.sentiment === 'pos').length;
         const neg = all.filter(m => m.sentiment === 'neg').length;
         const neu = all.length - pos - neg;
-        
-        const data = [
-            { name: 'Positive', value: pos, itemStyle: { color: '#10B981' } },
-            { name: 'Neutral',  value: neu, itemStyle: { color: '#94A3B8' } },
-            { name: 'Negative', value: neg, itemStyle: { color: '#EF4444' } }
-        ].filter(d => d.value > 0);
+        const tot = pos + neg + neu;
 
         if(!all.length){ if(ld)ld.classList.add('hidden'); return; }
-        if(_barChart){ try { _barChart.dispose(); } catch(e){} }
-        
+
+        const el = _$('barChart');
+        if (!el) return;
         el.style.display = 'block';
-        _barChart = echarts.init(el, null, { renderer: 'canvas' });
+
+        const chart = MTCharts.make('barChart');
+        if (!chart) { if(ld)ld.classList.add('hidden'); return; }
         
-        _barChart.setOption({
-            animation: false,
+        chart.setOption({
+            animation: true, animationDuration: _isSafari ? 400 : 800, animationEasing: 'cubicOut', backgroundColor: 'transparent',
             tooltip: {
-                trigger: 'item', backgroundColor: '#1e293b', borderColor: '#334155', borderWidth: 1,
-                textStyle: { color: '#fff', fontSize: 12 },
-                formatter: p => `<div style="font-weight:700;margin-bottom:4px;">${p.name}</div>
-                                <div style="display:flex;align-items:center;gap:8px;">
-                                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color}"></span>
-                                    <span>${numF(p.value)} mentions</span>
-                                    <span style="color:#94a3b8">(${p.percent}%)</span>
-                                </div>`
+                ...EC_TIP, trigger: 'item',
+                formatter: p => {
+                    const pct2 = tot > 0 ? ((p.value/tot)*100).toFixed(1) : '0.0';
+                    return `<div style="font-weight:700;font-size:13px;margin-bottom:5px;">${p.name}</div>
+                            <div style="display:flex;justify-content:space-between;gap:20px;margin-top:4px;"><span style="color:#94a3b8;">Mentions</span><span style="font-weight:700;">${numF(p.value)}</span></div>
+                            <div style="display:flex;justify-content:space-between;gap:20px;margin-top:3px;"><span style="color:#94a3b8;">Share</span><span style="font-weight:700;color:#34d399;">${pct2}%</span></div>`;
+                }
             },
-            legend: { bottom: '0%', left: 'center', itemWidth: 10, itemHeight: 10, textStyle: { fontSize: 11, fontWeight: 600, color: '#64748B' } },
+            legend: { show: false },
             series: [{
-                name: 'Sentiment', type: 'pie', 
-                radius: ['35%', '55%'], center: ['50%', '45%'],
-                avoidLabelOverlap: true,
-                itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
-                label: { 
-                    show: true, position: 'outside', fontSize: 10, fontWeight: 700, color: '#64748b',
-                    formatter: '{b}\n{d}%'
+                type: 'pie', radius: ['42%', '62%'], center: ['50%', '50%'],
+                avoidLabelOverlap: true, minAngle: 5,
+                itemStyle: { borderColor: '#fff', borderWidth: 3, borderRadius: 5 },
+                label: {
+                    show: true, alignTo: 'edge', edgeDistance: 10, lineHeight: 18,
+                    fontFamily: "'Poppins',sans-serif", fontSize: 11, color: '#374151',
+                    formatter: p => {
+                        const pc = tot > 0 ? (p.value/tot*100) : 0; if (pc < 3) return '';
+                        return `{name|${p.name}}\n{pct|${pc.toFixed(1)}%}`;
+                    },
+                    rich: {
+                        name: { fontWeight: '700', fontSize: 11, color: '#1a202c', lineHeight: 18 },
+                        pct:  { fontWeight: '700', fontSize: 10, color: '#038047', lineHeight: 16, backgroundColor: '#edf7f3', borderRadius: 4, padding: [1, 5] },
+                    }
                 },
-                emphasis: { label: { show: true, fontSize: 12, fontWeight: 800 } },
-                data: data
-            }]
+                labelLine: { show: true, length: 12, length2: 16, smooth: .4, lineStyle: { color: '#c4cdd8', width: 1.2 } },
+                emphasis: { scale: true, scaleSize: 5, itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,.12)' } },
+                data: [
+                    { name: 'Positive', value: pos, itemStyle: { color: '#10B981' } },
+                    { name: 'Neutral',  value: neu, itemStyle: { color: '#94A3B8' } },
+                    { name: 'Negative', value: neg, itemStyle: { color: '#EF4444' } },
+                ].filter(d => d.value > 0)
+            }],
+            graphic: [
+                { type: 'text', left: 'center', top: '44%', z: 100, style: { text: numK(tot), fill: '#0f172a', font: "800 17px 'Poppins',sans-serif", textAlign: 'center' } },
+                { type: 'text', left: 'center', top: '53%', z: 100, style: { text: 'TOTAL', fill: '#94a3b8', font: "600 8px 'Poppins',sans-serif", textAlign: 'center', letterSpacing: 2 } },
+            ]
         });
-        
+
+        // Add legend manually below
+        const legendEl = document.createElement('div');
+        legendEl.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:16px;margin-top:14px;flex-wrap:wrap;';
+        const items = [
+            { label: 'Positive', color: '#10B981', val: pos },
+            { label: 'Neutral',  color: '#94A3B8', val: neu },
+            { label: 'Negative', color: '#EF4444', val: neg },
+        ];
+        legendEl.innerHTML = items.map(it => `<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--slate-500);"><span style="width:7px;height:7px;border-radius:50%;background:${it.color};flex-shrink:0;display:inline-block;"></span>${it.label}</span>`).join('');
+        const wrap = el.parentElement;
+        const oldLegend = wrap.querySelector('.mt-bar-legend');
+        if (oldLegend) oldLegend.remove();
+        legendEl.className = 'mt-bar-legend';
+        wrap.appendChild(legendEl);
+
+        if (_isSafari) setTimeout(() => { try { chart.resize(); } catch(e){} }, 60);
         if(ld) ld.classList.add('hidden');
-        window.addEventListener('resize', () => _barChart && _barChart.resize());
     },
 
     _getItems(){return _activeTab==='all'?Store.all:(Store[_activeTab]||[]);},

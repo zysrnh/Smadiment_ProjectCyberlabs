@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register admin middleware alias
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'check.trial' => \App\Http\Middleware\CheckUserTrial::class,
         ]);
 
         // Append RememberSelectedProject ke semua web routes

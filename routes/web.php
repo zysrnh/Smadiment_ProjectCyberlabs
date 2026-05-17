@@ -45,7 +45,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 });
 
-Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
+Route::prefix('mk')->name('mk.')->middleware(['auth', 'check.trial'])->group(function () {
 
     // ═══════════════════════════════════════════════════════
     // API ROUTES
