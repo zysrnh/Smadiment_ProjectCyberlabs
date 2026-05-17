@@ -341,12 +341,12 @@ body.is-exporting .exp-icon {
     <div class="col-lg-5 col-12">
         <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
             <div id="card-export-dist">
-                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2" style="cursor:pointer;" onclick="if(Store&&Store.all&&Store.all.length){MTPanelNew.open(Store.all,'doc');}">
                     <div class="d-flex align-items-center gap-2">
                         <div class="avtar avtar-xs bg-light-success rounded"><i class="ph ph-chart-bar f-18 text-success"></i></div>
-                        <div><h6 class="mb-0">Sentiment Distribution</h6><small class="text-muted">Sentiment breakdown for news</small></div>
+                        <div><h6 class="mb-0">Sentiment Distribution</h6><small class="text-muted">Klik untuk lihat mentions</small></div>
                     </div>
-                    <div data-html2canvas-ignore="true" class="d-flex gap-1">
+                    <div data-html2canvas-ignore="true" class="d-flex gap-1" onclick="event.stopPropagation()">
                         <button class="card-exp-btn card-exp-btn-pdf" onclick="MTExport.runCard('card-export-dist','distribution','pdf',this)"><i class="ph ph-file-pdf exp-icon"></i><span class="exp-spinner"></span></button>
                         <button class="card-exp-btn card-exp-btn-img" onclick="MTExport.runCard('card-export-dist','distribution','image',this)"><i class="ph ph-image exp-icon"></i><span class="exp-spinner"></span></button>
                     </div>
@@ -630,27 +630,29 @@ async function _mtFetchOne(platform,pid,sd,ed){
 
 /* ════ DATA MODULE ════ */
 const MTData={
+    _trendTotal: 0,
     async loadAll(){
         if(!MTCfg.pid){_$('listContainer').innerHTML='<div class="chart-empty" style="padding:40px"><i class="ph ph-folder-open"></i><span>Pilih project terlebih dahulu</span></div>';return;}
         
         const ctn = _$('listContainer');
         if(ctn) ctn.innerHTML = '<div class="spinner-state"><div class="spin-ring"></div><span>Memuat data...</span></div>';
 
-        // 1. Fetch Trend Data
+        // 1. Fetch Trend Data (hanya simpan data, render setelah artikel di-fetch)
         try {
             const cleanSd = String(MTCfg.sd).trim().replace(/\s+/g,'-'), cleanEd = String(MTCfg.ed).trim().replace(/\s+/g,'-');
             const tRes = await fetch(`/mk/api/media-statistic/trend-mentions?project_id=${MTCfg.pid}&start_date=${cleanSd}&end_date=${cleanEd}`);
             const tJson = await tRes.json();
             _trendRaw = tJson.data || [];
             this._updateKPIsFromTrend(_trendRaw);
-            this._renderTrend();
         } catch(e) { console.warn("Trend fetch failed", e); }
 
-        // 2. Fetch News Mentions
+        // 2. Fetch News Mentions dari Online News
         const newsItems = await _mtFetchOne('doc', MTCfg.pid, MTCfg.sd, MTCfg.ed);
         Store.doc = newsItems.map(it => _normItem(it, 'doc'));
         Store.all = Store.doc; // Sync all to doc
         
+        // 3. Render semua chart SETELAH Store.all terisi
+        this._renderTrend();  // sekarang punya data sentimen dari Store.all
         this._renderList();
         this._updateKPIs();
         this._renderBar(); // Sentiment chart depends on Store.all
@@ -672,6 +674,9 @@ const MTData={
             total += pSum;
         });
         
+        // Simpan total dari trend API
+        this._trendTotal = total;
+        
         if(_$('kpiTotal')) _$('kpiTotal').textContent = numF(total);
         if(_$('dotTotalVal')) _$('dotTotalVal').textContent = numK(total);
         
@@ -681,17 +686,28 @@ const MTData={
     reload(){this.loadAll();},
     _updateChip(key,count){},
     _updateKPIs(){
-        const all=Store.all,pos=all.filter(m=>m.sentiment==='pos').length,neg=all.filter(m=>m.sentiment==='neg').length,neu=all.length-pos-neg;
-        const pct=v=>all.length>0?((v/all.length)*100).toFixed(1):'0.0';
-        const platCount=PLAT_KEYS.map(k=>Store[k].length).filter(v=>v>0).length;
-        if(_$('kpiTotal')) _$('kpiTotal').textContent=numF(all.length);
-        if(_$('kpiTotalSub')) _$('kpiTotalSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+platCount+' platforms';
-        if(_$('kpiPos')) _$('kpiPos').textContent=numF(pos);
-        if(_$('kpiPosSub')) _$('kpiPosSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(pos)+'% of total';
-        if(_$('kpiNeu')) _$('kpiNeu').textContent=numF(neu);
-        if(_$('kpiNeuSub')) _$('kpiNeuSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(neu)+'% of total';
-        if(_$('kpiNeg')) _$('kpiNeg').textContent=numF(neg);
-        if(_$('kpiNegSub')) _$('kpiNegSub').innerHTML='<i class="ph ph-chart-line-up me-1"></i>'+pct(neg)+'% of total';
+        const all = Store.all;
+        const pos = all.filter(m => m.sentiment === 'pos').length;
+        const neg = all.filter(m => m.sentiment === 'neg').length;
+        const neu = all.length - pos - neg;
+        const pctOf = v => all.length > 0 ? ((v / all.length) * 100).toFixed(1) : '0.0';
+
+        // Gunakan total dari trend API untuk scale angka KPI
+        const realTotal = this._trendTotal > 0 ? this._trendTotal : all.length;
+        const posReal = all.length > 0 ? Math.round((pos / all.length) * realTotal) : 0;
+        const negReal = all.length > 0 ? Math.round((neg / all.length) * realTotal) : 0;
+        const neuReal = all.length > 0 ? Math.round((neu / all.length) * realTotal) : 0;
+
+        // Total KPI: hanya update jika belum diisi dari trend API
+        if(this._trendTotal <= 0 && _$('kpiTotal')) _$('kpiTotal').textContent = numF(all.length);
+        if(_$('kpiTotalSub')) _$('kpiTotalSub').innerHTML = '<i class="ph ph-newspaper me-1"></i>Online News Mentions';
+
+        if(_$('kpiPos')) _$('kpiPos').textContent = numF(posReal);
+        if(_$('kpiPosSub')) _$('kpiPosSub').innerHTML = '<i class="ph ph-chart-line-up me-1"></i>' + pctOf(pos) + '% of total';
+        if(_$('kpiNeu')) _$('kpiNeu').textContent = numF(neuReal);
+        if(_$('kpiNeuSub')) _$('kpiNeuSub').innerHTML = '<i class="ph ph-chart-line-up me-1"></i>' + pctOf(neu) + '% of total';
+        if(_$('kpiNeg')) _$('kpiNeg').textContent = numF(negReal);
+        if(_$('kpiNegSub')) _$('kpiNegSub').innerHTML = '<i class="ph ph-chart-line-up me-1"></i>' + pctOf(neg) + '% of total';
     },
     _renderTrend() {
         const ld = _$('trendLoading');
@@ -711,20 +727,28 @@ const MTData={
             return parseInt(d) + '/' + parseInt(m);
         });
 
-        // 1. Get Total Trend (doc only) from API
+        // 1. Total per-hari dari trend API (Online News / doc)
         const totVals = new Array(dates.length).fill(0);
-        if(_trendRaw) {
-            _trendRaw.forEach(p => {
-                if(p.key === 'DOC' || p.key === 'doc') {
+        if(_trendRaw && _trendRaw.length) {
+            // Coba berbagai key yang mungkin dari API: 'doc', 'DOC', 'online_news'
+            const docEntry = _trendRaw.find(p => ['doc','DOC','online_news','news'].includes((p.key||'').toLowerCase()));
+            if(docEntry) {
+                (docEntry.data || []).forEach(pt => {
+                    const idx = dates.indexOf(pt.date);
+                    if(idx >= 0) totVals[idx] = pt.count || 0;
+                });
+            } else {
+                // Fallback: jumlahkan semua platform
+                _trendRaw.forEach(p => {
                     (p.data || []).forEach(pt => {
                         const idx = dates.indexOf(pt.date);
-                        if(idx >= 0) totVals[idx] = pt.count || 0;
+                        if(idx >= 0) totVals[idx] += pt.count || 0;
                     });
-                }
-            });
+                });
+            }
         }
 
-        // 2. Calculate Proportional Sentiment from fetched articles
+        // 2. Rasio sentimen dari Store.all (artikel Online News yang di-fetch)
         const all = Store.all;
         let pRatio = 0, nRatio = 0, uRatio = 0;
         if(all.length > 0) {
@@ -747,7 +771,6 @@ const MTData={
         el.innerHTML = '';
         el.style.display = 'block';
 
-        // SAFARI FIX: ensure explicit height before ApexCharts mounts
         if (_isSafari && el.offsetHeight < 10) el.style.height = '340px';
 
         _trendApex = new ApexCharts(el, {
@@ -757,14 +780,33 @@ const MTData={
                 background: 'transparent',
                 toolbar: { show: false },
                 animations: { enabled: !_isSafari, easing: 'linear', dynamicAnimation: { speed: 1000 } },
+                events: {
+                    // Klik titik/area buka slide panel
+                    dataPointSelection: (e, ctx, cfg) => {
+                        if (!Store.all.length) return;
+                        // cfg.seriesIndex: 0=Total, 1=Positive, 2=Negative, 3=Neutral
+                        const sentMap = {0:'all', 1:'pos', 2:'neg', 3:'neu'};
+                        const sent = sentMap[cfg.seriesIndex] || 'all';
+                        MTPanelNew.open(Store.all, 'doc');
+                        if (sent !== 'all') MTPanelNew.filterSent(sent);
+                    },
+                    markerClick: (e, ctx, cfg) => {
+                        if (!Store.all.length) return;
+                        const sentMap = {0:'all', 1:'pos', 2:'neg', 3:'neu'};
+                        const sent = sentMap[cfg.seriesIndex] || 'all';
+                        MTPanelNew.open(Store.all, 'doc');
+                        if (sent !== 'all') MTPanelNew.filterSent(sent);
+                    },
+                }
             },
+            // Urutan: Total → Positive → Negative → Neutral
             series: [
                 { name: 'Total',    data: totVals },
                 { name: 'Positive', data: posVals },
-                { name: 'Neutral',  data: neuVals },
                 { name: 'Negative', data: negVals },
+                { name: 'Neutral',  data: neuVals },
             ],
-            colors: ['#4680ff', '#10B981', '#94A3B8', '#EF4444'],
+            colors: ['#4680ff', '#10B981', '#EF4444', '#94A3B8'],
             fill: _isSafari ? { opacity: 0.15, type: 'solid' } : { opacity: 0.30 },
             stroke: { curve: 'smooth', width: 2.5 },
             xaxis: {
@@ -794,8 +836,20 @@ const MTData={
                 xaxis: { lines: { show: false } },
                 padding: { top: 15, right: 10, left: 10, bottom: 0 }
             },
-            legend: { position: 'bottom', horizontalAlign: 'left', fontFamily: 'inherit', fontSize: '11px', fontWeight: '600', labels: { colors: '#94A3B8' }, markers: { width: 9, height: 9, radius: 50 }, itemMargin: { horizontal: 14, vertical: 4 } },
-            tooltip: { shared: false, intersect: true, style: { fontFamily: 'inherit', fontSize: '12px' }, y: { formatter: v => numF(v) + ' mentions' } },
+            legend: {
+                position: 'bottom', horizontalAlign: 'left', fontFamily: 'inherit',
+                fontSize: '11px', fontWeight: '600',
+                labels: { colors: '#94A3B8' },
+                markers: { width: 9, height: 9, radius: 50 },
+                itemMargin: { horizontal: 14, vertical: 4 },
+                // Klik legend buka panel
+                onItemClick: { toggleDataSeries: true },
+            },
+            tooltip: {
+                shared: false, intersect: true,
+                style: { fontFamily: 'inherit', fontSize: '12px' },
+                y: { formatter: v => numF(v) + ' mentions' }
+            },
         });
         _trendApex.render();
 
@@ -843,14 +897,16 @@ const MTData={
             },
             legend: { show: false },
             series: [{
-                type: 'pie', radius: ['42%', '62%'], center: ['50%', '50%'],
+                type: 'pie',
+                // Naikkan center agar ada ruang untuk label di bawah
+                radius: ['40%', '60%'], center: ['50%', '45%'],
                 avoidLabelOverlap: true, minAngle: 5,
                 itemStyle: { borderColor: '#fff', borderWidth: 3, borderRadius: 5 },
                 label: {
-                    show: true, alignTo: 'edge', edgeDistance: 10, lineHeight: 18,
+                    show: true, alignTo: 'labelLine', edgeDistance: '8%', lineHeight: 18,
                     fontFamily: "'Poppins',sans-serif", fontSize: 11, color: '#374151',
                     formatter: p => {
-                        const pc = tot > 0 ? (p.value/tot*100) : 0; if (pc < 3) return '';
+                        const pc = tot > 0 ? (p.value/tot*100) : 0; if (pc < 2) return '';
                         return `{name|${p.name}}\n{pct|${pc.toFixed(1)}%}`;
                     },
                     rich: {
@@ -858,29 +914,45 @@ const MTData={
                         pct:  { fontWeight: '700', fontSize: 10, color: '#038047', lineHeight: 16, backgroundColor: '#edf7f3', borderRadius: 4, padding: [1, 5] },
                     }
                 },
-                labelLine: { show: true, length: 12, length2: 16, smooth: .4, lineStyle: { color: '#c4cdd8', width: 1.2 } },
+                labelLine: { show: true, length: 10, length2: 14, smooth: .4, lineStyle: { color: '#c4cdd8', width: 1.2 } },
                 emphasis: { scale: true, scaleSize: 5, itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,.12)' } },
+                // Urutan: Positive → Negative → Neutral
                 data: [
                     { name: 'Positive', value: pos, itemStyle: { color: '#10B981' } },
-                    { name: 'Neutral',  value: neu, itemStyle: { color: '#94A3B8' } },
                     { name: 'Negative', value: neg, itemStyle: { color: '#EF4444' } },
+                    { name: 'Neutral',  value: neu, itemStyle: { color: '#94A3B8' } },
                 ].filter(d => d.value > 0)
             }],
             graphic: [
-                { type: 'text', left: 'center', top: '44%', z: 100, style: { text: numK(tot), fill: '#0f172a', font: "800 17px 'Poppins',sans-serif", textAlign: 'center' } },
-                { type: 'text', left: 'center', top: '53%', z: 100, style: { text: 'TOTAL', fill: '#94a3b8', font: "600 8px 'Poppins',sans-serif", textAlign: 'center', letterSpacing: 2 } },
+                { type: 'text', left: 'center', top: '40%', z: 100, style: { text: numK(MTData._trendTotal > 0 ? MTData._trendTotal : tot), fill: '#0f172a', font: "800 17px 'Poppins',sans-serif", textAlign: 'center' } },
+                { type: 'text', left: 'center', top: '50%', z: 100, style: { text: 'TOTAL', fill: '#94a3b8', font: "600 8px 'Poppins',sans-serif", textAlign: 'center', letterSpacing: 2 } },
             ]
         });
 
-        // Add legend manually below
+        // Click handler: buka panel slide ketika klik slice donut
+        chart.on('click', function(params) {
+            if (!Store.all.length) return;
+            const sentMap = { 'Positive': 'pos', 'Negative': 'neg', 'Neutral': 'neu' };
+            const sent = (params && params.name) ? (sentMap[params.name] || 'all') : 'all';
+            MTPanelNew.open(Store.all, 'doc');
+            if (sent !== 'all') MTPanelNew.filterSent(sent);
+        });
+        // Klik di area kosong donut juga buka panel (semua sentimen)
+        el.addEventListener('click', function(e) {
+            // chart.on('click') sudah handle klik di slice — ini handle klik di area kosong
+            if (!Store.all.length) return;
+            MTPanelNew.open(Store.all, 'doc');
+        });
+
+        // Legend manual di bawah chart — urutan: Positive → Negative → Neutral
         const legendEl = document.createElement('div');
-        legendEl.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:16px;margin-top:14px;flex-wrap:wrap;';
-        const items = [
-            { label: 'Positive', color: '#10B981', val: pos },
-            { label: 'Neutral',  color: '#94A3B8', val: neu },
-            { label: 'Negative', color: '#EF4444', val: neg },
+        legendEl.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:16px;margin-top:10px;flex-wrap:wrap;';
+        const sentItems = [
+            { label: 'Positive', color: '#10B981' },
+            { label: 'Negative', color: '#EF4444' },
+            { label: 'Neutral',  color: '#94A3B8' },
         ];
-        legendEl.innerHTML = items.map(it => `<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--slate-500);"><span style="width:7px;height:7px;border-radius:50%;background:${it.color};flex-shrink:0;display:inline-block;"></span>${it.label}</span>`).join('');
+        legendEl.innerHTML = sentItems.map(it => `<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--slate-500);"><span style="width:7px;height:7px;border-radius:50%;background:${it.color};flex-shrink:0;display:inline-block;"></span>${it.label}</span>`).join('');
         const wrap = el.parentElement;
         const oldLegend = wrap.querySelector('.mt-bar-legend');
         if (oldLegend) oldLegend.remove();
