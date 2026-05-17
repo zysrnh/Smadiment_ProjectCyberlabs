@@ -64,7 +64,7 @@
                 }
 
                 $statisticRoutes   = ['mk.media-statistic', 'mk.media-statistic.trend', 'mk.sentiment', 'mk.net-sentiment-score', 'mk.engagement', 'mk.interaction-sentiment'];
-                $newsRoutes        = ['mk.news.word-cloud','mk.news.top-publishers','mk.news.timeline','mk.news.articles','mk.news.ai-analysis','mk.news.topic-map'];
+                $newsRoutes        = ['mk.news.overview','mk.news.word-cloud','mk.news.top-publishers','mk.news.timeline','mk.news.articles','mk.news.ai-analysis','mk.news.topic-map'];
                 $xRoutes           = ['mk.x.overview','mk.x.most-status','mk.x.most-retweets','mk.x.most-engagement','mk.x.authors.demographics','mk.x.trending-topics','mk.x.top-hashtags','mk.x.trending-word-cloud','mk.x.shared-urls','mk.x.most-active-users','mk.x.top-influencers','mk.x.emotion-analysis','mk.x.ai-analysis'];
                 $facebookRoutes    = ['mk.facebook.overview','mk.facebook.trending-topics','mk.facebook.most-viewed-posts','mk.facebook.most-engagement','mk.facebook.geographic','mk.facebook.trending-word-cloud','mk.facebook.ai-analysis','mk.facebook.emotion-analysis','mk.facebook.top-hashtags','mk.facebook.authors.demographics'];
                 $instagramRoutes   = ['mk.instagram.overview','mk.instagram.trending-topics','mk.instagram.most-viewed-posts','mk.instagram.authors.demographics','mk.instagram.geographic','mk.instagram.trending-word-cloud','mk.instagram.ai-analysis','mk.instagram.most-engagement','mk.instagram.emotion-analysis'];
@@ -202,6 +202,7 @@
                         <span class="pc-mtext">AI Analysis</span>
                     </a>
                 </li>
+                --}}
 
                 <li class="pc-item pc-caption">
                     <label>News</label>
@@ -214,6 +215,9 @@
                         <span class="pc-arrow"><i class="ti ti-chevron-right"></i></span>
                     </a>
                     <ul class="pc-submenu">
+                        <li class="pc-item {{ request()->routeIs('mk.news.overview') ? 'active' : '' }}">
+                            <a class="pc-link" href="{{ route('mk.news.overview') }}{{ $qs }}">Overview</a>
+                        </li>
                         <li class="pc-item {{ request()->routeIs('mk.news.word-cloud') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.news.word-cloud') }}{{ $qs }}">Word Cloud</a>
                         </li>
@@ -371,7 +375,7 @@
                         </li>
                     </ul>
                 </li>
-                --}}
+
 
             </ul>
         </div>

@@ -741,6 +741,34 @@ public function articlesData(Request $request)
 
 
 
+    public function newsOverviewPage(Request $request)
+    {
+        try {
+            $projects  = $this->getAllProjects();
+            $projectId = $request->query('project_id', session('selected_project_id'));
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+            }
+
+            if (!$projectId) {
+                return redirect()->route('mk.dashboard')->with('error', 'Please select a project first');
+            }
+
+            session(['selected_project_id' => $projectId]);
+
+            return view('mk.news.overview', [
+                'projects'  => $projects,
+                'projectId' => $projectId,
+                'startDate' => $request->query('start_date', now()->subDays(29)->format('Y-m-d')),
+                'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('News Overview Page Error', ['error' => $e->getMessage()]);
+            return redirect()->route('mk.dashboard')->with('error', 'Failed to load News Overview page');
+        }
+    }
+
     public function newsTimelinePage(Request $request)
     {
         try {

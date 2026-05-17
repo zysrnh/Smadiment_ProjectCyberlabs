@@ -263,6 +263,7 @@ Route::prefix('mk')->name('mk.')->middleware(['auth', 'check.trial'])->group(fun
     // NEWS PAGE ROUTES
     // ─────────────────────────────────────────────────────
     Route::prefix('news')->name('news.')->group(function () {
+        Route::get('/overview',      [NewsController::class, 'newsOverviewPage'])->name('overview');
         Route::get('/word-cloud',    [NewsController::class, 'newsWordCloudPage'])->name('word-cloud');
         Route::get('/top-publishers',[NewsController::class, 'topPublisherPage'])->name('top-publishers');
         Route::get('/timeline',      [NewsController::class, 'newsTimelinePage'])->name('timeline');

@@ -898,23 +898,26 @@ const MTData={
             legend: { show: false },
             series: [{
                 type: 'pie',
-                // Naikkan center agar ada ruang untuk label di bawah
-                radius: ['40%', '60%'], center: ['50%', '45%'],
-                avoidLabelOverlap: true, minAngle: 5,
+                radius: ['36%', '54%'], center: ['50%', '40%'],
+                avoidLabelOverlap: true, minAngle: 8,
                 itemStyle: { borderColor: '#fff', borderWidth: 3, borderRadius: 5 },
                 label: {
-                    show: true, alignTo: 'labelLine', edgeDistance: '8%', lineHeight: 18,
+                    show: true,
+                    alignTo: 'edge',
+                    edgeDistance: 12,
+                    lineHeight: 20,
                     fontFamily: "'Poppins',sans-serif", fontSize: 11, color: '#374151',
                     formatter: p => {
-                        const pc = tot > 0 ? (p.value/tot*100) : 0; if (pc < 2) return '';
+                        const pc = tot > 0 ? (p.value/tot*100) : 0;
+                        if (pc < 2) return '';
                         return `{name|${p.name}}\n{pct|${pc.toFixed(1)}%}`;
                     },
                     rich: {
-                        name: { fontWeight: '700', fontSize: 11, color: '#1a202c', lineHeight: 18 },
-                        pct:  { fontWeight: '700', fontSize: 10, color: '#038047', lineHeight: 16, backgroundColor: '#edf7f3', borderRadius: 4, padding: [1, 5] },
+                        name: { fontWeight: '700', fontSize: 11, color: '#1a202c', lineHeight: 20 },
+                        pct:  { fontWeight: '700', fontSize: 10, color: '#038047', lineHeight: 17, backgroundColor: '#edf7f3', borderRadius: 4, padding: [2, 6] },
                     }
                 },
-                labelLine: { show: true, length: 10, length2: 14, smooth: .4, lineStyle: { color: '#c4cdd8', width: 1.2 } },
+                labelLine: { show: true, length: 16, length2: 20, smooth: .3, lineStyle: { color: '#c4cdd8', width: 1.2 } },
                 emphasis: { scale: true, scaleSize: 5, itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,.12)' } },
                 // Urutan: Positive → Negative → Neutral
                 data: [
@@ -924,8 +927,8 @@ const MTData={
                 ].filter(d => d.value > 0)
             }],
             graphic: [
-                { type: 'text', left: 'center', top: '40%', z: 100, style: { text: numK(MTData._trendTotal > 0 ? MTData._trendTotal : tot), fill: '#0f172a', font: "800 17px 'Poppins',sans-serif", textAlign: 'center' } },
-                { type: 'text', left: 'center', top: '50%', z: 100, style: { text: 'TOTAL', fill: '#94a3b8', font: "600 8px 'Poppins',sans-serif", textAlign: 'center', letterSpacing: 2 } },
+                { type: 'text', left: 'center', top: '33%', z: 100, style: { text: numK(MTData._trendTotal > 0 ? MTData._trendTotal : tot), fill: '#0f172a', font: "800 17px 'Poppins',sans-serif", textAlign: 'center' } },
+                { type: 'text', left: 'center', top: '43%', z: 100, style: { text: 'TOTAL', fill: '#94a3b8', font: "600 8px 'Poppins',sans-serif", textAlign: 'center', letterSpacing: 2 } },
             ]
         });
 
