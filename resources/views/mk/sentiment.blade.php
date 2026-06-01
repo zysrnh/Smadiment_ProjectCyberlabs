@@ -1059,8 +1059,7 @@
         stroke: { curve:'smooth', width:2.5 },
         markers: { size:5, strokeWidth:2, strokeColors:'#fff', hover:{ size:7 } },
         dataLabels: {
-          enabled: xLabels.length <= 30,
-          enabledOnSeries: xLabels.length > 10 ? [0] : undefined,
+          enabled: xLabels.length <= 31,
           formatter: v => v > 0 ? numFmt(v) : '',
           style: { fontSize:'10px', fontFamily:'inherit', fontWeight:'800' },
           background: { enabled:true, borderRadius:3, borderWidth:0, padding:3, opacity:0.9 },
@@ -1095,8 +1094,18 @@
 
     /* ─── Weekday & Hour ─── */
     function renderWeekdayHour() {
-      renderTimeChart('chWeekday','skWeekday', SNTData.weekday?.weekdays||[], SNTData.weekday?.neg||[], SNTData.weekday?.pos||[], SNTData.weekday?.neu||[], SNTData.weekday?.total||[], false);
-      renderTimeChart('chHour','skHour', SNTData.hour?.hours||[], SNTData.hour?.neg||[], SNTData.hour?.pos||[], SNTData.hour?.neu||[], SNTData.hour?.total||[], true);
+      const wNeg = SNTData.weekday?.neg||[];
+      const wPos = SNTData.weekday?.pos||[];
+      const wNeu = SNTData.weekday?.neu||[];
+      const wTot = wNeg.map((n, i) => n + (wPos[i]||0) + (wNeu[i]||0));
+      
+      const hNeg = SNTData.hour?.neg||[];
+      const hPos = SNTData.hour?.pos||[];
+      const hNeu = SNTData.hour?.neu||[];
+      const hTot = hNeg.map((n, i) => n + (hPos[i]||0) + (hNeu[i]||0));
+
+      renderTimeChart('chWeekday','skWeekday', SNTData.weekday?.weekdays||[], wNeg, wPos, wNeu, wTot, false);
+      renderTimeChart('chHour','skHour', SNTData.hour?.hours||[], hNeg, hPos, hNeu, hTot, true);
     }
 
     function renderTimeChart(domId, skelId, labels, negData, posData, neuData, totals, isHour = false) {

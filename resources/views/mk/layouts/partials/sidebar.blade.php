@@ -171,9 +171,11 @@
                         <li class="pc-item {{ request()->routeIs('mk.net-sentiment-score') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.net-sentiment-score') }}{{ $qs }}">Net Sentiment Score</a>
                         </li>
+                        {{-- 
                         <li class="pc-item {{ request()->routeIs('mk.engagement-sentiment') ? 'active' : '' }}">
                             <a class="pc-link" href="{{ route('mk.engagement-sentiment') }}{{ $qs }}">Engagement Sentiment</a>
                         </li>
+                        --}}
                     </ul>
                 </li>
 

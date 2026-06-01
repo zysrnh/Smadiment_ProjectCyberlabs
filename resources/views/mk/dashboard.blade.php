@@ -1271,7 +1271,7 @@ markers: {
 },
 dataLabels: {
     enabled: totalPoints <= 30,
-    enabledOnSeries: totalPoints > 7 ? [0] : [0, 1, 2, 3],
+enabledOnSeries: [0, 1, 2, 3],
     formatter: v => v > 0 ? numK(v) : '',
     offsetY: -8,
     style: { fontSize: '9px', fontFamily: 'inherit', fontWeight: '700' },
