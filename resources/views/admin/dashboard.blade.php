@@ -34,7 +34,7 @@
     --c-news:      #2563EB;
     --c-twit:      #0284C7;
     --c-fb:        #1D4ED8;
-    --c-ig:        #E1306C;
+    --c-ig:        #DB2777;
     --c-yt:        #DC2626;
     --c-tiktok:    #0F172A;
 
@@ -131,15 +131,22 @@
   .kpi-card {
     background: var(--white);
     border: 1px solid var(--slate-200);
+    border-left: 4px solid var(--primary);
     border-radius: var(--radius);
     padding: 16px 18px;
     display: flex;
-    align-items: flex-start;
+    flex-direction: column;
     justify-content: space-between;
-    gap: 12px;
   }
-  .kpi-card-content {
-    flex: 1;
+  .kpi-card.kpi-blue   { border-left-color: #2563EB; }
+  .kpi-card.kpi-amber  { border-left-color: #D97706; }
+  .kpi-card.kpi-slate  { border-left-color: #475569; }
+
+  .kpi-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
   }
   .kpi-label {
     font-size: 11px;
@@ -147,16 +154,17 @@
     color: var(--slate-500);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    display: block;
-    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
   .kpi-val {
     font-family: var(--font);
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 800;
     color: var(--dark);
     line-height: 1;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
   .kpi-desc {
     font-size: 11px;
@@ -165,17 +173,6 @@
     display: flex;
     align-items: center;
     gap: 4px;
-  }
-  .kpi-icon-box {
-    width: 42px;
-    height: 42px;
-    border-radius: var(--radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    color: var(--white);
-    flex-shrink: 0;
   }
 
   /* ══ 2-COLUMN LAYOUT ══════════════════════════════ */
@@ -563,72 +560,60 @@
   </form>
 </div>
 
-{{-- ── 2. KPI Summary Strip (Solid & Crisp) ── --}}
+{{-- ── 2. KPI Summary Strip (Clean & High Contrast) ── --}}
 <div class="summary-grid">
   {{-- Card 1: Total Projects --}}
   <div class="kpi-card">
-    <div class="kpi-card-content">
-      <span class="kpi-label">Total Projects</span>
-      <div class="kpi-val">{{ number_format($totalProjects) }}</div>
-      <div class="kpi-desc">
-        <i class="ph ph-check-circle" style="color:#059669;"></i>
-        <span>Semua project terdaftar aktif</span>
-      </div>
+    <div class="kpi-label-row">
+      <span class="kpi-label"><i class="ph ph-folder-notch-open" style="font-size:14px;color:var(--primary);"></i> Total Projects</span>
     </div>
-    <div class="kpi-icon-box" style="background:#038047;">
-      <i class="ph ph-folder-notch-open"></i>
+    <div class="kpi-val">{{ number_format($totalProjects) }}</div>
+    <div class="kpi-desc">
+      <i class="ph ph-check-circle" style="color:#059669;"></i>
+      <span>Semua project terdaftar aktif</span>
     </div>
   </div>
 
   {{-- Card 2: Total Items / Mentions --}}
-  <div class="kpi-card">
-    <div class="kpi-card-content">
-      <span class="kpi-label">Total Mentions</span>
-      <div class="kpi-val">{{ number_format($totalMentions) }}</div>
-      <div class="kpi-desc">
-        <i class="ph ph-clock"></i>
-        <span>{{ date('d M', strtotime($start)) }} – {{ date('d M Y', strtotime($end)) }}</span>
-      </div>
+  <div class="kpi-card kpi-blue">
+    <div class="kpi-label-row">
+      <span class="kpi-label"><i class="ph ph-chart-bar" style="font-size:14px;color:#2563EB;"></i> Total Mentions</span>
     </div>
-    <div class="kpi-icon-box" style="background:#2563EB;">
-      <i class="ph ph-chart-bar"></i>
+    <div class="kpi-val">{{ number_format($totalMentions) }}</div>
+    <div class="kpi-desc">
+      <i class="ph ph-clock"></i>
+      <span>{{ date('d M', strtotime($start)) }} – {{ date('d M Y', strtotime($end)) }}</span>
     </div>
   </div>
 
   {{-- Card 3: Sentiment Quality --}}
-  <div class="kpi-card">
-    <div class="kpi-card-content">
-      <span class="kpi-label">Sentiment Quality</span>
-      <div class="kpi-val" style="font-size:20px;display:flex;align-items:baseline;gap:8px;">
-        <span style="color:#059669;">{{ $posPct }}% <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Pos</span></span>
-        <span style="color:#DC2626;">{{ $negPct }}% <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Neg</span></span>
-      </div>
-      <div class="kpi-desc">
-        <i class="ph ph-chart-pie-slice"></i>
-        <span>Rasio sentimen keseluruhan</span>
-      </div>
+  <div class="kpi-card kpi-amber">
+    <div class="kpi-label-row">
+      <span class="kpi-label"><i class="ph ph-thumbs-up" style="font-size:14px;color:#D97706;"></i> Sentiment Quality</span>
     </div>
-    <div class="kpi-icon-box" style="background:#D97706;">
-      <i class="ph ph-thumbs-up"></i>
+    <div class="kpi-val" style="font-size:22px;display:flex;align-items:baseline;gap:8px;">
+      <span style="color:#059669;">{{ $posPct }}% <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Pos</span></span>
+      <span style="color:#DC2626;">{{ $negPct }}% <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Neg</span></span>
+    </div>
+    <div class="kpi-desc">
+      <i class="ph ph-chart-pie-slice"></i>
+      <span>Rasio sentimen keseluruhan</span>
     </div>
   </div>
 
   {{-- Card 4: Media Composition --}}
-  <div class="kpi-card">
-    <div class="kpi-card-content">
-      <span class="kpi-label">Media Composition</span>
-      <div class="kpi-val" style="font-size:18px;display:flex;align-items:baseline;gap:6px;">
-        <span>{{ number_format($totalSocial) }} <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Social</span></span>
-        <span style="color:var(--slate-300);">/</span>
-        <span>{{ number_format($totalNews) }} <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Mass</span></span>
-      </div>
-      <div class="kpi-desc">
-        <i class="ph ph-globe"></i>
-        <span>6 platform aktif termonitor</span>
-      </div>
+  <div class="kpi-card kpi-slate">
+    <div class="kpi-label-row">
+      <span class="kpi-label"><i class="ph ph-share-network" style="font-size:14px;color:#475569;"></i> Media Composition</span>
     </div>
-    <div class="kpi-icon-box" style="background:#334155;">
-      <i class="ph ph-share-network"></i>
+    <div class="kpi-val" style="font-size:19px;display:flex;align-items:baseline;gap:6px;">
+      <span>{{ number_format($totalSocial) }} <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Social</span></span>
+      <span style="color:var(--slate-300);">/</span>
+      <span>{{ number_format($totalNews) }} <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Mass</span></span>
+    </div>
+    <div class="kpi-desc">
+      <i class="ph ph-globe"></i>
+      <span>6 platform aktif termonitor</span>
     </div>
   </div>
 </div>

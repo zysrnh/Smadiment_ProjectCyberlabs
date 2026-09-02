@@ -206,7 +206,7 @@
 
                     foreach ($missingDays as $idx => $md) {
                         $res = $responses[$idx] ?? null;
-                        $sentimentData = ($res && $res->successful()) ? $res->json() : [];
+                        $sentimentData = ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) ? $res->json() : [];
                         $normalized = $this->normalizeSentimentTotal(is_array($sentimentData) ? $sentimentData : []);
                         \Illuminate\Support\Facades\Cache::put($md['cache_key'], $normalized, 600);
                     }
@@ -340,7 +340,7 @@
                     
                     foreach ($missingRanges as $idx => $mr) {
                         $res = $responses[$idx] ?? null;
-                        $sentimentData = ($res && $res->successful()) ? $res->json() : [];
+                        $sentimentData = ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) ? $res->json() : [];
                         $normalized = $this->normalizeSentimentTotal(is_array($sentimentData) ? $sentimentData : []);
                         \Illuminate\Support\Facades\Cache::put($mr['cache_key'], $normalized, 600);
                     }
@@ -419,7 +419,7 @@
                     
                     foreach ($missingProjects as $idx => $project) {
                         $res = $responses[$idx] ?? null;
-                        $sentimentData = ($res && $res->successful()) ? $res->json() : [];
+                        $sentimentData = ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) ? $res->json() : [];
                         $normalized = $this->normalizeSentimentTotal(is_array($sentimentData) ? $sentimentData : []);
                         
                         $cacheKey = "dash_sent_{$project['id']}_{$startDate}_{$endDate}";
