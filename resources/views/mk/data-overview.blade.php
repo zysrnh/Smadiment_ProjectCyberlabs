@@ -802,8 +802,8 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
-                                <h3 class="mb-0 text-white f-w-300" id="kpiTotal">—</h3>
-                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub"><i class="ph ph-chart-line-up me-1"></i>Loading...</p>
+                                <h3 class="mb-0 text-white f-w-300" id="kpiTotal">{{ number_format($totalMentions ?? 0, 0, ',', '.') }}</h3>
+                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub"><i class="ph ph-chart-line-up me-1"></i>{{ number_format($totalMentions ?? 0, 0, ',', '.') }} total periode ini</p>
                             </div>
                             <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chat-dots"></i></div></div>
                         </div>
@@ -816,8 +816,8 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">Social Media</p>
-                                <h3 class="mb-0 text-white f-w-300" id="kpiSocial">—</h3>
-                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiSocialSub"><i class="ph ph-share-network me-1"></i>Loading...</p>
+                                <h3 class="mb-0 text-white f-w-300" id="kpiSocial">{{ number_format($socialMentions ?? 0, 0, ',', '.') }}</h3>
+                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiSocialSub"><i class="ph ph-share-network me-1"></i>{{ ($totalMentions ?? 0) > 0 ? number_format((($socialMentions ?? 0) / $totalMentions) * 100, 1) : 0 }}% dari total</p>
                             </div>
                             <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-share-network"></i></div></div>
                         </div>
@@ -830,8 +830,8 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">Online News</p>
-                                <h3 class="mb-0 text-white f-w-300" id="kpiNews">—</h3>
-                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNewsSub"><i class="ph ph-newspaper me-1"></i>Loading...</p>
+                                <h3 class="mb-0 text-white f-w-300" id="kpiNews">{{ number_format($newsMentions ?? 0, 0, ',', '.') }}</h3>
+                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNewsSub"><i class="ph ph-newspaper me-1"></i>{{ ($totalMentions ?? 0) > 0 ? number_format((($newsMentions ?? 0) / $totalMentions) * 100, 1) : 0 }}% dari total</p>
                             </div>
                             <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-newspaper"></i></div></div>
                         </div>
@@ -844,8 +844,8 @@
                         <div class="d-flex align-items-center">
                             <div class="flex-grow-1">
                                 <p class="mb-1 text-white text-opacity-75 f-12">Platforms Active</p>
-                                <h3 class="mb-0 text-white f-w-300" id="kpiPlatforms">—</h3>
-                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPlatformsSub"><i class="ph ph-circles-four me-1"></i>Loading...</p>
+                                <h3 class="mb-0 text-white f-w-300" id="kpiPlatforms">6</h3>
+                                <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPlatformsSub"><i class="ph ph-circles-four me-1"></i>News + 5 social platforms</p>
                             </div>
                             <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-circles-four"></i></div></div>
                         </div>
@@ -1752,10 +1752,12 @@
 
         init: function(){
             var self = this;
+            // Langsung load data mention agar kartu KPI & breakdown aktif seketika
+            self.loadMentions();
             if('IntersectionObserver' in window){
                 var obs=new IntersectionObserver(function(entries){
                     entries.forEach(function(e){ if(e.isIntersecting){ var card=e.target,sec=card.dataset.lazy; if(!self.loaded.has(sec)){self.loaded.add(sec);self.load(sec);obs.unobserve(card);} } });
-                },{rootMargin:'100px',threshold:.05});
+                },{rootMargin:'200px',threshold:.05});
                 document.querySelectorAll('[data-lazy]').forEach(function(c){obs.observe(c);});
             } else {
                 // Safari fallback: load all

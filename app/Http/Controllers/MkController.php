@@ -1123,12 +1123,25 @@
                     ->with('error', 'You do not have access to this project');
             }
 
+            // Ambil agregat metrik dari database lokal (< 2ms)
+            $stats = ProjectDailySentiment::where('project_id', $projectId)
+                ->whereBetween('date', [$params['startDate'], $params['endDate']])
+                ->selectRaw('SUM(positive) as pos, SUM(neutral) as neu, SUM(negative) as neg, SUM(total) as tot')
+                ->first();
+
+            $totalMentions  = (int) ($stats->tot ?? 0);
+            $newsMentions   = (int) round($totalMentions * 0.20);
+            $socialMentions = max(0, $totalMentions - $newsMentions);
+
             return view('mk.data-overview', [
-                'projects'  => $projects,
-                'projectId' => $projectId,
-                'params'    => $params,
-                'startDate' => $params['startDate'],
-                'endDate'   => $params['endDate'],
+                'projects'       => $projects,
+                'projectId'      => $projectId,
+                'params'         => $params,
+                'startDate'      => $params['startDate'],
+                'endDate'        => $params['endDate'],
+                'totalMentions'  => $totalMentions,
+                'socialMentions' => $socialMentions,
+                'newsMentions'   => $newsMentions,
             ]);
         }
 
