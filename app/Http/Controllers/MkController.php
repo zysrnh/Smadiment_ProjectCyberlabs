@@ -5,6 +5,7 @@
     use App\Services\MediaKernelsClient;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Auth;
+    use Illuminate\Support\Facades\Cache;
     use Illuminate\Support\Facades\Log;
 
     class MkController extends Controller
@@ -472,10 +473,6 @@
         // ══════════════════════════════════════════════════════════════
         public function adminDashboard(Request $request, MediaKernelsClient $mk)
         {
-            // Admin sees ALL projects (no filtering)
-            $rawProjects = $mk->listProjects(0, 100);
-            $projects    = array_values($rawProjects);
-
             $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
             $endDate   = $request->query('end_date',   now()->toDateString());
 
@@ -484,99 +481,99 @@
                 'end'   => $endDate,
             ];
 
-            foreach ($projects as &$project) {
+            $cacheKey = "admin_dashboard_projects_{$startDate}_{$endDate}";
+
+            $projects = Cache::remember($cacheKey, now()->addMinutes(15), function () use ($mk, $dateRange) {
                 try {
-                    // ── 1. ALL count: pakai sentimentTotal ──────────────────────
-                    $sentimentData = $mk->sentimentTotal(
-                        $project['id'],
-                        $dateRange['start'],
-                        $dateRange['end'],
-                        0,
-                        23
-                    );
-                    $norm     = $this->normalizeSentimentTotal($sentimentData);
-                    $allCount = $norm['positive'] + $norm['neutral'] + $norm['negative'];
-
-                    // ── 2. Per-platform: coba projectStats, fallback 0 ──────────
-                    $platformStats = [];
-                    $platforms = [
-                        'news'   => 'onlinenews',
-                        'twit'   => 'twit',
-                        'fb'     => 'fb',
-                        'ig'     => 'ig',
-                        'yt'     => 'yt',
-                        'tiktok' => 'tiktok',
-                    ];
-
-                    foreach ($platforms as $key => $apiParam) {
-                        try {
-                            $stat = $mk->projectStats(
-                                $project['id'],
-                                $apiParam,
-                                $dateRange['start'],
-                                $dateRange['end'],
-                                0,
-                                23,
-                                'volumetotal'
-                            );
-                            $platformStats[$key] = $this->extractTotal($stat);
-                        } catch (\Exception $e) {
-                            Log::warning("projectStats failed for {$apiParam}", [
-                                'project' => $project['id'],
-                                'error'   => $e->getMessage(),
-                            ]);
-                            $platformStats[$key] = 0;
-                        }
-                    }
-
-                    // ── 3. Jika semua platform 0, estimasi dari sentimentTotal ──
-                    $platformSum = array_sum($platformStats);
-                    if ($platformSum === 0 && $allCount > 0) {
-                        $platformStats['news']   = (int) round($allCount * 0.15);
-                        $platformStats['twit']   = (int) round($allCount * 0.45);
-                        $platformStats['fb']     = (int) round($allCount * 0.15);
-                        $platformStats['ig']     = (int) round($allCount * 0.10);
-                        $platformStats['yt']     = (int) round($allCount * 0.10);
-                        $platformStats['tiktok'] = (int) round($allCount * 0.05);
-
-                        Log::info("Using estimated platform breakdown for project {$project['id']}", [
-                            'all'   => $allCount,
-                            'stats' => $platformStats,
-                        ]);
-                    }
-
-                    $project['stats'] = array_merge(['all' => $allCount], $platformStats);
-
-                    // ── 4. Timeline 7 hari terakhir ─────────────────────────────
-                    $project['timeline'] = $this->extractDailyTimeline($project['id'], $mk);
-
-                    Log::info("✅ Stats loaded for project {$project['id']}", [
-                        'all'   => $allCount,
-                        'stats' => $project['stats'],
-                    ]);
-
-                } catch (\Exception $e) {
-                    Log::warning("❌ Failed to fetch stats for project {$project['id']}", [
-                        'error' => $e->getMessage(),
-                    ]);
-
-                    $project['stats'] = [
-                        'all'    => 0,
-                        'news'   => 0,
-                        'twit'   => 0,
-                        'fb'     => 0,
-                        'ig'     => 0,
-                        'yt'     => 0,
-                        'tiktok' => 0,
-                    ];
-                    $project['timeline'] = [
-                        'dates'     => [],
-                        'values'    => [],
-                        'sentiment' => ['positive' => [], 'neutral' => [], 'negative' => []],
-                    ];
+                    $rawProjects = $mk->listProjects(0, 100);
+                    $projects    = array_values($rawProjects);
+                } catch (\Throwable $e) {
+                    Log::warning("Failed to list projects for admin dashboard: " . $e->getMessage());
+                    $projects = [];
                 }
-            }
-            unset($project);
+
+                foreach ($projects as &$project) {
+                    try {
+                        // ── 1. ALL count: pakai sentimentTotal ──────────────────────
+                        $sentimentData = $mk->sentimentTotal(
+                            $project['id'],
+                            $dateRange['start'],
+                            $dateRange['end'],
+                            0,
+                            23
+                        );
+                        $norm     = $this->normalizeSentimentTotal($sentimentData);
+                        $allCount = $norm['positive'] + $norm['neutral'] + $norm['negative'];
+
+                        // ── 2. Per-platform: coba projectStats, fallback 0 ──────────
+                        $platformStats = [];
+                        $platforms = [
+                            'news'   => 'onlinenews',
+                            'twit'   => 'twit',
+                            'fb'     => 'fb',
+                            'ig'     => 'ig',
+                            'yt'     => 'yt',
+                            'tiktok' => 'tiktok',
+                        ];
+
+                        foreach ($platforms as $key => $apiParam) {
+                            try {
+                                $stat = $mk->projectStats(
+                                    $project['id'],
+                                    $apiParam,
+                                    $dateRange['start'],
+                                    $dateRange['end'],
+                                    0,
+                                    23,
+                                    'volumetotal'
+                                );
+                                $platformStats[$key] = $this->extractTotal($stat);
+                            } catch (\Throwable $e) {
+                                $platformStats[$key] = 0;
+                            }
+                        }
+
+                        // ── 3. Jika semua platform 0, estimasi dari sentimentTotal ──
+                        $platformSum = array_sum($platformStats);
+                        if ($platformSum === 0 && $allCount > 0) {
+                            $platformStats['news']   = (int) round($allCount * 0.15);
+                            $platformStats['twit']   = (int) round($allCount * 0.45);
+                            $platformStats['fb']     = (int) round($allCount * 0.15);
+                            $platformStats['ig']     = (int) round($allCount * 0.10);
+                            $platformStats['yt']     = (int) round($allCount * 0.10);
+                            $platformStats['tiktok'] = (int) round($allCount * 0.05);
+                        }
+
+                        $project['stats'] = array_merge(['all' => $allCount], $platformStats);
+
+                        // ── 4. Timeline 7 hari terakhir ─────────────────────────────
+                        $project['timeline'] = $this->extractDailyTimeline($project['id'], $mk);
+
+                    } catch (\Throwable $e) {
+                        Log::warning("❌ Failed to fetch stats for project {$project['id']}", [
+                            'error' => $e->getMessage(),
+                        ]);
+
+                        $project['stats'] = [
+                            'all'    => 0,
+                            'news'   => 0,
+                            'twit'   => 0,
+                            'fb'     => 0,
+                            'ig'     => 0,
+                            'yt'     => 0,
+                            'tiktok' => 0,
+                        ];
+                        $project['timeline'] = [
+                            'dates'     => [],
+                            'values'    => [],
+                            'sentiment' => ['positive' => [], 'neutral' => [], 'negative' => []],
+                        ];
+                    }
+                }
+                unset($project);
+
+                return $projects;
+            });
 
             return view('admin.dashboard', [
                 'projects'  => $projects,
