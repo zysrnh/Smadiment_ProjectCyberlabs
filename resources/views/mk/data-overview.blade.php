@@ -939,33 +939,30 @@
                             </div>
                         </div>
                     </div>
-                    <div id="mentionSkelWrap" style="padding:16px;">
-                        <div class="sk-block" style="height:240px;border-radius:6px;"></div>
-                    </div>
-                    <div class="do-mention-body" id="mentionBody" style="display:none;">
+                    <div class="do-mention-body" id="mentionBody">
                         <div class="do-mention-chart">
                             <div id="chMentionPie"></div>
                         </div>
                         <div class="do-mention-stats">
                             <div class="do-mstat-label">Breakdown</div>
-                            <div class="do-mstat-row" id="statNewsRow">
+                            <div class="do-mstat-row" id="statNewsRow" onclick="DOPanel.open('doc','all')" style="cursor:pointer;">
                                 <span class="do-mstat-name"><span style="background:#0284c7;"></span>Online News</span>
                                 <div class="do-mstat-val-row">
-                                    <span class="do-mstat-val" id="mentionNewsVal">—</span>
-                                    <span class="do-mstat-pct" id="mentionNewsPct" style="color:#0284c7;"></span>
+                                    <span class="do-mstat-val" id="mentionNewsVal">{{ number_format($newsMentions ?? 0, 0, ',', '.') }}</span>
+                                    <span class="do-mstat-pct" id="mentionNewsPct" style="color:#0284c7;">{{ ($totalMentions ?? 0) > 0 ? number_format((($newsMentions ?? 0) / $totalMentions) * 100, 1) : 0 }}%</span>
                                 </div>
                             </div>
-                            <div class="do-mstat-row" id="statSocialRow">
+                            <div class="do-mstat-row" id="statSocialRow" onclick="DOPanel.showPlatPicker(event.clientX,event.clientY,'all')" style="cursor:pointer;">
                                 <span class="do-mstat-name"><span style="background:var(--primary);"></span>Social Media</span>
                                 <div class="do-mstat-val-row">
-                                    <span class="do-mstat-val" id="mentionSocialVal">—</span>
-                                    <span class="do-mstat-pct" id="mentionSocialPct" style="color:var(--primary);"></span>
+                                    <span class="do-mstat-val" id="mentionSocialVal">{{ number_format($socialMentions ?? 0, 0, ',', '.') }}</span>
+                                    <span class="do-mstat-pct" id="mentionSocialPct" style="color:var(--primary);">{{ ($totalMentions ?? 0) > 0 ? number_format((($socialMentions ?? 0) / $totalMentions) * 100, 1) : 0 }}%</span>
                                 </div>
                             </div>
                             <div class="do-mstat-divider"></div>
-                            <div class="do-mstat-row" id="statTotalRow">
+                            <div class="do-mstat-row" id="statTotalRow" onclick="DOPanel.open('all','all')" style="cursor:pointer;">
                                 <span class="do-mstat-total-lbl">Total</span>
-                                <span class="do-mstat-total-val" id="mentionTotalVal">—</span>
+                                <span class="do-mstat-total-val" id="mentionTotalVal">{{ number_format($totalMentions ?? 0, 0, ',', '.') }}</span>
                             </div>
                         </div>
                     </div>
@@ -1152,6 +1149,9 @@
         pid: {{ $projectId ? (int)$projectId : 'null' }},
         sd:  '{{ $startDate }}',
         ed:  '{{ $endDate }}',
+        news: {{ (int)($newsMentions ?? 0) }},
+        social: {{ (int)($socialMentions ?? 0) }},
+        total: {{ (int)($totalMentions ?? 0) }},
         primary: '#038047',
         colorMap: {
             'Mass Media':'#0284c7','Online News':'#0284c7',
@@ -1803,90 +1803,94 @@
             }).catch(function(){ $('hashtagBody').innerHTML=emptyHtml('Gagal memuat'); });
         },
 
-        loadMentions: function(){
-            fetch('/mk/api/mention-counts?project_id='+DOCfg.pid+'&start_date='+DOCfg.sd+'&end_date='+DOCfg.ed).then(function(r){return r.json();}).then(function(d){
-                var social=Number(d.social||0), news=Number(d.news||0), total=social+news;
-                $('mentionNewsVal').textContent=numFmt(news);
-                $('mentionSocialVal').textContent=numFmt(social);
-                $('mentionTotalVal').textContent=numFmt(total);
-                var newsPct=total>0?(news/total*100).toFixed(1)+'%':'';
-                var socialPct=total>0?(social/total*100).toFixed(1)+'%':'';
-                var epNews=$('mentionNewsPct'), epSoc=$('mentionSocialPct');
-                if(epNews) epNews.textContent=newsPct;
-                if(epSoc)  epSoc.textContent=socialPct;
-                $('mentionSkelWrap').style.display='none';
-                $('mentionBody').style.display='-webkit-flex';
-                $('mentionBody').style.display='flex';
-                $('statNewsRow').onclick=function(){DOPanel.open('doc','all');};
-                $('statSocialRow').onclick=function(e){DOPanel.showPlatPicker(e.clientX,e.clientY,'all');};
-                $('statTotalRow').onclick=function(){DOPanel.open('all','all');};
-                _updateKPIs(news,social);
-                if(total>0){
-                    var chart=DOCharts.make('chMentionPie');
-                    if(chart){
-                        var primary=getPrimary(), totalAll=total;
-                        var labels=['Online News','Social Media'], counts=[news,social], colors=['#0284c7',primary];
-                        chart.setOption({
-                            animation:true,animationDuration:800,animationEasing:'cubicOut',backgroundColor:'transparent',
-                            tooltip:Object.assign({},EC_TT,{trigger:'item',confine:true,formatter:function(p){
-                                var pct=totalAll>0?(p.value/totalAll*100):0;
-                                return '<div style="font-weight:700;font-size:13px;margin-bottom:5px;">'+p.name+'</div><div style="display:flex;justify-content:space-between;gap:20px;margin-top:4px;"><span style="color:#94a3b8;">Mentions</span><span style="font-weight:700;">'+numFmt(p.value)+'</span></div><div style="display:flex;justify-content:space-between;gap:20px;margin-top:3px;"><span style="color:#94a3b8;">Share</span><span style="font-weight:700;color:#34d399;">'+(pct<1&&pct>0?'<1':pct.toFixed(1))+'%</span></div>';
-                            }}),
-                            legend:{show:false},
-                            series:[{
-                                type:'pie',
-                                /* ══ KEY FIX: smaller radius + offset center gives room for full labels ══ */
-                                radius:['32%','48%'],
-                                center:['50%','50%'],
-                                avoidLabelOverlap:true,
-                                minAngle:6,
-                                itemStyle:{borderColor:'#fff',borderWidth:3,borderRadius:5},
-                                label:{
-                                    show:true,
-                                    fontFamily:'inherit',
-                                    /* Use 'none' alignTo so ECharts places labels freely without edge-clipping */
-                                    alignTo:'none',
-                                    distanceToLabelLine:6,
-                                    /* Full names — no shortening */
-                                    overflow: 'none',
-                                    formatter:function(p){
-                                        var pc=totalAll>0?(p.value/totalAll*100):0;
-                                        return '{name|'+p.name+'}\n{pct|'+Math.round(pc)+'%}';
-                                    },
-                                    rich:{
-                                        name:{fontWeight:'700',fontSize:10,color:'#374151',lineHeight:17, overflow:'none'},
-                                        pct:{fontWeight:'800',fontSize:11,color:primary,lineHeight:15,
-                                            backgroundColor:'#f0faf5',borderRadius:4,padding:[1,5]}
-                                    }
-                                },
-                                labelLine:{
-                                    show:true,
-                                    length:10,
-                                    length2:14,
-                                    smooth:false,
-                                    lineStyle:{color:'#CBD5E1',width:1.2}
-                                },
-                                emphasis:{
-                                    scale:true,scaleSize:6,
-                                    itemStyle:{shadowBlur:14,shadowColor:'rgba(0,0,0,.18)'},
-                                    label:{show:true,fontFamily:'inherit',formatter:function(p){
-                                        var pc=totalAll>0?p.value/totalAll*100:0;
-                                        return '{n|'+p.name+'}\n{v|'+numK(p.value)+'}\n{p|'+pc.toFixed(1)+'%}';
-                                    },rich:{
-                                        n:{fontSize:10,color:'#94A3B8',fontWeight:'600',lineHeight:14},
-                                        v:{fontSize:15,color:'#0F172A',fontWeight:'700',lineHeight:20},
-                                        p:{fontSize:10,color:primary,fontWeight:'800',lineHeight:14}
-                                    }}
-                                },
-                                data:labels.map(function(lb,i){return{name:lb,value:counts[i],itemStyle:{color:colors[i]}};})
-                            }]
-                        },true);
-                        chart.on('click',function(p){ if(p.name==='Online News') DOPanel.open('doc','all'); else DOPanel.showPlatPicker(window.innerWidth/2,window.innerHeight/2,'all'); });
-                        chart.on('mouseover',function(p){if(p.componentType==='series') chart.getDom().style.cursor='pointer';});
-                        chart.on('mouseout',function(){chart.getDom().style.cursor='default';});
+        _renderMentionPie: function(news, social){
+            var total = news + social;
+            if(total <= 0) return;
+            var chart = DOCharts.make('chMentionPie');
+            if(!chart) return;
+            var primary = getPrimary(), totalAll = total;
+            var labels = ['Online News', 'Social Media'], counts = [news, social], colors = ['#0284c7', primary];
+            chart.setOption({
+                animation: true, animationDuration: 600, animationEasing: 'cubicOut', backgroundColor: 'transparent',
+                tooltip: Object.assign({}, EC_TT, {
+                    trigger: 'item', confine: true, formatter: function(p){
+                        var pct = totalAll > 0 ? (p.value / totalAll * 100) : 0;
+                        return '<div style="font-weight:700;font-size:13px;margin-bottom:5px;">' + p.name + '</div><div style="display:flex;justify-content:space-between;gap:20px;margin-top:4px;"><span style="color:#94a3b8;">Mentions</span><span style="font-weight:700;">' + numFmt(p.value) + '</span></div><div style="display:flex;justify-content:space-between;gap:20px;margin-top:3px;"><span style="color:#94a3b8;">Share</span><span style="font-weight:700;color:#34d399;">' + (pct < 1 && pct > 0 ? '<1' : pct.toFixed(1)) + '%</span></div>';
                     }
+                }),
+                legend: { show: false },
+                series: [{
+                    type: 'pie',
+                    radius: ['32%', '48%'],
+                    center: ['50%', '50%'],
+                    avoidLabelOverlap: true,
+                    minAngle: 6,
+                    itemStyle: { borderColor: '#fff', borderWidth: 3, borderRadius: 5 },
+                    label: {
+                        show: true,
+                        fontFamily: 'inherit',
+                        alignTo: 'none',
+                        distanceToLabelLine: 6,
+                        overflow: 'none',
+                        formatter: function(p){
+                            var pc = totalAll > 0 ? (p.value / totalAll * 100) : 0;
+                            return '{name|' + p.name + '}\n{pct|' + Math.round(pc) + '%}';
+                        },
+                        rich: {
+                            name: { fontWeight: '700', fontSize: 10, color: '#374151', lineHeight: 17, overflow: 'none' },
+                            pct: { fontWeight: '800', fontSize: 11, color: primary, lineHeight: 15, backgroundColor: '#f0faf5', borderRadius: 4, padding: [1, 5] }
+                        }
+                    },
+                    labelLine: {
+                        show: true, length: 10, length2: 14, smooth: false,
+                        lineStyle: { color: '#CBD5E1', width: 1.2 }
+                    },
+                    emphasis: {
+                        scale: true, scaleSize: 6,
+                        itemStyle: { shadowBlur: 14, shadowColor: 'rgba(0,0,0,.18)' },
+                        label: {
+                            show: true, fontFamily: 'inherit', formatter: function(p){
+                                var pc = totalAll > 0 ? p.value / totalAll * 100 : 0;
+                                return '{n|' + p.name + '}\n{v|' + numK(p.value) + '}\n{p|' + pc.toFixed(1) + '%}';
+                            },
+                            rich: {
+                                n: { fontSize: 10, color: '#94A3B8', fontWeight: '600', lineHeight: 14 },
+                                v: { fontSize: 15, color: '#0F172A', fontWeight: '700', lineHeight: 20 },
+                                p: { fontSize: 10, color: primary, fontWeight: '800', lineHeight: 14 }
+                            }
+                        }
+                    },
+                    data: labels.map(function(lb, i){ return { name: lb, value: counts[i], itemStyle: { color: colors[i] } }; })
+                }]
+            }, true);
+            chart.on('click', function(p){ if(p.name === 'Online News') DOPanel.open('doc', 'all'); else DOPanel.showPlatPicker(window.innerWidth / 2, window.innerHeight / 2, 'all'); });
+            chart.on('mouseover', function(p){ if(p.componentType === 'series') chart.getDom().style.cursor = 'pointer'; });
+            chart.on('mouseout', function(){ chart.getDom().style.cursor = 'default'; });
+        },
+
+        loadMentions: function(){
+            var self = this;
+            // 1. Render seketika dari data server-side
+            if(DOCfg.total > 0){
+                self._renderMentionPie(DOCfg.news, DOCfg.social);
+            }
+
+            // 2. Sync background
+            fetch('/mk/api/mention-counts?project_id=' + DOCfg.pid + '&start_date=' + DOCfg.sd + '&end_date=' + DOCfg.ed).then(function(r){ return r.json(); }).then(function(d){
+                var social = Number(d.social || 0), news = Number(d.news || 0), total = social + news;
+                if(total > 0){
+                    $('mentionNewsVal').textContent = numFmt(news);
+                    $('mentionSocialVal').textContent = numFmt(social);
+                    $('mentionTotalVal').textContent = numFmt(total);
+                    var newsPct = total > 0 ? (news / total * 100).toFixed(1) + '%' : '';
+                    var socialPct = total > 0 ? (social / total * 100).toFixed(1) + '%' : '';
+                    var epNews = $('mentionNewsPct'), epSoc = $('mentionSocialPct');
+                    if(epNews) epNews.textContent = newsPct;
+                    if(epSoc) epSoc.textContent = socialPct;
+                    _updateKPIs(news, social);
+                    self._renderMentionPie(news, social);
                 }
-            }).catch(function(e){ console.error('[loadMentions]',e); });
+            }).catch(function(e){ console.error('[loadMentions]', e); });
         },
 
  loadSov: function(){
