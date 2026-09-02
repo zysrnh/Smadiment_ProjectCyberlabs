@@ -3,7 +3,7 @@
     $globalEndDate   = request()->get('end_date', now()->format('Y-m-d'));
 @endphp<style>
 .circle-btn {
-    width: 56px !important; height: 56px !important; border-radius: 50% !important; padding: 0 !important; border: 3px solid #cbd5e1 !important; box-shadow: 0 4px 16px rgba(0,0,0,.14) !important; background: #f1f5f9 !important; display: flex !important; align-items: center !important; justify-content: center !important; position: relative !important; overflow: hidden !important; transition: all 0.25s cubic-bezier(.34,1.56,.64,1) !important; color: #475569 !important; text-decoration: none !important; line-height: 1 !important;
+    width: 56px !important; height: 56px !important; border-radius: 50% !important; padding: 0 !important; border: 2px solid #e2e8f0 !important; box-shadow: 0 4px 16px rgba(0,0,0,.14) !important; background: #f1f5f9 !important; display: flex !important; align-items: center !important; justify-content: center !important; position: relative !important; overflow: hidden !important; transition: all 0.25s cubic-bezier(.34,1.56,.64,1) !important; color: #475569 !important; text-decoration: none !important; line-height: 1 !important;
 }
 .circle-btn i { line-height: 1 !important; display: flex !important; align-items: center; justify-content: center; }
 .circle-btn:hover {

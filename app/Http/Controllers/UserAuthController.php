@@ -32,10 +32,20 @@ class UserAuthController extends Controller
 
         // Attempt to login with default guard (web)
         if (Auth::attempt($credentials, $request->filled('remember'))) {
+            $user = Auth::user();
+            if (!$user->isTrialActive()) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return back()->withErrors([
+                    'email' => 'Akun anda sudah kadaluarsa, mohon hubungi admin.',
+                ])->onlyInput('email');
+            }
+
             $request->session()->regenerate();
             
             return redirect()->intended(route('mk.dashboard'))
-                ->with('success', 'Welcome back, ' . Auth::user()->name . '!');
+                ->with('success', 'Welcome back, ' . $user->name . '!');
         }
 
         return back()->withErrors([

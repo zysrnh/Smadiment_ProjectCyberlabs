@@ -76,9 +76,8 @@ class TopicMapController extends Controller
     {
         try {
             $projectId = $request->get('project_id');
-            $media     = $request->get('media', 'all');
-            $startDate = $request->get('start_date', now()->subDays(7)->format('Y-m-d')); // ✅ ->get() biar baca inject middleware
-            $endDate   = $request->get('end_date',   now()->format('Y-m-d'));              // ✅ ->get() biar baca inject middleware
+            $startDate = $request->get('start_date', now()->subDays(7)->format('Y-m-d'));
+            $endDate   = $request->get('end_date',   now()->format('Y-m-d'));
             $startTime = (int) $request->get('start_time', 0);
             $endTime   = (int) $request->get('end_time',   23);
 
@@ -86,21 +85,23 @@ class TopicMapController extends Controller
                 return response()->json(['error' => 'project_id required'], 400);
             }
 
-            $data = $this->mkClient->topicMap(
+            // Using wordCloud instead of topicMap as requested by user
+            $resp = $this->mkClient->wordCloud(
                 $projectId,
-                $media,
                 $startDate,
-                $endDate,
                 $startTime,
+                $endDate,
                 $endTime
             );
 
-            // Transform to array format for frontend
+            $phrases = $resp['data']['phrases'] ?? [];
+            
+            // Transform phrases object { "Word": count } into array [ { name: "Word", count: count } ]
             $topics = [];
-            foreach ($data as $topic => $info) {
+            foreach ($phrases as $phrase => $count) {
                 $topics[] = [
-                    'name'  => $topic,
-                    'count' => $info['num_docs'] ?? 0,
+                    'name'  => $phrase,
+                    'count' => (int) $count,
                 ];
             }
 

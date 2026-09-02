@@ -461,8 +461,12 @@
         wordCloudInst.off('click');
         wordCloudInst.on('click', function(params) {
           if (params && params.name) {
-            const topic = encodeURIComponent(params.name);
-            window.location.href = `/mk/topic-detail?topic=${topic}`;
+            const url   = new URL('/mk/search-topic', window.location.origin);
+            url.searchParams.set('keyword', params.name);
+            url.searchParams.set('project_id', projectId);
+            url.searchParams.set('start_date', startDate);
+            url.searchParams.set('end_date',   endDate);
+            window.location.href = url.toString();
           }
         });
         let rtimer;
@@ -529,7 +533,7 @@
         }
         listEl.innerHTML = topics.slice(0, 10).map((t, i) => {
           const rank = i + 1;
-          const topicUrl = `/mk/topic-detail?topic=${encodeURIComponent(t.name)}`;
+          const topicUrl = `/mk/search-topic?keyword=${encodeURIComponent(t.name)}&project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`;
           return `<div class="topic-item" style="cursor:pointer" onclick="window.location.href='${topicUrl}'"><span class="topic-rank${rank<=3?' top-3':''}">#${rank}</span><span class="topic-name">${t.name}</span><span class="topic-count">${nF(t.count)}</span></div>`;
         }).join('');
         viewAllWrap.style.display = topics.length > 10 ? '' : 'none';
@@ -539,7 +543,7 @@
         const overlay = $('tmModalOverlay'), listEl = $('modalTopicList');
         listEl.innerHTML = topicsData.map((t, i) => {
           const rank = i + 1;
-          const topicUrl = `/mk/topic-detail?topic=${encodeURIComponent(t.name)}`;
+          const topicUrl = `/mk/search-topic?keyword=${encodeURIComponent(t.name)}&project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`;
           return `<div class="topic-item" data-name="${t.name.toLowerCase()}" style="cursor:pointer" onclick="window.location.href='${topicUrl}'"><span class="topic-rank${rank<=3?' top-3':''}">#${rank}</span><span class="topic-name">${t.name}</span><span class="topic-count">${nF(t.count)}</span></div>`;
         }).join('');
         overlay.classList.add('active');
