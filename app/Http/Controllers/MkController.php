@@ -2,10 +2,12 @@
 
     namespace App\Http\Controllers;
 
+    use App\Models\ProjectDailySentiment;
     use App\Services\MediaKernelsClient;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Auth;
     use Illuminate\Support\Facades\Cache;
+    use Illuminate\Support\Facades\Http;
     use Illuminate\Support\Facades\Log;
 
     class MkController extends Controller
@@ -20,7 +22,7 @@
         return [
             'positive' => (int) ($src['positive'] ?? $src['pos'] ?? $src['1'] ?? 0),
             'neutral'  => (int) ($src['neutral']  ?? $src['neu'] ?? $src['net'] ?? $src['0'] ?? 0), // ← tambah 'net'
-            'negative' => (int) ($src['negative'] ?? $src['neg'] ?? $src['-1'] ?? 0),
+            'negative' => (int) ($src['negative'] ?? $src['neg'] ?? $src[   '-1'] ?? 0),
         ];
     }
 
@@ -242,8 +244,8 @@
 
         /**
          * Helper: Extract Timeline by date range (untuk user dashboard — sinkron dengan datepicker)
-         * - Range <= 60 hari: per hari
-         * - Range > 60 hari: per minggu (supaya tidak terlalu banyak API call)
+         * - Membaca langsung dari DB lokal (ProjectDailySentiment)
+         * - Otomatis auto-sync jika ada tanggal yang belum ada di DB
          */
         private function extractTimelineByRange($projectId, string $startDate, string $endDate, MediaKernelsClient $mk): array
         {
@@ -262,12 +264,100 @@
             try {
                 $start = new \DateTime($startDate);
                 $end   = new \DateTime($endDate);
-                $diff  = (int) $start->diff($end)->days;
                 
-                $ranges = [];
-                
+                // 1. Generate semua tanggal dalam rentang
+                $allDates = [];
+                $current  = clone $start;
+                while ($current <= $end) {
+                    $allDates[] = $current->format('Y-m-d');
+                    $current->modify('+1 day');
+                }
+
+                // 2. Query dari database lokal
+                $existing = ProjectDailySentiment::where('project_id', $projectId)
+                    ->whereBetween('date', [$startDate, $endDate])
+                    ->get()
+                    ->keyBy(fn($item) => $item->date->format('Y-m-d'));
+
+                // 3. Cari tanggal yang belum ada di DB lokal
+                $missingDates = [];
+                foreach ($allDates as $dStr) {
+                    if (!$existing->has($dStr)) {
+                        $missingDates[] = $dStr;
+                    }
+                }
+
+                // 4. Jika ada tanggal yang belum tersimpan di DB, lakukan silent fetch & upsert
+                if (!empty($missingDates)) {
+                    try {
+                        $token   = $mk->getToken();
+                        $baseUrl = rtrim(config('services.mediakernels.base_url'), '/');
+                        
+                        $urls = [];
+                        foreach ($missingDates as $dStr) {
+                            $urls[$dStr] = $baseUrl . '/sentiment_total/?' . http_build_query([
+                                'project_id' => $projectId,
+                                'start_date' => $dStr,
+                                'start_time' => 0,
+                                'end_date'   => $dStr,
+                                'end_time'   => 23,
+                                'token'      => $token,
+                            ]);
+                        }
+
+                        $responses = Http::pool(function ($pool) use ($urls) {
+                            foreach ($urls as $dStr => $url) {
+                                $pool->as($dStr)->timeout(30)->acceptJson()->get($url);
+                            }
+                        });
+
+                        $upsertData = [];
+                        foreach ($missingDates as $dStr) {
+                            $res = $responses[$dStr] ?? null;
+                            $pos = 0; $neu = 0; $neg = 0;
+
+                            if ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) {
+                                $norm = $this->normalizeSentimentTotal($res->json() ?? []);
+                                $pos  = $norm['positive'];
+                                $neu  = $norm['neutral'];
+                                $neg  = $norm['negative'];
+                            }
+
+                            $upsertData[] = [
+                                'project_id' => $projectId,
+                                'date'       => $dStr,
+                                'positive'   => $pos,
+                                'neutral'    => $neu,
+                                'negative'   => $neg,
+                                'total'      => $pos + $neu + $neg,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ];
+                        }
+
+                        if (!empty($upsertData)) {
+                            ProjectDailySentiment::upsert(
+                                $upsertData,
+                                ['project_id', 'date'],
+                                ['positive', 'neutral', 'negative', 'total', 'updated_at']
+                            );
+                        }
+
+                        // Reload data terbaru dari DB
+                        $existing = ProjectDailySentiment::where('project_id', $projectId)
+                            ->whereBetween('date', [$startDate, $endDate])
+                            ->get()
+                            ->keyBy(fn($item) => $item->date->format('Y-m-d'));
+
+                    } catch (\Throwable $e) {
+                        Log::warning("Auto-sync missing dates failed for project {$projectId}: " . $e->getMessage());
+                    }
+                }
+
+                // 5. Susun timeline dari DB
+                $diff = (int) $start->diff($end)->days;
                 if ($diff > 60) {
-                    // Per minggu
+                    // Kelompokkan per minggu jika rentang > 60 hari
                     $current = clone $start;
                     while ($current <= $end) {
                         $weekEnd = clone $current;
@@ -276,102 +366,51 @@
                             $weekEnd = clone $end;
                         }
 
-                        $dateStr    = $current->format('Y-m-d');
-                        $weekEndStr = $weekEnd->format('Y-m-d');
-                        $dateLabel  = $current->format('d') . ' ' . $current->format('M');
-                        
-                        $ranges[] = [
-                            'label' => $dateLabel,
-                            'start' => $dateStr,
-                            'end'   => $weekEndStr,
-                            'cache_key' => "sent_{$projectId}_{$dateStr}_{$weekEndStr}"
-                        ];
+                        $wStartStr = $current->format('Y-m-d');
+                        $wEndStr   = $weekEnd->format('Y-m-d');
+                        $dateLabel = $current->format('d') . ' ' . $current->format('M');
+
+                        $weekRecords = $existing->filter(function ($item, $key) use ($wStartStr, $wEndStr) {
+                            return $key >= $wStartStr && $key <= $wEndStr;
+                        });
+
+                        $pos   = $weekRecords->sum('positive');
+                        $neu   = $weekRecords->sum('neutral');
+                        $neg   = $weekRecords->sum('negative');
+                        $total = $pos + $neu + $neg;
+
+                        $timeline['dates'][]                 = $dateLabel;
+                        $timeline['dates_start'][]           = $wStartStr;
+                        $timeline['dates_end'][]             = $wEndStr;
+                        $timeline['values'][]                = $total;
+                        $timeline['sentiment']['positive'][] = $pos;
+                        $timeline['sentiment']['neutral'][]  = $neu;
+                        $timeline['sentiment']['negative'][] = $neg;
 
                         $current->modify('+7 days');
                     }
                 } else {
-                    // Per hari
-                    $current = clone $start;
-                    while ($current <= $end) {
-                        $dateStr   = $current->format('Y-m-d');
-                        $dateLabel = $current->format('d') . ' ' . $current->format('M');
-                        
-                        $ranges[] = [
-                            'label' => $dateLabel,
-                            'start' => $dateStr,
-                            'end'   => $dateStr,
-                            'cache_key' => "sent_{$projectId}_{$dateStr}_{$dateStr}"
-                        ];
+                    // Per hari langsung dari DB
+                    foreach ($allDates as $dStr) {
+                        $record = $existing->get($dStr);
+                        $pos    = $record ? $record->positive : 0;
+                        $neu    = $record ? $record->neutral  : 0;
+                        $neg    = $record ? $record->negative : 0;
+                        $total  = $pos + $neu + $neg;
+                        $dt     = new \DateTime($dStr);
 
-                        $current->modify('+1 day');
+                        $timeline['dates'][]                 = $dt->format('d') . ' ' . $dt->format('M');
+                        $timeline['dates_start'][]           = $dStr;
+                        $timeline['dates_end'][]             = $dStr;
+                        $timeline['values'][]                = $total;
+                        $timeline['sentiment']['positive'][] = $pos;
+                        $timeline['sentiment']['neutral'][]  = $neu;
+                        $timeline['sentiment']['negative'][] = $neg;
                     }
                 }
-                
-                // Identify missing ranges from cache
-                $missingRanges = [];
-                foreach ($ranges as $range) {
-                    if (!\Illuminate\Support\Facades\Cache::has($range['cache_key'])) {
-                        $missingRanges[] = $range;
-                    }
-                }
-                
-                // Fetch missing ranges concurrently
-                if (!empty($missingRanges)) {
-                    $token = $mk->getToken();
-                    $baseUrl = rtrim(config('services.mediakernels.base_url'), '/');
-                    
-                    $urls = [];
-                    foreach ($missingRanges as $idx => $mr) {
-                        $urls[$idx] = $baseUrl . '/sentiment_total/?' . http_build_query([
-                            'project_id' => $projectId,
-                            'start_date' => $mr['start'],
-                            'start_time' => 0,
-                            'end_date'   => $mr['end'],
-                            'end_time'   => 23,
-                            'token'      => $token,
-                        ]);
-                    }
-                    
-                    $responses = \Illuminate\Support\Facades\Http::pool(function ($pool) use ($urls) {
-                        foreach ($urls as $idx => $url) {
-                            $pool->as($idx)->timeout(30)->acceptJson()->get($url);
-                        }
-                    });
-                    
-                    foreach ($missingRanges as $idx => $mr) {
-                        $res = $responses[$idx] ?? null;
-                        $sentimentData = ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) ? $res->json() : [];
-                        $normalized = $this->normalizeSentimentTotal(is_array($sentimentData) ? $sentimentData : []);
-                        \Illuminate\Support\Facades\Cache::put($mr['cache_key'], $normalized, 600);
-                    }
-                }
-                
-                // Build timeline from cache
-                foreach ($ranges as $range) {
-                    $normalized = \Illuminate\Support\Facades\Cache::get($range['cache_key'], [
-                        'positive' => 0,
-                        'neutral'  => 0,
-                        'negative' => 0,
-                    ]);
-                    
-                    $pos   = $normalized['positive'];
-                    $neu   = $normalized['neutral'];
-                    $neg   = $normalized['negative'];
-                    $total = $pos + $neu + $neg;
-                    
-                    $timeline['dates'][]                 = $range['label'];
-                    $timeline['dates_start'][]           = $range['start'];
-                    $timeline['dates_end'][]             = $range['end'];
-                    $timeline['values'][]                = $total;
-                    $timeline['sentiment']['positive'][] = $pos;
-                    $timeline['sentiment']['neutral'][]  = $neu;
-                    $timeline['sentiment']['negative'][] = $neg;
-                }
-                
-            } catch (\Exception $e) {
-                Log::warning("Failed to fetch timeline range for project {$projectId}", [
-                    'error' => $e->getMessage(),
-                ]);
+
+            } catch (\Throwable $e) {
+                Log::warning("Failed to extract timeline from DB for project {$projectId}: " . $e->getMessage());
             }
 
             return $timeline;
@@ -385,75 +424,52 @@
             $projects  = $this->getProjects($mk);
             $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
             $endDate   = $request->query('end_date',   now()->toDateString());
-            
-            $missingProjects = [];
-            foreach ($projects as $project) {
-                $cacheKey = "dash_sent_{$project['id']}_{$startDate}_{$endDate}";
-                if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
-                    $missingProjects[] = $project;
-                }
-            }
-            
-            if (!empty($missingProjects)) {
-                try {
-                    $token = $mk->getToken();
-                    $baseUrl = rtrim(config('services.mediakernels.base_url'), '/');
-                    
-                    $urls = [];
-                    foreach ($missingProjects as $idx => $project) {
-                        $urls[$idx] = $baseUrl . '/sentiment_total/?' . http_build_query([
-                            'project_id' => $project['id'],
-                            'start_date' => $startDate,
-                            'start_time' => 0,
-                            'end_date'   => $endDate,
-                            'end_time'   => 23,
-                            'token'      => $token,
-                        ]);
-                    }
-                    
-                    $responses = \Illuminate\Support\Facades\Http::pool(function ($pool) use ($urls) {
-                        foreach ($urls as $idx => $url) {
-                            $pool->as($idx)->timeout(30)->acceptJson()->get($url);
-                        }
-                    });
-                    
-                    foreach ($missingProjects as $idx => $project) {
-                        $res = $responses[$idx] ?? null;
-                        $sentimentData = ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) ? $res->json() : [];
-                        $normalized = $this->normalizeSentimentTotal(is_array($sentimentData) ? $sentimentData : []);
-                        
-                        $cacheKey = "dash_sent_{$project['id']}_{$startDate}_{$endDate}";
-                        \Illuminate\Support\Facades\Cache::put($cacheKey, $normalized, 300);
-                    }
-                } catch (\Exception $e) {
-                    Log::warning("Dashboard parallel fetch failed, falling back", [
-                        'error' => $e->getMessage()
-                    ]);
-                }
-            }
-        
+
+            $startObj = new \DateTime($startDate);
+            $endObj   = new \DateTime($endDate);
+            $expectedDays = (int) $startObj->diff($endObj)->days + 1;
+
             foreach ($projects as &$project) {
                 try {
-                    $cacheKey = "dash_sent_{$project['id']}_{$startDate}_{$endDate}";
-                    $norm = \Illuminate\Support\Facades\Cache::get($cacheKey, [
-                        'positive' => 0,
-                        'neutral'  => 0,
-                        'negative' => 0,
-                    ]);
-        
-                    $project['total_mentions']    = $norm['positive'] + $norm['neutral'] + $norm['negative'];
-                    $project['sentiment_summary'] = $norm;
-        
-                } catch (\Exception $e) {
+                    $pId = $project['id'];
+
+                    // 1. Ambil agregat langsung dari database lokal
+                    $stats = ProjectDailySentiment::where('project_id', $pId)
+                        ->whereBetween('date', [$startDate, $endDate])
+                        ->selectRaw('SUM(positive) as pos, SUM(neutral) as neu, SUM(negative) as neg, SUM(total) as tot, COUNT(id) as count')
+                        ->first();
+
+                    // 2. Jika di DB lokal datanya belum lengkap (kurang dari jumlah hari rentang), trigger auto-sync
+                    if (!$stats || (int) $stats->count < $expectedDays) {
+                        $this->extractTimelineByRange($pId, $startDate, $endDate, $mk);
+
+                        $stats = ProjectDailySentiment::where('project_id', $pId)
+                            ->whereBetween('date', [$startDate, $endDate])
+                            ->selectRaw('SUM(positive) as pos, SUM(neutral) as neu, SUM(negative) as neg, SUM(total) as tot')
+                            ->first();
+                    }
+
+                    $pos = (int) ($stats->pos ?? 0);
+                    $neu = (int) ($stats->neu ?? 0);
+                    $neg = (int) ($stats->neg ?? 0);
+                    $tot = (int) ($stats->tot ?? ($pos + $neu + $neg));
+
+                    $project['total_mentions']    = $tot;
+                    $project['sentiment_summary'] = [
+                        'positive' => $pos,
+                        'neutral'  => $neu,
+                        'negative' => $neg,
+                    ];
+
+                } catch (\Throwable $e) {
                     Log::warning("Dashboard: failed sentiment for project {$project['id']}", [
                         'error' => $e->getMessage(),
                     ]);
                     $project['total_mentions']    = 0;
-                    $project['sentiment_summary'] = ['positive'=>0,'neutral'=>0,'negative'=>0];
+                    $project['sentiment_summary'] = ['positive' => 0, 'neutral' => 0, 'negative' => 0];
                 }
             }
             unset($project);
-        
             Log::info('📊 Dashboard (fast with parallel pooling) loaded', [
                 'user_id'        => Auth::id(),
                 'projects_count' => count($projects),
