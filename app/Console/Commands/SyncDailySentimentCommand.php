@@ -16,7 +16,7 @@ class SyncDailySentimentCommand extends Command
      * @var string
      */
     protected $signature = 'mk:sync-daily-sentiment 
-                            {--days=14 : Number of days in the past to sync} 
+                            {--days=90 : Number of days in the past to sync (default: 90 days / 3 months)} 
                             {--project= : Specific project ID to sync}';
 
     /**
@@ -31,10 +31,10 @@ class SyncDailySentimentCommand extends Command
      */
     public function handle(MediaKernelsClient $mk)
     {
-        $daysCount   = (int) $this->option('days') ?: 14;
+        $daysCount   = (int) $this->option('days') ?: 90;
         $targetProj  = $this->option('project');
 
-        $this->info("🚀 Starting Daily Sentiment Sync (last {$daysCount} days)...");
+        $this->info("🚀 Starting Daily Sentiment Sync (last {$daysCount} days / " . round($daysCount / 30, 1) . " months)...");
 
         // 1. Get projects
         $projectIds = [];
@@ -66,64 +66,71 @@ class SyncDailySentimentCommand extends Command
         $token   = $mk->getToken();
         $baseUrl = rtrim(config('services.mediakernels.base_url'), '/');
 
+        // Chunk dates in batches of 15 days for optimal parallel HTTP pooling
+        $dateChunks = array_chunk($dates, 15);
+
         foreach ($projectIds as $pId) {
-            $this->line("Processing Project #{$pId}...");
+            $this->line("Processing Project #{$pId} ({$daysCount} days in " . count($dateChunks) . " batches)...");
 
-            $urls = [];
-            foreach ($dates as $d) {
-                $urls[$d] = $baseUrl . '/sentiment_total/?' . http_build_query([
-                    'project_id' => $pId,
-                    'start_date' => $d,
-                    'start_time' => 0,
-                    'end_date'   => $d,
-                    'end_time'   => 23,
-                    'token'      => $token,
-                ]);
-            }
-
-            // Pool HTTP requests in batch
-            $responses = Http::pool(function ($pool) use ($urls) {
-                foreach ($urls as $d => $url) {
-                    $pool->as($d)->timeout(30)->acceptJson()->get($url);
-                }
-            });
-
-            $records = [];
-            foreach ($dates as $d) {
-                $res = $responses[$d] ?? null;
-                $positive = 0;
-                $neutral  = 0;
-                $negative = 0;
-
-                if ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) {
-                    $json = $res->json();
-                    $src  = $json['data'] ?? $json;
-                    $positive = (int) ($src['positive'] ?? $src['pos'] ?? $src['1'] ?? 0);
-                    $neutral  = (int) ($src['neutral']  ?? $src['neu'] ?? $src['net'] ?? $src['0'] ?? 0);
-                    $negative = (int) ($src['negative'] ?? $src['neg'] ?? $src['-1'] ?? 0);
+            foreach ($dateChunks as $cIdx => $chunk) {
+                $urls = [];
+                foreach ($chunk as $d) {
+                    $urls[$d] = $baseUrl . '/sentiment_total/?' . http_build_query([
+                        'project_id' => $pId,
+                        'start_date' => $d,
+                        'start_time' => 0,
+                        'end_date'   => $d,
+                        'end_time'   => 23,
+                        'token'      => $token,
+                    ]);
                 }
 
-                $records[] = [
-                    'project_id' => $pId,
-                    'date'       => $d,
-                    'positive'   => $positive,
-                    'neutral'    => $neutral,
-                    'negative'   => $negative,
-                    'total'      => $positive + $neutral + $negative,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+                // Pool HTTP requests in batch of 15
+                $responses = Http::pool(function ($pool) use ($urls) {
+                    foreach ($urls as $d => $url) {
+                        $pool->as($d)->timeout(30)->acceptJson()->get($url);
+                    }
+                });
+
+                $records = [];
+                foreach ($chunk as $d) {
+                    $res = $responses[$d] ?? null;
+                    $positive = 0;
+                    $neutral  = 0;
+                    $negative = 0;
+
+                    if ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) {
+                        $json = $res->json();
+                        $src  = $json['data'] ?? $json;
+                        $positive = (int) ($src['positive'] ?? $src['pos'] ?? $src['1'] ?? 0);
+                        $neutral  = (int) ($src['neutral']  ?? $src['neu'] ?? $src['net'] ?? $src['0'] ?? 0);
+                        $negative = (int) ($src['negative'] ?? $src['neg'] ?? $src['-1'] ?? 0);
+                    }
+
+                    $records[] = [
+                        'project_id' => $pId,
+                        'date'       => $d,
+                        'positive'   => $positive,
+                        'neutral'    => $neutral,
+                        'negative'   => $negative,
+                        'total'      => $positive + $neutral + $negative,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+
+                if (!empty($records)) {
+                    ProjectDailySentiment::upsert(
+                        $records,
+                        ['project_id', 'date'],
+                        ['positive', 'neutral', 'negative', 'total', 'updated_at']
+                    );
+                }
+
+                $this->line("  - Batch " . ($cIdx + 1) . "/" . count($dateChunks) . " synced (" . count($records) . " days).");
             }
 
-            if (!empty($records)) {
-                ProjectDailySentiment::upsert(
-                    $records,
-                    ['project_id', 'date'],
-                    ['positive', 'neutral', 'negative', 'total', 'updated_at']
-                );
-            }
-
-            $this->info("✅ Project #{$pId} synced successfully (" . count($records) . " days).");
+            $this->info("✅ Project #{$pId} fully synced ({$daysCount} days).");
         }
 
         $this->info("🎉 Daily Sentiment Sync completed successfully!");
