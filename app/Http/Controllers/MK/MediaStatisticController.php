@@ -1105,7 +1105,21 @@ public function sentimentPage(Request $request)
     $projectId = $request->get('project_id') ?? ($projects[0]['id'] ?? null);
     $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
     $endDate   = $request->get('end_date', now()->format('Y-m-d'));
-    return view('mk.sentiment', compact('projects', 'projectId', 'startDate', 'endDate'));
+
+    $stats = ProjectDailySentiment::where('project_id', $projectId)
+        ->whereBetween('date', [$startDate, $endDate])
+        ->selectRaw('SUM(positive) as pos, SUM(neutral) as neu, SUM(negative) as neg, SUM(total) as tot')
+        ->first();
+
+    $posVal   = (int) ($stats->pos ?? 0);
+    $negVal   = (int) ($stats->neg ?? 0);
+    $neuVal   = (int) ($stats->neu ?? 0);
+    $totalVal = (int) ($stats->tot ?? 0);
+
+    return view('mk.sentiment', compact(
+        'projects', 'projectId', 'startDate', 'endDate',
+        'posVal', 'negVal', 'neuVal', 'totalVal'
+    ));
 }
 
 public function netSentimentScorePage(Request $request)
@@ -1133,130 +1147,135 @@ public function sentimentTotals(Request $request)
         return response()->json(['error' => 'project_id required'], 422);
     }
 
-    // ── 1. Sentiment per media ──
-    $sentimentMedia = [];
-    try {
-        $raw = $this->mk->sentimentMedia((string) $projectId, $startDate, $endDate);
-        $sentimentMedia = $this->normaliseSentimentMedia($raw);
-    } catch (\Throwable $e) {
-        Log::warning('sentimentTotals: sentimentMedia failed', ['error' => $e->getMessage()]);
-    }
+    $cacheKey = "snt_totals_{$projectId}_{$startDate}_{$endDate}_{$media}";
 
-    // ── 2. Filter by media if needed ──
-    $mediaKeyMap = [
-        'doc'       => ['doc'],
-        'twitter'   => ['twit', 'twitter'],
-        'facebook'  => ['fb', 'facebook'],
-        'instagram' => ['ig', 'instagram'],
-        'youtube'   => ['yt', 'youtube'],
-        'tiktok'    => ['tiktok'],
-    ];
-
-    $filtered = $sentimentMedia;
-    if ($media !== 'all' && isset($mediaKeyMap[$media])) {
-        $aliases = $mediaKeyMap[$media];
-        $filtered = array_filter($sentimentMedia, fn($m) => in_array(strtolower($m['media']), $aliases));
-        $filtered = array_values($filtered);
-    }
-
-    // ── 3. Totals ──
-    $totals = [
-        'neg' => array_sum(array_column($filtered, 'negative')),
-        'pos' => array_sum(array_column($filtered, 'positive')),
-        'neu' => array_sum(array_column($filtered, 'neutral')),
-    ];
-
-    // ── 4. By media (formatted for frontend) ──
-    $labelMap = [
-        'doc'       => 'Mass Media',
-        'twit'      => 'X / Twitter',
-        'twitter'   => 'X / Twitter',
-        'fb'        => 'Facebook',
-        'facebook'  => 'Facebook',
-        'ig'        => 'Instagram',
-        'instagram' => 'Instagram',
-        'yt'        => 'YouTube',
-        'youtube'   => 'YouTube',
-        'tiktok'    => 'TikTok',
-    ];
-
-    $byMedia = array_map(fn($m) => [
-        'key'   => $m['media'],
-        'label' => $labelMap[strtolower($m['media'])] ?? $m['label'],
-        'neg'   => $m['negative'],
-        'pos'   => $m['positive'],
-        'neu'   => $m['neutral'],
-    ], $sentimentMedia);
-
-    // ── 5. Trend (daily sentiment) ──
-    $trend = [];
-    try {
-        $raw = $this->mk->trendsTotal((string) $projectId, $startDate, $endDate);
-
-        // Build date list
-        $dates   = [];
-        $current = new \DateTime($startDate);
-        $end     = new \DateTime($endDate);
-        while ($current <= $end) {
-            $dates[] = $current->format('Y-m-d');
-            $current->modify('+1 day');
+    $res = Cache::remember($cacheKey, 1800, function () use ($projectId, $startDate, $endDate, $media) {
+        // ── 1. Sentiment per media ──
+        $sentimentMedia = [];
+        try {
+            $raw = $this->mk->sentimentMedia((string) $projectId, $startDate, $endDate);
+            $sentimentMedia = $this->normaliseSentimentMedia($raw);
+        } catch (\Throwable $e) {
+            Log::warning('sentimentTotals: sentimentMedia failed', ['error' => $e->getMessage()]);
         }
 
-        // For trend we use sentimentMedia daily — fallback: flat trend from trendsTotal split equally
-        // Since API doesn't provide daily sentiment breakdown, approximate from total ratio
-        $totalMentions = $totals['neg'] + $totals['pos'] + $totals['neu'];
-        $negRatio = $totalMentions > 0 ? $totals['neg'] / $totalMentions : 0.33;
-        $posRatio = $totalMentions > 0 ? $totals['pos'] / $totalMentions : 0.33;
-        $neuRatio = $totalMentions > 0 ? $totals['neu'] / $totalMentions : 0.34;
-
-        // Aggregate daily totals across all platforms
-        $keywordMap = [
-            'DOC' => 'doc', 'TWIT' => 'twitter', 'TWITTER' => 'twitter',
-            'FB' => 'facebook', 'FACEBOOK' => 'facebook',
-            'IG' => 'instagram', 'INSTAGRAM' => 'instagram',
-            'YT' => 'youtube', 'YOUTUBE' => 'youtube',
-            'TIKTOK' => 'tiktok', 'TT' => 'tiktok',
+        // ── 2. Filter by media if needed ──
+        $mediaKeyMap = [
+            'doc'       => ['doc'],
+            'twitter'   => ['twit', 'twitter'],
+            'facebook'  => ['fb', 'facebook'],
+            'instagram' => ['ig', 'instagram'],
+            'youtube'   => ['yt', 'youtube'],
+            'tiktok'    => ['tiktok'],
         ];
 
-        $dailyTotal = array_fill_keys($dates, 0);
+        $filtered = $sentimentMedia;
+        if ($media !== 'all' && isset($mediaKeyMap[$media])) {
+            $aliases = $mediaKeyMap[$media];
+            $filtered = array_filter($sentimentMedia, fn($m) => in_array(strtolower($m['media']), $aliases));
+            $filtered = array_values($filtered);
+        }
 
-        foreach ($raw['data'] ?? [] as $item) {
-            $kw  = strtoupper($item['keyword'] ?? '');
-            $key = $keywordMap[$kw] ?? strtolower($kw);
+        // ── 3. Totals ──
+        $totals = [
+            'neg' => array_sum(array_column($filtered, 'negative')),
+            'pos' => array_sum(array_column($filtered, 'positive')),
+            'neu' => array_sum(array_column($filtered, 'neutral')),
+        ];
 
-            // Filter by media if needed
-            if ($media !== 'all' && isset($mediaKeyMap[$media])) {
-                if (!in_array($key, $mediaKeyMap[$media])) continue;
+        // ── 4. By media (formatted for frontend) ──
+        $labelMap = [
+            'doc'       => 'Mass Media',
+            'twit'      => 'X / Twitter',
+            'twitter'   => 'X / Twitter',
+            'fb'        => 'Facebook',
+            'facebook'  => 'Facebook',
+            'ig'        => 'Instagram',
+            'instagram' => 'Instagram',
+            'yt'        => 'YouTube',
+            'youtube'   => 'YouTube',
+            'tiktok'    => 'TikTok',
+        ];
+
+        $byMedia = array_map(fn($m) => [
+            'key'   => $m['media'],
+            'label' => $labelMap[strtolower($m['media'])] ?? $m['label'],
+            'neg'   => $m['negative'],
+            'pos'   => $m['positive'],
+            'neu'   => $m['neutral'],
+        ], $sentimentMedia);
+
+        // ── 5. Trend (daily sentiment) ──
+        $trend = [];
+        try {
+            $raw = $this->mk->trendsTotal((string) $projectId, $startDate, $endDate);
+
+            // Build date list
+            $dates   = [];
+            $current = new \DateTime($startDate);
+            $end     = new \DateTime($endDate);
+            while ($current <= $end) {
+                $dates[] = $current->format('Y-m-d');
+                $current->modify('+1 day');
             }
 
-            foreach ($item['data'] ?? [] as $pt) {
-                $date  = substr((string)($pt['date'] ?? ''), 0, 10);
-                $count = (int)($pt['count'] ?? 0);
-                if (isset($dailyTotal[$date])) {
-                    $dailyTotal[$date] += $count;
+            // For trend we use sentimentMedia daily — fallback: flat trend from trendsTotal split equally
+            $totalMentions = $totals['neg'] + $totals['pos'] + $totals['neu'];
+            $negRatio = $totalMentions > 0 ? $totals['neg'] / $totalMentions : 0.33;
+            $posRatio = $totalMentions > 0 ? $totals['pos'] / $totalMentions : 0.33;
+            $neuRatio = $totalMentions > 0 ? $totals['neu'] / $totalMentions : 0.34;
+
+            // Aggregate daily totals across all platforms
+            $keywordMap = [
+                'DOC' => 'doc', 'TWIT' => 'twitter', 'TWITTER' => 'twitter',
+                'FB' => 'facebook', 'FACEBOOK' => 'facebook',
+                'IG' => 'instagram', 'INSTAGRAM' => 'instagram',
+                'YT' => 'youtube', 'YOUTUBE' => 'youtube',
+                'TIKTOK' => 'tiktok', 'TT' => 'tiktok',
+            ];
+
+            $dailyTotal = array_fill_keys($dates, 0);
+
+            foreach ($raw['data'] ?? [] as $item) {
+                $kw  = strtoupper($item['keyword'] ?? '');
+                $key = $keywordMap[$kw] ?? strtolower($kw);
+
+                // Filter by media if needed
+                if ($media !== 'all' && isset($mediaKeyMap[$media])) {
+                    if (!in_array($key, $mediaKeyMap[$media])) continue;
+                }
+
+                foreach ($item['data'] ?? [] as $pt) {
+                    $date  = substr((string)($pt['date'] ?? ''), 0, 10);
+                    $count = (int)($pt['count'] ?? 0);
+                    if (isset($dailyTotal[$date])) {
+                        $dailyTotal[$date] += $count;
+                    }
                 }
             }
+
+            foreach ($dates as $date) {
+                $dayTotal = $dailyTotal[$date] ?? 0;
+                $trend[] = [
+                    'date' => $date,
+                    'neg'  => (int) round($dayTotal * $negRatio),
+                    'pos'  => (int) round($dayTotal * $posRatio),
+                    'neu'  => (int) round($dayTotal * $neuRatio),
+                ];
+            }
+
+        } catch (\Throwable $e) {
+            Log::warning('sentimentTotals: trend failed', ['error' => $e->getMessage()]);
         }
 
-        foreach ($dates as $date) {
-            $dayTotal = $dailyTotal[$date] ?? 0;
-            $trend[] = [
-                'date' => $date,
-                'neg'  => (int) round($dayTotal * $negRatio),
-                'pos'  => (int) round($dayTotal * $posRatio),
-                'neu'  => (int) round($dayTotal * $neuRatio),
-            ];
-        }
+        return [
+            'totals'   => $totals,
+            'by_media' => $byMedia,
+            'trend'    => $trend,
+        ];
+    });
 
-    } catch (\Throwable $e) {
-        Log::warning('sentimentTotals: trend failed', ['error' => $e->getMessage()]);
-    }
-
-    return response()->json([
-        'totals'   => $totals,
-        'by_media' => $byMedia,
-        'trend'    => $trend,
-    ]);
+    return response()->json($res);
 }
 
 // ───────────────────────────────────────────────

@@ -165,23 +165,23 @@
   <div class="row mb-3">
     <div class="col-md-6 col-xl-3">
       <div class="card h-100 bg-success text-white kpi-card-hover fade-up fade-up-d1" style="cursor:pointer;" onclick="SNTPopup.openSentiment('pos')">
-        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Positive</p><h3 class="mb-0 text-white f-w-300" id="valPos">—</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctPos"><i class="ph ph-chart-line-up me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div></div></div>
+        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Positive</p><h3 class="mb-0 text-white f-w-300" id="valPos">{{ number_format($posVal ?? 0, 0, ',', '.') }}</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctPos"><i class="ph ph-chart-line-up me-1"></i>{{ ($totalVal ?? 0) > 0 ? number_format((($posVal ?? 0) / $totalVal) * 100, 1) : 0 }}%</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley"></i></div></div></div></div>
       </div>
     </div>
     <div class="col-md-6 col-xl-3">
       <div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d3" style="cursor:pointer;" onclick="SNTPopup.openSentiment('neg')">
-        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Negative</p><h3 class="mb-0 text-white f-w-300" id="valNeg">—</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg"><i class="ph ph-chart-line-up me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div></div></div>
+        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Negative</p><h3 class="mb-0 text-white f-w-300" id="valNeg">{{ number_format($negVal ?? 0, 0, ',', '.') }}</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg"><i class="ph ph-chart-line-up me-1"></i>{{ ($totalVal ?? 0) > 0 ? number_format((($negVal ?? 0) / $totalVal) * 100, 1) : 0 }}%</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-sad"></i></div></div></div></div>
       </div>
     </div>
     
     <div class="col-md-6 col-xl-3">
       <div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d2" style="cursor:pointer;" onclick="SNTPopup.openSentiment('neu')">
-        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Neutral</p><h3 class="mb-0 text-white f-w-300" id="valNeu">—</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu"><i class="ph ph-chart-line-up me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-meh"></i></div></div></div></div>
+        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Neutral</p><h3 class="mb-0 text-white f-w-300" id="valNeu">{{ number_format($neuVal ?? 0, 0, ',', '.') }}</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu"><i class="ph ph-chart-line-up me-1"></i>{{ ($totalVal ?? 0) > 0 ? number_format((($neuVal ?? 0) / $totalVal) * 100, 1) : 0 }}%</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-smiley-meh"></i></div></div></div></div>
       </div>
     </div>
     <div class="col-md-6 col-xl-3">
       <div class="card h-100 bg-primary text-white kpi-card-hover fade-up fade-up-d4">
-        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p><h3 class="mb-0 text-white f-w-300" id="valTot">—</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph ph-list-numbers me-1"></i>{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} – {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div></div></div>
+        <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p><h3 class="mb-0 text-white f-w-300" id="valTot">{{ number_format($totalVal ?? 0, 0, ',', '.') }}</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph ph-list-numbers me-1"></i>{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} – {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div></div></div>
       </div>
     </div>
   </div>
@@ -645,10 +645,10 @@
         const h = dom.offsetHeight || (dom.parentElement ? dom.parentElement.offsetHeight : 300);
 
         const c = echarts.init(dom, null, {
-          renderer: _isSafari ? 'svg' : 'canvas',
+          renderer: 'canvas',
           width:  w > 0 ? w : undefined,
           height: h > 0 ? h : undefined,
-          devicePixelRatio: _isSafari ? 1 : (window.devicePixelRatio || 1),
+          devicePixelRatio: window.devicePixelRatio || 1,
         });
         this._i[id] = c;
 
@@ -710,7 +710,9 @@
         return;
       }
       try {
-        if (document.fonts && document.fonts.ready) await document.fonts.ready;
+        if (document.fonts && document.fonts.ready) {
+          await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 120))]);
+        }
 
         const res  = await fetch(`/mk/api/sentiment/totals?project_id=${SNTCfg.pid}&start_date=${SNTCfg.sd}&end_date=${SNTCfg.ed}&media=${SNTCfg.media}`);
         const data = await res.json();
@@ -719,11 +721,9 @@
         SNTData.byMedia = data.by_media || [];
         SNTData.trend   = data.trend    || [];
 
-        _rafReady(renderAll, _isSafari ? 120 : 0);
+        _rafReady(renderAll, _isSafari ? 60 : 0);
       } catch(err) {
         console.error('loadSentiment error:', err);
-        ['valNeg','valPos','valNeu','valTot'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:600;">Error</span>';});
-        ['pctNeg','pctPos','pctNeu'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<i class="ph ph-warning-circle me-1"></i>Gagal memuat';});
         ['skOverview','skSovTotal','skMass','skSocial','skByType','skByPlat','skMassPie','skSocialPie'].forEach(hideSk);
       }
     }
@@ -731,7 +731,9 @@
     async function loadTimeData() {
       if (!SNTCfg.pid) return;
       try {
-        if (document.fonts && document.fonts.ready) await document.fonts.ready;
+        if (document.fonts && document.fonts.ready) {
+          await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 120))]);
+        }
 
         const res  = await fetch(`/mk/api/sentiment/by-time?project_id=${SNTCfg.pid}&start_date=${SNTCfg.sd}&end_date=${SNTCfg.ed}`);
         const data = await res.json();
@@ -739,7 +741,7 @@
         SNTData.weekday = data.weekday;
         SNTData.hour    = data.hour;
 
-        _rafReady(renderWeekdayHour, _isSafari ? 120 : 0);
+        _rafReady(renderWeekdayHour, _isSafari ? 60 : 0);
       } catch(err) {
         console.error('loadTimeData error:', err);
         ['skWeekday','skHour'].forEach(hideSk);
