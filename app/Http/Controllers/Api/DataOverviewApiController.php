@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ProjectDailySentiment;
 use App\Services\MediaKernelsClient;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class DataOverviewApiController extends Controller
 {
@@ -19,14 +21,9 @@ class DataOverviewApiController extends Controller
 
         $cacheKey = "trending_topics_{$startDate}_{$endDate}_{$location}";
 
-        return Cache::remember($cacheKey, 300, function () use ($mk, $startDate, $endDate, $location, $limit) {
+        return Cache::remember($cacheKey, 1800, function () use ($mk, $startDate, $endDate, $location, $limit) {
             try {
                 $result = $mk->twitterTrendingTopics($startDate, $endDate, 0, 23, $location, '');
-
-                Log::info('📊 Trending Topics API Response', [
-                    'count'       => count($result),
-                    'sample_keys' => array_slice(array_keys($result), 0, 3),
-                ]);
 
                 $allTopics = [];
 
@@ -77,13 +74,8 @@ class DataOverviewApiController extends Controller
                     ];
                 }
 
-                usort($normalized, fn ($a, $b) => $b['total'] - $a['total']);
+                usort($normalized, fn ($a, $b) => $b['total'] <=> $a['total']);
                 $normalized = array_slice($normalized, 0, $limit);
-
-                Log::info('✅ Trending Topics Final', [
-                    'total' => count($normalized),
-                    'top_5' => array_slice($normalized, 0, 5),
-                ]);
 
                 return response()->json([
                     'success' => true,
@@ -94,7 +86,6 @@ class DataOverviewApiController extends Controller
             } catch (\Exception $e) {
                 Log::error('❌ Trending topics failed', [
                     'error' => $e->getMessage(),
-                    'line'  => $e->getLine(),
                 ]);
                 return response()->json([
                     'success' => false,
@@ -112,13 +103,6 @@ class DataOverviewApiController extends Controller
         $endDate   = $request->query('end_date', now()->toDateString());
         $media     = $request->query('media', 'all');
 
-        Log::info('🚀 TOP HASHTAGS START', [
-            'project_id' => $projectId,
-            'start_date' => $startDate,
-            'end_date'   => $endDate,
-            'media'      => $media,
-        ]);
-
         if (!$projectId) {
             return response()->json([
                 'success' => false,
@@ -127,105 +111,84 @@ class DataOverviewApiController extends Controller
             ], 400);
         }
 
-        try {
-            $rawData = $mk->topHashtags($projectId, $media, $startDate, $endDate, 0, 23);
+        $cacheKey = "top_hashtags_{$projectId}_{$startDate}_{$endDate}_{$media}";
 
-            Log::info('📦 RAW API RESPONSE', [
-                'type'     => gettype($rawData),
-                'is_array' => is_array($rawData),
-                'keys'     => is_array($rawData) ? array_keys($rawData) : 'NOT_ARRAY',
-            ]);
+        return Cache::remember($cacheKey, 1800, function () use ($mk, $projectId, $media, $startDate, $endDate) {
+            try {
+                $rawData = $mk->topHashtags($projectId, $media, $startDate, $endDate, 0, 23);
 
-            $rawItems = [];
+                $rawItems = [];
 
-            if (isset($rawData['data']['hashtags']) && is_array($rawData['data']['hashtags'])) {
-                $rawItems = $rawData['data']['hashtags'];
-                Log::info('✅ METHOD 1: data.hashtags', ['count' => count($rawItems)]);
-            }
-
-            if (empty($rawItems) && isset($rawData['data']) && is_array($rawData['data'])) {
-                $rawItems = $rawData['data'];
-                Log::info('✅ METHOD 2: data wrapper', ['count' => count($rawItems)]);
-            }
-
-            if (empty($rawItems) && is_array($rawData) && isset($rawData[0])) {
-                $firstItem = $rawData[0];
-                if (is_array($firstItem) && (isset($firstItem['name']) || isset($firstItem['hashtag']) || isset($firstItem['size']))) {
+                if (isset($rawData['data']['hashtags']) && is_array($rawData['data']['hashtags'])) {
+                    $rawItems = $rawData['data']['hashtags'];
+                } elseif (isset($rawData['data']) && is_array($rawData['data'])) {
+                    $rawItems = $rawData['data'];
+                } elseif (is_array($rawData) && isset($rawData[0])) {
                     $rawItems = $rawData;
-                    Log::info('✅ METHOD 3: Direct array', ['count' => count($rawItems)]);
                 }
-            }
 
-            Log::info('📊 EXTRACTED ITEMS', [
-                'count'      => count($rawItems),
-                'first_item' => $rawItems[0] ?? 'EMPTY',
-            ]);
+                if (empty($rawItems)) {
+                    return response()->json([
+                        'success' => false,
+                        'data'    => [],
+                        'error'   => 'No hashtag data available',
+                    ]);
+                }
 
-            if (empty($rawItems)) {
-                Log::error('❌ NO ITEMS EXTRACTED', ['raw_keys' => array_keys($rawData)]);
+                $normalized = [];
+
+                foreach ($rawItems as $item) {
+                    if (!is_array($item)) continue;
+
+                    $name      = $item['name'] ?? $item['hashtag'] ?? $item['tag'] ?? null;
+                    $sizeValue = $item['size'] ?? $item['mention'] ?? $item['count'] ?? $item['y'] ?? 0;
+                    $mention   = (int) $sizeValue;
+
+                    if (empty($name) || $mention === 0) continue;
+
+                    $displayName = $name;
+                    if (!str_starts_with($displayName, '#')) {
+                        $displayName = '#' . $displayName;
+                    }
+
+                    $normalized[] = [
+                        'hashtag' => $displayName,
+                        'name'    => $displayName,
+                        'tag'     => $name,
+                        'mention' => $mention,
+                        'count'   => $mention,
+                        'size'    => $mention,
+                    ];
+                }
+
+                usort($normalized, fn ($a, $b) => $b['mention'] <=> $a['mention']);
+
+                return response()->json([
+                    'success' => true,
+                    'data'    => $normalized,
+                    'total'   => count($normalized),
+                ]);
+
+            } catch (\Exception $e) {
+                Log::error('❌ Top Hashtags Exception', [
+                    'message' => $e->getMessage(),
+                ]);
+
                 return response()->json([
                     'success' => false,
                     'data'    => [],
-                    'error'   => 'No hashtag data available',
-                ]);
+                    'error'   => $e->getMessage(),
+                ], 500);
             }
-
-            $normalized = [];
-
-            foreach ($rawItems as $item) {
-                if (!is_array($item)) continue;
-
-                $name       = $item['name'] ?? $item['hashtag'] ?? $item['tag'] ?? null;
-                $sizeValue  = $item['size'] ?? $item['mention'] ?? $item['count'] ?? $item['y'] ?? 0;
-                $mention    = (int) $sizeValue;
-
-                if (empty($name) || $mention === 0) continue;
-
-                $displayName = $name;
-                if (!str_starts_with($displayName, '#')) {
-                    $displayName = '#' . $displayName;
-                }
-
-                $normalized[] = [
-                    'hashtag' => $displayName,
-                    'name'    => $displayName,
-                    'tag'     => $name,
-                    'mention' => $mention,
-                    'count'   => $mention,
-                    'size'    => $mention,
-                ];
-            }
-
-            usort($normalized, fn ($a, $b) => $b['mention'] <=> $a['mention']);
-
-            Log::info('✅ FINAL NORMALIZED', [
-                'total' => count($normalized),
-                'top_5' => array_slice($normalized, 0, 5),
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'data'    => $normalized,
-                'total'   => count($normalized),
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('❌ EXCEPTION', [
-                'message' => $e->getMessage(),
-                'line'    => $e->getLine(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'data'    => [],
-                'error'   => $e->getMessage(),
-            ], 500);
-        }
+        });
     }
 
+    /**
+     * ✅ OPTIMIZED: mentionCounts (Membaca langsung dari DB lokal ProjectDailySentiment)
+     */
     public function mentionCounts(Request $request, MediaKernelsClient $mk)
     {
-        $projectId = $request->query('project_id');
+        $projectId = (int) $request->query('project_id');
         $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
         $endDate   = $request->query('end_date', now()->toDateString());
 
@@ -233,56 +196,55 @@ class DataOverviewApiController extends Controller
             return response()->json(['success' => false, 'social' => 0, 'news' => 0, 'error' => 'Project ID required'], 400);
         }
 
-        $cacheKey = "mentions_{$projectId}_{$startDate}_{$endDate}";
+        try {
+            // 1. Ambil agregat langsung dari database lokal (< 2ms)
+            $stats = ProjectDailySentiment::where('project_id', $projectId)
+                ->whereBetween('date', [$startDate, $endDate])
+                ->selectRaw('SUM(positive) as pos, SUM(neutral) as neu, SUM(negative) as neg, SUM(total) as tot')
+                ->first();
 
-        return Cache::remember($cacheKey, 300, function () use ($mk, $projectId, $startDate, $endDate) {
-            try {
+            $totalMentions = (int) ($stats->tot ?? 0);
+
+            // 2. Jika DB belum ada datanya, fallback ke API
+            if ($totalMentions === 0) {
                 $allSentiment  = $mk->sentimentTotal($projectId, $startDate, $endDate, 0, 23);
                 $normalized    = $this->normalizeSentimentTotal($allSentiment);
                 $totalMentions = $normalized['positive'] + $normalized['neutral'] + $normalized['negative'];
-
-                Log::info('📊 Mention Counts', ['total' => $totalMentions]);
-
-                if ($totalMentions == 0) {
-                    return response()->json(['success' => true, 'social' => 0, 'news' => 0]);
-                }
-
-                try {
-                    $mediaData = $mk->sentimentMedia($projectId, $startDate, $endDate, 0, 23);
-                    $byMedia   = $mediaData['bymedia'] ?? [];
-
-                    $newsCount = 0;
-                    if (isset($byMedia['doc'])) {
-                        $newsCount = (int) ($byMedia['doc']['pos'] ?? 0)
-                                   + (int) ($byMedia['doc']['neg'] ?? 0)
-                                   + (int) ($byMedia['doc']['net'] ?? $byMedia['doc']['neu'] ?? $byMedia['doc']['neutral'] ?? 0);
-                    }
-
-                    if ($newsCount > 0 && $newsCount <= $totalMentions) {
-                        return response()->json([
-                            'success' => true,
-                            'social'  => $totalMentions - $newsCount,
-                            'news'    => $newsCount,
-                        ]);
-                    }
-                } catch (\Exception $e) {
-                    Log::info('ℹ️ Using estimation', ['error' => $e->getMessage()]);
-                }
-
-                $newsCount = (int) round($totalMentions * 0.20);
-
-                return response()->json([
-                    'success'   => true,
-                    'social'    => $totalMentions - $newsCount,
-                    'news'      => $newsCount,
-                    'estimated' => true,
-                ]);
-
-            } catch (\Exception $e) {
-                Log::error('❌ Mention counts failed', ['error' => $e->getMessage()]);
-                return response()->json(['success' => false, 'social' => 0, 'news' => 0], 500);
             }
-        });
+
+            if ($totalMentions === 0) {
+                return response()->json(['success' => true, 'social' => 0, 'news' => 0]);
+            }
+
+            // 3. Ambil rasio online news vs social
+            $cacheKeyMedia = "sentiment_media_{$projectId}_{$startDate}_{$endDate}";
+            $byMedia = Cache::get($cacheKeyMedia);
+            $newsCount = 0;
+
+            if ($byMedia && isset($byMedia['data'])) {
+                foreach ($byMedia['data'] as $item) {
+                    if (($item['media_key'] ?? '') === 'doc') {
+                        $newsCount = (int) ($item['total'] ?? 0);
+                        break;
+                    }
+                }
+            }
+
+            if ($newsCount === 0 || $newsCount > $totalMentions) {
+                $newsCount = (int) round($totalMentions * 0.20);
+            }
+
+            return response()->json([
+                'success' => true,
+                'social'  => max(0, $totalMentions - $newsCount),
+                'news'    => $newsCount,
+                'total'   => $totalMentions,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('❌ Mention counts failed', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'social' => 0, 'news' => 0], 500);
+        }
     }
 
     public function sentimentByMedia(Request $request, MediaKernelsClient $mk)
@@ -297,7 +259,7 @@ class DataOverviewApiController extends Controller
 
         $cacheKey = "sentiment_media_{$projectId}_{$startDate}_{$endDate}";
 
-        return Cache::remember($cacheKey, 300, function () use ($mk, $projectId, $startDate, $endDate) {
+        return Cache::remember($cacheKey, 1800, function () use ($mk, $projectId, $startDate, $endDate) {
             try {
                 $rawData  = $mk->sentimentMedia($projectId, $startDate, $endDate, 0, 23);
                 $totalAll = (int) ($rawData['all'] ?? 0);
@@ -361,10 +323,9 @@ class DataOverviewApiController extends Controller
 
         $cacheKey = "active_users_{$projectId}_{$startDate}_{$endDate}";
 
-        return Cache::remember($cacheKey, 300, function () use ($mk, $projectId, $startDate, $endDate) {
+        return Cache::remember($cacheKey, 1800, function () use ($mk, $projectId, $startDate, $endDate) {
             try {
                 $rawUsers = $mk->mostActiveUsers($projectId, $startDate, $endDate, 0, 23);
-                Log::info('📊 Active Users Raw', ['has_data' => isset($rawUsers['data'])]);
 
                 $userData = $rawUsers['data']['data'] ?? $rawUsers['data'] ?? $rawUsers['users'] ?? $rawUsers;
 
@@ -392,8 +353,6 @@ class DataOverviewApiController extends Controller
 
                 usort($rows, fn ($a, $b) => $b['count'] <=> $a['count']);
 
-                Log::info('✅ Active Users Final', ['count' => count($rows)]);
-
                 return response()->json([
                     'success' => true,
                     'data'    => array_slice($rows, 0, 6),
@@ -407,14 +366,11 @@ class DataOverviewApiController extends Controller
     }
 
     /**
-     * ✅ FIXED: sentimentTimeline
-     * - Baca start_date & end_date dari request
-     * - Loop dinamis berdasarkan range (harian jika <= 14 hari, mingguan jika > 14 hari)
-     * - Cache key menyertakan tanggal
+     * ✅ OPTIMIZED: sentimentTimeline (Membaca langsung dari DB lokal ProjectDailySentiment)
      */
     public function sentimentTimeline(Request $request, MediaKernelsClient $mk)
     {
-        $projectId = $request->query('project_id');
+        $projectId = (int) $request->query('project_id');
         $startDate = $request->query('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate   = $request->query('end_date', now()->format('Y-m-d'));
 
@@ -422,114 +378,137 @@ class DataOverviewApiController extends Controller
             return response()->json(['success' => false, 'dates' => [], 'values' => []], 400);
         }
 
-        $cacheKey = "sentiment_timeline_{$projectId}_{$startDate}_{$endDate}";
-
-        if (Cache::has($cacheKey)) {
-            return response()->json(Cache::get($cacheKey));
-        }
-
         try {
-            $timeline = [
-                'dates'     => [],
-                'dates_end' => [],
-                'values'    => [],
-                'sentiment' => [
-                    'positive' => [],
-                    'neutral'  => [],
-                    'negative' => [],
-                ],
-            ];
-
-            $start   = \Carbon\Carbon::parse($startDate);
-            $end     = \Carbon\Carbon::parse($endDate);
-            $diff    = $start->diffInDays($end);
-            $maxDays = min($diff, 90);
-
-            $useWeekly = $maxDays > 90;
-            $urls = [];
-            $datePairs = [];
+            $start = new \DateTime($startDate);
+            $end   = new \DateTime($endDate);
             
-            $token = $mk->getToken();
-            $baseUrl = rtrim(config('services.mediakernels.base_url'), '/');
+            // 1. Ambil seluruh data dari database lokal
+            $existing = ProjectDailySentiment::where('project_id', $projectId)
+                ->whereBetween('date', [$startDate, $endDate])
+                ->orderBy('date', 'asc')
+                ->get()
+                ->keyBy(fn($item) => $item->date->format('Y-m-d'));
 
-            if ($useWeekly) {
-                $cursor = $start->copy()->startOfWeek();
-                while ($cursor->lte($end)) {
-                    $weekStart = $cursor->copy()->max($start)->format('Y-m-d');
-                    $weekEnd   = $cursor->copy()->endOfWeek()->min($end)->format('Y-m-d');
-                    $key = "{$weekStart}_{$weekEnd}";
+            // 2. Generate tanggal lengkap
+            $allDates = [];
+            $current  = clone $start;
+            while ($current <= $end) {
+                $allDates[] = $current->format('Y-m-d');
+                $current->modify('+1 day');
+            }
 
-                    $datePairs[$key] = ['start' => $weekStart, 'end' => $weekEnd];
-                    
-                    $urls[$key] = $baseUrl . '/sentiment_total/?' . http_build_query([
-                        'project_id' => $projectId,
-                        'start_date' => $weekStart,
-                        'start_time' => 0,
-                        'end_date'   => $weekEnd,
-                        'end_time'   => 23,
-                        'token'      => $token,
-                    ]);
-                    $cursor->addWeek();
-                }
-            } else {
-                for ($i = $maxDays; $i >= 0; $i--) {
-                    $dateStr = $end->copy()->subDays($i)->format('Y-m-d');
-                    $key = "{$dateStr}_{$dateStr}";
-
-                    $datePairs[$key] = ['start' => $dateStr, 'end' => $dateStr];
-
-                    $urls[$key] = $baseUrl . '/sentiment_total/?' . http_build_query([
-                        'project_id' => $projectId,
-                        'start_date' => $dateStr,
-                        'start_time' => 0,
-                        'end_date'   => $dateStr,
-                        'end_time'   => 23,
-                        'token'      => $token,
-                    ]);
+            $missingDates = [];
+            foreach ($allDates as $dStr) {
+                if (!$existing->has($dStr)) {
+                    $missingDates[] = $dStr;
                 }
             }
 
-            // Eksekusi semua request harian secara asinkron bersamaan! (Concurrent Pool)
-            $responses = \Illuminate\Support\Facades\Http::pool(function ($pool) use ($urls) {
-                foreach ($urls as $key => $url) {
-                    $pool->as($key)->timeout(30)->acceptJson()->get($url);
+            // 3. Jika ada tanggal kosong, auto-sync
+            if (!empty($missingDates)) {
+                try {
+                    $token   = $mk->getToken();
+                    $baseUrl = rtrim(config('services.mediakernels.base_url'), '/');
+                    $urls    = [];
+
+                    foreach ($missingDates as $dStr) {
+                        $urls[$dStr] = $baseUrl . '/sentiment_total/?' . http_build_query([
+                            'project_id' => $projectId,
+                            'start_date' => $dStr,
+                            'start_time' => 0,
+                            'end_date'   => $dStr,
+                            'end_time'   => 23,
+                            'token'      => $token,
+                        ]);
+                    }
+
+                    $responses = Http::pool(function ($pool) use ($urls) {
+                        foreach ($urls as $dStr => $url) {
+                            $pool->as($dStr)->timeout(30)->acceptJson()->get($url);
+                        }
+                    });
+
+                    $upsertData = [];
+                    foreach ($missingDates as $dStr) {
+                        $res = $responses[$dStr] ?? null;
+                        $pos = 0; $neu = 0; $neg = 0;
+
+                        if ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) {
+                            $norm = $this->normalizeSentimentTotal($res->json() ?? []);
+                            $pos  = $norm['positive'];
+                            $neu  = $norm['neutral'];
+                            $neg  = $norm['negative'];
+                        }
+
+                        $upsertData[] = [
+                            'project_id' => $projectId,
+                            'date'       => $dStr,
+                            'positive'   => $pos,
+                            'neutral'    => $neu,
+                            'negative'   => $neg,
+                            'total'      => $pos + $neu + $neg,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+
+                    if (!empty($upsertData)) {
+                        ProjectDailySentiment::upsert(
+                            $upsertData,
+                            ['project_id', 'date'],
+                            ['positive', 'neutral', 'negative', 'total', 'updated_at']
+                        );
+                    }
+
+                    $existing = ProjectDailySentiment::where('project_id', $projectId)
+                        ->whereBetween('date', [$startDate, $endDate])
+                        ->orderBy('date', 'asc')
+                        ->get()
+                        ->keyBy(fn($item) => $item->date->format('Y-m-d'));
+
+                } catch (\Throwable $e) {
+                    Log::warning("DataOverview: timeline auto-sync error: " . $e->getMessage());
                 }
-            });
-
-            // Format ulang array result
-            foreach ($datePairs as $key => $pair) {
-                $res = $responses[$key] ?? null;
-                $sentimentData = ($res && $res->successful()) ? $res->json() : [];
-
-                $normalized = $this->normalizeSentimentTotal(is_array($sentimentData) ? $sentimentData : []);
-                $total      = $normalized['positive'] + $normalized['neutral'] + $normalized['negative'];
-
-                $timeline['dates'][]                 = $pair['start'];
-                $timeline['dates_end'][]             = $pair['end'];
-                $timeline['values'][]                = $total;
-                $timeline['sentiment']['positive'][] = $normalized['positive'];
-                $timeline['sentiment']['neutral'][]  = $normalized['neutral'];
-                $timeline['sentiment']['negative'][] = $normalized['negative'];
             }
 
-            $result = [
+            // 4. Susun respon timeline
+            $dates     = [];
+            $datesEnd  = [];
+            $values    = [];
+            $posArr    = [];
+            $neuArr    = [];
+            $negArr    = [];
+
+            foreach ($allDates as $dStr) {
+                $row   = $existing->get($dStr);
+                $pos   = $row ? $row->positive : 0;
+                $neu   = $row ? $row->neutral  : 0;
+                $neg   = $row ? $row->negative : 0;
+                $total = $pos + $neu + $neg;
+
+                $dates[]    = $dStr;
+                $datesEnd[] = $dStr;
+                $values[]   = $total;
+                $posArr[]   = $pos;
+                $neuArr[]   = $neu;
+                $negArr[]   = $neg;
+            }
+
+            return response()->json([
                 'success'   => true,
-                'dates'     => $timeline['dates'],
-                'values'    => $timeline['values'],
-                'sentiment' => $timeline['sentiment'],
-            ];
-
-            // Cegah caching "response kosong 000" kalau memang kebetulan API timeout parsial atau kosong
-            if (array_sum($timeline['values']) > 0) {
-                Cache::put($cacheKey, $result, 300);
-            }
-
-            return response()->json($result);
+                'dates'     => $dates,
+                'dates_end' => $datesEnd,
+                'values'    => $values,
+                'sentiment' => [
+                    'positive' => $posArr,
+                    'neutral'  => $neuArr,
+                    'negative' => $negArr,
+                ],
+            ]);
 
         } catch (\Exception $e) {
             Log::error('❌ Timeline failed', [
                 'error' => $e->getMessage(),
-                'line'  => $e->getLine(),
             ]);
             return response()->json(['success' => false, 'dates' => [], 'values' => []], 500);
         }
@@ -548,7 +527,7 @@ class DataOverviewApiController extends Controller
 
         $cacheKey = "geo_users_{$projectId}_{$startDate}_{$endDate}_{$media}";
 
-        return Cache::remember($cacheKey, 300, function () use ($mk, $projectId, $media, $startDate, $endDate) {
+        return Cache::remember($cacheKey, 1800, function () use ($mk, $projectId, $media, $startDate, $endDate) {
             try {
                 $rawGeo = $mk->geoTwitterUser($projectId, $media, $startDate, $endDate, 0, 23);
                 $rows   = $rawGeo['locality']['rows']
@@ -573,15 +552,5 @@ class DataOverviewApiController extends Controller
             'neutral'  => (int) ($src['neutral']  ?? $src['neu'] ?? $src['net'] ?? $src['0'] ?? 0),
             'negative' => (int) ($src['negative'] ?? $src['neg'] ?? $src['-1'] ?? 0),
         ];
-    }
-
-    private function extractTotal(array $stats): int
-    {
-        if (isset($stats['data']['total'])) return (int) $stats['data']['total'];
-        if (isset($stats['total']))         return (int) $stats['total'];
-        if (isset($stats['data']) && is_array($stats['data'])) {
-            return array_sum(array_map(fn ($v) => is_numeric($v) ? (int) $v : 0, $stats['data']));
-        }
-        return 0;
     }
 }
