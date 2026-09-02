@@ -2131,7 +2131,10 @@
         },
         renderMap: function(elId,rows,primary){
             var map=L.map(elId,{center:[-2.5,118],zoom:5,scrollWheelZoom:false});
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap, © CARTO',subdomains:'abcd',maxZoom:19}).addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                maxZoom: 19
+            }).addTo(map);
             if(!rows.length) return{map:map,markerRefs:[]};
             var maxCount=Math.max.apply(null,rows.map(function(p){return parseInt(p.count||0);})), markerRefs=[];
             rows.forEach(function(p){
