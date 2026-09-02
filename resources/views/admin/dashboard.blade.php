@@ -1,366 +1,772 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Admin Dashboard')
+@section('title', 'Admin Dashboard - SMADIMENT')
 
 @section('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
 <style>
-* { box-sizing: border-box; }
+  * { box-sizing: border-box; }
 
-:root {
-  --green:       #038047;
-  --green-dk:    #025a35;
-  --green-light: #E8F5E9;
-  --dark:        #1E293B;
-  --mid:         #475569;
-  --muted:       #94A3B8;
-  --border:      #E2E8F0;
-  --bg:          #F8FAFC;
-  --white:       #FFFFFF;
-  --r:           8px;
-  --font:        'Poppins', sans-serif;
-  --sh-sm:       0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
-  --sh-md:       0 4px 14px rgba(15, 23, 42, .08);
-  --sh-lg:       0 10px 30px rgba(15, 23, 42, .12);
+  :root {
+    --primary:     #038047;
+    --primary-dk:  #026337;
+    --primary-lt:  #E8F5EE;
+    --dark:        #1E293B;
+    --dark-blue:   #273B4A;
+    --slate-700:   #334155;
+    --slate-600:   #475569;
+    --slate-500:   #64748B;
+    --slate-400:   #94A3B8;
+    --slate-200:   #E2E8F0;
+    --slate-100:   #F1F5F9;
+    --slate-50:    #F8FAFC;
+    --white:       #FFFFFF;
+    
+    --pos:         #059669;
+    --pos-lt:      #ECFDF5;
+    --neu:         #64748B;
+    --neu-lt:      #F1F5F9;
+    --neg:         #DC2626;
+    --neg-lt:      #FEF2F2;
 
-  --c-news:  #3B82F6;
-  --c-twit:  #1DA1F2;
-  --c-fb:    #1877F2;
-  --c-ig:    #E1306C;
-  --c-yt:    #FF0000;
-  --c-tt:    #111827;
-}
+    --c-news:      #2563EB;
+    --c-twit:      #0284C7;
+    --c-fb:        #1D4ED8;
+    --c-ig:        #DB2777;
+    --c-yt:        #DC2626;
+    --c-tiktok:    #0F172A;
 
-/* ══ Topbar ══════════════════════════════════════ */
-.adm-topbar {
-  display: flex; align-items: flex-end; justify-content: space-between;
-  margin-bottom: 24px; gap: 12px; flex-wrap: wrap;
-}
-.adm-page-title {
-  font-family: var(--font); font-size: 24px; font-weight: 700;
-  color: #fff; margin: 0 0 4px;
-}
-.adm-page-sub {
-  font-family: var(--font); font-size: 14px; color: rgba(255,255,255,0.7);
-  margin: 0; font-weight: 500;
-}
-.adm-date-pill {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 16px; background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;
-  font-family: var(--font); font-size: 13px; font-weight: 600; color: #fff;
-}
+    --radius:      6px;
+    --font:        'Poppins', sans-serif;
+  }
 
-/* ══ Summary Strip ═══════════════════════════════ */
-.summary-strip {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;
-}
-.sum-card {
-  border-radius: 12px; padding: 20px; display: flex; align-items: center;
-  justify-content: space-between; box-shadow: var(--sh-md);
-  transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s ease, filter .25s ease;
-  cursor: pointer; position: relative; overflow: hidden; color: #fff;
-}
-.sum-card::before {
-  content: ''; position: absolute; top: 0; bottom: 0; left: -100%;
-  width: 60%; background: linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
-  pointer-events: none; z-index: 1;
-}
-.sum-card:hover {
-  transform: translateY(-6px) scale(1.025); box-shadow: 0 20px 40px rgba(0,0,0,.25); filter: brightness(1.07);
-}
-.sum-card:hover::before { animation: kpiShimmer .6s ease forwards; }
-@keyframes kpiShimmer { 100% { left: 150%; } }
+  /* ══ TOPBAR ══════════════════════════════════════ */
+  .adm-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .adm-title-wrap h1 {
+    font-family: var(--font);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--white);
+    margin: 0 0 4px;
+    letter-spacing: -0.3px;
+  }
+  .adm-title-wrap p {
+    font-family: var(--font);
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.75);
+    margin: 0;
+    font-weight: 500;
+  }
 
-.sum-info { display: flex; flex-direction: column; z-index: 2; flex: 1; }
-.sum-lbl { font-family: var(--font); font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.75); margin-bottom: 4px; }
-.sum-val { font-family: var(--font); font-size: 28px; font-weight: 600; color: #fff; line-height: 1; margin: 4px 0; }
-.sum-sub { font-family: var(--font); font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+  /* Date Filter Form */
+  .adm-filter-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1B2B38;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 6px 10px;
+    border-radius: var(--radius);
+  }
+  .adm-filter-form label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--slate-400);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 4px;
+  }
+  .adm-date-input {
+    background: var(--dark-blue);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--white);
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: var(--radius);
+    outline: none;
+  }
+  .adm-date-input:focus {
+    border-color: var(--primary);
+  }
+  .adm-filter-btn {
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 7px 14px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s ease;
+  }
+  .adm-filter-btn:hover {
+    background: var(--primary-dk);
+  }
 
-.sum-icon {
-  width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
-  background: rgba(255,255,255,.2); flex-shrink: 0; z-index: 2; font-size: 24px; color: #fff; transition: background .2s ease;
-}
-.sum-card:hover .sum-icon { background: rgba(255,255,255,.35); }
-.sum-card:hover .sum-icon i { animation: kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both; }
-@keyframes kpiIconBounce { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  /* ══ KPI SUMMARY GRID ═════════════════════════════ */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 105px;
+  }
+  .kpi-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--slate-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .kpi-icon-pill {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+  .kpi-val {
+    font-family: var(--font);
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--dark);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .kpi-desc {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--slate-400);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
 
-/* ══ Two-column Main ═════════════════════════════ */
-.adm-main { display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; }
+  /* ══ 2-COLUMN LAYOUT ══════════════════════════════ */
+  .adm-main-layout {
+    display: grid;
+    grid-template-columns: 310px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
 
-/* ══ Left Sidebar ════════════════════════════════ */
-.proj-sidebar {
-  background: var(--white); border: 1px solid var(--border); border-radius: 12px;
-  box-shadow: var(--sh-sm); overflow: hidden; position: sticky; top: 24px;
-}
-.proj-sidebar-head {
-  display: flex; align-items: center; justify-content: space-between; padding: 16px 20px;
-  border-bottom: 1px solid var(--border); background: var(--white);
-}
-.proj-sidebar-title {
-  font-family: var(--font); font-size: 15px; font-weight: 600; color: var(--dark);
-  display: flex; align-items: center; gap: 8px;
-}
-.proj-sidebar-title i { color: var(--muted); font-size: 18px; }
-.proj-sidebar-badge {
-  background: var(--green); color: #fff; padding: 4px 10px; border-radius: 99px;
-  font-family: var(--font); font-size: 12px; font-weight: 600;
-}
-.proj-list { padding: 0; max-height: 600px; overflow-y: auto; }
-.proj-list::-webkit-scrollbar { width: 4px; }
-.proj-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-.proj-item {
-  display: flex; align-items: center; gap: 12px; padding: 16px 20px;
-  border-bottom: 1px solid var(--bg); cursor: pointer; transition: all .15s ease;
-}
-.proj-item:last-child { border-bottom: none; }
-.proj-item:hover { background: var(--bg); }
-.proj-item.hl { background: var(--green-light); border-left: 3px solid var(--green); }
-.proj-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: var(--green);
-  flex-shrink: 0; box-shadow: 0 0 0 3px var(--green-light); animation: pulseP 2.5s infinite;
-}
-@keyframes pulseP { 0%,100% { box-shadow: 0 0 0 3px var(--green-light) } 50% { box-shadow: 0 0 0 6px transparent } }
-.proj-info { flex: 1; min-width: 0; }
-.proj-name {
-  display: block; font-family: var(--font); font-size: 14px; font-weight: 500;
-  color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.proj-meta {
-  display: block; font-family: var(--font); font-size: 12px; color: var(--muted); margin-top: 4px;
-}
-.proj-arr { color: var(--muted); transition: color .15s; flex-shrink: 0; font-size: 16px; }
-.proj-item:hover .proj-arr { color: var(--green); }
+  /* ══ LEFT: PROJECT NAVIGATOR ═════════════════════ */
+  .proj-sidebar {
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: sticky;
+    top: 24px;
+  }
+  .proj-sidebar-hd {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--slate-200);
+    background: var(--slate-50);
+  }
+  .proj-sidebar-hd-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .proj-sidebar-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .proj-count-badge {
+    background: var(--primary);
+    color: var(--white);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .proj-search-input {
+    width: 100%;
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius);
+    padding: 7px 10px;
+    font-family: var(--font);
+    font-size: 12px;
+    color: var(--dark);
+    outline: none;
+  }
+  .proj-search-input:focus {
+    border-color: var(--primary);
+  }
+  .proj-nav-list {
+    max-height: calc(100vh - 280px);
+    overflow-y: auto;
+  }
+  .proj-nav-list::-webkit-scrollbar { width: 4px; }
+  .proj-nav-list::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 4px; }
 
-/* ══ Charts Column ═══════════════════════════════ */
-.charts-col { display: flex; flex-direction: column; gap: 24px; }
+  .proj-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--slate-100);
+    cursor: pointer;
+    transition: background 0.12s ease;
+  }
+  .proj-nav-item:last-child { border-bottom: none; }
+  .proj-nav-item:hover { background: var(--slate-50); }
+  .proj-nav-item.active-item {
+    background: var(--primary-lt);
+    border-left: 3px solid var(--primary);
+  }
+  .proj-nav-item.hidden-by-search { display: none !important; }
 
-/* ══ Chart Card ══════════════════════════════════ */
-.chart-card {
-  background: var(--white); border: 1px solid var(--border); border-radius: 12px;
-  box-shadow: var(--sh-sm); padding: 0; transition: border-color .3s, box-shadow .3s; overflow: hidden;
-}
-.chart-card.hl { border-color: var(--green); box-shadow: 0 0 0 3px rgba(3,128,71,.09), var(--sh-md); }
+  .proj-nav-left {
+    min-width: 0;
+    flex: 1;
+    margin-right: 10px;
+  }
+  .proj-nav-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .proj-nav-meta {
+    font-size: 11px;
+    color: var(--slate-500);
+    font-weight: 500;
+  }
+  .proj-nav-count {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
 
-.card-hd {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--white); flex-wrap: wrap;
-}
-.card-hd-left { display: flex; align-items: center; gap: 12px; }
-.card-hd-dot {
-  width: 32px; height: 32px; border-radius: 50%; background: var(--green-light);
-  color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
-}
-.card-title { font-family: var(--font); font-size: 15px; font-weight: 600; color: var(--dark); margin: 0 0 2px; }
-.card-sub { font-family: var(--font); font-size: 12px; color: var(--muted); font-weight: 500; }
-.card-actions { display: flex; align-items: center; gap: 6px; }
-.btn-primary {
-  display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
-  background: var(--green); color: #fff; border-radius: 6px; font-family: var(--font);
-  font-size: 12px; font-weight: 600; text-decoration: none; box-shadow: var(--sh-sm);
-  transition: all .18s; border: 1px solid var(--green);
-}
-.btn-primary:hover { filter: brightness(0.9); transform: translateY(-1px); color:#fff; }
-.btn-primary i { font-size: 16px; }
-.btn-icon {
-  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-  background: var(--white); border: 1px solid var(--border); border-radius: 6px;
-  color: var(--mid); text-decoration: none; transition: all .18s; font-size: 16px;
-}
-.btn-icon:hover { background: var(--bg); border-color: var(--muted); color: var(--dark); transform: translateY(-1px); }
+  /* ══ RIGHT: PROJECT CARDS ════════════════════════ */
+  .cards-column {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .project-card {
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .project-card.highlighted {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(3, 128, 71, 0.2);
+  }
 
-.card-bd { padding: 20px; }
+  /* Card Header */
+  .p-card-hd {
+    padding: 14px 18px;
+    background: var(--slate-50);
+    border-bottom: 1px solid var(--slate-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .p-card-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .p-card-id-badge {
+    background: var(--dark);
+    color: var(--white);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 7px;
+    border-radius: 4px;
+  }
+  .p-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0;
+  }
+  .p-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .adm-btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: var(--radius);
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.12s ease;
+  }
+  .adm-btn-primary {
+    background: var(--primary);
+    color: var(--white);
+  }
+  .adm-btn-primary:hover {
+    background: var(--primary-dk);
+    color: var(--white);
+  }
+  .adm-btn-secondary {
+    background: var(--white);
+    color: var(--slate-700);
+    border-color: var(--slate-200);
+  }
+  .adm-btn-secondary:hover {
+    background: var(--slate-100);
+    color: var(--dark);
+  }
 
-/* ══ STATS PILLS ══════════════════════════════════ */
-.stats-row {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 20px; overflow-x: auto; scrollbar-width: none;
-}
-.stats-row::-webkit-scrollbar { display: none; }
-.stat-pill {
-  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
-  background: var(--white); border: 1px solid var(--border); border-radius: 8px;
-  flex-shrink: 0;
-}
-.stat-pill.all-pill { border-color: var(--green); background: var(--green-light); }
-.stat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.stat-info { display: flex; flex-direction: column; gap: 2px; }
-.stat-val { font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--dark); line-height: 1; }
-.stat-lbl { font-family: var(--font); font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+  /* Card Body */
+  .p-card-bd {
+    padding: 18px;
+  }
 
-.card-divider { height: 1px; background: var(--border); margin-bottom: 20px; }
-.chart-wrap { height: 260px; position: relative; }
+  /* Sentiment Breakdown Strip */
+  .sent-breakdown-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .sent-bars-wrap {
+    flex: 1;
+    min-width: 200px;
+  }
+  .sent-progress-track {
+    height: 8px;
+    background: var(--slate-100);
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    margin-bottom: 6px;
+  }
+  .sent-bar-pos { background: var(--pos); height: 100%; }
+  .sent-bar-neu { background: var(--neu); height: 100%; }
+  .sent-bar-neg { background: var(--neg); height: 100%; }
+  
+  .sent-legends {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .sent-leg-item { display: flex; align-items: center; gap: 4px; }
+  .sent-leg-dot { width: 7px; height: 7px; border-radius: 50%; }
 
-.empty-main {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 80px 20px; background: var(--white); border: 1px dashed var(--border);
-  border-radius: var(--r); text-align: center; gap: 12px;
-}
-.empty-main i { font-size: 48px; color: var(--muted); }
-.empty-main h3 { font-family: var(--font); font-size: 18px; font-weight: 600; color: var(--dark); margin: 0; }
-.empty-main p  { font-family: var(--font); font-size: 14px; color: var(--muted); margin: 0; }
+  .sent-totals-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  .sent-totals-num {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--dark);
+    line-height: 1;
+  }
+  .sent-totals-lbl {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--slate-400);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-top: 3px;
+  }
 
-/* ══ Responsive ══════════════════════════════════ */
-@media (max-width: 1200px) { .summary-strip { grid-template-columns: repeat(2,1fr); } }
-@media (max-width: 1024px) { .adm-main { grid-template-columns: 1fr; } .proj-sidebar { position: static; } }
-@media (max-width: 640px) {
-  .summary-strip { grid-template-columns: repeat(2,1fr); gap: 12px; }
-  .sum-card { padding: 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
-  .sum-icon { position: absolute; top: 16px; right: 16px; width: 40px; height: 40px; font-size: 20px; }
-  .sum-val { font-size: 24px; }
-  .chart-card { padding: 0; }
-  .card-hd { flex-direction: column; align-items: flex-start; }
-  .card-actions { width: 100%; justify-content: flex-start; }
-  .chart-wrap { height: 220px; }
-  .adm-topbar { flex-direction: column; align-items: flex-start; gap: 16px; }
-}
+  /* Platform Badges Row */
+  .platform-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+    padding: 10px 0;
+    border-top: 1px solid var(--slate-100);
+    border-bottom: 1px solid var(--slate-100);
+  }
+  .plat-box {
+    background: var(--slate-50);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius);
+    padding: 8px;
+    text-align: center;
+  }
+  .plat-box-hd {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+  .plat-box-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--dark);
+  }
+
+  /* Chart Container */
+  .chart-area {
+    position: relative;
+    height: 220px;
+    width: 100%;
+  }
+
+  /* Empty State */
+  .adm-empty-state {
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius);
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--slate-400);
+  }
+  .adm-empty-state i { font-size: 40px; margin-bottom: 8px; display: block; }
+  .adm-empty-state h3 { font-size: 16px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+
+  /* ══ RESPONSIVE ══════════════════════════════════ */
+  @media (max-width: 1200px) {
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .platform-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 900px) {
+    .adm-main-layout { grid-template-columns: 1fr; }
+    .proj-sidebar { position: static; }
+  }
+  @media (max-width: 600px) {
+    .summary-grid { grid-template-columns: 1fr; }
+    .platform-grid { grid-template-columns: repeat(2, 1fr); }
+    .adm-topbar { flex-direction: column; align-items: stretch; }
+    .adm-filter-form { flex-direction: column; align-items: stretch; }
+  }
 </style>
 @endsection
 
 @section('content')
 
-{{-- ── Top Bar ── --}}
+@php
+  $start = $dateRange['start'] ?? request()->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+  $end   = $dateRange['end'] ?? request()->get('end_date', now()->format('Y-m-d'));
+  
+  $totalProjects = count($projects);
+  $totalMentions = collect($projects)->sum(fn($p) => $p['stats']['all'] ?? 0);
+  
+  $totalNews = collect($projects)->sum(fn($p) => $p['stats']['news'] ?? 0);
+  $totalSocial = collect($projects)->sum(fn($p) => 
+    ($p['stats']['twit'] ?? 0) + 
+    ($p['stats']['fb'] ?? 0) + 
+    ($p['stats']['ig'] ?? 0) + 
+    ($p['stats']['yt'] ?? 0) + 
+    ($p['stats']['tiktok'] ?? 0)
+  );
+
+  $totalPos = collect($projects)->sum(fn($p) => collect($p['timeline']['sentiment']['positive'] ?? [])->sum());
+  $totalNeu = collect($projects)->sum(fn($p) => collect($p['timeline']['sentiment']['neutral'] ?? [])->sum());
+  $totalNeg = collect($projects)->sum(fn($p) => collect($p['timeline']['sentiment']['negative'] ?? [])->sum());
+  $sumSentiment = $totalPos + $totalNeu + $totalNeg;
+  $posPct = $sumSentiment > 0 ? round(($totalPos / $sumSentiment) * 100, 1) : 0;
+  $negPct = $sumSentiment > 0 ? round(($totalNeg / $sumSentiment) * 100, 1) : 0;
+@endphp
+
+{{-- ── 1. Top Bar & Date Filter ── --}}
 <div class="adm-topbar">
-  <div>
-    <h1 class="adm-page-title">Dashboard</h1>
-    <p class="adm-page-sub">Monitor & manage all projects</p>
+  <div class="adm-title-wrap">
+    <h1>Admin Project Overview</h1>
+    <p>Monitoring & analytics overview across all client projects</p>
   </div>
-  <div class="adm-date-pill">
-    <i class="ph ph-calendar-blank"></i>
-    <span id="admDateLabel"></span>
+
+  <form method="GET" action="{{ route('admin.dashboard') }}" class="adm-filter-form">
+    <label><i class="ph ph-calendar-blank me-1"></i>Periode:</label>
+    <input type="date" name="start_date" class="adm-date-input" value="{{ $start }}" required />
+    <span style="color:rgba(255,255,255,0.4);font-weight:700;">–</span>
+    <input type="date" name="end_date" class="adm-date-input" value="{{ $end }}" required />
+    <button type="submit" class="adm-filter-btn">
+      <i class="ph ph-funnel"></i> Filter
+    </button>
+  </form>
+</div>
+
+{{-- ── 2. KPI Summary Strip ── --}}
+<div class="summary-grid">
+  {{-- Card 1: Total Projects --}}
+  <div class="kpi-card">
+    <div class="kpi-card-top">
+      <span class="kpi-label">Total Projects</span>
+      <div class="kpi-icon-pill" style="background:#ECFDF5;color:#059669;">
+        <i class="ph ph-folder-notch-open"></i>
+      </div>
+    </div>
+    <div class="kpi-val">{{ number_format($totalProjects) }}</div>
+    <div class="kpi-desc">
+      <i class="ph ph-check-circle" style="color:#059669;"></i>
+      <span>Semua project terdaftar aktif</span>
+    </div>
+  </div>
+
+  {{-- Card 2: Total Items / Mentions --}}
+  <div class="kpi-card">
+    <div class="kpi-card-top">
+      <span class="kpi-label">Total Mentions</span>
+      <div class="kpi-icon-pill" style="background:#EFF6FF;color:#2563EB;">
+        <i class="ph ph-chart-bar"></i>
+      </div>
+    </div>
+    <div class="kpi-val">{{ number_format($totalMentions) }}</div>
+    <div class="kpi-desc">
+      <i class="ph ph-clock"></i>
+      <span>Rentang {{ date('d M', strtotime($start)) }} – {{ date('d M Y', strtotime($end)) }}</span>
+    </div>
+  </div>
+
+  {{-- Card 3: Sentiment Quality --}}
+  <div class="kpi-card">
+    <div class="kpi-card-top">
+      <span class="kpi-label">Sentiment Quality</span>
+      <div class="kpi-icon-pill" style="background:#FEF2F2;color:#DC2626;">
+        <i class="ph ph-thumbs-up"></i>
+      </div>
+    </div>
+    <div class="kpi-val" style="font-size:20px;display:flex;align-items:baseline;gap:8px;">
+      <span style="color:#059669;">{{ $posPct }}% <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Pos</span></span>
+      <span style="color:#DC2626;">{{ $negPct }}% <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Neg</span></span>
+    </div>
+    <div class="kpi-desc">
+      <i class="ph ph-chart-pie-slice"></i>
+      <span>Rata-rata sentimen keseluruhan</span>
+    </div>
+  </div>
+
+  {{-- Card 4: Media Composition --}}
+  <div class="kpi-card">
+    <div class="kpi-card-top">
+      <span class="kpi-label">Media Source Ratio</span>
+      <div class="kpi-icon-pill" style="background:#F1F5F9;color:#475569;">
+        <i class="ph ph-share-network"></i>
+      </div>
+    </div>
+    <div class="kpi-val" style="font-size:18px;display:flex;align-items:baseline;gap:6px;">
+      <span>{{ number_format($totalSocial) }} <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Social</span></span>
+      <span style="color:var(--slate-300);">/</span>
+      <span>{{ number_format($totalNews) }} <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Mass</span></span>
+    </div>
+    <div class="kpi-desc">
+      <i class="ph ph-globe"></i>
+      <span>6 platform aktif termonitor</span>
+    </div>
   </div>
 </div>
 
-{{-- ── Summary Strip ── --}}
-<div class="summary-strip">
-  <div class="sum-card" style="background:#06B6D4;">
-    <div class="sum-info">
-      <span class="sum-lbl">Total Projects</span>
-      <span class="sum-val">{{ count($projects) }}</span>
-      <span class="sum-sub"><i class="ph ph-folder"></i>All active projects</span>
-    </div>
-    <div class="sum-icon"><i class="ph ph-list-bullets"></i></div>
-  </div>
-  <div class="sum-card" style="background:#4CAF50;">
-    <div class="sum-info">
-      <span class="sum-lbl">Total Items</span>
-      <span class="sum-val">{{ number_format(collect($projects)->sum(fn($p) => $p['stats']['all'] ?? 0)) }}</span>
-      <span class="sum-sub"><i class="ph ph-activity"></i>Across all items</span>
-    </div>
-    <div class="sum-icon"><i class="ph ph-chart-bar"></i></div>
-  </div>
-  <div class="sum-card" style="background:#F59E0B;">
-    <div class="sum-info">
-      <span class="sum-lbl">Active Sources</span>
-      <span class="sum-val">6</span>
-      <span class="sum-sub"><i class="ph ph-broadcast"></i>Monitored platforms</span>
-    </div>
-    <div class="sum-icon"><i class="ph ph-share-network"></i></div>
-  </div>
-  <div class="sum-card" style="background:#038047;">
-    <div class="sum-info">
-      <span class="sum-lbl">Social Posts</span>
-      <span class="sum-val">{{ number_format(collect($projects)->sum(fn($p) => ($p['stats']['twit'] ?? 0) + ($p['stats']['fb'] ?? 0) + ($p['stats']['ig'] ?? 0) + ($p['stats']['yt'] ?? 0) + ($p['stats']['tiktok'] ?? 0))) }}</span>
-      <span class="sum-sub"><i class="ph ph-users"></i>From social media</span>
-    </div>
-    <div class="sum-icon"><i class="ph ph-activity"></i></div>
-  </div>
-</div>
+{{-- ── 3. Main Two-Column View ── --}}
+<div class="adm-main-layout">
 
-{{-- ── Main 2-col ── --}}
-<div class="adm-main">
-
-  {{-- Left: Project List --}}
+  {{-- Left Column: Project Navigator --}}
   <aside class="proj-sidebar">
-    <div class="proj-sidebar-head">
-      <span class="proj-sidebar-title"><i class="ph ph-list-bullets"></i>Projects</span>
-      <span class="proj-sidebar-badge">{{ count($projects) }}</span>
+    <div class="proj-sidebar-hd">
+      <div class="proj-sidebar-hd-row">
+        <span class="proj-sidebar-title">
+          <i class="ph ph-list-dashes"></i> Projects List
+        </span>
+        <span class="proj-count-badge" id="visibleProjCount">{{ $totalProjects }}</span>
+      </div>
+      <input 
+        type="text" 
+        id="projSearchInput" 
+        class="proj-search-input" 
+        placeholder="Cari nama project..." 
+        autocomplete="off"
+      />
     </div>
-    <div class="proj-list">
+
+    <div class="proj-nav-list" id="projNavList">
       @forelse($projects as $project)
-      <div class="proj-item" data-id="{{ $project['id'] }}">
-        <div class="proj-dot"></div>
-        <div class="proj-info">
-          <span class="proj-name">{{ $project['name'] ?? $project['title'] ?? 'Unnamed' }}</span>
-          <span class="proj-meta">#{{ $project['id'] }} · {{ number_format($project['stats']['all'] ?? 0) }} items</span>
+      <div class="proj-nav-item" data-id="{{ $project['id'] }}" data-name="{{ strtolower($project['name'] ?? $project['title'] ?? '') }}">
+        <div class="proj-nav-left">
+          <span class="proj-nav-name">{{ $project['name'] ?? $project['title'] ?? 'Unnamed' }}</span>
+          <span class="proj-nav-meta">ID #{{ $project['id'] }}</span>
         </div>
-        <i class="ph ph-caret-right proj-arr"></i>
+        <span class="proj-nav-count">{{ number_format($project['stats']['all'] ?? 0) }}</span>
       </div>
       @empty
-      <div style="padding:32px 16px;text-align:center;font-family:var(--font);font-size:13px;color:var(--muted);">
-        No projects available
+      <div style="padding:28px 16px;text-align:center;font-size:12px;color:var(--slate-400);">
+        Belum ada project tersedia.
       </div>
       @endforelse
     </div>
   </aside>
 
-  {{-- Right: Chart Cards --}}
-  <div class="charts-col">
+  {{-- Right Column: Detailed Project Cards --}}
+  <div class="cards-column">
     @forelse($projects as $project)
-    <div class="chart-card" id="card-{{ $project['id'] }}">
+      @php
+        $pId = $project['id'];
+        $pName = $project['name'] ?? $project['title'] ?? 'Unnamed Project';
+        $pStats = $project['stats'] ?? [];
+        $pTotal = $pStats['all'] ?? 0;
 
-      {{-- Card Header --}}
-      <div class="card-hd">
-        <div class="card-hd-left">
-          <div class="card-hd-dot"><i class="ph ph-pulse"></i></div>
-          <div>
-            <h3 class="card-title">{{ $project['name'] ?? $project['title'] ?? 'Unnamed Project' }}</h3>
-            <span class="card-sub">Project #{{ $project['id'] }}</span>
+        $pPos = collect($project['timeline']['sentiment']['positive'] ?? [])->sum();
+        $pNeu = collect($project['timeline']['sentiment']['neutral'] ?? [])->sum();
+        $pNeg = collect($project['timeline']['sentiment']['negative'] ?? [])->sum();
+        $pSentTot = $pPos + $pNeu + $pNeg;
+        
+        $pPosPct = $pSentTot > 0 ? round(($pPos / $pSentTot) * 100, 1) : 0;
+        $pNeuPct = $pSentTot > 0 ? round(($pNeu / $pSentTot) * 100, 1) : 0;
+        $pNegPct = $pSentTot > 0 ? round(($pNeg / $pSentTot) * 100, 1) : 0;
+      @endphp
+
+      <div class="project-card" id="card-{{ $pId }}">
+        {{-- Card Header --}}
+        <div class="p-card-hd">
+          <div class="p-card-title-wrap">
+            <span class="p-card-id-badge">#{{ $pId }}</span>
+            <h3 class="p-card-title">{{ $pName }}</h3>
+          </div>
+
+          <div class="p-card-actions">
+            <a href="{{ route('mk.sentiment', ['project_id' => $pId, 'start_date' => $start, 'end_date' => $end]) }}" class="adm-btn-action adm-btn-primary" title="Buka Sentiment Analytics">
+              <i class="ph ph-chart-donut"></i> Sentiment
+            </a>
+            <a href="{{ route('mk.data-overview', ['project_id' => $pId, 'start_date' => $start, 'end_date' => $end]) }}" class="adm-btn-action adm-btn-secondary" title="Buka Data Overview">
+              <i class="ph ph-squares-four"></i> Overview
+            </a>
+            <a href="{{ route('mk.topic-map', ['project_id' => $pId, 'start_date' => $start, 'end_date' => $end]) }}" class="adm-btn-action adm-btn-secondary" title="Buka Word Cloud & Topik">
+              <i class="ph ph-cloud"></i> Topics
+            </a>
+            <a href="{{ route('mk.media-statistic', ['project_id' => $pId, 'start_date' => $start, 'end_date' => $end]) }}" class="adm-btn-action adm-btn-secondary" title="Buka Statistik Media">
+              <i class="ph ph-newspaper"></i> Media Stats
+            </a>
           </div>
         </div>
-        <div class="card-actions">
-          <a href="{{ route('mk.sentiment', ['project_id' => $project['id']]) }}" class="btn-primary">
-            <i class="ph ph-chart-bar"></i> Analytics
-          </a>
-          <a href="{{ route('mk.geographic', ['project_id' => $project['id']]) }}" class="btn-icon" title="Geographic">
-            <i class="ph ph-map-pin"></i>
-          </a>
-          <a href="{{ route('mk.publisher', ['project_id' => $project['id']]) }}" class="btn-icon" title="Publisher">
-            <i class="ph ph-users"></i>
-          </a>
-        </div>
-      </div>
 
-      <div class="card-bd">
-        {{-- Stat Pills (display only) --}}
-        @php
-          $stats = [
-            ['key'=>'all',    'lbl'=>'All',       'color'=>'#038047'],
-            ['key'=>'news',   'lbl'=>'News',      'color'=>'#3B82F6'],
-            ['key'=>'twit',   'lbl'=>'Twitter',   'color'=>'#1DA1F2'],
-            ['key'=>'fb',     'lbl'=>'Facebook',  'color'=>'#1877F2'],
-            ['key'=>'ig',     'lbl'=>'Instagram', 'color'=>'#E1306C'],
-            ['key'=>'yt',     'lbl'=>'YouTube',   'color'=>'#FF0000'],
-            ['key'=>'tiktok', 'lbl'=>'TikTok',    'color'=>'#111827'],
-          ];
-        @endphp
+        {{-- Card Body --}}
+        <div class="p-card-bd">
+          {{-- Row 1: Sentiment Segmented Bar & Totals --}}
+          <div class="sent-breakdown-row">
+            <div class="sent-bars-wrap">
+              <div class="sent-progress-track">
+                <div class="sent-bar-pos" style="width: {{ $pPosPct }}%;" title="Positif: {{ $pPosPct }}%"></div>
+                <div class="sent-bar-neu" style="width: {{ $pNeuPct }}%;" title="Netral: {{ $pNeuPct }}%"></div>
+                <div class="sent-bar-neg" style="width: {{ $pNegPct }}%;" title="Negatif: {{ $pNegPct }}%"></div>
+              </div>
+              <div class="sent-legends">
+                <div class="sent-leg-item" style="color:var(--pos);">
+                  <span class="sent-leg-dot" style="background:var(--pos);"></span>
+                  <span>Positif: <strong>{{ $pPosPct }}%</strong> ({{ number_format($pPos) }})</span>
+                </div>
+                <div class="sent-leg-item" style="color:var(--neu);">
+                  <span class="sent-leg-dot" style="background:var(--neu);"></span>
+                  <span>Netral: <strong>{{ $pNeuPct }}%</strong> ({{ number_format($pNeu) }})</span>
+                </div>
+                <div class="sent-leg-item" style="color:var(--neg);">
+                  <span class="sent-leg-dot" style="background:var(--neg);"></span>
+                  <span>Negatif: <strong>{{ $pNegPct }}%</strong> ({{ number_format($pNeg) }})</span>
+                </div>
+              </div>
+            </div>
 
-        <div class="stats-row">
-          @foreach($stats as $st)
-          <div class="stat-pill {{ $st['key'] === 'all' ? 'all-pill' : '' }}">
-            <span class="stat-dot" style="background:{{ $st['color'] }}"></span>
-            <div class="stat-info">
-              <span class="stat-val">{{ number_format($project['stats'][$st['key']] ?? 0) }}</span>
-              <span class="stat-lbl">{{ $st['lbl'] }}</span>
+            <div class="sent-totals-pill">
+              <span class="sent-totals-num">{{ number_format($pTotal) }}</span>
+              <span class="sent-totals-lbl">Total Mentions</span>
             </div>
           </div>
-          @endforeach
-        </div>
 
-        <div class="card-divider"></div>
+          {{-- Row 2: Platform Distribution Badges --}}
+          <div class="platform-grid">
+            <div class="plat-box">
+              <div class="plat-box-hd" style="color:var(--c-news);"><i class="ph ph-article"></i> News</div>
+              <div class="plat-box-val">{{ number_format($pStats['news'] ?? 0) }}</div>
+            </div>
+            <div class="plat-box">
+              <div class="plat-box-hd" style="color:var(--c-twit);"><i class="ph ph-twitter-logo"></i> X / Twit</div>
+              <div class="plat-box-val">{{ number_format($pStats['twit'] ?? 0) }}</div>
+            </div>
+            <div class="plat-box">
+              <div class="plat-box-hd" style="color:var(--c-fb);"><i class="ph ph-facebook-logo"></i> Facebook</div>
+              <div class="plat-box-val">{{ number_format($pStats['fb'] ?? 0) }}</div>
+            </div>
+            <div class="plat-box">
+              <div class="plat-box-hd" style="color:var(--c-ig);"><i class="ph ph-instagram-logo"></i> Instagram</div>
+              <div class="plat-box-val">{{ number_format($pStats['ig'] ?? 0) }}</div>
+            </div>
+            <div class="plat-box">
+              <div class="plat-box-hd" style="color:var(--c-yt);"><i class="ph ph-youtube-logo"></i> YouTube</div>
+              <div class="plat-box-val">{{ number_format($pStats['yt'] ?? 0) }}</div>
+            </div>
+            <div class="plat-box">
+              <div class="plat-box-hd" style="color:var(--c-tiktok);"><i class="ph ph-tiktok-logo"></i> TikTok</div>
+              <div class="plat-box-val">{{ number_format($pStats['tiktok'] ?? 0) }}</div>
+            </div>
+          </div>
 
-        {{-- Chart --}}
-        <div class="chart-wrap">
-          <canvas id="chart-{{ $project['id'] }}"></canvas>
+          {{-- Row 3: Daily Timeline Chart --}}
+          <div class="chart-area">
+            <canvas id="chart-{{ $pId }}"></canvas>
+          </div>
         </div>
       </div>
-
-    </div>
     @empty
-    <div class="empty-main">
-      <i class="ph ph-folder-open"></i>
-      <h3>No Projects Found</h3>
-      <p>There are no projects available at this moment.</p>
-    </div>
+      <div class="adm-empty-state">
+        <i class="ph ph-folder-open"></i>
+        <h3>Tidak Ada Project</h3>
+        <p>Belum ada data project yang tersedia untuk ditampilkan.</p>
+      </div>
     @endforelse
   </div>
 
@@ -371,30 +777,52 @@
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // Date label
-  const now = new Date();
-  document.getElementById('admDateLabel').textContent =
-    now.toLocaleDateString('en-US', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+  // ── 1. Live Search Project Navigator ──
+  const searchInput = document.getElementById('projSearchInput');
+  const navItems    = document.querySelectorAll('.proj-nav-item');
+  const countBadge  = document.getElementById('visibleProjCount');
 
-  // Sidebar scroll to card
-  document.querySelectorAll('.proj-item').forEach(el => {
-    el.addEventListener('click', () => {
-      const card = document.getElementById(`card-${el.dataset.id}`);
-      if (!card) return;
-      card.scrollIntoView({ behavior:'smooth', block:'start' });
-      card.classList.add('hl');
-      setTimeout(() => card.classList.remove('hl'), 2200);
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      let visible = 0;
+
+      navItems.forEach(item => {
+        const name = item.dataset.name || '';
+        const id   = item.dataset.id || '';
+        const match = name.includes(q) || id.includes(q);
+        
+        item.classList.toggle('hidden-by-search', !match);
+        if (match) visible++;
+      });
+
+      if (countBadge) countBadge.textContent = visible;
+    });
+  }
+
+  // ── 2. Click Sidebar to Scroll & Highlight Card ──
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      navItems.forEach(n => n.classList.remove('active-item'));
+      item.classList.add('active-item');
+
+      const card = document.getElementById(`card-${item.dataset.id}`);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        card.classList.add('highlighted');
+        setTimeout(() => card.classList.remove('highlighted'), 2000);
+      }
     });
   });
 
-  buildCharts();
+  // ── 3. Render Chart.js for all Projects ──
+  renderAllCharts();
 });
 
-function buildCharts() {
-  const C = { blue:'#5AB9EA', orange:'#F59E0B', gray:'#94A3B8', red:'#F87171', white:'#FFFFFF', light:'#94A3B8', border:'#E2E8F0', dark:'#0F172A' };
-  const projects = @json($projects);
+function renderAllCharts() {
+  const projectsData = @json($projects);
 
-  projects.forEach(project => {
+  projectsData.forEach(project => {
     const ctx = document.getElementById(`chart-${project.id}`);
     if (!ctx) return;
 
@@ -403,11 +831,11 @@ function buildCharts() {
     let allData, posData, neuData, negData;
 
     if (!labels.length) {
-      labels   = ['20 Feb','21 Feb','22 Feb','23 Feb','24 Feb','25 Feb','26 Feb'];
-      allData  = [520, 480, 610, 590, 720, 680, 800];
-      posData  = [210, 200, 260, 250, 300, 280, 340];
-      neuData  = [200, 185, 230, 220, 270, 255, 300];
-      negData  = [110, 95,  120, 120, 150, 145, 160];
+      labels   = ['H-6', 'H-5', 'H-4', 'H-3', 'H-2', 'Kemarin', 'Hari Ini'];
+      allData  = [0, 0, 0, 0, 0, 0, 0];
+      posData  = [0, 0, 0, 0, 0, 0, 0];
+      neuData  = [0, 0, 0, 0, 0, 0, 0];
+      negData  = [0, 0, 0, 0, 0, 0, 0];
     } else {
       allData = tl.values || [];
       if (tl.sentiment?.positive) {
@@ -415,65 +843,106 @@ function buildCharts() {
         neuData = tl.sentiment.neutral;
         negData = tl.sentiment.negative;
       } else {
-        posData = allData.map(v => Math.round(v * 0.42));
-        neuData = allData.map(v => Math.round(v * 0.38));
+        posData = allData.map(v => Math.round(v * 0.40));
+        neuData = allData.map(v => Math.round(v * 0.40));
         negData = allData.map(v => Math.round(v * 0.20));
       }
     }
 
     const ds = (label, data, color, dashed = false) => ({
-      label, data,
-      borderColor: color, backgroundColor: 'transparent',
-      borderWidth: dashed ? 1.8 : 2.2,
-      borderDash: dashed ? [4,3] : [],
-      tension: 0.45,
-      pointRadius: 4, pointHoverRadius: 6,
-      pointBackgroundColor: color, pointBorderColor: C.white, pointBorderWidth: 2,
+      label,
+      data,
+      borderColor: color,
+      backgroundColor: 'transparent',
+      borderWidth: dashed ? 1.5 : 2,
+      borderDash: dashed ? [4, 3] : [],
+      tension: 0.35,
+      pointRadius: 3,
+      pointHoverRadius: 5,
+      pointBackgroundColor: color,
+      pointBorderColor: '#fff',
+      pointBorderWidth: 1.5,
       fill: false,
     });
 
     new Chart(ctx, {
       type: 'line',
-      data: { labels, datasets: [
-        ds('New',      allData, C.blue),
-        ds('Positive', posData, C.orange),
-        ds('Neutral',  neuData, C.gray,  true),
-        ds('Negative', negData, C.red,   true),
-      ]},
+      data: {
+        labels,
+        datasets: [
+          ds('Total',    allData, '#2563EB'),
+          ds('Positif',  posData, '#059669'),
+          ds('Netral',   neuData, '#64748B', true),
+          ds('Negatif',  negData, '#DC2626', true),
+        ]
+      },
       options: {
-        responsive: true, maintainAspectRatio: false,
-        layout: { padding: { top:4, right:8, bottom:0, left:4 } },
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 6, right: 6, bottom: 0, left: 0 } },
         plugins: {
           legend: {
-            position:'bottom', align:'start',
-            labels: { usePointStyle:true, pointStyle:'circle', padding:16,
-              font:{ size:11, weight:'600', family:"'Poppins',sans-serif" },
-              color:C.light, boxWidth:7, boxHeight:7 }
+            position: 'top',
+            align: 'end',
+            labels: {
+              usePointStyle: true,
+              pointStyle: 'circle',
+              padding: 12,
+              font: { size: 11, weight: '600', family: "'Poppins', sans-serif" },
+              color: '#475569',
+              boxWidth: 6,
+              boxHeight: 6
+            }
           },
           tooltip: {
-            mode:'index', intersect:false,
-            backgroundColor:'#fff', titleColor:C.dark, bodyColor:C.dark,
-            borderColor:C.border, borderWidth:1, padding:12, cornerRadius:8,
-            titleFont:{ size:11,weight:'700',family:"'Poppins',sans-serif" },
-            bodyFont:{ size:11,weight:'500',family:"'Poppins',sans-serif" },
-            displayColors:true, boxWidth:7, boxHeight:7, boxPadding:5,
-            callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}` }
-          },
+            mode: 'index',
+            intersect: false,
+            backgroundColor: '#1E293B',
+            titleColor: '#FFFFFF',
+            bodyColor: '#F1F5F9',
+            borderColor: '#334155',
+            borderWidth: 1,
+            padding: 10,
+            cornerRadius: 6,
+            titleFont: { size: 11, weight: '700', family: "'Poppins', sans-serif" },
+            bodyFont: { size: 11, weight: '500', family: "'Poppins', sans-serif" },
+            displayColors: true,
+            boxWidth: 6,
+            boxHeight: 6,
+            boxPadding: 4,
+            callbacks: {
+              label: (c) => ` ${c.dataset.label}: ${c.parsed.y.toLocaleString()} mentions`
+            }
+          }
         },
         scales: {
           x: {
-            grid:{ display:false }, border:{ display:false },
-            ticks:{ font:{size:10,weight:'500',family:"'Poppins',sans-serif"}, color:C.light, padding:6, maxRotation:0, autoSkip:true, maxTicksLimit:8 }
+            grid: { display: false },
+            border: { display: false },
+            ticks: {
+              font: { size: 10, weight: '500', family: "'Poppins', sans-serif" },
+              color: '#94A3B8',
+              padding: 4,
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 7
+            }
           },
           y: {
-            beginAtZero:true,
-            grid:{ color:'rgba(226,232,240,.8)', drawBorder:false, lineWidth:1 },
-            border:{ display:false },
-            ticks:{ font:{size:10,weight:'500',family:"'Poppins',sans-serif"}, color:C.light, padding:10, maxTicksLimit:5, callback:v=>v>=1000?(v/1000)+'k':v }
-          },
+            beginAtZero: true,
+            grid: { color: 'rgba(226, 232, 240, 0.6)', drawBorder: false },
+            border: { display: false },
+            ticks: {
+              font: { size: 10, weight: '500', family: "'Poppins', sans-serif" },
+              color: '#94A3B8',
+              padding: 8,
+              maxTicksLimit: 5,
+              callback: (v) => v >= 1000 ? (v / 1000) + 'k' : v
+            }
+          }
         },
-        interaction:{ intersect:false, mode:'index' },
-      },
+        interaction: { intersect: false, mode: 'index' }
+      }
     });
   });
 }
