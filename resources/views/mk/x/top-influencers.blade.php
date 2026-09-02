@@ -38,33 +38,245 @@
 .do-detail-panel{position:absolute;inset:0;background:#fff;z-index:5;display:none;flex-direction:column;animation:slideInRight .2s cubic-bezier(.4,0,.2,1)}.do-detail-panel.show{display:flex}.do-dp2-header{display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--slate-50);border-bottom:1px solid var(--slate-200);flex-shrink:0}.do-dp2-back{width:28px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--slate-200);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-500);transition:all .13s;font-size:14px}.do-dp2-back:hover{background:var(--primary-lt);color:var(--primary);border-color:var(--primary)}.do-dp2-title{font-size:13px;font-weight:700;color:var(--slate-900);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .do-dp2-body{overflow-y:auto;flex:1;padding:16px}.do-dp2-body::-webkit-scrollbar{width:4px}.do-dp2-body::-webkit-scrollbar-thumb{background:var(--slate-200);border-radius:99px}
 .do-dp2-meta{font-size:11px;color:var(--slate-400);font-weight:500;margin-bottom:10px}.do-dp2-sent{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:3px;font-size:11px;font-weight:700;margin-bottom:10px}.do-dp2-sent--pos{background:#d1fae5;color:#065f46}.do-dp2-sent--neg{background:#fee2e2;color:#991b1b}.do-dp2-sent--neu{background:var(--slate-100);color:var(--slate-500)}.do-dp2-content{font-size:12px;color:var(--slate-700);line-height:1.7;margin-bottom:12px;background:var(--slate-50);border-radius:var(--radius-sm);padding:10px 12px;border:1px solid var(--slate-200);word-break:break-word}.do-dp2-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}.do-dp2-stat{background:var(--slate-50);border-radius:var(--radius-sm);padding:8px 10px;border:1px solid var(--slate-200);text-align:center}.do-dp2-stat-val{font-size:14px;font-weight:700;color:var(--slate-900)}.do-dp2-stat-lbl{font-size:9px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.4px;margin-top:1px}.do-dp2-link{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;background:var(--primary);color:#fff;border-radius:var(--radius-sm);font-size:12px;font-weight:700;text-decoration:none;transition:filter .14s;margin-top:4px}.do-dp2-link:hover{filter:brightness(1.1);color:#fff}
-.kpi-card-hover h3{font-size:1.5rem}@media(max-width:640px){.do-panel{width:100vw}}
+.kpi-card-hover h3{font-size:1.5rem}
+@media(max-width:640px){.do-panel{width:100vw}}
+
+/* ══════════════════════════════════════════════════════
+   EXPORT STYLES — identik dengan TikTok Most Engagement
+══════════════════════════════════════════════════════ */
+
+/* Page Export Bar */
+.page-export-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:#fff;border:1px solid var(--slate-200);border-radius:var(--radius);padding:9px 14px;margin-bottom:20px;box-shadow:var(--shadow-sm)}
+.page-export-bar-left{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--slate-600)}
+.page-export-bar-left i{font-size:15px;color:var(--primary)}
+.page-export-bar-right{display:flex;gap:8px}
+
+/* Page-level export buttons */
+.page-export-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--radius-sm);font-size:16px;cursor:pointer;transition:all .15s ease;border:1.5px solid transparent;font-family:inherit}
+.page-export-btn-pdf{background:#fff3f3;color:#dc2626;border-color:#fca5a5}
+.page-export-btn-pdf:hover{background:#dc2626;color:#fff;border-color:#dc2626}
+.page-export-btn-img{background:var(--primary-lt);color:var(--primary);border-color:rgba(3,128,71,.3)}
+.page-export-btn-img:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+.page-export-btn:disabled{opacity:.55;cursor:not-allowed;pointer-events:none}
+.page-export-btn .export-spinner{width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .65s linear infinite;display:none}
+.page-export-btn.exporting .export-spinner{display:inline-block}
+.page-export-btn.exporting .export-icon{display:none}
+
+/* Card-level export buttons */
+.card-exp-btn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:var(--radius-sm);font-size:14px;cursor:pointer;flex-shrink:0;transition:all .14s ease;border:1px solid transparent;font-family:inherit;background:transparent}
+.card-exp-btn-pdf{color:#dc2626;border-color:#fca5a5;background:#fff3f3}
+.card-exp-btn-pdf:hover{background:#dc2626;color:#fff;border-color:#dc2626}
+.card-exp-btn-img{color:var(--primary);border-color:rgba(3,128,71,.3);background:var(--primary-lt)}
+.card-exp-btn-img:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+.card-exp-btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+.card-exp-btn .export-spinner{width:11px;height:11px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .65s linear infinite;display:none}
+.card-exp-btn.exporting .export-spinner{display:inline-block}
+.card-exp-btn.exporting .export-icon{display:none}
+
+/* Export Toast */
+.export-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--slate-900);color:#fff;border-radius:var(--radius);padding:10px 18px;font-size:12px;font-weight:600;box-shadow:var(--shadow-lg);z-index:99999;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.export-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.export-toast.success{background:#065f46}
+.export-toast.error{background:#991b1b}
 </style>
 @endsection
+
 @section('page-title', 'X Top Influencers')
+
 @section('content')
-@php $projectId=$projectId??request()->get('project_id');$startDate=$startDate??request()->get('start_date',now()->subDays(6)->format('Y-m-d'));$endDate=$endDate??request()->get('end_date',now()->format('Y-m-d'));$projects=$projects??[]; @endphp
-<script>const OV_PID={{ $projectId?(int)$projectId:'null' }};const OV_SD='{{ $startDate }}';const OV_ED='{{ $endDate }}';</script>
+@php
+    $projectId = $projectId ?? request()->get('project_id');
+    $startDate = $startDate ?? request()->get('start_date', now()->subDays(6)->format('Y-m-d'));
+    $endDate   = $endDate ?? request()->get('end_date', now()->format('Y-m-d'));
+    $projects  = $projects ?? [];
+@endphp
+
+<script>
+    const OV_PID = {{ $projectId ? (int)$projectId : 'null' }};
+    const OV_SD  = '{{ $startDate }}';
+    const OV_ED  = '{{ $endDate }}';
+</script>
+
 @include('mk.layouts.partials.filter-datepicker')
+
 {{-- Tab --}}
 <div class="sent-tabs mb-3" id="subTabs">
     <button class="sent-tab active" data-s="rt"><i class="ph ph-chat-circle-dots me-1"></i> By Collected Mentions</button>
     <button class="sent-tab" data-s="rt_all"><i class="ph ph-repeat me-1"></i> By Total Retweets</button>
 </div>
+
+{{-- ════ PAGE EXPORT WRAPPER ════ --}}
+<div id="pageExportArea">
+
 {{-- KPI --}}
 <div class="row mb-3">
-    <div class="col-md-6 col-xl-3"><div class="card h-100 bg-primary text-white kpi-card-hover fade-up fade-up-d1"><div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Influencers</p><h3 class="mb-0 text-white f-w-300" id="kpiTotal"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub"><i class="ph ph-users me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-users"></i></div></div></div></div></div></div>
-    <div class="col-md-6 col-xl-3"><div class="card h-100 bg-success text-white kpi-card-hover fade-up fade-up-d2"><div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12" id="kpiEngLabel">Total Engagements</p><h3 class="mb-0 text-white f-w-300" id="kpiEng"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiEngSub"><i class="ph ph-chart-bar me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div></div></div></div></div>
-    <div class="col-md-6 col-xl-3"><div class="card h-100 bg-warning text-white kpi-card-hover fade-up fade-up-d3"><div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Top Account</p><h3 class="mb-0 text-white f-w-300" id="kpiTopAcc" style="font-size:1rem;"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopAccSub"><i class="ph ph-crown me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-crown"></i></div></div></div></div></div></div>
-    <div class="col-md-6 col-xl-3"><div class="card h-100 bg-danger text-white kpi-card-hover fade-up fade-up-d4"><div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Avg Followers</p><h3 class="mb-0 text-white f-w-300" id="kpiAvgFol"><span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span></h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiAvgFolSub"><i class="ph ph-trend-up me-1"></i>Loading…</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-trend-up"></i></div></div></div></div></div></div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d1" style="background:#06B6D4;">
+            <div class="card-body"><div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="mb-1 text-white text-opacity-75 f-12">Total Influencers</p>
+                    <h3 class="mb-0 text-white f-w-300" id="kpiTotal">—</h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTotalSub"><i class="ph-fill ph-users me-1"></i>—</p>
+                </div>
+                <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-users"></i></div></div>
+            </div></div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d2" style="background:#F59E0B;">
+            <div class="card-body"><div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="mb-1 text-white text-opacity-75 f-12" id="kpiEngLabel">Total Engagements</p>
+                    <h3 class="mb-0 text-white f-w-300" id="kpiEng">—</h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiEngSub"><i class="ph-fill ph-chart-bar me-1"></i>—</p>
+                </div>
+                <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div>
+            </div></div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d3" style="background:#4CAF50;">
+            <div class="card-body"><div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="mb-1 text-white text-opacity-75 f-12">Top Account</p>
+                    <h3 class="mb-0 text-white f-w-300" id="kpiTopAcc" style="font-size:1rem;">—</h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopAccSub"><i class="ph-fill ph-crown me-1"></i>—</p>
+                </div>
+                <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-crown"></i></div></div>
+            </div></div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100 text-white kpi-card-hover fade-up fade-up-d4" style="background:#038047;">
+            <div class="card-body"><div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="mb-1 text-white text-opacity-75 f-12">Avg Followers</p>
+                    <h3 class="mb-0 text-white f-w-300" id="kpiAvgFol">—</h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiAvgFolSub"><i class="ph-fill ph-trend-up me-1"></i>—</p>
+                </div>
+                <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-trend-up"></i></div></div>
+            </div></div>
+        </div>
+    </div>
 </div>
-{{-- Content: Donut top, Full-width list below --}}
+
+{{-- ══ Page Export Toolbar ══ --}}
+<div class="page-export-bar" data-html2canvas-ignore="true">
+    <div class="page-export-bar-left">
+        <i class="ph ph-export"></i>
+        <span>Export Halaman</span>
+        <span class="badge bg-light-secondary text-muted ms-1" style="font-size:10px;">
+            KPI + Donut + Influencer List
+        </span>
+    </div>
+    <div class="page-export-bar-right">
+        <button type="button"
+                class="page-export-btn page-export-btn-pdf"
+                id="pageExportPdfBtn"
+                onclick="XIExport.run('pdf', this)"
+                title="Export halaman sebagai PDF">
+            <i class="ph ph-file-pdf export-icon"></i>
+            <span class="export-spinner"></span>
+        </button>
+        <button type="button"
+                class="page-export-btn page-export-btn-img"
+                id="pageExportImgBtn"
+                onclick="XIExport.run('image', this)"
+                title="Export halaman sebagai PNG">
+            <i class="ph ph-image export-icon"></i>
+            <span class="export-spinner"></span>
+        </button>
+    </div>
+</div>
+
+{{-- Donut --}}
 <div class="row">
-    <div class="col-12"><div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;"><div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"><div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-donut f-18 text-primary"></i></div><div><h6 class="mb-0">Top 5 Engagement Share</h6><small class="text-muted">Klik untuk lihat detail</small></div></div><div id="donutLegend" class="donut-legend"></div></div><div class="card-body"><div class="chart-container" style="height:340px;"><div class="chart-loading" id="loadingDonut"><div class="spin-ring"></div><span>Loading…</span></div><div id="donutChart" style="width:100%;height:340px;display:none;"></div><div id="donutEmpty" style="display:none;" class="chart-empty"><i class="ph ph-chart-donut"></i><span>No data</span></div></div></div></div></div>
+    <div class="col-12">
+        <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
+            <div id="card-export-donut">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-donut f-18 text-primary"></i></div>
+                        <div>
+                            <h6 class="mb-0">Top 5 Engagement Share</h6>
+                            <small class="text-muted">Klik untuk lihat detail</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div id="donutLegend" class="donut-legend"></div>
+                        <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                            <button class="card-exp-btn card-exp-btn-pdf"
+                                    onclick="XIExport.runCard('card-export-donut','donut','pdf',this)"
+                                    title="Export PDF">
+                                <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                            </button>
+                            <button class="card-exp-btn card-exp-btn-img"
+                                    onclick="XIExport.runCard('card-export-donut','donut','image',this)"
+                                    title="Export PNG">
+                                <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height:340px;">
+                        <div class="chart-loading" id="loadingDonut" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;">
+                            <div class="spin-ring"></div><span style="font-size:11px;font-weight:600;color:var(--slate-400)">Loading…</span>
+                        </div>
+                        <div id="donutChart" style="width:100%;height:340px;display:none;"></div>
+                        <div id="donutEmpty" style="display:none;" class="chart-empty"><i class="ph ph-chart-donut"></i><span>No data</span></div>
+                    </div>
+                </div>
+            </div>{{-- /card-export-donut --}}
+        </div>
+    </div>
 </div>
+
+{{-- Influencer List --}}
 <div class="row">
-    <div class="col-12"><div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;"><div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2"><div class="d-flex align-items-center gap-2"><div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-star f-18 text-primary"></i></div><div><h6 class="mb-0">Influencer Ranking</h6><small class="text-muted">Klik user untuk lihat profil</small></div></div><div class="d-flex align-items-center gap-2"><button class="btn btn-outline-secondary btn-sm" onclick="exportCsv()" title="Export CSV"><i class="ph ph-download-simple me-1"></i>CSV</button><span class="badge bg-light-primary text-primary" id="badgeTotal">Loading…</span></div></div><div id="userList" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div><div id="pagArea"></div></div></div>
+    <div class="col-12">
+        <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
+            <div id="card-export-list">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-star f-18 text-primary"></i></div>
+                        <div>
+                            <h6 class="mb-0">Influencer Ranking</h6>
+                            <small class="text-muted">Klik user untuk lihat profil</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-light-primary text-primary" id="badgeTotal">—</span>
+                        <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                            <button class="card-exp-btn card-exp-btn-pdf"
+                                    onclick="XIExport.runCard('card-export-list','list','pdf',this)"
+                                    title="Export PDF">
+                                <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                            </button>
+                            <button class="card-exp-btn card-exp-btn-img"
+                                    onclick="XIExport.runCard('card-export-list','list','image',this)"
+                                    title="Export PNG">
+                                <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="userList" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
+                <div id="pagArea"></div>
+            </div>{{-- /card-export-list --}}
+        </div>
+    </div>
 </div>
+
+{{-- /pageExportArea --}}
+</div>
+
+{{-- ══ Export Toast ══ --}}
+<div class="export-toast" id="exportToast">
+    <i class="ph ph-check-circle" id="exportToastIcon"></i>
+    <span id="exportToastMsg">Exporting…</span>
+</div>
+
 {{-- Slide Panel --}}
 <div class="do-panel-overlay" id="panelOverlay" onclick="Panel.close()"></div>
 <div class="do-panel" id="sntPanel">
@@ -74,209 +286,661 @@
     </div>
     <div class="up-body" id="panelBody"></div>
     <div class="do-detail-panel" id="detailPanel">
-        <div class="do-dp2-header"><button class="do-dp2-back" onclick="Detail.close()"><i class="ph ph-caret-left"></i></button><span class="do-dp2-title" id="detailTitle">Tweet Detail</span><button class="do-panel-close" onclick="Panel.close()"><i class="ph ph-x"></i></button></div>
+        <div class="do-dp2-header">
+            <button class="do-dp2-back" onclick="Detail.close()"><i class="ph ph-caret-left"></i></button>
+            <span class="do-dp2-title" id="detailTitle">Tweet Detail</span>
+            <button class="do-panel-close" onclick="Panel.close()"><i class="ph ph-x"></i></button>
+        </div>
         <div class="do-dp2-body" id="detailBody"></div>
     </div>
 </div>
+
 @endsection
+
 @section('scripts')
+{{-- ══ Export dependencies ══ --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
 <script>
 'use strict';
-const CFG={pid:OV_PID,sd:OV_SD,ed:OV_ED};
-const DONUT_COLORS=['#038047','#273B4A','#F59E0B','#06B6D4','#EF4444'];
-const _$=id=>document.getElementById(id);const numF=n=>parseInt(n||0).toLocaleString('id-ID');const numK=n=>{n=parseInt(n||0);return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':String(n)};const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const totalEng=u=>curSub==='rt_all'?parseInt(u.retweets||u.total||0):parseInt(u.total||(parseInt(u.retweets||0)+parseInt(u.replies||0))||0);
-const _getInit=n=>{if(!n||n==='Unknown')return'?';const p=n.trim().split(/\s+/);return p.length===1?p[0].substring(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase()};
-const _avUrl=u=>{const a=u.profile_image||u.profile_image_url||'';if(a)return a;const h=u.screen_name||u.username||'';return h?`https://unavatar.io/twitter/${h}`:''};
-let Store=[],curPage=1,curSub='rt';const PP=15;let donutInst=null;
-/* TAB CONFIG */
-const TAB={rt:{engLabel:'Total RT + Reply',engSub:'RT + Reply count',col:'RT + Reply'},rt_all:{engLabel:'Total Retweets',engSub:'Total retweet count',col:'Total Retweets'}};
-/* load */
-async function loadData(){
-    _$('userList').innerHTML='<div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div>';
-    _$('pagArea').innerHTML='';_$('loadingDonut').style.display='flex';_$('donutChart').style.display='none';_$('donutEmpty').style.display='none';
-    try{
-        const r=await fetch(`/mk/api/x/top-influencers?project_id=${CFG.pid}&start_date=${CFG.sd}&end_date=${CFG.ed}&sub=${curSub}`);
-        const j=await r.json();
-        const rows=j.data||[];
-        if(!rows.length){showEmpty();return}
-        Store=rows.sort((a,b)=>totalEng(b)-totalEng(a));
-        curPage=1;updateKpi();renderDonut();renderList();
-    }catch(e){console.error(e);showEmpty(true)}
+const CFG = { pid: OV_PID, sd: OV_SD, ed: OV_ED };
+const DONUT_COLORS = ['#038047','#273B4A','#F59E0B','#06B6D4','#EF4444'];
+const _$  = id => document.getElementById(id);
+const numF = n => parseInt(n||0).toLocaleString('id-ID');
+const numK = n => { n=parseInt(n||0); return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':String(n); };
+const esc  = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const totalEng = u => curSub==='rt_all'
+    ? parseInt(u.retweets||u.total||0)
+    : parseInt(u.total||(parseInt(u.retweets||0)+parseInt(u.replies||0))||0);
+const _getInit = n => { if(!n||n==='Unknown')return'?'; const p=n.trim().split(/\s+/); return p.length===1?p[0].substring(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase(); };
+const _avUrl   = u => { const a=u.profile_image||u.profile_image_url||''; if(a)return a; const h=u.screen_name||u.username||''; return h?`https://unavatar.io/twitter/${h}`:''; };
+
+// NEW: Helper pembersih nama (Emoji & Channel ID)
+const _cleanName = (n, h) => {
+    if(!n) return h ? '@'+h : 'Unknown';
+    // Strip Emoji
+    let s = n.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E6}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F018}-\u{1F270}\u{1F300}-\u{1F5FF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+    s = s.trim();
+    // Cek jika masih berupa Channel ID (UC...) atau kosong setelah strip
+    const isID = /^UC[A-Za-z0-9_\-]{22}$/.test(s);
+    if(!s || isID) return h ? '@'+h : 'User';
+    return s;
+};
+
+let Store=[], curPage=1, curSub='rt';
+const PP = 15;
+let donutInst = null;
+
+const TAB = {
+    rt    : { engLabel:'Total RT + Reply', engSub:'RT + Reply count',    col:'RT + Reply' },
+    rt_all: { engLabel:'Total Retweets',   engSub:'Total retweet count', col:'Total Retweets' },
+};
+
+/* ══ LOAD ══ */
+async function loadData() {
+    _$('userList').innerHTML = '<div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div>';
+    _$('pagArea').innerHTML  = '';
+    _$('loadingDonut').style.display = 'flex';
+    _$('donutChart').style.display   = 'none';
+    _$('donutEmpty').style.display   = 'none';
+    try {
+        const r    = await fetch(`/mk/api/x/top-influencers?project_id=${CFG.pid}&start_date=${CFG.sd}&end_date=${CFG.ed}&sub=${curSub}`);
+        const j    = await r.json();
+        const rows = j.data || [];
+        if(!rows.length){ showEmpty(); return; }
+        Store    = rows.sort((a,b)=>totalEng(b)-totalEng(a));
+        curPage  = 1;
+        updateKpi();
+        renderDonut();
+        renderList();
+    } catch(e) { console.error(e); showEmpty(true); }
 }
-function showEmpty(isError){_$('loadingDonut').style.display='none';_$('donutEmpty').style.display='flex';_$('donutChart').style.display='none';const msg=isError?'<div class="spinner-state" style="padding:40px;"><i class="ph ph-warning" style="font-size:32px;color:var(--slate-300);"></i><span>Gagal memuat data. Server mungkin lambat.</span><button class="btn btn-sm btn-outline-primary mt-2" onclick="loadData()"><i class="ph ph-arrow-clockwise me-1"></i>Coba Lagi</button></div>':'<div class="spinner-state" style="padding:40px;"><i class="ph ph-users" style="font-size:32px;color:var(--slate-300);"></i><span>Tidak ada data influencer</span></div>';_$('userList').innerHTML=msg;_$('pagArea').innerHTML='';['kpiTotal','kpiEng','kpiAvgFol'].forEach(i=>{const e=_$(i);if(e)e.textContent='0'});_$('kpiTopAcc').textContent='–';_$('badgeTotal').textContent='0'}
-function updateKpi(){
-    const cfg=TAB[curSub],n=Store.length,tot=Store.reduce((s,u)=>s+totalEng(u),0);
-    _$('kpiTotal').textContent=numF(n);_$('kpiTotalSub').innerHTML=`<i class="ph ph-users me-1"></i>${n} accounts tracked`;
-    _$('kpiEngLabel').textContent=cfg.engLabel;_$('kpiEng').textContent=numF(tot);_$('kpiEngSub').innerHTML=`<i class="ph ph-chart-bar me-1"></i>${cfg.engSub}`;
-    if(n){const top=Store[0];_$('kpiTopAcc').textContent=top.name||('@'+(top.screen_name||''));_$('kpiTopAccSub').innerHTML=`<i class="ph ph-crown me-1"></i>${numF(totalEng(top))} engagements`;const avgF=Math.round(Store.reduce((s,u)=>s+parseInt(u.followers_count||u.author_followers_count||0),0)/n);_$('kpiAvgFol').textContent=numK(avgF);_$('kpiAvgFolSub').innerHTML=`<i class="ph ph-trend-up me-1"></i>Per influencer`}
-    _$('badgeTotal').textContent=n+' influencers';
+
+function showEmpty(isError) {
+    _$('loadingDonut').style.display = 'none';
+    _$('donutEmpty').style.display   = 'flex';
+    _$('donutChart').style.display   = 'none';
+    const msg = isError
+        ? '<div class="spinner-state" style="padding:40px;"><i class="ph ph-warning" style="font-size:32px;color:var(--slate-300);"></i><span>Gagal memuat data. Server mungkin lambat.</span><button class="btn btn-sm btn-outline-primary mt-2" onclick="loadData()"><i class="ph ph-arrow-clockwise me-1"></i>Coba Lagi</button></div>'
+        : '<div class="spinner-state" style="padding:40px;"><i class="ph ph-users" style="font-size:32px;color:var(--slate-300);"></i><span>Tidak ada data influencer</span></div>';
+    _$('userList').innerHTML = msg;
+    _$('pagArea').innerHTML  = '';
+    ['kpiTotal','kpiEng','kpiAvgFol'].forEach(id=>{ const e=_$(id); if(e)e.textContent='0'; });
+    _$('kpiTopAcc').textContent = '–';
+    _$('badgeTotal').textContent = '0';
 }
-/* donut */
-function renderDonut(){
-    const ld=_$('loadingDonut'),ch=_$('donutChart'),em=_$('donutEmpty'),lg=_$('donutLegend');
-    const top5=Store.slice(0,5);
-    if(!top5.length){ld.style.display='none';em.style.display='flex';return}
-    ld.style.display='none';ch.style.display='block';
-    const data=top5.map((u,i)=>({name:u.name||('@'+(u.screen_name||'')),value:totalEng(u),uname:u.screen_name||u.username||'',itemStyle:{color:DONUT_COLORS[i],borderColor:'#fff',borderWidth:3}}));
-    const total=data.reduce((s,d)=>s+d.value,0);
-    if(donutInst){try{donutInst.dispose()}catch(e){}}
-    donutInst=echarts.init(ch,null,{renderer:'canvas'});
-    donutInst.setOption({
-        backgroundColor:'transparent',animation:true,animationDuration:700,
-        tooltip:{trigger:'item',backgroundColor:'#1e293b',borderColor:'#334155',borderWidth:1,padding:[10,14],textStyle:{color:'#f8fafc',fontSize:12},extraCssText:'border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.2);',
-            formatter:p=>`<div style="font-weight:700;margin-bottom:4px;">${p.name}</div><div style="display:flex;justify-content:space-between;gap:16px"><span style="color:#94a3b8">Engagement</span><span style="font-weight:700">${numF(p.value)}</span></div><div style="display:flex;justify-content:space-between;gap:16px;margin-top:2px"><span style="color:#94a3b8">Share</span><span style="font-weight:700;color:#038047">${total?(p.value/total*100).toFixed(1):'0'}%</span></div>`
+
+function updateKpi() {
+    const cfg=TAB[curSub], n=Store.length, tot=Store.reduce((s,u)=>s+totalEng(u),0);
+    _$('kpiTotal').textContent   = numF(n);
+    _$('kpiTotalSub').innerHTML  = `<i class="ph ph-users me-1"></i>${n} accounts tracked`;
+    _$('kpiEngLabel').textContent= cfg.engLabel;
+    _$('kpiEng').textContent     = numF(tot);
+    _$('kpiEngSub').innerHTML    = `<i class="ph ph-chart-bar me-1"></i>${cfg.engSub}`;
+    if(n){
+        const top=Store[0];
+        _$('kpiTopAcc').textContent   = _cleanName(top.name, top.screen_name);
+        _$('kpiTopAccSub').innerHTML  = `<i class="ph ph-crown me-1"></i>${numF(totalEng(top))} engagements`;
+        const avgF = Math.round(Store.reduce((s,u)=>s+parseInt(u.followers_count||u.author_followers_count||0),0)/n);
+        _$('kpiAvgFol').textContent  = numK(avgF);
+        _$('kpiAvgFolSub').innerHTML = `<i class="ph ph-trend-up me-1"></i>Per influencer`;
+    }
+    _$('badgeTotal').textContent = n+' influencers';
+}
+
+/* ══ DONUT ══ */
+function renderDonut() {
+    const ld=_$('loadingDonut'), ch=_$('donutChart'), em=_$('donutEmpty'), lg=_$('donutLegend');
+    const top5 = Store.slice(0,5);
+    if(!top5.length){ ld.style.display='none'; em.style.display='flex'; return; }
+    ld.style.display='none'; ch.style.display='block';
+    const data  = top5.map((u,i)=>({
+        name: _cleanName(u.name, u.screen_name),
+        value: totalEng(u),
+        uname: u.screen_name||u.username||'',
+        itemStyle: { color:DONUT_COLORS[i], borderColor:'#fff', borderWidth:3 }
+    }));
+    const total = data.reduce((s,d)=>s+d.value,0);
+    if(donutInst){ try{ donutInst.dispose(); }catch(e){} }
+donutInst = echarts.init(ch, null, { renderer:'svg' });
+  donutInst.setOption({
+        backgroundColor: 'transparent',
+        animation: true, animationDuration:700,
+        tooltip:{
+            trigger:'item', backgroundColor:'#1e293b', borderColor:'#334155', borderWidth:1,
+            padding:[10,14], textStyle:{color:'#f8fafc',fontSize:12},
+            extraCssText:'border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.2);',
+            formatter: p => `<div style="font-weight:700;margin-bottom:4px;">${p.name}</div>
+                <div style="display:flex;justify-content:space-between;gap:16px"><span style="color:#94a3b8">Engagement</span><span style="font-weight:700">${numF(p.value)}</span></div>
+                <div style="display:flex;justify-content:space-between;gap:16px;margin-top:2px"><span style="color:#94a3b8">Share</span><span style="font-weight:700;color:#038047">${total?(p.value/total*100).toFixed(1):'0'}%</span></div>`
         },
-        series:[{type:'pie',radius:['46%','68%'],center:['50%','50%'],avoidLabelOverlap:true,minAngle:8,
-            label:{show:true,position:'outside',fontFamily:'inherit',fontSize:11,color:'#475569',
-                formatter:p=>{const n=p.name.length>12?p.name.slice(0,11)+'…':p.name;return `{n|${n}}\n{v|${numK(p.value)}}`},
-                rich:{n:{fontWeight:700,fontSize:11.5,color:'#1e293b',lineHeight:18},v:{fontWeight:700,fontSize:10.5,color:'#038047',lineHeight:16,backgroundColor:'rgba(3,128,71,.08)',borderRadius:3,padding:[1,4]}}
+        series:[{
+            type:'pie', radius:['46%','68%'], center:['50%','50%'],
+            avoidLabelOverlap:true, minAngle:8,
+            label:{
+                show:true, position:'outside', fontFamily:'inherit', fontSize:11, color:'#475569',
+               formatter: p => { const n=p.name.length>12?p.name.slice(0,11)+'…':p.name; const pct=total?(p.value/total*100).toFixed(1):'0'; return `{n|${n}}\n{v|${numK(p.value)}} {pct|${pct}%}`; },
+rich:{
+    n:{fontWeight:700,fontSize:11.5,color:'#1e293b',lineHeight:18},
+    v:{fontWeight:700,fontSize:10.5,color:'#038047',lineHeight:16,backgroundColor:'rgba(3,128,71,.08)',borderRadius:3,padding:[1,4]},
+    pct:{fontWeight:600,fontSize:10,color:'#64748b',lineHeight:16}
+},
             },
             labelLine:{show:true,length:14,length2:18,smooth:.3,lineStyle:{color:'#c4cdd8',width:1.2}},
             emphasis:{scale:true,scaleSize:4,itemStyle:{shadowBlur:8,shadowColor:'rgba(0,0,0,.1)'}},
             data
         }],
-        graphic:[{type:'text',left:'center',top:'46%',z:100,style:{text:numK(total),fill:'#0f172a',font:"700 24px inherit",textAlign:'center'}},{type:'text',left:'center',top:'54%',z:100,style:{text:'TOTAL',fill:'#94a3b8',font:"600 9px inherit",textAlign:'center'}}]
+        graphic:[
+            {type:'text',left:'center',top:'46%',z:100,style:{text:numK(total),fill:'#0f172a',font:"700 24px inherit",textAlign:'center'}},
+            {type:'text',left:'center',top:'54%',z:100,style:{text:'TOTAL',fill:'#94a3b8',font:"600 9px inherit",textAlign:'center'}}
+        ]
     });
-    donutInst.on('click',p=>{if(p.componentType==='series'){const u=top5.find(x=>(x.name||('@'+(x.screen_name||'')))===p.name);if(u)Panel.open(u)}});
-    window.addEventListener('resize',()=>{try{donutInst.resize()}catch(e){}});
-    lg.innerHTML=top5.map((u,i)=>`<span class="donut-leg-item" onclick="Panel.open(Store[${i}])"><span class="donut-dot" style="background:${DONUT_COLORS[i]}"></span>${esc((u.name||u.screen_name||'').substring(0,15))}</span>`).join('');
+    donutInst.on('click', p => {
+        if(p.componentType==='series'){
+            const u = top5.find(x=>(x.name||('@'+(x.screen_name||'')))===p.name);
+            if(u) Panel.open(u);
+        }
+    });
+    window.addEventListener('resize', ()=>{ try{ donutInst.resize(); }catch(e){} });
+    lg.innerHTML = top5.map((u,i)=>`<span class="donut-leg-item" onclick="Panel.open(Store[${i}])"><span class="donut-dot" style="background:${DONUT_COLORS[i]}"></span>${esc(_cleanName(Store[i].name, Store[i].screen_name).substring(0,15))}</span>`).join('');
 }
-/* user list */
-function renderList(){
-    const el=_$('userList'),pg=_$('pagArea');
-    if(!Store.length){el.innerHTML='<div class="spinner-state" style="padding:40px;"><i class="ph ph-users" style="font-size:32px;color:var(--slate-300);"></i><span>Tidak ada data</span></div>';pg.innerHTML='';return}
-    const total=Store.length,pages=Math.ceil(total/PP),start=(curPage-1)*PP,items=Store.slice(start,start+PP),mx=Store[0]?totalEng(Store[0]):1;
+
+/* ══ USER LIST ══ */
+function renderList() {
+    const el=_$('userList'), pg=_$('pagArea');
+    if(!Store.length){
+        el.innerHTML='<div class="spinner-state" style="padding:40px;"><i class="ph ph-users" style="font-size:32px;color:var(--slate-300);"></i><span>Tidak ada data</span></div>';
+        pg.innerHTML=''; return;
+    }
+    const total=Store.length, pages=Math.ceil(total/PP), start=(curPage-1)*PP;
+    const items=Store.slice(start,start+PP), mx=Store[0]?totalEng(Store[0]):1;
     let h='<div class="ht-list">';
     items.forEach((u,i)=>{
-        const rk=start+i+1,rc=rk<=3?` ht-rank--${rk}`:'',pct=Math.round((totalEng(u)/mx)*100);
-        const name=u.name||u.screen_name||'Unknown',uname=u.screen_name||u.username||'';
-        const src=_avUrl(u),init=_getInit(name);
-        const avH=src?`<img src="${esc(src)}" onerror="this.src='/assets/images/user/dummy.jpg'" alt="">`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--primary-lt);color:var(--primary);font-weight:700;font-size:11px;">${esc(init)}</div>`;
-        h+=`<div class="ht-item" onclick="Panel.open(Store[${start+i}])"><div class="ht-rank${rc}">${rk}</div><div class="ht-av">${avH}</div><div class="ht-info"><div class="ht-name">${esc(name)}</div><div class="ht-handle">@${esc(uname)} · <span style="color:var(--slate-500)">${numF(u.followers_count||0)} followers</span></div></div><div class="ht-bar-wrap"><div class="ht-bar-fill" style="width:${pct}%;"></div></div><div class="ht-count">${numF(totalEng(u))}</div></div>`;
+        const rk=start+i+1, rc=rk<=3?` ht-rank--${rk}`:'';
+        const pct = Math.round((totalEng(u)/mx)*100);
+        const uname=u.screen_name||u.username||'';
+        const name=_cleanName(u.name, uname);
+        const src=_avUrl(u), init=_getInit(name);
+        const avH = src
+            ? `<img src="${esc(src)}" onerror="this.src='/assets/images/user/dummy.jpg'" alt="">`
+            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--primary-lt);color:var(--primary);font-weight:700;font-size:11px;">${esc(init)}</div>`;
+        h+=`<div class="ht-item" onclick="Panel.open(Store[${start+i}])">
+            <div class="ht-rank${rc}">${rk}</div>
+            <div class="ht-av">${avH}</div>
+            <div class="ht-info">
+                <div class="ht-name">${esc(name)}</div>
+                <div class="ht-handle">@${esc(uname)} · <span style="color:var(--slate-500)">${numF(u.followers_count||0)} followers</span></div>
+            </div>
+            <div class="ht-bar-wrap"><div class="ht-bar-fill" style="width:${pct}%;"></div></div>
+            <div class="ht-count">${numF(totalEng(u))}</div>
+        </div>`;
     });
-    h+='</div>';el.innerHTML=h;
-    if(pages<=1){pg.innerHTML='';return}
-    const fr=start+1,to=Math.min(start+PP,total);
-    let b='',r=2;
+    h+='</div>';
+    el.innerHTML = h;
+    if(pages<=1){ pg.innerHTML=''; return; }
+    const fr=start+1, to=Math.min(start+PP,total);
+    let b='', r=2;
     b+=`<button class="tme-pag-btn" ${curPage<=1?'disabled':''} onclick="goPage(${curPage-1})"><i class="ph ph-caret-left"></i></button>`;
-    for(let i=1;i<=pages;i++){if(i===1||i===pages||(i>=curPage-r&&i<=curPage+r))b+=`<button class="tme-pag-btn${i===curPage?' is-active':''}" onclick="goPage(${i})">${i}</button>`;else if(i===curPage-r-1||i===curPage+r+1)b+=`<span class="tme-pag-btn" style="cursor:default;opacity:.4;">…</span>`}
+    for(let i=1;i<=pages;i++){
+        if(i===1||i===pages||(i>=curPage-r&&i<=curPage+r))
+            b+=`<button class="tme-pag-btn${i===curPage?' is-active':''}" onclick="goPage(${i})">${i}</button>`;
+        else if(i===curPage-r-1||i===curPage+r+1)
+            b+=`<span class="tme-pag-btn" style="cursor:default;opacity:.4;">…</span>`;
+    }
     b+=`<button class="tme-pag-btn" ${curPage>=pages?'disabled':''} onclick="goPage(${curPage+1})"><i class="ph ph-caret-right"></i></button>`;
     pg.innerHTML=`<div class="tme-pagination"><span class="tme-pag-info">${fr}–${to} dari ${total}</span><div class="tme-pag-controls">${b}</div></div>`;
 }
-function goPage(p){curPage=p;renderList();_$('userList')?.scrollIntoView({behavior:'smooth',block:'nearest'})}
-/* CSV */
-function exportCsv(){if(!Store.length){alert('Tidak ada data.');return}const cfg=TAB[curSub];const hdr=`rank;name;handle;followers;${cfg.col};retweets;replies`;const rows=Store.map((u,i)=>`${i+1};${(u.name||'').replace(/;/g,',')};@${u.screen_name||u.username||''};${u.followers_count||0};${u.total||totalEng(u)};${u.retweets||0};${u.replies||0}`);const blob=new Blob(['\uFEFF'+[hdr,...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`X_TopInfluencers_${curSub}_${CFG.sd}_${CFG.ed}.csv`}).click()}
+function goPage(p){ curPage=p; renderList(); _$('userList')?.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 
-/* ═══ SLIDE PANEL ═══ */
-const Panel=(()=>{
-    let _u=null,_mentions=[],_hasMore=false,_apiStart=0,_pg=1;const _PP=10;let _abort=null;
-    function open(user){
-        _u=user;_mentions=[];_hasMore=false;_apiStart=0;_pg=1;
-        if(_abort)try{_abort.abort()}catch(e){}_abort=new AbortController();
-        const name=user.name||user.screen_name||'Influencer';
-        _$('panelTitle').textContent=name+' — Profile';
-        _$('panelBody').innerHTML=_profileHTML(user)+'<div id="upMentions"><div class="up-loading"><div class="spin-ring"></div><span>Memuat tweets…</span></div></div>';
-        _$('panelOverlay').classList.remove('hiding');_$('panelOverlay').classList.add('show');
-        _$('sntPanel').classList.remove('hiding');_$('sntPanel').classList.add('show');
+/* ═══════════════════════════════════════════════════════════
+   SLIDE PANEL
+═══════════════════════════════════════════════════════════ */
+const Panel = (() => {
+    let _u=null, _mentions=[], _hasMore=false, _apiStart=0, _pg=1;
+    const _PP=10;
+    let _abort=null;
+
+    function open(user) {
+        _u=user; _mentions=[]; _hasMore=false; _apiStart=0; _pg=1;
+        if(_abort) try{ _abort.abort(); }catch(e){}
+        _abort = new AbortController();
+        const name = _cleanName(user.name, user.screen_name);
+        _$('panelTitle').textContent = name+' — Profile';
+        _$('panelBody').innerHTML    = _profileHTML(user)+'<div id="upMentions"><div class="up-loading"><div class="spin-ring"></div><span>Memuat tweets…</span></div></div>';
+        _$('panelOverlay').classList.remove('hiding'); _$('panelOverlay').classList.add('show');
+        _$('sntPanel').classList.remove('hiding');     _$('sntPanel').classList.add('show');
         _$('detailPanel').classList.remove('show');
         _fetchMentions();
     }
-    function close(){
-        if(_abort)try{_abort.abort()}catch(e){}_abort=null;
-        _$('panelOverlay').classList.add('hiding');_$('sntPanel').classList.add('hiding');
-        setTimeout(()=>{_$('panelOverlay').classList.remove('show','hiding');_$('sntPanel').classList.remove('show','hiding');_$('panelBody').innerHTML=''},260);
+    function close() {
+        if(_abort) try{ _abort.abort(); }catch(e){}
+        _abort=null;
+        _$('panelOverlay').classList.add('hiding'); _$('sntPanel').classList.add('hiding');
+        setTimeout(()=>{ _$('panelOverlay').classList.remove('show','hiding'); _$('sntPanel').classList.remove('show','hiding'); _$('panelBody').innerHTML=''; },260);
     }
-    async function _fetchMentions(){
-        try{
-            const uname=_u.screen_name||_u.username||'';
-            const url=`/mk/api/x/user-detailed-mentions?project_id=${CFG.pid}&username=${encodeURIComponent(uname)}&start_date=${CFG.sd}&end_date=${CFG.ed}&api_start=${_apiStart}&stat_mentions=${_u.mentions||0}&stat_replies=${_u.replies||0}&stat_retweets=${_u.retweets||0}`;
-            const r=await fetch(url,{signal:_abort?.signal});if(!r.ok)throw new Error('HTTP '+r.status);
-            const j=await r.json();if(!j.success){_renderMentions();return}
-            _mentions=[..._mentions,...(j.data?.mentions||[])];_hasMore=j.data?.has_more||false;_apiStart=j.data?.next_api_start||0;
+    async function _fetchMentions() {
+        try {
+            const uname = _u.screen_name||_u.username||'';
+            const url   = `/mk/api/x/user-detailed-mentions?project_id=${CFG.pid}&username=${encodeURIComponent(uname)}&start_date=${CFG.sd}&end_date=${CFG.ed}&api_start=${_apiStart}&stat_mentions=${_u.mentions||0}&stat_replies=${_u.replies||0}&stat_retweets=${_u.retweets||0}`;
+            const r     = await fetch(url,{signal:_abort?.signal});
+            if(!r.ok) throw new Error('HTTP '+r.status);
+            const j = await r.json();
+            if(!j.success){ _renderMentions(); return; }
+            _mentions    = [..._mentions,...(j.data?.mentions||[])];
+            _hasMore     = j.data?.has_more||false;
+            _apiStart    = j.data?.next_api_start||0;
             _renderMentions();
-        }catch(e){if(e.name!=='AbortError'){console.error(e);_renderMentions()}}
+        } catch(e) { if(e.name!=='AbortError'){ console.error(e); _renderMentions(); } }
     }
-    function _profileHTML(u){
-        const name=u.name||u.screen_name||'Unknown',uname=u.screen_name||u.username||'',src=_avUrl(u),init=_getInit(name);
-        const fol=parseInt(u.followers_count||u.author_followers_count||0),rt=parseInt(u.retweets||0),rep=parseInt(u.replies||0),tot=parseInt(u.total||0)||rt+rep;
-        const avH=src?`<img src="${esc(src)}" class="up-av" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="${esc(name)}"><div class="up-av-fb" style="display:none;">${esc(init)}</div>`:`<div class="up-av-fb">${esc(init)}</div>`;
-        return `<div class="up-banner"></div><div class="up-profile"><div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px">${avH}<a href="https://twitter.com/${esc(uname)}" target="_blank" rel="noopener" style="font-size:11px;font-weight:700;color:#fff;background:#0f1419;padding:6px 14px;border-radius:99px;text-decoration:none;display:inline-flex;align-items:center;gap:5px;margin-bottom:4px"><i class="ph ph-arrow-square-out" style="font-size:12px"></i>View on X</a></div><div class="up-name">${esc(name)}</div><div class="up-handle"><a href="https://twitter.com/${esc(uname)}" target="_blank" rel="noopener">@${esc(uname)}</a> · <strong>${numF(fol)}</strong> Followers</div><div class="up-stats"><div class="up-stat"><div class="up-stat-val">${numF(rep)}</div><div class="up-stat-lbl">Replies</div></div><div class="up-stat"><div class="up-stat-val">${numF(fol)}</div><div class="up-stat-lbl">Followers</div></div><div class="up-stat"><div class="up-stat-val">${numF(rt)}</div><div class="up-stat-lbl">Retweets</div></div></div><div class="up-total"><span class="up-total-lbl"><i class="ph ph-chart-bar"></i> Total Engagement</span><span class="up-total-val">${numF(tot)}</span></div></div>`;
+    function _profileHTML(u) {
+        const name=_cleanName(u.name, u.screen_name), uname=u.screen_name||u.username||'', src=_avUrl(u), init=_getInit(name);
+        const fol=parseInt(u.followers_count||u.author_followers_count||0), rt=parseInt(u.retweets||0), rep=parseInt(u.replies||0), tot=parseInt(u.total||0)||rt+rep;
+        const avH=src
+            ? `<img src="${esc(src)}" class="up-av" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="${esc(name)}"><div class="up-av-fb" style="display:none;">${esc(init)}</div>`
+            : `<div class="up-av-fb">${esc(init)}</div>`;
+        return `<div class="up-banner"></div>
+        <div class="up-profile">
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px">
+                ${avH}
+                <a href="https://twitter.com/${esc(uname)}" target="_blank" rel="noopener" style="font-size:11px;font-weight:700;color:#fff;background:#0f1419;padding:6px 14px;border-radius:99px;text-decoration:none;display:inline-flex;align-items:center;gap:5px;margin-bottom:4px">
+                    <i class="ph ph-arrow-square-out" style="font-size:12px"></i>View on X
+                </a>
+            </div>
+            <div class="up-name">${esc(name)}</div>
+            <div class="up-handle"><a href="https://twitter.com/${esc(uname)}" target="_blank" rel="noopener">@${esc(uname)}</a> · <strong>${numF(fol)}</strong> Followers</div>
+            <div class="up-stats">
+                <div class="up-stat"><div class="up-stat-val">${numF(rep)}</div><div class="up-stat-lbl">Replies</div></div>
+                <div class="up-stat"><div class="up-stat-val">${numF(fol)}</div><div class="up-stat-lbl">Followers</div></div>
+                <div class="up-stat"><div class="up-stat-val">${numF(rt)}</div><div class="up-stat-lbl">Retweets</div></div>
+            </div>
+            <div class="up-total">
+                <span class="up-total-lbl"><i class="ph ph-chart-bar"></i> Total Engagement</span>
+                <span class="up-total-val">${numF(tot)}</span>
+            </div>
+        </div>`;
     }
-    function _renderMentions(){
-        const el=_$('upMentions');if(!el)return;
-        if(!_mentions.length&&!_hasMore){el.innerHTML='<div class="up-empty"><i class="ph ph-chat-circle-dots"></i><span style="font-size:12px">No mentions found</span></div>';return}
-        const total=_mentions.length,pages=Math.ceil(total/_PP),si=(_pg-1)*_PP,ei=Math.min(si+_PP,total),page=_mentions.slice(si,ei);
+    function _renderMentions() {
+        const el=_$('upMentions'); if(!el) return;
+        if(!_mentions.length&&!_hasMore){
+            el.innerHTML='<div class="up-empty"><i class="ph ph-chat-circle-dots"></i><span style="font-size:12px">No mentions found</span></div>'; return;
+        }
+        const total=_mentions.length, pages=Math.ceil(total/_PP), si=(_pg-1)*_PP, ei=Math.min(si+_PP,total), page=_mentions.slice(si,ei);
         let h=`<div class="up-mentions-head"><h6><i class="ph ph-chat-circle-dots me-1"></i>Tweets & Mentions</h6><span class="up-mention-cnt">${_hasMore?total+' loaded · more':total+' found'}</span></div>`;
-        page.forEach(m=>{h+=_tweetCard(m)});
+        page.forEach(m=>{ h+=_tweetCard(m); });
         if(total>_PP||_hasMore){
-            const isLast=_pg>=pages,canLoad=isLast&&_hasMore;
+            const isLast=_pg>=pages, canLoad=isLast&&_hasMore;
             h+=`<div class="up-pag"><span class="up-pag-info">Page ${_pg}/${pages}${_hasMore?'+':''} · ${si+1}–${ei} of ${total}${_hasMore?'+':''}</span><div class="up-pag-btns">`;
             h+=`<button class="up-pag-btn" ${_pg<=1?'disabled':''} onclick="Panel.goPage(${_pg-1})"><i class="ph ph-caret-left"></i></button>`;
-            for(let p=Math.max(1,_pg-2);p<=Math.min(pages,_pg+2);p++)h+=`<button class="up-pag-btn${p===_pg?' is-active':''}" onclick="Panel.goPage(${p})">${p}</button>`;
-            if(canLoad)h+=`<button class="up-pag-btn" id="upLoadMore" onclick="Panel.loadMore()" style="padding:0 8px;background:var(--primary-lt);border-color:rgba(3,128,71,.2);color:var(--primary)">More <i class="ph ph-caret-right"></i></button>`;
-            else h+=`<button class="up-pag-btn" ${_pg>=pages?'disabled':''} onclick="Panel.goPage(${_pg+1})"><i class="ph ph-caret-right"></i></button>`;
+            for(let p=Math.max(1,_pg-2);p<=Math.min(pages,_pg+2);p++)
+                h+=`<button class="up-pag-btn${p===_pg?' is-active':''}" onclick="Panel.goPage(${p})">${p}</button>`;
+            if(canLoad)
+                h+=`<button class="up-pag-btn" id="upLoadMore" onclick="Panel.loadMore()" style="padding:0 8px;background:var(--primary-lt);border-color:rgba(3,128,71,.2);color:var(--primary)">More <i class="ph ph-caret-right"></i></button>`;
+            else
+                h+=`<button class="up-pag-btn" ${_pg>=pages?'disabled':''} onclick="Panel.goPage(${_pg+1})"><i class="ph ph-caret-right"></i></button>`;
             h+=`</div></div>`;
         }
-        el.innerHTML=h;
+        el.innerHTML = h;
     }
-    function _tweetCard(m){
-        const sent=(m.sentiment||'neutral').toLowerCase(),sentCls=sent.includes('pos')?'pos':sent.includes('neg')?'neg':'neu',sentLbl=sent.includes('pos')?'Positive':sent.includes('neg')?'Negative':'Neutral';
-        const author=m.author_name||m.author||_u?.screen_name||'',handle=m.author||_u?.screen_name||'';
-        const ts=m.timestamp||m.created_at||'';let dtStr='';if(ts){const d=new Date(ts);if(!isNaN(d))dtStr=d.toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Jakarta'})+' WIB'}
-        const likes=parseInt(m.likes||m.num_likes||0),rts=parseInt(m.retweets||m.num_shares||0),reps=parseInt(m.replies||m.num_comments||0);
-        const text=_linkify(m.text||'');
-        const tUrl=(m.url&&m.url!=='#')?m.url:'';
+    function _tweetCard(m) {
+        const sent=(m.sentiment||'neutral').toLowerCase(), sentCls=sent.includes('pos')?'pos':sent.includes('neg')?'neg':'neu';
+        const sentLbl=sent.includes('pos')?'Positive':sent.includes('neg')?'Negative':'Neutral';
+        const ts=m.timestamp||m.created_at||''; let dtStr='';
+        if(ts){ const d=new Date(ts); if(!isNaN(d)) dtStr=d.toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Jakarta'})+' WIB'; }
+        const likes=parseInt(m.likes||m.num_likes||0), rts=parseInt(m.retweets||m.num_shares||0), reps=parseInt(m.replies||m.num_comments||0);
+        const text=_linkify(m.text||''), tUrl=(m.url&&m.url!=='#')?m.url:'';
         const mJson=esc(JSON.stringify(m).replace(/'/g,'&#39;'));
         const viewLink=tUrl?`<a href="${esc(tUrl)}" target="_blank" rel="noopener" class="up-tw-link" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out"></i>View</a>`:'';
-        return `<div class="up-tweet" onclick="Detail.open(JSON.parse(this.dataset.m))" data-m='${mJson}'><div class="up-tw-head"><span class="up-tw-author">${esc(author)}</span><span class="up-tw-time">${dtStr}</span></div><div class="up-tw-text">${text}</div><div class="up-tw-foot"><span class="up-tw-sent up-tw-sent--${sentCls}">${sentLbl}</span><span class="up-tw-metric"><i class="ph ph-heart"></i>${numF(likes)}</span><span class="up-tw-metric"><i class="ph ph-repeat"></i>${numF(rts)}</span><span class="up-tw-metric"><i class="ph ph-chat-circle"></i>${numF(reps)}</span>${viewLink}</div></div>`;
+        return `<div class="up-tweet" onclick="Detail.open(JSON.parse(this.dataset.m))" data-m='${mJson}'>
+            <div class="up-tw-head"><span class="up-tw-author">${esc(m.author_name||m.author||_u?.screen_name||'')}</span><span class="up-tw-time">${dtStr}</span></div>
+            <div class="up-tw-text">${text}</div>
+            <div class="up-tw-foot">
+                <span class="up-tw-sent up-tw-sent--${sentCls}">${sentLbl}</span>
+                <span class="up-tw-metric"><i class="ph ph-heart"></i>${numF(likes)}</span>
+                <span class="up-tw-metric"><i class="ph ph-repeat"></i>${numF(rts)}</span>
+                <span class="up-tw-metric"><i class="ph ph-chat-circle"></i>${numF(reps)}</span>
+                ${viewLink}
+            </div>
+        </div>`;
     }
-    function goPage(p){const tp=Math.ceil(_mentions.length/_PP);if(p<1||p>tp)return;_pg=p;_renderMentions()}
-    async function loadMore(){
-        const btn=_$('upLoadMore');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin-ring" style="width:14px;height:14px;border-width:2px"></div>'}
-        try{
+    function goPage(p){ const tp=Math.ceil(_mentions.length/_PP); if(p<1||p>tp)return; _pg=p; _renderMentions(); }
+    async function loadMore() {
+        const btn=_$('upLoadMore');
+        if(btn){ btn.disabled=true; btn.innerHTML='<div class="spin-ring" style="width:14px;height:14px;border-width:2px"></div>'; }
+        try {
             const uname=_u?.screen_name||_u?.username||'';
             const url=`/mk/api/x/user-detailed-mentions?project_id=${CFG.pid}&username=${encodeURIComponent(uname)}&start_date=${CFG.sd}&end_date=${CFG.ed}&api_start=${_apiStart}&stat_mentions=${_u?.mentions||0}&stat_replies=${_u?.replies||0}&stat_retweets=${_u?.retweets||0}`;
-            const r=await fetch(url,{signal:_abort?.signal});const j=await r.json();
-            if(j.success&&j.data){_mentions=[..._mentions,...(j.data.mentions||[])];_hasMore=j.data.has_more||false;_apiStart=j.data.next_api_start||0;const tp=Math.ceil(_mentions.length/_PP);_pg=Math.min(_pg+1,tp);}
+            const r=await fetch(url,{signal:_abort?.signal}); const j=await r.json();
+            if(j.success&&j.data){ _mentions=[..._mentions,...(j.data.mentions||[])]; _hasMore=j.data.has_more||false; _apiStart=j.data.next_api_start||0; const tp=Math.ceil(_mentions.length/_PP); _pg=Math.min(_pg+1,tp); }
             _renderMentions();
-        }catch(e){if(btn){btn.disabled=false;btn.innerHTML='More <i class="ph ph-caret-right"></i>'}}
+        } catch(e){ if(btn){ btn.disabled=false; btn.innerHTML='More <i class="ph ph-caret-right"></i>'; } }
     }
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&_$('sntPanel')?.classList.contains('show'))close()});
-    return{open,close,goPage,loadMore};
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape'&&_$('sntPanel')?.classList.contains('show')) close(); });
+    return { open, close, goPage, loadMore };
 })();
 
-/* ═══ DETAIL PANEL ═══ */
-const Detail=(()=>{
-    function open(m){
-        const sent=(m.sentiment||'neutral').toLowerCase(),sentCls=sent.includes('pos')?'pos':sent.includes('neg')?'neg':'neu',sentLbl=sent.includes('pos')?'Positive':sent.includes('neg')?'Negative':'Neutral';
-        const author=m.author_name||m.author||'',handle=m.author||'';
-        const ts=m.timestamp||m.created_at||'';let dtStr='';if(ts){const d=new Date(ts);if(!isNaN(d))dtStr=d.toLocaleString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Jakarta'})+' WIB'}
-        const likes=parseInt(m.likes||m.num_likes||0),rts=parseInt(m.retweets||m.num_shares||0),reps=parseInt(m.replies||m.num_comments||0);
+/* ═══════════════════════════════════════════════════════════
+   DETAIL PANEL
+═══════════════════════════════════════════════════════════ */
+const Detail = (() => {
+    function open(m) {
+        const sent=(m.sentiment||'neutral').toLowerCase(), sentCls=sent.includes('pos')?'pos':sent.includes('neg')?'neg':'neu';
+        const sentLbl=sent.includes('pos')?'Positive':sent.includes('neg')?'Negative':'Neutral';
+        const ts=m.timestamp||m.created_at||''; let dtStr='';
+        if(ts){ const d=new Date(ts); if(!isNaN(d)) dtStr=d.toLocaleString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Jakarta'})+' WIB'; }
+        const likes=parseInt(m.likes||m.num_likes||0), rts=parseInt(m.retweets||m.num_shares||0), reps=parseInt(m.replies||m.num_comments||0);
         const text=_linkify(m.text||'');
+        const handle=m.author||'';
         const tUrl=(m.url&&m.url!=='#')?m.url:`https://twitter.com/${encodeURIComponent(handle)}`;
-        _$('detailTitle').textContent='Tweet Detail';
-        _$('detailBody').innerHTML=`
+        _$('detailTitle').textContent = 'Tweet Detail';
+        _$('detailBody').innerHTML = `
             <div class="do-dp2-meta">${dtStr?`<i class="ph ph-clock me-1"></i>${dtStr}`:''}</div>
             <div class="do-dp2-sent do-dp2-sent--${sentCls}"><i class="ph ph-circle-fill" style="font-size:6px"></i> ${sentLbl}</div>
             <div class="do-dp2-content">${text||'<em style="color:var(--slate-400)">No content</em>'}</div>
-            <div class="do-dp2-stats"><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(likes)}</div><div class="do-dp2-stat-lbl">Likes</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(rts)}</div><div class="do-dp2-stat-lbl">Retweets</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(reps)}</div><div class="do-dp2-stat-lbl">Replies</div></div></div>
+            <div class="do-dp2-stats">
+                <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(likes)}</div><div class="do-dp2-stat-lbl">Likes</div></div>
+                <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(rts)}</div><div class="do-dp2-stat-lbl">Retweets</div></div>
+                <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(reps)}</div><div class="do-dp2-stat-lbl">Replies</div></div>
+            </div>
             <a href="${esc(tUrl)}" target="_blank" rel="noopener" class="do-dp2-link"><i class="ph ph-arrow-square-out"></i>Open on X</a>`;
         _$('detailPanel').classList.add('show');
     }
-    function close(){_$('detailPanel').classList.remove('show')}
-    return{open,close};
+    function close(){ _$('detailPanel').classList.remove('show'); }
+    return { open, close };
 })();
 
-function _linkify(raw){if(!raw)return'<em style="color:var(--slate-400)">No content</em>';let t=raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');t=t.replace(/(https?:\/\/[^\s<>"'\u0000-\u001F]+)/g,u=>{const h=u.replace(/&amp;/g,'&');return`<a href="${h}" target="_blank" rel="noopener" style="color:var(--primary);word-break:break-all">${u}</a>`});t=t.replace(/(?<![\/\w])@([A-Za-z0-9_]{1,50})/g,'<a href="https://twitter.com/$1" target="_blank" rel="noopener" style="color:#1d9bf0">@$1</a>');t=t.replace(/(?<!\w)#([A-Za-z0-9_\u00C0-\u024F]+)/g,'<a href="https://twitter.com/hashtag/$1" target="_blank" rel="noopener" style="color:#1d9bf0">#$1</a>');return t}
+function _linkify(raw) {
+    if(!raw) return '<em style="color:var(--slate-400)">No content</em>';
+    let t=raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    t=t.replace(/(https?:\/\/[^\s<>"'\u0000-\u001F]+)/g, u=>{ const h=u.replace(/&amp;/g,'&'); return `<a href="${h}" target="_blank" rel="noopener" style="color:var(--primary);word-break:break-all">${u}</a>`; });
+    t=t.replace(/(?<![\/\w])@([A-Za-z0-9_]{1,50})/g,'<a href="https://twitter.com/$1" target="_blank" rel="noopener" style="color:#1d9bf0">@$1</a>');
+    t=t.replace(/(?<!\w)#([A-Za-z0-9_\u00C0-\u024F]+)/g,'<a href="https://twitter.com/hashtag/$1" target="_blank" rel="noopener" style="color:#1d9bf0">#$1</a>');
+    return t;
+}
 
-document.addEventListener('DOMContentLoaded',()=>{
-    if(CFG.pid)loadData();
-    document.querySelectorAll('#subTabs .sent-tab').forEach(btn=>{
-        btn.addEventListener('click',()=>{
+const XIExport = (() => {
+    let _toastTimer = null;
+
+    function _toast(msg, type='default', duration=3200) {
+        const t=_$('exportToast'), m=_$('exportToastMsg'), ico=_$('exportToastIcon');
+        if(!t||!m) return;
+        m.textContent = msg;
+        t.className   = 'export-toast show '+(type!=='default'?type:'');
+        const icons   = { success:'ph-check-circle', error:'ph-x-circle', default:'ph-spinner' };
+        ico.className = 'ph '+(icons[type]||icons.default);
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(()=>t.classList.remove('show'), duration);
+    }
+
+    function _btnState(btn, loading) {
+        if(!btn) return;
+        btn.disabled = loading;
+        btn.classList.toggle('exporting', loading);
+    }
+
+    /* ── Pre-snapshot ECharts sebelum html2canvas ── */
+    function _getDonutSnapshot() {
+        try {
+            if(!donutInst || donutInst.isDisposed()) return null;
+            const ch = _$('donutChart');
+            if(!ch || ch.style.display === 'none') return null;
+            return donutInst.getDataURL({ type:'png', pixelRatio:2, backgroundColor:'#ffffff' });
+        } catch(e) { return null; }
+    }
+
+    /* ── onclone: freeze animasi + inject snapshot ── */
+    function _makeOnClone(donutSnapshot) {
+        return (clonedDoc) => {
+            // Freeze semua animasi
+            const s = clonedDoc.createElement('style');
+            s.textContent = `
+                *, *::before, *::after {
+                    animation: none !important;
+                    transition: none !important;
+                    animation-play-state: paused !important;
+                }
+                .fade-up, .fade-up-d1, .fade-up-d2, .fade-up-d3, .fade-up-d4 {
+                    opacity: 1 !important;
+                    transform: none !important;
+                    visibility: visible !important;
+                }
+                .sk-block { animation: none !important; background: #e2e8f0 !important; }
+                [data-html2canvas-ignore] { display: none !important; }
+                .do-panel-overlay, .do-panel,
+                #panelOverlay, #sntPanel { display: none !important; }
+                .chart-loading, .spinner-state, .spin-ring { display: none !important; }
+                .kpi-card-hover { transform: none !important; filter: none !important; }
+                .sent-tabs { display: none !important; }
+            `;
+            clonedDoc.head.appendChild(s);
+
+            // Sembunyikan elemen yang tidak perlu
+            clonedDoc.querySelectorAll(
+                '.do-panel-overlay, .do-panel, .chart-loading, .spinner-state, .export-toast, .sent-tabs'
+            ).forEach(el => { el.style.display = 'none'; });
+
+            // Freeze elemen visual
+            clonedDoc.querySelectorAll(
+                '.card, .kpi-card-hover, .ht-item, .ht-list, [class*="col-"], .row, #pageExportArea'
+            ).forEach(el => {
+                el.style.opacity    = '1';
+                el.style.transform  = 'none';
+                el.style.visibility = 'visible';
+                el.style.animation  = 'none';
+            });
+
+            // Inject snapshot donut chart
+            const donutDiv = clonedDoc.getElementById('donutChart');
+            if (donutDiv) {
+                donutDiv.innerHTML = '';
+                donutDiv.style.cssText = 'display:block!important;width:100%;height:340px;';
+                if (donutSnapshot) {
+                    const img = clonedDoc.createElement('img');
+                    img.src = donutSnapshot;
+                    img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
+                    donutDiv.appendChild(img);
+                }
+            }
+        };
+    }
+
+    /* ── Core capture — Safari-safe ── */
+async function _capture(areaId, bgColor) {
+    const area = document.getElementById(areaId);
+    if(!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+
+    try { if(donutInst && !donutInst.isDisposed()) donutInst.resize(); } catch(e) {}
+    await new Promise(r => setTimeout(r, 300));
+
+    // Ambil SVG langsung dari DOM (karena renderer:svg)
+    const donutDiv   = _$('donutChart');
+    const donutSvgEl = donutDiv?.querySelector('svg');
+    let swapImg      = null;
+    let placeholder  = null;
+
+    if(donutDiv && donutSvgEl) {
+        // Serialize SVG → data URL
+        const svgStr  = new XMLSerializer().serializeToString(donutSvgEl);
+        const svgB64  = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
+
+        // Swap div chart → <img>
+        placeholder = document.createElement('div');
+        placeholder.id = '__donut_placeholder';
+
+        swapImg = document.createElement('img');
+        swapImg.id  = '__donut_img_swap';
+        swapImg.src = svgB64;
+        swapImg.style.cssText = 'width:100%;height:340px;object-fit:contain;display:block;';
+
+        donutDiv.parentNode.insertBefore(placeholder, donutDiv);
+        donutDiv.parentNode.insertBefore(swapImg, placeholder);
+        donutDiv.style.display = 'none';
+    }
+
+    // Freeze animasi
+    area.querySelectorAll(
+        '.fade-up,.fade-up-d1,.fade-up-d2,.fade-up-d3,.fade-up-d4,.kpi-card-hover,.ht-item,.card,[class*="col-"]'
+    ).forEach(e => {
+        e.style.opacity    = '1';
+        e.style.transform  = 'none';
+        e.style.visibility = 'visible';
+    });
+
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    window.scrollTo({ top: 0, left: 0 });
+
+    let canvas;
+    try {
+        const capturePromise = html2canvas(area, {
+            scale           : 2,
+            useCORS         : true,
+            allowTaint      : false,
+            backgroundColor : bgColor || '#f1f5f9',
+            logging         : false,
+            removeContainer : true,
+            scrollX         : 0,
+            scrollY         : 0,
+            windowWidth     : document.documentElement.scrollWidth,
+            windowHeight    : area.scrollHeight,
+            width           : area.offsetWidth,
+            height          : area.scrollHeight,
+            onclone         : _makeOnClone(),
+        });
+
+        const timeout = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Capture timeout')), 15000)
+        );
+
+        canvas = await Promise.race([capturePromise, timeout]);
+    } finally {
+        // Restore DOM
+        swapImg?.remove();
+        placeholder?.remove();
+        if(donutDiv) donutDiv.style.display = 'block';
+    }
+
+    return canvas;
+}
+    function _drawHeader(pdf, label) {
+        const pW = pdf.internal.pageSize.getWidth();
+        pdf.setFillColor(3, 128, 71);
+        pdf.rect(0, 0, pW, 11, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
+        pdf.text('SMADIMENT — ' + (label || 'X Top Influencers'), 10, 7.5);
+        const now = new Date().toLocaleDateString('id-ID', {
+            day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+        });
+        pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+        pdf.text('Generated: ' + now, pW - 10, 7.5, { align: 'right' });
+    }
+
+    function _paginatePdf(pdf, canvas, label) {
+        const pW = pdf.internal.pageSize.getWidth(), pH = pdf.internal.pageSize.getHeight();
+        const margin = 10, usableW = pW - margin*2, usableH = pH - margin*2 - 14;
+        const ratio = usableW / canvas.width, sliceH = usableH / ratio;
+        let srcY = 0, pg = 0;
+        while (srcY < canvas.height) {
+            if (pg > 0) { pdf.addPage(); _drawHeader(pdf, label); }
+            const srcSlice = Math.min(sliceH, canvas.height - srcY);
+            const slice    = document.createElement('canvas');
+            slice.width    = canvas.width; slice.height = Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice);
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, usableW, srcSlice * ratio);
+            pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+            pdf.text(`Halaman ${pg + 1}`, pW / 2, pH - 3, { align: 'center' });
+            srcY += srcSlice; pg++;
+        }
+    }
+
+    const _cardMeta = {
+        donut : { label:'Top 5 Engagement Share', file:'top5-engagement-share' },
+        list  : { label:'Influencer Ranking',     file:'influencer-ranking'    },
+    };
+    const _stamp = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
+
+    async function runCard(areaId, cardKey, type, btn) {
+        if(!window.html2canvas)                    { _toast('html2canvas tidak tersedia','error'); return; }
+        if(type==='pdf' && !window.jspdf?.jsPDF)   { _toast('jsPDF tidak tersedia','error'); return; }
+
+        _btnState(btn, true);
+        _toast(type==='pdf' ? 'Menyiapkan PDF card…' : 'Mengambil gambar card…', 'default', 99999);
+
+        try {
+            const canvas = await _capture(areaId, '#ffffff');
+            const meta   = _cardMeta[cardKey] || { label: cardKey, file: cardKey };
+            const fname  = `x_influencers_${meta.file}_${CFG.pid}_${_stamp()}`;
+
+            if (type === 'image') {
+                const a = document.createElement('a');
+                a.download = fname + '.png'; a.href = canvas.toDataURL('image/png'); a.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+                    unit:'mm', format:'a4'
+                });
+                _drawHeader(pdf, meta.label);
+                _paginatePdf(pdf, canvas, meta.label);
+                pdf.save(fname + '.pdf');
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(err) {
+            console.error('[XIExport.runCard]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            _btnState(btn, false);
+        }
+    }
+
+    async function run(type, btn) {
+        if(!window.html2canvas)                    { _toast('html2canvas tidak tersedia','error'); return; }
+        if(type==='pdf' && !window.jspdf?.jsPDF)   { _toast('jsPDF tidak tersedia','error'); return; }
+
+        const btnPdf = _$('pageExportPdfBtn'), btnImg = _$('pageExportImgBtn');
+        _btnState(btnPdf, true); _btnState(btnImg, true);
+        _toast(type==='pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+
+        try {
+            const canvas = await _capture('pageExportArea', '#f1f5f9');
+            const stamp  = _stamp();
+            if (type === 'image') {
+                const a = document.createElement('a');
+                a.download = `x_influencers_${CFG.pid}_${stamp}.png`;
+                a.href = canvas.toDataURL('image/png'); a.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+                _drawHeader(pdf, 'X Top Influencers');
+                _paginatePdf(pdf, canvas, 'X Top Influencers');
+                pdf.save(`x_influencers_${CFG.pid}_${stamp}.pdf`);
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(err) {
+            console.error('[XIExport]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            _btnState(btnPdf, false); _btnState(btnImg, false);
+        }
+    }
+
+    return { run, runCard };
+})();
+/* ══ INIT ══ */
+document.addEventListener('DOMContentLoaded', () => {
+    if(CFG.pid) loadData();
+    document.querySelectorAll('#subTabs .sent-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
             document.querySelectorAll('#subTabs .sent-tab').forEach(b=>b.classList.remove('active'));
-            btn.classList.add('active');curSub=btn.dataset.s;Store=[];loadData();
+            btn.classList.add('active');
+            curSub = btn.dataset.s;
+            Store  = [];
+            loadData();
         });
     });
 });

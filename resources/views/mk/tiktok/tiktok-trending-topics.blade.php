@@ -132,16 +132,6 @@
   .table-card-title { font-size:16px;font-weight:700;color:var(--text-primary); }
   .table-card-sub   { font-size:12px;color:var(--text-muted);margin-top:3px; }
 
-  .csv-btn {
-    display:inline-flex;align-items:center;gap:7px;
-    padding:8px 16px;background:var(--bg-gray-50);
-    border:1px solid var(--border-gray);border-radius:var(--radius-xs);
-    font-family:var(--font);font-size:12px;font-weight:600;color:var(--text-secondary);
-    cursor:pointer;transition:var(--transition);text-decoration:none;
-  }
-  .csv-btn:hover { background:var(--primary-green);color:#fff;border-color:var(--primary-green); }
-  .csv-btn svg { width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2; }
-
   .table-wrapper { overflow-x:auto; }
 
   .ht-table { width:100%;border-collapse:collapse;font-family:var(--font); }
@@ -253,14 +243,6 @@
   }
   .ctt-btn.active { background:var(--bg-white);color:var(--text-primary);box-shadow:var(--shadow-xs); }
   .ctt-btn svg { width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2; }
-  .csv-btn {
-    display:inline-flex;align-items:center;gap:7px;padding:8px 16px;
-    background:var(--bg-gray-50);border:1px solid var(--border-gray);border-radius:var(--radius-xs);
-    font-family:var(--font);font-size:12px;font-weight:600;color:var(--text-secondary);
-    cursor:pointer;transition:var(--transition);text-decoration:none;
-  }
-  .csv-btn:hover { background:var(--primary-green);color:#fff;border-color:var(--primary-green); }
-  .csv-btn svg { width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2; }
   .chart-body { padding:24px; }
   #htChart { width:100%;height:520px; }
   .chart-sk { display:flex;align-items:flex-end;gap:8px;height:520px;padding:0 10px 40px; }
@@ -527,10 +509,6 @@
             Donut
           </button>
         </div>
-        <button class="csv-btn" onclick="HashtagApp.exportCsv()">
-          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          CSV
-        </button>
       </div>
     </div>
 
@@ -921,17 +899,6 @@ const HashtagApp = {
   setTop(n) {
     this.topN = parseInt(n);
     this.renderChart();
-  },
-
-  exportCsv() {
-    if(!this.allHashtags.length) { alert('Tidak ada data.'); return; }
-    const rows = this.allHashtags.map((h,i) => (i+1)+';'+(h.name||'')+';'+(h.size||0));
-    const csv  = 'Rank;Hashtag;Mentions\n'+rows.join('\n');
-    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-    const a    = document.createElement('a');
-    a.href     = URL.createObjectURL(blob);
-    a.download = 'top-hashtags-'+this.startDate+'_'+this.endDate+'.csv';
-    a.click();
   },
 
   showError() {

@@ -244,26 +244,50 @@ class TopAnalyticsController extends Controller
 
             $startDate = $request->query('start_date', Carbon::now()->subDays(6)->format('Y-m-d'));
             $endDate = $request->query('end_date', Carbon::now()->format('Y-m-d'));
+            $media = $request->query('media', '');
 
             $response = $this->client->topInfluencers(
                 $projectId,
                 $startDate,
-                $endDate
+                $endDate,
+                0,
+                23,
+                '',
+                200
             );
 
-            Log::info('Top Influencers API response', [
-                'project_id' => $projectId,
-                'data_count' => count($response['data'] ?? [])
-            ]);
+            // API returns {data: [...]} or [...]
+            $rawData = $response['data'] ?? $response ?? [];
+            if (!is_array($rawData)) $rawData = [];
 
-            // Transform data for frontend
-            $influencers = $response['data'] ?? [];
+            // Filter & Sanitize
+            $influencers = [];
+            foreach ($rawData as $item) {
+                if (!is_array($item)) continue;
+
+                $name = $item['name'] ?? $item['author'] ?? '';
+                $info = $item['info'] ?? [];
+                $screenName = $info['screen_name'] ?? ltrim($name, '@');
+
+                // Skip YouTube Channel IDs (UC...)
+                if (preg_match('/^UC[A-Za-z0-9_-]{20,}$/', $screenName)) {
+                    continue;
+                }
+
+                // Clean display name if it's a raw ID
+                if (preg_match('/^UC[A-Za-z0-9_-]{20,}$/', $name)) {
+                    $item['name'] = $screenName ? ('@' . $screenName) : 'Unknown';
+                }
+
+                $influencers[] = $item;
+            }
+
             $chartData = $this->transformInfluencersForChart($influencers);
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'influencers' => $influencers,
+                    'influencers' => array_values($influencers),
                     'chartData' => $chartData,
                     'total' => count($influencers),
                 ]

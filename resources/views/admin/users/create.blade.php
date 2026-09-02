@@ -99,6 +99,42 @@
         </small>
       </div>
       
+      <!-- Subscription & Trial -->
+        <div class="form-group-row">
+          <div class="flex-1">
+            <label for="trial_days" class="form-label">Trial Period (Days)</label>
+            <input 
+              type="number" 
+              id="trial_days" 
+              name="trial_days" 
+              class="form-input @error('trial_days') is-invalid @enderror" 
+              value="{{ old('trial_days') }}" 
+              placeholder="e.g. 7, 30"
+            >
+            <div class="quick-select-days mt-2">
+              <button type="button" class="btn-quick-day" onclick="setTrialDays(30)">1 Month</button>
+              <button type="button" class="btn-quick-day" onclick="setTrialDays(60)">2 Months</button>
+              <button type="button" class="btn-quick-day" onclick="setTrialDays(90)">3 Months</button>
+            </div>
+            @error('trial_days')
+            <span class="error-message">{{ $message }}</span>
+            @enderror
+            <small class="form-hint">Number of days for trial access from today</small>
+          </div>
+          <div class="flex-1">
+            <label for="notice_days" class="form-label">Notice Reminder</label>
+            <select name="notice_days" id="notice_days" class="form-input @error('notice_days') is-invalid @enderror">
+              <option value="7" {{ old('notice_days') == 7 ? 'selected' : '' }}>1 Week Before (Default)</option>
+              <option value="30" {{ old('notice_days') == 30 ? 'selected' : '' }}>1 Month Before</option>
+              <option value="1" {{ old('notice_days') == 1 ? 'selected' : '' }}>1 Day Before</option>
+            </select>
+            @error('notice_days')
+            <span class="error-message">{{ $message }}</span>
+            @enderror
+            <small class="form-hint">When to show expiration warning in user's header</small>
+          </div>
+        </div>
+
       <!-- Project Assignment -->
       <div class="form-group">
         <label class="form-label">Assign Projects</label>
@@ -125,7 +161,7 @@
                   </svg>
                 </span>
                 <div>
-                  <div class="project-checkbox-name">{{ $project['name'] ?? $project['title'] ?? 'Unnamed Project' }}</div>
+                  <div class="project-checkbox-name">{{ $project['name'] ?? $project['project_name'] ?? $project['title'] ?? $project['label'] ?? 'Unknown Project' }}</div>
                   <div class="project-checkbox-id">ID: {{ $project['id'] }}</div>
                 </div>
               </div>
@@ -194,6 +230,16 @@
   margin-bottom: 28px;
 }
 
+.form-group-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
 .form-label {
   display: block;
   font-size: 14px;
@@ -218,6 +264,30 @@
   font-weight: 500;
   color: var(--dark-blue);
   transition: all 0.2s;
+}
+
+.quick-select-days {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn-quick-day {
+  padding: 6px 12px;
+  background: #f1f5f9;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-quick-day:hover {
+  background: var(--primary-green);
+  color: #fff;
+  border-color: var(--primary-green);
 }
 
 .form-input:focus {
@@ -546,6 +616,13 @@ function copyPassword() {
   setTimeout(() => {
     copyBtn.innerHTML = originalText;
   }, 2000);
+}
+
+/**
+ * Set Trial Days automatically
+ */
+function setTrialDays(days) {
+  document.getElementById('trial_days').value = days;
 }
 
 // Auto-generate when username changes

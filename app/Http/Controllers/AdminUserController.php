@@ -46,6 +46,8 @@ class AdminUserController extends Controller
             'password' => 'required|string|min:6',
             'projects' => 'required|array|min:1',
             'projects.*' => 'required|integer',
+            'trial_days' => 'nullable|integer|min:0',
+            'notice_days' => 'nullable|integer|in:1,7,30',
         ], [
             'email.ends_with' => 'Email must be in format: username@smadiment.com',
             'name.alpha_dash' => 'Username can only contain letters, numbers, dashes and underscores',
@@ -54,11 +56,20 @@ class AdminUserController extends Controller
         // Pakai password dari form (yang udah di-generate di frontend)
         $generatedPassword = $validated['password'];
 
+        $trialEndsAt = null;
+        if ($request->filled('trial_days')) {
+            $trialEndsAt = now()->addDays($request->integer('trial_days'));
+        }
+
         // Create user
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($generatedPassword),
+            'trial_ends_at' => $trialEndsAt,
+            'subscription_notice_at' => ($trialEndsAt && $request->filled('notice_days')) 
+                ? $trialEndsAt->copy()->subDays($request->integer('notice_days')) 
+                : null,
         ]);
 
         // Assign projects
@@ -103,6 +114,8 @@ class AdminUserController extends Controller
             'projects' => 'required|array|min:1',
             'projects.*' => 'required|integer',
             'reset_password' => 'nullable|boolean',
+            'trial_ends_at' => 'nullable|date',
+            'notice_days' => 'nullable|integer|in:1,7,30',
         ], [
             'email.ends_with' => 'Email must be in format: username@smadiment.com',
             'name.alpha_dash' => 'Username can only contain letters, numbers, dashes and underscores',
@@ -112,6 +125,10 @@ class AdminUserController extends Controller
         $user->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'trial_ends_at' => $request->input('trial_ends_at'),
+            'subscription_notice_at' => ($request->filled('trial_ends_at') && $request->filled('notice_days')) 
+                ? \Carbon\Carbon::parse($request->input('trial_ends_at'))->subDays($request->integer('notice_days')) 
+                : null,
         ]);
 
         // Reset password if requested - generate new password automatically

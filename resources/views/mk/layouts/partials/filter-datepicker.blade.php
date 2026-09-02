@@ -38,7 +38,7 @@
     padding:14px 18px; margin-bottom:20px;
 }
 .do-filter-row { display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap; }
-.do-filter-group { display:flex; flex-direction:column; gap:5px; }
+.do-filter-group { display:flex; flex-direction:column; gap:5px; min-width:0; }
 .do-filter-label {
     font-size:10px; font-weight:700; color:var(--do-slate-500);
     text-transform:uppercase; letter-spacing:.5px;
@@ -49,7 +49,12 @@
     font-size:13px; font-weight:500; color:var(--do-slate-800);
     background:var(--do-slate-50); outline:none;
     transition:border-color .14s, box-shadow .14s;
-    min-width:180px; cursor:pointer;
+    min-width:220px; cursor:pointer;
+    height:36px; box-sizing:border-box;
+    -webkit-appearance:none; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 10px center;
+    padding-right:30px;
 }
 .do-filter-select:focus {
     border-color:var(--do-primary);
@@ -60,8 +65,9 @@
     display:flex; align-items:center; gap:8px; padding:7px 14px;
     background:var(--do-slate-50); border:1px solid var(--do-slate-200);
     border-radius:var(--do-radius-sm); font-size:13px; font-weight:500;
-    color:var(--do-slate-800); cursor:pointer; min-width:260px;
+    color:var(--do-slate-800); cursor:pointer; min-width:220px;
     transition:border-color .14s, box-shadow .14s;
+    height:36px; box-sizing:border-box;
 }
 .do-date-trigger:hover {
     border-color:var(--do-primary);
@@ -200,9 +206,9 @@
             <button type="button" class="do-dp-preset" data-p="yesterday">Yesterday</button>
             <button type="button" class="do-dp-preset" data-p="last7">Last 7 Days</button>
             <button type="button" class="do-dp-preset" data-p="last30">Last 30 Days</button>
-            <button type="button" class="do-dp-preset" data-p="thismonth">This Month</button>
+            <button type="button" class="do-dp-preset active" data-p="thismonth">This Month</button>
             <button type="button" class="do-dp-preset" data-p="lastmonth">Last Month</button>
-            <button type="button" class="do-dp-preset active" data-p="custom">Custom Range</button>
+            <button type="button" class="do-dp-preset" data-p="custom">Custom Range</button>
         </div>
         <div class="do-dp-content">
             <div class="do-dp-header">
@@ -238,19 +244,69 @@ const DPicker = (()=>{
         if(p.length===3) return new Date(+p[0],+p[1]-1,+p[2]);
         return new Date(s);
     }
+    function thisMonthRange(){
+        const today=new Date(); today.setHours(0,0,0,0);
+        return { s: new Date(today.getFullYear(), today.getMonth(), 1), e: new Date(today) };
+    }
     function init(){
+        const params = new URLSearchParams(window.location.search);
+        const urlS = params.get('start_date');
+        const urlE = params.get('end_date');
+        const urlP = params.get('project_id');
+
+        /* ── Redirect dengan project_id dari storage jika belum ada ── */
+        if(!urlP) {
+            const gp = localStorage.getItem('selected_project_id');
+            if(gp) { params.set('project_id', gp); window.location.search = params.toString(); return; }
+        }
+
+        /* ── Default tanggal: pakai URL jika ada, fallback THIS MONTH ── */
         const si=_dpEl('hiddenStartDate'),ei=_dpEl('hiddenEndDate');
-        ds=si?.value?parseLocal(si.value):(()=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-6);return d;})();
-        de=ei?.value?parseLocal(ei.value):(()=>{const d=new Date();d.setHours(0,0,0,0);return d;})();
-        m1=new Date(ds);m2=new Date(ds);m2.setMonth(m2.getMonth()+1);
+        if(urlS && urlE){
+            ds=parseLocal(urlS);
+            de=parseLocal(urlE);
+            /* Cek apakah range = this month → highlight preset */
+            const tm=thisMonthRange();
+            if(fmt(ds)===fmt(tm.s) && fmt(de)===fmt(tm.e)){
+                setActivePreset('thismonth');
+            } else {
+                setActivePreset('custom');
+            }
+        } else {
+            /* Tidak ada URL param → default ke bulan ini */
+            const tm=thisMonthRange();
+            ds=tm.s; de=tm.e;
+            setActivePreset('thismonth');
+            /* Auto-redirect agar URL sinkron */
+            if(urlP || localStorage.getItem('selected_project_id')){
+                params.set('start_date', fmt(ds));
+                params.set('end_date',   fmt(de));
+                if(!urlP && localStorage.getItem('selected_project_id'))
+                    params.set('project_id', localStorage.getItem('selected_project_id'));
+                window.location.search = params.toString();
+                return;
+            }
+        }
+
+        if(si) si.value = fmt(ds);
+        if(ei) ei.value = fmt(de);
+        const dd = _dpEl('doDateDisplay');
+        if(dd) dd.textContent = fmt(ds) + ' – ' + fmt(de);
+
+        m1=new Date(ds); m2=new Date(ds); m2.setMonth(m2.getMonth()+1);
         render();
         _dpEl('doDateTrigger')?.addEventListener('click',open);
         document.querySelectorAll('.do-dp-preset').forEach(b=>b.addEventListener('click',onPreset));
         document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
         _dpEl('doProject')?.addEventListener('change',function(){
             _dpEl('hiddenProjectId').value=this.value;
+            _dpEl('hiddenStartDate').value = fmt(ds);
+            _dpEl('hiddenEndDate').value = fmt(de);
             _dpEl('doFilterForm').submit();
         });
+    }
+    function setActivePreset(p){
+        document.querySelectorAll('.do-dp-preset').forEach(b=>b.classList.toggle('active', b.dataset.p===p));
     }
     function open(){_dpEl('doDpModal').classList.add('show');render();}
     function close(){_dpEl('doDpModal').classList.remove('show');}
@@ -258,23 +314,25 @@ const DPicker = (()=>{
         _dpEl('hiddenStartDate').value=fmt(ds);
         _dpEl('hiddenEndDate').value=fmt(de);
         _dpEl('doDateDisplay').textContent=fmt(ds)+' – '+fmt(de);
+        localStorage.setItem('smadiment_g_start', fmt(ds));
+        localStorage.setItem('smadiment_g_end', fmt(de));
         close();
         _dpEl('doFilterForm').submit();
     }
     function nav(dir){m1.setMonth(m1.getMonth()+dir);m2.setMonth(m2.getMonth()+dir);render();}
     function onPreset(e){
-        document.querySelectorAll('.do-dp-preset').forEach(b=>b.classList.remove('active'));
-        e.target.classList.add('active');
+        const p=e.target.dataset.p;
+        setActivePreset(p);
         const today=new Date();today.setHours(0,0,0,0);
-        switch(e.target.dataset.p){
-            case 'today':    ds=new Date(today);de=new Date(today);break;
-            case 'yesterday':ds=new Date(today);ds.setDate(today.getDate()-1);de=new Date(ds);break;
-            case 'last7':    de=new Date(today);ds=new Date(today);ds.setDate(today.getDate()-6);break;
-            case 'last30':   de=new Date(today);ds=new Date(today);ds.setDate(today.getDate()-29);break;
-            case 'thismonth':ds=new Date(today.getFullYear(),today.getMonth(),1);de=new Date(today);break;
-            case 'lastmonth':ds=new Date(today.getFullYear(),today.getMonth()-1,1);de=new Date(today.getFullYear(),today.getMonth(),0);break;
+        switch(p){
+            case 'today':     ds=new Date(today);de=new Date(today);break;
+            case 'yesterday': ds=new Date(today);ds.setDate(today.getDate()-1);de=new Date(ds);break;
+            case 'last7':     de=new Date(today);ds=new Date(today);ds.setDate(today.getDate()-6);break;
+            case 'last30':    de=new Date(today);ds=new Date(today);ds.setDate(today.getDate()-29);break;
+            case 'thismonth': {const tm=thisMonthRange();ds=tm.s;de=tm.e;break;}
+            case 'lastmonth': ds=new Date(today.getFullYear(),today.getMonth()-1,1);de=new Date(today.getFullYear(),today.getMonth(),0);break;
         }
-        if(e.target.dataset.p!=='custom'){m1=new Date(ds);m2=new Date(ds);m2.setMonth(m2.getMonth()+1);}
+        if(p!=='custom'){m1=new Date(ds);m2=new Date(ds);m2.setMonth(m2.getMonth()+1);}
         updDisp();render();
     }
     function render(){renderCal('doCal1',m1);renderCal('doCal2',m2);updDisp();}
@@ -301,8 +359,7 @@ const DPicker = (()=>{
         el.querySelectorAll('.do-cal-day:not(.dim):not(:disabled)').forEach(btn=>{
             btn.addEventListener('click',function(){
                 const d=parseLocal(this.dataset.date);
-                document.querySelectorAll('.do-dp-preset').forEach(b=>b.classList.remove('active'));
-                document.querySelector('[data-p="custom"]').classList.add('active');
+                setActivePreset('custom');
                 if(pickStart||d<ds){ds=d;de=d;pickStart=false;}
                 else{if(d>=ds)de=d;else{de=ds;ds=d;}pickStart=true;}
                 updDisp();render();
@@ -322,3 +379,4 @@ _dpEl('doFilterForm')?.addEventListener('submit',function(e){e.preventDefault();
 document.addEventListener('DOMContentLoaded',()=>DPicker.init());
 })();
 </script>
+

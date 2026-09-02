@@ -121,10 +121,6 @@
     .chart-body { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
     .chart-body.hidden { max-height: 0; opacity: 0; margin-top: 0; }
 
-    .export-btn { padding: 10px 20px; background: var(--bg-white); border: 1px solid var(--border-gray); border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; color: var(--text-primary); cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); }
-    .export-btn:hover { border-color: var(--tt-primary); color: var(--tt-primary); box-shadow: var(--shadow-md); }
-    .export-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
-
     .pagination { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 20px; background: var(--bg-white); border-top: 1px solid var(--border-gray); }
     .pagination-info { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
     .page-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border-gray); background: var(--bg-white); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; font-family: 'Poppins', sans-serif; }
@@ -371,14 +367,6 @@
             <div class="stat-label">Total Shares</div>
             <div id="totalShares" class="stat-value">0</div>
         </div>
-    </div>
-
-    <!-- Export -->
-    <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:24px;">
-        <button class="export-btn" onclick="TTPostsLoader.exportCSV()">
-            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Download CSV
-        </button>
     </div>
 
     <!-- Chart -->
@@ -954,31 +942,6 @@ const TTPostsLoader = {
         this.currentPage = p;
         this.renderTable();
         document.querySelector('.table-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    },
-
-    exportCSV() {
-        if (!this.allPosts.length) { alert('No data to export'); return; }
-        const headers = ['Rank','Creator','Handle','Caption','Likes','Comments','Shares','Views','Engagement','Sentiment','Date'];
-        const rows    = this.allPosts.map((post, idx) => [
-            idx+1,
-            `"${(post.author?.name || post.name || 'Unknown').replace(/"/g,'""')}"`,
-            `"${(post.author?.scr_name || '').replace(/"/g,'""')}"`,
-            `"${(post.content || '').replace(/"/g,'""')}"`,
-            post.likes    || 0,
-            post.comments || 0,
-            post.shares   || 0,
-            post.view_cnt || 0,
-            (post.likes||0)+(post.comments||0)+(post.shares||0),
-            post.sentiment_str || 'Neutral',
-            post.date_created  || ''
-        ]);
-        const csv  = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href  = URL.createObjectURL(blob);
-        link.setAttribute('download', `tiktok_most_viewed_posts_${this.startDate}_to_${this.endDate}_${this.currentSub}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link); link.click(); document.body.removeChild(link);
     },
 
     fmtDate(dateString) {

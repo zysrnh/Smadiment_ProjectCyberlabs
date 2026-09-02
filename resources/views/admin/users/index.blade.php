@@ -61,6 +61,7 @@
             <th>Name</th>
             <th>Email</th>
             <th>Assigned Projects</th>
+            <th>Trial Status</th>
             <th>Created</th>
             <th>Actions</th>
           </tr>
@@ -82,6 +83,22 @@
                 @empty
                   <span class="no-projects">No projects</span>
                 @endforelse
+              </div>
+            </td>
+            <td>
+              <div class="trial-status">
+                @if($user->trial_ends_at)
+                  @php $remaining = $user->trialRemainingDays(); @endphp
+                  @if($remaining > 0)
+                    <span class="trial-badge {{ $remaining <= 3 ? 'trial-warning' : 'trial-active' }}">
+                      {{ $remaining }} Days Left
+                    </span>
+                  @else
+                    <span class="trial-badge trial-expired">Expired</span>
+                  @endif
+                @else
+                  <span class="trial-badge trial-permanent">Permanent</span>
+                @endif
               </div>
             </td>
             <td class="date-cell">{{ $user->created_at->format('d M Y') }}</td>
@@ -404,6 +421,41 @@
   color: #D1D5DB;
   font-size: 12.5px;
   font-style: italic;
+}
+
+/* ─── Trial Badges ────────────────────────────────────────── */
+.trial-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.trial-active {
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid #6EE7B7;
+}
+
+.trial-warning {
+  background: #FFFBEB;
+  color: #D97706;
+  border: 1px solid #FCD34D;
+}
+
+.trial-expired {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+}
+
+.trial-permanent {
+  background: #F3F4F6;
+  color: #4B5563;
+  border: 1px solid #D1D5DB;
 }
 
 /* ─── Action Buttons ──────────────────────────────────────── */

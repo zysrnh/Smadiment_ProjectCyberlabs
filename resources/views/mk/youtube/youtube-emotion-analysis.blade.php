@@ -297,6 +297,85 @@
 .kpi-card-hover:hover .kpi-icon-bg i { animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both; display:inline-block; }
 .kpi-card-hover:active { transform:translateY(-2px) scale(1.01); }
 
+/* ══ Page Export Bar ══ */
+.page-export-bar {
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:10px;
+    background:#fff; border:1px solid var(--slate-200);
+    border-radius:var(--radius); padding:9px 14px;
+    margin-bottom:20px; box-shadow:var(--shadow-sm);
+}
+.page-export-bar-left {
+    display:flex; align-items:center; gap:8px;
+    font-size:12px; font-weight:700; color:var(--slate-600);
+}
+.page-export-bar-left i { font-size:15px; color:var(--primary); }
+.page-export-bar-right  { display:flex; gap:8px; }
+
+.page-export-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:32px; height:32px; border-radius:var(--radius-sm);
+    font-size:16px; cursor:pointer;
+    transition:all .15s ease; border:1.5px solid transparent;
+    font-family:inherit;
+}
+.page-export-btn-pdf {
+    background:#fff3f3; color:#dc2626; border-color:#fca5a5;
+}
+.page-export-btn-pdf:hover {
+    background:#dc2626; color:#fff; border-color:#dc2626;
+}
+.page-export-btn-img {
+    background:var(--primary-lt); color:var(--primary);
+    border-color:rgba(3,128,71,.3);
+}
+.page-export-btn-img:hover {
+    background:var(--primary); color:#fff; border-color:var(--primary);
+}
+.page-export-btn:disabled { opacity:.55; cursor:not-allowed; pointer-events:none; }
+.page-export-btn .export-spinner {
+    width:13px; height:13px;
+    border:2px solid currentColor; border-top-color:transparent;
+    border-radius:50%; animation:spin .65s linear infinite; display:none;
+}
+.page-export-btn.exporting .export-spinner { display:inline-block; }
+.page-export-btn.exporting .export-icon    { display:none; }
+
+/* ══ Card-level Export Buttons ══ */
+.card-exp-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    font-size:14px; cursor:pointer; flex-shrink:0;
+    transition:all .14s ease; border:1px solid transparent;
+    font-family:inherit; background:transparent;
+}
+.card-exp-btn-pdf { color:#dc2626; border-color:#fca5a5; background:#fff3f3; }
+.card-exp-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.card-exp-btn-img { color:var(--primary); border-color:rgba(3,128,71,.3); background:var(--primary-lt); }
+.card-exp-btn-img:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.card-exp-btn:disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+.card-exp-btn .export-spinner {
+    width:11px; height:11px;
+    border:2px solid currentColor; border-top-color:transparent;
+    border-radius:50%; animation:spin .65s linear infinite; display:none;
+}
+.card-exp-btn.exporting .export-spinner { display:inline-block; }
+.card-exp-btn.exporting .export-icon    { display:none; }
+
+/* ══ Export Toast ══ */
+.export-toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--slate-900); color:#fff; border-radius:var(--radius);
+    padding:10px 18px; font-size:12px; font-weight:600;
+    box-shadow:var(--shadow-lg); z-index:99999;
+    opacity:0; pointer-events:none;
+    transition:opacity .22s ease, transform .22s ease;
+    display:flex; align-items:center; gap:8px; white-space:nowrap;
+}
+.export-toast.show    { opacity:1; transform:translateX(-50%) translateY(0); }
+.export-toast.success { background:#065f46; }
+.export-toast.error   { background:#991b1b; }
+
 /* ══ Slide Panel ══ */
 .do-panel-overlay {
     position:fixed; inset:0; z-index:9000;
@@ -339,13 +418,6 @@
     text-transform:uppercase; letter-spacing:.5px;
     display:flex; align-items:center; gap:5px;
 }
-.do-panel-export {
-    display:flex; align-items:center; gap:4px; padding:4px 10px;
-    background:var(--primary); color:#fff; border:none;
-    border-radius:var(--radius-sm); font-size:10px; font-weight:700;
-    cursor:pointer; transition:filter .13s;
-}
-.do-panel-export:hover { filter:brightness(1.1); }
 
 .do-panel-list { overflow-y:auto; flex:1; padding:2px 0; min-height:0; }
 .do-panel-list::-webkit-scrollbar { width:4px; }
@@ -472,48 +544,111 @@
 </div>
 @else
 
-{{-- ══ KPI Cards ══ --}}
-<div class="row">
-    @php
-        $kpiCards = [
-            ['id'=>'kpiJoy',   'label'=>'Joy',   'icon'=>'ph-smiley',        'bg'=>'bg-warning', 'sub'=>'Emosi paling positif'],
-            ['id'=>'kpiTrust', 'label'=>'Trust',  'icon'=>'ph-handshake',     'bg'=>'bg-success', 'sub'=>'Kepercayaan & rasa aman'],
-            ['id'=>'kpiAnger', 'label'=>'Anger',  'icon'=>'ph-fire',          'bg'=>'bg-danger',  'sub'=>'Ekspresi amarah'],
-            ['id'=>'kpiTotal', 'label'=>'Total',  'icon'=>'ph-chart-line-up', 'bg'=>'bg-primary', 'sub'=>'Total post dianalisis'],
-        ];
-        $delays = ['.00s','.05s','.10s','.15s'];
-    @endphp
-    @foreach($kpiCards as $ki => $kc)
-    <div class="col-md-6 col-xl-3">
-        <div class="card {{ $kc['bg'] }} text-white kpi-card-hover"
-             onmouseenter="this.style.transform='translateY(-6px) scale(1.025)';this.style.boxShadow='0 20px 40px rgba(0,0,0,.25)';this.style.filter='brightness(1.07)';this.style.transition='transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s ease,filter .25s ease';"
-             onmouseleave="this.style.transform='';this.style.boxShadow='';this.style.filter='';"
-             style="animation:fadeUp .38s ease-out {{ $delays[$ki] }} both;">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">{{ $kc['label'] }}</p>
-                        <h3 class="mb-0 text-white f-w-300" id="{{ $kc['id'] }}">
-                            <div class="sk-block" style="height:28px;width:90px;border-radius:4px;background:rgba(255,255,255,.2);"></div>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
-                            <i class="ph {{ $kc['icon'] }} me-1"></i>{{ $kc['sub'] }}
-                        </p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph {{ $kc['icon'] }}"></i></div>
-                    </div>
+{{-- ════ PAGE EXPORT WRAPPER ════ --}}
+<div id="pageExportArea">
+
+{{-- KPI — 4 Rotating Cards --}}
+<style>
+.kpi-rot-wrap{position:relative;overflow:hidden;}
+.kpi-rot-set{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;transition:opacity .4s ease,transform .4s ease;}
+.kpi-rot-set.hidden{position:absolute;top:0;left:0;width:100%;opacity:0;pointer-events:none;transform:translateY(8px);}
+.kpi-rot-set.visible{opacity:1;transform:translateY(0);}
+.kpi-rot-dots{display:flex;justify-content:center;gap:6px;margin-top:8px;}
+.kpi-rot-dot{width:6px;height:6px;border-radius:50%;background:var(--slate-300);transition:background .3s,width .3s;cursor:pointer;border:none;padding:0;}
+.kpi-rot-dot.active{background:var(--primary);width:18px;border-radius:3px;}
+.kpi-rot-progress{position:absolute;bottom:0;left:0;height:2px;background:rgba(255,255,255,.55);border-radius:0 0 var(--radius) 0;animation:kpiRotProg 3s linear forwards;}
+@keyframes kpiRotProg{from{width:0}to{width:100%}}
+@media(max-width:768px){.kpi-rot-set{grid-template-columns:repeat(2,1fr);}}
+</style>
+@php
+$rotCards=[
+    [0,'kpiJoy',         'Joy',          '#06B6D4','ph-smiley',       'Emosi paling positif'],
+    [0,'kpiTrust',       'Trust',        '#F59E0B','ph-shield-check', 'Kepercayaan & aman'],
+    [0,'kpiFear',        'Fear',         '#4CAF50','ph-smiley-nervous','Kekhawatiran & takut'],
+    [0,'kpiSurprise',    'Surprise',     '#038047','ph-smiley-wink',  'Ekspresi terkejut'],
+    [1,'kpiSadness',     'Sadness',      '#06B6D4','ph-smiley-sad',   'Rasa sedih & kecewa'],
+    [1,'kpiDisgust',     'Disgust',      '#F59E0B','ph-smiley-meh',   'Ketidaksukaan/jijik'],
+    [1,'kpiAnger',       'Anger',        '#4CAF50','ph-smiley-x-eyes','Ekspresi amarah'],
+    [1,'kpiAnticipation','Anticipation', '#038047','ph-smiley-blank', 'Ekspektasi & harap'],
+];
+@endphp
+<div class="kpi-rot-wrap mb-3" id="kpiRotWrap">
+    <div class="kpi-rot-set visible" id="kpiSet0">
+        @foreach($rotCards as $rc) @if($rc[0]===0)
+        <div class="card h-100 text-white kpi-card-hover" style="background:{{$rc[3]}};animation:fadeUp .38s ease-out both;position:relative;overflow:hidden;">
+            <div class="kpi-rot-progress"></div>
+            <div class="card-body"><div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="mb-1 text-white text-opacity-75 f-12">{{$rc[2]}}</p>
+                    <h3 class="mb-0 text-white f-w-300" id="{{$rc[1]}}">-</h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph {{$rc[4]}} me-1"></i>{{$rc[5]}}</p>
                 </div>
-            </div>
+                <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph {{$rc[4]}}"></i></div></div>
+            </div></div>
         </div>
+        @endif @endforeach
     </div>
-    @endforeach
+    <div class="kpi-rot-set hidden" id="kpiSet1">
+        @foreach($rotCards as $rc) @if($rc[0]===1)
+        <div class="card h-100 text-white kpi-card-hover" style="background:{{$rc[3]}};position:relative;overflow:hidden;">
+            <div class="card-body"><div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <p class="mb-1 text-white text-opacity-75 f-12">{{$rc[2]}}</p>
+                    <h3 class="mb-0 text-white f-w-300" id="{{$rc[1]}}">-</h3>
+                    <p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph {{$rc[4]}} me-1"></i>{{$rc[5]}}</p>
+                </div>
+                <div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph {{$rc[4]}}"></i></div></div>
+            </div></div>
+        </div>
+        @endif @endforeach
+    </div>
+</div>
+<div class="kpi-rot-dots mb-3">
+    <button class="kpi-rot-dot active" onclick="KPIRot.goTo(0)" title="Joy · Trust · Fear · Surprise"></button>
+    <button class="kpi-rot-dot" onclick="KPIRot.goTo(1)" title="Sadness · Disgust · Anger · Anticipation"></button>
+</div>
+<script>
+const KPIRot=(()=>{const SETS=2,INTERVAL=3000;let cur=0,timer=null;
+function goTo(idx){const sets=document.querySelectorAll('.kpi-rot-set');sets.forEach((s,i)=>{s.classList.toggle('visible',i===idx);s.classList.toggle('hidden',i!==idx);});document.querySelectorAll('.kpi-rot-dot').forEach((d,i)=>d.classList.toggle('active',i===idx));cur=idx;sets[idx].querySelectorAll('.kpi-rot-progress').forEach(p=>{p.style.animation='none';p.offsetHeight;p.style.animation=`kpiRotProg ${INTERVAL}ms linear forwards`;});}
+function next(){goTo((cur+1)%SETS);}function start(){stop();timer=setInterval(next,INTERVAL);goTo(0);}function stop(){clearInterval(timer);}
+const wrap=document.getElementById('kpiRotWrap');if(wrap){wrap.addEventListener('mouseenter',stop);wrap.addEventListener('mouseleave',()=>{timer=setInterval(next,INTERVAL);});}
+document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})();
+</script>
+
+{{-- ══ Page Export Toolbar ══ --}}
+<div class="page-export-bar" data-html2canvas-ignore="true">
+    <div class="page-export-bar-left">
+        <i class="ph ph-export"></i>
+        <span>Export Halaman</span>
+        <span class="badge bg-light-secondary text-muted ms-1" style="font-size:10px;">
+            KPI + Charts + Post List
+        </span>
+    </div>
+    <div class="page-export-bar-right">
+        <button type="button"
+                class="page-export-btn page-export-btn-pdf"
+                id="pageExportPdfBtn"
+                onclick="YTExport.run('pdf', this)"
+                title="Export halaman sebagai PDF">
+            <i class="ph ph-file-pdf export-icon"></i>
+            <span class="export-spinner"></span>
+        </button>
+        <button type="button"
+                class="page-export-btn page-export-btn-img"
+                id="pageExportImgBtn"
+                onclick="YTExport.run('image', this)"
+                title="Export halaman sebagai PNG">
+            <i class="ph ph-image export-icon"></i>
+            <span class="export-spinner"></span>
+        </button>
+    </div>
 </div>
 
 {{-- ══ Donut Distribution ══ --}}
 <div class="row">
     <div class="col-12">
         <div class="card" style="animation:fadeUp .38s ease-out .18s both;">
+            <div id="card-export-donut">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
                     <div class="avtar avtar-xs bg-light-primary rounded">
@@ -524,13 +659,19 @@
                         <small class="text-muted">Proporsi Plutchik wheel dari semua post</small>
                     </div>
                 </div>
-                <div id="donutLegend" class="donut-legend"></div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div id="donutLegend" class="donut-legend"></div>
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf" onclick="YTExport.runCard('card-export-donut','donut','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-img" onclick="YTExport.runCard('card-export-donut','donut','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <div style="height:420px;position:relative;">
                     <div class="chart-loading" id="donutLoading">
                         <div class="spin-ring"></div>
-                        <span>Loading chart…</span>
+                        <span>-</span>
                     </div>
                     <div id="donutChart" style="width:100%;height:420px;display:none;"></div>
                     <div id="donutEmpty" style="display:none;" class="chart-empty">
@@ -538,6 +679,7 @@
                     </div>
                 </div>
             </div>
+            </div>{{-- /card-export-donut --}}
         </div>
     </div>
 </div>
@@ -546,6 +688,7 @@
 <div class="row">
     <div class="col-xl-5">
         <div class="card" style="animation:fadeUp .38s ease-out .20s both;">
+            <div id="card-export-radar">
             <div class="card-header d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
                     <div class="avtar avtar-xs bg-light-primary rounded">
@@ -556,20 +699,28 @@
                         <small class="text-muted">Plutchik wheel distribution</small>
                     </div>
                 </div>
-                <span class="badge bg-light-secondary text-muted">Radar</span>
+                <div class="d-flex align-items-center gap-1">
+                    <span class="badge bg-light-secondary text-muted me-1">Radar</span>
+                    <div data-html2canvas-ignore="true" class="d-flex gap-1">
+                        <button class="card-exp-btn card-exp-btn-pdf" onclick="YTExport.runCard('card-export-radar','radar','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-img" onclick="YTExport.runCard('card-export-radar','radar','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <div class="chart-container" id="radarWrap" style="height:300px;">
                     <div class="chart-loading" id="radarLoading">
-                        <div class="spin-ring"></div><span>Loading…</span>
+                        <div class="spin-ring"></div><span>-</span>
                     </div>
                     <div id="radarChart" style="width:100%;height:300px;display:none;"></div>
                 </div>
             </div>
+            </div>{{-- /card-export-radar --}}
         </div>
     </div>
     <div class="col-xl-7">
         <div class="card" style="animation:fadeUp .38s ease-out .22s both;">
+            <div id="card-export-bar">
             <div class="card-header d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
                     <div class="avtar avtar-xs bg-light-primary rounded">
@@ -580,16 +731,23 @@
                         <small class="text-muted">Jumlah post per emosi Plutchik</small>
                     </div>
                 </div>
-                <span class="badge bg-light-primary text-primary" id="barBadge">—</span>
+                <div class="d-flex align-items-center gap-1">
+                    <span class="badge bg-light-primary text-primary me-1" id="barBadge">-</span>
+                    <div data-html2canvas-ignore="true" class="d-flex gap-1">
+                        <button class="card-exp-btn card-exp-btn-pdf" onclick="YTExport.runCard('card-export-bar','bar','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-img" onclick="YTExport.runCard('card-export-bar','bar','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <div class="chart-container" id="barWrap" style="height:300px;">
                     <div class="chart-loading" id="barLoading">
-                        <div class="spin-ring"></div><span>Loading…</span>
+                        <div class="spin-ring"></div><span>-</span>
                     </div>
                     <div id="barChart" style="width:100%;height:300px;display:none;"></div>
                 </div>
             </div>
+            </div>{{-- /card-export-bar --}}
         </div>
     </div>
 </div>
@@ -598,6 +756,7 @@
 <div class="row">
     <div class="col-12">
         <div class="card" style="animation:fadeUp .38s ease-out .24s both;">
+            <div id="card-export-trends">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
                     <div class="avtar avtar-xs bg-light-primary rounded">
@@ -609,43 +768,48 @@
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-light-primary text-primary" id="trendsBadge">—</span>
+                    <span class="badge bg-light-primary text-primary" id="trendsBadge">-</span>
                     <div class="fea-toggle-group" id="trendsTypeToggle">
                         <button class="fea-toggle-btn active" data-type="line" onclick="FEAChart.setTrendsType('line')">Line</button>
                         <button class="fea-toggle-btn" data-type="area" onclick="FEAChart.setTrendsType('area')">Area</button>
+                    </div>
+                    <div data-html2canvas-ignore="true" class="d-flex gap-1">
+                        <button class="card-exp-btn card-exp-btn-pdf" onclick="YTExport.runCard('card-export-trends','trends','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                        <button class="card-exp-btn card-exp-btn-img" onclick="YTExport.runCard('card-export-trends','trends','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
                     </div>
                 </div>
             </div>
             <div class="card-body">
                 <div class="chart-container" id="trendsWrap" style="height:300px;">
                     <div class="chart-loading" id="trendsLoading">
-                        <div class="spin-ring"></div><span>Loading…</span>
+                        <div class="spin-ring"></div><span>-</span>
                     </div>
                     <div id="trendsChart" style="width:100%;height:300px;display:none;"></div>
                 </div>
             </div>
+            </div>{{-- /card-export-trends --}}
         </div>
     </div>
 </div>
 
-{{-- ══ Emotion Tabs + Post List ══ --}}
+
+
+{{-- Tabs + Post List --}}
 <div class="d-flex align-items-center justify-content-between gap-2 mb-2" style="flex-wrap:wrap;">
     <div class="fea-tabs flex-grow-1 mb-0" style="min-width:0;">
-        <button class="fea-tab-btn active" id="tab-all" onclick="FEATab.show('all',this)">
-            <i class="ph ph-squares-four"></i>Semua <span class="fea-tab-chip" id="chip-all">—</span>
-        </button>
-        <button class="fea-tab-btn" id="tab-joy"          onclick="FEATab.show('joy',this)">Joy <span class="fea-tab-chip" id="chip-joy">—</span></button>
-        <button class="fea-tab-btn" id="tab-trust"        onclick="FEATab.show('trust',this)">Trust <span class="fea-tab-chip" id="chip-trust">—</span></button>
-        <button class="fea-tab-btn" id="tab-fear"         onclick="FEATab.show('fear',this)">Fear <span class="fea-tab-chip" id="chip-fear">—</span></button>
-        <button class="fea-tab-btn" id="tab-surprise"     onclick="FEATab.show('surprise',this)">Surprise <span class="fea-tab-chip" id="chip-surprise">—</span></button>
-        <button class="fea-tab-btn" id="tab-sadness"      onclick="FEATab.show('sadness',this)">Sadness <span class="fea-tab-chip" id="chip-sadness">—</span></button>
-        <button class="fea-tab-btn" id="tab-disgust"      onclick="FEATab.show('disgust',this)">Disgust <span class="fea-tab-chip" id="chip-disgust">—</span></button>
-        <button class="fea-tab-btn" id="tab-anger"        onclick="FEATab.show('anger',this)">Anger <span class="fea-tab-chip" id="chip-anger">—</span></button>
-        <button class="fea-tab-btn" id="tab-anticipation" onclick="FEATab.show('anticipation',this)">Anticipation <span class="fea-tab-chip" id="chip-anticipation">—</span></button>
+        <button class="fea-tab-btn active" id="tab-all" onclick="FEATab.show('all',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>Semua <span class="fea-tab-chip" id="chip-all">-</span></button>
+        <button class="fea-tab-btn" id="tab-joy" onclick="FEATab.show('joy',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Joy <span class="fea-tab-chip" id="chip-joy">-</span></button>
+        <button class="fea-tab-btn" id="tab-trust" onclick="FEATab.show('trust',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>Trust <span class="fea-tab-chip" id="chip-trust">-</span></button>
+        <button class="fea-tab-btn" id="tab-fear" onclick="FEATab.show('fear',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="M8 12s2-2 4-2 4 2 4 2"/></svg>Fear <span class="fea-tab-chip" id="chip-fear">-</span></button>
+        <button class="fea-tab-btn" id="tab-surprise" onclick="FEATab.show('surprise',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="16" r="3"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Surprise <span class="fea-tab-chip" id="chip-surprise">-</span></button>
+        <button class="fea-tab-btn" id="tab-sadness" onclick="FEATab.show('sadness',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Sadness <span class="fea-tab-chip" id="chip-sadness">-</span></button>
+        <button class="fea-tab-btn" id="tab-disgust" onclick="FEATab.show('disgust',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="m16 16-1.5-2-1.5 2-1.5-2-1.5 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Disgust <span class="fea-tab-chip" id="chip-disgust">-</span></button>
+        <button class="fea-tab-btn" id="tab-anger" onclick="FEATab.show('anger',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="m8 9 2-1"/><path d="m16 9-2-1"/></svg>Anger <span class="fea-tab-chip" id="chip-anger">-</span></button>
+        <button class="fea-tab-btn" id="tab-anticipation" onclick="FEATab.show('anticipation',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M9 15h6"/><path d="M8 9s1.5-2 4-2 4 2 4 2"/><line x1="11" y1="10" x2="11.01" y2="10"/><line x1="13" y1="10" x2="13.01" y2="10"/></svg>Anticipation <span class="fea-tab-chip" id="chip-anticipation">-</span></button>
     </div>
 </div>
-
 <div class="card" style="animation:fadeUp .38s ease-out .26s both;">
+    <div id="card-export-posts">
     <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div class="d-flex align-items-center gap-2">
             <div class="avtar avtar-xs bg-light-primary rounded">
@@ -662,14 +826,25 @@
                 <option value="100" selected>Top 100</option>
                 <option value="200">Top 200</option>
             </select>
-            <button class="btn btn-outline-secondary btn-sm" onclick="FEAData.exportCsv()" title="Export CSV">
-                <i class="ph ph-download-simple me-1"></i>CSV
-            </button>
-            <span class="badge bg-light-primary text-primary" id="listBadge">Loading…</span>
+            <span class="badge bg-light-primary text-primary" id="listBadge">-</span>
+            <div data-html2canvas-ignore="true" class="d-flex gap-1">
+                <button class="card-exp-btn card-exp-btn-pdf" onclick="YTExport.runCard('card-export-posts','posts','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                <button class="card-exp-btn card-exp-btn-img" onclick="YTExport.runCard('card-export-posts','posts','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+            </div>
         </div>
     </div>
-    <div id="listEl" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
+    <div id="listEl" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>-</div></div>
     <div id="pagEl"></div>
+    </div>{{-- /card-export-posts --}}
+</div>
+
+{{-- /pageExportArea --}}
+</div>
+
+{{-- ══ Export Toast ══ --}}
+<div class="export-toast" id="exportToast">
+    <i class="ph ph-check-circle" id="exportToastIcon"></i>
+    <span id="exportToastMsg">Exporting…</span>
 </div>
 
 {{-- ══ Slide Panel ══ --}}
@@ -683,11 +858,8 @@
     <div class="do-panel-actions">
         <div class="do-panel-meta">
             <i class="ph ph-brain" style="font-size:11px;"></i>
-            <span id="feaPanelMeta">—</span>
+            <span id="feaPanelMeta">-</span>
         </div>
-        <button class="do-panel-export" onclick="FEAPanel.exportCsv()">
-            <i class="ph ph-download-simple"></i> CSV
-        </button>
     </div>
     <div class="do-panel-list" id="feaPanelList"></div>
 
@@ -705,6 +877,12 @@
 @endsection
 
 @section('scripts')
+{{-- ══ Export dependencies ══ --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 <script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
 <script>
@@ -770,16 +948,16 @@ function makeEChart(id) {
 /* ══ STATE ══ */
 let allPosts = [], filteredPosts = [], currentFilter = 'all', currentPage = 1;
 
-/* ══ EMOTION DETECTION ══ */
+/* ══ EMOTION DETECTION ══
+   Sama dengan TikTok: hanya scan content, tidak scan title
+══ */
 function detectEmotion(post) {
     const raw = (post.emotion || post.emotion_str || '').toLowerCase().trim();
     if (raw && EMOTIONS.includes(raw)) return raw;
-    const title   = (post.title || '').toLowerCase();
     const content = (post.content || post.caption || '').toLowerCase();
-    const combined = title + ' ' + content;
     const sent    = (post.sentiment_str || '').toLowerCase();
     for (const [emo, kws] of Object.entries(EMO_KW)) {
-        if (kws.some(k => combined.includes(k))) return emo;
+        if (kws.some(k => content.includes(k))) return emo;
     }
     if (sent.includes('pos')) return 'joy';
     if (sent.includes('neg')) return 'anger';
@@ -859,8 +1037,9 @@ const FEAData = {
 
     async loadAll() {
         if (!FEACfg.pid) {
-            ['kpiJoy','kpiTrust','kpiAnger','kpiTotal'].forEach(id => {
-                const el = _$(id); if (el) el.textContent = '—';
+            EMOTIONS.forEach(e => {
+                const el = _$('kpi' + e.charAt(0).toUpperCase() + e.slice(1));
+                if (el) el.textContent = '—';
             });
             if (_$('listEl')) _$('listEl').innerHTML = emptyHtml('Pilih project terlebih dahulu');
             return;
@@ -911,10 +1090,10 @@ const FEAData = {
 
     _updateKPIs() {
         const counts = getEmoCounts();
-        const kv = _$('kpiJoy');   if (kv) kv.textContent  = numF(counts.joy   || 0);
-        const kt = _$('kpiTrust'); if (kt) kt.textContent  = numF(counts.trust  || 0);
-        const ka = _$('kpiAnger'); if (ka) ka.textContent  = numF(counts.anger  || 0);
-        const kto= _$('kpiTotal'); if (kto) kto.textContent = numF(allPosts.length);
+        EMOTIONS.forEach(e => {
+            const el = _$('kpi' + e.charAt(0).toUpperCase() + e.slice(1));
+            if (el) el.textContent = numF(counts[e] || 0);
+        });
     },
 
     _updateChips() {
@@ -925,7 +1104,6 @@ const FEAData = {
         });
     },
 
-    /* ── POST LIST ── */
     renderList() {
         const listEl = _$('listEl'), pagEl = _$('pagEl');
         if (!listEl) return;
@@ -1024,25 +1202,6 @@ const FEAData = {
         this.renderList();
         _$('listEl')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     },
-
-    exportCsv() {
-        const posts = filteredPosts.length ? filteredPosts : allPosts;
-        if (!posts.length) { alert('Tidak ada data.'); return; }
-        const hdr  = 'index;nama;emosi;sentimen;views;likes;comments;tanggal;url;judul;konten';
-        const rows = posts.map((p, i) => {
-            const name    = getName(p);
-            const sent    = { pos: 'Positif', neg: 'Negatif', neu: 'Netral' }[normSent(p)];
-            const title   = (p.title || '').replace(/;/g, ',').replace(/\n/g, ' ').slice(0, 200);
-            const content = (p.content || '').replace(/<[^>]*>/g, '').trim().replace(/;/g, ',').replace(/\n/g, ' ').slice(0, 300);
-            return `${i+1};${name.replace(/;/g,',')};${p.emotion||''};${sent};${getViews(p)};${getLikes(p)};${getComments(p)};${(p.date_created||'').split('T')[0]};${p.url||''};${title};${content}`;
-        });
-        const blob = new Blob(['\uFEFF' + [hdr, ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8;' });
-        const a    = Object.assign(document.createElement('a'), {
-            href: URL.createObjectURL(blob),
-            download: `YouTube_EmotionAnalysis_${FEACfg.sd}_${FEACfg.ed}.csv`
-        });
-        a.click();
-    }
 };
 
 /* ══ CHARTS ══ */
@@ -1063,7 +1222,6 @@ const FEAChart = {
         const counts = getEmoCounts();
         const labels = EMOTIONS.map(e => e.charAt(0).toUpperCase() + e.slice(1));
         const data   = EMOTIONS.map(e => counts[e] || 0);
-        const colors = EMOTIONS.map(e => EMO_COLORS[e]);
         const total  = allPosts.length || 1;
         const el = _$('barBadge'); if (el) el.textContent = numK(total) + ' posts';
 
@@ -1076,25 +1234,24 @@ const FEAChart = {
                     dataPointSelection: (e, ctx, cfg) => {
                         const emo = EMOTIONS[cfg.dataPointIndex];
                         if (!emo) return;
-                        const emoPosts = allPosts.filter(p => p.emotion === emo);
-                        FEAPanel.open(emoPosts, emo);
+                        FEAPanel.open(allPosts.filter(p => p.emotion === emo), emo);
                     },
-                    click  : (_, ctx, cfg) => {
+                    click: (_, ctx, cfg) => {
                         const emo = EMOTIONS[cfg.dataPointIndex];
                         if (!emo) return;
-                        const emoPosts = allPosts.filter(p => p.emotion === emo);
-                        FEAPanel.open(emoPosts, emo);
+                        FEAPanel.open(allPosts.filter(p => p.emotion === emo), emo);
                     }
                 }
             },
             series      : [{ name: 'Posts', data }],
-            colors,
+            colors      : EMOTIONS.map(e => EMO_COLORS[e]),
             plotOptions : { bar: { borderRadius: 5, columnWidth: '58%', distributed: true, dataLabels: { position: 'top' } } },
             dataLabels  : { enabled: true, formatter: v => numK(v), offsetY: -16, style: { fontSize: '10px', fontWeight: '800', colors: EMOTIONS.map(e => EMO_COLORS[e]) }, background: { enabled: false } },
             xaxis       : { categories: labels, axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' }, rotate: -20 } },
             yaxis       : { labels: { formatter: v => numK(v), style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } }, axisBorder: { show: false }, axisTicks: { show: false } },
             grid        : { borderColor: 'rgba(226,232,240,.55)', strokeDashArray: 3, xaxis: { lines: { show: false } }, padding: { top: 20, right: 8, bottom: 0, left: 4 } },
-            fill        : { type: 'gradient', gradient: { type: 'vertical', shadeIntensity: .2, opacityFrom: 1, opacityTo: .7, stops: [0, 100] } },
+            /* ── sama dengan TikTok: solid fill ── */
+            fill        : { type: 'solid', opacity: 1 },
             tooltip     : {
                 shared: false, intersect: true, style: { fontFamily: 'inherit', fontSize: '12px' },
                 y: { formatter: (v, { dataPointIndex }) => `${numF(v)} posts (${Math.round((v / total) * 100)}%)` }
@@ -1110,6 +1267,7 @@ const FEAChart = {
         const max    = Math.max(...Object.values(counts), 1);
         const chart  = makeEChart('radarChart');
         if (!chart) { hideLd('radarLoading'); return; }
+        window._feaRadarChart = chart;
         hideLd('radarLoading');
         chart.setOption({
             animation: true, animationDuration: 800, backgroundColor: 'transparent',
@@ -1155,10 +1313,7 @@ const FEAChart = {
         chart.on('click', params => {
             if (!params.name) return;
             const emo = params.name.toLowerCase();
-            if (EMOTIONS.includes(emo)) {
-                const emoPosts = allPosts.filter(p => p.emotion === emo);
-                FEAPanel.open(emoPosts, emo);
-            }
+            if (EMOTIONS.includes(emo)) FEAPanel.open(allPosts.filter(p => p.emotion === emo), emo);
         });
     },
 
@@ -1260,10 +1415,7 @@ const FEAChart = {
         });
         chart.on('click', p => {
             const x = top5[p.dataIndex];
-            if (x) {
-                const emoPosts = allPosts.filter(post => post.emotion === x.emo);
-                FEAPanel.open(emoPosts, x.emo);
-            }
+            if (x) FEAPanel.open(allPosts.filter(post => post.emotion === x.emo), x.emo);
         });
     },
 
@@ -1292,39 +1444,31 @@ const FEAChart = {
 
         makeApex('trendsChart', {
             chart: {
-                type       : type === 'area' ? 'area' : 'line',
-                height     : 300, fontFamily: 'inherit', background: 'transparent',
-                toolbar    : { show: false }, zoom: { enabled: false },
-                events     : {
+                type: type === 'area' ? 'area' : 'line', height: 300, fontFamily: 'inherit', background: 'transparent', toolbar: { show: false }, zoom: { enabled: false },
+                events: {
                     mounted: () => hideLd('trendsLoading'),
-                    markerClick: (e, ctx, { seriesIndex, dataPointIndex }) => {
-                        const emo = EMOTIONS[seriesIndex];
-                        const date = dates[dataPointIndex];
-                        if (!emo) return;
-                        const emoPosts = allPosts.filter(p => p.emotion === emo && (p.date_created || '').substring(0,10) === date);
-                        if (emoPosts.length) FEAPanel.open(emoPosts, emo);
-                        else { const all = allPosts.filter(p => p.emotion === emo); FEAPanel.open(all, emo); }
+                    markerClick: (e,ctx,{seriesIndex,dataPointIndex}) => {
+                        const emo=EMOTIONS[seriesIndex],date=dates[dataPointIndex];if(!emo)return;
+                        const pool=allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo&&(p.date_created||'').substring(0,10)===date);
+                        FEAPanel.open(pool.length?pool:allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo),emo);
                     },
-                    legendClick: (ctx, seriesIndex) => {
-                        const emo = EMOTIONS[seriesIndex];
-                        if (!emo) return;
-                        const emoPosts = allPosts.filter(p => p.emotion === emo);
-                        FEAPanel.open(emoPosts, emo);
-                    }
+                    dataPointSelection:(e,ctx,cfg)=>{
+                        const emo=EMOTIONS[cfg.seriesIndex],date=dates[cfg.dataPointIndex];if(!emo)return;
+                        const pool=allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo&&(p.date_created||'').substring(0,10)===date);
+                        FEAPanel.open(pool.length?pool:allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo),emo);
+                    },
+                    mouseMove:(e,ctx,cfg)=>{const el=ctx?.el;if(el)el.style.cursor=(cfg.dataPointIndex>=0||cfg.seriesIndex>=0)?'pointer':'default';}
                 }
             },
-            series  : seriesData,
-            colors  : EMO_COLORS_ARR,
-            xaxis   : { categories: dates, axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } } },
-            yaxis   : { labels: { formatter: v => numK(v), style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } }, axisBorder: { show: false }, axisTicks: { show: false } },
-            stroke  : { curve: 'smooth', width: 2 },
-            fill    : type === 'area'
-                ? { type: 'gradient', gradient: { opacityFrom: .35, opacityTo: .05, shadeIntensity: .1 } }
-                : { type: 'solid', opacity: 1 },
-            markers : { size: 0, hover: { size: 5 } },
-            grid    : { borderColor: 'rgba(226,232,240,.55)', strokeDashArray: 3, xaxis: { lines: { show: false } }, padding: { top: 10, right: 8, bottom: 0, left: 4 } },
-            legend  : { position: 'bottom', horizontalAlign: 'left', fontSize: '11px', fontFamily: 'inherit', fontWeight: 600, markers: { width: 8, height: 8, radius: 4 }, itemMargin: { horizontal: 12, vertical: 4 }, offsetY: 4 },
-            tooltip : { shared: true, intersect: false, style: { fontFamily: 'inherit', fontSize: '12px' }, y: { formatter: v => numF(v) + ' posts' } },
+            series: seriesData, colors: EMO_COLORS_ARR,
+            xaxis: { categories:dates, axisBorder: { show: false }, axisTicks: { show: false }, labels: { show: true, style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } } },
+            yaxis: { labels: { formatter: v => numK(v), style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } }, axisBorder: { show: false }, axisTicks: { show: false } },
+            stroke: { curve: 'smooth', width: 2 },
+            fill: type === 'area' ? { type: 'gradient', gradient: { opacityFrom: .35, opacityTo: .05, shadeIntensity: .1 } } : { type: 'solid', opacity: 1 },
+            markers: { size: 4, strokeWidth: 2, strokeColors: '#fff', hover: { size: 7 } },
+            grid: { borderColor: 'rgba(226,232,240,.55)', strokeDashArray: 3, xaxis: { lines: { show: false } }, padding: { top: 10, right: 8, bottom: 0, left: 4 } },
+            legend: { position: 'bottom', horizontalAlign: 'left', fontSize: '11px', fontFamily: 'inherit', fontWeight: 600, markers: { width: 8, height: 8, radius: 4 }, itemMargin: { horizontal: 12, vertical: 4 }, offsetY: 4 },
+            tooltip: { shared: false, intersect: true, style: { fontFamily: 'inherit', fontSize: '12px' }, x: { show: true }, y: { formatter: v => numF(v) + ' posts' } },
         });
     }
 };
@@ -1356,8 +1500,6 @@ const FEAPanel = {
         }, 240);
     },
 
-    exportCsv() { FEAData.exportCsv(); },
-
     _render() {
         const list  = _$('feaPanelList'); if (!list) return;
         const posts = this._posts;
@@ -1369,10 +1511,8 @@ const FEAPanel = {
             const avH    = (av && av.startsWith('http')) ? `<img src="${esc(av)}" onerror="this.src='${dummy}'">` : `<img src="${dummy}">`;
             const text   = dec((item.content || item.title || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()).slice(0, 130);
             const dt     = (item.date_created || '').split('T')[0];
-            const sent   = normSent(item);
-            const sentLbl= { pos: 'Pos', neg: 'Neg', neu: 'Neu' }[sent];
-            const emo    = item.emotion || 'trust';
-            const ec     = EMO_COLORS[emo] || '#64748b';
+            const sent   = normSent(item), sentLbl = { pos: 'Pos', neg: 'Neg', neu: 'Neu' }[sent];
+            const emo    = item.emotion || 'trust', ec = EMO_COLORS[emo] || '#64748b';
             const v = getViews(item), l = getLikes(item);
             const enc    = encodeURIComponent(JSON.stringify(item));
             return `<div class="do-panel-item" data-item="${esc(enc)}" onclick="FEAPanel._click(this)">
@@ -1434,13 +1574,10 @@ const FEADetail = {
             ? `<div class="do-dp2-media"><iframe src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>`
             : '';
 
-        /* emotion distribution bars */
         const counts = getEmoCounts();
         const maxC   = Math.max(...Object.values(counts), 1);
         const emoBars = EMOTIONS.map(e => {
-            const cc = counts[e] || 0;
-            const w  = Math.round((cc / maxC) * 100);
-            const ecc= EMO_COLORS[e];
+            const cc = counts[e] || 0, w = Math.round((cc / maxC) * 100), ecc = EMO_COLORS[e];
             return `<div class="emo-dist-bar">
                 <div class="emo-dist-label"><span class="emo-dist-dot" style="background:${ecc};"></span>${e.charAt(0).toUpperCase() + e.slice(1)}</div>
                 <div class="emo-dist-track"><div class="emo-dist-fill" style="width:${w}%;background:${ecc};"></div></div>
@@ -1479,7 +1616,471 @@ const FEADetail = {
     close()     { _$('feaDetailPanel')?.classList.remove('show'); },
     killIframe(){ const b = _$('feaDetailBody'); if (b) b.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); }); }
 };
+/* ══════════════════════════════════════════════════════
+   YTExport — Safari-safe + fix Safari clipping tren chart
+   
+   Fix tambahan vs versi sebelumnya:
+   1. _expandChartContainers: sebelum capture, paksa semua
+      .chart-container & chart wrapper div punya height
+      eksplisit dari scrollHeight (bukan CSS height:280px)
+      → Safari tidak crop chart yang legend-nya overflow
+   2. scrollTo(0,0) sebelum capture → viewport konsisten
+   3. height: el.scrollHeight + extra buffer 40px
+   4. _restoreChartContainers: kembalikan height semula
+   5. Capture delay lebih panjang (350ms) beri Safari waktu
+      reflow setelah height expansion
+══════════════════════════════════════════════════════ */
+const YTExport = (() => {
+    'use strict';
+    let _toastTimer = null;
 
+    /* ── Toast ── */
+    function _toast(msg, type = 'default', duration = 3200) {
+        const t   = _$('exportToast'),
+              m   = _$('exportToastMsg'),
+              ico = _$('exportToastIcon');
+        if (!t || !m) return;
+        m.textContent = msg;
+        t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
+        ico.className = 'ph ' + ({ success:'ph-check-circle', error:'ph-x-circle', default:'ph-spinner' }[type] || 'ph-spinner');
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+    }
+
+    /* ── Button state ── */
+    function _btnState(btn, on) {
+        if (!btn) return;
+        btn.disabled = on;
+        btn.classList.toggle('exporting', on);
+    }
+
+    /* ══════════════════════════════════════════════════════
+       ★ _expandChartContainers
+         Safari tidak mau auto-expand elemen dengan height
+         CSS eksplisit (height:280px, height:300px, dll).
+         Sebelum capture kita paksa height = scrollHeight
+         supaya legend & label tidak terpotong.
+    ══════════════════════════════════════════════════════ */
+    function _expandChartContainers(scopeEl) {
+        const restores = [];
+
+        /* Semua .chart-container dan chart div wrapper */
+        const selectors = [
+            '.chart-container',
+            '#trendsWrap', '#barWrap', '#radarWrap',
+            '#donutChart', '#radarChart', '#barChart', '#trendsChart',
+        ];
+
+        selectors.forEach(sel => {
+            scopeEl.querySelectorAll(sel).forEach(el => {
+                const computed = window.getComputedStyle(el);
+                const orig = el.style.height;
+                const sh   = el.scrollHeight;
+                if (sh > parseInt(computed.height || '0')) {
+                    el.style.height = sh + 'px';
+                    restores.push({ el, orig });
+                }
+            });
+        });
+
+        /* Khusus: chart parent cards — pastikan card body tidak clip */
+        scopeEl.querySelectorAll('.card-body').forEach(el => {
+            const orig = el.style.overflow;
+            el.style.overflow = 'visible';
+            restores.push({ el, prop: 'overflow', orig });
+        });
+
+        return restores;
+    }
+
+    function _restoreChartContainers(restores) {
+        restores.forEach(({ el, prop, orig }) => {
+            if (prop) {
+                el.style[prop] = orig;
+            } else {
+                el.style.height = orig;
+            }
+        });
+    }
+
+    /* ══════════════════════════════════════════════════════
+       ★ _swapChartsIn
+         — ApexCharts: dataURI() → <img>
+         — ECharts: SVG serializer → blob → canvas → dataURL → <img>
+    ══════════════════════════════════════════════════════ */
+    async function _swapChartsIn(el) {
+        const swaps = [];
+
+        /* ── ApexCharts ── */
+        for (const id of Object.keys(Charts)) {
+            const container = _$(id);
+            if (!container || !el.contains(container) || container.style.display === 'none') continue;
+            const chart = Charts[id];
+            if (!chart) continue;
+            try {
+                const { imgURI } = await chart.dataURI();
+                if (!imgURI) continue;
+                /* Gunakan scrollHeight agar legend tidak terpotong */
+                const h = Math.max(
+                    container.scrollHeight,
+                    Math.round(container.getBoundingClientRect().height),
+                    container.offsetHeight,
+                    300
+                );
+                const placeholder = document.createElement('div');
+                placeholder.dataset.swapFor = id;
+                placeholder.style.display = 'none';
+                const img = document.createElement('img');
+                img.src = imgURI;
+                img.style.cssText = `width:100%;height:${h}px;object-fit:contain;display:block;background:#fff;`;
+                container.parentNode.insertBefore(placeholder, container);
+                container.parentNode.insertBefore(img, placeholder);
+                container.style.display = 'none';
+                swaps.push({ container, placeholder, img });
+            } catch(e) { console.warn('[YTExport] ApexCharts swap failed:', id, e); }
+        }
+
+        /* ── ECharts (donutChart & radarChart) ── */
+        for (const id of ['donutChart', 'radarChart']) {
+            const container = _$(id);
+            if (!container || !el.contains(container) || container.style.display === 'none') continue;
+            const svgEl = container.querySelector('svg');
+            if (!svgEl) continue;
+            try {
+                const rect    = container.getBoundingClientRect();
+                const w       = Math.round(rect.width)  || container.offsetWidth  || 400;
+                const h       = Math.max(
+                    Math.round(rect.height),
+                    container.scrollHeight,
+                    container.offsetHeight,
+                    300
+                );
+                const svgStr  = new XMLSerializer().serializeToString(svgEl);
+                const blob    = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+                const blobUrl = URL.createObjectURL(blob);
+
+                const dataUrl = await new Promise(resolve => {
+                    const image  = new Image();
+                    const canvas = document.createElement('canvas');
+                    canvas.width  = w * 2;
+                    canvas.height = h * 2;
+                    const ctx = canvas.getContext('2d');
+                    image.onload = () => {
+                        ctx.scale(2, 2);
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, w, h);
+                        ctx.drawImage(image, 0, 0, w, h);
+                        URL.revokeObjectURL(blobUrl);
+                        resolve(canvas.toDataURL('image/png'));
+                    };
+                    image.onerror = () => { URL.revokeObjectURL(blobUrl); resolve(null); };
+                    setTimeout(() => resolve(null), 4000);
+                    image.src = blobUrl;
+                });
+
+                if (!dataUrl) continue;
+
+                const placeholder = document.createElement('div');
+                placeholder.dataset.swapFor = id;
+                placeholder.style.display = 'none';
+                const img = document.createElement('img');
+                img.src = dataUrl;
+                img.style.cssText = `width:100%;height:${h}px;object-fit:contain;display:block;background:#fff;`;
+                container.parentNode.insertBefore(placeholder, container);
+                container.parentNode.insertBefore(img, placeholder);
+                container.style.display = 'none';
+                swaps.push({ container, placeholder, img });
+            } catch(e) { console.warn('[YTExport] ECharts swap failed:', id, e); }
+        }
+
+        return swaps;
+    }
+
+    /* ── Restore semua swap ── */
+    function _swapChartsOut(swaps) {
+        swaps.forEach(({ container, placeholder, img }) => {
+            try { img.remove(); }         catch(e) {}
+            try { placeholder.remove(); } catch(e) {}
+            container.style.display = 'block';
+        });
+    }
+
+    /* ══════════════════════════════════════════════════════
+       ★ _onClone
+    ══════════════════════════════════════════════════════ */
+    function _onClone(clonedDoc) {
+        /* Sembunyikan panel, tooltip, spinner, toolbar */
+        clonedDoc.querySelectorAll(
+            '.do-panel-overlay,.do-panel,.do-detail-panel,' +
+            '#feaDonutTT,#feaPanelOverlay,#feaSntPanel,' +
+            '.spin-ring,.spinner-state,.export-toast,.chart-loading,' +
+            '[data-html2canvas-ignore]'
+        ).forEach(el => {
+            el.style.cssText += 'display:none!important;visibility:hidden!important;';
+        });
+
+        /* Sembunyikan iframe */
+        clonedDoc.querySelectorAll('iframe').forEach(f => {
+            f.style.cssText += 'display:none!important;';
+        });
+
+        /* Ganti avatar cross-origin */
+        clonedDoc.querySelectorAll('.fea-post-av,.do-panel-avatar,.do-dp2-avatar-lg').forEach(wrapper => {
+            wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
+            if (!wrapper.style.background) wrapper.style.background = 'linear-gradient(135deg,#038047,#05a85e)';
+        });
+
+        /* Sembunyikan thumbnail cross-origin */
+        clonedDoc.querySelectorAll('.fea-post-thumb img').forEach(img => { img.style.display = 'none'; });
+        clonedDoc.querySelectorAll('.fea-post-thumb-play').forEach(el => { el.style.display = 'none'; });
+        clonedDoc.querySelectorAll('.fea-post-thumb').forEach(wrapper => {
+            const ph = wrapper.querySelector('.fea-post-thumb-ph');
+            if (ph) ph.style.display = 'flex';
+            wrapper.style.background = 'linear-gradient(135deg,#273B4A,#374151)';
+        });
+
+        /* Stop animasi */
+        clonedDoc.querySelectorAll('*').forEach(el => {
+            el.style.animationPlayState = 'paused';
+            el.style.animation  = 'none';
+            el.style.transition = 'none';
+        });
+
+        /* Paksa visible + overflow visible agar tidak clip */
+        clonedDoc.querySelectorAll(
+            '.card,.card-body,.card-header,.row,[class*="col-"],' +
+            '.fea-post-list,.fea-post,#pageExportArea'
+        ).forEach(el => {
+            el.style.opacity    = '1';
+            el.style.transform  = 'none';
+            el.style.visibility = 'visible';
+            el.style.overflow   = 'visible';
+        });
+
+        /* Paksa chart wrapper tidak clip */
+        clonedDoc.querySelectorAll(
+            '.chart-container,#trendsWrap,#barWrap,#radarWrap'
+        ).forEach(el => {
+            el.style.overflow = 'visible';
+            el.style.height   = 'auto';
+        });
+    }
+
+    /* ══════════════════════════════════════════════════════
+       ★ _doCapture
+    ══════════════════════════════════════════════════════ */
+    async function _doCapture(el, isCard) {
+        /* Scroll ke atas dulu — viewport konsisten di Safari */
+        window.scrollTo(0, 0);
+        await new Promise(r => setTimeout(r, 80));
+
+        /* Paksa elemen visible */
+        el.querySelectorAll('.card,.kpi-card-hover,[class*="col-"],.fea-post')
+          .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; });
+
+        /* Expand chart containers sebelum swap */
+        const restores = _expandChartContainers(el);
+
+        /* Tunggu reflow Safari setelah height expand */
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, 150));
+
+        /* Swap charts ke <img> */
+        const swaps = await _swapChartsIn(el);
+
+        /* Beri Safari waktu composite */
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, 350));
+
+        /* Hitung total height setelah expand */
+        const totalH = el.scrollHeight;
+
+        let canvas;
+        try {
+            canvas = await html2canvas(el, {
+                scale          : isCard ? 2 : 1.5,
+                useCORS        : true,
+                allowTaint     : false,
+                backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
+                logging        : false,
+                removeContainer: true,
+                imageTimeout   : 8000,
+                scrollX        : 0,
+                scrollY        : 0,            /* sudah scrollTo(0,0) */
+                width          : el.offsetWidth,
+                height         : totalH,       /* pakai totalH yang sudah di-expand */
+                onclone        : d => _onClone(d),
+                ignoreElements : e =>
+                    e.hasAttribute('data-html2canvas-ignore') ||
+                    (e.tagName === 'IMG' && e.src && !e.src.startsWith('data:')),
+            });
+        } finally {
+            _swapChartsOut(swaps);
+            _restoreChartContainers(restores);
+        }
+        return canvas;
+    }
+
+    /* ── PDF helpers ── */
+    function _drawHeader(pdf, pW, pH, label, page, total) {
+        pdf.setFillColor(3, 128, 71); pdf.rect(0, 0, pW, 11, 'F');
+        pdf.setTextColor(255, 255, 255); pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
+        pdf.text('SMADIMENT — ' + (label || 'YouTube Emotion Analysis'), 10, 7.5);
+        const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+        pdf.text('Generated: ' + now, pW - 10, 7.5, { align: 'right' });
+        pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+        pdf.text(`Halaman ${page} / ${total}`, pW / 2, pH - 3, { align: 'center' });
+    }
+
+    function _fitCanvas(pdf, canvas, margin, pW, pH) {
+        const uw = pW - margin * 2, uh = pH - 14 - 10;
+        const r  = Math.min(uw / canvas.width, uh / canvas.height);
+        pdf.addImage(
+            canvas.toDataURL('image/png'), 'PNG',
+            margin + (uw - canvas.width  * r) / 2,
+            14     + (uh - canvas.height * r) / 2,
+            canvas.width * r, canvas.height * r
+        );
+    }
+
+    function _sliceCanvas(pdf, canvas, margin, pW, pH, labelFn) {
+        const uw     = pW - margin * 2, uh = pH - 14 - 10;
+        const ratio  = uw / canvas.width;
+        const sliceH = uh / ratio;
+        const total  = Math.max(1, Math.ceil((canvas.height * ratio) / uh));
+        let srcY = 0, pg = 1;
+        while (srcY < canvas.height) {
+            if (pg > 1) pdf.addPage();
+            _drawHeader(pdf, pW, pH, labelFn(), pg, total);
+            const srcSlice = Math.min(sliceH, canvas.height - srcY);
+            const slice    = document.createElement('canvas');
+            slice.width    = canvas.width;
+            slice.height   = Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice);
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, uw, srcSlice * ratio);
+            srcY += srcSlice; pg++;
+        }
+    }
+
+    function _stamp() { return new Date().toISOString().slice(0, 10).replace(/-/g, ''); }
+
+    /* ════════════════════════════
+       run — export full page
+    ════════════════════════════ */
+    async function run(type, btn) {
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error');       return; }
+
+        const btnPdf = _$('pageExportPdfBtn'), btnImg = _$('pageExportImgBtn');
+        _btnState(btnPdf, true); _btnState(btnImg, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+
+        try {
+            const area   = _$('pageExportArea');
+            const canvas = await _doCapture(area, false);
+            const stamp  = _stamp();
+
+            if (type === 'image') {
+                const link    = document.createElement('a');
+                link.download = `youtube_emotion_${FEA_PID}_${stamp}.png`;
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                const pW  = pdf.internal.pageSize.getWidth();
+                const pH  = pdf.internal.pageSize.getHeight();
+                const M   = 10, uw = pW - M * 2, uh = pH - 14 - 10;
+
+                if ((canvas.height * (uw / canvas.width)) <= uh) {
+                    _drawHeader(pdf, pW, pH, 'YouTube Emotion Analysis', 1, 1);
+                    _fitCanvas(pdf, canvas, M, pW, pH);
+                } else {
+                    _sliceCanvas(pdf, canvas, M, pW, pH, () => 'YouTube Emotion Analysis');
+                }
+
+                pdf.save(`youtube_emotion_${FEA_PID}_${stamp}.pdf`);
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(err) {
+            console.error('[YTExport.run]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            _btnState(btnPdf, false); _btnState(btnImg, false);
+        }
+    }
+
+    /* ════════════════════════════
+       runCard — export 1 card
+    ════════════════════════════ */
+    const _cardLabels = {
+        donut : 'Distribusi Emosi — Top 5',
+        radar : 'Emotion Radar',
+        bar   : 'Distribusi Emosi Bar',
+        trends: 'Tren Emosi Harian',
+        posts : 'Data Postingan',
+    };
+
+    function _cardFilename(k) {
+        const map = {
+            donut : 'distribusi-emosi-top5',
+            radar : 'emotion-radar',
+            bar   : 'distribusi-emosi-bar',
+            trends: 'tren-emosi-harian',
+            posts : 'data-postingan',
+        };
+        return `youtube_${map[k] || k}_${FEA_PID}_${_stamp()}`;
+    }
+
+    async function runCard(areaId, cardKey, type, btn) {
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error');       return; }
+
+        _btnState(btn, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+
+        try {
+            const area = document.getElementById(areaId);
+            if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+
+            const canvas = await _doCapture(area, true);
+            const fname  = _cardFilename(cardKey);
+            const label  = _cardLabels[cardKey] || cardKey;
+
+            if (type === 'image') {
+                const link    = document.createElement('a');
+                link.download = fname + '.png';
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const landscape = canvas.width > canvas.height * 1.2;
+                const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+                const pW  = pdf.internal.pageSize.getWidth();
+                const pH  = pdf.internal.pageSize.getHeight();
+                const M   = 10, uw = pW - M * 2, uh = pH - 14 - 10;
+
+                if ((canvas.height * (uw / canvas.width)) <= uh) {
+                    _drawHeader(pdf, pW, pH, label, 1, 1);
+                    _fitCanvas(pdf, canvas, M, pW, pH);
+                } else {
+                    _sliceCanvas(pdf, canvas, M, pW, pH, () => label);
+                }
+
+                pdf.save(fname + '.pdf');
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(err) {
+            console.error('[YTExport.runCard]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally { _btnState(btn, false); }
+    }
+
+    return { run, runCard };
+})();
 /* ══ INIT ══ */
 document.addEventListener('DOMContentLoaded', () => {
     FEAData.loadAll();

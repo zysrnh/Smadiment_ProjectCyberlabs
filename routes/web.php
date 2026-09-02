@@ -18,10 +18,11 @@ use App\Http\Controllers\MK\CompareProjectController;
 use App\Http\Controllers\MK\TrendingTopicController;
 use App\Http\Controllers\MK\SearchTopicController;
 use App\Http\Controllers\MK\MediaStatisticController;
+use App\Http\Controllers\MK\AllPlatformAiController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('user.login');
+    return view('welcome');
 });
 
 Route::prefix('user')->name('user.')->group(function () {
@@ -44,7 +45,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 });
 
-Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
+Route::prefix('mk')->name('mk.')->middleware(['auth', 'check.trial'])->group(function () {
 
     // ═══════════════════════════════════════════════════════
     // API ROUTES
@@ -220,6 +221,14 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
 
         // Trending Topic API
         Route::get('/trending-topics-twitter', [TrendingTopicController::class, 'getData'])->name('trending-topics-twitter');
+
+        // ─────────────────────────────────────────────────────
+        // ALL PLATFORM AI ROUTES
+        // ─────────────────────────────────────────────────────
+        Route::prefix('all-platform')->name('all-platform.')->group(function () {
+            Route::get('/ai-analysis-data', [AllPlatformAiController::class, 'data'])->name('ai-analysis-data');
+            Route::post('/ai-proxy',        [AllPlatformAiController::class, 'proxy'])->name('ai-proxy');
+        });
     });
 
     // ═══════════════════════════════════════════════════════
@@ -227,6 +236,9 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     // ═══════════════════════════════════════════════════════
     Route::get('/dashboard',        [MkController::class, 'dashboard'])->name('dashboard');
     Route::get('/dashboard/chart-data', [MkController::class, 'chartData'])->name('dashboard.chart-data'); // ← ADDED
+    Route::get('/profile',          [MkController::class, 'profile'])->name('profile');
+    Route::post('/profile/avatar',  [MkController::class, 'updateAvatar'])->name('profile.avatar');
+    Route::post('/profile/notice',  [MkController::class, 'updateNoticePreference'])->name('profile.notice');
     Route::get('/data-overview',    [MkController::class, 'dataOverview'])->name('data-overview');
     Route::get('/projects',         [MkController::class, 'projects'])->name('projects');
     Route::get('/media-statistic',       [MediaStatisticController::class, 'index'])->name('media-statistic');
@@ -236,6 +248,9 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     Route::get('/net-sentiment-score',   [MediaStatisticController::class, 'netSentimentScorePage'])->name('net-sentiment-score');
     Route::get('/engagement',            [MediaStatisticController::class, 'engagementPage'])->name('engagement');
     Route::get('/interaction-sentiment', [MediaStatisticController::class, 'interactionSentimentPage'])->name('interaction-sentiment');
+    Route::get('/interaction_sentiment', [MediaStatisticController::class, 'interactionSentimentPage']);
+    Route::get('/engagement-sentiment',  [MediaStatisticController::class, 'engagementSentimentPage'])->name('engagement-sentiment');
+    Route::get('/engagement_sentiment',  [MediaStatisticController::class, 'engagementSentimentPage']);
     Route::get('/compare',               [CompareProjectController::class, 'index'])->name('compare.index');
     Route::get('/topic-map',             [TopicMapController::class, 'index'])->name('topic-map');
     Route::get('/trending-topic',          [TrendingTopicController::class, 'index'])->name('trending-topic');
@@ -251,6 +266,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     // NEWS PAGE ROUTES
     // ─────────────────────────────────────────────────────
     Route::prefix('news')->name('news.')->group(function () {
+        Route::get('/overview',      [NewsController::class, 'newsOverviewPage'])->name('overview');
         Route::get('/word-cloud',    [NewsController::class, 'newsWordCloudPage'])->name('word-cloud');
         Route::get('/top-publishers',[NewsController::class, 'topPublisherPage'])->name('top-publishers');
         Route::get('/timeline',      [NewsController::class, 'newsTimelinePage'])->name('timeline');
@@ -340,6 +356,7 @@ Route::prefix('mk')->name('mk.')->middleware('auth')->group(function () {
     });
 
     Route::get('/geographic', [MkController::class, 'geographic'])->name('geographic');
+    Route::get('/all-ai-analysis', [AllPlatformAiController::class, 'page'])->name('all-ai-analysis');
 
     Route::prefix('authors')->name('authors.')->group(function () {
         Route::get('/age',    [MkController::class, 'authorsAge'])->name('age');

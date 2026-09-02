@@ -645,40 +645,21 @@ public function articlesData(Request $request)
             return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
         }
 
-        // ✅ Loop fetch sampai semua artikel terambil dari MK API
-        $allArticles = [];
-        $offset      = $start;
-        $batchSize   = 1000; // MK API max per request
+        // Fetch single batch of 100 for stability as requested
+        $batch = $this->mkClient->articles(
+            $projectId,
+            $media,
+            $startDate,
+            $endDate,
+            0,    // sentiment_id
+            23,   // end_hour
+            $start,
+            100,  // limit to 100
+            false // no quotes
+        );
 
-        do {
-            $batch = $this->mkClient->articles(
-                $projectId,
-                $media,
-                $startDate,
-                $endDate,
-                0,          // sentiment_id (0 = all)
-                23,         // end_hour
-                $offset,    // offset
-                $batchSize, // rows per batch
-                true        // include content
-            );
-
-            $batch = is_array($batch) ? array_values($batch) : [];
-
-            if (empty($batch)) break;
-
-            $allArticles = array_merge($allArticles, $batch);
-            $offset     += count($batch);
-
-            Log::info("📄 Articles batch fetched", [
-                'offset'      => $offset,
-                'batch_count' => count($batch),
-                'total_so_far' => count($allArticles),
-            ]);
-
-        } while (count($batch) === $batchSize && count($allArticles) < $maxRows);
-
-        Log::info("✅ Total articles fetched", ['total' => count($allArticles)]);
+        $allArticles = $this->extractArray($batch);
+        Log::info("✅ Articles fetched (single batch)", ['total' => count($allArticles)]);
 
         $totalQuotesBeforeFilter = 0;
         $totalQuotesAfterFilter  = 0;
@@ -759,6 +740,34 @@ public function articlesData(Request $request)
 }
 
 
+
+    public function newsOverviewPage(Request $request)
+    {
+        try {
+            $projects  = $this->getAllProjects();
+            $projectId = $request->query('project_id', session('selected_project_id'));
+
+            if (!$projectId && count($projects) > 0) {
+                $projectId = $projects[0]['id'] ?? null;
+            }
+
+            if (!$projectId) {
+                return redirect()->route('mk.dashboard')->with('error', 'Please select a project first');
+            }
+
+            session(['selected_project_id' => $projectId]);
+
+            return view('mk.news.overview', [
+                'projects'  => $projects,
+                'projectId' => $projectId,
+                'startDate' => $request->query('start_date', now()->subDays(29)->format('Y-m-d')),
+                'endDate'   => $request->query('end_date', now()->format('Y-m-d')),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('News Overview Page Error', ['error' => $e->getMessage()]);
+            return redirect()->route('mk.dashboard')->with('error', 'Failed to load News Overview page');
+        }
+    }
 
     public function newsTimelinePage(Request $request)
     {
@@ -1121,52 +1130,65 @@ public function articlesData(Request $request)
             $endDate   = $request->query('end_date');
             $rows      = (int) $request->query('rows', 2000);
             $start     = (int) $request->query('start', 0);
+            $sub       = $request->query('sub', 'postbyview');
 
             if (!$projectId) {
                 return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
             }
 
-            Log::info('▶️ YouTube Top Status Fetch', compact('projectId', 'startDate', 'endDate', 'rows', 'start'));
+            Log::info('▶️ YouTube Top Status Fetch', compact('projectId', 'startDate', 'endDate', 'rows', 'start', 'sub'));
 
-            $rawMentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
-            // ✅ FIX: extractArray
-            $mentions    = $this->extractArray($rawMentions);
+            $data = [];
 
-            $ytbItems = array_values(array_filter($mentions, function ($item) {
-                $mt  = strtolower((string) ($item['media_type_id'] ?? $item['media_type'] ?? $item['tcode'] ?? ''));
-                $id  = (string) ($item['id'] ?? $item['docid'] ?? '');
-                $url = (string) ($item['url'] ?? '');
-                return $mt === '4'
-                    || str_contains($mt, 'ytb')
-                    || str_contains($mt, 'youtube')
-                    || str_starts_with($id, 'yt-')
-                    || str_contains($url, 'youtube.com')
-                    || str_contains($url, 'youtu.be');
-            }));
+            try {
+                $raw  = $this->mkClient->ytbTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
+                $data = $this->extractArray($raw);
+                Log::info('✅ YT dedicated API returned', ['count' => count($data)]);
+            } catch (\Exception $e) {
+                Log::warning('⚠️ YT dedicated API failed, falling back to mentions', ['error' => $e->getMessage()]);
+            }
 
-            usort($ytbItems, fn($a, $b) =>
-                (int)($b['num_likes'] ?? 0) - (int)($a['num_likes'] ?? 0)
-            );
+            if (empty($data)) {
+                Log::info('📋 YouTube: using mentions fallback');
+                $rawMentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
+                $mentions    = $this->extractArray($rawMentions);
+
+                $data = array_values(array_filter($mentions, function ($item) {
+                    $mt  = strtolower((string) ($item['media_type_id'] ?? $item['media_type'] ?? $item['tcode'] ?? ''));
+                    $id  = (string) ($item['id'] ?? $item['docid'] ?? '');
+                    $url = (string) ($item['url'] ?? '');
+                    return $mt === '4'
+                        || str_contains($mt, 'ytb')
+                        || str_contains($mt, 'youtube')
+                        || str_starts_with($id, 'yt-')
+                        || str_contains($url, 'youtube.com')
+                        || str_contains($url, 'youtu.be');
+                }));
+
+                usort($data, fn($a, $b) =>
+                    (int)($b['num_likes'] ?? 0) - (int)($a['num_likes'] ?? 0)
+                );
+            }
 
             $normalised = array_map(fn($item) => [
                 '_platform'       => 'ytb',
                 'media_type_id'   => '4',
                 'id'              => $item['id'] ?? $item['docid'] ?? '',
                 'url'             => $item['url'] ?? '',
-                'content'         => strip_tags($item['content'] ?? ''),
-                'author_name'     => $item['author_name'] ?? $item['author_scr_name'] ?? '',
-                'author_handle'   => $item['author_scr_name'] ?? '',
-                'avatar_url'      => '',
+                'content'         => strip_tags($item['content'] ?? $item['name'] ?? ''),
+                'author_name'     => $item['author_name'] ?? $item['author_scr_name'] ?? $item['channel_title'] ?? '',
+                'author_handle'   => $item['author_scr_name'] ?? $item['channel_name'] ?? '',
+                'avatar_url'      => $item['image'] ?? $item['thumbnail'] ?? '',
                 'date_created'    => $item['date_created'] ?? '',
-                'num_likes'       => (int) ($item['num_likes'] ?? 0),
-                'num_comments'    => (int) ($item['num_comments'] ?? 0),
-                'num_shares'      => (int) ($item['num_shares'] ?? 0),
-                'num_views'       => (int) ($item['num_views'] ?? 0),
+                'num_likes'       => (int) ($item['num_likes'] ?? $item['likes'] ?? 0),
+                'num_comments'    => (int) ($item['num_comments'] ?? $item['comments'] ?? 0),
+                'num_shares'      => (int) ($item['num_shares'] ?? $item['shares'] ?? 0),
+                'num_views'       => (int) ($item['num_views'] ?? $item['views'] ?? 0),
                 'num_followers'   => 0,
-                'class_sentiment' => (string) ($item['class_sentiment'] ?? '0'),
+                'class_sentiment' => (string) ($item['sentiment'] ?? $item['class_sentiment'] ?? '0'),
                 'mention_type'    => $item['mention_type'] ?? 'video',
                 'hostname'        => 'youtube.com',
-            ], $ytbItems);
+            ], $data);
 
             Log::info('✅ YouTube Top Status fetched', ['total' => count($normalised)]);
 

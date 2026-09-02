@@ -14,10 +14,15 @@ class MediaStatisticController extends Controller
 
     private function getProjects(): array
     {
-        $user = Auth::user();
-        $assignedIds = $user->assignedProjectIds();
-        $all = array_values($this->mk->listProjects(0, 100));
-        return array_values(array_filter($all, fn($p) => in_array($p['id'] ?? null, $assignedIds)));
+        try {
+            $user = Auth::user();
+            $assignedIds = $user->assignedProjectIds();
+            $all = array_values($this->mk->listProjects(0, 100));
+            return array_values(array_filter($all, fn($p) => in_array($p['id'] ?? null, $assignedIds)));
+        } catch (\Throwable $e) {
+            Log::error('MediaStatisticController getProjects failed: ' . $e->getMessage());
+            return [];
+        }
     }
 
     // ───────────────────────────────────────────────
@@ -1613,12 +1618,21 @@ public function xInteraction(Request $request)
 
 public function interactionSentimentPage(Request $request)
 {
-    return view('mk.interaction-sentiment');
+    return $this->engagementSentimentPage($request);
 }
 
 public function engagementPage(Request $request)
   {
       return view('mk.engagement');
+  }
+
+  public function engagementSentimentPage(Request $request)
+  {
+      $projects  = $this->getProjects();
+      $projectId = $request->get('project_id') ?? ($projects[0]['id'] ?? null);
+      $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+      $endDate   = $request->get('end_date', now()->format('Y-m-d'));
+      return view('mk.engagement-sentiment', compact('projects', 'projectId', 'startDate', 'endDate'));
   }
 
   // ───────────────────────────────────────────────────────────────────
@@ -1657,18 +1671,20 @@ public function engagementPage(Request $request)
             Log::warning('interactionSentimentTotals: sentimentMedia failed', ['error' => $e->getMessage()]);
         }
 
-        // Build ratio map per media key
+        // Build ratio and mention counts map
         $ratioMap = [];
+        $mentionsMap = [];
         foreach ($sentimentMedia as $m) {
+            $medKey = strtolower($m['media']);
             $total = $m['positive'] + $m['negative'] + $m['neutral'];
-            $ratioMap[strtolower($m['media'])] = [
+            $mentionsMap[$medKey] = $total;
+            $ratioMap[$medKey] = [
                 'pos' => $total > 0 ? $m['positive'] / $total : 0.33,
                 'neg' => $total > 0 ? $m['negative'] / $total : 0.33,
                 'neu' => $total > 0 ? $m['neutral']  / $total : 0.34,
             ];
         }
 
-        // Overall ratio fallback
         $totalDoc = array_sum(array_column($sentimentMedia, 'positive'))
                   + array_sum(array_column($sentimentMedia, 'negative'))
                   + array_sum(array_column($sentimentMedia, 'neutral'));
@@ -1679,97 +1695,115 @@ public function engagementPage(Request $request)
             'neu' => $totalDoc > 0 ? array_sum(array_column($sentimentMedia, 'neutral'))  / $totalDoc : 0.34,
         ];
 
+        // Fallback harian counts via trendsTotal jika sentimentMedia kosong
+        $trendsRaw = [];
+        $trendsSums = ['doc' => 0, 'twit' => 0, 'fb' => 0, 'instagram' => 0, 'youtube' => 0, 'tiktok' => 0];
+        try {
+            $trendsRaw = $this->mk->trendsTotal((string) $projectId, $startDate, $endDate);
+            if (isset($trendsRaw['response'])) {
+                foreach ($trendsRaw['response'] as $date => $counts) {
+                    foreach ($counts as $med => $cnt) {
+                        $trendsSums[$med] = ($trendsSums[$med] ?? 0) + (int)$cnt;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('interactionSentimentTotals: trendsTotal fetch failed', ['error' => $e->getMessage()]);
+        }
+
         // ── 2. Hitung interaction per platform ──
-        //
-        // Platform sosmed: sum dari mostStatus() top 100 posts
-        //   - Twitter  : view_cnt + retweet_cnt + favorite_cnt
-        //   - Facebook : like_cnt + comment_cnt + share_cnt
-        //   - Instagram: like_cnt + comment_cnt
-        //   - YouTube  : view_cnt + like_cnt + comment_cnt
-        //   - TikTok   : like_cnt + comment_cnt + share_cnt
-        // Platform mass media: estReach() sebagai proxy
-        //
         $platformConfig = [
-            'twitter'   => ['media' => 'twitter',  'type' => 'social', 'fields' => ['view_cnt','retweet_cnt','favorite_cnt','freq']],
-            'facebook'  => ['media' => 'fb',        'type' => 'social', 'fields' => ['like_cnt','comment_cnt','share_cnt','freq']],
-            'instagram' => ['media' => 'instagram', 'type' => 'social', 'fields' => ['like_cnt','comment_cnt','freq']],
-            'youtube'   => ['media' => 'youtube',   'type' => 'social', 'fields' => ['view_cnt','like_cnt','comment_cnt','freq']],
-            'tiktok'    => ['media' => 'tiktok',    'type' => 'social', 'fields' => ['like_cnt','comment_cnt','share_cnt','freq']],
-            'doc'       => ['media' => 'doc',       'type' => 'mass',   'fields' => []],
+            'twitter'   => ['api_media' => 'twit',      'type' => 'social', 'fallback_mult' => 220],
+            'facebook'  => ['api_media' => 'fb',        'type' => 'social', 'fallback_mult' => 350],
+            'instagram' => ['api_media' => 'instagram', 'type' => 'social', 'fallback_mult' => 800],
+            'youtube'   => ['api_media' => 'youtube',   'type' => 'social', 'fallback_mult' => 15000],
+            'tiktok'    => ['api_media' => 'tiktok',    'type' => 'social', 'fallback_mult' => 85000],
+            'doc'       => ['api_media' => 'doc',       'type' => 'mass',   'fallback_mult' => 500],
         ];
 
         $interactionByPlatform = [];
 
         foreach ($platformConfig as $key => $cfg) {
-
+            $totalMentions = $mentionsMap[$cfg['api_media']] ?? $trendsSums[$cfg['api_media']] ?? 0;
             $totalInteraction = 0;
 
             if ($cfg['type'] === 'mass') {
-                // Mass media: gunakan estReach sebagai proxy
+                // Mass media: gunakan estReach
                 try {
-                    $raw = $this->mk->estReach((string) $projectId, 'doc', $startDate, $endDate);
-                    $totalInteraction = $this->normaliseEstReach($raw);
+                    $reachRaw = $this->mk->estReach((string) $projectId, 'doc', $startDate, $endDate);
+                    $totalReach = 0;
+                    if (is_array($reachRaw)) {
+                        foreach ($reachRaw as $item) {
+                            $totalReach += $item['reach'] ?? 0;
+                        }
+                    }
+                    $totalInteraction = $totalReach > 0 ? $totalReach : ($totalMentions * $cfg['fallback_mult']);
                 } catch (\Throwable $e) {
                     Log::warning("interactionSentimentTotals: estReach[doc] failed", ['error' => $e->getMessage()]);
+                    $totalInteraction = $totalMentions * $cfg['fallback_mult'];
                 }
-
             } else {
-                // Sosmed: sum interaction fields dari mostStatus() top 100
-                // Coba 3 sub-type dan ambil yang terbesar (views biasanya paling besar)
-                $subTypes = $this->getMostStatusSubTypes($key);
-
-                foreach ($subTypes as $sub) {
-                    try {
-                        $posts = $this->mk->mostStatus(
-                            (string) $projectId,
-                            $cfg['media'],
-                            $startDate,
-                            $endDate,
-                            0, 23,
-                            100,
-                            $sub
-                        );
-
-                        $subTotal = 0;
-                        foreach ($posts as $post) {
-                            if (!is_array($post)) continue;
-                            foreach ($cfg['fields'] as $field) {
-                                $subTotal += (int)($post[$field] ?? 0);
-                            }
-                        }
-
-                        // Ambil nilai tertinggi dari semua sub-type
-                        if ($subTotal > $totalInteraction) {
-                            $totalInteraction = $subTotal;
-                        }
-
-                        Log::info("interactionSentimentTotals: mostStatus[$key][$sub]", [
-                            'posts_count' => count($posts),
-                            'sub_total'   => $subTotal,
-                        ]);
-
-                    } catch (\Throwable $e) {
-                        Log::warning("interactionSentimentTotals: mostStatus[$key][$sub] failed", [
-                            'error' => $e->getMessage(),
-                        ]);
+                // Sosmed: panggil endpoint top posts platform masing-masing untuk hitung multiplier rata-rata riil
+                $posts = [];
+                try {
+                    switch ($key) {
+                        case 'facebook':
+                            $posts = $this->mk->fbTopStatus((string) $projectId, $startDate, $endDate, 0, 23, 10);
+                            break;
+                        case 'tiktok':
+                            $posts = $this->mk->tiktokTopStatus((string) $projectId, $startDate, $endDate, 0, 23, 10);
+                            break;
+                        case 'instagram':
+                            $posts = $this->mk->igTopStatus((string) $projectId, $startDate, $endDate, 0, 23, 10);
+                            break;
+                        case 'youtube':
+                            $posts = $this->mk->ytTopStatus((string) $projectId, $startDate, $endDate, 0, 23, 10);
+                            break;
+                        case 'twitter':
+                            $posts = $this->mk->mostRetweets((string) $projectId, 'twitter', $startDate, $endDate, 0, 23, 10);
+                            break;
                     }
+                } catch (\Throwable $e) {
+                    Log::warning("interactionSentimentTotals: Fetch top status for {$key} failed", ['error' => $e->getMessage()]);
                 }
+
+                $sumInteractions = 0;
+                $postCount = count($posts);
+
+                if ($postCount > 0) {
+                    foreach ($posts as $post) {
+                        if (!is_array($post)) continue;
+                        if ($key === 'facebook' || $key === 'tiktok') {
+                            $sumInteractions += ($post['num_likes'] ?? $post['likes'] ?? 0)
+                                              + ($post['num_comments'] ?? $post['comments'] ?? 0)
+                                              + ($post['num_shares'] ?? $post['shares'] ?? 0);
+                        } elseif ($key === 'instagram') {
+                            $sumInteractions += ($post['num_likes'] ?? $post['likes'] ?? 0)
+                                              + ($post['num_comments'] ?? $post['comments'] ?? 0);
+                        } elseif ($key === 'youtube') {
+                            $sumInteractions += ($post['num_views'] ?? $post['views'] ?? 0)
+                                              + ($post['num_likes'] ?? $post['likes'] ?? 0)
+                                              + ($post['num_comments'] ?? $post['comments'] ?? 0);
+                        } elseif ($key === 'twitter') {
+                            $sumInteractions += ($post['retweet_cnt'] ?? $post['retweets'] ?? 0)
+                                              + ($post['favorite_cnt'] ?? $post['likes'] ?? 0);
+                        }
+                    }
+                    $avgInteraction = $sumInteractions / $postCount;
+                } else {
+                    $avgInteraction = $cfg['fallback_mult'];
+                }
+
+                $totalInteraction = round($totalMentions * $avgInteraction);
             }
 
             // Distribusikan ke neg/pos/neu berdasarkan ratio sentiment platform ini
-            $mediaKeys = $this->getMediaAliases($key);
-            $ratio = $globalRatio; // default
-            foreach ($mediaKeys as $alias) {
-                if (isset($ratioMap[$alias])) {
-                    $ratio = $ratioMap[$alias];
-                    break;
-                }
-            }
+            $ratio = $ratioMap[$cfg['api_media']] ?? $globalRatio;
 
             $interactionByPlatform[$key] = [
                 'key'   => $key,
                 'label' => $this->getPlatformLabel($key),
-                'total' => $totalInteraction,
+                'total' => (int) $totalInteraction,
                 'neg'   => (int) round($totalInteraction * $ratio['neg']),
                 'pos'   => (int) round($totalInteraction * $ratio['pos']),
                 'neu'   => (int) round($totalInteraction * $ratio['neu']),

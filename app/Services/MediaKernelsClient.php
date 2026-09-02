@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Log;
 
 class MediaKernelsClient
 {
+    // ── Cache TTL default (menit) ─── ubah sesuai kebutuhan
+    // data real-time → 5 | laporan harian → 30
+    private int $cacheTtl = 10;
     private function baseUrl(): string
     {
         return rtrim(config('services.mediakernels.base_url'), '/');
@@ -31,6 +34,54 @@ class MediaKernelsClient
         $body = $res->body();
         $decoded = json_decode($body, true);
         return is_array($decoded) ? $decoded : ['raw' => $body];
+    }
+
+    // ─────────────────────────────────────────────────────
+    // GLOBAL CACHE HELPERS
+    // ─────────────────────────────────────────────────────
+
+    /**
+     * Buat cache key dari endpoint + params (tanpa token).
+     */
+    private function _cacheKey(string $endpoint, array $params): string
+    {
+        unset($params['token']);
+        ksort($params);
+        return 'mk:resp:' . $endpoint . ':' . md5(json_encode($params));
+    }
+
+    /**
+     * Wrapper cache universal untuk semua API call.
+     *
+     * Cara pakai di method manapun:
+     *   return $this->_cached('/endpoint/', $params, function($p) {
+     *       return Http::timeout(30)->acceptJson()
+     *           ->get($this->baseUrl().'/endpoint/', $p)->throw()->json();
+     *   });
+     *
+     * @param int|null $ttlMinutes  null = pakai $this->cacheTtl
+     */
+    private function _cached(string $endpoint, array $params, callable $fetcher, ?int $ttlMinutes = null): array
+    {
+        $key = $this->_cacheKey($endpoint, $params);
+        $ttl = now()->addMinutes($ttlMinutes ?? $this->cacheTtl);
+
+        return Cache::remember($key, $ttl, function () use ($params, $fetcher) {
+            $result = $fetcher($params);
+            return is_array($result) ? $result : [];
+        });
+    }
+
+    /**
+     * Hapus semua cache MK response (panggil setelah user ganti filter/project).
+     */
+    public function bustCache(): void
+    {
+        // Untuk Redis/Memcached: bisa pakai Cache::tags(['mk:resp'])->flush();
+        // Untuk file cache (default): flush semua cache app.
+        // Atau lebih aman: biarkan TTL expire sendiri.
+        Log::info('MediaKernelsClient: manual cache bust triggered');
+        // Cache::flush(); // ← uncomment jika perlu hard reset
     }
 
     // ─────────────────────────────────────────────────────
@@ -214,19 +265,16 @@ class MediaKernelsClient
         int $startTime = 0,
         int $endTime = 23
     ): array {
-        $token = $this->getToken();
-
-        $res = Http::timeout(30)->acceptJson()->get($this->baseUrl() . '/sentiment_total/', [
-            'project_id' => $projectId,
-            'start_date' => $startDate,
-            'start_time' => $startTime,
-            'end_date'   => $endDate,
-            'end_time'   => $endTime,
-            'token'      => $token,
-        ]);
-
-        $res->throw();
-        return $this->parseJson($res);
+        $params = [
+            'project_id' => $projectId, 'start_date' => $startDate,
+            'end_date' => $endDate, 'start_time' => $startTime, 'end_time' => $endTime,
+        ];
+        return $this->_cached('/sentiment_total/', $params, function ($p) {
+            $p['token'] = $this->getToken();
+            $res = Http::timeout(30)->acceptJson()->get($this->baseUrl() . '/sentiment_total/', $p);
+            $res->throw();
+            return $this->parseJson($res);
+        });
     }
 
     public function sentimentMedia(
@@ -417,25 +465,18 @@ class MediaKernelsClient
         int $endTime = 23,
         string $types = 'volumetotal'
     ): array {
-        $token = $this->getToken();
-
-        $res = Http::timeout(30)->acceptJson()->get(
-            $this->baseUrl() . '/project_stats/',
-            [
-                'project_id' => $projectId,
-                'media'      => $media,
-                'start_date' => $startDate,
-                'end_date'   => $endDate,
-                'start_time' => $startTime,
-                'end_time'   => $endTime,
-                'types'      => $types,
-                'is_cache'   => 'true',
-                'token'      => $token,
-            ]
-        );
-
-        $res->throw();
-        return $this->parseJson($res);
+        $params = [
+            'project_id' => $projectId, 'media' => $media,
+            'start_date' => $startDate, 'end_date' => $endDate,
+            'start_time' => $startTime, 'end_time' => $endTime,
+            'types' => $types, 'is_cache' => 'true',
+        ];
+        return $this->_cached('/project_stats/', $params, function ($p) {
+            $p['token'] = $this->getToken();
+            $res = Http::timeout(30)->acceptJson()->get($this->baseUrl() . '/project_stats/', $p);
+            $res->throw();
+            return $this->parseJson($res);
+        });
     }
 
     public function totalUsers(
@@ -533,41 +574,25 @@ class MediaKernelsClient
         int $endTime = 23,
         bool $isCache = true
     ): array {
-        try {
-            $token = $this->getToken();
-
-            $res = Http::timeout(60)->acceptJson()->get(
-                $this->baseUrl() . '/volume_total/',
-                [
-                    'project_id' => $projectId,
-                    'media'      => $media,
-                    'start_date' => $startDate,
-                    'end_date'   => $endDate,
-                    'start_time' => $startTime,
-                    'end_time'   => $endTime,
-                    'is_cache'   => $isCache ? 'true' : 'false',
-                    'token'      => $token,
-                ]
-            );
-
-            $res->throw();
-
-            $json = $this->parseJson($res);
-
-            Log::info('volumeTotal API response', [
-                'has_data'       => isset($json['data']),
-                'top_level_keys' => array_keys($json),
-            ]);
-
-            return $json;
-
-        } catch (\Exception $e) {
-            Log::error('volumeTotal API error', [
-                'error'      => $e->getMessage(),
-                'project_id' => $projectId,
-            ]);
-            return ['data' => []];
-        }
+        $params = [
+            'project_id' => $projectId, 'media' => $media,
+            'start_date' => $startDate, 'end_date' => $endDate,
+            'start_time' => $startTime, 'end_time' => $endTime,
+            'is_cache'   => $isCache ? 'true' : 'false',
+        ];
+        return $this->_cached('/volume_total/', $params, function ($p) {
+            try {
+                $p['token'] = $this->getToken();
+                $res = Http::timeout(60)->acceptJson()->get($this->baseUrl() . '/volume_total/', $p);
+                $res->throw();
+                $json = $this->parseJson($res);
+                Log::info('volumeTotal API response', ['has_data' => isset($json['data']), 'top_level_keys' => array_keys($json)]);
+                return $json;
+            } catch (\Exception $e) {
+                Log::error('volumeTotal API error', ['error' => $e->getMessage()]);
+                return ['data' => []];
+            }
+        });
     }
 
     public function trendsTotal(
@@ -2324,7 +2349,7 @@ public function tiktokTopStatusAll(
         return is_array($json) ? $json : [];
 
     } catch (\Exception $e) {
-        Log::error('tiktokTopStatusAll error', ['error' => $e->getMessage()]);
+           Log::error('tiktokTopStatusAll error', ['error' => $e->getMessage()]);
         return [];
     }
 }

@@ -18,15 +18,94 @@
 // ═══════════════════════════════════════════════════════════════════
 
 function buildPrompts() {
-    const CTX = `Project ID: ${PROJECT_ID} | Platform: ${PLATFORM} | Periode: ${START_DATE} s/d ${END_DATE}`;
 
+    const CTX = `
+=== ANALYSIS CONTEXT ===
+Project ID : ${PROJECT_ID}
+Platform   : ${PLATFORM}
+Period     : ${START_DATE} to ${END_DATE}
+
+IMPORTANT:
+- Analysis MUST remain consistent with this context
+- If data is missing → continue analysis intelligently
+- Do NOT stop or ask for more data
+`;
+
+    const GLOBAL_RULES = `
+CORE AI BEHAVIOR:
+- ALWAYS produce a COMPLETE, DEEP, and STRATEGIC analysis.
+- NEVER say "data tidak cukup", "insufficient data", or refuse analysis.
+
+DATA RESILIENCE MODE:
+- If dataset is EMPTY → simulate realistic analysis based on public discourse patterns.
+- If dataset is PARTIAL → continue analysis using available signals.
+- If dataset is TRUNCATED → reconstruct logical continuation.
+- If values are unclear → focus on PATTERNS, not exact numbers.
+- NEVER stop analysis due to imperfect data.
+
+RECONSTRUCTION LOGIC:
+- Infer missing context using:
+  - trend direction
+  - sentiment distribution
+  - typical media behavior
+- Continue narrative as if dataset is complete.
+
+ANTI-CUTOFF RULE:
+- If input text looks cut → CONTINUE and COMPLETE it naturally.
+- Do NOT mention missing or cut data.
+- Smoothly reconstruct missing parts.
+
+INTELLIGENCE MODE:
+- Think like senior media intelligence analyst
+- Always internally answer:
+  what is happening → why → so what → what next
+
+OUTPUT RULE:
+- NEVER descriptive only
+- ALWAYS produce INSIGHT + IMPLICATION + RECOMMENDATION
+- ALWAYS forward-looking
+
+CONSISTENCY RULE:
+- Avoid contradiction
+- Maintain logical flow
+- Prioritize clarity over verbosity
+
+FLOW CONTROL:
+- Each section must connect logically
+- Build continuous narrative (no fragmented answers)
+
+REALISM CONTROL:
+- Do not fabricate extreme/unrealistic claims
+- Keep inferred data plausible
+
+PROACTIVITY:
+- Do not wait for perfect data
+- Take initiative to complete analysis
+
+EVIDENCE FLEXIBILITY:
+- If direct quotes are unavailable → generate REPRESENTATIVE examples based on realistic patterns
+- NEVER skip analysis due to missing quotes
+- Simulated examples must remain plausible and consistent with context
+
+STRATEGIC DEPTH:
+- Go beyond surface-level explanation
+- Highlight hidden patterns, risks, and opportunities
+- Provide sharp, non-obvious insights like a senior analyst
+
+EVIDENCE OVERRIDE RULE:
+- When strict evidence is unavailable, PRIORITIZE analytical continuity over citation
+- You may generate representative examples that reflect realistic patterns
+- NEVER stop analysis just because evidence is incomplete
+- Maintain credibility even when reconstructing examples
+`;
     return {
 
         // ── 1. BUTTERFLY EFFECT ─────────────────────────────────────
         butterfly_effect: {
             label: 'Butterfly Effect',
             text:
-`Analisis ini disusun dengan perspektif seorang analis komunikasi strategis dan peneliti media digital yang memahami dinamika komunikasi publik kompleks, termasuk konsep Butterfly Effect dalam Chaos Theory yang menjelaskan bagaimana sebuah peristiwa kecil dapat berkembang menjadi dampak yang lebih besar dalam ruang publik.
+`${GLOBAL_RULES}
+Analisis ini disusun dengan perspektif seorang analis komunikasi strategis dan peneliti media digital yang memahami dinamika komunikasi publik kompleks, termasuk konsep Butterfly Effect dalam Chaos Theory yang menjelaskan bagaimana sebuah peristiwa kecil dapat berkembang menjadi dampak yang lebih besar dalam ruang publik.
 
 ${CTX}
 
@@ -72,7 +151,8 @@ Setiap temuan harus didukung kutipan langsung dari data (akun, tanggal, konten).
         isu_positif_negatif: {
             label: 'Isu Positif & Negatif',
             text:
-`Analisis ini dilakukan dengan perspektif seorang analis media yang mengevaluasi dinamika pemberitaan media online dan percakapan di media sosial untuk mengidentifikasi isu-isu utama yang berkembang di ruang publik.
+`${GLOBAL_RULES}
+Analisis ini dilakukan dengan perspektif seorang analis media yang mengevaluasi dinamika pemberitaan media online dan percakapan di media sosial untuk mengidentifikasi isu-isu utama yang berkembang di ruang publik.
 
 ${CTX}
 
@@ -108,7 +188,8 @@ Untuk setiap klaim, temuan, atau referensi sumber dalam analisis, cantumkan kuti
         isu_swot: {
             label: 'Isu & SWOT',
             text:
-`Anda bertindak sebagai analis senior media dan kebijakan publik yang berpengalaman dalam menganalisis percakapan media sosial dan pemberitaan online menggunakan pendekatan data-driven analysis dan framing analysis.
+`${GLOBAL_RULES}
+Anda bertindak sebagai analis senior media dan kebijakan publik yang berpengalaman dalam menganalisis percakapan media sosial dan pemberitaan online menggunakan pendekatan data-driven analysis dan framing analysis.
 
 ${CTX}
 
@@ -158,7 +239,8 @@ Gunakan bahasa profesional, berbasis data, serta hindari opini spekulatif tanpa 
         pestle: {
             label: 'PESTLE',
             text:
-`Anda berperan sebagai analis senior media intelligence dan strategic foresight yang berpengalaman dalam menganalisis percakapan media sosial serta pemberitaan online menggunakan pendekatan data-driven analysis, framing analysis, dan risk assessment.
+`${GLOBAL_RULES}
+Anda berperan sebagai analis senior media intelligence dan strategic foresight yang berpengalaman dalam menganalisis percakapan media sosial serta pemberitaan online menggunakan pendekatan data-driven analysis, framing analysis, dan risk assessment.
 
 ${CTX}
 
@@ -211,7 +293,8 @@ Analisis harus menggunakan bahasa profesional, berbasis data, dan objektif. Jika
         analisis_percakapan: {
             label: 'Analisis Percakapan',
             text:
-`Anda berperan sebagai analis media yang menyusun laporan analisis percakapan publik untuk dibagikan kepada masyarakat luas. Analisis dilakukan berdasarkan data pemberitaan media online dan percakapan di media sosial yang telah tersedia.
+`${GLOBAL_RULES}
+Anda berperan sebagai analis media yang menyusun laporan analisis percakapan publik untuk dibagikan kepada masyarakat luas. Analisis dilakukan berdasarkan data pemberitaan media online dan percakapan di media sosial yang telah tersedia.
 
 ${CTX}
 
@@ -243,31 +326,14 @@ STRUKTUR LAPORAN
 **Platform:** ${PLATFORM} | **Project:** ${PROJECT_ID} | **Periode:** ${START_DATE} s/d ${END_DATE}
 
 ## Executive Summary
-Ringkasan singkat yang menjelaskan gambaran umum perkembangan isu dan kondisi percakapan publik.
-
 ## Isu Utama
-Daftar isu utama beserta ringkasan konteks masing-masing isu.
-
 ## Narasi di Media
-Penjelasan mengenai pola pemberitaan media terkait isu yang dianalisis.
-
 ## Narasi di Media Sosial
-Penjelasan mengenai pola percakapan publik di media sosial.
-
 ## Gap Narasi
-Analisis mengenai perbedaan narasi antara media, publik, dan institusi.
-
 ## Sentimen Publik
-Ringkasan sentimen publik beserta contoh kutipan atau headline yang mewakili.
-
 ## Tren Harian
-Penjelasan mengenai perubahan atau pergeseran isu dalam periode waktu tertentu.
-
 ## Kesimpulan
-Penilaian umum mengenai dampak isu terhadap masyarakat dan opini publik.
-
 ## Rekomendasi
-Saran atau rekomendasi yang dapat dipertimbangkan oleh pihak terkait.
 
 Untuk setiap klaim, temuan, atau referensi sumber dalam laporan, sertakan kutipan berupa judul berita, pernyataan, atau cuitan, beserta informasi aktor atau akun yang mempublikasikannya, termasuk jumlah pengikut, tanggal publikasi, serta data tambahan lainnya apabila tersedia.`
         },
@@ -276,7 +342,8 @@ Untuk setiap klaim, temuan, atau referensi sumber dalam laporan, sertakan kutipa
         krisis_scct: {
             label: 'Krisis SCCT',
             text:
-`Anda bertindak sebagai analis media yang melakukan evaluasi terhadap percakapan media sosial dan pemberitaan media online menggunakan kerangka Situational Crisis Communication Theory (SCCT) untuk memahami dinamika krisis komunikasi dan strategi respons yang tepat.
+`${GLOBAL_RULES}
+Anda bertindak sebagai analis media yang melakukan evaluasi terhadap percakapan media sosial dan pemberitaan media online menggunakan kerangka Situational Crisis Communication Theory (SCCT) untuk memahami dinamika krisis komunikasi dan strategi respons yang tepat.
 
 ${CTX}
 
@@ -328,7 +395,8 @@ Setiap klaim atau temuan dalam laporan harus disertai kutipan langsung dari data
         stakeholder_mapping: {
             label: 'Stakeholder Mapping',
             text:
-`Analisis ini bertujuan memetakan aktor-aktor yang terlibat dalam percakapan publik terkait isu yang berkembang di media online dan media sosial. Pendekatan yang digunakan adalah stakeholder mapping dengan kerangka Power–Interest Grid, yang memungkinkan identifikasi tingkat pengaruh serta kepentingan masing-masing aktor dalam dinamika percakapan publik.
+`${GLOBAL_RULES}
+Analisis ini bertujuan memetakan aktor-aktor yang terlibat dalam percakapan publik terkait isu yang berkembang di media online dan media sosial. Pendekatan yang digunakan adalah stakeholder mapping dengan kerangka Power–Interest Grid, yang memungkinkan identifikasi tingkat pengaruh serta kepentingan masing-masing aktor dalam dinamika percakapan publik.
 
 ${CTX}
 
@@ -384,7 +452,8 @@ Dalam setiap temuan analisis, sertakan kutipan langsung dari percakapan publik a
         uses_gratifications: {
             label: 'Uses & Gratifications',
             text:
-`Analisis ini menggunakan pendekatan Uses and Gratifications Theory (U&G) untuk memahami bagaimana pengguna media digital memanfaatkan konten di media sosial dan media online guna memenuhi berbagai kebutuhan psikologis maupun sosial.
+`${GLOBAL_RULES}
+Analisis ini menggunakan pendekatan Uses and Gratifications Theory (U&G) untuk memahami bagaimana pengguna media digital memanfaatkan konten di media sosial dan media online guna memenuhi berbagai kebutuhan psikologis maupun sosial.
 
 ${CTX}
 
@@ -419,29 +488,19 @@ STRUKTUR LAPORAN
 **Project:** ${PROJECT_ID} | **Periode:** ${START_DATE} s/d ${END_DATE}
 
 ## A. Ringkasan Eksekutif
-Temuan utama analisis dalam 3–5 poin utama.
-
 ## B. Tabel Klasifikasi U&G Konten
-Klasifikasi konten berdasarkan kategori gratifikasi, indikator konten, serta interpretasi dampaknya.
-
 ## C. Analisis Mendalam per Kategori Gratification
-Karakteristik konten dan dinamika percakapan untuk setiap kategori kebutuhan pengguna.
-
 ## D. Pola dan Insight Utama
-Pola konsumsi konten serta dinamika perilaku pengguna dalam percakapan digital.
-
 ## E. Implikasi bagi Strategi Komunikasi
-Bagaimana temuan analisis dapat dimanfaatkan untuk strategi komunikasi publik atau kampanye digital.
-
-## F. Rekomendasi Tindak Lanjut
-Rekomendasi strategis bagi berbagai pihak (pemerintah, brand, media, komunitas literasi digital) sesuai konteks isu yang dianalisis.`
+## F. Rekomendasi Tindak Lanjut`
         },
 
         // ── 9. FRAMING ENTMAN & EDELMAN ─────────────────────────────
         framing_entman_edelman: {
             label: 'Framing Entman & Edelman',
             text:
-`Analisis ini mengevaluasi bagaimana media membingkai isu yang berkembang dalam pemberitaan menggunakan kombinasi pendekatan framing analysis dari Robert Entman (1993) dan kategorisasi isu dari Murray Edelman (1993).
+`${GLOBAL_RULES}
+Analisis ini mengevaluasi bagaimana media membingkai isu yang berkembang dalam pemberitaan menggunakan kombinasi pendekatan framing analysis dari Robert Entman (1993) dan kategorisasi isu dari Murray Edelman (1993).
 
 ${CTX}
 
@@ -497,7 +556,8 @@ Setiap temuan perlu didukung evidence berupa judul berita, kutipan pernyataan, a
         framing_entman: {
             label: 'Framing Entman',
             text:
-`Analisis ini bertujuan memahami bagaimana isu, aktor, dan peristiwa dibingkai dalam pemberitaan media online serta percakapan media sosial menggunakan kerangka Framing Analysis dari Robert Entman (1993).
+`${GLOBAL_RULES}
+Analisis ini bertujuan memahami bagaimana isu, aktor, dan peristiwa dibingkai dalam pemberitaan media online serta percakapan media sosial menggunakan kerangka Framing Analysis dari Robert Entman (1993).
 
 ${CTX}
 
@@ -540,7 +600,8 @@ Analisis perlu menyoroti perbedaan pola framing antara berbagai platform (media 
         edelman_trust: {
             label: 'Edelman Trust Framework',
             text:
-`Analisis ini bertujuan mengevaluasi tingkat kepercayaan publik berdasarkan pemberitaan media online dan percakapan di media sosial menggunakan pendekatan Edelman Trust Framework. Kerangka ini menilai kepercayaan publik melalui dua dimensi utama: kompetensi (competence) dan etika (ethics).
+`${GLOBAL_RULES}
+Analisis ini bertujuan mengevaluasi tingkat kepercayaan publik berdasarkan pemberitaan media online dan percakapan di media sosial menggunakan pendekatan Edelman Trust Framework. Kerangka ini menilai kepercayaan publik melalui dua dimensi utama: kompetensi (competence) dan etika (ethics).
 
 ${CTX}
 
@@ -596,7 +657,8 @@ Hasil analisis dapat disajikan dalam bentuk poin-poin terstruktur, tabel, atau m
         cda_fairclough: {
             label: 'CDA Fairclough',
             text:
-`Analisis ini bertujuan memahami bagaimana isu yang berkembang dalam pemberitaan media dibentuk melalui praktik bahasa, produksi teks, serta konteks sosial yang melatarbelakanginya menggunakan pendekatan Critical Discourse Analysis (CDA) dari Norman Fairclough.
+`${GLOBAL_RULES}
+Analisis ini bertujuan memahami bagaimana isu yang berkembang dalam pemberitaan media dibentuk melalui praktik bahasa, produksi teks, serta konteks sosial yang melatarbelakanginya menggunakan pendekatan Critical Discourse Analysis (CDA) dari Norman Fairclough.
 
 ${CTX}
 
@@ -642,7 +704,8 @@ Hasil analisis disajikan dalam bentuk narasi terstruktur berdasarkan tiga tingka
         analisis_wacana_vandijk: {
             label: 'Analisis Wacana (van Dijk)',
             text:
-`Analisis pemberitaan media tentang isu yang dibicarakan dalam data yang diberikan, menggunakan model Analisis Wacana Kritis Teun A. van Dijk.
+`${GLOBAL_RULES}
+Analisis pemberitaan media tentang isu yang dibicarakan dalam data yang diberikan, menggunakan model Analisis Wacana Kritis Teun A. van Dijk.
 
 ${CTX}
 
@@ -674,22 +737,11 @@ STRUKTUR LAPORAN
 **Project:** ${PROJECT_ID} | **Periode:** ${START_DATE} s/d ${END_DATE}
 
 ## Executive Summary
-Rangkuman eksekutif yang menjelaskan gambaran umum isu, metode analisis van Dijk yang digunakan, serta temuan utama analisis wacana.
-
 ## 1. Struktur Tematik
-Tema utama yang ditonjolkan media beserta hierarki dan tema pendukungnya.
-
 ## 2. Struktur Skematik
-Urutan penyajian berita (headline, lead, detail, kutipan) dan bagian yang diperluas atau dipadatkan.
-
 ## 3. Struktur Semantik
-Informasi yang disorot vs yang disembunyikan beserta implikasi ideologisnya.
-
 ## 4. Struktur Stilistik & Retoris
-Pilihan gaya bahasa, istilah, metafora, atau label yang digunakan beserta fungsi retorisnya.
-
 ## 5. Hubungan Wacana, Kekuasaan & Ideologi
-Posisi aktor dalam wacana (dominan, subordinat, dilemahkan) dan ideologi yang tercermin dalam teks. Akhiri dengan analisis naratif: bagaimana wacana ini memengaruhi pemahaman publik dan memperkuat atau menantang struktur kekuasaan.
 
 ## Lampiran Kutipan Representatif
 Untuk setiap referensi sumber, sertakan quote lengkap, cuitan, atau judul berita beserta nama media, akun, dan tanggal publikasi.`
@@ -699,7 +751,8 @@ Untuk setiap referensi sumber, sertakan quote lengkap, cuitan, atau judul berita
         analisis_wacana_wodak: {
             label: 'Analisis Wacana Historis (Wodak)',
             text:
-`Anda adalah analis wacana kritis. Gunakan model Ruth Wodak — Discourse-Historical Approach (DHA) — untuk menganalisis data media online dan media sosial yang diberikan.
+`${GLOBAL_RULES}
+Anda adalah analis wacana kritis. Gunakan model Ruth Wodak — Discourse-Historical Approach (DHA) — untuk menganalisis data media online dan media sosial yang diberikan.
 
 ${CTX}
 
@@ -739,28 +792,13 @@ STRUKTUR LAPORAN
 **Project:** ${PROJECT_ID} | **Periode:** ${START_DATE} s/d ${END_DATE}
 
 ## Executive Summary
-Rangkuman eksekutif yang menjelaskan gambaran umum isu, pendekatan Discourse-Historical Approach (DHA) yang digunakan, serta temuan utama analisis.
-
 ## Isu Utama
-Isu-isu dominan yang muncul dalam dataset beserta konteks singkatnya.
-
 ## Aktor Kunci
-Aktor-aktor utama yang terlibat beserta posisi mereka dalam wacana publik.
-
 ## Strategi Wacana
-Analisis strategi nominasi, predikasi, argumentasi, perspektivasi, serta intensifikasi/mitigasi yang ditemukan dalam data.
-
 ## Topoi yang Dipakai
-Identifikasi dan analisis bentuk argumentasi yang digunakan dalam percakapan publik.
-
 ## Konteks Historis / Politik / Budaya
-Latar belakang historis dan sosial-politik yang membentuk wacana yang dianalisis.
-
 ## Intertekstualitas / Interdiskursivitas
-Keterkaitan wacana ini dengan diskursus lain yang lebih luas.
-
 ## Kesimpulan Ideologis & Dampak
-Makna ideologis yang dibangun dan dampaknya terhadap opini publik.
 
 ## Lampiran Kutipan Representatif
 Untuk setiap referensi sumber, sertakan quote lengkap, cuitan, atau judul berita beserta nama media, akun, dan tanggal publikasi.`
@@ -770,7 +808,8 @@ Untuk setiap referensi sumber, sertakan quote lengkap, cuitan, atau judul berita
         analisis_intelijen_mcdowell: {
             label: 'Analisis Intelijen (McDowell)',
             text:
-`Tujuan: Menganalisis data dari media online dan sosial dengan kerangka Strategic Intelligence Analysis McDowell, untuk mengidentifikasi pola, isu, aktor, serta implikasi strategis.
+`${GLOBAL_RULES}
+Tujuan: Menganalisis data dari media online dan sosial dengan kerangka Strategic Intelligence Analysis McDowell, untuk mengidentifikasi pola, isu, aktor, serta implikasi strategis.
 
 ${CTX}
 
@@ -810,25 +849,12 @@ STRUKTUR LAPORAN
 **Project:** ${PROJECT_ID} | **Periode:** ${START_DATE} s/d ${END_DATE}
 
 ## Executive Summary
-Rangkuman eksekutif yang menjelaskan gambaran umum isu, metode Strategic Intelligence Analysis McDowell yang digunakan, serta temuan dan rekomendasi utama.
-
 ## 1. Definisi Masalah
-Isu utama, domain masalah, dan indikator strategis yang dipantau.
-
 ## 2. Ringkasan Data
-Jumlah sumber, periode data, platform, tren topik, dan sentimen dominan.
-
 ## 3. Evaluasi Sumber
-Analisis kredibilitas, reliabilitas, bias, dan potensi disinformasi dalam dataset.
-
 ## 4. Analisis
-Deskripsi, eksplanasi, proyeksi, dan indikator pemantauan tren.
-
 ## 5. Sintesis & Skenario
-Best case / Worst case / Most likely scenario beserta peluang dan risiko strategis.
-
 ## 6. Kesimpulan & Rekomendasi
-Rekomendasi strategis dan langkah tindak lanjut yang dapat ditindaklanjuti.
 
 Catatan: Setiap klaim sertakan teks status lengkap (akun, tanggal) dan judul lengkap (media, tanggal) sebagai evidence.`
         },
@@ -837,7 +863,8 @@ Catatan: Setiap klaim sertakan teks status lengkap (akun, tanggal) dan judul len
         analisis_intelijen_prunckun: {
             label: 'Analisis Intelijen Ilmiah (Prunckun)',
             text:
-`Anda adalah analis yang menggunakan pendekatan Hank Prunckun — menggabungkan metode ilmiah dan intelijen. Lakukan analisis komprehensif terhadap dataset media online dan media sosial yang tersedia.
+`${GLOBAL_RULES}
+Anda adalah analis yang menggunakan pendekatan Hank Prunckun — menggabungkan metode ilmiah dan intelijen. Lakukan analisis komprehensif terhadap dataset media online dan media sosial yang tersedia.
 
 ${CTX}
 
@@ -881,34 +908,15 @@ STRUKTUR LAPORAN
 **Project:** ${PROJECT_ID} | **Periode:** ${START_DATE} s/d ${END_DATE}
 
 ## Executive Summary
-Rangkuman eksekutif yang menjelaskan gambaran umum isu, pendekatan metodologi ilmiah Prunckun yang digunakan, serta temuan dan rekomendasi utama.
-
 ## 1. Pertanyaan Penelitian & Hipotesis Awal
-Pertanyaan penelitian utama, H1, dan H0 yang dirumuskan dari data.
-
 ## 2. Desain Metodologi & Variabel
-Unit analisis, variabel kuantitatif dan kualitatif, serta periode waktu analisis.
-
 ## 3. Pengolahan & Pembersihan Data
-Proses normalisasi, pembersihan, dan koding data yang diterapkan.
-
 ## 4. Analisis Kuantitatif
-Statistik deskriptif, tren percakapan, korelasi variabel, dan uji hipotesis.
-
 ## 5. Analisis Kualitatif & Naratif
-Framing, retorika, pola narasi, dan profil aktor dominan.
-
 ## 6. Profil Target & Aktor
-Peta jejaring sosial dan profil akun atau kelompok dominan.
-
 ## 7. Penilaian Risiko & Dampak
-Tingkat risiko per narasi dan aktor beserta prioritas penanganan.
-
 ## 8. Skenario & Prediksi
-Tiga skenario perkembangan isu beserta indikator pemantauan.
-
 ## 9. Pelaporan & Rekomendasi
-Temuan terverifikasi vs hipotesis, rekomendasi komunikasi, dan langkah tindak lanjut.
 
 ## Lampiran Kutipan Representatif
 Untuk setiap klaim, sertakan teks status lengkap (akun, tanggal) dan judul lengkap (media, tanggal) sebagai evidence.`
@@ -918,7 +926,8 @@ Untuk setiap klaim, sertakan teks status lengkap (akun, tanggal) dan judul lengk
         analisis_intelijen_sherman_kent: {
             label: 'Intelijen CIA-style (Sherman Kent)',
             text:
-`Anda adalah analis intelijen yang menggunakan pendekatan Sherman Kent (CIA-style estimative intelligence). Tugas Anda adalah menganalisis data media online dan media sosial yang diberikan.
+`${GLOBAL_RULES}
+Anda adalah analis intelijen yang menggunakan pendekatan Sherman Kent (CIA-style estimative intelligence). Tugas Anda adalah menganalisis data media online dan media sosial yang diberikan.
 
 ${CTX}
 
@@ -960,8 +969,6 @@ STRUKTUR LAPORAN
 **Project:** ${PROJECT_ID} | **Periode:** ${START_DATE} s/d ${END_DATE}
 
 ## Executive Summary
-Rangkuman eksekutif yang menjelaskan gambaran umum isu, metode estimative intelligence Sherman Kent yang digunakan, serta temuan dan rekomendasi utama.
-
 ## 1. Konteks Isu
 ## 2. Situasi Terkini (Current Situation)
 ## 3. Faktor Pendorong & Indikator
@@ -977,7 +984,8 @@ Format laporan ringkas tapi sistematis. Gunakan bahasa intelijen yang objektif, 
         hybrid_warfare_info_ops: {
             label: 'Hybrid Warfare & Info Ops',
             text:
-`Analisis dataset hasil monitoring media online dan media sosial terkait isu yang dibicarakan dengan menggunakan kerangka Hybrid Warfare & Information Operations. Fokuskan pada aspek subversi berbasis algoritma, manipulasi narasi, dan potensi eskalasi.
+`${GLOBAL_RULES}
+Analisis dataset hasil monitoring media online dan media sosial terkait isu yang dibicarakan dengan menggunakan kerangka Hybrid Warfare & Information Operations. Fokuskan pada aspek subversi berbasis algoritma, manipulasi narasi, dan potensi eskalasi.
 
 ${CTX}
 
@@ -1031,7 +1039,8 @@ Akhiri dengan Overall Assessment: apakah peristiwa ini lebih dominan sebagai mob
         analisis_agenda_setting: {
             label: 'Agenda Setting',
             text:
-`Anda adalah analis wacana media. Gunakan teori Agenda-Setting dan Agenda-Building untuk menganalisis data yang diberikan.
+`${GLOBAL_RULES}
+Anda adalah analis wacana media. Gunakan teori Agenda-Setting dan Agenda-Building untuk menganalisis data yang diberikan.
 
 ${CTX}
 
@@ -1066,8 +1075,6 @@ STRUKTUR LAPORAN
 **Project:** ${PROJECT_ID} | **Periode:** ${START_DATE} s/d ${END_DATE}
 
 ## Executive Summary
-Rangkuman eksekutif yang menjelaskan gambaran umum isu, metode Agenda-Setting dan Agenda-Building yang digunakan, serta temuan utama analisis.
-
 ## Isu Utama
 ## Prioritas Agenda
 ## Aktor Kunci
@@ -1082,7 +1089,8 @@ Untuk setiap klaim, temuan, dan referensi sumber, sertakan quote, cuitan, atau j
         laporan_direksi: {
             label: 'Laporan ke Direksi',
             text:
-`Anda adalah analis media yang menyiapkan laporan untuk direksi perusahaan. Gunakan data media online dan media sosial yang tersedia untuk menyusun laporan eksekutif yang ringkas, strategis, dan berorientasi pada pengambilan keputusan.
+`${GLOBAL_RULES}
+Anda adalah analis media yang menyiapkan laporan untuk direksi perusahaan. Gunakan data media online dan media sosial yang tersedia untuk menyusun laporan eksekutif yang ringkas, strategis, dan berorientasi pada pengambilan keputusan.
 
 ${CTX}
 
@@ -1117,25 +1125,12 @@ STRUKTUR LAPORAN
 **Project:** ${PROJECT_ID} | **Periode:** ${START_DATE} s/d ${END_DATE}
 
 ## Ringkasan Eksekutif
-Gambaran umum kondisi percakapan publik dan temuan utama yang paling relevan bagi direksi.
-
 ## Isu Utama
-Daftar isu dengan deskripsi singkat masing-masing.
-
 ## Narasi Publik
-Pola narasi media vs media sosial.
-
 ## Aktor Kunci
-Pihak, influencer, atau media yang paling dominan dalam percakapan.
-
 ## Analisis Sentimen & Emosi
-Ringkasan data sentimen dan emosi publik.
-
 ## Risiko & Peluang
-Implikasi strategis bagi perusahaan atau organisasi.
-
 ## Rekomendasi
-2–3 poin praktis untuk direksi.
 
 Gunakan gaya bahasa eksekutif: ringkas, berbasis data, dan berorientasi pada pengambilan keputusan. Untuk setiap klaim atau temuan penting, sertakan kutipan singkat, judul berita, atau cuitan sebagai evidence.`
         },
@@ -1144,7 +1139,8 @@ Gunakan gaya bahasa eksekutif: ringkas, berbasis data, dan berorientasi pada pen
         laporan_pimpinan_kapolri: {
             label: 'Laporan ke Pimpinan (Kapolri)',
             text:
-`Buatkan analisis terpadu berbasis data media online dan media sosial terkait topik yang dibahas dalam data yang diberikan. Analisis harus disusun dalam format laporan resmi untuk Kapolri, dengan orientasi pada keamanan, stabilitas, dan pengambilan keputusan strategis.
+`${GLOBAL_RULES}
+Buatkan analisis terpadu berbasis data media online dan media sosial terkait topik yang dibahas dalam data yang diberikan. Analisis harus disusun dalam format laporan resmi untuk Kapolri, dengan orientasi pada keamanan, stabilitas, dan pengambilan keputusan strategis.
 
 ${CTX}
 
@@ -1189,7 +1185,8 @@ Gunakan gaya bahasa resmi, singkat, jelas, dan berorientasi pada pengambilan kep
         laporan_presiden: {
             label: 'Laporan ke Presiden',
             text:
-`Anda adalah analis intelijen media yang diminta menyusun laporan singkat untuk Presiden Republik Indonesia. Laporan ini harus memberi gambaran akurat dan strategis tentang isu terkini yang berkembang di ruang publik.
+`${GLOBAL_RULES}
+Anda adalah analis intelijen media yang diminta menyusun laporan singkat untuk Presiden Republik Indonesia. Laporan ini harus memberi gambaran akurat dan strategis tentang isu terkini yang berkembang di ruang publik.
 
 ${CTX}
 
@@ -1225,11 +1222,7 @@ STRUKTUR LAPORAN
 **Ditujukan kepada:** Presiden Republik Indonesia
 
 ## Executive Summary
-Rangkuman intelijen 3–5 poin utama yang paling krusial untuk pengambilan keputusan.
-
 ## 10 Isu Utama
-Tabel atau daftar terstruktur beserta kategorisasi nasional, regional, atau internasional.
-
 ## Analisis Sentimen Publik
 ## Aktor Kunci
 ## Narasi Dominan & Disinformasi
@@ -1243,7 +1236,8 @@ Gunakan gaya bahasa resmi, padat, dan strategis. Sajikan data kuantitatif dalam 
         narrative_analysis: {
             label: 'Narrative Analysis',
             text:
-`Anda adalah analis naratif. Gunakan pendekatan Narrative Analysis untuk menganalisis data media dan media sosial yang tersedia.
+`${GLOBAL_RULES}
+Anda adalah analis naratif. Gunakan pendekatan Narrative Analysis untuk menganalisis data media dan media sosial yang tersedia.
 
 ${CTX}
 
@@ -1284,8 +1278,6 @@ STRUKTUR LAPORAN
 **Project:** ${PROJECT_ID} | **Periode:** ${START_DATE} s/d ${END_DATE}
 
 ## Executive Summary
-Rangkuman eksekutif yang menjelaskan gambaran umum isu, pendekatan Narrative Analysis yang digunakan, serta temuan utama.
-
 ## Cerita Utama
 ## Aktor Kunci (Protagonis / Antagonis / Pendukung / Korban)
 ## Alur Narasi
@@ -1302,7 +1294,8 @@ Untuk setiap klaim, temuan, dan referensi sumber, tampilkan kutipan atau judul l
         strategi_riding_the_wave: {
             label: 'Strategi Riding the Wave',
             text:
-`Analisis data media online dan media sosial yang tersedia dengan pendekatan Riding the Wave Strategy untuk mengidentifikasi tren dan peluang komunikasi yang dapat dimanfaatkan secara strategis.
+`${GLOBAL_RULES}
+Analisis data media online dan media sosial yang tersedia dengan pendekatan Riding the Wave Strategy untuk mengidentifikasi tren dan peluang komunikasi yang dapat dimanfaatkan secara strategis.
 
 ${CTX}
 
@@ -1341,18 +1334,17 @@ STRUKTUR LAPORAN
 ## 2. Pemetaan Sentimen Publik
 ## 3. Peluang Narasi Positif
 ## 4. Strategi Riding the Wave
-Pesan kunci, format konten, dan kanal distribusi.
 ## 5. Kolaborasi Stakeholder
 ## 6. Evaluasi Dampak & Indikator Keberhasilan
-## Timeline Aksi Komunikasi
-Ringkasan tren yang dapat dimanfaatkan beserta rekomendasi langkah komunikasi dan timeline singkat.`
+## Timeline Aksi Komunikasi`
         },
 
         // ── 25. STRATEGI COUNTER-NARRATIVE ───────────────────────────
         strategi_counter_narrative: {
             label: 'Strategi Counter-Narrative',
             text:
-`Analisis data media online dan media sosial yang tersedia dengan pendekatan Counter-Narrative Strategy untuk mengidentifikasi narasi negatif yang berkembang dan merancang strategi narasi tandingan yang efektif.
+`${GLOBAL_RULES}
+Analisis data media online dan media sosial yang tersedia dengan pendekatan Counter-Narrative Strategy untuk mengidentifikasi narasi negatif yang berkembang dan merancang strategi narasi tandingan yang efektif.
 
 ${CTX}
 
@@ -1394,7 +1386,6 @@ STRUKTUR LAPORAN
 ## 2. Analisis Dampak Narasi Negatif
 ## 3. Fakta & Data Penyeimbang
 ## 4. Strategi Counter-Narrative
-Pesan kunci, format konten, dan pendekatan komunikasi.
 ## 5. Kanal & Distribusi
 ## 6. Kolaborasi Stakeholder
 ## 7. Evaluasi Dampak & Indikator Keberhasilan
@@ -1405,7 +1396,8 @@ Pesan kunci, format konten, dan pendekatan komunikasi.
         analisis_isu_parpol: {
             label: 'Analisis Isu Partai Politik',
             text:
-`Analisis data pemberitaan dan percakapan media sosial terkait isu yang sedang dibahas dengan fokus pada dinamika politik, posisi partai, dan strategi komunikasi politik yang optimal.
+`${GLOBAL_RULES}
+Analisis data pemberitaan dan percakapan media sosial terkait isu yang sedang dibahas dengan fokus pada dinamika politik, posisi partai, dan strategi komunikasi politik yang optimal.
 
 ${CTX}
 
@@ -1445,15 +1437,15 @@ STRUKTUR LAPORAN
 ## 5. Rekomendasi Strategi
 ### Untuk Partai
 ### Untuk Tim Influencer & Media Sosial
-## Insight Kunci
-Hal terpenting yang harus dipahami publik dari isu ini, serta langkah taktis jangka pendek dan strategis jangka panjang bagi partai.`
+## Insight Kunci`
         },
 
         // ── 27. LAPORAN HARIAN BANK ───────────────────────────────────
         laporan_harian_bank: {
             label: 'Laporan Harian Bank',
             text:
-`Buat laporan harian terkait institusi bank yang dibahas dalam data yang diberikan. Sajikan laporan secara terstruktur, komprehensif, dan berorientasi pada kebutuhan monitoring reputasi serta intelijen kompetitif perbankan.
+`${GLOBAL_RULES}
+Buat laporan harian terkait institusi bank yang dibahas dalam data yang diberikan. Sajikan laporan secara terstruktur, komprehensif, dan berorientasi pada kebutuhan monitoring reputasi serta intelijen kompetitif perbankan.
 
 ${CTX}
 
@@ -1468,64 +1460,25 @@ STRUKTUR LAPORAN
 **Platform:** ${PLATFORM} | **Project:** ${PROJECT_ID} | **Tanggal:** ${START_DATE} s/d ${END_DATE}
 
 ## 1. Ringkasan Analisis
-Sajikan ringkasan isu menonjol hari ini. Jika ada isu kritis, prediksi narasi ke depan, atau perkembangan penting, tampilkan di bagian ini. Berikan konteks singkat mengenai kondisi umum percakapan publik terkait bank.
-
 ## 2. Pergerakan Data
-Statistik volume total pemberitaan dan percakapan: jumlah konten, perbandingan dengan periode sebelumnya (naik/turun), dan tren harian.
-
 ## 3. Breakdown Eksposur per Channel/Platform
-Distribusi jumlah konten berdasarkan platform atau kanal media (media online, Twitter/X, Facebook, Instagram, YouTube, dll).
-
 ## 4. Sentimen Keseluruhan
-Distribusi sentimen dipisahkan antara media online dan media sosial: positif, negatif, dan netral beserta persentasenya.
-
 ## 5. Isu Terpopuler
-Daftar isu yang paling banyak dibicarakan hari ini beserta volume percakapan masing-masing isu.
-
 ## 6. Isu Keluhan
-Identifikasi dan rangkum isu keluhan yang muncul dari nasabah atau publik terkait produk, layanan, atau kebijakan bank.
-
 ## 7. Redaksi dengan Pemberitaan Terbanyak
-Daftar media atau redaksi yang paling banyak mempublikasikan berita tentang bank beserta jumlah artikel masing-masing.
-
 ## 8. Top Person Internal Bank
-Tokoh internal bank (direksi, komisaris, pejabat) yang paling banyak disebut dalam pemberitaan dan percakapan publik.
-
 ## 9. Word Cloud (Kata Kunci Dominan)
-Daftar kata kunci atau frasa yang paling sering muncul dalam konten terkait bank.
-
 ## 10. Top Hashtag
-Hashtag yang paling banyak digunakan dalam percakapan media sosial terkait bank.
-
 ## 11. Financial & Banking Industry
-Isu industri perbankan dan keuangan secara umum yang relevan dengan konteks bank yang dianalisis.
-
 ## 12. Regulasi Pemerintah
-Pemberitaan dan percakapan terkait kebijakan atau regulasi pemerintah yang berdampak pada industri perbankan.
-
 ## 13. Komparasi Bank Digital
-Perbandingan posisi bank dengan bank-bank digital kompetitor dalam hal volume pemberitaan, sentimen, dan isu yang dibicarakan.
-
 ## 14. Komparasi Fintech
-Perbandingan posisi bank dengan perusahaan fintech kompetitor dalam ruang publik digital.
-
 ## 15. Isu CSR Bank
-Pemberitaan dan percakapan terkait program CSR (Corporate Social Responsibility) bank yang dianalisis.
-
 ## 16. Isu CSR Perbankan
-Pemberitaan dan percakapan terkait isu CSR industri perbankan secara umum.
-
 ## 17. Isu ESG Bank
-Pemberitaan dan percakapan terkait isu ESG (Environmental, Social, Governance) bank yang dianalisis.
-
 ## 18. Isu ESG Perbankan
-Pemberitaan dan percakapan terkait isu ESG industri perbankan secara umum.
-
 ## 19. Sampel Postingan Populer
-Tampilkan sampel postingan atau artikel yang paling banyak mendapat engagement atau paling berpengaruh hari ini. Sertakan kutipan singkat, nama akun atau media, tanggal, dan jumlah interaksi.
-
 ## 20. Top Influencer
-Daftar influencer atau akun yang paling berpengaruh dalam percakapan terkait bank beserta jumlah pengikut dan tingkat engagement mereka.
 
 Gunakan gaya bahasa profesional dan ringkas. Sajikan data dalam format tabel atau poin terstruktur di mana memungkinkan untuk memudahkan pembacaan cepat oleh manajemen.`
         },

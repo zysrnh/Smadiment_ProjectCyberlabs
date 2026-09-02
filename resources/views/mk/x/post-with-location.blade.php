@@ -722,36 +722,6 @@
         border: 1px solid var(--border-gray);
     }
 
-    /* Export Button */
-    .export-btn {
-        padding: 10px 20px;
-        background: var(--bg-white);
-        border: 1px solid var(--border-gray);
-        border-radius: 10px;
-        font-family: 'Poppins', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-primary);
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .export-btn:hover {
-        border-color: var(--primary-green);
-        color: var(--primary-green);
-        box-shadow: var(--shadow-md);
-    }
-
-    .export-btn svg {
-        width: 16px;
-        height: 16px;
-        stroke: currentColor;
-        fill: none;
-    }
 
     /* Skeleton Loading */
     .skeleton-line {
@@ -1416,17 +1386,6 @@
         </div>
     </div>
 
-    <!-- Export Button -->
-    <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 24px;">
-        <button class="export-btn" onclick="LocationLoader.exportCSV()">
-            <svg viewBox="0 0 24 24">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            Download CSV
-        </button>
-    </div>
 
     <!-- Table Container -->
     <div class="table-container">
@@ -2197,57 +2156,7 @@ changePage(p) {
     this.renderTable();
     document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
 },
-    exportCSV() {
-        if (!this.allPosts.length) {
-            alert('No data to export');
-            return;
-        }
 
-        const headers = ['Rank', 'Author', 'Content', 'Location', 'Coordinates', 'Sentiment', 'Date', 'Doc ID'];
-        const rows = this.allPosts.map((post, idx) => {
-            let coordsText = '';
-            if (post.coordinates) {
-                try {
-                    const coords = JSON.parse(post.coordinates);
-                    if (coords.length > 0) {
-                        const firstCoord = coords[0];
-                        coordsText = `${firstCoord.lat},${firstCoord.lng}`;
-                    }
-                } catch (e) {
-                    coordsText = '';
-                }
-            }
-
-            return [
-                idx + 1,
-                `"${(post.author_scr_name || 'Unknown').replace(/"/g, '""')}"`,
-                `"${(post.content || '').replace(/"/g, '""')}"`,
-                `"${(post.location || '').replace(/"/g, '""')}"`,
-                coordsText,
-                post.class_sentiment_label === 'pos' ? 'Positive' : 
-                    post.class_sentiment_label === 'neg' ? 'Negative' : 'Neutral',
-                post.date_created || '',
-                post.docid || ''
-            ];
-        });
-
-        const csv = [
-            headers.join(','),
-            ...rows.map(row => row.join(','))
-        ].join('\n');
-
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', `posts_with_location_${this.startDate}_to_${this.endDate}.csv`);
-        link.style.visibility = 'hidden';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    },
 
     formatDate(dateString) {
         if (!dateString) return '';

@@ -110,6 +110,47 @@
           </small>
         </div>
       </div>
+
+      <!-- Subscription & Trial -->
+        <div class="form-group-row">
+          <div class="flex-1">
+            <label for="trial_ends_at" class="form-label">Trial Ends At</label>
+            <input 
+              type="date" 
+              id="trial_ends_at" 
+              name="trial_ends_at" 
+              class="form-input @error('trial_ends_at') is-invalid @enderror" 
+              value="{{ old('trial_ends_at', $user->trial_ends_at ? $user->trial_ends_at->format('Y-m-d') : '') }}"
+            >
+            <div class="quick-select-days mt-2">
+              <button type="button" class="btn-quick-day" onclick="addMonths(1)">+1 Month</button>
+              <button type="button" class="btn-quick-day" onclick="addMonths(2)">+2 Months</button>
+              <button type="button" class="btn-quick-day" onclick="addMonths(3)">+3 Months</button>
+            </div>
+            @error('trial_ends_at')
+            <span class="error-message">{{ $message }}</span>
+            @enderror
+            <small class="form-hint">Date when the user's trial access expires</small>
+          </div>
+          <div class="flex-1">
+            <label for="notice_days" class="form-label">Notice Reminder</label>
+            @php
+              $currentNoticeDays = 7; // Default
+              if($user->trial_ends_at && $user->subscription_notice_at) {
+                  $currentNoticeDays = $user->subscription_notice_at->diffInDays($user->trial_ends_at);
+              }
+            @endphp
+            <select name="notice_days" id="notice_days" class="form-input @error('notice_days') is-invalid @enderror">
+              <option value="7" {{ old('notice_days', $currentNoticeDays) == 7 ? 'selected' : '' }}>1 Week Before (Default)</option>
+              <option value="30" {{ old('notice_days', $currentNoticeDays) == 30 ? 'selected' : '' }}>1 Month Before</option>
+              <option value="1" {{ old('notice_days', $currentNoticeDays) == 1 ? 'selected' : '' }}>1 Day Before</option>
+            </select>
+            @error('notice_days')
+            <span class="error-message">{{ $message }}</span>
+            @enderror
+            <small class="form-hint">When to show expiration warning in user's header</small>
+          </div>
+        </div>
       
       <!-- Project Assignment -->
       <div class="form-group">
@@ -137,7 +178,7 @@
                   </svg>
                 </span>
                 <div>
-                  <div class="project-checkbox-name">{{ $project['name'] ?? $project['title'] ?? 'Unnamed Project' }}</div>
+                  <div class="project-checkbox-name">{{ $project['name'] ?? $project['project_name'] ?? $project['title'] ?? $project['label'] ?? 'Unknown Project' }}</div>
                   <div class="project-checkbox-id">ID: {{ $project['id'] }}</div>
                 </div>
               </div>
@@ -206,6 +247,16 @@
   margin-bottom: 28px;
 }
 
+.form-group-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
 .form-label {
   display: block;
   font-size: 14px;
@@ -230,6 +281,30 @@
   font-weight: 500;
   color: var(--dark-blue);
   transition: all 0.2s;
+}
+
+.quick-select-days {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn-quick-day {
+  padding: 6px 12px;
+  background: #f1f5f9;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-quick-day:hover {
+  background: var(--primary-green);
+  color: #fff;
+  border-color: var(--primary-green);
 }
 
 .form-input:focus {
@@ -579,6 +654,33 @@ function copyGeneratedPassword() {
   setTimeout(() => {
     copyBtn.innerHTML = originalHTML;
   }, 2000);
+}
+
+/**
+ * Add months to the trial_ends_at date
+ */
+function addMonths(numMonths) {
+  const trialEndsInput = document.getElementById('trial_ends_at');
+  let currentDate;
+  
+  if (trialEndsInput.value) {
+    currentDate = new Date(trialEndsInput.value);
+    // If current date is past, start from today
+    if (currentDate < new Date()) {
+      currentDate = new Date();
+    }
+  } else {
+    currentDate = new Date();
+  }
+  
+  currentDate.setMonth(currentDate.getMonth() + numMonths);
+  
+  // Format to YYYY-MM-DD
+  const year = currentDate.getFullYear();
+  const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+  const day = String(currentDate.getDate()).padStart(2, '0');
+  
+  trialEndsInput.value = `${year}-${month}-${day}`;
 }
 
 // Auto-update password preview when username changes

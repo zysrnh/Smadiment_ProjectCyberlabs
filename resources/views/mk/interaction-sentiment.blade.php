@@ -292,15 +292,6 @@
   .intp-sent-tab.pos.active           { color:#2FC6F6; }
   .intp-sent-tab.neu.active           { color:#94a3b8; }
 
-  .intp-export-btn {
-    display:flex; align-items:center; gap:5px; padding:5px 11px;
-    background:var(--primary-green); color:#fff; border:none; border-radius:var(--radius-xs);
-    font-family:var(--font); font-size:10px; font-weight:700;
-    cursor:pointer; transition:var(--transition); white-space:nowrap;
-  }
-  .intp-export-btn:hover { background:var(--primary-green-dark); transform:translateY(-1px); }
-  .intp-export-btn svg { width:11px; height:11px; stroke:#fff; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
-
   .intp-list { overflow-y:auto; flex:1; padding:4px 0; min-height:0; }
   .intp-list::-webkit-scrollbar { width:5px; }
   .intp-list::-webkit-scrollbar-thumb { background:var(--border-gray); border-radius:4px; }
@@ -853,10 +844,6 @@
         <button class="intp-sent-tab pos"    data-s="pos" onclick="INTPopup.filterSent('pos')">Pos</button>
         <button class="intp-sent-tab neu"    data-s="neu" onclick="INTPopup.filterSent('neu')">Neu</button>
       </div>
-      <button class="intp-export-btn" onclick="INTPopup.exportCsv()">
-        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Export CSV
-      </button>
     </div>
   </div>
   <div class="intp-list" id="intPopList"></div>
@@ -1595,25 +1582,6 @@ const INTPopup = {
   close() {
     document.getElementById('intPopup')?.classList.remove('visible');
     INTDetail.close();
-  },
-
-  exportCsv() {
-    const items=this._getFiltered();
-    if (!items.length) { alert('Tidak ada data untuk diekspor.'); return; }
-    const rows=items.map((item,idx)=>{
-      const name=(item.from_name||item.page_name||item.author_nickname||item.channel_name||item.author_name||item.username||item.screen_name||item.publisher||item.source_name||item.name||'').trim();
-      const content=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,500);
-      const sentRaw=String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim();
-      const sent=sentRaw==='1'||sentRaw==='positive'?'Positif':sentRaw==='-1'||sentRaw==='2'||sentRaw==='negative'?'Negatif':'Netral';
-      const esc2=s=>String(s||'').replace(/;/g,',').replace(/\n/g,' ');
-      return `${idx};${esc2(name)};${esc2(sent)};${esc2((item.date_created||item.created_at||'').split('T')[0])};${esc2(item.url||item.link||'')};${esc2(content)}`;
-    });
-    const csv=['index;nama;sentimen;tanggal;url;konten',...rows].join('\r\n');
-    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url; a.download=`interaction_sentiment_${this._curPlat||'all'}_${INTCfg.sd}_${INTCfg.ed}.csv`;
-    a.click(); URL.revokeObjectURL(url);
   },
 
   async _fetch(platform) {

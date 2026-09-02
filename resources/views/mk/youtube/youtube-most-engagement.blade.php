@@ -5,7 +5,7 @@
 @section('styles')
 <style>
 /* ══════════════════════════════════════════════════════
-   DESIGN TOKENS — mirrored from TikTok Most Engagement
+   DESIGN TOKENS
 ══════════════════════════════════════════════════════ */
 :root {
     --primary        : #038047;
@@ -54,6 +54,12 @@
 @keyframes slideOutRight { from{transform:translateX(0);opacity:1}    to{transform:translateX(100%);opacity:0} }
 @keyframes overlayIn  { from{opacity:0} to{opacity:1} }
 @keyframes overlayOut { from{opacity:1} to{opacity:0} }
+@keyframes kpiShimmer { 0%{left:-100%} 100%{left:150%} }
+@keyframes kpiIconBounce {
+    0%,100% { transform:scale(1) rotate(0deg); }
+    30%      { transform:scale(1.25) rotate(-10deg); }
+    60%      { transform:scale(1.1) rotate(6deg); }
+}
 
 /* ══ KPI Icon bg ══ */
 .kpi-icon-bg {
@@ -275,14 +281,6 @@
     text-transform:uppercase; letter-spacing:.5px;
     display:flex; align-items:center; gap:5px;
 }
-.do-panel-export {
-    display:flex; align-items:center; gap:4px; padding:4px 10px;
-    background:var(--primary); color:#fff; border:none;
-    border-radius:var(--radius-sm); font-size:10px; font-weight:700;
-    cursor:pointer; transition:filter .13s;
-}
-.do-panel-export:hover { filter:brightness(1.1); }
-
 .do-panel-list { overflow-y:auto; flex:1; padding:2px 0; min-height:0; }
 .do-panel-list::-webkit-scrollbar { width:4px; }
 .do-panel-list::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
@@ -364,10 +362,8 @@
 .do-dp2-content    { font-size:12px; color:var(--slate-700); line-height:1.7; margin-bottom:12px; background:var(--slate-50); border-radius:var(--radius-sm); padding:10px 12px; border:1px solid var(--slate-200); word-break:break-word; }
 .do-dp2-media      { border-radius:var(--radius-sm); overflow:hidden; margin-bottom:10px; background:#000; }
 .do-dp2-media img  { width:100%; max-height:200px; object-fit:cover; display:block; }
-/* YouTube embed player */
 .do-dp2-yt-embed   { position:relative; width:100%; padding-top:56.25%; border-radius:var(--radius-sm); overflow:hidden; margin-bottom:10px; background:#000; }
 .do-dp2-yt-embed iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:none; }
-/* Thumbnail with play */
 .do-dp2-yt-thumb   { position:relative; width:100%; border-radius:var(--radius-sm); overflow:hidden; margin-bottom:10px; background:#000; cursor:pointer; }
 .do-dp2-yt-thumb img { width:100%; display:block; max-height:180px; object-fit:cover; }
 .do-dp2-yt-thumb-play { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.3); transition:background .2s; }
@@ -408,15 +404,6 @@
 .donut-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 
 /* ══ KPI Card Hover Animations ══ */
-@keyframes kpiIconBounce {
-    0%,100% { transform:scale(1) rotate(0deg); }
-    30%      { transform:scale(1.25) rotate(-10deg); }
-    60%      { transform:scale(1.1) rotate(6deg); }
-}
-@keyframes kpiShimmer {
-    0%   { left:-100%; }
-    100% { left:150%; }
-}
 .kpi-card-hover {
     will-change: transform, box-shadow;
     transition: transform .25s cubic-bezier(.34,1.56,.64,1) !important,
@@ -443,6 +430,74 @@
 .kpi-card-hover:hover .kpi-icon-bg i { animation: kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both !important; display: inline-block !important; }
 .kpi-card-hover:active { transform: translateY(-2px) scale(1.01) !important; transition-duration: .08s !important; }
 
+/* ══ EXPORT STYLES ══ */
+.page-export-bar {
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:10px;
+    background:#fff; border:1px solid var(--slate-200);
+    border-radius:var(--radius); padding:9px 14px;
+    margin-bottom:20px; box-shadow:var(--shadow-sm);
+}
+.page-export-bar-left {
+    display:flex; align-items:center; gap:8px;
+    font-size:12px; font-weight:700; color:var(--slate-600);
+}
+.page-export-bar-left i { font-size:15px; color:var(--primary); }
+.page-export-bar-right { display:flex; gap:8px; }
+
+.page-export-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:32px; height:32px; border-radius:var(--radius-sm);
+    font-size:16px; cursor:pointer;
+    transition:all .15s ease; border:1.5px solid transparent;
+    font-family:inherit; background:transparent; padding:0; line-height:1;
+}
+.page-export-btn-pdf { background:#fff3f3; color:#dc2626; border-color:#fca5a5; }
+.page-export-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.page-export-btn-img { background:var(--primary-lt); color:var(--primary); border-color:rgba(3,128,71,.3); }
+.page-export-btn-img:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.page-export-btn:disabled { opacity:.55; cursor:not-allowed; pointer-events:none; }
+.page-export-btn .export-spinner {
+    width:13px; height:13px; border:2px solid currentColor;
+    border-top-color:transparent; border-radius:50%;
+    animation:spin .65s linear infinite; display:none;
+}
+.page-export-btn.exporting .export-spinner { display:inline-block; }
+.page-export-btn.exporting .export-icon    { display:none; }
+
+.card-exp-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    font-size:14px; cursor:pointer; flex-shrink:0;
+    transition:all .14s ease; border:1px solid transparent;
+    font-family:inherit; background:transparent; padding:0; line-height:1;
+}
+.card-exp-btn-pdf { color:#dc2626; border-color:#fca5a5; background:#fff3f3; }
+.card-exp-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.card-exp-btn-img { color:var(--primary); border-color:rgba(3,128,71,.3); background:var(--primary-lt); }
+.card-exp-btn-img:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.card-exp-btn:disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+.card-exp-btn .export-spinner {
+    width:11px; height:11px; border:2px solid currentColor;
+    border-top-color:transparent; border-radius:50%;
+    animation:spin .65s linear infinite; display:none;
+}
+.card-exp-btn.exporting .export-spinner { display:inline-block; }
+.card-exp-btn.exporting .export-icon    { display:none; }
+
+.export-toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--slate-900); color:#fff; border-radius:var(--radius);
+    padding:10px 18px; font-size:12px; font-weight:600;
+    box-shadow:var(--shadow-lg); z-index:99999;
+    opacity:0; pointer-events:none;
+    transition:opacity .22s ease, transform .22s ease;
+    display:flex; align-items:center; gap:8px; white-space:nowrap;
+}
+.export-toast.show    { opacity:1; transform:translateX(-50%) translateY(0); }
+.export-toast.success { background:#065f46; }
+.export-toast.error   { background:#991b1b; }
+
 @media(max-width:640px) {
     .do-panel { width:100vw; }
     .yme-tabs { flex-wrap:wrap; }
@@ -468,23 +523,20 @@
     const YME_ED  = '{{ $endDate }}';
 </script>
 
-{{-- Filter (reuse same partial as TikTok) --}}
 @include('mk.layouts.partials.filter-datepicker')
+
+<div id="pageExportArea">
 
 {{-- ══ KPI Cards ══ --}}
 <div class="row mb-3">
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 bg-primary text-white kpi-card-hover" style="animation:fadeUp .38s ease-out both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#06B6D4;animation:fadeUp .38s ease-out both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Views</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiViews">
-                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiViewsSub">
-                            <i class="ph ph-chart-line-up me-1"></i>Loading…
-                        </p>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiViews">-</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiViewsSub"><i class="ph ph-chart-line-up me-1"></i>-</p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
                         <div class="kpi-icon-bg"><i class="ph ph-eye"></i></div>
@@ -494,17 +546,13 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 bg-success text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .05s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#F59E0B;animation:fadeUp .38s ease-out .05s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Likes</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes">
-                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub">
-                            <i class="ph ph-chart-line-up me-1"></i>Loading…
-                        </p>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiLikes">-</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiLikesSub"><i class="ph ph-chart-line-up me-1"></i>-</p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
                         <div class="kpi-icon-bg"><i class="ph ph-thumbs-up"></i></div>
@@ -514,17 +562,13 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-4">
-        <div class="card h-100 bg-warning text-white kpi-card-hover" style="animation:fadeUp .38s ease-out .10s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#4CAF50;animation:fadeUp .38s ease-out .10s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Comments</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiCmts">
-                            <span class="sk-block" style="width:80px;height:24px;display:inline-block;"></span>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCmtsSub">
-                            <i class="ph ph-chart-line-up me-1"></i>Loading…
-                        </p>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiCmts">-</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiCmtsSub"><i class="ph ph-chart-line-up me-1"></i>-</p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
                         <div class="kpi-icon-bg"><i class="ph ph-chat-circle"></i></div>
@@ -535,10 +579,32 @@
     </div>
 </div>
 
+{{-- ══ Page Export Toolbar ══ --}}
+<div class="page-export-bar" data-html2canvas-ignore="true">
+    <div class="page-export-bar-left">
+        <i class="ph ph-export"></i>
+        <span>Export Halaman</span>
+        <span class="badge bg-light-secondary text-muted ms-1" style="font-size:10px;">
+            KPI + Charts + Post List
+        </span>
+    </div>
+    <div class="page-export-bar-right">
+        <button type="button" class="page-export-btn page-export-btn-pdf" id="pageExportPdfBtn"
+                onclick="YMEExport.run('pdf', this)" title="Export halaman sebagai PDF">
+            <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+        </button>
+        <button type="button" class="page-export-btn page-export-btn-img" id="pageExportImgBtn"
+                onclick="YMEExport.run('image', this)" title="Export halaman sebagai PNG">
+            <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+        </button>
+    </div>
+</div>
+
 {{-- ══ Donut Distribution Card ══ --}}
 <div class="row">
     <div class="col-12">
         <div class="card" style="animation:fadeUp .38s ease-out .18s both;">
+            <div id="card-export-donut">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
                     <div class="avtar avtar-xs bg-light-primary rounded">
@@ -549,7 +615,21 @@
                         <small class="text-muted">Proporsi engagement per video</small>
                     </div>
                 </div>
-                <div id="donutLegend" class="donut-legend"></div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div id="donutLegend" class="donut-legend"></div>
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf"
+                                onclick="YMEExport.runCard('card-export-donut','donut','pdf',this)"
+                                title="Export PDF">
+                            <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                        <button class="card-exp-btn card-exp-btn-img"
+                                onclick="YMEExport.runCard('card-export-donut','donut','image',this)"
+                                title="Export PNG">
+                            <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <div class="chart-container" style="height:480px;" id="donutWrap">
@@ -562,6 +642,7 @@
                         <i class="ph ph-chart-donut"></i><span>No data</span>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
     </div>
@@ -588,8 +669,8 @@
 @endphp
 <div class="yme-tab-panel {{ $tp === 'view' ? 'active' : '' }}" id="panel-{{ $tp }}">
 
-    {{-- Post List Card --}}
     <div class="card mb-3" style="animation:fadeUp .38s ease-out .2s both;">
+        <div id="card-export-list-{{ $tp }}">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
                 <div class="avtar avtar-xs bg-light-primary rounded">
@@ -607,18 +688,28 @@
                     <option value="50">Top 50</option>
                     <option value="100" selected>Top 100</option>
                 </select>
-                <button class="btn btn-outline-secondary btn-sm" onclick="YMEData.exportCsv('{{ $tp }}')" title="Export CSV">
-                    <i class="ph ph-download-simple me-1"></i>CSV
-                </button>
                 <span class="badge bg-light-primary text-primary" id="badge-{{ $tp }}">Loading…</span>
+                <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                    <button class="card-exp-btn card-exp-btn-pdf"
+                            onclick="YMEExport.runCard('card-export-list-{{ $tp }}','list-{{ $tp }}','pdf',this)"
+                            title="Export PDF">
+                        <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                    <button class="card-exp-btn card-exp-btn-img"
+                            onclick="YMEExport.runCard('card-export-list-{{ $tp }}','list-{{ $tp }}','image',this)"
+                            title="Export PNG">
+                        <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                </div>
             </div>
         </div>
         <div id="list-{{ $tp }}" class="p-0"><div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div></div>
         <div id="pag-{{ $tp }}"></div>
+        </div>
     </div>
 
-    {{-- Bar Chart Card --}}
     <div class="card mb-3" style="animation:fadeUp .38s ease-out .25s both;">
+        <div id="card-export-bar-{{ $tp }}">
         <div class="card-header d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2">
                 <div class="avtar avtar-xs bg-light-primary rounded">
@@ -629,7 +720,21 @@
                     <small class="text-muted">Top 10 video</small>
                 </div>
             </div>
-            <span class="badge bg-light-secondary text-muted">Top 10</span>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-light-secondary text-muted">Top 10</span>
+                <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                    <button class="card-exp-btn card-exp-btn-pdf"
+                            onclick="YMEExport.runCard('card-export-bar-{{ $tp }}','bar-{{ $tp }}','pdf',this)"
+                            title="Export PDF">
+                        <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                    <button class="card-exp-btn card-exp-btn-img"
+                            onclick="YMEExport.runCard('card-export-bar-{{ $tp }}','bar-{{ $tp }}','image',this)"
+                            title="Export PNG">
+                        <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="card-body">
             <div class="chart-container" id="wrap-bar-{{ $tp }}">
@@ -639,11 +744,12 @@
                 <div id="bar-{{ $tp }}" style="width:100%;height:280px;display:none;"></div>
             </div>
         </div>
+        </div>
     </div>
 
-    {{-- Engagement comparison — view tab only --}}
     @if($tp === 'view')
     <div class="card mb-3" style="animation:fadeUp .38s ease-out .30s both;">
+        <div id="card-export-eng">
         <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
                 <div class="avtar avtar-xs bg-light-secondary rounded">
@@ -654,9 +760,23 @@
                     <small class="text-muted">Perbandingan engagement keseluruhan</small>
                 </div>
             </div>
-            <div class="yme-toggle-group" id="engTypeToggle">
-                <button class="yme-toggle-btn active" data-type="stacked" onclick="YMEChart.setEngType('stacked')">Stacked</button>
-                <button class="yme-toggle-btn" data-type="grouped"  onclick="YMEChart.setEngType('grouped')">Grouped</button>
+            <div class="d-flex align-items-center gap-2">
+                <div class="yme-toggle-group" id="engTypeToggle">
+                    <button class="yme-toggle-btn active" data-type="stacked" onclick="YMEChart.setEngType('stacked')">Stacked</button>
+                    <button class="yme-toggle-btn" data-type="grouped"  onclick="YMEChart.setEngType('grouped')">Grouped</button>
+                </div>
+                <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                    <button class="card-exp-btn card-exp-btn-pdf"
+                            onclick="YMEExport.runCard('card-export-eng','eng','pdf',this)"
+                            title="Export PDF">
+                        <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                    <button class="card-exp-btn card-exp-btn-img"
+                            onclick="YMEExport.runCard('card-export-eng','eng','image',this)"
+                            title="Export PNG">
+                        <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                </div>
             </div>
         </div>
         <div class="card-body">
@@ -667,13 +787,21 @@
                 <div id="bar-eng" style="width:100%;height:280px;display:none;"></div>
             </div>
         </div>
+        </div>
     </div>
     @endif
 
 </div>
 @endforeach
 
-{{-- ══ Slide Panel (drawer) ══ --}}
+</div>{{-- /pageExportArea --}}
+
+<div class="export-toast" id="exportToast">
+    <i class="ph ph-check-circle" id="exportToastIcon"></i>
+    <span id="exportToastMsg">Exporting…</span>
+</div>
+
+{{-- ══ Slide Panel ══ --}}
 <div class="do-panel-overlay" id="ymePanelOverlay" onclick="YMEPanel.close()"></div>
 <div class="do-panel" id="ymeSntPanel">
     <div class="do-panel-header">
@@ -686,9 +814,6 @@
             <i class="ph ph-magnifying-glass" style="font-size:11px;"></i>
             <span id="ymePanelMeta">—</span>
         </div>
-        <button class="do-panel-export" onclick="YMEPanel.exportCsv()">
-            <i class="ph ph-download-simple"></i> CSV
-        </button>
     </div>
     <div class="do-panel-list" id="ymePanelList"></div>
 
@@ -705,6 +830,11 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 <script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
 <script>
@@ -716,7 +846,7 @@ const YMECfg = {
     sd     : YME_SD,
     ed     : YME_ED,
     primary: '#038047',
-    colors : { view:'#038047', like:'#10B981', comment:'#F59E0B' },
+    colors : { view:'#EF4444', like:'#1D9BF0', comment:'#10B981' },
     perPage: 10,
 };
 const DONUT_COLORS = ['#038047','#273B4A','#F59E0B','#06B6D4','#EF4444'];
@@ -934,7 +1064,6 @@ const YMEData = {
         const v=parseInt(item.num_views||item.view_cnt||item.views||item.freq||0);
         const l=parseInt(item.num_likes||item.likes||0);
         const c=parseInt(item.num_comments||item.comments||0);
-        const sentLbl={pos:'Positive',neg:'Negative',neu:'Neutral'}[sent];
         const enc=encodeURIComponent(JSON.stringify(item));
         const vCls=type==='view'?' yme-metric--primary':'';
         const lCls=type==='like'?' yme-metric--primary':'';
@@ -954,8 +1083,6 @@ const YMEData = {
                     <span class="yme-metric${vCls}"><i class="ph ph-eye me-1"></i>${numF(v)}</span>
                     <span class="yme-metric${lCls}"><i class="ph ph-thumbs-up me-1"></i>${numF(l)}</span>
                     <span class="yme-metric${cCls}"><i class="ph ph-chat-circle me-1"></i>${numF(c)}</span>
-                    <span class="yme-sent yme-sent--${sent}">${sentLbl}</span>
-                    ${finalUrl?`<a href="${esc(finalUrl)}" target="_blank" rel="noopener" class="yme-view-link" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out me-1"></i>Lihat</a>`:''}
                 </div>
             </div>
             ${thumbHtml}
@@ -970,7 +1097,10 @@ const YMEData = {
         const values=items.map(it=>this._metric(it,type));
         const opts={
             chart:{ type:'bar', height:280, fontFamily:'inherit', background:'transparent', toolbar:{show:false}, zoom:{enabled:false},
-                events:{ mounted:()=>hideLd('loading-bar-'+type), click:(_,ctx,cfg)=>{ const item=items[cfg.dataPointIndex]; if(item){ YMEPanel.open(Store[type],type,'YouTube'); YMEDetail.open(item,type); } } }
+                events:{
+                    mounted:()=>hideLd('loading-bar-'+type),
+                    click:(_,ctx,cfg)=>{ const item=items[cfg.dataPointIndex]; if(item){ YMEPanel.open(Store[type],type,'YouTube'); YMEDetail.open(item,type); } }
+                }
             },
             series:[{ name:{view:'Views',like:'Likes',comment:'Comments'}[type], data:values }],
             colors:[color],
@@ -994,7 +1124,6 @@ const YMEData = {
         const total=top5.reduce((s,it)=>s+this._metric(it,type),0);
         const metLbl={view:'Views',like:'Likes',comment:'Comments'}[type];
 
-        /* Legend chips */
         const legEl=_$('donutLegend');
         if(legEl) legEl.innerHTML=top5.map((it,i)=>{
             const n=this._getName(it), sn=n.length>22?n.slice(0,21)+'…':n;
@@ -1012,20 +1141,10 @@ const YMEData = {
         window.__ymeDonutChart=chart;
         window.addEventListener('resize',()=>{ try{ chart.resize(); }catch(e){} });
 
-        const pieData=top5.map((it,i)=>{
-            const name=this._getName(it);
-            const val=this._metric(it,type);
-            const content=dec((it.content||it.caption||it.title||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim());
-            const words=content?content.slice(0,120).split(' '):[];
-            const lines=[]; let cur='';
-            words.forEach(w=>{ if((cur+' '+w).trim().length>42){ lines.push(cur.trim()); cur=w; } else{ cur=(cur+' '+w).trim(); } });
-            if(cur) lines.push(cur);
-            return {
-                name, value:val, _content:content,
-                itemStyle:{ color:DONUT_COLORS[i] },
-                label:{ formatter:()=>`${name}\n${lines.join('\n')?lines.join('\n')+'\n':''}`+`(${numF(val)} ${metLbl})` }
-            };
-        });
+        const pieData=top5.map((it,i)=>({
+            name: this._getName(it), value: this._metric(it,type),
+            itemStyle:{ color:DONUT_COLORS[i] },
+        }));
 
         const option={
             backgroundColor:'transparent', animation:true, animationDuration:1000, animationEasing:'cubicOut', animationDelay:idx=>idx*80,
@@ -1118,25 +1237,6 @@ const YMEData = {
         if(!items.length) return;
         const top10=[...items].map(it=>({...it,_total:parseInt(it.num_views||it.view_cnt||it.views||it.freq||0)+parseInt(it.num_likes||it.likes||0)+parseInt(it.num_comments||it.comments||0)})).sort((a,b)=>b._total-a._total).slice(0,10);
         YMEChart._items=top10; YMEChart._render(top10,YMEChart._type);
-    },
-
-    exportCsv(type){
-        const items=Store[type]; if(!items?.length){ alert('Tidak ada data.'); return; }
-        const hdr='index;nama;sentiment;views;likes;comments;tanggal;url;judul;konten';
-        const rows=items.map((it,i)=>{
-            const name=this._getName(it), sent=this._normSent(it);
-            const sentLbl={pos:'Positif',neg:'Negatif',neu:'Netral'}[sent];
-            const v=parseInt(it.num_views||it.view_cnt||it.views||it.freq||0);
-            const l=parseInt(it.num_likes||it.likes||0), c=parseInt(it.num_comments||it.comments||0);
-            const vidId=ytVideoIdFromItem(it);
-            const url=it.url||it.link||(vidId?`https://www.youtube.com/watch?v=${vidId}`:'');
-            const title=(it.title||'').replace(/;/g,',').replace(/\n/g,' ');
-            const content=(it.content||it.caption||'').replace(/<[^>]*>/g,'').trim().slice(0,300).replace(/;/g,',').replace(/\n/g,' ');
-            return `${i};${name.replace(/;/g,',')};${sentLbl};${v};${l};${c};${(it.date_created||'').split('T')[0]};${url};${title};${content}`;
-        });
-        const blob=new Blob(['\uFEFF'+[hdr,...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});
-        const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`YouTube_Most${type.charAt(0).toUpperCase()+type.slice(1)}_${YMECfg.sd}_${YMECfg.ed}.csv`});
-        a.click();
     }
 };
 
@@ -1195,11 +1295,9 @@ const YMEPanel = {
         pn.classList.add('hiding'); ov.classList.add('hiding');
         setTimeout(()=>{ pn.classList.remove('show','hiding'); ov.classList.remove('show','hiding'); },240);
     },
-    exportCsv(){ YMEData.exportCsv(this._type||'view'); },
     _render(items,type){
         const list=_$('ymePanelList'); if(!list) return;
         if(!items?.length){ list.innerHTML='<div class="do-panel-loading"><div class="do-panel-spinner"></div>Tidak ada data</div>'; return; }
-        const color=YMECfg.colors[type]||YMECfg.primary;
         const metLbl={view:'Views',like:'Likes',comment:'Komentar'}[type];
         list.innerHTML=items.slice(0,100).map(item=>{
             const name=YMEData._getName(item), av=YMEData._getAvatar(item);
@@ -1238,7 +1336,6 @@ const YMEPanel = {
 /* ══ DETAIL SUB-PANEL ══ */
 const YMEDetail = {
     open(item,type){
-        /* Kill any playing iframe first before re-rendering body */
         this._killIframe();
         const panel=_$('ymeDetailPanel'), body=_$('ymeDetailBody'), title=_$('ymeDetailTitle');
         if(!panel||!body) return;
@@ -1266,17 +1363,11 @@ const YMEDetail = {
         const sentLbl={pos:'Positif',neg:'Negatif',neu:'Netral'}[sent];
         let dtFmt=''; if(dt){ try{ dtFmt=new Date(dt).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ dtFmt=dt.split('T')[0]; } }
 
-        /* Thumbnail with play button */
         let mediaHtml='';
         if(vidId){
-            mediaHtml=`<div class="do-dp2-yt-thumb" id="ymeThumbWrap" onclick="YMEDetail._loadEmbed('${vidId}')">
-                <img src="${thumb}" onerror="this.src='https://img.youtube.com/vi/${vidId}/hqdefault.jpg'" alt="thumbnail">
-                <div class="do-dp2-yt-thumb-play">
-                    <svg viewBox="0 0 68 48" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M66.52 7.74C65.68 4.6 63.2 2.12 60.06 1.28 54.8 0 34 0 34 0S13.2 0 7.94 1.27C4.8 2.12 2.32 4.6 1.48 7.74 0 13 0 24 0 24s0 11 1.48 16.26c.84 3.14 3.32 5.62 6.46 6.46C13.2 48 34 48 34 48s20.8 0 26.06-1.27c3.14-.84 5.62-3.32 6.46-6.46C68 35 68 24 68 24s0-11-1.48-16.26z" fill="#ff0000"/>
-                        <path d="M27 34l18-10-18-10v20z" fill="#fff"/>
-                    </svg>
-                </div>
+            mediaHtml=`<div class="do-dp2-yt-thumb" id="ymeThumbWrap" onclick="YMEDetail._loadEmbed('${vidId}')" style="cursor:pointer;position:relative;background:#000;aspect-ratio:16/9;border-radius:var(--radius);overflow:hidden;">
+                <img src="${esc(thumb)}" style="width:100%;height:100%;object-fit:cover;opacity:0.6;" onerror="this.src='https://img.youtube.com/vi/${vidId}/hqdefault.jpg'" alt="thumbnail">
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><i class="ph ph-youtube-logo" style="font-size:48px;color:#ff0000;filter:drop-shadow(0 0 10px rgba(0,0,0,.5));"></i></div>
             </div>`;
         } else if(thumb){
             mediaHtml=`<div class="do-dp2-media"><img src="${esc(thumb)}" onerror="this.parentElement.style.display='none'"></div>`;
@@ -1313,14 +1404,8 @@ const YMEDetail = {
         wrap.replaceWith(div);
     },
     _killIframe(){
-        /* Stop audio: blank out src before removing iframe */
         const body=_$('ymeDetailBody');
-        if(body){
-            body.querySelectorAll('iframe').forEach(f=>{
-                f.src='';
-                f.remove();
-            });
-        }
+        if(body){ body.querySelectorAll('iframe').forEach(f=>{ f.src=''; f.remove(); }); }
     },
     close(){
         this._killIframe();
@@ -1328,10 +1413,438 @@ const YMEDetail = {
     }
 };
 
+/* ══════════════════════════════════════════════════════
+   EXPORT MODULE v3 — fix Chrome + Safari
+   Perubahan utama vs versi lama:
+   1. _swapChartsIn/Out: swap ECharts canvas → <img> di DOM asli (lebih reliable dari onClone)
+   2. _snapshotApex: snapshot semua ApexCharts via dataURI() sebelum capture
+   3. Safari fallback: salin DOM canvas langsung jika getDataURL gagal
+   4. Tidak pakai _freeze global (ApexCharts butuh render selesai dulu)
+   5. _onClone: cleanup panel, avatar, iframe saja (chart sudah dihandle swap)
+══════════════════════════════════════════════════════ */
+const YMEExport = (() => {
+    'use strict';
+    let _toastTimer = null;
+ 
+    /* ── Toast ── */
+    function _toast(msg, type = 'default', duration = 3200) {
+        const t   = _$('exportToast'),
+              m   = _$('exportToastMsg'),
+              ico = _$('exportToastIcon');
+        if (!t || !m) return;
+        m.textContent = msg;
+        t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
+        ico.className = 'ph ' + ({ success:'ph-check-circle', error:'ph-x-circle', default:'ph-spinner' }[type] || 'ph-spinner');
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+    }
+ 
+    /* ── Button state ── */
+    function _btnState(btn, on) {
+        if (!btn) return;
+        btn.disabled = on;
+        btn.classList.toggle('exporting', on);
+    }
+ 
+    /* ══════════════════════════════════════════════════════
+       ★ _swapChartsIn
+         — ApexCharts: dataURI() → <img> swap
+         — ECharts (donut): SVG serializer → blob → canvas → dataURL
+           (sama persis pola IGExport — bukan canvas DOM fallback)
+    ══════════════════════════════════════════════════════ */
+    async function _swapChartsIn(el) {
+        const swaps = [];
+ 
+        /* ── ApexCharts (bar-view, bar-like, bar-comment, bar-eng) ── */
+        for (const id of Object.keys(Charts)) {
+            const container = _$(id);
+            if (!container || !el.contains(container) || container.style.display === 'none') continue;
+            const chart = Charts[id];
+            if (!chart) continue;
+            try {
+                const { imgURI } = await chart.dataURI();
+                if (!imgURI) continue;
+                const h = Math.round(container.getBoundingClientRect().height) || container.offsetHeight || 280;
+                const placeholder = document.createElement('div');
+                placeholder.dataset.swapFor = id;
+                placeholder.style.display = 'none';
+                const img = document.createElement('img');
+                img.src = imgURI;
+                img.style.cssText = `width:100%;height:${h}px;object-fit:contain;display:block;background:#fff;`;
+                container.parentNode.insertBefore(placeholder, container);
+                container.parentNode.insertBefore(img, placeholder);
+                container.style.display = 'none';
+                swaps.push({ container, placeholder, img });
+            } catch(e) { console.warn('[YMEExport] ApexCharts swap failed:', id, e); }
+        }
+ 
+        /* ── ECharts donut (SVG renderer) ── */
+        const donutContainer = _$('donutChart');
+        if (donutContainer && el.contains(donutContainer) && donutContainer.style.display !== 'none') {
+            const svgEl = donutContainer.querySelector('svg');
+            if (svgEl) {
+                try {
+                    const rect  = donutContainer.getBoundingClientRect();
+                    const w     = Math.round(rect.width)  || donutContainer.offsetWidth  || 800;
+                    const h     = Math.round(rect.height) || donutContainer.offsetHeight || 480;
+                    const svgStr  = new XMLSerializer().serializeToString(svgEl);
+                    const blob    = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+                    const blobUrl = URL.createObjectURL(blob);
+                    const dataUrl = await new Promise(resolve => {
+                        const image  = new Image();
+                        const canvas = document.createElement('canvas');
+                        canvas.width  = w * 2;
+                        canvas.height = h * 2;
+                        const ctx = canvas.getContext('2d');
+                        image.onload = () => {
+                            ctx.scale(2, 2);
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(0, 0, w, h);
+                            ctx.drawImage(image, 0, 0, w, h);
+                            URL.revokeObjectURL(blobUrl);
+                            resolve(canvas.toDataURL('image/png'));
+                        };
+                        image.onerror = () => { URL.revokeObjectURL(blobUrl); resolve(null); };
+                        setTimeout(() => resolve(null), 4000);
+                        image.src = blobUrl;
+                    });
+                    if (dataUrl) {
+                        const placeholder = document.createElement('div');
+                        placeholder.dataset.swapFor = 'donutChart';
+                        placeholder.style.display = 'none';
+                        const img = document.createElement('img');
+                        img.src = dataUrl;
+                        img.style.cssText = `width:100%;height:${h}px;object-fit:contain;display:block;background:#fff;`;
+                        donutContainer.parentNode.insertBefore(placeholder, donutContainer);
+                        donutContainer.parentNode.insertBefore(img, placeholder);
+                        donutContainer.style.display = 'none';
+                        swaps.push({ container: donutContainer, placeholder, img });
+                    }
+                } catch(e) { console.warn('[YMEExport] ECharts donut swap failed:', e); }
+            }
+        }
+ 
+        return swaps;
+    }
+ 
+    /* ── Restore semua swap ── */
+    function _swapChartsOut(swaps) {
+        swaps.forEach(({ container, placeholder, img }) => {
+            try { img.remove(); }         catch(e) {}
+            try { placeholder.remove(); } catch(e) {}
+            container.style.display = 'block';
+        });
+    }
+ 
+    /* ══════════════════════════════════════════════════════
+       ★ _onClone — cleanup sebelum html2canvas render
+    ══════════════════════════════════════════════════════ */
+    function _onClone(clonedDoc) {
+        /* Sembunyikan panel, tooltip, spinner, toolbar */
+        clonedDoc.querySelectorAll(
+            '.do-panel-overlay,.do-panel,.do-detail-panel,' +
+            '#ymeDonutCustomTT,#ymePanelOverlay,#ymeSntPanel,' +
+            '.spin-ring,.spinner-state,.export-toast,.chart-loading,' +
+            '[data-html2canvas-ignore]'
+        ).forEach(el => {
+            el.style.cssText += 'display:none!important;visibility:hidden!important;';
+        });
+ 
+        /* Sembunyikan tab panel tidak aktif */
+        clonedDoc.querySelectorAll('.yme-tab-panel:not(.active)').forEach(el => {
+            el.style.cssText += 'display:none!important;height:0!important;overflow:hidden!important;';
+        });
+ 
+        /* Sembunyikan iframe YouTube */
+        clonedDoc.querySelectorAll('.do-dp2-yt-embed,.do-dp2-yt-embed iframe,.do-dp2-yt-thumb').forEach(el => {
+            el.style.cssText += 'display:none!important;';
+        });
+ 
+        /* Ganti avatar cross-origin dengan placeholder */
+        clonedDoc.querySelectorAll('.yme-post-av,.do-panel-avatar,.do-dp2-avatar-lg').forEach(wrapper => {
+            wrapper.querySelectorAll('img').forEach(img => { img.style.display = 'none'; });
+        });
+ 
+        /* Sembunyikan thumbnail cross-origin */
+        clonedDoc.querySelectorAll('.yme-post-thumb img').forEach(img => { img.style.display = 'none'; });
+        clonedDoc.querySelectorAll('.yme-post-thumb-play').forEach(el => { el.style.display = 'none'; });
+ 
+        /* Stop animasi */
+        clonedDoc.querySelectorAll('*').forEach(el => {
+            el.style.animationPlayState = 'paused';
+            el.style.animation  = 'none';
+            el.style.transition = 'none';
+        });
+ 
+        /* Paksa elemen terlihat */
+        clonedDoc.querySelectorAll(
+            '.card,.card-body,.card-header,.row,[class*="col-"],' +
+            '.yme-tab-panel.active,.yme-post-list,.yme-post,#pageExportArea'
+        ).forEach(el => {
+            el.style.opacity    = '1';
+            el.style.transform  = 'none';
+            el.style.visibility = 'visible';
+        });
+    }
+ 
+    /* ══════════════════════════════════════════════════════
+       ★ _doCapture — swap charts → capture → restore
+    ══════════════════════════════════════════════════════ */
+    async function _doCapture(el, isCard) {
+        /* Paksa elemen visible */
+        el.querySelectorAll('.kpi-card-hover,.yme-post,.card,[class*="col-"]')
+          .forEach(e => { e.style.opacity='1'; e.style.transform='none'; e.style.visibility='visible'; });
+ 
+        /* Swap charts ke <img> */
+        const swaps = await _swapChartsIn(el);
+ 
+        /* Beri browser waktu composite */
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, 250));
+ 
+        let canvas;
+        try {
+            canvas = await html2canvas(el, {
+                scale          : isCard ? 2 : 1.5,
+                useCORS        : true,
+                allowTaint     : false,          /* Safari-safe */
+                backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
+                logging        : false,
+                removeContainer: true,
+                imageTimeout   : 8000,           /* tidak hang di Safari */
+                scrollX        : 0,
+                scrollY        : -window.scrollY,
+                width          : el.offsetWidth,
+                height         : el.scrollHeight,
+                onclone        : d => _onClone(d),
+                /* Skip semua <img> yang bukan data URI — cegah cross-origin block */
+                ignoreElements : e =>
+                    e.hasAttribute('data-html2canvas-ignore') ||
+                    (e.tagName === 'IMG' && e.src && !e.src.startsWith('data:')),
+            });
+        } finally {
+            /* Restore selalu, meski error */
+            _swapChartsOut(swaps);
+        }
+        return canvas;
+    }
+ 
+    /* ── PDF helpers ── */
+    function _drawHeader(pdf, pW, pH, label, page, total) {
+        pdf.setFillColor(3, 128, 71); pdf.rect(0, 0, pW, 11, 'F');
+        pdf.setTextColor(255, 255, 255); pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
+        pdf.text('SMADIMENT — ' + (label || 'YouTube Most Engagement'), 10, 7.5);
+        const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+        pdf.text('Generated: ' + now, pW - 10, 7.5, { align: 'right' });
+        pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+        pdf.text(`Halaman ${page} / ${total}`, pW / 2, pH - 3, { align: 'center' });
+    }
+ 
+    function _fitCanvas(pdf, canvas, margin, pW, pH) {
+        const uw = pW - margin * 2, uh = pH - 14 - 10;
+        const r  = Math.min(uw / canvas.width, uh / canvas.height);
+        pdf.addImage(
+            canvas.toDataURL('image/png'), 'PNG',
+            margin + (uw - canvas.width  * r) / 2,
+            14     + (uh - canvas.height * r) / 2,
+            canvas.width * r, canvas.height * r
+        );
+    }
+ 
+    function _sliceCanvas(pdf, canvas, margin, pW, pH, labelFn) {
+        const uw = pW - margin * 2, uh = pH - 14 - 10;
+        const ratio  = uw / canvas.width;
+        const sliceH = uh / ratio;
+        const total  = Math.max(1, Math.ceil((canvas.height * ratio) / uh));
+        let srcY = 0, pg = 1;
+        while (srcY < canvas.height) {
+            if (pg > 1) pdf.addPage();
+            _drawHeader(pdf, pW, pH, labelFn(), pg, total);
+            const srcSlice = Math.min(sliceH, canvas.height - srcY);
+            const slice    = document.createElement('canvas');
+            slice.width    = canvas.width;
+            slice.height   = Math.ceil(srcSlice);
+            slice.getContext('2d').drawImage(
+                canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice
+            );
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, 14, uw, srcSlice * ratio);
+            srcY += srcSlice; pg++;
+        }
+    }
+ 
+    function _stamp() { return new Date().toISOString().slice(0, 10).replace(/-/g, ''); }
+ 
+    /* ════════════════════════════════════════════
+       run — Export seluruh halaman (3 tab)
+    ════════════════════════════════════════════ */
+    async function run(type, btn) {
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error');       return; }
+ 
+        const btnPdf = _$('pageExportPdfBtn'), btnImg = _$('pageExportImgBtn');
+        _btnState(btnPdf, true); _btnState(btnImg, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF semua tab…' : 'Mengambil gambar…', 'default', 99999);
+ 
+        const originalTab = ['view','like','comment'].find(t => _$('tab-'+t)?.classList.contains('active')) || 'view';
+        const area  = _$('pageExportArea');
+        const stamp = _stamp();
+ 
+        try {
+            if (type === 'image') {
+                window.scrollTo({ top: 0 });
+                await new Promise(r => setTimeout(r, 200));
+                const canvas = await _doCapture(area, false);
+                const link   = document.createElement('a');
+                link.download = `youtube_engagement_${YME_PID}_${stamp}.png`;
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+                return;
+            }
+ 
+            /* PDF: capture semua 3 tab */
+            const TAB_ORDER = [
+                { key:'view',    label:'Most Viewed'   },
+                { key:'like',    label:'Most Liked'    },
+                { key:'comment', label:'Most Comments' },
+            ];
+ 
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+            const pW  = pdf.internal.pageSize.getWidth();
+            const pH  = pdf.internal.pageSize.getHeight();
+            const M   = 10;
+            const uw  = pW - M * 2;
+            const uh  = pH - 14 - 10;
+ 
+            /* Hitung total halaman dulu */
+            let firstPage = true;
+ 
+            for (let i = 0; i < TAB_ORDER.length; i++) {
+                const { key, label } = TAB_ORDER[i];
+                _toast(`Mengambil tab ${i+1}/3: ${label}…`, 'default', 99999);
+                YMETab.show(key);
+                /* Tunggu data & chart render */
+                await new Promise(r => setTimeout(r, 1200));
+                window.scrollTo({ top: 0 });
+                await new Promise(r => setTimeout(r, 150));
+ 
+                const canvas = await _doCapture(area, false);
+                const ratio  = uw / canvas.width;
+                const sliceH = uh / ratio;
+                const pages  = Math.max(1, Math.ceil((canvas.height * ratio) / uh));
+                let srcY = 0, pg = 1;
+ 
+                while (srcY < canvas.height) {
+                    if (!firstPage) pdf.addPage();
+                    firstPage = false;
+                    _drawHeader(pdf, pW, pH, `YouTube Most Engagement — ${label}`, pg, pages);
+                    const srcSlice = Math.min(sliceH, canvas.height - srcY);
+                    const slice    = document.createElement('canvas');
+                    slice.width    = canvas.width;
+                    slice.height   = Math.ceil(srcSlice);
+                    slice.getContext('2d').drawImage(
+                        canvas, 0, srcY, canvas.width, srcSlice, 0, 0, canvas.width, srcSlice
+                    );
+                    pdf.addImage(slice.toDataURL('image/png'), 'PNG', M, 14, uw, srcSlice * ratio);
+                    srcY += srcSlice; pg++;
+                }
+            }
+ 
+            pdf.save(`youtube_engagement_${YME_PID}_${stamp}.pdf`);
+            _toast('PDF berhasil diunduh!', 'success');
+ 
+        } catch(err) {
+            console.error('[YMEExport.run]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            YMETab.show(originalTab);
+            _btnState(btnPdf, false); _btnState(btnImg, false);
+        }
+    }
+ 
+    /* ════════════════════════════════════════════
+       runCard — Export per-card
+    ════════════════════════════════════════════ */
+    const _cardLabels = {
+        'donut'        : 'Distribusi Views — Top 5',
+        'eng'          : 'Engagement Comparison',
+        'list-view'    : 'Top Videos by Views',
+        'list-like'    : 'Top Videos by Likes',
+        'list-comment' : 'Top Videos by Comments',
+        'bar-view'     : 'Chart Most Viewed',
+        'bar-like'     : 'Chart Most Liked',
+        'bar-comment'  : 'Chart Most Comments',
+    };
+ 
+    function _cardFilename(k) {
+        const map = {
+            'donut'        : 'distribusi-views-top5',
+            'eng'          : 'engagement-comparison',
+            'list-view'    : 'top-videos-by-view',
+            'list-like'    : 'top-videos-by-like',
+            'list-comment' : 'top-videos-by-comment',
+            'bar-view'     : 'chart-most-viewed',
+            'bar-like'     : 'chart-most-liked',
+            'bar-comment'  : 'chart-most-comments',
+        };
+        return `youtube_engagement_${map[k]||k}_${YME_PID}_${_stamp()}`;
+    }
+ 
+    async function runCard(areaId, cardKey, type, btn) {
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error');       return; }
+ 
+        _btnState(btn, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+ 
+        try {
+            const area = document.getElementById(areaId);
+            if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+ 
+            const canvas = await _doCapture(area, true);
+            const fname  = _cardFilename(cardKey);
+            const label  = _cardLabels[cardKey] || cardKey;
+ 
+            if (type === 'image') {
+                const link    = document.createElement('a');
+                link.download = fname + '.png';
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const landscape = canvas.width > canvas.height * 1.2;
+                const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit:'mm', format:'a4' });
+                const pW  = pdf.internal.pageSize.getWidth();
+                const pH  = pdf.internal.pageSize.getHeight();
+                const M   = 10;
+                const uw  = pW - M * 2;
+                const uh  = pH - 14 - 10;
+ 
+                if ((canvas.height * (uw / canvas.width)) <= uh) {
+                    _drawHeader(pdf, pW, pH, label, 1, 1);
+                    _fitCanvas(pdf, canvas, M, pW, pH);
+                } else {
+                    _sliceCanvas(pdf, canvas, M, pW, pH, () => label);
+                }
+                pdf.save(fname + '.pdf');
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch(err) {
+            console.error('[YMEExport.runCard]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally { _btnState(btn, false); }
+    }
+ 
+    return { run, runCard };
+})();
+ 
 /* ══ INIT ══ */
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', () => {
     YMEData.loadAll();
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape') YMEPanel.close(); });
+    document.addEventListener('keydown', e => { if(e.key==='Escape') YMEPanel.close(); });
 });
 </script>
 @endsection

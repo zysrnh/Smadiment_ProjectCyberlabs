@@ -99,7 +99,7 @@ async function preloadProjectData() {
         const res  = await fetch(`${ROUTES.aiAnalysisData}?${qs}`);
         const json = await res.json();
         if (!json.success) throw new Error(json.error);
-        cachedDataset = json.data.dataset;
+cachedDataset = json.data.text_dataset ?? json.data.dataset;
         dataReady     = true;
         const s   = json.data.summary;
         const pos = s.sentiment?.positive ?? 0;

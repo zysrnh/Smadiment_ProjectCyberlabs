@@ -5,7 +5,7 @@
 @section('styles')
 <style>
 /* ══════════════════════════════════════════════════════
-   DESIGN TOKENS — identical to TikTok Most Engagement
+   DESIGN TOKENS
 ══════════════════════════════════════════════════════ */
 :root {
     --primary        : #038047;
@@ -14,7 +14,6 @@
     --dark           : #273B4A;
     --white          : #FFFFFF;
     --bg             : #F1F5F8;
-
     --green          : #038047;
     --green-light    : #E8F5EE;
     --red            : #EF4444;
@@ -23,7 +22,6 @@
     --amber-light    : #FFFBEB;
     --cyan           : #06B6D4;
     --cyan-light     : #ECFEFF;
-
     --slate-50       : #F8FAFC;
     --slate-100      : #F1F5F9;
     --slate-200      : #E2E8F0;
@@ -34,7 +32,6 @@
     --slate-700      : #334155;
     --slate-800      : #1E293B;
     --slate-900      : #0F172A;
-
     --radius         : 8px;
     --radius-sm      : 5px;
     --shadow-sm      : 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
@@ -42,7 +39,7 @@
     --shadow-lg      : 0 10px 30px rgba(15,23,42,.12);
 }
 
-/* ══ Animations — identical to TME ══ */
+/* ══ Animations ══ */
 @keyframes fadeUp        { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 @keyframes shimmer       { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
 @keyframes spin          { to{transform:rotate(360deg)} }
@@ -72,11 +69,11 @@
     padding:56px 20px; gap:12px; color:var(--slate-400); font-size:12px; font-weight:600;
 }
 
-/* ══ KPI Cards — identical to TME ══ */
+/* ══ KPI Cards ══ */
 .kpi-icon-bg {
-    width:48px; height:48px; border-radius:12px;
+    width:52px; height:52px; border-radius:12px;
     display:flex; align-items:center; justify-content:center;
-    background:rgba(255,255,255,.2); font-size:24px; color:#fff; flex-shrink:0;
+    background:rgba(255,255,255,.35); font-size:32px; color:#fff; flex-shrink:0;
 }
 .kpi-card-hover {
     will-change:transform,box-shadow;
@@ -95,7 +92,7 @@
 .kpi-card-hover:hover .kpi-icon-bg i { animation:kpiIconBounce .5s cubic-bezier(.34,1.56,.64,1) both !important; display:inline-block !important; }
 .kpi-card-hover:active { transform:translateY(-2px) scale(1.01) !important; transition-duration:.08s !important; }
 
-/* ══ Tabs — identical to TME ══ */
+/* ══ Tabs ══ */
 .ntm-tabs {
     display:flex; gap:2px;
     background:var(--slate-100); border:1px solid var(--slate-200);
@@ -109,14 +106,11 @@
     cursor:pointer; transition:background .13s, color .13s; white-space:nowrap;
 }
 .ntm-tab-btn:hover { background:#fff; color:var(--slate-800); }
-.ntm-tab-btn.active {
-    background:#fff; color:var(--primary);
-    box-shadow:0 1px 4px rgba(0,0,0,.08);
-}
+.ntm-tab-btn.active { background:#fff; color:var(--primary); box-shadow:0 1px 4px rgba(0,0,0,.08); }
 .ntm-tab-panel { display:none; }
 .ntm-tab-panel.active { display:block; }
 
-/* ══ Toggle group — identical to TME ══ */
+/* ══ Toggle group ══ */
 .ntm-toggle-group {
     display:flex; background:var(--slate-50); border-radius:var(--radius-sm);
     padding:2px; gap:2px; border:1px solid var(--slate-200);
@@ -141,7 +135,7 @@
 .ntm-rlbtn svg { width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5; }
 .ntm-rlbtn.spin svg { animation:spin .7s linear infinite; }
 
-/* ══ Headline toggle — styled like TME toggle ══ */
+/* ══ Headline toggle ══ */
 .ntm-hl-tog {
     display:inline-flex; align-items:center; gap:5px;
     padding:4px 10px; border:1px solid var(--slate-200); border-radius:3px;
@@ -153,7 +147,6 @@
 
 /* ══ Treemap ══ */
 #ntmTreemap { position:relative; width:100%; overflow:hidden; }
-
 .ntm-tile {
     position:absolute; overflow:hidden; cursor:pointer;
     box-sizing:border-box; transition:filter .15s, transform .15s;
@@ -171,7 +164,7 @@
     overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; color:#fff;
 }
 
-/* Dark palette — mirrors Drone Emprit red-family + TME dark */
+/* Dark palette */
 .c0 {background:#7f1d1d} .c1 {background:#273B4A} .c2 {background:#92400e}
 .c3 {background:#064e3b} .c4 {background:#1e3a5f} .c5 {background:#5b21b6}
 .c6 {background:#9d174d} .c7 {background:#1e40af} .c8 {background:#374151}
@@ -218,24 +211,22 @@
 .ntm-empty-state h4  { font-size:14px; font-weight:700; color:var(--slate-500); margin:0; }
 .ntm-empty-state p   { font-size:12px; color:var(--slate-400); margin:0; text-align:center; }
 
-/* ══ SLIDE PANEL — identical to TME ══ */
+/* ══ Slide Panel ══ */
 .do-panel-overlay {
     position:fixed; inset:0; z-index:9000;
     background:rgba(15,23,42,.45); backdrop-filter:blur(4px); display:none;
 }
 .do-panel-overlay.show   { display:block; animation:overlayIn .22s ease-out; }
 .do-panel-overlay.hiding { animation:overlayOut .22s ease-out forwards; }
-
 .do-panel {
     position:fixed; top:0; right:0; bottom:0; z-index:9001;
-    width:560px; max-width:100vw; background:#fff;
+    width:850px; max-width:100vw; background:#fff;
     display:none; flex-direction:column;
     border-left:1px solid var(--slate-200);
-    box-shadow:-8px 0 40px rgba(15,23,42,.16);
+    box-shadow:-12px 0 50px rgba(15,23,42,.2);
 }
 .do-panel.show   { display:flex; animation:slideInRight .28s cubic-bezier(.4,0,.2,1); }
 .do-panel.hiding { animation:slideOutRight .24s cubic-bezier(.4,0,.2,1) forwards; }
-
 .do-panel-header {
     display:flex; align-items:center; gap:10px;
     padding:14px 16px; border-bottom:1px solid var(--slate-200);
@@ -250,7 +241,6 @@
     color:var(--slate-500); font-size:16px; transition:all .14s; flex-shrink:0;
 }
 .do-panel-close:hover { background:var(--red); border-color:var(--red); color:#fff; }
-
 .do-panel-actions {
     display:flex; align-items:center; gap:7px; padding:7px 12px;
     border-bottom:1px solid var(--slate-200); background:#fff; flex-shrink:0;
@@ -260,23 +250,14 @@
     text-transform:uppercase; letter-spacing:.5px;
     display:flex; align-items:center; gap:5px;
 }
-.do-panel-export {
-    display:flex; align-items:center; gap:4px; padding:4px 10px;
-    background:var(--primary); color:#fff; border:none;
-    border-radius:var(--radius-sm); font-size:10px; font-weight:700;
-    cursor:pointer; transition:filter .13s;
-}
-.do-panel-export:hover { filter:brightness(1.1); }
 
-/* ── 3-column layout inside panel ── */
-.ntm-panel-body {
-    flex:1; display:flex; overflow:hidden; min-height:0;
-}
+/* Panel 3-col layout */
+.ntm-panel-body { flex:1; display:flex; overflow:hidden; min-height:0; }
 .ntm-p-pub {
-    width:190px; flex-shrink:0; border-right:1px solid var(--slate-200);
+    width:220px; flex-shrink:0; border-right:1px solid var(--slate-200);
     overflow-y:auto; display:flex; flex-direction:column;
 }
-.ntm-p-pub::-webkit-scrollbar { width:3px; }
+.ntm-p-pub::-webkit-scrollbar { width:4px; }
 .ntm-p-pub::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
 .ntm-p-pub-hdr {
     padding:8px 12px; font-size:10px; font-weight:700; color:var(--slate-400);
@@ -296,12 +277,11 @@
 .ntm-pub-docs { font-size:9px; font-weight:700; color:#fff; background:var(--primary); padding:1px 6px; border-radius:9px; flex-shrink:0; }
 .ntm-pub-arr  { color:var(--slate-300); font-size:12px; flex-shrink:0; }
 .ntm-pub-row.act .ntm-pub-arr { color:var(--primary); }
-
 .ntm-p-kw {
-    width:220px; flex-shrink:0; border-right:1px solid var(--slate-200);
+    width:260px; flex-shrink:0; border-right:1px solid var(--slate-200);
     overflow-y:auto; display:flex; flex-direction:column;
 }
-.ntm-p-kw::-webkit-scrollbar { width:3px; }
+.ntm-p-kw::-webkit-scrollbar { width:4px; }
 .ntm-p-kw::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
 .ntm-p-kw-hdr {
     padding:8px 12px; font-size:10px; font-weight:700; color:var(--slate-400);
@@ -321,7 +301,6 @@
 .ntm-kw-no { width:28px; padding:6px 4px 6px 10px; font-size:10px; color:var(--slate-400); font-weight:600; }
 .ntm-kw-w  { padding:6px 6px; font-size:11px; font-weight:500; color:var(--slate-700); }
 .ntm-kw-f  { padding:6px 10px 6px 4px; font-size:11px; font-weight:700; color:var(--slate-800); text-align:right; }
-
 .ntm-p-art { flex:1; overflow-y:auto; }
 .ntm-p-art::-webkit-scrollbar { width:3px; }
 .ntm-p-art::-webkit-scrollbar-thumb { background:var(--slate-200); border-radius:99px; }
@@ -331,8 +310,6 @@
     border-bottom:1px solid var(--slate-200); background:var(--slate-50);
     position:sticky; top:0; z-index:1;
 }
-
-/* ── Article items ── */
 .ntm-ac {
     padding:12px 14px; border-bottom:1px solid var(--slate-50);
     transition:background .1s; display:flex; gap:10px;
@@ -342,11 +319,12 @@
 .ntm-ac-src   { font-size:10px; font-weight:800; color:var(--primary); text-transform:uppercase; margin-bottom:2px; }
 .ntm-ac-date  { font-size:10px; color:var(--slate-400); margin-bottom:3px; }
 .ntm-ac-title {
-    font-size:12px; font-weight:700; color:var(--amber);
-    text-decoration:none; line-height:1.4; display:block; margin-bottom:4px;
+    font-size:12.5px; font-weight:700; color:var(--slate-800);
+    text-decoration:none; line-height:1.45; display:block; margin-bottom:4px;
+    transition:color .12s;
 }
-.ntm-ac-title:hover { color:#92400e; text-decoration:underline; }
-.ntm-ac-snippet { font-size:11px; color:var(--slate-400); line-height:1.55; }
+.ntm-ac-title:hover { color:var(--primary); text-decoration:underline; }
+.ntm-ac-snippet { font-size:11.5px; color:var(--slate-500); line-height:1.6; }
 .ntm-ac-thumb {
     width:64px; height:48px; border-radius:var(--radius-sm);
     object-fit:cover; flex-shrink:0; background:var(--slate-100);
@@ -363,6 +341,87 @@
 }
 .ntm-tip.on { opacity:1; }
 .ntm-tip b  { color:#4ade80; }
+
+/* ══ Metric chips ══ */
+.ntm-metric { display:inline-flex; align-items:center; gap:3px; padding:2px 6px; border-radius:3px; font-size:10px; font-weight:700; background:var(--slate-100); color:var(--slate-500); }
+.ntm-metric--primary { background:var(--primary-lt); color:var(--primary); }
+
+/* ══ Source badge ══ */
+.ntm-src-badge {
+    display:inline-flex; align-items:center; gap:5px;
+    padding:2px 9px; border-radius:3px;
+    font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px;
+    background:var(--primary-lt); color:var(--primary);
+    border:1px solid rgba(3,128,71,.2);
+}
+
+/* ══════════════════════════════════════════════════════
+   EXPORT STYLES
+══════════════════════════════════════════════════════ */
+.page-export-bar {
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:10px;
+    background:#fff; border:1px solid var(--slate-200);
+    border-radius:var(--radius); padding:9px 14px;
+    margin-bottom:20px; box-shadow:var(--shadow-sm);
+}
+.page-export-bar-left {
+    display:flex; align-items:center; gap:8px;
+    font-size:12px; font-weight:700; color:var(--slate-600);
+}
+.page-export-bar-left i { font-size:15px; color:var(--primary); }
+.page-export-bar-right  { display:flex; gap:8px; }
+.page-export-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:32px; height:32px; border-radius:var(--radius-sm);
+    font-size:16px; cursor:pointer; transition:all .15s ease;
+    border:1.5px solid transparent; font-family:inherit;
+}
+.page-export-btn-pdf { background:#fff3f3; color:#dc2626; border-color:#fca5a5; }
+.page-export-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.page-export-btn-img { background:var(--primary-lt); color:var(--primary); border-color:rgba(3,128,71,.3); }
+.page-export-btn-img:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.page-export-btn:disabled { opacity:.55; cursor:not-allowed; pointer-events:none; }
+.page-export-btn .export-spinner {
+    width:13px; height:13px; border:2px solid currentColor;
+    border-top-color:transparent; border-radius:50%;
+    animation:spin .65s linear infinite; display:none;
+}
+.page-export-btn.exporting .export-spinner { display:inline-block; }
+.page-export-btn.exporting .export-icon    { display:none; }
+
+.card-exp-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:var(--radius-sm);
+    font-size:14px; cursor:pointer; flex-shrink:0;
+    transition:all .14s ease; border:1px solid transparent;
+    font-family:inherit; background:transparent;
+}
+.card-exp-btn-pdf { color:#dc2626; border-color:#fca5a5; background:#fff3f3; }
+.card-exp-btn-pdf:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+.card-exp-btn-img { color:var(--primary); border-color:rgba(3,128,71,.3); background:var(--primary-lt); }
+.card-exp-btn-img:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.card-exp-btn:disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+.card-exp-btn .export-spinner {
+    width:11px; height:11px; border:2px solid currentColor;
+    border-top-color:transparent; border-radius:50%;
+    animation:spin .65s linear infinite; display:none;
+}
+.card-exp-btn.exporting .export-spinner { display:inline-block; }
+.card-exp-btn.exporting .export-icon    { display:none; }
+
+.export-toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--slate-900); color:#fff; border-radius:var(--radius);
+    padding:10px 18px; font-size:12px; font-weight:600;
+    box-shadow:var(--shadow-lg); z-index:99999;
+    opacity:0; pointer-events:none;
+    transition:opacity .22s ease, transform .22s ease;
+    display:flex; align-items:center; gap:8px; white-space:nowrap;
+}
+.export-toast.show    { opacity:1; transform:translateX(-50%) translateY(0); }
+.export-toast.success { background:#065f46; }
+.export-toast.error   { background:#991b1b; }
 
 /* ══ Date Picker Modal ══ */
 .ntm-dp-modal {
@@ -408,7 +467,6 @@
 }
 .ntm-dp-nav:hover { background:var(--primary); border-color:var(--primary); color:#fff; }
 .ntm-dp-nav svg  { width:16px; height:16px; }
-
 .ntm-cal-month   { font-size:13px; font-weight:700; color:var(--slate-800); margin-bottom:12px; text-align:center; }
 .ntm-cal-wdays   { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-bottom:4px; }
 .ntm-cal-wday    { text-align:center; font-size:9px; font-weight:700; color:var(--slate-400); padding:5px 0; }
@@ -425,7 +483,6 @@
 .ntm-cal-day.tod { border:2px solid var(--primary); }
 .ntm-cal-day.sel { background:var(--primary); color:#fff; }
 .ntm-cal-day.inr { background:var(--primary-lt); color:var(--primary); }
-
 .ntm-dp-display {
     padding:10px 14px; background:var(--slate-50); border-radius:var(--radius-sm);
     text-align:center; margin:14px 0; border:1px solid var(--slate-200);
@@ -445,24 +502,6 @@
     color:#fff; border:none; box-shadow:0 4px 12px rgba(3,128,71,.2);
 }
 .ntm-dp-apply:hover { filter:brightness(1.1); }
-
-/* ══ Metric chips ══ */
-.ntm-metric {
-    display:inline-flex; align-items:center; gap:3px;
-    padding:2px 6px; border-radius:3px;
-    font-size:10px; font-weight:700;
-    background:var(--slate-100); color:var(--slate-500);
-}
-.ntm-metric--primary { background:var(--primary-lt); color:var(--primary); }
-
-/* ══ Source badge ══ */
-.ntm-src-badge {
-    display:inline-flex; align-items:center; gap:5px;
-    padding:2px 9px; border-radius:3px;
-    font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px;
-    background:var(--primary-lt); color:var(--primary);
-    border:1px solid rgba(3,128,71,.2);
-}
 
 @media(max-width:768px) {
     .do-panel { width:100vw; }
@@ -491,7 +530,7 @@
     const NTM_ED  = '{{ $endDate }}';
 </script>
 
-{{-- ── Filter datepicker ── --}}
+{{-- Filter datepicker --}}
 @include('mk.layouts.partials.filter-datepicker')
 
 @if(!$projectId)
@@ -500,19 +539,20 @@
 </div>
 @else
 
+{{-- ════ PAGE EXPORT AREA WRAPPER ════ --}}
+<div id="ntmExportArea">
+
 {{-- ══ KPI Cards ══ --}}
 <div class="row mb-3">
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#4680ff;animation:fadeUp .38s ease-out both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#06B6D4;animation:fadeUp .38s ease-out both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Topics</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiTopics">
-                            <span class="sk-block" style="width:70px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiTopics">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopicsSub">
-                            <i class="ph ph-chart-line-up me-1"></i>Loading…
+                            <i class="ph ph-squares-four me-1"></i>Sum weight
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -523,16 +563,33 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#10B981;animation:fadeUp .38s ease-out .05s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#F59E0B;animation:fadeUp .38s ease-out .10s both;">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1" style="min-width:0;">
+                        <p class="mb-1 text-white text-opacity-75 f-12">Top Topic</p>
+                        <h3 class="mb-0 text-white f-w-300 f-16" id="kpiTop" style="word-break:break-word;line-height:1.2;">—</h3>
+                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopSub">
+                            <i class="ph ph-trophy me-1"></i>Most mentioned
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 ms-3">
+                        <div class="kpi-icon-bg"><i class="ph ph-trophy"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+       
+    </div>
+    <div class="col-md-6 col-xl-3">
+         <div class="card h-100 text-white kpi-card-hover" style="background:#4CAF50;animation:fadeUp .38s ease-out .05s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Articles</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiArts">
-                            <span class="sk-block" style="width:70px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiArts">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiArtsSub">
-                            <i class="ph ph-newspaper me-1"></i>Loading…
+                            <i class="ph ph-newspaper me-1"></i>Loading...
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -543,36 +600,14 @@
         </div>
     </div>
     <div class="col-md-6 col-xl-3">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#F59E0B;animation:fadeUp .38s ease-out .10s both;">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="mb-1 text-white text-opacity-75 f-12">Top Topic</p>
-                        <h3 class="mb-0 text-white f-w-300 f-16" id="kpiTop" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                            <span class="sk-block" style="width:100px;height:24px;display:inline-block;"></span>
-                        </h3>
-                        <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiTopSub">
-                            <i class="ph ph-trophy me-1"></i>Loading…
-                        </p>
-                    </div>
-                    <div class="flex-shrink-0 ms-3">
-                        <div class="kpi-icon-bg"><i class="ph ph-trophy"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="card h-100 text-white kpi-card-hover" style="background:#8B5CF6;animation:fadeUp .38s ease-out .15s both;">
+        <div class="card h-100 text-white kpi-card-hover" style="background:#038047;animation:fadeUp .38s ease-out .15s both;">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Publishers Found</p>
-                        <h3 class="mb-0 text-white f-w-300" id="kpiPubs">
-                            <span class="sk-block" style="width:70px;height:24px;display:inline-block;"></span>
-                        </h3>
+                        <h3 class="mb-0 text-white f-w-300" id="kpiPubs">—</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPubsSub">
-                            <i class="ph ph-globe me-1"></i>Loading…
+                            <i class="ph ph-globe me-1"></i>Unique online publishers
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -584,8 +619,29 @@
     </div>
 </div>
 
+{{-- ══ Page Export Toolbar ══ --}}
+<div class="page-export-bar" data-html2canvas-ignore="true">
+    <div class="page-export-bar-left">
+        <i class="ph ph-export"></i>
+        <span>Export Halaman</span>
+        <span class="badge bg-light-secondary text-muted ms-1" style="font-size:10px;">KPI + Active Tab</span>
+    </div>
+    <div class="page-export-bar-right">
+        <button type="button" class="page-export-btn page-export-btn-pdf" id="ntmExportPdfBtn"
+                onclick="NTMExport.run('pdf', this)" title="Export sebagai PDF">
+            <i class="ph ph-file-pdf export-icon"></i>
+            <span class="export-spinner"></span>
+        </button>
+        <button type="button" class="page-export-btn page-export-btn-img" id="ntmExportImgBtn"
+                onclick="NTMExport.run('image', this)" title="Export sebagai PNG">
+            <i class="ph ph-image export-icon"></i>
+            <span class="export-spinner"></span>
+        </button>
+    </div>
+</div>
+
 {{-- ══ Tabs ══ --}}
-<div class="ntm-tabs">
+<div class="ntm-tabs" data-html2canvas-ignore="true">
     <button class="ntm-tab-btn active" id="tab-map"    onclick="NTMTab.show('map')">
         <i class="ph ph-squares-four"></i> Topic Map
     </button>
@@ -600,87 +656,139 @@
 {{-- ══ TAB: Map ══ --}}
 <div class="ntm-tab-panel active" id="panel-map">
     <div class="card" style="animation:fadeUp .38s ease-out .18s both;">
-        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div class="d-flex align-items-center gap-2">
-                <div class="avtar avtar-xs bg-light-primary rounded">
-                    <i class="ph ph-squares-four f-18 text-primary"></i>
+        <div id="card-ntm-map">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avtar avtar-xs bg-light-primary rounded">
+                        <i class="ph ph-squares-four f-18 text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">News Topic Map</h6>
+                        <small class="text-muted" id="ntmMapMeta">Visual map of the most-discussed topics</small>
+                    </div>
                 </div>
-                <div>
-                    <h6 class="mb-0">News Topic Map</h6>
-                    <small class="text-muted" id="ntmMapMeta">Visual map of the most-discussed topics</small>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="ntm-src-badge"><i class="ph ph-newspaper me-1"></i>Online News (Ind)</span>
+                    <button class="ntm-hl-tog" id="ntmHlTog" onclick="toggleHL()" title="Show/Hide Headline">
+                        <i class="ph ph-eye" style="font-size:11px;"></i>
+                        Headline: <span id="ntmHlLabel">On</span>
+                    </button>
+                    <input type="checkbox" id="ntmHlChk" checked style="display:none;" onchange="ntmRender()">
+                    <button class="ntm-rlbtn" id="ntmRl" onclick="ntmLoad()" title="Refresh" data-html2canvas-ignore="true">
+                        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    </button>
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf"
+                                onclick="NTMExport.runCard('card-ntm-map','topic-map','pdf',this)"
+                                title="Export PDF">
+                            <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                        <button class="card-exp-btn card-exp-btn-img"
+                                onclick="NTMExport.runCard('card-ntm-map','topic-map','image',this)"
+                                title="Export PNG">
+                            <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <span class="ntm-src-badge"><i class="ph ph-newspaper me-1"></i>Online News (Ind)</span>
-                <button class="ntm-hl-tog" id="ntmHlTog" onclick="toggleHL()" title="Show/Hide Headline">
-                    <i class="ph ph-eye" style="font-size:11px;"></i>
-                    Headline: <span id="ntmHlLabel">On</span>
-                </button>
-                <input type="checkbox" id="ntmHlChk" checked style="display:none;" onchange="ntmRender()">
-                <button class="ntm-rlbtn" id="ntmRl" onclick="ntmLoad()" title="Refresh">
-                    <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-                </button>
+            <div class="card-body p-0">
+                <div id="ntmLoading" class="spinner-state"><div class="spin-ring"></div>Loading topic map…</div>
+                <div id="ntmMapWrap" style="display:none;">
+                    <div id="ntmTreemap" style="position:relative;width:100%;overflow:hidden;"></div>
+                </div>
+                <div id="ntmEmpty" class="ntm-empty-state" style="display:none;">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <h4>No topic data found</h4>
+                    <p>Try a wider date range or check your project settings.</p>
+                </div>
             </div>
-        </div>
-        <div class="card-body p-0">
-            <div id="ntmLoading" class="spinner-state"><div class="spin-ring"></div>Loading topic map…</div>
-            <div id="ntmMapWrap" style="display:none;">
-                <div id="ntmTreemap" style="position:relative;width:100%;overflow:hidden;"></div>
-            </div>
-            <div id="ntmEmpty" class="ntm-empty-state" style="display:none;">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <h4>No topic data found</h4>
-                <p>Try a wider date range or check your project settings.</p>
-            </div>
-        </div>
+        </div>{{-- /card-ntm-map --}}
     </div>
 </div>
 
 {{-- ══ TAB: List ══ --}}
 <div class="ntm-tab-panel" id="panel-list">
     <div class="card" style="animation:fadeUp .38s ease-out .18s both;">
-        <div class="card-header d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-2">
-                <div class="avtar avtar-xs bg-light-primary rounded">
-                    <i class="ph ph-list-numbers f-18 text-primary"></i>
+        <div id="card-ntm-list">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avtar avtar-xs bg-light-primary rounded">
+                        <i class="ph ph-list-numbers f-18 text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">Topic Ranking</h6>
+                        <small class="text-muted">Sorted by article count</small>
+                    </div>
                 </div>
-                <div>
-                    <h6 class="mb-0">Topic Ranking</h6>
-                    <small class="text-muted">Sorted by article count</small>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-light-primary text-primary" id="badgeList">—</span>
+                    <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                        <button class="card-exp-btn card-exp-btn-pdf"
+                                onclick="NTMExport.runCard('card-ntm-list','topic-list','pdf',this)"
+                                title="Export PDF">
+                            <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                        <button class="card-exp-btn card-exp-btn-img"
+                                onclick="NTMExport.runCard('card-ntm-list','topic-list','image',this)"
+                                title="Export PNG">
+                            <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                        </button>
+                    </div>
                 </div>
             </div>
-            <span class="badge bg-light-primary text-primary" id="badgeList">—</span>
-        </div>
-        <div id="ntmListInner" class="p-0">
-            <div class="spinner-state"><div class="spin-ring"></div>Loading…</div>
-        </div>
+            <div id="ntmListInner" class="p-0">
+                <div class="spinner-state"><div class="spin-ring"></div>Loading…</div>
+            </div>
+        </div>{{-- /card-ntm-list --}}
     </div>
 </div>
 
 {{-- ══ TAB: Bubble ══ --}}
 <div class="ntm-tab-panel" id="panel-bubble">
     <div class="card" style="animation:fadeUp .38s ease-out .18s both;">
-        <div class="card-header d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-2">
-                <div class="avtar avtar-xs bg-light-primary rounded">
-                    <i class="ph ph-circles-three f-18 text-primary"></i>
+        <div id="card-ntm-bubble">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avtar avtar-xs bg-light-primary rounded">
+                        <i class="ph ph-circles-three f-18 text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">Bubble View</h6>
+                        <small class="text-muted">Size = topic weight</small>
+                    </div>
                 </div>
-                <div>
-                    <h6 class="mb-0">Bubble View</h6>
-                    <small class="text-muted">Size = topic weight</small>
+                <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                    <button class="card-exp-btn card-exp-btn-pdf"
+                            onclick="NTMExport.runCard('card-ntm-bubble','topic-bubble','pdf',this)"
+                            title="Export PDF">
+                        <i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span>
+                    </button>
+                    <button class="card-exp-btn card-exp-btn-img"
+                            onclick="NTMExport.runCard('card-ntm-bubble','topic-bubble','image',this)"
+                            title="Export PNG">
+                        <i class="ph ph-image export-icon"></i><span class="export-spinner"></span>
+                    </button>
                 </div>
             </div>
-        </div>
-        <div class="card-body p-0">
-            <div class="ntm-bub-card-inner" id="ntmBubWrap" style="display:none;">
-                <svg id="ntmBubSvg"></svg>
+            <div class="card-body p-0">
+                <div class="ntm-bub-card-inner" id="ntmBubWrap" style="display:none;">
+                    <svg id="ntmBubSvg"></svg>
+                </div>
+                <div class="spinner-state" id="ntmBubLoading"><div class="spin-ring"></div>Loading…</div>
             </div>
-            <div class="spinner-state" id="ntmBubLoading"><div class="spin-ring"></div>Loading…</div>
-        </div>
+        </div>{{-- /card-ntm-bubble --}}
     </div>
 </div>
 
-{{-- ══ Slide Panel (drawer) — identical structure to TME ══ --}}
+</div>{{-- /ntmExportArea --}}
+
+{{-- Export Toast --}}
+<div class="export-toast" id="ntmExportToast">
+    <i class="ph ph-check-circle" id="ntmExportToastIcon"></i>
+    <span id="ntmExportToastMsg">Exporting…</span>
+</div>
+
+{{-- ══ Slide Panel ══ --}}
 <div class="do-panel-overlay" id="ntmPanelOverlay" onclick="NTMPanel.close()"></div>
 <div class="do-panel" id="ntmDetailPanel">
     <div class="do-panel-header">
@@ -764,7 +872,13 @@
 @endsection
 
 @section('scripts')
+{{-- Export dependencies --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+
 <script>
 (function(){
 'use strict';
@@ -779,7 +893,7 @@ const CFG = {
     pubApi:   '/mk/api/news/top-publisher',
 };
 
-/* ══ Palette — TME dark palette ══ */
+/* ══ Palette ══ */
 const PAL = [
     '#7f1d1d','#273B4A','#92400e','#064e3b','#1e3a5f',
     '#5b21b6','#9d174d','#1e40af','#374151','#4d7c0f',
@@ -812,8 +926,8 @@ const NTMTab = {
             $('tab-'+t)?.classList.toggle('active', t===tab);
             $('panel-'+t)?.classList.toggle('active', t===tab);
         });
-        if(tab==='map' && D.raw.length && !this._rendered.map) { this._rendered.map=true; doMap(D.fil); }
-        if(tab==='list' && D.raw.length) { renderList(D.fil); }
+        if(tab==='map'    && D.raw.length && !this._rendered.map)    { this._rendered.map=true;    doMap(D.fil); }
+        if(tab==='list'   && D.raw.length)                           { renderList(D.fil); }
         if(tab==='bubble' && D.raw.length && !this._rendered.bubble) { this._rendered.bubble=true; doBub(D.fil); }
     },
     reset() { this._rendered={map:false,list:false,bubble:false}; }
@@ -825,19 +939,17 @@ function updateKPIs() {
     const total    = D.raw.reduce((s,d)=>s+d.count,0);
     const top      = D.raw[0]||{};
     const pubCount = Object.keys(D.arts.reduce((m,a)=>{ const p=a.publisher||extractHostname(a.url||'')||'Unknown'; m[p]=1; return m; },{})).length;
-
     const el  = (id,v) => { const e=$(id); if(e) e.textContent=v; };
     const sub = (id,v) => { const e=$(id); if(e) e.innerHTML=v; };
-
     el('kpiTopics', D.raw.length);
-    sub('kpiTopicsSub', `<i class="ph ph-chart-bar me-1"></i>Sum weight ${numF(total)}`);
+    sub('kpiTopicsSub', `<i class="ph-fill ph-chart-bar me-1"></i>Sum weight ${numF(total)}`);
     el('kpiArts', D.arts.length);
-    sub('kpiArtsSub', `<i class="ph ph-newspaper me-1"></i>${NTM_SD} – ${NTM_ED}`);
+    sub('kpiArtsSub', `<i class="ph-fill ph-newspaper me-1"></i>${String(NTM_SD).replace(/\s+/g,'-')} – ${String(NTM_ED).replace(/\s+/g,'-')}`);
     el('kpiTop', top.topic||'—');
-    sub('kpiTopSub', top.count ? `<i class="ph ph-trophy me-1"></i>${numF(top.count)} articles / mentions` : '');
+    const topLbl = top.count === 1 ? 'article' : 'articles';
+    sub('kpiTopSub', top.count ? `<i class="ph-fill ph-trophy me-1"></i>${numF(top.count)} ${topLbl}` : '<i class="ph-fill ph-trophy me-1"></i>—');
     el('kpiPubs', pubCount||D.allPubs.length);
-    sub('kpiPubsSub', `<i class="ph ph-globe me-1"></i>Unique online publishers`);
-
+    sub('kpiPubsSub', `<i class="ph-fill ph-globe me-1"></i>Unique online publishers`);
     const bl=$('badgeList'); if(bl) bl.textContent=D.raw.length+' topics';
 }
 
@@ -855,15 +967,13 @@ function findHeadlineUnique(topic, usedSet) {
         words.forEach(w=>{ if(title.includes(w)) score+=15; });
         if(content.includes(q)) score+=20;
         words.forEach(w=>{ if(content.includes(w)) score+=3; });
-        if(score>bestScore||(score===bestScore&&best&&titleRaw.length<best.title.length)){
-            bestScore=score; best=a;
-        }
+        if(score>bestScore||(score===bestScore&&best&&titleRaw.length<best.title.length)){ bestScore=score; best=a; }
     });
     if(bestScore>=15&&best){ usedSet.add(best.title||''); return best.title||''; }
     return '';
 }
 
-/* ══ Fetch articles (paginated) ══ */
+/* ══ Fetch articles ══ */
 async function fetchAllArticles() {
     const batchSize=500; let all=[], start=0, hasMore=true;
     while(hasMore) {
@@ -889,7 +999,6 @@ window.ntmLoad = async function() {
     if(D.busy||!CFG.pid) return; D.busy=true;
     const rl=$('ntmRl'); rl?.classList.add('spin');
     NTMTab.reset();
-    /* show loaders */
     $('ntmLoading').style.display='flex'; $('ntmMapWrap').style.display='none'; $('ntmEmpty').style.display='none';
     $('ntmListInner').innerHTML='<div class="spinner-state"><div class="spin-ring"></div>Loading…</div>';
     $('ntmBubLoading').style.display='flex'; $('ntmBubWrap').style.display='none';
@@ -900,12 +1009,10 @@ window.ntmLoad = async function() {
             fetch(`${CFG.pubApi}?project_id=${CFG.pid}&start_date=${CFG.s}&end_date=${CFG.e}&news_type=article`).catch(()=>null),
             fetchAllArticles(),
         ]);
-
         const topicJson = await topicRes.json();
         const pubJson   = pubRes ? await pubRes.json().catch(()=>null) : null;
         D.arts = allArts;
 
-        /* Publisher fallback */
         if(pubJson?.success&&Array.isArray(pubJson.data)&&pubJson.data.length) {
             D.allPubs = pubJson.data;
         } else {
@@ -914,7 +1021,6 @@ window.ntmLoad = async function() {
             D.allPubs=Object.entries(pm).map(([domain,count],i)=>({rank:i+1,domain,count})).sort((a,b)=>b.count-a.count);
         }
 
-        /* Parse topics */
         let raw={};
         if(topicJson.data&&!Array.isArray(topicJson.data)&&typeof topicJson.data==='object') raw=topicJson.data;
         else if(Array.isArray(topicJson.data)) topicJson.data.forEach(it=>{ raw[it.name||it.topic||'']={num_docs:it.weight||it.num_docs||1}; });
@@ -938,8 +1044,6 @@ window.ntmLoad = async function() {
 
         updateKPIs();
         ntmRender();
-
-        /* Pre-load detail silently */
         if(D.raw[0]) buildDetail(D.raw[0], 0);
 
     } catch(err) {
@@ -955,7 +1059,7 @@ window.ntmRender = function() {
     $('ntmLoading').style.display='none';
     $('ntmMapWrap').style.display='block';
     $('ntmEmpty').style.display='none';
-    $('ntmMapMeta').textContent=`${D.raw.length} topics · ${CFG.s} to ${CFG.e}`;
+    $('ntmMapMeta').textContent=`${D.raw.length} topics · ${String(CFG.s).replace(/\s+/g,'-')} to ${String(CFG.e).replace(/\s+/g,'-')}`;
     doMap(D.fil);
 };
 
@@ -965,8 +1069,8 @@ window.toggleHL = function() {
     const tog=$('ntmHlTog'), lbl=$('ntmHlLabel');
     tog?.classList.toggle('off',!c.checked);
     if(lbl) lbl.textContent=c.checked?'On':'Off';
-    if(c.checked) { const i=tog?.querySelector('i'); if(i){ i.className='ph ph-eye'; i.style.fontSize='11px'; } }
-    else { const i=tog?.querySelector('i'); if(i){ i.className='ph ph-eye-slash'; i.style.fontSize='11px'; } }
+    const i=tog?.querySelector('i');
+    if(i){ i.className=c.checked?'ph ph-eye':'ph ph-eye-slash'; i.style.fontSize='11px'; }
     ntmRender();
 };
 
@@ -1056,7 +1160,7 @@ function doBub(data) {
     pack(root);
     const svg=d3.select(svgEl), defs=svg.append('defs');
 
-    function lighten(hex,a){ const n=parseInt(hex.replace('#',''),16); return `rgb(${Math.min(255,((n>>16)&0xff)+Math.round(255*a))},${Math.min(255,((n>>8)&0xff)+Math.round(255*a))},${Math.min(255,(n&0xff)+Math.round(255*a))})` }
+    function lighten(hex,a){ const n=parseInt(hex.replace('#',''),16); return `rgb(${Math.min(255,((n>>16)&0xff)+Math.round(255*a))},${Math.min(255,((n>>8)&0xff)+Math.round(255*a))},${Math.min(255,(n&0xff)+Math.round(255*a))})`; }
 
     root.leaves().forEach((node,i)=>{
         const gid=`bg${i}`, base=PAL[i%PAL.length];
@@ -1094,7 +1198,7 @@ function doBub(data) {
         .on('click',(e,d)=>openDetail(d.data, D.raw.indexOf(d.data)));
 }
 
-/* ══ Detail — build data ══ */
+/* ══ Detail ══ */
 function buildDetail(d, idx) {
     DS.topic=d; DS.idx=idx; DS.activePub=null;
     const q=d.topic.toLowerCase();
@@ -1108,7 +1212,6 @@ function buildDetail(d, idx) {
 function openDetail(d, idx) {
     if(!d) return;
     buildDetail(d, idx);
-    /* Update panel header */
     $('ntmPanelDot').style.background=PAL[idx%PAL.length];
     $('ntmPanelTitle').textContent=d.topic;
     $('ntmPanelMeta').textContent=`${CFG.s} – ${CFG.e}`;
@@ -1132,7 +1235,6 @@ const NTMPanel = {
 };
 window.NTMPanel=NTMPanel;
 
-/* ── Publisher panel ── */
 function renderPubPanel() {
     let pubs=Object.entries(DS.pubArts).filter(([,a])=>a.length>0).map(([domain,a])=>({domain,count:a.length})).sort((a,b)=>b.count-a.count);
     if(!pubs.length) pubs=D.allPubs.slice(0,30).map(p=>({domain:p.domain,count:p.count,isGlobal:true}));
@@ -1159,7 +1261,6 @@ window.selectPub=function(domain){
     renderArts(arts, domain);
 };
 
-/* ── Keywords: All ── */
 function renderKwAll() {
     $('ntmKwTitle').textContent='Keywords — All';
     if(!DS.arts.length){
@@ -1180,24 +1281,22 @@ function renderKwAll() {
     let h='';
     sorted.forEach(([kw,val],i)=>{
         const ia=DS.topic&&kw===DS.topic.topic;
-        h+=`<tr style="${ia?'background:#f0fdf4;':''}"><td class="ntm-kw-no">${i+1}</td><td class="ntm-kw-w" style="${ia?'color:var(--primary);font-weight:700;':''}">${esc(kw)}${ia?' ◀':''}</td><td class="ntm-kw-f" style="${ia?'color:var(--primary);':''}">${val.freq}</td></tr>`;
+        h+=`<tr style="${ia?'background:rgba(76,175,80,.05);border-left:3px solid var(--primary);':'border-left:3px solid transparent;'}"><td class="ntm-kw-no">${i+1}</td><td class="ntm-kw-w" style="${ia?'color:var(--primary);font-weight:700;':''}">${esc(kw)}${ia?' <i class="ph ph-caret-left ms-1"></i>':''}</td><td class="ntm-kw-f" style="${ia?'color:var(--primary);':''}">${val.freq}</td></tr>`;
     });
     $('ntmKwBody').innerHTML=h||'<tr><td colspan="3" style="padding:20px;text-align:center;color:var(--slate-400);font-size:11px;">No keywords found</td></tr>';
     setTimeout(()=>{ $('ntmKwBody')?.querySelector('tr[style*="#f0fdf4"]')?.scrollIntoView({block:'center',behavior:'smooth'}); },100);
 }
 
-/* ── Keywords: per publisher ── */
 function renderKwForPub(arts, domain) {
     $('ntmKwTitle').textContent=`KW — ${domain.length>22?domain.slice(0,21)+'…':domain}`;
     if(!arts.length){ $('ntmKwBody').innerHTML='<tr><td colspan="3" style="padding:16px;text-align:center;color:var(--slate-400);font-size:11px;">No articles from this publisher</td></tr>'; return; }
     const kwFreq={};
     D.raw.forEach(t=>{ const q=t.topic.toLowerCase(); let cnt=0; arts.forEach(a=>{ const txt=((a.title||'')+(a.content||'')+(a.description||'')).toLowerCase(); let pos=0,found; while((found=txt.indexOf(q,pos))!==-1){cnt++;pos=found+q.length;} }); if(cnt>0) kwFreq[t.topic]=cnt; });
     const sorted=Object.entries(kwFreq).sort((a,b)=>b[1]-a[1]);
-    let h=''; sorted.forEach(([kw,cnt],i)=>{ const ia=DS.topic&&kw===DS.topic.topic; h+=`<tr style="${ia?'background:#f0fdf4;':''}"><td class="ntm-kw-no">${i+1}</td><td class="ntm-kw-w" style="${ia?'color:var(--primary);font-weight:700;':''}">${esc(kw)}${ia?' ◀':''}</td><td class="ntm-kw-f" style="${ia?'color:var(--primary);':''}">${cnt}</td></tr>`; });
+    let h=''; sorted.forEach(([kw,cnt],i)=>{ const ia=DS.topic&&kw===DS.topic.topic; h+=`<tr style="${ia?'background:rgba(76,175,80,.05);border-left:3px solid var(--primary);':'border-left:3px solid transparent;'}"><td class="ntm-kw-no">${i+1}</td><td class="ntm-kw-w" style="${ia?'color:var(--primary);font-weight:700;':''}">${esc(kw)}${ia?' <i class="ph ph-caret-left ms-1"></i>':''}</td><td class="ntm-kw-f" style="${ia?'color:var(--primary);':''}">${cnt}</td></tr>`; });
     $('ntmKwBody').innerHTML=h||'<tr><td colspan="3" style="padding:16px;text-align:center;color:var(--slate-400);font-size:11px;">No match</td></tr>';
 }
 
-/* ── Articles ── */
 function renderArts(arts, pubLabel) {
     $('ntmArtTitle').textContent=`Articles — ${pubLabel} (${arts.length})`;
     if(!arts.length){
@@ -1316,6 +1415,282 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(CFG.pid) ntmLoad();
 });
 
+})();
+
+const NTMExport = (() => {
+    let _toastTimer = null;
+
+    function _toast(msg, type = 'default', duration = 3200) {
+        const t   = document.getElementById('ntmExportToast');
+        const m   = document.getElementById('ntmExportToastMsg');
+        const ico = document.getElementById('ntmExportToastIcon');
+        if (!t || !m) return;
+        m.textContent = msg;
+        t.className   = 'export-toast show ' + (type !== 'default' ? type : '');
+        const icons   = { success: 'ph-check-circle', error: 'ph-x-circle', default: 'ph-spinner' };
+        ico.className = 'ph ' + (icons[type] || icons.default);
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+    }
+
+    function _btnState(btn, loading) {
+        if (!btn) return;
+        btn.disabled = loading;
+        btn.classList.toggle('exporting', loading);
+    }
+
+    /* ══ Freeze semua CSS animation ══ */
+    function _freezeAnimations() {
+        const s = document.createElement('style');
+        s.id = '__ntm_freeze';
+        s.textContent = `
+            * {
+                animation: none !important;
+                animation-play-state: paused !important;
+                transition: none !important;
+            }
+            .ntm-tile, .ntm-fi, .ntm-li, .ntm-ac {
+                opacity: 1 !important;
+                transform: none !important;
+            }
+        `;
+        document.head.appendChild(s);
+    }
+    function _unfreezeAnimations() {
+        document.getElementById('__ntm_freeze')?.remove();
+    }
+
+    /* ══ onclone: paksa semua elemen visible & opacity 1 ══ */
+    function _onClone(clonedDoc) {
+        /* Sembunyikan elemen yg tidak perlu */
+        clonedDoc.querySelectorAll(
+            '[data-html2canvas-ignore], .do-panel-overlay, #ntmDetailPanel, ' +
+            '.ntm-dp-modal, .export-toast, .ntm-tip, ' +
+            '#ntmExportPdfBtn, #ntmExportImgBtn, .card-exp-btn, ' +
+            '.ntm-rlbtn, .ntm-tabs'
+        ).forEach(el => {
+            el.style.display    = 'none';
+            el.style.visibility = 'hidden';
+            el.style.opacity    = '0';
+        });
+
+        /* Paksa semua KPI card visible */
+        clonedDoc.querySelectorAll(
+            '.kpi-card-hover, .card, .row, [class*="col-"], ' +
+            '#ntmExportArea, .ntm-tab-panel.active'
+        ).forEach(el => {
+            el.style.opacity    = '1';
+            el.style.transform  = 'none';
+            el.style.animation  = 'none';
+            el.style.visibility = 'visible';
+        });
+
+        /* ══ KUNCI: paksa semua tile treemap visible dengan warna asli ══ */
+        clonedDoc.querySelectorAll('.ntm-tile, .ntm-fi, .ntm-li, .ntm-ac, .ntm-li-fill').forEach(el => {
+            el.style.opacity    = '1';
+            el.style.transform  = 'none';
+            el.style.animation  = 'none';
+            el.style.visibility = 'visible';
+            el.style.filter     = 'none';
+        });
+
+        /* Paksa ntm-li-fill bar visible dengan lebar yg sudah di-set */
+        clonedDoc.querySelectorAll('.ntm-li-fill').forEach(el => {
+            /* Ambil width dari style inline yg sudah di-set JS */
+            if (!el.style.width || el.style.width === '0%') {
+                el.style.width = el.dataset?.p ? el.dataset.p + '%' : '50%';
+            }
+        });
+
+        /* Freeze semua animation di clone */
+        clonedDoc.querySelectorAll('*').forEach(el => {
+            el.style.animationPlayState = 'paused';
+            el.style.animation          = 'none';
+            el.style.transition         = 'none';
+        });
+
+        /* Paksa tab panel inactive tersembunyi agar tidak makan ruang */
+        clonedDoc.querySelectorAll('.ntm-tab-panel:not(.active)').forEach(el => {
+            el.style.display = 'none';
+        });
+    }
+
+    /* ══ Core capture ══ */
+    async function _doCapture(el, isCard) {
+        _freezeAnimations();
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await new Promise(r => setTimeout(r, 500));
+
+        let canvas;
+        try {
+            canvas = await html2canvas(el, {
+                scale:           2,
+                useCORS:         true,
+                allowTaint:      true,   /* penting: agar inline SVG + canvas D3 ter-capture */
+                backgroundColor: isCard ? '#ffffff' : '#f1f5f9',
+                logging:         false,
+                removeContainer: true,
+                onclone:         (clonedDoc) => _onClone(clonedDoc),
+                ignoreElements:  e => e.hasAttribute('data-html2canvas-ignore'),
+                x:               0,
+                y:               0,
+                width:           el.offsetWidth,
+                height:          el.scrollHeight,
+            });
+        } finally {
+            _unfreezeAnimations();
+        }
+        return canvas;
+    }
+
+    /* ══ PDF Header ══ */
+    function _drawPdfHeader(pdf, pW, margin, label, page, total) {
+        pdf.setFillColor(3, 128, 71);
+        pdf.rect(0, 0, pW, 11, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
+        pdf.text('SMADIMENT — ' + (label || 'News Topic Map'), margin, 7.5);
+        const now = new Date().toLocaleDateString('id-ID', {
+            day: '2-digit', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+        pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+        pdf.text('Generated: ' + now, pW - margin, 7.5, { align: 'right' });
+        pdf.setFontSize(7); pdf.setTextColor(148, 163, 184);
+        pdf.text(`Halaman ${page} / ${total}`, pW / 2,
+            pdf.internal.pageSize.getHeight() - 3, { align: 'center' });
+    }
+
+    /* ══ Fit 1 halaman (card) ══ */
+    function _fitCanvas(pdf, canvas, margin, pW, pH, label) {
+        _drawPdfHeader(pdf, pW, margin, label, 1, 1);
+        const usableW = pW - margin * 2;
+        const usableH = pH - margin * 2 - 18;
+        const ratio   = Math.min(usableW / canvas.width, usableH / canvas.height);
+        const dstW    = canvas.width  * ratio;
+        const dstH    = canvas.height * ratio;
+        const x       = margin + (usableW - dstW) / 2;
+        const y       = 14    + (usableH - dstH) / 2;
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, dstW, dstH);
+    }
+
+    /* ══ Auto-split maks 2 halaman ══ */
+    function _autoSplit(pdf, canvas, margin, pW, pH, label) {
+        const usableW   = pW - margin * 2;
+        const usableH   = pH - 14 - 10;
+        const ratioByW  = usableW / canvas.width;
+        const ratioBy2H = (2 * usableH) / canvas.height;
+        const ratio     = Math.min(ratioByW, ratioBy2H);
+        const dstW      = canvas.width * ratio;
+        const numPages  = Math.max(1, Math.ceil(canvas.height * ratio / usableH));
+        const xOffset   = margin + (usableW - dstW) / 2;
+        const srcSliceH = Math.ceil(canvas.height / numPages);
+
+        for (let page = 0; page < numPages; page++) {
+            if (page > 0) pdf.addPage();
+            _drawPdfHeader(pdf, pW, margin, label, page + 1, numPages);
+
+            const srcY     = page * srcSliceH;
+            const srcSlice = Math.min(srcSliceH, canvas.height - srcY);
+            if (srcSlice <= 0) break;
+
+            const slice = document.createElement('canvas');
+            slice.width  = canvas.width;
+            slice.height = srcSlice;
+            slice.getContext('2d').drawImage(
+                canvas, 0, srcY, canvas.width, srcSlice,
+                0, 0, canvas.width, srcSlice
+            );
+            pdf.addImage(slice.toDataURL('image/png'), 'PNG', xOffset, 14, dstW, srcSlice * ratio);
+        }
+    }
+
+    const _cardLabels = {
+        'topic-map':    'News Topic Map',
+        'topic-list':   'Topic Ranking List',
+        'topic-bubble': 'Topic Bubble View',
+    };
+
+    function _stamp() { return new Date().toISOString().slice(0, 10).replace(/-/g, ''); }
+
+    /* ══ Export full page ══ */
+    async function run(type, btn) {
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+
+        const btnPdf = document.getElementById('ntmExportPdfBtn');
+        const btnImg = document.getElementById('ntmExportImgBtn');
+        _btnState(btnPdf, true); _btnState(btnImg, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+
+        try {
+            const area   = document.getElementById('ntmExportArea');
+            const canvas = await _doCapture(area, false);
+
+            if (type === 'image') {
+                const link = document.createElement('a');
+                link.download = `news_topic_map_${NTM_PID}_${_stamp()}.png`;
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                _autoSplit(pdf, canvas, 10,
+                    pdf.internal.pageSize.getWidth(),
+                    pdf.internal.pageSize.getHeight(),
+                    'News Topic Map');
+                pdf.save(`news_topic_map_${NTM_PID}_${_stamp()}.pdf`);
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch (err) {
+            console.error('[NTMExport.run]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            _btnState(btnPdf, false); _btnState(btnImg, false);
+        }
+    }
+
+    /* ══ Export single card ══ */
+    async function runCard(areaId, cardKey, type, btn) {
+        if (!window.html2canvas)                    { _toast('html2canvas tidak tersedia', 'error'); return; }
+        if (type === 'pdf' && !window.jspdf?.jsPDF) { _toast('jsPDF tidak tersedia', 'error'); return; }
+
+        _btnState(btn, true);
+        _toast(type === 'pdf' ? 'Menyiapkan PDF…' : 'Mengambil gambar…', 'default', 99999);
+
+        try {
+            const area = document.getElementById(areaId);
+            if (!area) throw new Error('Area #' + areaId + ' tidak ditemukan');
+            const canvas = await _doCapture(area, true);
+            const label  = _cardLabels[cardKey] || cardKey;
+            const fname  = `ntm_${cardKey}_${NTM_PID}_${_stamp()}`;
+
+            if (type === 'image') {
+                const link = document.createElement('a');
+                link.download = fname + '.png';
+                link.href     = canvas.toDataURL('image/png');
+                link.click();
+                _toast('Gambar berhasil diunduh!', 'success');
+            } else {
+                const { jsPDF } = window.jspdf;
+                const landscape = canvas.width > canvas.height;
+                const pdf = new jsPDF({ orientation: landscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+                _fitCanvas(pdf, canvas, 10,
+                    pdf.internal.pageSize.getWidth(),
+                    pdf.internal.pageSize.getHeight(), label);
+                pdf.save(fname + '.pdf');
+                _toast('PDF berhasil diunduh!', 'success');
+            }
+        } catch (err) {
+            console.error('[NTMExport.runCard]', err);
+            _toast('Export gagal: ' + err.message, 'error');
+        } finally {
+            _btnState(btn, false);
+        }
+    }
+
+    return { run, runCard };
 })();
 </script>
 @endsection

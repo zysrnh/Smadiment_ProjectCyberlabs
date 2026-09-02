@@ -1498,35 +1498,73 @@
             }
 
             try {
-                $data = $this->client->topInfluencers(
+                $response = $this->client->topInfluencers(
                     (string) $projectId,
                     $startDate,
                     $endDate,
                     $startTime,
-                    $endTime
+                    $endTime,
+                    '',
+                    200
                 );
 
-                Log::info('topInfluencersData raw', [
+                // Handle jika response berbungkus 'data' atau array langsung
+                $rawData = $response['data'] ?? $response ?? [];
+                if (!is_array($rawData)) $rawData = [];
+
+                Log::info('topInfluencersData processed', [
                     'project_id' => $projectId,
-                    'sub'        => $sub,
-                    'count'      => count($data),
-                    'sample'     => count($data) > 0 ? array_slice($data[0], 0, 5) : [],
+                    'total_raw'  => count($rawData),
                 ]);
 
                 $influencers = [];
 
-                foreach ($data as $item) {
+                foreach ($rawData as $item) {
                     if (!is_array($item)) continue;
 
                     // Data user ada di dalam 'info'
                     $info = $item['info'] ?? [];
 
-                    // Screen name
-                    $screenName = $info['screen_name'] ?? ltrim($item['name'] ?? '', '@');
+                    // ── Filter platform: skip jika bukan Twitter ──────────────
+                    $platform = strtolower($item['media'] ?? $item['platform'] ?? $item['tcode'] ?? '');
+                    if ($platform && !in_array($platform, ['twitter', 'twit', 'x', ''])) {
+                        continue;
+                    }
+
+                    // Screen name — ambil dari info dulu, fallback dari item['name']
+                    $screenName = $info['screen_name'] ?? '';
+
+                    // Jika tidak ada di info, coba dari item['name']
+                    if (!$screenName) {
+                        $rawName = ltrim($item['name'] ?? '', '@');
+
+                        // ── Filter: skip YouTube Channel ID (format UC + 22 karakter alfanumerik) ──
+                        if (preg_match('/^UC[A-Za-z0-9_-]{20,}$/', $rawName)) {
+                            Log::debug('topInfluencersData: skipped YouTube channel ID', [
+                                'author_id' => $item['author_id'] ?? '',
+                                'name'      => $rawName,
+                            ]);
+                            continue;
+                        }
+
+                        // ── Filter: skip raw ID yang bukan Twitter username ──
+                        // Twitter username: max 15 char, hanya huruf/angka/underscore
+                        if (strlen($rawName) > 50 || preg_match('/[^A-Za-z0-9_]/', $rawName) && !strpos($rawName, '.')) {
+                            continue;
+                        }
+
+                        $screenName = $rawName;
+                    }
+
                     if (!$screenName) continue;
 
-                    // Display name
-                    $displayName = $info['name'] ?? $item['name'] ?? ('@' . $screenName);
+                    // Display name — jangan tampilkan raw channel ID sebagai nama
+                    $rawDisplayName = $info['name'] ?? $item['name'] ?? '';
+                    // Jika display name terlihat seperti YouTube channel ID, gunakan screen_name saja
+                    if (preg_match('/^UC[A-Za-z0-9_-]{20,}$/', $rawDisplayName)) {
+                        $rawDisplayName = '';
+                    }
+                    $displayName = $rawDisplayName ?: ('@' . $screenName);
 
                     // Counts — total = RT + Reply Count dari API
                     $total    = (int) ($item['total']    ?? 0);
@@ -1633,290 +1671,218 @@
     }
 }
  
-public function emotionAnalysisData(Request $request): \Illuminate\Http\JsonResponse
-{
-    $projectId = $request->query('project_id');
-    $startDate = $request->query('start_date', now()->startOfMonth()->format('Y-m-d'));
-    $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+    public function emotionAnalysisData(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $projectId = $request->query('project_id');
+        $startDate = $request->query('start_date', now()->startOfMonth()->format('Y-m-d'));
+        $endDate   = $request->query('end_date', now()->format('Y-m-d'));
 
-    if (!$projectId) {
-        return response()->json(['success' => false, 'error' => 'project_id required'], 422);
-    }
-
-    // ── Proporsi emotion per sentiment bucket ────────────────────────────
-    // Angka ini adalah "bobot" — akan dikalikan jumlah post per hari
-    $emotionMap = [
-        'positive' => [
-            'joy'          => 0.50,
-            'trust'        => 0.30,
-            'anticipation' => 0.20,
-        ],
-        'negative' => [
-            'anger'   => 0.40,
-            'fear'    => 0.25,
-            'sadness' => 0.20,
-            'disgust' => 0.15,
-        ],
-        'neutral' => [
-            'surprise'     => 0.60,
-            'anticipation' => 0.40,
-        ],
-    ];
-
-    try {
-        // ─── 1. Fetch mentions (semua platform, filter Twitter di bawah) ──
-        $rawMentions = $this->client->mentions(
-            $projectId,
-            $startDate,
-            $endDate,
-            0,      // sentiment_id: 0 = all
-            23,     // end_hour
-            true,   // include_content
-            0,      // offset
-            5000    // rows — ambil banyak supaya representatif
-        );
-
-        // Normalize response format (sama seperti extractArray di NewsController)
-        if (!is_array($rawMentions)) {
-            $mentions = [];
-        } elseif (empty($rawMentions) || isset($rawMentions[0])) {
-            $mentions = $rawMentions;
-        } elseif (isset($rawMentions['data']) && is_array($rawMentions['data'])) {
-            $mentions = $rawMentions['data'];
-        } else {
-            $mentions = $rawMentions;
+        if (!$projectId) {
+            return response()->json(['success' => false, 'error' => 'project_id required'], 422);
         }
 
-        Log::info('emotionAnalysis: raw mentions fetched', [
-            'project_id' => $projectId,
-            'total_raw'  => count($mentions),
-        ]);
+        // ── Emotion proportions per sentiment bucket ────────────────────────────
+        $emotionMap = [
+            'positive' => [
+                'joy'          => 0.50,
+                'trust'        => 0.30,
+                'anticipation' => 0.20,
+            ],
+            'negative' => [
+                'anger'   => 0.40,
+                'fear'    => 0.25,
+                'sadness' => 0.20,
+                'disgust' => 0.15,
+            ],
+            'neutral' => [
+                'surprise'     => 0.60,
+                'anticipation' => 0.40,
+            ],
+        ];
 
-        // ─── 2. Filter Twitter only ───────────────────────────────────────
-        $twitterMentions = array_values(array_filter($mentions, function ($item) {
-            $tcode = strtolower((string) ($item['tcode']      ?? ''));
-            $mt    = strtolower((string) ($item['media_type'] ?? ''));
-            $mtid  = (string) ($item['media_type_id']         ?? '');
-            $id    = (string) ($item['id']    ?? $item['docid'] ?? '');
-            $url   = (string) ($item['url']   ?? '');
-
-            return str_starts_with($tcode, 'tw-')
-                || str_contains($tcode, 'twitter')
-                || $mt   === 'tw'
-                || $mt   === 'twitter'
-                || $mtid === '1'
-                || str_starts_with($id, 'tw-')
-                || str_contains($url, 'twitter.com')
-                || str_contains($url, 'x.com');
-        }));
-
-        Log::info('emotionAnalysis: twitter mentions filtered', [
-            'twitter_count' => count($twitterMentions),
-        ]);
-
-        // ─── 3. Aggregate per tanggal per sentiment ───────────────────────
-        // trendBySentiment['2026-02-01']['positive'] = 123
-        $trendBySentiment = [];
-        $sentimentTotals  = ['positive' => 0, 'negative' => 0, 'neutral' => 0];
-        $processedTweets  = [];
-
-        foreach ($twitterMentions as $item) {
-            // Normalize sentiment string
-            $rawSentiment = strtolower(
-                $item['sentiment_str']
-                ?? $item['sentiment']
-                ?? ''
-            );
-
-            // Fallback ke class_sentiment / sentiment_id jika sentiment_str kosong
-            if (empty($rawSentiment)) {
-                $classVal = (string) ($item['class_sentiment'] ?? $item['sentiment_id'] ?? '0');
-                if ($classVal === '1' || $classVal === 'positive' || $classVal === 'positif') {
-                    $rawSentiment = 'positive';
-                } elseif ($classVal === '-1' || $classVal === 'negative' || $classVal === 'negatif') {
-                    $rawSentiment = 'negative';
-                } else {
-                    $rawSentiment = 'neutral';
+        try {
+            // ─── 1. Fetch tweets by engagement (User Request) ────────────────────
+            $allEngagementPosts = [];
+            $seenIds = [];
+            $subOptions = ['postbyview', 'postbyrt', 'postbyfav'];
+            
+            foreach ($subOptions as $sub) {
+                try {
+                    $result = $this->client->mostStatus($projectId, 'twitter', $startDate, $endDate, 0, 23, 100, $sub);
+                    if (is_array($result)) {
+                        foreach ($result as $item) {
+                            $uid = $item['id'] ?? $item['sub_id'] ?? md5(($item['content'] ?? '') . ($item['name'] ?? ''));
+                            if (!isset($seenIds[$uid])) {
+                                $seenIds[$uid] = true;
+                                $allEngagementPosts[] = $item;
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::warning("emotionAnalysis engagement fetch failed for $sub", ['error' => $e->getMessage()]);
                 }
             }
 
-            // Normalize alias
-            if (str_contains($rawSentiment, 'pos')) {
-                $bucket = 'positive';
-            } elseif (str_contains($rawSentiment, 'neg')) {
-                $bucket = 'negative';
-            } else {
-                $bucket = 'neutral';
-            }
-
-            $sentimentTotals[$bucket]++;
-
-            // Tanggal untuk trend
-            $dateKey = substr($item['date_created'] ?? '', 0, 10);
-            if ($dateKey && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateKey)) {
-                if (!isset($trendBySentiment[$dateKey])) {
-                    $trendBySentiment[$dateKey] = ['positive' => 0, 'negative' => 0, 'neutral' => 0];
+            // Fallback to most_retweets if still empty
+            if (empty($allEngagementPosts)) {
+                try {
+                    $rtResult = $this->client->mostRetweets($projectId, $startDate, $endDate);
+                    if (is_array($rtResult)) {
+                        $allEngagementPosts = $rtResult;
+                    }
+                } catch (\Exception $e) {
+                    Log::warning("emotionAnalysis fallback fetch failed", ['error' => $e->getMessage()]);
                 }
-                $trendBySentiment[$dateKey][$bucket]++;
             }
 
-            // Collect tweets untuk tabel (max 500)
-            if (count($processedTweets) < 500) {
+            // ─── 2. Aggregate counts and build trend ───────────────────────────
+            $trendBySentiment = [];
+            $sentimentTotals  = ['positive' => 0, 'negative' => 0, 'neutral' => 0];
+            $processedTweets  = [];
+
+            foreach ($allEngagementPosts as $item) {
+                // Determine sentiment bucket
+                $rawSentiment = strtolower($item['sentiment_str'] ?? $item['sentiment'] ?? '');
+                if (empty($rawSentiment)) {
+                    $classVal = (string) ($item['class_sentiment'] ?? $item['sentiment_id'] ?? '0');
+                    $rawSentiment = match($classVal) {
+                        '1', 'positive', 'positif' => 'positive',
+                        '-1', 'negative', 'negatif' => 'negative',
+                        default => 'neutral'
+                    };
+                }
+
+                $bucket = str_contains($rawSentiment, 'pos') ? 'positive' : (str_contains($rawSentiment, 'neg') ? 'negative' : 'neutral');
+                $sentimentTotals[$bucket]++;
+
+                // Trends by date
+                $dateKey = substr($item['date_created'] ?? '', 0, 10);
+                if ($dateKey && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateKey)) {
+                    if (!isset($trendBySentiment[$dateKey])) {
+                        $trendBySentiment[$dateKey] = ['positive' => 0, 'negative' => 0, 'neutral' => 0];
+                    }
+                    $trendBySentiment[$dateKey][$bucket]++;
+                }
+
+                // Prepare tweet for display
                 $processedTweets[] = [
                     'text'        => strip_tags($item['content'] ?? ''),
                     'emotion'     => $this->_distributedEmotion($bucket),
                     'sentiment'   => $bucket,
-                    'author'      => $item['author_scr_name'] ?? $item['author_id'] ?? '',
-                    'author_name' => $item['author_name']     ?? $item['author_scr_name'] ?? '',
-                    'timestamp'   => $item['date_created']    ?? '',
-                    'likes'       => (int) ($item['num_likes']    ?? $item['freq'] ?? 0),
-                    'retweets'    => (int) ($item['num_shares']   ?? $item['rt']   ?? 0),
-                    'replies'     => (int) ($item['num_comments'] ?? 0),
+                    'author'      => $item['author_scr_name'] ?? $item['name'] ?? $item['author_id'] ?? '',
+                    'author_name' => $item['author_name'] ?? $item['name'] ?? '',
+                    'timestamp'   => $item['date_created'] ?? '',
+                    'likes'       => (int) ($item['fav_count'] ?? $item['likes'] ?? $item['fav'] ?? 0),
+                    'retweets'    => (int) ($item['rt_count'] ?? $item['rt'] ?? $item['num_shares'] ?? 0),
+                    'replies'     => (int) ($item['reply_count'] ?? $item['replies'] ?? $item['num_comments'] ?? 0),
                     'url'         => $item['url'] ?? '#',
                 ];
             }
-        }
 
-        $totalPosts = array_sum($sentimentTotals);
+            // Sort processed tweets by total engagement
+            usort($processedTweets, fn($a, $b) => ($b['likes'] + $b['retweets'] + $b['replies']) - ($a['likes'] + $a['retweets'] + $a['replies']));
 
-        // ─── 4. Distribusi ke 8 emosi berdasarkan proporsi ───────────────
-        $emotionCounts = [
-            'joy'          => 0,
-            'trust'        => 0,
-            'fear'         => 0,
-            'surprise'     => 0,
-            'sadness'      => 0,
-            'disgust'      => 0,
-            'anger'        => 0,
-            'anticipation' => 0,
-        ];
+            // ─── 3. Final Emotion Analysis Distribution ────────────────────────
+            $emotionCounts = [
+                'joy' => 0, 'trust' => 0, 'fear' => 0, 'surprise' => 0,
+                'sadness' => 0, 'disgust' => 0, 'anger' => 0, 'anticipation' => 0,
+            ];
 
-        foreach ($emotionMap as $bucket => $proportions) {
-            $bucketTotal = $sentimentTotals[$bucket];
-            foreach ($proportions as $emotion => $ratio) {
-                $emotionCounts[$emotion] += (int) round($bucketTotal * $ratio);
-            }
-        }
-
-        // ─── 5. Build trend array (per tanggal per emosi) ─────────────────
-        ksort($trendBySentiment);
-        $trendArray = [];
-
-        foreach ($trendBySentiment as $date => $buckets) {
             foreach ($emotionMap as $bucket => $proportions) {
-                $bucketCount = $buckets[$bucket] ?? 0;
+                $bucketTotal = $sentimentTotals[$bucket];
                 foreach ($proportions as $emotion => $ratio) {
-                    $count = (int) round($bucketCount * $ratio);
-                    if ($count > 0) {
-                        $trendArray[] = [
-                            'date'    => $date,
-                            'emotion' => $emotion,
-                            'count'   => $count,
-                        ];
+                    $emotionCounts[$emotion] += (int) round($bucketTotal * $ratio);
+                }
+            }
+
+            // ─── 4. Build Trend array ────────────────────────────────────────
+            ksort($trendBySentiment);
+            $trendArray = [];
+            foreach ($trendBySentiment as $date => $buckets) {
+                foreach ($emotionMap as $bucket => $proportions) {
+                    $bucketCount = $buckets[$bucket] ?? 0;
+                    foreach ($proportions as $emotion => $ratio) {
+                        $count = (int) round($bucketCount * $ratio);
+                        if ($count > 0) {
+                            $trendArray[] = ['date' => $date, 'emotion' => $emotion, 'count' => $count];
+                        }
                     }
                 }
             }
-        }
 
-        // ─── 6. Sort tweets by engagement ─────────────────────────────────
-        usort($processedTweets, function ($a, $b) {
-            return ($b['likes'] + $b['retweets']) - ($a['likes'] + $a['retweets']);
-        });
+            // ─── 5. Summary Statistics ──────────────────────────────────────
+            $totalPosts = array_sum($sentimentTotals);
+            $emotions     = [];
+            $emotionTotalValue = array_sum($emotionCounts);
+            foreach ($emotionCounts as $emo => $count) {
+                $emotions[$emo] = [
+                    'count' => $count,
+                    'pct'   => $emotionTotalValue > 0 ? round(($count / $emotionTotalValue) * 100, 1) : 0,
+                ];
+            }
 
-        // ─── 7. Emotions summary ──────────────────────────────────────────
-        $emotionTotal = array_sum($emotionCounts);
-        $emotions     = [];
-        foreach ($emotionCounts as $emo => $count) {
-            $emotions[$emo] = [
-                'count' => $count,
-                'pct'   => $emotionTotal > 0 ? round(($count / $emotionTotal) * 100, 1) : 0,
+            $summary = [
+                'total_posts'  => $totalPosts,
+                'positive_pct' => $totalPosts > 0 ? round(($sentimentTotals['positive'] / $totalPosts) * 100, 1) : 0,
+                'negative_pct' => $totalPosts > 0 ? round(($sentimentTotals['negative'] / $totalPosts) * 100, 1) : 0,
+                'days_count'   => max(1, \Carbon\Carbon::parse($startDate)->diffInDays(\Carbon\Carbon::parse($endDate)) + 1),
+                'start_date'   => $startDate,
+                'end_date'     => $endDate,
+                'last_updated' => \Carbon\Carbon::now('Asia/Jakarta')->format('d M Y, H:i') . ' WIB',
             ];
+
+            return response()->json([
+                'success' => true,
+                'data'    => [
+                    'summary'  => $summary,
+                    'emotions' => $emotions,
+                    'trend'    => $trendArray,
+                    'tweets'   => array_slice($processedTweets, 0, 500),
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('emotionAnalysis error', ['error' => $e->getMessage(), 'project_id' => $projectId]);
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
+    }
 
-        // ─── 8. Summary stats ─────────────────────────────────────────────
-        $positiveTotal = $sentimentTotals['positive'];
-        $negativeTotal = $sentimentTotals['negative'];
+    private array $_emotionCounters = [];
 
-        $summary = [
-            'total_posts'  => $totalPosts,
-            'positive_pct' => $totalPosts > 0 ? round(($positiveTotal / $totalPosts) * 100, 1) : 0,
-            'negative_pct' => $totalPosts > 0 ? round(($negativeTotal / $totalPosts) * 100, 1) : 0,
-            'days_count'   => max(1, \Carbon\Carbon::parse($startDate)->diffInDays(\Carbon\Carbon::parse($endDate)) + 1),
-            'start_date'   => $startDate,
-            'end_date'     => $endDate,
-            'last_updated' => \Carbon\Carbon::now('Asia/Jakarta')->format('d M Y, H:i') . ' WIB',
+    /**
+     * Distribute emotion proportionally within a sentiment bucket.
+     * Uses a counter per bucket so tweets are spread across sub-emotions
+     * deterministically (round-robin weighted).
+     */
+    private function _distributedEmotion(string $bucket): string
+    {
+        $map = [
+            'positive' => ['joy' => 50, 'trust' => 30, 'anticipation' => 20],
+            'negative' => ['anger' => 40, 'fear' => 25, 'sadness' => 20, 'disgust' => 15],
+            'neutral'  => ['surprise' => 60, 'anticipation' => 40],
         ];
 
-        Log::info('emotionAnalysis: done', [
-            'project_id'      => $projectId,
-            'total_posts'     => $totalPosts,
-            'sentiment_dist'  => $sentimentTotals,
-            'emotion_dist'    => array_map(fn($v) => $v['count'], $emotions),
-        ]);
+        $proportions = $map[$bucket] ?? $map['neutral'];
 
-        return response()->json([
-            'success' => true,
-            'data'    => [
-                'summary'  => $summary,
-                'emotions' => $emotions,
-                'trend'    => $trendArray,
-                'tweets'   => $processedTweets,
-            ],
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('emotionAnalysis error', [
-            'error'      => $e->getMessage(),
-            'project_id' => $projectId,
-        ]);
-        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
-    }
-}
-
-private function _bucketToMainEmotion(string $bucket): string
-{
-    return match ($bucket) {
-        'positive' => 'joy',
-        'negative' => 'anger',
-        default    => 'surprise',
-    };
-}
-
-/**
- * Distribute emotion proportionally within a sentiment bucket.
- * Uses a counter per bucket so tweets are spread across sub-emotions
- * deterministically (round-robin weighted).
- */
-private array $_emotionCounters = [];
-
-private function _distributedEmotion(string $bucket): string
-{
-    $map = [
-        'positive' => ['joy' => 50, 'trust' => 30, 'anticipation' => 20],
-        'negative' => ['anger' => 40, 'fear' => 25, 'sadness' => 20, 'disgust' => 15],
-        'neutral'  => ['surprise' => 60, 'anticipation' => 40],
-    ];
-
-    $proportions = $map[$bucket] ?? $map['neutral'];
-
-    if (!isset($this->_emotionCounters[$bucket])) {
-        $this->_emotionCounters[$bucket] = 0;
-    }
-
-    $idx   = $this->_emotionCounters[$bucket]++;
-    $total = array_sum($proportions);
-    $pos   = $idx % $total;
-
-    $cumulative = 0;
-    foreach ($proportions as $emotion => $weight) {
-        $cumulative += $weight;
-        if ($pos < $cumulative) {
-            return $emotion;
+        if (!isset($this->_emotionCounters[$bucket])) {
+            $this->_emotionCounters[$bucket] = 0;
         }
+
+        $idx   = $this->_emotionCounters[$bucket]++;
+        $total = array_sum($proportions);
+        $pos   = $idx % $total;
+
+        $cumulative = 0;
+        foreach ($proportions as $emotion => $weight) {
+            $cumulative += $weight;
+            if ($pos < $cumulative) {
+                return $emotion;
+            }
+        }
+
+        return array_key_first($proportions);
     }
 
-    return array_key_first($proportions);
-}
 public function mostEngagementPage(Request $request)
 {
     try {
