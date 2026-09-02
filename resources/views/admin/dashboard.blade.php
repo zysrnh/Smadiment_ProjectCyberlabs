@@ -11,19 +11,21 @@
     --primary:     #038047;
     --primary-dk:  #026337;
     --primary-lt:  #E8F5EE;
-    --dark:        #1E293B;
+    --dark:        #0F172A;
     --dark-blue:   #273B4A;
+    --slate-800:   #1E293B;
     --slate-700:   #334155;
     --slate-600:   #475569;
     --slate-500:   #64748B;
     --slate-400:   #94A3B8;
+    --slate-300:   #CBD5E1;
     --slate-200:   #E2E8F0;
     --slate-100:   #F1F5F9;
     --slate-50:    #F8FAFC;
     --white:       #FFFFFF;
     
     --pos:         #059669;
-    --pos-lt:      #ECFDF5;
+    --pos-lt:      #E8F5EE;
     --neu:         #64748B;
     --neu-lt:      #F1F5F9;
     --neg:         #DC2626;
@@ -32,7 +34,7 @@
     --c-news:      #2563EB;
     --c-twit:      #0284C7;
     --c-fb:        #1D4ED8;
-    --c-ig:        #DB2777;
+    --c-ig:        #E1306C;
     --c-yt:        #DC2626;
     --c-tiktok:    #0F172A;
 
@@ -82,6 +84,9 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-right: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
   .adm-date-input {
     background: var(--dark-blue);
@@ -129,15 +134,12 @@
     border-radius: var(--radius);
     padding: 16px 18px;
     display: flex;
-    flex-direction: column;
+    align-items: flex-start;
     justify-content: space-between;
-    min-height: 105px;
+    gap: 12px;
   }
-  .kpi-card-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
+  .kpi-card-content {
+    flex: 1;
   }
   .kpi-label {
     font-size: 11px;
@@ -145,15 +147,8 @@
     color: var(--slate-500);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-  }
-  .kpi-icon-pill {
-    width: 32px;
-    height: 32px;
-    border-radius: var(--radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
+    display: block;
+    margin-bottom: 6px;
   }
   .kpi-val {
     font-family: var(--font);
@@ -169,13 +164,24 @@
     color: var(--slate-400);
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
+  }
+  .kpi-icon-box {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: var(--white);
+    flex-shrink: 0;
   }
 
   /* ══ 2-COLUMN LAYOUT ══════════════════════════════ */
   .adm-main-layout {
     display: grid;
-    grid-template-columns: 310px 1fr;
+    grid-template-columns: 290px 1fr;
     gap: 20px;
     align-items: start;
   }
@@ -275,7 +281,7 @@
     font-weight: 500;
   }
   .proj-nav-count {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--primary);
     background: var(--white);
@@ -305,7 +311,7 @@
 
   /* Card Header */
   .p-card-hd {
-    padding: 14px 18px;
+    padding: 12px 18px;
     background: var(--slate-50);
     border-bottom: 1px solid var(--slate-200);
     display: flex;
@@ -317,15 +323,16 @@
   .p-card-title-wrap {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
   }
   .p-card-id-badge {
-    background: var(--dark);
+    background: var(--slate-800);
     color: var(--white);
     font-size: 11px;
     font-weight: 700;
     padding: 3px 7px;
     border-radius: 4px;
+    letter-spacing: 0.3px;
   }
   .p-card-title {
     font-size: 15px;
@@ -368,11 +375,12 @@
   .adm-btn-secondary:hover {
     background: var(--slate-100);
     color: var(--dark);
+    border-color: var(--slate-300);
   }
 
   /* Card Body */
   .p-card-bd {
-    padding: 18px;
+    padding: 16px 18px;
   }
 
   /* Sentiment Breakdown Strip */
@@ -386,10 +394,10 @@
   }
   .sent-bars-wrap {
     flex: 1;
-    min-width: 200px;
+    min-width: 240px;
   }
   .sent-progress-track {
-    height: 8px;
+    height: 7px;
     background: var(--slate-100);
     border-radius: 4px;
     overflow: hidden;
@@ -400,15 +408,25 @@
   .sent-bar-neu { background: var(--neu); height: 100%; }
   .sent-bar-neg { background: var(--neg); height: 100%; }
   
-  .sent-legends {
+  .sent-badges-row {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .sent-pill-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    border-radius: 4px;
     font-size: 11px;
     font-weight: 600;
   }
-  .sent-leg-item { display: flex; align-items: center; gap: 4px; }
-  .sent-leg-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .sent-pill-tag.pos { background: var(--pos-lt); color: var(--pos); }
+  .sent-pill-tag.neu { background: var(--neu-lt); color: var(--neu); }
+  .sent-pill-tag.neg { background: var(--neg-lt); color: var(--neg); }
+  .sent-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
   .sent-totals-pill {
     display: flex;
@@ -435,7 +453,7 @@
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 8px;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
     padding: 10px 0;
     border-top: 1px solid var(--slate-100);
     border-bottom: 1px solid var(--slate-100);
@@ -444,7 +462,7 @@
     background: var(--slate-50);
     border: 1px solid var(--slate-200);
     border-radius: var(--radius);
-    padding: 8px;
+    padding: 8px 6px;
     text-align: center;
   }
   .plat-box-hd {
@@ -456,6 +474,7 @@
     font-weight: 700;
     margin-bottom: 4px;
     text-transform: uppercase;
+    letter-spacing: 0.3px;
   }
   .plat-box-val {
     font-size: 13px;
@@ -466,7 +485,7 @@
   /* Chart Container */
   .chart-area {
     position: relative;
-    height: 220px;
+    height: 210px;
     width: 100%;
   }
 
@@ -534,7 +553,7 @@
   </div>
 
   <form method="GET" action="{{ route('admin.dashboard') }}" class="adm-filter-form">
-    <label><i class="ph ph-calendar-blank me-1"></i>Periode:</label>
+    <label><i class="ph ph-calendar-blank"></i> Periode:</label>
     <input type="date" name="start_date" class="adm-date-input" value="{{ $start }}" required />
     <span style="color:rgba(255,255,255,0.4);font-weight:700;">–</span>
     <input type="date" name="end_date" class="adm-date-input" value="{{ $end }}" required />
@@ -544,72 +563,72 @@
   </form>
 </div>
 
-{{-- ── 2. KPI Summary Strip ── --}}
+{{-- ── 2. KPI Summary Strip (Solid & Crisp) ── --}}
 <div class="summary-grid">
   {{-- Card 1: Total Projects --}}
   <div class="kpi-card">
-    <div class="kpi-card-top">
+    <div class="kpi-card-content">
       <span class="kpi-label">Total Projects</span>
-      <div class="kpi-icon-pill" style="background:#ECFDF5;color:#059669;">
-        <i class="ph ph-folder-notch-open"></i>
+      <div class="kpi-val">{{ number_format($totalProjects) }}</div>
+      <div class="kpi-desc">
+        <i class="ph ph-check-circle" style="color:#059669;"></i>
+        <span>Semua project terdaftar aktif</span>
       </div>
     </div>
-    <div class="kpi-val">{{ number_format($totalProjects) }}</div>
-    <div class="kpi-desc">
-      <i class="ph ph-check-circle" style="color:#059669;"></i>
-      <span>Semua project terdaftar aktif</span>
+    <div class="kpi-icon-box" style="background:#038047;">
+      <i class="ph ph-folder-notch-open"></i>
     </div>
   </div>
 
   {{-- Card 2: Total Items / Mentions --}}
   <div class="kpi-card">
-    <div class="kpi-card-top">
+    <div class="kpi-card-content">
       <span class="kpi-label">Total Mentions</span>
-      <div class="kpi-icon-pill" style="background:#EFF6FF;color:#2563EB;">
-        <i class="ph ph-chart-bar"></i>
+      <div class="kpi-val">{{ number_format($totalMentions) }}</div>
+      <div class="kpi-desc">
+        <i class="ph ph-clock"></i>
+        <span>{{ date('d M', strtotime($start)) }} – {{ date('d M Y', strtotime($end)) }}</span>
       </div>
     </div>
-    <div class="kpi-val">{{ number_format($totalMentions) }}</div>
-    <div class="kpi-desc">
-      <i class="ph ph-clock"></i>
-      <span>Rentang {{ date('d M', strtotime($start)) }} – {{ date('d M Y', strtotime($end)) }}</span>
+    <div class="kpi-icon-box" style="background:#2563EB;">
+      <i class="ph ph-chart-bar"></i>
     </div>
   </div>
 
   {{-- Card 3: Sentiment Quality --}}
   <div class="kpi-card">
-    <div class="kpi-card-top">
+    <div class="kpi-card-content">
       <span class="kpi-label">Sentiment Quality</span>
-      <div class="kpi-icon-pill" style="background:#FEF2F2;color:#DC2626;">
-        <i class="ph ph-thumbs-up"></i>
+      <div class="kpi-val" style="font-size:20px;display:flex;align-items:baseline;gap:8px;">
+        <span style="color:#059669;">{{ $posPct }}% <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Pos</span></span>
+        <span style="color:#DC2626;">{{ $negPct }}% <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Neg</span></span>
+      </div>
+      <div class="kpi-desc">
+        <i class="ph ph-chart-pie-slice"></i>
+        <span>Rasio sentimen keseluruhan</span>
       </div>
     </div>
-    <div class="kpi-val" style="font-size:20px;display:flex;align-items:baseline;gap:8px;">
-      <span style="color:#059669;">{{ $posPct }}% <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Pos</span></span>
-      <span style="color:#DC2626;">{{ $negPct }}% <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Neg</span></span>
-    </div>
-    <div class="kpi-desc">
-      <i class="ph ph-chart-pie-slice"></i>
-      <span>Rata-rata sentimen keseluruhan</span>
+    <div class="kpi-icon-box" style="background:#D97706;">
+      <i class="ph ph-thumbs-up"></i>
     </div>
   </div>
 
   {{-- Card 4: Media Composition --}}
   <div class="kpi-card">
-    <div class="kpi-card-top">
-      <span class="kpi-label">Media Source Ratio</span>
-      <div class="kpi-icon-pill" style="background:#F1F5F9;color:#475569;">
-        <i class="ph ph-share-network"></i>
+    <div class="kpi-card-content">
+      <span class="kpi-label">Media Composition</span>
+      <div class="kpi-val" style="font-size:18px;display:flex;align-items:baseline;gap:6px;">
+        <span>{{ number_format($totalSocial) }} <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Social</span></span>
+        <span style="color:var(--slate-300);">/</span>
+        <span>{{ number_format($totalNews) }} <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Mass</span></span>
+      </div>
+      <div class="kpi-desc">
+        <i class="ph ph-globe"></i>
+        <span>6 platform aktif termonitor</span>
       </div>
     </div>
-    <div class="kpi-val" style="font-size:18px;display:flex;align-items:baseline;gap:6px;">
-      <span>{{ number_format($totalSocial) }} <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Social</span></span>
-      <span style="color:var(--slate-300);">/</span>
-      <span>{{ number_format($totalNews) }} <span style="font-size:11px;font-weight:600;color:var(--slate-400);">Mass</span></span>
-    </div>
-    <div class="kpi-desc">
-      <i class="ph ph-globe"></i>
-      <span>6 platform aktif termonitor</span>
+    <div class="kpi-icon-box" style="background:#334155;">
+      <i class="ph ph-share-network"></i>
     </div>
   </div>
 </div>
@@ -705,19 +724,16 @@
                 <div class="sent-bar-neu" style="width: {{ $pNeuPct }}%;" title="Netral: {{ $pNeuPct }}%"></div>
                 <div class="sent-bar-neg" style="width: {{ $pNegPct }}%;" title="Negatif: {{ $pNegPct }}%"></div>
               </div>
-              <div class="sent-legends">
-                <div class="sent-leg-item" style="color:var(--pos);">
-                  <span class="sent-leg-dot" style="background:var(--pos);"></span>
-                  <span>Positif: <strong>{{ $pPosPct }}%</strong> ({{ number_format($pPos) }})</span>
-                </div>
-                <div class="sent-leg-item" style="color:var(--neu);">
-                  <span class="sent-leg-dot" style="background:var(--neu);"></span>
-                  <span>Netral: <strong>{{ $pNeuPct }}%</strong> ({{ number_format($pNeu) }})</span>
-                </div>
-                <div class="sent-leg-item" style="color:var(--neg);">
-                  <span class="sent-leg-dot" style="background:var(--neg);"></span>
-                  <span>Negatif: <strong>{{ $pNegPct }}%</strong> ({{ number_format($pNeg) }})</span>
-                </div>
+              <div class="sent-badges-row">
+                <span class="sent-pill-tag pos">
+                  <span class="sent-pill-dot"></span> Positif: {{ $pPosPct }}% ({{ number_format($pPos) }})
+                </span>
+                <span class="sent-pill-tag neu">
+                  <span class="sent-pill-dot"></span> Netral: {{ $pNeuPct }}% ({{ number_format($pNeu) }})
+                </span>
+                <span class="sent-pill-tag neg">
+                  <span class="sent-pill-dot"></span> Negatif: {{ $pNegPct }}% ({{ number_format($pNeg) }})
+                </span>
               </div>
             </div>
 
@@ -854,14 +870,15 @@ function renderAllCharts() {
       data,
       borderColor: color,
       backgroundColor: 'transparent',
-      borderWidth: dashed ? 1.5 : 2,
+      borderWidth: dashed ? 1.8 : 2.4,
       borderDash: dashed ? [4, 3] : [],
       tension: 0.35,
-      pointRadius: 3,
-      pointHoverRadius: 5,
+      pointRadius: 4,
+      pointHoverRadius: 7,
       pointBackgroundColor: color,
       pointBorderColor: '#fff',
-      pointBorderWidth: 1.5,
+      pointBorderWidth: 2,
+      pointHitRadius: 10,
       fill: false,
     });
 
@@ -880,6 +897,10 @@ function renderAllCharts() {
         responsive: true,
         maintainAspectRatio: false,
         layout: { padding: { top: 6, right: 6, bottom: 0, left: 0 } },
+        hover: {
+          mode: 'nearest',
+          intersect: true
+        },
         plugins: {
           legend: {
             position: 'top',
@@ -890,28 +911,29 @@ function renderAllCharts() {
               padding: 12,
               font: { size: 11, weight: '600', family: "'Poppins', sans-serif" },
               color: '#475569',
-              boxWidth: 6,
-              boxHeight: 6
+              boxWidth: 7,
+              boxHeight: 7
             }
           },
           tooltip: {
-            mode: 'index',
-            intersect: false,
-            backgroundColor: '#1E293B',
-            titleColor: '#FFFFFF',
-            bodyColor: '#F1F5F9',
+            mode: 'nearest',
+            intersect: true,
+            backgroundColor: '#0F172A',
+            titleColor: '#94A3B8',
+            bodyColor: '#FFFFFF',
             borderColor: '#334155',
             borderWidth: 1,
-            padding: 10,
-            cornerRadius: 6,
-            titleFont: { size: 11, weight: '700', family: "'Poppins', sans-serif" },
-            bodyFont: { size: 11, weight: '500', family: "'Poppins', sans-serif" },
+            padding: 8,
+            cornerRadius: 4,
             displayColors: true,
-            boxWidth: 6,
-            boxHeight: 6,
+            boxWidth: 7,
+            boxHeight: 7,
             boxPadding: 4,
+            titleFont: { size: 10, weight: '600', family: "'Poppins', sans-serif" },
+            bodyFont: { size: 12, weight: '700', family: "'Poppins', sans-serif" },
             callbacks: {
-              label: (c) => ` ${c.dataset.label}: ${c.parsed.y.toLocaleString()} mentions`
+              title: (items) => items[0]?.label ? items[0].label : '',
+              label: (ctx) => ` ${ctx.dataset.label}: ${Number(ctx.parsed.y).toLocaleString()} mentions`
             }
           }
         },
@@ -920,9 +942,9 @@ function renderAllCharts() {
             grid: { display: false },
             border: { display: false },
             ticks: {
-              font: { size: 10, weight: '500', family: "'Poppins', sans-serif" },
+              font: { size: 10, weight: '600', family: "'Poppins', sans-serif" },
               color: '#94A3B8',
-              padding: 4,
+              padding: 6,
               maxRotation: 0,
               autoSkip: true,
               maxTicksLimit: 7
@@ -930,10 +952,10 @@ function renderAllCharts() {
           },
           y: {
             beginAtZero: true,
-            grid: { color: 'rgba(226, 232, 240, 0.6)', drawBorder: false },
+            grid: { color: 'rgba(226, 232, 240, 0.7)', drawBorder: false },
             border: { display: false },
             ticks: {
-              font: { size: 10, weight: '500', family: "'Poppins', sans-serif" },
+              font: { size: 10, weight: '600', family: "'Poppins', sans-serif" },
               color: '#94A3B8',
               padding: 8,
               maxTicksLimit: 5,
@@ -941,7 +963,10 @@ function renderAllCharts() {
             }
           }
         },
-        interaction: { intersect: false, mode: 'index' }
+        interaction: {
+          mode: 'nearest',
+          intersect: true
+        }
       }
     });
   });
