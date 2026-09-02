@@ -329,9 +329,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
-                        <h3 class="mb-0 text-white f-w-300" id="valPos">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="valPos">{{ number_format($posVal ?? 0, 0, ',', '.') }}</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctPos">
-                            <i class="ph ph-chart-line-up me-1"></i>Loading…
+                            <i class="ph ph-chart-line-up me-1"></i>{{ ($totalVal ?? 0) > 0 ? number_format((($posVal ?? 0) / $totalVal) * 100, 1) : 0 }}% Share
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -341,16 +341,16 @@
             </div>
         </div>
     </div>
-<div class="col-md-6 col-xl-3">
+    <div class="col-md-6 col-xl-3">
         <div class="card h-100 bg-danger text-white kpi-card-hover clickable" style="animation:fadeUp .38s ease-out .10s both;"
              onclick="MSPanel.openSentiment('neg')">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
-                        <h3 class="mb-0 text-white f-w-300" id="valNeg">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="valNeg">{{ number_format($negVal ?? 0, 0, ',', '.') }}</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeg">
-                            <i class="ph ph-chart-line-up me-1"></i>Loading…
+                            <i class="ph ph-chart-line-up me-1"></i>{{ ($totalVal ?? 0) > 0 ? number_format((($negVal ?? 0) / $totalVal) * 100, 1) : 0 }}% Share
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -367,9 +367,9 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
-                        <h3 class="mb-0 text-white f-w-300" id="valNeu">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="valNeu">{{ number_format($neuVal ?? 0, 0, ',', '.') }}</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="pctNeu">
-                            <i class="ph ph-chart-line-up me-1"></i>Loading…
+                            <i class="ph ph-chart-line-up me-1"></i>{{ ($totalVal ?? 0) > 0 ? number_format((($neuVal ?? 0) / $totalVal) * 100, 1) : 0 }}% Share
                         </p>
                     </div>
                     <div class="flex-shrink-0 ms-3">
@@ -386,7 +386,7 @@
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
-                        <h3 class="mb-0 text-white f-w-300" id="valTotal">—</h3>
+                        <h3 class="mb-0 text-white f-w-300" id="valTotal">{{ number_format($totalVal ?? 0, 0, ',', '.') }}</h3>
                         <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
                             <i class="ph ph-calendar-blank me-1"></i>{{ \Carbon\Carbon::parse($startDate)->format('d M') }} – {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
                         </p>

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\MK;
 
 use App\Http\Controllers\Controller;
+use App\Models\ProjectDailySentiment;
 use App\Services\MediaKernelsClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class MediaStatisticController extends Controller
@@ -35,7 +37,21 @@ class MediaStatisticController extends Controller
         $projectId = $request->get('project_id') ?? ($projects[0]['id'] ?? null);
         $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate   = $request->get('end_date', now()->format('Y-m-d'));
-        return view('mk.media-statistic', compact('projects', 'projectId', 'startDate', 'endDate'));
+
+        $stats = ProjectDailySentiment::where('project_id', $projectId)
+            ->whereBetween('date', [$startDate, $endDate])
+            ->selectRaw('SUM(positive) as pos, SUM(neutral) as neu, SUM(negative) as neg, SUM(total) as tot')
+            ->first();
+
+        $posVal   = (int) ($stats->pos ?? 0);
+        $negVal   = (int) ($stats->neg ?? 0);
+        $neuVal   = (int) ($stats->neu ?? 0);
+        $totalVal = (int) ($stats->tot ?? 0);
+
+        return view('mk.media-statistic', compact(
+            'projects', 'projectId', 'startDate', 'endDate',
+            'posVal', 'negVal', 'neuVal', 'totalVal'
+        ));
     }
 
     // ───────────────────────────────────────────────
@@ -52,226 +68,186 @@ class MediaStatisticController extends Controller
             return response()->json(['error' => 'project_id required'], 422);
         }
 
-        // ── Definisi platform: label + key di dalam bymedia response API ──
-        //
-        // Dari log aktual, bymedia shape-nya:
-        // { "doc":"88065", "fb":"4488", "twit":"180524",
-        //   "youtube":"7651", "instagram":"648", "tiktok":"2153" }
-        //
-        // Perhatikan: youtube & instagram pakai nama penuh, bukan alias pendek.
-        // Kita daftarkan semua kemungkinan alias agar robust terhadap perubahan API.
-        $platforms = [
-            [
-                'media'    => 'doc',
-                'label'    => 'Mass Media',
-                'category' => 'mass_media',
-                'aliases'  => ['doc', 'news', 'online'],
-            ],
-            [
-                'media'    => 'twitter',
-                'label'    => 'X (Twitter)',
-                'category' => 'social_media',
-                'aliases'  => ['twit', 'twitter', 'x'],
-            ],
-            [
-                'media'    => 'facebook',
-                'label'    => 'Facebook',
-                'category' => 'social_media',
-                'aliases'  => ['fb', 'facebook'],
-            ],
-            [
-                'media'    => 'instagram',
-                'label'    => 'Instagram',
-                'category' => 'social_media',
-                'aliases'  => ['instagram', 'ig'],   // API pakai 'instagram', bukan 'ig'
-            ],
-            [
-                'media'    => 'youtube',
-                'label'    => 'YouTube',
-                'category' => 'social_media',
-                'aliases'  => ['youtube', 'yt'],      // API pakai 'youtube', bukan 'yt'
-            ],
-            [
-                'media'    => 'tiktok',
-                'label'    => 'TikTok',
-                'category' => 'social_media',
-                'aliases'  => ['tiktok', 'tt'],
-            ],
-        ];
+        $cacheKey = "media_stat_plat_{$projectId}_{$startDate}_{$endDate}";
 
-        $results   = [];
-        $massTotal = 0;
-        $socTotal  = 0;
-        $bymedia   = [];
-
-        // ── Satu kali panggil API — response selalu return semua platform ──
-        try {
-            $data = $this->mk->volumeTotal((string) $projectId, 'doc', $startDate, $endDate);
-
-            Log::info('mentionByPlatform volumeTotal raw', [
-                'keys'    => is_array($data) ? array_keys($data) : gettype($data),
-                'preview' => is_array($data) ? array_slice($data, 0, 3, true) : $data,
-            ]);
-
-            // Ekstrak bymedia — normalize semua key ke lowercase
-            if (isset($data['bymedia']) && is_array($data['bymedia'])) {
-                foreach ($data['bymedia'] as $k => $v) {
-                    $bymedia[strtolower($k)] = (int) $v;
-                }
-            }
-
-        } catch (\Throwable $e) {
-            Log::warning('mentionByPlatform: volumeTotal failed', [
-                'error' => $e->getMessage(),
-            ]);
-        }
-
-        // ── Petakan setiap platform ke nilai dari bymedia ──
-        foreach ($platforms as $plat) {
-            $count = 0;
-
-            // Coba setiap alias sampai ketemu yang ada di bymedia
-            foreach ($plat['aliases'] as $alias) {
-                if (isset($bymedia[strtolower($alias)])) {
-                    $count = $bymedia[strtolower($alias)];
-                    break;
-                }
-            }
-
-            $results[] = [
-                'media'    => $plat['media'],
-                'label'    => $plat['label'],
-                'count'    => $count,
-                'category' => $plat['category'],
+        $res = Cache::remember($cacheKey, 1800, function () use ($projectId, $startDate, $endDate) {
+            $platforms = [
+                [
+                    'media'    => 'doc',
+                    'label'    => 'Mass Media',
+                    'category' => 'mass_media',
+                    'aliases'  => ['doc', 'news', 'online'],
+                ],
+                [
+                    'media'    => 'twitter',
+                    'label'    => 'X (Twitter)',
+                    'category' => 'social_media',
+                    'aliases'  => ['twit', 'twitter', 'x'],
+                ],
+                [
+                    'media'    => 'facebook',
+                    'label'    => 'Facebook',
+                    'category' => 'social_media',
+                    'aliases'  => ['fb', 'facebook'],
+                ],
+                [
+                    'media'    => 'instagram',
+                    'label'    => 'Instagram',
+                    'category' => 'social_media',
+                    'aliases'  => ['instagram', 'ig'],
+                ],
+                [
+                    'media'    => 'youtube',
+                    'label'    => 'YouTube',
+                    'category' => 'social_media',
+                    'aliases'  => ['youtube', 'yt'],
+                ],
+                [
+                    'media'    => 'tiktok',
+                    'label'    => 'TikTok',
+                    'category' => 'social_media',
+                    'aliases'  => ['tiktok', 'tt'],
+                ],
             ];
 
-            if ($plat['category'] === 'mass_media') {
-                $massTotal += $count;
-            } else {
-                $socTotal += $count;
+            $results   = [];
+            $massTotal = 0;
+            $socTotal  = 0;
+            $bymedia   = [];
+
+            try {
+                $data = $this->mk->volumeTotal((string) $projectId, 'doc', $startDate, $endDate);
+
+                if (isset($data['bymedia']) && is_array($data['bymedia'])) {
+                    foreach ($data['bymedia'] as $k => $v) {
+                        $bymedia[strtolower($k)] = (int) $v;
+                    }
+                }
+
+            } catch (\Throwable $e) {
+                Log::warning('mentionByPlatform: volumeTotal failed', [
+                    'error' => $e->getMessage(),
+                ]);
             }
-        }
 
-        Log::info('mentionByPlatform result', [
-            'bymedia_keys' => array_keys($bymedia),
-            'results'      => array_map(fn ($r) => "{$r['media']}={$r['count']}", $results),
-            'mass_total'   => $massTotal,
-            'social_total' => $socTotal,
-        ]);
+            foreach ($platforms as $plat) {
+                $count = 0;
+                foreach ($plat['aliases'] as $alias) {
+                    if (isset($bymedia[strtolower($alias)])) {
+                        $count = $bymedia[strtolower($alias)];
+                        break;
+                    }
+                }
 
-        return response()->json([
-            'platforms'    => $results,
-            'mass_total'   => $massTotal,
-            'social_total' => $socTotal,
-            'grand_total'  => $massTotal + $socTotal,
-        ]);
+                $results[] = [
+                    'media'    => $plat['media'],
+                    'label'    => $plat['label'],
+                    'count'    => $count,
+                    'category' => $plat['category'],
+                ];
+
+                if ($plat['category'] === 'mass_media') {
+                    $massTotal += $count;
+                } else {
+                    $socTotal += $count;
+                }
+            }
+
+            return [
+                'platforms'    => $results,
+                'mass_total'   => $massTotal,
+                'social_total' => $socTotal,
+                'grand_total'  => $massTotal + $socTotal,
+            ];
+        });
+
+        return response()->json($res);
     }
 
     // ───────────────────────────────────────────────
     // TREND BY MEDIA – GET /mk/api/media-statistic/trend-by-media
-    //
-    // Fetch trend per platform, bisa semua sekaligus atau
-    // filter satu platform via ?media=twitter
-    //
-    // Response:
-    // {
-    //   "data": [
-    //     { "keyword": "twitter",  "data": [{"date":"2026-02-01","count":1234}, ...] },
-    //     { "keyword": "tiktok",   "data": [...] },
-    //     { "keyword": "facebook", "data": [...] },
-    //     { "keyword": "instagram","data": [...] },
-    //     { "keyword": "youtube",  "data": [...] },
-    //     { "keyword": "doc",      "data": [...] },
-    //   ]
-    // }
     // ───────────────────────────────────────────────
 
     public function trendByMedia(Request $request)
-{
-    $projectId   = $request->get('project_id');
-    $startDate   = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
-    $endDate     = $request->get('end_date',   now()->format('Y-m-d'));
-    $mediaFilter = $request->get('media');
+    {
+        $projectId   = $request->get('project_id');
+        $startDate   = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+        $endDate     = $request->get('end_date',   now()->format('Y-m-d'));
+        $mediaFilter = $request->get('media');
 
-    if (! $projectId) {
-        return response()->json(['error' => 'project_id required'], 422);
-    }
-
-    // trendsTotal TIDAK punya param media — return semua platform sekaligus
-    // Panggil sekali saja, lalu petakan per keyword
-    try {
-        $raw = $this->mk->trendsTotal(
-            (string) $projectId,
-            $startDate,   // ← FIX: dulu $mediaKey nyasar ke sini
-            $endDate
-        );
-
-        Log::info('trendByMedia trendsTotal raw', [
-            'keys'    => is_array($raw) ? array_keys($raw) : gettype($raw),
-            'preview' => is_array($raw) ? array_slice($raw, 0, 2, true) : $raw,
-        ]);
-
-    } catch (\Throwable $e) {
-        Log::warning('trendByMedia trendsTotal failed', ['error' => $e->getMessage()]);
-        $raw = ['data' => []];
-    }
-
-    // Map keyword dari response ke label platform yang dikenal
-    // trendsTotal return keyword dalam UPPERCASE (DOC, TWIT, FB, dll)
-    $keywordMap = [
-        'DOC'       => 'doc',
-        'TWIT'      => 'twitter',
-        'TWITTER'   => 'twitter',
-        'FB'        => 'facebook',
-        'FACEBOOK'  => 'facebook',
-        'IG'        => 'instagram',
-        'INSTAGRAM' => 'instagram',
-        'YT'        => 'youtube',
-        'YOUTUBE'   => 'youtube',
-        'TIKTOK'    => 'tiktok',
-        'TT'        => 'tiktok',
-    ];
-
-    // Rebuild result — group by normalized platform key
-    $grouped = [];
-    foreach ($raw['data'] ?? [] as $item) {
-        $kw  = strtoupper($item['keyword'] ?? '');
-        $key = $keywordMap[$kw] ?? strtolower($kw);
-
-        if (! isset($grouped[$key])) {
-            $grouped[$key] = [];
+        if (! $projectId) {
+            return response()->json(['error' => 'project_id required'], 422);
         }
 
-        foreach ($item['data'] ?? [] as $pt) {
-            $date  = substr((string)($pt['date'] ?? ''), 0, 10);
-            $count = (int)($pt['count'] ?? 0);
-            if (! $date) continue;
+        $cacheKey = "media_stat_trend_{$projectId}_{$startDate}_{$endDate}_" . ($mediaFilter ?: 'all');
 
-            // merge by date kalau ada duplikat
-            $grouped[$key][$date] = ($grouped[$key][$date] ?? 0) + $count;
-        }
+        $res = Cache::remember($cacheKey, 1800, function () use ($projectId, $startDate, $endDate, $mediaFilter) {
+            try {
+                $raw = $this->mk->trendsTotal(
+                    (string) $projectId,
+                    $startDate,
+                    $endDate
+                );
+            } catch (\Throwable $e) {
+                Log::warning('trendByMedia trendsTotal failed', ['error' => $e->getMessage()]);
+                $raw = ['data' => []];
+            }
+
+            $keywordMap = [
+                'DOC'       => 'doc',
+                'TWIT'      => 'twitter',
+                'TWITTER'   => 'twitter',
+                'FB'        => 'facebook',
+                'FACEBOOK'  => 'facebook',
+                'IG'        => 'instagram',
+                'INSTAGRAM' => 'instagram',
+                'YT'        => 'youtube',
+                'YOUTUBE'   => 'youtube',
+                'TIKTOK'    => 'tiktok',
+                'TT'        => 'tiktok',
+            ];
+
+            $grouped = [];
+            foreach ($raw['data'] ?? [] as $item) {
+                $kw  = strtoupper($item['keyword'] ?? '');
+                $key = $keywordMap[$kw] ?? strtolower($kw);
+
+                if (! isset($grouped[$key])) {
+                    $grouped[$key] = [];
+                }
+
+                foreach ($item['data'] ?? [] as $pt) {
+                    $date  = substr((string)($pt['date'] ?? ''), 0, 10);
+                    $count = (int)($pt['count'] ?? 0);
+                    if (! $date) continue;
+
+                    $grouped[$key][$date] = ($grouped[$key][$date] ?? 0) + $count;
+                }
+            }
+
+            $allKeys = ['twitter', 'tiktok', 'facebook', 'instagram', 'youtube', 'doc'];
+            $filtered = $mediaFilter ? [$mediaFilter] : $allKeys;
+
+            $result = [];
+            foreach ($filtered as $mk) {
+                $dateMap = $grouped[$mk] ?? [];
+                ksort($dateMap);
+
+                $result[] = [
+                    'keyword' => $mk,
+                    'data'    => array_values(array_map(
+                        fn($d, $c) => ['date' => $d, 'count' => $c],
+                        array_keys($dateMap),
+                        array_values($dateMap)
+                    )),
+                ];
+            }
+
+            return ['data' => $result];
+        });
+
+        return response()->json($res);
     }
-
-    $allKeys = ['twitter', 'tiktok', 'facebook', 'instagram', 'youtube', 'doc'];
-    $filtered = $mediaFilter ? [$mediaFilter] : $allKeys;
-
-    $result = [];
-    foreach ($filtered as $mk) {
-        $dateMap = $grouped[$mk] ?? [];
-        ksort($dateMap);
-
-        $result[] = [
-            'keyword' => $mk,
-            'data'    => array_values(array_map(
-                fn($d, $c) => ['date' => $d, 'count' => $c],
-                array_keys($dateMap),
-                array_values($dateMap)
-            )),
-        ];
-    }
-
-    return response()->json(['data' => $result]);
-}
 
     // ───────────────────────────────────────────────
     // TAB 2 – GET /mk/api/media-statistic/sentiment-engagement
