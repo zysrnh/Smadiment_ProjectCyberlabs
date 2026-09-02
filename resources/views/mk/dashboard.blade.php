@@ -1681,21 +1681,76 @@ dataLabels: {
                 t.classList.toggle('active', t.dataset.s === _curSent)
             );
             const list = _$('dashPanelList');
-            list.innerHTML = `<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat mentions…</span></div>`;
             const overlay = _$('dashPanelOverlay'), panel = _$('dashSntPanel');
             overlay.classList.remove('hiding'); panel.classList.remove('hiding');
             overlay.classList.add('show'); panel.classList.add('show');
-            try {
-                const sdStr = _overrideSd || DashCfg.sd;
-                const edStr = _overrideEd || DashCfg.ed;
-                const key = `${_curPid}_${platform}_${sdStr}_${edStr}`;
-                if (!_cache[key]) _cache[key] = await _fetchAll(platform, _curPid, sdStr, edStr);
+
+            const sdStr = _overrideSd || DashCfg.sd;
+            const edStr = _overrideEd || DashCfg.ed;
+            const key = `${_curPid}_${platform}_${sdStr}_${edStr}`;
+
+            // If already cached in memory, render instantly
+            if (_cache[key]) {
                 _allItems = _cache[key];
                 _filtered = _filterBySent(_allItems, _curSent);
-                _render(list, _filtered, platform, meta.color);
-            } catch (err) {
-                list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:13px;">Gagal memuat data<br><small>${_es(err.message)}</small></div>`;
+                _render(list, _filtered, platform, meta.color, false);
+                return;
             }
+
+            // Progressive streaming mode: initialize empty array and show initial loader
+            _allItems = [];
+            list.innerHTML = `<div class="do-panel-loading" id="panelInitialLoader"><div class="do-panel-spinner"></div><span>Memuat mentions…</span></div>`;
+
+            let platformsToFetch = [];
+            if (platform === 'all') {
+                platformsToFetch = ['doc', 'twit', 'fb', 'instagram', 'youtube', 'tiktok'];
+            } else if (platform === 'social') {
+                platformsToFetch = ['twit', 'fb', 'instagram', 'youtube', 'tiktok'];
+            } else {
+                platformsToFetch = [platform];
+            }
+
+            let pidsToFetch = (_curPid === 'ALL_PROJECTS') ? (KPI_DATA.allPids || []) : [_curPid];
+            let totalTasks = platformsToFetch.length * pidsToFetch.length;
+            let completedTasks = 0;
+            let hasRenderedFirst = false;
+
+            pidsToFetch.forEach(pid => {
+                platformsToFetch.forEach(p => {
+                    _fetchOne(p, pid, sdStr, edStr).then(items => {
+                        completedTasks++;
+                        if (Array.isArray(items) && items.length > 0) {
+                            _allItems = _allItems.concat(items);
+                            _allItems.sort((a,b)=>new Date(b.date_created||b.created_at||0)-new Date(a.date_created||a.created_at||0));
+                            _filtered = _filterBySent(_allItems, _curSent);
+                            _render(list, _filtered, platform, meta.color, completedTasks < totalTasks);
+                            hasRenderedFirst = true;
+                        }
+
+                        if (completedTasks >= totalTasks) {
+                            _cache[key] = _allItems;
+                            if (!hasRenderedFirst) {
+                                _filtered = _filterBySent(_allItems, _curSent);
+                                _render(list, _filtered, platform, meta.color, false);
+                            } else {
+                                const streamBadge = document.getElementById('panelStreamStatus');
+                                if (streamBadge) streamBadge.remove();
+                            }
+                        } else if (hasRenderedFirst) {
+                            const streamBadge = document.getElementById('panelStreamStatus');
+                            if (streamBadge) {
+                                streamBadge.innerHTML = `<span class="spinner-border spinner-border-sm me-1" style="width:11px;height:11px;border-width:2px;display:inline-block;vertical-align:middle;"></span> Memuat platform lain (${completedTasks}/${totalTasks})...`;
+                            }
+                        }
+                    }).catch(err => {
+                        completedTasks++;
+                        if (completedTasks >= totalTasks && !hasRenderedFirst) {
+                            _filtered = _filterBySent(_allItems, _curSent);
+                            _render(list, _filtered, platform, meta.color, false);
+                        }
+                    });
+                });
+            });
         }
 
         function close() {
@@ -1716,83 +1771,51 @@ dataLabels: {
             );
             _filtered = _filterBySent(_allItems, sent);
             const meta = DashCfg.platMeta[_curPlat] || { color: '#4361EE' };
-            _render(_$('dashPanelList'), _filtered, _curPlat, meta.color);
+            _render(_$('dashPanelList'), _filtered, _curPlat, meta.color, false);
         }
 
         function _filterBySent(items, sent) {
             return sent === 'all' ? items : items.filter(i => _normSent(i) === sent);
         }
 
-        async function _fetchAll(platform, pid, sd, ed) {
-            if (pid === 'ALL_PROJECTS') {
-                const pids = KPI_DATA.allPids || [];
-                const res = await Promise.allSettled(pids.map(id => _fetchAll(platform, id, sd, ed)));
-                const items = res.flatMap(r => r.status==='fulfilled' ? r.value : []);
-                items.sort((a,b)=>new Date(b.date_created||b.created_at||0)-new Date(a.date_created||a.created_at||0));
-                return items;
-            }
-
-            if (platform === 'all') {
-                const all = ['doc','twit','fb','instagram','youtube','tiktok'];
-                const res = await Promise.allSettled(all.map(p => _fetchOne(p, pid, sd, ed)));
-                const items = res.flatMap(r => r.status==='fulfilled' ? r.value : []);
-                items.sort((a,b)=>new Date(b.date_created||b.created_at||0)-new Date(a.date_created||a.created_at||0));
-                return items;
-            }
-            if (platform === 'social') {
-                const s = ['twit','fb','instagram','youtube','tiktok'];
-                const res = await Promise.allSettled(s.map(p => _fetchOne(p, pid, sd, ed)));
-                const items = res.flatMap(r => r.status==='fulfilled' ? r.value : []);
-                items.sort((a,b)=>new Date(b.date_created||b.created_at||0)-new Date(a.date_created||a.created_at||0));
-                return items;
-            }
-            return _fetchOne(platform, pid, sd, ed);
-        }
-
         async function _fetchOne(platform, pid, sd, ed) {
             const q = `project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=500&start=0`;
+            const ctrl = new AbortController();
+            const tid = setTimeout(() => ctrl.abort(), 6000); // 6 seconds fast timeout
+
             if (platform === 'instagram') {
-                for (const sub of ['postbylike','postbyview','postbycomment','postbydate']) {
-                    const ic = new AbortController(), it = setTimeout(() => ic.abort(), 15000);
-                    try {
-                        const r = await fetch(`/mk/api/news/ig-top-status?${q}${sub ? '&sub='+sub : ''}`, { signal: ic.signal });
-                        clearTimeout(it);
-                        const d = await r.json();
-                        const items = Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []);
-                        if (items.length > 0) return items.map(i => ({ ...i, _platform: platform }));
-                    } catch (e) { clearTimeout(it); continue; }
-                }
-                return [];
+                try {
+                    const r = await fetch(`/mk/api/news/ig-top-status?${q}&sub=postbylike`, { signal: ctrl.signal });
+                    clearTimeout(tid);
+                    const d = await r.json();
+                    const items = Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []);
+                    return items.map(i => ({ ...i, _platform: platform }));
+                } catch (e) { clearTimeout(tid); return []; }
             }
 
             if (platform === 'youtube') {
-                for (const sub of ['postbylike','postbyview','postbycomment','postbydate','']) {
-                    const ic = new AbortController(), it = setTimeout(() => ic.abort(), 15000);
-                    try {
-                        const r = await fetch(`/mk/api/news/ytb-top-status?${q}${sub ? '&sub='+sub : ''}`, { signal: ic.signal });
-                        clearTimeout(it);
-                        const d = await r.json();
-                        const items = Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []);
-                        if (items.length > 0) return items.map(i => ({ ...i, _platform: platform }));
-                    } catch (e) { clearTimeout(it); continue; }
-                }
-                return [];
+                try {
+                    const r = await fetch(`/mk/api/news/ytb-top-status?${q}&sub=postbylike`, { signal: ctrl.signal });
+                    clearTimeout(tid);
+                    const d = await r.json();
+                    const items = Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []);
+                    return items.map(i => ({ ...i, _platform: platform }));
+                } catch (e) { clearTimeout(tid); return []; }
             }
 
-            /* ── Online News: use articles API (has proper URLs) ── */
+            /* ── Online News: use articles API ── */
             if (platform === 'doc') {
-                const docQ = `project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=50&start=0&media=doc`;
+                const docQ = `project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=500&start=0&media=doc`;
                 const artUrl = `/mk/api/news/articles?${docQ}`;
-                const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
                 try {
-                    const r = await fetch(artUrl, { signal: ctrl.signal }); clearTimeout(tid);
+                    const r = await fetch(artUrl, { signal: ctrl.signal });
+                    clearTimeout(tid);
                     if (!r.ok) return [];
                     const d = await r.json();
                     let items = Array.isArray(d?.data) ? d.data : (Array.isArray(d) ? d : []);
                     return items.map(i => ({
                         ...i,
                         _platform: 'doc',
-                        /* Normalise fields so panel renderer picks them up correctly */
                         content:         i.content  || i.summary || '',
                         title:           i.title    || 'Untitled',
                         publisher:       i.publisher || i.name || '',
@@ -1809,15 +1832,13 @@ dataLabels: {
                 fb:      `/mk/api/news/fb-top-status?${q}&sub=fblike`,
                 tiktok:  `/mk/api/news/tiktok-top-status?${q}&sub=postbylike`,
             };
-            const twitFallback = `/mk/api/news/mentions?${q}`;
-            const url = eps[platform]; if (!url) return [];
-            const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
+            const url = eps[platform];
+            if (!url) return [];
+
             try {
-                const r = await fetch(url, { signal: ctrl.signal }); clearTimeout(tid);
-                if (!r.ok) {
-                    if (platform==='twit') throw new Error('Twitter Primary Fail');
-                    return [];
-                }
+                const r = await fetch(url, { signal: ctrl.signal });
+                clearTimeout(tid);
+                if (!r.ok) return [];
                 const d = await r.json();
                 let items = [];
                 if      (Array.isArray(d?.data?.data))  items = d.data.data;
@@ -1831,53 +1852,21 @@ dataLabels: {
                     const vals = Object.values(d.data);
                     if (vals.length && typeof vals[0]==='object') items = vals;
                 }
-                if (platform==='twit' && items.length===0) {
-                    /* Fallback 1: try most-retweets endpoint */
-                    try {
-                        const r1b = await fetch(`/mk/api/x/most-retweets?${q}`);
-                        if (r1b.ok) {
-                            const d1b = await r1b.json();
-                            if (Array.isArray(d1b?.data)) items = d1b.data;
-                            else if (Array.isArray(d1b)) items = d1b;
-                        }
-                    } catch(e1b) {}
-                }
-                if (platform==='twit' && items.length===0) {
-                    /* Fallback 2: try user-mentions endpoint */
-                    try {
-                        const r1c = await fetch(`/mk/api/x/user-mentions?${q}`);
-                        if (r1c.ok) {
-                            const d1c = await r1c.json();
-                            if (Array.isArray(d1c?.data)) items = d1c.data;
-                            else if (Array.isArray(d1c)) items = d1c;
-                        }
-                    } catch(e1c) {}
-                }
-                if (platform==='twit' && items.length===0) {
-                    /* Fallback 3: try mentions API with Twitter filtering */
-                    try {
-                        const r2 = await fetch(twitFallback);
-                        const d2 = await r2.json();
-                        let fb = Array.isArray(d2?.data?.data) ? d2.data.data : Array.isArray(d2?.data) ? d2.data : Array.isArray(d2) ? d2 : [];
-                        items = fb.filter(m => {
-                            const tc=String(m.tcode||'').toLowerCase(), mt=String(m.media_type||'').toLowerCase();
-                            const id=String(m.id||m.docid||'').toLowerCase(), url2=String(m.url||'').toLowerCase();
-                            return tc==='twit'||tc==='rt'||mt==='twit'||mt==='twitter'||mt==='x'
-                                ||id.startsWith('tw-')||url2.includes('twitter.com')||url2.includes('x.com');
-                        });
-                    } catch (e2) {}
-                }
                 return items.map(i => ({ ...i, _platform: platform }));
             } catch (e) { clearTimeout(tid); return []; }
         }
 
-        function _render(list, items, platform, accentColor) {
+        function _render(list, items, platform, accentColor, isStreaming = false) {
             if (!items.length) {
-                list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`;
+                if (isStreaming) {
+                    list.innerHTML = `<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat mentions…</span></div>`;
+                } else {
+                    list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`;
+                }
                 return;
             }
 
-            const PAGE = 10;
+            const PAGE = 15;
             let _page = 0;
 
             function _renderItems(arr) {
