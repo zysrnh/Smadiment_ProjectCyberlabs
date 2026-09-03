@@ -908,9 +908,10 @@ const XGeo = {
         }
         var map = L.map(elementId, { center:[-2.5,118], zoom:5, scrollWheelZoom:false, preferCanvas:true, zoomAnimation:true, fadeAnimation:true });
         window._leafletMaps[elementId] = map;
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution:'© OpenStreetMap, © CARTO', subdomains:'abcd', maxZoom:19,
-            crossOrigin:true, detectRetina:true
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19,
+            crossOrigin: true
         }).addTo(map);
 
         var overlay = document.createElement('div');

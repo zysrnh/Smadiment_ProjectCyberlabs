@@ -796,8 +796,10 @@ const FBGeoLoader = {
     // ── Shared renderMap ──────────────────────────────────────────────────
     renderMap(elementId, rows, getMarkerProps) {
         const map = L.map(elementId, { center: [-2.5, 118], zoom: 5, scrollWheelZoom: false });
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap contributors, © CARTO', subdomains: 'abcd', maxZoom: 19
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19,
+            crossOrigin: true
         }).addTo(map);
 
         const mapEl  = document.getElementById(elementId);
