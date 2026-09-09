@@ -1674,225 +1674,205 @@ const SNTExport = (() => {
     const sntEsc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
     const SNTPopup = {
-      _cache:{}, _allItems:[], _curSent:'all', _curPlat:null, _curSd:null, _curEd:null,
-      _offsets:{}, _hasMoreServer:{}, _isFetchingMore:false,
+      _cache: {},
+      _allItems: [],
+      _curSent: 'all',
+      _curPlat: null,
+      _curSd: null,
+      _curEd: null,
+      _offset: 0,
+      _hasMoreServer: true,
+      _isFetchingMore: false,
+      _renderedCount: 0,
+
       init() {
-        document.addEventListener('mousedown', e=>{ const pp=document.getElementById('sntPlatPicker'); if(pp?.classList.contains('visible')&&!pp.contains(e.target)) pp.classList.remove('visible'); });
-        document.addEventListener('keydown', e=>{ if(e.key==='Escape') this.close(); });
+        document.addEventListener('mousedown', e => {
+          const pp = document.getElementById('sntPlatPicker');
+          if (pp?.classList.contains('visible') && !pp.contains(e.target)) pp.classList.remove('visible');
+        });
+        document.addEventListener('keydown', e => {
+          if (e.key === 'Escape') this.close();
+        });
       },
-      async open(platform,sentiment,customStartDate,customEndDate) {
-        const popup=document.getElementById('sntPopup'), overlay=document.getElementById('sntPanelOverlay');
-        if(!popup) return;
+
+      _normItem(m) {
+        const tc = String(m.tcode || '').toLowerCase();
+        const mt = String(m.media_type || '').toLowerCase();
+        const docid = String(m.docid || m.id || '');
+        let plat = 'doc';
+        if (mt === 'fb' || mt === 'facebook' || tc.startsWith('fb-') || docid.startsWith('fb-')) plat = 'fb';
+        else if (mt === 'ig' || mt === 'instagram' || tc.startsWith('ig-') || docid.startsWith('ig-')) plat = 'ig';
+        else if (mt === 'yt' || mt === 'youtube' || tc.startsWith('yt-') || docid.startsWith('yt-')) plat = 'yt';
+        else if (mt === 'tiktok' || tc.startsWith('tt-') || tc.startsWith('tiktok-') || docid.startsWith('tt-')) plat = 'tiktok';
+        else if (mt === 'twit' || mt === 'twitter' || mt === 'x' || tc.startsWith('tw-') || docid.startsWith('tw-')) plat = 'twit';
+        else plat = 'doc';
+
+        let url = m.url || m.link || m.post_url || m.article_url || '';
+        if (!url) {
+          if (plat === 'yt' && docid.startsWith('yt-')) {
+            url = `https://www.youtube.com/watch?v=${docid.replace(/^yt-/, '')}`;
+          } else if (plat === 'twit' && docid.startsWith('tw-')) {
+            const scr = m.author_scr_name || m.screen_name || 'i';
+            url = `https://twitter.com/${scr}/status/${docid.replace(/^tw-/, '')}`;
+          } else if (plat === 'fb' && m.post_id_s) {
+            url = `https://www.facebook.com/${m.post_id_s}`;
+          }
+        }
+
+        return {
+          ...m,
+          _type: plat,
+          url: url,
+          title: m.title || '',
+          content: m.content || m.text || m.summary || '',
+          date_created: m.date_created || m.date_inserted_dt || '',
+          class_sentiment: String(m.class_sentiment || m.sentiment_class || m.sentiment || '0')
+        };
+      },
+
+      async open(platform, sentiment, customStartDate, customEndDate) {
+        const popup = document.getElementById('sntPopup'), overlay = document.getElementById('sntPanelOverlay');
+        if (!popup) return;
         SNTDetail.close();
-        this._curPlat=platform; this._curSent=sentiment||'all';
+        this._curPlat = platform;
+        this._curSent = sentiment || 'all';
         this._curSd = customStartDate || SNTCfg.sd;
         this._curEd = customEndDate || SNTCfg.ed;
-        this._renderedCount=0;
-        this._isFetchingMore=false;
+        this._offset = 0;
+        this._hasMoreServer = true;
+        this._isFetchingMore = false;
+        this._renderedCount = 0;
 
-        let dotColor,title;
-        if (sentiment&&sentiment!=='all') {
-          dotColor=SNTPlatMeta[sentiment]?.color||'#038047';
-          const sentLabel={neg:'Negative',pos:'Positive',neu:'Neutral'}[sentiment]||sentiment;
-          const platLabel=platform==='all'?'All Media':platform==='social'?'Social Media':(SNTPlatMeta[platform]?.label||platform);
-          title=`${sentLabel} — ${platLabel}`;
+        let dotColor, title;
+        if (sentiment && sentiment !== 'all') {
+          dotColor = SNTPlatMeta[sentiment]?.color || '#038047';
+          const sentLabel = { neg: 'Negative', pos: 'Positive', neu: 'Neutral' }[sentiment] || sentiment;
+          const platLabel = platform === 'all' ? 'All Media' : platform === 'social' ? 'Social Media' : (SNTPlatMeta[platform]?.label || platform);
+          title = `${sentLabel} — ${platLabel}`;
         } else {
-          dotColor=platform==='all'||platform==='social'?'#038047':(SNTPlatMeta[platform]?.color||'#038047');
-          title=platform==='all'?'All Media':platform==='social'?'Social Media':(SNTPlatMeta[platform]?.label||platform);
+          dotColor = platform === 'all' || platform === 'social' ? '#038047' : (SNTPlatMeta[platform]?.color || '#038047');
+          title = platform === 'all' ? 'All Media' : platform === 'social' ? 'Social Media' : (SNTPlatMeta[platform]?.label || platform);
         }
-        document.getElementById('sntPopDot').style.background=dotColor;
-        document.getElementById('sntPopTitle').textContent=title;
+        document.getElementById('sntPopDot').style.background = dotColor;
+        document.getElementById('sntPopTitle').textContent = title;
         document.getElementById('sntPopMeta').textContent = (this._curSd === this._curEd) ? this._curSd : (this._curSd + ' – ' + this._curEd);
-        document.getElementById('sntPopCount').textContent='…';
-        
-        document.querySelectorAll('.sntp-sent-tab').forEach(b=>b.classList.toggle('active',b.dataset.s===this._curSent));
-        const list=document.getElementById('sntPopList');
-        list.innerHTML=`<div class="sntp-loading"><div class="sntp-spinner"></div>Memuat mentions…</div>`;
-        popup.classList.remove('hiding'); popup.classList.add('show');
-        if(overlay){overlay.classList.remove('hiding');overlay.classList.add('show');}
-        document.body.style.overflow='hidden';
-        
-        const platforms = platform==='social' ? ['twit','fb','ig','yt','tiktok'] : platform==='all' ? ['doc','twit','fb','ig','yt','tiktok'] : [platform];
-        this._offsets = {};
-        this._hasMoreServer = {};
-        platforms.forEach(p => {
-          this._offsets[p] = 0;
-          this._hasMoreServer[p] = true;
-        });
+        document.getElementById('sntPopCount').textContent = '…';
 
-        const cacheKey=`${SNTCfg.pid}_${platform}_${this._curSd}_${this._curEd}`;
+        document.querySelectorAll('.sntp-sent-tab').forEach(b => b.classList.toggle('active', b.dataset.s === this._curSent));
+        const list = document.getElementById('sntPopList');
+        list.innerHTML = `<div class="sntp-loading"><div class="sntp-spinner"></div>Memuat mentions…</div>`;
+        popup.classList.remove('hiding'); popup.classList.add('show');
+        if (overlay) { overlay.classList.remove('hiding'); overlay.classList.add('show'); }
+        document.body.style.overflow = 'hidden';
+
+        const cacheKey = `${SNTCfg.pid}_${platform}_${this._curSd}_${this._curEd}`;
         try {
-          if(!this._cache[cacheKey]) {
-            const initialData = await this._fetch(platform, this._curSd, this._curEd, 500);
-            this._cache[cacheKey] = initialData;
+          if (!this._cache[cacheKey] || !this._cache[cacheKey].items?.length) {
+            const initialData = await this._fetchNextBatches(platform, this._curSd, this._curEd, 150);
+            this._cache[cacheKey] = {
+              items: initialData,
+              offset: this._offset,
+              hasMore: this._hasMoreServer
+            };
+          } else {
+            this._offset = this._cache[cacheKey].offset;
+            this._hasMoreServer = this._cache[cacheKey].hasMore;
           }
-          this._allItems = [...this._cache[cacheKey]];
+          this._allItems = [...this._cache[cacheKey].items];
           this._renderFiltered(list);
-        } catch(err) {
-          list.innerHTML=`<div class="sntp-loading" style="color:#94a3b8;">Gagal memuat data</div>`;
-          document.getElementById('sntPopCount').textContent='0';
+        } catch (err) {
+          list.innerHTML = `<div class="sntp-loading" style="color:#94a3b8;">Gagal memuat data</div>`;
+          document.getElementById('sntPopCount').textContent = '0';
         }
       },
-      openSentiment(sentiment, customStartDate, customEndDate){ this.open('all', sentiment, customStartDate, customEndDate); },
-      openPlatform(platform,sentiment, customStartDate, customEndDate){ const pp=document.getElementById('sntPlatPicker'); if(pp) pp.classList.remove('visible'); this.open(platform, sentiment||'all', customStartDate, customEndDate); },
+
+      openSentiment(sentiment, customStartDate, customEndDate) { this.open('all', sentiment, customStartDate, customEndDate); },
+      openPlatform(platform, sentiment, customStartDate, customEndDate) {
+        const pp = document.getElementById('sntPlatPicker');
+        if (pp) pp.classList.remove('visible');
+        this.open(platform, sentiment || 'all', customStartDate, customEndDate);
+      },
       filterSent(sent) {
-        this._curSent=sent;
-        document.querySelectorAll('.sntp-sent-tab').forEach(b=>b.classList.toggle('active',b.dataset.s===sent));
+        this._curSent = sent;
+        document.querySelectorAll('.sntp-sent-tab').forEach(b => b.classList.toggle('active', b.dataset.s === sent));
         this._renderFiltered(document.getElementById('sntPopList'));
       },
       close() {
-        const popup=document.getElementById('sntPopup'), overlay=document.getElementById('sntPanelOverlay');
-        if(!popup||!popup.classList.contains('show')) return;
+        const popup = document.getElementById('sntPopup'), overlay = document.getElementById('sntPanelOverlay');
+        if (!popup || !popup.classList.contains('show')) return;
         SNTDetail.close();
-        const dpBody=document.getElementById('sntDpBody');
-        if(dpBody) dpBody.querySelectorAll('iframe').forEach(f=>{f.src='';f.remove();});
+        const dpBody = document.getElementById('sntDpBody');
+        if (dpBody) dpBody.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); });
         popup.classList.add('hiding');
-        if(overlay) overlay.classList.add('hiding');
-        setTimeout(()=>{popup.classList.remove('show','hiding');if(overlay) overlay.classList.remove('show','hiding');document.body.style.overflow='';},240);
+        if (overlay) overlay.classList.add('hiding');
+        setTimeout(() => { popup.classList.remove('show', 'hiding'); if (overlay) overlay.classList.remove('show', 'hiding'); document.body.style.overflow = ''; }, 240);
       },
-      async _fetch(platform, sd, ed, rows=500) {
+
+      async _fetchNextBatches(platform, sd, ed, minItems = 100) {
+        if (!this._hasMoreServer) return [];
         const useSd = sd || this._curSd || SNTCfg.sd;
         const useEd = ed || this._curEd || SNTCfg.ed;
-        const platforms = platform==='social' ? ['twit','fb','ig','yt','tiktok'] : platform==='all' ? ['doc','twit','fb','ig','yt','tiktok'] : [platform];
-        
-        const activePlatforms = platforms.filter(p => this._hasMoreServer[p] !== false);
-        if(!activePlatforms.length) return [];
+        let gathered = [];
+        let maxLoops = 10;
+        const BATCH = 100;
 
-        const results = await Promise.allSettled(activePlatforms.map(p => {
-          const curStart = this._offsets[p] || 0;
-          return this._fetchOne(p, useSd, useEd, curStart, rows).then(items => {
-            this._offsets[p] = curStart + items.length;
-            if(items.length < rows) {
-              this._hasMoreServer[p] = false;
+        while (this._hasMoreServer && gathered.length < minItems && maxLoops-- > 0) {
+          try {
+            const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 20000);
+            const res = await fetch(`/mk/api/news/mentions?project_id=${SNTCfg.pid}&start_date=${useSd}&end_date=${useEd}&rows=${BATCH}&start=${this._offset}`, { signal: ctrl.signal });
+            clearTimeout(tid);
+            if (!res.ok) { this._hasMoreServer = false; break; }
+            const json = await res.json();
+            const raw = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
+            this._offset += raw.length;
+            if (raw.length < BATCH) {
+              this._hasMoreServer = false;
             }
-            return items;
-          });
-        }));
+            if (raw.length === 0) break;
 
-        let merged = [];
-        results.forEach((r, i) => {
-            if (r.status === 'fulfilled' && Array.isArray(r.value)) {
-                const p = activePlatforms[i];
-                r.value.forEach(item => { if (!item._type) item._type = p; });
-                merged = merged.concat(r.value);
+            const mapped = raw.map(m => this._normItem(m));
+            let filtered = mapped;
+            if (platform === 'social') {
+              filtered = mapped.filter(m => m._type !== 'doc');
+            } else if (platform !== 'all') {
+              filtered = mapped.filter(m => m._type === platform);
             }
-        });
-        merged.sort((a,b)=>(b.date_created||b.created_at||'').localeCompare(a.date_created||a.created_at||''));
-        return merged;
-      },
-      async _fetchOne(platform, sd, ed, start=0, rows=500) {
-        const useSd = sd || this._curSd || SNTCfg.sd;
-        const useEd = ed || this._curEd || SNTCfg.ed;
-        const q=`project_id=${SNTCfg.pid}&start_date=${useSd}&end_date=${useEd}&rows=${rows}&start=${start}`;
-        const _normArr = d => {
-          if (Array.isArray(d?.data?.data)) return d.data.data;
-          if (Array.isArray(d?.data)) return d.data;
-          if (Array.isArray(d?.statuses)) return d.statuses;
-          if (Array.isArray(d?.results)) return d.results;
-          if (Array.isArray(d?.posts)) return d.posts;
-          if (Array.isArray(d)) return d;
-          if (d?.data && typeof d.data === 'object' && !Array.isArray(d.data)) {
-            const vals = Object.values(d.data);
-            if (vals.length && typeof vals[0] === 'object') return vals;
+            gathered = gathered.concat(filtered);
+          } catch (e) {
+            console.warn('Mentions stream error:', e);
+            break;
           }
-          return [];
-        };
+        }
+        return gathered;
+      },
 
-        if(platform==='ig'){
-          for(const sub of ['postbylike', 'postbycomment', 'postbydate', '']){
-            try{ 
-              const ctrl=new AbortController(), tid=setTimeout(()=>ctrl.abort(),15000); 
-              const res=await fetch(`/mk/api/news/ig-top-status?${q}${sub?'&sub='+sub:''}`,{signal:ctrl.signal}); 
-              clearTimeout(tid); if(!res.ok) continue; 
-              const d=await res.json(); let items = _normArr(d);
-              if(items.length>0){ items.forEach(it=>{it._type='ig';}); return items; } 
-            } catch(e){continue;}
-          } return [];
-        }
-        if(platform==='yt'){
-          for(const sub of ['postbylike', 'postbyview', 'postbydate', 'postbycomment', '']){
-            try{ 
-              const ctrl=new AbortController(), tid=setTimeout(()=>ctrl.abort(),15000); 
-              const res=await fetch(`/mk/api/news/ytb-top-status?${q}${sub?'&sub='+sub:''}`,{signal:ctrl.signal}); 
-              clearTimeout(tid); if(!res.ok) continue; 
-              const d=await res.json(); let items = _normArr(d);
-              if(items.length>0){ items.forEach(it=>{it._type='yt';}); return items; } 
-            } catch(e){continue;}
-          } return [];
-        }
-        if(platform==='doc'){
-          const docQ=`project_id=${SNTCfg.pid}&start_date=${useSd}&end_date=${useEd}&rows=${rows}&start=${start}&media=doc`;
-          try{
-            const ctrl=new AbortController(), tid=setTimeout(()=>ctrl.abort(),25000);
-            const res = await fetch(`/mk/api/news/articles?${docQ}`, {signal:ctrl.signal}); clearTimeout(tid);
-            if(!res.ok) return [];
-            const d = await res.json();
-            const raw = Array.isArray(d?.data)?d.data:(Array.isArray(d)?d:[]);
-            return raw.map(i => ({
-                ...i, _type: 'doc',
-                content: i.content || i.summary || i.text || '',
-                title: i.title || i.subject || 'Untitled',
-                publisher: i.publisher || i.name || i.source_name || '',
-                url: i.url || i.link || i.post_url || i.article_url || '',
-                class_sentiment: String(i.class_sentiment || i.sentiment_class || i.sentiment || '0')
-            }));
-          }catch(e){ return []; }
-        }
-        
-        const eps={twit:`/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,fb:`/mk/api/news/fb-top-status?${q}&sub=fblike`,tiktok:`/mk/api/news/tiktok-top-status?${q}&sub=postbylike`};
-        const url=eps[platform]; if(!url) return [];
-        const ctrl=new AbortController(), tid=setTimeout(()=>ctrl.abort(),20000);
-        try {
-          const res=await fetch(url,{signal:ctrl.signal}); clearTimeout(tid); 
-          if(!res.ok){ if(platform==='twit') throw new Error('Twitter fail'); return []; }
-          const d=await res.json(); let items = _normArr(d);
-          
-          // Twitter Fallback
-          if (platform === 'twit' && items.length === 0) {
-            try {
-              const r2 = await fetch(`/mk/api/news/mentions?${q}`);
-              const d2 = await r2.json();
-              let allM = _normArr(d2);
-              items = allM.filter(m => {
-                const tc=String(m.tcode||'').toLowerCase(), mt=String(m.media_type||'').toLowerCase(), id2=String(m.id||m.docid||'').toLowerCase(), url2=String(m.url||'').toLowerCase();
-                return tc==='twit'||tc==='rt'||mt==='twit'||mt==='twitter'||mt==='x'||id2.startsWith('tw-')||url2.includes('twitter.com')||url2.includes('x.com');
-              });
-            } catch(e2) {}
-          }
-          items.forEach(it=>{ it._type=platform; });
-          return items;
-        } catch(e) { return []; }
+      _normSent(item) {
+        const raw = String(item.sentiment_class || item.class_sentiment || item.sentiment || item.sentiment_label || item.sentiment_str || '0').toLowerCase().trim();
+        if (['1', 'positive', 'positif', 'pos'].includes(raw)) return 'pos';
+        if (['-1', '2', 'negative', 'negatif', 'neg'].includes(raw)) return 'neg';
+        return 'neu';
       },
-      _normSent(item){ 
-        const raw=String(item.sentiment_class||item.class_sentiment||item.sentiment||item.sentiment_label||item.sentiment_str||'0').toLowerCase().trim(); 
-        if(['1','positive','positif','pos'].includes(raw)) return 'pos'; 
-        if(['-1','2','negative','negatif','neg'].includes(raw)) return 'neg'; 
-        return 'neu'; 
+      _getFiltered() {
+        return this._curSent === 'all' ? this._allItems : this._allItems.filter(item => this._normSent(item) === this._curSent);
       },
-      _getFiltered(){ return this._curSent==='all'?this._allItems:this._allItems.filter(item=>this._normSent(item)===this._curSent); },
       _renderFiltered(list) {
-        const items=this._getFiltered();
-        const hasMoreServer = Object.values(this._hasMoreServer).some(v => v === true);
-        document.getElementById('sntPopCount').textContent = items.length.toLocaleString() + (hasMoreServer ? '+' : '');
-        const badge=document.getElementById('sntPopCount');
-        const bColors={neg:'#ef4444',pos:'#2FC6F6',neu:'#94a3b8',all:'var(--primary)'};
-        if(badge) badge.style.background=bColors[this._curSent]||'var(--primary)';
-        list.innerHTML=''; list.scrollTop=0;
-        this._renderedCount=0;
+        const items = this._getFiltered();
+        document.getElementById('sntPopCount').textContent = items.length.toLocaleString() + (this._hasMoreServer ? '+' : '');
+        const badge = document.getElementById('sntPopCount');
+        const bColors = { neg: '#ef4444', pos: '#2FC6F6', neu: '#94a3b8', all: 'var(--primary)' };
+        if (badge) badge.style.background = bColors[this._curSent] || 'var(--primary)';
+        list.innerHTML = ''; list.scrollTop = 0;
+        this._renderedCount = 0;
         this.loadMore(list);
       },
-      async loadMore(list=document.getElementById('sntPopList')) {
-        let items=this._getFiltered();
-        const btn=document.getElementById('sntPopLoadMoreBtn');
-        
-        const limit=20;
-        const start=this._renderedCount||0;
+      async loadMore(list = document.getElementById('sntPopList')) {
+        let items = this._getFiltered();
+        const btn = document.getElementById('sntPopLoadMoreBtn');
+        const limit = 20;
+        const start = this._renderedCount || 0;
 
-        // If remaining items in memory are less than limit, try fetching more from server
         const remaining = items.length - start;
-        const hasMoreServer = Object.values(this._hasMoreServer).some(v => v === true);
-        
-        if (remaining <= limit && hasMoreServer && !this._isFetchingMore) {
+        if (remaining <= limit && this._hasMoreServer && !this._isFetchingMore) {
           const loadBtn = document.getElementById('_doLMBtn');
           if (loadBtn) {
             loadBtn.disabled = true;
@@ -1900,133 +1880,135 @@ const SNTExport = (() => {
           }
           this._isFetchingMore = true;
           try {
-            const nextBatch = await this._fetch(this._curPlat, this._curSd, this._curEd, 500);
-            if (nextBatch.length > 0) {
-              const seen = new Set(this._allItems.map(it => it.id || it.docid || it.url || (it.content||'').slice(0,50)));
-              const uniqueNew = nextBatch.filter(it => {
-                const k = it.id || it.docid || it.url || (it.content||'').slice(0,50);
+            const nextItems = await this._fetchNextBatches(this._curPlat, this._curSd, this._curEd, 80);
+            if (nextItems.length > 0) {
+              const seen = new Set(this._allItems.map(it => it.id || it.docid || it.url || (it.content || '').slice(0, 50)));
+              const uniqueNew = nextItems.filter(it => {
+                const k = it.id || it.docid || it.url || (it.content || '').slice(0, 50);
                 if (k && seen.has(k)) return false;
                 if (k) seen.add(k);
                 return true;
               });
               this._allItems = this._allItems.concat(uniqueNew);
+              const cacheKey = `${SNTCfg.pid}_${this._curPlat}_${this._curSd}_${this._curEd}`;
+              if (this._cache[cacheKey]) {
+                this._cache[cacheKey].items = this._allItems;
+                this._cache[cacheKey].offset = this._offset;
+                this._cache[cacheKey].hasMore = this._hasMoreServer;
+              }
               items = this._getFiltered();
-              const hasMoreAfter = Object.values(this._hasMoreServer).some(v => v === true);
-              document.getElementById('sntPopCount').textContent = items.length.toLocaleString() + (hasMoreAfter ? '+' : '');
+              document.getElementById('sntPopCount').textContent = items.length.toLocaleString() + (this._hasMoreServer ? '+' : '');
             }
-          } catch(e) {
+          } catch (e) {
             console.warn('Load more fetch error:', e);
           } finally {
             this._isFetchingMore = false;
           }
         }
 
-        if(btn) btn.remove();
+        if (btn) btn.remove();
 
-        if(!items.length){
-          list.innerHTML=`<div class="sntp-loading" style="color:#94a3b8;padding:50px 20px;text-align:center;">Tidak ada mention untuk filter ini</div>`;
+        if (!items.length) {
+          list.innerHTML = `<div class="sntp-loading" style="color:#94a3b8;padding:50px 20px;text-align:center;">Tidak ada mention untuk filter ini</div>`;
           return;
         }
 
-        const chunk=items.slice(start, start+limit);
-        const getPlat=item=>{ if(item._type) return item._type; return this._curPlat||'doc'; };
-        
-        const html=chunk.map(item=>{
-          const plat=getPlat(item),meta=SNTPlatMeta[plat]||{color:'#038047'},color=meta.color;
-          const ao0 = (()=>{ if(typeof item.author==='object'&&item.author) return item.author; try{return JSON.parse(item.author||'{}');}catch(e){return{};} })();
-          const rawName = (()=>{
-            if (plat==='fb')     return item.from_name || item.page_name || item.author_name || ao0?.name || item.author_handle || null;
-            if (plat==='ig')     return item.username || item.user_name || null;
-            if (plat==='tiktok') return item.author_nickname || item.nickname || ao0?.nickname || item.author_name || null;
-            if (plat==='yt')     return item.channel_title || item.channel_name || item.author_name || null;
-            if (plat==='twit')   return item.name || ao0?.name || ao0?.scr_name || item.author_name || item.author_scr_name || null;
+        const chunk = items.slice(start, start + limit);
+        const getPlat = item => { if (item._type) return item._type; return this._curPlat || 'doc'; };
+
+        const html = chunk.map(item => {
+          const plat = getPlat(item), meta = SNTPlatMeta[plat] || { color: '#038047', label: plat }, color = meta.color;
+          const ao0 = (() => { if (typeof item.author === 'object' && item.author) return item.author; try { return JSON.parse(item.author || '{}'); } catch (e) { return {}; } })();
+          const rawName = (() => {
+            if (plat === 'fb') return item.from_name || item.page_name || item.author_name || ao0?.name || item.author_handle || null;
+            if (plat === 'ig') return item.username || item.user_name || null;
+            if (plat === 'tiktok') return item.author_nickname || item.nickname || ao0?.nickname || item.author_name || null;
+            if (plat === 'yt') return item.channel_title || item.channel_name || item.author_name || null;
+            if (plat === 'twit') return item.name || ao0?.name || ao0?.scr_name || item.author_name || item.author_scr_name || null;
             return null;
           })();
           let name = (rawName || item.author_name || item.channel_name || item.publisher || item.source_name || item.name || '').trim();
-          if(!name || name.toLowerCase()==='tidak diketahui' || name.toLowerCase()==='unknown' || /^\d{8,}$/.test(name)){
-            const alt = (item.author_handle||item.author_scr_name||item.screen_name||ao0?.scr_name||ao0?.username||item.username||item.nickname||'').trim();
-            if(alt && !/^\d{8,}$/.test(alt)) name = alt;
-            else if(!name) name = 'Tidak diketahui';
+          if (!name || name.toLowerCase() === 'tidak diketahui' || name.toLowerCase() === 'unknown' || /^\d{8,}$/.test(name)) {
+            const alt = (item.author_handle || item.author_scr_name || item.screen_name || ao0?.scr_name || ao0?.username || item.username || item.nickname || '').trim();
+            if (alt && !/^\d{8,}$/.test(alt)) name = alt;
+            else if (!name) name = 'Tidak diketahui';
           }
           const dName = name;
-          const rawH = ((plat==='ig'?item.username:'')||item.author_handle||item.author_scr_name||item.screen_name||ao0?.scr_name||item.username||'').trim();
-          const handle = (()=>{
+          const rawH = ((plat === 'ig' ? item.username : '') || item.author_handle || item.author_scr_name || item.screen_name || ao0?.scr_name || item.username || '').trim();
+          const handle = (() => {
             if (!rawH) return '';
-            const w = ['twit','ig','tiktok'].includes(plat) ? (rawH.startsWith('@')?rawH:'@'+rawH) : rawH;
-            return w.replace(/^@/,'').toLowerCase() === dName.toLowerCase() ? '' : w;
+            const w = ['twit', 'ig', 'tiktok'].includes(plat) ? (rawH.startsWith('@') ? rawH : '@' + rawH) : rawH;
+            return w.replace(/^@/, '').toLowerCase() === dName.toLowerCase() ? '' : w;
           })();
 
-          const text = (()=>{
+          const text = (() => {
             if (plat === 'doc') {
-              const c = (item.content||'').replace(/<[^>]*>/g,'').trim();
-              return c ? c.slice(0,155) : (item.title||'').slice(0,155);
+              const c = (item.content || '').replace(/<[^>]*>/g, '').trim();
+              return c ? c.slice(0, 155) : (item.title || '').slice(0, 155);
             }
-            return (item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,155);
+            return (item.content || item.caption || item.description || item.title || item.text || '').replace(/<[^>]*>/g, '').trim().slice(0, 155);
           })();
-          const artTitle = (plat === 'doc') ? (item.title||'').replace(/<[^>]*>/g,'').trim() : '';
-          const url = (item.url||item.link||'').trim();
-          const av = (item.avatar_url||item.profile_image_url||item.author_image||ao0?.image||item.profile_image||item.thumbnail||item.picture||'').trim();
+          const artTitle = (plat === 'doc') ? (item.title || '').replace(/<[^>]*>/g, '').trim() : '';
+          const av = (item.avatar_url || item.profile_image_url || item.author_image || ao0?.image || item.profile_image || item.thumbnail || item.picture || '').trim();
 
-          const words=dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
-          const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||dName[0]||'?')).toUpperCase().replace(/['"]/g,'');
-          const avHtml=(av&&(av.startsWith('http://')||av.startsWith('https://')))?`<img src="${sntEsc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}'">`:(plat==='doc'?`<i class="ph ph-newspaper" style="font-size:14px;color:#fff;"></i>`:ini);
-          
-          const sent=this._normSent(item),sentLbl={neg:'Neg',pos:'Pos',neu:'Neu'}[sent]||'Neu';
-          const dt=(item.date_created||item.created_at||item.publish_date||'').split('T')[0];
-          const itemData=sntEsc(JSON.stringify(item));
+          const words = dName.replace(/[^a-zA-Z0-9\s]/g, '').trim().split(/\s+/).filter(Boolean);
+          const ini = (words.length >= 2 ? (words[0][0] + words[words.length - 1][0]) : (words[0]?.[0] || dName[0] || '?')).toUpperCase().replace(/['"]/g, '');
+          const avHtml = (av && (av.startsWith('http://') || av.startsWith('https://'))) ? `<img src="${sntEsc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}'">` : (plat === 'doc' ? `<i class="ph ph-newspaper" style="font-size:14px;color:#fff;"></i>` : ini);
 
-          /* Doc view */
-          if(plat==='doc' && artTitle){
+          const sent = this._normSent(item), sentLbl = { neg: 'Neg', pos: 'Pos', neu: 'Neu' }[sent] || 'Neu';
+          const dt = (item.date_created || item.created_at || item.publish_date || '').split('T')[0];
+          const itemData = sntEsc(JSON.stringify(item));
+
+          if (plat === 'doc' && artTitle) {
             return `<div class="sntp-item" data-item='${itemData}' data-plat="${plat}" onclick="SNTPopup._onItemClick(this)">
               <div class="sntp-avatar" style="background:linear-gradient(135deg,${color},${color}99);">${avHtml}</div>
               <div class="sntp-item-body">
                 <div class="sntp-item-author" style="font-size:10px;color:#64748b;font-weight:600;">${sntEsc(dName)}</div>
-                <div style="font-size:12px;font-weight:700;color:#1e293b;line-height:1.35;margin:3px 0 4px;">${sntEsc(artTitle.slice(0,100))}</div>
-                <div class="sntp-item-text" style="font-size:11px;">${sntEsc(text||'(tidak ada konten)')}</div>
+                <div style="font-size:12px;font-weight:700;color:#1e293b;line-height:1.35;margin:3px 0 4px;">${sntEsc(artTitle.slice(0, 100))}</div>
+                <div class="sntp-item-text" style="font-size:11px;">${sntEsc(text || '(tidak ada konten)')}</div>
                 <div class="sntp-item-footer" style="justify-content:space-between;flex-wrap:nowrap;margin-top:2px;">
                   <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
                     <span class="sntp-sent-badge sntp-sent-badge--${sent}">${sentLbl}</span>
                     <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${color};flex-shrink:0;"></span>
                     <span style="font-size:10px;font-weight:600;color:${color};">${meta.label}</span>
-                    ${dt?`<span style="margin-left:2px;font-size:10px;color:var(--slate-400);">${dt}</span>`:''}
+                    ${dt ? `<span style="margin-left:2px;font-size:10px;color:var(--slate-400);">${dt}</span>` : ''}
                   </div>
                 </div>
               </div>
             </div>`;
           }
 
-          /* Social view (TIDAK ADA THUMBNAIL) */
           return `<div class="sntp-item" data-item='${itemData}' data-plat="${plat}" onclick="SNTPopup._onItemClick(this)">
             <div class="sntp-avatar" style="background:linear-gradient(135deg,${color},${color}99);">${avHtml}</div>
             <div class="sntp-item-body">
               <div class="sntp-item-author">${sntEsc(dName)}</div>
-              ${handle?`<div class="sntp-item-handle">${sntEsc(handle)}</div>`:''}
-              <div class="sntp-item-text">${sntEsc(text||'(tidak ada konten)')}</div>
+              ${handle ? `<div class="sntp-item-handle">${sntEsc(handle)}</div>` : ''}
+              <div class="sntp-item-text">${sntEsc(text || '(tidak ada konten)')}</div>
               <div class="sntp-item-footer" style="justify-content:space-between;flex-wrap:nowrap;margin-top:2px;">
                 <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
                   <span class="sntp-sent-badge sntp-sent-badge--${sent}">${sentLbl}</span>
                   <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${color};flex-shrink:0;"></span>
                   <span style="font-size:10px;font-weight:600;color:${color};">${meta.label}</span>
-                  ${dt?`<span style="margin-left:2px;font-size:10px;color:var(--slate-400);">${dt}</span>`:''}
+                  ${dt ? `<span style="margin-left:2px;font-size:10px;color:var(--slate-400);">${dt}</span>` : ''}
                 </div>
               </div>
             </div>
           </div>`;
         }).join('');
-        
-        list.insertAdjacentHTML('beforeend',html);
-        this._renderedCount=start+chunk.length;
-        const canLoadMore = (items.length > this._renderedCount) || Object.values(this._hasMoreServer).some(v => v === true);
-        if(canLoadMore){
-          list.insertAdjacentHTML('beforeend',`<div id="sntPopLoadMoreBtn" style="padding:16px;text-align:center;background:var(--slate-50);border-top:1px dashed var(--slate-200);"><button id="_doLMBtn" onclick="SNTPopup.loadMore()" style="background:var(--primary);color:#fff;border:none;padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(3,128,71,.2);" onmouseover="this.style.filter='brightness(1.1)';" onmouseout="this.style.filter='';">Muat Lebih Banyak</button></div>`);
+
+        list.insertAdjacentHTML('beforeend', html);
+        this._renderedCount = start + chunk.length;
+        const canLoadMore = (items.length > this._renderedCount) || this._hasMoreServer;
+        if (canLoadMore) {
+          list.insertAdjacentHTML('beforeend', `<div id="sntPopLoadMoreBtn" style="padding:16px;text-align:center;background:var(--slate-50);border-top:1px dashed var(--slate-200);"><button id="_doLMBtn" onclick="SNTPopup.loadMore()" style="background:var(--primary);color:#fff;border:none;padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(3,128,71,.2);" onmouseover="this.style.filter='brightness(1.1)';" onmouseout="this.style.filter='';">Muat Lebih Banyak</button></div>`);
         }
       },
       _onItemClick(el) {
-        try{ 
-            const raw = el.getAttribute('data-item'); 
-            const item = JSON.parse(raw.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g, "'")); 
-            SNTDetail.open(item, el.dataset.plat || this._curPlat || 'doc'); 
-        } catch(e){ console.warn('SNT Detail parse error:', e); }
+        try {
+          const raw = el.getAttribute('data-item');
+          const item = JSON.parse(raw.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'"));
+          SNTDetail.open(item, el.dataset.plat || this._curPlat || 'doc');
+        } catch (e) { console.warn('SNT Detail parse error:', e); }
       }
     };
 
