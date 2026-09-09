@@ -180,7 +180,7 @@
       </div>
     </div>
     <div class="col-md-6 col-xl-3">
-      <div class="card h-100 bg-primary text-white kpi-card-hover fade-up fade-up-d4">
+      <div class="card h-100 bg-primary text-white kpi-card-hover fade-up fade-up-d4" style="cursor:pointer;" onclick="SNTPopup.open('all', 'all')">
         <div class="card-body"><div class="d-flex align-items-center"><div class="flex-grow-1"><p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p><h3 class="mb-0 text-white f-w-300" id="valTot">{{ number_format($totalVal ?? 0, 0, ',', '.') }}</h3><p class="mb-0 mt-2 text-white text-opacity-75 f-12"><i class="ph ph-list-numbers me-1"></i>{{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} – {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p></div><div class="flex-shrink-0 ms-3"><div class="kpi-icon-bg"><i class="ph ph-chart-bar"></i></div></div></div></div>
       </div>
     </div>
