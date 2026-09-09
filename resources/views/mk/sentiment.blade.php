@@ -1023,46 +1023,16 @@
             dynamicAnimation: { speed: 1000 }
           },
           events: {
-            click: (e, ctx, cfg) => {
-              let date = null;
-              let sIdx = 0;
-              if (cfg && typeof cfg.dataPointIndex === 'number' && cfg.dataPointIndex >= 0) {
-                date = dates[cfg.dataPointIndex];
-                if (typeof cfg.seriesIndex === 'number' && cfg.seriesIndex >= 0) sIdx = cfg.seriesIndex;
-              } else {
-                const target = e.target;
-                const textEl = target.closest('text') || target;
-                const jAttr = textEl.getAttribute('j') || textEl.getAttribute('data:realIndex') || textEl.getAttribute('index');
-                const iAttr = textEl.getAttribute('i') || textEl.getAttribute('data:seriesIndex');
-                if (jAttr !== null && !isNaN(parseInt(jAttr, 10))) {
-                  const dpIdx = parseInt(jAttr, 10);
-                  if (dates[dpIdx]) {
-                    date = dates[dpIdx];
-                    if (iAttr !== null && !isNaN(parseInt(iAttr, 10))) sIdx = parseInt(iAttr, 10);
-                  }
-                } else {
-                  const txt = textEl.textContent?.trim();
-                  if (txt) {
-                    const xIdx = xLabels.indexOf(txt);
-                    if (xIdx >= 0 && dates[xIdx]) date = dates[xIdx];
-                  }
-                }
-              }
-              if (date) {
-                SNTPopup.open('all', sentMap[sIdx] || 'all', date, date);
-              }
-            },
-            markerClick: (e, ctx, cfg) => {
+            dataPointSelection: (e, ctx, cfg) => {
               const date = (cfg && typeof cfg.dataPointIndex === 'number' && cfg.dataPointIndex >= 0) ? dates[cfg.dataPointIndex] : null;
-              SNTPopup.open('all', sentMap[cfg.seriesIndex] || 'all', date, date);
+              const sent = (cfg && typeof cfg.seriesIndex === 'number' && cfg.seriesIndex >= 0) ? sentMap[cfg.seriesIndex] : 'all';
+              if (date) {
+                SNTPopup.open('all', sent || 'all', date, date);
+              }
             },
             legendClick: (ctx, seriesIndex) => {
               SNTPopup.open('all', sentMap[seriesIndex] || 'all');
-            },
-            dataPointSelection: (e, ctx, cfg) => {
-              const date = (cfg && typeof cfg.dataPointIndex === 'number' && cfg.dataPointIndex >= 0) ? dates[cfg.dataPointIndex] : null;
-              SNTPopup.open('all', sentMap[cfg.seriesIndex] || 'all', date, date);
-            },
+            }
           }
         },
         series: [
@@ -1686,6 +1656,7 @@ const SNTExport = (() => {
       _hasMoreSocial: true,
       _isFetchingMore: false,
       _renderedCount: 0,
+      _fetchSeq: 0,
 
       init() {
         document.addEventListener('mousedown', e => {
@@ -1695,6 +1666,17 @@ const SNTExport = (() => {
         document.addEventListener('keydown', e => {
           if (e.key === 'Escape') this.close();
         });
+      },
+
+      _normSent(item) {
+        if (!item) return 'neu';
+        const sStr = String(item.sentiment || item.sentiment_class || item.sentiment_label || item.sentiment_str || '').toLowerCase().trim();
+        if (sStr.includes('pos') || sStr === '1') return 'pos';
+        if (sStr.includes('neg') || sStr === '-1' || sStr === '2') return 'neg';
+        const cStr = String(item.class_sentiment ?? '').trim();
+        if (cStr === '1') return 'pos';
+        if (cStr === '-1' || cStr === '2') return 'neg';
+        return 'neu';
       },
 
       _normItem(m, forcePlat = null) {
@@ -1723,14 +1705,17 @@ const SNTExport = (() => {
           }
         }
 
+        const sent = this._normSent(m);
+
         return {
           ...m,
           _type: plat,
+          _sent: sent,
           url: url,
           title: m.title || '',
           content: m.content || m.text || m.summary || m.caption || m.description || '',
           date_created: m.date_created || m.date_inserted_dt || m.created_at || m.date || '',
-          class_sentiment: String(m.class_sentiment ?? m.sentiment_class ?? m.sentiment ?? '0')
+          class_sentiment: sent === 'pos' ? '1' : (sent === 'neg' ? '-1' : '0')
         };
       },
 
@@ -1744,7 +1729,8 @@ const SNTExport = (() => {
         const popup = document.getElementById('sntPopup'), overlay = document.getElementById('sntPanelOverlay');
         if (!popup) return;
         SNTDetail.close();
-        this._curPlat = platform;
+        const seq = ++this._fetchSeq;
+        this._curPlat = platform || 'all';
         this._curSent = sentiment || 'all';
         this._curSd = customStartDate || SNTCfg.sd;
         this._curEd = customEndDate || SNTCfg.ed;
@@ -1754,6 +1740,7 @@ const SNTExport = (() => {
         this._hasMoreSocial = true;
         this._isFetchingMore = false;
         this._renderedCount = 0;
+        this._allItems = [];
 
         let dotColor, title;
         if (sentiment && sentiment !== 'all') {
@@ -1777,24 +1764,28 @@ const SNTExport = (() => {
         if (overlay) { overlay.classList.remove('hiding'); overlay.classList.add('show'); }
         document.body.style.overflow = 'hidden';
 
-        const cacheKey = `${SNTCfg.pid}_${platform}_${this._curSd}_${this._curEd}`;
+        const cacheKey = `${SNTCfg.pid}_${this._curPlat}_${this._curSd}_${this._curEd}`;
         try {
-          if (!this._cache[cacheKey] || !this._cache[cacheKey].items?.length) {
-            const initialData = await this._fetchNextBatches(platform, this._curSd, this._curEd, 60);
-            this._cache[cacheKey] = {
-              items: initialData,
-              docOffset: this._docOffset,
-              socialOffset: this._socialOffset,
-              hasMoreDoc: this._hasMoreDoc,
-              hasMoreSocial: this._hasMoreSocial
-            };
-          } else {
+          if (this._cache[cacheKey] && this._cache[cacheKey].items && this._cache[cacheKey].items.length > 0) {
             this._docOffset = this._cache[cacheKey].docOffset;
             this._socialOffset = this._cache[cacheKey].socialOffset;
             this._hasMoreDoc = this._cache[cacheKey].hasMoreDoc;
             this._hasMoreSocial = this._cache[cacheKey].hasMoreSocial;
+            this._allItems = [...this._cache[cacheKey].items];
+          } else {
+            const initialData = await this._fetchNextBatches(this._curPlat, this._curSd, this._curEd, 50);
+            if (seq !== this._fetchSeq) return;
+            this._allItems = initialData;
+            if (initialData.length > 0) {
+              this._cache[cacheKey] = {
+                items: this._allItems,
+                docOffset: this._docOffset,
+                socialOffset: this._socialOffset,
+                hasMoreDoc: this._hasMoreDoc,
+                hasMoreSocial: this._hasMoreSocial
+              };
+            }
           }
-          this._allItems = [...this._cache[cacheKey].items];
           this._renderFiltered(list);
         } catch (err) {
           console.error('[SNTPopup.open]', err);
@@ -1825,7 +1816,7 @@ const SNTExport = (() => {
         setTimeout(() => { popup.classList.remove('show', 'hiding'); if (overlay) overlay.classList.remove('show', 'hiding'); document.body.style.overflow = ''; }, 240);
       },
 
-      async _fetchNextBatches(platform, sd, ed, minItems = 60) {
+      async _fetchNextBatches(platform, sd, ed, minItems = 50) {
         const useSd = sd || this._curSd || SNTCfg.sd;
         const useEd = ed || this._curEd || SNTCfg.ed;
         let gathered = [];
@@ -1837,7 +1828,7 @@ const SNTExport = (() => {
           try {
             const promises = [];
 
-            // 1. Online News stream (doc) -> from /mk/api/news/articles (has real URLs!)
+            // 1. Online News stream (doc) -> from /mk/api/news/articles
             const needDoc = (platform === 'all' || platform === 'doc') && this._hasMoreDoc;
             if (needDoc) {
               const pDoc = (async () => {
@@ -1860,7 +1851,7 @@ const SNTExport = (() => {
               promises.push(pDoc);
             }
 
-            // 2. Social Media stream -> from /mk/api/news/mentions (has post IDs, embeds, video IDs)
+            // 2. Social Media stream -> from /mk/api/news/mentions
             const needSocial = (platform !== 'doc') && this._hasMoreSocial;
             if (needSocial) {
               const pSocial = (async () => {
@@ -1902,8 +1893,8 @@ const SNTExport = (() => {
 
             // Sort descending by date
             batchCombined.sort((a, b) => {
-              const da = new Date(a.date_created || a.date_inserted_dt || a.created_at || 0).getTime() || 0;
-              const db = new Date(b.date_created || b.date_inserted_dt || b.created_at || 0).getTime() || 0;
+              const da = Date.parse(a.date_created || a.date_inserted_dt || a.created_at || '') || 0;
+              const db = Date.parse(b.date_created || b.date_inserted_dt || b.created_at || '') || 0;
               return db - da;
             });
 
@@ -1916,25 +1907,24 @@ const SNTExport = (() => {
         return gathered;
       },
 
-      _normSent(item) {
-        const raw = String(item.sentiment_class ?? item.class_sentiment ?? item.sentiment ?? item.sentiment_label ?? item.sentiment_str ?? '0').toLowerCase().trim();
-        if (['1', 'positive', 'positif', 'pos'].includes(raw)) return 'pos';
-        if (['-1', '2', 'negative', 'negatif', 'neg'].includes(raw)) return 'neg';
-        return 'neu';
-      },
       _getFiltered() {
-        return this._curSent === 'all' ? this._allItems : this._allItems.filter(item => this._normSent(item) === this._curSent);
+        if (this._curSent === 'all') return this._allItems;
+        return this._allItems.filter(item => (item._sent || this._normSent(item)) === this._curSent);
       },
+
       _renderFiltered(list) {
         const items = this._getFiltered();
-        document.getElementById('sntPopCount').textContent = items.length.toLocaleString() + (this._hasMore() ? '+' : '');
-        const badge = document.getElementById('sntPopCount');
-        const bColors = { neg: '#ef4444', pos: '#2FC6F6', neu: '#94a3b8', all: 'var(--primary)' };
-        if (badge) badge.style.background = bColors[this._curSent] || 'var(--primary)';
+        const countEl = document.getElementById('sntPopCount');
+        if (countEl) {
+          countEl.textContent = items.length.toLocaleString() + (this._hasMore() ? '+' : '');
+          const bColors = { neg: '#ef4444', pos: '#2FC6F6', neu: '#94a3b8', all: 'var(--primary)' };
+          countEl.style.background = bColors[this._curSent] || 'var(--primary)';
+        }
         list.innerHTML = ''; list.scrollTop = 0;
         this._renderedCount = 0;
         this.loadMore(list);
       },
+
       async loadMore(list = document.getElementById('sntPopList')) {
         let items = this._getFiltered();
         const btn = document.getElementById('sntPopLoadMoreBtn');
@@ -1969,7 +1959,8 @@ const SNTExport = (() => {
                 this._cache[cacheKey].hasMoreSocial = this._hasMoreSocial;
               }
               items = this._getFiltered();
-              document.getElementById('sntPopCount').textContent = items.length.toLocaleString() + (this._hasMore() ? '+' : '');
+              const countEl = document.getElementById('sntPopCount');
+              if (countEl) countEl.textContent = items.length.toLocaleString() + (this._hasMore() ? '+' : '');
             }
           } catch (e) {
             console.warn('Load more fetch error:', e);
@@ -2027,7 +2018,7 @@ const SNTExport = (() => {
           const ini = (words.length >= 2 ? (words[0][0] + words[words.length - 1][0]) : (words[0]?.[0] || dName[0] || '?')).toUpperCase().replace(/['"]/g, '');
           const avHtml = (av && (av.startsWith('http://') || av.startsWith('https://'))) ? `<img src="${sntEsc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}'">` : (plat === 'doc' ? `<i class="ph ph-newspaper" style="font-size:14px;color:#fff;"></i>` : ini);
 
-          const sent = this._normSent(item), sentLbl = { neg: 'Neg', pos: 'Pos', neu: 'Neu' }[sent] || 'Neu';
+          const sent = item._sent || this._normSent(item), sentLbl = { neg: 'Neg', pos: 'Pos', neu: 'Neu' }[sent] || 'Neu';
           const dt = (item.date_created || item.created_at || item.publish_date || item.date_inserted_dt || '').split('T')[0];
           const itemData = sntEsc(JSON.stringify(item));
 
