@@ -2104,6 +2104,23 @@ const SNTExport = (() => {
           list.insertAdjacentHTML('beforeend', `<div id="sntPopLoadMoreBtn" style="padding:16px;text-align:center;background:var(--slate-50);border-top:1px dashed var(--slate-200);"><button id="_doLMBtn" onclick="SNTPopup.loadMore()" style="background:var(--primary);color:#fff;border:none;padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(3,128,71,.2);" onmouseover="this.style.filter='brightness(1.1)';" onmouseout="this.style.filter='';">Muat Lebih Banyak</button></div>`);
         }
       },
+      openDetailByIndex(idx) {
+        const item = this._renderedItems ? this._renderedItems[idx] : null;
+        if (!item) return;
+        const mt = String(item.media_type || item.type || item.tcode || item._type || '').toLowerCase();
+        let plat = this._curPlat || 'doc';
+        if (plat === 'all') {
+          if (mt.includes('doc') || mt.includes('news') || mt.includes('berita')) plat = 'doc';
+          else if (mt.includes('twit') || mt.includes('twitter') || mt.includes('x')) plat = 'twit';
+          else if (mt.includes('fb') || mt.includes('facebook')) plat = 'fb';
+          else if (mt.includes('ig') || mt.includes('instagram')) plat = 'ig';
+          else if (mt.includes('yt') || mt.includes('youtube')) plat = 'yt';
+          else if (mt.includes('tiktok')) plat = 'tiktok';
+          else if (item._type) plat = item._type;
+          else plat = 'doc';
+        }
+        SNTDetail.open(item, plat);
+      },
       _onItemClick(el) {
         try {
           const raw = el.getAttribute('data-item');
