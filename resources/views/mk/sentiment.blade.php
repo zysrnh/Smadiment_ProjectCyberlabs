@@ -1675,6 +1675,7 @@ const SNTExport = (() => {
 
     const SNTPopup = {
       _cache:{}, _allItems:[], _curSent:'all', _curPlat:null, _curSd:null, _curEd:null,
+      _offsets:{}, _hasMoreServer:{}, _isFetchingMore:false,
       init() {
         document.addEventListener('mousedown', e=>{ const pp=document.getElementById('sntPlatPicker'); if(pp?.classList.contains('visible')&&!pp.contains(e.target)) pp.classList.remove('visible'); });
         document.addEventListener('keydown', e=>{ if(e.key==='Escape') this.close(); });
@@ -1686,6 +1687,8 @@ const SNTExport = (() => {
         this._curPlat=platform; this._curSent=sentiment||'all';
         this._curSd = customStartDate || SNTCfg.sd;
         this._curEd = customEndDate || SNTCfg.ed;
+        this._renderedCount=0;
+        this._isFetchingMore=false;
 
         let dotColor,title;
         if (sentiment&&sentiment!=='all') {
@@ -1709,10 +1712,21 @@ const SNTExport = (() => {
         if(overlay){overlay.classList.remove('hiding');overlay.classList.add('show');}
         document.body.style.overflow='hidden';
         
+        const platforms = platform==='social' ? ['twit','fb','ig','yt','tiktok'] : platform==='all' ? ['doc','twit','fb','ig','yt','tiktok'] : [platform];
+        this._offsets = {};
+        this._hasMoreServer = {};
+        platforms.forEach(p => {
+          this._offsets[p] = 0;
+          this._hasMoreServer[p] = true;
+        });
+
         const cacheKey=`${SNTCfg.pid}_${platform}_${this._curSd}_${this._curEd}`;
         try {
-          if(!this._cache[cacheKey]) this._cache[cacheKey]=await this._fetch(platform, this._curSd, this._curEd);
-          this._allItems=this._cache[cacheKey];
+          if(!this._cache[cacheKey]) {
+            const initialData = await this._fetch(platform, this._curSd, this._curEd, 500);
+            this._cache[cacheKey] = initialData;
+          }
+          this._allItems = [...this._cache[cacheKey]];
           this._renderFiltered(list);
         } catch(err) {
           list.innerHTML=`<div class="sntp-loading" style="color:#94a3b8;">Gagal memuat data</div>`;
@@ -1736,25 +1750,40 @@ const SNTExport = (() => {
         if(overlay) overlay.classList.add('hiding');
         setTimeout(()=>{popup.classList.remove('show','hiding');if(overlay) overlay.classList.remove('show','hiding');document.body.style.overflow='';},240);
       },
-      async _fetch(platform, sd, ed) {
+      async _fetch(platform, sd, ed, rows=500) {
         const useSd = sd || this._curSd || SNTCfg.sd;
         const useEd = ed || this._curEd || SNTCfg.ed;
         const platforms = platform==='social' ? ['twit','fb','ig','yt','tiktok'] : platform==='all' ? ['doc','twit','fb','ig','yt','tiktok'] : [platform];
-        const results = await Promise.allSettled(platforms.map(p=>this._fetchOne(p, useSd, useEd)));
+        
+        const activePlatforms = platforms.filter(p => this._hasMoreServer[p] !== false);
+        if(!activePlatforms.length) return [];
+
+        const results = await Promise.allSettled(activePlatforms.map(p => {
+          const curStart = this._offsets[p] || 0;
+          return this._fetchOne(p, useSd, useEd, curStart, rows).then(items => {
+            this._offsets[p] = curStart + items.length;
+            if(items.length < rows) {
+              this._hasMoreServer[p] = false;
+            }
+            return items;
+          });
+        }));
+
         let merged = [];
         results.forEach((r, i) => {
-            if (r.status === 'fulfilled') {
-                r.value.forEach(item => { if (!item._type) item._type = platforms[i]; });
+            if (r.status === 'fulfilled' && Array.isArray(r.value)) {
+                const p = activePlatforms[i];
+                r.value.forEach(item => { if (!item._type) item._type = p; });
                 merged = merged.concat(r.value);
             }
         });
         merged.sort((a,b)=>(b.date_created||b.created_at||'').localeCompare(a.date_created||a.created_at||''));
         return merged;
       },
-      async _fetchOne(platform, sd, ed) {
+      async _fetchOne(platform, sd, ed, start=0, rows=500) {
         const useSd = sd || this._curSd || SNTCfg.sd;
         const useEd = ed || this._curEd || SNTCfg.ed;
-        const q=`project_id=${SNTCfg.pid}&start_date=${useSd}&end_date=${useEd}&rows=500&start=0`;
+        const q=`project_id=${SNTCfg.pid}&start_date=${useSd}&end_date=${useEd}&rows=${rows}&start=${start}`;
         const _normArr = d => {
           if (Array.isArray(d?.data?.data)) return d.data.data;
           if (Array.isArray(d?.data)) return d.data;
@@ -1792,7 +1821,7 @@ const SNTExport = (() => {
           } return [];
         }
         if(platform==='doc'){
-          const docQ=`project_id=${SNTCfg.pid}&start_date=${useSd}&end_date=${useEd}&rows=500&start=0&media=doc`;
+          const docQ=`project_id=${SNTCfg.pid}&start_date=${useSd}&end_date=${useEd}&rows=${rows}&start=${start}&media=doc`;
           try{
             const ctrl=new AbortController(), tid=setTimeout(()=>ctrl.abort(),25000);
             const res = await fetch(`/mk/api/news/articles?${docQ}`, {signal:ctrl.signal}); clearTimeout(tid);
@@ -1843,7 +1872,8 @@ const SNTExport = (() => {
       _getFiltered(){ return this._curSent==='all'?this._allItems:this._allItems.filter(item=>this._normSent(item)===this._curSent); },
       _renderFiltered(list) {
         const items=this._getFiltered();
-        document.getElementById('sntPopCount').textContent=items.length.toLocaleString();
+        const hasMoreServer = Object.values(this._hasMoreServer).some(v => v === true);
+        document.getElementById('sntPopCount').textContent = items.length.toLocaleString() + (hasMoreServer ? '+' : '');
         const badge=document.getElementById('sntPopCount');
         const bColors={neg:'#ef4444',pos:'#2FC6F6',neu:'#94a3b8',all:'var(--primary)'};
         if(badge) badge.style.background=bColors[this._curSent]||'var(--primary)';
@@ -1851,12 +1881,54 @@ const SNTExport = (() => {
         this._renderedCount=0;
         this.loadMore(list);
       },
-      loadMore(list=document.getElementById('sntPopList')) {
-        const items=this._getFiltered();
-        const btn=document.getElementById('sntPopLoadMoreBtn'); if(btn) btn.remove();
-        if(!items.length){list.innerHTML=`<div class="sntp-loading" style="color:#94a3b8;padding:50px 20px;text-align:center;">Tidak ada mention untuk filter ini</div>`;return;}
+      async loadMore(list=document.getElementById('sntPopList')) {
+        let items=this._getFiltered();
+        const btn=document.getElementById('sntPopLoadMoreBtn');
         
-        const limit=20, start=this._renderedCount||0, chunk=items.slice(start,start+limit);
+        const limit=20;
+        const start=this._renderedCount||0;
+
+        // If remaining items in memory are less than limit, try fetching more from server
+        const remaining = items.length - start;
+        const hasMoreServer = Object.values(this._hasMoreServer).some(v => v === true);
+        
+        if (remaining <= limit && hasMoreServer && !this._isFetchingMore) {
+          const loadBtn = document.getElementById('_doLMBtn');
+          if (loadBtn) {
+            loadBtn.disabled = true;
+            loadBtn.innerHTML = '<span class="spin-ring" style="width:13px;height:13px;display:inline-block;vertical-align:middle;margin-right:6px;border-width:2px;border-top-color:#fff;"></span> Memuat lebih banyak...';
+          }
+          this._isFetchingMore = true;
+          try {
+            const nextBatch = await this._fetch(this._curPlat, this._curSd, this._curEd, 500);
+            if (nextBatch.length > 0) {
+              const seen = new Set(this._allItems.map(it => it.id || it.docid || it.url || (it.content||'').slice(0,50)));
+              const uniqueNew = nextBatch.filter(it => {
+                const k = it.id || it.docid || it.url || (it.content||'').slice(0,50);
+                if (k && seen.has(k)) return false;
+                if (k) seen.add(k);
+                return true;
+              });
+              this._allItems = this._allItems.concat(uniqueNew);
+              items = this._getFiltered();
+              const hasMoreAfter = Object.values(this._hasMoreServer).some(v => v === true);
+              document.getElementById('sntPopCount').textContent = items.length.toLocaleString() + (hasMoreAfter ? '+' : '');
+            }
+          } catch(e) {
+            console.warn('Load more fetch error:', e);
+          } finally {
+            this._isFetchingMore = false;
+          }
+        }
+
+        if(btn) btn.remove();
+
+        if(!items.length){
+          list.innerHTML=`<div class="sntp-loading" style="color:#94a3b8;padding:50px 20px;text-align:center;">Tidak ada mention untuk filter ini</div>`;
+          return;
+        }
+
+        const chunk=items.slice(start, start+limit);
         const getPlat=item=>{ if(item._type) return item._type; return this._curPlat||'doc'; };
         
         const html=chunk.map(item=>{
@@ -1944,7 +2016,8 @@ const SNTExport = (() => {
         
         list.insertAdjacentHTML('beforeend',html);
         this._renderedCount=start+chunk.length;
-        if(items.length>this._renderedCount){
+        const canLoadMore = (items.length > this._renderedCount) || Object.values(this._hasMoreServer).some(v => v === true);
+        if(canLoadMore){
           list.insertAdjacentHTML('beforeend',`<div id="sntPopLoadMoreBtn" style="padding:16px;text-align:center;background:var(--slate-50);border-top:1px dashed var(--slate-200);"><button id="_doLMBtn" onclick="SNTPopup.loadMore()" style="background:var(--primary);color:#fff;border:none;padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(3,128,71,.2);" onmouseover="this.style.filter='brightness(1.1)';" onmouseout="this.style.filter='';">Muat Lebih Banyak</button></div>`);
         }
       },
