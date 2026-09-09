@@ -1544,89 +1544,64 @@ const INTPopup = {
       this._allItems=this._cache[cacheKey];
       this._renderFiltered(list);
     } catch(err) {
-      list.innerHTML=`<div class="intp-loading" style="color:#94a3b8;"><svg style="width:32px;height:32px;stroke:#e2e8f0;fill:none;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>Gagal memuat data</div>`;
-      document.getElementById('intPopCount').textContent='0';
+      this._filterAndRender(list);
+      return;
     }
+
+    const mediaParam=(this._curPlat==='all'||this._curPlat==='social')?'all':this._curPlat;
+    const url=`/mk/api/mentions?project_id=${INTCfg.pid}&start_date=${INTCfg.sd}&end_date=${INTCfg.ed}&media=${mediaParam}&limit=300`;
+
+    fetch(url)
+      .then(r => r.json())
+      .then(json => {
+        let items=[];
+        if (json&&Array.isArray(json.data)) items=json.data;
+        else if (json&&Array.isArray(json.posts)) items=json.posts;
+        else if (Array.isArray(json)) items=json;
+        else if (json&&json.data&&Array.isArray(json.data.data)) items=json.data.data;
+
+        if (this._curPlat==='social') {
+          items=items.filter(it => {
+            const mt=String(it.media_type||it.type||it.tcode||'').toLowerCase();
+            return !mt.includes('doc')&&!mt.includes('news');
+          });
+        }
+        this._cache[cacheKey]=items;
+        this._allItems=items;
+        this._filterAndRender(list);
+      })
+      .catch(err => {
+        console.error('[INTPopup.open]', err);
+        list.innerHTML=`<div class="intp-loading" style="color:#ef4444;">Gagal memuat data</div>`;
+        document.getElementById('intPopCount').textContent='0';
+      });
   },
 
-  openSentiment(sentiment,x,y) { this.open('all',sentiment,x,y); },
-
-  showPlatPicker(x,y,sentiment) {
-    const pp=document.getElementById('intPlatPicker'); if(!pp) return;
-    pp.dataset.sentiment=sentiment||'all';
-    const pw=185,ph=240,vw=window.innerWidth,vh=window.innerHeight;
-    let left=x+10,top=y-10;
-    if (left+pw>vw-8) left=x-pw-10; if (top+ph>vh-8) top=vh-ph-8; if (top<8) top=8;
-    pp.style.left=left+'px'; pp.style.top=top+'px';
-    pp.classList.add('visible');
-    pp.querySelectorAll('.intpp-btn').forEach(btn=>{
-      const plat=btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
-      if (plat) btn.setAttribute('onclick',`INTPopup.openPlatform('${plat}','${sentiment||'all'}')`);
-    });
-  },
-
-  openPlatform(platform,sentiment) {
-    const pp=document.getElementById('intPlatPicker');
-    const x=pp?parseFloat(pp.style.left)+90:window.innerWidth/2;
-    const y=pp?parseFloat(pp.style.top)+20:window.innerHeight/2;
-    if (pp) pp.classList.remove('visible');
-    this.open(platform,sentiment||'all',x,y);
-  },
+  openSentiment(sentiment) { this.open(this._curPlat||'all', sentiment); },
+  openPlatform(platform, sentiment) { this.open(platform, sentiment||'all'); },
 
   filterSent(sent) {
     this._curSent=sent;
-    document.querySelectorAll('.intp-sent-tab').forEach(b=>b.classList.toggle('active',b.dataset.s===sent));
-    this._renderFiltered(document.getElementById('intPopList'));
+    this._renderedItems=[];
+    document.querySelectorAll('.intp-sent-tab').forEach(b => {
+      b.classList.toggle('active', b.dataset.s===sent);
+    });
+    this._filterAndRender(document.getElementById('intPopList'));
   },
 
   close() {
-    document.getElementById('intPopup')?.classList.remove('visible');
+    const popup=document.getElementById('intPopup');
+    if (!popup||!popup.classList.contains('show')) return;
     INTDetail.close();
+    popup.classList.add('hiding');
+    setTimeout(() => { popup.classList.remove('show','hiding'); }, 240);
   },
 
-  async _fetch(platform) {
-    const q=`project_id=${INTCfg.pid}&start_date=${INTCfg.sd}&end_date=${INTCfg.ed}&rows=500&start=0`;
-    if (platform==='all'||platform==='social') {
-      const plats=platform==='social'?['twit','fb','ig','yt','tiktok']:['doc','twit','fb','ig','yt','tiktok'];
-      const results=await Promise.allSettled(plats.map(p=>this._fetchOne(p,q)));
-      let merged=[]; results.forEach(r=>{ if(r.status==='fulfilled') merged=merged.concat(r.value); });
-      merged.sort((a,b)=>(b.date_created||b.created_at||'').localeCompare(a.date_created||a.created_at||''));
-      return merged;
+  _filterAndRender(list) {
+    let items=this._allItems;
+    if (this._curSent!=='all') {
+      items=items.filter(it => this._normSent(it)===this._curSent);
     }
-    return this._fetchOne(platform,q);
-  },
-
-  async _fetchOne(platform,q) {
-    const eps={
-      doc:    `/mk/api/news/mentions?${q}`,
-      twit:   `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,
-      fb:     `/mk/api/news/fb-top-status?${q}&sub=fblike`,
-      ig:     `/mk/api/news/ig-top-status?${q}`,
-      yt:     `/mk/api/news/ytb-top-status?${q}`,
-      tiktok: `/mk/api/news/tiktok-top-status?${q}&sub=postbylike`,
-    };
-    const url=eps[platform]; if(!url) return [];
-    const ctrl=new AbortController(), tid=setTimeout(()=>ctrl.abort(),30000);
-    const res=await fetch(url,{signal:ctrl.signal}); clearTimeout(tid);
-    if (!res.ok) return [];
-    const data=await res.json();
-    return Array.isArray(data.data)?data.data:(Array.isArray(data)?data:[]);
-  },
-
-  _normSent(item) {
-    const raw=String(item.class_sentiment||item.sentiment||'0').toLowerCase().trim();
-    if (raw==='1'||raw==='positive'||raw==='positif') return 'pos';
-    if (raw==='-1'||raw==='2'||raw==='negative'||raw==='negatif') return 'neg';
-    return 'neu';
-  },
-
-  _getFiltered() {
-    if (this._curSent==='all') return this._allItems;
-    return this._allItems.filter(item=>this._normSent(item)===this._curSent);
-  },
-
-  _renderFiltered(list) {
-    const items=this._getFiltered();
     document.getElementById('intPopCount').textContent=items.length.toLocaleString();
     const badge=document.getElementById('intPopCount');
     const bColors={neg:'#ef4444',pos:'#2FC6F6',neu:'#94a3b8',all:'var(--primary-green)'};
@@ -1637,6 +1612,7 @@ const INTPopup = {
   _render(list, items) {
     if (!items.length) {
       list.innerHTML=`<div class="intp-loading" style="color:#94a3b8;"><svg style="width:32px;height:32px;stroke:#e2e8f0;fill:none;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>Tidak ada mention untuk filter ini</div>`;
+      this._renderedItems=[];
       return;
     }
     const SHOW=60;
@@ -1650,21 +1626,23 @@ const INTPopup = {
       if(mt.includes('tiktok')) return 'tiktok';
       return this._curPlat||'doc';
     };
-    list.innerHTML=items.slice(0,SHOW).map(item=>{
+    const visibleItems = items.slice(0,SHOW);
+    this._renderedItems = visibleItems;
+
+    list.innerHTML=visibleItems.map((item, idx)=>{
       const plat=getPlat(item), meta=INTPlatMeta[plat]||{color:'#038047'};
       const name=(item.from_name||item.page_name||item.author_nickname||item.channel_title||item.channel_name||item.author_name||item.username||item.author_scr_name||item.screen_name||item.publisher||item.source_name||item.name||'Tidak diketahui').trim();
-      const isNumericId=/^\d{8,}$/.test(name), displayName=isNumericId?`User ${name.slice(-4)}`:name;
+      const isNumericId=/^\d{8,}$/.test(name), displayName=isNumericId?`User ${name.slice(-4)}`:intDec(name);
       const rawHandle=(item.author_scr_name||item.screen_name||item.username||item.handle||'').trim();
       const handle=rawHandle&&rawHandle.toLowerCase()!==displayName.toLowerCase()?(['twit','ig','tiktok'].includes(plat)?(rawHandle.startsWith('@')?rawHandle:'@'+rawHandle):rawHandle):'';
-      const text=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,155);
+      const text=intDec(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,155);
       const av=(item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||item.thumbnail||item.picture||'').trim();
       const words=displayName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
       const ini=words.length>=2?(words[0][0]+words[words.length-1][0]).toUpperCase():(words[0]?.[0]||displayName[0]||'?').toUpperCase();
       const avHtml=(av&&(av.startsWith('http://')||av.startsWith('https://')))?`<img src="${intEsc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini.replace(/['"]/g,'')}'">`:ini;
       const sent=this._normSent(item), sentLbl={neg:'Neg',pos:'Pos',neu:'Neu'}[sent]||'Neu';
       const dt=(item.date_created||item.created_at||item.publish_date||'').split('T')[0];
-      const itemData=intEsc(JSON.stringify(item));
-      return `<div class="intp-item" data-item='${itemData}' data-plat="${plat}" onclick="INTPopup._onItemClick(this)">
+      return `<div class="intp-item" onclick="INTPopup.openDetailByIndex(${idx})">
         <div class="intp-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
         <div class="intp-item-body">
           <div class="intp-item-author">${intEsc(displayName)}</div>
@@ -1684,9 +1662,25 @@ const INTPopup = {
     }
   },
 
+  openDetailByIndex(idx) {
+    const item = this._renderedItems ? this._renderedItems[idx] : null;
+    if (item) {
+      const mt=String(item.media_type||item.type||item.tcode||'').toLowerCase();
+      let plat=this._curPlat||'doc';
+      if(mt.includes('doc')||mt.includes('news')||mt.includes('berita')) plat='doc';
+      else if(mt.includes('twit')||mt.includes('twitter')||mt.includes('x')) plat='twit';
+      else if(mt.includes('fb')||mt.includes('facebook')) plat='fb';
+      else if(mt.includes('ig')||mt.includes('instagram')) plat='ig';
+      else if(mt.includes('yt')||mt.includes('youtube')) plat='yt';
+      else if(mt.includes('tiktok')) plat='tiktok';
+      INTDetail.open(item, plat);
+    }
+  },
+
   _onItemClick(el) {
     try {
       const raw=el.getAttribute('data-item');
+      if (!raw) return;
       const item=JSON.parse(raw.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"'));
       INTDetail.open(item, el.dataset.plat||this._curPlat||'doc');
     } catch(e){ console.warn('INT Detail parse error:',e); }
@@ -1702,10 +1696,10 @@ const INTDetail = {
     if (!panel||!body) return;
     const meta=INTPlatMeta[platform]||{label:platform,color:'#038047'};
     const name=(item.from_name||item.page_name||item.author_nickname||item.channel_title||item.channel_name||item.author_name||item.username||item.author_scr_name||item.screen_name||item.publisher||item.source_name||item.name||'Tidak diketahui').trim();
-    const isNumericId=/^\d{8,}$/.test(name), displayName=isNumericId?`User ${name.slice(-4)}`:name;
+    const isNumericId=/^\d{8,}$/.test(name), displayName=isNumericId?`User ${name.slice(-4)}`:intDec(name);
     const rawHandle=(item.author_scr_name||item.screen_name||item.username||item.handle||'').trim();
     const handle=rawHandle&&rawHandle.toLowerCase()!==displayName.toLowerCase()?(rawHandle.startsWith('@')?rawHandle:'@'+rawHandle):'';
-    const content=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
+    const content=intDec(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
     const av=(item.avatar_url||item.profile_image_url||item.author_image||item.profile_image||item.thumbnail||item.picture||'').trim();
     const url=item.url||item.link||'';
     const date=item.date_created||item.created_at||item.publish_date||'';

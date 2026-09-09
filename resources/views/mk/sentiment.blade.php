@@ -1628,13 +1628,10 @@ const SNTExport = (() => {
     return { run, runCard };
 })();
     /* ══════════════════════════════════════════════════════
-       SENTIMENT MENTION POPUP
-    ══════════════════════════════════════════════════════ */
-    /* ══════════════════════════════════════════════════════
        SENTIMENT MENTION POPUP & DETAIL (SYNC WITH MEDIA STAT)
     ══════════════════════════════════════════════════════ */
     const SNTPlatMeta = {
-      doc:   { label:'Online News',  color:'#0284c7' }, twit: { label:'X ( Twitter )', color:'#1d9bf0' },
+      doc:   { label:'Online News',  color:'#0284c7' }, twit: { label:'X (Twitter)', color:'#1d9bf0' },
       fb:    { label:'Facebook',     color:'#1877f2' }, ig:   { label:'Instagram',     color:'#e1306c' },
       yt:    { label:'YouTube',      color:'#ff0000' }, tiktok:{ label:'TikTok',       color:'#111827' },
       neg:   { label:'Negative',     color:'#ef4444' }, pos:  { label:'Positive',      color:'#2FC6F6' },
@@ -1642,10 +1639,17 @@ const SNTExport = (() => {
     };
     
     const sntEsc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    const sntDec = s => {
+      if (!s) return '';
+      const d = document.createElement('textarea');
+      d.innerHTML = s;
+      return d.value;
+    };
 
     const SNTPopup = {
       _cache: {},
       _allItems: [],
+      _renderedItems: [],
       _curSent: 'all',
       _curPlat: null,
       _curSd: null,
@@ -1734,67 +1738,75 @@ const SNTExport = (() => {
         this._curSent = sentiment || 'all';
         this._curSd = customStartDate || SNTCfg.sd;
         this._curEd = customEndDate || SNTCfg.ed;
+        this._renderedItems = [];
+
+        document.querySelectorAll('.sntp-sent-tab').forEach(b => b.classList.toggle('active', b.dataset.s === this._curSent));
+
+        const titleEl = document.getElementById('sntPopTitle'), dotEl = document.getElementById('sntPopDot');
+        if (titleEl) {
+          const isSingleDate = this._curSd && this._curEd && this._curSd === this._curEd;
+          const dateSuffix = isSingleDate ? ` · ${this._curSd}` : '';
+          const meta = SNTPlatMeta[this._curPlat] || { label: 'All Media', color: '#038047' };
+          titleEl.textContent = (this._curPlat === 'all' ? 'All Mentions' : (meta.label + ' Mentions')) + dateSuffix;
+          if (dotEl) dotEl.style.background = meta.color || 'var(--primary)';
+        }
+
+        const list = document.getElementById('sntPopList');
+        if (list) list.innerHTML = `<div class="sntp-loading"><div class="spin-ring"></div><div style="font-size:12px;font-weight:600;color:var(--slate-500);margin-top:10px;">Mengambil data...</div></div>`;
+
+        popup.classList.remove('hiding');
+        if (overlay) overlay.classList.remove('hiding');
+        popup.classList.add('show');
+        if (overlay) overlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+
+        const cacheKey = `${SNTCfg.pid}_${this._curPlat}_${this._curSd}_${this._curEd}`;
+        if (this._cache[cacheKey]) {
+          const c = this._cache[cacheKey];
+          this._allItems = c.items;
+          this._docOffset = c.docOffset;
+          this._socialOffset = c.socialOffset;
+          this._hasMoreDoc = c.hasMoreDoc;
+          this._hasMoreSocial = c.hasMoreSocial;
+          this._renderFiltered(list);
+          return;
+        }
+
+        this._allItems = [];
         this._docOffset = 0;
         this._socialOffset = 0;
         this._hasMoreDoc = true;
         this._hasMoreSocial = true;
-        this._isFetchingMore = false;
-        this._renderedCount = 0;
-        this._allItems = [];
 
-        let dotColor, title;
-        if (sentiment && sentiment !== 'all') {
-          dotColor = SNTPlatMeta[sentiment]?.color || '#038047';
-          const sentLabel = { neg: 'Negative', pos: 'Positive', neu: 'Neutral' }[sentiment] || sentiment;
-          const platLabel = platform === 'all' ? 'All Media' : platform === 'social' ? 'Social Media' : (SNTPlatMeta[platform]?.label || platform);
-          title = `${sentLabel} — ${platLabel}`;
-        } else {
-          dotColor = platform === 'all' || platform === 'social' ? '#038047' : (SNTPlatMeta[platform]?.color || '#038047');
-          title = platform === 'all' ? 'All Media' : platform === 'social' ? 'Social Media' : (SNTPlatMeta[platform]?.label || platform);
-        }
-        document.getElementById('sntPopDot').style.background = dotColor;
-        document.getElementById('sntPopTitle').textContent = title;
-        document.getElementById('sntPopMeta').textContent = (this._curSd === this._curEd) ? this._curSd : (this._curSd + ' – ' + this._curEd);
-        document.getElementById('sntPopCount').textContent = '…';
-
-        document.querySelectorAll('.sntp-sent-tab').forEach(b => b.classList.toggle('active', b.dataset.s === this._curSent));
-        const list = document.getElementById('sntPopList');
-        list.innerHTML = `<div class="sntp-loading"><div class="sntp-spinner"></div>Memuat mentions…</div>`;
-        popup.classList.remove('hiding'); popup.classList.add('show');
-        if (overlay) { overlay.classList.remove('hiding'); overlay.classList.add('show'); }
-        document.body.style.overflow = 'hidden';
-
-        const cacheKey = `${SNTCfg.pid}_${this._curPlat}_${this._curSd}_${this._curEd}`;
         try {
-          if (this._cache[cacheKey] && this._cache[cacheKey].items && this._cache[cacheKey].items.length > 0) {
-            this._docOffset = this._cache[cacheKey].docOffset;
-            this._socialOffset = this._cache[cacheKey].socialOffset;
-            this._hasMoreDoc = this._cache[cacheKey].hasMoreDoc;
-            this._hasMoreSocial = this._cache[cacheKey].hasMoreSocial;
-            this._allItems = [...this._cache[cacheKey].items];
-          } else {
-            const initialData = await this._fetchNextBatches(this._curPlat, this._curSd, this._curEd, 50);
-            if (seq !== this._fetchSeq) return;
-            this._allItems = initialData;
-            if (initialData.length > 0) {
-              this._cache[cacheKey] = {
-                items: this._allItems,
-                docOffset: this._docOffset,
-                socialOffset: this._socialOffset,
-                hasMoreDoc: this._hasMoreDoc,
-                hasMoreSocial: this._hasMoreSocial
-              };
-            }
-          }
+          const items = await this._fetchNextBatches(this._curPlat, this._curSd, this._curEd, 50);
+          if (seq !== this._fetchSeq) return;
+
+          const seen = new Set();
+          this._allItems = items.filter(it => {
+            const k = it.id || it.docid || it.url || ((it.title || '') + (it.content || '').slice(0, 50));
+            if (k && seen.has(k)) return false;
+            if (k) seen.add(k);
+            return true;
+          });
+
+          this._cache[cacheKey] = {
+            items: this._allItems,
+            docOffset: this._docOffset,
+            socialOffset: this._socialOffset,
+            hasMoreDoc: this._hasMoreDoc,
+            hasMoreSocial: this._hasMoreSocial
+          };
+
           this._renderFiltered(list);
         } catch (err) {
+          if (seq !== this._fetchSeq) return;
           console.error('[SNTPopup.open]', err);
-          list.innerHTML = `<div class="sntp-loading" style="color:#94a3b8;">Gagal memuat data</div>`;
-          document.getElementById('sntPopCount').textContent = '0';
+          if (list) list.innerHTML = `<div class="sntp-loading" style="color:var(--danger);padding:40px 20px;text-align:center;"><i class="ph ph-warning-circle" style="font-size:32px;display:block;margin-bottom:8px;"></i>Gagal memuat data: ${err.message}</div>`;
         }
       },
 
-      openSentiment(sentiment, customStartDate, customEndDate) { this.open('all', sentiment, customStartDate, customEndDate); },
+      openSentiment(sentiment, customStartDate, customEndDate) { this.open(this._curPlat || 'all', sentiment || 'all', customStartDate, customEndDate); },
       openPlatform(platform, sentiment, customStartDate, customEndDate) {
         const pp = document.getElementById('sntPlatPicker');
         if (pp) pp.classList.remove('visible');
@@ -1802,6 +1814,7 @@ const SNTExport = (() => {
       },
       filterSent(sent) {
         this._curSent = sent;
+        this._renderedItems = [];
         document.querySelectorAll('.sntp-sent-tab').forEach(b => b.classList.toggle('active', b.dataset.s === sent));
         this._renderFiltered(document.getElementById('sntPopList'));
       },
@@ -1838,10 +1851,11 @@ const SNTExport = (() => {
                   clearTimeout(tid);
                   if (!res.ok) { this._hasMoreDoc = false; return []; }
                   const json = await res.json();
-                  const raw = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
-                  this._docOffset += raw.length;
-                  if (raw.length < DOC_BATCH) this._hasMoreDoc = false;
-                  return raw.map(m => this._normItem(m, 'doc'));
+                  const rawArr = (json && (json.data || json.docs || json.rows || (Array.isArray(json) ? json : []))) || [];
+                  const rawList = Array.isArray(rawArr) ? rawArr : (rawArr.data || []);
+                  this._docOffset += rawList.length;
+                  if (rawList.length < DOC_BATCH) this._hasMoreDoc = false;
+                  return rawList.map(it => this._normItem(it, 'doc'));
                 } catch (e) {
                   clearTimeout(tid);
                   this._hasMoreDoc = false;
@@ -1851,65 +1865,79 @@ const SNTExport = (() => {
               promises.push(pDoc);
             }
 
-            // 2. Social Media stream -> from /mk/api/news/mentions
+            // 2. Social Media stream -> from /mk/api/mentions
             const needSocial = (platform !== 'doc') && this._hasMoreSocial;
             if (needSocial) {
-              const pSocial = (async () => {
+              const pSoc = (async () => {
                 const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 20000);
                 try {
-                  const res = await fetch(`/mk/api/news/mentions?project_id=${SNTCfg.pid}&start_date=${useSd}&end_date=${useEd}&rows=${SOCIAL_BATCH}&start=${this._socialOffset}`, { signal: ctrl.signal });
+                  const mediaParam = (platform === 'all' || platform === 'social') ? 'all' : (platform === 'twit' ? 'twitter' : platform);
+                  const res = await fetch(`/mk/api/mentions?project_id=${SNTCfg.pid}&start_date=${useSd}&end_date=${useEd}&media=${mediaParam}&limit=${SOCIAL_BATCH}&offset=${this._socialOffset}`, { signal: ctrl.signal });
                   clearTimeout(tid);
                   if (!res.ok) { this._hasMoreSocial = false; return []; }
                   const json = await res.json();
-                  const raw = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
-                  this._socialOffset += raw.length;
-                  if (raw.length < SOCIAL_BATCH) this._hasMoreSocial = false;
-                  const mapped = raw.map(m => this._normItem(m));
-                  if (platform === 'social' || platform === 'all') {
-                    return mapped.filter(m => m._type !== 'doc');
-                  } else {
-                    return mapped.filter(m => m._type === platform);
-                  }
+                  let rawArr = [];
+                  if (json && Array.isArray(json.data)) rawArr = json.data;
+                  else if (json && Array.isArray(json.posts)) rawArr = json.posts;
+                  else if (json && Array.isArray(json.mentions)) rawArr = json.mentions;
+                  else if (Array.isArray(json)) rawArr = json;
+                  else if (json && json.data && Array.isArray(json.data.data)) rawArr = json.data.data;
+
+                  const socialItems = rawArr.filter(it => {
+                    const mt = String(it.media_type || it.type || it.tcode || '').toLowerCase();
+                    const docid = String(it.docid || it.id || '');
+                    if (platform === 'all') return true;
+                    if (platform === 'social') return !mt.includes('doc') && !mt.includes('news') && !docid.startsWith('doc_');
+                    if (platform === 'twit') return mt.includes('twit') || mt.includes('twitter') || mt.includes('x') || docid.startsWith('tw-');
+                    if (platform === 'fb') return mt.includes('fb') || mt.includes('facebook') || docid.startsWith('fb-');
+                    if (platform === 'ig') return mt.includes('ig') || mt.includes('instagram') || docid.startsWith('ig-');
+                    if (platform === 'yt') return mt.includes('yt') || mt.includes('youtube') || docid.startsWith('yt-');
+                    if (platform === 'tiktok') return mt.includes('tiktok') || mt.includes('tt') || docid.startsWith('tt-');
+                    return true;
+                  });
+
+                  this._socialOffset += rawArr.length;
+                  if (rawArr.length < SOCIAL_BATCH) this._hasMoreSocial = false;
+                  return socialItems.map(it => this._normItem(it));
                 } catch (e) {
                   clearTimeout(tid);
                   this._hasMoreSocial = false;
                   return [];
                 }
               })();
-              promises.push(pSocial);
+              promises.push(pSoc);
             }
 
-            if (promises.length === 0) break;
+            if (!promises.length) break;
 
-            const results = await Promise.allSettled(promises);
-            let batchCombined = [];
-            for (const r of results) {
-              if (r.status === 'fulfilled' && Array.isArray(r.value)) {
-                batchCombined = batchCombined.concat(r.value);
-              }
-            }
+            const results = await Promise.all(promises);
+            let combined = [];
+            results.forEach(arr => { if (arr && arr.length) combined = combined.concat(arr); });
 
-            if (batchCombined.length === 0) break;
+            if (combined.length === 0) break;
+            gathered = gathered.concat(combined);
 
-            // Sort descending by date
-            batchCombined.sort((a, b) => {
-              const da = Date.parse(a.date_created || a.date_inserted_dt || a.created_at || '') || 0;
-              const db = Date.parse(b.date_created || b.date_inserted_dt || b.created_at || '') || 0;
-              return db - da;
-            });
-
-            gathered = gathered.concat(batchCombined);
           } catch (e) {
             console.warn('[SNTPopup._fetchNextBatches] error:', e);
             break;
           }
         }
+
+        gathered.sort((a, b) => {
+          const da = new Date(a.date_created || a.date_inserted_dt || a.created_at || a.date || 0).getTime();
+          const db = new Date(b.date_created || b.date_inserted_dt || b.created_at || b.date || 0).getTime();
+          return db - da;
+        });
+
         return gathered;
       },
 
       _getFiltered() {
-        if (this._curSent === 'all') return this._allItems;
-        return this._allItems.filter(item => (item._sent || this._normSent(item)) === this._curSent);
+        if (!this._allItems || !this._allItems.length) return [];
+        return this._allItems.filter(it => {
+          if (this._curSent === 'all') return true;
+          return it._sent === this._curSent;
+        });
       },
 
       _renderFiltered(list) {
@@ -1922,6 +1950,7 @@ const SNTExport = (() => {
         }
         list.innerHTML = ''; list.scrollTop = 0;
         this._renderedCount = 0;
+        this._renderedItems = [];
         this.loadMore(list);
       },
 
@@ -1976,10 +2005,17 @@ const SNTExport = (() => {
           return;
         }
 
+        if (start === 0) {
+          this._renderedItems = [];
+        }
+
         const chunk = items.slice(start, start + limit);
         const getPlat = item => { if (item._type) return item._type; return this._curPlat || 'doc'; };
 
         const html = chunk.map(item => {
+          const globalIdx = this._renderedItems.length;
+          this._renderedItems.push(item);
+
           const plat = getPlat(item), meta = SNTPlatMeta[plat] || { color: '#038047', label: plat }, color = meta.color;
           const ao0 = (() => { if (typeof item.author === 'object' && item.author) return item.author; try { return JSON.parse(item.author || '{}'); } catch (e) { return {}; } })();
           const rawName = (() => {
@@ -1996,7 +2032,7 @@ const SNTExport = (() => {
             if (alt && !/^\d{8,}$/.test(alt)) name = alt;
             else if (!name) name = 'Tidak diketahui';
           }
-          const dName = name;
+          const dName = sntDec(name);
           const rawH = ((plat === 'ig' ? item.username : '') || item.author_handle || item.author_scr_name || item.screen_name || ao0?.scr_name || item.username || '').trim();
           const handle = (() => {
             if (!rawH) return '';
@@ -2006,12 +2042,12 @@ const SNTExport = (() => {
 
           const text = (() => {
             if (plat === 'doc') {
-              const c = (item.content || '').replace(/<[^>]*>/g, '').trim();
-              return c ? c.slice(0, 155) : (item.title || '').slice(0, 155);
+              const c = sntDec(item.content || '').replace(/<[^>]*>/g, '').trim();
+              return c ? c.slice(0, 155) : sntDec(item.title || '').slice(0, 155);
             }
-            return (item.content || item.caption || item.description || item.title || item.text || '').replace(/<[^>]*>/g, '').trim().slice(0, 155);
+            return sntDec(item.content || item.caption || item.description || item.title || item.text || '').replace(/<[^>]*>/g, '').trim().slice(0, 155);
           })();
-          const artTitle = (plat === 'doc') ? (item.title || '').replace(/<[^>]*>/g, '').trim() : '';
+          const artTitle = (plat === 'doc') ? sntDec(item.title || '').replace(/<[^>]*>/g, '').trim() : '';
           const av = (item.avatar_url || item.profile_image_url || item.author_image || ao0?.image || item.profile_image || item.thumbnail || item.picture || '').trim();
 
           const words = dName.replace(/[^a-zA-Z0-9\s]/g, '').trim().split(/\s+/).filter(Boolean);
@@ -2020,10 +2056,9 @@ const SNTExport = (() => {
 
           const sent = item._sent || this._normSent(item), sentLbl = { neg: 'Neg', pos: 'Pos', neu: 'Neu' }[sent] || 'Neu';
           const dt = (item.date_created || item.created_at || item.publish_date || item.date_inserted_dt || '').split('T')[0];
-          const itemData = sntEsc(JSON.stringify(item));
 
           if (plat === 'doc' && artTitle) {
-            return `<div class="sntp-item" data-item='${itemData}' data-plat="${plat}" onclick="SNTPopup._onItemClick(this)">
+            return `<div class="sntp-item" onclick="SNTPopup.openDetailByIndex(${globalIdx})">
               <div class="sntp-avatar" style="background:linear-gradient(135deg,${color},${color}99);">${avHtml}</div>
               <div class="sntp-item-body">
                 <div class="sntp-item-author" style="font-size:10px;color:#64748b;font-weight:600;">${sntEsc(dName)}</div>
@@ -2041,7 +2076,7 @@ const SNTExport = (() => {
             </div>`;
           }
 
-          return `<div class="sntp-item" data-item='${itemData}' data-plat="${plat}" onclick="SNTPopup._onItemClick(this)">
+          return `<div class="sntp-item" onclick="SNTPopup.openDetailByIndex(${globalIdx})">
             <div class="sntp-avatar" style="background:linear-gradient(135deg,${color},${color}99);">${avHtml}</div>
             <div class="sntp-item-body">
               <div class="sntp-item-author">${sntEsc(dName)}</div>
@@ -2092,9 +2127,9 @@ const SNTExport = (() => {
           if(altN && !/^\d{5,}$/.test(altN)) name=altN;
           else if(!name) name='Tidak diketahui';
         }
-        const displayName = name;
+        const displayName = sntDec(name);
         const handle=((platform==='ig'?item.username:'')||item.author_handle||item.author_scr_name||item.screen_name||ao3?.scr_name||item.username||'').trim();
-        const content=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
+        const content=sntDec(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
         const av=(item.avatar_url||item.profile_image_url||ao3?.image||item.author_image||item.profile_image||item.thumbnail||'').trim();
         const url=item.url||item.link||'';const dt=item.date_created||item.created_at||item.publish_date||'';
         title.textContent=displayName;
@@ -2208,7 +2243,7 @@ const SNTExport = (() => {
             } else {
                 sourceBtnHtml = `<div style="margin-top:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px 12px;font-size:11px;color:#991b1b;display:flex;align-items:flex-start;gap:7px;line-height:1.4;"><i class="ph ph-warning-circle" style="font-size:15px;flex-shrink:0;"></i><span>Link artikel spesifik tidak tersedia dari sumber data.</span></div>`;
             }
-            const artTitle = (item.title||'').replace(/<[^>]*>/g,'').trim();
+            const artTitle = sntDec(item.title||'').replace(/<[^>]*>/g,'').trim();
             body.innerHTML=`
                 <div class="sntdp-avatar-row">
                     <div class="sntdp-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);"><i class="ph ph-newspaper" style="font-size:20px;color:#fff;"></i></div>

@@ -423,7 +423,7 @@
 <div class="row g-2 mb-3 fade-up" id="card-export-platforms">
     @foreach([
         ['doc',    'pcDoc',  '#0284c7', 'rgba(2,132,199,.1)',    'ph-newspaper',    'Mass Media'],
-        ['twit',   'pcTwit', '#1d9bf0', 'rgba(29,155,240,.1)',   'ph-x-logo',       'X ( Twitter )'],
+        ['twit',   'pcTwit', '#1d9bf0', 'rgba(29,155,240,.1)',   'ph-x-logo',       'X (Twitter)'],
         ['fb',     'pcFb',   '#1877f2', 'rgba(24,119,242,.1)',   'ph-facebook-logo','Facebook'],
         ['ig',     'pcIg',   '#e1306c', 'rgba(225,48,108,.1)',   'ph-instagram-logo','Instagram'],
         ['yt',     'pcYt',   '#ff0000', 'rgba(255,0,0,.07)',     'ph-youtube-logo', 'YouTube'],
@@ -764,7 +764,7 @@
 {{-- ══ Platform Picker ══ --}}
 <div class="do-plat-picker" id="msPlatPicker">
     <div class="do-plat-picker-head">Pilih Platform</div>
-    <button class="do-plat-btn" onclick="MSPanel.openPlatform('twit')">X ( Twitter ) <span class="do-plat-dot" style="background:#1d9bf0;"></span></button>
+    <button class="do-plat-btn" onclick="MSPanel.openPlatform('twit')">X (Twitter) <span class="do-plat-dot" style="background:#1d9bf0;"></span></button>
     <button class="do-plat-btn" onclick="MSPanel.openPlatform('fb')">Facebook <span class="do-plat-dot" style="background:#1877f2;"></span></button>
     <button class="do-plat-btn" onclick="MSPanel.openPlatform('ig')">Instagram <span class="do-plat-dot" style="background:#e1306c;"></span></button>
     <button class="do-plat-btn" onclick="MSPanel.openPlatform('yt')">YouTube <span class="do-plat-dot" style="background:#ff0000;"></span></button>
@@ -821,7 +821,7 @@ const MSCfg = {
   sd  : '{{ $startDate }}',
   ed  : '{{ $endDate }}',
   platColors: {
-    'Mass Media':'#0284c7','X ( Twitter )':'#1d9bf0','Facebook':'#1877f2',
+    'Mass Media':'#0284c7','X (Twitter)':'#1d9bf0','X ( Twitter )':'#1d9bf0','Facebook':'#1877f2',
     'Instagram':'#e1306c','YouTube':'#ff0000','TikTok':'#111827',
     doc:'#0284c7',twit:'#1d9bf0',twitter:'#1d9bf0',
     fb:'#1877f2',facebook:'#1877f2',
@@ -831,7 +831,7 @@ const MSCfg = {
   },
   platMeta: {
     doc    : { label:'Online News',  color:'#0284c7' },
-    twit   : { label:'X ( Twitter )', color:'#1d9bf0' },
+    twit   : { label:'X (Twitter)', color:'#1d9bf0' },
     fb     : { label:'Facebook',    color:'#1877f2' },
     ig     : { label:'Instagram',   color:'#e1306c' },
     yt     : { label:'YouTube',     color:'#ff0000' },
@@ -848,7 +848,7 @@ const showSk    = id => { const e=document.getElementById(id); if(e) e.style.dis
 const emptyHtml = msg => `<div class="ms-empty"><i class="ph ph-warning-circle"></i><span>${msg}</span></div>`;
 const labelToKey= { 
     'Mass Media':'doc', 'Online News':'doc',
-    'X ( Twitter )':'twit', 'X (Twitter)':'twit', 'X / Twitter':'twit', 'Twitter':'twit',
+    'X (Twitter)':'twit', 'X ( Twitter )':'twit', 'X / Twitter':'twit', 'Twitter':'twit',
     'Facebook':'fb', 'Instagram':'ig', 'YouTube':'yt', 'TikTok':'tiktok' 
 };
 
@@ -1004,8 +1004,7 @@ function makeEDoughnut(domId, labels, values, colors, onClickFns, subtitles) {
         const sub = params.data.subtitle
           ? `<br><span style="color:#94a3b8;font-size:11px;">${params.data.subtitle}</span>` : '';
         const dName = (params.name || '')
-          .replace('Mass Media', 'Online News')
-          .replace('X (Twitter)', 'X ( Twitter )');
+          .replace('Mass Media', 'Online News');
         return `<div style="font-weight:700;font-size:13px;margin-bottom:5px;">${dName}${sub}</div>
                 <div style="display:flex;justify-content:space-between;gap:20px;margin-top:4px;">
                   <span style="color:#94a3b8;">Mentions</span>
@@ -1042,7 +1041,6 @@ function makeEDoughnut(domId, labels, values, colors, onClickFns, subtitles) {
         formatter: params => {
           const pc    = total > 0 ? (params.value / total * 100) : 0;
           const rawName = String(params.name)
-            .replace('X (Twitter)', 'X ( Twitter )')
             .replace('Mass Media', 'Online News');
           /* Trim long names gracefully */
           const name = rawName.length > 12 ? rawName.slice(0, 11) + '…' : rawName;
@@ -1187,9 +1185,9 @@ async function loadTrend(){
   let trendSD,trendED;
   if(MSTrendToggle._datePickerOverride){ trendSD=MSCfg.sd; trendED=MSCfg.ed; }
   else{ const now=new Date(),off=MSTrendToggle._weekOffset;const edDate=new Date(now);edDate.setDate(now.getDate()-(7*off));const sdDate=new Date(now);sdDate.setDate(now.getDate()-(7*(off+1)));trendSD=fmtDate(sdDate);trendED=fmtDate(edDate); }
-  const platMeta={doc:{label:'Online News',color:'#0284c7'},twitter:{label:'X ( Twitter )',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
+  const platMeta={doc:{label:'Online News',color:'#0284c7'},twitter:{label:'X (Twitter)',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
   const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];
-  const keyMap={'Online News':'doc','X ( Twitter )':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
+  const keyMap={'Online News':'doc','X (Twitter)':'twit','X ( Twitter )':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
   try{
     const res=await fetch(`/mk/api/media-statistic/trend-mentions?project_id=${MSCfg.pid}&start_date=${trendSD}&end_date=${trendED}`);
     const json=await res.json();if(json.error)throw new Error(json.error);
@@ -1834,14 +1832,14 @@ const MSTrendToggle = {
   _weekLabel(){ return this._weekOffset===0?'Minggu Ini':`Week -${this._weekOffset}`; },
   copyCSV(){if(!this._trendData){alert('Data belum tersedia');return;}const lines=this._buildCSV(this._trendData,this._mode);MSCsvModal.show('Trend Mentions — '+(this._mode==='monthly'?'Bulanan':'Harian'),lines);},
   _buildCSV(raw,mode){
-    const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];const platMeta={doc:'Online News',twitter:'X ( Twitter )',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok'};
+    const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];const platMeta={doc:'Online News',twitter:'X (Twitter)',facebook:'Facebook',instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok'};
     if(mode==='monthly'){const monthMap={};raw.forEach(p=>(p.data||[]).forEach(d=>{const m=d.date.slice(0,7);if(!monthMap[m])monthMap[m]={};monthMap[m][p.key]=(monthMap[m][p.key]||0)+d.count;}));const months=Object.keys(monthMap).sort();const lines=[];months.forEach(m=>platOrder.forEach(k=>{const val=monthMap[m][k]||0;if(val>0)lines.push(`${lines.length};${platMeta[k]||k};${val};${m}`);}));return lines;}
     else{const dSet=new Set();raw.forEach(p=>(p.data||[]).forEach(d=>dSet.add(d.date)));const allDates=Array.from(dSet).sort();const lines=[];allDates.forEach(date=>raw.forEach(p=>{const pt=(p.data||[]).find(x=>x.date===date);if(pt&&pt.count>0)lines.push(`${lines.length};${platMeta[p.key]||p.key};${pt.count};${date}`);}));return lines;}
   },
   _render(raw){
-    const platMetaFull={doc:{label:'Online News',color:'#0284c7'},twitter:{label:'X ( Twitter )',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
+    const platMetaFull={doc:{label:'Online News',color:'#0284c7'},twitter:{label:'X (Twitter)',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
     const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];
-    const keyMap={'Online News':'doc','X ( Twitter )':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
+    const keyMap={'Online News':'doc','X (Twitter)':'twit','X ( Twitter )':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
     if(this._mode==='monthly'){
       const monthMap={};raw.forEach(p=>(p.data||[]).forEach(d=>{const m=d.date.slice(0,7);if(!monthMap[m])monthMap[m]={};monthMap[m][p.key]=(monthMap[m][p.key]||0)+d.count;}));
       const months=Object.keys(monthMap).sort();const xLabels=months.map(m=>{const dt=new Date(m+'-01T00:00:00');return dt.toLocaleString('id-ID',{month:'short',year:'numeric'});});

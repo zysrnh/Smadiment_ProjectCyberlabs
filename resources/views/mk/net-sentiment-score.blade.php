@@ -645,7 +645,7 @@ const NSS_ED  = '{{ $endDate }}';
 
 const PLAT_META = {
     doc:       { label: 'Online News', color: '#0284c7' },
-    twitter:   { label: 'Twitter',     color: '#1d9bf0' },
+    twitter:   { label: 'X (Twitter)', color: '#1d9bf0' },
     facebook:  { label: 'Facebook',    color: '#1877f2' },
     instagram: { label: 'Instagram',   color: '#e1306c' },
     youtube:   { label: 'YouTube',     color: '#ff0000' },
@@ -661,6 +661,12 @@ const $      = id => document.getElementById(id);
 const numFmt = n  => (parseInt(n)||0).toLocaleString('id-ID');
 const pct    = (v,t) => t>0?((v/t)*100).toFixed(1)+'%':'0%';
 const esc    = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const dec    = s => {
+    if (!s) return '';
+    const d = document.createElement('textarea');
+    d.innerHTML = s;
+    return d.value;
+};
 function getPrimary() { return getComputedStyle(document.documentElement).getPropertyValue('--bs-primary').trim()||'#4361EE'; }
 
 /* ── Count-up ── */
@@ -936,11 +942,15 @@ const NSSPanel=(()=>{
         }catch(e){clearTimeout(tid); return[];}
     }
 
+    let _renderedItems = [];
+
     function _render(list,items, showAll = false){
-        if(!items.length){list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:var(--do-slate-400);font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`;return;}
+        if(!items.length){list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:var(--do-slate-400);font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`; _renderedItems=[]; return;}
         const SHOW=80;
         const visibleItems = showAll ? items : items.slice(0,SHOW);
-        list.innerHTML=visibleItems.map(item=>{
+        _renderedItems = visibleItems;
+
+        list.innerHTML=visibleItems.map((item, idx)=>{
             const plat=item._platform||'doc';
             const meta=PLAT_META[plat]||{label:plat,color:getPrimary()};
             const sent=_normSent(item);
@@ -959,22 +969,21 @@ const NSSPanel=(()=>{
               const alt=(item.author_handle||item.author_scr_name||item.screen_name||ao?.scr_name||ao?.username||item.username||item.nickname||'').trim();
               if(alt&&!/^\d{5,}$/.test(alt)) name=alt; else if(!name) name='Unknown';
             }
-            const dName=name;
+            const dName=dec(name);
             const rawHandle=(item.author_handle||item.author_scr_name||item.screen_name||ao?.scr_name||item.username||item.handle||'').trim();
             const handle=rawHandle&&rawHandle.toLowerCase()!==dName.toLowerCase()?((['twitter','instagram','tiktok'].includes(plat))?(rawHandle.startsWith('@')?rawHandle:'@'+rawHandle):rawHandle):'';
-            const artTitle=(plat==='doc')?(item.title||'').replace(/<[^>]*>/g,'').trim():'';
-            const text=(()=>{if(plat==='doc'){const c=(item.content||'').replace(/<[^>]*>/g,'').trim(); return c?c.slice(0,150):(item.title||'').slice(0,150);} return (item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,150);})();
+            const artTitle=(plat==='doc')?dec(item.title||'').replace(/<[^>]*>/g,'').trim():'';
+            const text=(()=>{if(plat==='doc'){const c=dec(item.content||'').replace(/<[^>]*>/g,'').trim(); return c?c.slice(0,150):dec(item.title||'').slice(0,150);} return dec(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,150);})();
             const av=(item.avatar_url||item.profile_image_url||item.author_image||ao?.image||item.profile_image||'').trim();
             const dt=(item.date_created||item.created_at||item.publish_date||'').split('T')[0];
             const words=dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
             const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||'?')).toUpperCase();
             const safeIni=ini.replace(/['"]/g,'');
             const avHtml=(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${safeIni}';">`:(plat==='doc'?`<i class="ph ph-newspaper" style="font-size:14px;color:#fff;"></i>`:ini);
-            const docUrl=(plat==='doc')?(item.url||item.link||'').trim():'';
-            const itemJson=esc(JSON.stringify({...item,_platform:plat}));
+            
             /* Doc: special rendering with article title */
             if(plat==='doc'&&artTitle){
-              return `<div class="do-panel-item" data-item='${itemJson}' onclick="NSSDetail.open(this)">
+              return `<div class="do-panel-item" onclick="NSSDetail.openByIndex(${idx})">
                 <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);"><i class="ph ph-newspaper" style="font-size:14px;color:#fff;"></i></div>
                 <div class="do-panel-item-body">
                     <div class="do-panel-author" style="font-size:10px;color:#64748b;">${esc(dName)}</div>
@@ -989,7 +998,7 @@ const NSSPanel=(()=>{
                 </div>
               </div>`;
             }
-            return `<div class="do-panel-item" data-item='${itemJson}' onclick="NSSDetail.open(this)">
+            return `<div class="do-panel-item" onclick="NSSDetail.openByIndex(${idx})">
                 <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
                 <div class="do-panel-item-body">
                     <div class="do-panel-author">${esc(dName)}</div>
@@ -1017,24 +1026,35 @@ const NSSPanel=(()=>{
 
     function showAll() { _render($('nssPanelList'), _filtered, true); }
 
-    return{open,close,closeByOverlay,filterSent,showAll,_extractYtId,get _cache(){return _cache;},set _cache(v){_cache=v;}};
+    return{open,close,closeByOverlay,filterSent,showAll,_extractYtId,get _cache(){return _cache;},set _cache(v){_cache=v;},get _renderedItems(){return _renderedItems;}};
 })();
 
 /* ══ DETAIL PANEL ══ */
 const NSSDetail = {
+    openByIndex(idx) {
+        const item = NSSPanel._renderedItems ? NSSPanel._renderedItems[idx] : null;
+        if (item) this.openItem(item);
+    },
     open(el) {
         let item;
-        try { const raw=el.getAttribute('data-item'); item=JSON.parse(raw.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"')); } catch(e){ console.warn('NSSDetail parse error',e); return; }
+        try {
+            const raw=el.getAttribute('data-item');
+            if (!raw) return;
+            item=JSON.parse(raw.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"'));
+        } catch(e){ console.warn('NSSDetail parse error',e); return; }
+        if (item) this.openItem(item);
+    },
+    openItem(item) {
         const plat=item._platform||'doc';
         const meta=PLAT_META[plat]||{label:plat,color:'#4361EE'};
         const panel=$('nssDetailPanel'),body=$('nssDpBody'),title=$('nssDpTitle');
         if(!panel) return;
         const ao=(()=>{if(typeof item.author==='object'&&item.author) return item.author; try{return JSON.parse(item.author||'{}');}catch(e){return{};}})();
         const name=(item.from_name||item.page_name||item.author_nickname||item.nickname||item.channel_title||item.channel_name||item.author_name||item.username||item.user_name||item.author_scr_name||item.screen_name||ao?.name||ao?.scr_name||item.publisher||item.source_name||item.name||'Unknown').trim();
-        const displayName=/^\d{8,}$/.test(name)?`User ${name.slice(-4)}`:name;
+        const displayName=/^\d{8,}$/.test(name)?`User ${name.slice(-4)}`:dec(name);
         const rawHandle=(item.author_scr_name||item.screen_name||ao?.scr_name||item.username||item.handle||'').trim();
         const handle=rawHandle&&rawHandle.toLowerCase()!==displayName.toLowerCase()?(rawHandle.startsWith('@')?rawHandle:'@'+rawHandle):'';
-        const content=(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
+        const content=dec(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim();
         const av=(item.avatar_url||item.profile_image_url||item.author_image||ao?.image||item.profile_image||item.thumbnail||item.picture||'').trim();
         let url = item.url || item.link || item.post_url || item.article_url || item.source_url || item.permalink || item.news_url || item.web_url || '';
         if(!url&&plat==='twitter'){const scr=rawHandle.replace(/^@/,''),subId=item.sub_id||''; if(subId) url=`https://twitter.com/${encodeURIComponent(scr)}/status/${encodeURIComponent(subId)}`; else if(scr) url=`https://twitter.com/${encodeURIComponent(scr)}`;}
