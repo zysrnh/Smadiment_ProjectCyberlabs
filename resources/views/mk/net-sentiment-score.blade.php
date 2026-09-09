@@ -604,7 +604,7 @@
     </div>
     <div class="do-panel-actions">
         <div class="do-panel-meta">
-            <i class="ph ph-magnifying-glass" style="font-size:11px;"></i>
+            <i class="ph ph-calendar-blank" style="font-size:11px;"></i>
             <span id="nssPanelMeta">—</span>
         </div>
         <div class="do-panel-tabs">

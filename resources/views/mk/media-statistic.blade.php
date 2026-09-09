@@ -738,7 +738,7 @@
     </div>
     <div class="do-panel-actions">
         <div class="do-panel-meta">
-            <i class="ph ph-magnifying-glass" style="font-size:11px;"></i>
+            <i class="ph ph-calendar-blank" style="font-size:11px;"></i>
             <span id="msPanelMeta">—</span>
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">

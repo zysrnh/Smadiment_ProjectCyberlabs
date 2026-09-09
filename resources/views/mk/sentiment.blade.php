@@ -539,7 +539,7 @@
       <div class="sntp-dot" id="sntPopDot"></div><span class="sntp-title" id="sntPopTitle">Mentions</span><span class="sntp-count" id="sntPopCount">…</span><button class="sntp-close" onclick="SNTPopup.close()">×</button>
     </div>
     <div class="sntp-actions">
-      <div class="sntp-meta"><i class="ph ph-magnifying-glass" style="font-size:11px;"></i><span class="sntp-meta__label" id="sntPopMeta">—</span></div>
+      <div class="sntp-meta"><i class="ph ph-calendar-blank" style="font-size:11px;"></i><span class="sntp-meta__label" id="sntPopMeta">—</span></div>
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
         <div class="sntp-sent-tabs" id="sntPopSentTabs">
           <button class="sntp-sent-tab active" data-s="all" onclick="SNTPopup.filterSent('all')">Semua</button>
@@ -1742,7 +1742,10 @@ const SNTExport = (() => {
 
         document.querySelectorAll('.sntp-sent-tab').forEach(b => b.classList.toggle('active', b.dataset.s === this._curSent));
 
-        const titleEl = document.getElementById('sntPopTitle'), dotEl = document.getElementById('sntPopDot');
+        const titleEl = document.getElementById('sntPopTitle'), dotEl = document.getElementById('sntPopDot'), metaEl = document.getElementById('sntPopMeta');
+        const titleDate = this._curSd ? (this._curSd === this._curEd ? this._curSd : `${this._curSd} – ${this._curEd}`) : (SNTCfg.sd + ' – ' + SNTCfg.ed);
+        if (metaEl) metaEl.textContent = titleDate;
+
         if (titleEl) {
           const isSingleDate = this._curSd && this._curEd && this._curSd === this._curEd;
           const dateSuffix = isSingleDate ? ` · ${this._curSd}` : '';
