@@ -537,9 +537,16 @@ const OVData = {
     async loadHashtags() {
         const ld=_$('hashtagLoading'), ct=_$('hashtagContent'), em=_$('hashtagEmpty'), bd=_$('badgeHashtag');
         try {
-            const r = await fetch(`${API_BASE}/trending-topics?start_date=${OVCfg.sd}&end_date=${OVCfg.ed}&location=Indonesia`);
+            const r = await fetch(`${API_BASE}/top-hashtags-data?project_id=${OVCfg.pid}&start_date=${OVCfg.sd}&end_date=${OVCfg.ed}`);
             const j = await r.json();
-            const topics = (j.data?.top_topics||[]).map(t=>({ name:t.name, size:t.total_volume||t.appearances||0, url:t.url||'' }));
+            const rawHashtags = j.data?.hashtags || [];
+            const topics = rawHashtags.map(t=>({
+                name: t.name ? (t.name.startsWith('#') ? t.name : '#' + t.name) : (t.hashtag || ''),
+                rawName: t.name ? t.name.replace(/^#/, '') : '',
+                size: parseInt(t.size || t.count || 0),
+                url: t.url || ''
+            })).filter(t => t.name && t.size > 0);
+
             if (topics.length) {
                 Store.hashtag=topics; Pag.hashtag=1;
                 if(bd) bd.textContent=topics.length+' topics';
@@ -847,9 +854,9 @@ const OVData = {
     },
 
     _openHashtagPanel(h){
-        const tag=h.name.toLowerCase();
+        const tag=(h.rawName || h.name).replace(/^#/, '').toLowerCase();
         const filtered=allPostsRaw.filter(p=>(p.content||'').toLowerCase().includes(tag));
-        OVPanel.open(filtered.length?filtered:allPostsRaw.slice(0,20),'view',`${PLAT} — ${h.name} (${h.size} mentions)`);
+        OVPanel.open(filtered.length?filtered:allPostsRaw.slice(0,20),'view',`${PLAT} — ${h.name} (${numF(h.size)} mentions)`);
     },
 };
 
