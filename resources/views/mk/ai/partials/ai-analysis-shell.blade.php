@@ -72,13 +72,13 @@
             <div class="img-preview-bar" id="imgPreviewBar"></div>
             <div class="input-row">
                 <input type="file" id="imgFileInput" accept="image/*" multiple hidden onchange="handleImgAttach(this)">
-                <button class="btn-attach" id="btnAttach" onclick="document.getElementById('imgFileInput').click()" title="Lampirkan gambar" disabled>
+                <button class="btn-attach" id="btnAttach" onclick="document.getElementById('imgFileInput').click()" title="Lampirkan gambar">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 </button>
-                <textarea class="chat-textarea" id="chatInput" placeholder="Memuat data…" rows="1" disabled
+                <textarea class="chat-textarea" id="chatInput" placeholder="Ketik pertanyaan atau pilih prompt template di sebelah kiri…" rows="1"
                     onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"
                     oninput="autoResize(this)"></textarea>
-                <button class="btn-send" id="sendBtn" onclick="sendMessage()" disabled>
+                <button class="btn-send" id="sendBtn" onclick="sendMessage()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="22" y1="2" x2="11" y2="13"/>
                         <polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor"/>

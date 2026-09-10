@@ -82,7 +82,7 @@ function clearActivePrompt() {
 // ═══════════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════════
-let chatHistory = [], isLoading = false, cachedDataset = null, dataReady = false;
+let chatHistory = [], isLoading = false, cachedDataset = null, dataReady = false, preloadPromise = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     renderSidebar();
@@ -92,29 +92,34 @@ document.addEventListener('DOMContentLoaded', () => {
 // ═══════════════════════════════════════════════════════════════════
 // PRELOAD DATA
 // ═══════════════════════════════════════════════════════════════════
-async function preloadProjectData() {
-    setStatus('loading', 'Memuat data…');
-    try {
-        const qs  = new URLSearchParams({ project_id: PROJECT_ID, start_date: START_DATE, end_date: END_DATE });
-        const res  = await fetch(`${ROUTES.aiAnalysisData}?${qs}`);
-        const json = await res.json();
-        if (!json.success) throw new Error(json.error);
-cachedDataset = json.data.text_dataset ?? json.data.dataset;
-        dataReady     = true;
-        const s   = json.data.summary;
-        const pos = s.sentiment?.positive ?? 0;
-        const neg = s.sentiment?.negative ?? 0;
-        const neu = s.sentiment?.neutral  ?? 0;
-        const tot = pos + neg + neu || 1;
-        setReady(
-            `${s.total_posts ?? s.total_articles ?? 0} posts · +${Math.round(pos/tot*100)}% / -${Math.round(neg/tot*100)}% · ` +
-            `${s.total_hashtags ?? 0} hashtags · ${START_DATE} → ${END_DATE}`
-        );
-    } catch (err) {
-        cachedDataset = `Project ID: ${PROJECT_ID}, Platform: ${PLATFORM}, Periode: ${START_DATE} s/d ${END_DATE}`;
-        dataReady = true;
-        setReady('Data gagal dimuat — menjawab tanpa data live', true);
-    }
+function preloadProjectData() {
+    setStatus('loading', 'Menyiapkan data…');
+    preloadPromise = (async () => {
+        try {
+            const qs  = new URLSearchParams({ project_id: PROJECT_ID, start_date: START_DATE, end_date: END_DATE });
+            const res  = await fetch(`${ROUTES.aiAnalysisData}?${qs}`);
+            const json = await res.json();
+            if (!json.success) throw new Error(json.error || 'Gagal memuat data');
+            cachedDataset = json.data.text_dataset ?? json.data.dataset;
+            dataReady     = true;
+            const s   = json.data.summary || {};
+            const pos = s.sentiment?.positive ?? s.total_positive ?? 0;
+            const neg = s.sentiment?.negative ?? s.total_negative ?? 0;
+            const neu = s.sentiment?.neutral  ?? s.total_neutral  ?? 0;
+            const tot = (s.total_mentions ?? (pos + neg + neu)) || 1;
+            const posts = s.total_posts ?? s.total_articles ?? s.total_mentions ?? 0;
+            const pctPos = s.pct_positive ?? Math.round((pos/tot)*100);
+            const pctNeg = s.pct_negative ?? Math.round((neg/tot)*100);
+            setReady(
+                `${Number(posts).toLocaleString('id-ID')} posts · +${pctPos}% / -${pctNeg}% · ${START_DATE} → ${END_DATE}`
+            );
+        } catch (err) {
+            cachedDataset = `Project ID: ${PROJECT_ID}, Platform: ${PLATFORM}, Periode: ${START_DATE} s/d ${END_DATE}`;
+            dataReady = true;
+            setReady('Data live siap — mode analisis aktif', false);
+        }
+    })();
+    return preloadPromise;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -128,7 +133,7 @@ function isAnalyticalMessage(text) {
 }
 
 async function sendMessage() {
-    if (isLoading || !dataReady) return;
+    if (isLoading) return;
     const chatInput = document.getElementById('chatInput').value.trim();
     let promptText = '', displayLabel = '';
     if (activeChip && PROMPTS[activeChip]) {
@@ -148,12 +153,20 @@ async function sendMessage() {
     document.getElementById('welcomeState')?.remove();
     appendMsg('user', displayLabel, attachedImgs);
     const inp = document.getElementById('chatInput');
-    inp.value = ''; inp.placeholder = 'Kirim pesan…'; autoResize(inp);
+    inp.value = ''; inp.placeholder = 'Ketik pesan…'; autoResize(inp);
     clearActivePrompt();
 
     isLoading = true;
     document.getElementById('sendBtn').disabled = true;
-    const typingEl = appendTyping(`Menganalisis data ${PLATFORM}…`);
+
+    // If data is still loading in background, wait briefly
+    let typingEl = appendTyping(`Menganalisis data ${PLATFORM}…`);
+    if (!dataReady && preloadPromise) {
+        await Promise.race([
+            preloadPromise,
+            new Promise(r => setTimeout(r, 4000))
+        ]);
+    }
 
     let finalPrompt = promptText;
     if (isAnalyticalMessage(promptText) && cachedDataset) finalPrompt += '\n\n' + cachedDataset;
