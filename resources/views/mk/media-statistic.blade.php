@@ -735,6 +735,7 @@
     <div class="do-panel-header">
         <div class="do-panel-dot" id="msPanelDot"></div>
         <span class="do-panel-title" id="msPanelTitle">Mentions</span>
+        <span class="do-panel-count ms-2" id="msPanelCount" style="display:none;"></span>
         <button class="do-panel-close" onclick="MSPanel.close()"><i class="ph ph-x"></i></button>
     </div>
     <div class="do-panel-actions">
@@ -1475,14 +1476,12 @@ const MSPanel = (() => {
 
   async function _fetchProjectData(pid, platform, sd, ed) {
     const promises = [];
-    const needDoc = (platform === 'all' || platform === 'doc');
-    const needSocial = (platform !== 'doc');
 
-    if (needDoc) {
+    if (platform === 'doc') {
       promises.push((async () => {
         const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
         try {
-          const res = await fetch(`/mk/api/news/articles?project_id=${pid}&start_date=${sd}&end_date=${ed}&media=doc&rows=100`, { signal: ctrl.signal });
+          const res = await fetch(`/mk/api/news/articles?project_id=${pid}&start_date=${sd}&end_date=${ed}&media=doc&rows=300`, { signal: ctrl.signal });
           clearTimeout(tid);
           if (!res.ok) return [];
           const json = await res.json();
@@ -1494,13 +1493,99 @@ const MSPanel = (() => {
           return [];
         }
       })());
-    }
-
-    if (needSocial) {
+    } else if (platform === 'tiktok') {
       promises.push((async () => {
         const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
         try {
-          const res = await fetch(`/mk/api/news/mentions?project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=500`, { signal: ctrl.signal });
+          const res = await fetch(`/mk/api/news/tiktok-top-status?project_id=${pid}&start_date=${sd}&end_date=${ed}&sub=postbylike&rows=300`, { signal: ctrl.signal });
+          clearTimeout(tid);
+          if (!res.ok) return [];
+          const json = await res.json();
+          const list = (json && Array.isArray(json.data)) ? json.data : [];
+          if (list.length) return list.map(it => _normItem(it, 'tiktok'));
+          const resM = await fetch(`/mk/api/news/mentions?project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=1200`);
+          const jsonM = await resM.json();
+          const rawArr = (jsonM && (jsonM.data || jsonM.posts || jsonM.mentions || []));
+          return (Array.isArray(rawArr) ? rawArr : []).filter(it => {
+            const mt = String(it.media_type || it.type || it.tcode || '').toLowerCase();
+            return mt.includes('tiktok') || mt.includes('tt') || String(it.docid||it.id||'').startsWith('tt-');
+          }).map(it => _normItem(it, 'tiktok'));
+        } catch (e) {
+          clearTimeout(tid);
+          return [];
+        }
+      })());
+    } else if (platform === 'yt' || platform === 'youtube') {
+      promises.push((async () => {
+        const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
+        try {
+          const res = await fetch(`/mk/api/news/ytb-top-status?project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=300`, { signal: ctrl.signal });
+          clearTimeout(tid);
+          if (!res.ok) return [];
+          const json = await res.json();
+          const list = (json && Array.isArray(json.data)) ? json.data : [];
+          if (list.length) return list.map(it => _normItem(it, 'yt'));
+          const resM = await fetch(`/mk/api/news/mentions?project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=1200`);
+          const jsonM = await resM.json();
+          const rawArr = (jsonM && (jsonM.data || jsonM.posts || jsonM.mentions || []));
+          return (Array.isArray(rawArr) ? rawArr : []).filter(it => {
+            const mt = String(it.media_type || it.type || it.tcode || '').toLowerCase();
+            return mt.includes('yt') || mt.includes('youtube') || String(it.docid||it.id||'').startsWith('yt-');
+          }).map(it => _normItem(it, 'yt'));
+        } catch (e) {
+          clearTimeout(tid);
+          return [];
+        }
+      })());
+    } else if (platform === 'ig' || platform === 'instagram') {
+      promises.push((async () => {
+        const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
+        try {
+          const res = await fetch(`/mk/api/news/ig-top-status?project_id=${pid}&start_date=${sd}&end_date=${ed}&sub=postbylike&rows=300`, { signal: ctrl.signal });
+          clearTimeout(tid);
+          if (!res.ok) return [];
+          const json = await res.json();
+          const list = (json && Array.isArray(json.data)) ? json.data : [];
+          if (list.length) return list.map(it => _normItem(it, 'ig'));
+          const resM = await fetch(`/mk/api/news/mentions?project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=1200`);
+          const jsonM = await resM.json();
+          const rawArr = (jsonM && (jsonM.data || jsonM.posts || jsonM.mentions || []));
+          return (Array.isArray(rawArr) ? rawArr : []).filter(it => {
+            const mt = String(it.media_type || it.type || it.tcode || '').toLowerCase();
+            return mt.includes('ig') || mt.includes('instagram') || String(it.docid||it.id||'').startsWith('ig-');
+          }).map(it => _normItem(it, 'ig'));
+        } catch (e) {
+          clearTimeout(tid);
+          return [];
+        }
+      })());
+    } else if (platform === 'fb' || platform === 'facebook') {
+      promises.push((async () => {
+        const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
+        try {
+          const res = await fetch(`/mk/api/news/fb-top-status?project_id=${pid}&start_date=${sd}&end_date=${ed}&sub=fblike&rows=300`, { signal: ctrl.signal });
+          clearTimeout(tid);
+          if (!res.ok) return [];
+          const json = await res.json();
+          const list = (json && Array.isArray(json.data)) ? json.data : [];
+          if (list.length) return list.map(it => _normItem(it, 'fb'));
+          const resM = await fetch(`/mk/api/news/mentions?project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=1200`);
+          const jsonM = await resM.json();
+          const rawArr = (jsonM && (jsonM.data || jsonM.posts || jsonM.mentions || []));
+          return (Array.isArray(rawArr) ? rawArr : []).filter(it => {
+            const mt = String(it.media_type || it.type || it.tcode || '').toLowerCase();
+            return mt.includes('fb') || mt.includes('facebook') || String(it.docid||it.id||'').startsWith('fb-');
+          }).map(it => _normItem(it, 'fb'));
+        } catch (e) {
+          clearTimeout(tid);
+          return [];
+        }
+      })());
+    } else if (platform === 'twit' || platform === 'twitter') {
+      promises.push((async () => {
+        const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
+        try {
+          const res = await fetch(`/mk/api/news/mentions?project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=1200`, { signal: ctrl.signal });
           clearTimeout(tid);
           if (!res.ok) return [];
           const json = await res.json();
@@ -1512,19 +1597,49 @@ const MSPanel = (() => {
           else if (json && json.data && Array.isArray(json.data.data)) rawArr = json.data.data;
 
           const filtered = rawArr.filter(it => {
-            if (platform === 'all' || platform === 'social') return true;
             const mt = String(it.media_type || it.type || it.tcode || '').toLowerCase();
             const docid = String(it.docid || it.id || '');
             const url = String(it.url || it.link || '').toLowerCase();
-            if (platform === 'twit' || platform === 'twitter') return mt.includes('twit') || mt.includes('twitter') || mt.includes('x') || docid.startsWith('tw-') || url.includes('twitter.com') || url.includes('x.com');
-            if (platform === 'fb' || platform === 'facebook') return mt.includes('fb') || mt.includes('facebook') || docid.startsWith('fb-') || url.includes('facebook.com');
-            if (platform === 'ig' || platform === 'instagram') return mt.includes('ig') || mt.includes('instagram') || docid.startsWith('ig-') || url.includes('instagram.com');
-            if (platform === 'yt' || platform === 'youtube') return mt.includes('yt') || mt.includes('youtube') || docid.startsWith('yt-') || url.includes('youtube.com') || url.includes('youtu.be');
-            if (platform === 'tiktok') return mt.includes('tiktok') || mt.includes('tt') || docid.startsWith('tt-') || url.includes('tiktok.com');
-            return true;
+            return mt.includes('twit') || mt.includes('twitter') || mt.includes('x') || docid.startsWith('tw-') || url.includes('twitter.com') || url.includes('x.com');
           });
+          return filtered.map(it => _normItem(it, 'twit'));
+        } catch (e) {
+          clearTimeout(tid);
+          return [];
+        }
+      })());
+    } else {
+      // platform === 'all'
+      promises.push((async () => {
+        const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
+        try {
+          const res = await fetch(`/mk/api/news/articles?project_id=${pid}&start_date=${sd}&end_date=${ed}&media=doc&rows=300`, { signal: ctrl.signal });
+          clearTimeout(tid);
+          if (!res.ok) return [];
+          const json = await res.json();
+          const rawArr = (json && (json.data || json.docs || json.rows || (Array.isArray(json) ? json : []))) || [];
+          const rawList = Array.isArray(rawArr) ? rawArr : (rawArr.data || []);
+          return rawList.map(it => _normItem(it, 'doc'));
+        } catch (e) {
+          clearTimeout(tid);
+          return [];
+        }
+      })());
 
-          return filtered.map(it => _normItem(it));
+      promises.push((async () => {
+        const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
+        try {
+          const res = await fetch(`/mk/api/news/mentions?project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=1200`, { signal: ctrl.signal });
+          clearTimeout(tid);
+          if (!res.ok) return [];
+          const json = await res.json();
+          let rawArr = [];
+          if (json && Array.isArray(json.data)) rawArr = json.data;
+          else if (json && Array.isArray(json.posts)) rawArr = json.posts;
+          else if (json && Array.isArray(json.mentions)) rawArr = json.mentions;
+          else if (Array.isArray(json)) rawArr = json;
+          else if (json && json.data && Array.isArray(json.data.data)) rawArr = json.data.data;
+          return rawArr.map(it => _normItem(it));
         } catch (e) {
           clearTimeout(tid);
           return [];
@@ -1547,12 +1662,18 @@ const MSPanel = (() => {
 
   function _render(list, items, platform, color) {
     _renderedItems = items || [];
+    const countEl = _$('msPanelCount');
+    if (countEl) {
+      countEl.textContent = _renderedItems.length + ' data';
+      countEl.style.display = _renderedItems.length ? 'inline-block' : 'none';
+    }
+
     if (!items.length) {
       list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94a3b8;font-size:12px;font-weight:600;">Tidak ada mention${_curSent !== 'all' ? ' untuk filter ini' : ' periode ini'}.</div>`;
       return;
     }
 
-    const PAGE = 10;
+    const PAGE = 25;
     let _page = 0;
 
     const getPlat = item => item._platform || item._type || platform;
@@ -1664,14 +1785,19 @@ const MSPanel = (() => {
         <button id="_msLMBtn" onclick="MSPanel.loadMore()"
           style="display:inline-flex;align-items:center;gap:5px;padding:6px 20px;background:var(--primary);color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:filter .14s;"
           onmouseover="this.style.filter='brightness(1.12)'" onmouseout="this.style.filter=''">
-          <i class="ph ph-arrow-circle-down" style="font-size:13px;"></i> Muat Lebih Banyak
+          <i class="ph ph-arrow-circle-down" style="font-size:13px;"></i> Muat Lebih Banyak (${remaining} tersisa)
         </button>
       </div>`;
     }
 
     list.innerHTML = _renderItems(items.slice(0, PAGE), 0) + _renderLoadMore();
 
+    let _loadingMore = false;
     MSPanel.loadMore = function() {
+      if (_loadingMore) return;
+      const shown = (_page + 1) * PAGE;
+      if (shown >= items.length) return;
+      _loadingMore = true;
       const btn = document.getElementById('_msLMBtn');
       if (btn) { btn.textContent = 'Memuat…'; btn.disabled = true; }
       setTimeout(() => {
@@ -1680,7 +1806,18 @@ const MSPanel = (() => {
         const batch = items.slice(startIdx, startIdx + PAGE);
         document.getElementById('_msLMWrap')?.remove();
         list.insertAdjacentHTML('beforeend', _renderItems(batch, startIdx) + _renderLoadMore());
+        _loadingMore = false;
       }, 80);
+    };
+
+    // Auto-scroll infinite loading
+    list.onscroll = function() {
+      if (list.scrollTop + list.clientHeight >= list.scrollHeight - 140) {
+        const shown = (_page + 1) * PAGE;
+        if (shown < items.length) {
+          MSPanel.loadMore();
+        }
+      }
     };
   }
 
