@@ -867,166 +867,253 @@ const NSSPanel=(()=>{
     async function _fetchAll(media){
         const platforms=media==='all'?['doc','twitter','facebook','instagram','youtube','tiktok']:[media];
         const res=await Promise.allSettled(platforms.map(p=>_fetchOne(p)));
-        return res.flatMap(r=>r.status==='fulfilled'?r.value:[]);
+        const all = res.flatMap(r=>r.status==='fulfilled'?r.value:[]);
+        const seen = new Set();
+        const unique = all.filter(it => {
+            const k = it.id || it.docid || it.url || ((it.title || '') + (it.content || '').slice(0, 50));
+            if (k && seen.has(k)) return false;
+            if (k) seen.add(k);
+            return true;
+        });
+        unique.sort((a,b) => new Date(b.date_created||b.created_at||b.publish_date||0) - new Date(a.date_created||a.created_at||a.publish_date||0));
+        return unique;
     }
-    async function _fetchOne(platform){
-        const q=`project_id=${NSS_PID}&start_date=${NSS_SD}&end_date=${NSS_ED}&rows=500&start=0`;
-        const twitFallback=`/mk/api/news/mentions?${q}`;
-        if(platform==='doc'){
-          const docQ=`project_id=${NSS_PID}&start_date=${NSS_SD}&end_date=${NSS_ED}&rows=1000&start=0&media=doc`;
-          try{
-            const res=await fetch(`/mk/api/news/articles?${docQ}`);
-            if(!res.ok) return [];
-            const d=await res.json();
-            return (Array.isArray(d?.data)?d.data:(Array.isArray(d)?d:[])).map(i=>({...i,_platform:'doc'}));
-          }catch(e){return[];}
-        }
-        if(platform==='instagram'){
-            for(const sub of['postbylike','postbyview','postbycomment','postbydate','']){
-                try{
-                    const r=await fetch(`/mk/api/news/ig-top-status?${q}${sub?'&sub='+sub:''}`);
-                    const d=await r.json();
-                    const items=Array.isArray(d?.data)?d.data:(Array.isArray(d)?d:[]);
-                    if(items.length>0)return items.map(i=>({...i,_platform:'instagram'}));
-                }catch(e){continue;}
-            }
-            return[];
-        }
-        if(platform==='youtube'){
-            for(const sub of['postbylike','postbyview','postbycomment','postbydate','']){
-                try{
-                    const r=await fetch(`/mk/api/news/ytb-top-status?${q}${sub?'&sub='+sub:''}`);
-                    const d=await r.json();
-                    const items=Array.isArray(d?.data)?d.data:(Array.isArray(d)?d:[]);
-                    if(items.length>0)return items.map(i=>({...i,_platform:'youtube'}));
-                }catch(e){continue;}
-            }
-            return[];
-        }
-        const eps={
-            twitter:  `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,
-            facebook: `/mk/api/news/fb-top-status?${q}&sub=fblike`,
-            tiktok:   `/mk/api/news/tiktok-top-status?${q}&sub=postbylike`,
-        };
-        const url=eps[platform]; if(!url) return [];
-        const ctrl=new AbortController(), tid=setTimeout(()=>ctrl.abort(), 25000);
-        try{
-            const r=await fetch(url,{signal:ctrl.signal}); clearTimeout(tid);
-            if(!r.ok){
-                if(platform==='twitter') throw new Error('Twitter fail');
-                return [];
-            }
-            const d=await r.json();
-            let items=[];
-            if(Array.isArray(d?.data?.data))      items=d.data.data;
-            else if(Array.isArray(d?.data))       items=d.data;
-            else if(Array.isArray(d?.statuses))   items=d.statuses;
-            else if(Array.isArray(d?.results))    items=d.results;
-            else if(Array.isArray(d?.posts))      items=d.posts;
-            else if(Array.isArray(d))             items=d;
 
-            if(platform==='twitter' && items.length===0){
-                try{
-                    const r2=await fetch(twitFallback);
-                    const d2=await r2.json();
-                    let fb=Array.isArray(d2?.data?.data)?d2.data.data:Array.isArray(d2?.data)?d2.data:Array.isArray(d2)?d2:[];
-                    items=fb.filter(m=>{
-                        const tc=String(m.tcode||'').toLowerCase(), mt=String(m.media_type||'').toLowerCase();
-                        const id=String(m.id||m.docid||'').toLowerCase(), url2=String(m.url||'').toLowerCase();
-                        return tc==='twit'||tc==='rt'||mt==='twit'||mt==='twitter'||mt==='x'
-                            ||id.startsWith('tw-')||url2.includes('twitter.com')||url2.includes('x.com');
-                    });
-                }catch(e2){}
+    async function _fetchOne(platform){
+        const sd = NSS_SD, ed = NSS_ED, pid = NSS_PID;
+        if (!pid) return [];
+        const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
+
+        try {
+            if (platform === 'doc') {
+                const res = await fetch(`/mk/api/news/articles?project_id=${pid}&start_date=${sd}&end_date=${ed}&media=doc&rows=300`, { signal: ctrl.signal });
+                clearTimeout(tid);
+                if (!res.ok) return [];
+                const d = await res.json();
+                const arr = (d && (d.data || d.docs || d.rows || (Array.isArray(d) ? d : []))) || [];
+                const list = Array.isArray(arr) ? arr : (arr.data || []);
+                return list.map(i => ({ ...i, _platform: 'doc' }));
             }
-            return items.map(i=>({...i,_platform:platform}));
-        }catch(e){clearTimeout(tid); return[];}
+            if (platform === 'tiktok') {
+                const res = await fetch(`/mk/api/news/tiktok-top-status?project_id=${pid}&start_date=${sd}&end_date=${ed}&sub=postbylike&rows=300`, { signal: ctrl.signal });
+                clearTimeout(tid);
+                if (res.ok) {
+                    const d = await res.json();
+                    const list = (d && Array.isArray(d.data)) ? d.data : [];
+                    if (list.length) return list.map(i => ({ ...i, _platform: 'tiktok' }));
+                }
+                const resM = await fetch(`/mk/api/news/mentions?project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=1200`);
+                const jsonM = await resM.json();
+                const rawArr = (jsonM && (jsonM.data || jsonM.posts || jsonM.mentions || []));
+                return (Array.isArray(rawArr) ? rawArr : []).filter(it => {
+                    const mt = String(it.media_type || it.type || it.tcode || '').toLowerCase();
+                    return mt.includes('tiktok') || mt.includes('tt') || String(it.docid||it.id||'').startsWith('tt-');
+                }).map(i => ({ ...i, _platform: 'tiktok' }));
+            }
+            if (platform === 'youtube') {
+                const res = await fetch(`/mk/api/news/ytb-top-status?project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=300`, { signal: ctrl.signal });
+                clearTimeout(tid);
+                if (res.ok) {
+                    const d = await res.json();
+                    const list = (d && Array.isArray(d.data)) ? d.data : [];
+                    if (list.length) return list.map(i => ({ ...i, _platform: 'youtube' }));
+                }
+                const resM = await fetch(`/mk/api/news/mentions?project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=1200`);
+                const jsonM = await resM.json();
+                const rawArr = (jsonM && (jsonM.data || jsonM.posts || jsonM.mentions || []));
+                return (Array.isArray(rawArr) ? rawArr : []).filter(it => {
+                    const mt = String(it.media_type || it.type || it.tcode || '').toLowerCase();
+                    return mt.includes('yt') || mt.includes('youtube') || String(it.docid||it.id||'').startsWith('yt-');
+                }).map(i => ({ ...i, _platform: 'youtube' }));
+            }
+            if (platform === 'instagram') {
+                const res = await fetch(`/mk/api/news/ig-top-status?project_id=${pid}&start_date=${sd}&end_date=${ed}&sub=postbylike&rows=300`, { signal: ctrl.signal });
+                clearTimeout(tid);
+                if (res.ok) {
+                    const d = await res.json();
+                    const list = (d && Array.isArray(d.data)) ? d.data : [];
+                    if (list.length) return list.map(i => ({ ...i, _platform: 'instagram' }));
+                }
+                const resM = await fetch(`/mk/api/news/mentions?project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=1200`);
+                const jsonM = await resM.json();
+                const rawArr = (jsonM && (jsonM.data || jsonM.posts || jsonM.mentions || []));
+                return (Array.isArray(rawArr) ? rawArr : []).filter(it => {
+                    const mt = String(it.media_type || it.type || it.tcode || '').toLowerCase();
+                    return mt.includes('ig') || mt.includes('instagram') || String(it.docid||it.id||'').startsWith('ig-');
+                }).map(i => ({ ...i, _platform: 'instagram' }));
+            }
+            if (platform === 'facebook') {
+                const res = await fetch(`/mk/api/news/fb-top-status?project_id=${pid}&start_date=${sd}&end_date=${ed}&sub=fblike&rows=300`, { signal: ctrl.signal });
+                clearTimeout(tid);
+                if (res.ok) {
+                    const d = await res.json();
+                    const list = (d && Array.isArray(d.data)) ? d.data : [];
+                    if (list.length) return list.map(i => ({ ...i, _platform: 'facebook' }));
+                }
+                const resM = await fetch(`/mk/api/news/mentions?project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=1200`);
+                const jsonM = await resM.json();
+                const rawArr = (jsonM && (jsonM.data || jsonM.posts || jsonM.mentions || []));
+                return (Array.isArray(rawArr) ? rawArr : []).filter(it => {
+                    const mt = String(it.media_type || it.type || it.tcode || '').toLowerCase();
+                    return mt.includes('fb') || mt.includes('facebook') || String(it.docid||it.id||'').startsWith('fb-');
+                }).map(i => ({ ...i, _platform: 'facebook' }));
+            }
+            if (platform === 'twitter') {
+                const res = await fetch(`/mk/api/news/mentions?project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=1200`, { signal: ctrl.signal });
+                clearTimeout(tid);
+                if (!res.ok) return [];
+                const json = await res.json();
+                let rawArr = [];
+                if (json && Array.isArray(json.data)) rawArr = json.data;
+                else if (json && Array.isArray(json.posts)) rawArr = json.posts;
+                else if (json && Array.isArray(json.mentions)) rawArr = json.mentions;
+                else if (Array.isArray(json)) rawArr = json;
+                else if (json && json.data && Array.isArray(json.data.data)) rawArr = json.data.data;
+
+                const filtered = rawArr.filter(it => {
+                    const mt = String(it.media_type || it.type || it.tcode || '').toLowerCase();
+                    const docid = String(it.docid || it.id || '');
+                    const url = String(it.url || '');
+                    return mt.includes('twit') || mt.includes('twitter') || mt.includes('x') || docid.startsWith('tw-') || url.includes('twitter.com') || url.includes('x.com');
+                });
+                return filtered.map(i => ({ ...i, _platform: 'twitter' }));
+            }
+        } catch (e) {
+            clearTimeout(tid);
+            return [];
+        }
+        return [];
     }
 
     let _renderedItems = [];
 
-    function _render(list,items, showAll = false){
-        if(!items.length){list.innerHTML=`<div style="padding:50px 20px;text-align:center;color:var(--do-slate-400);font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`; _renderedItems=[]; return;}
-        const SHOW=80;
-        const visibleItems = showAll ? items : items.slice(0,SHOW);
-        _renderedItems = visibleItems;
-
-        list.innerHTML=visibleItems.map((item, idx)=>{
-            const plat=item._platform||'doc';
-            const meta=PLAT_META[plat]||{label:plat,color:getPrimary()};
-            const sent=_normSent(item);
-            const sentText={pos:'Pos',neg:'Neg',neu:'Neu'}[sent]||'Neu';
-            const ao=(()=>{if(typeof item.author==='object'&&item.author) return item.author; try{return JSON.parse(item.author||'{}');}catch(e){return {};}})();
-            const rawName=(()=>{
-                if(plat==='facebook')  return item.from_name||item.page_name||item.author_name||ao?.name||item.author_handle||null;
-                if(plat==='instagram') return item.username||item.user_name||null;
-                if(plat==='tiktok')    return item.author_nickname||item.nickname||ao?.nickname||null;
-                if(plat==='youtube')   return item.channel_title||item.channel_name||null;
-                if(plat==='twitter')   return item.name||ao?.name||ao?.scr_name||item.author_name||item.author_scr_name||null;
-                return null;
-            })();
-            let name=(rawName||item.author_name||item.channel_name||item.publisher||item.source_name||'').trim();
-            if(!name||/^\d{5,}$/.test(name)||name.toLowerCase()==='unknown'){
-              const alt=(item.author_handle||item.author_scr_name||item.screen_name||ao?.scr_name||ao?.username||item.username||item.nickname||'').trim();
-              if(alt&&!/^\d{5,}$/.test(alt)) name=alt; else if(!name) name='Unknown';
-            }
-            const dName=dec(name);
-            const rawHandle=(item.author_handle||item.author_scr_name||item.screen_name||ao?.scr_name||item.username||item.handle||'').trim();
-            const handle=rawHandle&&rawHandle.toLowerCase()!==dName.toLowerCase()?((['twitter','instagram','tiktok'].includes(plat))?(rawHandle.startsWith('@')?rawHandle:'@'+rawHandle):rawHandle):'';
-            const artTitle=(plat==='doc')?dec(item.title||'').replace(/<[^>]*>/g,'').trim():'';
-            const text=(()=>{if(plat==='doc'){const c=dec(item.content||'').replace(/<[^>]*>/g,'').trim(); return c?c.slice(0,150):dec(item.title||'').slice(0,150);} return dec(item.content||item.caption||item.description||item.title||item.text||'').replace(/<[^>]*>/g,'').trim().slice(0,150);})();
-            const av=(item.avatar_url||item.profile_image_url||item.author_image||ao?.image||item.profile_image||'').trim();
-            const dt=(item.date_created||item.created_at||item.publish_date||'').split('T')[0];
-            const words=dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);
-            const ini=(words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||'?')).toUpperCase();
-            const safeIni=ini.replace(/['"]/g,'');
-            const avHtml=(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${safeIni}';">`:(plat==='doc'?`<i class="ph ph-newspaper" style="font-size:14px;color:#fff;"></i>`:ini);
-            
-            /* Doc: special rendering with article title */
-            if(plat==='doc'&&artTitle){
-              return `<div class="do-panel-item" onclick="NSSDetail.openByIndex(${idx})">
-                <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);"><i class="ph ph-newspaper" style="font-size:14px;color:#fff;"></i></div>
-                <div class="do-panel-item-body">
-                    <div class="do-panel-author" style="font-size:10px;color:#64748b;">${esc(dName)}</div>
-                    <div style="font-size:12px;font-weight:700;color:#1e293b;line-height:1.3;margin:2px 0 3px;">${esc(artTitle.slice(0,100))}</div>
-                    <div class="do-panel-text">${esc(text||'(tidak ada konten)')}</div>
-                    <div class="do-panel-footer">
-                        <span class="do-sent-badge do-sent-badge--${sent}">${sentText}</span>
-                        <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
-                        <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
-                        ${dt?`<span>${dt}</span>`:''}
-                    </div>
-                </div>
-              </div>`;
-            }
-            return `<div class="do-panel-item" onclick="NSSDetail.openByIndex(${idx})">
-                <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
-                <div class="do-panel-item-body">
-                    <div class="do-panel-author">${esc(dName)}</div>
-                    ${handle?`<div style="font-size:10px;color:#94a3b8;margin-top:-1px;">${esc(handle)}</div>`:''}
-                    <div class="do-panel-text">${esc(text||'(tidak ada konten)')}</div>
-                    <div class="do-panel-footer">
-                        <span class="do-sent-badge do-sent-badge--${sent}">${sentText}</span>
-                        <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
-                        <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
-                        ${dt?`<span style="margin-left:auto;">${dt}</span>`:''}
-                    </div>
-                </div>
-            </div>`;
-        }).join('');
-        if(!showAll && items.length>SHOW) {
-             const btnWrap = document.createElement('div');
-             btnWrap.style.padding = '16px';
-             btnWrap.style.textAlign = 'center';
-             btnWrap.style.borderTop = '1px dashed rgba(0,0,0,.08)';
-             btnWrap.style.background = '#f8fafc';
-             btnWrap.innerHTML = `<button onclick="NSSPanel.showAll()" style="background:#038047;color:#fff;border:none;padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(3,128,71,.2);" onmouseover="this.style.background='#026136';this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#038047';this.style.transform='none';">Muat Lebih Banyak</button>`;
-             list.appendChild(btnWrap);
+    function _render(list, items) {
+        _renderedItems = items || [];
+        if (!items.length) {
+            list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:var(--do-slate-400);font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`;
+            return;
         }
+
+        const PAGE = 25;
+        let _page = 0;
+
+        function _renderItems(arr, startIdx) {
+            return arr.map((item, localIdx) => {
+                const globalIdx = startIdx + localIdx;
+                const plat = item._platform || 'doc';
+                const meta = PLAT_META[plat] || { label: plat, color: getPrimary() };
+                const sent = _normSent(item);
+                const sentText = { pos: 'Pos', neg: 'Neg', neu: 'Neu' }[sent] || 'Neu';
+                const ao = (() => { if (typeof item.author === 'object' && item.author) return item.author; try { return JSON.parse(item.author || '{}'); } catch (e) { return {}; } })();
+                const rawName = (() => {
+                    if (plat === 'facebook')  return item.from_name || item.page_name || item.author_name || ao?.name || item.author_handle || null;
+                    if (plat === 'instagram') return item.username || item.user_name || null;
+                    if (plat === 'tiktok')    return item.author_nickname || item.nickname || ao?.nickname || null;
+                    if (plat === 'youtube')   return item.channel_title || item.channel_name || null;
+                    if (plat === 'twitter')   return item.name || ao?.name || ao?.scr_name || item.author_name || item.author_scr_name || null;
+                    return null;
+                })();
+                let name = (rawName || item.author_name || item.channel_name || item.publisher || item.source_name || '').trim();
+                if (!name || /^\d{5,}$/.test(name) || name.toLowerCase() === 'unknown') {
+                    const alt = (item.author_handle || item.author_scr_name || item.screen_name || ao?.scr_name || ao?.username || item.username || item.nickname || '').trim();
+                    if (alt && !/^\d{5,}$/.test(alt)) name = alt; else if (!name) name = 'Unknown';
+                }
+                const dName = dec(name);
+                const rawHandle = (item.author_handle || item.author_scr_name || item.screen_name || ao?.scr_name || item.username || item.handle || '').trim();
+                const handle = rawHandle && rawHandle.toLowerCase() !== dName.toLowerCase() ? ((['twitter', 'instagram', 'tiktok'].includes(plat)) ? (rawHandle.startsWith('@') ? rawHandle : '@' + rawHandle) : rawHandle) : '';
+                const artTitle = (plat === 'doc') ? dec(item.title || '').replace(/<[^>]*>/g, '').trim() : '';
+                const text = (() => { if (plat === 'doc') { const c = dec(item.content || '').replace(/<[^>]*>/g, '').trim(); return c ? c.slice(0, 150) : dec(item.title || '').slice(0, 150); } return dec(item.content || item.caption || item.description || item.title || item.text || '').replace(/<[^>]*>/g, '').trim().slice(0, 150); })();
+                const av = (item.avatar_url || item.profile_image_url || item.author_image || ao?.image || item.profile_image || '').trim();
+                const dt = (item.date_created || item.created_at || item.publish_date || '').split('T')[0];
+                const words = dName.replace(/[^a-zA-Z0-9\s]/g, '').trim().split(/\s+/).filter(Boolean);
+                const ini = (words.length >= 2 ? (words[0][0] + words[words.length - 1][0]) : (words[0]?.[0] || '?')).toUpperCase();
+                const safeIni = ini.replace(/['"]/g, '');
+                const avHtml = (av && av.startsWith('http')) ? `<img src="${esc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${safeIni}';">` : (plat === 'doc' ? `<i class="ph ph-newspaper" style="font-size:14px;color:#fff;"></i>` : ini);
+
+                /* Doc: special rendering with article title */
+                if (plat === 'doc' && artTitle) {
+                    const docUrl = (item.url || item.link || item.original_url || '').trim();
+                    return `<div class="do-panel-item" onclick="NSSDetail.openByIndex(${globalIdx})">
+                        <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);"><i class="ph ph-newspaper" style="font-size:14px;color:#fff;"></i></div>
+                        <div class="do-panel-item-body">
+                            <div class="do-panel-author" style="font-size:10px;color:#64748b;">${esc(dName)}</div>
+                            <div style="font-size:12px;font-weight:700;color:#1e293b;line-height:1.3;margin:2px 0 3px;">${esc(artTitle.slice(0, 100))}</div>
+                            <div class="do-panel-text">${esc(text || '(tidak ada konten)')}</div>
+                            <div class="do-panel-footer">
+                                <span class="do-sent-badge do-sent-badge--${sent}">${sentText}</span>
+                                <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
+                                <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
+                                ${docUrl ? `<a href="${esc(docUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" style="margin-left:auto;font-size:10px;font-weight:700;color:${meta.color};background:${meta.color}15;padding:2px 7px;border-radius:4px;border:1px solid ${meta.color}30;display:inline-flex;align-items:center;gap:3px;text-decoration:none;transition:all .15s;" onmouseover="this.style.background='${meta.color}';this.style.color='#fff';" onmouseout="this.style.background='${meta.color}15';this.style.color='${meta.color}';"><i class="ph ph-arrow-square-out" style="font-size:12px;"></i>Buka</a>` : ''}
+                                ${dt && !docUrl ? `<span>${dt}</span>` : (dt ? `<span>${dt}</span>` : '')}
+                            </div>
+                        </div>
+                    </div>`;
+                }
+
+                const docUrl = (item.url || item.link || item.permalink || item.original_url || '').trim();
+                return `<div class="do-panel-item" onclick="NSSDetail.openByIndex(${globalIdx})">
+                    <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
+                    <div class="do-panel-item-body">
+                        <div class="do-panel-author">${esc(dName)}</div>
+                        ${handle ? `<div style="font-size:10px;color:#94a3b8;margin-top:-1px;">${esc(handle)}</div>` : ''}
+                        <div class="do-panel-text">${esc(text || '(tidak ada konten)')}</div>
+                        <div class="do-panel-footer">
+                            <span class="do-sent-badge do-sent-badge--${sent}">${sentText}</span>
+                            <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${meta.color};flex-shrink:0;"></span>
+                            <span style="font-size:10px;font-weight:600;color:${meta.color};">${meta.label}</span>
+                            ${docUrl ? `<a href="${esc(docUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" style="margin-left:auto;font-size:10px;font-weight:700;color:${meta.color};background:${meta.color}15;padding:2px 7px;border-radius:4px;border:1px solid ${meta.color}30;display:inline-flex;align-items:center;gap:3px;text-decoration:none;transition:all .15s;" onmouseover="this.style.background='${meta.color}';this.style.color='#fff';" onmouseout="this.style.background='${meta.color}15';this.style.color='${meta.color}';"><i class="ph ph-arrow-square-out" style="font-size:12px;"></i>Buka</a>` : ''}
+                            ${dt && !docUrl ? `<span style="margin-left:auto;">${dt}</span>` : (dt ? `<span>${dt}</span>` : '')}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function _renderLoadMore() {
+            const shown = (_page + 1) * PAGE;
+            const remaining = items.length - shown;
+            if (remaining <= 0) return '';
+            return `<div id="_nssLMWrap" style="padding:11px 14px;text-align:center;background:var(--do-slate-50);border-top:1px dashed var(--do-slate-200);">
+                <button id="_nssLMBtn" onclick="NSSPanel.loadMore()"
+                    style="display:inline-flex;align-items:center;gap:5px;padding:6px 20px;background:var(--do-primary);color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:filter .14s;"
+                    onmouseover="this.style.filter='brightness(1.12)'" onmouseout="this.style.filter=''">
+                    <i class="ph ph-arrow-circle-down" style="font-size:13px;"></i> Muat Lebih Banyak (${remaining} tersisa)
+                </button>
+            </div>`;
+        }
+
+        list.innerHTML = _renderItems(items.slice(0, PAGE), 0) + _renderLoadMore();
+
+        let _loadingMore = false;
+        NSSPanel.loadMore = function() {
+            if (_loadingMore) return;
+            const shown = (_page + 1) * PAGE;
+            if (shown >= items.length) return;
+            _loadingMore = true;
+            const btn = document.getElementById('_nssLMBtn');
+            if (btn) { btn.textContent = 'Memuat…'; btn.disabled = true; }
+            setTimeout(() => {
+                _page++;
+                const startIdx = _page * PAGE;
+                const batch = items.slice(startIdx, startIdx + PAGE);
+                document.getElementById('_nssLMWrap')?.remove();
+                list.insertAdjacentHTML('beforeend', _renderItems(batch, startIdx) + _renderLoadMore());
+                _loadingMore = false;
+            }, 80);
+        };
+
+        // Auto-scroll infinite loading
+        list.onscroll = function() {
+            if (list.scrollTop + list.clientHeight >= list.scrollHeight - 140) {
+                const shown = (_page + 1) * PAGE;
+                if (shown < items.length) {
+                    NSSPanel.loadMore();
+                }
+            }
+        };
     }
 
-    function showAll() { _render($('nssPanelList'), _filtered, true); }
-
-    return{open,close,closeByOverlay,filterSent,showAll,_extractYtId,get _cache(){return _cache;},set _cache(v){_cache=v;},get _renderedItems(){return _renderedItems;}};
+    return{open,close,closeByOverlay,filterSent,loadMore:function(){},_extractYtId,get _cache(){return _cache;},set _cache(v){_cache=v;},get _renderedItems(){return _renderedItems;}};
 })();
 
 /* ══ DETAIL PANEL ══ */
