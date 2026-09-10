@@ -1242,7 +1242,7 @@
                             if (tl.dates_end   && tl.dates_end[cfg.dataPointIndex])   edStr = tl.dates_end[cfg.dataPointIndex];
                         }
                         if (cfg && cfg.seriesIndex >= 0) {
-                            const mapping = {0:'all', 1:'pos', 2:'neu', 3:'neg'};
+                            const mapping = {0: 'all', 1: 'pos', 2: 'neg', 3: 'neu'};
                             DashPanel.open('all', mapping[cfg.seriesIndex] || 'all', projectId, sdStr, edStr);
                         } else {
                             DashPanel.open('all', 'all', projectId, sdStr, edStr);
