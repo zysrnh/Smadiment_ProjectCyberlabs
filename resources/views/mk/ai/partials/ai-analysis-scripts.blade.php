@@ -261,6 +261,54 @@ function copyBubbleText(btn) {
     });
 }
 
+const PDF_PAGE_STYLE = `
+<style>
+    * { box-sizing: border-box; }
+    body, div, p, span, strong, em, h1, h2, h3, h4, table, th, td {
+        font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    }
+    p, .ai-num-item, .ai-bullet-item, h2, h3, h4, tr, .ai-table-wrap, blockquote, li {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        break-inside: avoid-page !important;
+    }
+    h2, h3, h4 {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+        margin-top: 14px !important;
+        margin-bottom: 6px !important;
+    }
+    .ai-num-item {
+        margin: 6px 0 !important;
+        display: flex !important;
+        gap: 6px !important;
+        align-items: flex-start !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+    .ai-bullet-item {
+        margin: 4px 0 !important;
+        display: flex !important;
+        gap: 6px !important;
+        align-items: flex-start !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+    .ai-table-wrap {
+        margin: 12px 0 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+    table {
+        page-break-inside: auto !important;
+    }
+    tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+</style>
+`;
+
 function exportBubblePDF(btn) {
     const row = btn.closest('.chat-msg-row');
     const bubble = row?.querySelector('.chat-bubble');
@@ -268,8 +316,9 @@ function exportBubblePDF(btn) {
 
     const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
     const html = `
+        ${PDF_PAGE_STYLE}
         <div style="font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding:0;color:#1a202c;">
-            <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid #038047;">
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid #038047;page-break-inside:avoid;break-inside:avoid;">
                 <div style="width:44px;height:44px;border-radius:10px;background:#038047;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                     <span style="color:#fff;font-weight:800;font-size:14px;">AI</span>
                 </div>
@@ -281,7 +330,7 @@ function exportBubblePDF(btn) {
             <div style="padding:14px 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:12.5px;line-height:1.75;color:#1a202c;">
                 ${bubble.innerHTML}
             </div>
-            <div style="margin-top:24px;padding-top:10px;border-top:1px solid #e2e8f0;text-align:center;">
+            <div style="margin-top:24px;padding-top:10px;border-top:1px solid #e2e8f0;text-align:center;page-break-inside:avoid;break-inside:avoid;">
                 <p style="font-size:9px;color:#94a3b8;margin:0;">SMADIMENT AI — ${escHtml(PLATFORM)} — ${now}</p>
             </div>
         </div>`;
@@ -490,8 +539,9 @@ function exportChatPDF() {
     // Build clean HTML for PDF
     const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
     let html = `
+        ${PDF_PAGE_STYLE}
         <div style="font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding:0;color:#1a202c;">
-            <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid #038047;">
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid #038047;page-break-inside:avoid;break-inside:avoid;">
                 <div style="width:44px;height:44px;border-radius:10px;background:#038047;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                     <span style="color:#fff;font-weight:800;font-size:14px;">AI</span>
                 </div>
@@ -508,8 +558,8 @@ function exportChatPDF() {
         const content = bubble.innerHTML;
         const isAI = role === 'ai';
 
-        html += `<div style="margin-bottom:14px;page-break-inside:avoid;">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+        html += `<div style="margin-bottom:14px;page-break-inside:avoid;break-inside:avoid;">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;page-break-inside:avoid;break-inside:avoid;">
                 <div style="width:22px;height:22px;border-radius:6px;background:${isAI?'#038047':'#64748b'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                     <span style="color:#fff;font-size:9px;font-weight:700;">${isAI?'AI':'U'}</span>
                 </div>
@@ -521,7 +571,7 @@ function exportChatPDF() {
         </div>`;
     });
 
-    html += `<div style="margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;text-align:center;">
+    html += `<div style="margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;text-align:center;page-break-inside:avoid;break-inside:avoid;">
         <p style="font-size:9px;color:#94a3b8;margin:0;">SMADIMENT AI Analysis Report — ${escHtml(PLATFORM)} — Generated ${now}</p>
     </div></div>`;
 
@@ -545,10 +595,13 @@ function _renderPDF(html, filename) {
     html2pdf().set({
         margin: [12, 14, 12, 14],
         filename: filename,
-        image: { type: 'jpeg', quality: 0.96 },
+        image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        pagebreak: {
+            mode: ['css', 'legacy'],
+            avoid: ['p', '.ai-num-item', '.ai-bullet-item', 'h2', 'h3', 'h4', 'tr', '.ai-table-wrap', 'blockquote', 'li']
+        }
     }).from(el).save().catch(() => {
         _fallbackPdfPrint(html, filename);
     });

@@ -1279,11 +1279,12 @@ public function aiAnalysisProxy(Request $request)
 
         // Model terbaru berdasarkan API key yang tersedia
         $models = [
-            'gemini-2.5-flash',       // terbaru & terbaik
-            'gemini-2.5-pro',         // paling powerful
-            'gemini-2.0-flash',       // stable
-            'gemini-2.0-flash-lite',  // paling ringan
-            'gemini-flash-latest',    // alias latest
+            'gemini-2.5-flash',
+            'gemini-3.5-flash',
+            'gemini-3.6-flash',
+            'gemini-3.5-flash-lite',
+            'gemini-flash-lite-latest',
+            'gemini-flash-latest',
         ];
 
         $text      = '';
