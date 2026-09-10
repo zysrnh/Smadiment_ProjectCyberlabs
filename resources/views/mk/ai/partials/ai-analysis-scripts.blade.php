@@ -280,7 +280,7 @@ const PDF_PAGE_STYLE = `
     body, div, p, span, strong, em, h1, h2, h3, h4, table, th, td {
         font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
     }
-    .ai-num-card, .ai-sub-card, .ai-evidence-box, .ai-table-wrap, .ai-bullet-item, p, h2, h3, h4, tr, blockquote, li {
+    .ai-num-card, .ai-sub-card, .ai-evidence-box, .ai-table-wrap, .ai-bullet-item, .ai-para, p, h2, h3, h4, tr, blockquote, li {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
         break-inside: avoid-page !important;
@@ -288,6 +288,8 @@ const PDF_PAGE_STYLE = `
     h2, h3, h4 {
         page-break-after: avoid !important;
         break-after: avoid !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
         margin-top: 14px !important;
         margin-bottom: 6px !important;
     }
@@ -298,6 +300,8 @@ const PDF_PAGE_STYLE = `
         border: 1px solid #e2e8f0 !important;
         border-left: 4px solid #038047 !important;
         border-radius: 6px !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
     }
     .ai-sub-card {
         margin: 5px 0 5px 14px !important;
@@ -305,9 +309,35 @@ const PDF_PAGE_STYLE = `
         border-radius: 4px !important;
         font-size: 12px !important;
         line-height: 1.55 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+    .ai-evidence-box {
+        margin: 5px 0 6px 14px !important;
+        padding: 7px 11px !important;
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        border-left: 3px solid #64748b !important;
+        border-radius: 4px !important;
+        font-size: 12px !important;
+        line-height: 1.55 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+    .ai-bullet-item {
+        margin: 4px 0 4px 14px !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+    .ai-para {
+        margin: 0 0 6px !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
     }
     .ai-table-wrap {
         margin: 10px 0 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
     }
     table {
         page-break-inside: auto !important;
@@ -358,7 +388,7 @@ function exportBubblePDF(btn) {
             </div>
 
             <!-- Content -->
-            <div style="padding:14px 16px;background:#ffffff;border:1px solid #e2e8f0;border-radius:0 0 8px 8px;font-size:12.5px;line-height:1.75;color:#1e293b;">
+            <div style="padding:4px 0;font-size:12.5px;line-height:1.7;color:#1e293b;">
                 ${bubble.innerHTML}
             </div>
 
@@ -532,31 +562,34 @@ function formatMarkdown(text) {
     if (!text) return '';
     text = cleanClientText(text);
 
-    // 1. Pre-processing: Auto break mashed inline bullets into separate lines
+    // 1. Strip trailing asterisks on bullet lines (e.g. * Text didominasi... *)
+    text = text.replace(/^([-*•]\s+)(.+?)\s*\*+$/gm, '$1$2');
+
+    // 2. Pre-processing: Auto break mashed inline bullets into separate lines
     text = text.replace(/([^\n])\s+([*•\-])\s+(?=\*{0,2}(?:Tindakan|Komunikasi|Rekomendasi|Implikasi|Solusi|Dampak|Penyebab|Strategi|Catatan)\b)/gi, "$1\n$2 ");
 
-    // 2. Escape HTML
+    // 3. Escape HTML
     let h = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-    // 3. Code blocks
-    h = h.replace(/```[\w]*\n?([\s\S]*?)```/g,'<pre style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;overflow-x:auto;margin:8px 0;"><code style="font-size:12px;color:#1a202c;background:transparent;border:none;padding:0;">$1</code></pre>');
+    // 4. Code blocks
+    h = h.replace(/```[\w]*\n?([\s\S]*?)```/g,'<pre style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;overflow-x:auto;margin:8px 0;page-break-inside:avoid;break-inside:avoid;"><code style="font-size:12px;color:#1a202c;background:transparent;border:none;padding:0;">$1</code></pre>');
     h = h.replace(/`([^`]+)`/g,'<code style="background:#f1f5f9;color:#0f172a;padding:2px 6px;border-radius:4px;font-size:12px;border:1px solid #e2e8f0;">$1</code>');
 
-    // 4. Headers
-    h = h.replace(/^### (.+)$/gm,'<h4 style="font-size:13.5px;font-weight:700;margin:14px 0 6px;color:#038047;border-bottom:1px solid #f1f5f9;padding-bottom:3px;">$1</h4>');
-    h = h.replace(/^## (.+)$/gm, '<h3 style="font-size:15px;font-weight:800;margin:16px 0 8px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:4px;">$1</h3>');
-    h = h.replace(/^# (.+)$/gm,  '<h2 style="font-size:17px;font-weight:800;margin:18px 0 10px;color:#026738;border-bottom:2px solid #038047;padding-bottom:6px;">$1</h2>');
+    // 5. Headers
+    h = h.replace(/^### (.+)$/gm,'<h4 style="font-size:13.5px;font-weight:700;margin:14px 0 6px;color:#038047;border-bottom:1px solid #f1f5f9;padding-bottom:3px;page-break-inside:avoid;break-inside:avoid;">$1</h4>');
+    h = h.replace(/^## (.+)$/gm, '<h3 style="font-size:15px;font-weight:800;margin:16px 0 8px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:4px;page-break-inside:avoid;break-inside:avoid;">$1</h3>');
+    h = h.replace(/^# (.+)$/gm,  '<h2 style="font-size:17px;font-weight:800;margin:18px 0 10px;color:#026738;border-bottom:2px solid #038047;padding-bottom:6px;page-break-inside:avoid;break-inside:avoid;">$1</h2>');
 
-    // 5. Bold & Italic (Strict regex to prevent swallowing list item asterisks)
+    // 6. Bold & Italic (Strict regex to prevent swallowing list item asterisks)
     h = h.replace(/\*\*\*(?!\s)([^\*\n]+?)(?<!\s)\*\*\*/g,'<strong style="color:#0f172a;font-weight:700;"><em>$1</em></strong>');
     h = h.replace(/\*\*(?!\s)([^\*\n]+?)(?<!\s)\*\*/g,'<strong style="color:#0f172a;font-weight:700;">$1</strong>');
     h = h.replace(/(?<!\*)\*(?!\s)([^\*\n]+?)(?<!\s)\*(?!\*)/g,'<em>$1</em>');
     h = h.replace(/^---$/gm,'<hr style="border:none;border-top:1px solid #e2e8f0;margin:14px 0;">');
 
-    // 6. Tables
+    // 7. Tables
     h = parseMarkdownTables(h);
 
-    // 7. Sub-action cards (Tindakan, Komunikasi, Rekomendasi, etc.)
+    // 8. Sub-action cards (Tindakan, Komunikasi, Rekomendasi, etc.)
     h = h.replace(/^[-*•]\s+\*{0,2}(Tindakan|Komunikasi|Rekomendasi|Implikasi|Solusi|Dampak|Penyebab|Strategi|Catatan)\*{0,2}[:\-]\s*(.+)$/gim, (match, label, content) => {
         const l = label.toLowerCase();
         let color = '#038047'; let bg = '#f0fdf4'; let icon = '🎯';
@@ -567,23 +600,33 @@ function formatMarkdown(text) {
         return `<div class="ai-sub-card" style="margin:6px 0 6px 14px;padding:8px 12px;background:${bg};border:1px solid #e2e8f0;border-left:3px solid ${color};border-radius:4px;font-size:12.5px;line-height:1.6;color:#1e293b;page-break-inside:avoid;break-inside:avoid;"><span style="font-weight:700;color:${color};display:inline-flex;align-items:center;gap:4px;margin-right:4px;"><span>${icon}</span> ${label}:</span> <span>${formatInlineMarkdown(content)}</span></div>`;
     });
 
-    // 8. Numbered issue cards
+    // 9. Evidence citation cards (@username or Publisher (Date) — "quote")
+    h = h.replace(/^((?:@\w[\w\.\-]*|\*{0,2}[A-Za-z0-9\s\.\-]+\*{0,2})(?:\s+di\s+[A-Za-z0-9\s/()]+)?)\s*\(([^)]+)\)\s*[—–-]\s*(.+)$/gm, (match, author, date, quote) => {
+        let cleanAuthor = formatInlineMarkdown(author.trim());
+        let cleanDate   = formatInlineMarkdown(date.trim());
+        let cleanQuote  = formatInlineMarkdown(quote.trim());
+        return `<div class="ai-evidence-box" style="margin:5px 0 7px 14px;padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-left:3px solid #64748b;border-radius:4px;font-size:12px;line-height:1.6;color:#1e293b;page-break-inside:avoid;break-inside:avoid;"><div style="font-weight:700;color:#334155;margin-bottom:2px;display:flex;align-items:center;gap:5px;"><span>💬</span><span>${cleanAuthor} (${cleanDate})</span></div><div style="font-style:italic;color:#475569;">${cleanQuote}</div></div>`;
+    });
+
+    // 10. Numbered issue cards
     h = h.replace(/^(\d+)\.\s+(\*\*.+?\*\*|[^:\n]+:?)(.*)$/gm, (match, num, title, rest) => {
         let cleanTitle = formatInlineMarkdown(title.trim());
         let cleanRest  = formatInlineMarkdown(rest.trim());
         return `<div class="ai-num-card" style="margin:12px 0 6px;padding:10px 14px;background:#ffffff;border:1px solid #e2e8f0;border-left:4px solid #038047;border-radius:6px;page-break-inside:avoid;break-inside:avoid;"><div style="display:flex;gap:8px;align-items:baseline;"><span class="ai-badge-num" style="background:#e6f4ea;color:#038047;font-weight:800;font-size:11px;padding:2px 7px;border-radius:4px;flex-shrink:0;">#${num}</span><div style="flex:1;font-size:13px;color:#0f172a;line-height:1.55;"><strong style="color:#0f172a;font-weight:700;">${cleanTitle}</strong> ${cleanRest}</div></div></div>`;
     });
 
-    // 9. Regular bullets
-    h = h.replace(/^[-*•]\s+(.+)$/gm, '<div class="ai-bullet-item" style="display:flex;gap:6px;margin:4px 0 4px 14px;align-items:flex-start;font-size:12.5px;line-height:1.6;color:#1e293b;page-break-inside:avoid;break-inside:avoid;"><span style="color:#038047;min-width:12px;flex-shrink:0;font-weight:700;">•</span><div style="flex:1;">$1</div></div>');
+    // 11. Regular bullets
+    h = h.replace(/^[-*•]\s+(.+)$/gm, (match, content) => {
+        return `<div class="ai-bullet-item" style="display:flex;gap:6px;margin:4px 0 4px 14px;align-items:flex-start;font-size:12.5px;line-height:1.6;color:#1e293b;page-break-inside:avoid;break-inside:avoid;"><span style="color:#038047;min-width:12px;flex-shrink:0;font-weight:700;">•</span><div style="flex:1;">${formatInlineMarkdown(content)}</div></div>`;
+    });
 
-    // 10. Paragraphs
-    h = h.split(/\n{2,}/).map(p => {
-        p = p.trim();
-        if (!p) return '';
-        if (/^<(h[2-4]|pre|hr|div|table)/.test(p)) return p;
-        return `<p style="margin:0 0 8px;color:#1e293b;font-size:13px;line-height:1.65;">${p.replace(/\n/g,'<br>')}</p>`;
-    }).join('\n');
+    // 12. Clean atomic paragraphs without large single block blobs
+    h = h.split(/\n+/).map(line => {
+        line = line.trim();
+        if (!line) return '';
+        if (/^<(h[2-4]|pre|hr|div|table)/.test(line)) return line;
+        return `<p class="ai-para" style="margin:0 0 6px;color:#1e293b;font-size:12.5px;line-height:1.65;page-break-inside:avoid;break-inside:avoid;">${formatInlineMarkdown(line)}</p>`;
+    }).filter(Boolean).join('\n');
 
     return h;
 }
@@ -615,7 +658,7 @@ function exportChatPDF() {
                         CONFIDENTIAL
                     </div>
                 </div>
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:gap:8px;">
                     <div>
                         <h1 style="margin:0;font-size:16px;font-weight:800;color:#ffffff;">${escHtml(PLATFORM)} AI Analysis Report</h1>
                         <p style="margin:3px 0 0;font-size:10.5px;color:#cbd5e1;">Project ID: <strong style="color:#fff;">${escHtml(PROJECT_ID)}</strong> &bull; Period: <strong style="color:#fff;">${escHtml(START_DATE)} s/d ${escHtml(END_DATE)}</strong></p>
@@ -634,14 +677,14 @@ function exportChatPDF() {
         const content = bubble.innerHTML;
         const isAI = role === 'ai';
 
-        html += `<div style="margin-bottom:14px;page-break-inside:avoid;break-inside:avoid;">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;page-break-inside:avoid;break-inside:avoid;">
+        html += `<div style="margin-bottom:12px;page-break-inside:avoid;break-inside:avoid;">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;page-break-inside:avoid;break-inside:avoid;">
                 <div style="width:22px;height:22px;border-radius:6px;background:${isAI?'#038047':'#64748b'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                     <span style="color:#fff;font-size:9px;font-weight:700;">${isAI?'AI':'U'}</span>
                 </div>
                 <span style="font-size:11px;font-weight:700;color:${isAI?'#038047':'#64748b'};">${isAI?'SMADIMENT AI':'User'}</span>
             </div>
-            <div style="margin-left:28px;padding:10px 14px;background:${isAI?'#ffffff':'#f8fafc'};border:1px solid #e2e8f0;border-radius:8px;font-size:12px;line-height:1.7;color:#1e293b;">
+            <div style="margin-left:28px;padding:8px 0;font-size:12px;line-height:1.7;color:#1e293b;">
                 ${content}
             </div>
         </div>`;
@@ -662,22 +705,18 @@ function _renderPDF(html, filename) {
         return;
     }
 
-    // Create a plain element — do NOT add positioning/opacity styles or append to DOM.
-    // html2pdf internally creates its own overlay container (position:fixed, full-screen)
-    // and moves this element into it. Adding position:absolute/opacity:0 would persist
-    // inside the overlay and cause html2canvas to capture a blank area.
     const el = document.createElement('div');
     el.innerHTML = html;
 
     html2pdf().set({
-        margin: [12, 14, 12, 14],
+        margin: [10, 12, 10, 12],
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: {
-            mode: ['css', 'legacy'],
-            avoid: ['.ai-num-card', '.ai-sub-card', '.ai-evidence-box', '.ai-table-wrap', '.ai-bullet-item', 'p', 'h2', 'h3', 'h4', 'tr', 'blockquote', 'li']
+            mode: ['avoid-all', 'css', 'legacy'],
+            avoid: ['.ai-num-card', '.ai-sub-card', '.ai-evidence-box', '.ai-table-wrap', '.ai-bullet-item', '.ai-para', 'p', 'h2', 'h3', 'h4', 'tr', 'blockquote', 'li']
         }
     }).from(el).save().catch(() => {
         _fallbackPdfPrint(html, filename);
