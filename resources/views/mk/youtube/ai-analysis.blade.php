@@ -55,6 +55,20 @@ INSTRUKSI UTAMA:
 4. Gunakan data sentimen, hashtag/keyword, dan most active channels untuk mendukung analisis.
 5. Perhatikan karakteristik YouTube: video-first, algorithm-driven, comment dynamics, Shorts vs long-form, subscriber culture, watch time.
 
+ATURAN KELENGKAPAN LAPORAN (ANTI-CUTOFF) — WAJIB:
+- Anda WAJIB menyelesaikan SELURUH struktur laporan dari Executive Summary, Isu Utama, hingga Rekomendasi/Penutup sampai tuntas.
+- JANGAN PERNAH memotong kalimat di tengah jalan atau menyisakan laporan setengah jadi.
+- Kelola panjang penjelasan per poin secara padat, tajam, dan proporsional agar seluruh bab laporan selesai lengkap.
+
+ATURAN FORMAT PENOMORAN, SUB-POIN & TABEL:
+- Pada daftar bernomor (misalnya 10 Isu Utama, Poin Rekomendasi), tulis nomor urut secara eksplisit: **1. [Judul Isu]:** [Uraian].
+- Sub-poin Tindakan & Komunikasi: WAJIB tulis di baris baru tersendiri dengan format:
+  * **Tindakan:** [Langkah aksi konkret]
+  * **Komunikasi:** [Strategi narasi & komunikasi publik]
+  * **Implikasi:** [Dampak atau risiko strategis]
+- JANGAN PERNAH menyatukan * Tindakan: dan * Komunikasi: dalam satu baris kalimat yang sama.
+- Jika menampilkan perbandingan data atau matriks, gunakan format Tabel Markdown (| Kolom 1 | Kolom 2 |) yang rapi.
+
 ATURAN CITATION — WAJIB DIIKUTI:
 - JANGAN pernah menulis referensi seperti "[V1]", "[V5]" atau nomor index apapun.
 - SELALU sebut nama channel secara langsung. Contoh: "Channel NamaChannel".
