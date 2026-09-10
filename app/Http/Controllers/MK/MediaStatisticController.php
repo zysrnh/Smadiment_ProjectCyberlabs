@@ -810,134 +810,114 @@ public function trendMentions(Request $request)
         return response()->json(['error' => 'project_id required'], 422);
     }
 
-    // ── Pakai trendsTotal — return aggregate count per hari per platform ──
-    // Jauh lebih cepat vs fetch raw mentions (tidak ada limit rows, tidak timeout)
-    // Response shape: { data: [ { keyword: "TWIT", data: [{date, count}] }, ... ] }
+    $cacheKey = "media_stat_trend_mentions_{$projectId}_{$startDate}_{$endDate}";
 
-    $keywordMap = [
-        'DOC'       => 'doc',
-        'TWIT'      => 'twitter',
-        'TWITTER'   => 'twitter',
-        'FB'        => 'facebook',
-        'FACEBOOK'  => 'facebook',
-        'IG'        => 'instagram',
-        'INSTAGRAM' => 'instagram',
-        'YT'        => 'youtube',
-        'YOUTUBE'   => 'youtube',
-        'TIKTOK'    => 'tiktok',
-        'TT'        => 'tiktok',
-    ];
-
-    $platLabels = [
-        'doc'       => 'Online News',
-        'twitter'   => 'Twitter',
-        'facebook'  => 'Facebook',
-        'instagram' => 'Instagram',
-        'youtube'   => 'YouTube',
-        'tiktok'    => 'TikTok',
-    ];
-    $platColors = [
-        'doc'       => '#038047',
-        'twitter'   => '#1d9bf0',
-        'facebook'  => '#1877f2',
-        'instagram' => '#e1306c',
-        'youtube'   => '#ff0000',
-        'tiktok'    => '#2dd4bf',
-    ];
-
-    $platforms = ['doc', 'twitter', 'facebook', 'instagram', 'youtube', 'tiktok'];
-
-    // ── Generate date list untuk fill 0 pada hari tanpa data ──
-    $dates   = [];
-    $current = new \DateTime($startDate);
-    $end     = new \DateTime($endDate);
-    while ($current <= $end) {
-        $dates[] = $current->format('Y-m-d');
-        $current->modify('+1 day');
-    }
-
-    // Init grouped per platform per date
-    $grouped = [];
-    foreach ($platforms as $p) {
-        $grouped[$p] = [];
-    }
-
-    try {
-        $raw = $this->mk->trendsTotal(
-            (string) $projectId,
-            $startDate,
-            $endDate
-        );
-
-        Log::info('trendMentions trendsTotal raw', [
-            'project_id' => $projectId,
-            'keys'       => is_array($raw) ? array_keys($raw) : gettype($raw),
-            'data_count' => is_array($raw['data'] ?? null) ? count($raw['data']) : 0,
-        ]);
-
-        foreach ($raw['data'] ?? [] as $item) {
-            $kw  = strtoupper($item['keyword'] ?? '');
-            $key = $keywordMap[$kw] ?? strtolower($kw);
-
-            if (! isset($grouped[$key])) continue;
-
-            foreach ($item['data'] ?? [] as $pt) {
-                $date  = substr((string) ($pt['date'] ?? ''), 0, 10);
-                $count = (int) ($pt['count'] ?? 0);
-                if (! $date) continue;
-                $grouped[$key][$date] = ($grouped[$key][$date] ?? 0) + $count;
-            }
-        }
-
-    } catch (\Throwable $e) {
-        Log::warning('trendMentions trendsTotal failed', [
-            'project_id' => $projectId,
-            'error'      => $e->getMessage(),
-        ]);
-
-        return response()->json([
-            'error' => 'Gagal mengambil data trend: ' . $e->getMessage(),
-            'data'  => [],
-            'meta'  => ['start_date' => $startDate, 'end_date' => $endDate],
-        ], 500);
-    }
-
-    // ── Build result — semua tanggal ter-represent (0 jika tidak ada data) ──
-    $grandTotal = 0;
-    $result     = [];
-
-    foreach ($platforms as $p) {
-        $dayData = [];
-        foreach ($dates as $date) {
-            $count    = $grouped[$p][$date] ?? 0;
-            $grandTotal += $count;
-            $dayData[] = ['date' => $date, 'count' => $count];
-        }
-
-        $result[] = [
-            'key'   => $p,
-            'label' => $platLabels[$p],
-            'color' => $platColors[$p],
-            'data'  => $dayData,
+    $res = Cache::remember($cacheKey, 1800, function () use ($projectId, $startDate, $endDate) {
+        $keywordMap = [
+            'DOC'       => 'doc',
+            'TWIT'      => 'twitter',
+            'TWITTER'   => 'twitter',
+            'FB'        => 'facebook',
+            'FACEBOOK'  => 'facebook',
+            'IG'        => 'instagram',
+            'INSTAGRAM' => 'instagram',
+            'YT'        => 'youtube',
+            'YOUTUBE'   => 'youtube',
+            'TIKTOK'    => 'tiktok',
+            'TT'        => 'tiktok',
         ];
-    }
 
-    Log::info('trendMentions complete', [
-        'project_id'  => $projectId,
-        'date_range'  => "$startDate – $endDate",
-        'grand_total' => $grandTotal,
-    ]);
+        $platLabels = [
+            'doc'       => 'Online News',
+            'twitter'   => 'Twitter',
+            'facebook'  => 'Facebook',
+            'instagram' => 'Instagram',
+            'youtube'   => 'YouTube',
+            'tiktok'    => 'TikTok',
+        ];
+        $platColors = [
+            'doc'       => '#038047',
+            'twitter'   => '#1d9bf0',
+            'facebook'  => '#1877f2',
+            'instagram' => '#e1306c',
+            'youtube'   => '#ff0000',
+            'tiktok'    => '#2dd4bf',
+        ];
 
-    return response()->json([
-        'data' => $result,
-        'meta' => [
-            'total_fetched' => $grandTotal,
-            'start_date'    => $startDate,
-            'end_date'      => $endDate,
-            'days_total'    => count($dates),
-            'days_errored'  => 0,
-        ],
-    ]);
+        $platforms = ['doc', 'twitter', 'facebook', 'instagram', 'youtube', 'tiktok'];
+
+        $dates   = [];
+        $current = new \DateTime($startDate);
+        $end     = new \DateTime($endDate);
+        while ($current <= $end) {
+            $dates[] = $current->format('Y-m-d');
+            $current->modify('+1 day');
+        }
+
+        $grouped = [];
+        foreach ($platforms as $p) {
+            $grouped[$p] = [];
+        }
+
+        try {
+            $raw = $this->mk->trendsTotal(
+                (string) $projectId,
+                $startDate,
+                $endDate
+            );
+
+            foreach ($raw['data'] ?? [] as $item) {
+                $kw  = strtoupper($item['keyword'] ?? '');
+                $key = $keywordMap[$kw] ?? strtolower($kw);
+
+                if (! isset($grouped[$key])) continue;
+
+                foreach ($item['data'] ?? [] as $pt) {
+                    $date  = substr((string) ($pt['date'] ?? ''), 0, 10);
+                    $count = (int) ($pt['count'] ?? 0);
+                    if (! $date) continue;
+                    $grouped[$key][$date] = ($grouped[$key][$date] ?? 0) + $count;
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('trendMentions trendsTotal failed', [
+                'project_id' => $projectId,
+                'error'      => $e->getMessage(),
+            ]);
+        }
+
+        $grandTotal = 0;
+        $result     = [];
+
+        foreach ($platforms as $p) {
+            $dayData = [];
+            foreach ($dates as $date) {
+                $count    = $grouped[$p][$date] ?? 0;
+                $grandTotal += $count;
+                $dayData[] = ['date' => $date, 'count' => $count];
+            }
+
+            $result[] = [
+                'key'   => $p,
+                'label' => $platLabels[$p],
+                'color' => $platColors[$p],
+                'data'  => $dayData,
+            ];
+        }
+
+        return [
+            'data' => $result,
+            'meta' => [
+                'total_fetched' => $grandTotal,
+                'start_date'    => $startDate,
+                'end_date'      => $endDate,
+                'days_total'    => count($dates),
+                'days_errored'  => 0,
+            ],
+        ];
+    });
+
+    return response()->json($res);
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -948,6 +928,7 @@ public function trendPage(Request $request)
 {
     return view('mk.media-statistic-trend');
 }
+
 public function mentionsByHour(Request $request)
 {
     $projectId = $request->get('project_id');
@@ -1004,11 +985,9 @@ public function mentionsByHour(Request $request)
                 $hourAcc[$p] = array_fill(0, 24, 0);
             }
 
-            // Ambil 5 batch × 1000 = 5000 rows
-            // Cukup representatif untuk distribusi per jam
-            // dan tidak terlalu lama (~30 detik)
-            $batchSize  = 1000;
-            $maxBatches = 5;
+            // Ambil 1 batch sampling 500 rows untuk distribusi per jam cepat
+            $batchSize  = 500;
+            $maxBatches = 1;
 
             for ($batch = 0; $batch < $maxBatches; $batch++) {
                 $start = $batch * $batchSize;

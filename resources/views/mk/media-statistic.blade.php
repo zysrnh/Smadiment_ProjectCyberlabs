@@ -1098,28 +1098,29 @@ function makeEDoughnut(domId, labels, values, colors, onClickFns, subtitles) {
 
 /* ══ LOAD MENTION BY PLATFORM ══ */
 async function loadMentionByPlatform(){
-  if(!MSCfg.pid){ ['valPos','valNeu','valNeg','valTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<span style="font-size:13px;color:#94a3b8;">—</span>'}); ['pctPos','pctNeu','pctNeg'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<i class="ph ph-warning-circle me-1"></i>No Project';}); ['skBar','skSovMass','skSovPlat','skBarRace'].forEach(hideSk); return; }
-  try{
-    const [resPlat, resSent] = await Promise.all([
-      fetch(`/mk/api/media-statistic/mention-by-platform?project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}`),
-      fetch(`/mk/api/sentiment/totals?project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}`)
-    ]);
-    const d=await resPlat.json();
-    const s=await resSent.json();
+  if(!MSCfg.pid){ ['skBar','skSovMass','skSovPlat','skBarRace'].forEach(hideSk); return; }
+  
+  // Background fetch for sentiment totals to refresh KPI if needed
+  fetch(`/mk/api/sentiment/totals?project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}`)
+    .then(r=>r.json())
+    .then(s=>{
+      const sent = s.totals || {pos:0, neu:0, neg:0};
+      const totalSent = (sent.pos||0) + (sent.neu||0) + (sent.neg||0);
+      if (totalSent > 0) {
+        document.getElementById('valPos').textContent = numFmt(sent.pos);
+        document.getElementById('valNeu').textContent = numFmt(sent.neu);
+        document.getElementById('valNeg').textContent = numFmt(sent.neg);
+        document.getElementById('valTotal').textContent = numFmt(totalSent);
+        document.getElementById('pctPos').innerHTML = `<i class="ph ph-trend-up me-1"></i>${(sent.pos/totalSent*100).toFixed(1)}% Share`;
+        document.getElementById('pctNeu').innerHTML = `<i class="ph ph-minus me-1"></i>${(sent.neu/totalSent*100).toFixed(1)}% Share`;
+        document.getElementById('pctNeg').innerHTML = `<i class="ph ph-trend-down me-1"></i>${(sent.neg/totalSent*100).toFixed(1)}% Share`;
+      }
+    }).catch(()=>{});
 
+  try{
+    const resPlat = await fetch(`/mk/api/media-statistic/mention-by-platform?project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}`);
+    const d = await resPlat.json();
     if(d.error) throw new Error(d.error);
-    
-    /* Update Sentiment KPIs */
-    const sent = s.totals || {pos:0, neu:0, neg:0};
-    const totalSent = (sent.pos||0) + (sent.neu||0) + (sent.neg||0) || 1;
-    document.getElementById('valPos').textContent = numFmt(sent.pos);
-    document.getElementById('valNeu').textContent = numFmt(sent.neu);
-    document.getElementById('valNeg').textContent = numFmt(sent.neg);
-    document.getElementById('valTotal').textContent = numFmt(totalSent);
-    
-    document.getElementById('pctPos').innerHTML = `<i class="ph ph-trend-up me-1"></i>${(sent.pos/totalSent*100).toFixed(1)}% Share`;
-    document.getElementById('pctNeu').innerHTML = `<i class="ph ph-minus me-1"></i>${(sent.neu/totalSent*100).toFixed(1)}% Share`;
-    document.getElementById('pctNeg').innerHTML = `<i class="ph ph-trend-down me-1"></i>${(sent.neg/totalSent*100).toFixed(1)}% Share`;
 
     const platforms=d.platforms||[];
     const pcMap={doc:'pcDoc',twit:'pcTwit',twitter:'pcTwit',fb:'pcFb',facebook:'pcFb',ig:'pcIg',instagram:'pcIg',yt:'pcYt',youtube:'pcYt',tiktok:'pcTt'};
@@ -1173,15 +1174,13 @@ async function loadMentionByPlatform(){
     } else { const bd=document.getElementById('chBarRace');if(bd)bd.innerHTML=emptyHtml('Tidak ada data mention'); }
   }catch(err){
     console.error('loadMentionByPlatform:',err);
-    ['valPos','valNeu','valNeg','valTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<span style="font-size:12px;color:#dc2626;font-weight:600;">Error</span>';});
-    ['pctPos','pctNeu','pctNeg'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='<i class="ph ph-warning-circle me-1"></i>Gagal memuat';});
     ['skBar','skSovMass','skSovPlat','skBarRace'].forEach(hideSk);
   }
 }
 
-/* ══ LOAD TREND ══ */
+/* ══ LOAD TREND & ARTICLE TREND (Unified Fetch) ══ */
 async function loadTrend(){
-  if(!MSCfg.pid){ hideSk('skTrend'); return; }
+  if(!MSCfg.pid){ hideSk('skTrend'); hideSk('skArticleTrend'); return; }
   const fmtDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   let trendSD,trendED;
   if(MSTrendToggle._datePickerOverride){ trendSD=MSCfg.sd; trendED=MSCfg.ed; }
@@ -1193,12 +1192,38 @@ async function loadTrend(){
     const res=await fetch(`/mk/api/media-statistic/trend-mentions?project_id=${MSCfg.pid}&start_date=${trendSD}&end_date=${trendED}`);
     const json=await res.json();if(json.error)throw new Error(json.error);
     hideSk('skTrend');
+    hideSk('skArticleTrend');
     const raw=json.data||[];
     const dSet=new Set();raw.forEach(p=>(p.data||[]).forEach(d=>dSet.add(d.date)));
     const allDates=Array.from(dSet).sort();
     MSTrendToggle.setData(raw);
-    if(MSTrendToggle._mode==='monthly'){ MSTrendToggle._render(raw); return; }
     const fmtB=d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()} ${dt.toLocaleString('id-ID',{month:'short'})}`;};
+
+    /* ── Render Article Trend Chart ── */
+    const docData=raw.find(p=>p.key==='doc');
+    if(docData&&docData.data?.length){
+      const artBadge = document.getElementById('articleTrendBadge');
+      if(artBadge) artBadge.textContent=`${fmtB(MSCfg.sd)} – ${fmtB(MSCfg.ed)}`;
+      const dates=docData.data.map(d=>d.date),values=docData.data.map(d=>d.count);
+      MSCsvModal.setArticleData(dates,values);
+      const xLabelsArt=dates.map(d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()} ${dt.toLocaleString('id-ID',{month:'short'})}`;});
+      _destroyApx('article');
+      const elArt=document.getElementById('chArticleTrend');
+      if(elArt){
+        const onPointClickArt = (_sIdx, cx, cy) => { MSPanel.open('doc', cx, cy); };
+        const optsArt = apxBase(['#0284c7'], [{name:'Online News', data:values}], xLabelsArt, 340, onPointClickArt);
+        optsArt.tooltip.y = { formatter: v => numFmt(v)+' articles' };
+        APX.article = new ApexCharts(elArt, optsArt);
+        APX.article.render();
+      }
+    } else {
+      const artBadge = document.getElementById('articleTrendBadge');
+      if(artBadge) artBadge.textContent='No Data';
+      const elArt=document.getElementById('chArticleTrend');
+      if(elArt) elArt.innerHTML=emptyHtml('Data artikel tidak tersedia untuk periode ini');
+    }
+
+    if(MSTrendToggle._mode==='monthly'){ MSTrendToggle._render(raw); return; }
     document.getElementById('trendBadge').textContent=`${fmtB(trendSD)} – ${fmtB(trendED)}`;
     const sub=document.getElementById('trendSubtitle');if(sub)sub.textContent=`${fmtB(trendSD)} – ${fmtB(trendED)}`;
     const weekNavGroup=document.getElementById('weekNavGroup'),weekNavLabel=document.getElementById('weekNavLabel'),weekNavNext=document.getElementById('weekNavNext');
@@ -1217,32 +1242,15 @@ async function loadTrend(){
     const trendOpts = apxBase(colorsArr, seriesArr, xLabels, 340, onPointClick);
     APX.trend = new ApexCharts(el, trendOpts);
     APX.trend.render();
-  }catch(err){ hideSk('skTrend');document.getElementById('trendBadge').textContent='Error';document.getElementById('chTrend').innerHTML=emptyHtml('Data trend tidak tersedia'); }
+  }catch(err){
+    hideSk('skTrend');
+    hideSk('skArticleTrend');
+    document.getElementById('trendBadge').textContent='Error';
+    document.getElementById('chTrend').innerHTML=emptyHtml('Data trend tidak tersedia');
+  }
 }
 
-/* ══ LOAD ARTICLE TREND ══ */
-async function loadArticleTrend(){
-  if(!MSCfg.pid){ hideSk('skArticleTrend'); return; }
-  const fmtB=d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()} ${dt.toLocaleString('id-ID',{month:'short'})}`;};
-  try{
-    const res=await fetch(`/mk/api/media-statistic/trend-mentions?project_id=${MSCfg.pid}&start_date=${MSCfg.sd}&end_date=${MSCfg.ed}`);
-    const json=await res.json();if(json.error)throw new Error(json.error);
-    hideSk('skArticleTrend');
-    const raw=json.data||[];const docData=raw.find(p=>p.key==='doc');
-    if(!docData||!docData.data?.length){ document.getElementById('articleTrendBadge').textContent='No Data';document.getElementById('chArticleTrend').innerHTML=emptyHtml('Data artikel tidak tersedia untuk periode ini');return; }
-    document.getElementById('articleTrendBadge').textContent=`${fmtB(MSCfg.sd)} – ${fmtB(MSCfg.ed)}`;
-    const dates=docData.data.map(d=>d.date),values=docData.data.map(d=>d.count);
-    MSCsvModal.setArticleData(dates,values);
-    const xLabels=dates.map(d=>{const dt=new Date(d+'T00:00:00');return`${dt.getDate()} ${dt.toLocaleString('id-ID',{month:'short'})}`;});
-    _destroyApx('article');
-    const el=document.getElementById('chArticleTrend');if(!el)return;
-    const onPointClick = (_sIdx, cx, cy) => { MSPanel.open('doc', cx, cy); };
-    const opts = apxBase(['#0284c7'], [{name:'Online News', data:values}], xLabels, 340, onPointClick);
-    opts.tooltip.y = { formatter: v => numFmt(v)+' articles' };
-    APX.article = new ApexCharts(el, opts);
-    APX.article.render();
-  }catch(err){ hideSk('skArticleTrend');document.getElementById('articleTrendBadge').textContent='Error';document.getElementById('chArticleTrend').innerHTML=emptyHtml('Data artikel tidak tersedia'); }
-}
+function loadArticleTrend(){ loadTrend(); }
 
 /* ══ LOAD WEEKDAY & HOUR ══ */
 async function loadWeekHour(){
