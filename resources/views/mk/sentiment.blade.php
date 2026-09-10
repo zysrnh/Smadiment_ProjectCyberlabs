@@ -1954,13 +1954,26 @@ const SNTExport = (() => {
         list.innerHTML = ''; list.scrollTop = 0;
         this._renderedCount = 0;
         this._renderedItems = [];
+
+        // Auto-scroll infinite loading
+        list.onscroll = () => {
+          if (list.scrollTop + list.clientHeight >= list.scrollHeight - 140) {
+            const curItems = this._getFiltered();
+            if ((curItems.length > this._renderedCount || this._hasMore()) && !this._isFetchingMore && !this._loadingMore) {
+              this.loadMore(list);
+            }
+          }
+        };
+
         this.loadMore(list);
       },
 
       async loadMore(list = document.getElementById('sntPopList')) {
+        if (this._loadingMore) return;
+        this._loadingMore = true;
         let items = this._getFiltered();
         const btn = document.getElementById('sntPopLoadMoreBtn');
-        const limit = 20;
+        const limit = 25;
         const start = this._renderedCount || 0;
 
         const remaining = items.length - start;
@@ -2005,6 +2018,7 @@ const SNTExport = (() => {
 
         if (!items.length) {
           list.innerHTML = `<div class="sntp-loading" style="color:#94a3b8;padding:50px 20px;text-align:center;">Tidak ada mention untuk filter ini</div>`;
+          this._loadingMore = false;
           return;
         }
 
@@ -2101,8 +2115,11 @@ const SNTExport = (() => {
         this._renderedCount = start + chunk.length;
         const canLoadMore = (items.length > this._renderedCount) || this._hasMore();
         if (canLoadMore) {
-          list.insertAdjacentHTML('beforeend', `<div id="sntPopLoadMoreBtn" style="padding:16px;text-align:center;background:var(--slate-50);border-top:1px dashed var(--slate-200);"><button id="_doLMBtn" onclick="SNTPopup.loadMore()" style="background:var(--primary);color:#fff;border:none;padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(3,128,71,.2);" onmouseover="this.style.filter='brightness(1.1)';" onmouseout="this.style.filter='';">Muat Lebih Banyak</button></div>`);
+          const rem = items.length - this._renderedCount;
+          const remText = rem > 0 ? ` (${rem} tersisa)` : (this._hasMore() ? ' (masih ada lagi)' : '');
+          list.insertAdjacentHTML('beforeend', `<div id="sntPopLoadMoreBtn" style="padding:16px;text-align:center;background:var(--slate-50);border-top:1px dashed var(--slate-200);"><button id="_doLMBtn" onclick="SNTPopup.loadMore()" style="background:var(--primary);color:#fff;border:none;padding:8px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 4px rgba(3,128,71,.2);" onmouseover="this.style.filter='brightness(1.1)';" onmouseout="this.style.filter='';">Muat Lebih Banyak${remText}</button></div>`);
         }
+        this._loadingMore = false;
       },
       openDetailByIndex(idx) {
         const item = this._renderedItems ? this._renderedItems[idx] : null;

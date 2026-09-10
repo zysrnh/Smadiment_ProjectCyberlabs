@@ -1865,7 +1865,7 @@ dataLabels: {
                 return;
             }
 
-            const PAGE = 10;
+            const PAGE = 25;
             let _page = 0;
 
             function _renderItems(arr, startIdx) {
@@ -1986,14 +1986,19 @@ dataLabels: {
                         onmouseover="this.style.filter='brightness(1.12)'"
                         onmouseout="this.style.filter=''">
                         <i class="ph ph-arrow-circle-down" style="font-size:13px;"></i>
-                        Muat lagi
+                        Muat Lebih Banyak (${remaining} tersisa)
                     </button>
                 </div>`;
             }
 
             list.innerHTML = _renderItems(items.slice(0, PAGE), 0) + _renderLoadMore();
 
+            let _loadingMore = false;
             window.__dashLoadMore = function() {
+                if (_loadingMore) return;
+                const shown = (_page + 1) * PAGE;
+                if (shown >= items.length) return;
+                _loadingMore = true;
                 const btn = document.getElementById('_dashLMBtn');
                 if (btn) { btn.textContent = 'Memuat…'; btn.disabled = true; }
                 setTimeout(() => {
@@ -2003,7 +2008,18 @@ dataLabels: {
                     document.getElementById('_doLMWrap')?.remove();
                     document.getElementById('_dashLMWrap')?.remove();
                     list.insertAdjacentHTML('beforeend', _renderItems(batch, startIdx) + _renderLoadMore());
+                    _loadingMore = false;
                 }, 80);
+            };
+
+            // Auto-scroll infinite loading
+            list.onscroll = function() {
+                if (list.scrollTop + list.clientHeight >= list.scrollHeight - 140) {
+                    const shown = (_page + 1) * PAGE;
+                    if (shown < items.length) {
+                        window.__dashLoadMore();
+                    }
+                }
             };
         }
 

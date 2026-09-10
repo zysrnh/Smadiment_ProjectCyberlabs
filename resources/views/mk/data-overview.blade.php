@@ -1452,7 +1452,7 @@
                 return;
             }
 
-            var PAGE = 10;
+            var PAGE = 25;
             var _page = 0;
 
             function _renderItems(arr, startIdx) {
@@ -1547,13 +1547,18 @@
                 var remaining = items.length - shown;
                 if (remaining <= 0) return '';
                 return '<div id="_doLMWrap" style="padding:11px 14px;text-align:center;background:var(--slate-50);border-top:1px dashed var(--slate-200);">'
-                    +'<button id="_doLMBtn" onclick="DOPanel.loadMore()" style="display:inline-flex;align-items:center;gap:5px;padding:6px 20px;background:var(--primary);color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-transition:filter .14s;transition:filter .14s;" onmouseover="this.style.filter=\'brightness(1.12)\'" onmouseout="this.style.filter=\'\'"><i class="ph ph-arrow-circle-down" style="font-size:13px;"></i> Muat Lebih Banyak</button>'
+                    +'<button id="_doLMBtn" onclick="DOPanel.loadMore()" style="display:inline-flex;align-items:center;gap:5px;padding:6px 20px;background:var(--primary);color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-transition:filter .14s;transition:filter .14s;" onmouseover="this.style.filter=\'brightness(1.12)\'" onmouseout="this.style.filter=\'\'"><i class="ph ph-arrow-circle-down" style="font-size:13px;"></i> Muat Lebih Banyak ('+remaining+' tersisa)</button>'
                     +'</div>';
             }
 
             list.innerHTML = _renderItems(items.slice(0, PAGE), 0) + _renderLoadMore();
 
+            var _loadingMore = false;
             DOPanel.loadMore = function() {
+                if (_loadingMore) return;
+                var shown = (_page + 1) * PAGE;
+                if (shown >= items.length) return;
+                _loadingMore = true;
                 var btn = document.getElementById('_doLMBtn');
                 if (btn) { btn.textContent = 'Memuat…'; btn.disabled = true; }
                 setTimeout(function() {
@@ -1563,7 +1568,18 @@
                     var wrap = document.getElementById('_doLMWrap');
                     if (wrap) wrap.remove();
                     list.insertAdjacentHTML('beforeend', _renderItems(batch, startIdx) + _renderLoadMore());
+                    _loadingMore = false;
                 }, 80);
+            };
+
+            // Auto-scroll infinite loading
+            list.onscroll = function() {
+                if (list.scrollTop + list.clientHeight >= list.scrollHeight - 140) {
+                    var shown = (_page + 1) * PAGE;
+                    if (shown < items.length) {
+                        DOPanel.loadMore();
+                    }
+                }
             };
         }
 
