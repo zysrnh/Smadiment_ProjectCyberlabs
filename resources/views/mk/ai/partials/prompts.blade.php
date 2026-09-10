@@ -97,6 +97,15 @@ EVIDENCE OVERRIDE RULE:
 - You may generate representative examples that reflect realistic patterns
 - NEVER stop analysis just because evidence is incomplete
 - Maintain credibility even when reconstructing examples
+
+FORMATTING & STRUCTURE RULE (CRITICAL):
+- Format Penomoran: Gunakan nomor urut teratur (1., 2., 3., dst) dengan judul tebal: **1. [Judul Isu]:** [Uraian].
+- Sub-poin Tindakan & Komunikasi: WAJIB tulis di baris baru tersendiri dengan format:
+  * **Tindakan:** [Langkah aksi konkret]
+  * **Komunikasi:** [Strategi narasi & komunikasi publik]
+  * **Implikasi:** [Dampak atau konsekuensi strategis]
+- JANGAN PERNAH menyatukan * Tindakan: dan * Komunikasi: dalam satu baris kalimat yang sama.
+- Tabel: Gunakan format Markdown table (| Header 1 | Header 2 |) yang rapi jika menyajikan matriks/data komparatif.
 `;
     return {
 

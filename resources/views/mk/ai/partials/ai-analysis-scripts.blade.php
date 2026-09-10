@@ -233,41 +233,13 @@ function appendMsg(role, text, images) {
     const actionsHtml = isAI ? `<div class="bubble-actions">
         <button class="bubble-act-btn" onclick="copyBubbleText(this)" title="Copy teks">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-            <span>Copy</span>
-        </button>
-        <button class="bubble-act-btn" onclick="exportBubblePDF(this)" title="Download PDF">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
-            <span>PDF</span>
-        </button>
-    </div>` : '';
-
-    el.innerHTML = `<div style="${ava}">${isAI?'AI':'U'}</div><div style="display:flex;flex-direction:column;max-width:78%;gap:4px;align-items:${isAI?'flex-start':'flex-end'};"><div class="chat-bubble" style="${bub}">${isAI?formatMarkdown(text):`<span style="color:#fff">${escHtml(text)}</span>`}${imgHtml}</div>${actionsHtml}<div style="font-size:10px;color:#cbd5e1;padding:0 4px;">${now}</div></div>`;
-    container.appendChild(el);
-    container.scrollTop = container.scrollHeight;
-    return el;
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// BUBBLE ACTIONS — COPY & SINGLE PDF
-// ═══════════════════════════════════════════════════════════════════
-function copyBubbleText(btn) {
-    const row = btn.closest('.chat-msg-row');
-    const raw = row?.dataset.rawText || row?.querySelector('.chat-bubble')?.innerText || '';
-    navigator.clipboard.writeText(raw).then(() => {
-        const label = btn.querySelector('span');
-        btn.classList.add('copied');
-        label.textContent = 'Copied!';
-        setTimeout(() => { btn.classList.remove('copied'); label.textContent = 'Copy'; }, 1500);
-    });
-}
-
-const PDF_PAGE_STYLE = `
+       const PDF_PAGE_STYLE = `
 <style>
     * { box-sizing: border-box; }
     body, div, p, span, strong, em, h1, h2, h3, h4, table, th, td {
         font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
     }
-    p, .ai-num-item, .ai-bullet-item, h2, h3, h4, tr, .ai-table-wrap, blockquote, li {
+    .ai-num-card, .ai-sub-card, .ai-evidence-box, .ai-table-wrap, .ai-bullet-item, p, h2, h3, h4, tr, blockquote, li {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
         break-inside: avoid-page !important;
@@ -278,29 +250,27 @@ const PDF_PAGE_STYLE = `
         margin-top: 14px !important;
         margin-bottom: 6px !important;
     }
-    .ai-num-item {
-        margin: 6px 0 !important;
-        display: flex !important;
-        gap: 6px !important;
-        align-items: flex-start !important;
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
+    .ai-num-card {
+        margin: 10px 0 6px !important;
+        padding: 9px 12px !important;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-left: 4px solid #038047 !important;
+        border-radius: 6px !important;
     }
-    .ai-bullet-item {
-        margin: 4px 0 !important;
-        display: flex !important;
-        gap: 6px !important;
-        align-items: flex-start !important;
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
+    .ai-sub-card {
+        margin: 5px 0 5px 14px !important;
+        padding: 7px 11px !important;
+        border-radius: 4px !important;
+        font-size: 12px !important;
+        line-height: 1.55 !important;
     }
     .ai-table-wrap {
-        margin: 12px 0 !important;
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
+        margin: 10px 0 !important;
     }
     table {
         page-break-inside: auto !important;
+        width: 100% !important;
     }
     tr {
         page-break-inside: avoid !important;
@@ -317,21 +287,44 @@ function exportBubblePDF(btn) {
     const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
     const html = `
         ${PDF_PAGE_STYLE}
-        <div style="font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding:0;color:#1a202c;">
-            <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid #038047;page-break-inside:avoid;break-inside:avoid;">
-                <div style="width:44px;height:44px;border-radius:10px;background:#038047;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <span style="color:#fff;font-weight:800;font-size:14px;">AI</span>
+        <div style="font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding:0;color:#1e293b;">
+            <!-- Executive Header Banner -->
+            <div style="background:#0f172a;color:#ffffff;padding:16px 20px;border-radius:8px 8px 0 0;margin-bottom:14px;page-break-inside:avoid;break-inside:avoid;">
+                <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.15);padding-bottom:10px;margin-bottom:10px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <div style="width:32px;height:32px;background:#038047;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#fff;">
+                            S
+                        </div>
+                        <div>
+                            <div style="font-size:14px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;color:#ffffff;">SMADIMENT MEDIA INTELLIGENCE</div>
+                            <div style="font-size:10px;color:#94a3b8;">EXECUTIVE INTELLIGENCE BRIEFING</div>
+                        </div>
+                    </div>
+                    <div style="background:#dc2626;color:#ffffff;font-size:9.5px;font-weight:800;padding:3px 8px;border-radius:4px;letter-spacing:0.06em;text-transform:uppercase;">
+                        CONFIDENTIAL
+                    </div>
                 </div>
-                <div>
-                    <h1 style="margin:0;font-size:18px;font-weight:800;color:#0f172a;">${escHtml(PLATFORM)} AI Analysis</h1>
-                    <p style="margin:2px 0 0;font-size:11px;color:#64748b;">Project: ${escHtml(PROJECT_ID)} &middot; ${escHtml(START_DATE)} s/d ${escHtml(END_DATE)} &middot; ${now}</p>
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px;">
+                    <div>
+                        <h1 style="margin:0;font-size:16px;font-weight:800;color:#ffffff;">${escHtml(PLATFORM)} AI Analysis Report</h1>
+                        <p style="margin:3px 0 0;font-size:10.5px;color:#cbd5e1;">Project ID: <strong style="color:#fff;">${escHtml(PROJECT_ID)}</strong> &bull; Period: <strong style="color:#fff;">${escHtml(START_DATE)} s/d ${escHtml(END_DATE)}</strong></p>
+                    </div>
+                    <div style="font-size:10px;color:#94a3b8;text-align:right;">
+                        <div>Generated: <span style="color:#cbd5e1;">${now}</span></div>
+                        <div>Classification: <span style="color:#cbd5e1;">INTERNAL USE</span></div>
+                    </div>
                 </div>
             </div>
-            <div style="padding:14px 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:12.5px;line-height:1.75;color:#1a202c;">
+
+            <!-- Content -->
+            <div style="padding:14px 16px;background:#ffffff;border:1px solid #e2e8f0;border-radius:0 0 8px 8px;font-size:12.5px;line-height:1.75;color:#1e293b;">
                 ${bubble.innerHTML}
             </div>
-            <div style="margin-top:24px;padding-top:10px;border-top:1px solid #e2e8f0;text-align:center;page-break-inside:avoid;break-inside:avoid;">
-                <p style="font-size:9px;color:#94a3b8;margin:0;">SMADIMENT AI — ${escHtml(PLATFORM)} — ${now}</p>
+
+            <!-- Executive Footer -->
+            <div style="margin-top:20px;padding-top:10px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-size:9px;color:#94a3b8;page-break-inside:avoid;break-inside:avoid;">
+                <span>SMADIMENT INTELLIGENCE &bull; ALL RIGHTS RESERVED</span>
+                <span>${escHtml(PLATFORM)} &bull; ${now}</span>
             </div>
         </div>`;
 
@@ -428,7 +421,7 @@ function cleanClientText(str) {
         .replace(/aEUR/g, '”')
         .replace(/â€™/g, '’')
         .replace(/â€œ/g, '“')
-        .replace(/â€/g, '”')
+        .replace(/â€ /g, '”')
         .replace(/â€“/g, '–')
         .replace(/â€”/g, '—')
         .replace(/â€¦/g, '…')
@@ -438,9 +431,9 @@ function cleanClientText(str) {
 function formatInlineMarkdown(text) {
     if (!text) return '';
     let h = text;
-    h = h.replace(/\*\*\*(.+?)\*\*\*/g, '<strong style="color:#1a202c;font-weight:700;"><em>$1</em></strong>');
-    h = h.replace(/\*\*(.+?)\*\*/g, '<strong style="color:#1a202c;font-weight:700;">$1</strong>');
-    h = h.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    h = h.replace(/\*\*\*(.+?)\*\*\*/g, '<strong style="color:#0f172a;font-weight:700;"><em>$1</em></strong>');
+    h = h.replace(/\*\*(.+?)\*\*/g, '<strong style="color:#0f172a;font-weight:700;">$1</strong>');
+    h = h.replace(/(?<!\*)\*(?!\s)([^\*\n]+?)(?<!\s)\*(?!\*)/g, '<em>$1</em>');
     h = h.replace(/`([^`]+)`/g, '<code style="background:#f1f5f9;color:#0f172a;padding:2px 5px;border-radius:3px;font-size:11.5px;border:1px solid #e2e8f0;">$1</code>');
     return h;
 }
@@ -498,32 +491,57 @@ function formatMarkdown(text) {
     if (!text) return '';
     text = cleanClientText(text);
 
+    // 1. Pre-processing: Auto break mashed inline bullets into separate lines
+    text = text.replace(/([^\n])\s+([*•\-])\s+(?=\*{0,2}(?:Tindakan|Komunikasi|Rekomendasi|Implikasi|Solusi|Dampak|Penyebab|Strategi|Catatan)\b)/gi, "$1\n$2 ");
+
+    // 2. Escape HTML
     let h = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    // 3. Code blocks
     h = h.replace(/```[\w]*\n?([\s\S]*?)```/g,'<pre style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;overflow-x:auto;margin:8px 0;"><code style="font-size:12px;color:#1a202c;background:transparent;border:none;padding:0;">$1</code></pre>');
     h = h.replace(/`([^`]+)`/g,'<code style="background:#f1f5f9;color:#0f172a;padding:2px 6px;border-radius:4px;font-size:12px;border:1px solid #e2e8f0;">$1</code>');
-    h = h.replace(/^### (.+)$/gm,'<h4 style="font-size:13px;font-weight:700;margin:12px 0 5px;color:#038047;">$1</h4>');
-    h = h.replace(/^## (.+)$/gm, '<h3 style="font-size:14px;font-weight:700;margin:14px 0 6px;color:#038047;">$1</h3>');
-    h = h.replace(/^# (.+)$/gm,  '<h2 style="font-size:15px;font-weight:700;margin:16px 0 7px;color:#026738;">$1</h2>');
-    h = h.replace(/\*\*\*(.+?)\*\*\*/g,'<strong style="color:#1a202c;font-weight:700;"><em>$1</em></strong>');
-    h = h.replace(/\*\*(.+?)\*\*/g,'<strong style="color:#1a202c;font-weight:700;">$1</strong>');
-    h = h.replace(/\*(.+?)\*/g,'<em>$1</em>');
-    h = h.replace(/^---$/gm,'<hr style="border:none;border-top:1px solid #e2e8f0;margin:12px 0;">');
 
-    // Parse tables first before block splitting
+    // 4. Headers
+    h = h.replace(/^### (.+)$/gm,'<h4 style="font-size:13.5px;font-weight:700;margin:14px 0 6px;color:#038047;border-bottom:1px solid #f1f5f9;padding-bottom:3px;">$1</h4>');
+    h = h.replace(/^## (.+)$/gm, '<h3 style="font-size:15px;font-weight:800;margin:16px 0 8px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:4px;">$1</h3>');
+    h = h.replace(/^# (.+)$/gm,  '<h2 style="font-size:17px;font-weight:800;margin:18px 0 10px;color:#026738;border-bottom:2px solid #038047;padding-bottom:6px;">$1</h2>');
+
+    // 5. Bold & Italic (Strict regex to prevent swallowing list item asterisks)
+    h = h.replace(/\*\*\*(?!\s)([^\*\n]+?)(?<!\s)\*\*\*/g,'<strong style="color:#0f172a;font-weight:700;"><em>$1</em></strong>');
+    h = h.replace(/\*\*(?!\s)([^\*\n]+?)(?<!\s)\*\*/g,'<strong style="color:#0f172a;font-weight:700;">$1</strong>');
+    h = h.replace(/(?<!\*)\*(?!\s)([^\*\n]+?)(?<!\s)\*(?!\*)/g,'<em>$1</em>');
+    h = h.replace(/^---$/gm,'<hr style="border:none;border-top:1px solid #e2e8f0;margin:14px 0;">');
+
+    // 6. Tables
     h = parseMarkdownTables(h);
 
-    // Numbered lists: 1. Text
-    h = h.replace(/^(\d+)\.\s+(.+)$/gm, '<div class="ai-num-item" style="display:flex;gap:6px;margin:5px 0;align-items:flex-start;"><strong style="color:#038047;min-width:20px;flex-shrink:0;">$1.</strong><div style="flex:1;">$2</div></div>');
+    // 7. Sub-action cards (Tindakan, Komunikasi, Rekomendasi, etc.)
+    h = h.replace(/^[-*•]\s+\*{0,2}(Tindakan|Komunikasi|Rekomendasi|Implikasi|Solusi|Dampak|Penyebab|Strategi|Catatan)\*{0,2}[:\-]\s*(.+)$/gim, (match, label, content) => {
+        const l = label.toLowerCase();
+        let color = '#038047'; let bg = '#f0fdf4'; let icon = '🎯';
+        if (l.includes('komunikasi')) { color = '#1877F2'; bg = '#eff6ff'; icon = '📢'; }
+        else if (l.includes('rekomendasi') || l.includes('strategi')) { color = '#7c3aed'; bg = '#f5f3ff'; icon = '💡'; }
+        else if (l.includes('implikasi') || l.includes('dampak')) { color = '#d97706'; bg = '#fffbeb'; icon = '⚡'; }
 
-    // Bullet lists: - Text or * Text or • Text
-    h = h.replace(/^[-*•]\s+(.+)$/gm, '<div class="ai-bullet-item" style="display:flex;gap:6px;margin:4px 0;align-items:flex-start;"><span style="color:#038047;min-width:12px;flex-shrink:0;font-weight:700;">•</span><div style="flex:1;">$1</div></div>');
+        return `<div class="ai-sub-card" style="margin:6px 0 6px 14px;padding:8px 12px;background:${bg};border:1px solid #e2e8f0;border-left:3px solid ${color};border-radius:4px;font-size:12.5px;line-height:1.6;color:#1e293b;page-break-inside:avoid;break-inside:avoid;"><span style="font-weight:700;color:${color};display:inline-flex;align-items:center;gap:4px;margin-right:4px;"><span>${icon}</span> ${label}:</span> <span>${formatInlineMarkdown(content)}</span></div>`;
+    });
 
-    // Paragraphs
+    // 8. Numbered issue cards
+    h = h.replace(/^(\d+)\.\s+(\*\*.+?\*\*|[^:\n]+:?)(.*)$/gm, (match, num, title, rest) => {
+        let cleanTitle = formatInlineMarkdown(title.trim());
+        let cleanRest  = formatInlineMarkdown(rest.trim());
+        return `<div class="ai-num-card" style="margin:12px 0 6px;padding:10px 14px;background:#ffffff;border:1px solid #e2e8f0;border-left:4px solid #038047;border-radius:6px;page-break-inside:avoid;break-inside:avoid;"><div style="display:flex;gap:8px;align-items:baseline;"><span class="ai-badge-num" style="background:#e6f4ea;color:#038047;font-weight:800;font-size:11px;padding:2px 7px;border-radius:4px;flex-shrink:0;">#${num}</span><div style="flex:1;font-size:13px;color:#0f172a;line-height:1.55;"><strong style="color:#0f172a;font-weight:700;">${cleanTitle}</strong> ${cleanRest}</div></div></div>`;
+    });
+
+    // 9. Regular bullets
+    h = h.replace(/^[-*•]\s+(.+)$/gm, '<div class="ai-bullet-item" style="display:flex;gap:6px;margin:4px 0 4px 14px;align-items:flex-start;font-size:12.5px;line-height:1.6;color:#1e293b;page-break-inside:avoid;break-inside:avoid;"><span style="color:#038047;min-width:12px;flex-shrink:0;font-weight:700;">•</span><div style="flex:1;">$1</div></div>');
+
+    // 10. Paragraphs
     h = h.split(/\n{2,}/).map(p => {
         p = p.trim();
         if (!p) return '';
         if (/^<(h[2-4]|pre|hr|div|table)/.test(p)) return p;
-        return `<p style="margin:0 0 8px;color:#1a202c;">${p.replace(/\n/g,'<br>')}</p>`;
+        return `<p style="margin:0 0 8px;color:#1e293b;font-size:13px;line-height:1.65;">${p.replace(/\n/g,'<br>')}</p>`;
     }).join('\n');
 
     return h;
@@ -536,18 +554,35 @@ function exportChatPDF() {
     const rows = document.querySelectorAll('.chat-msg-row');
     if (!rows.length) { alert('Belum ada percakapan untuk diexport.'); return; }
 
-    // Build clean HTML for PDF
     const now = new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
     let html = `
         ${PDF_PAGE_STYLE}
-        <div style="font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding:0;color:#1a202c;">
-            <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid #038047;page-break-inside:avoid;break-inside:avoid;">
-                <div style="width:44px;height:44px;border-radius:10px;background:#038047;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <span style="color:#fff;font-weight:800;font-size:14px;">AI</span>
+        <div style="font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding:0;color:#1e293b;">
+            <!-- Executive Header Banner -->
+            <div style="background:#0f172a;color:#ffffff;padding:16px 20px;border-radius:8px 8px 0 0;margin-bottom:14px;page-break-inside:avoid;break-inside:avoid;">
+                <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.15);padding-bottom:10px;margin-bottom:10px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <div style="width:32px;height:32px;background:#038047;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#fff;">
+                            S
+                        </div>
+                        <div>
+                            <div style="font-size:14px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;color:#ffffff;">SMADIMENT MEDIA INTELLIGENCE</div>
+                            <div style="font-size:10px;color:#94a3b8;">FULL SESSION BRIEFING REPORT</div>
+                        </div>
+                    </div>
+                    <div style="background:#dc2626;color:#ffffff;font-size:9.5px;font-weight:800;padding:3px 8px;border-radius:4px;letter-spacing:0.06em;text-transform:uppercase;">
+                        CONFIDENTIAL
+                    </div>
                 </div>
-                <div>
-                    <h1 style="margin:0;font-size:18px;font-weight:800;color:#0f172a;">${escHtml(PLATFORM)} AI Analysis Report</h1>
-                    <p style="margin:2px 0 0;font-size:11px;color:#64748b;">Project: ${escHtml(PROJECT_ID)} &middot; ${escHtml(START_DATE)} s/d ${escHtml(END_DATE)} &middot; Generated: ${now}</p>
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px;">
+                    <div>
+                        <h1 style="margin:0;font-size:16px;font-weight:800;color:#ffffff;">${escHtml(PLATFORM)} AI Analysis Report</h1>
+                        <p style="margin:3px 0 0;font-size:10.5px;color:#cbd5e1;">Project ID: <strong style="color:#fff;">${escHtml(PROJECT_ID)}</strong> &bull; Period: <strong style="color:#fff;">${escHtml(START_DATE)} s/d ${escHtml(END_DATE)}</strong></p>
+                    </div>
+                    <div style="font-size:10px;color:#94a3b8;text-align:right;">
+                        <div>Generated: <span style="color:#cbd5e1;">${now}</span></div>
+                        <div>Classification: <span style="color:#cbd5e1;">INTERNAL USE</span></div>
+                    </div>
                 </div>
             </div>`;
 
@@ -564,6 +599,59 @@ function exportChatPDF() {
                     <span style="color:#fff;font-size:9px;font-weight:700;">${isAI?'AI':'U'}</span>
                 </div>
                 <span style="font-size:11px;font-weight:700;color:${isAI?'#038047':'#64748b'};">${isAI?'SMADIMENT AI':'User'}</span>
+            </div>
+            <div style="margin-left:28px;padding:10px 14px;background:${isAI?'#ffffff':'#f8fafc'};border:1px solid #e2e8f0;border-radius:8px;font-size:12px;line-height:1.7;color:#1e293b;">
+                ${content}
+            </div>
+        </div>`;
+    });
+
+    html += `<div style="margin-top:20px;padding-top:10px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-size:9px;color:#94a3b8;page-break-inside:avoid;break-inside:avoid;">
+        <span>SMADIMENT INTELLIGENCE &bull; ALL RIGHTS RESERVED</span>
+        <span>${escHtml(PLATFORM)} &bull; ${now}</span>
+    </div></div>`;
+
+    const filename = `AI_Analysis_${PLATFORM}_${PROJECT_ID}_${START_DATE}_${END_DATE}.pdf`;
+    _renderPDF(html, filename);
+}
+
+function _renderPDF(html, filename) {
+    if (typeof html2pdf === 'undefined') {
+        _fallbackPdfPrint(html, filename);
+        return;
+    }
+
+    // Create a plain element — do NOT add positioning/opacity styles or append to DOM.
+    // html2pdf internally creates its own overlay container (position:fixed, full-screen)
+    // and moves this element into it. Adding position:absolute/opacity:0 would persist
+    // inside the overlay and cause html2canvas to capture a blank area.
+    const el = document.createElement('div');
+    el.innerHTML = html;
+
+    html2pdf().set({
+        margin: [12, 14, 12, 14],
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: {
+            mode: ['css', 'legacy'],
+            avoid: ['.ai-num-card', '.ai-sub-card', '.ai-evidence-box', '.ai-table-wrap', '.ai-bullet-item', 'p', 'h2', 'h3', 'h4', 'tr', 'blockquote', 'li']
+        }
+    }).from(el).save().catch(() => {
+        _fallbackPdfPrint(html, filename);
+    });
+}
+
+function _fallbackPdfPrint(html, filename) {
+    const win = window.open('', '_blank');
+    if (!win) { alert('Popup diblokir. Izinkan popup untuk download PDF.'); return; }
+    win.document.write(`<!DOCTYPE html><html><head><title>${escHtml(filename)}</title>
+        <style>body{font-family:'Segoe UI',system-ui,sans-serif;padding:20px;color:#1a202c;max-width:780px;margin:0 auto;}
+        @media print{body{padding:10px;}}</style></head><body>${html}
+        <script>setTimeout(function(){window.print();},500);<\/script></body></html>`);
+    win.document.close();
+}b'};">${isAI?'SMADIMENT AI':'User'}</span>
             </div>
             <div style="margin-left:28px;padding:10px 14px;background:${isAI?'#f8fafc':'#f1f5f9'};border:1px solid #e2e8f0;border-radius:8px;font-size:12px;line-height:1.7;color:#1a202c;">
                 ${content}

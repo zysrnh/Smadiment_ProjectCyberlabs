@@ -59,8 +59,13 @@ ATURAN KELENGKAPAN LAPORAN (ANTI-CUTOFF) — WAJIB:
 - JANGAN PERNAH memotong kalimat di tengah jalan atau menyisakan laporan setengah jadi.
 - Kelola panjang penjelasan per poin secara padat, tajam, dan proporsional agar seluruh bab laporan selesai lengkap.
 
-ATURAN FORMAT PENOMORAN & TABEL:
-- Pada daftar bernomor (misalnya 10 Isu Utama, Poin Rekomendasi), tulis nomor urut secara eksplisit: 1., 2., 3., 4., 5., 6., 7., 8., 9., 10.
+ATURAN FORMAT PENOMORAN, SUB-POIN & TABEL:
+- Pada daftar bernomor (misalnya 10 Isu Utama, Poin Rekomendasi), tulis nomor urut secara eksplisit: **1. [Judul Isu]:** [Uraian].
+- Sub-poin Tindakan & Komunikasi: WAJIB tulis di baris baru tersendiri dengan format:
+  * **Tindakan:** [Langkah aksi konkret]
+  * **Komunikasi:** [Strategi narasi & komunikasi publik]
+  * **Implikasi:** [Dampak atau risiko strategis]
+- JANGAN PERNAH menyatukan * Tindakan: dan * Komunikasi: dalam satu baris kalimat yang sama.
 - Jika menampilkan perbandingan data atau matriks, gunakan format Tabel Markdown (| Kolom 1 | Kolom 2 |) yang rapi.
 
 ATURAN CITATION — WAJIB DIIKUTI:
