@@ -1635,7 +1635,7 @@ dataLabels: {
     };
 
     const DashPanel = (() => {
-        let _cache = {}, _allItems = [], _filtered = [];
+        let _cache = {}, _allItems = [], _filtered = [], _renderedItems = [];
         let _curPlat = 'all', _curSent = 'all', _curPid = null, _curPlatForSent = 'all';
         let _overrideSd = null, _overrideEd = null;
 
@@ -1663,14 +1663,15 @@ dataLabels: {
         }
 
         async function open(platform, sentiment, projectId, sdOverride = null, edOverride = null) {
-            _curPlat = platform; _curSent = sentiment || 'all';
+            _curPlat = platform || 'all';
+            _curSent = sentiment || 'all';
             if (projectId) _curPid = projectId;
             _overrideSd = sdOverride; _overrideEd = edOverride;
 
-            const meta = DashCfg.platMeta[platform] || { label: platform, color: '#4361EE' };
+            const meta = DashCfg.platMeta[_curPlat] || { label: _curPlat, color: '#4361EE' };
             DashDetail.close();
             _$('dashPanelDot').style.background  = meta.color;
-            _$('dashPanelTitle').textContent      = meta.label + (platform==='all' ? ' — All Platforms' : '');
+            _$('dashPanelTitle').textContent      = meta.label + (_curPlat==='all' ? ' — All Platforms' : '');
 
             const titleDate = sdOverride
                 ? (sdOverride === edOverride ? sdOverride : sdOverride + ' – ' + edOverride)
@@ -1685,15 +1686,17 @@ dataLabels: {
             const overlay = _$('dashPanelOverlay'), panel = _$('dashSntPanel');
             overlay.classList.remove('hiding'); panel.classList.remove('hiding');
             overlay.classList.add('show'); panel.classList.add('show');
+
             try {
                 const sdStr = _overrideSd || DashCfg.sd;
                 const edStr = _overrideEd || DashCfg.ed;
-                const key = `${_curPid}_${platform}_${sdStr}_${edStr}`;
-                if (!_cache[key]) _cache[key] = await _fetchAll(platform, _curPid, sdStr, edStr);
+                const key = `${_curPid}_${_curPlat}_${sdStr}_${edStr}`;
+                if (!_cache[key]) _cache[key] = await _fetchAll(_curPlat, _curPid, sdStr, edStr);
                 _allItems = _cache[key];
                 _filtered = _filterBySent(_allItems, _curSent);
-                _render(list, _filtered, platform, meta.color);
+                _render(list, _filtered, _curPlat, meta.color);
             } catch (err) {
+                console.error('[DashPanel.open]', err);
                 list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:13px;">Gagal memuat data<br><small>${_es(err.message)}</small></div>`;
             }
         }
@@ -1723,155 +1726,140 @@ dataLabels: {
             return sent === 'all' ? items : items.filter(i => _normSent(i) === sent);
         }
 
+        function _normItem(m, forcePlat) {
+            const plat = forcePlat || (() => {
+                const mt = String(m.media_type || m.type || m.tcode || '').toLowerCase();
+                const docid = String(m.docid || m.id || '');
+                const url = String(m.url || m.link || '').toLowerCase();
+                if (mt.includes('doc') || mt.includes('news') || docid.startsWith('doc_')) return 'doc';
+                if (mt.includes('twit') || mt.includes('twitter') || mt.includes('x') || docid.startsWith('tw-') || url.includes('twitter.com') || url.includes('x.com')) return 'twit';
+                if (mt.includes('fb') || mt.includes('facebook') || docid.startsWith('fb-') || url.includes('facebook.com') || url.includes('fb.watch')) return 'fb';
+                if (mt.includes('ig') || mt.includes('instagram') || docid.startsWith('ig-') || url.includes('instagram.com')) return 'instagram';
+                if (mt.includes('yt') || mt.includes('youtube') || docid.startsWith('yt-') || url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
+                if (mt.includes('tiktok') || mt.includes('tt') || docid.startsWith('tt-') || url.includes('tiktok.com')) return 'tiktok';
+                return 'twit';
+            })();
+
+            let url = m.url || m.link || m.post_url || m.article_url || m.source_url || m.permalink || m.web_url || m.full_url || '';
+            const docid = String(m.docid || m.id || '');
+            if (!url) {
+                if (plat === 'youtube' && docid.startsWith('yt-')) {
+                    url = `https://www.youtube.com/watch?v=${docid.replace(/^yt-/, '')}`;
+                } else if (plat === 'twit' && docid.startsWith('tw-')) {
+                    const scr = m.author_scr_name || m.screen_name || 'i';
+                    url = `https://twitter.com/${scr}/status/${docid.replace(/^tw-/, '')}`;
+                } else if (plat === 'fb' && m.post_id_s) {
+                    url = `https://www.facebook.com/${m.post_id_s}`;
+                }
+            }
+
+            const sent = _normSent(m);
+
+            return {
+                ...m,
+                _platform: plat,
+                _sent: sent,
+                url: url,
+                title: m.title || '',
+                content: m.content || m.text || m.summary || m.caption || m.description || '',
+                date_created: m.date_created || m.date_inserted_dt || m.created_at || m.date || '',
+                class_sentiment: sent === 'pos' ? '1' : (sent === 'neg' ? '-1' : '0')
+            };
+        }
+
+        async function _fetchProjectData(pid, platform, sd, ed) {
+            const promises = [];
+            const needDoc = (platform === 'all' || platform === 'doc');
+            const needSocial = (platform !== 'doc');
+
+            if (needDoc) {
+                promises.push((async () => {
+                    const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
+                    try {
+                        const res = await fetch(`/mk/api/news/articles?project_id=${pid}&start_date=${sd}&end_date=${ed}&media=doc&rows=100`, { signal: ctrl.signal });
+                        clearTimeout(tid);
+                        if (!res.ok) return [];
+                        const json = await res.json();
+                        const rawArr = (json && (json.data || json.docs || json.rows || (Array.isArray(json) ? json : []))) || [];
+                        const rawList = Array.isArray(rawArr) ? rawArr : (rawArr.data || []);
+                        return rawList.map(it => _normItem(it, 'doc'));
+                    } catch (e) {
+                        clearTimeout(tid);
+                        return [];
+                    }
+                })());
+            }
+
+            if (needSocial) {
+                promises.push((async () => {
+                    const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
+                    try {
+                        const res = await fetch(`/mk/api/news/mentions?project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=500`, { signal: ctrl.signal });
+                        clearTimeout(tid);
+                        if (!res.ok) return [];
+                        const json = await res.json();
+                        let rawArr = [];
+                        if (json && Array.isArray(json.data)) rawArr = json.data;
+                        else if (json && Array.isArray(json.posts)) rawArr = json.posts;
+                        else if (json && Array.isArray(json.mentions)) rawArr = json.mentions;
+                        else if (Array.isArray(json)) rawArr = json;
+                        else if (json && json.data && Array.isArray(json.data.data)) rawArr = json.data.data;
+
+                        const filtered = rawArr.filter(it => {
+                            if (platform === 'all' || platform === 'social') return true;
+                            const mt = String(it.media_type || it.type || it.tcode || '').toLowerCase();
+                            const docid = String(it.docid || it.id || '');
+                            const url = String(it.url || it.link || '').toLowerCase();
+                            if (platform === 'twit') return mt.includes('twit') || mt.includes('twitter') || mt.includes('x') || docid.startsWith('tw-') || url.includes('twitter.com') || url.includes('x.com');
+                            if (platform === 'fb') return mt.includes('fb') || mt.includes('facebook') || docid.startsWith('fb-') || url.includes('facebook.com');
+                            if (platform === 'instagram') return mt.includes('ig') || mt.includes('instagram') || docid.startsWith('ig-') || url.includes('instagram.com');
+                            if (platform === 'youtube') return mt.includes('yt') || mt.includes('youtube') || docid.startsWith('yt-') || url.includes('youtube.com') || url.includes('youtu.be');
+                            if (platform === 'tiktok') return mt.includes('tiktok') || mt.includes('tt') || docid.startsWith('tt-') || url.includes('tiktok.com');
+                            return true;
+                        });
+
+                        return filtered.map(it => _normItem(it));
+                    } catch (e) {
+                        clearTimeout(tid);
+                        return [];
+                    }
+                })());
+            }
+
+            const results = await Promise.all(promises);
+            return results.flat();
+        }
+
         async function _fetchAll(platform, pid, sd, ed) {
             if (pid === 'ALL_PROJECTS') {
                 const pids = KPI_DATA.allPids || [];
-                const res = await Promise.allSettled(pids.map(id => _fetchAll(platform, id, sd, ed)));
-                const items = res.flatMap(r => r.status==='fulfilled' ? r.value : []);
-                items.sort((a,b)=>new Date(b.date_created||b.created_at||0)-new Date(a.date_created||a.created_at||0));
-                return items;
+                const res = await Promise.allSettled(pids.map(id => _fetchProjectData(id, platform, sd, ed)));
+                const items = res.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+                const seen = new Set();
+                const unique = items.filter(it => {
+                    const k = it.id || it.docid || it.url || ((it.title || '') + (it.content || '').slice(0, 50));
+                    if (k && seen.has(k)) return false;
+                    if (k) seen.add(k);
+                    return true;
+                });
+                unique.sort((a,b) => new Date(b.date_created||b.created_at||0) - new Date(a.date_created||a.created_at||0));
+                return unique;
             }
 
-            if (platform === 'all') {
-                const all = ['doc','twit','fb','instagram','youtube','tiktok'];
-                const res = await Promise.allSettled(all.map(p => _fetchOne(p, pid, sd, ed)));
-                const items = res.flatMap(r => r.status==='fulfilled' ? r.value : []);
-                items.sort((a,b)=>new Date(b.date_created||b.created_at||0)-new Date(a.date_created||a.created_at||0));
-                return items;
-            }
-            if (platform === 'social') {
-                const s = ['twit','fb','instagram','youtube','tiktok'];
-                const res = await Promise.allSettled(s.map(p => _fetchOne(p, pid, sd, ed)));
-                const items = res.flatMap(r => r.status==='fulfilled' ? r.value : []);
-                items.sort((a,b)=>new Date(b.date_created||b.created_at||0)-new Date(a.date_created||a.created_at||0));
-                return items;
-            }
-            return _fetchOne(platform, pid, sd, ed);
-        }
-
-        async function _fetchOne(platform, pid, sd, ed) {
-            const q = `project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=500&start=0`;
-            if (platform === 'instagram') {
-                for (const sub of ['postbylike','postbyview','postbycomment','postbydate']) {
-                    const ic = new AbortController(), it = setTimeout(() => ic.abort(), 15000);
-                    try {
-                        const r = await fetch(`/mk/api/news/ig-top-status?${q}${sub ? '&sub='+sub : ''}`, { signal: ic.signal });
-                        clearTimeout(it);
-                        const d = await r.json();
-                        const items = Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []);
-                        if (items.length > 0) return items.map(i => ({ ...i, _platform: platform }));
-                    } catch (e) { clearTimeout(it); continue; }
-                }
-                return [];
-            }
-
-            if (platform === 'youtube') {
-                for (const sub of ['postbylike','postbyview','postbycomment','postbydate','']) {
-                    const ic = new AbortController(), it = setTimeout(() => ic.abort(), 15000);
-                    try {
-                        const r = await fetch(`/mk/api/news/ytb-top-status?${q}${sub ? '&sub='+sub : ''}`, { signal: ic.signal });
-                        clearTimeout(it);
-                        const d = await r.json();
-                        const items = Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []);
-                        if (items.length > 0) return items.map(i => ({ ...i, _platform: platform }));
-                    } catch (e) { clearTimeout(it); continue; }
-                }
-                return [];
-            }
-
-            /* ── Online News: use articles API (has proper URLs) ── */
-            if (platform === 'doc') {
-                const docQ = `project_id=${pid}&start_date=${sd}&end_date=${ed}&rows=50&start=0&media=doc`;
-                const artUrl = `/mk/api/news/articles?${docQ}`;
-                const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
-                try {
-                    const r = await fetch(artUrl, { signal: ctrl.signal }); clearTimeout(tid);
-                    if (!r.ok) return [];
-                    const d = await r.json();
-                    let items = Array.isArray(d?.data) ? d.data : (Array.isArray(d) ? d : []);
-                    return items.map(i => ({
-                        ...i,
-                        _platform: 'doc',
-                        /* Normalise fields so panel renderer picks them up correctly */
-                        content:         i.content  || i.summary || '',
-                        title:           i.title    || 'Untitled',
-                        publisher:       i.publisher || i.name || '',
-                        source_name:     i.publisher || i.name || '',
-                        date_created:    i.date_created || '',
-                        url:             i.url || '',
-                        class_sentiment: String(i.class_sentiment ?? i.sentiment_class ?? i.sentiment ?? '0'),
-                    }));
-                } catch (e) { clearTimeout(tid); return []; }
-            }
-
-            const eps = {
-                twit:    `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,
-                fb:      `/mk/api/news/fb-top-status?${q}&sub=fblike`,
-                tiktok:  `/mk/api/news/tiktok-top-status?${q}&sub=postbylike`,
-            };
-            const twitFallback = `/mk/api/news/mentions?${q}`;
-            const url = eps[platform]; if (!url) return [];
-            const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 25000);
-            try {
-                const r = await fetch(url, { signal: ctrl.signal }); clearTimeout(tid);
-                if (!r.ok) {
-                    if (platform==='twit') throw new Error('Twitter Primary Fail');
-                    return [];
-                }
-                const d = await r.json();
-                let items = [];
-                if      (Array.isArray(d?.data?.data))  items = d.data.data;
-                else if (Array.isArray(d?.data))         items = d.data;
-                else if (Array.isArray(d?.statuses))     items = d.statuses;
-                else if (Array.isArray(d?.tweets))       items = d.tweets;
-                else if (Array.isArray(d?.results))      items = d.results;
-                else if (Array.isArray(d?.posts))         items = d.posts;
-                else if (Array.isArray(d))               items = d;
-                else if (d?.data && typeof d.data==='object' && !Array.isArray(d.data)) {
-                    const vals = Object.values(d.data);
-                    if (vals.length && typeof vals[0]==='object') items = vals;
-                }
-                if (platform==='twit' && items.length===0) {
-                    /* Fallback 1: try most-retweets endpoint */
-                    try {
-                        const r1b = await fetch(`/mk/api/x/most-retweets?${q}`);
-                        if (r1b.ok) {
-                            const d1b = await r1b.json();
-                            if (Array.isArray(d1b?.data)) items = d1b.data;
-                            else if (Array.isArray(d1b)) items = d1b;
-                        }
-                    } catch(e1b) {}
-                }
-                if (platform==='twit' && items.length===0) {
-                    /* Fallback 2: try user-mentions endpoint */
-                    try {
-                        const r1c = await fetch(`/mk/api/x/user-mentions?${q}`);
-                        if (r1c.ok) {
-                            const d1c = await r1c.json();
-                            if (Array.isArray(d1c?.data)) items = d1c.data;
-                            else if (Array.isArray(d1c)) items = d1c;
-                        }
-                    } catch(e1c) {}
-                }
-                if (platform==='twit' && items.length===0) {
-                    /* Fallback 3: try mentions API with Twitter filtering */
-                    try {
-                        const r2 = await fetch(twitFallback);
-                        const d2 = await r2.json();
-                        let fb = Array.isArray(d2?.data?.data) ? d2.data.data : Array.isArray(d2?.data) ? d2.data : Array.isArray(d2) ? d2 : [];
-                        items = fb.filter(m => {
-                            const tc=String(m.tcode||'').toLowerCase(), mt=String(m.media_type||'').toLowerCase();
-                            const id=String(m.id||m.docid||'').toLowerCase(), url2=String(m.url||'').toLowerCase();
-                            return tc==='twit'||tc==='rt'||mt==='twit'||mt==='twitter'||mt==='x'
-                                ||id.startsWith('tw-')||url2.includes('twitter.com')||url2.includes('x.com');
-                        });
-                    } catch (e2) {}
-                }
-                return items.map(i => ({ ...i, _platform: platform }));
-            } catch (e) { clearTimeout(tid); return []; }
+            const items = await _fetchProjectData(pid, platform, sd, ed);
+            const seen = new Set();
+            const unique = items.filter(it => {
+                const k = it.id || it.docid || it.url || ((it.title || '') + (it.content || '').slice(0, 50));
+                if (k && seen.has(k)) return false;
+                if (k) seen.add(k);
+                return true;
+            });
+            unique.sort((a,b) => new Date(b.date_created||b.created_at||0) - new Date(a.date_created||a.created_at||0));
+            return unique;
         }
 
         function _render(list, items, platform, accentColor) {
+            _renderedItems = items || [];
             if (!items.length) {
                 list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`;
                 return;
@@ -1880,8 +1868,9 @@ dataLabels: {
             const PAGE = 10;
             let _page = 0;
 
-            function _renderItems(arr) {
-                return arr.map(item => {
+            function _renderItems(arr, startIdx) {
+                return arr.map((item, localIdx) => {
+                    const globalIdx = startIdx + localIdx;
                     const plat = item._platform || platform;
                     const meta = DashCfg.platMeta[plat] || { label: plat, color: accentColor };
                     const ao0  = (() => { if (typeof item.author==='object'&&item.author) return item.author; try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
@@ -1919,7 +1908,6 @@ dataLabels: {
                     })();
                     const text  = (() => {
                         if (plat === 'doc') {
-                            /* For articles: show content snippet, fallback to title */
                             const c = (item.content||'').replace(/<[^>]*>/g,'').trim();
                             return c ? c.slice(0,150) : (item.title||'').slice(0,150);
                         }
@@ -1934,12 +1922,11 @@ dataLabels: {
                     const ini   = (words.length>=2?(words[0][0]+words[words.length-1][0]):(words[0]?.[0]||dName[0]||'?')).toUpperCase().replace(/['"]/g,'');
                     const avHtml = (av&&av.startsWith('http')) ? `<img src="${_es(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">` : ini;
                     const sentBadge = `do-sent-badge--${sent}`;
-                    const enc = encodeURIComponent(JSON.stringify(item));
 
-                    /* For doc (Online News) items: show article title prominently */
+                    /* For doc (Online News) items */
                     if (plat === 'doc' && artTitle) {
                         const docUrl = (item.url||'').trim();
-                        return `<div class="do-panel-item" onclick="DashDetail.openEncoded('${enc}','${plat}')">
+                        return `<div class="do-panel-item" onclick="DashDetail.openByIndex(${globalIdx})">
                             <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);"><i class="ph ph-newspaper" style="font-size:16px;color:#fff;"></i></div>
                             <div class="do-panel-item-body">
                                 <div class="do-panel-author" style="font-size:11px;color:#64748b;font-weight:600;">${_es(dName)}</div>
@@ -1967,7 +1954,7 @@ dataLabels: {
                         if (ti && ni) finalUrl = `https://www.tiktok.com/@${ni}/video/${ti}`;
                     }
 
-                    return `<div class="do-panel-item" onclick="DashDetail.openEncoded('${enc}','${plat}')">
+                    return `<div class="do-panel-item" onclick="DashDetail.openByIndex(${globalIdx})">
                         <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
                         <div class="do-panel-item-body">
                             <div class="do-panel-author">${_es(dName)}</div>
@@ -1989,9 +1976,7 @@ dataLabels: {
                 const shown     = (_page + 1) * PAGE;
                 const remaining = items.length - shown;
                 if (remaining <= 0) {
-                    return `<div style="padding:9px;text-align:center;font-size:10px;color:#94A3B8;font-weight:600;border-top:1px dashed #E2E8F0;">
-                        ✓ Semua ${items.length.toLocaleString()} mentions sudah dimuat
-                    </div>`;
+                    return '';
                 }
                 return `<div id="_dashLMWrap" style="padding:11px 14px;text-align:center;background:#F8FAFC;border-top:1px dashed #E2E8F0;">
                     <button id="_dashLMBtn" onclick="window.__dashLoadMore()"
@@ -2006,28 +1991,42 @@ dataLabels: {
                 </div>`;
             }
 
-            list.innerHTML = _renderItems(items.slice(0, PAGE)) + _renderLoadMore();
+            list.innerHTML = _renderItems(items.slice(0, PAGE), 0) + _renderLoadMore();
 
             window.__dashLoadMore = function() {
                 const btn = document.getElementById('_dashLMBtn');
                 if (btn) { btn.textContent = 'Memuat…'; btn.disabled = true; }
                 setTimeout(() => {
                     _page++;
-                    const batch = items.slice(_page * PAGE, (_page + 1) * PAGE);
+                    const startIdx = _page * PAGE;
+                    const batch = items.slice(startIdx, startIdx + PAGE);
                     document.getElementById('_doLMWrap')?.remove();
                     document.getElementById('_dashLMWrap')?.remove();
-                    list.insertAdjacentHTML('beforeend', _renderItems(batch) + _renderLoadMore());
+                    list.insertAdjacentHTML('beforeend', _renderItems(batch, startIdx) + _renderLoadMore());
                 }, 80);
             };
         }
 
-        return { open, close, closeByOverlay, showPlatPicker, openPlatform, filterSent };
+        function getItemByIndex(idx) {
+            return _renderedItems ? _renderedItems[idx] : null;
+        }
+
+        return { open, close, closeByOverlay, showPlatPicker, openPlatform, filterSent, getItemByIndex };
     })();
 
     /* ════════════════════════════════════════════════════════
        DASH DETAIL
     ════════════════════════════════════════════════════════ */
     const DashDetail = {
+        openByIndex(idx) {
+            const item = DashPanel.getItemByIndex(idx);
+            if (item) this.open(item, item._platform || 'all');
+        },
+
+        openItem(item, plat) {
+            this.open(item, plat || item?._platform || 'all');
+        },
+
         openEncoded(enc, plat) {
             try { this.open(JSON.parse(decodeURIComponent(enc)), plat); } catch (e) {}
         },
