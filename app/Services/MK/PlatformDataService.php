@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Log;
 class PlatformDataService
 {
     /** Max items fetched per platform per project. */
-    private const LIMIT = 15;
+    private const LIMIT = 35;
 
     /** Cache TTL in seconds (5 minutes). */
     private const CACHE_TTL = 300;
@@ -178,16 +178,38 @@ class PlatformDataService
             $raw   = $this->client->mostStatus($projectId, 'twitter', $startDate, $endDate, 0, 23, self::LIMIT, 'postbyview');
             $items = $this->toArray($raw);
 
+            // Fallback 1: mostStatus postbyrt
+            if (empty($items)) {
+                $raw   = $this->client->mostStatus($projectId, 'twitter', $startDate, $endDate, 0, 23, self::LIMIT, 'postbyrt');
+                $items = $this->toArray($raw);
+            }
+
+            // Fallback 2: mostRetweets
+            if (empty($items)) {
+                $raw   = $this->client->mostRetweets($projectId, $startDate, $endDate);
+                $items = array_slice($this->toArray($raw), 0, self::LIMIT);
+            }
+
+            // Fallback 3: mentions
+            if (empty($items)) {
+                $raw      = $this->client->mentions($projectId, $startDate, $endDate, 0, 23, true, 0, self::LIMIT);
+                $allItems = $this->toArray($raw);
+                $items    = array_values(array_filter($allItems, function ($item) {
+                    $tc = strtolower($item['tcode'] ?? $item['media_type'] ?? $item['media'] ?? '');
+                    return str_starts_with($tc, 'tw') || in_array($tc, ['twitter', 'x', 'rt']);
+                }));
+            }
+
             return array_map(fn ($t) => $this->normalizeItem($projectId, 'twitter', [
-                'author'   => $t['author']['scr_name'] ?? $t['name'] ?? '',
-                'content'  => $t['content'] ?? '',
-                'date'     => $t['date_created'] ?? '',
-                'sentiment'=> $t['sentiment_str'] ?? '',
+                'author'   => $t['author']['scr_name'] ?? $t['scr_name'] ?? $t['name'] ?? '',
+                'content'  => $t['content'] ?? $t['text'] ?? '',
+                'date'     => $t['date_created'] ?? $t['date'] ?? '',
+                'sentiment'=> $t['sentiment_str'] ?? $t['sentiment'] ?? '',
                 'metrics'  => [
                     'likes'    => (int) ($t['fav_count'] ?? $t['likes'] ?? 0),
                     'views'    => (int) ($t['view_cnt']  ?? $t['freq']  ?? 0),
-                    'comments' => (int) ($t['reply_cnt'] ?? 0),
-                    'shares'   => (int) ($t['rt']        ?? 0),
+                    'comments' => (int) ($t['reply_cnt'] ?? $t['comments'] ?? 0),
+                    'shares'   => (int) ($t['rt']        ?? $t['shares'] ?? 0),
                 ],
                 'url' => $t['url'] ?? '',
             ]), $items);
@@ -321,6 +343,42 @@ class PlatformDataService
     }
 
     /**
+     * Clean text and decode Mojibake / HTML entities.
+     */
+    private function cleanText(string $text): string
+    {
+        if (empty($text)) return '';
+
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        // Fix common Mojibake artifacts
+        $mojibakeMap = [
+            'aEURoe' => '“',
+            'aEUR'   => '”',
+            'aEUR"'  => '—',
+            'aEUR™'  => '’',
+            'â€™'    => '’',
+            'â€œ'    => '“',
+            'â€'    => '”',
+            'â€"'    => '—',
+            'â€“'    => '–',
+            'â€¦'    => '…',
+            'Ã©'     => 'é',
+            'Ã '     => 'à',
+            'Ã¨'     => 'è',
+            'ðŸ'     => '',
+        ];
+        $text = str_replace(array_keys($mojibakeMap), array_values($mojibakeMap), $text);
+
+        // Strip non-printable control characters
+        $text = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $text);
+
+        $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
+
+        return trim($text);
+    }
+
+    /**
      * Normalize a raw platform item into the unified schema.
      *
      * Unified shape:
@@ -332,16 +390,20 @@ class PlatformDataService
      */
     private function normalizeItem(string $projectId, string $platform, array $raw): array
     {
+        $author  = $this->cleanText(strip_tags((string) ($raw['author'] ?? '')));
+        $content = $this->cleanText(strip_tags((string) ($raw['content'] ?? '')));
+        $body    = $this->cleanText(strip_tags((string) ($raw['body'] ?? '')));
+
         return [
             'project_id' => $projectId,
             'platform'   => $platform,
-            'author'     => substr(strip_tags($raw['author'] ?? ''), 0, 80),
-            'content'    => substr(strip_tags($raw['content'] ?? ''), 0, 200),
-            'body'       => substr(strip_tags($raw['body']    ?? ''), 0, 300),
+            'author'     => mb_substr($author, 0, 80),
+            'content'    => mb_substr($content, 0, 200),
+            'body'       => mb_substr($body, 0, 300),
             'metrics'    => array_map('intval', $raw['metrics'] ?? ['likes' => 0, 'views' => 0, 'comments' => 0, 'shares' => 0]),
-            'date'       => substr($raw['date'] ?? '', 0, 10),
-            'sentiment'  => $this->normalizeSentiment($raw['sentiment'] ?? ''),
-            'url'        => $raw['url'] ?? '',
+            'date'       => substr((string) ($raw['date'] ?? ''), 0, 10),
+            'sentiment'  => $this->normalizeSentiment((string) ($raw['sentiment'] ?? '')),
+            'url'        => (string) ($raw['url'] ?? ''),
         ];
     }
 

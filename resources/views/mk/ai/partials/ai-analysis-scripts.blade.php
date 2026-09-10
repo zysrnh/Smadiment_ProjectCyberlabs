@@ -372,8 +372,83 @@ function removeImgPreview(idx) {
     renderImgPreviews();
 }
 
+function cleanClientText(str) {
+    if (!str) return '';
+    return str
+        .replace(/aEURoe/g, '“')
+        .replace(/aEUR/g, '”')
+        .replace(/â€™/g, '’')
+        .replace(/â€œ/g, '“')
+        .replace(/â€/g, '”')
+        .replace(/â€“/g, '–')
+        .replace(/â€”/g, '—')
+        .replace(/â€¦/g, '…')
+        .replace(/ðŸ[\w\d\S]*/g, '');
+}
+
+function formatInlineMarkdown(text) {
+    if (!text) return '';
+    let h = text;
+    h = h.replace(/\*\*\*(.+?)\*\*\*/g, '<strong style="color:#1a202c;font-weight:700;"><em>$1</em></strong>');
+    h = h.replace(/\*\*(.+?)\*\*/g, '<strong style="color:#1a202c;font-weight:700;">$1</strong>');
+    h = h.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    h = h.replace(/`([^`]+)`/g, '<code style="background:#f1f5f9;color:#0f172a;padding:2px 5px;border-radius:3px;font-size:11.5px;border:1px solid #e2e8f0;">$1</code>');
+    return h;
+}
+
+function parseMarkdownTables(text) {
+    const tableRegex = /((?:^[ \t]*\|.+?\|[ \t]*(?:\r?\n|$)){2,})/gm;
+    return text.replace(tableRegex, (match) => {
+        const lines = match.trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        if (lines.length < 2) return match;
+
+        let separatorIdx = lines.findIndex((l, idx) => idx > 0 && /^\|?([ \t]*:?-+:?[ \t]*\|)+[ \t]*:?-+:?[ \t]*\|?$/.test(l));
+        if (separatorIdx === -1) return match;
+
+        const parseRow = (line) => {
+            let clean = line.replace(/^\|/, '').replace(/\|$/, '');
+            return clean.split('|').map(c => c.trim());
+        };
+
+        const headerCols = parseRow(lines[0]);
+        const alignments = lines[separatorIdx].replace(/^\|/, '').replace(/\|$/, '').split('|').map(s => {
+            s = s.trim();
+            if (s.startsWith(':') && s.endsWith(':')) return 'center';
+            if (s.endsWith(':')) return 'right';
+            return 'left';
+        });
+
+        let html = '<div class="ai-table-wrap" style="overflow-x:auto;margin:12px 0;border-radius:6px;border:1px solid #e2e8f0;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.04);">';
+        html += '<table style="width:100%;border-collapse:collapse;font-size:12.5px;line-height:1.5;text-align:left;">';
+
+        html += '<thead style="background:#f8fafc;border-bottom:2px solid #e2e8f0;"><tr>';
+        headerCols.forEach((col, i) => {
+            const align = alignments[i] || 'left';
+            html += `<th style="padding:8px 12px;font-weight:700;color:#0f172a;text-align:${align};border-right:1px solid #e2e8f0;">${formatInlineMarkdown(col)}</th>`;
+        });
+        html += '</tr></thead>';
+
+        html += '<tbody>';
+        const bodyLines = lines.filter((_, idx) => idx !== 0 && idx !== separatorIdx);
+        bodyLines.forEach((line, rowIdx) => {
+            const rowCols = parseRow(line);
+            const rowBg = rowIdx % 2 === 1 ? '#fcfdfd' : '#ffffff';
+            html += `<tr style="background:${rowBg};border-bottom:1px solid #f1f5f9;">`;
+            rowCols.forEach((col, i) => {
+                const align = alignments[i] || 'left';
+                html += `<td style="padding:8px 12px;color:#334155;text-align:${align};border-right:1px solid #f1f5f9;">${formatInlineMarkdown(col)}</td>`;
+            });
+            html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+        return html;
+    });
+}
+
 function formatMarkdown(text) {
     if (!text) return '';
+    text = cleanClientText(text);
+
     let h = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     h = h.replace(/```[\w]*\n?([\s\S]*?)```/g,'<pre style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;overflow-x:auto;margin:8px 0;"><code style="font-size:12px;color:#1a202c;background:transparent;border:none;padding:0;">$1</code></pre>');
     h = h.replace(/`([^`]+)`/g,'<code style="background:#f1f5f9;color:#0f172a;padding:2px 6px;border-radius:4px;font-size:12px;border:1px solid #e2e8f0;">$1</code>');
@@ -384,9 +459,24 @@ function formatMarkdown(text) {
     h = h.replace(/\*\*(.+?)\*\*/g,'<strong style="color:#1a202c;font-weight:700;">$1</strong>');
     h = h.replace(/\*(.+?)\*/g,'<em>$1</em>');
     h = h.replace(/^---$/gm,'<hr style="border:none;border-top:1px solid #e2e8f0;margin:12px 0;">');
-    h = h.replace(/((?:^[-*•] .+(?:\n|$))+)/gm,(b) => { const i=b.trim().split('\n').map(l=>`<li style="margin-bottom:4px;color:#1a202c;">${l.replace(/^[-*•] /,'').trim()}</li>`).join(''); return`<ul style="margin:6px 0 10px;padding-left:20px;color:#1a202c;">${i}</ul>`; });
-    h = h.replace(/((?:^\d+\. .+(?:\n|$))+)/gm,(b) => { const i=b.trim().split('\n').map(l=>`<li style="margin-bottom:4px;color:#1a202c;">${l.replace(/^\d+\. /,'').trim()}</li>`).join(''); return`<ol style="margin:6px 0 10px;padding-left:20px;color:#1a202c;">${i}</ol>`; });
-    h = h.split(/\n{2,}/).map(p => { p=p.trim(); if(!p) return ''; if(/^<(h[2-4]|ul|ol|pre|hr)/.test(p)) return p; return `<p style="margin:0 0 8px;color:#1a202c;">${p.replace(/\n/g,'<br>')}</p>`; }).join('\n');
+
+    // Parse tables first before block splitting
+    h = parseMarkdownTables(h);
+
+    // Numbered lists: 1. Text
+    h = h.replace(/^(\d+)\.\s+(.+)$/gm, '<div class="ai-num-item" style="display:flex;gap:6px;margin:5px 0;align-items:flex-start;"><strong style="color:#038047;min-width:20px;flex-shrink:0;">$1.</strong><div style="flex:1;">$2</div></div>');
+
+    // Bullet lists: - Text or * Text or • Text
+    h = h.replace(/^[-*•]\s+(.+)$/gm, '<div class="ai-bullet-item" style="display:flex;gap:6px;margin:4px 0;align-items:flex-start;"><span style="color:#038047;min-width:12px;flex-shrink:0;font-weight:700;">•</span><div style="flex:1;">$1</div></div>');
+
+    // Paragraphs
+    h = h.split(/\n{2,}/).map(p => {
+        p = p.trim();
+        if (!p) return '';
+        if (/^<(h[2-4]|pre|hr|div|table)/.test(p)) return p;
+        return `<p style="margin:0 0 8px;color:#1a202c;">${p.replace(/\n/g,'<br>')}</p>`;
+    }).join('\n');
+
     return h;
 }
 
