@@ -132,7 +132,10 @@
         .do-panel-header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--slate-200); background: var(--slate-50); flex-shrink: 0; }
         .do-panel-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
         .do-panel-title { font-size: 13px; font-weight: 700; color: var(--slate-900); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .do-panel-close { width: 28px; height: 28px; border-radius: var(--radius-sm); border: 1px solid var(--slate-200); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--slate-500); font-size: 16px; transition: all .14s; flex-shrink: 0; }
+        .do-panel-header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .do-panel-btn-reload, .do-panel-close { width: 28px; height: 28px; border-radius: var(--radius-sm); border: 1px solid var(--slate-200); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--slate-500); font-size: 16px; transition: all .14s; flex-shrink: 0; }
+        .do-panel-btn-reload:hover { background: var(--slate-100); color: var(--dash-primary); border-color: var(--slate-300); }
+        .do-panel-btn-reload.spinning i { animation: spin .65s linear infinite; }
         .do-panel-close:hover { background: var(--red); border-color: var(--red); color: #fff; }
         .do-panel-actions { display: flex; align-items: center; gap: 7px; padding: 7px 12px; border-bottom: 1px solid var(--slate-200); background: #fff; flex-shrink: 0; }
         .do-panel-meta { flex: 1; font-size: 10px; font-weight: 700; color: var(--slate-400); text-transform: uppercase; letter-spacing: .5px; display: flex; align-items: center; gap: 5px; }
@@ -140,15 +143,15 @@
         .do-panel-tab { padding: 3px 9px; border-radius: 3px; border: none; background: transparent; font-size: 11px; font-weight: 700; cursor: pointer; transition: all .13s; color: var(--slate-500); font-family: inherit; }
         .do-panel-tab:hover { background: #fff; }
         .do-panel-tab.active { background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .08); }
-        .do-panel-tab.active[data-s="all"] { color: var(--dash-primary); }
-        .do-panel-tab.neg.active { color: #EF4444; }
+        .do-panel-tab.active[data-s="all"] { color: #10B981; }
         .do-panel-tab.pos.active { color: #10B981; }
+        .do-panel-tab.neg.active { color: #EF4444; }
         .do-panel-tab.neu.active { color: var(--slate-500); }
         .do-panel-list { overflow-y: auto; flex: 1; padding: 2px 0; min-height: 0; }
         .do-panel-list::-webkit-scrollbar { width: 4px; }
         .do-panel-list::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 99px; }
         .do-panel-item { display: flex; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--slate-50); cursor: pointer; transition: background .1s; align-items: flex-start; }
-        .do-panel-item:hover { background: #f0f9ff; }
+        .do-panel-item:hover { background: #f0fdf4; }
         .do-panel-item:last-child { border-bottom: none; }
         .do-panel-avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: #fff; border: 1.5px solid var(--slate-200); overflow: hidden; }
         .do-panel-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
@@ -161,8 +164,8 @@
         .do-sent-badge--pos { background: #dbeafe; color: #1d4ed8; }
         .do-sent-badge--neg { background: #fee2e2; color: #991b1b; }
         .do-sent-badge--neu { background: var(--slate-100); color: var(--slate-500); }
-        .do-panel-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; color: var(--slate-400); font-size: 13px; font-weight: 600; }
-        .do-panel-spinner { width: 28px; height: 28px; border: 2.5px solid var(--slate-100); border-top-color: var(--dash-primary); border-radius: 50%; animation: spin .65s linear infinite; }
+        .do-panel-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 300px; gap: 12px; color: var(--slate-400); font-size: 13px; font-weight: 600; }
+        .do-panel-spinner { width: 28px; height: 28px; border: 2.5px solid var(--slate-100); border-top-color: #10B981; border-radius: 50%; animation: spin .65s linear infinite; }
         .do-detail-panel { position: absolute; inset: 0; background: #fff; z-index: 5; display: none; flex-direction: column; animation: slideInRight .2s cubic-bezier(.4, 0, .2, 1); }
         .do-detail-panel.show { display: flex; }
         .do-dp2-header { display: flex; align-items: center; gap: 8px; padding: 12px 14px; background: var(--slate-50); border-bottom: 1px solid var(--slate-200); flex-shrink: 0; }
@@ -488,15 +491,18 @@
     <div class="do-panel" id="cmpSntPanel">
         <div class="do-panel-header">
             <div class="do-panel-dot" id="cmpPanelDot"></div>
-            <span class="do-panel-title" id="cmpPanelTitle">Mentions</span>
-            <button class="do-panel-close" onclick="CmpPanel.close()"><i class="ph ph-x"></i></button>
+            <span class="do-panel-title" id="cmpPanelTitle">All Media</span>
+            <div class="do-panel-header-actions">
+                <button class="do-panel-btn-reload" id="cmpPanelReloadBtn" onclick="CmpPanel.reload()" title="Muat ulang data"><i class="ph ph-arrows-clockwise"></i></button>
+                <button class="do-panel-close" onclick="CmpPanel.close()" title="Tutup"><i class="ph ph-x"></i></button>
+            </div>
         </div>
         <div class="do-panel-actions">
             <div class="do-panel-meta"><i class="ph ph-magnifying-glass" style="font-size:11px;"></i><span id="cmpPanelMeta">—</span></div>
             <div class="do-panel-tabs">
                 <button class="do-panel-tab active" data-s="all" onclick="CmpPanel.filterSent('all')">Semua</button>
-                <button class="do-panel-tab neg" data-s="neg" onclick="CmpPanel.filterSent('neg')">Neg</button>
                 <button class="do-panel-tab pos" data-s="pos" onclick="CmpPanel.filterSent('pos')">Pos</button>
+                <button class="do-panel-tab neg" data-s="neg" onclick="CmpPanel.filterSent('neg')">Neg</button>
                 <button class="do-panel-tab neu" data-s="neu" onclick="CmpPanel.filterSent('neu')">Neu</button>
             </div>
         </div>
@@ -891,74 +897,227 @@
 
         /* ══ CmpPanel ══ */
         const CmpPanel = (() => {
-            let _cache = {}, _allItems = [], _filtered = [], _curSent = 'all', _curPlat = null, _curPid = null;
+            let _cache = {}, _allItems = [], _filtered = [], _curSent = 'all', _curPlat = 'all', _curPid = null;
             const SENT_MAP = { '1': 'pos', 'positive': 'pos', 'positif': 'pos', '-1': 'neg', '2': 'neg', 'negative': 'neg', 'negatif': 'neg' };
-            const _ns = item => SENT_MAP[String(item.class_sentiment || item.sentiment || '0').toLowerCase().trim()] || 'neu';
+            const _ns = item => SENT_MAP[String(item.class_sentiment || item.sentiment || item._sent || '0').toLowerCase().trim()] || 'neu';
 
             function openPlatform(platform, sentiment) {
                 _$c('cmpPlatPicker')?.classList.remove('show');
                 open(platform, sentiment || 'all', _cmpPickerPid || _curPid);
             }
 
-            async function open(platform, sentiment, projectId) {
-                _curPlat = platform; _curSent = sentiment || 'all';
+            function _getProjectTitle(pid) {
+                if (!pid) return '';
+                const p = _cmpAllProjects.find(x => String(x.id) === String(pid));
+                if (p && p.title) return p.title;
+                const d = _cmpData?.project_details?.[pid] || _cmpData?.project_details?.[String(pid)];
+                if (d && d.title) return d.title;
+                return 'Project #' + pid;
+            }
+
+            async function open(platform, sentiment, projectId, projectTitle = null) {
+                _curPlat = platform || 'all';
+                _curSent = sentiment || 'all';
                 if (projectId) _curPid = String(projectId);
-                const meta = CMP_PLAT_META[platform] || { label: platform, color: '#4361EE' };
+
+                const meta = CMP_PLAT_META[_curPlat] || { label: _curPlat, color: '#4361EE' };
+                const pTitle = projectTitle || _getProjectTitle(_curPid);
+                
                 CmpDetail.close();
                 _$c('cmpPanelDot').style.background = meta.color;
-                _$c('cmpPanelTitle').textContent = meta.label + (platform === 'all' ? ' — All Platforms' : '');
+                _$c('cmpPanelTitle').textContent = meta.label + (pTitle ? ` — ${_trunc(pTitle, 26)}` : (_curPlat === 'all' ? ' — All Platforms' : ''));
                 _$c('cmpPanelMeta').textContent = _cmpStartDate + ' – ' + _cmpEndDate;
-                document.querySelectorAll('#cmpSntPanel .do-panel-tab').forEach(t => t.classList.toggle('active', t.dataset.s === _curSent));
+
+                document.querySelectorAll('#cmpSntPanel .do-panel-tab').forEach(t =>
+                    t.classList.toggle('active', t.dataset.s === _curSent)
+                );
+
                 const list = _$c('cmpPanelList');
                 list.innerHTML = `<div class="do-panel-loading"><div class="do-panel-spinner"></div><span>Memuat mentions…</span></div>`;
+                
                 const overlay = _$c('cmpPanelOverlay'), panel = _$c('cmpSntPanel');
                 overlay.classList.remove('hiding'); panel.classList.remove('hiding');
                 overlay.classList.add('show'); panel.classList.add('show');
+
                 try {
-                    const key = `${_curPid}_${platform}_${_cmpStartDate}_${_cmpEndDate}`;
-                    if (!_cache[key]) _cache[key] = await _fetchAll(platform, _curPid);
+                    const key = `${_curPid}_${_curPlat}_${_cmpStartDate}_${_cmpEndDate}`;
+                    if (!_cache[key]) _cache[key] = await _fetchAll(_curPlat, _curPid);
                     _allItems = _cache[key];
                     _filtered = _curSent === 'all' ? _allItems : _allItems.filter(i => _ns(i) === _curSent);
-                    _render(list, _filtered, platform, meta.color);
+                    _render(list, _filtered, _curPlat, meta.color);
                 } catch (err) {
+                    console.error('[CmpPanel.open]', err);
                     list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:13px;">Gagal memuat data<br><small>${_esc(err.message)}</small></div>`;
+                }
+            }
+
+            async function reload() {
+                if (!_curPid) return;
+                const btn = _$c('cmpPanelReloadBtn');
+                if (btn) btn.classList.add('spinning');
+                const key = `${_curPid}_${_curPlat}_${_cmpStartDate}_${_cmpEndDate}`;
+                delete _cache[key];
+                try {
+                    await open(_curPlat, _curSent, _curPid);
+                } finally {
+                    if (btn) btn.classList.remove('spinning');
                 }
             }
 
             function close() {
                 const overlay = _$c('cmpPanelOverlay'), panel = _$c('cmpSntPanel');
                 panel.classList.add('hiding'); overlay.classList.add('hiding');
-                setTimeout(() => { panel.classList.remove('show', 'hiding'); overlay.classList.remove('show', 'hiding'); CmpDetail.close(); }, 240);
+                setTimeout(() => {
+                    panel.classList.remove('show', 'hiding');
+                    overlay.classList.remove('show', 'hiding');
+                    CmpDetail.close();
+                }, 240);
             }
 
             function filterSent(sent) {
                 _curSent = sent;
-                document.querySelectorAll('#cmpSntPanel .do-panel-tab').forEach(t => t.classList.toggle('active', t.dataset.s === sent));
+                document.querySelectorAll('#cmpSntPanel .do-panel-tab').forEach(t =>
+                    t.classList.toggle('active', t.dataset.s === sent)
+                );
                 _filtered = sent === 'all' ? _allItems : _allItems.filter(i => _ns(i) === sent);
                 _render(_$c('cmpPanelList'), _filtered, _curPlat, (CMP_PLAT_META[_curPlat] || { color: '#4361EE' }).color);
             }
 
-            async function _fetchAll(platform, pid) {
-                if (platform === 'all') {
-                    const res = await Promise.allSettled(['doc', 'twit', 'fb', 'instagram', 'youtube', 'tiktok'].map(p => _fetchOne(p, pid)));
-                    return res.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+            function _normItem(m, forcePlat) {
+                const plat = forcePlat || (() => {
+                    const mt = String(m.media_type || m.type || m.tcode || '').toLowerCase();
+                    const docid = String(m.docid || m.id || '');
+                    const url = String(m.url || m.link || '').toLowerCase();
+                    if (mt.includes('doc') || mt.includes('news') || docid.startsWith('doc_')) return 'doc';
+                    if (mt.includes('twit') || mt.includes('twitter') || mt.includes('x') || docid.startsWith('tw-') || url.includes('twitter.com') || url.includes('x.com')) return 'twit';
+                    if (mt.includes('fb') || mt.includes('facebook') || docid.startsWith('fb-') || url.includes('facebook.com') || url.includes('fb.watch')) return 'fb';
+                    if (mt.includes('ig') || mt.includes('instagram') || docid.startsWith('ig-') || url.includes('instagram.com')) return 'instagram';
+                    if (mt.includes('yt') || mt.includes('youtube') || docid.startsWith('yt-') || url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
+                    if (mt.includes('tiktok') || mt.includes('tt') || docid.startsWith('tt-') || url.includes('tiktok.com')) return 'tiktok';
+                    return 'twit';
+                })();
+
+                let url = m.url || m.link || m.post_url || m.article_url || m.source_url || m.permalink || m.web_url || m.full_url || '';
+                const docid = String(m.docid || m.id || '');
+                if (!url) {
+                    if (plat === 'youtube' && docid.startsWith('yt-')) {
+                        url = `https://www.youtube.com/watch?v=${docid.replace(/^yt-/, '')}`;
+                    } else if (plat === 'twit' && docid.startsWith('tw-')) {
+                        const scr = m.author_scr_name || m.screen_name || 'i';
+                        url = `https://twitter.com/${scr}/status/${docid.replace(/^tw-/, '')}`;
+                    } else if (plat === 'fb' && m.post_id_s) {
+                        url = `https://www.facebook.com/${m.post_id_s}`;
+                    }
                 }
-                return _fetchOne(platform, pid);
+
+                const sent = _ns(m);
+
+                return {
+                    ...m,
+                    _platform: plat,
+                    _sent: sent,
+                    url: url,
+                    title: m.title || '',
+                    content: m.content || m.text || m.summary || m.caption || m.description || '',
+                    date_created: m.date_created || m.date_inserted_dt || m.created_at || m.date || '',
+                    class_sentiment: sent === 'pos' ? '1' : (sent === 'neg' ? '-1' : '0')
+                };
             }
 
-            async function _fetchOne(platform, pid) {
+            async function _fetchAll(platform, pid) {
+                const promises = [];
+                const needDoc = (platform === 'all' || platform === 'doc');
+                const needSocial = (platform !== 'doc');
+
+                if (needDoc) {
+                    promises.push((async () => {
+                        const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 20000);
+                        try {
+                            const res = await fetch(`/mk/api/news/articles?project_id=${pid}&start_date=${_cmpStartDate}&end_date=${_cmpEndDate}&media=doc&rows=100`, { signal: ctrl.signal });
+                            clearTimeout(tid);
+                            if (!res.ok) return [];
+                            const json = await res.json();
+                            const rawArr = (json && (json.data || json.docs || json.rows || (Array.isArray(json) ? json : []))) || [];
+                            const rawList = Array.isArray(rawArr) ? rawArr : (rawArr.data || []);
+                            return rawList.map(it => _normItem(it, 'doc'));
+                        } catch (e) {
+                            clearTimeout(tid);
+                            return [];
+                        }
+                    })());
+                }
+
+                if (needSocial) {
+                    promises.push((async () => {
+                        const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 20000);
+                        try {
+                            const res = await fetch(`/mk/api/news/mentions?project_id=${pid}&start_date=${_cmpStartDate}&end_date=${_cmpEndDate}&rows=500`, { signal: ctrl.signal });
+                            clearTimeout(tid);
+                            if (!res.ok) return [];
+                            const json = await res.json();
+                            let rawArr = [];
+                            if (json && Array.isArray(json.data)) rawArr = json.data;
+                            else if (json && Array.isArray(json.posts)) rawArr = json.posts;
+                            else if (json && Array.isArray(json.mentions)) rawArr = json.mentions;
+                            else if (Array.isArray(json)) rawArr = json;
+                            else if (json && json.data && Array.isArray(json.data.data)) rawArr = json.data.data;
+
+                            const filtered = rawArr.filter(it => {
+                                if (platform === 'all') return true;
+                                const mt = String(it.media_type || it.type || it.tcode || '').toLowerCase();
+                                const docid = String(it.docid || it.id || '');
+                                const url = String(it.url || it.link || '').toLowerCase();
+                                if (platform === 'twit') return mt.includes('twit') || mt.includes('twitter') || mt.includes('x') || docid.startsWith('tw-') || url.includes('twitter.com') || url.includes('x.com');
+                                if (platform === 'fb') return mt.includes('fb') || mt.includes('facebook') || docid.startsWith('fb-') || url.includes('facebook.com') || url.includes('fb.watch');
+                                if (platform === 'instagram') return mt.includes('ig') || mt.includes('instagram') || docid.startsWith('ig-') || url.includes('instagram.com');
+                                if (platform === 'youtube') return mt.includes('yt') || mt.includes('youtube') || docid.startsWith('yt-') || url.includes('youtube.com') || url.includes('youtu.be');
+                                if (platform === 'tiktok') return mt.includes('tiktok') || mt.includes('tt') || docid.startsWith('tt-') || url.includes('tiktok.com');
+                                return true;
+                            });
+
+                            return filtered.map(it => _normItem(it, platform === 'all' ? null : platform));
+                        } catch (e) {
+                            clearTimeout(tid);
+                            return [];
+                        }
+                    })());
+                }
+
+                const results = await Promise.allSettled(promises);
+                let allItems = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+
+                if (allItems.length === 0 && platform !== 'all' && platform !== 'doc') {
+                    allItems = await _fetchDedicated(platform, pid);
+                }
+
+                return allItems;
+            }
+
+            async function _fetchDedicated(platform, pid) {
                 const q = `project_id=${pid}&start_date=${_cmpStartDate}&end_date=${_cmpEndDate}&rows=500&start=0`;
                 if (platform === 'instagram') {
                     for (const sub of ['postbylike', 'postbycomment', 'postbydate', '']) {
-                        try { const r = await fetch(`/mk/api/news/ig-top-status?${q}${sub ? '&sub=' + sub : ''}`); const d = await r.json(); const items = Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []); if (items.length > 0) return items.map(i => ({ ...i, _platform: platform })); } catch (e) { continue; }
+                        try {
+                            const r = await fetch(`/mk/api/news/ig-top-status?${q}${sub ? '&sub=' + sub : ''}`);
+                            const d = await r.json();
+                            const items = Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []);
+                            if (items.length > 0) return items.map(i => _normItem(i, 'instagram'));
+                        } catch (e) { continue; }
                     }
                     return [];
                 }
-                const eps = { doc: `/mk/api/news/articles?${q}`, twit: `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`, fb: `/mk/api/news/fb-top-status?${q}&sub=fblike`, youtube: `/mk/api/news/ytb-top-status?${q}`, tiktok: `/mk/api/news/tiktok-top-status?${q}&sub=postbylike` };
-                const url = eps[platform]; if (!url) return [];
-                const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 30000);
+                const eps = {
+                    twit: `/mk/api/x/most-status?${q}&media=all&mention_type=view_all`,
+                    fb: `/mk/api/news/fb-top-status?${q}&sub=fblike`,
+                    youtube: `/mk/api/news/ytb-top-status?${q}`,
+                    tiktok: `/mk/api/news/tiktok-top-status?${q}&sub=postbylike`
+                };
+                const url = eps[platform];
+                if (!url) return [];
+                const ctrl = new AbortController(), tid = setTimeout(() => ctrl.abort(), 20000);
                 try {
-                    const r = await fetch(url, { signal: ctrl.signal }); clearTimeout(tid);
+                    const r = await fetch(url, { signal: ctrl.signal });
+                    clearTimeout(tid);
                     if (!r.ok) return [];
                     const d = await r.json();
                     let items = [];
@@ -968,23 +1127,52 @@
                     else if (Array.isArray(d?.results)) items = d.results;
                     else if (Array.isArray(d?.posts)) items = d.posts;
                     else if (Array.isArray(d)) items = d;
-                    // if (platform === 'doc') items = items.filter(m => { const tc = String(m.tcode || '').toLowerCase(), mt = String(m.media_type || '').toLowerCase(); return tc === 'berita' || mt === 'berita' || mt === 'doc' || mt === 'news' || mt === 'online' || mt === 'article'; });
-                    return items.map(i => ({ ...i, _platform: platform }));
-                } catch (e) { clearTimeout(tid); return []; }
+                    return items.map(i => _normItem(i, platform));
+                } catch (e) {
+                    clearTimeout(tid);
+                    return [];
+                }
             }
 
             function _render(list, items, platform, accentColor) {
-                if (!items.length) { list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`; return; }
+                if (!items.length) {
+                    list.innerHTML = `<div style="padding:50px 20px;text-align:center;color:#94A3B8;font-size:12px;font-weight:600;">Tidak ada mentions untuk filter ini.</div>`;
+                    return;
+                }
                 const SHOW = 60;
                 list.innerHTML = items.slice(0, SHOW).map(item => {
                     const plat = item._platform || platform, meta = CMP_PLAT_META[plat] || { label: plat, color: accentColor };
-                    const rawName = (() => { if (plat === 'fb') return item.from_name || item.page_name || null; if (plat === 'instagram') return item.username || item.user_name || null; if (plat === 'tiktok') return item.author_nickname || item.nickname || item.author?.nickname || null; if (plat === 'youtube') return item.channel_title || item.channel_name || item.snippet?.channelTitle || null; if (plat === 'twit') { const ao = typeof item.author === 'object' ? item.author : (() => { try { return JSON.parse(item.author || '{}'); } catch (e) { return {}; } })(); return item.name || ao?.name || ao?.scr_name || item.author_name || null; } return null; })();
+                    const rawName = (() => {
+                        if (plat === 'fb') return item.from_name || item.page_name || null;
+                        if (plat === 'instagram') return item.username || item.user_name || null;
+                        if (plat === 'tiktok') return item.author_nickname || item.nickname || item.author?.nickname || null;
+                        if (plat === 'youtube') return item.channel_title || item.channel_name || item.snippet?.channelTitle || null;
+                        if (plat === 'twit') {
+                            const ao = typeof item.author === 'object' ? item.author : (() => { try { return JSON.parse(item.author || '{}'); } catch (e) { return {}; } })();
+                            return item.name || ao?.name || ao?.scr_name || item.author_name || null;
+                        }
+                        return null;
+                    })();
                     const name = (rawName || item.author_name || item.channel_name || item.publisher || item.source_name || 'Unknown').trim();
                     const dName = /^\d{10,}$/.test(name) ? `User ${name.slice(-4)}` : name;
-                    const rawH = (() => { if (plat === 'instagram') return item.username || ''; if (plat === 'twit') { const ao = typeof item.author === 'object' ? item.author : (() => { try { return JSON.parse(item.author || '{}'); } catch (e) { return {}; } })(); return item.screen_name || item.author_scr_name || ao?.scr_name || ao?.username || ''; } return item.author_scr_name || item.screen_name || item.username || ''; })().trim();
-                    const handle = (() => { if (!rawH) return ''; const w = ['twit', 'instagram', 'tiktok'].includes(plat) ? (rawH.startsWith('@') ? rawH : '@' + rawH) : rawH; return w.replace(/^@/, '').toLowerCase() === dName.toLowerCase() ? '' : w; })();
+                    const rawH = (() => {
+                        if (plat === 'instagram') return item.username || '';
+                        if (plat === 'twit') {
+                            const ao = typeof item.author === 'object' ? item.author : (() => { try { return JSON.parse(item.author || '{}'); } catch (e) { return {}; } })();
+                            return item.screen_name || item.author_scr_name || ao?.scr_name || ao?.username || '';
+                        }
+                        return item.author_scr_name || item.screen_name || item.username || '';
+                    })().trim();
+                    const handle = (() => {
+                        if (!rawH) return '';
+                        const w = ['twit', 'instagram', 'tiktok'].includes(plat) ? (rawH.startsWith('@') ? rawH : '@' + rawH) : rawH;
+                        return w.replace(/^@/, '').toLowerCase() === dName.toLowerCase() ? '' : w;
+                    })();
                     const text = (item.content || item.caption || item.description || item.title || item.text || '').replace(/<[^>]*>/g, '').trim().slice(0, 150);
-                    const ao = (() => { if (typeof item.author === 'object' && item.author) return item.author; try { return JSON.parse(item.author || '{}'); } catch (e) { return {}; } })();
+                    const ao = (() => {
+                        if (typeof item.author === 'object' && item.author) return item.author;
+                        try { return JSON.parse(item.author || '{}'); } catch (e) { return {}; }
+                    })();
                     const av = (item.avatar_url || item.profile_image_url || ao?.image || item.author_image || item.profile_image || item.thumbnail || '').trim();
                     const dt = (item.date_created || item.created_at || '').split('T')[0];
                     const sent = _ns(item);
@@ -997,7 +1185,7 @@
                 if (items.length > SHOW) list.insertAdjacentHTML('beforeend', `<div style="padding:9px;text-align:center;font-size:11px;font-weight:600;color:#94A3B8;background:#F8FAFC;border-top:1px dashed #E2E8F0;">+${(items.length - SHOW).toLocaleString()} lainnya</div>`);
             }
 
-            return { open, close, filterSent, openPlatform, get _cache() { return _cache; }, set _cache(v) { _cache = v; } };
+            return { open, close, filterSent, reload, openPlatform, get _cache() { return _cache; }, set _cache(v) { _cache = v; } };
         })();
 
         /* ══ CmpDetail ══ */
@@ -1008,7 +1196,7 @@
                 if (!panel || !body) return;
                 const meta = CMP_PLAT_META[platform] || { label: platform, color: '#4361EE' };
                 const SM2 = { '1': 'pos', 'positive': 'pos', 'positif': 'pos', '-1': 'neg', '2': 'neg', 'negative': 'neg', 'negatif': 'neg' };
-                const sent = SM2[String(item.class_sentiment || item.sentiment || '0').toLowerCase().trim()] || 'neu';
+                const sent = SM2[String(item.class_sentiment || item.sentiment || item._sent || '0').toLowerCase().trim()] || 'neu';
                 const SLBL = { pos: 'Positif', neg: 'Negatif', neu: 'Netral' }, SBGS = { pos: 'do-dp2-sent--pos', neg: 'do-dp2-sent--neg', neu: 'do-dp2-sent--neu' };
                 const rawName = (() => { if (platform === 'fb') return item.from_name || item.page_name || null; if (platform === 'instagram') return item.username || null; if (platform === 'tiktok') return item.author_nickname || item.nickname || item.author?.nickname || null; if (platform === 'youtube') return item.channel_title || item.channel_name || item.snippet?.channelTitle || null; if (platform === 'twit') { const ao = typeof item.author === 'object' ? item.author : (() => { try { return JSON.parse(item.author || '{}'); } catch (e) { return {}; } })(); return item.name || ao?.name || ao?.scr_name || item.author_name || null; } return null; })();
                 const name = (rawName || item.author_name || item.channel_name || item.publisher || item.source_name || 'Unknown').trim();
