@@ -233,7 +233,35 @@ function appendMsg(role, text, images) {
     const actionsHtml = isAI ? `<div class="bubble-actions">
         <button class="bubble-act-btn" onclick="copyBubbleText(this)" title="Copy teks">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-       const PDF_PAGE_STYLE = `
+            <span>Copy</span>
+        </button>
+        <button class="bubble-act-btn" onclick="exportBubblePDF(this)" title="Download PDF">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+            <span>PDF</span>
+        </button>
+    </div>` : '';
+
+    el.innerHTML = `<div style="${ava}">${isAI?'AI':'U'}</div><div style="display:flex;flex-direction:column;max-width:78%;gap:4px;align-items:${isAI?'flex-start':'flex-end'};"><div class="chat-bubble" style="${bub}">${isAI?formatMarkdown(text):`<span style="color:#fff">${escHtml(text)}</span>`}${imgHtml}</div>${actionsHtml}<div style="font-size:10px;color:#cbd5e1;padding:0 4px;">${now}</div></div>`;
+    container.appendChild(el);
+    container.scrollTop = container.scrollHeight;
+    return el;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// BUBBLE ACTIONS — COPY & SINGLE PDF
+// ═══════════════════════════════════════════════════════════════════
+function copyBubbleText(btn) {
+    const row = btn.closest('.chat-msg-row');
+    const raw = row?.dataset.rawText || row?.querySelector('.chat-bubble')?.innerText || '';
+    navigator.clipboard.writeText(raw).then(() => {
+        const label = btn.querySelector('span');
+        btn.classList.add('copied');
+        label.textContent = 'Copied!';
+        setTimeout(() => { btn.classList.remove('copied'); label.textContent = 'Copy'; }, 1500);
+    });
+}
+
+const PDF_PAGE_STYLE = `
 <style>
     * { box-sizing: border-box; }
     body, div, p, span, strong, em, h1, h2, h3, h4, table, th, td {
@@ -651,59 +679,8 @@ function _fallbackPdfPrint(html, filename) {
         @media print{body{padding:10px;}}</style></head><body>${html}
         <script>setTimeout(function(){window.print();},500);<\/script></body></html>`);
     win.document.close();
-}b'};">${isAI?'SMADIMENT AI':'User'}</span>
-            </div>
-            <div style="margin-left:28px;padding:10px 14px;background:${isAI?'#f8fafc':'#f1f5f9'};border:1px solid #e2e8f0;border-radius:8px;font-size:12px;line-height:1.7;color:#1a202c;">
-                ${content}
-            </div>
-        </div>`;
-    });
-
-    html += `<div style="margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;text-align:center;page-break-inside:avoid;break-inside:avoid;">
-        <p style="font-size:9px;color:#94a3b8;margin:0;">SMADIMENT AI Analysis Report — ${escHtml(PLATFORM)} — Generated ${now}</p>
-    </div></div>`;
-
-    const filename = `AI_Analysis_${PLATFORM}_${PROJECT_ID}_${START_DATE}_${END_DATE}.pdf`;
-    _renderPDF(html, filename);
-}
-
-function _renderPDF(html, filename) {
-    if (typeof html2pdf === 'undefined') {
-        _fallbackPdfPrint(html, filename);
-        return;
-    }
-
-    // Create a plain element — do NOT add positioning/opacity styles or append to DOM.
-    // html2pdf internally creates its own overlay container (position:fixed, full-screen)
-    // and moves this element into it. Adding position:absolute/opacity:0 would persist
-    // inside the overlay and cause html2canvas to capture a blank area.
-    const el = document.createElement('div');
-    el.innerHTML = html;
-
-    html2pdf().set({
-        margin: [12, 14, 12, 14],
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: {
-            mode: ['css', 'legacy'],
-            avoid: ['p', '.ai-num-item', '.ai-bullet-item', 'h2', 'h3', 'h4', 'tr', '.ai-table-wrap', 'blockquote', 'li']
-        }
-    }).from(el).save().catch(() => {
-        _fallbackPdfPrint(html, filename);
-    });
-}
-
-function _fallbackPdfPrint(html, filename) {
-    const win = window.open('', '_blank');
-    if (!win) { alert('Popup diblokir. Izinkan popup untuk download PDF.'); return; }
-    win.document.write(`<!DOCTYPE html><html><head><title>${escHtml(filename)}</title>
-        <style>body{font-family:'Segoe UI',system-ui,sans-serif;padding:20px;color:#1a202c;max-width:780px;margin:0 auto;}
-        @media print{body{padding:10px;}}</style></head><body>${html}
-        <script>setTimeout(function(){window.print();},500);<\/script></body></html>`);
-    win.document.close();
 }
 
 @endverbatim
 </script>
+
