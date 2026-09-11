@@ -60,7 +60,8 @@ Route::prefix('mk')->name('mk.')->middleware(['auth', 'check.trial'])->group(fun
         Route::get('/sentiment-timeline',    [DataOverviewApiController::class, 'sentimentTimeline'])->name('sentiment-timeline');
         Route::get('/geo-users',             [DataOverviewApiController::class, 'geoUsers'])->name('geo-users');
 
-        Route::get('/topic-map', [TopicMapController::class, 'getTopicMap'])->name('topic-map');
+        Route::get('/topic-map',      [TopicMapController::class, 'getTopicMap'])->name('topic-map');
+        Route::get('/topic-mentions', [TopicMapController::class, 'getTopicMentions'])->name('topic-mentions');
 
         Route::get('/top-hashtags',   [TopAnalyticsController::class, 'getHashtagsData'])->name('top-hashtags');
         Route::get('/top-locations',  [TopAnalyticsController::class, 'getLocationsData'])->name('top-locations');

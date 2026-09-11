@@ -119,6 +119,76 @@
     .export-toast.success{background:#065f46}
     .export-toast.error{background:#991b1b}
 
+    /* ══ Slide Drawer ══ */
+    .topic-drawer-overlay {
+      position: fixed; inset: 0; z-index: 9998;
+      background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(4px);
+      display: none; opacity: 0; transition: opacity .25s ease;
+    }
+    .topic-drawer-overlay.active { display: block; opacity: 1; }
+    .topic-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; z-index: 9999;
+      width: 520px; max-width: 100vw; background: #fff;
+      display: flex; flex-direction: column;
+      box-shadow: -8px 0 35px rgba(15, 23, 42, 0.15);
+      transform: translateX(100%); transition: transform .3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .topic-drawer.active { transform: translateX(0); }
+    .topic-drawer-header {
+      padding: 16px 20px; background: var(--slate-50);
+      border-bottom: 1px solid var(--slate-200);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .topic-drawer-icon {
+      width: 36px; height: 36px; border-radius: var(--radius-sm);
+      background: var(--tm-primary-lt); color: var(--tm-primary);
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .topic-drawer-close {
+      width: 30px; height: 30px; border-radius: var(--radius-sm);
+      border: 1px solid var(--slate-200); background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--slate-500); cursor: pointer; transition: all .14s;
+    }
+    .topic-drawer-close:hover { background: var(--tm-red); color: #fff; border-color: var(--tm-red); }
+    .topic-drawer-body {
+      padding: 16px 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px;
+    }
+    .topic-drawer-body::-webkit-scrollbar { width: 5px; }
+    .topic-drawer-body::-webkit-scrollbar-thumb { background: var(--slate-200); border-radius: 99px; }
+
+    /* News card in drawer */
+    .drawer-article-card {
+      background: #fff; border: 1px solid var(--slate-200);
+      border-radius: var(--radius); padding: 14px 16px;
+      transition: all .15s ease;
+    }
+    .drawer-article-card:hover {
+      border-color: var(--tm-primary);
+      box-shadow: 0 4px 14px rgba(15, 23, 42, .06);
+      transform: translateY(-1px);
+    }
+    .drawer-article-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 11px; margin-bottom: 6px;
+    }
+    .drawer-pub-badge {
+      font-weight: 700; color: var(--tm-primary); background: var(--tm-primary-lt);
+      padding: 2px 8px; border-radius: 4px;
+    }
+    .drawer-article-title {
+      font-size: 13px; font-weight: 700; color: var(--slate-900);
+      margin-bottom: 6px; line-height: 1.4; display: block; text-decoration: none;
+    }
+    .drawer-article-title:hover { color: var(--tm-primary); text-decoration: underline; }
+    .drawer-article-snippet {
+      font-size: 12px; color: var(--slate-600); line-height: 1.5; margin-bottom: 8px;
+    }
+    .drawer-article-link {
+      font-size: 11px; font-weight: 600; color: var(--slate-400); display: inline-flex; align-items: center; gap: 4px; text-decoration: none;
+    }
+    .drawer-article-link:hover { color: var(--tm-primary); }
+
     @media(max-width:768px) {
       .wordcloud-container { min-height:480px;height:480px; }
     }
@@ -325,6 +395,22 @@
     </div>
   </div>
 
+  {{-- ══ Slide Drawer: Topic Mentions ══ --}}
+  <div class="topic-drawer-overlay" id="topicDrawerOverlay" onclick="TMApp.closeTopicDrawer()"></div>
+  <div class="topic-drawer" id="topicDrawer">
+    <div class="topic-drawer-header">
+      <div class="d-flex align-items-center gap-2">
+        <div class="topic-drawer-icon"><i class="ph ph-newspaper"></i></div>
+        <div>
+          <h5 class="mb-0" id="topicDrawerTitle" style="font-size:14px;font-weight:700;">Topic Mentions</h5>
+          <small class="text-muted" id="topicDrawerSubtitle" style="font-size:11px;">Memuat artikel berita...</small>
+        </div>
+      </div>
+      <button class="topic-drawer-close" onclick="TMApp.closeTopicDrawer()"><i class="ph ph-x"></i></button>
+    </div>
+    <div class="topic-drawer-body" id="topicDrawerBody"></div>
+  </div>
+
 @endsection
 
 @section('scripts')
@@ -473,16 +559,11 @@
             data: wordData,
           }],
         }, true);
-        // Enable click on word cloud word
+        // Enable click on word cloud word -> Open Slide Drawer
         wordCloudInst.off('click');
         wordCloudInst.on('click', function(params) {
           if (params && params.name) {
-            const url   = new URL('/mk/search-topic', window.location.origin);
-            url.searchParams.set('keyword', params.name);
-            url.searchParams.set('project_id', projectId);
-            url.searchParams.set('start_date', startDate);
-            url.searchParams.set('end_date',   endDate);
-            window.location.href = url.toString();
+            TMApp.openTopicDrawer(params.name);
           }
         });
         let rtimer;
@@ -549,8 +630,8 @@
         }
         listEl.innerHTML = topics.slice(0, 10).map((t, i) => {
           const rank = i + 1;
-          const topicUrl = `/mk/search-topic?keyword=${encodeURIComponent(t.name)}&project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`;
-          return `<div class="topic-item" style="cursor:pointer" onclick="window.location.href='${topicUrl}'"><span class="topic-rank${rank<=3?' top-3':''}">#${rank}</span><span class="topic-name">${t.name}</span><span class="topic-count">${nF(t.count)}</span></div>`;
+          const cleanName = _escHtml(t.name);
+          return `<div class="topic-item" style="cursor:pointer" onclick="TMApp.openTopicDrawer('${cleanName.replace(/'/g, "\\'")}')"><span class="topic-rank${rank<=3?' top-3':''}">#${rank}</span><span class="topic-name">${cleanName}</span><span class="topic-count">${nF(t.count)}</span></div>`;
         }).join('');
         viewAllWrap.style.display = topics.length > 10 ? '' : 'none';
       }
@@ -559,19 +640,103 @@
         const overlay = $('tmModalOverlay'), listEl = $('modalTopicList');
         listEl.innerHTML = topicsData.map((t, i) => {
           const rank = i + 1;
-          const topicUrl = `/mk/search-topic?keyword=${encodeURIComponent(t.name)}&project_id=${projectId}&start_date=${startDate}&end_date=${endDate}`;
-          return `<div class="topic-item" data-name="${t.name.toLowerCase()}" style="cursor:pointer" onclick="window.location.href='${topicUrl}'"><span class="topic-rank${rank<=3?' top-3':''}">#${rank}</span><span class="topic-name">${t.name}</span><span class="topic-count">${nF(t.count)}</span></div>`;
+          const cleanName = _escHtml(t.name);
+          return `<div class="topic-item" data-name="${t.name.toLowerCase()}" style="cursor:pointer" onclick="TMApp.openTopicDrawer('${cleanName.replace(/'/g, "\\'")}'); TMApp.closeModal();"><span class="topic-rank${rank<=3?' top-3':''}">#${rank}</span><span class="topic-name">${cleanName}</span><span class="topic-count">${nF(t.count)}</span></div>`;
         }).join('');
         overlay.classList.add('active');
         document.body.style.overflow = 'hidden';
         setTimeout(() => $('modalSearch')?.focus(), 100);
       }
       function closeModal() {
-        $('tmModalOverlay').classList.remove('active');
+        $('tmModalOverlay')?.classList.remove('active');
         document.body.style.overflow = '';
         if ($('modalSearch')) $('modalSearch').value = '';
       }
       function closeModalOnOverlay(e) { if (e.target.id === 'tmModalOverlay') closeModal(); }
+
+      function openTopicDrawer(keyword) {
+        keyword = (keyword || '').trim();
+        if (!keyword) return;
+
+        $('topicDrawerTitle').textContent = `Topic: "${keyword}"`;
+        $('topicDrawerSubtitle').textContent = 'Memuat artikel berita terkait...';
+        $('topicDrawerBody').innerHTML = `
+          <div class="tm-loading" style="padding:40px 10px;">
+            <div class="tm-spinner"></div>
+            <span>Mencari berita dengan kata "${_escHtml(keyword)}"...</span>
+          </div>
+        `;
+        $('topicDrawerOverlay')?.classList.add('active');
+        $('topicDrawer')?.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        const params = new URLSearchParams({
+          project_id: projectId,
+          keyword: keyword,
+          start_date: startDate,
+          end_date:   endDate,
+        });
+
+        fetch(`/api/mk/topic-mentions?${params.toString()}`)
+          .then(r => r.json())
+          .then(res => {
+            if (!res.success || !res.data || !res.data.length) {
+              $('topicDrawerSubtitle').textContent = '0 artikel ditemukan';
+              $('topicDrawerBody').innerHTML = `
+                <div class="tm-empty" style="padding:50px 10px;">
+                  <i class="ph ph-newspaper-clipping"></i>
+                  <span>Tidak ada artikel berita yang memuat topik "${_escHtml(keyword)}" pada periode ini.</span>
+                </div>
+              `;
+              return;
+            }
+
+            $('topicDrawerSubtitle').textContent = `${nF(res.total)} artikel berita ditemukan`;
+            $('topicDrawerBody').innerHTML = res.data.map(art => {
+              const cleanTitle = _escHtml(art.title);
+              const cleanPub   = _escHtml(art.publisher || 'News');
+              const cleanDate  = _escHtml(art.date || '');
+              const cleanSnip  = _escHtml(art.snippet || '');
+              const url        = art.url || '#';
+
+              return `
+                <div class="drawer-article-card">
+                  <div class="drawer-article-meta">
+                    <span class="drawer-pub-badge">${cleanPub}</span>
+                    <span class="text-muted">${cleanDate}</span>
+                  </div>
+                  <a href="${url}" target="_blank" rel="noopener noreferrer" class="drawer-article-title">
+                    ${cleanTitle}
+                  </a>
+                  ${cleanSnip ? `<div class="drawer-article-snippet">${cleanSnip}</div>` : ''}
+                  <a href="${url}" target="_blank" rel="noopener noreferrer" class="drawer-article-link">
+                    <i class="ph ph-arrow-square-out"></i> Buka Berita Asli
+                  </a>
+                </div>
+              `;
+            }).join('');
+          })
+          .catch(err => {
+            console.error('Drawer error:', err);
+            $('topicDrawerSubtitle').textContent = 'Gagal memuat';
+            $('topicDrawerBody').innerHTML = `
+              <div class="tm-empty" style="padding:40px 10px;">
+                <i class="ph ph-warning-circle text-danger"></i>
+                <span>Gagal mengambil data artikel. Silakan coba lagi.</span>
+              </div>
+            `;
+          });
+      }
+
+      function closeTopicDrawer() {
+        $('topicDrawerOverlay')?.classList.remove('active');
+        $('topicDrawer')?.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+
+      function _escHtml(str) {
+        return (str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+      }
 
       function _showEmpty(msg) {
         const html = `<div class="tm-empty"><i class="ph ph-warning-circle"></i><span>${msg}</span></div>`;
@@ -587,7 +752,13 @@
       function getInsts() { return { wordCloudInst, barChartInst, pieChartInst, currentChart }; }
 
       document.addEventListener('DOMContentLoaded', init);
-      return { switchChart, openModal, closeModal, closeModalOnOverlay, getInsts, nF };
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+          closeModal();
+          closeTopicDrawer();
+        }
+      });
+      return { switchChart, openModal, closeModal, closeModalOnOverlay, openTopicDrawer, closeTopicDrawer, getInsts, nF };
     })();
 
     /* ════════════════════════════════════════════════════════
