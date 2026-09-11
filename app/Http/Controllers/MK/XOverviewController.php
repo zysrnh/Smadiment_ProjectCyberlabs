@@ -6,6 +6,7 @@
     use App\Services\MediaKernelsClient;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Auth;
+    use Illuminate\Support\Facades\Cache;
     use Illuminate\Support\Facades\Log;
     use Carbon\Carbon;
 
@@ -835,7 +836,12 @@
                 $startDate = $request->query('start_date');
                 $endDate   = $request->query('end_date');
                 if (!$projectId || !$startDate || !$endDate) return response()->json(['success' => false, 'error' => 'Missing required parameters: project_id, start_date, end_date'], 400);
-                $result = $this->client->geoTwitterUser($projectId, 'twitter', $startDate, $endDate);
+
+                $cacheKey = "mk_x_geo_user_{$projectId}_{$startDate}_{$endDate}";
+                $result = Cache::remember($cacheKey, 1800, function () use ($projectId, $startDate, $endDate) {
+                    return $this->client->geoTwitterUser($projectId, 'twitter', $startDate, $endDate);
+                });
+
                 return response()->json(['success' => true, 'data' => $result]);
             } catch (\Exception $e) {
                 Log::error('geoUser API error', ['error' => $e->getMessage(), 'project_id' => $request->query('project_id')]);
@@ -850,7 +856,12 @@
                 $startDate = $request->query('start_date');
                 $endDate   = $request->query('end_date');
                 if (!$projectId || !$startDate || !$endDate) return response()->json(['success' => false, 'error' => 'Missing required parameters: project_id, start_date, end_date'], 400);
-                $result = $this->client->geoTwitterUserSentiment($projectId, 'twitter', $startDate, $endDate, 0, 23, 1);
+
+                $cacheKey = "mk_x_geo_sentiment_{$projectId}_{$startDate}_{$endDate}";
+                $result = Cache::remember($cacheKey, 1800, function () use ($projectId, $startDate, $endDate) {
+                    return $this->client->geoTwitterUserSentiment($projectId, 'twitter', $startDate, $endDate, 0, 23, 1);
+                });
+
                 return response()->json(['success' => true, 'data' => $result]);
             } catch (\Exception $e) {
                 Log::error('geoSentiment API error', ['error' => $e->getMessage(), 'project_id' => $request->query('project_id')]);
@@ -865,17 +876,23 @@
                 $startDate = $request->query('start_date');
                 $endDate   = $request->query('end_date');
                 if (!$projectId || !$startDate || !$endDate) return response()->json(['success' => false, 'error' => 'Missing required parameters: project_id, start_date, end_date'], 400);
-                $result    = $this->client->topAuthorLocation($projectId, 'twitter', $startDate, $endDate);
-                $locations = [];
-                if (is_array($result)) {
-                    foreach ($result as $location) {
-                        $locations[] = [
-                            'name'  => $location['name']  ?? $location['location'] ?? 'Unknown',
-                            'count' => $location['count'] ?? $location['total']    ?? 0,
-                        ];
+
+                $cacheKey = "mk_x_top_locations_{$projectId}_{$startDate}_{$endDate}";
+                $locations = Cache::remember($cacheKey, 1800, function () use ($projectId, $startDate, $endDate) {
+                    $result = $this->client->topAuthorLocation($projectId, 'twitter', $startDate, $endDate);
+                    $locs   = [];
+                    if (is_array($result)) {
+                        foreach ($result as $location) {
+                            $locs[] = [
+                                'name'  => $location['name']  ?? $location['location'] ?? 'Unknown',
+                                'count' => $location['count'] ?? $location['total']    ?? 0,
+                            ];
+                        }
+                        usort($locs, fn($a, $b) => $b['count'] - $a['count']);
                     }
-                    usort($locations, fn($a, $b) => $b['count'] - $a['count']);
-                }
+                    return $locs;
+                });
+
                 return response()->json(['success' => true, 'data' => $locations]);
             } catch (\Exception $e) {
                 Log::error('topLocations API error', ['error' => $e->getMessage(), 'project_id' => $request->query('project_id')]);

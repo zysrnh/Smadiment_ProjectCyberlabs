@@ -639,6 +639,8 @@ body { background: var(--bg); }
 
 function normalizeProvinceName(name) {
     if (!name) return '';
+    name = String(name).replace(/&[a-z0-9#]+;/gi, ' ').replace(/[\u0000-\u001F\u007F-\u009F]/g, '').trim();
+    if (!name) return '';
     const map = {
         'DKI JAKARTA':'DKI Jakarta','JAKARTA':'DKI Jakarta',
         'JAWA BARAT':'Jawa Barat','JABAR':'Jawa Barat',
@@ -666,7 +668,7 @@ function normalizeProvinceName(name) {
         'PAPUA PEGUNUNGAN':'Papua Pegunungan','PAPUA SELATAN':'Papua Selatan',
         'PAPUA BARAT DAYA':'Papua Barat Daya',
     };
-    const key = String(name).trim().toUpperCase();
+    const key = name.toUpperCase();
     return map[key] || name;
 }
 
@@ -715,7 +717,12 @@ const XGeo = {
         }
         if (document.readyState === 'complete') { start(); }
         else { window.addEventListener('load', start); }
-        self._loadDonut();
+
+        // Parallel fetch for KPI cards and Donut Chart on load
+        Promise.all([
+            this.fetchGeoUser(),
+            this._loadDonut()
+        ]).catch(function(e) { console.warn('Initial load error:', e); });
     },
 
     _initObserver() {
@@ -794,16 +801,23 @@ const XGeo = {
         var rows = this.parseGeoRows(result), total = this.parseGeoTotal(result), top = rows[0];
         var set = (id,v) => { var e=_$(id); if(e) e.textContent=v; };
         var sub = (id,h) => { var e=_$(id); if(e) e.innerHTML=h; };
-        set('kpiCountries', rows.length); set('kpiUsers', numF(total));
+        set('kpiCountries', rows.length ? numF(rows.length) : '0'); 
+        set('kpiUsers', numF(total));
         sub('kpiCountriesSub', '<i class="ph ph-globe me-1"></i>' + rows.length + ' countries detected');
         sub('kpiUsersSub', '<i class="ph ph-users me-1"></i>' + numK(total) + ' total identified');
         if (top) {
             set('kpiTopCountry', normalizeProvinceName(top.name) || 'N/A');
             sub('kpiTopCountrySub', '<i class="ph ph-chart-bar me-1"></i>' + numF(top.count) + ' users');
-            var provs = Object.entries(top.detail || {}).sort((a,b) => b[1]-a[1]);
+            var provs = Object.entries(top.detail || {}).sort((a,b) => (parseInt(b[1])||0)-(parseInt(a[1])||0));
             set('kpiTopProvince', provs.length ? normalizeProvinceName(provs[0][0]) : 'N/A');
             if (provs.length) sub('kpiTopProvinceSub', '<i class="ph ph-buildings me-1"></i>' + numF(provs[0][1]) + ' users');
-        } else { set('kpiTopCountry','N/A'); set('kpiTopProvince','N/A'); }
+            else sub('kpiTopProvinceSub', '<i class="ph ph-buildings me-1"></i>No province breakdown');
+        } else { 
+            set('kpiTopCountry','N/A'); 
+            set('kpiTopProvince','N/A'); 
+            sub('kpiTopCountrySub', '<i class="ph ph-map-pin me-1"></i>No data');
+            sub('kpiTopProvinceSub', '<i class="ph ph-buildings me-1"></i>No data');
+        }
     },
 
     async _loadDonut() {
