@@ -677,7 +677,7 @@
           end_date:   endDate,
         });
 
-        fetch(`/api/mk/topic-mentions?${params.toString()}`)
+        fetch(`/mk/api/topic-mentions?${params.toString()}`)
           .then(r => r.json())
           .then(res => {
             if (!res.success || !res.data || !res.data.length) {

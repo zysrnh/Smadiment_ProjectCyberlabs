@@ -62,6 +62,7 @@ Route::prefix('mk')->name('mk.')->middleware(['auth', 'check.trial'])->group(fun
 
         Route::get('/topic-map',      [TopicMapController::class, 'getTopicMap'])->name('topic-map');
         Route::get('/topic-mentions', [TopicMapController::class, 'getTopicMentions'])->name('topic-mentions');
+        Route::get('/mk/topic-mentions', [TopicMapController::class, 'getTopicMentions']);
 
         Route::get('/top-hashtags',   [TopAnalyticsController::class, 'getHashtagsData'])->name('top-hashtags');
         Route::get('/top-locations',  [TopAnalyticsController::class, 'getLocationsData'])->name('top-locations');
