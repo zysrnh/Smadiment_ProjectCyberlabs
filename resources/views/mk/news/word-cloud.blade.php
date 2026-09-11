@@ -44,7 +44,7 @@
 
     /* ══ Chart Container ══ */
     .tm-chart-wrap { position:relative;min-height:500px; }
-    .wordcloud-container { min-height:700px;height:700px;position:relative;background:linear-gradient(135deg,#ffffff 0%,#f8fafc 100%);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;overflow:hidden; }
+    .wordcloud-container { min-height:560px;height:560px;position:relative;background:linear-gradient(135deg,#ffffff 0%,#f8fafc 100%);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;overflow:hidden; }
     #wordCloudChart { width:100%!important;height:100%!important;cursor:pointer;position:absolute;top:0;left:0;z-index:1; }
     .wordcloud-hint { position:absolute;bottom:12px;right:16px;z-index:2;display:none;align-items:center;gap:5px;font-size:11px;color:var(--slate-400);pointer-events:none; }
     .wordcloud-hint i { font-size:13px; }
@@ -415,9 +415,11 @@
         const txt = document.createElement('textarea');
         txt.innerHTML = str;
         let val = txt.value || str;
-        val = val.replace(/^#+/, '')
-                 .replace(/&[a-zA-Z0-9#]+;/g, '')
-                 .replace(/^[\s\-–—,.;:!?_]+|[\s\-–—,.;:!?_]+$/g, '')
+        val = val.replace(/&[a-zA-Z0-9#]+;/g, ' ')
+                 .replace(/<[^>]*>/g, ' ')
+                 .replace(/[#@_]/g, ' ')
+                 .replace(/^[\s\-–—,.;:!?_"'`()\[\]{}]+|[\s\-–—,.;:!?_"'`()\[\]{}]+$/g, '')
+                 .replace(/\s+/g, ' ')
                  .trim();
         return val;
       }
@@ -431,14 +433,17 @@
         loadingEl.style.display = 'none';
         chartDiv.style.display  = 'block';
         hintEl.style.display    = 'flex';
-        const top      = topics.slice(0, 80);
+        const top      = topics.slice(0, 100);
         const primary  = getPrimary();
         const colors   = [primary,'#0284c7','#10B981','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#6366f1','#ec4899','#14b8a6','#f97316'];
-        const wordData = top.map(t => ({
-          name  : _cleanWord(t.name) || t.name,
-          value : t.count,
-          _topic: t,
-        })).filter(w => w.name && w.name.length > 0);
+        const wordData = top.map(t => {
+          const cleanName = _cleanWord(t.name);
+          return {
+            name  : cleanName || t.name,
+            value : t.count,
+            _topic: t,
+          };
+        }).filter(w => w.name && w.name.length >= 2 && !/^[\d\W_]+$/.test(w.name));
 
         if (wordCloudInst) wordCloudInst.dispose();
         wordCloudInst = echarts.init(chartDiv, null, { renderer:'canvas', devicePixelRatio:window.devicePixelRatio || 1 });
@@ -456,10 +461,10 @@
           series:[{
             type:'wordCloud', shape:'circle', keepAspect:false, left:'center', top:'center',
             width:'96%', height:'96%', right:null, bottom:null,
-            sizeRange:[13, 52], rotationRange:[-30, 30], rotationStep:30, gridSize:5,
+            sizeRange:[16, 76], rotationRange:[-30, 30], rotationStep:30, gridSize:6,
             drawOutOfBound:false, layoutAnimation:true,
             textStyle:{ fontFamily:'Poppins, Inter, sans-serif', fontWeight:'600', color:()=>colors[Math.floor(Math.random()*colors.length)] },
-            emphasis:{ focus:'self', textStyle:{ textShadowBlur:8, textShadowColor:'rgba(0,0,0,0.25)', fontWeight:'bold' } },
+            emphasis:{ focus:'self', textStyle:{ textShadowBlur:10, textShadowColor:'rgba(0,0,0,0.3)', fontWeight:'bold' } },
             data:wordData,
           }],
         }, true);
