@@ -445,7 +445,7 @@
           const cleanName = _cleanWord(t.name);
           return {
             name  : cleanName || t.name,
-            value : t.count,
+            value : Math.pow(t.count, 0.55),
             _topic: t,
           };
         }).filter(w => w.name && w.name.length >= 2 && !/^[\d\W_]+$/.test(w.name));
@@ -460,13 +460,13 @@
             shadowBlur:16, shadowColor:'rgba(0,0,0,.08)', shadowOffsetY:4,
             formatter: p => `<div style="font-family:inherit;min-width:140px;">
                               <div style="font-weight:700;font-size:13px;color:#0F172A;margin-bottom:4px;text-align:center;">${p.name}</div>
-                              <div style="font-size:12px;color:#64748B;text-align:center;"><strong>${nF(p.data._topic?.count || p.value)}</strong> mentions</div>
+                              <div style="font-size:12px;color:#64748B;text-align:center;"><strong>${nF(p.data._topic?.count || 0)}</strong> mentions</div>
                             </div>`,
           },
           series:[{
             type:'wordCloud', shape:'circle', keepAspect:false, left:'center', top:'center',
-            width:'96%', height:'96%', right:null, bottom:null,
-            sizeRange:[16, 76], rotationRange:[-30, 30], rotationStep:30, gridSize:6,
+            width:'98%', height:'98%', right:null, bottom:null,
+            sizeRange:[22, 85], rotationRange:[-30, 30], rotationStep:30, gridSize:8,
             drawOutOfBound:false, layoutAnimation:true,
             textStyle:{ fontFamily:'Poppins, Inter, sans-serif', fontWeight:'600', color:()=>colors[Math.floor(Math.random()*colors.length)] },
             emphasis:{ focus:'self', textStyle:{ textShadowBlur:10, textShadowColor:'rgba(0,0,0,0.3)', fontWeight:'bold' } },

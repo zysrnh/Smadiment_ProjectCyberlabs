@@ -86,7 +86,7 @@ class TopicMapController extends Controller
                 return response()->json(['error' => 'project_id required'], 400);
             }
 
-            $cacheKey = "mk:topic_map_wc:{$projectId}_{$startDate}_{$startTime}_{$endDate}_{$endTime}";
+            $cacheKey = "mk:topic_map_wc_v2:{$projectId}_{$startDate}_{$startTime}_{$endDate}_{$endTime}";
 
             $topics = Cache::remember($cacheKey, 1800, function () use ($projectId, $startDate, $startTime, $endDate, $endTime) {
                 // Using wordCloud instead of topicMap as requested by user
@@ -103,8 +103,16 @@ class TopicMapController extends Controller
                 // Transform phrases object { "Word": count } into array [ { name: "Word", count: count } ]
                 $list = [];
                 foreach ($phrases as $phrase => $count) {
+                    $clean = html_entity_decode((string) $phrase, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                    $clean = preg_replace('/&[a-zA-Z0-9#]+;/', '', $clean);
+                    $clean = trim($clean, " \t\n\r\0\x0B-#@_–—,.;:!?\"'`()[]{}");
+
+                    if (empty($clean) || mb_strlen($clean) < 2 || preg_match('/^[\d\W_]+$/u', $clean)) {
+                        continue;
+                    }
+
                     $list[] = [
-                        'name'  => $phrase,
+                        'name'  => $clean,
                         'count' => (int) $count,
                     ];
                 }
