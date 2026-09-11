@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\MediaKernelsClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class TopicMapController extends Controller
@@ -85,28 +86,34 @@ class TopicMapController extends Controller
                 return response()->json(['error' => 'project_id required'], 400);
             }
 
-            // Using wordCloud instead of topicMap as requested by user
-            $resp = $this->mkClient->wordCloud(
-                $projectId,
-                $startDate,
-                $startTime,
-                $endDate,
-                $endTime
-            );
+            $cacheKey = "mk:topic_map_wc:{$projectId}_{$startDate}_{$startTime}_{$endDate}_{$endTime}";
 
-            $phrases = $resp['data']['phrases'] ?? [];
-            
-            // Transform phrases object { "Word": count } into array [ { name: "Word", count: count } ]
-            $topics = [];
-            foreach ($phrases as $phrase => $count) {
-                $topics[] = [
-                    'name'  => $phrase,
-                    'count' => (int) $count,
-                ];
-            }
+            $topics = Cache::remember($cacheKey, 1800, function () use ($projectId, $startDate, $startTime, $endDate, $endTime) {
+                // Using wordCloud instead of topicMap as requested by user
+                $resp = $this->mkClient->wordCloud(
+                    $projectId,
+                    $startDate,
+                    $startTime,
+                    $endDate,
+                    $endTime
+                );
 
-            // Sort by count descending
-            usort($topics, fn($a, $b) => $b['count'] - $a['count']);
+                $phrases = $resp['data']['phrases'] ?? [];
+                
+                // Transform phrases object { "Word": count } into array [ { name: "Word", count: count } ]
+                $list = [];
+                foreach ($phrases as $phrase => $count) {
+                    $list[] = [
+                        'name'  => $phrase,
+                        'count' => (int) $count,
+                    ];
+                }
+
+                // Sort by count descending
+                usort($list, fn($a, $b) => $b['count'] - $a['count']);
+
+                return $list;
+            });
 
             return response()->json([
                 'success' => true,

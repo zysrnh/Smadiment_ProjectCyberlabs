@@ -410,6 +410,18 @@
         }
       }
 
+      function _cleanWord(str) {
+        if (!str) return '';
+        const txt = document.createElement('textarea');
+        txt.innerHTML = str;
+        let val = txt.value || str;
+        val = val.replace(/^#+/, '')
+                 .replace(/&[a-zA-Z0-9#]+;/g, '')
+                 .replace(/^[\s\-–—,.;:!?_]+|[\s\-–—,.;:!?_]+$/g, '')
+                 .trim();
+        return val;
+      }
+
       function _renderWordCloud(topics) {
         const chartDiv  = $('wordCloudChart');
         const loadingEl = $('wordCloudLoading');
@@ -419,36 +431,35 @@
         loadingEl.style.display = 'none';
         chartDiv.style.display  = 'block';
         hintEl.style.display    = 'flex';
-        const top      = topics.slice(0, 60);
-        const maxCount = Math.max(...top.map(t => t.count));
-        const minCount = Math.min(...top.map(t => t.count));
+        const top      = topics.slice(0, 80);
         const primary  = getPrimary();
-        const colors   = [primary,'#10B981','#2FC6F6','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#a78bfa','#34d399','#fbbf24'];
+        const colors   = [primary,'#0284c7','#10B981','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#6366f1','#ec4899','#14b8a6','#f97316'];
         const wordData = top.map(t => ({
-          name  : t.name.replace(/^#/, ''),
-          value : Math.pow((t.count - minCount) / (maxCount - minCount || 1), 0.5) * 1200 + 200,
+          name  : _cleanWord(t.name) || t.name,
+          value : t.count,
           _topic: t,
-        }));
+        })).filter(w => w.name && w.name.length > 0);
+
         if (wordCloudInst) wordCloudInst.dispose();
         wordCloudInst = echarts.init(chartDiv, null, { renderer:'canvas', devicePixelRatio:window.devicePixelRatio || 1 });
         wordCloudInst.setOption({
           tooltip: {
             show:true, trigger:'item',
-            backgroundColor:'#fff', borderColor:'#E2E8F0', borderWidth:1, padding:14,
+            backgroundColor:'#fff', borderColor:'#E2E8F0', borderWidth:1, padding:12,
             textStyle:{ color:'#0F172A', fontSize:12, fontFamily:'inherit' },
-            shadowBlur:20, shadowColor:'rgba(0,0,0,.1)', shadowOffsetY:4,
-            formatter: p => `<div style="font-family:inherit;min-width:160px;">
-                              <div style="font-weight:700;font-size:14px;color:#0F172A;margin-bottom:6px;text-align:center;">${p.name}</div>
-                              <div style="font-size:12px;color:#64748B;text-align:center;"><strong>${nF(p.data._topic.count)}</strong> mentions</div>
+            shadowBlur:16, shadowColor:'rgba(0,0,0,.08)', shadowOffsetY:4,
+            formatter: p => `<div style="font-family:inherit;min-width:140px;">
+                              <div style="font-weight:700;font-size:13px;color:#0F172A;margin-bottom:4px;text-align:center;">${p.name}</div>
+                              <div style="font-size:12px;color:#64748B;text-align:center;"><strong>${nF(p.data._topic?.count || p.value)}</strong> mentions</div>
                             </div>`,
           },
           series:[{
             type:'wordCloud', shape:'circle', keepAspect:false, left:'center', top:'center',
-            width:'98%', height:'98%', right:null, bottom:null,
-            sizeRange:[24,120], rotationRange:[-45,45], rotationStep:45, gridSize:8,
+            width:'96%', height:'96%', right:null, bottom:null,
+            sizeRange:[13, 52], rotationRange:[-30, 30], rotationStep:30, gridSize:5,
             drawOutOfBound:false, layoutAnimation:true,
-            textStyle:{ fontFamily:'Poppins, Inter, sans-serif', fontWeight:'bold', color:()=>colors[Math.floor(Math.random()*colors.length)] },
-            emphasis:{ focus:'self', textStyle:{ textShadowBlur:10, textShadowColor:'rgba(0,0,0,0.35)' } },
+            textStyle:{ fontFamily:'Poppins, Inter, sans-serif', fontWeight:'600', color:()=>colors[Math.floor(Math.random()*colors.length)] },
+            emphasis:{ focus:'self', textStyle:{ textShadowBlur:8, textShadowColor:'rgba(0,0,0,0.25)', fontWeight:'bold' } },
             data:wordData,
           }],
         }, true);
