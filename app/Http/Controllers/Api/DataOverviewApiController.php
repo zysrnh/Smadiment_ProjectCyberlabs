@@ -166,6 +166,10 @@ class DataOverviewApiController extends Controller
                 return $normalized;
             });
 
+            if (empty($data)) {
+                $data = $this->extractHashtagsFromSnapshots($projectId, $startDate, $endDate);
+            }
+
             return response()->json([
                 'success' => true,
                 'data'    => $data ?? [],
@@ -177,11 +181,69 @@ class DataOverviewApiController extends Controller
                 'message' => $e->getMessage(),
             ]);
 
+            $fallbackData = $this->extractHashtagsFromSnapshots($projectId, $startDate, $endDate);
+            if (!empty($fallbackData)) {
+                return response()->json([
+                    'success' => true,
+                    'data'    => $fallbackData,
+                    'total'   => count($fallbackData),
+                ]);
+            }
+
             return response()->json([
                 'success' => false,
                 'data'    => [],
                 'error'   => $e->getMessage(),
             ], 500);
+        }
+    }
+
+    /**
+     * Fallback extractor for Top Hashtags from DB snapshots.
+     */
+    private function extractHashtagsFromSnapshots(int $projectId, string $startDate, string $endDate): array
+    {
+        try {
+            $mentionsSnapshot = ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'news_mentions_0_1200', $startDate, $endDate)
+                ?? ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'news_mentions_0_500', $startDate, $endDate);
+
+            if (!$mentionsSnapshot || !is_array($mentionsSnapshot)) {
+                return [];
+            }
+
+            $tagCounts = [];
+            foreach ($mentionsSnapshot as $item) {
+                $text = ($item['content'] ?? '') . ' ' . ($item['title'] ?? '') . ' ' . ($item['text'] ?? '');
+                if (preg_match_all('/#([a-zA-Z0-9_\x{0080}-\x{FFFF}]+)/u', $text, $matches)) {
+                    foreach ($matches[1] as $tag) {
+                        $tagLower = strtolower($tag);
+                        if (is_numeric($tagLower) || strlen($tagLower) < 2) continue;
+                        $tagCounts[$tag] = ($tagCounts[$tag] ?? 0) + 1;
+                    }
+                }
+            }
+
+            arsort($tagCounts);
+            $extracted = [];
+            foreach (array_slice($tagCounts, 0, 25, true) as $tag => $cnt) {
+                $extracted[] = [
+                    'hashtag' => '#' . $tag,
+                    'name'    => '#' . $tag,
+                    'tag'     => $tag,
+                    'mention' => $cnt,
+                    'count'   => $cnt,
+                    'size'    => $cnt,
+                ];
+            }
+
+            if (!empty($extracted)) {
+                ProjectApiSnapshot::storeSnapshot($projectId, 'all', 'top_hashtags', $startDate, $endDate, $extracted);
+            }
+
+            return $extracted;
+        } catch (\Throwable $e) {
+            Log::warning("TopHashtags fallback extraction failed: {$e->getMessage()}");
+            return [];
         }
     }
 

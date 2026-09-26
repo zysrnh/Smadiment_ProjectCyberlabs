@@ -98,6 +98,78 @@ class ProjectApiSnapshot extends Model
     }
 
     /**
+     * Smart flexible snapshot resolver for offline resilience:
+     * 1. Exact match (start_date & end_date)
+     * 2. Containing date range (e.g. searching 2026-09-05 inside 2026-09-01 s/d 2026-09-26)
+     * 3. Latest snapshot for the endpoint
+     * 4. Family prefix match (e.g. news_mentions_0_1200 covers news_mentions_0_500)
+     */
+    public static function findSnapshotForQuery(
+        int $projectId,
+        string $media,
+        string $endpointKey,
+        string $startDate,
+        string $endDate
+    ): mixed {
+        $sDate = Carbon::parse($startDate)->format('Y-m-d');
+        $eDate = Carbon::parse($endDate)->format('Y-m-d');
+        $media = strtolower($media);
+
+        // 1. Exact Match
+        $record = static::where('project_id', $projectId)
+            ->where('media', $media)
+            ->where('endpoint_key', $endpointKey)
+            ->where('start_date', $sDate)
+            ->where('end_date', $eDate)
+            ->first();
+
+        // 2. Containing Match (snapshot covers the requested period)
+        if (!$record) {
+            $record = static::where('project_id', $projectId)
+                ->where('media', $media)
+                ->where('endpoint_key', $endpointKey)
+                ->where('start_date', '<=', $sDate)
+                ->where('end_date', '>=', $eDate)
+                ->orderBy('synced_at', 'desc')
+                ->first();
+        }
+
+        // 3. Fallback to latest snapshot of exact endpoint_key
+        if (!$record) {
+            $record = static::where('project_id', $projectId)
+                ->where('media', $media)
+                ->where('endpoint_key', $endpointKey)
+                ->orderBy('end_date', 'desc')
+                ->orderBy('synced_at', 'desc')
+                ->first();
+        }
+
+        // 4. Family prefix fallback (e.g. news_mentions_*, articles_*)
+        if (!$record) {
+            $prefix = null;
+            if (str_starts_with($endpointKey, 'news_mentions_')) {
+                $prefix = 'news_mentions_%';
+            } elseif (str_starts_with($endpointKey, 'articles_')) {
+                $prefix = 'articles_%';
+            }
+
+            if ($prefix) {
+                $record = static::where('project_id', $projectId)
+                    ->where('endpoint_key', 'like', $prefix)
+                    ->orderBy('synced_at', 'desc')
+                    ->first();
+            }
+        }
+
+        if (!$record || empty($record->payload)) {
+            return null;
+        }
+
+        $decoded = json_decode($record->payload, true);
+        return $decoded !== null ? $decoded : $record->payload;
+    }
+
+    /**
      * Fallback lookup: get latest snapshot for endpoint even if date differs slightly.
      *
      * @param int $projectId
