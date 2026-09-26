@@ -48,8 +48,14 @@ class AppServiceProvider extends ServiceProvider
                 // Get MediaKernelsClient instance
                 $client = app(MediaKernelsClient::class);
                 
-                // Fetch ALL projects from API
-                $projectsData = $client->listProjects(0, 100);
+                // Fetch ALL projects from API (with cache fallback)
+                try {
+                    $projectsData = $client->listProjects(0, 100);
+                    \Illuminate\Support\Facades\Cache::put('vault_all_projects_raw', $projectsData, now()->addDays(7));
+                } catch (\Throwable $apiErr) {
+                    Log::warning('View Composer: API listProjects failed, using cache', ['error' => $apiErr->getMessage()]);
+                    $projectsData = \Illuminate\Support\Facades\Cache::get('vault_all_projects_raw', []);
+                }
                 
                 Log::info('View Composer - Raw projects response', [
                     'response_type' => gettype($projectsData),

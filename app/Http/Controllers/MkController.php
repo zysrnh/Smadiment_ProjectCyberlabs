@@ -122,8 +122,14 @@
                 'assigned_ids' => $assignedProjectIds,
             ]);
 
-            $rawProjects = $mk->listProjects(0, 100);
-            $allProjects = array_values($rawProjects);
+            try {
+                $rawProjects = $mk->listProjects(0, 100);
+                $allProjects = array_values($rawProjects);
+                Cache::put('vault_all_projects', $allProjects, now()->addDays(7));
+            } catch (\Throwable $e) {
+                Log::warning("getProjects: API listProjects failed, using cached projects", ['error' => $e->getMessage()]);
+                $allProjects = Cache::get('vault_all_projects', []);
+            }
 
             $userProjects = array_filter($allProjects, function ($project) use ($assignedProjectIds) {
                 return in_array($project['id'] ?? null, $assignedProjectIds);

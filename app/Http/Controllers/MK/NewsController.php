@@ -3,18 +3,22 @@
 namespace App\Http\Controllers\MK;
 
 use App\Http\Controllers\Controller;
+use App\Services\ApiDataVaultService;
 use App\Services\MediaKernelsClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class NewsController extends Controller
 {
     protected $mkClient;
+    protected ApiDataVaultService $vault;
 
-    public function __construct(MediaKernelsClient $mkClient)
+    public function __construct(MediaKernelsClient $mkClient, ApiDataVaultService $vault)
     {
         $this->mkClient = $mkClient;
+        $this->vault    = $vault;
     }
 
     private function getAllProjects(): array
@@ -22,8 +26,14 @@ class NewsController extends Controller
         $user = Auth::user();
         $assignedProjectIds = $user->assignedProjectIds();
 
-        $rawProjects = $this->mkClient->listProjects(0, 100);
-        $allProjects = array_values($rawProjects);
+        try {
+            $rawProjects = $this->mkClient->listProjects(0, 100);
+            $allProjects = array_values($rawProjects);
+            Cache::put('vault_all_projects', $allProjects, now()->addDays(7));
+        } catch (\Throwable $e) {
+            Log::warning("getAllProjects: API listProjects failed, using cached projects", ['error' => $e->getMessage()]);
+            $allProjects = Cache::get('vault_all_projects', []);
+        }
 
         $userProjects = array_filter($allProjects, function ($project) use ($assignedProjectIds) {
             return in_array($project['id'] ?? null, $assignedProjectIds);
@@ -186,161 +196,163 @@ class NewsController extends Controller
     }
 
     /**
-     * API: Get News Word Cloud Data (ENHANCED VERSION)
+     * API: Get News Word Cloud Data (ENHANCED VERSION with Vault)
      */
-public function newsWordCloudData(Request $request)
-{
-    try {
-        $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date');
-        $endDate   = $request->query('end_date');
-        $sentiment = $request->query('sentiment', '2');
-
-        if (!$projectId) {
-            return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
-        }
-
-        Log::info('🔍 News Word Cloud - Fetching from articles/doc', [
-            'project_id' => $projectId,
-            'start_date' => $startDate,
-            'end_date'   => $endDate,
-            'sentiment'  => $sentiment,
-        ]);
-
-        $phrases = [];
-
-        // ── 1. PRIMARY: WordCloud API dulu ───────────────────────────
+    public function newsWordCloudData(Request $request)
+    {
         try {
-            $wordCloudData = $this->mkClient->wordCloud(
-                $projectId, $startDate, 0, $endDate, 23, $sentiment
-            );
+            $projectId = (int) $request->query('project_id');
+            $startDate = $request->query('start_date', now()->subDays(29)->format('Y-m-d'));
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
+            $sentiment = $request->query('sentiment', '2');
 
-            $wcPhrases = $wordCloudData['data']['phrases']
-                      ?? $wordCloudData['phrases']
-                      ?? [];
-
-            foreach ($wcPhrases as $word => $count) {
-                $phrases[$word] = ($phrases[$word] ?? 0) + (int) $count;
+            if (!$projectId) {
+                return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
             }
 
-            Log::info('✅ WordCloud API', ['count' => count($wcPhrases)]);
-        } catch (\Exception $e) {
-            Log::warning('⚠️ WordCloud API failed', ['error' => $e->getMessage()]);
-        }
+            Log::info('🔍 News Word Cloud - Fetching from articles/doc', [
+                'project_id' => $projectId,
+                'start_date' => $startDate,
+                'end_date'   => $endDate,
+                'sentiment'  => $sentiment,
+            ]);
 
-        // ── 2. PRIMARY: Ambil articles (doc = online news) ───────────
-        // Ini sumber utama DroneEmprit, ambil banyak artikel lalu
-        // text-mine title + content untuk dapat semua kata
-        try {
-            $articles = $this->mkClient->articles(
-                $projectId,
-                'doc',      // media type: doc = online news
-                $startDate,
-                $endDate,
-                0,          // sentiment_id (0=all)
-                23,         // end hour
-                0,          // offset
-                2000,       // rows - ambil banyak
-                true        // include content
-            );
+            $endpointKey = "news_word_cloud_{$sentiment}";
 
-            $articles = is_array($articles) ? $articles : [];
+            $phrases = $this->vault->remember($projectId, 'news', $endpointKey, $startDate, $endDate, function () use ($projectId, $startDate, $endDate, $sentiment) {
+                $phrases = [];
 
-            Log::info('✅ Articles fetched for mining', ['count' => count($articles)]);
+                // ── 1. PRIMARY: WordCloud API dulu ───────────────────────────
+                try {
+                    $wordCloudData = $this->mkClient->wordCloud(
+                        $projectId, $startDate, 0, $endDate, 23, $sentiment
+                    );
 
-            $stopwords = $this->getStopwords();
+                    $wcPhrases = $wordCloudData['data']['phrases']
+                              ?? $wordCloudData['phrases']
+                              ?? [];
 
-            foreach ($articles as $article) {
-                // Filter sentiment kalau bukan "all"
-                if ($sentiment !== '2') {
-                    $articleSentiment = $article['class_sentiment']
-                                     ?? $article['sentiment_id']
-                                     ?? '0';
-                    $sentimentStr = strtolower($article['sentiment'] ?? '');
-                    if (str_contains($sentimentStr, 'positif') || str_contains($sentimentStr, 'positive')) {
-                        $articleSentiment = '0';
-                    } elseif (str_contains($sentimentStr, 'negatif') || str_contains($sentimentStr, 'negative')) {
-                        $articleSentiment = '-1';
-                    } elseif (str_contains($sentimentStr, 'netral') || str_contains($sentimentStr, 'neutral')) {
-                        $articleSentiment = '1';
+                    foreach ($wcPhrases as $word => $count) {
+                        $phrases[$word] = ($phrases[$word] ?? 0) + (int) $count;
                     }
-                    if ((string)$articleSentiment !== (string)$sentiment) continue;
+
+                    Log::info('✅ WordCloud API', ['count' => count($wcPhrases)]);
+                } catch (\Exception $e) {
+                    Log::warning('⚠️ WordCloud API failed', ['error' => $e->getMessage()]);
                 }
 
-                // Mine dari title (bobot x3 karena judul lebih penting)
-                $title = strip_tags($article['title'] ?? '');
-                $titleWords = $this->extractWords($title, $stopwords);
-                foreach ($titleWords as $word => $count) {
-                    $phrases[$word] = ($phrases[$word] ?? 0) + ($count * 3);
-                }
+                // ── 2. PRIMARY: Ambil articles (doc = online news) ───────────
+                try {
+                    $articles = $this->mkClient->articles(
+                        $projectId,
+                        'doc',      // media type: doc = online news
+                        $startDate,
+                        $endDate,
+                        0,          // sentiment_id (0=all)
+                        23,         // end hour
+                        0,          // offset
+                        2000,       // rows - ambil banyak
+                        true        // include content
+                    );
 
-                // Mine dari content
-                $content = strip_tags($article['content'] ?? '');
-                if (strlen($content) > 50) {
-                    $contentWords = $this->extractWords($content, $stopwords);
-                    foreach ($contentWords as $word => $count) {
-                        $phrases[$word] = ($phrases[$word] ?? 0) + $count;
+                    $articles = is_array($articles) ? $articles : [];
+
+                    Log::info('✅ Articles fetched for mining', ['count' => count($articles)]);
+
+                    $stopwords = $this->getStopwords();
+
+                    foreach ($articles as $article) {
+                        if ($sentiment !== '2') {
+                            $articleSentiment = $article['class_sentiment']
+                                             ?? $article['sentiment_id']
+                                             ?? '0';
+                            $sentimentStr = strtolower($article['sentiment'] ?? '');
+                            if (str_contains($sentimentStr, 'positif') || str_contains($sentimentStr, 'positive')) {
+                                $articleSentiment = '0';
+                            } elseif (str_contains($sentimentStr, 'negatif') || str_contains($sentimentStr, 'negative')) {
+                                $articleSentiment = '-1';
+                            } elseif (str_contains($sentimentStr, 'netral') || str_contains($sentimentStr, 'neutral')) {
+                                $articleSentiment = '1';
+                            }
+                            if ((string)$articleSentiment !== (string)$sentiment) continue;
+                        }
+
+                        // Mine dari title (bobot x3 karena judul lebih penting)
+                        $title = strip_tags($article['title'] ?? '');
+                        $titleWords = $this->extractWords($title, $stopwords);
+                        foreach ($titleWords as $word => $count) {
+                            $phrases[$word] = ($phrases[$word] ?? 0) + ($count * 3);
+                        }
+
+                        // Mine dari content
+                        $content = strip_tags($article['content'] ?? '');
+                        if (strlen($content) > 50) {
+                            $contentWords = $this->extractWords($content, $stopwords);
+                            foreach ($contentWords as $word => $count) {
+                                $phrases[$word] = ($phrases[$word] ?? 0) + $count;
+                            }
+                        }
                     }
+
+                    Log::info('✅ Articles text-mined', ['unique_words' => count($phrases)]);
+                } catch (\Exception $e) {
+                    Log::warning('⚠️ Articles mining failed', ['error' => $e->getMessage()]);
                 }
-            }
 
-            Log::info('✅ Articles text-mined', ['unique_words' => count($phrases)]);
-        } catch (\Exception $e) {
-            Log::warning('⚠️ Articles mining failed', ['error' => $e->getMessage()]);
-        }
-
-        // ── 3. SUPPLEMENT: Hashtags ──────────────────────────────────
-        try {
-            $hashtagsData = $this->mkClient->topHashtags($projectId, 'all', $startDate, $endDate);
-            $hashtags = $hashtagsData['data'] ?? $hashtagsData ?? [];
-            if (is_array($hashtags)) {
-                foreach ($hashtags as $item) {
-                    if (!is_array($item)) continue;
-                    $tag   = ltrim($item['hashtag'] ?? '', '#');
-                    $count = (int)($item['count'] ?? 1);
-                    if (mb_strlen($tag) >= 3) {
-                        $phrases[$tag] = ($phrases[$tag] ?? 0) + (int)($count * 2);
+                // ── 3. SUPPLEMENT: Hashtags ──────────────────────────────────
+                try {
+                    $hashtagsData = $this->mkClient->topHashtags($projectId, 'all', $startDate, $endDate);
+                    $hashtags = $hashtagsData['data'] ?? $hashtagsData ?? [];
+                    if (is_array($hashtags)) {
+                        foreach ($hashtags as $item) {
+                            if (!is_array($item)) continue;
+                            $tag   = ltrim($item['hashtag'] ?? '', '#');
+                            $count = (int)($item['count'] ?? 1);
+                            if (mb_strlen($tag) >= 3) {
+                                $phrases[$tag] = ($phrases[$tag] ?? 0) + (int)($count * 2);
+                            }
+                        }
                     }
+                } catch (\Exception $e) {
+                    Log::warning('⚠️ Hashtags failed', ['error' => $e->getMessage()]);
                 }
-            }
+
+                // ── 4. Cleanup & filter ──────────────────────────────────────
+                $banned = [
+                    'http', 'https', 'www', 'com', 'net', 'org', 'co', 'id',
+                    'quot', 'amp', 'nbsp', 'ndash', 'mdash', 'rsquo', 'ldquo',
+                    'rdquo', 'lsquo', 'hellip', 'raquo', 'laquo',
+                ];
+
+                $phrases = array_filter($phrases, function ($word) use ($banned) {
+                    $lower = mb_strtolower($word, 'UTF-8');
+                    return mb_strlen($word, 'UTF-8') >= 3
+                        && mb_strlen($word, 'UTF-8') <= 30
+                        && !in_array($lower, $banned)
+                        && !is_numeric($word)
+                        && !str_starts_with($word, '&')
+                        && !str_starts_with($word, '@')
+                        && !preg_match('/^[^a-zA-Z\x{00C0}-\x{024F}\x{0370}-\x{03FF}]/u', $word);
+                }, ARRAY_FILTER_USE_KEY);
+
+                arsort($phrases);
+                return array_slice($phrases, 0, 200, true);
+            });
+
+            $phrases = is_array($phrases) ? $phrases : [];
+            Log::info('✅ Word Cloud final', ['total' => count($phrases)]);
+
+            return response()->json([
+                'success' => true,
+                'data'    => ['data' => ['phrases' => $phrases]],
+                'meta'    => ['total_words' => count($phrases)],
+            ]);
+
         } catch (\Exception $e) {
-            Log::warning('⚠️ Hashtags failed', ['error' => $e->getMessage()]);
+            Log::error('❌ News Word Cloud Error', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'error' => 'Failed to fetch word cloud data'], 500);
         }
-
-        // ── 4. Cleanup & filter ──────────────────────────────────────
-        $banned = [
-            'http', 'https', 'www', 'com', 'net', 'org', 'co', 'id',
-            'quot', 'amp', 'nbsp', 'ndash', 'mdash', 'rsquo', 'ldquo',
-            'rdquo', 'lsquo', 'hellip', 'raquo', 'laquo',
-        ];
-
-        $phrases = array_filter($phrases, function ($word) use ($banned) {
-            $lower = mb_strtolower($word, 'UTF-8');
-            return mb_strlen($word, 'UTF-8') >= 3
-                && mb_strlen($word, 'UTF-8') <= 30
-                && !in_array($lower, $banned)
-                && !is_numeric($word)
-                && !str_starts_with($word, '&')
-                && !str_starts_with($word, '@')
-                && !preg_match('/^[^a-zA-Z\x{00C0}-\x{024F}\x{0370}-\x{03FF}]/u', $word);
-        }, ARRAY_FILTER_USE_KEY);
-
-        arsort($phrases);
-        $phrases = array_slice($phrases, 0, 200, true);
-
-        Log::info('✅ Word Cloud final', ['total' => count($phrases)]);
-
-        return response()->json([
-            'success' => true,
-            'data'    => ['data' => ['phrases' => $phrases]],
-            'meta'    => ['total_words' => count($phrases)],
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('❌ News Word Cloud Error', ['error' => $e->getMessage()]);
-        return response()->json(['success' => false, 'error' => 'Failed to fetch word cloud data'], 500);
     }
-}
 
 // ── Helper: extract & count words dari text ──────────────────────────
 private function extractWords(string $text, array $stopwords): array
@@ -478,125 +490,118 @@ public function topPublisherPage(Request $request)
 public function topPublisherData(Request $request)
 {
     try {
-        $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date');
-        $endDate   = $request->query('end_date');
+        $projectId = (int) $request->query('project_id');
+        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+        $endDate   = $request->query('end_date', now()->format('Y-m-d'));
         $newsType  = $request->query('news_type', 'article');
 
         if (!$projectId) {
             return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
         }
 
-        // ══════════════════════════════════════════════════════════
-        // 1. Fetch article COUNT per publisher (topPublisher API)
-        //    Returns: { "antaranews.com": 321, "liputan6.com": 161, ... }
-        // ══════════════════════════════════════════════════════════
-        $publishersData = $this->mkClient->topPublisher(
-            $projectId, $startDate, $endDate, 0, 23, 1000, $newsType
-        );
+        $endpointKey = "top_publisher_{$newsType}";
 
-        // Bangun lookup keyed by normalized domain
-        $publishers = [];
-        $rank = 1;
-        foreach ($publishersData as $domain => $count) {
-            $key = preg_replace('/^www\./', '', strtolower(trim($domain)));
-            $publishers[$key] = [
-                'rank'     => $rank++,
-                'domain'   => $domain,
-                'count'    => (int) $count,
-                'mentions' => 0,   // diisi di step 2
-            ];
-        }
-
-        // ══════════════════════════════════════════════════════════
-        // 2. Fetch articles detail → group by publisher → mentions
-        //    articles() sudah ada, gunakan doc + rows besar
-        //    include_content = false agar lebih cepat
-        // ══════════════════════════════════════════════════════════
-        try {
-            $articles = $this->mkClient->articles(
-                $projectId,
-                'doc',   // media type: online news
-                $startDate,
-                $endDate,
-                0,       // sentiment_id: 0 = all
-                23,      // end_hour
-                0,       // offset
-                5000,    // rows — ambil banyak untuk coverage akurat
-                false    // include_content = false, lebih cepat
+        $result = $this->vault->remember($projectId, 'news', $endpointKey, $startDate, $endDate, function () use ($projectId, $startDate, $endDate, $newsType) {
+            // ══════════════════════════════════════════════════════════
+            // 1. Fetch article COUNT per publisher (topPublisher API)
+            // ══════════════════════════════════════════════════════════
+            $publishersData = $this->mkClient->topPublisher(
+                $projectId, $startDate, $endDate, 0, 23, 1000, $newsType
             );
 
-            $articles = is_array($articles) ? $articles : [];
+            // Bangun lookup keyed by normalized domain
+            $publishers = [];
+            $rank = 1;
+            foreach ($publishersData as $domain => $count) {
+                $key = preg_replace('/^www\./', '', strtolower(trim($domain)));
+                $publishers[$key] = [
+                    'rank'     => $rank++,
+                    'domain'   => $domain,
+                    'count'    => (int) $count,
+                    'mentions' => 0,   // diisi di step 2
+                ];
+            }
 
-            // ── Hitung mentions per domain ──────────────────────────
-            $menMap = [];
-            foreach ($articles as $article) {
-                // Coba ambil publisher dari berbagai field
-                $pub = trim(
-                    $article['publisher']   ??
-                    $article['hostname']    ??
-                    $article['source_name'] ??
-                    $article['domain']      ?? ''
+            // ══════════════════════════════════════════════════════════
+            // 2. Fetch articles detail → group by publisher → mentions
+            // ══════════════════════════════════════════════════════════
+            try {
+                $articles = $this->mkClient->articles(
+                    $projectId,
+                    'doc',   // media type: online news
+                    $startDate,
+                    $endDate,
+                    0,       // sentiment_id: 0 = all
+                    23,      // end_hour
+                    0,       // offset
+                    5000,    // rows — ambil banyak untuk coverage akurat
+                    false    // include_content = false, lebih cepat
                 );
 
-                // Fallback: parse dari URL
-                if (!$pub) {
-                    $url = (string) ($article['url'] ?? $article['link'] ?? '');
-                    if ($url) {
-                        $parsed = parse_url($url);
-                        $pub    = $parsed['host'] ?? '';
-                    }
-                }
+                $articles = is_array($articles) ? $articles : [];
 
-                $pub = preg_replace('/^www\./', '', strtolower(trim($pub)));
-                if (!$pub) continue;
+                // ── Hitung mentions per domain ──────────────────────────
+                $menMap = [];
+                foreach ($articles as $article) {
+                    $pub = trim(
+                        $article['publisher']   ??
+                        $article['hostname']    ??
+                        $article['source_name'] ??
+                        $article['domain']      ?? ''
+                    );
 
-                $menMap[$pub] = ($menMap[$pub] ?? 0) + 1;
-            }
-
-            Log::info('✅ topPublisherData — articles fetched for mentions', [
-                'articles_total'    => count($articles),
-                'unique_publishers' => count($menMap),
-                'sample'            => array_slice($menMap, 0, 5, true),
-            ]);
-
-            // ── Attach mentions ke setiap publisher ─────────────────
-            foreach ($publishers as $key => &$pub) {
-                $men = $menMap[$key] ?? 0;
-
-                // Partial fallback: "nasional.kompas.com" → check "kompas.com"
-                if (!$men && substr_count($key, '.') >= 2) {
-                    $parts   = explode('.', $key);
-                    $rootKey = implode('.', array_slice($parts, -2));
-                    foreach ($menMap as $mKey => $mVal) {
-                        if (str_ends_with($mKey, $rootKey)) {
-                            $men += $mVal;
+                    if (!$pub) {
+                        $url = (string) ($article['url'] ?? $article['link'] ?? '');
+                        if ($url) {
+                            $parsed = parse_url($url);
+                            $pub    = $parsed['host'] ?? '';
                         }
                     }
+
+                    $pub = preg_replace('/^www\./', '', strtolower(trim($pub)));
+                    if (!$pub) continue;
+
+                    $menMap[$pub] = ($menMap[$pub] ?? 0) + 1;
                 }
 
-                $pub['mentions'] = $men;
+                // ── Attach mentions ke setiap publisher ─────────────────
+                foreach ($publishers as $key => &$pub) {
+                    $men = $menMap[$key] ?? 0;
+
+                    if (!$men && substr_count($key, '.') >= 2) {
+                        $parts   = explode('.', $key);
+                        $rootKey = implode('.', array_slice($parts, -2));
+                        foreach ($menMap as $mKey => $mVal) {
+                            if (str_ends_with($mKey, $rootKey)) {
+                                $men += $mVal;
+                            }
+                        }
+                    }
+
+                    $pub['mentions'] = $men;
+                }
+                unset($pub);
+
+            } catch (\Exception $e) {
+                Log::warning('⚠️ topPublisherData: articles detail fetch failed', [
+                    'error' => $e->getMessage(),
+                ]);
             }
-            unset($pub);
 
-            Log::info('✅ topPublisherData — merge done', [
-                'top5' => array_map(
-                    fn($p) => "{$p['domain']} art:{$p['count']} men:{$p['mentions']}",
-                    array_slice(array_values($publishers), 0, 5)
-                ),
-            ]);
+            $publishers    = array_values($publishers);
+            $totalArticles = array_sum(array_column($publishers, 'count'));
+            $totalMentions = array_sum(array_column($publishers, 'mentions'));
 
-        } catch (\Exception $e) {
-            // Gagal fetch articles detail → lanjut dengan mentions = 0
-            Log::warning('⚠️ topPublisherData: articles detail fetch failed', [
-                'error' => $e->getMessage(),
-            ]);
-        }
+            return [
+                'data'           => $publishers,
+                'total_articles' => $totalArticles,
+                'total_mentions' => $totalMentions,
+            ];
+        });
 
-        // Re-index jadi plain array, sorted by count DESC (sudah dari API)
-        $publishers    = array_values($publishers);
-        $totalArticles = array_sum(array_column($publishers, 'count'));
-        $totalMentions = array_sum(array_column($publishers, 'mentions'));
+        $publishers    = $result['data'] ?? [];
+        $totalArticles = $result['total_articles'] ?? 0;
+        $totalMentions = $result['total_mentions'] ?? 0;
 
         return response()->json([
             'success' => true,
@@ -633,87 +638,97 @@ public function topPublisherData(Request $request)
 public function articlesData(Request $request)
 {
     try {
-        $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date');
-        $endDate   = $request->query('end_date');
+        $projectId = (int) $request->query('project_id');
+        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+        $endDate   = $request->query('end_date', now()->format('Y-m-d'));
         $media     = $request->query('media', 'doc');
         $sentiment = $request->query('sentiment', 'all');
-        $maxRows   = (int) $request->query('rows', 99999); // max total yang mau diambil
+        $maxRows   = (int) $request->query('rows', 99999);
         $start     = (int) $request->query('start', 0);
 
         if (!$projectId) {
             return response()->json(['success' => false, 'error' => 'Project ID is required'], 400);
         }
 
-        // Fetch single batch of 100 for stability as requested
-        $batch = $this->mkClient->articles(
-            $projectId,
-            $media,
-            $startDate,
-            $endDate,
-            0,    // sentiment_id
-            23,   // end_hour
-            $start,
-            100,  // limit to 100
-            false // no quotes
-        );
+        $endpointKey = "articles_{$media}_{$sentiment}_{$start}";
 
-        $allArticles = $this->extractArray($batch);
-        Log::info("✅ Articles fetched (single batch)", ['total' => count($allArticles)]);
-
-        $totalQuotesBeforeFilter = 0;
-        $totalQuotesAfterFilter  = 0;
-        $articlesWithValidQuotes = 0;
-        $quotesFilteredOut       = 0;
-
-        $articles = array_map(function ($article) use (
-            &$totalQuotesBeforeFilter, &$totalQuotesAfterFilter,
-            &$articlesWithValidQuotes, &$quotesFilteredOut
+        $articles = $this->vault->remember($projectId, $media, $endpointKey, $startDate, $endDate, function () use (
+            $projectId, $media, $startDate, $endDate, $sentiment, $start
         ) {
-            $article['title']           = $article['title']           ?? 'Untitled';
-            $article['publisher']       = $article['publisher']       ?? 'Unknown Publisher';
-            $article['url']             = $article['url']             ?? '#';
-            $article['date_created']    = $article['date_created']    ?? now()->toDateTimeString();
-            $article['content']         = $article['content']         ?? '';
-            $article['sentiment']       = $article['sentiment']       ?? 'Neutral';
-            $article['sentiment_class'] = $article['sentiment_class'] ?? 'neutral';
+            // Fetch single batch of 100 for stability as requested
+            $batch = $this->mkClient->articles(
+                $projectId,
+                $media,
+                $startDate,
+                $endDate,
+                0,    // sentiment_id
+                23,   // end_hour
+                $start,
+                100,  // limit to 100
+                false // no quotes
+            );
 
-            $quotes = $article['quotes'] ?? [];
-            $totalQuotesBeforeFilter += is_array($quotes) ? count($quotes) : 0;
+            $allArticles = $this->extractArray($batch);
+            Log::info("✅ Articles fetched (single batch)", ['total' => count($allArticles)]);
 
-            if (is_array($quotes) && count($quotes) > 0) {
-                $validQuotes = array_filter($quotes, function ($quote) use (&$quotesFilteredOut) {
-                    if (!is_array($quote))             { $quotesFilteredOut++; return false; }
-                    if (!isset($quote['Kutipan']))      { $quotesFilteredOut++; return false; }
-                    if (trim($quote['Kutipan']) === '') { $quotesFilteredOut++; return false; }
-                    return true;
-                });
-                $quotes = array_values($validQuotes);
-            } else {
-                $quotes = [];
+            $totalQuotesBeforeFilter = 0;
+            $totalQuotesAfterFilter  = 0;
+            $articlesWithValidQuotes = 0;
+            $quotesFilteredOut       = 0;
+
+            $articles = array_map(function ($article) use (
+                &$totalQuotesBeforeFilter, &$totalQuotesAfterFilter,
+                &$articlesWithValidQuotes, &$quotesFilteredOut
+            ) {
+                $article['title']           = $article['title']           ?? 'Untitled';
+                $article['publisher']       = $article['publisher']       ?? 'Unknown Publisher';
+                $article['url']             = $article['url']             ?? '#';
+                $article['date_created']    = $article['date_created']    ?? now()->toDateTimeString();
+                $article['content']         = $article['content']         ?? '';
+                $article['sentiment']       = $article['sentiment']       ?? 'Neutral';
+                $article['sentiment_class'] = $article['sentiment_class'] ?? 'neutral';
+
+                $quotes = $article['quotes'] ?? [];
+                $totalQuotesBeforeFilter += is_array($quotes) ? count($quotes) : 0;
+
+                if (is_array($quotes) && count($quotes) > 0) {
+                    $validQuotes = array_filter($quotes, function ($quote) use (&$quotesFilteredOut) {
+                        if (!is_array($quote))             { $quotesFilteredOut++; return false; }
+                        if (!isset($quote['Kutipan']))      { $quotesFilteredOut++; return false; }
+                        if (trim($quote['Kutipan']) === '') { $quotesFilteredOut++; return false; }
+                        return true;
+                    });
+                    $quotes = array_values($validQuotes);
+                } else {
+                    $quotes = [];
+                }
+
+                $totalQuotesAfterFilter += count($quotes);
+                if (count($quotes) > 0) $articlesWithValidQuotes++;
+
+                $article['quotes']       = $quotes;
+                $article['total_quotes'] = count($quotes);
+                return $article;
+
+            }, $allArticles);
+
+            // Filter by sentiment jika bukan 'all'
+            if ($sentiment !== 'all') {
+                $articles = array_values(array_filter($articles, function ($article) use ($sentiment) {
+                    $articleSentiment = $article['class_sentiment'] ?? $article['sentiment_class'] ?? '0';
+                    $sentimentLower   = strtolower($article['sentiment'] ?? '');
+                    if     ($sentimentLower === 'positive' || $sentimentLower === 'positif') $articleSentiment = '1';
+                    elseif ($sentimentLower === 'negative' || $sentimentLower === 'negatif') $articleSentiment = '-1';
+                    elseif ($sentimentLower === 'neutral'  || $sentimentLower === 'netral')  $articleSentiment = '0';
+                    return $articleSentiment == $sentiment;
+                }));
             }
 
-            $totalQuotesAfterFilter += count($quotes);
-            if (count($quotes) > 0) $articlesWithValidQuotes++;
+            return $articles;
+        });
 
-            $article['quotes']       = $quotes;
-            $article['total_quotes'] = count($quotes);
-            return $article;
-
-        }, $allArticles);
-
-        // ✅ Filter by sentiment jika bukan 'all'
-        if ($sentiment !== 'all') {
-            $articles = array_values(array_filter($articles, function ($article) use ($sentiment) {
-                $articleSentiment = $article['class_sentiment'] ?? $article['sentiment_class'] ?? '0';
-                $sentimentLower   = strtolower($article['sentiment'] ?? '');
-                if     ($sentimentLower === 'positive' || $sentimentLower === 'positif') $articleSentiment = '1';
-                elseif ($sentimentLower === 'negative' || $sentimentLower === 'negatif') $articleSentiment = '-1';
-                elseif ($sentimentLower === 'neutral'  || $sentimentLower === 'netral')  $articleSentiment = '0';
-                return $articleSentiment == $sentiment;
-            }));
-        }
-
+        $articles = is_array($articles) ? $articles : [];
+        $articlesWithValidQuotes = count(array_filter($articles, fn($a) => ($a['total_quotes'] ?? 0) > 0));
         $totalQuotes = array_sum(array_column($articles, 'total_quotes'));
 
         return response()->json([
@@ -729,7 +744,7 @@ public function articlesData(Request $request)
                 'sentiment_filter'       => $sentiment,
                 'media_type'             => $media,
                 'start'                  => $start,
-                'rows_fetched'           => count($articles), // ✅ total aktual
+                'rows_fetched'           => count($articles),
             ],
         ]);
 
@@ -792,9 +807,9 @@ public function articlesData(Request $request)
     public function newsMentionsData(Request $request)
     {
         try {
-            $projectId = $request->query('project_id');
-            $startDate = $request->query('start_date');
-            $endDate   = $request->query('end_date');
+            $projectId = (int) $request->query('project_id');
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
             $start     = (int) $request->query('start', 0);
             $rows      = (int) $request->query('rows', 2000);
 
@@ -804,40 +819,16 @@ public function articlesData(Request $request)
 
             Log::info('🔍 News Mentions Timeline Data Fetch', compact('projectId', 'startDate', 'endDate', 'start', 'rows'));
 
-            $raw      = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
-            // ✅ FIX: extractArray handles raw [], {data:[]}, {success,data}
-            $mentions = $this->extractArray($raw);
+            $endpointKey = "news_mentions_{$start}_{$rows}";
 
-            // ═══════════════════════════════════════════════════════
-            // DEBUG: Lihat distribusi media_type_id dari raw mentions
-            // Ini penting untuk diagnosa kenapa Online News = 0
-            // ═══════════════════════════════════════════════════════
-            $mtidDist = [];
-            $tcodeDist = [];
-            $sample = [];
-            foreach ($mentions as $i => $m) {
-                $mtid  = (string)($m['media_type_id'] ?? 'NULL');
-                $tcode = (string)($m['tcode'] ?? $m['media_type'] ?? 'NULL');
-                $mtidDist[$mtid]   = ($mtidDist[$mtid] ?? 0) + 1;
-                $tcodeDist[$tcode] = ($tcodeDist[$tcode] ?? 0) + 1;
-                if ($i < 5) {
-                    $sample[] = [
-                        'id'            => substr((string)($m['id'] ?? $m['docid'] ?? ''), 0, 20),
-                        'media_type_id' => $m['media_type_id'] ?? 'NULL',
-                        'media_type'    => $m['media_type'] ?? 'NULL',
-                        'tcode'         => $m['tcode'] ?? 'NULL',
-                        'url'           => substr((string)($m['url'] ?? ''), 0, 40),
-                    ];
-                }
-            }
-            arsort($mtidDist);
-            Log::info('🔬 RAW MENTIONS DEBUG — media_type_id distribution', [
-                'total'        => count($mentions),
-                'mtid_dist'    => $mtidDist,
-                'tcode_dist'   => $tcodeDist,
-                'sample_items' => $sample,
-            ]);
-            // ═══════════════════════════════════════════════════════
+            $mentions = $this->vault->remember($projectId, 'all', $endpointKey, $startDate, $endDate, function () use (
+                $projectId, $startDate, $endDate, $start, $rows
+            ) {
+                $raw      = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
+                return $this->extractArray($raw);
+            });
+
+            $mentions = is_array($mentions) ? $mentions : [];
 
             Log::info('✅ News Mentions fetched', ['total' => count($mentions), 'start' => $start]);
 
@@ -859,9 +850,9 @@ public function articlesData(Request $request)
     public function tiktokTopStatus(Request $request)
     {
         try {
-            $projectId = $request->query('project_id');
-            $startDate = $request->query('start_date');
-            $endDate   = $request->query('end_date');
+            $projectId = (int) $request->query('project_id');
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
             $rows      = (int) $request->query('rows', 2000);
             $start     = (int) $request->query('start', 0);
             $sub       = $request->query('sub', 'postbylike');
@@ -870,24 +861,28 @@ public function articlesData(Request $request)
 
             Log::info('🎵 TikTok Top Status Fetch', compact('projectId', 'startDate', 'endDate', 'rows', 'start', 'sub'));
 
-            $raw  = $this->mkClient->tiktokTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
-            // ✅ FIX: dulu pakai count((array)$data) yang return 1 meski kosong
-            $data = $this->extractArray($raw);
+            $endpointKey = "tiktok_top_status_{$sub}_{$start}_{$rows}";
 
-            Log::info('tiktokTopStatus API response', [
-                'project_id'  => $projectId,
-                'sub'         => $sub,
-                'total_items' => count($data),
-                'first_item'  => count($data) > 0 ? array_slice($data[0], 0, 4) : null,
+            $normalised = $this->vault->remember($projectId, 'tiktok', $endpointKey, $startDate, $endDate, function () use (
+                $projectId, $startDate, $endDate, $rows, $start, $sub
+            ) {
+                $raw  = $this->mkClient->tiktokTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
+                $data = $this->extractArray($raw);
+
+                if (empty($data)) {
+                    return [];
+                }
+
+                return array_map(fn($item) => $this->normaliseTiktok($item), $data);
+            });
+
+            $normalised = is_array($normalised) ? $normalised : [];
+
+            return response()->json([
+                'success' => true,
+                'data'    => $normalised,
+                'meta'    => ['total' => count($normalised), 'platform' => 'tiktok', 'sub' => $sub]
             ]);
-
-            if (empty($data)) {
-                Log::info('TikTok: no data from dedicated API, returning empty (frontend handles fallback)');
-                return response()->json(['success' => true, 'data' => [], 'meta' => ['total' => 0, 'platform' => 'tiktok', 'sub' => $sub]]);
-            }
-
-            $normalised = array_map(fn($item) => $this->normaliseTiktok($item), $data);
-            return response()->json(['success' => true, 'data' => $normalised, 'meta' => ['total' => count($normalised), 'platform' => 'tiktok', 'sub' => $sub]]);
 
         } catch (\Exception $e) {
             Log::error('TikTok Top Status Error', ['error' => $e->getMessage()]);
@@ -925,9 +920,9 @@ public function articlesData(Request $request)
     public function igTopStatus(Request $request)
     {
         try {
-            $projectId = $request->query('project_id');
-            $startDate = $request->query('start_date');
-            $endDate   = $request->query('end_date');
+            $projectId = (int) $request->query('project_id');
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
             $rows      = (int) $request->query('rows', 2000);
             $start     = (int) $request->query('start', 0);
             $sub       = $request->query('sub', 'postbylike');
@@ -938,42 +933,49 @@ public function articlesData(Request $request)
 
             Log::info('📷 Instagram Top Status Fetch', compact('projectId', 'startDate', 'endDate', 'rows', 'start', 'sub'));
 
-            $data = [];
+            $endpointKey = "ig_top_status_{$sub}_{$start}_{$rows}";
 
-            try {
-                $raw  = $this->mkClient->igTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
-                // ✅ FIX: extractArray instead of count((array)$data)
-                $data = $this->extractArray($raw);
-                Log::info('✅ IG dedicated API returned', ['count' => count($data)]);
-            } catch (\Exception $e) {
-                Log::warning('⚠️ IG dedicated API failed, falling back to mentions', ['error' => $e->getMessage()]);
-            }
+            $normalised = $this->vault->remember($projectId, 'instagram', $endpointKey, $startDate, $endDate, function () use (
+                $projectId, $startDate, $endDate, $rows, $start, $sub
+            ) {
+                $data = [];
 
-            if (empty($data)) {
-                Log::info('📋 Instagram: using mentions fallback');
-                $rawMentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
-                $mentions    = $this->extractArray($rawMentions);
+                try {
+                    $raw  = $this->mkClient->igTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
+                    $data = $this->extractArray($raw);
+                    Log::info('✅ IG dedicated API returned', ['count' => count($data)]);
+                } catch (\Exception $e) {
+                    Log::warning('⚠️ IG dedicated API failed, falling back to mentions', ['error' => $e->getMessage()]);
+                }
 
-                $data = array_values(array_filter($mentions, function ($item) {
-                    $mt  = strtolower((string) ($item['media_type_id'] ?? $item['media_type'] ?? $item['tcode'] ?? ''));
-                    $id  = (string) ($item['id'] ?? $item['docid'] ?? '');
-                    $url = (string) ($item['url'] ?? '');
-                    return $mt === '3'
-                        || str_contains($mt, 'ig')
-                        || str_contains($mt, 'instagram')
-                        || str_starts_with($id, 'in-')
-                        || str_contains($url, 'instagram.com');
-                }));
+                if (empty($data)) {
+                    Log::info('📋 Instagram: using mentions fallback');
+                    $rawMentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
+                    $mentions    = $this->extractArray($rawMentions);
 
-                usort($data, fn($a, $b) =>
-                    (int)($b['num_likes'] ?? $b['likes'] ?? $b['freq'] ?? 0)
-                    - (int)($a['num_likes'] ?? $a['likes'] ?? $a['freq'] ?? 0)
-                );
+                    $data = array_values(array_filter($mentions, function ($item) {
+                        $mt  = strtolower((string) ($item['media_type_id'] ?? $item['media_type'] ?? $item['tcode'] ?? ''));
+                        $id  = (string) ($item['id'] ?? $item['docid'] ?? '');
+                        $url = (string) ($item['url'] ?? '');
+                        return $mt === '3'
+                            || str_contains($mt, 'ig')
+                            || str_contains($mt, 'instagram')
+                            || str_starts_with($id, 'in-')
+                            || str_contains($url, 'instagram.com');
+                    }));
 
-                Log::info('📋 Instagram fallback result', ['count' => count($data)]);
-            }
+                    usort($data, fn($a, $b) =>
+                        (int)($b['num_likes'] ?? $b['likes'] ?? $b['freq'] ?? 0)
+                        - (int)($a['num_likes'] ?? $a['likes'] ?? $a['freq'] ?? 0)
+                    );
 
-            $normalised = array_map(fn($item) => $this->normaliseInstagram($item), $data);
+                    Log::info('📋 Instagram fallback result', ['count' => count($data)]);
+                }
+
+                return array_map(fn($item) => $this->normaliseInstagram($item), $data);
+            });
+
+            $normalised = is_array($normalised) ? $normalised : [];
 
             Log::info('✅ Instagram Top Status final', ['total' => count($normalised)]);
 
@@ -1028,9 +1030,9 @@ public function articlesData(Request $request)
     public function fbTopStatusApi(Request $request)
     {
         try {
-            $projectId = $request->query('project_id');
-            $startDate = $request->query('start_date');
-            $endDate   = $request->query('end_date');
+            $projectId = (int) $request->query('project_id');
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
             $rows      = (int) $request->query('rows', 2000);
             $start     = (int) $request->query('start', 0);
             $sub       = $request->query('sub', 'fblike');
@@ -1041,46 +1043,50 @@ public function articlesData(Request $request)
 
             Log::info('📘 Facebook Top Status Fetch', compact('projectId', 'startDate', 'endDate', 'rows', 'start', 'sub'));
 
-            $data = [];
+            $endpointKey = "fb_top_status_{$sub}_{$start}_{$rows}";
 
-            try {
-                $raw  = $this->mkClient->fbTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
-                // ✅ FIX: extractArray instead of count((array)$data)
-                $data = $this->extractArray($raw);
-                Log::info('✅ FB dedicated API returned', ['count' => count($data)]);
-            } catch (\Exception $e) {
-                Log::warning('⚠️ FB dedicated API failed, falling back to mentions', ['error' => $e->getMessage()]);
-            }
+            $normalised = $this->vault->remember($projectId, 'facebook', $endpointKey, $startDate, $endDate, function () use (
+                $projectId, $startDate, $endDate, $rows, $start, $sub
+            ) {
+                $data = [];
 
-            if (empty($data)) {
-                Log::info('📋 Facebook: using mentions fallback');
-                $rawMentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
-                $mentions    = $this->extractArray($rawMentions);
+                try {
+                    $raw  = $this->mkClient->fbTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
+                    $data = $this->extractArray($raw);
+                    Log::info('✅ FB dedicated API returned', ['count' => count($data)]);
+                } catch (\Exception $e) {
+                    Log::warning('⚠️ FB dedicated API failed, falling back to mentions', ['error' => $e->getMessage()]);
+                }
 
-                // ✅ FIX: Filter by tcode/media_type string, bukan media_type_id
-                // Karena media_type_id tidak konsisten antar project
-                // Di project ini: media_type="fb", tcode="fb-post"/"fb-comment"
-                $data = array_values(array_filter($mentions, function ($item) {
-                    $mt    = strtolower((string) ($item['media_type'] ?? ''));
-                    $tcode = strtolower((string) ($item['tcode'] ?? ''));
-                    $id    = (string) ($item['id'] ?? '');
-                    $url   = (string) ($item['url'] ?? '');
-                    return $mt === 'fb' || $mt === 'facebook'
-                        || str_starts_with($tcode, 'fb-')
-                        || str_starts_with($id, 'fb-')
-                        || str_contains($url, 'facebook.com')
-                        || str_contains($url, 'fb.com');
-                }));
+                if (empty($data)) {
+                    Log::info('📋 Facebook: using mentions fallback');
+                    $rawMentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
+                    $mentions    = $this->extractArray($rawMentions);
 
-                usort($data, fn($a, $b) =>
-                    (int)($b['num_likes'] ?? $b['likes'] ?? 0)
-                    - (int)($a['num_likes'] ?? $a['likes'] ?? 0)
-                );
+                    $data = array_values(array_filter($mentions, function ($item) {
+                        $mt    = strtolower((string) ($item['media_type'] ?? ''));
+                        $tcode = strtolower((string) ($item['tcode'] ?? ''));
+                        $id    = (string) ($item['id'] ?? '');
+                        $url   = (string) ($item['url'] ?? '');
+                        return $mt === 'fb' || $mt === 'facebook'
+                            || str_starts_with($tcode, 'fb-')
+                            || str_starts_with($id, 'fb-')
+                            || str_contains($url, 'facebook.com')
+                            || str_contains($url, 'fb.com');
+                    }));
 
-                Log::info('📋 Facebook fallback result', ['count' => count($data)]);
-            }
+                    usort($data, fn($a, $b) =>
+                        (int)($b['num_likes'] ?? $b['likes'] ?? 0)
+                        - (int)($a['num_likes'] ?? $a['likes'] ?? 0)
+                    );
 
-            $normalised = array_map(fn($item) => $this->normaliseFacebook($item), $data);
+                    Log::info('📋 Facebook fallback result', ['count' => count($data)]);
+                }
+
+                return array_map(fn($item) => $this->normaliseFacebook($item), $data);
+            });
+
+            $normalised = is_array($normalised) ? $normalised : [];
 
             return response()->json([
                 'success' => true,
@@ -1125,9 +1131,9 @@ public function articlesData(Request $request)
     public function ytbTopStatus(Request $request)
     {
         try {
-            $projectId = $request->query('project_id');
-            $startDate = $request->query('start_date');
-            $endDate   = $request->query('end_date');
+            $projectId = (int) $request->query('project_id');
+            $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+            $endDate   = $request->query('end_date', now()->format('Y-m-d'));
             $rows      = (int) $request->query('rows', 2000);
             $start     = (int) $request->query('start', 0);
             $sub       = $request->query('sub', 'postbyview');
@@ -1138,57 +1144,65 @@ public function articlesData(Request $request)
 
             Log::info('▶️ YouTube Top Status Fetch', compact('projectId', 'startDate', 'endDate', 'rows', 'start', 'sub'));
 
-            $data = [];
+            $endpointKey = "ytb_top_status_{$sub}_{$start}_{$rows}";
 
-            try {
-                $raw  = $this->mkClient->ytbTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
-                $data = $this->extractArray($raw);
-                Log::info('✅ YT dedicated API returned', ['count' => count($data)]);
-            } catch (\Exception $e) {
-                Log::warning('⚠️ YT dedicated API failed, falling back to mentions', ['error' => $e->getMessage()]);
-            }
+            $normalised = $this->vault->remember($projectId, 'youtube', $endpointKey, $startDate, $endDate, function () use (
+                $projectId, $startDate, $endDate, $rows, $start, $sub
+            ) {
+                $data = [];
 
-            if (empty($data)) {
-                Log::info('📋 YouTube: using mentions fallback');
-                $rawMentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
-                $mentions    = $this->extractArray($rawMentions);
+                try {
+                    $raw  = $this->mkClient->ytbTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
+                    $data = $this->extractArray($raw);
+                    Log::info('✅ YT dedicated API returned', ['count' => count($data)]);
+                } catch (\Exception $e) {
+                    Log::warning('⚠️ YT dedicated API failed, falling back to mentions', ['error' => $e->getMessage()]);
+                }
 
-                $data = array_values(array_filter($mentions, function ($item) {
-                    $mt  = strtolower((string) ($item['media_type_id'] ?? $item['media_type'] ?? $item['tcode'] ?? ''));
-                    $id  = (string) ($item['id'] ?? $item['docid'] ?? '');
-                    $url = (string) ($item['url'] ?? '');
-                    return $mt === '4'
-                        || str_contains($mt, 'ytb')
-                        || str_contains($mt, 'youtube')
-                        || str_starts_with($id, 'yt-')
-                        || str_contains($url, 'youtube.com')
-                        || str_contains($url, 'youtu.be');
-                }));
+                if (empty($data)) {
+                    Log::info('📋 YouTube: using mentions fallback');
+                    $rawMentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
+                    $mentions    = $this->extractArray($rawMentions);
 
-                usort($data, fn($a, $b) =>
-                    (int)($b['num_likes'] ?? 0) - (int)($a['num_likes'] ?? 0)
-                );
-            }
+                    $data = array_values(array_filter($mentions, function ($item) {
+                        $mt  = strtolower((string) ($item['media_type_id'] ?? $item['media_type'] ?? $item['tcode'] ?? ''));
+                        $id  = (string) ($item['id'] ?? $item['docid'] ?? '');
+                        $url = (string) ($item['url'] ?? '');
+                        return $mt === '4'
+                            || str_contains($mt, 'ytb')
+                            || str_contains($mt, 'youtube')
+                            || str_starts_with($id, 'yt-')
+                            || str_contains($url, 'youtube.com')
+                            || str_contains($url, 'youtu.be');
+                    }));
 
-            $normalised = array_map(fn($item) => [
-                '_platform'       => 'ytb',
-                'media_type_id'   => '4',
-                'id'              => $item['id'] ?? $item['docid'] ?? '',
-                'url'             => $item['url'] ?? '',
-                'content'         => strip_tags($item['content'] ?? $item['name'] ?? ''),
-                'author_name'     => $item['author_name'] ?? $item['author_scr_name'] ?? $item['channel_title'] ?? '',
-                'author_handle'   => $item['author_scr_name'] ?? $item['channel_name'] ?? '',
-                'avatar_url'      => $item['image'] ?? $item['thumbnail'] ?? '',
-                'date_created'    => $item['date_created'] ?? '',
-                'num_likes'       => (int) ($item['num_likes'] ?? $item['likes'] ?? 0),
-                'num_comments'    => (int) ($item['num_comments'] ?? $item['comments'] ?? 0),
-                'num_shares'      => (int) ($item['num_shares'] ?? $item['shares'] ?? 0),
-                'num_views'       => (int) ($item['num_views'] ?? $item['views'] ?? 0),
-                'num_followers'   => 0,
-                'class_sentiment' => (string) ($item['sentiment'] ?? $item['class_sentiment'] ?? '0'),
-                'mention_type'    => $item['mention_type'] ?? 'video',
-                'hostname'        => 'youtube.com',
-            ], $data);
+                    usort($data, fn($a, $b) =>
+                        (int)($b['num_likes'] ?? 0) - (int)($a['num_likes'] ?? 0)
+                    );
+                }
+
+                return array_map(fn($item) => [
+                    '_platform'       => 'ytb',
+                    'media_type_id'   => '4',
+                    'id'              => $item['id'] ?? $item['docid'] ?? '',
+                    'url'             => $item['url'] ?? '',
+                    'content'         => strip_tags($item['content'] ?? $item['name'] ?? ''),
+                    'author_name'     => $item['author_name'] ?? $item['author_scr_name'] ?? $item['channel_title'] ?? '',
+                    'author_handle'   => $item['author_scr_name'] ?? $item['channel_name'] ?? '',
+                    'avatar_url'      => $item['image'] ?? $item['thumbnail'] ?? '',
+                    'date_created'    => $item['date_created'] ?? '',
+                    'num_likes'       => (int) ($item['num_likes'] ?? $item['likes'] ?? 0),
+                    'num_comments'    => (int) ($item['num_comments'] ?? $item['comments'] ?? 0),
+                    'num_shares'      => (int) ($item['num_shares'] ?? $item['shares'] ?? 0),
+                    'num_views'       => (int) ($item['views'] ?? $item['num_views'] ?? 0),
+                    'num_followers'   => 0,
+                    'class_sentiment' => (string) ($item['sentiment'] ?? $item['class_sentiment'] ?? '0'),
+                    'mention_type'    => $item['mention_type'] ?? 'video',
+                    'hostname'        => 'youtube.com',
+                ], $data);
+            });
+
+            $normalised = is_array($normalised) ? $normalised : [];
 
             Log::info('✅ YouTube Top Status fetched', ['total' => count($normalised)]);
 
@@ -1203,6 +1217,7 @@ public function articlesData(Request $request)
             return response()->json(['success' => false, 'error' => 'Failed to fetch YouTube data'], 500);
         }
     }
+
     public function aiAnalysisPage(Request $request)
     {
         try {

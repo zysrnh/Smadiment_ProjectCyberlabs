@@ -4,14 +4,21 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProjectDailySentiment;
+use App\Services\ApiDataVaultService;
 use App\Services\MediaKernelsClient;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class DataOverviewApiController extends Controller
 {
+    protected ApiDataVaultService $vault;
+
+    public function __construct(ApiDataVaultService $vault)
+    {
+        $this->vault = $vault;
+    }
+
     public function trendingTopics(Request $request, MediaKernelsClient $mk)
     {
         $startDate = $request->query('start_date', now()->startOfMonth()->format('Y-m-d'));
@@ -19,41 +26,41 @@ class DataOverviewApiController extends Controller
         $location  = $request->query('location', 'Indonesia');
         $limit     = (int) $request->query('limit', 50);
 
-        $cacheKey = "trending_topics_{$startDate}_{$endDate}_{$location}";
-
-        return Cache::remember($cacheKey, 1800, function () use ($mk, $startDate, $endDate, $location, $limit) {
-            try {
+        try {
+            $data = $this->vault->remember(0, 'twitter', "trending_topics_{$location}", $startDate, $endDate, function () use ($mk, $startDate, $endDate, $location, $limit) {
                 $result = $mk->twitterTrendingTopics($startDate, $endDate, 0, 23, $location, '');
 
                 $allTopics = [];
 
-                foreach ($result as $datetime => $period) {
-                    if (!is_array($period) || !isset($period['data'])) continue;
+                if (is_array($result)) {
+                    foreach ($result as $datetime => $period) {
+                        if (!is_array($period) || !isset($period['data'])) continue;
 
-                    foreach ($period['data'] as $topic) {
-                        $name   = $topic['name'] ?? '';
-                        $volume = (int) ($topic['tweet_volume_i'] ?? 0);
-                        $url    = $topic['url'] ?? '';
+                        foreach ($period['data'] as $topic) {
+                            $name   = $topic['name'] ?? '';
+                            $volume = (int) ($topic['tweet_volume_i'] ?? 0);
+                            $url    = $topic['url'] ?? '';
 
-                        if (!$name) continue;
+                            if (!$name) continue;
 
-                        if (!isset($allTopics[$name])) {
-                            $allTopics[$name] = [
-                                'name'         => $name,
-                                'title'        => $name,
-                                'topic'        => $name,
-                                'total_volume' => 0,
-                                'appearances'  => 0,
-                                'url'          => $url,
-                                'urls'         => [$url],
-                            ];
-                        }
+                            if (!isset($allTopics[$name])) {
+                                $allTopics[$name] = [
+                                    'name'         => $name,
+                                    'title'        => $name,
+                                    'topic'        => $name,
+                                    'total_volume' => 0,
+                                    'appearances'  => 0,
+                                    'url'          => $url,
+                                    'urls'         => [$url],
+                                ];
+                            }
 
-                        $allTopics[$name]['total_volume'] += $volume;
-                        $allTopics[$name]['appearances']++;
+                            $allTopics[$name]['total_volume'] += $volume;
+                            $allTopics[$name]['appearances']++;
 
-                        if ($url && !in_array($url, $allTopics[$name]['urls'])) {
-                            $allTopics[$name]['urls'][] = $url;
+                            if ($url && !in_array($url, $allTopics[$name]['urls'])) {
+                                $allTopics[$name]['urls'][] = $url;
+                            }
                         }
                     }
                 }
@@ -75,30 +82,30 @@ class DataOverviewApiController extends Controller
                 }
 
                 usort($normalized, fn ($a, $b) => $b['total'] <=> $a['total']);
-                $normalized = array_slice($normalized, 0, $limit);
+                return array_slice($normalized, 0, $limit);
+            });
 
-                return response()->json([
-                    'success' => true,
-                    'data'    => $normalized,
-                    'total'   => count($normalized),
-                ]);
+            return response()->json([
+                'success' => true,
+                'data'    => $data ?? [],
+                'total'   => count($data ?? []),
+            ]);
 
-            } catch (\Exception $e) {
-                Log::error('❌ Trending topics failed', [
-                    'error' => $e->getMessage(),
-                ]);
-                return response()->json([
-                    'success' => false,
-                    'data'    => [],
-                    'error'   => 'Failed to fetch trending topics',
-                ], 500);
-            }
-        });
+        } catch (\Exception $e) {
+            Log::error('❌ Trending topics failed', [
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'data'    => [],
+                'error'   => 'Failed to fetch trending topics',
+            ], 500);
+        }
     }
 
     public function topHashtags(Request $request, MediaKernelsClient $mk)
     {
-        $projectId = $request->query('project_id');
+        $projectId = (int) $request->query('project_id');
         $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
         $endDate   = $request->query('end_date', now()->toDateString());
         $media     = $request->query('media', 'all');
@@ -111,10 +118,8 @@ class DataOverviewApiController extends Controller
             ], 400);
         }
 
-        $cacheKey = "top_hashtags_{$projectId}_{$startDate}_{$endDate}_{$media}";
-
-        return Cache::remember($cacheKey, 1800, function () use ($mk, $projectId, $media, $startDate, $endDate) {
-            try {
+        try {
+            $data = $this->vault->remember($projectId, $media, 'top_hashtags', $startDate, $endDate, function () use ($mk, $projectId, $media, $startDate, $endDate) {
                 $rawData = $mk->topHashtags($projectId, $media, $startDate, $endDate, 0, 23);
 
                 $rawItems = [];
@@ -128,11 +133,7 @@ class DataOverviewApiController extends Controller
                 }
 
                 if (empty($rawItems)) {
-                    return response()->json([
-                        'success' => false,
-                        'data'    => [],
-                        'error'   => 'No hashtag data available',
-                    ]);
+                    return [];
                 }
 
                 $normalized = [];
@@ -162,25 +163,26 @@ class DataOverviewApiController extends Controller
                 }
 
                 usort($normalized, fn ($a, $b) => $b['mention'] <=> $a['mention']);
+                return $normalized;
+            });
 
-                return response()->json([
-                    'success' => true,
-                    'data'    => $normalized,
-                    'total'   => count($normalized),
-                ]);
+            return response()->json([
+                'success' => true,
+                'data'    => $data ?? [],
+                'total'   => count($data ?? []),
+            ]);
 
-            } catch (\Exception $e) {
-                Log::error('❌ Top Hashtags Exception', [
-                    'message' => $e->getMessage(),
-                ]);
+        } catch (\Exception $e) {
+            Log::error('❌ Top Hashtags Exception', [
+                'message' => $e->getMessage(),
+            ]);
 
-                return response()->json([
-                    'success' => false,
-                    'data'    => [],
-                    'error'   => $e->getMessage(),
-                ], 500);
-            }
-        });
+            return response()->json([
+                'success' => false,
+                'data'    => [],
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -207,28 +209,32 @@ class DataOverviewApiController extends Controller
 
             // 2. Jika DB belum ada datanya, fallback ke API
             if ($totalMentions === 0) {
-                $allSentiment  = $mk->sentimentTotal($projectId, $startDate, $endDate, 0, 23);
-                $normalized    = $this->normalizeSentimentTotal($allSentiment);
-                $totalMentions = $normalized['positive'] + $normalized['neutral'] + $normalized['negative'];
+                try {
+                    $allSentiment = $mk->sentimentTotal($projectId, $startDate, $endDate, 0, 23);
+                    $normalized   = $this->normalizeSentimentTotal($allSentiment);
+                    $totalMentions = $normalized['positive'] + $normalized['neutral'] + $normalized['negative'];
+                } catch (\Throwable $apiErr) {
+                    $totalMentions = 0;
+                }
             }
 
             if ($totalMentions === 0) {
                 return response()->json(['success' => true, 'social' => 0, 'news' => 0]);
             }
 
-            // 3. Ambil rasio online news vs social
-            $cacheKeyMedia = "sentiment_media_{$projectId}_{$startDate}_{$endDate}";
-            $byMedia = Cache::get($cacheKeyMedia);
+            // 3. Ambil rasio online news vs social via Vault
             $newsCount = 0;
-
-            if ($byMedia && isset($byMedia['data'])) {
-                foreach ($byMedia['data'] as $item) {
-                    if (($item['media_key'] ?? '') === 'doc') {
-                        $newsCount = (int) ($item['total'] ?? 0);
-                        break;
+            try {
+                $byMediaData = $this->vault->getSnapshot($projectId, 'all', 'sentiment_by_media', $startDate, $endDate);
+                if ($byMediaData && isset($byMediaData['media_data'])) {
+                    foreach ($byMediaData['media_data'] as $item) {
+                        if (($item['media_key'] ?? '') === 'doc') {
+                            $newsCount = (int) ($item['total'] ?? 0);
+                            break;
+                        }
                     }
                 }
-            }
+            } catch (\Throwable $ignored) {}
 
             if ($newsCount === 0 || $newsCount > $totalMentions) {
                 $newsCount = (int) round($totalMentions * 0.20);
@@ -249,7 +255,7 @@ class DataOverviewApiController extends Controller
 
     public function sentimentByMedia(Request $request, MediaKernelsClient $mk)
     {
-        $projectId = $request->query('project_id');
+        $projectId = (int) $request->query('project_id');
         $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
         $endDate   = $request->query('end_date', now()->toDateString());
 
@@ -257,10 +263,8 @@ class DataOverviewApiController extends Controller
             return response()->json(['success' => false, 'data' => []], 400);
         }
 
-        $cacheKey = "sentiment_media_{$projectId}_{$startDate}_{$endDate}";
-
-        return Cache::remember($cacheKey, 1800, function () use ($mk, $projectId, $startDate, $endDate) {
-            try {
+        try {
+            $data = $this->vault->remember($projectId, 'all', 'sentiment_by_media', $startDate, $endDate, function () use ($mk, $projectId, $startDate, $endDate) {
                 $rawData  = $mk->sentimentMedia($projectId, $startDate, $endDate, 0, 23);
                 $totalAll = (int) ($rawData['all'] ?? 0);
                 $byMedia  = $rawData['bymedia'] ?? [];
@@ -298,22 +302,27 @@ class DataOverviewApiController extends Controller
 
                 usort($mediaData, fn ($a, $b) => $b['total'] <=> $a['total']);
 
-                return response()->json([
-                    'success'   => true,
-                    'total_all' => $totalAll,
-                    'data'      => $mediaData,
-                ]);
+                return [
+                    'total_all'  => $totalAll,
+                    'media_data' => $mediaData,
+                ];
+            });
 
-            } catch (\Exception $e) {
-                Log::error('❌ Sentiment media failed', ['error' => $e->getMessage()]);
-                return response()->json(['success' => false, 'data' => []], 500);
-            }
-        });
+            return response()->json([
+                'success'   => true,
+                'total_all' => $data['total_all'] ?? 0,
+                'data'      => $data['media_data'] ?? [],
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('❌ Sentiment media failed', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'data' => []], 500);
+        }
     }
 
     public function activeUsers(Request $request, MediaKernelsClient $mk)
     {
-        $projectId = $request->query('project_id');
+        $projectId = (int) $request->query('project_id');
         $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
         $endDate   = $request->query('end_date', now()->toDateString());
 
@@ -321,19 +330,17 @@ class DataOverviewApiController extends Controller
             return response()->json(['success' => false, 'data' => []], 400);
         }
 
-        $cacheKey = "active_users_{$projectId}_{$startDate}_{$endDate}";
-
-        return Cache::remember($cacheKey, 1800, function () use ($mk, $projectId, $startDate, $endDate) {
-            try {
+        try {
+            $rows = $this->vault->remember($projectId, 'all', 'active_users', $startDate, $endDate, function () use ($mk, $projectId, $startDate, $endDate) {
                 $rawUsers = $mk->mostActiveUsers($projectId, $startDate, $endDate, 0, 23);
 
                 $userData = $rawUsers['data']['data'] ?? $rawUsers['data'] ?? $rawUsers['users'] ?? $rawUsers;
 
                 if (!is_array($userData) || empty($userData)) {
-                    return response()->json(['success' => false, 'data' => []]);
+                    return [];
                 }
 
-                $rows = [];
+                $list = [];
                 foreach ($userData as $item) {
                     if (!is_array($item)) continue;
 
@@ -344,25 +351,26 @@ class DataOverviewApiController extends Controller
                     $count = (int) ($item['y'] ?? $item['post_count'] ?? $item['count'] ?? 0);
                     if ($count === 0) continue;
 
-                    $rows[] = [
+                    $list[] = [
                         'username'  => $username,
                         'count'     => $count,
                         'full_name' => $fullName,
                     ];
                 }
 
-                usort($rows, fn ($a, $b) => $b['count'] <=> $a['count']);
+                usort($list, fn ($a, $b) => $b['count'] <=> $a['count']);
+                return array_slice($list, 0, 6);
+            });
 
-                return response()->json([
-                    'success' => true,
-                    'data'    => array_slice($rows, 0, 6),
-                ]);
+            return response()->json([
+                'success' => true,
+                'data'    => $rows ?? [],
+            ]);
 
-            } catch (\Exception $e) {
-                Log::error('❌ Active users failed', ['error' => $e->getMessage()]);
-                return response()->json(['success' => false, 'data' => []], 500);
-            }
-        });
+        } catch (\Exception $e) {
+            Log::error('❌ Active users failed', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'data' => []], 500);
+        }
     }
 
     /**
@@ -516,7 +524,7 @@ class DataOverviewApiController extends Controller
 
     public function geoUsers(Request $request, MediaKernelsClient $mk)
     {
-        $projectId = $request->query('project_id');
+        $projectId = (int) $request->query('project_id');
         $startDate = $request->query('start_date', now()->startOfMonth()->toDateString());
         $endDate   = $request->query('end_date', now()->toDateString());
         $media     = $request->query('media', 'twit');
@@ -525,22 +533,20 @@ class DataOverviewApiController extends Controller
             return response()->json(['success' => false, 'data' => []], 400);
         }
 
-        $cacheKey = "geo_users_{$projectId}_{$startDate}_{$endDate}_{$media}";
-
-        return Cache::remember($cacheKey, 1800, function () use ($mk, $projectId, $media, $startDate, $endDate) {
-            try {
+        try {
+            $rows = $this->vault->remember($projectId, $media, 'geo_users', $startDate, $endDate, function () use ($mk, $projectId, $media, $startDate, $endDate) {
                 $rawGeo = $mk->geoTwitterUser($projectId, $media, $startDate, $endDate, 0, 23);
-                $rows   = $rawGeo['locality']['rows']
-                       ?? $rawGeo['administrative_area_level_1']['rows']
-                       ?? [];
+                return $rawGeo['locality']['rows']
+                    ?? $rawGeo['administrative_area_level_1']['rows']
+                    ?? (is_array($rawGeo) ? $rawGeo : []);
+            });
 
-                return response()->json(['success' => true, 'data' => $rows]);
+            return response()->json(['success' => true, 'data' => $rows ?? []]);
 
-            } catch (\Exception $e) {
-                Log::error('❌ Geo failed', ['error' => $e->getMessage()]);
-                return response()->json(['success' => false, 'data' => []], 500);
-            }
-        });
+        } catch (\Exception $e) {
+            Log::error('❌ Geo failed', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'data' => []], 500);
+        }
     }
 
     private function normalizeSentimentTotal(array $raw): array
