@@ -67,6 +67,7 @@ Route::prefix('mk')->name('mk.')->middleware(['auth', 'check.trial'])->group(fun
         Route::get('/top-hashtags',   [DataOverviewApiController::class, 'topHashtags'])->name('top-hashtags');
         Route::get('/top-locations',  [TopAnalyticsController::class, 'getLocationsData'])->name('top-locations');
         Route::get('/top-influencers',[TopAnalyticsController::class, 'getInfluencersData'])->name('top-influencers');
+        Route::get('/mentions',       [NewsController::class, 'newsMentionsData'])->name('mentions');
 
         // ─────────────────────────────────────────────────────
         // NEWS API ROUTES
