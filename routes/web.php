@@ -255,6 +255,7 @@ Route::prefix('mk')->name('mk.')->middleware(['auth', 'check.trial'])->group(fun
     Route::get('/engagement-sentiment',  [MediaStatisticController::class, 'engagementSentimentPage'])->name('engagement-sentiment');
     Route::get('/engagement_sentiment',  [MediaStatisticController::class, 'engagementSentimentPage']);
     Route::get('/compare',               [CompareProjectController::class, 'index'])->name('compare.index');
+    Route::get('/compare-projects',      [CompareProjectController::class, 'index'])->name('compare-projects');
     Route::get('/topic-map',             [TopicMapController::class, 'index'])->name('topic-map');
     Route::get('/trending-topic',          [TrendingTopicController::class, 'index'])->name('trending-topic');
     Route::get('/search-topic',            [SearchTopicController::class, 'index'])->name('search-topic');

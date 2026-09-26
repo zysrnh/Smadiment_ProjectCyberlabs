@@ -33,7 +33,7 @@ class MediaStatisticController extends Controller
                         'id'           => $pid,
                         'name'         => ($pid == 16978) ? 'Prabowo' : "Project #{$pid}",
                         'project_name' => ($pid == 16978) ? 'Prabowo' : "Project #{$pid}",
-                        'client'       => 'Cyberlabs',
+                        'client'       => '',
                         'status'       => 1,
                     ];
                 }
@@ -46,7 +46,7 @@ class MediaStatisticController extends Controller
                     'id'           => 16978,
                     'name'         => 'Prabowo',
                     'project_name' => 'Prabowo',
-                    'client'       => 'Cyberlabs',
+                    'client'       => '',
                     'status'       => 1,
                 ]
             ];

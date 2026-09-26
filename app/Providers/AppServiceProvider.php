@@ -108,7 +108,7 @@ class AppServiceProvider extends ServiceProvider
                             'id'           => $pid,
                             'name'         => ($pid == 16978) ? 'Prabowo' : "Project #{$pid}",
                             'project_name' => ($pid == 16978) ? 'Prabowo' : "Project #{$pid}",
-                            'client'       => 'Cyberlabs',
+                            'client'       => '',
                             'status'       => 1,
                         ];
                     }

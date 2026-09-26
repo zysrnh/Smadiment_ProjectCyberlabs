@@ -197,7 +197,7 @@ class MediaKernelsClient
                     'name'         => 'Prabowo',
                     'project_name' => 'Prabowo',
                     'description'  => 'Monitoring Project Prabowo',
-                    'client'       => 'Cyberlabs',
+                    'client'       => '',
                     'status'       => 1,
                 ]
             ];
