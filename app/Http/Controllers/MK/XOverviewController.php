@@ -79,269 +79,108 @@
             $diffDays = max(1, $start->diffInDays($end));
 
             $authors = [
-                [
-                    'name'     => 'Prabowo Subianto',
-                    'scr_name' => 'prabowo',
-                    'image'    => 'https://unavatar.io/x/prabowo',
-                    'flw_cnt'  => 4850000,
-                    'color'    => '#038047',
-                ],
-                [
-                    'name'     => 'Kementerian Pertahanan RI',
-                    'scr_name' => 'kemhanri',
-                    'image'    => 'https://unavatar.io/x/kemhanri',
-                    'flw_cnt'  => 1200000,
-                    'color'    => '#273B4A',
-                ],
-                [
-                    'name'     => 'KOMPAS.com',
-                    'scr_name' => 'kompascom',
-                    'image'    => 'https://unavatar.io/x/kompascom',
-                    'flw_cnt'  => 8200000,
-                    'color'    => '#F59E0B',
-                ],
-                [
-                    'name'     => 'detikcom',
-                    'scr_name' => 'detikcom',
-                    'image'    => 'https://unavatar.io/x/detikcom',
-                    'flw_cnt'  => 19500000,
-                    'color'    => '#06B6D4',
-                ],
-                [
-                    'name'     => 'Tempo.co',
-                    'scr_name' => 'tempodotco',
-                    'image'    => 'https://unavatar.io/x/tempodotco',
-                    'flw_cnt'  => 5600000,
-                    'color'    => '#EF4444',
-                ],
-                [
-                    'name'     => 'CNN Indonesia',
-                    'scr_name' => 'cnnindonesia',
-                    'image'    => 'https://unavatar.io/x/cnnindonesia',
-                    'flw_cnt'  => 6900000,
-                    'color'    => '#DC2626',
-                ],
-                [
-                    'name'     => 'Dahnil Anzar Simanjuntak',
-                    'scr_name' => 'Dahnilanzar',
-                    'image'    => 'https://unavatar.io/x/Dahnilanzar',
-                    'flw_cnt'  => 680000,
-                    'color'    => '#10B981',
-                ],
-                [
-                    'name'     => 'Sujiwo Tejo',
-                    'scr_name' => 'sudjiwotedjo',
-                    'image'    => 'https://unavatar.io/x/sudjiwotedjo',
-                    'flw_cnt'  => 3100000,
-                    'color'    => '#8B5CF6',
-                ],
-                [
-                    'name'     => 'Fadli Zon',
-                    'scr_name' => 'fadlizon',
-                    'image'    => 'https://unavatar.io/x/fadlizon',
-                    'flw_cnt'  => 1850000,
-                    'color'    => '#3B82F6',
-                ],
-                [
-                    'name'     => 'Partai Gerindra',
-                    'scr_name' => 'gerindra',
-                    'image'    => 'https://unavatar.io/x/gerindra',
-                    'flw_cnt'  => 850000,
-                    'color'    => '#B91C1C',
-                ],
-                [
-                    'name'     => 'Mata Najwa',
-                    'scr_name' => 'MataNajwa',
-                    'image'    => 'https://unavatar.io/x/MataNajwa',
-                    'flw_cnt'  => 4200000,
-                    'color'    => '#EA580C',
-                ],
-                [
-                    'name'     => 'kumparan',
-                    'scr_name' => 'kumparan',
-                    'image'    => 'https://unavatar.io/x/kumparan',
-                    'flw_cnt'  => 2800000,
-                    'color'    => '#059669',
-                ],
-                [
-                    'name'     => 'Prof. Nadirsyah Hosen',
-                    'scr_name' => 'na_dirs',
-                    'image'    => 'https://unavatar.io/x/na_dirs',
-                    'flw_cnt'  => 890000,
-                    'color'    => '#0D9488',
-                ],
-                [
-                    'name'     => 'Partai Socmed',
-                    'scr_name' => 'PartaiSocmed',
-                    'image'    => 'https://unavatar.io/x/PartaiSocmed',
-                    'flw_cnt'  => 720000,
-                    'color'    => '#6366F1',
-                ],
-                [
-                    'name'     => 'Tirto.id',
-                    'scr_name' => 'tirtoid',
-                    'image'    => 'https://unavatar.io/x/tirtoid',
-                    'flw_cnt'  => 1600000,
-                    'color'    => '#D97706',
-                ],
+                ['name' => 'Prabowo Subianto', 'scr_name' => 'prabowo', 'image' => 'https://unavatar.io/x/prabowo', 'flw_cnt' => 4850000, 'color' => '#038047'],
+                ['name' => 'Kementerian Pertahanan RI', 'scr_name' => 'kemhanri', 'image' => 'https://unavatar.io/x/kemhanri', 'flw_cnt' => 1200000, 'color' => '#273B4A'],
+                ['name' => 'KOMPAS.com', 'scr_name' => 'kompascom', 'image' => 'https://unavatar.io/x/kompascom', 'flw_cnt' => 8200000, 'color' => '#F59E0B'],
+                ['name' => 'detikcom', 'scr_name' => 'detikcom', 'image' => 'https://unavatar.io/x/detikcom', 'flw_cnt' => 19500000, 'color' => '#06B6D4'],
+                ['name' => 'Tempo.co', 'scr_name' => 'tempodotco', 'image' => 'https://unavatar.io/x/tempodotco', 'flw_cnt' => 5600000, 'color' => '#EF4444'],
+                ['name' => 'CNN Indonesia', 'scr_name' => 'cnnindonesia', 'image' => 'https://unavatar.io/x/cnnindonesia', 'flw_cnt' => 6900000, 'color' => '#DC2626'],
+                ['name' => 'Dahnil Anzar Simanjuntak', 'scr_name' => 'Dahnilanzar', 'image' => 'https://unavatar.io/x/Dahnilanzar', 'flw_cnt' => 680000, 'color' => '#10B981'],
+                ['name' => 'Sujiwo Tejo', 'scr_name' => 'sudjiwotedjo', 'image' => 'https://unavatar.io/x/sudjiwotedjo', 'flw_cnt' => 3100000, 'color' => '#8B5CF6'],
+                ['name' => 'Fadli Zon', 'scr_name' => 'fadlizon', 'image' => 'https://unavatar.io/x/fadlizon', 'flw_cnt' => 1850000, 'color' => '#3B82F6'],
+                ['name' => 'Partai Gerindra', 'scr_name' => 'gerindra', 'image' => 'https://unavatar.io/x/gerindra', 'flw_cnt' => 850000, 'color' => '#B91C1C'],
+                ['name' => 'Mata Najwa', 'scr_name' => 'MataNajwa', 'image' => 'https://unavatar.io/x/MataNajwa', 'flw_cnt' => 4200000, 'color' => '#EA580C'],
+                ['name' => 'kumparan', 'scr_name' => 'kumparan', 'image' => 'https://unavatar.io/x/kumparan', 'flw_cnt' => 2800000, 'color' => '#059669'],
+                ['name' => 'Prof. Nadirsyah Hosen', 'scr_name' => 'na_dirs', 'image' => 'https://unavatar.io/x/na_dirs', 'flw_cnt' => 890000, 'color' => '#0D9488'],
+                ['name' => 'Partai Socmed', 'scr_name' => 'PartaiSocmed', 'image' => 'https://unavatar.io/x/PartaiSocmed', 'flw_cnt' => 720000, 'color' => '#6366F1'],
+                ['name' => 'Tirto.id', 'scr_name' => 'tirtoid', 'image' => 'https://unavatar.io/x/tirtoid', 'flw_cnt' => 1600000, 'color' => '#D97706'],
+                ['name' => 'Mahfud MD', 'scr_name' => 'mohmahfudmd', 'image' => 'https://unavatar.io/x/mohmahfudmd', 'flw_cnt' => 4500000, 'color' => '#1E293B'],
+                ['name' => 'Gibran Rakabuming', 'scr_name' => 'gibran_tweet', 'image' => 'https://unavatar.io/x/gibran_tweet', 'flw_cnt' => 1200000, 'color' => '#0284C7'],
+                ['name' => 'Erick Thohir', 'scr_name' => 'erickthohir', 'image' => 'https://unavatar.io/x/erickthohir', 'flw_cnt' => 2400000, 'color' => '#15803D'],
+                ['name' => 'Ridwan Kamil', 'scr_name' => 'ridwankamil', 'image' => 'https://unavatar.io/x/ridwankamil', 'flw_cnt' => 5100000, 'color' => '#0891B2'],
+                ['name' => 'Katadata Indonesia', 'scr_name' => 'katadatacoid', 'image' => 'https://unavatar.io/x/katadatacoid', 'flw_cnt' => 1400000, 'color' => '#7C3AED'],
+                ['name' => 'CNBC Indonesia', 'scr_name' => 'cnbcindonesia', 'image' => 'https://unavatar.io/x/cnbcindonesia', 'flw_cnt' => 2100000, 'color' => '#C026D3'],
+                ['name' => 'Narasi Newsroom', 'scr_name' => 'NarasiNewsroom', 'image' => 'https://unavatar.io/x/NarasiNewsroom', 'flw_cnt' => 3300000, 'color' => '#E11D48'],
+                ['name' => 'Watchdoc Image', 'scr_name' => 'Watchdoc_ID', 'image' => 'https://unavatar.io/x/Watchdoc_ID', 'flw_cnt' => 950000, 'color' => '#475569'],
+                ['name' => 'ANTARA News', 'scr_name' => 'antaranews', 'image' => 'https://unavatar.io/x/antaranews', 'flw_cnt' => 3800000, 'color' => '#4338CA'],
+                ['name' => 'Bisnis.com', 'scr_name' => 'Bisniscom', 'image' => 'https://unavatar.io/x/Bisniscom', 'flw_cnt' => 1750000, 'color' => '#B45309'],
             ];
 
             $tweetTemplates = [
-                [
-                    'author_idx' => 0,
-                    'content'    => 'Terima kasih atas segala masukan, aspirasi, dan doa dari seluruh rakyat Indonesia. Program Makan Bergizi Gratis (#MBG) dan kemandirian pangan nasional kita persiapkan sungguh-sungguh demi generasi penerus. Mari bersatu dan #jagaindonesia bersama! #prabowo #prabowosubianto',
-                    'view_cnt'   => 1850000,
-                    'rt'         => 34200,
-                    'fav_count'  => 98400,
-                    'reply_cnt'  => 8620,
-                    'sentiment'  => 'Positive',
-                ],
-                [
-                    'author_idx' => 1,
-                    'content'    => 'Menhan @prabowo menegaskan penguatan kedaulatan wilayah NKRI melalui modernisasi alutsista dan diplomasi pertahanan aktif. Seluruh jajaran siap mengawal stabilitas keamanan nasional. #prabowo #kemhanri #jagaindonesia',
-                    'view_cnt'   => 1420000,
-                    'rt'         => 21500,
-                    'fav_count'  => 64300,
-                    'reply_cnt'  => 3120,
-                    'sentiment'  => 'Positive',
-                ],
-                [
-                    'author_idx' => 2,
-                    'content'    => 'Presiden Terpilih Prabowo Subianto meminta seluruh elemen bangsa tetap tenang dan menghormati konstitusi di tengah maraknya aksi mahasiswa terkait putusan MK. #ALLEYESONINDONESIA #demo #prabowo',
-                    'view_cnt'   => 1280000,
-                    'rt'         => 28900,
-                    'fav_count'  => 52100,
-                    'reply_cnt'  => 5400,
-                    'sentiment'  => 'Neutral',
-                ],
-                [
-                    'author_idx' => 3,
-                    'content'    => 'Uji coba program Makan Bergizi Gratis (#MBG) sukses digelar di 38 kabupaten/kota. Para siswa dan guru antusias menyambut menu bergizi tinggi dari UMKM katering lokal. #prabowo #MBG #jagaindonesia',
-                    'view_cnt'   => 1150000,
-                    'rt'         => 18400,
-                    'fav_count'  => 49800,
-                    'reply_cnt'  => 2840,
-                    'sentiment'  => 'Positive',
-                ],
-                [
-                    'author_idx' => 4,
-                    'content'    => 'Massa aksi buruh dan mahasiswa sampaikan tuntutan reformasi hukum dan keterbukaan publik. Tim transisi Prabowo pastikan ruang dialog terbuka lebar. #demo #ALLEYESONINDONESIA #prabowo',
-                    'view_cnt'   => 980000,
-                    'rt'         => 24600,
-                    'fav_count'  => 38200,
-                    'reply_cnt'  => 4150,
-                    'sentiment'  => 'Negative',
-                ],
-                [
-                    'author_idx' => 5,
-                    'content'    => 'CNN Indonesia Insight: Menakar postur kabinet baru Prabowo-Gibran dalam menghadapi volatilitas geopolitik global dan tantangan transisi energi hijau. #prabowo #cnnindonesia #prabowosubianto',
-                    'view_cnt'   => 890000,
-                    'rt'         => 14200,
-                    'fav_count'  => 31500,
-                    'reply_cnt'  => 1920,
-                    'sentiment'  => 'Neutral',
-                ],
-                [
-                    'author_idx' => 6,
-                    'content'    => 'Silaturahmi kebangsaan Pak @prabowo dengan para ulama, tokoh lintas agama, dan pimpinan ormas Islam berlangsung sejuk dan penuh kehangatan. #islamalaprabowo #prabowo #jagaindonesia',
-                    'view_cnt'   => 840000,
-                    'rt'         => 16700,
-                    'fav_count'  => 42100,
-                    'reply_cnt'  => 2310,
-                    'sentiment'  => 'Positive',
-                ],
-                [
-                    'author_idx' => 7,
-                    'content'    => 'Kunci kepemimpinan nusantara adalah keikhlasan untuk mendengar jeritan rakyat di bawah. Semoga amanah besar ini membawa berkah untuk bangsa. #prabowo #jagaindonesia',
-                    'view_cnt'   => 760000,
-                    'rt'         => 19400,
-                    'fav_count'  => 36800,
-                    'reply_cnt'  => 1840,
-                    'sentiment'  => 'Neutral',
-                ],
-                [
-                    'author_idx' => 8,
-                    'content'    => 'Diplomasi luar negeri Presiden Terpilih @prabowo ke negara-negara sahabat mempertegas posisi Indonesia sebagai jembatan perdamaian dunia. #prabowo #prabowosubianto',
-                    'view_cnt'   => 710000,
-                    'rt'         => 12800,
-                    'fav_count'  => 29400,
-                    'reply_cnt'  => 1420,
-                    'sentiment'  => 'Positive',
-                ],
-                [
-                    'author_idx' => 9,
-                    'content'    => 'Pesan Ketua Umum @gerindra @prabowo: Seluruh kader harus turun ke lapangan, bantu petani, nelayan, dan pedagang kecil. Jangan ada yang sombong! #prabowo #Gerindra #jagaindonesia',
-                    'view_cnt'   => 680000,
-                    'rt'         => 15100,
-                    'fav_count'  => 33200,
-                    'reply_cnt'  => 1750,
-                    'sentiment'  => 'Positive',
-                ],
-                [
-                    'author_idx' => 10,
-                    'content'    => 'Eksklusif Mata Najwa: Mengupas peta jalan ekonomi 100 hari pertama pemerintahan Prabowo. Apa saja prioritas fiskal yang akan digeber? #MataNajwa #prabowo #MBG',
-                    'view_cnt'   => 640000,
-                    'rt'         => 13700,
-                    'fav_count'  => 27900,
-                    'reply_cnt'  => 2210,
-                    'sentiment'  => 'Neutral',
-                ],
-                [
-                    'author_idx' => 11,
-                    'content'    => 'Pemerintah daerah siapkan lahan pertanian produktif terpadu untuk memasok kebutuhan bahan baku program #MBG Prabowo. #prabowo #MBG #kumparan',
-                    'view_cnt'   => 590000,
-                    'rt'         => 9800,
-                    'fav_count'  => 24600,
-                    'reply_cnt'  => 1180,
-                    'sentiment'  => 'Positive',
-                ],
-                [
-                    'author_idx' => 12,
-                    'content'    => 'Menjaga kerukunan antarumat dan nilai-nilai moderasi adalah benteng utama menjaga keutuhan Republik. Nilai ini yang terus ditekankan dalam #islamalaprabowo. #prabowo #jagaindonesia',
-                    'view_cnt'   => 540000,
-                    'rt'         => 11200,
-                    'fav_count'  => 28300,
-                    'reply_cnt'  => 1640,
-                    'sentiment'  => 'Positive',
-                ],
-                [
-                    'author_idx' => 13,
-                    'content'    => 'Bursa menteri makin hangat. Kabarnya Prabowo memprioritaskan menteri teknokrat di pos keuangan, pertanian, dan ESDM untuk menjamin akselerasi program. #prabowo #PartaiSocmed',
-                    'view_cnt'   => 510000,
-                    'rt'         => 14500,
-                    'fav_count'  => 22400,
-                    'reply_cnt'  => 2630,
-                    'sentiment'  => 'Neutral',
-                ],
-                [
-                    'author_idx' => 14,
-                    'content'    => 'Investigasi: Antisipasi bencana kabut asap dan titik api #Karhutla di kawasan rawan gambut. Publik meminta ketegasan penegakan hukum bagi pelaku pembakaran hutan. #Karhutla #Watchdoc #tirtoid',
-                    'view_cnt'   => 480000,
-                    'rt'         => 16300,
-                    'fav_count'  => 19800,
-                    'reply_cnt'  => 1890,
-                    'sentiment'  => 'Negative',
-                ],
+                ['author_idx' => 0, 'sentiment' => 'Positive', 'v' => 1850000, 'r' => 34200, 'f' => 98400, 'rep' => 8620, 'content' => 'Terima kasih atas segala masukan, aspirasi, dan doa dari seluruh rakyat Indonesia. Program Makan Bergizi Gratis (#MBG) dan kemandirian pangan nasional kita persiapkan sungguh-sungguh demi generasi penerus. Mari bersatu dan #jagaindonesia bersama! #prabowo #prabowosubianto'],
+                ['author_idx' => 1, 'sentiment' => 'Positive', 'v' => 1420000, 'r' => 21500, 'f' => 64300, 'rep' => 3120, 'content' => 'Menhan @prabowo menegaskan penguatan kedaulatan wilayah NKRI melalui modernisasi alutsista dan diplomasi pertahanan aktif. Seluruh jajaran siap mengawal stabilitas keamanan nasional. #prabowo #kemhanri #jagaindonesia'],
+                ['author_idx' => 2, 'sentiment' => 'Neutral',  'v' => 1280000, 'r' => 28900, 'f' => 52100, 'rep' => 5400, 'content' => 'Presiden Terpilih Prabowo Subianto meminta seluruh elemen bangsa tetap tenang dan menghormati konstitusi di tengah dinamika putusan MK dan peta politik nasional. #prabowo #kompascom #politik'],
+                ['author_idx' => 3, 'sentiment' => 'Positive', 'v' => 1150000, 'r' => 18400, 'f' => 49800, 'rep' => 2840, 'content' => 'Uji coba program Makan Bergizi Gratis (#MBG) sukses digelar di 38 kabupaten/kota. Para siswa dan guru antusias menyambut menu bergizi tinggi dari UMKM katering lokal. #prabowo #MBG #detikcom'],
+                ['author_idx' => 4, 'sentiment' => 'Negative', 'v' => 980000,  'r' => 24600, 'f' => 38200, 'rep' => 4150, 'content' => 'Massa aksi buruh dan koalisi masyarakat sipil sampaikan aspirasi terkait keterbukaan penyusunan regulasi ketenagakerjaan dan reformasi hukum. #prabowo #tempodotco #hukum'],
+                ['author_idx' => 5, 'sentiment' => 'Neutral',  'v' => 890000,  'r' => 14200, 'f' => 31500, 'rep' => 1920, 'content' => 'CNN Indonesia Insight: Menakar postur kabinet baru Prabowo-Gibran dalam menghadapi volatilitas geopolitik global dan tantangan transisi energi hijau. #prabowo #cnnindonesia #kabinet'],
+                ['author_idx' => 6, 'sentiment' => 'Positive', 'v' => 840000,  'r' => 16700, 'f' => 42100, 'rep' => 2310, 'content' => 'Silaturahmi kebangsaan Pak @prabowo dengan para ulama, tokoh lintas agama, dan pimpinan ormas Islam berlangsung sejuk dan penuh kehangatan. #islamalaprabowo #prabowo #jagaindonesia'],
+                ['author_idx' => 7, 'sentiment' => 'Neutral',  'v' => 760000,  'r' => 19400, 'f' => 36800, 'rep' => 1840, 'content' => 'Kunci kepemimpinan nusantara adalah keikhlasan untuk mendengar jeritan rakyat di bawah. Semoga amanah besar ini membawa berkah untuk bangsa. #prabowo #jagaindonesia #sudjiwotedjo'],
+                ['author_idx' => 8, 'sentiment' => 'Positive', 'v' => 710000,  'r' => 12800, 'f' => 29400, 'rep' => 1420, 'content' => 'Diplomasi luar negeri Presiden Terpilih @prabowo ke negara-negara sahabat mempertegas posisi Indonesia sebagai jembatan perdamaian dunia. #prabowo #fadlizon #diplomasi'],
+                ['author_idx' => 9, 'sentiment' => 'Positive', 'v' => 680000,  'r' => 15100, 'f' => 33200, 'rep' => 1750, 'content' => 'Pesan Ketua Umum @gerindra @prabowo: Seluruh kader harus turun ke lapangan, bantu petani, nelayan, dan pedagang kecil. Jangan ada yang sombong! #prabowo #Gerindra #jagaindonesia'],
+                ['author_idx' => 10, 'sentiment' => 'Neutral', 'v' => 640000,  'r' => 13700, 'f' => 27900, 'rep' => 2210, 'content' => 'Eksklusif Mata Najwa: Mengupas peta jalan ekonomi 100 hari pertama pemerintahan Prabowo. Apa saja prioritas fiskal yang akan digeber? #MataNajwa #prabowo #ekonomi'],
+                ['author_idx' => 11, 'sentiment' => 'Positive', 'v' => 590000,  'r' => 9800,  'f' => 24600, 'rep' => 1180, 'content' => 'Pemerintah daerah siapkan lahan pertanian produktif terpadu untuk memasok kebutuhan bahan baku program #MBG Prabowo. #prabowo #MBG #kumparan'],
+                ['author_idx' => 12, 'sentiment' => 'Positive', 'v' => 540000,  'r' => 11200, 'f' => 28300, 'rep' => 1640, 'content' => 'Menjaga kerukunan antarumat dan nilai-nilai moderasi adalah benteng utama menjaga keutuhan Republik. Nilai ini yang terus ditekankan dalam #islamalaprabowo. #prabowo #jagaindonesia'],
+                ['author_idx' => 13, 'sentiment' => 'Neutral',  'v' => 510000,  'r' => 14500, 'f' => 22400, 'rep' => 2630, 'content' => 'Bursa menteri makin hangat. Kabarnya Prabowo memprioritaskan menteri teknokrat di pos keuangan, pertanian, dan ESDM untuk menjamin akselerasi program. #prabowo #PartaiSocmed'],
+                ['author_idx' => 14, 'sentiment' => 'Negative', 'v' => 480000,  'r' => 16300, 'f' => 19800, 'rep' => 1890, 'content' => 'Investigasi: Publik menyoroti komitmen penegakan tata kelola lingkungan hidup dan keterbukaan data alokasi anggaran transisi energi. #prabowo #tirtoid #lingkungan'],
+                ['author_idx' => 15, 'sentiment' => 'Positive', 'v' => 460000,  'r' => 15800, 'f' => 25400, 'rep' => 1340, 'content' => 'Penegakan supremasi hukum dan transparansi peradilan harus tetap menjadi pilar utama pembangunan bangsa. Kita doakan pemerintahan baru amanah. #prabowo #hukum #MahfudMD'],
+                ['author_idx' => 16, 'sentiment' => 'Positive', 'v' => 440000,  'r' => 17200, 'f' => 31000, 'rep' => 2100, 'content' => 'Fokus kita adalah pemerataan digitalisasi dan penyiapan generasi muda di sektor teknologi dan ekonomi kreatif. Gaspol untuk Indonesia Maju! #prabowo #gibran #IndonesiaMaju'],
+                ['author_idx' => 17, 'sentiment' => 'Positive', 'v' => 420000,  'r' => 11400, 'f' => 26800, 'rep' => 1280, 'content' => 'Transformasi BUMN dan integrasi ekosistem logistik nasional siap mendukung penuh ketahanan pangan dan energi era Prabowo. #prabowo #BUMN #ErickThohir'],
+                ['author_idx' => 18, 'sentiment' => 'Positive', 'v' => 400000,  'r' => 13200, 'f' => 28500, 'rep' => 1450, 'content' => 'Pembangunan infrastruktur daerah yang berkeadilan dan ramah lingkungan akan mempercepat pertumbuhan ekonomi desa. Semangat menyambut era baru! #prabowo #RidwanKamil'],
+                ['author_idx' => 19, 'sentiment' => 'Neutral',  'v' => 380000,  'r' => 8900,  'f' => 18700, 'rep' => 960,  'content' => 'Analisis Katadata: Strategi fiskal pemerintahan baru dalam mempertahankan stabilitas nilai tukar rupiah dan menarik investasi manufaktur global. #prabowo #katadata #ekonomi'],
+                ['author_idx' => 20, 'sentiment' => 'Neutral',  'v' => 360000,  'r' => 9400,  'f' => 17200, 'rep' => 890,  'content' => 'Pasar modal merespons positif kepastian transisi pemerintahan dan komitmen keberlanjutan proyek hilirisasi mineral nasional. #prabowo #CNBC #pasar'],
+                ['author_idx' => 21, 'sentiment' => 'Neutral',  'v' => 340000,  'r' => 12100, 'f' => 21500, 'rep' => 1650, 'content' => 'Liputan Khusus Narasi: Harapan dan catatan kritis para pelaku industri kreatif dan UMKM terhadap program insentif pajak 2025. #prabowo #Narasi #UMKM'],
+                ['author_idx' => 22, 'sentiment' => 'Negative', 'v' => 320000,  'r' => 14300, 'f' => 16400, 'rep' => 1820, 'content' => 'Catatan Kritis: Pentingnya menjaga ruang demokrasi dan kebebasan berekspresi di ruang digital bagi masa depan pemuda Indonesia. #prabowo #Watchdoc #demokrasi'],
+                ['author_idx' => 23, 'sentiment' => 'Positive', 'v' => 300000,  'r' => 7600,  'f' => 15200, 'rep' => 710,  'content' => 'ANTARA: Kementerian Pertanian optimis target swasembada beras dan jagung dapat tercapai lebih cepat lewat modernisasi alsintan. #prabowo #antaranews #pangan'],
+                ['author_idx' => 24, 'sentiment' => 'Neutral',  'v' => 290000,  'r' => 8100,  'f' => 14900, 'rep' => 640,  'content' => 'Bisnis.com: Target pertumbuhan ekonomi 8% dinilai ambisius namun terukur dengan dorongan industrialisasi dan hilirisasi terpadu. #prabowo #Bisniscom #ekonomi'],
+            ];
+
+            $topicsPool = [
+                ['topic' => 'Swasembada pangan dan modernisasi pertanian', 'hash' => '#prabowo #pangan #pertanian', 'sent' => 'Positive'],
+                ['topic' => 'Kesiapan logistik dan dapur umum program MBG', 'hash' => '#prabowo #MBG #gizi', 'sent' => 'Positive'],
+                ['topic' => 'Penguatan industri pertahanan dalam negeri', 'hash' => '#prabowo #alutsista #kemhan', 'sent' => 'Positive'],
+                ['topic' => 'Evaluasi efisiensi anggaran belanja kementerian', 'hash' => '#prabowo #anggaran #fiskal', 'sent' => 'Neutral'],
+                ['topic' => 'Kritik publik terhadap kenaikan tarif PPN dan pajak', 'hash' => '#prabowo #pajak #ekonomi', 'sent' => 'Negative'],
+                ['topic' => 'Peningkatan kesejahteraan guru dan tenaga honorer', 'hash' => '#prabowo #pendidikan #guru', 'sent' => 'Positive'],
+                ['topic' => 'Diplomasi strategis di forum KTT ASEAN dan G20', 'hash' => '#prabowo #diplomasi #ASEAN', 'sent' => 'Positive'],
+                ['topic' => 'Penertiban izin tambang ilegal dan konservasi alam', 'hash' => '#prabowo #tambang #lingkungan', 'sent' => 'Neutral'],
+                ['topic' => 'Penyaluran bantuan sosial tepat sasaran berbasis NIK', 'hash' => '#prabowo #bansos #rakyat', 'sent' => 'Positive'],
+                ['topic' => 'Diskusi publik mengenai komposisi kabinet zaken', 'hash' => '#prabowo #kabinet #politik', 'sent' => 'Neutral'],
             ];
 
             $posts = [];
-            $totalCount = min(max(10, $limit), 500);
+            $totalCount = min(max(10, $limit), 100);
 
             for ($i = 0; $i < $totalCount; $i++) {
-                $tpl = $tweetTemplates[$i % count($tweetTemplates)];
-                $author = $authors[$tpl['author_idx'] % count($authors)];
+                $author = $authors[$i % count($authors)];
                 
+                if ($i < count($tweetTemplates)) {
+                    $tpl = $tweetTemplates[$i];
+                    $author = $authors[$tpl['author_idx'] % count($authors)];
+                    $content = $tpl['content'];
+                    $sent = $tpl['sentiment'];
+                    $baseV = $tpl['v'];
+                    $baseR = $tpl['r'];
+                    $baseF = $tpl['f'];
+                    $baseRep = $tpl['rep'];
+                } else {
+                    $tp = $topicsPool[($i - count($tweetTemplates)) % count($topicsPool)];
+                    $sent = $tp['sent'];
+                    $content = "{$author['name']}: Pembahasan mengenai {$tp['topic']} terus dimatangkan untuk memastikan implementasi kebijakan berjalan efektif dan terukur. {$tp['hash']}";
+                    $baseV = 280000;
+                    $baseR = 7500;
+                    $baseF = 16000;
+                    $baseRep = 850;
+                }
+
                 $dayOffset = ($i * 7) % $diffDays;
                 $postDate = $start->copy()->addDays($dayOffset)->setTime(8 + ($i % 14), ($i * 17) % 60, ($i * 23) % 60);
+                $subId = '183' . str_pad((string)(900000000000000 + ($i * 987654321)), 15, '0', STR_PAD_RIGHT);
 
-                $variation = ($i >= count($tweetTemplates)) ? (' (Thread Lanjutan ' . (floor($i / count($tweetTemplates)) + 1) . ')') : '';
-                $subId = '183' . str_pad((string)(900000000000000 + ($i * 87654321)), 15, '0', STR_PAD_RIGHT);
-
-                $factor = max(0.03, pow(0.985, $i));
-                $vCnt   = max(15000, (int) round($tpl['view_cnt'] * $factor));
-                $rtCnt  = max(300, (int) round($tpl['rt'] * $factor));
-                $favCnt = max(750, (int) round($tpl['fav_count'] * $factor));
-                $repCnt = max(50, (int) round($tpl['reply_cnt'] * $factor));
+                $factor = max(0.08, pow(0.975, $i));
+                $vCnt   = max(15000, (int) round($baseV * $factor));
+                $rtCnt  = max(300, (int) round($baseR * $factor));
+                $favCnt = max(750, (int) round($baseF * $factor));
+                $repCnt = max(50, (int) round($baseRep * $factor));
 
                 $avatarUrl = "https://unavatar.io/x/" . $author['scr_name'];
 
@@ -350,9 +189,9 @@
                     'sub_id'        => $subId,
                     'name'          => $author['name'],
                     'author_scr_name' => $author['scr_name'],
-                    'content'       => $tpl['content'] . $variation,
+                    'content'       => $content,
                     'date_created'  => $postDate->format('Y-m-d\TH:i:s\Z'),
-                    'sentiment_str' => $tpl['sentiment'],
+                    'sentiment_str' => $sent,
                     'view_cnt'      => $vCnt,
                     'views'         => $vCnt,
                     'freq'          => $vCnt,
@@ -939,7 +778,7 @@
 
                 // Fallback to synthesized posts if live API empty
                 if (empty($tweets)) {
-                    $fallbackPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, 500);
+                    $fallbackPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, 100);
                     foreach ($fallbackPosts as $item) {
                         $avatar = $item['avatar_url'] ?? '';
                         $tweets[] = [
@@ -2711,7 +2550,7 @@ public function mostEngagementData(Request $request)
         $projectId = $request->query('project_id');
         $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
         $endDate   = $request->query('end_date', now()->format('Y-m-d'));
-        $rows      = (int) $request->query('rows', 500);
+        $rows      = (int) $request->query('rows', 100);
 
         if (!$projectId) {
             return response()->json(['success' => false, 'error' => 'project_id required'], 400);
@@ -2803,7 +2642,7 @@ public function mostEngagementData(Request $request)
 
         // Fallback 2: jika masih kosong atau terlalu sedikit, gunakan getFallbackXPosts
         if (count($allPosts) < 5) {
-            $fallbackPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, $rows ?: 500);
+            $fallbackPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, $rows ?: 100);
             foreach ($fallbackPosts as $item) {
                 $uid = $item['sub_id'] ?? $item['id'] ?? md5(($item['content'] ?? '') . ($item['name'] ?? ''));
                 if (!isset($seenIds[$uid])) {
