@@ -895,10 +895,10 @@ const CFG = {
 
 /* ══ Palette ══ */
 const PAL = [
-    '#7f1d1d','#273B4A','#92400e','#064e3b','#1e3a5f',
-    '#5b21b6','#9d174d','#1e40af','#374151','#4d7c0f',
-    '#0e7490','#6d28d9','#b45309','#166534','#991b1b',
-    '#1d4ed8','#7e22ce','#a16207','#065f46','#0f172a',
+    '#1e3a8a', '#047857', '#6d28d9', '#991b1b', '#0f766e',
+    '#374151', '#4338ca', '#b45309', '#1d4ed8', '#166534',
+    '#7e22ce', '#9a3412', '#0e7490', '#1f2937', '#2563eb',
+    '#059669', '#581c87', '#c2410c', '#0891b2', '#334155'
 ];
 
 /* ══ State ══ */
@@ -913,6 +913,23 @@ const tip = $('ntmTip');
 const esc   = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const trunc = (s,n) => s&&s.length>n?s.slice(0,n-1)+'…':s;
 const numF  = n => parseInt(n||0).toLocaleString('id-ID');
+
+function cleanHeadlineText(str) {
+    if (!str) return '';
+    const txt = document.createElement('textarea');
+    txt.innerHTML = str;
+    let val = txt.value || str;
+    val = val.replace(/aEUR["\x9d\x9c\x94\x93]/gi, '—')
+             .replace(/&[a-zA-Z0-9#]+;/g, ' ')
+             .replace(/<[^>]*>/g, ' ')
+             .replace(/^(Akurat\.co|Liputan6\.com|Kompas\.com|Detik\.com|Tribunnews\.com|Tempo\.co|CNN Indonesia|VIVA|Suarakitanews\.com)[^a-zA-Z0-9]*/gi, '')
+             .replace(/\s*\|\s*#[a-zA-Z0-9_]+/gi, '')
+             .replace(/\s*\|\s*[a-zA-Z0-9\.\s]+$/gi, '')
+             .replace(/^[\s\-–—,.;:!?_"'`()\[\]{}]+|[\s\-–—,.;:!?_"'`()\[\]{}]+$/g, '')
+             .replace(/\s+/g, ' ')
+             .trim();
+    return val;
+}
 
 function showTip(e,h){ tip.innerHTML=h; tip.classList.add('on'); moveTip(e); }
 function moveTip(e){ tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY-50)+'px'; }
@@ -969,7 +986,10 @@ function findHeadlineUnique(topic, usedSet) {
         words.forEach(w=>{ if(content.includes(w)) score+=3; });
         if(score>bestScore||(score===bestScore&&best&&titleRaw.length<best.title.length)){ bestScore=score; best=a; }
     });
-    if(bestScore>=15&&best){ usedSet.add(best.title||''); return best.title||''; }
+    if(bestScore>=15&&best){
+        usedSet.add(best.title||'');
+        return cleanHeadlineText(best.title||'');
+    }
     return '';
 }
 
@@ -1059,7 +1079,7 @@ window.ntmRender = function() {
     $('ntmLoading').style.display='none';
     $('ntmMapWrap').style.display='block';
     $('ntmEmpty').style.display='none';
-    $('ntmMapMeta').textContent=`${D.raw.length} topics · ${String(CFG.s).replace(/\s+/g,'-')} to ${String(CFG.e).replace(/\s+/g,'-')}`;
+    $('ntmMapMeta').textContent=`Top 24 topics of ${D.raw.length} · ${String(CFG.s).replace(/\s+/g,'-')} to ${String(CFG.e).replace(/\s+/g,'-')}`;
     doMap(D.fil);
 };
 
@@ -1088,13 +1108,16 @@ function doMap(data) {
 
     if (!data || !data.length) return;
 
-    // Power scaling (0.6) prevents giant outliers from monopolizing the canvas while preserving hierarchy
-    const root = d3.hierarchy({ children: data }).sum(d => Math.pow(Math.max(1, Number(d.count || 1)), 0.6));
+    // Tampilkan Top 24 topik terpenting di treemap agar proporsi kotak harmonis, lapang & konsisten
+    const topData = data.slice(0, 24);
+
+    // Power scaling (0.62) menyeimbangkan proporsi kotak
+    const root = d3.hierarchy({ children: topData }).sum(d => Math.pow(Math.max(1, Number(d.count || 1)), 0.62));
 
     d3.treemap()
-        .tile(d3.treemapSquarify.ratio(1.33))
+        .tile(d3.treemapSquarify.ratio(1.3))
         .size([W, H])
-        .paddingInner(2)
+        .paddingInner(3)
         .paddingOuter(0)
         .round(true)(root);
 
@@ -1108,27 +1131,24 @@ function doMap(data) {
         const tile = document.createElement('div');
         tile.className = 'ntm-tile ntm-fi';
         tile.style.cssText = `position:absolute;left:${node.x0}px;top:${node.y0}px;width:${tW}px;height:${tH}px;` +
-            `animation-delay:${Math.min(i * 5, 250)}ms;background:${d.color};border-radius:3px;box-sizing:border-box;`;
+            `animation-delay:${Math.min(i * 10, 240)}ms;background:${d.color};border-radius:4px;box-sizing:border-box;border:1px solid rgba(255,255,255,0.12);`;
 
-        const isMicro = tW < 48 || tH < 32;
-        const isSmall = tW < 78 || tH < 46;
-        const catFs   = Math.max(7, Math.min(11, tW / 14));
-        const hlFs    = Math.max(9, Math.min(20, tW / 7));
-        const lines   = Math.max(1, Math.floor((tH - catFs * 2 - 6) / (hlFs * 1.25)));
+        const isMedium = tW < 130 || tH < 85;
+        const catFs   = Math.max(8, Math.min(10.5, tW / 14));
+        const hlFs    = Math.max(11, Math.min(16, tW / 11));
+        const lines   = Math.max(1, Math.min(4, Math.floor((tH - 46) / (hlFs * 1.3))));
 
-        let hlHtml = '';
-        if (!isSmall && tH > 46) {
-            if (showHL && d.headline) {
-                hlHtml = `<div class="ntm-tile-hl" style="font-size:${hlFs}px;-webkit-line-clamp:${lines};">${esc(d.headline)}</div>`;
-            } else {
-                const tf = Math.max(10, Math.min(18, tW / 8));
-                hlHtml = `<div class="ntm-tile-hl" style="font-size:${tf}px;-webkit-line-clamp:${lines};font-weight:800;">${esc(d.topic)}</div>`;
-            }
-        }
+        let hlText = (showHL && d.headline) ? d.headline : d.topic;
+        let hlHtml = `<div class="ntm-tile-hl" style="font-size:${hlFs}px;line-height:1.35;-webkit-line-clamp:${lines};font-weight:${(showHL && d.headline) ? '600' : '700'};">${esc(hlText)}</div>`;
 
-        tile.innerHTML = `<div class="ntm-tile-in" style="${isMicro ? 'padding:2px 3px;justify-content:center;align-items:center;' : 'padding:5px 7px;'}">
-            <div class="ntm-tile-cat" style="font-size:${catFs}px;${isMicro ? 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;opacity:1;' : ''}">${esc(d.topic)}</div>
-            ${hlHtml}
+        tile.innerHTML = `<div class="ntm-tile-in" style="padding:${isMedium ? '6px 8px' : '9px 12px'};display:flex;flex-direction:column;justify-content:space-between;height:100%;">
+            <div>
+                <div class="ntm-tile-cat" style="font-size:${catFs}px;margin-bottom:4px;font-weight:800;letter-spacing:0.5px;color:rgba(255,255,255,0.85);">${esc(d.topic)}</div>
+                ${hlHtml}
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">
+                <span style="font-size:9.5px;font-weight:700;color:rgba(255,255,255,0.75);background:rgba(0,0,0,0.22);padding:1px 6px;border-radius:3px;"><i class="ph ph-newspaper me-1"></i>${numF(d.count)}</span>
+            </div>
         </div>`;
 
         tile.addEventListener('mouseenter', e => showTip(e, `<b>${esc(d.topic)}</b><br><small>${numF(d.count)} articles / mentions</small>`));
