@@ -289,89 +289,27 @@
 
     {{-- ══ Tabs ══ --}}
     <div class="tme-tabs" id="ovTabsBar">
-        <button class="tme-tab-btn active" id="tab-hashtag" onclick="OVTab.show('hashtag')">
-            <i class="ph ph-hash"></i> Top Topics
-            <span class="tme-tab-chip" id="chip-hashtag">—</span>
+        <button class="tme-tab-btn active" id="tab-retweet" onclick="OVTab.show('retweet')">
+            <i class="ph ph-repeat"></i> Most Retweeted
+            <span class="tme-tab-chip" id="chip-retweet">—</span>
         </button>
         <button class="tme-tab-btn" id="tab-view" onclick="OVTab.show('view')">
             <i class="ph ph-eye"></i> Most Viewed
             <span class="tme-tab-chip" id="chip-view">—</span>
         </button>
-        <button class="tme-tab-btn" id="tab-retweet" onclick="OVTab.show('retweet')">
-            <i class="ph ph-repeat"></i> Most Retweeted
-            <span class="tme-tab-chip" id="chip-retweet">—</span>
+        <button class="tme-tab-btn" id="tab-hashtag" onclick="OVTab.show('hashtag')">
+            <i class="ph ph-hash"></i> Top Topics
+            <span class="tme-tab-chip" id="chip-hashtag">—</span>
         </button>
     </div>
 
-    {{-- ══ Panel: Top Topics (Hashtag) ══ --}}
-    <div class="tme-tab-panel active" id="panel-hashtag">
-
-        {{-- Donut + Breakdown (stacked dalam 1 card) --}}
-        <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
-            <div id="card-export-hashtag-donut">
-                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-donut f-18 text-primary"></i></div>
-                        <div><h6 class="mb-0">Distribusi — Top 5 Topics</h6><small class="text-muted">Proporsi penggunaan topic teratas</small></div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <div class="d-flex gap-1" data-html2canvas-ignore="true">
-                            <button class="card-exp-btn card-exp-btn-pdf" onclick="OVExport.runCard('card-export-hashtag-donut','hashtag-donut','pdf',this)" title="PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
-                            <button class="card-exp-btn card-exp-btn-img" onclick="OVExport.runCard('card-export-hashtag-donut','hashtag-donut','image',this)" title="PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body pb-0">
-                    <div class="donut-stack-wrap">
-                        {{-- Donut chart di atas --}}
-                        <div class="donut-chart-area">
-                            <div class="chart-container" style="width:100%;max-width:420px;">
-                                <div class="chart-loading" id="loadingDonutHashtag"><div class="spin-ring"></div><span>Loading…</span></div>
-                                <div id="donutHashtagChart" style="width:100%;height:320px;display:none;"></div>
-                            </div>
-                        </div>
-                        {{-- Breakdown list di bawah --}}
-                        <div class="donut-breakdown-list" id="donutHashtagBreakdown" style="display:none;"></div>
-                    </div>
-                </div>
-                <div style="height:8px;"></div>
-            </div>
-        </div>
-
-        {{-- Hashtag List Card --}}
-        <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
-            <div id="card-export-hashtag-list">
-                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-hash f-18 text-primary"></i></div>
-                        <div><h6 class="mb-0">Top Topics / Hashtags</h6><small class="text-muted">Klik untuk lihat tweet terkait</small></div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-light-primary text-primary" id="badgeHashtag">Loading…</span>
-                        <div class="d-flex gap-1" data-html2canvas-ignore="true">
-                            <button class="card-exp-btn card-exp-btn-pdf" onclick="OVExport.runCard('card-export-hashtag-list','hashtag-list','pdf',this)" title="PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
-                            <button class="card-exp-btn card-exp-btn-img" onclick="OVExport.runCard('card-export-hashtag-list','hashtag-list','image',this)" title="PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
-                        </div>
-                    </div>
-                </div>
-                <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>Loading...</span></div>
-                <div id="hashtagContent" style="display:none;">
-                    <div id="hashtagList" class="ht-list"></div>
-                    <div id="pag-hashtag"></div>
-                </div>
-                <div id="hashtagEmpty" style="display:none;" class="chart-empty" style="padding:40px 0;"><i class="ph ph-hash"></i><span>Tidak ada data topics</span></div>
-            </div>
-        </div>
-
-    </div>
-
-    {{-- ══ Panel: Most Viewed & Most Retweeted ══ --}}
-    @foreach(['view' => 'Most Viewed', 'retweet' => 'Most Retweeted'] as $tp => $tpLabel)
+    {{-- ══ Panel: Most Retweeted & Most Viewed ══ --}}
+    @foreach(['retweet' => 'Most Retweeted', 'view' => 'Most Viewed'] as $tp => $tpLabel)
     @php
-        $tpIcons = ['view' => 'ph-eye', 'retweet' => 'ph-repeat'];
+        $tpIcons = ['retweet' => 'ph-repeat', 'view' => 'ph-eye'];
         $tpIcon  = $tpIcons[$tp];
     @endphp
-    <div class="tme-tab-panel" id="panel-{{ $tp }}">
+    <div class="tme-tab-panel {{ $tp === 'retweet' ? 'active' : '' }}" id="panel-{{ $tp }}">
 
         {{-- Donut + Breakdown stacked card --}}
         <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
@@ -434,6 +372,68 @@
     </div>
     @endforeach
 
+    {{-- ══ Panel: Top Topics (Hashtag) ══ --}}
+    <div class="tme-tab-panel" id="panel-hashtag">
+
+        {{-- Donut + Breakdown (stacked dalam 1 card) --}}
+        <div class="card mb-3" style="animation:fadeUp .38s ease-out .18s both;">
+            <div id="card-export-hashtag-donut">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-chart-donut f-18 text-primary"></i></div>
+                        <div><h6 class="mb-0">Distribusi — Top 5 Topics</h6><small class="text-muted">Proporsi penggunaan topic teratas</small></div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                            <button class="card-exp-btn card-exp-btn-pdf" onclick="OVExport.runCard('card-export-hashtag-donut','hashtag-donut','pdf',this)" title="PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                            <button class="card-exp-btn card-exp-btn-img" onclick="OVExport.runCard('card-export-hashtag-donut','hashtag-donut','image',this)" title="PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body pb-0">
+                    <div class="donut-stack-wrap">
+                        {{-- Donut chart di atas --}}
+                        <div class="donut-chart-area">
+                            <div class="chart-container" style="width:100%;max-width:420px;">
+                                <div class="chart-loading" id="loadingDonutHashtag"><div class="spin-ring"></div><span>Loading…</span></div>
+                                <div id="donutHashtagChart" style="width:100%;height:320px;display:none;"></div>
+                            </div>
+                        </div>
+                        {{-- Breakdown list di bawah --}}
+                        <div class="donut-breakdown-list" id="donutHashtagBreakdown" style="display:none;"></div>
+                    </div>
+                </div>
+                <div style="height:8px;"></div>
+            </div>
+        </div>
+
+        {{-- Hashtag List Card --}}
+        <div class="card mb-3" style="animation:fadeUp .38s ease-out .22s both;">
+            <div id="card-export-hashtag-list">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avtar avtar-xs bg-light-primary rounded"><i class="ph ph-hash f-18 text-primary"></i></div>
+                        <div><h6 class="mb-0">Top Topics / Hashtags</h6><small class="text-muted">Klik untuk lihat tweet terkait</small></div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-light-primary text-primary" id="badgeHashtag">Loading…</span>
+                        <div class="d-flex gap-1" data-html2canvas-ignore="true">
+                            <button class="card-exp-btn card-exp-btn-pdf" onclick="OVExport.runCard('card-export-hashtag-list','hashtag-list','pdf',this)" title="PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
+                            <button class="card-exp-btn card-exp-btn-img" onclick="OVExport.runCard('card-export-hashtag-list','hashtag-list','image',this)" title="PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
+                        </div>
+                    </div>
+                </div>
+                <div id="hashtagLoading" class="spinner-state"><div class="spin-ring"></div><span>Loading...</span></div>
+                <div id="hashtagContent" style="display:none;">
+                    <div id="hashtagList" class="ht-list"></div>
+                    <div id="pag-hashtag"></div>
+                </div>
+                <div id="hashtagEmpty" style="display:none;" class="chart-empty" style="padding:40px 0;"><i class="ph ph-hash"></i><span>Tidak ada data topics</span></div>
+            </div>
+        </div>
+
+    </div>
+
 </div>{{-- /pageExportArea --}}
 
 {{-- Export Toast --}}
@@ -485,8 +485,8 @@ const OVCfg    = {
     colors : { view:'#EF4444', retweet:'#F59E0B', post:'#10B981', hashtag:'#273B4A' },
     perPage: 10,
 };
-const DONUT_COLORS = ['#EF4444','#F59E0B','#10B981','#273B4A','#06B6D4'];
-const TAB_TYPES    = ['hashtag', 'view', 'retweet'];
+const DONUT_COLORS = ['#F59E0B','#EF4444','#10B981','#273B4A','#06B6D4'];
+const TAB_TYPES    = ['retweet', 'view', 'hashtag'];
 
 const _$  = id => document.getElementById(id);
 const numF = n => parseInt(n||0).toLocaleString('id-ID');
@@ -495,13 +495,13 @@ const esc  = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/
 const dec  = s => { if(!s)return ''; try{const f=decodeURIComponent(escape(s));if(!f.includes('\uFFFD')&&f!==s)return f}catch(e){}return s; };
 const hideLd = id => { const e=_$(id); if(e&&e.classList.contains('chart-loading'))e.classList.add('hidden'); };
 
-const Store  = { view:[], retweet:[], hashtag:[] };
-const Pag    = { view:1,  retweet:1,  hashtag:1  };
+const Store  = { retweet:[], view:[], hashtag:[] };
+const Pag    = { retweet:1,  view:1,  hashtag:1  };
 let allPostsRaw = [];
 let _engFetched = false;
 
 window.addEventListener('resize',()=>{
-    ['__ec_donutHashtagChart','__ec_donutChart_view','__ec_donutChart_retweet'].forEach(k=>{
+    ['__ec_donutChart_retweet','__ec_donutChart_view','__ec_donutHashtagChart'].forEach(k=>{
         try{ if(window[k]&&!window[k].isDisposed()) window[k].resize(); }catch(e){}
     });
 });
@@ -510,7 +510,7 @@ window.addEventListener('resize',()=>{
    TABS
 ════════════════════════════ */
 const OVTab = {
-    _loaded: { hashtag:false, view:false, retweet:false },
+    _loaded: { retweet:false, view:false, hashtag:false },
     show(t) {
         TAB_TYPES.forEach(x => {
             _$('tab-'+x)?.classList.toggle('active', x===t);
@@ -518,9 +518,8 @@ const OVTab = {
         });
         if (!this._loaded[t]) { this._loaded[t]=true; OVData.loadTab(t); }
         else if (t!=='hashtag' && Store[t].length) OVData._renderDonut(t, Store[t]);
-        if (t!=='hashtag') setTimeout(()=>{ _$('ovTabsBar')?.scrollIntoView({behavior:'smooth',block:'nearest'}); },80);
     },
-    reset() { this._loaded = { hashtag:false, view:false, retweet:false }; }
+    reset() { this._loaded = { retweet:false, view:false, hashtag:false }; }
 };
 
 /* ════════════════════════════
@@ -1065,9 +1064,9 @@ const OVExport = (() => {
             }
 
             const TAB_ORDER=[
-                {key:'hashtag', label:'Top Topics'},
-                {key:'view',    label:'Most Viewed'},
                 {key:'retweet', label:'Most Retweeted'},
+                {key:'view',    label:'Most Viewed'},
+                {key:'hashtag', label:'Top Topics'},
             ];
 
             // Load semua tab dulu
@@ -1092,7 +1091,7 @@ const OVExport = (() => {
                 });
 
                 // Resize chart tab aktif
-                const tabEcKeys={hashtag:['__ec_donutHashtagChart'],view:['__ec_donutChart_view'],retweet:['__ec_donutChart_retweet']};
+                const tabEcKeys={retweet:['__ec_donutChart_retweet'],view:['__ec_donutChart_view'],hashtag:['__ec_donutHashtagChart']};
                 (tabEcKeys[key]||[]).forEach(wk=>{
                     try{ if(window[wk]&&!window[wk].isDisposed()) window[wk].resize(); }catch(e){}
                 });
@@ -1140,12 +1139,12 @@ const OVExport = (() => {
 
     // ── runCard() ──
     const _cardLabels={
-        'hashtag-list':'Top Topics / Hashtags','hashtag-donut':'Distribusi Top Topics',
-        'donut-view':'Distribusi Most Viewed','donut-retweet':'Distribusi Most Retweeted',
-        'list-view':'Top Tweets by Views','list-retweet':'Top Tweets by Retweets'
+        'list-retweet':'Top Tweets by Retweets','donut-retweet':'Distribusi Most Retweeted',
+        'list-view':'Top Tweets by Views','donut-view':'Distribusi Most Viewed',
+        'hashtag-list':'Top Topics / Hashtags','hashtag-donut':'Distribusi Top Topics'
     };
     function _cardFilename(k){
-        const map={'hashtag-list':'top-topics-list','hashtag-donut':'top-topics-donut','donut-view':'distribusi-most-viewed','donut-retweet':'distribusi-most-retweeted','list-view':'top-tweets-by-view','list-retweet':'top-tweets-by-retweets'};
+        const map={'list-retweet':'top-tweets-by-retweets','donut-retweet':'distribusi-most-retweeted','list-view':'top-tweets-by-view','donut-view':'distribusi-most-viewed','hashtag-list':'top-topics-list','hashtag-donut':'top-topics-donut'};
         return `x_overview_${map[k]||k}_${OV_PID}_${new Date().toISOString().slice(0,10).replace(/-/g,'')}`;
     }
 
@@ -1191,12 +1190,13 @@ const OVExport = (() => {
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded',()=>{
     if(!OVCfg.pid) return;
-    OVTab._loaded.hashtag=true;
-    OVData.loadHashtags();
+    OVTab._loaded.retweet=true;
     OVData._ensureEngagement().then(()=>{
+        OVData._sortAndDisplay('retweet');
         OVTab._loaded.view=true;
-        OVData._sortAndDisplay('view');
+        OVData._distributeItems(allPostsRaw);
     });
+    OVData.loadHashtags();
     document.addEventListener('keydown',e=>{ if(e.key==='Escape') OVPanel.close(); });
 });
 </script>
