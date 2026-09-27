@@ -1568,7 +1568,7 @@
 
                 // Fallback 2: use getFallbackXPosts if still empty
                 if (empty($posts)) {
-                    $fallbackPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, 60);
+                    $fallbackPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, 100);
                     foreach ($fallbackPosts as $item) {
                         $avatar = $item['avatar_url'] ?? '';
                         $posts[] = [

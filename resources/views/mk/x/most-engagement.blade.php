@@ -828,6 +828,7 @@ const hideLd = id => { const e=_$(id); if(e&&e.classList.contains('chart-loading
 /* ══ STORE & PAGINATION ══ */
 const Store = { view:[], retweet:[], follower:[], sentiment:[] };
 const Pag   = { view:1, retweet:1, follower:1, sentiment:1 };
+let _volTotal = 0;
 
 /* ══ ApexCharts instances ══ */
 const Charts = {};
@@ -874,9 +875,16 @@ const XMVData = {
         const listEl = _$('list-'+type);
         if(listEl) listEl.innerHTML = `<div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div>`;
         try {
-            const res  = await fetch(`/mk/api/x/most-status?project_id=${XMVCfg.pid}&start_date=${XMVCfg.sd}&end_date=${XMVCfg.ed}`);
-            const json = await res.json();
-            let items  = json.data || json || []; if(!Array.isArray(items)) items=[];
+            const [resStatus, resVol] = await Promise.allSettled([
+                fetch(`/mk/api/x/most-status?project_id=${XMVCfg.pid}&start_date=${XMVCfg.sd}&end_date=${XMVCfg.ed}`).then(r => r.json()),
+                fetch(`/mk/api/x/volume-total?project_id=${XMVCfg.pid}&start_date=${XMVCfg.sd}&end_date=${XMVCfg.ed}`).then(r => r.json())
+            ]);
+            let items = (resStatus.status === 'fulfilled' && resStatus.value) ? (resStatus.value.data || resStatus.value || []) : [];
+            if(!Array.isArray(items)) items = [];
+
+            if (resVol.status === 'fulfilled' && resVol.value?.data?.total) {
+                _volTotal = parseInt(resVol.value.data.total || 0);
+            }
 
             /* Sort by tab type */
             const sorted = this._sortByType(items, type).slice(0, rows);
@@ -885,7 +893,7 @@ const XMVData = {
             const chip  = _$('chip-'+type);  if(chip)  chip.textContent  = sorted.length;
             const badge = _$('badge-'+type); if(badge) badge.textContent = `${sorted.length} posts`;
 
-            if(type === 'view') { this._updateKPIs(items); this._renderEngChart(sorted); }
+            if(type === 'view') { this._updateKPIs(items, _volTotal); this._renderEngChart(sorted); }
             this._renderList(type);
             this._renderBar(type, sorted.slice(0,10));
             this._renderDonut(type, sorted);
@@ -920,7 +928,7 @@ const XMVData = {
         }
     },
 
-    _updateKPIs(items) {
+    _updateKPIs(items, volTotal) {
         const n = items.length;
         const totalViews    = items.reduce((s,i)=>s+parseInt(i.view_cnt||0),0);
         const totalRetweets = items.reduce((s,i)=>s+parseInt(i.rt||0),0);
@@ -929,15 +937,16 @@ const XMVData = {
         const el  = (id,val) => { const e=_$(id); if(e) e.textContent=numF(val); };
         const sub = (id,txt) => { const e=_$(id); if(e) e.innerHTML=`<i class="ph ph-chart-line-up me-1"></i>${txt}`; };
 
-        el('kpiPosts',    n);
+        const totalPosts = volTotal || n;
+        el('kpiPosts',    totalPosts);
         el('kpiViews',    totalViews);
         el('kpiRetweets', totalRetweets);
         el('kpiAvg',      avgViews);
 
-        sub('kpiPostsSub',    `${n} posts dalam periode ini`);
-        sub('kpiViewsSub',    `Avg ${numF(avgViews)} views / post`);
-        sub('kpiRetweetsSub', `Total retweet keseluruhan`);
-        sub('kpiAvgSub',      `Berdasarkan ${n} posts`);
+        sub('kpiPostsSub',    `Total ${numF(totalPosts)} tweets volume`);
+        sub('kpiViewsSub',    `Avg ${numF(avgViews)} views / post · Top ${numF(n)} posts`);
+        sub('kpiRetweetsSub', `Total retweet (${numF(n)} top posts)`);
+        sub('kpiAvgSub',      `Berdasarkan Top ${n} posts`);
     },
 
     _getName(item) {
