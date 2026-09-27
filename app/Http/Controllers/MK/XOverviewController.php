@@ -325,7 +325,7 @@
             ];
 
             $posts = [];
-            $totalCount = min(max(50, $limit), 100);
+            $totalCount = min(max(10, $limit), 500);
 
             for ($i = 0; $i < $totalCount; $i++) {
                 $tpl = $tweetTemplates[$i % count($tweetTemplates)];
@@ -337,7 +337,7 @@
                 $variation = ($i >= count($tweetTemplates)) ? (' (Thread Lanjutan ' . (floor($i / count($tweetTemplates)) + 1) . ')') : '';
                 $subId = '183' . str_pad((string)(900000000000000 + ($i * 87654321)), 15, '0', STR_PAD_RIGHT);
 
-                $factor = 1.0 - ($i * 0.011);
+                $factor = max(0.03, pow(0.985, $i));
                 $vCnt   = max(15000, (int) round($tpl['view_cnt'] * $factor));
                 $rtCnt  = max(300, (int) round($tpl['rt'] * $factor));
                 $favCnt = max(750, (int) round($tpl['fav_count'] * $factor));
@@ -939,7 +939,7 @@
 
                 // Fallback to synthesized posts if live API empty
                 if (empty($tweets)) {
-                    $fallbackPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, 100);
+                    $fallbackPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, 500);
                     foreach ($fallbackPosts as $item) {
                         $avatar = $item['avatar_url'] ?? '';
                         $tweets[] = [
@@ -2711,7 +2711,7 @@ public function mostEngagementData(Request $request)
         $projectId = $request->query('project_id');
         $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
         $endDate   = $request->query('end_date', now()->format('Y-m-d'));
-        $rows      = (int) $request->query('rows', 100);
+        $rows      = (int) $request->query('rows', 250);
 
         if (!$projectId) {
             return response()->json(['success' => false, 'error' => 'project_id required'], 400);
@@ -2803,7 +2803,7 @@ public function mostEngagementData(Request $request)
 
         // Fallback 2: jika masih kosong atau terlalu sedikit, gunakan getFallbackXPosts
         if (count($allPosts) < 5) {
-            $fallbackPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, $rows ?: 100);
+            $fallbackPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, $rows ?: 250);
             foreach ($fallbackPosts as $item) {
                 $uid = $item['sub_id'] ?? $item['id'] ?? md5(($item['content'] ?? '') . ($item['name'] ?? ''));
                 if (!isset($seenIds[$uid])) {
