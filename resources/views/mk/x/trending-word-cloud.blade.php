@@ -307,7 +307,7 @@
 <script>
 'use strict';
 
-const CFG  = { sd: OV_SD, ed: OV_ED, loc: OV_LOC };
+const CFG  = { pid: OV_PID, sd: OV_SD, ed: OV_ED, loc: OV_LOC };
 const _$   = id => document.getElementById(id);
 const numF = n => parseInt(n||0).toLocaleString('id-ID');
 const esc  = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -387,6 +387,7 @@ const NEG_SET = new Set([
     'dipermalukan','dicerca','dicaci','dimaki','dihujat','hujatan',
     'sampah','limbah','jorok','kotor','busuk','najis',
     'susah','sulit','kesulitan','hambatan','keterpurukan',
+    'karhutla','fufufafa','dinasti','boikot'
 ]);
 
 const POS_SET = new Set([
@@ -447,6 +448,7 @@ const POS_SET = new Set([
     'viral','populer','hits','trending','booming','digemari','favorit',
     'spesial','istimewa','premium','berkualitas','terjamin',
     'terdepan',
+    'mbg','gizi','makanbergizi','makanbergizigratis','jagaindonesia','swasembada','alutsista','kemhan','kemhanri','indonesiamaju','prabowogibran','nusantara','pembangunan','ketahananpangan','ketahanan','kedaulatan','merahputih','patriot'
 ]);
 
 function getSent(name) {
@@ -454,12 +456,14 @@ function getSent(name) {
     const tokens = clean.split(/[\s_\-\.\/\\|&]+/).filter(Boolean);
     let negScore = 0, posScore = 0;
     for (const tok of tokens) {
-        if (NEG_SET.has(tok)) negScore++;
-        if (POS_SET.has(tok)) posScore++;
+        if (NEG_SET.has(tok)) negScore += 2;
+        if (POS_SET.has(tok)) posScore += 2;
     }
-    if (tokens.length === 1 && clean.length > 4) {
-        for (const kw of NEG_SET) { if (kw.length >= 4 && clean.includes(kw)) negScore += 0.5; }
-        for (const kw of POS_SET) { if (kw.length >= 4 && clean.includes(kw)) posScore += 0.5; }
+    for (const kw of NEG_SET) {
+        if (kw.length >= 3 && clean.includes(kw)) negScore += 1;
+    }
+    for (const kw of POS_SET) {
+        if (kw.length >= 3 && clean.includes(kw)) posScore += 1;
     }
     if (negScore > posScore) return 'negative';
     if (posScore > negScore) return 'positive';
@@ -469,13 +473,30 @@ function getSent(name) {
 /* ══ Load Data ══ */
 async function loadData() {
     try {
-        const r = await fetch(`/mk/api/x/trending-topics?start_date=${CFG.sd}&end_date=${CFG.ed}&location=${CFG.loc}`);
+        let url = CFG.pid
+            ? `/mk/api/x/top-hashtags-data?project_id=${CFG.pid}&start_date=${CFG.sd}&end_date=${CFG.ed}`
+            : `/mk/api/x/trending-topics?start_date=${CFG.sd}&end_date=${CFG.ed}&location=${CFG.loc}`;
+        const r = await fetch(url);
         const j = await r.json();
-        if (!j.success || !j.data?.top_topics?.length) { showEmpty(); return; }
-        allTopics = j.data.top_topics.map(t => {
-            const name = String(t.name || '').trim();
-            return { name, size: t.total_volume || t.appearances || 100, sent: getSent(name) };
-        }).filter(t => t.name);
+        let raw = [];
+        if (j.data?.hashtags && Array.isArray(j.data.hashtags)) {
+            raw = j.data.hashtags.map(h => ({
+                name: h.hashtag || ('#' + h.name),
+                size: h.size,
+                sent: getSent(h.name)
+            }));
+        } else if (j.data?.top_topics && Array.isArray(j.data.top_topics)) {
+            raw = j.data.top_topics.map(t => {
+                const name = String(t.name || '').trim();
+                return {
+                    name,
+                    size: t.total_volume || t.appearances || 100,
+                    sent: getSent(name)
+                };
+            });
+        }
+        if (!raw.length) { showEmpty(); return; }
+        allTopics = raw.filter(t => t.name && t.size > 0);
         applyFilter();
     } catch(e) { console.error(e); showEmpty(); }
 }
