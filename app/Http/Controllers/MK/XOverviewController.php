@@ -325,7 +325,7 @@
             ];
 
             $posts = [];
-            $totalCount = min(max(30, $limit), 80);
+            $totalCount = min(max(50, $limit), 100);
 
             for ($i = 0; $i < $totalCount; $i++) {
                 $tpl = $tweetTemplates[$i % count($tweetTemplates)];
@@ -939,7 +939,7 @@
 
                 // Fallback to synthesized posts if live API empty
                 if (empty($tweets)) {
-                    $fallbackPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, 60);
+                    $fallbackPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, 100);
                     foreach ($fallbackPosts as $item) {
                         $avatar = $item['avatar_url'] ?? '';
                         $tweets[] = [

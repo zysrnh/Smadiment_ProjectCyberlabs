@@ -499,6 +499,7 @@ const Store  = { retweet:[], view:[], hashtag:[] };
 const Pag    = { retweet:1,  view:1,  hashtag:1  };
 let allPostsRaw = [];
 let _engFetched = false;
+let _volTotal = 0;
 
 window.addEventListener('resize',()=>{
     ['__ec_donutChart_retweet','__ec_donutChart_view','__ec_donutHashtagChart'].forEach(k=>{
@@ -611,14 +612,24 @@ const OVData = {
 
     async _ensureEngagement() {
         if(_engFetched) return;
-        const rows=parseInt(_$('rows-view')?.value||'100');
+        const rows=parseInt(_$('rows-retweet')?.value||_$('rows-view')?.value||'100');
         ['view','retweet'].forEach(t=>{const ls=_$('list-'+t);if(ls)ls.innerHTML=`<div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div>`});
         try {
-            const r=await fetch(`${API_BASE}/most-engagement?project_id=${OVCfg.pid}&start_date=${OVCfg.sd}&end_date=${OVCfg.ed}&rows=${rows}`);
-            const j=await r.json();
-            let items=j.data||j||[]; if(!Array.isArray(items)) items=[];
-            allPostsRaw=items; _engFetched=true;
-            this._updateKpi(items); this._distributeItems(items);
+            const [rEng, rVol] = await Promise.allSettled([
+                fetch(`${API_BASE}/most-engagement?project_id=${OVCfg.pid}&start_date=${OVCfg.sd}&end_date=${OVCfg.ed}&rows=${rows}`).then(r=>r.json()),
+                fetch(`${API_BASE}/volume-total?project_id=${OVCfg.pid}&start_date=${OVCfg.sd}&end_date=${OVCfg.ed}`).then(r=>r.json())
+            ]);
+            let items = (rEng.status === 'fulfilled' && rEng.value) ? (rEng.value.data || rEng.value || []) : [];
+            if(!Array.isArray(items)) items = [];
+            
+            if (rVol.status === 'fulfilled' && rVol.value?.data?.total) {
+                _volTotal = parseInt(rVol.value.data.total || 0);
+            }
+
+            allPostsRaw = items;
+            _engFetched = true;
+            this._updateKpi(items, _volTotal);
+            this._distributeItems(items);
         } catch(e) {
             console.error('[OV]',e);
             ['view','retweet'].forEach(t=>{
@@ -641,25 +652,31 @@ const OVData = {
     },
     _sortAndDisplay(t){ this._renderList(t); this._renderDonut(t, Store[t]); },
 
-    _updateKpi(items) {
-        let tv=0,tr=0; items.forEach(i=>{tv+=parseInt(i.view_cnt||0);tr+=parseInt(i.rt||0)});
-        const n=items.length, av=v=>n?Math.round(v/n):0;
-        const el=(id,v)=>{const e=_$(id);if(e)e.textContent=numF(v)};
-        const sub=(id,icon,v,txt)=> {
-            const e=_$(id); if(e) e.innerHTML=`<i class="ph ${icon} me-1" style="vertical-align:text-bottom;"></i>Avg ${numF(av(v))} / ${txt} &middot; ${numF(n)} tweets`;
+    _updateKpi(items, volTotal) {
+        let tv=0, tr=0;
+        items.forEach(i=>{ tv += parseInt(i.view_cnt||0); tr += parseInt(i.rt||0); });
+        const n = items.length, av = v => n ? Math.round(v/n) : 0;
+        const el = (id, v) => { const e = _$(id); if(e) e.textContent = numF(v); };
+        const sub = (id, icon, v, txt) => {
+            const e = _$(id); if(e) e.innerHTML = `<i class="ph ${icon} me-1" style="vertical-align:text-bottom;"></i>Avg ${numF(av(v))} / ${txt} &middot; Top ${numF(n)} tweets`;
         };
-        el('kpiViews',tv); sub('kpiViewsSub', 'ph-eye', tv, 'tweet');
-        el('kpiRt',tr);    sub('kpiRtSub', 'ph-repeat', tr, 'tweet');
-        el('kpiPosts', n);
-        const ps=_$('kpiPostsSub'); if(ps) ps.innerHTML=`<i class="ph ph-chat-circle-dots me-1" style="vertical-align:text-bottom;"></i>${numF(n)} Tweets collected`;
+        el('kpiViews', tv); sub('kpiViewsSub', 'ph-eye', tv, 'tweet');
+        el('kpiRt', tr);    sub('kpiRtSub', 'ph-repeat', tr, 'tweet');
+        
+        const totalPosts = volTotal || n;
+        el('kpiPosts', totalPosts);
+        const ps = _$('kpiPostsSub');
+        if (ps) ps.innerHTML = `<i class="ph ph-chat-circle-dots me-1" style="vertical-align:text-bottom;"></i>Total ${numF(totalPosts)} tweets volume`;
+        
         el('kpiTopics', Store.hashtag.length || 0);
-        const tss=_$('kpiTopicsSub'); if(tss) tss.innerHTML=`<i class="ph ph-hash me-1" style="vertical-align:text-bottom;"></i>Top ${Store.hashtag.length} Active Topics`;
+        const tss = _$('kpiTopicsSub');
+        if (tss) tss.innerHTML = `<i class="ph ph-hash me-1" style="vertical-align:text-bottom;"></i>Top ${Store.hashtag.length || 50} Active Topics`;
     },
 
     reloadAll() {
         _engFetched=false; Store.view=[]; Store.retweet=[]; Pag.view=1; Pag.retweet=1;
         this._ensureEngagement().then(()=>{
-            ['view','retweet'].forEach(t=>{if(OVTab._loaded[t]) this._sortAndDisplay(t)});
+            ['retweet','view'].forEach(t=>{if(OVTab._loaded[t]) this._sortAndDisplay(t)});
         });
     },
 
