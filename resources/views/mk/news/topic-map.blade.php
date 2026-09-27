@@ -1076,46 +1076,65 @@ window.toggleHL = function() {
 
 /* ══ Treemap ══ */
 function doMap(data) {
-    const showHL=$('ntmHlChk')?.checked!==false;
-    const wrap=$('ntmTreemap'); wrap.innerHTML='';
-    const W=wrap.offsetWidth||900;
-    const H=Math.min(680,Math.max(520,window.innerHeight*.7));
-    wrap.style.height=H+'px';
+    const showHL = $('ntmHlChk')?.checked !== false;
+    const wrap   = $('ntmTreemap');
+    if (!wrap) return;
+    wrap.innerHTML = '';
 
-    const root=d3.hierarchy({children:data}).sum(d=>d.count||1);
-    d3.treemap().tile(d3.treemapBinary).size([W,H]).padding(2).round(true)(root);
+    const W = wrap.clientWidth || wrap.offsetWidth || 900;
+    const H = Math.min(650, Math.max(500, Math.round(window.innerHeight * 0.65)));
+    wrap.style.height = H + 'px';
+    wrap.style.position = 'relative';
 
-    root.leaves().forEach((node,i)=>{
-        const d=node.data, tW=node.x1-node.x0, tH=node.y1-node.y0;
-        if(tW<40||tH<28) return;
-        const tile=document.createElement('div');
-        tile.className='ntm-tile ntm-fi';
-        tile.style.cssText=`left:${node.x0}px;top:${node.y0}px;width:${tW}px;height:${tH}px;`+
-            `animation-delay:${i*7}ms;background:${d.color};`;
+    if (!data || !data.length) return;
 
-        const catFs=Math.max(7,Math.min(10,tW/18));
-        const hlFs =Math.max(10,Math.min(26,tW/8));
-        const lines=Math.max(1,Math.floor((tH-catFs*2-14)/(hlFs*1.3)));
+    // Power scaling (0.6) prevents giant outliers from monopolizing the canvas while preserving hierarchy
+    const root = d3.hierarchy({ children: data }).sum(d => Math.pow(Math.max(1, Number(d.count || 1)), 0.6));
 
-        let hlHtml='';
-        if(tH>48){
-            if(showHL&&d.headline){
-                hlHtml=`<div class="ntm-tile-hl" style="font-size:${hlFs}px;-webkit-line-clamp:${lines};">${esc(d.headline)}</div>`;
+    d3.treemap()
+        .tile(d3.treemapSquarify.ratio(1.33))
+        .size([W, H])
+        .paddingInner(2)
+        .paddingOuter(0)
+        .round(true)(root);
+
+    const leaves = root.leaves();
+    leaves.forEach((node, i) => {
+        const d  = node.data;
+        const tW = Math.max(0, node.x1 - node.x0);
+        const tH = Math.max(0, node.y1 - node.y0);
+        if (tW <= 0 || tH <= 0) return;
+
+        const tile = document.createElement('div');
+        tile.className = 'ntm-tile ntm-fi';
+        tile.style.cssText = `position:absolute;left:${node.x0}px;top:${node.y0}px;width:${tW}px;height:${tH}px;` +
+            `animation-delay:${Math.min(i * 5, 250)}ms;background:${d.color};border-radius:3px;box-sizing:border-box;`;
+
+        const isMicro = tW < 48 || tH < 32;
+        const isSmall = tW < 78 || tH < 46;
+        const catFs   = Math.max(7, Math.min(11, tW / 14));
+        const hlFs    = Math.max(9, Math.min(20, tW / 7));
+        const lines   = Math.max(1, Math.floor((tH - catFs * 2 - 6) / (hlFs * 1.25)));
+
+        let hlHtml = '';
+        if (!isSmall && tH > 46) {
+            if (showHL && d.headline) {
+                hlHtml = `<div class="ntm-tile-hl" style="font-size:${hlFs}px;-webkit-line-clamp:${lines};">${esc(d.headline)}</div>`;
             } else {
-                const tf=Math.max(11,Math.min(24,tW/9));
-                hlHtml=`<div class="ntm-tile-hl" style="font-size:${tf}px;-webkit-line-clamp:${lines};font-weight:800;">${esc(d.topic)}</div>`;
+                const tf = Math.max(10, Math.min(18, tW / 8));
+                hlHtml = `<div class="ntm-tile-hl" style="font-size:${tf}px;-webkit-line-clamp:${lines};font-weight:800;">${esc(d.topic)}</div>`;
             }
         }
 
-        tile.innerHTML=`<div class="ntm-tile-in">
-            <div class="ntm-tile-cat" style="font-size:${catFs}px;">${esc(d.topic)}</div>
+        tile.innerHTML = `<div class="ntm-tile-in" style="${isMicro ? 'padding:2px 3px;justify-content:center;align-items:center;' : 'padding:5px 7px;'}">
+            <div class="ntm-tile-cat" style="font-size:${catFs}px;${isMicro ? 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;opacity:1;' : ''}">${esc(d.topic)}</div>
             ${hlHtml}
         </div>`;
 
-        tile.addEventListener('mouseenter', e=>showTip(e,`<b>${esc(d.topic)}</b><br><small>${numF(d.count)} articles</small>`));
+        tile.addEventListener('mouseenter', e => showTip(e, `<b>${esc(d.topic)}</b><br><small>${numF(d.count)} articles / mentions</small>`));
         tile.addEventListener('mousemove', moveTip);
         tile.addEventListener('mouseleave', hideTip);
-        tile.addEventListener('click', ()=>{ hideTip(); openDetail(d,i); });
+        tile.addEventListener('click', () => { hideTip(); openDetail(d, i); });
         wrap.appendChild(tile);
     });
 }
