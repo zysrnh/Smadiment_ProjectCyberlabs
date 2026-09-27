@@ -995,18 +995,37 @@ function findHeadlineUnique(topic, usedSet) {
 
 /* ══ Fetch articles ══ */
 async function fetchAllArticles() {
-    const batchSize=500; let all=[], start=0, hasMore=true;
+    const batchSize = 500;
+    let all = [], start = 0, hasMore = true;
     while(hasMore) {
         try {
-            const res=await fetch(`${CFG.artApi}?project_id=${CFG.pid}&media=doc&start_date=${CFG.s}&end_date=${CFG.e}&rows=${batchSize}&start=${start}`);
-            const json=await res.json();
-            const batch=json.data||(Array.isArray(json)?json:[]);
-            if(!batch.length){ hasMore=false; break; }
-            all=all.concat(batch);
-            if(batch.length<batchSize) hasMore=false; else start+=batchSize;
-            if(all.length>=5000) hasMore=false;
-        } catch(e){ hasMore=false; }
+            const res = await fetch(`${CFG.artApi}?project_id=${CFG.pid}&media=doc&start_date=${CFG.s}&end_date=${CFG.e}&rows=${batchSize}&start=${start}`);
+            const json = await res.json();
+            const batch = json.data || (Array.isArray(json) ? json : []);
+            if (!batch.length) { hasMore = false; break; }
+            all = all.concat(batch);
+            if (batch.length < batchSize) hasMore = false; else start += batchSize;
+            if (all.length >= 5000) hasMore = false;
+        } catch(e) { hasMore = false; }
     }
+
+    // Also merge articles from news mentions endpoint for maximum corpus completeness
+    try {
+        const mRes = await fetch(`/mk/api/news/mentions?project_id=${CFG.pid}&start_date=${CFG.s}&end_date=${CFG.e}&rows=1200`);
+        const mJson = await mRes.json();
+        const mBatch = mJson.data || (Array.isArray(mJson) ? mJson : []);
+        if (Array.isArray(mBatch) && mBatch.length) {
+            const seen = new Set(all.map(a => String(a.id || a.docid || (a.title || '').trim().toLowerCase())));
+            mBatch.forEach(a => {
+                const key = String(a.id || a.docid || (a.title || '').trim().toLowerCase());
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    all.push(a);
+                }
+            });
+        }
+    } catch(e) {}
+
     return all;
 }
 
@@ -1351,7 +1370,7 @@ function openDetail(d, idx) {
     $('ntmPanelDot').style.background = PAL[idx % PAL.length];
     $('ntmPanelTitle').textContent = d.topic;
     $('ntmPanelMeta').textContent = `${CFG.s} – ${CFG.e}`;
-    $('ntmPanelBadge').textContent = DS.arts.length > 0 ? `${numF(DS.arts.length)} articles` : `${numF(d.count)} mentions`;
+    $('ntmPanelBadge').textContent = `${numF(DS.arts.length)} articles · ${numF(d.count)} mentions`;
     NTMPanel.open();
 }
 window.openDetail = openDetail;
@@ -1383,40 +1402,43 @@ function renderPubPanel() {
 
     let h = '';
     const isAllAct = !DS.activePub;
-    h += `<div class="ntm-pub-row${isAllAct ? ' act' : ''}" onclick="selectPub(null)">
+    h += `<div class="ntm-pub-row${isAllAct ? ' act' : ''}" data-domain="__all__" onclick="selectPub(null)">
         <span class="ntm-pub-name" title="All Publishers"><strong>All Publishers</strong></span>
-        <span class="ntm-pub-docs">${DS.arts.length}</span>
+        <span class="ntm-pub-docs">${numF(DS.arts.length)}</span>
         <span class="ntm-pub-arr">›</span>
     </div>`;
 
     pubs.forEach(p => {
         const isAct = DS.activePub === p.domain;
-        h += `<div class="ntm-pub-row${isAct ? ' act' : ''}" onclick="selectPub(${JSON.stringify(p.domain)})">
+        h += `<div class="ntm-pub-row${isAct ? ' act' : ''}" data-domain="${esc(p.domain)}" onclick="selectPub(this.dataset.domain)">
             <span class="ntm-pub-name" title="${esc(p.domain)}">${esc(p.domain)}</span>
-            <span class="ntm-pub-docs">${p.count}</span>
+            <span class="ntm-pub-docs">${numF(p.count)}</span>
             <span class="ntm-pub-arr">›</span>
         </div>`;
     });
 
     if (!h) h = '<div style="padding:20px 12px;font-size:11px;color:var(--slate-400);text-align:center;">No publishers</div>';
-    $('ntmPubList').innerHTML = h;
+    const listEl = $('ntmPubList');
+    if (listEl) {
+        listEl.innerHTML = h;
+    }
 }
 
 window.selectPub = function(domain) {
-    DS.activePub = domain;
+    DS.activePub = (domain && domain !== '__all__') ? domain : null;
     document.querySelectorAll('#ntmPubList .ntm-pub-row').forEach(el => {
-        const rowTitle = el.querySelector('.ntm-pub-name')?.getAttribute('title');
-        if (!domain) {
-            el.classList.toggle('act', rowTitle === 'All Publishers');
+        const rowDom = el.dataset.domain;
+        if (!DS.activePub) {
+            el.classList.toggle('act', rowDom === '__all__');
         } else {
-            el.classList.toggle('act', rowTitle === domain);
+            el.classList.toggle('act', rowDom === DS.activePub);
         }
     });
 
-    const arts = domain ? (DS.pubArts[domain] || []) : DS.arts;
-    const label = domain || 'All Publishers';
-    if (domain) {
-        renderKwForPub(arts, domain);
+    const arts = DS.activePub ? (DS.pubArts[DS.activePub] || []) : DS.arts;
+    const label = DS.activePub || 'All Publishers';
+    if (DS.activePub) {
+        renderKwForPub(arts, DS.activePub);
     } else {
         renderKwAll();
     }
