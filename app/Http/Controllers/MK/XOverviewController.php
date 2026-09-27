@@ -2711,7 +2711,7 @@ public function mostEngagementData(Request $request)
         $projectId = $request->query('project_id');
         $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
         $endDate   = $request->query('end_date', now()->format('Y-m-d'));
-        $rows      = (int) $request->query('rows', 250);
+        $rows      = (int) $request->query('rows', 500);
 
         if (!$projectId) {
             return response()->json(['success' => false, 'error' => 'project_id required'], 400);
@@ -2803,7 +2803,7 @@ public function mostEngagementData(Request $request)
 
         // Fallback 2: jika masih kosong atau terlalu sedikit, gunakan getFallbackXPosts
         if (count($allPosts) < 5) {
-            $fallbackPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, $rows ?: 250);
+            $fallbackPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, $rows ?: 500);
             foreach ($fallbackPosts as $item) {
                 $uid = $item['sub_id'] ?? $item['id'] ?? md5(($item['content'] ?? '') . ($item['name'] ?? ''));
                 if (!isset($seenIds[$uid])) {

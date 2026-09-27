@@ -356,8 +356,8 @@
                             <option value="20">Top 20</option>
                             <option value="50">Top 50</option>
                             <option value="100">Top 100</option>
-                            <option value="250" selected>Top 250</option>
-                            <option value="500">Top 500</option>
+                            <option value="250">Top 250</option>
+                            <option value="500" selected>Top 500</option>
                         </select>
                         <span class="badge bg-light-primary text-primary" id="badge-{{ $tp }}">Loading…</span>
                         <div class="d-flex gap-1" data-html2canvas-ignore="true">
@@ -614,7 +614,7 @@ const OVData = {
 
     async _ensureEngagement() {
         if(_engFetched) return;
-        const rows=parseInt(_$('rows-retweet')?.value||_$('rows-view')?.value||'250');
+        const rows=parseInt(_$('rows-retweet')?.value||_$('rows-view')?.value||'500');
         ['view','retweet'].forEach(t=>{const ls=_$('list-'+t);if(ls)ls.innerHTML=`<div class="spinner-state"><div class="spin-ring"></div>Memuat data…</div>`});
         try {
             const [rEng, rVol] = await Promise.allSettled([
