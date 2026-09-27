@@ -82,105 +82,105 @@
                 [
                     'name'     => 'Prabowo Subianto',
                     'scr_name' => 'prabowo',
-                    'image'    => 'https://pbs.twimg.com/profile_images/1699042618999394304/7qN3hD7u.jpg',
+                    'image'    => 'https://unavatar.io/x/prabowo',
                     'flw_cnt'  => 4850000,
                     'color'    => '#038047',
                 ],
                 [
                     'name'     => 'Kementerian Pertahanan RI',
                     'scr_name' => 'kemhanri',
-                    'image'    => 'https://pbs.twimg.com/profile_images/1577934241511284736/m-U9E9sM.jpg',
+                    'image'    => 'https://unavatar.io/x/kemhanri',
                     'flw_cnt'  => 1200000,
                     'color'    => '#273B4A',
                 ],
                 [
                     'name'     => 'KOMPAS.com',
                     'scr_name' => 'kompascom',
-                    'image'    => 'https://pbs.twimg.com/profile_images/1608670559098716160/9hJ1rO-G.jpg',
+                    'image'    => 'https://unavatar.io/x/kompascom',
                     'flw_cnt'  => 8200000,
                     'color'    => '#F59E0B',
                 ],
                 [
                     'name'     => 'detikcom',
                     'scr_name' => 'detikcom',
-                    'image'    => 'https://pbs.twimg.com/profile_images/1544211116676341760/6aW4YnI3.jpg',
+                    'image'    => 'https://unavatar.io/x/detikcom',
                     'flw_cnt'  => 19500000,
                     'color'    => '#06B6D4',
                 ],
                 [
                     'name'     => 'Tempo.co',
                     'scr_name' => 'tempodotco',
-                    'image'    => 'https://pbs.twimg.com/profile_images/1614833299714572288/h5QOa1tW.jpg',
+                    'image'    => 'https://unavatar.io/x/tempodotco',
                     'flw_cnt'  => 5600000,
                     'color'    => '#EF4444',
                 ],
                 [
                     'name'     => 'CNN Indonesia',
                     'scr_name' => 'cnnindonesia',
-                    'image'    => 'https://pbs.twimg.com/profile_images/1615201170751848450/iXFqXpM_.jpg',
+                    'image'    => 'https://unavatar.io/x/cnnindonesia',
                     'flw_cnt'  => 6900000,
                     'color'    => '#DC2626',
                 ],
                 [
                     'name'     => 'Dahnil Anzar Simanjuntak',
                     'scr_name' => 'Dahnilanzar',
-                    'image'    => 'https://pbs.twimg.com/profile_images/1591325357870718976/Xg3z_n0A.jpg',
+                    'image'    => 'https://unavatar.io/x/Dahnilanzar',
                     'flw_cnt'  => 680000,
                     'color'    => '#10B981',
                 ],
                 [
                     'name'     => 'Sujiwo Tejo',
                     'scr_name' => 'sudjiwotedjo',
-                    'image'    => 'https://pbs.twimg.com/profile_images/1495982885955682305/7C6O5YqW.jpg',
+                    'image'    => 'https://unavatar.io/x/sudjiwotedjo',
                     'flw_cnt'  => 3100000,
                     'color'    => '#8B5CF6',
                 ],
                 [
                     'name'     => 'Fadli Zon',
                     'scr_name' => 'fadlizon',
-                    'image'    => 'https://pbs.twimg.com/profile_images/1636979603093684224/m6QkE2eM.jpg',
+                    'image'    => 'https://unavatar.io/x/fadlizon',
                     'flw_cnt'  => 1850000,
                     'color'    => '#3B82F6',
                 ],
                 [
                     'name'     => 'Partai Gerindra',
                     'scr_name' => 'gerindra',
-                    'image'    => 'https://pbs.twimg.com/profile_images/1609804868471836673/Tz3sQp4v.jpg',
+                    'image'    => 'https://unavatar.io/x/gerindra',
                     'flw_cnt'  => 850000,
                     'color'    => '#B91C1C',
                 ],
                 [
                     'name'     => 'Mata Najwa',
                     'scr_name' => 'MataNajwa',
-                    'image'    => 'https://pbs.twimg.com/profile_images/1582236894055628800/W8r-O2Kz.jpg',
+                    'image'    => 'https://unavatar.io/x/MataNajwa',
                     'flw_cnt'  => 4200000,
                     'color'    => '#EA580C',
                 ],
                 [
                     'name'     => 'kumparan',
                     'scr_name' => 'kumparan',
-                    'image'    => 'https://pbs.twimg.com/profile_images/1614833299714572288/h5QOa1tW.jpg',
+                    'image'    => 'https://unavatar.io/x/kumparan',
                     'flw_cnt'  => 2800000,
                     'color'    => '#059669',
                 ],
                 [
                     'name'     => 'Prof. Nadirsyah Hosen',
                     'scr_name' => 'na_dirs',
-                    'image'    => 'https://pbs.twimg.com/profile_images/1589512345678901234/a1b2c3d4.jpg',
+                    'image'    => 'https://unavatar.io/x/na_dirs',
                     'flw_cnt'  => 890000,
                     'color'    => '#0D9488',
                 ],
                 [
                     'name'     => 'Partai Socmed',
                     'scr_name' => 'PartaiSocmed',
-                    'image'    => 'https://pbs.twimg.com/profile_images/1589123456789012345/x1y2z3a4.jpg',
+                    'image'    => 'https://unavatar.io/x/PartaiSocmed',
                     'flw_cnt'  => 720000,
                     'color'    => '#6366F1',
                 ],
                 [
                     'name'     => 'Tirto.id',
                     'scr_name' => 'tirtoid',
-                    'image'    => 'https://pbs.twimg.com/profile_images/1544211116676341760/6aW4YnI3.jpg',
+                    'image'    => 'https://unavatar.io/x/tirtoid',
                     'flw_cnt'  => 1600000,
                     'color'    => '#D97706',
                 ],
@@ -343,7 +343,7 @@
                 $favCnt = max(750, (int) round($tpl['fav_count'] * $factor));
                 $repCnt = max(50, (int) round($tpl['reply_cnt'] * $factor));
 
-                $avatarUrl = "https://ui-avatars.com/api/?name=" . urlencode($author['name']) . "&background=" . ltrim($author['color'], '#') . "&color=fff&size=80&bold=true&format=png";
+                $avatarUrl = "https://unavatar.io/x/" . $author['scr_name'];
 
                 $posts[] = [
                     'id'            => $subId,
@@ -366,10 +366,13 @@
                     'replies'       => $repCnt,
                     'reply_count'   => $repCnt,
                     'avatar_url'    => $avatarUrl,
+                    'author_image_url' => $avatarUrl,
+                    'media_url'     => null,
                     'author'        => [
                         'name'     => $author['name'],
                         'scr_name' => $author['scr_name'],
                         'image'    => $avatarUrl,
+                        'avatar'   => $avatarUrl,
                         'flw_cnt'  => $author['flw_cnt'],
                     ],
                     'url'           => "https://twitter.com/{$author['scr_name']}/status/{$subId}",
@@ -2817,13 +2820,20 @@ public function mostEngagementData(Request $request)
             if (is_string($authorObj) && str_starts_with(trim($authorObj), '{')) {
                 try { $authorObj = json_decode($authorObj, true) ?? []; } catch (\Exception $e) { $authorObj = []; }
             }
-            if (!is_array($authorObj)) $authorObj = [];
+            $scrName = $authorObj['scr_name'] ?? ($item['author_scr_name'] ?? ($item['name'] ?? ''));
+            $authorName = $authorObj['name'] ?? ($item['author_name'] ?? ($item['name'] ?? ''));
 
             $authorImg = $item['avatar_url']
-                ?? ($authorObj['image'] ?? '');
+                ?? ($authorObj['image'] ?? ($authorObj['avatar'] ?? ''));
 
-            // Hapus _normal. di URL avatar supaya dapat foto full size
-            $authorImg = str_replace('_normal.', '.', $authorImg ?? '');
+            if (empty($authorImg) && !empty($scrName)) {
+                $authorImg = 'https://unavatar.io/x/' . ltrim($scrName, '@');
+            } else {
+                // Hapus _normal. di URL avatar supaya dapat foto full size
+                $authorImg = str_replace('_normal.', '.', $authorImg ?? '');
+            }
+
+            $mediaUrl = $item['media_url'] ?? $item['media'] ?? $item['image_url'] ?? null;
 
             return [
                 'id'            => $item['id']       ?? '',
@@ -2831,6 +2841,7 @@ public function mostEngagementData(Request $request)
                 'content'       => $item['content']  ?? '',
                 'date_created'  => $item['date_created'] ?? '',
                 'sentiment_str' => $item['sentiment_str'] ?? 'Neutral',
+                'media_url'     => $mediaUrl,
 
                 // Engagement metrics — fallback chain
                 'view_cnt'  => (int) ($item['view_cnt']  ?? $item['views']    ?? $item['freq'] ?? 0),
@@ -2841,9 +2852,10 @@ public function mostEngagementData(Request $request)
                 // Author info
                 'avatar_url' => $authorImg,
                 'author'     => [
-                    'name'     => $authorObj['name']     ?? ($item['author_name'] ?? ($item['name'] ?? '')),
-                    'scr_name' => $authorObj['scr_name'] ?? ($item['author_scr_name'] ?? ($item['name'] ?? '')),
-                    'image'    => $authorObj['image']    ?? $authorImg,
+                    'name'     => $authorName ?: $scrName,
+                    'scr_name' => $scrName,
+                    'image'    => $authorObj['image'] ?? $authorImg,
+                    'avatar'   => $authorObj['avatar'] ?? $authorImg,
                     'flw_cnt'  => (int) ($authorObj['flw_cnt'] ?? 0),
                 ],
             ];

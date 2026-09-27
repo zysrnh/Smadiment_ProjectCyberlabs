@@ -668,14 +668,29 @@ const OVData = {
     _metric(item,type){ const k={view:'view_cnt',retweet:'rt'};return parseInt(item[k[type]]||0); },
     _getName(item){ return item.author?.name||item.name||'X User'; },
     _getScr(item){ return item.author?.scr_name||item.name||''; },
-    _getAvatar(item){ return (item.avatar_url||item.author?.image||'').replace(/_normal\./g,'.').trim(); },
+    _getAvatar(item){
+        const scr = this._getScr(item);
+        const av = item.avatar_url || item.author_image_url || item.author?.image || item.author?.avatar || '';
+        if(av && av.startsWith('http')) return av.replace(/_normal\./g,'.').trim();
+        if(scr) return `https://unavatar.io/x/${encodeURIComponent(scr.replace(/^@/,''))}`;
+        return '';
+    },
     _getColor(item){
         const seed=item.sub_id||item.id||this._getName(item);
         const pal=['#038047','#273B4A','#F59E0B','#06B6D4','#8b5cf6','#ec4899','#f97316','#14b8a6'];
         let h=0; for(let i=0;i<seed.length;i++) h=(h*31+seed.charCodeAt(i))&0xffffffff;
         return pal[Math.abs(h)%pal.length];
     },
-    _avHtml(item){ const av=this._getAvatar(item),d='/assets/images/user/dummy.jpg'; return(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.src='${d}'">`:`<img src="${d}">`; },
+    _avHtml(item){
+        const av=this._getAvatar(item);
+        const name=this._getName(item);
+        const color=this._getColor(item).replace('#','');
+        const fallback=`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${color}&color=fff&size=80&bold=true&format=png`;
+        if(av && av.startsWith('http')) {
+            return `<img src="${esc(av)}" loading="lazy" onerror="this.onerror=null;this.src='${esc(fallback)}';">`;
+        }
+        return `<img src="${esc(fallback)}" loading="lazy">`;
+    },
     _normSent(item){ const r=String(item.sentiment_str||item.sentiment||'').toLowerCase(); return r.includes('pos')?'pos':r.includes('neg')?'neg':'neu'; },
     _tweetUrl(item){ const scr=this._getScr(item),sid=item.sub_id||item.id||''; if(scr&&sid)return `https://twitter.com/${encodeURIComponent(scr)}/status/${encodeURIComponent(sid)}`; return item.url||item.link||''; },
 
@@ -719,7 +734,8 @@ const OVData = {
         const enc=encodeURIComponent(JSON.stringify(item));
         const vC=type==='view'?' tme-metric--primary':'', rtC=type==='retweet'?' tme-metric--primary':'';
         const av=this._getAvatar(item);
-        const thH=(av&&av.startsWith('http'))?`<div class="tme-post-thumb"><img src="${esc(av)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="tme-post-thumb-ph" style="display:none">${X_LOGO}</div></div>`:`<div class="tme-post-thumb"><div class="tme-post-thumb-ph">${X_LOGO}</div></div>`;
+        const mediaImg=item.media_url||item.media||item.image_url||'';
+        const thH=(mediaImg&&mediaImg.startsWith('http')&&mediaImg!==av)?`<div class="tme-post-thumb"><img src="${esc(mediaImg)}" loading="lazy" onerror="this.parentElement.style.display='none';"></div>`:'';
         return `<div class="tme-post" data-item="${esc(enc)}"><div class="tme-post-rank tme-post-rank${rkC}">${rank}</div><div class="tme-post-av" style="background:linear-gradient(135deg,${color},${color}99);">${avH}</div><div class="tme-post-body"><div class="tme-post-author">${esc(name)}${scr?` <span style="color:var(--slate-400);font-weight:500;">@${esc(scr)}</span>`:''}</div>${dt?`<div class="tme-post-date">${dt}</div>`:''}${content?`<div class="tme-post-text">${esc(content)}</div>`:''}<div class="tme-post-stats"><span class="tme-metric${vC}"><i class="ph ph-eye me-1"></i>${numF(v)}</span><span class="tme-metric${rtC}"><i class="ph ph-repeat me-1"></i>${numF(rt)}</span><span class="tme-sent tme-sent--${sent}">${sL}</span>${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="tme-view-link" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out me-1"></i>Lihat</a>`:''}</div></div>${thH}</div>`;
     },
 
@@ -887,8 +903,8 @@ const OVPanel = {
         const ml={view:'Views',retweet:'Retweets'}[type]||'Views';
         list.innerHTML=items.slice(0,100).map(item=>{
             const nm=OVData._getName(item), av=OVData._getAvatar(item), cl=OVData._getColor(item),
-                  d='/assets/images/user/dummy.jpg',
-                  aH=(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.src='${d}'">`:`<img src="${d}">`,
+                  fallback=`https://ui-avatars.com/api/?name=${encodeURIComponent(nm)}&background=${cl.replace('#','')}&color=fff&size=80&bold=true&format=png`,
+                  aH=(av&&av.startsWith('http'))?`<img src="${esc(av)}" loading="lazy" onerror="this.onerror=null;this.src='${esc(fallback)}';">`:`<img src="${esc(fallback)}" loading="lazy">`,
                   tx=(item.content||'').replace(/<[^>]*>/g,'').trim(),
                   mv=OVData._metric(item,type), dt=(item.date_created||'').split('T')[0],
                   sn=OVData._normSent(item), sl={pos:'Pos',neg:'Neg',neu:'Neu'}[sn],
@@ -914,8 +930,9 @@ const OVDetail = {
         const panel=_$('ovDetailPanel'), body=_$('ovDetailBody'), title=_$('ovDetailTitle');
         if(!panel||!body) return;
         const color=OVCfg.colors[type]||OVCfg.primary, name=OVData._getName(item), scr=OVData._getScr(item),
-              av=OVData._getAvatar(item), ac=OVData._getColor(item), d='/assets/images/user/dummy.jpg',
-              aH=(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.src='${d}'">`:`<img src="${d}">`;
+              av=OVData._getAvatar(item), ac=OVData._getColor(item),
+              fallback=`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${ac.replace('#','')}&color=fff&size=80&bold=true&format=png`,
+              aH=(av&&av.startsWith('http'))?`<img src="${esc(av)}" loading="lazy" onerror="this.onerror=null;this.src='${esc(fallback)}';">`:`<img src="${esc(fallback)}" loading="lazy">`;
         const raw=(item.content||'').replace(/<[^>]*>/g,'').trim(), ct=raw?dec(raw):'',
               url=OVData._tweetUrl(item), dt=item.date_created||'';
         const v=parseInt(item.view_cnt||0), rt=parseInt(item.rt||0);
