@@ -1499,14 +1499,13 @@ public function aiAnalysisProxy(Request $request)
             ];
         }
 
-        // Model terbaru berdasarkan API key yang tersedia
+        // Model fallback chain
         $models = [
             'gemini-2.5-flash',
-            'gemini-3.5-flash',
-            'gemini-3.6-flash',
-            'gemini-3.5-flash-lite',
-            'gemini-flash-lite-latest',
-            'gemini-flash-latest',
+            'gemini-2.0-flash',
+            'gemini-1.5-flash',
+            'gemini-1.5-pro',
+            'gemini-2.5-pro',
         ];
 
         $text      = '';
@@ -1678,22 +1677,83 @@ public function updateSentiment(Request $request)
 public function aiAnalysisData(Request $request)
 {
     try {
-        $projectId = $request->query('project_id');
-        $startDate = $request->query('start_date');
-        $endDate   = $request->query('end_date');
+        $projectId = (int) $request->query('project_id', 16978);
+        $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
+        $endDate   = $request->query('end_date', now()->format('Y-m-d'));
 
         if (!$projectId) {
             return response()->json(['success' => false, 'error' => 'Project ID required'], 400);
         }
 
-        // ── 1. Fetch semua data paralel ──
-        $articlesRaw    = $this->mkClient->articles($projectId, 'doc', $startDate, $endDate, 0, 23, 0, 100, true);
-        $publishersRaw  = $this->mkClient->topPublisher($projectId, $startDate, $endDate, 0, 23, 20, 'article');
-        $sentimentRaw   = $this->mkClient->sentimentTotal($projectId, $startDate, $endDate);
-        $wordCloudRaw   = $this->mkClient->wordCloud($projectId, $startDate, 0, $endDate, 23, '2');
+        // ── 1. Fetch Articles (Live API -> DB Snapshot Fallback) ──
+        $articlesRaw = [];
+        try {
+            $batch = $this->mkClient->articles($projectId, 'doc', $startDate, $endDate, 0, 23, 0, 100, true);
+            $articlesRaw = is_array($batch) ? $batch : ($batch['data'] ?? []);
+        } catch (\Throwable $e) {
+            $articlesRaw = [];
+        }
 
-        // ── 2. Parse articles ──
-        $articles = is_array($articlesRaw) ? $articlesRaw : ($articlesRaw['data'] ?? []);
+        if (empty($articlesRaw)) {
+            $largeSnap = ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'news_mentions_0_2000', $startDate, $endDate)
+                      ?? ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'news_mentions_0_1200', $startDate, $endDate)
+                      ?? ProjectApiSnapshot::findSnapshotForQuery($projectId, 'doc', 'articles_doc_all_0', $startDate, $endDate);
+
+            if ($largeSnap) {
+                $articlesRaw = is_array($largeSnap) ? ($largeSnap['data'] ?? $largeSnap) : [];
+            }
+        }
+
+        // ── 2. Fetch Top Publishers (Live API -> DB Snapshot Fallback) ──
+        $publishersRaw = [];
+        try {
+            $pubRes = $this->mkClient->topPublisher($projectId, $startDate, $endDate, 0, 23, 20, 'article');
+            $publishersRaw = is_array($pubRes) ? ($pubRes['data'] ?? $pubRes) : [];
+        } catch (\Throwable $e) {
+            $publishersRaw = [];
+        }
+
+        if (empty($publishersRaw)) {
+            $pubSnap = ProjectApiSnapshot::findSnapshotForQuery($projectId, 'news', 'top_publisher_article', $startDate, $endDate);
+            if ($pubSnap) {
+                $publishersRaw = is_array($pubSnap) ? ($pubSnap['data'] ?? $pubSnap) : [];
+            }
+        }
+
+        // ── 3. Fetch Sentiment Total (Live API -> DB Snapshot Fallback) ──
+        $sentimentRaw = [];
+        try {
+            $sntRes = $this->mkClient->sentimentTotal($projectId, $startDate, $endDate);
+            $sentimentRaw = is_array($sntRes) ? ($sntRes['data'] ?? $sntRes) : [];
+        } catch (\Throwable $e) {
+            $sentimentRaw = [];
+        }
+
+        if (empty($sentimentRaw)) {
+            $sntSnap = ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'sentiment_by_media', $startDate, $endDate);
+            if ($sntSnap) {
+                $sentimentRaw = is_array($sntSnap) ? ($sntSnap['data'] ?? $sntSnap) : [];
+            }
+        }
+
+        // ── 4. Fetch Word Cloud (Live API -> DB Snapshot Fallback) ──
+        $wordCloudRaw = [];
+        try {
+            $wcRes = $this->mkClient->wordCloud($projectId, $startDate, 0, $endDate, 23, '2');
+            $wordCloudRaw = is_array($wcRes) ? ($wcRes['data'] ?? $wcRes) : [];
+        } catch (\Throwable $e) {
+            $wordCloudRaw = [];
+        }
+
+        if (empty($wordCloudRaw)) {
+            $wcSnap = ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'word_cloud', $startDate, $endDate);
+            if ($wcSnap) {
+                $wordCloudRaw = is_array($wcSnap) ? ($wcSnap['data'] ?? $wcSnap) : [];
+            }
+        }
+
+        // ── 5. Parse articles ──
+        $articles = is_array($articlesRaw) ? (isset($articlesRaw['data']) && is_array($articlesRaw['data']) ? $articlesRaw['data'] : $articlesRaw) : [];
 
         $sentCounts = ['positive' => 0, 'negative' => 0, 'neutral' => 0];
         $parsedArticles = [];
@@ -1702,10 +1762,10 @@ public function aiAnalysisData(Request $request)
             if (!is_array($article)) continue;
 
             // Normalize sentiment
-            $sentStr = strtolower($article['sentiment'] ?? '');
-            if (str_contains($sentStr, 'pos')) {
+            $rawSent = strtolower((string) ($article['sentiment'] ?? $article['class_sentiment'] ?? $article['class_sentiment_code'] ?? '0'));
+            if ($rawSent === 'pos' || $rawSent === '1' || str_contains($rawSent, 'pos') || str_contains($rawSent, 'positive')) {
                 $bucket = 'positive';
-            } elseif (str_contains($sentStr, 'neg')) {
+            } elseif ($rawSent === 'neg' || $rawSent === '-1' || $rawSent === '2' || str_contains($rawSent, 'neg') || str_contains($rawSent, 'negative')) {
                 $bucket = 'negative';
             } else {
                 $bucket = 'neutral';
@@ -1716,8 +1776,8 @@ public function aiAnalysisData(Request $request)
             $quotes = [];
             if (!empty($article['quotes']) && is_array($article['quotes'])) {
                 foreach ($article['quotes'] as $q) {
-                    $kutipan    = trim($q['Kutipan']    ?? $q['kutipan']    ?? '');
-                    $narasumber = trim($q['Narasumber'] ?? $q['narasumber'] ?? '');
+                    $kutipan    = trim($q['Kutipan'] ?? $q['kutipan'] ?? $q['text'] ?? '');
+                    $narasumber = trim($q['Narasumber'] ?? $q['narasumber'] ?? $q['source'] ?? $q['speaker'] ?? '');
                     if ($kutipan) {
                         $quotes[] = [
                             'text'   => substr($kutipan, 0, 200),
@@ -1727,33 +1787,69 @@ public function aiAnalysisData(Request $request)
                 }
             }
 
+            $rawTitle = $article['title'] ?? $article['name'] ?? 'Untitled';
+            $rawPub   = $article['publisher'] ?? $article['publisher_name'] ?? $article['hostname'] ?? $article['author_name'] ?? 'Media Berita';
+            $rawDate  = $article['date_created'] ?? $article['date'] ?? $article['created_at'] ?? '';
+            $rawCont  = $article['content'] ?? $article['description'] ?? $article['summary'] ?? '';
+
             $parsedArticles[] = [
-                'title'     => substr(strip_tags($article['title']     ?? 'Untitled'), 0, 120),
-                'publisher' => substr($article['publisher'] ?? $article['hostname'] ?? 'Unknown', 0, 40),
-                'date'      => substr($article['date_created'] ?? '', 0, 10),
+                'title'     => substr(strip_tags((string) $rawTitle), 0, 140),
+                'publisher' => substr((string) $rawPub, 0, 50),
+                'date'      => substr((string) $rawDate, 0, 10),
                 'sentiment' => $bucket,
-                'content'   => substr(strip_tags($article['content'] ?? ''), 0, 200),
+                'content'   => substr(strip_tags((string) $rawCont), 0, 250),
                 'quotes'    => $quotes,
-                'url'       => $article['url'] ?? '',
+                'url'       => $article['url'] ?? $article['link'] ?? '',
             ];
         }
 
-        // ── 3. Parse publishers ──
+        // ── 6. Parse publishers ──
         $publishers = [];
         if (is_array($publishersRaw)) {
-            $rank = 1;
-            foreach ($publishersRaw as $domain => $count) {
-                if (!is_string($domain)) continue;
-                $publishers[] = [
-                    'domain' => $domain,
-                    'count'  => (int) $count,
-                    'rank'   => $rank++,
-                ];
-                if ($rank > 20) break;
+            $isAssoc = array_keys($publishersRaw) !== range(0, count($publishersRaw) - 1);
+            if ($isAssoc) {
+                $rank = 1;
+                foreach ($publishersRaw as $domain => $count) {
+                    if (!is_string($domain)) continue;
+                    $publishers[] = [
+                        'domain' => $domain,
+                        'count'  => (int) $count,
+                        'rank'   => $rank++,
+                    ];
+                    if ($rank > 20) break;
+                }
+            } else {
+                foreach (array_slice($publishersRaw, 0, 20) as $i => $item) {
+                    if (is_array($item)) {
+                        $publishers[] = [
+                            'domain' => $item['domain'] ?? $item['publisher'] ?? $item['name'] ?? 'Media Berita',
+                            'count'  => (int) ($item['count'] ?? $item['total'] ?? 1),
+                            'rank'   => $item['rank'] ?? ($i + 1),
+                        ];
+                    }
+                }
             }
         }
 
-        // ── 4. Parse sentiment total ──
+        // Fallback publishers calculated from articles if still empty
+        if (empty($publishers) && !empty($parsedArticles)) {
+            $pubMap = [];
+            foreach ($parsedArticles as $pa) {
+                $p = $pa['publisher'];
+                $pubMap[$p] = ($pubMap[$p] ?? 0) + 1;
+            }
+            arsort($pubMap);
+            $r = 1;
+            foreach (array_slice($pubMap, 0, 20) as $domain => $cnt) {
+                $publishers[] = [
+                    'domain' => $domain,
+                    'count'  => $cnt,
+                    'rank'   => $r++,
+                ];
+            }
+        }
+
+        // ── 7. Parse sentiment total ──
         $positive = 0; $negative = 0; $neutral = 0;
         if (isset($sentimentRaw['pos'], $sentimentRaw['neg'], $sentimentRaw['net'])) {
             $positive = (int) $sentimentRaw['pos'];
@@ -1764,26 +1860,47 @@ public function aiAnalysisData(Request $request)
             $positive = (int) ($d['pos'] ?? 0);
             $negative = (int) ($d['neg'] ?? 0);
             $neutral  = (int) ($d['net'] ?? 0);
+        } elseif (isset($sentimentRaw['doc'])) {
+            $d        = $sentimentRaw['doc'];
+            $positive = (int) ($d['positive'] ?? $d['pos'] ?? 0);
+            $negative = (int) ($d['negative'] ?? $d['neg'] ?? 0);
+            $neutral  = (int) ($d['neutral']  ?? $d['net'] ?? 0);
         }
 
-        // Fallback ke hitungan dari articles kalau sentiment API kosong
+        // Fallback to parsed articles counts if sentiment API is empty
         if ($positive === 0 && $negative === 0 && $neutral === 0) {
             $positive = $sentCounts['positive'];
             $negative = $sentCounts['negative'];
             $neutral  = $sentCounts['neutral'];
         }
 
-        // ── 5. Parse word cloud — ambil top 30 ──
+        // ── 8. Parse word cloud — ambil top 30 ──
         $phrases = [];
-        $wcRaw   = $wordCloudRaw['data']['phrases'] ?? $wordCloudRaw['phrases'] ?? [];
-        arsort($wcRaw);
-        $i = 0;
-        foreach ($wcRaw as $word => $count) {
-            $phrases[] = "{$word}({$count})";
-            if (++$i >= 30) break;
+        $wcRaw   = $wordCloudRaw['data']['phrases'] ?? $wordCloudRaw['phrases'] ?? $wordCloudRaw['data'] ?? $wordCloudRaw;
+        if (is_array($wcRaw)) {
+            $isAssoc = array_keys($wcRaw) !== range(0, count($wcRaw) - 1);
+            if ($isAssoc) {
+                arsort($wcRaw);
+                $i = 0;
+                foreach ($wcRaw as $word => $count) {
+                    if (!is_string($word) && !is_numeric($word)) continue;
+                    $phrases[] = "{$word}({$count})";
+                    if (++$i >= 30) break;
+                }
+            } else {
+                foreach (array_slice($wcRaw, 0, 30) as $item) {
+                    if (is_array($item)) {
+                        $name = $item['name'] ?? $item['topic'] ?? $item['phrase'] ?? '';
+                        $count = $item['count'] ?? $item['weight'] ?? 1;
+                        if ($name) {
+                            $phrases[] = "{$name}({$count})";
+                        }
+                    }
+                }
+            }
         }
 
-        // ── 6. Build dataset string untuk AI ──
+        // ── 9. Build dataset string untuk AI ──
         $total  = $positive + $negative + $neutral ?: 1;
         $pctPos = round($positive / $total * 100);
         $pctNeg = round($negative / $total * 100);
@@ -1792,7 +1909,7 @@ public function aiAnalysisData(Request $request)
         $lines   = [];
         $lines[] = "=== DATA BERITA (ONLINE NEWS) PROJECT {$projectId} ===";
         $lines[] = "Periode: {$startDate} s/d {$endDate}";
-        $lines[] = "Total Artikel: " . count($articles);
+        $lines[] = "Total Artikel: " . count($parsedArticles);
         $lines[] = "Sentimen: Positif {$pctPos}% ({$positive}) | Negatif {$pctNeg}% ({$negative}) | Netral {$pctNeu}% ({$neutral})";
 
         // Top Publishers
@@ -1821,14 +1938,19 @@ public function aiAnalysisData(Request $request)
             array_slice(array_values($neuArticles), 0,  5),
         ));
 
+        // If sample is small, fill up from parsedArticles
+        if (count($sample) < 15 && count($parsedArticles) > 0) {
+            $sample = array_slice($parsedArticles, 0, 25);
+        }
+
         $lines[] = "\n--- SAMPEL ARTIKEL (" . count($sample) . " dari " . count($parsedArticles) . ") ---";
         foreach ($sample as $i => $art) {
             $lines[] = "[" . ($i + 1) . "] \"{$art['title']}\" | {$art['publisher']} | {$art['date']} | {$art['sentiment']}";
 
             // Sertakan kutipan narasumber kalau ada
             foreach (array_slice($art['quotes'], 0, 2) as $q) {
-                if ($q['text']) {
-                    $src = $q['source'] ? " — {$q['source']}" : '';
+                if (!empty($q['text'])) {
+                    $src = !empty($q['source']) ? " — {$q['source']}" : '';
                     $lines[] = "   → \"{$q['text']}\"{$src}";
                 }
             }
