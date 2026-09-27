@@ -1346,14 +1346,16 @@ function renderArts(arts, pubLabel) {
     arts.forEach((a,i)=>{
         const src=a.publisher||extractHostname(a.url||'')||'Unknown';
         const url=a.url||a.link||'#', date=(a.date_created||'').split('T')[0];
-        const snippet=(a.content||a.description||a.summary||'').replace(/<[^>]+>/g,'').trim().slice(0,200);
+        const rawSnip = a.content||a.description||a.summary||'';
+        const cleanSnip = cleanHeadlineText(rawSnip).slice(0, 220);
+        const cleanTitle = cleanHeadlineText(a.title || 'Untitled');
         const img=a.image||a.thumbnail||a.image_url||a.urlToImage||'';
         h+=`<div class="ntm-ac ntm-fi" style="animation-delay:${Math.min(i,25)*12}ms;">
             <div class="ntm-ac-body">
                 <div class="ntm-ac-src">${esc(src.toUpperCase())}</div>
                 ${date?`<div class="ntm-ac-date">${date}</div>`:''}
-                <a class="ntm-ac-title" href="${esc(url)}" target="_blank" rel="noopener">${esc(a.title||'Untitled')}</a>
-                ${snippet?`<div class="ntm-ac-snippet">…${esc(snippet)}${snippet.length>=200?'…':''}</div>`:''}
+                <a class="ntm-ac-title" href="${esc(url)}" target="_blank" rel="noopener">${esc(cleanTitle)}</a>
+                ${cleanSnip?`<div class="ntm-ac-snippet">…${esc(cleanSnip)}${cleanSnip.length>=220?'…':''}</div>`:''}
             </div>
             ${img?`<img class="ntm-ac-thumb" src="${esc(img)}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}
         </div>`;
