@@ -189,6 +189,26 @@ class TopicMapController extends Controller
             // Sort by count descending
             usort($topics, fn($a, $b) => $b['count'] - $a['count']);
 
+            // Auto-persist snapshot to database for offline vault durability
+            if (!empty($topics)) {
+                try {
+                    $phrasesDict = [];
+                    foreach ($topics as $tp) {
+                        $phrasesDict[$tp['name']] = $tp['count'];
+                    }
+                    ProjectApiSnapshot::storeSnapshot(
+                        $projectId,
+                        'all',
+                        'word_cloud',
+                        $startDate,
+                        $endDate,
+                        $phrasesDict
+                    );
+                } catch (\Throwable $storeErr) {
+                    // non-blocking
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'data'    => $topics,
@@ -262,23 +282,40 @@ class TopicMapController extends Controller
             $articles = is_array($mentionsSnap) ? ($mentionsSnap['data'] ?? $mentionsSnap) : [];
             $keywordCounts = [];
             $dictionary = [
-                'Prabowo Subianto'          => ['prabowo', 'subianto'],
-                'Presiden RI'               => ['presiden', 'kepala negara'],
-                'Kabinet Merah Putih'       => ['kabinet', 'menteri', 'perpres'],
-                'Makan Bergizi Gratis'      => ['makan bergizi', 'mbg', 'gizi'],
-                'Swasembada Pangan'         => ['pangan', 'kementan', 'panen', 'petani', 'beras'],
-                'Ketahanan Energi'          => ['energi', 'pln', 'pertamina', 'migas'],
-                'Hilirisasi Industri'       => ['hilirisasi', 'industri', 'nikel', 'tambang'],
-                'Diplomasi Internasional'   => ['diplomasi', 'luar negeri', 'ktt', 'bilateral', 'putin', 'brics'],
-                'Pertahanan Nasional'       => ['pertahanan', 'tni', 'kemhan', 'alutsista', 'kedaulatan'],
-                'IKN Nusantara'             => ['ikn', 'nusantara', 'ibu kota'],
-                'Pertumbuhan Ekonomi'       => ['ekonomi', 'fiskal', 'investasi', 'apbn', 'pajak'],
-                'Koperasi Merah Putih'      => ['koperasi', 'desa', 'subsidi', 'koperasi desa'],
-                'BUMN & Infrastruktur'      => ['bumn', 'infrastruktur', 'konstruksi'],
-                'Pengentasan Kemiskinan'    => ['kemiskinan', 'bansos', 'kesejahteraan'],
-                'Gerindra'                  => ['gerindra', 'partai'],
-                'Transformasi Digital'      => ['digital', 'teknologi', 'ai', 'kominfo'],
-                'Stabilitas Politik'        => ['politik', 'dpr', 'koalisi', 'hukum'],
+                'Prabowo Subianto'              => ['prabowo', 'subianto'],
+                'Presiden RI'                   => ['presiden', 'kepala negara'],
+                'Kabinet Merah Putih'           => ['kabinet', 'menteri', 'perpres'],
+                'Makan Bergizi Gratis'          => ['makan bergizi', 'mbg', 'gizi', 'nutrisi'],
+                'Swasembada Pangan'             => ['pangan', 'kementan', 'panen', 'petani', 'beras', 'amran'],
+                'Ketahanan Energi'              => ['energi', 'pln', 'pertamina', 'migas', 'bahlil'],
+                'Hilirisasi Industri'           => ['hilirisasi', 'industri', 'nikel', 'tambang', 'smelter'],
+                'Diplomasi Internasional'       => ['diplomasi', 'luar negeri', 'ktt', 'bilateral', 'putin', 'brics'],
+                'Pertahanan Nasional'           => ['pertahanan', 'tni', 'kemhan', 'alutsista', 'kedaulatan'],
+                'IKN Nusantara'                 => ['ikn', 'nusantara', 'ibu kota', 'oikn'],
+                'Pertumbuhan Ekonomi 8%'        => ['ekonomi', 'fiskal', 'investasi', 'apbn', 'pajak', 'sri mulyani'],
+                'Koperasi Merah Putih'          => ['koperasi', 'desa', 'subsidi', 'koperasi desa', 'budi arie'],
+                'BUMN & Infrastruktur'          => ['bumn', 'infrastruktur', 'konstruksi', 'erick thohir'],
+                'Pengentasan Kemiskinan'        => ['kemiskinan', 'bansos', 'kesejahteraan'],
+                'Transformasi Digital'          => ['digital', 'teknologi', 'ai', 'kominfo'],
+                'Stabilitas Politik & Hukum'    => ['politik', 'dpr', 'koalisi', 'hukum', 'kejaksaan', 'mahkamah'],
+                'Pemberantasan Korupsi'         => ['korupsi', 'kpk', 'transparansi', 'integritas'],
+                'Pendidikan Berkualitas'        => ['pendidikan', 'beasiswa', 'sekolah', 'kampus', 'guru'],
+                'Layanan Kesehatan Nasional'    => ['kesehatan', 'bpjs', 'rsud', 'puskesmas', 'dokter'],
+                'Kedaulatan Maritim'            => ['maritim', 'kelautan', 'nelayan', 'kkp', 'pesisir'],
+                'Industri Tekstil Nasional'     => ['tekstil', 'garmen', 'manufaktur', 'pabrik', 'sritex'],
+                'Kementerian Pertanian'         => ['kementan', 'pupuk', 'irigasi', 'swasembada'],
+                'Kementerian Keuangan'          => ['kemenkeu', 'fiskal', 'anggaran', 'cukai', 'bea cukai'],
+                'Kementerian Luar Negeri'       => ['kemlu', 'duta besar', 'asean', 'diplomat'],
+                'Polri & Keamanan Dalam Negeri' => ['polri', 'kapolri', 'kamtibmas', 'polda', 'polres'],
+                'Pilkada Serentak'              => ['pilkada', 'kpu', 'bawaslu', 'calon', 'gubernur', 'bupati'],
+                'Gerakan Indonesia Raya'        => ['gerindra', 'partai gerindra', 'fraksi gerindra'],
+                'Partai Demokrat'               => ['demokrat', 'ahy', 'agus harimurti yudhoyono'],
+                'Golkar'                        => ['golkar', 'bahlil lahadalia', 'partai golkar'],
+                'PDI Perjuangan'                => ['pdip', 'megawati', 'puan maharani'],
+                'Partai NasDem'                 => ['nasdem', 'surya paloh'],
+                'Partai Kebangkitan Bangsa'     => ['pkb', 'muhaimin', 'cak imin'],
+                'Partai Keadilan Sejahtera'     => ['pks', 'ahmad syaikhu'],
+                'Partai Amanat Nasional'        => ['pan', 'zulkifli hasan'],
             ];
 
             foreach ($articles as $art) {
@@ -303,7 +340,7 @@ class TopicMapController extends Controller
         }
 
         // 3. Fallback standard high-volume topic cloud if database snapshots are sparse
-        if (count($topics) < 15) {
+        if (count($topics) < 20) {
             $defaults = [
                 ['name' => 'Prabowo Subianto',         'count' => 14850],
                 ['name' => 'Presiden RI',              'count' => 11200],

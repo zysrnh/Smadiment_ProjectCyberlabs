@@ -1023,8 +1023,8 @@ window.ntmLoad = async function() {
 
         let raw={};
         if(topicJson.data&&!Array.isArray(topicJson.data)&&typeof topicJson.data==='object') raw=topicJson.data;
-        else if(Array.isArray(topicJson.data)) topicJson.data.forEach(it=>{ raw[it.name||it.topic||'']={num_docs:it.weight||it.num_docs||1}; });
-        else if(Array.isArray(topicJson)) topicJson.forEach(it=>{ raw[it.name||it.topic||'']={num_docs:it.weight||it.num_docs||1}; });
+        else if(Array.isArray(topicJson.data)) topicJson.data.forEach(it=>{ raw[it.name||it.topic||'']={num_docs: Number(it.count || it.weight || it.num_docs || 1)}; });
+        else if(Array.isArray(topicJson)) topicJson.forEach(it=>{ raw[it.name||it.topic||'']={num_docs: Number(it.count || it.weight || it.num_docs || 1)}; });
         else if(typeof topicJson==='object'&&!topicJson.success&&!topicJson.error) raw=topicJson;
 
         const usedHeadlines=new Set();
