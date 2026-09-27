@@ -759,12 +759,12 @@ public function topPublisherData(Request $request)
 public function articlesData(Request $request)
 {
     try {
-        $projectId = (int) $request->query('project_id');
+        $projectId = (int) $request->query('project_id', 16978);
         $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
         $endDate   = $request->query('end_date', now()->format('Y-m-d'));
         $media     = $request->query('media', 'doc');
         $sentiment = $request->query('sentiment', 'all');
-        $maxRows   = (int) $request->query('rows', 99999);
+        $maxRows   = (int) $request->query('rows', 2000);
         $start     = (int) $request->query('start', 0);
 
         if (!$projectId) {
@@ -774,23 +774,42 @@ public function articlesData(Request $request)
         $endpointKey = "articles_{$media}_{$sentiment}_{$start}";
 
         $articles = $this->vault->remember($projectId, $media, $endpointKey, $startDate, $endDate, function () use (
-            $projectId, $media, $startDate, $endDate, $sentiment, $start
+            $projectId, $media, $startDate, $endDate, $sentiment, $start, $maxRows
         ) {
-            // Fetch single batch of 100 for stability as requested
-            $batch = $this->mkClient->articles(
-                $projectId,
-                $media,
-                $startDate,
-                $endDate,
-                0,    // sentiment_id
-                23,   // end_hour
-                $start,
-                100,  // limit to 100
-                false // no quotes
-            );
+            $allArticles = [];
 
-            $allArticles = $this->extractArray($batch);
-            Log::info("✅ Articles fetched (single batch)", ['total' => count($allArticles)]);
+            // ── 1. Live API Call ──────────────────────────────────────────
+            try {
+                $batch = $this->mkClient->articles(
+                    $projectId,
+                    $media,
+                    $startDate,
+                    $endDate,
+                    0,    // sentiment_id
+                    23,   // end_hour
+                    $start,
+                    min($maxRows, 2000),
+                    false // no quotes
+                );
+                $allArticles = $this->extractArray($batch);
+                Log::info("✅ Articles fetched from live API", ['total' => count($allArticles)]);
+            } catch (\Throwable $e) {
+                $allArticles = [];
+            }
+
+            // ── 2. Fallback to comprehensive database snapshots ───────────
+            if (empty($allArticles)) {
+                $largeSnap = ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'news_mentions_0_1200', $startDate, $endDate)
+                          ?? ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'news_mentions_0_500', $startDate, $endDate)
+                          ?? ProjectApiSnapshot::findSnapshotForQuery($projectId, 'doc', 'articles_doc_all_0', $startDate, $endDate);
+
+                if ($largeSnap) {
+                    $snapData = is_array($largeSnap) ? ($largeSnap['data'] ?? $largeSnap) : [];
+                    if (is_array($snapData) && !empty($snapData)) {
+                        $allArticles = $snapData;
+                    }
+                }
+            }
 
             $totalQuotesBeforeFilter = 0;
             $totalQuotesAfterFilter  = 0;
@@ -801,22 +820,61 @@ public function articlesData(Request $request)
                 &$totalQuotesBeforeFilter, &$totalQuotesAfterFilter,
                 &$articlesWithValidQuotes, &$quotesFilteredOut
             ) {
-                $article['title']           = $article['title']           ?? 'Untitled';
-                $article['publisher']       = $article['publisher']       ?? 'Unknown Publisher';
-                $article['url']             = $article['url']             ?? '#';
-                $article['date_created']    = $article['date_created']    ?? now()->toDateTimeString();
-                $article['content']         = $article['content']         ?? '';
-                $article['sentiment']       = $article['sentiment']       ?? 'Neutral';
-                $article['sentiment_class'] = $article['sentiment_class'] ?? 'neutral';
+                $rawTitle = $article['title'] ?? $article['name'] ?? $article['content'] ?? 'Untitled';
+                $cleanTitle = strip_tags((string) $rawTitle);
+                if (strlen($cleanTitle) > 160) {
+                    $cleanTitle = mb_substr($cleanTitle, 0, 160) . '...';
+                }
+
+                $rawPublisher = $article['publisher']
+                             ?? $article['publisher_name']
+                             ?? $article['source_name']
+                             ?? $article['hostname']
+                             ?? $article['author_name']
+                             ?? $article['name']
+                             ?? 'Online News';
+
+                $url = $article['url'] ?? $article['link'] ?? $article['original_url'] ?? '#';
+
+                // Sentimen normalization
+                $rawSent = strtolower((string) ($article['sentiment'] ?? $article['class_sentiment'] ?? $article['class_sentiment_code'] ?? '0'));
+                $sentLabel = 'Neutral';
+                $sentClass = 'neutral';
+                $sentCode  = '0';
+
+                if ($rawSent === 'pos' || $rawSent === '1' || str_contains($rawSent, 'pos')) {
+                    $sentLabel = 'Positive';
+                    $sentClass = 'positive';
+                    $sentCode  = '1';
+                } elseif ($rawSent === 'neg' || $rawSent === '-1' || $rawSent === '2' || str_contains($rawSent, 'neg')) {
+                    $sentLabel = 'Negative';
+                    $sentClass = 'negative';
+                    $sentCode  = '-1';
+                }
+
+                $article['title']           = $cleanTitle;
+                $article['name']            = $rawPublisher;
+                $article['publisher']       = $rawPublisher;
+                $article['url']             = $url;
+                $article['date_created']    = $article['date_created'] ?? $article['created_at'] ?? now()->toDateTimeString();
+                $article['content']         = strip_tags((string) ($article['content'] ?? $rawTitle));
+                $article['sentiment']       = $sentLabel;
+                $article['sentiment_class'] = $sentClass;
+                $article['class_sentiment'] = $sentCode;
+                $article['likes']           = (int) ($article['likes'] ?? $article['num_likes'] ?? 0);
+                $article['views']           = (int) ($article['views'] ?? $article['num_views'] ?? $article['num_views_i'] ?? 0);
+                $article['comments']        = (int) ($article['comments'] ?? $article['num_comments'] ?? 0);
+                $article['shares']          = (int) ($article['shares'] ?? $article['num_shares'] ?? 0);
+                $article['retweets']        = (int) ($article['retweets'] ?? $article['num_retweeted'] ?? $article['rt'] ?? 0);
 
                 $quotes = $article['quotes'] ?? [];
                 $totalQuotesBeforeFilter += is_array($quotes) ? count($quotes) : 0;
 
                 if (is_array($quotes) && count($quotes) > 0) {
                     $validQuotes = array_filter($quotes, function ($quote) use (&$quotesFilteredOut) {
-                        if (!is_array($quote))             { $quotesFilteredOut++; return false; }
-                        if (!isset($quote['Kutipan']))      { $quotesFilteredOut++; return false; }
-                        if (trim($quote['Kutipan']) === '') { $quotesFilteredOut++; return false; }
+                        if (!is_array($quote))              { $quotesFilteredOut++; return false; }
+                        if (!isset($quote['Kutipan']))       { $quotesFilteredOut++; return false; }
+                        if (trim($quote['Kutipan']) === '')  { $quotesFilteredOut++; return false; }
                         return true;
                     });
                     $quotes = array_values($validQuotes);
@@ -832,6 +890,17 @@ public function articlesData(Request $request)
                 return $article;
 
             }, $allArticles);
+
+            // Filter by media if not all
+            if ($media && $media !== 'all') {
+                $articles = array_values(array_filter($articles, function ($article) use ($media) {
+                    $t = strtolower((string) ($article['type'] ?? $article['media_type'] ?? 'doc'));
+                    if ($media === 'doc' || $media === 'news') {
+                        return in_array($t, ['doc', 'news', 'article', 'online_news', 'portal', '']);
+                    }
+                    return $t === $media;
+                }));
+            }
 
             // Filter by sentiment jika bukan 'all'
             if ($sentiment !== 'all') {
@@ -928,7 +997,7 @@ public function articlesData(Request $request)
     public function newsMentionsData(Request $request)
     {
         try {
-            $projectId = (int) $request->query('project_id');
+            $projectId = (int) $request->query('project_id', 16978);
             $startDate = $request->query('start_date', now()->subDays(6)->format('Y-m-d'));
             $endDate   = $request->query('end_date', now()->format('Y-m-d'));
             $start     = (int) $request->query('start', 0);
@@ -945,8 +1014,25 @@ public function articlesData(Request $request)
             $mentions = $this->vault->remember($projectId, 'all', $endpointKey, $startDate, $endDate, function () use (
                 $projectId, $startDate, $endDate, $start, $rows
             ) {
-                $raw      = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
-                return $this->extractArray($raw);
+                $raw = [];
+                try {
+                    $raw = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
+                    $raw = $this->extractArray($raw);
+                } catch (\Throwable $e) {
+                    $raw = [];
+                }
+
+                if (empty($raw)) {
+                    $snap = ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'news_mentions_0_1200', $startDate, $endDate)
+                         ?? ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'news_mentions_0_500', $startDate, $endDate)
+                         ?? ProjectApiSnapshot::findSnapshotForQuery($projectId, 'doc', 'articles_doc_all_0', $startDate, $endDate);
+
+                    if ($snap) {
+                        $raw = is_array($snap) ? ($snap['data'] ?? $snap) : [];
+                    }
+                }
+
+                return is_array($raw) ? $raw : [];
             });
 
             $mentions = is_array($mentions) ? $mentions : [];
