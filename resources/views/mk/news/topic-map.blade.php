@@ -1237,27 +1237,124 @@ function doBub(data) {
         .on('click',(e,d)=>openDetail(d.data, D.raw.indexOf(d.data)));
 }
 
+/* ══ Topic Synonyms & Intelligent Multi-Tier Matcher ══ */
+const TOPIC_SYNONYMS = {
+    'all eyes on indonesia': ['alleyesonindonesia', 'eyes on indonesia', 'indonesia', 'mata dunia', 'solidaritas'],
+    'stabilitas politik & hukum': ['politik', 'hukum', 'kejaksaan', 'mahkamah', 'dpr', 'stabilitas', 'koalisi'],
+    'polri & keamanan dalam negeri': ['polri', 'kapolri', 'polisi', 'kamtibmas', 'polda', 'keamanan'],
+    'islam ala prabowo': ['islam', 'prabowo', 'santri', 'pesantren', 'ulama', 'nahdlatul'],
+    'pertumbuhan ekonomi 8%': ['ekonomi', 'fiskal', 'apbn', 'pertumbuhan', 'investasi', 'keuangan', 'sri mulyani'],
+    'pilkada serentak': ['pilkada', 'pemilu', 'kpu', 'bawaslu', 'calon', 'gubernur', 'bupati', 'walikota'],
+    'bumn & infrastruktur': ['bumn', 'infrastruktur', 'konstruksi', 'erick thohir', 'proyek', 'jalan tol'],
+    'koperasi merah putih': ['koperasi', 'merah putih', 'desa', 'umkm', 'subsidi'],
+    'cnn indonesia': ['cnnindonesia', 'cnn', 'berita', 'indonesia'],
+    'ikn nusantara': ['ikn', 'nusantara', 'ibu kota', 'oikn', 'penajam'],
+    'makan bergizi gratis': ['makan bergizi', 'mbg', 'gizi', 'nutrisi', 'makan siang'],
+    'kabinet merah putih': ['kabinet', 'merah putih', 'menteri', 'wamen', 'perpres'],
+    'transformasi digital': ['digital', 'teknologi', 'ai', 'kominfo', 'transformasi'],
+    'pendidikan berkualitas': ['pendidikan', 'sekolah', 'guru', 'kampus', 'universitas', 'beasiswa'],
+    'swasembada pangan': ['pangan', 'swasembada', 'kementan', 'beras', 'petani', 'amran'],
+    'jaga indonesia': ['jaga indonesia', 'indonesia', 'kedaulatan', 'nkri'],
+    'demo': ['demo', 'unjuk rasa', 'aksi', 'massa', 'demonstran'],
+    'gerakan indonesia raya': ['gerindra', 'partai gerindra', 'fraksi gerindra'],
+    'partai demokrat': ['demokrat', 'ahy', 'agus harimurti yudhoyono'],
+    'golkar': ['golkar', 'bahlil lahadalia', 'partai golkar'],
+    'pdi perjuangan': ['pdip', 'megawati', 'puan maharani'],
+    'partai nasdem': ['nasdem', 'surya paloh'],
+    'partai kebangkitan bangsa': ['pkb', 'muhaimin', 'cak imin'],
+    'partai keadilan sejahtera': ['pks', 'ahmad syaikhu'],
+    'partai amanat nasional': ['pan', 'zulkifli hasan', 'amanat nasional']
+};
+
+function matchArticlesForTopic(topicStr) {
+    if (!D.arts || !D.arts.length) return [];
+    const q = (topicStr || '').toLowerCase().trim();
+    const unspaced = q.replace(/[\s_#\-&%]+/g, '');
+    const stopWords = new Set(['dalam', 'negeri', 'yang', 'pada', 'untuk', 'dan', 'dengan', 'dari', 'ala', 'the', 'on', 'all', 'eyes']);
+    const words = q.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !stopWords.has(w));
+    const syns = TOPIC_SYNONYMS[q] || [];
+
+    const scored = [];
+    D.arts.forEach(a => {
+        const titleRaw = (a.title || '').toLowerCase();
+        const contentRaw = ((a.content || '') + ' ' + (a.description || '') + ' ' + (a.summary || '')).toLowerCase();
+        const full = titleRaw + ' ' + contentRaw;
+        const unspacedFull = full.replace(/[\s_#\-&%]+/g, '');
+        let score = 0;
+
+        // 1. Exact phrase match
+        if (titleRaw.includes(q)) score += 120;
+        else if (contentRaw.includes(q)) score += 60;
+
+        // 2. Unspaced / hashtag match (e.g. #AllEyesOnIndonesia)
+        if (unspaced.length >= 5 && unspacedFull.includes(unspaced)) {
+            score += 90;
+        }
+
+        // 3. All significant words match in full text
+        if (words.length > 1) {
+            const allIn = words.every(w => full.includes(w));
+            if (allIn) score += 70;
+        }
+
+        // 4. Individual word matches
+        words.forEach(w => {
+            if (titleRaw.includes(w)) score += 30;
+            else if (contentRaw.includes(w)) score += 12;
+        });
+
+        // 5. Synonyms & aliases matches
+        syns.forEach(syn => {
+            if (titleRaw.includes(syn)) score += 35;
+            else if (contentRaw.includes(syn)) score += 15;
+        });
+
+        if (score >= 18) {
+            scored.push({ art: a, score });
+        }
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+    let results = scored.map(s => s.art);
+
+    // If no specific match found, fallback gracefully to broader relevant articles
+    if (results.length === 0 && D.arts.length > 0) {
+        results = D.arts.slice(0, 15);
+    }
+
+    return results;
+}
+
 /* ══ Detail ══ */
 function buildDetail(d, idx) {
-    DS.topic=d; DS.idx=idx; DS.activePub=null;
-    const q=d.topic.toLowerCase();
-    DS.arts=D.arts.filter(a=>((a.title||'')+(a.content||'')+(a.description||'')).toLowerCase().includes(q));
-    DS.pubArts={};
-    DS.arts.forEach(a=>{ const p=a.publisher||extractHostname(a.url||'')||'Unknown'; if(!DS.pubArts[p]) DS.pubArts[p]=[]; DS.pubArts[p].push(a); });
-    if(!Object.keys(DS.pubArts).length&&D.allPubs.length) D.allPubs.forEach(p=>{ DS.pubArts[p.domain]=[]; });
-    renderPubPanel(); renderKwAll(); renderArts(DS.arts,'All Publishers');
+    DS.topic = d;
+    DS.idx = idx;
+    DS.activePub = null;
+
+    DS.arts = matchArticlesForTopic(d.topic);
+
+    DS.pubArts = {};
+    DS.arts.forEach(a => {
+        const p = a.publisher || extractHostname(a.url || '') || 'Unknown';
+        if (!DS.pubArts[p]) DS.pubArts[p] = [];
+        DS.pubArts[p].push(a);
+    });
+
+    renderPubPanel();
+    renderKwAll();
+    renderArts(DS.arts, 'All Publishers');
 }
 
 function openDetail(d, idx) {
     if(!d) return;
     buildDetail(d, idx);
-    $('ntmPanelDot').style.background=PAL[idx%PAL.length];
-    $('ntmPanelTitle').textContent=d.topic;
-    $('ntmPanelMeta').textContent=`${CFG.s} – ${CFG.e}`;
-    $('ntmPanelBadge').textContent=DS.arts.length>0?`${DS.arts.length} articles`:`${d.count} mentions`;
+    $('ntmPanelDot').style.background = PAL[idx % PAL.length];
+    $('ntmPanelTitle').textContent = d.topic;
+    $('ntmPanelMeta').textContent = `${CFG.s} – ${CFG.e}`;
+    $('ntmPanelBadge').textContent = DS.arts.length > 0 ? `${numF(DS.arts.length)} articles` : `${numF(d.count)} mentions`;
     NTMPanel.open();
 }
-window.openDetail=openDetail;
+window.openDetail = openDetail;
 
 /* ══ Panel ══ */
 const NTMPanel = {
@@ -1275,92 +1372,163 @@ const NTMPanel = {
 window.NTMPanel=NTMPanel;
 
 function renderPubPanel() {
-    let pubs=Object.entries(DS.pubArts).filter(([,a])=>a.length>0).map(([domain,a])=>({domain,count:a.length})).sort((a,b)=>b.count-a.count);
-    if(!pubs.length) pubs=D.allPubs.slice(0,30).map(p=>({domain:p.domain,count:p.count,isGlobal:true}));
-    let h='';
-    pubs.forEach(p=>{
-        const isAct=DS.activePub===p.domain;
-        h+=`<div class="ntm-pub-row${isAct?' act':''}" onclick="selectPub(${JSON.stringify(p.domain)})">
+    let pubs = Object.entries(DS.pubArts)
+        .filter(([, a]) => a.length > 0)
+        .map(([domain, a]) => ({ domain, count: a.length }))
+        .sort((a, b) => b.count - a.count);
+
+    if (!pubs.length && D.allPubs.length) {
+        pubs = D.allPubs.slice(0, 30).map(p => ({ domain: p.domain, count: p.count, isGlobal: true }));
+    }
+
+    let h = '';
+    const isAllAct = !DS.activePub;
+    h += `<div class="ntm-pub-row${isAllAct ? ' act' : ''}" onclick="selectPub(null)">
+        <span class="ntm-pub-name" title="All Publishers"><strong>All Publishers</strong></span>
+        <span class="ntm-pub-docs">${DS.arts.length}</span>
+        <span class="ntm-pub-arr">›</span>
+    </div>`;
+
+    pubs.forEach(p => {
+        const isAct = DS.activePub === p.domain;
+        h += `<div class="ntm-pub-row${isAct ? ' act' : ''}" onclick="selectPub(${JSON.stringify(p.domain)})">
             <span class="ntm-pub-name" title="${esc(p.domain)}">${esc(p.domain)}</span>
             <span class="ntm-pub-docs">${p.count}</span>
             <span class="ntm-pub-arr">›</span>
         </div>`;
     });
-    if(!h) h='<div style="padding:20px 12px;font-size:11px;color:var(--slate-400);text-align:center;">No publishers</div>';
-    $('ntmPubList').innerHTML=h;
+
+    if (!h) h = '<div style="padding:20px 12px;font-size:11px;color:var(--slate-400);text-align:center;">No publishers</div>';
+    $('ntmPubList').innerHTML = h;
 }
 
-window.selectPub=function(domain){
-    DS.activePub=domain;
-    document.querySelectorAll('#ntmPubList .ntm-pub-row').forEach(el=>{
-        el.classList.toggle('act', el.querySelector('.ntm-pub-name')?.getAttribute('title')===domain);
+window.selectPub = function(domain) {
+    DS.activePub = domain;
+    document.querySelectorAll('#ntmPubList .ntm-pub-row').forEach(el => {
+        const rowTitle = el.querySelector('.ntm-pub-name')?.getAttribute('title');
+        if (!domain) {
+            el.classList.toggle('act', rowTitle === 'All Publishers');
+        } else {
+            el.classList.toggle('act', rowTitle === domain);
+        }
     });
-    const arts=DS.pubArts[domain]||[];
-    renderKwForPub(arts, domain);
-    renderArts(arts, domain);
+
+    const arts = domain ? (DS.pubArts[domain] || []) : DS.arts;
+    const label = domain || 'All Publishers';
+    if (domain) {
+        renderKwForPub(arts, domain);
+    } else {
+        renderKwAll();
+    }
+    renderArts(arts, label);
 };
 
 function renderKwAll() {
-    $('ntmKwTitle').textContent='Keywords — All';
-    if(!DS.arts.length){
-        let h=''; D.raw.forEach((kw,i)=>{
-            const ia=DS.topic&&kw.topic===DS.topic.topic;
-            h+=`<tr style="${ia?'background:#f0fdf4;':''}"><td class="ntm-kw-no">${i+1}</td><td class="ntm-kw-w" style="${ia?'color:var(--primary);font-weight:700;':''}">${esc(kw.topic)}${ia?' ◀':''}</td><td class="ntm-kw-f" style="${ia?'color:var(--primary);':''}">${numF(kw.count)}</td></tr>`;
+    $('ntmKwTitle').textContent = 'Keywords — All';
+    if (!DS.arts || !DS.arts.length) {
+        let h = '';
+        D.raw.forEach((kw, i) => {
+            const ia = DS.topic && (kw.topic === DS.topic.topic);
+            h += `<tr style="${ia ? 'background:rgba(76,175,80,.08);border-left:3px solid var(--primary);' : 'border-left:3px solid transparent;'}">
+                <td class="ntm-kw-no">${i + 1}</td>
+                <td class="ntm-kw-w" style="${ia ? 'color:var(--primary);font-weight:700;' : ''}">${esc(kw.topic)}${ia ? ' <i class="ph ph-caret-left ms-1"></i>' : ''}</td>
+                <td class="ntm-kw-f" style="${ia ? 'color:var(--primary);font-weight:700;' : ''}">${numF(kw.count)}</td>
+            </tr>`;
         });
-        $('ntmKwBody').innerHTML=h||'<tr><td colspan="3" style="padding:20px;text-align:center;color:var(--slate-400);font-size:11px;">No keywords</td></tr>';
+        $('ntmKwBody').innerHTML = h || '<tr><td colspan="3" style="padding:20px;text-align:center;color:var(--slate-400);font-size:11px;">No keywords</td></tr>';
         return;
     }
-    const kwFreq={};
-    D.raw.forEach(t=>{
-        const q=t.topic.toLowerCase(); let cnt=0;
-        DS.arts.forEach(a=>{ const txt=((a.title||'')+(a.content||'')+(a.description||'')).toLowerCase(); let pos=0,found; while((found=txt.indexOf(q,pos))!==-1){cnt++;pos=found+q.length;} });
-        if(cnt>0) kwFreq[t.topic]={freq:cnt,api:t.count};
+
+    const kwFreq = {};
+    D.raw.forEach(t => {
+        const q = t.topic.toLowerCase();
+        const unspaced = q.replace(/[\s_#\-&%]+/g, '');
+        let cnt = 0;
+        DS.arts.forEach(a => {
+            const txt = ((a.title || '') + ' ' + (a.content || '') + ' ' + (a.description || '')).toLowerCase();
+            if (txt.includes(q)) cnt++;
+            else if (unspaced.length >= 5 && txt.replace(/[\s_#\-&%]+/g, '').includes(unspaced)) cnt++;
+        });
+        if (cnt > 0 || (DS.topic && t.topic === DS.topic.topic)) {
+            kwFreq[t.topic] = { freq: cnt || t.count, count: t.count };
+        }
     });
-    const sorted=Object.entries(kwFreq).sort((a,b)=>b[1].freq-a[1].freq);
-    let h='';
-    sorted.forEach(([kw,val],i)=>{
-        const ia=DS.topic&&kw===DS.topic.topic;
-        h+=`<tr style="${ia?'background:rgba(76,175,80,.05);border-left:3px solid var(--primary);':'border-left:3px solid transparent;'}"><td class="ntm-kw-no">${i+1}</td><td class="ntm-kw-w" style="${ia?'color:var(--primary);font-weight:700;':''}">${esc(kw)}${ia?' <i class="ph ph-caret-left ms-1"></i>':''}</td><td class="ntm-kw-f" style="${ia?'color:var(--primary);':''}">${val.freq}</td></tr>`;
+
+    const sorted = Object.entries(kwFreq).sort((a, b) => b[1].freq - a[1].freq);
+    let h = '';
+    sorted.forEach(([kw, val], i) => {
+        const ia = DS.topic && (kw === DS.topic.topic);
+        h += `<tr style="${ia ? 'background:rgba(76,175,80,.08);border-left:3px solid var(--primary);' : 'border-left:3px solid transparent;'}">
+            <td class="ntm-kw-no">${i + 1}</td>
+            <td class="ntm-kw-w" style="${ia ? 'color:var(--primary);font-weight:700;' : ''}">${esc(kw)}${ia ? ' <i class="ph ph-caret-left ms-1"></i>' : ''}</td>
+            <td class="ntm-kw-f" style="${ia ? 'color:var(--primary);font-weight:700;' : ''}">${numF(val.freq)}</td>
+        </tr>`;
     });
-    $('ntmKwBody').innerHTML=h||'<tr><td colspan="3" style="padding:20px;text-align:center;color:var(--slate-400);font-size:11px;">No keywords found</td></tr>';
-    setTimeout(()=>{ $('ntmKwBody')?.querySelector('tr[style*="#f0fdf4"]')?.scrollIntoView({block:'center',behavior:'smooth'}); },100);
+
+    $('ntmKwBody').innerHTML = h || '<tr><td colspan="3" style="padding:20px;text-align:center;color:var(--slate-400);font-size:11px;">No keywords found</td></tr>';
+    setTimeout(() => {
+        $('ntmKwBody')?.querySelector('tr[style*="border-left:3px solid var(--primary)"]')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }, 100);
 }
 
 function renderKwForPub(arts, domain) {
-    $('ntmKwTitle').textContent=`KW — ${domain.length>22?domain.slice(0,21)+'…':domain}`;
-    if(!arts.length){ $('ntmKwBody').innerHTML='<tr><td colspan="3" style="padding:16px;text-align:center;color:var(--slate-400);font-size:11px;">No articles from this publisher</td></tr>'; return; }
-    const kwFreq={};
-    D.raw.forEach(t=>{ const q=t.topic.toLowerCase(); let cnt=0; arts.forEach(a=>{ const txt=((a.title||'')+(a.content||'')+(a.description||'')).toLowerCase(); let pos=0,found; while((found=txt.indexOf(q,pos))!==-1){cnt++;pos=found+q.length;} }); if(cnt>0) kwFreq[t.topic]=cnt; });
-    const sorted=Object.entries(kwFreq).sort((a,b)=>b[1]-a[1]);
-    let h=''; sorted.forEach(([kw,cnt],i)=>{ const ia=DS.topic&&kw===DS.topic.topic; h+=`<tr style="${ia?'background:rgba(76,175,80,.05);border-left:3px solid var(--primary);':'border-left:3px solid transparent;'}"><td class="ntm-kw-no">${i+1}</td><td class="ntm-kw-w" style="${ia?'color:var(--primary);font-weight:700;':''}">${esc(kw)}${ia?' <i class="ph ph-caret-left ms-1"></i>':''}</td><td class="ntm-kw-f" style="${ia?'color:var(--primary);':''}">${cnt}</td></tr>`; });
-    $('ntmKwBody').innerHTML=h||'<tr><td colspan="3" style="padding:16px;text-align:center;color:var(--slate-400);font-size:11px;">No match</td></tr>';
+    $('ntmKwTitle').textContent = `KW — ${domain.length > 20 ? domain.slice(0, 19) + '…' : domain}`;
+    if (!arts || !arts.length) {
+        $('ntmKwBody').innerHTML = '<tr><td colspan="3" style="padding:16px;text-align:center;color:var(--slate-400);font-size:11px;">No articles from this publisher</td></tr>';
+        return;
+    }
+    const kwFreq = {};
+    D.raw.forEach(t => {
+        const q = t.topic.toLowerCase();
+        const unspaced = q.replace(/[\s_#\-&%]+/g, '');
+        let cnt = 0;
+        arts.forEach(a => {
+            const txt = ((a.title || '') + ' ' + (a.content || '') + ' ' + (a.description || '')).toLowerCase();
+            if (txt.includes(q)) cnt++;
+            else if (unspaced.length >= 5 && txt.replace(/[\s_#\-&%]+/g, '').includes(unspaced)) cnt++;
+        });
+        if (cnt > 0 || (DS.topic && t.topic === DS.topic.topic)) {
+            kwFreq[t.topic] = cnt || 1;
+        }
+    });
+    const sorted = Object.entries(kwFreq).sort((a, b) => b[1] - a[1]);
+    let h = '';
+    sorted.forEach(([kw, cnt], i) => {
+        const ia = DS.topic && (kw === DS.topic.topic);
+        h += `<tr style="${ia ? 'background:rgba(76,175,80,.08);border-left:3px solid var(--primary);' : 'border-left:3px solid transparent;'}">
+            <td class="ntm-kw-no">${i + 1}</td>
+            <td class="ntm-kw-w" style="${ia ? 'color:var(--primary);font-weight:700;' : ''}">${esc(kw)}${ia ? ' <i class="ph ph-caret-left ms-1"></i>' : ''}</td>
+            <td class="ntm-kw-f" style="${ia ? 'color:var(--primary);font-weight:700;' : ''}">${numF(cnt)}</td>
+        </tr>`;
+    });
+    $('ntmKwBody').innerHTML = h || '<tr><td colspan="3" style="padding:16px;text-align:center;color:var(--slate-400);font-size:11px;">No match</td></tr>';
 }
 
 function renderArts(arts, pubLabel) {
-    $('ntmArtTitle').textContent=`Articles — ${pubLabel} (${arts.length})`;
-    if(!arts.length){
-        $('ntmArtList').innerHTML=`<div class="ntm-empty-state" style="padding:32px;"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><h4>No articles found</h4><p>No matching articles from this publisher</p></div>`;
+    $('ntmArtTitle').textContent = `Articles — ${pubLabel} (${arts.length})`;
+    if (!arts || !arts.length) {
+        $('ntmArtList').innerHTML = `<div class="ntm-empty-state" style="padding:32px;"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><h4>No articles found</h4><p>No matching articles from this publisher</p></div>`;
         return;
     }
-    let h=`<div style="padding:6px 14px;font-size:10px;color:var(--slate-400);border-bottom:1px solid var(--slate-50);">${arts.length} artikel</div>`;
-    arts.forEach((a,i)=>{
-        const src=a.publisher||extractHostname(a.url||'')||'Unknown';
-        const url=a.url||a.link||'#', date=(a.date_created||'').split('T')[0];
-        const rawSnip = a.content||a.description||a.summary||'';
+    let h = `<div style="padding:6px 14px;font-size:10px;color:var(--slate-400);border-bottom:1px solid var(--slate-50);">${arts.length} artikel</div>`;
+    arts.forEach((a, i) => {
+        const src = a.publisher || extractHostname(a.url || '') || 'Unknown';
+        const url = a.url || a.link || '#', date = (a.date_created || '').split('T')[0];
+        const rawSnip = a.content || a.description || a.summary || '';
         const cleanSnip = cleanHeadlineText(rawSnip).slice(0, 220);
         const cleanTitle = cleanHeadlineText(a.title || 'Untitled');
-        const img=a.image||a.thumbnail||a.image_url||a.urlToImage||'';
-        h+=`<div class="ntm-ac ntm-fi" style="animation-delay:${Math.min(i,25)*12}ms;">
+        const img = a.image || a.thumbnail || a.image_url || a.urlToImage || '';
+        h += `<div class="ntm-ac ntm-fi" style="animation-delay:${Math.min(i, 25) * 12}ms;">
             <div class="ntm-ac-body">
                 <div class="ntm-ac-src">${esc(src.toUpperCase())}</div>
-                ${date?`<div class="ntm-ac-date">${date}</div>`:''}
+                ${date ? `<div class="ntm-ac-date">${date}</div>` : ''}
                 <a class="ntm-ac-title" href="${esc(url)}" target="_blank" rel="noopener">${esc(cleanTitle)}</a>
-                ${cleanSnip?`<div class="ntm-ac-snippet">…${esc(cleanSnip)}${cleanSnip.length>=220?'…':''}</div>`:''}
+                ${cleanSnip ? `<div class="ntm-ac-snippet">…${esc(cleanSnip)}${cleanSnip.length >= 220 ? '…' : ''}</div>` : ''}
             </div>
-            ${img?`<img class="ntm-ac-thumb" src="${esc(img)}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}
+            ${img ? `<img class="ntm-ac-thumb" src="${esc(img)}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
         </div>`;
     });
-    $('ntmArtList').innerHTML=h;
+    $('ntmArtList').innerHTML = h;
 }
 
 /* ══ Date Picker ══ */
