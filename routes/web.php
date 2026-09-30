@@ -147,6 +147,7 @@ Route::prefix('mk')->name('mk.')->middleware(['auth', 'check.trial'])->group(fun
             Route::get('/trending-topics',  [FacebookOverviewController::class, 'trendingTopicsData'])->name('trending-topics');
             Route::get('/most-viewed-posts',[FacebookOverviewController::class, 'mostViewedPostsData'])->name('most-viewed-posts');
             Route::get('/most-engagement',  [FacebookOverviewController::class, 'mostEngagementData'])->name('most-engagement');
+            Route::get('/emotion-analysis', [FacebookOverviewController::class, 'emotionAnalysisData'])->name('emotion-analysis');
             Route::get('/authors-age',      [FacebookOverviewController::class, 'authorsAgeData'])->name('authors-age');
             Route::get('/authors-gender',   [FacebookOverviewController::class, 'authorsGenderData'])->name('authors-gender');
             Route::get('/authors-type',     [FacebookOverviewController::class, 'authorsTypeData'])->name('authors-type');
