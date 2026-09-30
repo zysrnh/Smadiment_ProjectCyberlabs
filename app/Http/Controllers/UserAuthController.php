@@ -30,8 +30,8 @@ class UserAuthController extends Controller
             'password' => 'required|min:6',
         ]);
 
-        // Attempt to login with default guard (web)
-        if (Auth::attempt($credentials, $request->filled('remember'))) {
+        // Attempt to login with default guard (web) - always remember to keep session persistent
+        if (Auth::attempt($credentials, true)) {
             $user = Auth::user();
             if (!$user->isTrialActive()) {
                 Auth::logout();
