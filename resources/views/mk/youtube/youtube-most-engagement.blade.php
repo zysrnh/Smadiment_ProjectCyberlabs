@@ -1392,8 +1392,8 @@ const YMEDetail = {
                 <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(v)}</div><div class="do-dp2-stat-lbl">Views</div></div>
                 <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(l)}</div><div class="do-dp2-stat-lbl">Likes</div></div>
                 <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(c)}</div><div class="do-dp2-stat-lbl">Comments</div></div>
-            </div>
-            ${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out me-1"></i>Buka di YouTube</a>`:''}`;
+            <div style="font-size:11px;color:var(--slate-500);background:var(--slate-100);border:1px dashed var(--slate-300);padding:7px 10px;border-radius:4px;margin-top:12px;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ph ph-info" style="font-size:14px;color:var(--primary);flex-shrink:0;"></i><span>Catatan: API tidak mengembalikan URL post spesifik.</span></div>
+            ${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-youtube-logo me-1"></i>Buka Channel di YouTube</a>`:''}`;
         panel.classList.add('show');
     },
     _loadEmbed(vidId){

@@ -2094,6 +2094,33 @@ public function aiAnalysisProxy(Request $request)
                 $engagement = $likes + $shares + $comments;
                 $viewCnt = $likes * 3 + $shares * 7;
 
+                $fbHandleMap = [
+                    'Prabowo Subianto' => 'prabowosubianto',
+                    'Partai Gerindra' => 'Gerindra',
+                    'Kompas.com' => 'Kompascom',
+                    'Kompas TV' => 'KompasTV',
+                    'Detikcom' => 'detikcom',
+                    'CNN Indonesia' => 'CNNIndonesia',
+                    'Narasi Newsroom' => 'narasi',
+                    'Mata Najwa' => 'MataNajwa',
+                    'Kementerian Pertahanan RI' => 'KemhanRI',
+                    'Sekretariat Kabinet RI' => 'setkabgoid',
+                    'Sekretariat Presiden' => 'presidenri',
+                    'Tribunnews' => 'tribunnews',
+                    'Tempo.co' => 'tempodotco',
+                    'Kumparan' => 'kumparan',
+                    'Tirto.id' => 'TirtoID',
+                    'Antara News' => 'antaranews',
+                    'CNBC Indonesia' => 'CNBCIndonesia',
+                    'Bisnis Indonesia' => 'bisniscom',
+                    'Tribun Jabar' => 'tribunjabar',
+                    'Pikiran Rakyat' => 'pikiranrakyat',
+                    'Merdeka.com' => 'merdekadotcom',
+                    'Suara.com' => 'suaradotcom',
+                ];
+                $fbSlug = $fbHandleMap[$c['name']] ?? preg_replace('/[^a-zA-Z0-9]/', '', $c['name']);
+                $fbUrl  = 'https://www.facebook.com/' . $fbSlug;
+
                 $posts[] = [
                     'id' => $uid,
                     'sub_id' => $uid,
@@ -2113,7 +2140,7 @@ public function aiAnalysisProxy(Request $request)
                     'sentiment_prec' => 0.85,
                     'emotion' => $c['emotion'],
                     'date_created' => $timePoint,
-                    'url' => 'https://www.facebook.com',
+                    'url' => $fbUrl,
                     'avatar_url' => 'https://ui-avatars.com/api/?name=' . urlencode($c['name']) . '&background=' . $c['bg'] . '&color=fff',
                     'tcode' => 'fb-post',
                     'author' => [

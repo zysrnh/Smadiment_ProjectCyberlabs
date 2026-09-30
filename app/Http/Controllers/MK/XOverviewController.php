@@ -207,6 +207,7 @@
                     'avatar_url'    => $avatarUrl,
                     'author_image_url' => $avatarUrl,
                     'media_url'     => null,
+                    'url'           => 'https://x.com/' . ltrim($author['scr_name'], '@'),
                     'author'        => [
                         'name'     => $author['name'],
                         'scr_name' => $author['scr_name'],

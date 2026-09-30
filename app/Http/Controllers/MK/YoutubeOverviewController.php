@@ -1087,10 +1087,8 @@ class YoutubeOverviewController extends Controller
             $eng      = $likes + $comments;
 
             $initials = urlencode($this->getInitials($v['name']));
-            $bg       = $v['bg'] ?? 'FF0000';
-            $avatar   = "https://ui-avatars.com/api/?name={$initials}&background={$bg}&color=fff&size=80&bold=true&format=png";
-            $thumb    = "https://img.youtube.com/vi/{$vid}/mqdefault.jpg";
-            $postUrl  = "https://www.youtube.com/watch?v={$vid}";
+            $channelUrl = !empty($v['handle']) ? ('https://www.youtube.com/' . (str_starts_with($v['handle'], '@') ? $v['handle'] : '@' . $v['handle'])) : 'https://www.youtube.com';
+            $postUrl    = $channelUrl;
 
             $posts[] = [
                 'id'              => 'yt_' . $projectId . '_' . str_pad($i + 1, 2, '0', STR_PAD_LEFT),
@@ -1115,14 +1113,16 @@ class YoutubeOverviewController extends Controller
                 'emotion'         => $v['emotion'],
                 'date_created'    => $v['date'],
                 'url'             => $postUrl,
+                'channel_url'     => $channelUrl,
                 'avatar_url'      => $avatar,
                 'image'           => $thumb,
                 'thumbnail_url'   => $thumb,
                 'tcode'           => 'youtube',
                 'author'          => [
-                    'name'     => $v['name'],
-                    'scr_name' => $v['handle'],
-                    'image'    => $avatar,
+                    'name'        => $v['name'],
+                    'scr_name'    => $v['handle'],
+                    'channel_url' => $channelUrl,
+                    'image'       => $avatar,
                 ],
             ];
         }

@@ -936,7 +936,7 @@ class InstagramOverviewController extends Controller
                     'sentiment_prec' => 0.88,
                     'emotion' => $c['emotion'],
                     'date_created' => $c['date'] . ' ' . sprintf('%02d:%02d:00', rand(8, 21), rand(0, 59)),
-                    'url' => 'https://www.instagram.com/p/' . substr(md5($pidStr), 0, 11) . '/',
+                    'url' => 'https://www.instagram.com/' . ltrim($c['handle'] ?? '', '@') . '/',
                     'avatar_url' => $avatar,
                     'image' => '',
                     'tcode' => 'ig-post',
