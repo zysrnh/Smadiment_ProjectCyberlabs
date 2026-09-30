@@ -621,11 +621,28 @@ function makeEChart(id) {
 let allData={}, allTweets=[], filteredTweets=[], currentFilter='all', currentPage=1;
 
 function getEmoCounts() {
+    if (allData && allData.emotions) {
+        const c = {};
+        EMOTIONS.forEach(e => {
+            const val = allData.emotions[e];
+            c[e] = (typeof val === 'object' && val !== null) ? (val.count || 0) : (parseInt(val) || 0);
+        });
+        if (Object.values(c).some(v => v > 0)) {
+            return c;
+        }
+    }
     const c={}; EMOTIONS.forEach(e=>c[e]=0);
     allTweets.forEach(t=>{ const e=(t.emotion||'').toLowerCase(); if(EMOTIONS.includes(e)) c[e]=(c[e]||0)+1; });
     return c;
 }
-function getTotalPosts() { return allTweets.length || Object.values(getEmoCounts()).reduce((a,b)=>a+b,0); }
+function getTotalPosts() {
+    if (allData && allData.summary && allData.summary.total_posts) {
+        return allData.summary.total_posts;
+    }
+    const c = getEmoCounts();
+    const sum = Object.values(c).reduce((a,b)=>a+b,0);
+    return sum || allTweets.length;
+}
 function getName(t)  { return t.author_name||t.author||t.screen_name||'X User'; }
 function getHandle(t){ return t.author||t.screen_name||''; }
 function normSent(t) { const s=(t.sentiment||'').toLowerCase(); return s.includes('pos')?'pos':s.includes('neg')?'neg':'neu'; }
@@ -907,7 +924,7 @@ const FEAChart = {
         const sorted = EMOTIONS.map(e=>({emo:e,count:counts[e]||0})).sort((a,b)=>b.count-a.count);
         const top5   = sorted.slice(0,5).filter(x=>x.count>0);
         if(!top5.length){ loadEl.style.display='none'; if(emptyEl) emptyEl.style.display='flex'; return; }
-        const total = top5.reduce((s,x)=>s+x.count,0);
+        const total = (allData && allData.summary && allData.summary.total_posts) ? allData.summary.total_posts : top5.reduce((s,x)=>s+x.count,0);
         const legEl = _$('donutLegend');
         if(legEl) legEl.innerHTML = top5.map((x,i)=>
             `<div class="donut-leg-item" onclick="FEAPanel.open(allTweets.filter(t=>(t.emotion||'').toLowerCase()==='${x.emo}'),'${x.emo}')">
