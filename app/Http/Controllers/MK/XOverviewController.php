@@ -2623,6 +2623,18 @@
             return response()->json(['success' => false, 'error' => 'project_id required'], 422);
         }
 
+        // ── 0. Cek snapshot emotion_analysis di database terlebih dahulu ──
+        $existingSnapshot = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'twit', 'emotion_analysis', $startDate, $endDate);
+        if (!empty($existingSnapshot) && is_array($existingSnapshot) && !empty($existingSnapshot['emotions'])) {
+            $snapTotal = (int) ($existingSnapshot['summary']['total_posts'] ?? 0);
+            if ($snapTotal > 500) {
+                return response()->json([
+                    'success' => true,
+                    'data'    => $existingSnapshot,
+                ]);
+            }
+        }
+
         // ── Emotion proportions per sentiment bucket ────────────────────────────
         $emotionMap = [
             'positive' => [
