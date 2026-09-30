@@ -71,7 +71,25 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // ── Tangkap TokenMismatchException (CSRF Expired / Sesi Habis - Error 419) ──
+        // ── Tangkap TokenMismatchException & 419 HttpException (CSRF Expired / Sesi Habis) ──
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, $request) {
+            if ($e->getStatusCode() === 419) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'error'   => 'Maaf, sesi Anda telah habis. Harap login kembali.',
+                        'code'    => 'SESSION_EXPIRED',
+                    ], 419);
+                }
+
+                if ($request->is('admin/*', 'admin/login*')) {
+                    return redirect()->route('admin.login')->with('warning', 'Maaf, sesi Anda telah habis. Harap login kembali.');
+                }
+
+                return redirect()->route('user.login')->with('warning', 'Maaf, sesi Anda telah habis. Harap login kembali.');
+            }
+        });
+
         $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
             if ($request->expectsJson()) {
                 return response()->json([
@@ -85,11 +103,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return redirect()->route('admin.login')->with('warning', 'Maaf, sesi Anda telah habis. Harap login kembali.');
             }
 
-            if ($request->is('user/*', 'user/login*', 'login*', 'logout*')) {
-                return redirect()->route('user.login')->with('warning', 'Maaf, sesi Anda telah habis. Harap login kembali.');
-            }
-
-            return response()->view('errors.419', [], 419);
+            return redirect()->route('user.login')->with('warning', 'Maaf, sesi Anda telah habis. Harap login kembali.');
         });
 
     })->create();
