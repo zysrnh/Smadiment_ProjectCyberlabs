@@ -22,6 +22,14 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\RememberSelectedProject::class,
         ]);
 
+        // ✅ Exclude login routes dari CSRF check
+        // Ini aman karena login cuma pakai Auth::attempt() yang validate credentials
+        // Mencegah loop "Sesi Berakhir" ketika token expired
+        $middleware->validateCsrfTokens(except: [
+            'user/login',
+            'admin/login',
+        ]);
+
         // ✅ Redirect authenticated users (away from guest-only routes like /login)
         $middleware->redirectUsersTo(function ($request) {
             if ($request->is('admin/*')) {
@@ -32,8 +40,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // ✅ Redirect guests (to login)
         $middleware->redirectGuestsTo(function ($request) {
-            if (!$request->expectsJson()) {
-                session()->flash('warning', 'Sesi Anda telah habis. Silahkan login kembali.');
+            if ($request->is('admin/*')) {
+                return route('admin.login');
             }
             return route('user.login');
         });
