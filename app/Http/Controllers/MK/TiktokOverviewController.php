@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\MK;
 
 use App\Http\Controllers\Controller;
+use App\Models\ProjectApiSnapshot;
 use App\Services\MediaKernelsClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -97,7 +98,12 @@ class TiktokOverviewController extends Controller
                 return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
             }
 
-            $result = $this->client->volumeTotal($projectId, 'tiktok', $startDate, $endDate);
+            $result = [];
+            try {
+                $result = $this->client->volumeTotal($projectId, 'tiktok', $startDate, $endDate);
+            } catch (\Throwable $e) {
+                Log::warning('TikTok volumeTotal live API failed: ' . $e->getMessage());
+            }
 
             Log::info('TikTok volumeTotal raw', ['result' => $result]);
 
@@ -126,6 +132,27 @@ class TiktokOverviewController extends Controller
                 Log::warning('TikTok: Failed to load trends data', ['error' => $e->getMessage()]);
             }
 
+            // Store snapshot if we got data
+            if ($total > 0 || !empty($chartData)) {
+                try {
+                    ProjectApiSnapshot::storeSnapshot((int)$projectId, 'tiktok', 'volume_total', $startDate, $endDate, [
+                        'total' => $total,
+                        'chart' => $chartData,
+                    ]);
+                } catch (\Throwable $e) {
+                    Log::warning('TikTok volumeTotal snapshot store failed: ' . $e->getMessage());
+                }
+            }
+
+            // Fallback to snapshot if API returned nothing
+            if ($total === 0 && empty($chartData)) {
+                $snap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'tiktok', 'volume_total', $startDate, $endDate);
+                if (!empty($snap) && is_array($snap)) {
+                    $total     = (int) ($snap['total'] ?? 0);
+                    $chartData = $snap['chart'] ?? [];
+                }
+            }
+
             return response()->json(['success' => true, 'data' => ['total' => $total, 'chart' => $chartData]]);
 
         } catch (\Exception $e) {
@@ -145,7 +172,12 @@ class TiktokOverviewController extends Controller
                 return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
             }
 
-            $result = $this->client->getSentiment($projectId, 'tiktok', $startDate, $endDate);
+            $result = [];
+            try {
+                $result = $this->client->getSentiment($projectId, 'tiktok', $startDate, $endDate);
+            } catch (\Throwable $e) {
+                Log::warning('TikTok sentimentTotal live API failed: ' . $e->getMessage());
+            }
 
             Log::info('TikTok sentimentTotal raw', ['result' => $result]);
 
@@ -168,6 +200,29 @@ class TiktokOverviewController extends Controller
                 $neutral  = (int) ($d['net'] ?? 0);
             }
 
+            // Store snapshot if we got data
+            if (($positive + $negative + $neutral) > 0) {
+                try {
+                    ProjectApiSnapshot::storeSnapshot((int)$projectId, 'tiktok', 'sentiment_total', $startDate, $endDate, [
+                        'positive' => $positive,
+                        'negative' => $negative,
+                        'neutral'  => $neutral,
+                    ]);
+                } catch (\Throwable $e) {
+                    Log::warning('TikTok sentimentTotal snapshot store failed: ' . $e->getMessage());
+                }
+            }
+
+            // Fallback to snapshot if API returned nothing
+            if (($positive + $negative + $neutral) === 0) {
+                $snap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'tiktok', 'sentiment_total', $startDate, $endDate);
+                if (!empty($snap) && is_array($snap)) {
+                    $positive = (int) ($snap['positive'] ?? 0);
+                    $negative = (int) ($snap['negative'] ?? 0);
+                    $neutral  = (int) ($snap['neutral'] ?? 0);
+                }
+            }
+
             return response()->json(['success' => true, 'data' => ['positive' => $positive, 'negative' => $negative, 'neutral' => $neutral]]);
 
         } catch (\Exception $e) {
@@ -187,7 +242,24 @@ class TiktokOverviewController extends Controller
                 return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
             }
 
-            $result = $this->client->mostActiveUsers($projectId, $startDate, $endDate);
+            $result = [];
+            try {
+                $result = $this->client->mostActiveUsers($projectId, $startDate, $endDate);
+                if (isset($result['data']['data']) && is_array($result['data']['data']) && count($result['data']['data']) > 0) {
+                    ProjectApiSnapshot::storeSnapshot((int)$projectId, 'tiktok', 'most_active_users', $startDate, $endDate, $result);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('TikTok mostActiveUsers live API failed: ' . $e->getMessage());
+            }
+
+            // Fallback to snapshot if API returned nothing
+            if (empty($result['data']['data'])) {
+                $snap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'tiktok', 'most_active_users', $startDate, $endDate)
+                     ?? ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'all', 'most_active_users', $startDate, $endDate);
+                if (!empty($snap) && is_array($snap)) {
+                    $result = $snap;
+                }
+            }
 
             $users = [];
 
@@ -269,10 +341,27 @@ public function mostViewedPostsData(Request $request)
             return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
         }
 
-        $items = $this->client->tiktokTopStatusAll(
-            $projectId, $startDate, $endDate, 0, 23, 100, $sub
-        );
-        $items = is_array($items) ? $items : [];
+        $items = [];
+        try {
+            $items = $this->client->tiktokTopStatusAll(
+                $projectId, $startDate, $endDate, 0, 23, 100, $sub
+            );
+            $items = is_array($items) ? $items : [];
+
+            if (!empty($items)) {
+                ProjectApiSnapshot::storeSnapshot((int)$projectId, 'tiktok', 'most_viewed_posts_' . $sub, $startDate, $endDate, $items);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('TikTok mostViewedPostsData live API failed: ' . $e->getMessage());
+        }
+
+        // Fallback to snapshot if API returned nothing
+        if (empty($items)) {
+            $snap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'tiktok', 'most_viewed_posts_' . $sub, $startDate, $endDate);
+            if (!empty($snap) && is_array($snap)) {
+                $items = $snap;
+            }
+        }
 
         $posts = [];
         foreach ($items as $item) {
@@ -382,10 +471,15 @@ public function trendingTopicsData(Request $request)
             return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
         }
 
-        $posts = $this->client->tiktokTopStatusAll(
-            $projectId, $startDate, $endDate, 0, 23, 100, 'postbylike'
-        );
-        $posts = is_array($posts) ? $posts : [];
+        $posts = [];
+        try {
+            $posts = $this->client->tiktokTopStatusAll(
+                $projectId, $startDate, $endDate, 0, 23, 100, 'postbylike'
+            );
+            $posts = is_array($posts) ? $posts : [];
+        } catch (\Throwable $e) {
+            Log::warning('TikTok trendingTopicsData live API failed: ' . $e->getMessage());
+        }
 
         $hashtagCount = [];
         foreach ($posts as $post) {
@@ -408,6 +502,28 @@ public function trendingTopicsData(Request $request)
         foreach ($hashtagCount as $name => $size) {
             $hashtags[]     = ['name' => $name, 'hashtag' => $name, 'size' => $size];
             $totalMentions += $size;
+        }
+
+        // Store snapshot if we got hashtags
+        if (!empty($hashtags)) {
+            try {
+                ProjectApiSnapshot::storeSnapshot((int)$projectId, 'tiktok', 'trending_topics', $startDate, $endDate, [
+                    'hashtags'       => $hashtags,
+                    'total_hashtags' => count($hashtags),
+                    'total_mentions' => $totalMentions,
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning('TikTok trendingTopicsData snapshot store failed: ' . $e->getMessage());
+            }
+        }
+
+        // Fallback to snapshot if no hashtags extracted
+        if (empty($hashtags)) {
+            $snap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'tiktok', 'trending_topics', $startDate, $endDate);
+            if (!empty($snap) && is_array($snap)) {
+                $hashtags      = $snap['hashtags'] ?? [];
+                $totalMentions = (int) ($snap['total_mentions'] ?? 0);
+            }
         }
 
         return response()->json([
@@ -507,10 +623,27 @@ public function mostEngagementData(Request $request)
             default         => 'postbyview',
         };
 
-        $items = $this->client->tiktokTopStatusAll(
-            $projectId, $startDate, $endDate, 0, 23, $rows, $apiSub
-        );
-        $items = is_array($items) ? $items : [];
+        $items = [];
+        try {
+            $items = $this->client->tiktokTopStatusAll(
+                $projectId, $startDate, $endDate, 0, 23, $rows, $apiSub
+            );
+            $items = is_array($items) ? $items : [];
+
+            if (!empty($items)) {
+                ProjectApiSnapshot::storeSnapshot((int)$projectId, 'tiktok', 'most_engagement_' . $sub, $startDate, $endDate, $items);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('TikTok mostEngagementData live API failed: ' . $e->getMessage());
+        }
+
+        // Fallback to snapshot if API returned nothing
+        if (empty($items)) {
+            $snap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'tiktok', 'most_engagement_' . $sub, $startDate, $endDate);
+            if (!empty($snap) && is_array($snap)) {
+                $items = $snap;
+            }
+        }
 
         $posts = [];
         foreach ($items as $item) {
@@ -661,9 +794,22 @@ public function mostEngagementData(Request $request)
             return response()->json(['success' => false, 'error' => 'Project ID required'], 400);
         }
 
-        $postsRaw     = $this->client->tiktokTopStatusAll($projectId, $startDate, $endDate, 0, 23, 100, 'postbylike');
-        $sentimentRaw = $this->client->getSentiment($projectId, 'tiktok', $startDate, $endDate);
-        $volumeRaw    = $this->client->volumeTotal($projectId, 'tiktok', $startDate, $endDate);
+        $postsRaw = []; $sentimentRaw = []; $volumeRaw = [];
+        try {
+            $postsRaw     = $this->client->tiktokTopStatusAll($projectId, $startDate, $endDate, 0, 23, 100, 'postbylike');
+        } catch (\Throwable $e) {
+            Log::warning('TikTok aiAnalysisData posts API failed: ' . $e->getMessage());
+        }
+        try {
+            $sentimentRaw = $this->client->getSentiment($projectId, 'tiktok', $startDate, $endDate);
+        } catch (\Throwable $e) {
+            Log::warning('TikTok aiAnalysisData sentiment API failed: ' . $e->getMessage());
+        }
+        try {
+            $volumeRaw    = $this->client->volumeTotal($projectId, 'tiktok', $startDate, $endDate);
+        } catch (\Throwable $e) {
+            Log::warning('TikTok aiAnalysisData volume API failed: ' . $e->getMessage());
+        }
 
         $positive = 0; $negative = 0; $neutral = 0;
         if (isset($sentimentRaw['data']['pos'], $sentimentRaw['data']['neg'], $sentimentRaw['data']['net'])) {
@@ -681,6 +827,16 @@ public function mostEngagementData(Request $request)
             $neutral  = (int) ($d['net'] ?? 0);
         }
 
+        // Fallback sentiment from snapshot
+        if (($positive + $negative + $neutral) === 0) {
+            $sntSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'tiktok', 'sentiment_total', $startDate, $endDate);
+            if (!empty($sntSnap) && is_array($sntSnap)) {
+                $positive = (int) ($sntSnap['positive'] ?? 0);
+                $negative = (int) ($sntSnap['negative'] ?? 0);
+                $neutral  = (int) ($sntSnap['neutral'] ?? 0);
+            }
+        }
+
         $volume = 0;
         if (isset($volumeRaw['all']['total'])) {
             $volume = (int) $volumeRaw['all']['total'];
@@ -690,7 +846,25 @@ public function mostEngagementData(Request $request)
             $volume = (int) $volumeRaw['bymedia']['tt'];
         }
 
+        // Fallback volume from snapshot
+        if ($volume === 0) {
+            $volSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'tiktok', 'volume_total', $startDate, $endDate);
+            if (!empty($volSnap) && is_array($volSnap)) {
+                $volume = (int) ($volSnap['total'] ?? 0);
+            }
+        }
+
         $items      = is_array($postsRaw) ? $postsRaw : [];
+
+        // Fallback posts from snapshot
+        if (empty($items)) {
+            $postsSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'tiktok', 'most_viewed_posts_postbylike', $startDate, $endDate)
+                      ?? ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'tiktok', 'most_engagement_postbylike', $startDate, $endDate);
+            if (!empty($postsSnap) && is_array($postsSnap)) {
+                $items = $postsSnap;
+            }
+        }
+
         $posts      = [];
         $hashtagMap = [];
         $creatorMap = [];
@@ -745,6 +919,14 @@ public function mostEngagementData(Request $request)
             $hashtags[] = ['name' => $name, 'size' => $size];
         }
 
+        // Fallback hashtags from snapshot
+        if (empty($hashtags)) {
+            $hashSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'tiktok', 'trending_topics', $startDate, $endDate);
+            if (!empty($hashSnap['hashtags']) && is_array($hashSnap['hashtags'])) {
+                $hashtags = $hashSnap['hashtags'];
+            }
+        }
+
         arsort($creatorMap);
         $activeCreators = [];
         foreach (array_slice($creatorMap, 0, 10, true) as $name => $count) {
@@ -783,17 +965,28 @@ public function mostEngagementData(Request $request)
 
         $lines[] = "=== AKHIR DATASET ===";
 
+        $resultData = [
+            'dataset' => implode("\n", $lines),
+            'summary' => [
+                'total_posts'    => count($posts),
+                'total_hashtags' => count($hashtags),
+                'sentiment'      => ['positive' => $positive, 'negative' => $negative, 'neutral' => $neutral],
+                'volume'         => $volume,
+            ],
+        ];
+
+        // Store AI analysis snapshot
+        if (count($posts) > 0 || $volume > 0) {
+            try {
+                ProjectApiSnapshot::storeSnapshot((int)$projectId, 'tiktok', 'ai_analysis_data', $startDate, $endDate, $resultData);
+            } catch (\Throwable $e) {
+                Log::warning('TikTok aiAnalysisData snapshot store failed: ' . $e->getMessage());
+            }
+        }
+
         return response()->json([
             'success' => true,
-            'data'    => [
-                'dataset' => implode("\n", $lines),
-                'summary' => [
-                    'total_posts'    => count($posts),
-                    'total_hashtags' => count($hashtags),
-                    'sentiment'      => ['positive' => $positive, 'negative' => $negative, 'neutral' => $neutral],
-                    'volume'         => $volume,
-                ],
-            ],
+            'data'    => $resultData,
         ]);
 
     } catch (\Exception $e) {
