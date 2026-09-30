@@ -946,7 +946,7 @@ function makeEChart(id) {
 }
 
 /* ══ STATE ══ */
-let allPosts = [], filteredPosts = [], currentFilter = 'all', currentPage = 1;
+let allData = {}, allPosts = [], filteredPosts = [], currentFilter = 'all', currentPage = 1;
 
 /* ══ EMOTION DETECTION ══
    Sama dengan TikTok: hanya scan content, tidak scan title
@@ -965,10 +965,32 @@ function detectEmotion(post) {
 }
 
 function getEmoCounts(posts) {
+    if (!posts && allData && allData.emotions) {
+        const c = {}; EMOTIONS.forEach(e => c[e] = 0);
+        EMOTIONS.forEach(e => {
+            if (typeof allData.emotions[e] !== 'undefined') {
+                const v = allData.emotions[e];
+                c[e] = (typeof v === 'object' && v !== null) ? (parseInt(v.count) || 0) : (parseInt(v) || 0);
+            }
+        });
+        if (Object.values(c).some(v => v > 0)) return c;
+    }
     const c = {};
     EMOTIONS.forEach(e => c[e] = 0);
-    (posts || allPosts).forEach(p => c[p.emotion] = (c[p.emotion] || 0) + 1);
+    (posts || allPosts).forEach(p => {
+        const e = (p.emotion || '').toLowerCase();
+        if (EMOTIONS.includes(e)) c[e] = (c[e] || 0) + 1;
+    });
     return c;
+}
+
+function getTotalPosts() {
+    if (allData && allData.summary && allData.summary.total_posts) {
+        return allData.summary.total_posts;
+    }
+    const c = getEmoCounts();
+    const sum = Object.values(c).reduce((a, b) => a + b, 0);
+    return sum || allPosts.length;
 }
 
 /* ══ FIELD HELPERS — YouTube specific ══ */
@@ -1024,7 +1046,7 @@ const FEATab = {
         currentPage   = 1;
         document.querySelectorAll('.fea-tab-btn').forEach(b => b.classList.remove('active'));
         if (btn) btn.classList.add('active');
-        filteredPosts = filter === 'all' ? [...allPosts] : allPosts.filter(p => p.emotion === filter);
+        filteredPosts = filter === 'all' ? [...allPosts] : allPosts.filter(p => (p.emotion || '').toLowerCase() === filter);
         FEAData.renderList();
         const lb = _$('listBadge');
         if (lb) lb.textContent = numK(filteredPosts.length) + ' posts';
@@ -1042,20 +1064,26 @@ const FEAData = {
                 if (el) el.textContent = '—';
             });
             if (_$('listEl')) _$('listEl').innerHTML = emptyHtml('Pilih project terlebih dahulu');
+            ['barLoading','radarLoading','donutLoading','trendsLoading'].forEach(hideLd);
             return;
         }
         if (this._abort) this._abort.abort();
         this._abort = new AbortController();
 
         const rows = parseInt(_$('rowsSel')?.value || '100');
-        const url  = `/mk/api/youtube/most-viewed-posts?project_id=${FEACfg.pid}&start_date=${FEACfg.sd}&end_date=${FEACfg.ed}&sub=postbyview&rows=${rows}`;
+        const url  = `/mk/api/youtube/emotion-analysis?project_id=${FEACfg.pid}&start_date=${FEACfg.sd}&end_date=${FEACfg.ed}&rows=${rows}`;
 
         try {
             const res  = await fetch(url, { signal: this._abort.signal });
             const json = await res.json();
             if (!json.success) throw new Error(json.error || 'Failed');
 
-            allPosts      = (json.data || []).map(p => ({ ...p, emotion: detectEmotion(p) }));
+            allData       = json.data || {};
+            const rawPosts= allData.posts || [];
+            allPosts      = rawPosts.map(p => ({
+                ...p,
+                emotion: (p.emotion && EMOTIONS.includes(p.emotion.toLowerCase())) ? p.emotion.toLowerCase() : detectEmotion(p)
+            }));
             filteredPosts = [...allPosts];
             currentPage   = 1;
 
@@ -1082,7 +1110,7 @@ const FEAData = {
     },
 
     reload() {
-        allPosts = []; filteredPosts = []; currentFilter = 'all'; currentPage = 1;
+        allData = {}; allPosts = []; filteredPosts = []; currentFilter = 'all'; currentPage = 1;
         document.querySelectorAll('.fea-tab-btn').forEach(b => b.classList.remove('active'));
         _$('tab-all')?.classList.add('active');
         this.loadAll();
@@ -1098,7 +1126,7 @@ const FEAData = {
 
     _updateChips() {
         const counts = getEmoCounts();
-        const el = _$('chip-all'); if (el) el.textContent = numK(allPosts.length);
+        const el = _$('chip-all'); if (el) el.textContent = numK(getTotalPosts());
         EMOTIONS.forEach(e => {
             const chip = _$('chip-' + e); if (chip) chip.textContent = numK(counts[e] || 0);
         });
@@ -1213,16 +1241,15 @@ const FEAChart = {
         this._trendsType = t;
         document.querySelectorAll('#trendsTypeToggle .fea-toggle-btn')
             .forEach(b => b.classList.toggle('active', b.dataset.type === t));
-        if (this._trendsItems.length) this._doRenderTrends(this._trendsItems, t);
+        this.renderTrends();
     },
 
     renderBar() {
         hideLd('barLoading');
-        if (!allPosts.length) return;
         const counts = getEmoCounts();
+        const total  = getTotalPosts() || 1;
         const labels = EMOTIONS.map(e => e.charAt(0).toUpperCase() + e.slice(1));
         const data   = EMOTIONS.map(e => counts[e] || 0);
-        const total  = allPosts.length || 1;
         const el = _$('barBadge'); if (el) el.textContent = numK(total) + ' posts';
 
         makeApex('barChart', {
@@ -1234,12 +1261,12 @@ const FEAChart = {
                     dataPointSelection: (e, ctx, cfg) => {
                         const emo = EMOTIONS[cfg.dataPointIndex];
                         if (!emo) return;
-                        FEAPanel.open(allPosts.filter(p => p.emotion === emo), emo);
+                        FEAPanel.open(allPosts.filter(p => (p.emotion || '').toLowerCase() === emo), emo);
                     },
                     click: (_, ctx, cfg) => {
                         const emo = EMOTIONS[cfg.dataPointIndex];
                         if (!emo) return;
-                        FEAPanel.open(allPosts.filter(p => p.emotion === emo), emo);
+                        FEAPanel.open(allPosts.filter(p => (p.emotion || '').toLowerCase() === emo), emo);
                     }
                 }
             },
@@ -1250,7 +1277,6 @@ const FEAChart = {
             xaxis       : { categories: labels, axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' }, rotate: -20 } },
             yaxis       : { labels: { formatter: v => numK(v), style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } }, axisBorder: { show: false }, axisTicks: { show: false } },
             grid        : { borderColor: 'rgba(226,232,240,.55)', strokeDashArray: 3, xaxis: { lines: { show: false } }, padding: { top: 20, right: 8, bottom: 0, left: 4 } },
-            /* ── sama dengan TikTok: solid fill ── */
             fill        : { type: 'solid', opacity: 1 },
             tooltip     : {
                 shared: false, intersect: true, style: { fontFamily: 'inherit', fontSize: '12px' },
@@ -1262,7 +1288,6 @@ const FEAChart = {
 
     renderRadar() {
         hideLd('radarLoading');
-        if (!allPosts.length) return;
         const counts = getEmoCounts();
         const max    = Math.max(...Object.values(counts), 1);
         const chart  = makeEChart('radarChart');
@@ -1313,7 +1338,7 @@ const FEAChart = {
         chart.on('click', params => {
             if (!params.name) return;
             const emo = params.name.toLowerCase();
-            if (EMOTIONS.includes(emo)) FEAPanel.open(allPosts.filter(p => p.emotion === emo), emo);
+            if (EMOTIONS.includes(emo)) FEAPanel.open(allPosts.filter(p => (p.emotion || '').toLowerCase() === emo), emo);
         });
     },
 
@@ -1329,11 +1354,11 @@ const FEAChart = {
             if (emptyEl) emptyEl.style.display = 'flex';
             return;
         }
-        const total = top5.reduce((s, x) => s + x.count, 0);
+        const total = getTotalPosts();
 
         const legEl = _$('donutLegend');
         if (legEl) legEl.innerHTML = top5.map((x, i) =>
-            `<div class="donut-leg-item"><span class="donut-dot" style="background:${DONUT_COLORS[i]};"></span>${x.emo.charAt(0).toUpperCase() + x.emo.slice(1)} · ${numF(x.count)}</div>`
+            `<div class="donut-leg-item" onclick="FEAPanel.open(allPosts.filter(p => (p.emotion || '').toLowerCase() === '${x.emo}'), '${x.emo}')"><span class="donut-dot" style="background:${DONUT_COLORS[i]};"></span>${x.emo.charAt(0).toUpperCase() + x.emo.slice(1)} · ${numF(x.count)}</div>`
         ).join('');
 
         loadEl.style.display = 'none';
@@ -1415,27 +1440,63 @@ const FEAChart = {
         });
         chart.on('click', p => {
             const x = top5[p.dataIndex];
-            if (x) FEAPanel.open(allPosts.filter(post => post.emotion === x.emo), x.emo);
+            if (x) FEAPanel.open(allPosts.filter(post => (post.emotion || '').toLowerCase() === x.emo), x.emo);
         });
     },
 
     renderTrends() {
         hideLd('trendsLoading');
-        if (!allPosts.length) return;
-        this._trendsItems = allPosts;
-        const tb = _$('trendsBadge'); if (tb) tb.textContent = numK(allPosts.length) + ' posts';
-        this._doRenderTrends(allPosts, this._trendsType);
-    },
+        const total = getTotalPosts();
+        const tb = _$('trendsBadge'); if (tb) tb.textContent = numK(total) + ' posts';
 
-    _doRenderTrends(posts, type) {
-        const dateMap = {};
-        posts.forEach(p => {
-            const d = (p.date_created || '').substring(0, 10); if (!d) return;
-            if (!dateMap[d]) { dateMap[d] = {}; EMOTIONS.forEach(e => dateMap[d][e] = 0); }
-            dateMap[d][p.emotion] = (dateMap[d][p.emotion] || 0) + 1;
-        });
+        const apiTrend = allData.trend || [];
+        let dateMap = {};
+
+        if (Array.isArray(apiTrend) && apiTrend.length > 0) {
+            apiTrend.forEach(t => {
+                const d = t.date; if (!d) return;
+                if (!dateMap[d]) { dateMap[d] = {}; EMOTIONS.forEach(e => dateMap[d][e] = 0); }
+                if (t.emotion) {
+                    const emo = (t.emotion || '').toLowerCase();
+                    if (EMOTIONS.includes(emo)) dateMap[d][emo] = (dateMap[d][emo] || 0) + (t.count || 0);
+                } else {
+                    EMOTIONS.forEach(e => {
+                        if (typeof t[e] !== 'undefined') dateMap[d][e] = (dateMap[d][e] || 0) + (parseInt(t[e]) || 0);
+                    });
+                }
+            });
+        }
+
+        const uniqueDates = Object.keys(dateMap).length;
+        if (uniqueDates < 2 && allPosts.length > 0) {
+            dateMap = {};
+            allPosts.forEach(p => {
+                const d = (p.date_created || '').substring(0, 10);
+                if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+                if (!dateMap[d]) { dateMap[d] = {}; EMOTIONS.forEach(e => dateMap[d][e] = 0); }
+                const emo = (p.emotion || '').toLowerCase();
+                if (EMOTIONS.includes(emo)) dateMap[d][emo] = (dateMap[d][emo] || 0) + 1;
+            });
+        }
+
+        const rangeStart = FEACfg.sd, rangeEnd = FEACfg.ed;
+        let filledDates = 0;
+        if (rangeStart && rangeEnd) {
+            const s = new Date(rangeStart), e = new Date(rangeEnd);
+            for (let cur = new Date(s); cur <= e && filledDates < 366; cur.setDate(cur.getDate() + 1), filledDates++) {
+                const dk = cur.toISOString().split('T')[0];
+                if (!dateMap[dk]) { dateMap[dk] = {}; EMOTIONS.forEach(em => dateMap[dk][em] = 0); }
+            }
+        }
+
         const dates = Object.keys(dateMap).sort();
         if (!dates.length) return;
+
+        this._doRenderTrends(dateMap, dates, this._trendsType);
+    },
+
+    _doRenderTrends(dateMap, dates, type) {
+        if (!dates || !dates.length) return;
 
         const seriesData = EMOTIONS.map(e => ({
             name: e.charAt(0).toUpperCase() + e.slice(1),
@@ -1447,21 +1508,21 @@ const FEAChart = {
                 type: type === 'area' ? 'area' : 'line', height: 300, fontFamily: 'inherit', background: 'transparent', toolbar: { show: false }, zoom: { enabled: false },
                 events: {
                     mounted: () => hideLd('trendsLoading'),
-                    markerClick: (e,ctx,{seriesIndex,dataPointIndex}) => {
-                        const emo=EMOTIONS[seriesIndex],date=dates[dataPointIndex];if(!emo)return;
-                        const pool=allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo&&(p.date_created||'').substring(0,10)===date);
-                        FEAPanel.open(pool.length?pool:allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo),emo);
+                    markerClick: (e, ctx, { seriesIndex, dataPointIndex }) => {
+                        const emo = EMOTIONS[seriesIndex], date = dates[dataPointIndex]; if (!emo) return;
+                        const pool = allPosts.filter(p => (p.emotion || '').toLowerCase() === emo && (p.date_created || '').substring(0, 10) === date);
+                        FEAPanel.open(pool.length ? pool : allPosts.filter(p => (p.emotion || '').toLowerCase() === emo), emo);
                     },
-                    dataPointSelection:(e,ctx,cfg)=>{
-                        const emo=EMOTIONS[cfg.seriesIndex],date=dates[cfg.dataPointIndex];if(!emo)return;
-                        const pool=allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo&&(p.date_created||'').substring(0,10)===date);
-                        FEAPanel.open(pool.length?pool:allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo),emo);
+                    dataPointSelection: (e, ctx, cfg) => {
+                        const emo = EMOTIONS[cfg.seriesIndex], date = dates[cfg.dataPointIndex]; if (!emo) return;
+                        const pool = allPosts.filter(p => (p.emotion || '').toLowerCase() === emo && (p.date_created || '').substring(0, 10) === date);
+                        FEAPanel.open(pool.length ? pool : allPosts.filter(p => (p.emotion || '').toLowerCase() === emo), emo);
                     },
-                    mouseMove:(e,ctx,cfg)=>{const el=ctx?.el;if(el)el.style.cursor=(cfg.dataPointIndex>=0||cfg.seriesIndex>=0)?'pointer':'default';}
+                    mouseMove: (e, ctx, cfg) => { const el = ctx?.el; if (el) el.style.cursor = (cfg.dataPointIndex >= 0 || cfg.seriesIndex >= 0) ? 'pointer' : 'default'; }
                 }
             },
             series: seriesData, colors: EMO_COLORS_ARR,
-            xaxis: { categories:dates, axisBorder: { show: false }, axisTicks: { show: false }, labels: { show: true, style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } } },
+            xaxis: { categories: dates, axisBorder: { show: false }, axisTicks: { show: false }, labels: { show: true, style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } } },
             yaxis: { labels: { formatter: v => numK(v), style: { fontSize: '10px', fontWeight: 600, colors: '#94A3B8' } }, axisBorder: { show: false }, axisTicks: { show: false } },
             stroke: { curve: 'smooth', width: 2 },
             fill: type === 'area' ? { type: 'gradient', gradient: { opacityFrom: .35, opacityTo: .05, shadeIntensity: .1 } } : { type: 'solid', opacity: 1 },
