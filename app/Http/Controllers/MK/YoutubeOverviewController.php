@@ -1086,7 +1086,9 @@ class YoutubeOverviewController extends Controller
             $comments = (int) $v['comments'];
             $eng      = $likes + $comments;
 
-            $initials = urlencode($this->getInitials($v['name']));
+            $initials   = urlencode($this->getInitials($v['name']));
+            $avatar     = 'https://ui-avatars.com/api/?name=' . $initials . '&background=' . ($v['bg'] ?? 'FF0000') . '&color=fff&size=128';
+            $thumb      = 'https://img.youtube.com/vi/' . $vid . '/mqdefault.jpg';
             $channelUrl = !empty($v['handle']) ? ('https://www.youtube.com/' . (str_starts_with($v['handle'], '@') ? $v['handle'] : '@' . $v['handle'])) : 'https://www.youtube.com';
             $postUrl    = $channelUrl;
 
