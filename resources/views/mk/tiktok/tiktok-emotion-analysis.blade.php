@@ -1019,14 +1019,16 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
                 if (this._abort) this._abort.abort();
                 this._abort = new AbortController();
                 const rows = parseInt(_$('rowsSel')?.value || '100');
-                const url  = `/mk/api/tiktok/most-engagement?project_id=${FEACfg.pid}&start_date=${FEACfg.sd}&end_date=${FEACfg.ed}&sub=postbyview&rows=${rows}`;
+                const url  = `/mk/api/tiktok/emotion-analysis?project_id=${FEACfg.pid}&start_date=${FEACfg.sd}&end_date=${FEACfg.ed}`;
 
                 try {
                     const res  = await fetch(url, { signal: this._abort.signal });
                     const json = await res.json();
                     if (!json.success) throw new Error(json.error || 'Failed');
 
-                    allPosts      = (json.data || []).map(p => ({ ...p, emotion: detectEmotion(p) }));
+                    const rawData = json.data || {};
+                    const rawPosts = rawData.posts || rawData.data || json.data || [];
+                    allPosts      = (Array.isArray(rawPosts) ? rawPosts : []).map(p => ({ ...p, emotion: detectEmotion(p) }));
                     filteredPosts = [...allPosts];
                     currentPage   = 1;
 
