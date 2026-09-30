@@ -491,7 +491,7 @@
     const ECharts={};
     function makeEChart(id){if(ECharts[id]){try{ECharts[id].dispose();}catch(e){}}const el=_$(id);if(!el)return null;el.style.display='block';const c=echarts.init(el,null,{renderer:'svg'});ECharts[id]=c;window.addEventListener('resize',()=>{try{c.resize();}catch(e){}});return c;}
 
-    let allPosts=[],filteredPosts=[],currentFilter='all',currentPage=1;
+    let allData={},allPosts=[],filteredPosts=[],currentFilter='all',currentPage=1;
 
     function detectEmotion(post){
         const raw=(post.emotion||post.emotion_str||'').toLowerCase().trim();
@@ -503,7 +503,33 @@
         for(const[emo,kws]of Object.entries(EMO_KW)){if(kws.some(k=>combined.includes(k)))return emo;}
         if(sent.includes('pos'))return 'joy';if(sent.includes('neg'))return 'anger';return 'trust';
     }
-    function getEmoCounts(posts){const c={};EMOTIONS.forEach(e=>c[e]=0);(posts||allPosts).forEach(p=>c[p.emotion]=(c[p.emotion]||0)+1);return c;}
+    function getEmoCounts(posts){
+        if(!posts && allData && allData.emotions){
+            const c={};EMOTIONS.forEach(e=>c[e]=0);
+            EMOTIONS.forEach(e=>{
+                if(typeof allData.emotions[e] !== 'undefined') {
+                    const v = allData.emotions[e];
+                    c[e] = (typeof v === 'object' && v !== null) ? (parseInt(v.count)||0) : (parseInt(v)||0);
+                }
+            });
+            if(Object.values(c).some(v=>v>0))return c;
+        }
+        const c={};EMOTIONS.forEach(e=>c[e]=0);
+        (posts||allPosts).forEach(p=>{
+            const e=(p.emotion||'').toLowerCase();
+            if(EMOTIONS.includes(e)) c[e]=(c[e]||0)+1;
+        });
+        return c;
+    }
+
+    function getTotalPosts(){
+        if(allData && allData.summary && allData.summary.total_posts){
+            return allData.summary.total_posts;
+        }
+        const c=getEmoCounts();
+        const sum=Object.values(c).reduce((a,b)=>a+b,0);
+        return sum || allPosts.length;
+    }
 
     /* Instagram-specific helpers */
     function getName(item){
@@ -521,24 +547,52 @@
     function avHtml(item){const av=getAvatar(item);const dummy='/assets/images/user/dummy.jpg';return(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.src='${dummy}'">`:`<img src="${dummy}">`;}
     function emptyHtml(msg){return `<div class="chart-empty" style="padding:40px 20px;"><i class="ph ph-folder-open"></i><span>${esc(msg)}</span></div>`;}
 
-    const FEATab={show(filter,btn){currentFilter=filter;currentPage=1;document.querySelectorAll('.fea-tab-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');filteredPosts=filter==='all'?[...allPosts]:allPosts.filter(p=>p.emotion===filter);FEAData.renderList();const lb=_$('listBadge');if(lb)lb.textContent=numK(filteredPosts.length)+' posts';}};
+    const FEATab={
+        show(filter,btn){
+            currentFilter=filter;currentPage=1;
+            document.querySelectorAll('.fea-tab-btn').forEach(b=>b.classList.remove('active'));
+            if(btn)btn.classList.add('active');
+            filteredPosts=filter==='all'?[...allPosts]:allPosts.filter(p=>(p.emotion||'').toLowerCase()===filter);
+            FEAData.renderList();
+            const lb=_$('listBadge');if(lb)lb.textContent=numK(filteredPosts.length)+' posts';
+        }
+    };
 
     const FEAData={
         _abort:null,
         async loadAll(){
-            if(!FEACfg.pid){['kpiJoy','kpiTrust','kpiAnger','kpiTotal'].forEach(id=>{const el=_$(id);if(el)el.textContent='—';});if(_$('listEl'))_$('listEl').innerHTML=emptyHtml('Pilih project terlebih dahulu');return;}
+            if(!FEACfg.pid){
+                ['kpiJoy','kpiTrust','kpiFear','kpiSurprise','kpiSadness','kpiDisgust','kpiAnger','kpiAnticipation'].forEach(id=>{const el=_$(id);if(el)el.textContent='—';});
+                if(_$('listEl'))_$('listEl').innerHTML=emptyHtml('Pilih project terlebih dahulu');
+                ['barLoading','radarLoading','donutLoading','trendsLoading'].forEach(hideLd);
+                return;
+            }
             if(this._abort)this._abort.abort();this._abort=new AbortController();
             const rows=parseInt(_$('rowsSel')?.value||'100');
-            const url=`/mk/api/instagram/most-viewed-posts?project_id=${FEACfg.pid}&start_date=${FEACfg.sd}&end_date=${FEACfg.ed}&sub=postbylike&rows=${rows}`;
+            const url=`/mk/api/instagram/emotion-analysis?project_id=${FEACfg.pid}&start_date=${FEACfg.sd}&end_date=${FEACfg.ed}&rows=${rows}`;
             try{
-                const res=await fetch(url,{signal:this._abort.signal});const json=await res.json();
+                const res=await fetch(url,{signal:this._abort.signal});
+                const json=await res.json();
                 if(!json.success)throw new Error(json.error||'Failed');
-                allPosts=(json.data||[]).map(p=>({...p,emotion:detectEmotion(p)}));filteredPosts=[...allPosts];currentPage=1;
+                allData=json.data||{};
+                const rawPosts=allData.posts||[];
+                allPosts=rawPosts.map(p=>({...p,emotion:(p.emotion&&EMOTIONS.includes(p.emotion.toLowerCase()))?p.emotion.toLowerCase():detectEmotion(p)}));
+                filteredPosts=[...allPosts];currentPage=1;
                 this._updateKPIs();this._updateChips();this.renderList();
                 requestAnimationFrame(()=>{FEAChart.renderBar();requestAnimationFrame(()=>{FEAChart.renderRadar();requestAnimationFrame(()=>{FEAChart.renderDonut();requestAnimationFrame(()=>FEAChart.renderTrends());});});});
-            }catch(err){if(err.name==='AbortError')return;console.error('[FEA]',err);if(_$('listEl'))_$('listEl').innerHTML=emptyHtml('Gagal memuat: '+err.message);['barLoading','radarLoading','donutLoading','trendsLoading'].forEach(hideLd);}
+            }catch(err){
+                if(err.name==='AbortError')return;
+                console.error('[FEA]',err);
+                if(_$('listEl'))_$('listEl').innerHTML=emptyHtml('Gagal memuat: '+err.message);
+                ['barLoading','radarLoading','donutLoading','trendsLoading'].forEach(hideLd);
+            }
         },
-        reload(){allPosts=[];filteredPosts=[];currentFilter='all';currentPage=1;document.querySelectorAll('.fea-tab-btn').forEach(b=>b.classList.remove('active'));_$('tab-all')?.classList.add('active');this.loadAll();},
+        reload(){
+            allData={};allPosts=[];filteredPosts=[];currentFilter='all';currentPage=1;
+            document.querySelectorAll('.fea-tab-btn').forEach(b=>b.classList.remove('active'));
+            _$('tab-all')?.classList.add('active');
+            this.loadAll();
+        },
         _updateKPIs(){
             const c=getEmoCounts();
             EMOTIONS.forEach(e => {
@@ -546,14 +600,22 @@
                 if(el) el.textContent = numF(c[e]||0);
             });
         },
-        _updateChips(){const c=getEmoCounts();const el=_$('chip-all');if(el)el.textContent=numK(allPosts.length);EMOTIONS.forEach(e=>{const chip=_$('chip-'+e);if(chip)chip.textContent=numK(c[e]||0);});},
+        _updateChips(){
+            const c=getEmoCounts();
+            const el=_$('chip-all');
+            if(el)el.textContent=numK(getTotalPosts());
+            EMOTIONS.forEach(e=>{
+                const chip=_$('chip-'+e);
+                if(chip)chip.textContent=numK(c[e]||0);
+            });
+        },
         renderList(){
             const listEl=_$('listEl'),pagEl=_$('pagEl');if(!listEl)return;
             if(!filteredPosts.length){listEl.innerHTML=emptyHtml('Tidak ada postingan untuk filter ini');if(pagEl)pagEl.innerHTML='';return;}
             const pp=FEACfg.perPage,total=filteredPosts.length,pages=Math.ceil(total/pp),start=(currentPage-1)*pp,page=filteredPosts.slice(start,start+pp);
             listEl.innerHTML=`<div class="fea-post-list">${page.map((p,i)=>this._postHtml(p,start+i)).join('')}</div>`;
             if(pagEl)pagEl.innerHTML=pages>1?this._pagHtml(currentPage,pages,total,start+1,Math.min(start+pp,total)):'';
-            listEl.querySelectorAll('.fea-post').forEach(el=>{el.addEventListener('click',()=>{try{const item=JSON.parse(decodeURIComponent(el.dataset.item));FEAPanel.open(filteredPosts,item.emotion||'trust');FEADetail.open(item);}catch(e){console.warn(e);}});});
+            listEl.querySelectorAll('.fea-post').forEach(el=>{el.addEventListener('click',()=>{try{const item=JSON.parse(decodeURIComponent(el.dataset.item));const emo=(item.emotion||'trust').toLowerCase();const pool=allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo);FEAPanel.open(pool.length?pool:allPosts,emo);FEADetail.open(item);}catch(e){console.warn(e);}});});
         },
         _postHtml(post,gi){
             const rank=gi+1,rkCls=rank<=3?'--'+rank:'',name=getName(post),color=getColor(post),thumb=getThumbnail(post),sent=normSent(post);
@@ -569,18 +631,83 @@
         goPage(p){const pages=Math.ceil(filteredPosts.length/FEACfg.perPage);if(p<1||p>pages)return;currentPage=p;this.renderList();_$('listEl')?.scrollIntoView({behavior:'smooth',block:'start'});}
     };
 
-    /* Charts - identical structure to original */
+    /* Charts */
     const FEAChart={
         _trendsType:'line',_trendsItems:[],
-        setTrendsType(t){this._trendsType=t;document.querySelectorAll('#trendsTypeToggle .fea-toggle-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===t));if(this._trendsItems.length)this._doRenderTrends(this._trendsItems,t);},
-        renderBar(){hideLd('barLoading');if(!allPosts.length)return;const counts=getEmoCounts(),labels=EMOTIONS.map(e=>e.charAt(0).toUpperCase()+e.slice(1)),data=EMOTIONS.map(e=>counts[e]||0),colors=EMOTIONS.map(e=>EMO_COLORS[e]),total=allPosts.length||1;const el=_$('barBadge');if(el)el.textContent=numK(total)+' posts';
-            makeApex('barChart',{chart:{type:'bar',height:300,fontFamily:'inherit',background:'transparent',toolbar:{show:false},zoom:{enabled:false},events:{mounted:()=>hideLd('barLoading'),dataPointSelection:(e,ctx,cfg)=>{const emo=EMOTIONS[cfg.dataPointIndex];if(emo)FEAPanel.open(allPosts.filter(p=>p.emotion===emo),emo);},click:(_,ctx,cfg)=>{const emo=EMOTIONS[cfg.dataPointIndex];if(emo)FEAPanel.open(allPosts.filter(p=>p.emotion===emo),emo);}}},series:[{name:'Posts',data}],colors,plotOptions:{bar:{borderRadius:5,columnWidth:'58%',distributed:true,dataLabels:{position:'top'}}},dataLabels:{enabled:true,formatter:v=>numK(v),offsetY:-16,style:{fontSize:'10px',fontWeight:'800',colors:EMOTIONS.map(e=>EMO_COLORS[e])},background:{enabled:false}},xaxis:{categories:labels,axisBorder:{show:false},axisTicks:{show:false},labels:{style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'},rotate:-20}},yaxis:{labels:{formatter:v=>numK(v),style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},axisBorder:{show:false},axisTicks:{show:false}},grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}},padding:{top:20,right:8,bottom:0,left:4}},fill:{type:'gradient',gradient:{type:'vertical',shadeIntensity:.2,opacityFrom:1,opacityTo:.7,stops:[0,100]}},tooltip:{shared:false,intersect:true,style:{fontFamily:'inherit',fontSize:'12px'},y:{formatter:(v)=>`${numF(v)} posts (${Math.round((v/total)*100)}%)`}},legend:{show:false}});},
-        renderRadar(){hideLd('radarLoading');if(!allPosts.length)return;const counts=getEmoCounts(),max=Math.max(...Object.values(counts),1);const chart=makeEChart('radarChart');if(!chart)return;
+        setTrendsType(t){this._trendsType=t;document.querySelectorAll('#trendsTypeToggle .fea-toggle-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===t));this.renderTrends();},
+        renderBar(){
+            hideLd('barLoading');
+            const counts=getEmoCounts(), total=getTotalPosts()||1;
+            const labels=EMOTIONS.map(e=>e.charAt(0).toUpperCase()+e.slice(1));
+            const data=EMOTIONS.map(e=>counts[e]||0);
+            const colors=EMOTIONS.map(e=>EMO_COLORS[e]);
+            const el=_$('barBadge');if(el)el.textContent=numK(total)+' posts';
+            makeApex('barChart',{
+                chart:{
+                    type:'bar',height:300,fontFamily:'inherit',background:'transparent',toolbar:{show:false},zoom:{enabled:false},
+                    events:{
+                        mounted:()=>hideLd('barLoading'),
+                        dataPointSelection:(e,ctx,cfg)=>{const emo=EMOTIONS[cfg.dataPointIndex];if(emo)FEAPanel.open(allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo),emo);},
+                        click:(_,ctx,cfg)=>{if(cfg.dataPointIndex<0)return;const emo=EMOTIONS[cfg.dataPointIndex];if(emo)FEAPanel.open(allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo),emo);}
+                    }
+                },
+                series:[{name:'Posts',data}],colors,
+                plotOptions:{bar:{borderRadius:5,columnWidth:'58%',distributed:true,dataLabels:{position:'top'}}},
+                dataLabels:{enabled:true,formatter:v=>numK(v),offsetY:-16,style:{fontSize:'10px',fontWeight:'800',colors:EMOTIONS.map(e=>EMO_COLORS[e])},background:{enabled:false}},
+                xaxis:{categories:labels,axisBorder:{show:false},axisTicks:{show:false},labels:{style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'},rotate:-20}},
+                yaxis:{labels:{formatter:v=>numK(v),style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},axisBorder:{show:false},axisTicks:{show:false}},
+                grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}},padding:{top:20,right:8,bottom:0,left:4}},
+                fill:{type:'gradient',gradient:{type:'vertical',shadeIntensity:.2,opacityFrom:1,opacityTo:.7,stops:[0,100]}},
+                tooltip:{shared:false,intersect:true,style:{fontFamily:'inherit',fontSize:'12px'},y:{formatter:(v)=>`${numF(v)} posts (${Math.round((v/total)*100)}%)`}},
+                legend:{show:false}
+            });
+        },
+        renderRadar(){
+            hideLd('radarLoading');
+            const counts=getEmoCounts(),max=Math.max(...Object.values(counts),1);
+            const chart=makeEChart('radarChart');if(!chart)return;
             window._feaRadarChart=chart;
-            chart.setOption({animation:true,animationDuration:800,backgroundColor:'transparent',tooltip:{show:true,backgroundColor:'#1e293b',borderColor:'#334155',borderWidth:1,padding:[10,14],textStyle:{color:'#fff',fontFamily:'inherit',fontSize:12},formatter:params=>{if(!params.data)return '';const vals=params.data.value||[];return `<div style="min-width:180px;"><div style="font-weight:700;font-size:12px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.12);">Emotion Distribution</div>${EMOTIONS.map((e,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${EMO_COLORS[e]};"></span><span style="font-size:12px;color:#94a3b8;">${e.charAt(0).toUpperCase()+e.slice(1)}</span></div><span style="font-size:12px;font-weight:700;">${numF(vals[i]||0)}</span></div>`).join('')}</div>`;}},radar:{indicator:EMOTIONS.map(e=>({name:e.charAt(0).toUpperCase()+e.slice(1),max})),shape:'polygon',radius:'62%',center:['50%','50%'],axisName:{fontFamily:'inherit',fontSize:11,fontWeight:'700',color:'#475569'},splitLine:{lineStyle:{color:'#e2e8f0'}},axisLine:{lineStyle:{color:'#e2e8f0'}},splitArea:{show:true,areaStyle:{color:['rgba(248,250,252,0.8)','#fff']}}},series:[{type:'radar',data:[{value:EMOTIONS.map(e=>counts[e]||0),name:'Emotion',areaStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:1,colorStops:[{offset:0,color:'rgba(3,128,71,0.2)'},{offset:1,color:'rgba(3,128,71,0.05)'}]}},lineStyle:{color:'#038047',width:2.5},symbol:'circle',symbolSize:6,itemStyle:{color:EMOTIONS.map(e=>EMO_COLORS[e]),borderColor:'#fff',borderWidth:2}}]}]});
-            chart.on('click',params=>{if(!params.name)return;const emo=params.name.toLowerCase();if(EMOTIONS.includes(emo))FEAPanel.open(allPosts.filter(p=>p.emotion===emo),emo);});},
-        renderDonut(){const loadEl=_$('donutLoading'),chartEl=_$('donutChart'),emptyEl=_$('donutEmpty');if(!loadEl||!chartEl)return;const counts=getEmoCounts();const sorted=EMOTIONS.map(e=>({emo:e,count:counts[e]||0})).sort((a,b)=>b.count-a.count);const top5=sorted.slice(0,5).filter(x=>x.count>0);if(!top5.length){loadEl.style.display='none';if(emptyEl)emptyEl.style.display='flex';return;}const total=top5.reduce((s,x)=>s+x.count,0);const legEl=_$('donutLegend');if(legEl)legEl.innerHTML=top5.map((x,i)=>`<div class="donut-leg-item"><span class="donut-dot" style="background:${DONUT_COLORS[i]};"></span>${x.emo.charAt(0).toUpperCase()+x.emo.slice(1)} · ${numF(x.count)}</div>`).join('');loadEl.style.display='none';if(emptyEl)emptyEl.style.display='none';if(window.__feaDonut){try{window.__feaDonut.dispose();}catch(e){}}chartEl.style.display='block';const chart=echarts.init(chartEl,null,{renderer:'canvas'});window.__feaDonut=chart;window.addEventListener('resize',()=>{try{chart.resize();}catch(e){}});
-            chart.setOption({backgroundColor:'transparent',animation:true,animationDuration:1000,series:[{type:'pie',radius:['38%','62%'],center:['50%','50%'],avoidLabelOverlap:true,minAngle:8,itemStyle:{borderColor:'#fff',borderWidth:3},label:{show:true,position:'outside',alignTo:'edge',edgeDistance:20,lineHeight:18,fontSize:11,fontFamily:'inherit',color:'#334155',fontWeight:'500',formatter:p=>`{title|${p.name}}\n({val|${numF(p.value)}} posts, {pct|${p.percent.toFixed(1)}%})`,rich:{title:{fontSize:11,fontWeight:'700',color:'#1e293b',lineHeight:18},val:{fontSize:11,fontWeight:'700',color:'#038047'},pct:{fontSize:11,fontWeight:'600',color:'#64748b'}}},labelLine:{show:true,length:18,length2:24,smooth:.3,lineStyle:{width:1.5,color:'#94A3B8'}},emphasis:{scale:false,itemStyle:{borderWidth:3,borderColor:'#fff'},label:{show:true}},data:top5.map((x,i)=>({name:x.emo.charAt(0).toUpperCase()+x.emo.slice(1),value:x.count,_emo:x.emo,itemStyle:{color:DONUT_COLORS[i]}}))}],graphic:[{type:'text',left:'center',top:'46%',z:100,style:{text:numK(total),fill:'#0f172a',font:'800 28px inherit',textAlign:'center'}},{type:'text',left:'center',top:'54%',z:100,style:{text:'TOTAL POSTS',fill:'#94a3b8',font:'600 9px inherit',textAlign:'center'}}]});
+            chart.setOption({
+                animation:true,animationDuration:800,backgroundColor:'transparent',
+                tooltip:{
+                    show:true,backgroundColor:'#1e293b',borderColor:'#334155',borderWidth:1,padding:[10,14],textStyle:{color:'#fff',fontFamily:'inherit',fontSize:12},
+                    formatter:params=>{if(!params.data)return '';const vals=params.data.value||[];return `<div style="min-width:180px;"><div style="font-weight:700;font-size:12px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.12);">Emotion Distribution</div>${EMOTIONS.map((e,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0;"><div style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${EMO_COLORS[e]};"></span><span style="font-size:12px;color:#94a3b8;">${e.charAt(0).toUpperCase()+e.slice(1)}</span></div><span style="font-size:12px;font-weight:700;">${numF(vals[i]||0)}</span></div>`).join('')}</div>`;}
+                },
+                radar:{indicator:EMOTIONS.map(e=>({name:e.charAt(0).toUpperCase()+e.slice(1),max})),shape:'polygon',radius:'62%',center:['50%','50%'],axisName:{fontFamily:'inherit',fontSize:11,fontWeight:'700',color:'#475569'},splitLine:{lineStyle:{color:'#e2e8f0'}},axisLine:{lineStyle:{color:'#e2e8f0'}},splitArea:{show:true,areaStyle:{color:['rgba(248,250,252,0.8)','#fff']}}},
+                series:[{type:'radar',data:[{value:EMOTIONS.map(e=>counts[e]||0),name:'Emotion',areaStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:1,colorStops:[{offset:0,color:'rgba(3,128,71,0.2)'},{offset:1,color:'rgba(3,128,71,0.05)'}]}},lineStyle:{color:'#038047',width:2.5},symbol:'circle',symbolSize:6,itemStyle:{color:EMOTIONS.map(e=>EMO_COLORS[e]),borderColor:'#fff',borderWidth:2}}]}]
+            });
+            chart.on('click',params=>{if(!params.name)return;const emo=params.name.toLowerCase();if(EMOTIONS.includes(emo))FEAPanel.open(allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo),emo);});
+        },
+        renderDonut(){
+            const loadEl=_$('donutLoading'),chartEl=_$('donutChart'),emptyEl=_$('donutEmpty');
+            if(!loadEl||!chartEl)return;
+            const counts=getEmoCounts();
+            const sorted=EMOTIONS.map(e=>({emo:e,count:counts[e]||0})).sort((a,b)=>b.count-a.count);
+            const top5=sorted.slice(0,5).filter(x=>x.count>0);
+            if(!top5.length){loadEl.style.display='none';if(emptyEl)emptyEl.style.display='flex';return;}
+            const total=getTotalPosts() || top5.reduce((s,x)=>s+x.count,0);
+            const legEl=_$('donutLegend');
+            if(legEl)legEl.innerHTML=top5.map((x,i)=>`<div class="donut-leg-item" onclick="FEAPanel.open(allPosts.filter(p=>(p.emotion||'').toLowerCase()==='${x.emo}'),'${x.emo}')"><span class="donut-dot" style="background:${DONUT_COLORS[i]};"></span>${x.emo.charAt(0).toUpperCase()+x.emo.slice(1)} · ${numF(x.count)}</div>`).join('');
+            loadEl.style.display='none';if(emptyEl)emptyEl.style.display='none';
+            if(window.__feaDonut){try{window.__feaDonut.dispose();}catch(e){}}
+            chartEl.style.display='block';
+            const chart=echarts.init(chartEl,null,{renderer:'canvas'});
+            window.__feaDonut=chart;
+            window.addEventListener('resize',()=>{try{chart.resize();}catch(e){}});
+            chart.setOption({
+                backgroundColor:'transparent',animation:true,animationDuration:1000,
+                series:[{
+                    type:'pie',radius:['38%','62%'],center:['50%','50%'],avoidLabelOverlap:true,minAngle:8,itemStyle:{borderColor:'#fff',borderWidth:3},
+                    label:{show:true,position:'outside',alignTo:'edge',edgeDistance:20,lineHeight:18,fontSize:11,fontFamily:'inherit',color:'#334155',fontWeight:'500',formatter:p=>`{title|${p.name}}\n({val|${numF(p.value)}} posts, {pct|${p.percent.toFixed(1)}%})`,rich:{title:{fontSize:11,fontWeight:'700',color:'#1e293b',lineHeight:18},val:{fontSize:11,fontWeight:'700',color:'#038047'},pct:{fontSize:11,fontWeight:'600',color:'#64748b'}}},
+                    labelLine:{show:true,length:18,length2:24,smooth:.3,lineStyle:{width:1.5,color:'#94A3B8'}},
+                    emphasis:{scale:false,itemStyle:{borderWidth:3,borderColor:'#fff'},label:{show:true}},
+                    data:top5.map((x,i)=>({name:x.emo.charAt(0).toUpperCase()+x.emo.slice(1),value:x.count,_emo:x.emo,itemStyle:{color:DONUT_COLORS[i]}}))
+                }],
+                graphic:[
+                    {type:'text',left:'center',top:'46%',z:100,style:{text:numK(total),fill:'#0f172a',font:'800 28px inherit',textAlign:'center'}},
+                    {type:'text',left:'center',top:'54%',z:100,style:{text:'TOTAL POSTS',fill:'#94a3b8',font:'600 9px inherit',textAlign:'center'}}
+                ]
+            });
             /* hover tooltip */
             let _tt = document.getElementById('feaDonutTT');
             if (!_tt) {
@@ -607,23 +734,88 @@
                 if (x+tw>vw) x=e.clientX-tw; if (y+th>vh) y=e.clientY-th;
                 _tt.style.left=x+'px'; _tt.style.top=y+'px';
             });
-            chart.on('click',p=>{const x=top5[p.dataIndex];if(x)FEAPanel.open(allPosts.filter(post=>post.emotion===x.emo),x.emo);});},
-        renderTrends(){hideLd('trendsLoading');if(!allPosts.length)return;this._trendsItems=allPosts;const tb=_$('trendsBadge');if(tb)tb.textContent=numK(allPosts.length)+' posts';this._doRenderTrends(allPosts,this._trendsType);},
-        _doRenderTrends(posts,type){const dateMap={};posts.forEach(p=>{const d=(p.date_created||'').substring(0,10);if(!d)return;if(!dateMap[d]){dateMap[d]={};EMOTIONS.forEach(e=>dateMap[d][e]=0);}dateMap[d][p.emotion]=(dateMap[d][p.emotion]||0)+1;});const dates=Object.keys(dateMap).sort();if(!dates.length)return;
-            makeApex('trendsChart',{chart:{type:type==='area'?'area':'line',height:300,fontFamily:'inherit',background:'transparent',toolbar:{show:false},zoom:{enabled:false},events:{
-                mounted:()=>hideLd('trendsLoading'),
-                markerClick:(e,ctx,{seriesIndex,dataPointIndex})=>{
-                    const emo=EMOTIONS[seriesIndex],date=dates[dataPointIndex];if(!emo)return;
-                    const pool=allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo&&(p.date_created||'').substring(0,10)===date);
-                    FEAPanel.open(pool.length?pool:allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo),emo);
+            chart.on('click',p=>{const x=top5[p.dataIndex];if(x)FEAPanel.open(allPosts.filter(post=>(post.emotion||'').toLowerCase()===x.emo),x.emo);});
+        },
+        renderTrends(){
+            hideLd('trendsLoading');
+            const total = getTotalPosts();
+            const tb=_$('trendsBadge');
+            if(tb) tb.textContent=numK(total)+' posts';
+
+            const apiTrend = allData.trend || [];
+            let dateMap = {};
+
+            if (Array.isArray(apiTrend) && apiTrend.length > 0) {
+                apiTrend.forEach(t => {
+                    const d = t.date; if (!d) return;
+                    if (!dateMap[d]) { dateMap[d] = {}; EMOTIONS.forEach(e => dateMap[d][e] = 0); }
+                    if (t.emotion) {
+                        const emo = (t.emotion || '').toLowerCase();
+                        if (EMOTIONS.includes(emo)) dateMap[d][emo] = (dateMap[d][emo] || 0) + (t.count || 0);
+                    } else {
+                        EMOTIONS.forEach(e => {
+                            if (typeof t[e] !== 'undefined') dateMap[d][e] = (dateMap[d][e] || 0) + (parseInt(t[e]) || 0);
+                        });
+                    }
+                });
+            }
+
+            const uniqueDates = Object.keys(dateMap).length;
+            if (uniqueDates < 2 && allPosts.length > 0) {
+                dateMap = {};
+                allPosts.forEach(p => {
+                    const d = (p.date_created || '').substring(0, 10);
+                    if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+                    if (!dateMap[d]) { dateMap[d] = {}; EMOTIONS.forEach(e => dateMap[d][e] = 0); }
+                    const emo = (p.emotion || '').toLowerCase();
+                    if (EMOTIONS.includes(emo)) dateMap[d][emo] = (dateMap[d][emo] || 0) + 1;
+                });
+            }
+
+            const rangeStart = FEACfg.sd, rangeEnd = FEACfg.ed;
+            let filledDates = 0;
+            if (rangeStart && rangeEnd) {
+                const s = new Date(rangeStart), e = new Date(rangeEnd);
+                for (let cur = new Date(s); cur <= e && filledDates < 366; cur.setDate(cur.getDate() + 1), filledDates++) {
+                    const dk = cur.toISOString().split('T')[0];
+                    if (!dateMap[dk]) { dateMap[dk] = {}; EMOTIONS.forEach(em => dateMap[dk][em] = 0); }
+                }
+            }
+
+            const dates = Object.keys(dateMap).sort();
+            if (!dates.length) return;
+
+            const type = this._trendsType;
+            makeApex('trendsChart',{
+                chart:{
+                    type:type==='area'?'area':'line',height:300,fontFamily:'inherit',background:'transparent',toolbar:{show:false},zoom:{enabled:false},
+                    events:{
+                        mounted:()=>hideLd('trendsLoading'),
+                        markerClick:(e,ctx,{seriesIndex,dataPointIndex})=>{
+                            const emo=EMOTIONS[seriesIndex],date=dates[dataPointIndex];if(!emo)return;
+                            const pool=allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo&&(p.date_created||'').substring(0,10)===date);
+                            FEAPanel.open(pool.length?pool:allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo),emo);
+                        },
+                        dataPointSelection:(e,ctx,cfg)=>{
+                            const emo=EMOTIONS[cfg.seriesIndex],date=dates[cfg.dataPointIndex];if(!emo)return;
+                            const pool=allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo&&(p.date_created||'').substring(0,10)===date);
+                            FEAPanel.open(pool.length?pool:allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo),emo);
+                        },
+                        mouseMove:(e,ctx,cfg)=>{const el=ctx?.el;if(el)el.style.cursor=(cfg.dataPointIndex>=0||cfg.seriesIndex>=0)?'pointer':'default';}
+                    }
                 },
-                dataPointSelection:(e,ctx,cfg)=>{
-                    const emo=EMOTIONS[cfg.seriesIndex],date=dates[cfg.dataPointIndex];if(!emo)return;
-                    const pool=allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo&&(p.date_created||'').substring(0,10)===date);
-                    FEAPanel.open(pool.length?pool:allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo),emo);
-                },
-                mouseMove:(e,ctx,cfg)=>{const el=ctx?.el;if(el)el.style.cursor=(cfg.dataPointIndex>=0||cfg.seriesIndex>=0)?'pointer':'default';}
-            }},series:EMOTIONS.map(e=>({name:e.charAt(0).toUpperCase()+e.slice(1),data:dates.map(d=>dateMap[d][e]||0)})),colors:EMO_COLORS_ARR,xaxis:{categories:dates,axisBorder:{show:false},axisTicks:{show:false},labels:{show:true,style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'}}},yaxis:{labels:{formatter:v=>numK(v),style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},axisBorder:{show:false},axisTicks:{show:false}},stroke:{curve:'smooth',width:2},fill:type==='area'?{type:'gradient',gradient:{opacityFrom:.35,opacityTo:.05,shadeIntensity:.1}}:{type:'solid',opacity:1},markers:{size:4,strokeWidth:2,strokeColors:'#fff',hover:{size:7}},grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}},padding:{top:10,right:8,bottom:0,left:4}},legend:{position:'bottom',horizontalAlign:'left',fontSize:'11px',fontFamily:'inherit',fontWeight:600,markers:{width:8,height:8,radius:4},itemMargin:{horizontal:12,vertical:4},offsetY:4},tooltip:{shared:false,intersect:true,style:{fontFamily:'inherit',fontSize:'12px'},x:{show:true},y:{formatter:v=>numF(v)+' posts'}}});}
+                series:EMOTIONS.map(e=>({name:e.charAt(0).toUpperCase()+e.slice(1),data:dates.map(d=>dateMap[d][e]||0)})),
+                colors:EMO_COLORS_ARR,
+                xaxis:{categories:dates,axisBorder:{show:false},axisTicks:{show:false},labels:{show:true,style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'}}},
+                yaxis:{labels:{formatter:v=>numK(v),style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},axisBorder:{show:false},axisTicks:{show:false}},
+                stroke:{curve:'smooth',width:2},
+                fill:type==='area'?{type:'gradient',gradient:{opacityFrom:.35,opacityTo:.05,shadeIntensity:.1}}:{type:'solid',opacity:1},
+                markers:{size:4,strokeWidth:2,strokeColors:'#fff',hover:{size:7}},
+                grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}},padding:{top:10,right:8,bottom:0,left:4}},
+                legend:{position:'bottom',horizontalAlign:'left',fontSize:'11px',fontFamily:'inherit',fontWeight:600,markers:{width:8,height:8,radius:4},itemMargin:{horizontal:12,vertical:4},offsetY:4},
+                tooltip:{shared:false,intersect:true,style:{fontFamily:'inherit',fontSize:'12px'},x:{show:true},y:{formatter:v=>numF(v)+' posts'}}
+            });
+        }
     };
 
     const FEAPanel={

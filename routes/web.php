@@ -169,6 +169,8 @@ Route::prefix('mk')->name('mk.')->middleware(['auth', 'check.trial'])->group(fun
             Route::get('/most-active-users',[InstagramOverviewController::class, 'mostActiveUsers'])->name('most-active-users');
             Route::get('/trending-topics',  [InstagramOverviewController::class, 'trendingTopicsData'])->name('trending-topics');
             Route::get('/most-viewed-posts',[InstagramOverviewController::class, 'mostViewedPostsData'])->name('most-viewed-posts');
+            Route::get('/most-engagement',  [InstagramOverviewController::class, 'mostEngagementData'])->name('most-engagement');
+            Route::get('/emotion-analysis', [InstagramOverviewController::class, 'emotionAnalysisData'])->name('emotion-analysis');
             Route::get('/authors-age',      [InstagramOverviewController::class, 'authorsAgeData'])->name('authors-age');
             Route::get('/authors-gender',   [InstagramOverviewController::class, 'authorsGenderData'])->name('authors-gender');
             Route::get('/authors-type',     [InstagramOverviewController::class, 'authorsTypeData'])->name('authors-type');
