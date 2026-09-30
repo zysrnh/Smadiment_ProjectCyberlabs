@@ -656,6 +656,26 @@
         this.closest('.form-group').style.transform = 'translateY(0)';
       });
     });
+
+    // Reload page if restored from bfcache to guarantee fresh CSRF token
+    window.addEventListener('pageshow', function (event) {
+      if (event.persisted) {
+        window.location.reload();
+      }
+    });
+
+    // Auto-refresh token if tab was inactive for more than 30 minutes
+    let lastActive = Date.now();
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') {
+        const elapsed = Date.now() - lastActive;
+        if (elapsed > 30 * 60 * 1000) {
+          window.location.reload();
+        }
+      } else {
+        lastActive = Date.now();
+      }
+    });
   </script>
 
 </body>

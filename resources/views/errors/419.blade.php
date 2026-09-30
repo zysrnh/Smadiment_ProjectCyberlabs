@@ -157,13 +157,13 @@
         <p>Sesi login atau keamanan halaman Anda telah berakhir. Harap login kembali untuk melanjutkan aktivitas Anda di sistem.</p>
 
         <div class="actions">
-            <a href="{{ route('user.login') }}" class="btn-primary" id="loginBtn">
+            <a href="{{ route('user.login') }}" onclick="goToLogin(); return false;" class="btn-primary" id="loginBtn">
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                 </svg>
                 Login Kembali
             </a>
-            <button onclick="window.location.reload()" class="btn-secondary">
+            <button onclick="goToLogin(); return false;" class="btn-secondary">
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
@@ -172,21 +172,26 @@
         </div>
 
         <div class="auto-redirect" id="countdownWrapper">
-            Otomatis dialihkan ke halaman login dalam <span id="countdown">5</span> detik...
+            Otomatis dialihkan ke halaman login dalam <span id="countdown">4</span> detik...
         </div>
     </div>
 
     <script>
-        let seconds = 5;
-        const countdownEl = document.getElementById('countdown');
         const loginUrl = "{{ route('user.login') }}";
+
+        function goToLogin() {
+            window.location.replace(loginUrl + (loginUrl.includes('?') ? '&' : '?') + 'r=' + Date.now());
+        }
+
+        let seconds = 4;
+        const countdownEl = document.getElementById('countdown');
 
         const interval = setInterval(() => {
             seconds--;
             if (countdownEl) countdownEl.textContent = seconds;
             if (seconds <= 0) {
                 clearInterval(interval);
-                window.location.href = loginUrl;
+                goToLogin();
             }
         }, 1000);
     </script>

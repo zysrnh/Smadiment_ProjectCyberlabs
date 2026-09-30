@@ -81,7 +81,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 419);
             }
 
-            if ($request->is('login', 'user/login', 'admin/login', 'logout', '*login*', '*logout*')) {
+            if ($request->is('admin/*', 'admin/login*')) {
+                return redirect()->route('admin.login')->with('warning', 'Maaf, sesi Anda telah habis. Harap login kembali.');
+            }
+
+            if ($request->is('user/*', 'user/login*', 'login*', 'logout*')) {
                 return redirect()->route('user.login')->with('warning', 'Maaf, sesi Anda telah habis. Harap login kembali.');
             }
 
