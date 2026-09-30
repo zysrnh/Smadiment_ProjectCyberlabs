@@ -71,4 +71,21 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
+        // ── Tangkap TokenMismatchException (CSRF Expired / Sesi Habis - Error 419) ──
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => 'Maaf, sesi Anda telah habis. Harap login kembali.',
+                    'code'    => 'SESSION_EXPIRED',
+                ], 419);
+            }
+
+            if ($request->is('login', 'user/login', 'admin/login', 'logout', '*login*', '*logout*')) {
+                return redirect()->route('user.login')->with('warning', 'Maaf, sesi Anda telah habis. Harap login kembali.');
+            }
+
+            return response()->view('errors.419', [], 419);
+        });
+
     })->create();
