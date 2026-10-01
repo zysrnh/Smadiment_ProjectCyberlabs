@@ -1783,7 +1783,7 @@ class TiktokOverviewController extends Controller
                 'emotion'         => $tpl['emotion'],
                 'emotion_str'     => $tpl['emotion'],
                 'date_created'    => $dCreated,
-                'url'             => "https://www.tiktok.com/@{$handle}/video/74189028190" . (1000 + $i),
+                'url'             => "https://www.tiktok.com/@{$handle}",
                 'avatar_url'      => $avatarUrl,
                 'profile_url'     => $avatarUrl,
                 'image'           => '',
