@@ -1745,24 +1745,35 @@
             }
 
             /* Media embed & YouTube ID detection */
-            if (platform === 'youtube' || platform === 'yt') {
-                var ytId = _extractYtId(item);
+            if (platform === 'youtube') {
+                var url = item.url || item.link || item.permalink || item.original_url || '';
+                ytId = ((url).match(/[?&]v=([a-zA-Z0-9_-]{11})/)||
+                        (url).match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)||
+                        (url).match(/shorts\/([a-zA-Z0-9_-]{11})/)||
+                        (url).match(/embed\/([a-zA-Z0-9_-]{11})/)||[])[1];
+                
+                if (!ytId) {
+                    var flds = ['video_id','youtube_id','yt_id','id_str','post_id','docid','id','sub_id'];
+                    for(var i=0; i<flds.length; i++) {
+                        var f = flds[i]; var v = item[f]; if(!v) continue;
+                        var s = String(v).replace(/^(yt[-_])/i, '');
+                        if(s.length===11) { ytId=s; break; }
+                    }
+                }
+                if (!ytId && item.snippet) ytId = item.snippet.videoId || (item.snippet.resourceId && item.snippet.resourceId.videoId);
+                if (ytId && String(ytId).includes('yt-')) ytId = String(ytId).replace(/^(yt[-_])/i, '');
+
                 var thumb = item.thumbnail||item.thumbnail_url||item.image_url||item.cover||item.picture||(ytId ? 'https://img.youtube.com/vi/'+ytId+'/hqdefault.jpg' : '');
+                
                 if (ytId) {
                     var eid = 'yt_'+ytId+'_'+Date.now();
-                    mediaHtml = '<div id="'+eid+'" class="do-dp2-media" style="position:relative;cursor:pointer;background:#000;height:220px;border-radius:6px;overflow:hidden;margin-bottom:10px;"'
+                    mediaHtml = '<div id="'+eid+'" class="do-dp2-media" style="position:relative;cursor:pointer;background:#f1f5f9;height:220px;"'
                         +' onclick="document.getElementById(\''+eid+'\').innerHTML=\'<iframe width=\\\'100%\\\' height=\\\'220\\\' src=\\\'https://www.youtube.com/embed/'+ytId+'?autoplay=1&controls=1\\\' frameborder=\\\'0\\\' allowfullscreen style=\\\'border-radius:6px;\\\'></iframe>\'; document.getElementById(\''+eid+'\').style.height=\'auto\';">'
                         +'<img src="'+(thumb||'https://img.youtube.com/vi/'+ytId+'/hqdefault.jpg')+'" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.src=\'https://img.youtube.com/vi/'+ytId+'/mqdefault.jpg\'">'
-                        +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.15);">'
-                            +'<div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.3);">'
-                                +'<i class="ph-fill ph-play" style="font-size:24px;color:#fff;margin-left:3px;"></i>'
-                            +'</div>'
-                        +'</div>'
                     +'</div>';
                 } else if (thumb) {
-                    mediaHtml = '<div class="do-dp2-media" style="background:#f1f5f9;"><img src="'+esc(thumb)+'" onerror="this.parentElement.style.display=\'none\'" style="max-height:280px;object-fit:cover;width:100%;display:block;border-radius:6px;"></div>';
+                    mediaHtml = '<div class="do-dp2-media" style="background:#f1f5f9;"><img src="'+esc(thumb)+'" onerror="this.parentElement.style.display=\'none\'"></div>';
                 }
-            }
             } else if (platform === 'tiktok') {
                 var tid   = ((item.url||'').match(/\/video\/(\d+)/)||(item.url||'').match(/\/v\/(\d+)/)||[])[1]||(item.video_id||item.aweme_id||'');
                 var thumb = item.thumbnail||item.cover||item.image_url||item.video_cover||'';
