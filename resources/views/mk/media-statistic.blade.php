@@ -1664,8 +1664,7 @@ const MSPanel = (() => {
     _renderedItems = items || [];
     const countEl = _$('msPanelCount');
     if (countEl) {
-      countEl.textContent = _renderedItems.length + ' data';
-      countEl.style.display = _renderedItems.length ? 'inline-block' : 'none';
+      countEl.style.display = 'none';
     }
 
     if (!items.length) {
