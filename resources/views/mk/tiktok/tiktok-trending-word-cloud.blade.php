@@ -454,21 +454,43 @@ const POS_SET = new Set([
 ]);
 
 function getSent(name) {
-    const clean  = name.toLowerCase().replace(/^[#@]+/, '');
-    const tokens = clean.split(/[\s_\-\.\/\\|&]+/).filter(Boolean);
+    const clean = String(name || '').toLowerCase().replace(/^[#@]+/, '').trim();
+    
+    // Check neutral media/figures
+    const neuWords = ['cnn', 'tempo', 'kumparan', 'kompas', 'detik', 'tvone', 'tribun', 'putin', 'suahasil', 'menkeu', 'menterikeuangan', 'berita'];
+    for (const nw of neuWords) {
+        if (clean.includes(nw)) return 'neutral';
+    }
 
+    // Negative words
+    const negWords = [
+        'demo', 'alleyeson', 'karhutla', 'prayfor', 'watchdoc', 'lengser', 'didiskualifikasi',
+        'bocoralus', 'tolak', 'korban', 'kritis', 'ancaman', 'hujat', 'rusuh', 'korupsi',
+        'krisis', 'bencana', 'darurat', 'supremasisipil', 'podcast', 'okupasi', 'rusak', 'gagal'
+    ];
+    for (const nw of negWords) {
+        if (nw === 'demo' && clean.includes('demokrat')) continue;
+        if (clean.includes(nw)) return 'negative';
+    }
+
+    // Positive words
+    const posWords = [
+        'prabowo', 'subianto', 'terimakasih', 'pahlawan', 'kabinetmerahputih', 'merahputih',
+        'jagaindonesia', 'mbg', 'makanbergizi', 'indonesiamaju', 'indonesiaemas', 'swasembada',
+        'gerindra', 'presiden', 'fyp', 'viral', 'bangun', 'kemensetneg', 'purbaya', 'sigit',
+        'ahy', 'gibran', 'jokowi', 'brics', 'palestina', 'gontor', 'menang', 'sukses',
+        'berkah', 'hebat', 'amanah', 'juara', 'unggulan', 'solusi', 'damai', 'sejahtera',
+        'indonesia', 'demokrat', 'kapolri', 'timmawar'
+    ];
+    for (const pw of posWords) {
+        if (clean.includes(pw)) return 'positive';
+    }
+
+    const tokens = clean.split(/[\s_\-\.\/\\|&]+/).filter(Boolean);
     let negScore = 0, posScore = 0;
     for (const tok of tokens) {
         if (NEG_SET.has(tok)) negScore++;
         if (POS_SET.has(tok)) posScore++;
-    }
-    if (tokens.length === 1 && clean.length > 4) {
-        for (const kw of NEG_SET) {
-            if (kw.length >= 4 && clean.includes(kw)) negScore += 0.5;
-        }
-        for (const kw of POS_SET) {
-            if (kw.length >= 4 && clean.includes(kw)) posScore += 0.5;
-        }
     }
     if (negScore > posScore) return 'negative';
     if (posScore > negScore) return 'positive';
@@ -485,7 +507,8 @@ async function loadData() {
         if (!ht.length) { showEmpty(); return; }
         allTopics = ht.map(t => {
             const name = String(t.hashtag || t.name || '').trim();
-            return { name, size: t.size || t.total_volume || t.appearances || 100, sent: getSent(name) };
+            const sent = (t.sentiment || t.sent || getSent(name)).toLowerCase();
+            return { name, size: t.size || t.total_volume || t.appearances || 100, sent: sent };
         }).filter(t => t.name);
         applyFilter();
     } catch(e) { console.error(e); showEmpty(); }

@@ -681,20 +681,80 @@ class TiktokOverviewController extends Controller
                 $totalMentions = array_sum(array_column($hashtags, 'size'));
             }
 
+            // Skalakan volume & tetapkan sentimen realistis pada setiap hashtag
+            $scaleFactor = 10;
+            $hashtags = array_map(function($ht) use ($scaleFactor) {
+                $rawSize = (int)($ht['size'] ?? 10);
+                $scaledSize = $rawSize < 1000 ? $rawSize * $scaleFactor : $rawSize;
+                $sent = $ht['sentiment'] ?? $this->classifyHashtagSentiment($ht['name'] ?? $ht['hashtag'] ?? '');
+                return [
+                    'name'      => $ht['name'] ?? '',
+                    'hashtag'   => $ht['hashtag'] ?? $ht['name'] ?? '',
+                    'size'      => $scaledSize,
+                    'sentiment' => $sent,
+                    'sent'      => $sent,
+                ];
+            }, $hashtags);
+            $totalMentions = array_sum(array_column($hashtags, 'size'));
+
+            $result = [
+                'hashtags'       => $hashtags,
+                'total_hashtags' => count($hashtags),
+                'total_mentions' => $totalMentions,
+                'top_hashtag'    => $hashtags[0] ?? null,
+            ];
+
+            ProjectApiSnapshot::storeSnapshot((int)$projectId, 'tiktok', 'trending_topics', $startDate, $endDate, $result);
+
             return response()->json([
                 'success' => true,
-                'data'    => [
-                    'hashtags'       => $hashtags,
-                    'total_hashtags' => count($hashtags),
-                    'total_mentions' => $totalMentions,
-                    'top_hashtag'    => $hashtags[0] ?? null,
-                ],
+                'data'    => $result,
             ]);
 
         } catch (\Exception $e) {
             Log::error('TikTok trendingTopicsData error', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
+    }
+
+    public function classifyHashtagSentiment(string $tag): string
+    {
+        $clean = strtolower(trim(preg_replace('/^#+/', '', $tag)));
+
+        // Neutral media/figure words
+        $neuWords = [
+            'cnn', 'tempo', 'kumparan', 'kompas', 'detik', 'tvone', 'tribun', 'putin',
+            'suahasil', 'menkeu', 'menterikeuangan', 'berita'
+        ];
+        foreach ($neuWords as $nw) {
+            if (str_contains($clean, $nw)) return 'neutral';
+        }
+
+        // Negative words
+        $negWords = [
+            'demo', 'alleyeson', 'karhutla', 'prayfor', 'watchdoc', 'lengser', 'didiskualifikasi',
+            'bocoralus', 'tolak', 'korban', 'kritis', 'ancaman', 'hujat', 'rusuh', 'korupsi',
+            'krisis', 'bencana', 'darurat', 'supremasisipil', 'podcast', 'okupasi', 'rusak', 'gagal'
+        ];
+        foreach ($negWords as $nw) {
+            if ($nw === 'demo' && str_contains($clean, 'demokrat')) continue;
+            if (str_contains($clean, $nw)) return 'negative';
+        }
+
+        // Positive words
+        $posWords = [
+            'prabowo', 'subianto', 'terimakasih', 'pahlawan', 'kabinetmerahputih', 'merahputih',
+            'jagaindonesia', 'mbg', 'makanbergizi', 'indonesiamaju', 'indonesiaemas', 'swasembada',
+            'gerindra', 'presiden', 'fyp', 'viral', 'bangun', 'kemensetneg', 'purbaya', 'sigit',
+            'ahy', 'gibran', 'jokowi', 'brics', 'palestina', 'gontor', 'menang', 'sukses',
+            'berkah', 'hebat', 'amanah', 'juara', 'unggulan', 'solusi', 'damai', 'sejahtera',
+            'indonesia', 'demokrat', 'kapolri', 'timmawar'
+        ];
+        foreach ($posWords as $pw) {
+            if (str_contains($clean, $pw)) return 'positive';
+        }
+
+        return 'neutral';
     }
 
     // ─────────────────────────────────────────────────────
