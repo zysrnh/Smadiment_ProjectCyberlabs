@@ -1010,19 +1010,18 @@ class TiktokOverviewController extends Controller
         // 2. Emotion proportions per sentiment bucket (Plutchik wheel)
         $emotionMap = [
             'positive' => [
-                'joy'          => 0.48,
-                'trust'        => 0.30,
-                'anticipation' => 0.22,
+                'joy'          => 0.60,
+                'trust'        => 0.40,
             ],
             'negative' => [
-                'anger'   => 0.38,
-                'fear'    => 0.27,
+                'anger'   => 0.40,
+                'fear'    => 0.25,
                 'sadness' => 0.20,
                 'disgust' => 0.15,
             ],
             'neutral' => [
-                'surprise'     => 0.55,
-                'anticipation' => 0.45,
+                'surprise'     => 0.60,
+                'anticipation' => 0.40,
             ],
         ];
 
@@ -1196,6 +1195,8 @@ class TiktokOverviewController extends Controller
             'trend'    => $trendArray,
             'posts'    => $posts,
         ];
+
+        ProjectApiSnapshot::storeSnapshot((int)$projectId, 'tiktok', 'emotion_analysis', $startDate, $endDate, $resultData);
 
         return response()->json([
             'success' => true,
@@ -1639,6 +1640,48 @@ class TiktokOverviewController extends Controller
                 'content'   => 'Kolaborasi Polri & TNI amankan stabilitas nasional di tengah dinamika geopolitik global. #TNI_Polri #KeamananNasional #PrabowoPresiden',
                 'views'     => 365000, 'likes' => 22400, 'comments' => 890, 'shares' => 1400,
                 'sentiment' => 'Positive', 'emotion' => 'trust'
+            ],
+            [
+                'creator'   => 'suara_peduli',
+                'name'      => 'Suara Hati Rakyat',
+                'content'   => 'Sedih melihat kondisi sebagian saudara kita di pelosok yang masih kekurangan fasilitas dasar. Semoga komitmen pemerintah Prabowo merata sampai ke pelosok desa tertinggal. 🥺💔 #HarapanRakyat #PelosokNegeri #Pemerataan',
+                'views'     => 342000, 'likes' => 21300, 'comments' => 1890, 'shares' => 1250,
+                'sentiment' => 'Negative', 'emotion' => 'sadness'
+            ],
+            [
+                'creator'   => 'keluhankita',
+                'name'      => 'Keluhan Warga',
+                'content'   => 'Hati terasa miris mendengar kisah anak-anak sekolah yang harus menyeberangi jembatan rusak. Harap segera ditindaklanjuti kementerian terkait pak presiden. 😢 #BantuWarga #InfrastrukturDesa #KawalKebijakan',
+                'views'     => 318000, 'likes' => 19400, 'comments' => 1640, 'shares' => 980,
+                'sentiment' => 'Negative', 'emotion' => 'sadness'
+            ],
+            [
+                'creator'   => 'radar_investigasi',
+                'name'      => 'Radar Investigasi',
+                'content'   => 'Muak dan geram melihat oknum birokrat yang masih coba-coba main mata dengan anggaran bansos! Jangan kasih ampun pak Prabowo, sikat habis koruptor! 🤬🤮 #LawanKorupsi #Transparansi #BersihBersih',
+                'views'     => 355000, 'likes' => 25800, 'comments' => 3120, 'shares' => 2400,
+                'sentiment' => 'Negative', 'emotion' => 'disgust'
+            ],
+            [
+                'creator'   => 'publikbicara',
+                'name'      => 'Publik Bicara',
+                'content'   => 'Jijik dengan drama saling lempar tanggung jawab oknum pejabat daerah. Rakyat butuh solusi nyata bukan alasan belaka! 👎 #KinerjaPejabat #TuntutanRakyat #KabinetMerahPutih',
+                'views'     => 298000, 'likes' => 18700, 'comments' => 2250, 'shares' => 1100,
+                'sentiment' => 'Negative', 'emotion' => 'disgust'
+            ],
+            [
+                'creator'   => 'waspada_id',
+                'name'      => 'Waspada Indonesia',
+                'content'   => 'Kekhawatiran meningkat terhadap tensi geopolitik kawasan dan dampaknya terhadap harga pangan impor. Pemerintah harus perkuat cadangan beras nasional segera! ⚠️🛡️ #KetahananPangan #Geopolitik #Waspada',
+                'views'     => 330000, 'likes' => 20500, 'comments' => 1430, 'shares' => 1600,
+                'sentiment' => 'Negative', 'emotion' => 'fear'
+            ],
+            [
+                'creator'   => 'kawalkebijakan',
+                'name'      => 'Kawal Kebijakan RI',
+                'content'   => 'Kecemasan masyarakat terhadap fluktuasi nilai tukar rupiah dan beban utang luar negeri. Semoga tim ekonomi kabinet Prabowo mampu redam gejolak pasar global. 📉💼 #EkonomiIndonesia #Rupiah #KawalKebijakan',
+                'views'     => 285000, 'likes' => 16800, 'comments' => 1340, 'shares' => 890,
+                'sentiment' => 'Negative', 'emotion' => 'fear'
             ],
         ];
 

@@ -939,7 +939,7 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
         }
 
         /* ══ STATE ══ */
-        let allPosts = [], filteredPosts = [], currentFilter = 'all', currentPage = 1;
+        let allData = {}, allPosts = [], filteredPosts = [], currentFilter = 'all', currentPage = 1;
 
         /* ══ EMOTION DETECTION ══ */
         function detectEmotion(post) {
@@ -955,10 +955,33 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
             return 'trust';
         }
         function getEmoCounts(posts) {
+            if (!posts && allData && allData.emotions) {
+                const c = {};
+                EMOTIONS.forEach(e => c[e] = 0);
+                EMOTIONS.forEach(e => {
+                    if (typeof allData.emotions[e] !== 'undefined') {
+                        const v = allData.emotions[e];
+                        c[e] = (typeof v === 'object' && v !== null) ? (parseInt(v.count) || 0) : (parseInt(v) || 0);
+                    }
+                });
+                if (Object.values(c).some(v => v > 0)) return c;
+            }
             const c = {};
             EMOTIONS.forEach(e => c[e] = 0);
-            (posts || allPosts).forEach(p => c[p.emotion] = (c[p.emotion] || 0) + 1);
+            (posts || allPosts).forEach(p => {
+                const e = (p.emotion || '').toLowerCase();
+                if (EMOTIONS.includes(e)) c[e] = (c[e] || 0) + 1;
+            });
             return c;
+        }
+
+        function getTotalPosts() {
+            if (allData && allData.summary && allData.summary.total_posts) {
+                return allData.summary.total_posts;
+            }
+            const c = getEmoCounts();
+            const sum = Object.values(c).reduce((a, b) => a + b, 0);
+            return sum || allPosts.length;
         }
 
         /* ══ FIELD HELPERS ══ */
@@ -1026,9 +1049,9 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
                     const json = await res.json();
                     if (!json.success) throw new Error(json.error || 'Failed');
 
-                    const rawData = json.data || {};
-                    const rawPosts = rawData.posts || rawData.data || json.data || [];
-                    allPosts      = (Array.isArray(rawPosts) ? rawPosts : []).map(p => ({ ...p, emotion: detectEmotion(p) }));
+                    allData       = json.data || {};
+                    const rawPosts = allData.posts || allData.data || json.data || [];
+                    allPosts      = (Array.isArray(rawPosts) ? rawPosts : []).map(p => ({ ...p, emotion: (p.emotion && EMOTIONS.includes(p.emotion.toLowerCase())) ? p.emotion.toLowerCase() : detectEmotion(p) }));
                     filteredPosts = [...allPosts];
                     currentPage   = 1;
 
@@ -1055,7 +1078,7 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
             },
 
             reload() {
-                allPosts = []; filteredPosts = []; currentFilter = 'all'; currentPage = 1;
+                allData = {}; allPosts = []; filteredPosts = []; currentFilter = 'all'; currentPage = 1;
                 document.querySelectorAll('.fea-tab-btn').forEach(b => b.classList.remove('active'));
                 _$('tab-all')?.classList.add('active');
                 this.loadAll();
@@ -1071,7 +1094,7 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
 
             _updateChips() {
                 const counts = getEmoCounts();
-                const el = _$('chip-all'); if (el) el.textContent = numK(allPosts.length);
+                const el = _$('chip-all'); if (el) el.textContent = numK(getTotalPosts());
                 EMOTIONS.forEach(e => { const chip = _$('chip-'+e); if (chip) chip.textContent = numK(counts[e]||0); });
             },
 
@@ -1187,11 +1210,10 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
 
             renderBar() {
                 hideLd('barLoading');
-                if (!allPosts.length) return;
                 const counts = getEmoCounts();
                 const labels = EMOTIONS.map(e => e.charAt(0).toUpperCase()+e.slice(1));
                 const data   = EMOTIONS.map(e => counts[e] || 0);
-                const total  = allPosts.length || 1;
+                const total  = getTotalPosts() || 1;
                 const el = _$('barBadge'); if (el) el.textContent = numK(total) + ' posts';
 
                 makeApex('barChart', {
@@ -1292,10 +1314,10 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
                     if (emptyEl) emptyEl.style.display = 'flex';
                     return;
                 }
-                const total = top5.reduce((s,x) => s+x.count, 0);
+                const total = getTotalPosts() || top5.reduce((s,x) => s+x.count, 0);
                 const legEl = _$('donutLegend');
                 if (legEl) legEl.innerHTML = top5.map((x,i) =>
-                    `<div class="donut-leg-item"><span class="donut-dot" style="background:${DONUT_COLORS[i]};"></span>${x.emo.charAt(0).toUpperCase()+x.emo.slice(1)} · ${numF(x.count)}</div>`
+                    `<div class="donut-leg-item" onclick="FEAPanel.open(allPosts.filter(p=>(p.emotion||'').toLowerCase()==='${x.emo}'),'${x.emo}')"><span class="donut-dot" style="background:${DONUT_COLORS[i]};"></span>${x.emo.charAt(0).toUpperCase()+x.emo.slice(1)} · ${numF(x.count)}</div>`
                 ).join('');
 
                 loadEl.style.display = 'none';
@@ -1376,19 +1398,34 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
 
             renderTrends() {
                 hideLd('trendsLoading');
-                if (!allPosts.length) return;
-                this._trendsItems = allPosts;
-                const tb = _$('trendsBadge'); if (tb) tb.textContent = numK(allPosts.length) + ' posts';
+                const total = getTotalPosts();
+                const tb = _$('trendsBadge'); if (tb) tb.textContent = numK(total) + ' posts';
                 this._doRenderTrends(allPosts, this._trendsType);
             },
 
             _doRenderTrends(posts, type) {
-                const dateMap = {};
-                posts.forEach(p => {
-                    const d = (p.date_created||'').substring(0,10); if (!d) return;
-                    if (!dateMap[d]) { dateMap[d]={}; EMOTIONS.forEach(e => dateMap[d][e]=0); }
-                    dateMap[d][p.emotion] = (dateMap[d][p.emotion]||0) + 1;
-                });
+                const apiTrend = allData.trend || [];
+                let dateMap = {};
+
+                if (Array.isArray(apiTrend) && apiTrend.length > 0) {
+                    apiTrend.forEach(t => {
+                        const d = t.date; if (!d) return;
+                        if (!dateMap[d]) { dateMap[d] = {}; EMOTIONS.forEach(e => dateMap[d][e] = 0); }
+                        const emo = (t.emotion || '').toLowerCase();
+                        if (EMOTIONS.includes(emo)) {
+                            dateMap[d][emo] = (dateMap[d][emo] || 0) + (parseInt(t.count) || 0);
+                        }
+                    });
+                } else {
+                    posts.forEach(p => {
+                        const d = (p.date_created||'').substring(0,10); if (!d) return;
+                        if (!dateMap[d]) { dateMap[d]={}; EMOTIONS.forEach(e => dateMap[d][e]=0); }
+                        const emo = (p.emotion || '').toLowerCase();
+                        if (EMOTIONS.includes(emo)) {
+                            dateMap[d][emo] = (dateMap[d][emo] || 0) + 1;
+                        }
+                    });
+                }
                 const dates = Object.keys(dateMap).sort();
                 if (!dates.length) return;
 
