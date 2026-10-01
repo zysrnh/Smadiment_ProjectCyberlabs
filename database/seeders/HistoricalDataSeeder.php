@@ -14,6 +14,8 @@ class HistoricalDataSeeder extends Seeder
      */
     public function run(): void
     {
+        @ini_set('memory_limit', '512M');
+
         $archiveFile = database_path('seeders/data/historical_snapshots.json.gz');
 
         if (!file_exists($archiveFile)) {
