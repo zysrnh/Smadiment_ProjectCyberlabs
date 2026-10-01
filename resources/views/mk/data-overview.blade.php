@@ -1864,7 +1864,7 @@
 
         loadTrending: function(){
             var self = this;
-            fetch('/mk/api/trending-topics').then(function(r){return r.json();}).then(function(d){
+            fetch('/mk/api/trending-topics?project_id='+DOCfg.pid+'&start_date='+DOCfg.sd+'&end_date='+DOCfg.ed).then(function(r){return r.json();}).then(function(d){
                 var body=$('trendingBody'), topics=d.data||[];
                 if(!topics.length){body.innerHTML=emptyHtml();return;}
                 if(topics.length>10) $('trendingHead').insertAdjacentHTML('beforeend','<button class="do-view-all" onclick="DOListModal.openTrending(window._doTopics)"><i class="ph ph-caret-right"></i>All</button>');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ProjectApiSnapshot;
 use App\Models\ProjectDailySentiment;
 use App\Services\ApiDataVaultService;
 use App\Services\MediaKernelsClient;
@@ -85,6 +86,10 @@ class DataOverviewApiController extends Controller
                 return array_slice($normalized, 0, $limit);
             });
 
+            if (empty($data)) {
+                $data = $this->extractTrendingFromSnapshots($location, $limit);
+            }
+
             return response()->json([
                 'success' => true,
                 'data'    => $data ?? [],
@@ -95,11 +100,100 @@ class DataOverviewApiController extends Controller
             Log::error('❌ Trending topics failed', [
                 'error' => $e->getMessage(),
             ]);
+
+            $fallbackData = $this->extractTrendingFromSnapshots($location, $limit);
+            if (!empty($fallbackData)) {
+                return response()->json([
+                    'success' => true,
+                    'data'    => $fallbackData,
+                    'total'   => count($fallbackData),
+                ]);
+            }
+
             return response()->json([
                 'success' => false,
                 'data'    => [],
                 'error'   => 'Failed to fetch trending topics',
             ], 500);
+        }
+    }
+
+    /**
+     * Fallback extractor for Trending Topics from DB snapshots.
+     */
+    private function extractTrendingFromSnapshots(string $location = 'Indonesia', int $limit = 50): array
+    {
+        try {
+            $snap = ProjectApiSnapshot::where(function ($q) use ($location) {
+                    $q->where('endpoint_key', "trending_topics_{$location}")
+                      ->orWhere('endpoint_key', 'like', 'trending_topics%');
+                })
+                ->latest('synced_at')
+                ->first();
+
+            if (!$snap || empty($snap->payload)) {
+                return [];
+            }
+
+            $snapData = json_decode($snap->payload, true);
+            if (!is_array($snapData) || empty($snapData)) {
+                return [];
+            }
+
+            $first = reset($snapData);
+            if (is_array($first) && (isset($first['title']) || isset($first['name']) || isset($first['topic']))) {
+                return array_slice($snapData, 0, $limit);
+            }
+
+            $allTopics = [];
+            foreach ($snapData as $period) {
+                if (!is_array($period) || !isset($period['data']) || !is_array($period['data'])) continue;
+                foreach ($period['data'] as $topic) {
+                    $name   = $topic['name'] ?? '';
+                    $volume = (int) ($topic['tweet_volume_i'] ?? 0);
+                    $url    = $topic['url'] ?? '';
+                    if (!$name) continue;
+
+                    if (!isset($allTopics[$name])) {
+                        $allTopics[$name] = [
+                            'name'         => $name,
+                            'title'        => $name,
+                            'topic'        => $name,
+                            'total_volume' => 0,
+                            'appearances'  => 0,
+                            'url'          => $url,
+                            'urls'         => [$url],
+                        ];
+                    }
+                    $allTopics[$name]['total_volume'] += $volume;
+                    $allTopics[$name]['appearances']++;
+                    if ($url && !in_array($url, $allTopics[$name]['urls'])) {
+                        $allTopics[$name]['urls'][] = $url;
+                    }
+                }
+            }
+
+            $normalized = [];
+            foreach ($allTopics as $topic) {
+                $normalized[] = [
+                    'title'       => $topic['name'],
+                    'name'        => $topic['name'],
+                    'topic'       => $topic['name'],
+                    'volume'      => $topic['total_volume'],
+                    'count'       => $topic['total_volume'],
+                    'total'       => $topic['total_volume'],
+                    'appearances' => $topic['appearances'],
+                    'description' => '',
+                    'reference'   => $topic['url'],
+                    'urls'        => array_filter($topic['urls']),
+                ];
+            }
+
+            usort($normalized, fn ($a, $b) => $b['total'] <=> $a['total']);
+            return array_slice($normalized, 0, $limit);
+        } catch (\Throwable $e) {
+            Log::warning("TrendingTopics fallback extraction failed: {$e->getMessage()}");
+            return [];
         }
     }
 
@@ -204,15 +298,76 @@ class DataOverviewApiController extends Controller
     private function extractHashtagsFromSnapshots(int $projectId, string $startDate, string $endDate): array
     {
         try {
-            $mentionsSnapshot = ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'news_mentions_0_1200', $startDate, $endDate)
-                ?? ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'news_mentions_0_500', $startDate, $endDate);
+            // 1. Cek apakah ada snapshot top_hashtags di DB
+            $snap = ProjectApiSnapshot::where('endpoint_key', 'top_hashtags')
+                ->where(function ($q) use ($projectId) {
+                    if ($projectId > 0) {
+                        $q->where('project_id', $projectId)->orWhere('project_id', 0);
+                    }
+                })
+                ->latest('synced_at')
+                ->first();
 
-            if (!$mentionsSnapshot || !is_array($mentionsSnapshot)) {
+            if ($snap && !empty($snap->payload)) {
+                $decoded = json_decode($snap->payload, true);
+                if (is_array($decoded) && !empty($decoded)) {
+                    $rawItems = isset($decoded['data']['hashtags']) ? $decoded['data']['hashtags']
+                        : (isset($decoded['data']) && is_array($decoded['data']) ? $decoded['data'] : $decoded);
+
+                    $normalized = [];
+                    foreach ($rawItems as $item) {
+                        if (!is_array($item)) continue;
+                        $name = $item['name'] ?? $item['hashtag'] ?? $item['tag'] ?? null;
+                        $sizeValue = $item['size'] ?? $item['mention'] ?? $item['count'] ?? $item['y'] ?? 0;
+                        $mention = (int) $sizeValue;
+                        if (empty($name) || $mention === 0) continue;
+
+                        $displayName = $name;
+                        if (!str_starts_with($displayName, '#')) {
+                            $displayName = '#' . $displayName;
+                        }
+
+                        $normalized[] = [
+                            'hashtag' => $displayName,
+                            'name'    => $displayName,
+                            'tag'     => $name,
+                            'mention' => $mention,
+                            'count'   => $mention,
+                            'size'    => $mention,
+                        ];
+                    }
+
+                    if (!empty($normalized)) {
+                        usort($normalized, fn ($a, $b) => $b['mention'] <=> $a['mention']);
+                        return array_slice($normalized, 0, 25);
+                    }
+                }
+            }
+
+            // 2. Fallback ekstrak dari snapshot articles atau mentions
+            $mentionsSnapshot = ProjectApiSnapshot::where('project_id', $projectId)
+                ->where(function ($q) {
+                    $q->where('endpoint_key', 'like', 'news_mentions%')
+                      ->orWhere('endpoint_key', 'like', 'articles%');
+                })
+                ->latest('synced_at')
+                ->first();
+
+            if (!$mentionsSnapshot || empty($mentionsSnapshot->payload)) {
                 return [];
             }
 
+            $articlesData = json_decode($mentionsSnapshot->payload, true);
+            if (!is_array($articlesData)) {
+                return [];
+            }
+
+            $items = isset($articlesData['docs']) ? $articlesData['docs']
+                : (isset($articlesData['data']) && is_array($articlesData['data']) ? $articlesData['data'] : $articlesData);
+
             $tagCounts = [];
-            foreach ($mentionsSnapshot as $item) {
+            foreach ($items as $item) {
+                if (!is_array($item)) continue;
                 $text = ($item['content'] ?? '') . ' ' . ($item['title'] ?? '') . ' ' . ($item['text'] ?? '');
                 if (preg_match_all('/#([a-zA-Z0-9_\x{0080}-\x{FFFF}]+)/u', $text, $matches)) {
                     foreach ($matches[1] as $tag) {
@@ -237,7 +392,9 @@ class DataOverviewApiController extends Controller
             }
 
             if (!empty($extracted)) {
-                ProjectApiSnapshot::storeSnapshot($projectId, 'all', 'top_hashtags', $startDate, $endDate, $extracted);
+                try {
+                    ProjectApiSnapshot::storeSnapshot($projectId, 'all', 'top_hashtags', $startDate, $endDate, $extracted);
+                } catch (\Throwable $e) {}
             }
 
             return $extracted;
