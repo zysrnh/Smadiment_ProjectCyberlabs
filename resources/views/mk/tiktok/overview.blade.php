@@ -181,8 +181,8 @@
                     <div><h6 class="mb-0">Top Videos by {{ $panelLabels[$tp] }}</h6><small class="text-muted">Klik video untuk lihat detail</small></div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <select class="tme-rows-sel" id="rows-{{ $tp }}" onchange="OVData.reloadTab('{{ $tp }}')"><option value="10">Top 10</option><option value="20">Top 20</option><option value="50">Top 50</option><option value="100" selected>Top 100</option></select>
-                    <span class="badge bg-light-primary text-primary" id="badge-{{ $tp }}">Loading…</span>
+                    <select class="tme-rows-sel" id="rows-{{ $tp }}" onchange="OVData.reloadTab('{{ $tp }}')" style="display:none;"><option value="10">Top 10</option><option value="20">Top 20</option><option value="50">Top 50</option><option value="100" selected>Top 100</option></select>
+                    <span class="badge bg-light-primary text-primary" id="badge-{{ $tp }}" style="display:none;">Loading…</span>
                     <div class="d-flex gap-1" data-html2canvas-ignore="true">
                         <button class="card-exp-btn card-exp-btn-pdf" onclick="OVExport.runCard('card-export-list-{{ $tp }}','list-{{ $tp }}','pdf',this)"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
                         <button class="card-exp-btn card-exp-btn-img" onclick="OVExport.runCard('card-export-list-{{ $tp }}','list-{{ $tp }}','image',this)"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
@@ -486,38 +486,53 @@ const OVDetail={
         const v=parseInt(item.view_cnt||item.views||item.freq||0),l=parseInt(item.likes||item.num_likes||0),c=parseInt(item.comments||item.num_comments||0),s=parseInt(item.shares||item.num_shares||0);
         const sn=OVData._normSent(item),sl={pos:'Positif',neg:'Negatif',neu:'Netral'}[sn];
         let dtF='';if(dt){try{dtF=new Date(dt).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})}catch(e){dtF=dt.split('T')[0]}}
-        const watchUrl = (url && url.startsWith('http')) ? url : `https://www.tiktok.com/@${handle || 'creator'}`;
+        const watchUrl = (url && url.startsWith('http')) ? url : `https://www.tiktok.com/search?q=${encodeURIComponent(handle || name || 'prabowo')}`;
+        const videoSrc = item.video_url || item.media_url || 'https://assets.mixkit.co/videos/preview/mixkit-vertical-portrait-of-a-woman-in-a-neon-tunnel-42687-large.mp4';
         const mH = `
-        <div class="tt-player-card" style="margin:14px 0;background:#0b0f19;border-radius:12px;overflow:hidden;border:1px solid #1e293b;box-shadow:0 8px 24px rgba(0,0,0,0.35);">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.06);">
+        <div class="tt-player-card" style="margin:14px 0;background:#000;border-radius:12px;overflow:hidden;border:1px solid #1e293b;box-shadow:0 8px 24px rgba(0,0,0,0.45);position:relative;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.08);">
                 <div style="display:flex;align-items:center;gap:7px;">
                     <svg style="width:16px;height:16px;fill:#fe2c55;" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.86-4.49V8.72a8.28 8.28 0 0 0 4.84 1.54v-3.5a4.85 4.85 0 0 1-.93-.07z"/></svg>
-                    <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:0.5px;">TikTok Video</span>
+                    <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:0.5px;">TikTok Video Player</span>
                 </div>
-                <span style="font-size:10px;font-weight:700;color:#94a3b8;background:rgba(255,255,255,0.08);padding:2px 8px;border-radius:12px;">@${esc(handle || 'creator')}</span>
+                <span style="font-size:10px;font-weight:700;color:#cbd5e1;background:rgba(255,255,255,0.12);padding:2px 8px;border-radius:12px;">@${esc(handle || 'creator')}</span>
             </div>
-            <div style="position:relative;height:240px;background:linear-gradient(135deg,#1e293b 0%,#090d16 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;">
-                <a href="${esc(watchUrl)}" target="_blank" rel="noopener noreferrer" style="width:62px;height:62px;border-radius:50%;background:#fe2c55;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(254,44,85,0.6);text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;margin-bottom:12px;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
-                    <svg style="width:26px;height:26px;fill:#fff;margin-left:3px;" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                </a>
-                <div style="color:#fff;font-size:13px;font-weight:700;margin-bottom:4px;">Tonton di TikTok</div>
-                <div style="color:#94a3b8;font-size:11px;max-width:240px;line-height:1.4;margin-bottom:14px;">Buka video asli langsung di aplikasi/web TikTok</div>
-                <a href="${esc(watchUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.12);color:#fff;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,0.18);transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
-                    <span>Buka Profil / Video</span>
+            <div style="position:relative;background:#000;text-align:center;">
+                <video id="ovDrawerVid"
+                       src="${esc(videoSrc)}"
+                       poster="${esc(av)}"
+                       playsinline
+                       controls
+                       loop
+                       style="width:100%;max-height:360px;object-fit:cover;display:block;background:#0b0f19;">
+                </video>
+            </div>
+            <div style="padding:10px 14px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.08);">
+                <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;">
+                    <i class="ph ph-music-note" style="color:#fe2c55;"></i>
+                    <span>Suara Asli - ${esc(name)}</span>
+                </div>
+                <a href="${esc(watchUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:5px;background:#fe2c55;color:#fff;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#e02447'" onmouseout="this.style.background='#fe2c55'">
+                    <span>Buka di TikTok</span>
                     <i class="ph ph-arrow-square-out" style="font-size:12px;"></i>
                 </a>
             </div>
-            <div style="padding:9px 14px;background:rgba(0,0,0,0.3);display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;border-top:1px solid rgba(255,255,255,0.06);">
-                <i class="ph ph-music-note" style="color:#fe2c55;"></i>
-                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Suara Asli - ${esc(name)}</span>
-            </div>
         </div>`;
         title.textContent=name;
-        body.innerHTML=`<div class="do-dp2-avatar-row"><div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${ac},${ac}99);">${aH}</div><div><div class="do-dp2-name">${esc(name)}</div>${handle?`<div class="do-dp2-handle">@${esc(handle)}</div>`:''}<span class="do-dp2-plat-badge" style="background:${color}18;color:${color};">TikTok</span></div></div>${dtF?`<div class="do-dp2-meta">${dtF}</div>`:''}<div class="do-dp2-sent do-dp2-sent--${sn}">${sl}</div>${mH}${content?`<div class="do-dp2-content">${esc(content)}</div>`:''}<div class="do-dp2-stats"><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(v)}</div><div class="do-dp2-stat-lbl">Views</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(l)}</div><div class="do-dp2-stat-lbl">Likes</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(c)}</div><div class="do-dp2-stat-lbl">Comments</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(s)}</div><div class="do-dp2-stat-lbl">Shares</div></div></div>${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out me-1"></i>Buka di TikTok</a>`:''}`;
+        body.innerHTML=`<div class="do-dp2-avatar-row"><div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${ac},${ac}99);">${aH}</div><div><div class="do-dp2-name">${esc(name)}</div>${handle?`<div class="do-dp2-handle">@${esc(handle)}</div>`:''}<span class="do-dp2-plat-badge" style="background:${color}18;color:${color};">TikTok</span></div></div>${dtF?`<div class="do-dp2-meta">${dtF}</div>`:''}<div class="do-dp2-sent do-dp2-sent--${sn}">${sl}</div>${mH}${content?`<div class="do-dp2-content">${esc(content)}</div>`:''}<div class="do-dp2-stats"><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(v)}</div><div class="do-dp2-stat-lbl">Views</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(l)}</div><div class="do-dp2-stat-lbl">Likes</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(c)}</div><div class="do-dp2-stat-lbl">Comments</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(s)}</div><div class="do-dp2-stat-lbl">Shares</div></div></div>${watchUrl?`<a href="${esc(watchUrl)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out me-1"></i>Buka di TikTok</a>`:''}`;
         panel.classList.add('show');
     },
-    close(){_$('ovDetailPanel')?.classList.remove('show')},
-    killIframe(){const b=_$('ovDetailBody');if(b)b.querySelectorAll('iframe').forEach(f=>{f.src='';f.remove()})}
+    close(){
+        this.killIframe();
+        _$('ovDetailPanel')?.classList.remove('show');
+    },
+    killIframe(){
+        const b=_$('ovDetailBody');
+        if(b){
+            b.querySelectorAll('video').forEach(v=>{try{v.pause();v.currentTime=0;}catch(e){}});
+            b.querySelectorAll('iframe').forEach(f=>{f.src='';f.remove();});
+        }
+    }
 };
 const OVExport = (() => {
     'use strict';
