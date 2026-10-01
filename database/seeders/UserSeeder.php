@@ -27,18 +27,7 @@ class UserSeeder extends Seeder
             ]
         );
 
-        // 2. Also set standard test user as Unlimited
-        $standardUser = User::updateOrCreate(
-            ['email' => 'user@smadiment.com'],
-            [
-                'name'              => 'User SMADIMENT',
-                'password'          => Hash::make('password123'),
-                'email_verified_at' => now(),
-                'trial_ends_at'     => null, // Null = Unlimited access
-            ]
-        );
-
-        // 3. Fetch available projects from MediaKernels API or fallback
+        // 2. Fetch available projects from MediaKernels API or fallback
         $projectIds = [];
 
         try {
@@ -74,20 +63,17 @@ class UserSeeder extends Seeder
 
         $uniqueProjectIds = array_unique($projectIds);
 
-        // 4. Assign projects to both accounts
-        foreach ([$unlimitedUser, $standardUser] as $u) {
-            foreach ($uniqueProjectIds as $projectId) {
-                UserProject::updateOrCreate(
-                    [
-                        'user_id'    => $u->id,
-                        'project_id' => $projectId,
-                    ]
-                );
-            }
+        // 3. Assign projects to Unlimited account
+        foreach ($uniqueProjectIds as $projectId) {
+            UserProject::updateOrCreate(
+                [
+                    'user_id'    => $unlimitedUser->id,
+                    'project_id' => $projectId,
+                ]
+            );
         }
 
         $this->command->info("✅ Unlimited User [{$unlimitedUser->email}] seeded successfully (Password: password123, Access: Unlimited)");
-        $this->command->info("✅ Standard User [{$standardUser->email}] updated to Unlimited Access");
         $this->command->info("   Project IDs assigned: " . implode(', ', $uniqueProjectIds));
     }
 }
