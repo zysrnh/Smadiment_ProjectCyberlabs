@@ -33,16 +33,11 @@ class ApiDataVaultService
     }
 
     /**
-     * Main Vault retrieval and persistence method.
+     * Main Vault retrieval and persistence method (DB-First).
      * 
-     * If subscription is ACTIVE:
-     *   1. Queries API via $apiCallback (with Cache::remember).
-     *   2. Persists successful result into DB snapshot.
-     *   3. If API fails, falls back gracefully to DB snapshot.
-     * 
-     * If subscription is EXPIRED (Archive Mode):
-     *   1. Skips external API call completely.
-     *   2. Retrieves snapshot from local DB using flexible matcher.
+     * 1. Checks Cache first for instant response.
+     * 2. Checks DB Snapshot next. If snapshot exists, returns DB data immediately.
+     * 3. Hits live API callback ONLY if DB snapshot is missing, and saves result to DB snapshot + Cache.
      *
      * @param int $projectId
      * @param string $media (e.g., 'twitter', 'facebook', 'instagram', 'youtube', 'tiktok', 'news', 'all', 'doc')
@@ -67,80 +62,49 @@ class ApiDataVaultService
         $media = strtolower($media);
 
         $cacheKey = "vault_{$projectId}_{$media}_{$endpointKey}_{$sDate}_{$eDate}";
-        $isLive = $this->isSubscriptionActive();
 
-        // ══════════════════════════════════════════════════════════════
-        // 1. LIVE MODE (Subscription Active)
-        // ══════════════════════════════════════════════════════════════
-        if ($isLive) {
-            try {
-                $result = Cache::remember($cacheKey, $cacheSeconds, function () use (
-                    $projectId,
-                    $media,
-                    $endpointKey,
-                    $sDate,
-                    $eDate,
-                    $apiCallback
-                ) {
-                    $res = $apiCallback();
-
-                    // Only persist if result contains meaningful data
-                    if ($res !== null && !empty($res)) {
-                        try {
-                            ProjectApiSnapshot::storeSnapshot(
-                                $projectId,
-                                $media,
-                                $endpointKey,
-                                $sDate,
-                                $eDate,
-                                $res
-                            );
-                        } catch (\Throwable $dbErr) {
-                            Log::warning("ApiDataVault: Failed saving snapshot to DB: {$dbErr->getMessage()}", [
-                                'project_id' => $projectId,
-                                'endpoint'   => $endpointKey,
-                            ]);
-                        }
-                    }
-
-                    return $res;
-                });
-
-                if ($result !== null && !empty($result)) {
-                    return $result;
-                }
-
-                // If live callback returned empty array (e.g. bad API auth), fallback to snapshot
-                $snapshot = $this->resolveSnapshotPayload($projectId, $media, $endpointKey, $sDate, $eDate);
-                if ($snapshot !== null) {
-                    return $snapshot;
-                }
-
-                return $result ?? [];
-            } catch (\Throwable $apiErr) {
-                Log::warning("ApiDataVault: Live API call failed ({$endpointKey}): {$apiErr->getMessage()} - falling back to DB.");
-
-                // Graceful fallback to DB snapshot when live API is down
-                $snapshot = $this->resolveSnapshotPayload($projectId, $media, $endpointKey, $sDate, $eDate);
-                if ($snapshot !== null) {
-                    Log::info("ApiDataVault: Served fallback DB snapshot for {$endpointKey} after API error.");
-                    return $snapshot;
-                }
-
-                return [];
+        // 1. Ultra-fast Cache Check
+        if (Cache::has($cacheKey)) {
+            $cached = Cache::get($cacheKey);
+            if ($cached !== null && !empty($cached)) {
+                return $cached;
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        // 2. ARCHIVE MODE (Subscription Inactive / Disconnected)
-        // ══════════════════════════════════════════════════════════════
-        Log::info("ApiDataVault: Serving from Archive DB (Subscription Inactive)", [
-            'project_id' => $projectId,
-            'media'      => $media,
-            'endpoint'   => $endpointKey,
-        ]);
-
+        // 2. DB-First: Return local DB snapshot immediately if available
         $snapshot = $this->resolveSnapshotPayload($projectId, $media, $endpointKey, $sDate, $eDate);
+        if ($snapshot !== null && !empty($snapshot)) {
+            Cache::put($cacheKey, $snapshot, $cacheSeconds);
+            return $snapshot;
+        }
+
+        // 3. Fallback: Hit Live API if DB snapshot does not exist yet
+        try {
+            $res = $apiCallback();
+
+            if ($res !== null && !empty($res)) {
+                try {
+                    ProjectApiSnapshot::storeSnapshot(
+                        $projectId,
+                        $media,
+                        $endpointKey,
+                        $sDate,
+                        $eDate,
+                        $res
+                    );
+                } catch (\Throwable $dbErr) {
+                    Log::warning("ApiDataVault: Failed saving snapshot to DB: " . $dbErr->getMessage(), [
+                        'project_id' => $projectId,
+                        'endpoint'   => $endpointKey,
+                    ]);
+                }
+                Cache::put($cacheKey, $res, $cacheSeconds);
+                return $res;
+            }
+        } catch (\Throwable $apiErr) {
+            Log::warning("ApiDataVault: Live API call failed ({$endpointKey}): " . $apiErr->getMessage());
+        }
+
         return $snapshot ?? [];
     }
 
@@ -165,7 +129,7 @@ class ApiDataVaultService
             if ($sDate === $eDate) {
                 $filtered = [];
                 foreach ($data as $item) {
-                    $itemDate = $item['date_created'] ?? $item['date_inserted_dt'] ?? $item['date'] ?? $item['created_at'] ?? '';
+                    $itemDate = $item['orig_date'] ?? $item['date_created'] ?? $item['date_inserted_dt'] ?? $item['date'] ?? $item['created_at'] ?? '';
                     if (str_starts_with($itemDate, $sDate) || str_contains($itemDate, $sDate)) {
                         $filtered[] = $item;
                     }
@@ -205,10 +169,10 @@ class ApiDataVaultService
         string $media,
         string $endpointKey,
         string $startDate,
-        string $endDate
+        string $endtime
     ): mixed {
         $sDate = Carbon::parse($startDate)->format('Y-m-d');
-        $eDate = Carbon::parse($endDate)->format('Y-m-d');
+        $eDate = Carbon::parse($endtime)->format('Y-m-d');
         return $this->resolveSnapshotPayload($projectId, $media, $endpointKey, $sDate, $eDate);
     }
 }

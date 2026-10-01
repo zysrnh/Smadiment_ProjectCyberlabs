@@ -704,7 +704,7 @@ class DataOverviewApiController extends Controller
 
                     $responses = Http::pool(function ($pool) use ($urls) {
                         foreach ($urls as $dStr => $url) {
-                            $pool->as($dStr)->timeout(30)->acceptJson()->get($url);
+                            $pool->as($dStr)->timeout(3)->acceptJson()->get($url);
                         }
                     });
 
