@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class NewsController extends Controller
 {
@@ -1073,17 +1074,31 @@ public function articlesData(Request $request)
             $normalised = $this->vault->remember($projectId, 'tiktok', $endpointKey, $startDate, $endDate, function () use (
                 $projectId, $startDate, $endDate, $rows, $start, $sub
             ) {
-                $raw  = $this->mkClient->tiktokTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
-                $data = $this->extractArray($raw);
+                try {
+                    $raw  = $this->mkClient->tiktokTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
+                    $data = $this->extractArray($raw);
 
-                if (empty($data)) {
-                    return [];
+                    if (!empty($data)) {
+                        return array_map(fn($item) => $this->normaliseTiktok($item), $data);
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('TikTok live API failed: ' . $e->getMessage());
                 }
 
-                return array_map(fn($item) => $this->normaliseTiktok($item), $data);
+                return [];
             });
 
             $normalised = is_array($normalised) ? $normalised : [];
+
+            // Fallback to local DB snapshot if API returned empty
+            if (empty($normalised)) {
+                $normalised = $this->getTiktokSnapshotFallback($projectId, $sub, $rows);
+                if (!empty($normalised)) {
+                    $sDate = Carbon::parse($startDate)->format('Y-m-d');
+                    $eDate = Carbon::parse($endDate)->format('Y-m-d');
+                    Cache::put("vault_{$projectId}_tiktok_{$endpointKey}_{$sDate}_{$eDate}", $normalised, 1800);
+                }
+            }
 
             return response()->json([
                 'success' => true,
@@ -1097,23 +1112,61 @@ public function articlesData(Request $request)
         }
     }
 
+    protected function getTiktokSnapshotFallback(int $projectId, string $sub = 'postbylike', int $rows = 300): array
+    {
+        $snaps = ProjectApiSnapshot::where('project_id', $projectId)
+            ->where('media', 'tiktok')
+            ->orderBy('synced_at', 'desc')
+            ->get();
+
+        $posts = [];
+        foreach ($snaps as $snap) {
+            $decoded = json_decode($snap->payload, true);
+            if (!empty($decoded['posts']) && is_array($decoded['posts'])) {
+                $posts = $decoded['posts'];
+                break;
+            } elseif (is_array($decoded) && isset($decoded[0]) && is_array($decoded[0])) {
+                $posts = $decoded;
+                break;
+            }
+        }
+
+        if (empty($posts)) {
+            return [];
+        }
+
+        $normalised = array_map(fn($item) => $this->normaliseTiktok($item), $posts);
+
+        if ($sub === 'postbyview' || $sub === 'view') {
+            usort($normalised, fn($a, $b) => ($b['num_views'] ?? 0) - ($a['num_views'] ?? 0));
+        } elseif ($sub === 'postbycomment' || $sub === 'comment') {
+            usort($normalised, fn($a, $b) => ($b['num_comments'] ?? 0) - ($a['num_comments'] ?? 0));
+        } elseif ($sub === 'postbyshare' || $sub === 'share') {
+            usort($normalised, fn($a, $b) => ($b['num_shares'] ?? 0) - ($a['num_shares'] ?? 0));
+        } else {
+            usort($normalised, fn($a, $b) => ($b['num_likes'] ?? 0) - ($a['num_likes'] ?? 0));
+        }
+
+        return array_slice($normalised, 0, $rows > 0 ? $rows : 300);
+    }
+
     private function normaliseTiktok(array $item): array
     {
-        $handle = $item['author_scr_name'] ?? $item['author_id'] ?? '';
+        $handle = $item['author_scr_name'] ?? $item['author_id'] ?? $item['name'] ?? '';
         return [
             '_platform'       => 'tiktok',
             'media_type_id'   => '6',
             'id'              => $item['id'] ?? $item['docid'] ?? '',
             'url'             => $item['url'] ?? '',
-            'content'         => strip_tags($item['content'] ?? $item['name'] ?? ''),
-            'author_name'     => $handle,
+            'content'         => strip_tags($item['content'] ?? $item['caption'] ?? $item['name'] ?? ''),
+            'author_name'     => $item['name'] ?? $item['author_nickname'] ?? $item['nickname'] ?? $handle,
             'author_handle'   => $handle,
-            'avatar_url'      => ($item['image'] ?? '') ?: '',
+            'avatar_url'      => ($item['avatar_url'] ?? $item['image'] ?? '') ?: '',
             'date_created'    => $item['date_created'] ?? '',
             'num_likes'       => (int) ($item['likes'] ?? $item['num_likes'] ?? $item['freq'] ?? 0),
             'num_comments'    => (int) ($item['comments'] ?? $item['num_comments'] ?? 0),
-            'num_shares'      => (int) ($item['shares'] ?? 0),
-            'num_views'       => (int) ($item['views'] ?? $item['num_views'] ?? 0),
+            'num_shares'      => (int) ($item['shares'] ?? $item['num_shares'] ?? 0),
+            'num_views'       => (int) ($item['views'] ?? $item['view_cnt'] ?? $item['num_views'] ?? 0),
             'num_followers'   => (int) ($item['num_followers'] ?? 0),
             'class_sentiment' => (string) ($item['sentiment'] ?? $item['class_sentiment'] ?? '0'),
             'mention_type'    => $item['mention_type'] ?? 'video',
@@ -1151,38 +1204,50 @@ public function articlesData(Request $request)
                     $raw  = $this->mkClient->igTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
                     $data = $this->extractArray($raw);
                     Log::info('✅ IG dedicated API returned', ['count' => count($data)]);
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     Log::warning('⚠️ IG dedicated API failed, falling back to mentions', ['error' => $e->getMessage()]);
                 }
 
                 if (empty($data)) {
                     Log::info('📋 Instagram: using mentions fallback');
-                    $rawMentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
-                    $mentions    = $this->extractArray($rawMentions);
+                    try {
+                        $rawMentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
+                        $mentions    = $this->extractArray($rawMentions);
 
-                    $data = array_values(array_filter($mentions, function ($item) {
-                        $mt  = strtolower((string) ($item['media_type_id'] ?? $item['media_type'] ?? $item['tcode'] ?? ''));
-                        $id  = (string) ($item['id'] ?? $item['docid'] ?? '');
-                        $url = (string) ($item['url'] ?? '');
-                        return $mt === '3'
-                            || str_contains($mt, 'ig')
-                            || str_contains($mt, 'instagram')
-                            || str_starts_with($id, 'in-')
-                            || str_contains($url, 'instagram.com');
-                    }));
+                        $data = array_values(array_filter($mentions, function ($item) {
+                            $mt  = strtolower((string) ($item['media_type_id'] ?? $item['media_type'] ?? $item['tcode'] ?? ''));
+                            $id  = (string) ($item['id'] ?? $item['docid'] ?? '');
+                            $url = (string) ($item['url'] ?? '');
+                            return $mt === '3'
+                                || str_contains($mt, 'ig')
+                                || str_contains($mt, 'instagram')
+                                || str_starts_with($id, 'in-')
+                                || str_contains($url, 'instagram.com');
+                        }));
 
-                    usort($data, fn($a, $b) =>
-                        (int)($b['num_likes'] ?? $b['likes'] ?? $b['freq'] ?? 0)
-                        - (int)($a['num_likes'] ?? $a['likes'] ?? $a['freq'] ?? 0)
-                    );
-
-                    Log::info('📋 Instagram fallback result', ['count' => count($data)]);
+                        usort($data, fn($a, $b) =>
+                            (int)($b['num_likes'] ?? $b['likes'] ?? $b['freq'] ?? 0)
+                            - (int)($a['num_likes'] ?? $a['likes'] ?? $a['freq'] ?? 0)
+                        );
+                    } catch (\Throwable $e) {
+                        Log::warning('IG mentions fallback failed: ' . $e->getMessage());
+                    }
                 }
 
                 return array_map(fn($item) => $this->normaliseInstagram($item), $data);
             });
 
             $normalised = is_array($normalised) ? $normalised : [];
+
+            // Fallback to local DB snapshot if API returned empty
+            if (empty($normalised)) {
+                $normalised = $this->getInstagramSnapshotFallback($projectId, $sub, $rows);
+                if (!empty($normalised)) {
+                    $sDate = Carbon::parse($startDate)->format('Y-m-d');
+                    $eDate = Carbon::parse($endDate)->format('Y-m-d');
+                    Cache::put("vault_{$projectId}_instagram_{$endpointKey}_{$sDate}_{$eDate}", $normalised, 1800);
+                }
+            }
 
             Log::info('✅ Instagram Top Status final', ['total' => count($normalised)]);
 
@@ -1198,11 +1263,84 @@ public function articlesData(Request $request)
         }
     }
 
+    protected function getInstagramSnapshotFallback(int $projectId, string $sub = 'postbylike', int $rows = 300): array
+    {
+        $snaps = ProjectApiSnapshot::where('project_id', $projectId)
+            ->where('media', 'ig')
+            ->orderBy('synced_at', 'desc')
+            ->get();
+
+        $posts = [];
+        foreach ($snaps as $snap) {
+            if (str_contains($snap->endpoint_key, $sub)) {
+                $decoded = json_decode($snap->payload, true);
+                if (is_array($decoded) && !empty($decoded)) {
+                    $posts = $decoded['posts'] ?? (isset($decoded[0]) ? $decoded : []);
+                    if (!empty($posts)) break;
+                }
+            }
+        }
+
+        if (empty($posts)) {
+            foreach ($snaps as $snap) {
+                $decoded = json_decode($snap->payload, true);
+                if (is_array($decoded) && !empty($decoded)) {
+                    $posts = $decoded['posts'] ?? (isset($decoded[0]) ? $decoded : []);
+                    if (!empty($posts)) break;
+                }
+            }
+        }
+
+        if (empty($posts)) {
+            $mentionsSnaps = ProjectApiSnapshot::where('project_id', $projectId)
+                ->where('media', 'all')
+                ->where('endpoint_key', 'like', 'news_mentions_%')
+                ->orderBy('synced_at', 'desc')
+                ->get();
+
+            foreach ($mentionsSnaps as $snap) {
+                $decoded = json_decode($snap->payload, true);
+                $rawList = is_array($decoded) ? ($decoded['data'] ?? (isset($decoded[0]) ? $decoded : [])) : [];
+                $filtered = array_values(array_filter($rawList, function ($item) {
+                    $mt  = strtolower((string) ($item['media_type_id'] ?? $item['media_type'] ?? $item['tcode'] ?? ''));
+                    $id  = (string) ($item['id'] ?? $item['docid'] ?? '');
+                    $url = (string) ($item['url'] ?? '');
+                    return $mt === '3'
+                        || str_contains($mt, 'ig')
+                        || str_contains($mt, 'instagram')
+                        || str_starts_with($id, 'in-')
+                        || str_contains($url, 'instagram.com');
+                }));
+                if (!empty($filtered)) {
+                    $posts = $filtered;
+                    break;
+                }
+            }
+        }
+
+        if (empty($posts)) {
+            return [];
+        }
+
+        $normalised = array_map(fn($item) => $this->normaliseInstagram($item), $posts);
+
+        if ($sub === 'postbycomment' || $sub === 'comment') {
+            usort($normalised, fn($a, $b) => ($b['num_comments'] ?? 0) - ($a['num_comments'] ?? 0));
+        } elseif ($sub === 'postbyshare' || $sub === 'share') {
+            usort($normalised, fn($a, $b) => ($b['num_shares'] ?? 0) - ($a['num_shares'] ?? 0));
+        } else {
+            usort($normalised, fn($a, $b) => ($b['num_likes'] ?? 0) - ($a['num_likes'] ?? 0));
+        }
+
+        return array_slice($normalised, 0, $rows > 0 ? $rows : 300);
+    }
+
     private function normaliseInstagram(array $item): array
     {
-        $handle    = $item['author_scr_name'] ?? $item['author_id'] ?? '';
+        $handle    = $item['author_scr_name'] ?? $item['author_id'] ?? $item['username'] ?? '';
+        $name      = $item['author_name'] ?? $item['name'] ?? $handle;
         $authorId  = $item['author_id'] ?? $handle;
-        $rawImage  = $item['image'] ?? '';
+        $rawImage  = $item['avatar_url'] ?? $item['image'] ?? '';
 
         $avatarUrl = ($rawImage && str_starts_with($rawImage, 'http'))
             ? $rawImage
@@ -1213,8 +1351,8 @@ public function articlesData(Request $request)
             'media_type_id'   => '3',
             'id'              => $item['id'] ?? $item['docid'] ?? '',
             'url'             => $item['url'] ?? '',
-            'content'         => strip_tags($item['content'] ?? $item['name'] ?? ''),
-            'author_name'     => $handle,
+            'content'         => strip_tags($item['content'] ?? $item['caption'] ?? $item['name'] ?? ''),
+            'author_name'     => $name,
             'author_handle'   => $authorId,
             'avatar_url'      => $avatarUrl,
             'date_created'    => $item['date_created'] ?? '',
@@ -1261,39 +1399,51 @@ public function articlesData(Request $request)
                     $raw  = $this->mkClient->fbTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
                     $data = $this->extractArray($raw);
                     Log::info('✅ FB dedicated API returned', ['count' => count($data)]);
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     Log::warning('⚠️ FB dedicated API failed, falling back to mentions', ['error' => $e->getMessage()]);
                 }
 
                 if (empty($data)) {
                     Log::info('📋 Facebook: using mentions fallback');
-                    $rawMentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
-                    $mentions    = $this->extractArray($rawMentions);
+                    try {
+                        $rawMentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
+                        $mentions    = $this->extractArray($rawMentions);
 
-                    $data = array_values(array_filter($mentions, function ($item) {
-                        $mt    = strtolower((string) ($item['media_type'] ?? ''));
-                        $tcode = strtolower((string) ($item['tcode'] ?? ''));
-                        $id    = (string) ($item['id'] ?? '');
-                        $url   = (string) ($item['url'] ?? '');
-                        return $mt === 'fb' || $mt === 'facebook'
-                            || str_starts_with($tcode, 'fb-')
-                            || str_starts_with($id, 'fb-')
-                            || str_contains($url, 'facebook.com')
-                            || str_contains($url, 'fb.com');
-                    }));
+                        $data = array_values(array_filter($mentions, function ($item) {
+                            $mt    = strtolower((string) ($item['media_type'] ?? ''));
+                            $tcode = strtolower((string) ($item['tcode'] ?? ''));
+                            $id    = (string) ($item['id'] ?? '');
+                            $url   = (string) ($item['url'] ?? '');
+                            return $mt === 'fb' || $mt === 'facebook'
+                                || str_starts_with($tcode, 'fb-')
+                                || str_starts_with($id, 'fb-')
+                                || str_contains($url, 'facebook.com')
+                                || str_contains($url, 'fb.com');
+                        }));
 
-                    usort($data, fn($a, $b) =>
-                        (int)($b['num_likes'] ?? $b['likes'] ?? 0)
-                        - (int)($a['num_likes'] ?? $a['likes'] ?? 0)
-                    );
-
-                    Log::info('📋 Facebook fallback result', ['count' => count($data)]);
+                        usort($data, fn($a, $b) =>
+                            (int)($b['num_likes'] ?? $b['likes'] ?? 0)
+                            - (int)($a['num_likes'] ?? $a['likes'] ?? 0)
+                        );
+                    } catch (\Throwable $e) {
+                        Log::warning('FB mentions fallback failed: ' . $e->getMessage());
+                    }
                 }
 
                 return array_map(fn($item) => $this->normaliseFacebook($item), $data);
             });
 
             $normalised = is_array($normalised) ? $normalised : [];
+
+            // Fallback to local DB snapshot if API returned empty
+            if (empty($normalised)) {
+                $normalised = $this->getFacebookSnapshotFallback($projectId, $sub, $rows);
+                if (!empty($normalised)) {
+                    $sDate = Carbon::parse($startDate)->format('Y-m-d');
+                    $eDate = Carbon::parse($endDate)->format('Y-m-d');
+                    Cache::put("vault_{$projectId}_facebook_{$endpointKey}_{$sDate}_{$eDate}", $normalised, 1800);
+                }
+            }
 
             return response()->json([
                 'success' => true,
@@ -1307,19 +1457,92 @@ public function articlesData(Request $request)
         }
     }
 
+    protected function getFacebookSnapshotFallback(int $projectId, string $sub = 'fblike', int $rows = 300): array
+    {
+        $snaps = ProjectApiSnapshot::where('project_id', $projectId)
+            ->where('media', 'fb')
+            ->orderBy('synced_at', 'desc')
+            ->get();
+
+        $posts = [];
+        foreach ($snaps as $snap) {
+            if (str_contains($snap->endpoint_key, $sub)) {
+                $decoded = json_decode($snap->payload, true);
+                if (is_array($decoded) && !empty($decoded)) {
+                    $posts = $decoded['posts'] ?? (isset($decoded[0]) ? $decoded : []);
+                    if (!empty($posts)) break;
+                }
+            }
+        }
+
+        if (empty($posts)) {
+            foreach ($snaps as $snap) {
+                $decoded = json_decode($snap->payload, true);
+                if (is_array($decoded) && !empty($decoded)) {
+                    $posts = $decoded['posts'] ?? (isset($decoded[0]) ? $decoded : []);
+                    if (!empty($posts)) break;
+                }
+            }
+        }
+
+        if (empty($posts)) {
+            $mentionsSnaps = ProjectApiSnapshot::where('project_id', $projectId)
+                ->where('media', 'all')
+                ->where('endpoint_key', 'like', 'news_mentions_%')
+                ->orderBy('synced_at', 'desc')
+                ->get();
+
+            foreach ($mentionsSnaps as $snap) {
+                $decoded = json_decode($snap->payload, true);
+                $rawList = is_array($decoded) ? ($decoded['data'] ?? (isset($decoded[0]) ? $decoded : [])) : [];
+                $filtered = array_values(array_filter($rawList, function ($item) {
+                    $mt    = strtolower((string) ($item['media_type'] ?? ''));
+                    $tcode = strtolower((string) ($item['tcode'] ?? ''));
+                    $id    = (string) ($item['id'] ?? '');
+                    $url   = (string) ($item['url'] ?? '');
+                    return $mt === 'fb' || $mt === 'facebook'
+                        || str_starts_with($tcode, 'fb-')
+                        || str_starts_with($id, 'fb-')
+                        || str_contains($url, 'facebook.com')
+                        || str_contains($url, 'fb.com');
+                }));
+                if (!empty($filtered)) {
+                    $posts = $filtered;
+                    break;
+                }
+            }
+        }
+
+        if (empty($posts)) {
+            return [];
+        }
+
+        $normalised = array_map(fn($item) => $this->normaliseFacebook($item), $posts);
+
+        if ($sub === 'fbcomment' || $sub === 'comment') {
+            usort($normalised, fn($a, $b) => ($b['num_comments'] ?? 0) - ($a['num_comments'] ?? 0));
+        } elseif ($sub === 'fbshare' || $sub === 'share') {
+            usort($normalised, fn($a, $b) => ($b['num_shares'] ?? 0) - ($a['num_shares'] ?? 0));
+        } else {
+            usort($normalised, fn($a, $b) => ($b['num_likes'] ?? 0) - ($a['num_likes'] ?? 0));
+        }
+
+        return array_slice($normalised, 0, $rows > 0 ? $rows : 300);
+    }
+
     private function normaliseFacebook(array $item): array
     {
         $handle = $item['author_scr_name'] ?? $item['author_id'] ?? '';
-        $name   = $item['author_name'] ?? $handle;
+        $name   = $item['author_name'] ?? $item['name'] ?? $item['page_name'] ?? $item['from_name'] ?? $handle;
         return [
             '_platform'       => 'fb',
             'media_type_id'   => '2',
             'id'              => $item['id'] ?? $item['docid'] ?? '',
             'url'             => $item['url'] ?? '',
-            'content'         => strip_tags($item['content'] ?? $item['name'] ?? ''),
+            'content'         => strip_tags($item['content'] ?? $item['caption'] ?? $item['name'] ?? ''),
             'author_name'     => $name,
             'author_handle'   => $handle,
-            'avatar_url'      => ($item['image'] ?? ''),
+            'avatar_url'      => ($item['avatar_url'] ?? $item['image'] ?? ''),
             'date_created'    => $item['date_created'] ?? '',
             'num_likes'       => (int) ($item['likes'] ?? $item['num_likes'] ?? $item['freq'] ?? 0),
             'num_comments'    => (int) ($item['comments'] ?? $item['num_comments'] ?? 0),
@@ -1362,54 +1585,50 @@ public function articlesData(Request $request)
                     $raw  = $this->mkClient->ytbTopStatus($projectId, $startDate, $endDate, 0, 23, $rows, $sub);
                     $data = $this->extractArray($raw);
                     Log::info('✅ YT dedicated API returned', ['count' => count($data)]);
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     Log::warning('⚠️ YT dedicated API failed, falling back to mentions', ['error' => $e->getMessage()]);
                 }
 
                 if (empty($data)) {
                     Log::info('📋 YouTube: using mentions fallback');
-                    $rawMentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
-                    $mentions    = $this->extractArray($rawMentions);
+                    try {
+                        $rawMentions = $this->mkClient->mentions($projectId, $startDate, $endDate, 0, 23, true, $start, $rows);
+                        $mentions    = $this->extractArray($rawMentions);
 
-                    $data = array_values(array_filter($mentions, function ($item) {
-                        $mt  = strtolower((string) ($item['media_type_id'] ?? $item['media_type'] ?? $item['tcode'] ?? ''));
-                        $id  = (string) ($item['id'] ?? $item['docid'] ?? '');
-                        $url = (string) ($item['url'] ?? '');
-                        return $mt === '4'
-                            || str_contains($mt, 'ytb')
-                            || str_contains($mt, 'youtube')
-                            || str_starts_with($id, 'yt-')
-                            || str_contains($url, 'youtube.com')
-                            || str_contains($url, 'youtu.be');
-                    }));
+                        $data = array_values(array_filter($mentions, function ($item) {
+                            $mt  = strtolower((string) ($item['media_type_id'] ?? $item['media_type'] ?? $item['tcode'] ?? ''));
+                            $id  = (string) ($item['id'] ?? $item['docid'] ?? '');
+                            $url = (string) ($item['url'] ?? '');
+                            return $mt === '4'
+                                || str_contains($mt, 'ytb')
+                                || str_contains($mt, 'youtube')
+                                || str_starts_with($id, 'yt-')
+                                || str_contains($url, 'youtube.com')
+                                || str_contains($url, 'youtu.be');
+                        }));
 
-                    usort($data, fn($a, $b) =>
-                        (int)($b['num_likes'] ?? 0) - (int)($a['num_likes'] ?? 0)
-                    );
+                        usort($data, fn($a, $b) =>
+                            (int)($b['num_likes'] ?? 0) - (int)($a['num_likes'] ?? 0)
+                        );
+                    } catch (\Throwable $e) {
+                        Log::warning('YouTube mentions fallback failed: ' . $e->getMessage());
+                    }
                 }
 
-                return array_map(fn($item) => [
-                    '_platform'       => 'ytb',
-                    'media_type_id'   => '4',
-                    'id'              => $item['id'] ?? $item['docid'] ?? '',
-                    'url'             => $item['url'] ?? '',
-                    'content'         => strip_tags($item['content'] ?? $item['name'] ?? ''),
-                    'author_name'     => $item['author_name'] ?? $item['author_scr_name'] ?? $item['channel_title'] ?? '',
-                    'author_handle'   => $item['author_scr_name'] ?? $item['channel_name'] ?? '',
-                    'avatar_url'      => $item['image'] ?? $item['thumbnail'] ?? '',
-                    'date_created'    => $item['date_created'] ?? '',
-                    'num_likes'       => (int) ($item['num_likes'] ?? $item['likes'] ?? 0),
-                    'num_comments'    => (int) ($item['num_comments'] ?? $item['comments'] ?? 0),
-                    'num_shares'      => (int) ($item['num_shares'] ?? $item['shares'] ?? 0),
-                    'num_views'       => (int) ($item['views'] ?? $item['num_views'] ?? 0),
-                    'num_followers'   => 0,
-                    'class_sentiment' => (string) ($item['sentiment'] ?? $item['class_sentiment'] ?? '0'),
-                    'mention_type'    => $item['mention_type'] ?? 'video',
-                    'hostname'        => 'youtube.com',
-                ], $data);
+                return array_map(fn($item) => $this->normaliseYoutube($item), $data);
             });
 
             $normalised = is_array($normalised) ? $normalised : [];
+
+            // Fallback to local DB snapshot if API returned empty
+            if (empty($normalised)) {
+                $normalised = $this->getYoutubeSnapshotFallback($projectId, $sub, $rows);
+                if (!empty($normalised)) {
+                    $sDate = Carbon::parse($startDate)->format('Y-m-d');
+                    $eDate = Carbon::parse($endDate)->format('Y-m-d');
+                    Cache::put("vault_{$projectId}_youtube_{$endpointKey}_{$sDate}_{$eDate}", $normalised, 1800);
+                }
+            }
 
             Log::info('✅ YouTube Top Status fetched', ['total' => count($normalised)]);
 
@@ -1423,6 +1642,100 @@ public function articlesData(Request $request)
             Log::error('❌ YouTube Top Status Error', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'error' => 'Failed to fetch YouTube data'], 500);
         }
+    }
+
+    protected function getYoutubeSnapshotFallback(int $projectId, string $sub = 'postbyview', int $rows = 300): array
+    {
+        $snaps = ProjectApiSnapshot::where('project_id', $projectId)
+            ->where('media', 'yt')
+            ->orderBy('synced_at', 'desc')
+            ->get();
+
+        $posts = [];
+        foreach ($snaps as $snap) {
+            $decoded = json_decode($snap->payload, true);
+            if (is_array($decoded) && !empty($decoded)) {
+                $posts = $decoded['posts'] ?? (isset($decoded[0]) ? $decoded : []);
+                if (!empty($posts)) break;
+            }
+        }
+
+        if (empty($posts)) {
+            $mentionsSnaps = ProjectApiSnapshot::where('project_id', $projectId)
+                ->where('media', 'all')
+                ->where('endpoint_key', 'like', 'news_mentions_%')
+                ->orderBy('synced_at', 'desc')
+                ->get();
+
+            foreach ($mentionsSnaps as $snap) {
+                $decoded = json_decode($snap->payload, true);
+                $rawList = is_array($decoded) ? ($decoded['data'] ?? (isset($decoded[0]) ? $decoded : [])) : [];
+                $filtered = array_values(array_filter($rawList, function ($item) {
+                    $mt  = strtolower((string) ($item['media_type_id'] ?? $item['media_type'] ?? $item['tcode'] ?? ''));
+                    $id  = (string) ($item['id'] ?? $item['docid'] ?? '');
+                    $url = (string) ($item['url'] ?? '');
+                    return $mt === '4'
+                        || str_contains($mt, 'ytb')
+                        || str_contains($mt, 'youtube')
+                        || str_starts_with($id, 'yt-')
+                        || str_contains($url, 'youtube.com')
+                        || str_contains($url, 'youtu.be');
+                }));
+                if (!empty($filtered)) {
+                    $posts = $filtered;
+                    break;
+                }
+            }
+        }
+
+        if (empty($posts)) {
+            return [];
+        }
+
+        $normalised = array_map(fn($item) => $this->normaliseYoutube($item), $posts);
+
+        if ($sub === 'postbylike' || $sub === 'like') {
+            usort($normalised, fn($a, $b) => ($b['num_likes'] ?? 0) - ($a['num_likes'] ?? 0));
+        } elseif ($sub === 'postbycomment' || $sub === 'comment') {
+            usort($normalised, fn($a, $b) => ($b['num_comments'] ?? 0) - ($a['num_comments'] ?? 0));
+        } else {
+            usort($normalised, fn($a, $b) => ($b['num_views'] ?? 0) - ($a['num_views'] ?? 0));
+        }
+
+        return array_slice($normalised, 0, $rows > 0 ? $rows : 300);
+    }
+
+    private function normaliseYoutube(array $item): array
+    {
+        $authorName = $item['author_name'] ?? $item['author_scr_name'] ?? $item['channel_title'] ?? $item['channel_name'] ?? $item['name'] ?? '';
+        $authorHandle = $item['author_scr_name'] ?? $item['channel_name'] ?? $item['author_id'] ?? '';
+        $url = $item['url'] ?? '';
+        $docid = $item['id'] ?? $item['docid'] ?? $item['video_id'] ?? '';
+        if (!$url && $docid) {
+            $vid = preg_replace('/^yt-/', '', $docid);
+            $url = "https://www.youtube.com/watch?v={$vid}";
+        }
+
+        return [
+            '_platform'       => 'yt',
+            'media_type_id'   => '4',
+            'id'              => $docid,
+            'url'             => $url,
+            'title'           => $item['title'] ?? '',
+            'content'         => strip_tags($item['content'] ?? $item['caption'] ?? $item['description'] ?? $item['title'] ?? $item['name'] ?? ''),
+            'author_name'     => $authorName,
+            'author_handle'   => $authorHandle,
+            'avatar_url'      => ($item['avatar_url'] ?? $item['image'] ?? $item['thumbnail'] ?? $item['thumbnail_url'] ?? ''),
+            'date_created'    => $item['date_created'] ?? '',
+            'num_likes'       => (int) ($item['num_likes'] ?? $item['likes'] ?? 0),
+            'num_comments'    => (int) ($item['num_comments'] ?? $item['comments'] ?? 0),
+            'num_shares'      => (int) ($item['num_shares'] ?? $item['shares'] ?? 0),
+            'num_views'       => (int) ($item['views'] ?? $item['view_cnt'] ?? $item['num_views'] ?? 0),
+            'num_followers'   => 0,
+            'class_sentiment' => (string) ($item['sentiment'] ?? $item['class_sentiment'] ?? '0'),
+            'mention_type'    => $item['mention_type'] ?? 'video',
+            'hostname'        => 'youtube.com',
+        ];
     }
 
     public function aiAnalysisPage(Request $request)
