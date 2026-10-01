@@ -15,6 +15,7 @@ class RememberSelectedProject
         }
 
         if (!$request->query('project_id') && session('selected_project_id')) {
+            $request->query->set('project_id', session('selected_project_id'));
             $request->merge(['project_id' => session('selected_project_id')]);
         }
 
@@ -27,6 +28,8 @@ class RememberSelectedProject
         }
 
         if (!$request->query('start_date') && session('selected_start_date')) {
+            $request->query->set('start_date', session('selected_start_date'));
+            $request->query->set('end_date', session('selected_end_date'));
             $request->merge([
                 'start_date' => session('selected_start_date'),
                 'end_date'   => session('selected_end_date'),

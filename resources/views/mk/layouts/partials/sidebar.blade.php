@@ -81,10 +81,16 @@
                 $isTiktokActive    = request()->routeIs($tiktokRoutes);
                 $isTopicActive     = request()->routeIs($topicRoutes);
 
-                // Build query string preserving project_id ONLY
+                // Build query string preserving project_id AND global date range
                 $qsParts = [];
                 if (!empty($currentProjectId)) {
                     $qsParts[] = 'project_id=' . $currentProjectId;
+                }
+                $sDate = request()->get('start_date') ?? session('selected_start_date');
+                $eDate = request()->get('end_date') ?? session('selected_end_date');
+                if (!empty($sDate) && !empty($eDate)) {
+                    $qsParts[] = 'start_date=' . $sDate;
+                    $qsParts[] = 'end_date=' . $eDate;
                 }
                 $qs = !empty($qsParts) ? '?' . implode('&', $qsParts) : '';
             @endphp
