@@ -426,16 +426,8 @@ class DataOverviewApiController extends Controller
 
             $totalMentions = (int) ($stats->tot ?? 0);
 
-            // 2. Jika DB belum ada datanya, fallback ke API
-            if ($totalMentions === 0) {
-                try {
-                    $allSentiment = $mk->sentimentTotal($projectId, $startDate, $endDate, 0, 23);
-                    $normalized   = $this->normalizeSentimentTotal($allSentiment);
-                    $totalMentions = $normalized['positive'] + $normalized['neutral'] + $normalized['negative'];
-                } catch (\Throwable $apiErr) {
-                    $totalMentions = 0;
-                }
-            }
+            // 2. Jika DB belum ada datanya, return 0 (no blocking API call)
+            // Data akan tersedia setelah sync berjalan di background
 
             if ($totalMentions === 0) {
                 return response()->json(['success' => true, 'social' => 0, 'news' => 0]);
@@ -684,72 +676,9 @@ class DataOverviewApiController extends Controller
                 }
             }
 
-            // 3. Jika ada tanggal kosong, auto-sync
-            if (!empty($missingDates)) {
-                try {
-                    $token   = $mk->getToken();
-                    $baseUrl = rtrim(config('services.mediakernels.base_url'), '/');
-                    $urls    = [];
-
-                    foreach ($missingDates as $dStr) {
-                        $urls[$dStr] = $baseUrl . '/sentiment_total/?' . http_build_query([
-                            'project_id' => $projectId,
-                            'start_date' => $dStr,
-                            'start_time' => 0,
-                            'end_date'   => $dStr,
-                            'end_time'   => 23,
-                            'token'      => $token,
-                        ]);
-                    }
-
-                    $responses = Http::pool(function ($pool) use ($urls) {
-                        foreach ($urls as $dStr => $url) {
-                            $pool->as($dStr)->timeout(3)->acceptJson()->get($url);
-                        }
-                    });
-
-                    $upsertData = [];
-                    foreach ($missingDates as $dStr) {
-                        $res = $responses[$dStr] ?? null;
-                        $pos = 0; $neu = 0; $neg = 0;
-
-                        if ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) {
-                            $norm = $this->normalizeSentimentTotal($res->json() ?? []);
-                            $pos  = $norm['positive'];
-                            $neu  = $norm['neutral'];
-                            $neg  = $norm['negative'];
-                        }
-
-                        $upsertData[] = [
-                            'project_id' => $projectId,
-                            'date'       => $dStr,
-                            'positive'   => $pos,
-                            'neutral'    => $neu,
-                            'negative'   => $neg,
-                            'total'      => $pos + $neu + $neg,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ];
-                    }
-
-                    if (!empty($upsertData)) {
-                        ProjectDailySentiment::upsert(
-                            $upsertData,
-                            ['project_id', 'date'],
-                            ['positive', 'neutral', 'negative', 'total', 'updated_at']
-                        );
-                    }
-
-                    $existing = ProjectDailySentiment::where('project_id', $projectId)
-                        ->whereBetween('date', [$startDate, $endDate])
-                        ->orderBy('date', 'asc')
-                        ->get()
-                        ->keyBy(fn($item) => $item->date->format('Y-m-d'));
-
-                } catch (\Throwable $e) {
-                    Log::warning("DataOverview: timeline auto-sync error: " . $e->getMessage());
-                }
-            }
+            // 3. Skip auto-sync untuk kecepatan - langsung return data DB yang ada
+            // Tanggal yang belum ada di DB akan ditampilkan sebagai 0
+            // Auto-sync bisa dilakukan di background/cron terpisah
 
             // 4. Susun respon timeline
             $dates     = [];
