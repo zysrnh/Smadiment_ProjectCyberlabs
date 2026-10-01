@@ -1313,6 +1313,21 @@ async function loadWeekHour(){
 /* ══════════════════════════════════════════════════════
    SLIDE PANEL — Dual-Stream & Index Lookup
 ══════════════════════════════════════════════════════ */
+const _extractYtId = v => {
+    if (!v) return '';
+    const url = String(v.url || v.link || v.permalink || v.original_url || v.post_url || v.article_url || v.source_url || v.web_url || '');
+    let id = (url.match(/[?&]v=([a-zA-Z0-9_-]{11})/) || url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/) || url.match(/shorts\/([a-zA-Z0-9_-]{11})/) || url.match(/embed\/([a-zA-Z0-9_-]{11})/) || [])[1];
+    if (id) return id;
+    const flds = ['video_id','youtube_id','yt_id','id_str','post_id','docid','id','sub_id'];
+    for (let f of flds) {
+        let val = v[f]; if (!val) continue;
+        let s = String(val).replace(/^(yt[-_])/i, '');
+        if (s.length === 11) return s;
+    }
+    if (v.snippet) return v.snippet.videoId || v.snippet.resourceId?.videoId || '';
+    return '';
+};
+
 const MSPanel = (() => {
   let _cache = {}, _allItems = [], _renderedItems = [], _curPlat = null, _curSent = 'all';
 
@@ -1860,26 +1875,22 @@ const MSDetail = {
     const avHtml=(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';">`:ini;
     let dtFmt='';if(dt){try{dtFmt=new Date(dt).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){dtFmt=dt.split('T')[0];}}
     let mediaHtml='';
-    if(platform==='yt'){
-        let ytId=''; if(url){ const m=url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|\/vi\/)([a-zA-Z0-9_-]{11})/); if(m) ytId=m[1]; }
-        if(!ytId){
-            var flds = ['video_id','youtube_id','yt_id','id_str','post_id','docid','id','sub_id'];
-            for(var i=0; i<flds.length; i++){
-                var f = flds[i]; var v = item[f]; if(!v) continue;
-                var s = String(v).replace(/^(yt[-_])/i, '');
-                if(s.length===11){ ytId=s; break; }
-            }
-        }
-        if(!ytId && item.snippet) ytId = (item.snippet.videoId || (item.snippet.resourceId && item.snippet.resourceId.videoId) || '');
-        const thumb = item.thumbnail || item.image_url || item.picture || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
+    if(platform==='yt'||platform==='youtube'){
+        const ytId = _extractYtId(item);
+        const thumb = item.thumbnail || item.thumbnail_url || item.image_url || item.cover || item.picture || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
         if(ytId){
             const eid = `yt_${ytId}_${Date.now()}`;
-            mediaHtml = `<div id="${eid}" class="do-dp2-media" style="position:relative;cursor:pointer;background:#f1f5f9;height:220px;"
-                onclick="document.getElementById('${eid}').innerHTML='<iframe width=\\'100%\\' height=\\'220\\' src=\\'https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1\\' frameborder=\\'0\\' allowfullscreen style=\\'border-radius:6px;\\'></iframe>'; document.getElementById('${eid}').style.height='auto';">
+            mediaHtml = `<div id="${eid}" class="do-dp2-media" style="position:relative;cursor:pointer;background:#000;height:220px;border-radius:6px;overflow:hidden;margin-bottom:10px;"
+                onclick="document.getElementById('${eid}').innerHTML='<iframe width=\'100%\' height=\'220\' src=\'https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1\' frameborder=\'0\' allowfullscreen style=\'border-radius:6px;\'></iframe>'; document.getElementById('${eid}').style.height='auto';">
                 <img src="${thumb||`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.src='https://img.youtube.com/vi/${ytId}/mqdefault.jpg'">
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.15);">
+                    <div style="width:52px;height:52px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.3);">
+                        <i class="ph-fill ph-play" style="font-size:24px;color:#fff;margin-left:3px;"></i>
+                    </div>
+                </div>
             </div>`;
         } else if(thumb) {
-            mediaHtml=`<div class="do-dp2-media" style="background:#f1f5f9;"><img src="${esc(thumb)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:220px;object-fit:cover;display:block;border-radius:var(--radius);"></div>`;
+            mediaHtml=`<div class="do-dp2-media" style="background:#f1f5f9;"><img src="${esc(thumb)}" onerror="this.parentElement.style.display='none'" style="width:100%;max-height:280px;object-fit:cover;display:block;border-radius:6px;"></div>`;
         }
     }
     else if(platform==='tiktok'){
