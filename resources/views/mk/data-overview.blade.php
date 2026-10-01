@@ -1333,11 +1333,11 @@
                 var docid = String(m.docid || m.id || '');
                 var url = String(m.url || m.link || '').toLowerCase();
                 if (mt.indexOf('doc') !== -1 || mt.indexOf('news') !== -1 || docid.indexOf('doc_') === 0) return 'doc';
+                if (mt === 'tiktok' || mt === 'tt' || mt.indexOf('tiktok') !== -1 || docid.indexOf('tt-') === 0 || docid.indexOf('tt_') === 0 || url.indexOf('tiktok.com') !== -1) return 'tiktok';
                 if (mt.indexOf('twit') !== -1 || mt.indexOf('twitter') !== -1 || mt.indexOf('x') !== -1 || docid.indexOf('tw-') === 0 || url.indexOf('twitter.com') !== -1 || url.indexOf('x.com') !== -1) return 'twit';
                 if (mt.indexOf('fb') !== -1 || mt.indexOf('facebook') !== -1 || docid.indexOf('fb-') === 0 || url.indexOf('facebook.com') !== -1 || url.indexOf('fb.watch') !== -1) return 'fb';
                 if (mt.indexOf('ig') !== -1 || mt.indexOf('instagram') !== -1 || docid.indexOf('ig-') === 0 || url.indexOf('instagram.com') !== -1) return 'instagram';
                 if (mt.indexOf('yt') !== -1 || mt.indexOf('youtube') !== -1 || docid.indexOf('yt-') === 0 || url.indexOf('youtube.com') !== -1 || url.indexOf('youtu.be') !== -1) return 'youtube';
-                if (mt.indexOf('tiktok') !== -1 || mt.indexOf('tt') !== -1 || docid.indexOf('tt-') === 0 || url.indexOf('tiktok.com') !== -1) return 'tiktok';
                 return 'twit';
             })();
 
@@ -1369,13 +1369,11 @@
 
         function _fetchProjectData(pid, platform, sd, ed) {
             var promises = [];
-            var needDoc = (platform === 'all' || platform === 'doc');
-            var needSocial = (platform !== 'doc');
 
-            if (needDoc) {
+            if (platform === 'doc') {
                 promises.push(new Promise(function(resolve) {
                     var ctrl = new AbortController(), tid = setTimeout(function(){ ctrl.abort(); }, 25000);
-                    fetch('/mk/api/news/articles?project_id='+pid+'&start_date='+sd+'&end_date='+ed+'&media=doc&rows=100', { signal: ctrl.signal })
+                    fetch('/mk/api/news/articles?project_id='+pid+'&start_date='+sd+'&end_date='+ed+'&media=doc&rows=300', { signal: ctrl.signal })
                         .then(function(res) {
                             clearTimeout(tid);
                             if (!res.ok) return resolve([]);
@@ -1387,12 +1385,66 @@
                         })
                         .catch(function() { clearTimeout(tid); resolve([]); });
                 }));
-            }
-
-            if (needSocial) {
+            } else if (platform === 'tiktok') {
                 promises.push(new Promise(function(resolve) {
                     var ctrl = new AbortController(), tid = setTimeout(function(){ ctrl.abort(); }, 25000);
-                    fetch('/mk/api/news/mentions?project_id='+pid+'&start_date='+sd+'&end_date='+ed+'&rows=500', { signal: ctrl.signal })
+                    fetch('/mk/api/news/tiktok-top-status?project_id='+pid+'&start_date='+sd+'&end_date='+ed+'&sub=postbylike&rows=300', { signal: ctrl.signal })
+                        .then(function(res) {
+                            clearTimeout(tid);
+                            if (!res.ok) return resolve([]);
+                            return res.json().then(function(json) {
+                                var list = (json && Array.isArray(json.data)) ? json.data : [];
+                                resolve(list.map(function(it) { return _normItem(it, 'tiktok'); }));
+                            });
+                        })
+                        .catch(function() { clearTimeout(tid); resolve([]); });
+                }));
+            } else if (platform === 'instagram' || platform === 'ig') {
+                promises.push(new Promise(function(resolve) {
+                    var ctrl = new AbortController(), tid = setTimeout(function(){ ctrl.abort(); }, 25000);
+                    fetch('/mk/api/news/ig-top-status?project_id='+pid+'&start_date='+sd+'&end_date='+ed+'&sub=postbylike&rows=300', { signal: ctrl.signal })
+                        .then(function(res) {
+                            clearTimeout(tid);
+                            if (!res.ok) return resolve([]);
+                            return res.json().then(function(json) {
+                                var list = (json && Array.isArray(json.data)) ? json.data : [];
+                                resolve(list.map(function(it) { return _normItem(it, 'instagram'); }));
+                            });
+                        })
+                        .catch(function() { clearTimeout(tid); resolve([]); });
+                }));
+            } else if (platform === 'fb' || platform === 'facebook') {
+                promises.push(new Promise(function(resolve) {
+                    var ctrl = new AbortController(), tid = setTimeout(function(){ ctrl.abort(); }, 25000);
+                    fetch('/mk/api/news/fb-top-status?project_id='+pid+'&start_date='+sd+'&end_date='+ed+'&sub=fblike&rows=300', { signal: ctrl.signal })
+                        .then(function(res) {
+                            clearTimeout(tid);
+                            if (!res.ok) return resolve([]);
+                            return res.json().then(function(json) {
+                                var list = (json && Array.isArray(json.data)) ? json.data : [];
+                                resolve(list.map(function(it) { return _normItem(it, 'fb'); }));
+                            });
+                        })
+                        .catch(function() { clearTimeout(tid); resolve([]); });
+                }));
+            } else if (platform === 'youtube' || platform === 'yt') {
+                promises.push(new Promise(function(resolve) {
+                    var ctrl = new AbortController(), tid = setTimeout(function(){ ctrl.abort(); }, 25000);
+                    fetch('/mk/api/news/ytb-top-status?project_id='+pid+'&start_date='+sd+'&end_date='+ed+'&rows=300', { signal: ctrl.signal })
+                        .then(function(res) {
+                            clearTimeout(tid);
+                            if (!res.ok) return resolve([]);
+                            return res.json().then(function(json) {
+                                var list = (json && Array.isArray(json.data)) ? json.data : [];
+                                resolve(list.map(function(it) { return _normItem(it, 'youtube'); }));
+                            });
+                        })
+                        .catch(function() { clearTimeout(tid); resolve([]); });
+                }));
+            } else if (platform === 'twit' || platform === 'twitter') {
+                promises.push(new Promise(function(resolve) {
+                    var ctrl = new AbortController(), tid = setTimeout(function(){ ctrl.abort(); }, 25000);
+                    fetch('/mk/api/news/mentions?project_id='+pid+'&start_date='+sd+'&end_date='+ed+'&rows=1200', { signal: ctrl.signal })
                         .then(function(res) {
                             clearTimeout(tid);
                             if (!res.ok) return resolve([]);
@@ -1405,23 +1457,27 @@
                                 else if (json && json.data && Array.isArray(json.data.data)) rawArr = json.data.data;
 
                                 var filtered = rawArr.filter(function(it) {
-                                    if (platform === 'all' || platform === 'social') return true;
                                     var mt = String(it.media_type || it.type || it.tcode || '').toLowerCase();
                                     var docid = String(it.docid || it.id || '');
                                     var url = String(it.url || it.link || '').toLowerCase();
-                                    if (platform === 'twit') return mt.indexOf('twit') !== -1 || mt.indexOf('twitter') !== -1 || mt.indexOf('x') !== -1 || docid.indexOf('tw-') === 0 || url.indexOf('twitter.com') !== -1 || url.indexOf('x.com') !== -1;
-                                    if (platform === 'fb') return mt.indexOf('fb') !== -1 || mt.indexOf('facebook') !== -1 || docid.indexOf('fb-') === 0 || url.indexOf('facebook.com') !== -1;
-                                    if (platform === 'instagram') return mt.indexOf('ig') !== -1 || mt.indexOf('instagram') !== -1 || docid.indexOf('ig-') === 0 || url.indexOf('instagram.com') !== -1;
-                                    if (platform === 'youtube') return mt.indexOf('yt') !== -1 || mt.indexOf('youtube') !== -1 || docid.indexOf('yt-') === 0 || url.indexOf('youtube.com') !== -1 || url.indexOf('youtu.be') !== -1;
-                                    if (platform === 'tiktok') return mt.indexOf('tiktok') !== -1 || mt.indexOf('tt') !== -1 || docid.indexOf('tt-') === 0 || url.indexOf('tiktok.com') !== -1;
-                                    return true;
+                                    return mt.indexOf('twit') !== -1 || mt.indexOf('twitter') !== -1 || mt.indexOf('x') !== -1 || docid.indexOf('tw-') === 0 || url.indexOf('twitter.com') !== -1 || url.indexOf('x.com') !== -1;
                                 });
 
-                                resolve(filtered.map(function(it) { return _normItem(it); }));
+                                resolve(filtered.map(function(it) { return _normItem(it, 'twit'); }));
                             });
                         })
                         .catch(function() { clearTimeout(tid); resolve([]); });
                 }));
+            } else {
+                // platform === 'all' or 'social'
+                var subPlats = (platform === 'all')
+                    ? ['doc', 'tiktok', 'instagram', 'fb', 'youtube', 'twit']
+                    : ['tiktok', 'instagram', 'fb', 'youtube', 'twit'];
+
+                return Promise.all(subPlats.map(function(p) { return _fetchProjectData(pid, p, sd, ed); }))
+                    .then(function(results) {
+                        return results.reduce(function(acc, val) { return acc.concat(val); }, []);
+                    });
             }
 
             return Promise.all(promises).then(function(results) {
@@ -1464,7 +1520,7 @@
                     var rawName = (function() {
                         if (plat==='fb')        return item.from_name||item.page_name||item.author_name||(ao0&&ao0.name)||item.author_handle||null;
                         if (plat==='instagram') return item.username||item.user_name||null;
-                        if (plat==='tiktok')    return item.author_nickname||item.nickname||(ao0&&ao0.nickname)||null;
+                        if (plat==='tiktok')    return item.author_nickname||item.nickname||(ao0&&ao0.nickname)||item.author_name||item.name||item.author_scr_name||null;
                         if (plat==='youtube')   return item.channel_title||item.channel_name||(item.snippet&&item.snippet.channelTitle)||null;
                         if (plat==='twit')      return item.name||(ao0&&ao0.name)||(ao0&&ao0.scr_name)||item.author_name||item.author_scr_name||null;
                         return null;
@@ -1640,7 +1696,7 @@
             var rawName = (function() {
                 if (platform==='fb')        return item.from_name||item.page_name||item.author_name||(ao2&&ao2.name)||item.author_handle||null;
                 if (platform==='instagram') return item.username||null;
-                if (platform==='tiktok')    return item.author_nickname||item.nickname||(ao2&&ao2.nickname)||null;
+                if (platform==='tiktok')    return item.author_nickname||item.nickname||(ao2&&ao2.nickname)||item.author_name||item.name||item.author_scr_name||null;
                 if (platform==='youtube')   return item.channel_title||item.channel_name||(item.snippet&&item.snippet.channelTitle)||null;
                 if (platform==='twit')      return item.name||(ao2&&ao2.name)||(ao2&&ao2.scr_name)||item.author_name||item.author_scr_name||null;
                 return null;
