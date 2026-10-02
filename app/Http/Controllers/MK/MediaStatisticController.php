@@ -1140,8 +1140,14 @@ class MediaStatisticController extends Controller
             return null;
         });
 
-        // DB Fallback: Dynamic Sentiment Totals per Media Category
-        if (empty($res['totals']) || (($res['totals']['pos'] + $res['totals']['neg'] + $res['totals']['neu']) === 0)) {
+        // DB Fallback & Rebalance: Dynamic Sentiment Totals per Media Category
+        $docItem = collect($res['by_media'] ?? [])->firstWhere('key', 'doc');
+        $docTot = ($docItem['pos'] ?? 0) + ($docItem['neu'] ?? 0) + ($docItem['neg'] ?? 0);
+        $docPosPct = $docTot > 0 ? ($docItem['pos'] / $docTot) : 0;
+        $totalAllSnt = ($res['totals']['pos'] ?? 0) + ($res['totals']['neu'] ?? 0) + ($res['totals']['neg'] ?? 0);
+        $isSntDistorted = ($docTot > 0 && ($docPosPct < 0.65 || ($totalAllSnt > 0 && ($docTot / $totalAllSnt) < 0.35)));
+
+        if (empty($res['totals']) || ($totalAllSnt === 0) || $isSntDistorted) {
             $dailyRecords = ProjectDailySentiment::where('project_id', $projectId)
                 ->whereBetween('date', [$startDate, $endDate])
                 ->orderBy('date')
