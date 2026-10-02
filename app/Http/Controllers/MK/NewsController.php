@@ -800,14 +800,26 @@ public function articlesData(Request $request)
 
             // ── 2. Fallback to comprehensive database snapshots ───────────
             if (empty($allArticles)) {
-                $largeSnap = ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'news_mentions_0_1200', $startDate, $endDate)
-                          ?? ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'news_mentions_0_500', $startDate, $endDate)
-                          ?? ProjectApiSnapshot::findSnapshotForQuery($projectId, 'doc', 'articles_doc_all_0', $startDate, $endDate);
-
-                if ($largeSnap) {
-                    $snapData = is_array($largeSnap) ? ($largeSnap['data'] ?? $largeSnap) : [];
+                $docSnap = ProjectApiSnapshot::findSnapshotForQuery($projectId, 'doc', 'articles_doc_all_0', $startDate, $endDate);
+                if ($docSnap) {
+                    $snapData = is_array($docSnap) ? ($docSnap['data'] ?? $docSnap) : [];
                     if (is_array($snapData) && !empty($snapData)) {
                         $allArticles = $snapData;
+                    }
+                }
+
+                if (empty($allArticles)) {
+                    $largeSnap = ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'news_mentions_0_1200', $startDate, $endDate)
+                              ?? ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'news_mentions_0_500', $startDate, $endDate);
+
+                    if ($largeSnap) {
+                        $snapData = is_array($largeSnap) ? ($largeSnap['data'] ?? $largeSnap) : [];
+                        if (is_array($snapData) && !empty($snapData)) {
+                            $allArticles = array_values(array_filter($snapData, function ($it) {
+                                $mt = strtolower((string) ($it['media_type'] ?? $it['type'] ?? ''));
+                                return in_array($mt, ['doc', 'news', 'online_news']) || str_contains($mt, 'doc');
+                            }));
+                        }
                     }
                 }
             }
@@ -835,7 +847,18 @@ public function articlesData(Request $request)
                              ?? $article['name']
                              ?? 'Online News';
 
-                $url = $article['url'] ?? $article['link'] ?? $article['original_url'] ?? '#';
+                $url = $article['url'] ?? $article['link'] ?? $article['original_url'] ?? '';
+                if (empty($url) || in_array(rtrim(strtolower($url), '/'), ['#', 'about:blank'])) {
+                    if (!empty($cleanTitle) && $cleanTitle !== 'Untitled') {
+                        $pubPart = ($rawPublisher && !in_array($rawPublisher, ['Online News', 'Unknown'])) ? ' ' . $rawPublisher : '';
+                        $url = 'https://www.google.com/search?q=' . urlencode($cleanTitle . $pubPart);
+                    } elseif (!empty($rawPublisher) && !in_array(strtolower($rawPublisher), ['online news', 'unknown'])) {
+                        $cleanPub = preg_replace('#^https?://#i', '', $rawPublisher);
+                        $url = 'https://' . ltrim($cleanPub, '/');
+                    } else {
+                        $url = 'https://news.google.com';
+                    }
+                }
 
                 // Sentimen normalization
                 $rawSent = strtolower((string) ($article['sentiment'] ?? $article['class_sentiment'] ?? $article['class_sentiment_code'] ?? '0'));
@@ -1534,11 +1557,12 @@ public function articlesData(Request $request)
     {
         $handle = $item['author_scr_name'] ?? $item['author_id'] ?? '';
         $name   = $item['author_name'] ?? $item['name'] ?? $item['page_name'] ?? $item['from_name'] ?? $handle;
+        $resolvedUrl = $this->resolveFacebookUrl($item['url'] ?? $item['link'] ?? '', $name, $item['author_id'] ?? null);
         return [
             '_platform'       => 'fb',
             'media_type_id'   => '2',
             'id'              => $item['id'] ?? $item['docid'] ?? '',
-            'url'             => $item['url'] ?? '',
+            'url'             => $resolvedUrl,
             'content'         => strip_tags($item['content'] ?? $item['caption'] ?? $item['name'] ?? ''),
             'author_name'     => $name,
             'author_handle'   => $handle,
@@ -1553,6 +1577,72 @@ public function articlesData(Request $request)
             'mention_type'    => $item['mention_type'] ?? 'post',
             'hostname'        => 'facebook.com',
         ];
+    }
+
+    public function resolveFacebookUrl(?string $url, ?string $authorName, ?string $authorId = null): string
+    {
+        if (!empty($url) && !in_array(rtrim(strtolower($url), '/'), [
+            'https://www.facebook.com',
+            'http://www.facebook.com',
+            'https://facebook.com',
+            'http://facebook.com',
+            '#'
+        ])) {
+            return $url;
+        }
+
+        if (!empty($authorId) && is_numeric($authorId)) {
+            return "https://www.facebook.com/{$authorId}";
+        }
+
+        $name = trim((string)$authorName);
+        $fbHandleMap = [
+            'Prabowo Subianto'          => 'prabowosubianto',
+            'Partai Gerindra'           => 'Gerindra',
+            'Kompas.com'                => 'Kompascom',
+            'Kompas TV'                 => 'KompasTV',
+            'Detikcom'                  => 'detikcom',
+            'CNN Indonesia'             => 'CNNIndonesia',
+            'Narasi Newsroom'           => 'narasi',
+            'Mata Najwa'                => 'MataNajwa',
+            'Kementerian Pertahanan RI' => 'KemhanRI',
+            'Sekretariat Kabinet RI'    => 'setkabgoid',
+            'Sekretariat Presiden'      => 'presidenri',
+            'Tribunnews'                => 'tribunnews',
+            'Tempo.co'                  => 'tempodotco',
+            'Kumparan'                  => 'kumparan',
+            'Tirto.id'                  => 'TirtoID',
+            'Antara News'               => 'antaranews',
+            'Antaranews'                => 'antaranews',
+            'CNBC Indonesia'            => 'CNBCIndonesia',
+            'Bisnis Indonesia'          => 'bisniscom',
+            'Tribun Jabar'              => 'tribunjabar',
+            'Pikiran Rakyat'            => 'pikiranrakyat',
+            'Merdeka.com'               => 'merdekadotcom',
+            'Suara.com'                 => 'suaradotcom',
+            'Liputan6.com'              => 'liputan6online',
+            'Sindonews'                 => 'sindonews',
+            'iNews'                     => 'iNewsTVOfficial',
+            'Jawa Pos'                  => 'jawaposcom',
+            'Pojok Bekasi'              => '100064832615247',
+        ];
+
+        foreach ($fbHandleMap as $key => $handle) {
+            if (strcasecmp($name, $key) === 0 || stripos($name, $key) !== false) {
+                return "https://www.facebook.com/{$handle}";
+            }
+        }
+
+        $slug = preg_replace('/[^a-zA-Z0-9]/', '', $name);
+        if (!empty($slug) && !in_array(strtolower($slug), ['unknown', 'facebookpost', 'facebookuser', 'fb'])) {
+            return "https://www.facebook.com/{$slug}";
+        }
+
+        if (!empty($name) && !in_array(strtolower($name), ['unknown', 'facebook post', 'facebook user'])) {
+            return 'https://www.facebook.com/search/top?q=' . urlencode($name);
+        }
+
+        return 'https://www.facebook.com';
     }
 
     // ════════════════════════════════════════════════════════════════

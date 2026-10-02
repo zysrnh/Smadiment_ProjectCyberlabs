@@ -1233,12 +1233,18 @@ if (projectId && startDate && endDate) {
         ? article.quotes.filter(q => q && q.Kutipan && q.Kutipan.trim() !== '')
         : [];
       const hasQuotes = quotes.length > 0;
+      let artUrl = (article.url || article.link || '').trim();
+      if (!artUrl || artUrl === '#' || artUrl === 'about:blank') {
+        const t = article.title || '';
+        const p = (article.publisher && article.publisher !== 'Unknown' && article.publisher !== 'Online News') ? article.publisher : '';
+        artUrl = t ? `https://www.google.com/search?q=${encodeURIComponent(t + (p ? ' ' + p : ''))}` : (p ? `https://${p.replace(/^https?:\/\//,'')}` : 'https://news.google.com');
+      }
 
       return `
         <div class="article-card">
           <div class="article-header">
             <h3 class="article-title">
-              <a href="${article.url || '#'}" target="_blank" rel="noopener noreferrer">
+              <a href="${artUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">
                 ${escapeHtml(article.title || 'Untitled')}
               </a>
             </h3>
@@ -1331,11 +1337,10 @@ if (projectId && startDate && endDate) {
                 <span>${content.length > 0 ? Math.round(content.length / 100) + ' min read' : 'News Article'}</span>
               </div>
             `}
-            <a href="${article.url || '#'}"
+            <a href="${artUrl}"
                target="_blank"
                rel="noopener noreferrer"
-               class="view-article-btn"
-               ${!article.url || article.url === '#' ? 'style="opacity:0.5;pointer-events:none;"' : ''}>
+               class="view-article-btn">
               Read Full Article
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>

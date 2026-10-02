@@ -819,7 +819,13 @@
                         : shortDomain(domain);
                     const fav = `https://www.google.com/s2/favicons?sz=64&domain=${artDomain}`;
                     const title = (a.title || '').trim(), text = (a.content || a.description || a.summary || '').replace(/<[^>]*>/g, '').trim().slice(0, 130);
-                    const dt = (a.date_created || a.publish_date || '').split('T')[0], url = a.url || a.link || '';
+                    const dt = (a.date_created || a.publish_date || '').split('T')[0];
+                    let url = (a.url || a.link || '').trim();
+                    if (!url || url === '#' || url === 'about:blank') {
+                        const t = title || text;
+                        const p = (pub && pub !== 'Unknown' && pub !== 'Online News') ? pub : '';
+                        url = t ? `https://www.google.com/search?q=${encodeURIComponent(t + (p ? ' ' + p : ''))}` : (p ? `https://${p.replace(/^https?:\/\//,'')}` : 'https://news.google.com');
+                    }
                     const views = parseInt(a.num_views || a.views || 0) || 0;
                     const sentRaw = String(a.class_sentiment || a.sentiment || '0').toLowerCase();
                     const sent = sentRaw === '1' || sentRaw === 'positive' || sentRaw === 'positif' ? 'pos' : sentRaw === '-1' || sentRaw === 'negative' || sentRaw === 'negatif' ? 'neg' : 'neu';
@@ -832,12 +838,12 @@
                         <div class="do-panel-avatar" style="background:#EF4444;"><img src="${fav}" onerror="this.style.display='none';this.parentElement.textContent='${ini}';"></div>
                         <div class="do-panel-item-body">
                             <div class="do-panel-author">${esc(pub)}</div>
-                            <div class="do-panel-text">${url ? `<a href="${esc(url)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;" onmouseover="this.style.color='var(--primary)';this.style.textDecoration='underline'" onmouseout="this.style.color='inherit';this.style.textDecoration='none'" onclick="event.stopPropagation()">${esc(title || text || '(no title)')}</a>` : esc(title || text || '(no title)')}</div>
+                            <div class="do-panel-text">${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;" onmouseover="this.style.color='var(--primary)';this.style.textDecoration='underline'" onmouseout="this.style.color='inherit';this.style.textDecoration='none'" onclick="event.stopPropagation()">${esc(title || text || '(no title)')}</a>` : esc(title || text || '(no title)')}</div>
                             <div class="do-panel-footer">
                                 <span class="do-sent-badge do-sent-badge--${sent}">${sentLbl}</span>
                                 ${views > 0 ? `<span>Views ${numF(views)}</span>` : ''}
                                 ${dt ? `<span style="margin-left:auto;">${dt}</span>` : '<span style="margin-left:auto;"></span>'}
-                                ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--primary-lt);color:var(--primary);border-radius:4px;font-weight:700;font-size:10px;text-decoration:none;transition:background 0.15s;" onmouseover="this.style.background='var(--primary)';this.style.color='#fff';" onmouseout="this.style.background='var(--primary-lt)';this.style.color='var(--primary)';" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out"></i>Lihat</a>` : ''}
+                                ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--primary-lt);color:var(--primary);border-radius:4px;font-weight:700;font-size:10px;text-decoration:none;transition:background 0.15s;" onmouseover="this.style.background='var(--primary)';this.style.color='#fff';" onmouseout="this.style.background='var(--primary-lt)';this.style.color='var(--primary)';" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out"></i>Lihat</a>` : ''}
                             </div>
                         </div>
                     </div>`;
@@ -865,7 +871,12 @@
                 const pub = (item.publisher || item.source_name || item.hostname || domain).trim();
                 const artTitle = (item.title || 'Article').trim();
                 const content = (item.content || item.description || item.summary || '').replace(/<[^>]*>/g, '').trim();
-                const url = item.url || item.link || '', date = item.date_created || item.publish_date || '';
+                let url = (item.url || item.link || '').trim(), date = item.date_created || item.publish_date || '';
+                if (!url || url === '#' || url === 'about:blank') {
+                    const t = artTitle;
+                    const p = (pub && pub !== 'Unknown' && pub !== 'Online News') ? pub : '';
+                    url = t ? `https://www.google.com/search?q=${encodeURIComponent(t + (p ? ' ' + p : ''))}` : (p ? `https://${p.replace(/^https?:\/\//,'')}` : 'https://news.google.com');
+                }
                 const fav = `https://www.google.com/s2/favicons?sz=64&domain=${shortDomain(domain)}`;
                 const ini = (shortDomain(domain)[0] || 'N').toUpperCase();
                 const views = parseInt(item.num_views || item.views || 0) || 0;

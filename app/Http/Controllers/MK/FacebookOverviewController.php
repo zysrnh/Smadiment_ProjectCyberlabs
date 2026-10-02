@@ -1707,7 +1707,10 @@ public function aiAnalysisProxy(Request $request)
         if (!empty($snap) && is_array($snap)) {
             $snapPosts = $snap['data'] ?? $snap;
             if (is_array($snapPosts) && count($snapPosts) >= 30) {
-                $posts = $snapPosts;
+                $posts = array_map(function ($p) {
+                    $p['url'] = $this->resolveFacebookUrl($p['url'] ?? null, $p['author_name'] ?? $p['name'] ?? '', $p['author_id'] ?? null);
+                    return $p;
+                }, $snapPosts);
             }
         }
 
@@ -1745,7 +1748,7 @@ public function aiAnalysisProxy(Request $request)
                             'sentiment_prec' => 0.85,
                             'emotion' => 'trust',
                             'date_created' => substr($item['date_created'] ?? $item['date'] ?? now()->toDateTimeString(), 0, 19),
-                            'url' => $item['url'] ?? $item['link'] ?? 'https://www.facebook.com',
+                            'url' => $this->resolveFacebookUrl($item['url'] ?? $item['link'] ?? null, $author, $item['author_id'] ?? null),
                             'avatar_url' => 'https://ui-avatars.com/api/?name=' . urlencode($author) . '&background=1877F2&color=fff',
                             'tcode' => 'fb-post',
                             'author' => [
@@ -2231,7 +2234,7 @@ public function aiAnalysisProxy(Request $request)
                         'freq'          => (int) ($item['view_cnt'] ?? ($likes * 3 + $shares * 7)),
                         'sentiment_str' => $item['sentiment_str'] ?? 'Neutral',
                         'date_created'  => $item['date_created']  ?? '',
-                        'url'           => $item['url']           ?? $item['link'] ?? null,
+                        'url'           => $this->resolveFacebookUrl($item['url'] ?? $item['link'] ?? null, $authorName, $item['author_id'] ?? null),
                         'avatar_url'    => $profilePic ?: ('https://ui-avatars.com/api/?name=' . urlencode($authorName) . '&background=1877F2&color=fff'),
                         'tcode'         => $item['tcode']         ?? 'fb-post',
                         'author'        => [
@@ -2249,6 +2252,12 @@ public function aiAnalysisProxy(Request $request)
                 $posts = $this->getFallbackFacebookPosts((int)$projectId, $startDate, $endDate, $rows, $sub);
             }
 
+            // Pastikan setiap post memiliki URL Facebook valid menuju halaman/post asli author
+            $posts = array_map(function ($p) {
+                $p['url'] = $this->resolveFacebookUrl($p['url'] ?? null, $p['author_name'] ?? $p['name'] ?? '', $p['author_id'] ?? null);
+                return $p;
+            }, $posts);
+
             // JANGAN sort ulang — API / Fallback sudah sort by sub yang diminta
             return response()->json(['success' => true, 'data' => $posts]);
 
@@ -2256,5 +2265,74 @@ public function aiAnalysisProxy(Request $request)
             Log::error('FB mostEngagementData error', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Resolves a Facebook URL to the author's real Facebook page or specific post.
+     */
+    public function resolveFacebookUrl(?string $url, ?string $authorName, ?string $authorId = null): string
+    {
+        if (!empty($url) && !in_array(rtrim(strtolower($url), '/'), [
+            'https://www.facebook.com',
+            'http://www.facebook.com',
+            'https://facebook.com',
+            'http://facebook.com',
+            '#'
+        ])) {
+            return $url;
+        }
+
+        if (!empty($authorId) && is_numeric($authorId)) {
+            return "https://www.facebook.com/{$authorId}";
+        }
+
+        $name = trim((string)$authorName);
+        $fbHandleMap = [
+            'Prabowo Subianto'          => 'prabowosubianto',
+            'Partai Gerindra'           => 'Gerindra',
+            'Kompas.com'                => 'Kompascom',
+            'Kompas TV'                 => 'KompasTV',
+            'Detikcom'                  => 'detikcom',
+            'CNN Indonesia'             => 'CNNIndonesia',
+            'Narasi Newsroom'           => 'narasi',
+            'Mata Najwa'                => 'MataNajwa',
+            'Kementerian Pertahanan RI' => 'KemhanRI',
+            'Sekretariat Kabinet RI'    => 'setkabgoid',
+            'Sekretariat Presiden'      => 'presidenri',
+            'Tribunnews'                => 'tribunnews',
+            'Tempo.co'                  => 'tempodotco',
+            'Kumparan'                  => 'kumparan',
+            'Tirto.id'                  => 'TirtoID',
+            'Antara News'               => 'antaranews',
+            'Antaranews'                => 'antaranews',
+            'CNBC Indonesia'            => 'CNBCIndonesia',
+            'Bisnis Indonesia'          => 'bisniscom',
+            'Tribun Jabar'              => 'tribunjabar',
+            'Pikiran Rakyat'            => 'pikiranrakyat',
+            'Merdeka.com'               => 'merdekadotcom',
+            'Suara.com'                 => 'suaradotcom',
+            'Liputan6.com'              => 'liputan6online',
+            'Sindonews'                 => 'sindonews',
+            'iNews'                     => 'iNewsTVOfficial',
+            'Jawa Pos'                  => 'jawaposcom',
+            'Pojok Bekasi'              => '100064832615247',
+        ];
+
+        foreach ($fbHandleMap as $key => $handle) {
+            if (strcasecmp($name, $key) === 0 || stripos($name, $key) !== false) {
+                return "https://www.facebook.com/{$handle}";
+            }
+        }
+
+        $slug = preg_replace('/[^a-zA-Z0-9]/', '', $name);
+        if (!empty($slug) && !in_array(strtolower($slug), ['unknown', 'facebookpost', 'facebookuser', 'fb'])) {
+            return "https://www.facebook.com/{$slug}";
+        }
+
+        if (!empty($name) && !in_array(strtolower($name), ['unknown', 'facebook post', 'facebook user'])) {
+            return 'https://www.facebook.com/search/top?q=' . urlencode($name);
+        }
+
+        return 'https://www.facebook.com';
     }
 }

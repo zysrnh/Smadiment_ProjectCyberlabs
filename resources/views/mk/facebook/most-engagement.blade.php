@@ -614,6 +614,54 @@ const FMEData={
     _getColor(item){const seed=item.id||this._getName(item)||'fb';const palette=['#1877f2','#273B4A','#F59E0B','#06B6D4','#8b5cf6','#ec4899','#f97316','#14b8a6'];let h=0;for(let i=0;i<seed.length;i++)h=(h*31+seed.charCodeAt(i))&0xffffffff;return palette[Math.abs(h)%palette.length];},
     _avHtml(item){const av=this._getAvatar(item),dummy='/assets/images/user/dummy.jpg';if(av&&av.startsWith('http'))return`<img src="${esc(av)}" onerror="this.src='${dummy}'">`; return`<img src="${dummy}">`;},
     _normSent(item){const r=String(item.sentiment_str||item.sentiment||'').toLowerCase();return r.includes('pos')?'pos':r.includes('neg')?'neg':'neu';},
+    _resolveFbUrl(item){
+        const u = (item.url || item.link || '').trim();
+        if (u && !['https://www.facebook.com','https://www.facebook.com/','https://facebook.com','http://www.facebook.com','http://facebook.com','#'].includes(u.replace(/\/$/,''))) {
+            return u;
+        }
+        const authorId = item.author_id || (item.author && item.author.id) || '';
+        if (authorId && /^\d+$/.test(authorId)) return `https://www.facebook.com/${authorId}`;
+        const name = this._getName(item);
+        const map = {
+            'prabowo subianto':'prabowosubianto',
+            'partai gerindra':'Gerindra',
+            'kompas.com':'Kompascom',
+            'kompas tv':'KompasTV',
+            'detikcom':'detikcom',
+            'cnn indonesia':'CNNIndonesia',
+            'tribunnews':'tribunnews',
+            'narasi newsroom':'narasi',
+            'mata najwa':'MataNajwa',
+            'kementerian pertahanan ri':'KemhanRI',
+            'sekretariat kabinet ri':'setkabgoid',
+            'sekretariat presiden':'presidenri',
+            'tempo.co':'tempodotco',
+            'kumparan':'kumparan',
+            'tirto.id':'TirtoID',
+            'antara news':'antaranews',
+            'antaranews':'antaranews',
+            'cnbc indonesia':'CNBCIndonesia',
+            'bisnis indonesia':'bisniscom',
+            'tribun jabar':'tribunjabar',
+            'pikiran rakyat':'pikiranrakyat',
+            'merdeka.com':'merdekadotcom',
+            'suara.com':'suaradotcom',
+            'liputan6.com':'liputan6online',
+            'sindonews':'sindonews',
+            'inews':'iNewsTVOfficial',
+            'jawa pos':'jawaposcom',
+            'pojok bekasi':'100064832615247'
+        };
+        const lower = name.toLowerCase().trim();
+        for (const [k, v] of Object.entries(map)) {
+            if (lower === k || lower.includes(k)) return `https://www.facebook.com/${v}`;
+        }
+        const slug = name.replace(/[^a-zA-Z0-9]/g,'');
+        if (slug && !['unknown','facebookpost','facebookuser','fb'].includes(slug.toLowerCase())) {
+            return `https://www.facebook.com/${slug}`;
+        }
+        return `https://www.facebook.com/search/top?q=${encodeURIComponent(name)}`;
+    },
     _emptyHtml(msg){return`<div class="chart-empty" style="padding:40px 20px;"><i class="ph ph-folder-open"></i><span>${esc(msg)}</span></div>`;},
     _renderList(type){
         const items=Store[type],listEl=_$('list-'+type),pagEl=_$('pag-'+type);if(!listEl)return;
@@ -635,7 +683,7 @@ const FMEData={
         const rank=gi+1,rkCls=rank<=3?'--'+rank:'';
         const name=this._getName(item),color=this._getColor(item),avHtml=this._avHtml(item),sent=this._normSent(item);
         const content=dec((item.content||item.caption||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim()).slice(0,200);
-        const dt=(item.date_created||'').split('T')[0],url=item.url||item.link||'';
+        const dt=(item.date_created||'').split('T')[0],url=this._resolveFbUrl(item);
         const l=parseInt(item.likes||item.num_likes||0),s=parseInt(item.shares||item.num_shares||0),c=parseInt(item.comments||item.num_comments||0),total=l+s+c;
         const sentLbl={pos:'Positive',neg:'Negative',neu:'Neutral'}[sent];
         const enc=encodeURIComponent(JSON.stringify(item));
@@ -653,7 +701,7 @@ const FMEData={
                     <span class="tme-metric${cCls}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${numF(c)}</span>
                     <span class="tme-metric" style="font-weight:800;">∑ ${numF(total)}</span>
                     <span class="tme-sent tme-sent--${sent}">${sentLbl}</span>
-                    ${url?`<a href="${esc(url)}" target="_blank" rel="noopener" class="tme-view-link" onclick="event.stopPropagation()"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Lihat</a>`:''}
+                    ${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="tme-view-link" onclick="event.stopPropagation()"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Lihat Halaman FB</a>`:''}
                 </div>
             </div>
         </div>`;
@@ -744,12 +792,11 @@ const FMEDetail={
         const panel=_$('fmeDetailPanel'),body=_$('fmeDetailBody'),title=_$('fmeDetailTitle');if(!panel||!body)return;
         const color=FMECfg.colors[type]||FMECfg.primary,name=FMEData._getName(item),avColor=FMEData._getColor(item),avHtml=FMEData._avHtml(item);
         const rawContent=(item.content||item.caption||'').replace(/<[^>]*>/g,'').trim(),content=rawContent?dec(rawContent):'';
-        const url=item.url||item.link||'',dt=item.date_created||'';
+        const url=FMEData._resolveFbUrl(item),dt=item.date_created||'';
         const l=parseInt(item.likes||item.num_likes||0),s=parseInt(item.shares||item.num_shares||0),c=parseInt(item.comments||item.num_comments||0);
         const sent=FMEData._normSent(item),sentLbl={pos:'Positif',neg:'Negatif',neu:'Netral'}[sent];
         let dtFmt='';if(dt){try{dtFmt=new Date(dt).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){dtFmt=dt.split('T')[0];}}
-        const apiNote=`<div style="font-size:11px;color:var(--slate-500);background:var(--slate-100);border:1px dashed var(--slate-300);padding:7px 10px;border-radius:4px;margin-top:12px;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ph ph-info" style="font-size:14px;color:var(--primary);flex-shrink:0;"></i><span>Catatan: API tidak mengembalikan URL post spesifik.</span></div>`;
-        body.innerHTML=`<div class="do-dp2-avatar-row"><div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${avColor},${avColor}99);">${avHtml}</div><div><div class="do-dp2-name">${esc(name)}</div><span class="do-dp2-plat-badge" style="background:#1877f218;color:#1877f2;">Facebook</span></div></div>${dtFmt?`<div class="do-dp2-meta"><i class="ph ph-calendar me-1"></i>${dtFmt}</div>`:''}<div class="do-dp2-sent do-dp2-sent--${sent}"><i class="ph ph-smiley me-1"></i>${sentLbl}</div>${content?`<div class="do-dp2-content">${esc(content)}</div>`:''}<div class="do-dp2-stats"><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(l)}</div><div class="do-dp2-stat-lbl">Likes</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(s)}</div><div class="do-dp2-stat-lbl">Shares</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(c)}</div><div class="do-dp2-stat-lbl">Comments</div></div></div>${apiNote}${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-facebook-logo me-1"></i>Buka Halaman Facebook</a>`:''}`;
+        body.innerHTML=`<div class="do-dp2-avatar-row"><div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${avColor},${avColor}99);">${avHtml}</div><div><div class="do-dp2-name">${esc(name)}</div><span class="do-dp2-plat-badge" style="background:#1877f218;color:#1877f2;">Facebook</span></div></div>${dtFmt?`<div class="do-dp2-meta"><i class="ph ph-calendar me-1"></i>${dtFmt}</div>`:''}<div class="do-dp2-sent do-dp2-sent--${sent}"><i class="ph ph-smiley me-1"></i>${sentLbl}</div>${content?`<div class="do-dp2-content">${esc(content)}</div>`:''}<div class="do-dp2-stats"><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(l)}</div><div class="do-dp2-stat-lbl">Likes</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(s)}</div><div class="do-dp2-stat-lbl">Shares</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(c)}</div><div class="do-dp2-stat-lbl">Comments</div></div></div><div style="margin-top:16px;">${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-facebook-logo me-1"></i>Buka Halaman Facebook (${esc(name)})</a>`:''}</div>`;
         panel.classList.add('show');
     },
     close(){_$('fmeDetailPanel')?.classList.remove('show');}

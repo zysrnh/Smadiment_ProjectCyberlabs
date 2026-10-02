@@ -452,9 +452,14 @@ const NV = (() => {
       const sentClass=sent==='pos'?'sent-pos':sent==='neg'?'sent-neg':'sent-neu';
       const sentIcon=sent==='pos'?'ph-smiley':sent==='neg'?'ph-smiley-sad':'ph-smiley-meh';
       const date=a.date_created?new Date(a.date_created).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}):'';
-      const url=a.url||a.link||'#';
       const publisher=a.publisher||a.hostname||'Unknown';
-      return `<a href="${url}" target="_blank" rel="noopener" class="article-item">
+      let url=(a.url||a.link||'').trim();
+      if(!url || url === '#' || url === 'about:blank'){
+        const t = a.title || '';
+        const p = (publisher !== 'Unknown' && publisher !== 'Online News') ? publisher : '';
+        url = t ? `https://www.google.com/search?q=${encodeURIComponent(t + (p ? ' ' + p : ''))}` : (p ? `https://${p.replace(/^https?:\/\//,'')}` : 'https://news.google.com');
+      }
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="article-item" onclick="event.stopPropagation()">
         <div class="article-title">${a.title||'Untitled'}</div>
         <div class="article-meta">
           <span><i class="ph ph-globe me-1"></i>${publisher}</span>
