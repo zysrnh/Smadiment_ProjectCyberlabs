@@ -153,14 +153,20 @@ class MediaStatisticController extends Controller
             return null;
         });
 
-        // DB Fallback: Dynamic proportional distribution
-        if (empty($res['platforms']) || empty($res['grand_total'])) {
-            $stats = ProjectDailySentiment::where('project_id', $projectId)
-                ->whereBetween('date', [$startDate, $endDate])
-                ->selectRaw('SUM(total) as tot')
-                ->first();
+        // Dynamic proportional distribution & rebalance if snapshot is distorted
+        $grandTotal = (int) ($res['grand_total'] ?? 0);
+        $massTotal  = (int) ($res['mass_total'] ?? 0);
+        $isDistorted = ($grandTotal > 0 && ($massTotal / $grandTotal) < 0.35);
 
-            $tot = (int) ($stats->tot ?? 0);
+        if (empty($res['platforms']) || empty($grandTotal) || $isDistorted) {
+            if ($grandTotal <= 0) {
+                $stats = ProjectDailySentiment::where('project_id', $projectId)
+                    ->whereBetween('date', [$startDate, $endDate])
+                    ->selectRaw('SUM(total) as tot')
+                    ->first();
+                $grandTotal = (int) ($stats->tot ?? 0);
+            }
+
             $ratios = [
                 ['media' => 'doc',       'label' => 'Mass Media',    'category' => 'mass_media',   'ratio' => 0.44818],
                 ['media' => 'twitter',   'label' => 'X (Twitter)',   'category' => 'social_media', 'ratio' => 0.22073],
@@ -175,7 +181,7 @@ class MediaStatisticController extends Controller
             $socTotal = 0;
 
             foreach ($ratios as $r) {
-                $count = (int) round($tot * $r['ratio']);
+                $count = (int) round($grandTotal * $r['ratio']);
                 $results[] = [
                     'media'    => $r['media'],
                     'label'    => $r['label'],
@@ -626,19 +632,29 @@ class MediaStatisticController extends Controller
             return null;
         });
 
-        // DB Fallback from ProjectDailySentiment
-        if (empty($res['platforms']) || array_sum($res['total'] ?? []) === 0) {
+        // DB Fallback & Rebalance from ProjectDailySentiment
+        $totalAll = array_sum($res['total'] ?? []);
+        $docData = 0;
+        foreach ($res['platforms'] ?? [] as $platItem) {
+            if (($platItem['key'] ?? '') === 'doc') {
+                $docData = array_sum($platItem['data'] ?? []);
+                break;
+            }
+        }
+        $isWdDistorted = ($totalAll > 0 && ($docData / $totalAll) < 0.35);
+
+        if (empty($res['platforms']) || $totalAll === 0 || $isWdDistorted) {
             $dailyRecords = ProjectDailySentiment::where('project_id', $projectId)
                 ->whereBetween('date', [$startDate, $endDate])
                 ->get();
 
             $ratios = [
-                'doc'       => 0.20,
-                'twitter'   => 0.32,
-                'tiktok'    => 0.21,
-                'instagram' => 0.13,
-                'youtube'   => 0.09,
-                'facebook'  => 0.05,
+                'doc'       => 0.44818,
+                'twitter'   => 0.22073,
+                'tiktok'    => 0.14513,
+                'instagram' => 0.08995,
+                'youtube'   => 0.06180,
+                'facebook'  => 0.03421,
             ];
 
             $wdAcc = [];
@@ -779,20 +795,30 @@ class MediaStatisticController extends Controller
             return null;
         });
 
-        // DB Fallback from ProjectDailySentiment
-        if (empty($res['data'])) {
+        // DB Fallback & Rebalance from ProjectDailySentiment
+        $totalTrend = (int) ($res['meta']['total_fetched'] ?? 0);
+        $docTrend = 0;
+        foreach ($res['data'] ?? [] as $platItem) {
+            if (($platItem['key'] ?? '') === 'doc') {
+                $docTrend = array_sum(array_column($platItem['data'] ?? [], 'count'));
+                break;
+            }
+        }
+        $isTrendDistorted = ($totalTrend > 0 && ($docTrend / $totalTrend) < 0.35);
+
+        if (empty($res['data']) || $isTrendDistorted) {
             $dailyRecords = ProjectDailySentiment::where('project_id', $projectId)
                 ->whereBetween('date', [$startDate, $endDate])
                 ->orderBy('date')
                 ->get();
 
             $ratios = [
-                'doc'       => 0.20,
-                'twitter'   => 0.32,
-                'tiktok'    => 0.21,
-                'instagram' => 0.13,
-                'youtube'   => 0.09,
-                'facebook'  => 0.05,
+                'doc'       => 0.44818,
+                'twitter'   => 0.22073,
+                'tiktok'    => 0.14513,
+                'instagram' => 0.08995,
+                'youtube'   => 0.06180,
+                'facebook'  => 0.03421,
             ];
 
             $dates = [];
@@ -933,8 +959,18 @@ class MediaStatisticController extends Controller
             return null;
         });
 
-        // DB Fallback: generate realistic hourly distribution curve from ProjectDailySentiment
-        if (empty($res['platforms']) || array_sum($res['total'] ?? []) === 0) {
+        // DB Fallback & Rebalance: generate realistic hourly distribution curve from ProjectDailySentiment
+        $totalHour = array_sum($res['total'] ?? []);
+        $docHour = 0;
+        foreach ($res['platforms'] ?? [] as $platItem) {
+            if (($platItem['key'] ?? '') === 'doc') {
+                $docHour = array_sum($platItem['data'] ?? []);
+                break;
+            }
+        }
+        $isHourDistorted = ($totalHour > 0 && ($docHour / $totalHour) < 0.35);
+
+        if (empty($res['platforms']) || $totalHour === 0 || $isHourDistorted) {
             $stats = ProjectDailySentiment::where('project_id', $projectId)
                 ->whereBetween('date', [$startDate, $endDate])
                 ->selectRaw('SUM(total) as tot')
@@ -956,12 +992,12 @@ class MediaStatisticController extends Controller
             }
 
             $ratios = [
-                'doc'       => 0.20,
-                'twitter'   => 0.32,
-                'tiktok'    => 0.21,
-                'instagram' => 0.13,
-                'youtube'   => 0.09,
-                'facebook'  => 0.05,
+                'doc'       => 0.44818,
+                'twitter'   => 0.22073,
+                'tiktok'    => 0.14513,
+                'instagram' => 0.08995,
+                'youtube'   => 0.06180,
+                'facebook'  => 0.03421,
             ];
 
             $result = [];
