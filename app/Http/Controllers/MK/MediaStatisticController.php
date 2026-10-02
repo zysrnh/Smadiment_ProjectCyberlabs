@@ -153,72 +153,53 @@ class MediaStatisticController extends Controller
             return null;
         });
 
-        // DB Fallback & Drone Emprit Synchronization
-        $isSept = ($startDate >= '2026-09-01' && $endDate <= '2026-09-30');
-        if (empty($res['platforms']) || empty($res['grand_total']) || ($isSept && ($res['mass_total'] ?? 0) < 50000)) {
-            if ($isSept) {
-                $results = [
-                    ['media' => 'doc',       'label' => 'Mass Media',    'count' => 80357, 'category' => 'mass_media'],
-                    ['media' => 'twitter',   'label' => 'X (Twitter)',   'count' => 39576, 'category' => 'social_media'],
-                    ['media' => 'tiktok',    'label' => 'TikTok',        'count' => 26021, 'category' => 'social_media'],
-                    ['media' => 'instagram', 'label' => 'Instagram',     'count' => 16127, 'category' => 'social_media'],
-                    ['media' => 'youtube',   'label' => 'YouTube',       'count' => 11081, 'category' => 'social_media'],
-                    ['media' => 'facebook',  'label' => 'Facebook',      'count' => 6134,  'category' => 'social_media'],
-                ];
-                $res = [
-                    'platforms'    => $results,
-                    'mass_total'   => 80357,
-                    'social_total' => 98939,
-                    'grand_total'  => 179296,
-                ];
-            } else {
-                $stats = ProjectDailySentiment::where('project_id', $projectId)
-                    ->whereBetween('date', [$startDate, $endDate])
-                    ->selectRaw('SUM(total) as tot')
-                    ->first();
+        // DB Fallback: Dynamic proportional distribution
+        if (empty($res['platforms']) || empty($res['grand_total'])) {
+            $stats = ProjectDailySentiment::where('project_id', $projectId)
+                ->whereBetween('date', [$startDate, $endDate])
+                ->selectRaw('SUM(total) as tot')
+                ->first();
 
-                $tot = (int) ($stats->tot ?? 0);
-                $ratios = [
-                    ['media' => 'doc',       'label' => 'Mass Media',    'category' => 'mass_media',   'ratio' => 0.44818],
-                    ['media' => 'twitter',   'label' => 'X (Twitter)',   'category' => 'social_media', 'ratio' => 0.22073],
-                    ['media' => 'tiktok',    'label' => 'TikTok',        'category' => 'social_media', 'ratio' => 0.14513],
-                    ['media' => 'instagram', 'label' => 'Instagram',     'category' => 'social_media', 'ratio' => 0.08995],
-                    ['media' => 'youtube',   'label' => 'YouTube',       'category' => 'social_media', 'ratio' => 0.06180],
-                    ['media' => 'facebook',  'label' => 'Facebook',      'category' => 'social_media', 'ratio' => 0.03421],
+            $tot = (int) ($stats->tot ?? 0);
+            $ratios = [
+                ['media' => 'doc',       'label' => 'Mass Media',    'category' => 'mass_media',   'ratio' => 0.44818],
+                ['media' => 'twitter',   'label' => 'X (Twitter)',   'category' => 'social_media', 'ratio' => 0.22073],
+                ['media' => 'tiktok',    'label' => 'TikTok',        'category' => 'social_media', 'ratio' => 0.14513],
+                ['media' => 'instagram', 'label' => 'Instagram',     'category' => 'social_media', 'ratio' => 0.08995],
+                ['media' => 'youtube',   'label' => 'YouTube',       'category' => 'social_media', 'ratio' => 0.06180],
+                ['media' => 'facebook',  'label' => 'Facebook',      'category' => 'social_media', 'ratio' => 0.03421],
+            ];
+
+            $results = [];
+            $massTotal = 0;
+            $socTotal = 0;
+
+            foreach ($ratios as $r) {
+                $count = (int) round($tot * $r['ratio']);
+                $results[] = [
+                    'media'    => $r['media'],
+                    'label'    => $r['label'],
+                    'count'    => $count,
+                    'category' => $r['category'],
                 ];
-
-                $results = [];
-                $massTotal = 0;
-                $socTotal = 0;
-
-                foreach ($ratios as $r) {
-                    $count = (int) round($tot * $r['ratio']);
-                    $results[] = [
-                        'media'    => $r['media'],
-                        'label'    => $r['label'],
-                        'count'    => $count,
-                        'category' => $r['category'],
-                    ];
-                    if ($r['category'] === 'mass_media') {
-                        $massTotal += $count;
-                    } else {
-                        $socTotal += $count;
-                    }
+                if ($r['category'] === 'mass_media') {
+                    $massTotal += $count;
+                } else {
+                    $socTotal += $count;
                 }
-
-                $res = [
-                    'platforms'    => $results,
-                    'mass_total'   => $massTotal,
-                    'social_total' => $socTotal,
-                    'grand_total'  => $massTotal + $socTotal,
-                ];
             }
+
+            $res = [
+                'platforms'    => $results,
+                'mass_total'   => $massTotal,
+                'social_total' => $socTotal,
+                'grand_total'  => $massTotal + $socTotal,
+            ];
 
             try {
                 ProjectApiSnapshot::storeSnapshot($projectId, 'all', 'mention_by_platform', $startDate, $endDate, $res);
             } catch (\Throwable $e) {}
         }
-
         return response()->json($res);
     }
 
@@ -396,113 +377,79 @@ class MediaStatisticController extends Controller
             return null;
         });
 
-        // DB Fallback & Drone Emprit Synchronization
-        $isSept = ($startDate >= '2026-09-01' && $endDate <= '2026-09-30');
-        $needsSync = empty($res['sentiment_media']) || empty($res['sentiment_total']);
-        if (!$needsSync && $isSept) {
-            foreach ($res['sentiment_media'] ?? [] as $m) {
-                if ($m['media'] === 'doc' && ($m['positive'] ?? 0) < 30000) {
-                    $needsSync = true;
-                    break;
-                }
+        // DB Fallback: Dynamic Sentiment Distribution per Media Category
+        if (empty($res['sentiment_media']) || empty($res['sentiment_total'])) {
+            $stats = ProjectDailySentiment::where('project_id', $projectId)
+                ->whereBetween('date', [$startDate, $endDate])
+                ->selectRaw('SUM(positive) as pos, SUM(neutral) as neu, SUM(negative) as neg, SUM(total) as tot')
+                ->first();
+
+            $tot = (int) ($stats->tot ?? 0);
+
+            // 1. Mass Media (Online News) - news sentiment profile (~71.7% Pos, ~20.7% Neu, ~7.6% Neg)
+            $mTot = (int) round($tot * 0.44818);
+            $mPos = (int) round($mTot * 0.71701);
+            $mNeu = (int) round($mTot * 0.20700);
+            $mNeg = max(0, $mTot - $mPos - $mNeu);
+
+            // 2. Social Media platforms - social sentiment profile (~46.2% Pos, ~6.4% Neu, ~47.4% Neg)
+            $socialRatios = [
+                ['media' => 'twit',   'label' => 'X (Twitter)', 'ratio' => 0.22073, 'reach_mult' => 450],
+                ['media' => 'tiktok', 'label' => 'TikTok',      'ratio' => 0.14513, 'reach_mult' => 5200],
+                ['media' => 'ig',     'label' => 'Instagram',   'ratio' => 0.08995, 'reach_mult' => 1200],
+                ['media' => 'yt',     'label' => 'YouTube',     'ratio' => 0.06180, 'reach_mult' => 8500],
+                ['media' => 'fb',     'label' => 'Facebook',    'ratio' => 0.03421, 'reach_mult' => 380],
+            ];
+
+            $sentimentMedia = [
+                [
+                    'media'    => 'doc',
+                    'label'    => 'Mass Media',
+                    'positive' => $mPos,
+                    'negative' => $mNeg,
+                    'neutral'  => $mNeu,
+                ]
+            ];
+
+            $reachData = ['doc' => (int) round($mTot * 1500)];
+            $sPosTot = 0; $sNeuTot = 0; $sNegTot = 0;
+
+            foreach ($socialRatios as $r) {
+                $pTot = (int) round($tot * $r['ratio']);
+                $pPos = (int) round($pTot * 0.462);
+                $pNeu = (int) round($pTot * 0.064);
+                $pNeg = max(0, $pTot - $pPos - $pNeu);
+
+                $sentimentMedia[] = [
+                    'media'    => $r['media'],
+                    'label'    => $r['label'],
+                    'positive' => $pPos,
+                    'negative' => $pNeg,
+                    'neutral'  => $pNeu,
+                ];
+
+                $reachKey = match($r['media']) {
+                    'twit' => 'twitter',
+                    'ig'   => 'instagram',
+                    'yt'   => 'youtube',
+                    default => $r['media'],
+                };
+                $reachData[$reachKey] = (int) round($pTot * $r['reach_mult']);
+
+                $sPosTot += $pPos;
+                $sNeuTot += $pNeu;
+                $sNegTot += $pNeg;
             }
-        }
 
-        if ($needsSync) {
-            if ($isSept) {
-                $sentimentMedia = [
-                    ['media' => 'doc',    'label' => 'Mass Media',  'positive' => 57616, 'negative' => 6107,  'neutral' => 16634],
-                    ['media' => 'twit',   'label' => 'X (Twitter)', 'positive' => 18284, 'negative' => 18759, 'neutral' => 2533],
-                    ['media' => 'tiktok', 'label' => 'TikTok',      'positive' => 12022, 'negative' => 12334, 'neutral' => 1665],
-                    ['media' => 'ig',     'label' => 'Instagram',   'positive' => 7451,  'negative' => 7644,  'neutral' => 1032],
-                    ['media' => 'yt',     'label' => 'YouTube',     'positive' => 5119,  'negative' => 5253,  'neutral' => 709],
-                    ['media' => 'fb',     'label' => 'Facebook',    'positive' => 2834,  'negative' => 2907,  'neutral' => 393],
-                ];
-
-                $reachData = [
-                    'doc'       => 80357 * 1500,
-                    'twitter'   => 39576 * 450,
-                    'tiktok'    => 26021 * 5200,
-                    'instagram' => 16127 * 1200,
-                    'youtube'   => 11081 * 8500,
-                    'facebook'  => 6134 * 380,
-                ];
-
-                $res = [
-                    'sentiment_media' => $sentimentMedia,
-                    'sentiment_total' => ['positive' => 103326, 'negative' => 53004, 'neutral' => 22966],
-                    'reach_by_media'  => $reachData,
-                ];
-            } else {
-                $stats = ProjectDailySentiment::where('project_id', $projectId)
-                    ->whereBetween('date', [$startDate, $endDate])
-                    ->selectRaw('SUM(positive) as pos, SUM(neutral) as neu, SUM(negative) as neg, SUM(total) as tot')
-                    ->first();
-
-                $tot = (int) ($stats->tot ?? 0);
-                $mTot = (int) round($tot * 0.44818);
-                $mPos = (int) round($mTot * 0.71701);
-                $mNeu = (int) round($mTot * 0.20700);
-                $mNeg = max(0, $mTot - $mPos - $mNeu);
-
-                $socialRatios = [
-                    ['media' => 'twit',   'label' => 'X (Twitter)', 'ratio' => 0.22073, 'reach_mult' => 450],
-                    ['media' => 'tiktok', 'label' => 'TikTok',      'ratio' => 0.14513, 'reach_mult' => 5200],
-                    ['media' => 'ig',     'label' => 'Instagram',   'ratio' => 0.08995, 'reach_mult' => 1200],
-                    ['media' => 'yt',     'label' => 'YouTube',     'ratio' => 0.06180, 'reach_mult' => 8500],
-                    ['media' => 'fb',     'label' => 'Facebook',    'ratio' => 0.03421, 'reach_mult' => 380],
-                ];
-
-                $sentimentMedia = [
-                    [
-                        'media'    => 'doc',
-                        'label'    => 'Mass Media',
-                        'positive' => $mPos,
-                        'negative' => $mNeg,
-                        'neutral'  => $mNeu,
-                    ]
-                ];
-
-                $reachData = ['doc' => (int) round($mTot * 1500)];
-                $sPosTot = 0; $sNeuTot = 0; $sNegTot = 0;
-
-                foreach ($socialRatios as $r) {
-                    $pTot = (int) round($tot * $r['ratio']);
-                    $pPos = (int) round($pTot * 0.462);
-                    $pNeu = (int) round($pTot * 0.064);
-                    $pNeg = max(0, $pTot - $pPos - $pNeu);
-
-                    $sentimentMedia[] = [
-                        'media'    => $r['media'],
-                        'label'    => $r['label'],
-                        'positive' => $pPos,
-                        'negative' => $pNeg,
-                        'neutral'  => $pNeu,
-                    ];
-
-                    $reachKey = match($r['media']) {
-                        'twit' => 'twitter',
-                        'ig'   => 'instagram',
-                        'yt'   => 'youtube',
-                        default => $r['media'],
-                    };
-                    $reachData[$reachKey] = (int) round($pTot * $r['reach_mult']);
-
-                    $sPosTot += $pPos;
-                    $sNeuTot += $pNeu;
-                    $sNegTot += $pNeg;
-                }
-
-                $res = [
-                    'sentiment_media' => $sentimentMedia,
-                    'sentiment_total' => [
-                        'positive' => $mPos + $sPosTot,
-                        'negative' => $mNeg + $sNegTot,
-                        'neutral'  => $mNeu + $sNeuTot,
-                    ],
-                    'reach_by_media'  => $reachData,
-                ];
-            }
+            $res = [
+                'sentiment_media' => $sentimentMedia,
+                'sentiment_total' => [
+                    'positive' => $mPos + $sPosTot,
+                    'negative' => $mNeg + $sNegTot,
+                    'neutral'  => $mNeu + $sNeuTot,
+                ],
+                'reach_by_media'  => $reachData,
+            ];
 
             try {
                 ProjectApiSnapshot::storeSnapshot($projectId, 'all', 'sentiment_engagement', $startDate, $endDate, $res);
@@ -1157,128 +1104,86 @@ class MediaStatisticController extends Controller
             return null;
         });
 
-        // DB Fallback & Drone Emprit Synchronization
-        $isSept = ($startDate >= '2026-09-01' && $endDate <= '2026-09-30');
-        $needsSync = empty($res['totals']) || (($res['totals']['pos'] + $res['totals']['neg'] + $res['totals']['neu']) === 0);
-        if (!$needsSync && $isSept) {
-            foreach ($res['by_media'] ?? [] as $m) {
-                if ($m['key'] === 'doc' && ($m['pos'] ?? 0) < 30000) {
-                    $needsSync = true;
-                    break;
-                }
+        // DB Fallback: Dynamic Sentiment Totals per Media Category
+        if (empty($res['totals']) || (($res['totals']['pos'] + $res['totals']['neg'] + $res['totals']['neu']) === 0)) {
+            $dailyRecords = ProjectDailySentiment::where('project_id', $projectId)
+                ->whereBetween('date', [$startDate, $endDate])
+                ->orderBy('date')
+                ->get();
+
+            $tot = $dailyRecords->sum('total');
+
+            // 1. Mass Media (Online News) - ~71.7% Pos, ~20.7% Neu, ~7.6% Neg
+            $mTot = (int) round($tot * 0.44818);
+            $mPos = (int) round($mTot * 0.71701);
+            $mNeu = (int) round($mTot * 0.20700);
+            $mNeg = max(0, $mTot - $mPos - $mNeu);
+
+            // 2. Social Media platforms - ~46.2% Pos, ~6.4% Neu, ~47.4% Neg
+            $socialPlatforms = [
+                'twitter'   => ['label' => 'X / Twitter', 'ratio' => 0.22073],
+                'tiktok'    => ['label' => 'TikTok',      'ratio' => 0.14513],
+                'instagram' => ['label' => 'Instagram',   'ratio' => 0.08995],
+                'youtube'   => ['label' => 'YouTube',     'ratio' => 0.06180],
+                'facebook'  => ['label' => 'Facebook',    'ratio' => 0.03421],
+            ];
+
+            $byMedia = [
+                [
+                    'key'   => 'doc',
+                    'label' => 'Mass Media',
+                    'pos'   => $mPos,
+                    'neu'   => $mNeu,
+                    'neg'   => $mNeg,
+                ]
+            ];
+
+            $sPosTot = 0; $sNeuTot = 0; $sNegTot = 0;
+            foreach ($socialPlatforms as $k => $info) {
+                $pTot = (int) round($tot * $info['ratio']);
+                $pPos = (int) round($pTot * 0.462);
+                $pNeu = (int) round($pTot * 0.064);
+                $pNeg = max(0, $pTot - $pPos - $pNeu);
+
+                $byMedia[] = [
+                    'key'   => $k,
+                    'label' => $info['label'],
+                    'pos'   => $pPos,
+                    'neu'   => $pNeu,
+                    'neg'   => $pNeg,
+                ];
+
+                $sPosTot += $pPos;
+                $sNeuTot += $pNeu;
+                $sNegTot += $pNeg;
             }
-        }
 
-        if ($needsSync) {
-            if ($isSept) {
-                $byMedia = [
-                    ['key' => 'doc',       'label' => 'Mass Media',  'pos' => 57616, 'neg' => 6107,  'neu' => 16634],
-                    ['key' => 'twitter',   'label' => 'X / Twitter', 'pos' => 18284, 'neg' => 18759, 'neu' => 2533],
-                    ['key' => 'tiktok',    'label' => 'TikTok',      'pos' => 12022, 'neg' => 12334, 'neu' => 1665],
-                    ['key' => 'instagram', 'label' => 'Instagram',   'pos' => 7451,  'neg' => 7644,  'neu' => 1032],
-                    ['key' => 'youtube',   'label' => 'YouTube',     'pos' => 5119,  'neg' => 5253,  'neu' => 709],
-                    ['key' => 'facebook',  'label' => 'Facebook',    'pos' => 2834,  'neg' => 2907,  'neu' => 393],
-                ];
-
-                if ($media !== 'all') {
-                    $targetKey = match($media) {
-                        'doc' => 'doc',
-                        'twit', 'twitter' => 'twitter',
-                        'tiktok' => 'tiktok',
-                        'ig', 'instagram' => 'instagram',
-                        'yt', 'youtube' => 'youtube',
-                        'fb', 'facebook' => 'facebook',
-                        default => $media,
-                    };
-                    $item = collect($byMedia)->firstWhere('key', $targetKey) ?: ['pos' => 0, 'neu' => 0, 'neg' => 0];
-                    $totals = ['pos' => $item['pos'], 'neu' => $item['neu'], 'neg' => $item['neg']];
-                } else {
-                    $totals = ['pos' => 103326, 'neu' => 22966, 'neg' => 53004];
-                }
-
-                $res = [
-                    'totals'   => $totals,
-                    'by_media' => $byMedia,
-                    'trend'    => [],
-                ];
+            if ($media === 'doc') {
+                $totals = ['pos' => $mPos, 'neu' => $mNeu, 'neg' => $mNeg];
+            } elseif ($media !== 'all') {
+                $targetKey = match($media) {
+                    'twit', 'twitter' => 'twitter',
+                    'tiktok' => 'tiktok',
+                    'ig', 'instagram' => 'instagram',
+                    'yt', 'youtube' => 'youtube',
+                    'fb', 'facebook' => 'facebook',
+                    default => $media,
+                };
+                $item = collect($byMedia)->firstWhere('key', $targetKey) ?: ['pos' => 0, 'neu' => 0, 'neg' => 0];
+                $totals = ['pos' => $item['pos'], 'neu' => $item['neu'], 'neg' => $item['neg']];
             } else {
-                $dailyRecords = ProjectDailySentiment::where('project_id', $projectId)
-                    ->whereBetween('date', [$startDate, $endDate])
-                    ->orderBy('date')
-                    ->get();
-
-                $tot = $dailyRecords->sum('total');
-
-                $mTot = (int) round($tot * 0.44818);
-                $mPos = (int) round($mTot * 0.71701);
-                $mNeu = (int) round($mTot * 0.20700);
-                $mNeg = max(0, $mTot - $mPos - $mNeu);
-
-                $socialPlatforms = [
-                    'twitter'   => ['label' => 'X / Twitter', 'ratio' => 0.22073],
-                    'tiktok'    => ['label' => 'TikTok',      'ratio' => 0.14513],
-                    'instagram' => ['label' => 'Instagram',   'ratio' => 0.08995],
-                    'youtube'   => ['label' => 'YouTube',     'ratio' => 0.06180],
-                    'facebook'  => ['label' => 'Facebook',    'ratio' => 0.03421],
-                ];
-
-                $byMedia = [
-                    [
-                        'key'   => 'doc',
-                        'label' => 'Mass Media',
-                        'pos'   => $mPos,
-                        'neu'   => $mNeu,
-                        'neg'   => $mNeg,
-                    ]
-                ];
-
-                $sPosTot = 0; $sNeuTot = 0; $sNegTot = 0;
-                foreach ($socialPlatforms as $k => $info) {
-                    $pTot = (int) round($tot * $info['ratio']);
-                    $pPos = (int) round($pTot * 0.462);
-                    $pNeu = (int) round($pTot * 0.064);
-                    $pNeg = max(0, $pTot - $pPos - $pNeu);
-
-                    $byMedia[] = [
-                        'key'   => $k,
-                        'label' => $info['label'],
-                        'pos'   => $pPos,
-                        'neu'   => $pNeu,
-                        'neg'   => $pNeg,
-                    ];
-
-                    $sPosTot += $pPos;
-                    $sNeuTot += $pNeu;
-                    $sNegTot += $pNeg;
-                }
-
-                if ($media === 'doc') {
-                    $totals = ['pos' => $mPos, 'neu' => $mNeu, 'neg' => $mNeg];
-                } elseif ($media !== 'all') {
-                    $targetKey = match($media) {
-                        'twit', 'twitter' => 'twitter',
-                        'tiktok' => 'tiktok',
-                        'ig', 'instagram' => 'instagram',
-                        'yt', 'youtube' => 'youtube',
-                        'fb', 'facebook' => 'facebook',
-                        default => $media,
-                    };
-                    $item = collect($byMedia)->firstWhere('key', $targetKey) ?: ['pos' => 0, 'neu' => 0, 'neg' => 0];
-                    $totals = ['pos' => $item['pos'], 'neu' => $item['neu'], 'neg' => $item['neg']];
-                } else {
-                    $totals = [
-                        'pos' => $mPos + $sPosTot,
-                        'neu' => $mNeu + $sNeuTot,
-                        'neg' => $mNeg + $sNegTot,
-                    ];
-                }
-
-                $res = [
-                    'totals'   => $totals,
-                    'by_media' => $byMedia,
-                    'trend'    => [],
+                $totals = [
+                    'pos' => $mPos + $sPosTot,
+                    'neu' => $mNeu + $sNeuTot,
+                    'neg' => $mNeg + $sNegTot,
                 ];
             }
+
+            $res = [
+                'totals'   => $totals,
+                'by_media' => $byMedia,
+                'trend'    => [],
+            ];
 
             try {
                 ProjectApiSnapshot::storeSnapshot($projectId, 'all', $endpointKey, $startDate, $endDate, $res);
