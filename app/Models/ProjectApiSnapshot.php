@@ -142,25 +142,23 @@ class ProjectApiSnapshot extends Model
                 'sentiment_by_time', 'sentiment_engagement', 'trend_by_media'
             ];
 
+            $sMonth = Carbon::parse($startDate)->format('Y-m');
+            $eMonth = Carbon::parse($endDate)->format('Y-m');
+
             $query = static::where('project_id', $projectId)
                 ->where('media', $media)
-                ->where('endpoint_key', $endpointKey);
-
-            if (in_array($endpointKey, $metricEndpoints)) {
-                $sMonth = Carbon::parse($startDate)->format('Y-m');
-                $eMonth = Carbon::parse($endDate)->format('Y-m');
-                $query->where(function ($q) use ($sMonth, $eMonth) {
+                ->where('endpoint_key', $endpointKey)
+                ->where(function ($q) use ($sMonth, $eMonth) {
                     $q->whereRaw("DATE_FORMAT(start_date, '%Y-%m') <= ?", [$eMonth])
                       ->whereRaw("DATE_FORMAT(end_date, '%Y-%m') >= ?", [$sMonth]);
                 });
-            }
 
             $record = $query->orderBy('end_date', 'desc')
                 ->orderBy('synced_at', 'desc')
                 ->first();
         }
 
-        // 4. Family prefix fallback (e.g. news_mentions_*, articles_*)
+        // 4. Family prefix fallback (e.g. news_mentions_*, articles_*) - Wajib dalam bulan yang sama
         if (!$record) {
             $prefix = null;
             if (str_starts_with($endpointKey, 'news_mentions_')) {
@@ -170,8 +168,15 @@ class ProjectApiSnapshot extends Model
             }
 
             if ($prefix) {
+                $sMonth = Carbon::parse($startDate)->format('Y-m');
+                $eMonth = Carbon::parse($endDate)->format('Y-m');
+
                 $record = static::where('project_id', $projectId)
                     ->where('endpoint_key', 'like', $prefix)
+                    ->where(function ($q) use ($sMonth, $eMonth) {
+                        $q->whereRaw("DATE_FORMAT(start_date, '%Y-%m') <= ?", [$eMonth])
+                          ->whereRaw("DATE_FORMAT(end_date, '%Y-%m') >= ?", [$sMonth]);
+                    })
                     ->orderBy('synced_at', 'desc')
                     ->first();
             }

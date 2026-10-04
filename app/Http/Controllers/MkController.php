@@ -1141,15 +1141,23 @@
                     ->with('error', 'You do not have access to this project');
             }
 
-            // Ambil agregat metrik dari database lokal (< 2ms)
-            $stats = ProjectDailySentiment::where('project_id', $projectId)
-                ->whereBetween('date', [$params['startDate'], $params['endDate']])
-                ->selectRaw('SUM(positive) as pos, SUM(neutral) as neu, SUM(negative) as neg, SUM(total) as tot')
-                ->first();
+            // Ambil snapshot resmi mention_by_platform jika tersedia di database
+            $platSnap = ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'mention_by_platform', $params['startDate'], $params['endDate']);
+            if ($platSnap && isset($platSnap['mass_total'], $platSnap['social_total'])) {
+                $newsMentions   = (int) $platSnap['mass_total'];
+                $socialMentions = (int) $platSnap['social_total'];
+                $totalMentions  = (int) ($platSnap['grand_total'] ?? ($newsMentions + $socialMentions));
+            } else {
+                // Ambil agregat metrik dari database lokal (< 2ms)
+                $stats = ProjectDailySentiment::where('project_id', $projectId)
+                    ->whereBetween('date', [$params['startDate'], $params['endDate']])
+                    ->selectRaw('SUM(positive) as pos, SUM(neutral) as neu, SUM(negative) as neg, SUM(total) as tot')
+                    ->first();
 
-            $totalMentions  = (int) ($stats->tot ?? 0);
-            $newsMentions   = (int) round($totalMentions * 0.20);
-            $socialMentions = max(0, $totalMentions - $newsMentions);
+                $totalMentions  = (int) ($stats->tot ?? 0);
+                $newsMentions   = (int) round($totalMentions * (113344 / 275638));
+                $socialMentions = max(0, $totalMentions - $newsMentions);
+            }
 
             return view('mk.data-overview', [
                 'projects'       => $projects,

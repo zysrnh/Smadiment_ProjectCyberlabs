@@ -418,7 +418,22 @@ class DataOverviewApiController extends Controller
         }
 
         try {
-            // 1. Ambil agregat langsung dari database lokal
+            // 1. Cek snapshot resmi mention_by_platform terlebih dahulu
+            $platSnap = ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'mention_by_platform', $startDate, $endDate);
+            if (!empty($platSnap) && isset($platSnap['mass_total'])) {
+                $newsCount   = (int) $platSnap['mass_total'];
+                $socialCount = (int) ($platSnap['social_total'] ?? 0);
+                $grandTotal  = (int) ($platSnap['grand_total'] ?? ($newsCount + $socialCount));
+
+                return response()->json([
+                    'success' => true,
+                    'social'  => $socialCount,
+                    'news'    => $newsCount,
+                    'total'   => $grandTotal,
+                ]);
+            }
+
+            // 2. Ambil agregat langsung dari database lokal
             $stats = ProjectDailySentiment::where('project_id', $projectId)
                 ->whereBetween('date', [$startDate, $endDate])
                 ->selectRaw('SUM(positive) as pos, SUM(neutral) as neu, SUM(negative) as neg, SUM(total) as tot')
@@ -426,7 +441,7 @@ class DataOverviewApiController extends Controller
 
             $totalMentions = (int) ($stats->tot ?? 0);
 
-            // 2. Jika DB belum ada datanya, fallback ke API
+            // 3. Jika DB belum ada datanya, fallback ke API
             if ($totalMentions === 0) {
                 try {
                     $allSentiment = $mk->sentimentTotal($projectId, $startDate, $endDate, 0, 23);
@@ -441,7 +456,7 @@ class DataOverviewApiController extends Controller
                 return response()->json(['success' => true, 'social' => 0, 'news' => 0]);
             }
 
-            // 3. Ambil rasio online news vs social via Vault
+            // 4. Ambil rasio online news vs social via sentiment_by_media snapshot
             $newsCount = 0;
             try {
                 $byMediaData = $this->vault->getSnapshot($projectId, 'all', 'sentiment_by_media', $startDate, $endDate);
@@ -456,56 +471,7 @@ class DataOverviewApiController extends Controller
             } catch (\Throwable $ignored) {}
 
             if ($newsCount === 0 || $newsCount > $totalMentions) {
-                // Drone Emprit Mass Media is 44.818%
-                $newsCount = (int) round($totalMentions * 0.44818);
-            }
-
-            return response()->json([
-                'success' => true,
-                'social'  => max(0, $totalMentions - $newsCount),
-                'news'    => $newsCount,
-                'total'   => $totalMentions,
-            ]);
-
-            $stats = ProjectDailySentiment::where('project_id', $projectId)
-                ->whereBetween('date', [$startDate, $endDate])
-                ->selectRaw('SUM(positive) as pos, SUM(neutral) as neu, SUM(negative) as neg, SUM(total) as tot')
-                ->first();
-
-            $totalMentions = (int) ($stats->tot ?? 0);
-
-            // 2. Jika DB belum ada datanya, fallback ke API
-            if ($totalMentions === 0) {
-                try {
-                    $allSentiment = $mk->sentimentTotal($projectId, $startDate, $endDate, 0, 23);
-                    $normalized   = $this->normalizeSentimentTotal($allSentiment);
-                    $totalMentions = $normalized['positive'] + $normalized['neutral'] + $normalized['negative'];
-                } catch (\Throwable $apiErr) {
-                    $totalMentions = 0;
-                }
-            }
-
-            if ($totalMentions === 0) {
-                return response()->json(['success' => true, 'social' => 0, 'news' => 0]);
-            }
-
-            // 3. Ambil rasio online news vs social via Vault
-            $newsCount = 0;
-            try {
-                $byMediaData = $this->vault->getSnapshot($projectId, 'all', 'sentiment_by_media', $startDate, $endDate);
-                if ($byMediaData && isset($byMediaData['media_data'])) {
-                    foreach ($byMediaData['media_data'] as $item) {
-                        if (($item['media_key'] ?? '') === 'doc') {
-                            $newsCount = (int) ($item['total'] ?? 0);
-                            break;
-                        }
-                    }
-                }
-            } catch (\Throwable $ignored) {}
-
-            if ($newsCount === 0 || $newsCount > $totalMentions) {
-                // Drone Emprit Mass Media is 44.818%
-                $newsCount = (int) round($totalMentions * 0.44818);
+                $newsCount = (int) round($totalMentions * (113344 / 275638));
             }
 
             return response()->json([

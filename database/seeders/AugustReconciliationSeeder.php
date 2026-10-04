@@ -12,15 +12,20 @@ class AugustReconciliationSeeder extends Seeder
      * Run the database seeds.
      * Reconciles August 2026 data with official Drone Emprit monthly totals (Pak Syarif):
      * - Total Mentions: 275,638
-     * - Mass Media (Online News): 113,344 (41.12%)
-     * - Social Media: 162,294 (58.88%)
+     * - Mass Media (Online News Ind): 113,344 (41.12%)
+     * - Twitter / X: 129,594
+     * - YouTube: 15,668
+     * - Instagram: 12,630
+     * - Facebook: 3,738
+     * - TikTok: 664
+     * - Total Social Media: 162,294 (58.88%)
      */
     public function run(): void
     {
         $projectId = 16978;
 
         // 1. Reconcile project_daily_sentiments for August 2026
-        // August 14 currently has 28084. Adjust by -32 mentions to make total exactly 275638.
+        // Adjust August 14 to make the entire month total exactly 275,638.
         ProjectDailySentiment::where('project_id', $projectId)
             ->where('date', '2026-08-14')
             ->update([
@@ -38,15 +43,15 @@ class AugustReconciliationSeeder extends Seeder
         $startDate = '2026-08-01';
         $endDate   = '2026-08-31';
 
-        // 2. mention_by_platform snapshot
+        // 2. mention_by_platform snapshot (Exact Drone Emprit Official Numbers)
         $mentionByPlat = [
             'platforms' => [
                 ['media' => 'doc',       'label' => 'Mass Media',    'count' => 113344, 'category' => 'mass_media'],
-                ['media' => 'twitter',   'label' => 'X (Twitter)',   'count' => 64918,  'category' => 'social_media'],
-                ['media' => 'tiktok',    'label' => 'TikTok',        'count' => 42196,  'category' => 'social_media'],
-                ['media' => 'instagram', 'label' => 'Instagram',     'count' => 25967,  'category' => 'social_media'],
-                ['media' => 'youtube',   'label' => 'YouTube',       'count' => 17852,  'category' => 'social_media'],
-                ['media' => 'facebook',  'label' => 'Facebook',      'count' => 11361,  'category' => 'social_media'],
+                ['media' => 'twitter',   'label' => 'X (Twitter)',   'count' => 129594, 'category' => 'social_media'],
+                ['media' => 'youtube',   'label' => 'YouTube',       'count' => 15668,  'category' => 'social_media'],
+                ['media' => 'instagram', 'label' => 'Instagram',     'count' => 12630,  'category' => 'social_media'],
+                ['media' => 'facebook',  'label' => 'Facebook',      'count' => 3738,   'category' => 'social_media'],
+                ['media' => 'tiktok',    'label' => 'TikTok',        'count' => 664,    'category' => 'social_media'],
             ],
             'mass_total'   => 113344,
             'social_total' => 162294,
@@ -66,11 +71,11 @@ class AugustReconciliationSeeder extends Seeder
             ],
             'by_media' => [
                 ['key' => 'doc',       'label' => 'Mass Media',    'pos' => 81268, 'neu' => 23462, 'neg' => 8614],
-                ['key' => 'twitter',   'label' => 'X / Twitter',   'pos' => 29992, 'neu' => 4155,  'neg' => 30771],
-                ['key' => 'tiktok',    'label' => 'TikTok',        'pos' => 19495, 'neu' => 2701,  'neg' => 20000],
-                ['key' => 'instagram', 'label' => 'Instagram',     'pos' => 11997, 'neu' => 1662,  'neg' => 12308],
-                ['key' => 'youtube',   'label' => 'YouTube',       'pos' => 8248,  'neu' => 1143,  'neg' => 8461],
-                ['key' => 'facebook',  'label' => 'Facebook',      'pos' => 5248,  'neu' => 726,   'neg' => 5387],
+                ['key' => 'twitter',   'label' => 'X / Twitter',   'pos' => 59872, 'neu' => 8294,  'neg' => 61428],
+                ['key' => 'youtube',   'label' => 'YouTube',       'pos' => 7239,  'neu' => 1003,  'neg' => 7426],
+                ['key' => 'instagram', 'label' => 'Instagram',     'pos' => 5835,  'neu' => 808,   'neg' => 5987],
+                ['key' => 'facebook',  'label' => 'Facebook',      'pos' => 1727,  'neu' => 239,   'neg' => 1772],
+                ['key' => 'tiktok',    'label' => 'TikTok',        'pos' => 307,   'neu' => 43,    'neg' => 314],
             ],
             'trend' => [],
         ];
@@ -94,32 +99,10 @@ class AugustReconciliationSeeder extends Seeder
                 [
                     'media'               => 'X (Twitter)',
                     'media_key'           => 'twit',
-                    'positive'            => 29992,
-                    'neutral'             => 4155,
-                    'negative'            => 30771,
-                    'total'               => 64918,
-                    'positive_percentage' => 46.2,
-                    'neutral_percentage'  => 6.4,
-                    'negative_percentage' => 47.4,
-                ],
-                [
-                    'media'               => 'TikTok',
-                    'media_key'           => 'tiktok',
-                    'positive'            => 19495,
-                    'neutral'             => 2701,
-                    'negative'            => 20000,
-                    'total'               => 42196,
-                    'positive_percentage' => 46.2,
-                    'neutral_percentage'  => 6.4,
-                    'negative_percentage' => 47.4,
-                ],
-                [
-                    'media'               => 'Instagram',
-                    'media_key'           => 'ig',
-                    'positive'            => 11997,
-                    'neutral'             => 1662,
-                    'negative'            => 12308,
-                    'total'               => 25967,
+                    'positive'            => 59872,
+                    'neutral'             => 8294,
+                    'negative'            => 61428,
+                    'total'               => 129594,
                     'positive_percentage' => 46.2,
                     'neutral_percentage'  => 6.4,
                     'negative_percentage' => 47.4,
@@ -127,10 +110,21 @@ class AugustReconciliationSeeder extends Seeder
                 [
                     'media'               => 'YouTube',
                     'media_key'           => 'yt',
-                    'positive'            => 8248,
-                    'neutral'             => 1143,
-                    'negative'            => 8461,
-                    'total'               => 17852,
+                    'positive'            => 7239,
+                    'neutral'             => 1003,
+                    'negative'            => 7426,
+                    'total'               => 15668,
+                    'positive_percentage' => 46.2,
+                    'neutral_percentage'  => 6.4,
+                    'negative_percentage' => 47.4,
+                ],
+                [
+                    'media'               => 'Instagram',
+                    'media_key'           => 'ig',
+                    'positive'            => 5835,
+                    'neutral'             => 808,
+                    'negative'            => 5987,
+                    'total'               => 12630,
                     'positive_percentage' => 46.2,
                     'neutral_percentage'  => 6.4,
                     'negative_percentage' => 47.4,
@@ -138,10 +132,21 @@ class AugustReconciliationSeeder extends Seeder
                 [
                     'media'               => 'Facebook',
                     'media_key'           => 'fb',
-                    'positive'            => 5248,
-                    'neutral'             => 726,
-                    'negative'            => 5387,
-                    'total'               => 11361,
+                    'positive'            => 1727,
+                    'neutral'             => 239,
+                    'negative'            => 1772,
+                    'total'               => 3738,
+                    'positive_percentage' => 46.2,
+                    'neutral_percentage'  => 6.4,
+                    'negative_percentage' => 47.4,
+                ],
+                [
+                    'media'               => 'TikTok',
+                    'media_key'           => 'tiktok',
+                    'positive'            => 307,
+                    'neutral'             => 43,
+                    'negative'            => 314,
+                    'total'               => 664,
                     'positive_percentage' => 46.2,
                     'neutral_percentage'  => 6.4,
                     'negative_percentage' => 47.4,
@@ -150,30 +155,30 @@ class AugustReconciliationSeeder extends Seeder
         ];
         ProjectApiSnapshot::storeSnapshot($projectId, 'all', 'sentiment_by_media', $startDate, $endDate, $sentimentByMedia);
 
-        // 5. trend_mentions snapshot (all 31 days of August)
+        // 5. trend_mentions snapshot (all 31 days of August, aligned with exact ratios)
         $platLabels = [
             'doc'       => 'Online News',
             'twitter'   => 'Twitter',
-            'tiktok'    => 'TikTok',
-            'instagram' => 'Instagram',
             'youtube'   => 'YouTube',
+            'instagram' => 'Instagram',
             'facebook'  => 'Facebook',
+            'tiktok'    => 'TikTok',
         ];
         $platColors = [
             'doc'       => '#038047',
             'twitter'   => '#1d9bf0',
-            'tiktok'    => '#000000',
-            'instagram' => '#e1306c',
             'youtube'   => '#ff0000',
+            'instagram' => '#e1306c',
             'facebook'  => '#1877f2',
+            'tiktok'    => '#000000',
         ];
         $ratios = [
-            'doc'       => 0.41120,
-            'twitter'   => 0.23552,
-            'tiktok'    => 0.15308,
-            'instagram' => 0.09421,
-            'youtube'   => 0.06477,
-            'facebook'  => 0.04122,
+            'doc'       => 113344 / 275638,
+            'twitter'   => 129594 / 275638,
+            'youtube'   => 15668  / 275638,
+            'instagram' => 12630  / 275638,
+            'facebook'  => 3738   / 275638,
+            'tiktok'    => 664    / 275638,
         ];
 
         $dailyMap = [];
