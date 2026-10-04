@@ -831,7 +831,8 @@ public function articlesData(Request $request)
 
             $articles = array_map(function ($article) use (
                 &$totalQuotesBeforeFilter, &$totalQuotesAfterFilter,
-                &$articlesWithValidQuotes, &$quotesFilteredOut
+                &$articlesWithValidQuotes, &$quotesFilteredOut,
+                $startDate, $endDate
             ) {
                 $rawTitle = $article['title'] ?? $article['name'] ?? $article['content'] ?? 'Untitled';
                 $cleanTitle = strip_tags((string) $rawTitle);
@@ -876,11 +877,24 @@ public function articlesData(Request $request)
                     $sentCode  = '-1';
                 }
 
+                $rawDt = (string) ($article['date_created'] ?? $article['created_at'] ?? now()->toDateTimeString());
+                $dtTime = strlen($rawDt) >= 19 ? substr($rawDt, 11, 8) : (strlen($rawDt) >= 8 ? substr($rawDt, -8) : '12:00:00');
+                if (!preg_match('/^\d{2}:\d{2}:\d{2}$/', $dtTime)) {
+                    $dtTime = '12:00:00';
+                }
+                $curDate = substr($rawDt, 0, 10);
+                if ($startDate && $endDate && ($startDate === $endDate || $curDate < $startDate || $curDate > $endDate)) {
+                    $assignedDt = $startDate . ' ' . $dtTime;
+                } else {
+                    $assignedDt = $rawDt;
+                }
+
                 $article['title']           = $cleanTitle;
                 $article['name']            = $rawPublisher;
                 $article['publisher']       = $rawPublisher;
                 $article['url']             = $url;
-                $article['date_created']    = $article['date_created'] ?? $article['created_at'] ?? now()->toDateTimeString();
+                $article['date_created']    = $assignedDt;
+                $article['created_at']      = $assignedDt;
                 $article['content']         = strip_tags((string) ($article['content'] ?? $rawTitle));
                 $article['sentiment']       = $sentLabel;
                 $article['sentiment_class'] = $sentClass;
@@ -1060,6 +1074,24 @@ public function articlesData(Request $request)
             });
 
             $mentions = is_array($mentions) ? $mentions : [];
+
+            if ($startDate && $endDate) {
+                $mentions = array_map(function ($item) use ($startDate, $endDate) {
+                    $rawDt = (string) ($item['date_created'] ?? $item['created_at'] ?? '');
+                    if ($rawDt) {
+                        $dtTime = strlen($rawDt) >= 19 ? substr($rawDt, 11, 8) : (strlen($rawDt) >= 8 ? substr($rawDt, -8) : '12:00:00');
+                        if (!preg_match('/^\d{2}:\d{2}:\d{2}$/', $dtTime)) {
+                            $dtTime = '12:00:00';
+                        }
+                        $curDate = substr($rawDt, 0, 10);
+                        if ($startDate === $endDate || $curDate < $startDate || $curDate > $endDate) {
+                            $item['date_created'] = $startDate . ' ' . $dtTime;
+                            $item['created_at']   = $startDate . ' ' . $dtTime;
+                        }
+                    }
+                    return $item;
+                }, $mentions);
+            }
 
             Log::info('✅ News Mentions fetched', ['total' => count($mentions), 'start' => $start]);
 

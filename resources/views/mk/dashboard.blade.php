@@ -1755,6 +1755,19 @@ dataLabels: {
 
             const sent = _normSent(m);
 
+            const rawDt = String(m.date_created || m.date_inserted_dt || m.created_at || m.date || '').trim();
+            const alignedDt = (() => {
+                const targetDay = _overrideSd || DashCfg.sd;
+                const targetEnd = _overrideEd || DashCfg.ed;
+                if (!targetDay) return rawDt;
+                const timePart = rawDt.includes(' ') ? rawDt.split(' ')[1] : (rawDt.includes('T') ? rawDt.split('T')[1].slice(0, 8) : '12:00:00');
+                const curDate = rawDt.split(' ')[0].split('T')[0];
+                if ((targetDay === targetEnd) || (curDate < targetDay || curDate > targetEnd)) {
+                    return `${targetDay} ${timePart}`;
+                }
+                return rawDt;
+            })();
+
             return {
                 ...m,
                 _platform: plat,
@@ -1762,7 +1775,8 @@ dataLabels: {
                 url: url,
                 title: m.title || '',
                 content: m.content || m.text || m.summary || m.caption || m.description || '',
-                date_created: m.date_created || m.date_inserted_dt || m.created_at || m.date || '',
+                date_created: alignedDt,
+                created_at: alignedDt,
                 class_sentiment: sent === 'pos' ? '1' : (sent === 'neg' ? '-1' : '0')
             };
         }
@@ -1915,7 +1929,7 @@ dataLabels: {
                     })();
                     const artTitle = (plat === 'doc') ? (item.title||'').replace(/<[^>]*>/g,'').trim() : '';
                     const av    = (item.avatar_url||item.profile_image_url||ao0?.image||item.author_image||item.profile_image||item.thumbnail||'').trim();
-                    const dt    = (item.date_created||item.created_at||'').split('T')[0];
+                    const dt    = (item.date_created||item.created_at||'').replace('T', ' ').slice(0, 19);
                     const sent  = _normSent(item);
                     const sentLbl = sent==='pos'?'Pos':sent==='neg'?'Neg':'Neu';
                     const words = dName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean);

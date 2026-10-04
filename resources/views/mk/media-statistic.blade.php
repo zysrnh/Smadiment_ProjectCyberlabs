@@ -1191,9 +1191,14 @@ async function loadMentionByPlatform(){
 async function loadTrend(){
   if(!MSCfg.pid){ hideSk('skTrend'); hideSk('skArticleTrend'); return; }
   const fmtDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  let trendSD,trendED;
-  if(MSTrendToggle._datePickerOverride){ trendSD=MSCfg.sd; trendED=MSCfg.ed; }
-  else{ const now=new Date(),off=MSTrendToggle._weekOffset;const edDate=new Date(now);edDate.setDate(now.getDate()-(7*off));const sdDate=new Date(now);sdDate.setDate(now.getDate()-(7*(off+1)));trendSD=fmtDate(sdDate);trendED=fmtDate(edDate); }
+  let trendSD = MSCfg.sd;
+  let trendED = MSCfg.ed;
+  if(MSTrendToggle._weekOffset && MSTrendToggle._weekOffset !== 0){
+    const now=new Date(),off=MSTrendToggle._weekOffset;
+    const edDate=new Date(now);edDate.setDate(now.getDate()-(7*off));
+    const sdDate=new Date(now);sdDate.setDate(now.getDate()-(7*(off+1)));
+    trendSD=fmtDate(sdDate);trendED=fmtDate(edDate);
+  }
   const platMeta={doc:{label:'Online News',color:'#0284c7'},twitter:{label:'X (Twitter)',color:'#1d9bf0'},facebook:{label:'Facebook',color:'#1877f2'},instagram:{label:'Instagram',color:'#e1306c'},youtube:{label:'YouTube',color:'#ff0000'},tiktok:{label:'TikTok',color:'#111827'}};
   const platOrder=['doc','twitter','facebook','instagram','youtube','tiktok'];
   const keyMap={'Online News':'doc','X (Twitter)':'twit','X ( Twitter )':'twit','Facebook':'fb','Instagram':'ig','YouTube':'yt','TikTok':'tiktok'};
@@ -1461,6 +1466,17 @@ const MSPanel = (() => {
 
     const sent = _ns(m);
 
+    const rawDt = String(m.date_created || m.date_inserted_dt || m.created_at || m.date || '').trim();
+    const alignedDt = (() => {
+      if (!MSCfg.sd) return rawDt;
+      const timePart = rawDt.includes(' ') ? rawDt.split(' ')[1] : (rawDt.includes('T') ? rawDt.split('T')[1].slice(0, 8) : '12:00:00');
+      const curDate = rawDt.split(' ')[0].split('T')[0];
+      if ((MSCfg.sd === MSCfg.ed) || (curDate < MSCfg.sd || curDate > MSCfg.ed)) {
+        return `${MSCfg.sd} ${timePart}`;
+      }
+      return rawDt;
+    })();
+
     return {
       ...m,
       _platform: plat,
@@ -1469,7 +1485,8 @@ const MSPanel = (() => {
       url: url,
       title: m.title || '',
       content: m.content || m.text || m.summary || m.caption || m.description || '',
-      date_created: m.date_created || m.date_inserted_dt || m.created_at || m.date || '',
+      date_created: alignedDt,
+      created_at: alignedDt,
       class_sentiment: sent === 'pos' ? '1' : (sent === 'neg' ? '-1' : '0')
     };
   }

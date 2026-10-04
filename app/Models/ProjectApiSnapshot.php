@@ -136,10 +136,26 @@ class ProjectApiSnapshot extends Model
 
         // 3. Fallback to latest snapshot of exact endpoint_key
         if (!$record) {
-            $record = static::where('project_id', $projectId)
+            $metricEndpoints = [
+                'trend_mentions', 'mention_by_platform', 'mentions_by_weekday', 
+                'mentions_by_hour', 'sentiment_by_media', 'snt_totals_all', 
+                'sentiment_by_time', 'sentiment_engagement', 'trend_by_media'
+            ];
+
+            $query = static::where('project_id', $projectId)
                 ->where('media', $media)
-                ->where('endpoint_key', $endpointKey)
-                ->orderBy('end_date', 'desc')
+                ->where('endpoint_key', $endpointKey);
+
+            if (in_array($endpointKey, $metricEndpoints)) {
+                $sMonth = Carbon::parse($startDate)->format('Y-m');
+                $eMonth = Carbon::parse($endDate)->format('Y-m');
+                $query->where(function ($q) use ($sMonth, $eMonth) {
+                    $q->whereRaw("DATE_FORMAT(start_date, '%Y-%m') <= ?", [$eMonth])
+                      ->whereRaw("DATE_FORMAT(end_date, '%Y-%m') >= ?", [$sMonth]);
+                });
+            }
+
+            $record = $query->orderBy('end_date', 'desc')
                 ->orderBy('synced_at', 'desc')
                 ->first();
         }
