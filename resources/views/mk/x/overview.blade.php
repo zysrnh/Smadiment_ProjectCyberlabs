@@ -557,12 +557,14 @@ const OVData = {
                 this._renderDonutHashtag(topics);
             } else {
                 if(ld) ld.style.display='none';
+                const ldh=_$('loadingDonutHashtag'); if(ldh) ldh.style.display='none';
                 if(em) em.style.display='flex';
                 if(bd) bd.textContent='0';
             }
         } catch(e) {
             console.error('[OV]',e);
             if(ld) ld.style.display='none';
+            const ldh=_$('loadingDonutHashtag'); if(ldh) ldh.style.display='none';
             if(em) em.style.display='flex';
             if(bd) bd.textContent='Error';
         }

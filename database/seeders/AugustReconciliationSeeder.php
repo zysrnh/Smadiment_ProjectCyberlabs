@@ -254,5 +254,26 @@ class AugustReconciliationSeeder extends Seeder
             'platforms' => $wdResult,
         ];
         ProjectApiSnapshot::storeSnapshot($projectId, 'all', 'mentions_by_weekday', $startDate, $endDate, $weekdayPayload);
+
+        // 7. top_hashtags snapshot (Twitter & All)
+        $topHashtags = [
+            ['name' => 'prabowo', 'size' => 890, 'media' => 'twit'],
+            ['name' => 'demo', 'size' => 661, 'media' => 'twit'],
+            ['name' => 'ALLEYEONINDONESIA', 'size' => 634, 'media' => 'twit'],
+            ['name' => 'prabowosubianto', 'size' => 585, 'media' => 'twit'],
+            ['name' => 'islamalaprabowo', 'size' => 537, 'media' => 'twit'],
+            ['name' => 'kabinetprabowo', 'size' => 482, 'media' => 'twit'],
+            ['name' => 'swasembadapangan', 'size' => 421, 'media' => 'twit'],
+            ['name' => 'iknnusantara', 'size' => 395, 'media' => 'twit'],
+            ['name' => 'indonesiamaju', 'size' => 360, 'media' => 'twit'],
+            ['name' => 'gerindra', 'size' => 324, 'media' => 'twit'],
+            ['name' => 'makanbergizigratis', 'size' => 298, 'media' => 'twit'],
+            ['name' => 'transisipemerintahan', 'size' => 265, 'media' => 'twit'],
+            ['name' => 'hilirisasi', 'size' => 241, 'media' => 'twit'],
+            ['name' => 'pertanianmodern', 'size' => 218, 'media' => 'twit'],
+            ['name' => 'menhanprabowo', 'size' => 195, 'media' => 'twit'],
+        ];
+        ProjectApiSnapshot::storeSnapshot($projectId, 'twit', 'top_hashtags', $startDate, $endDate, ['hashtags' => $topHashtags]);
+        ProjectApiSnapshot::storeSnapshot($projectId, 'all', 'top_hashtags', $startDate, $endDate, ['hashtags' => $topHashtags]);
     }
 }
