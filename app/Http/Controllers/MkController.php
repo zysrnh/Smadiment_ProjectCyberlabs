@@ -3,6 +3,7 @@
     namespace App\Http\Controllers;
 
     use App\Models\ProjectDailySentiment;
+    use App\Models\ProjectApiSnapshot;
     use App\Services\MediaKernelsClient;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Auth;
