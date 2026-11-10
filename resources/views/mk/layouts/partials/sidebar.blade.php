@@ -185,12 +185,15 @@
                     </ul>
                 </li>
 
+                {{-- Compare Projects (disembunyikan sementara) --}}
+                {{--
                 <li class="pc-item {{ request()->routeIs('mk.compare.index') ? 'active' : '' }}">
                     <a href="{{ route('mk.compare.index') }}" class="pc-link">
                         <span class="pc-micon"><i class="ph ph-git-diff"></i></span>
                         <span class="pc-mtext">Compare Projects</span>
                     </a>
                 </li>
+                --}}
 
                 <li class="pc-item {{ request()->routeIs('mk.topic-map') ? 'active' : '' }}">
                     <a href="{{ route('mk.topic-map') }}{{ $qs }}" class="pc-link">
