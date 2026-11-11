@@ -456,9 +456,11 @@ const _normSent = it => {
     return r.includes('pos') ? 'pos' : r.includes('neg') ? 'neg' : 'neu';
 };
 const _tweetUrl = it => {
-    const sc = _getScr(it), sid = it.sub_id || it.id || '';
-    if (sc && sid) return `https://twitter.com/${encodeURIComponent(sc)}/status/${encodeURIComponent(sid)}`;
-    return it.url || it.link || '';
+    const direct = (it.url || it.link || '').trim();
+    if (direct && direct.startsWith('http') && !direct.includes('/status/1839')) return direct;
+    const sc = String(_getScr(it) || '').replace(/^@+/, ''), sid = String(it.sub_id || it.id || '');
+    if (sc && /^\d{15,20}$/.test(sid) && !sid.startsWith('1839')) return `https://x.com/${encodeURIComponent(sc)}/status/${encodeURIComponent(sid)}`;
+    return sc ? `https://x.com/${encodeURIComponent(sc)}` : '';
 };
 
 /* ══ LOAD DATA ══ */

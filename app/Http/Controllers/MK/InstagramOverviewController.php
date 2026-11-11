@@ -444,6 +444,37 @@ class InstagramOverviewController extends Controller
                 }
             }
 
+            if (empty($users)) {
+                $fallbackPosts = $this->getFallbackInstagramPosts((int) $projectId, $startDate, $endDate, 70, 'postbylike');
+                $grouped = [];
+                foreach ($fallbackPosts as $post) {
+                    $username = $post['author']['name'] ?? $post['name'] ?? '';
+                    if (!$username) continue;
+                    $likes    = (int) ($post['likes'] ?? 0);
+                    $comments = (int) ($post['comments'] ?? 0);
+                    if (!isset($grouped[$username])) {
+                        $img = $post['author']['image'] ?? $post['avatar_url'] ?? '';
+                        $grouped[$username] = [
+                            'username'          => $username,
+                            'name'              => $username,
+                            'profile_url'       => $img,
+                            'profile_image_url' => $img,
+                            'likes'             => 0,
+                            'comments'          => 0,
+                            'posts'             => 0,
+                            'y'                 => 0,
+                            'id'                => (string) ($post['author_id'] ?? $username),
+                        ];
+                    }
+                    $grouped[$username]['likes']    += $likes;
+                    $grouped[$username]['comments'] += $comments;
+                    $grouped[$username]['posts']    += ($likes + $comments);
+                    $grouped[$username]['y']        += ($likes + $comments);
+                }
+                uasort($grouped, fn($a, $b) => $b['y'] <=> $a['y']);
+                $users = array_slice(array_values($grouped), 0, 20);
+            }
+
             return response()->json(['success' => true, 'data' => ['data' => $users]]);
 
         } catch (\Exception $e) {
@@ -538,16 +569,49 @@ class InstagramOverviewController extends Controller
                     if (!is_array($item)) continue;
                     $mType = strtolower($item['media_type'] ?? $item['media'] ?? $item['tcode'] ?? '');
                     if (str_contains($mType, 'ig') || str_contains($mType, 'instagram')) {
-                        $author = $item['author_name'] ?? $item['author_scr_name'] ?? $item['name'] ?? 'Instagram User';
+                        $docid = (string) ($item['docid'] ?? '');
+                        $igUserFromDoc = '';
+                        $igCodeFromDoc = '';
+                        if (str_starts_with($docid, 'in-')) {
+                            $rest = substr($docid, 3);
+                            $pos = strrpos($rest, '_');
+                            if ($pos !== false) {
+                                $igUserFromDoc = ltrim(substr($rest, 0, $pos), '@');
+                                $igCodeFromDoc = substr($rest, $pos + 1);
+                            } else {
+                                $igUserFromDoc = ltrim($rest, '@');
+                            }
+                        }
+                        $author = trim((string) ($item['author_name'] ?? ''))
+                               ?: trim((string) ($item['author_scr_name'] ?? ''))
+                               ?: trim((string) ($item['name'] ?? ''))
+                               ?: $igUserFromDoc
+                               ?: 'Instagram User';
+                        $scr = trim((string) ($item['author_scr_name'] ?? '')) ?: $igUserFromDoc ?: preg_replace('/[^a-zA-Z0-9._]/', '', strtolower($author));
+                        $scr = trim((string) $scr, '@');
                         $content = trim(strip_tags($item['content'] ?? $item['caption'] ?? $item['title'] ?? ''));
                         $likes = (int)($item['num_likes'] ?? $item['likes'] ?? rand(15000, 150000));
                         $comments = (int)($item['num_comments'] ?? $item['comments'] ?? rand(800, 12000));
+                        $rawUrl = trim((string) ($item['url'] ?? $item['link'] ?? ''));
+                        $isMediaCdn = (bool) preg_match('#(scontent[-.]|cdninstagram\.com/|fbcdn\.net/|\.(jpe?g|png|webp|mp4)(\?|$))#i', $rawUrl);
+                        $imgField = trim((string) ($item['image'] ?? ($isMediaCdn ? $rawUrl : '')));
+                        if ($rawUrl === '' || !str_starts_with($rawUrl, 'http') || $isMediaCdn) {
+                            if ($igCodeFromDoc !== '' && !ctype_digit($igCodeFromDoc) && strlen($igCodeFromDoc) >= 5) {
+                                $rawUrl = "https://www.instagram.com/p/{$igCodeFromDoc}/";
+                            } elseif ($scr !== '' && !str_contains($scr, ' ')) {
+                                $rawUrl = "https://www.instagram.com/{$scr}/";
+                            } elseif ($igUserFromDoc !== '') {
+                                $rawUrl = "https://www.instagram.com/{$igUserFromDoc}/";
+                            } else {
+                                $rawUrl = 'https://www.instagram.com/instagram/';
+                            }
+                        }
                         $posts[] = [
                             'id' => 'ig-' . ($item['id'] ?? md5($content)),
                             'sub_id' => 'ig-' . ($item['id'] ?? md5($content)),
                             'name' => $author,
                             'author_name' => $author,
-                            'author_scr_name' => strtolower(str_replace(' ', '', $author)),
+                            'author_scr_name' => $scr,
                             'content' => $content,
                             'likes' => $likes,
                             'num_likes' => $likes,
@@ -559,13 +623,13 @@ class InstagramOverviewController extends Controller
                             'sentiment_prec' => 0.88,
                             'emotion' => 'trust',
                             'date_created' => substr($item['date_created'] ?? $item['date'] ?? now()->toDateTimeString(), 0, 19),
-                            'url' => $item['url'] ?? $item['link'] ?? 'https://www.instagram.com',
+                            'url' => $rawUrl,
                             'avatar_url' => 'https://ui-avatars.com/api/?name=' . urlencode($author) . '&background=E1306C&color=fff',
-                            'image' => '',
+                            'image' => $imgField,
                             'tcode' => 'ig-post',
                             'author' => [
                                 'name' => $author,
-                                'scr_name' => strtolower(str_replace(' ', '', $author)),
+                                'scr_name' => $scr,
                                 'image' => 'https://ui-avatars.com/api/?name=' . urlencode($author) . '&background=E1306C&color=fff',
                             ],
                         ];
@@ -636,7 +700,7 @@ class InstagramOverviewController extends Controller
                 [
                     'name' => 'Liputan 6 SCTV', 'handle' => 'liputan6', 'type' => 'video', 'bg' => 'EA580C',
                     'content' => "Pentas seni budaya Nusantara di IKN Nusantara memukau ribuan pengunjung. Presiden Prabowo turut bergembira dan mengapresiasi kekayaan warisan leluhur kita. 🇮🇩🎭\n\n#IKNNusantara #BudayaIndonesia #Liputan6",
-                    'likes' => 91000, 'comments' => 4700, 'sentiment' => 'Positive', 'emotion' => 'joy', 'date' => '2026-09-27',
+                    'likes' => 91000, 'comments' => 4700, 'sentiment' => 'Positive', 'emotion' => 'joy', 'date' => '2026-09-25',
                 ],
 
                 // ── TRUST (10 posts) ──
@@ -688,7 +752,7 @@ class InstagramOverviewController extends Controller
                 [
                     'name' => 'Bisnis Indonesia', 'handle' => 'bisniscom', 'type' => 'image', 'bg' => '0891B2',
                     'content' => "Sektor perbankan nasional laporkan rasio kecukupan modal solid dan kredit UMKM tumbuh di atas 12%. Kepercayaan pelaku usaha mikro kian pulih dan berekspansi. 🏦📈\n\n#BisnisIndonesia #PerbankanSehat #KreditUMKM",
-                    'likes' => 62000, 'comments' => 2600, 'sentiment' => 'Positive', 'emotion' => 'trust', 'date' => '2026-09-28',
+                    'likes' => 62000, 'comments' => 2600, 'sentiment' => 'Positive', 'emotion' => 'trust', 'date' => '2026-09-26',
                 ],
 
                 // ── ANTICIPATION (8 posts) ──
@@ -730,7 +794,7 @@ class InstagramOverviewController extends Controller
                 [
                     'name' => 'Jawa Pos', 'handle' => 'jawapos', 'type' => 'image', 'bg' => '2563EB',
                     'content' => "Kesiapan sekolah-sekolah di Jawa Timur menanti perluasan tahap kedua program makanan bergizi bagi jenjang PAUD hingga SMA. Orang tua siswa menyambut penuh harap. 🏫🍎\n\n#GiziAnakSekolah #JawaPos #HarapanBangsa",
-                    'likes' => 89000, 'comments' => 4800, 'sentiment' => 'Neutral', 'emotion' => 'anticipation', 'date' => '2026-09-27',
+                    'likes' => 89000, 'comments' => 4800, 'sentiment' => 'Neutral', 'emotion' => 'anticipation', 'date' => '2026-09-25',
                 ],
 
                 // ── SURPRISE (8 posts) ──
@@ -878,7 +942,7 @@ class InstagramOverviewController extends Controller
                 [
                     'name' => 'Tempo.co', 'handle' => 'tempodotco', 'type' => 'image', 'bg' => 'DC2626',
                     'content' => "Proyek jalan desa baru selesai sebulan sudah retak dan hancur berantakan karena aspal tipis berkualitas rendah. Warga kesal kontraktor nakal curang ambil untung pribadi. 🛣️🤬\n\n#UsutKorupsiAspal #ProyekAsalJadi #TempoCo",
-                    'likes' => 178000, 'comments' => 15400, 'sentiment' => 'Negative', 'emotion' => 'disgust', 'date' => '2026-09-27',
+                    'likes' => 178000, 'comments' => 15400, 'sentiment' => 'Negative', 'emotion' => 'disgust', 'date' => '2026-09-26',
                 ],
 
                 // ── ANGER (6 posts) ──
@@ -1034,7 +1098,13 @@ class InstagramOverviewController extends Controller
 
                     $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
                     $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
-                    $postUrl  = $item['url']     ?? $item['link']    ?? null;
+                    $postUrl  = trim((string) ($item['url'] ?? $item['link'] ?? ''));
+                    $isMedia  = (bool) preg_match('#(scontent[-.]|cdninstagram\.com/|fbcdn\.net/)#i', $postUrl);
+                    $imgVal   = trim((string) ($item['image'] ?? ($isMedia ? $postUrl : '')));
+                    if ($postUrl === '' || !str_starts_with($postUrl, 'http') || $isMedia) {
+                        $handleSlug = preg_replace('/[^a-zA-Z0-9._]/', '', ltrim((string) ($item['author_scr_name'] ?? $authorId ?? ''), '@'));
+                        $postUrl = $handleSlug !== '' ? "https://www.instagram.com/{$handleSlug}/" : 'https://www.instagram.com/';
+                    }
                     $content  = $item['content'] ?? $item['caption'] ?? '';
 
                     if (!$content && $rawName) {
@@ -1060,7 +1130,7 @@ class InstagramOverviewController extends Controller
                         'date_created'   => $item['date_created']   ?? '',
                         'url'            => $postUrl,
                         'avatar_url'     => $profilePic,
-                        'image'          => $item['image']          ?? '',
+                        'image'          => $imgVal,
                         'tcode'          => $item['tcode']          ?? 'ig-post',
                         'author'         => [
                             'name'     => $authorName,

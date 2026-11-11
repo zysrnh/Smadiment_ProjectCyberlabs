@@ -2002,7 +2002,18 @@ const MostStatusLoader = {
         const sentimentClass = post.sentiment_str.toLowerCase();
         const sentimentPrec = post.sentiment_prec || 0;
         const date = this.formatDate(post.date_created);
-        const twitterUrl = post.sub_id ? `https://twitter.com/i/web/status/${post.sub_id}` : '#';
+        const _directUrl = (post.url || post.link || '').trim();
+        const _subIdStr  = String(post.sub_id || '').trim();
+        let twitterUrl = null;
+        if (_directUrl && _directUrl.startsWith('http') && !_directUrl.includes('/status/1839')) {
+            twitterUrl = _directUrl;
+        } else if (authorHandle && /^\d{15,20}$/.test(_subIdStr) && !_subIdStr.startsWith('1839')) {
+            twitterUrl = `https://x.com/${encodeURIComponent(authorHandle)}/status/${_subIdStr}`;
+        } else if (/^\d{15,20}$/.test(_subIdStr) && !_subIdStr.startsWith('1839')) {
+            twitterUrl = `https://x.com/i/web/status/${_subIdStr}`;
+        } else if (authorHandle) {
+            twitterUrl = `https://x.com/${encodeURIComponent(authorHandle)}`;
+        }
 
         const modalBody = document.getElementById('modalBody');
         modalBody.innerHTML = `
@@ -2045,21 +2056,19 @@ const MostStatusLoader = {
                 </div>
             </div>
 
-            ${post.sub_id ? `
             <div class="modal-actions">
-                <a href="${twitterUrl}" target="_blank" class="modal-btn primary">
+                ${twitterUrl ? `<a href="${twitterUrl}" target="_blank" rel="noopener noreferrer" class="modal-btn primary">
                     <svg viewBox="0 0 24 24">
                         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
                         <polyline points="15 3 21 3 21 9"/>
                         <line x1="10" y1="14" x2="21" y2="3"/>
                     </svg>
                     View on X (Twitter)
-                </a>
+                </a>` : ''}
                 <button onclick="MostStatusLoader.closeModal()" class="modal-btn secondary">
                     Close
                 </button>
             </div>
-            ` : ''}
         `;
 
         document.getElementById('postModal').classList.add('active');

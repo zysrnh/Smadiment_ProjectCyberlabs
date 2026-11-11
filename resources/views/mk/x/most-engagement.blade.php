@@ -1038,7 +1038,13 @@ const XMVData = {
         const avHtml=this._avHtml(item), sent=this._normSent(item);
         const content=(item.content||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim().slice(0,200);
         const dt=this._formatDate(item.date_created);
-        const url=item.url||(handle?`https://x.com/${handle}`:(item.sub_id?`https://twitter.com/i/web/status/${item.sub_id}`:''));
+        const _direct = (item.url || '').trim();
+        const _sid = String(item.sub_id || '');
+        const url = (_direct && _direct.startsWith('http') && !_direct.includes('/status/1839'))
+            ? _direct
+            : (handle && /^\d{15,20}$/.test(_sid) && !_sid.startsWith('1839')
+                ? `https://x.com/${handle}/status/${_sid}`
+                : (handle ? `https://x.com/${handle}` : ''));
         const v=parseInt(item.view_cnt||0), rt=parseInt(item.rt||0), flw=parseInt(item.author?.flw_cnt||0);
         const total=v+rt;
         const sentLbl={pos:'Positive',neg:'Negative',neu:'Neutral'}[sent];
@@ -1291,7 +1297,15 @@ const XMVDetail = {
         const avColor = XMVData._getColor(item);
         const avHtml  = XMVData._avHtml(item);
         const content = (item.content||'').replace(/<[^>]*>/g,'').trim();
-        const url     = item.url || (handle ? `https://x.com/${handle}` : (item.sub_id ? `https://twitter.com/i/web/status/${item.sub_id}` : ''));
+        const _direct = (item.url || '').trim();
+        const _sid    = String(item.sub_id || '');
+        const url     = (_direct && _direct.startsWith('http') && !_direct.includes('/status/1839'))
+            ? _direct
+            : (handle && /^\d{15,20}$/.test(_sid) && !_sid.startsWith('1839')
+                ? `https://x.com/${handle}/status/${_sid}`
+                : (handle ? `https://x.com/${handle}` : ''));
+        const isStatusUrl = /\/status\/\d+/.test(url);
+        const linkLabel   = isStatusUrl ? 'Buka Post di X (Twitter)' : 'Buka Profil di X (Twitter)';
         const dt      = item.date_created||'';
         let dtFmt=''; if(dt){ try{ dtFmt=new Date(dt).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ dtFmt=dt.split('T')[0]; } }
         const v   = parseInt(item.view_cnt||0);
@@ -1299,7 +1313,9 @@ const XMVDetail = {
         const flw = parseInt(item.author?.flw_cnt||0);
         const sent    = XMVData._normSent(item);
         const sentLbl = {pos:'Positif',neg:'Negatif',neu:'Netral'}[sent];
-        const apiNote = `<div style="font-size:11px;color:var(--slate-500);background:var(--slate-100);border:1px dashed var(--slate-300);padding:7px 10px;border-radius:4px;margin-top:12px;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ph ph-info" style="font-size:14px;color:var(--primary);flex-shrink:0;"></i><span>Catatan: API tidak mengembalikan URL post spesifik.</span></div>`;
+        const apiNote = (url && !isStatusUrl)
+            ? `<div style="font-size:11px;color:var(--slate-500);background:var(--slate-100);border:1px dashed var(--slate-300);padding:7px 10px;border-radius:4px;margin-top:12px;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ph ph-info" style="font-size:14px;color:var(--primary);flex-shrink:0;"></i><span>Tautan menuju profil X terkait karena URL post spesifik tidak tersedia.</span></div>`
+            : '';
 
         title.textContent = name;
         body.innerHTML=`
@@ -1320,7 +1336,7 @@ const XMVDetail = {
                 <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numK(flw)}</div><div class="do-dp2-stat-lbl">Followers</div></div>
             </div>
             ${apiNote}
-            ${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-x-logo me-1"></i>Buka Profil di X (Twitter)</a>`:''}`;
+            ${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-x-logo me-1"></i>${linkLabel}</a>`:''}`;
         panel.classList.add('show');
     },
     close() { _$('xmvDetailPanel')?.classList.remove('show'); }

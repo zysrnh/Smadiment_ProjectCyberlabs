@@ -1404,16 +1404,27 @@ const YTPostsLoader = {
         const sentimentRaw = (post.sentiment_str || 'neutral').toLowerCase();
         const sentimentLbl = post.sentiment_str || 'Neutral';
         const date         = this.formatDate(post.date_created);
-        // Build YouTube URL: prefer post.url, fallback to sub_id/id as video ID
+        // Build YouTube URL & extract 11-char video ID
         const rawYtUrl = post.url || '';
-        let ytUrl = null;
-        if (rawYtUrl && rawYtUrl.startsWith('http')) {
-            ytUrl = rawYtUrl;
-        } else if (post.sub_id && post.sub_id.length > 5) {
-            ytUrl = `https://www.youtube.com/watch?v=${post.sub_id}`;
-        } else if (post.id && post.id.length > 5) {
-            ytUrl = `https://www.youtube.com/watch?v=${post.id}`;
+        const urlMatch = rawYtUrl.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+        let videoId = null;
+        if (post.sub_id && /^[a-zA-Z0-9_-]{11}$/.test(String(post.sub_id))) {
+            videoId = String(post.sub_id);
+        } else if (urlMatch) {
+            videoId = urlMatch[1];
+        } else if (post.id && /^[a-zA-Z0-9_-]{11}$/.test(String(post.id))) {
+            videoId = String(post.id);
         }
+
+        let ytUrl = null;
+        if (videoId) {
+            ytUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        } else if (rawYtUrl && rawYtUrl.startsWith('http')) {
+            ytUrl = rawYtUrl;
+        }
+        const mediaHtml = videoId
+            ? `<div style="position:relative;width:100%;padding-top:56.25%;border-radius:8px;overflow:hidden;background:#0f172a;margin-bottom:14px;"><iframe src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>`
+            : '';
         const hasContent   = rawContent.trim().length > 0;
 
         document.getElementById('modalBody').innerHTML = `
@@ -1424,6 +1435,7 @@ const YTPostsLoader = {
                     <span class="sentiment-badge ${sentimentRaw}" style="margin-top:4px;">${sentimentLbl}</span>
                 </div>
             </div>
+            ${mediaHtml}
             <div class="modal-post-content">${hasContent ? content : '<span style="color:var(--text-muted);font-style:italic;">(No title/description available)</span>'}</div>
             <div class="modal-post-meta">
                 <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -1448,9 +1460,9 @@ const YTPostsLoader = {
                 </div>
             </div>
             <div class="modal-actions">
-                ${ytUrl ? `<a href="${ytUrl}" target="_blank" rel="noopener" class="modal-btn primary">
+                ${ytUrl ? `<a href="${ytUrl}" target="_blank" rel="noopener noreferrer" class="modal-btn primary">
                     <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                    Watch on YouTube
+                    Tonton Video di YouTube
                 </a>` : ''}
                 <button onclick="YTPostsLoader.closeModal()" class="modal-btn secondary">Close</button>
             </div>`;
@@ -1461,6 +1473,7 @@ const YTPostsLoader = {
 
     closeModal() {
         document.getElementById('postModal').classList.remove('active');
+        document.getElementById('modalBody').innerHTML = '';
         document.body.style.overflow = '';
     },
 

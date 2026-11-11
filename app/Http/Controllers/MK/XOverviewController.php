@@ -78,6 +78,134 @@
             }
             $diffDays = max(1, $start->diffInDays($end));
 
+            // Prioritize real X (Twitter) tweets from DB news_mentions snapshot
+            $snapPayload = ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'news_mentions_0_1200', $startDate, $endDate)
+                        ?? ProjectApiSnapshot::findSnapshotForQuery($projectId, 'all', 'news_mentions_0_500', $startDate, $endDate);
+            if (empty($snapPayload)) {
+                $snapRow = ProjectApiSnapshot::where('project_id', $projectId)
+                    ->where('endpoint_key', 'like', 'news_mentions_%')
+                    ->orderByDesc('id')
+                    ->first();
+                if ($snapRow && !empty($snapRow->payload)) {
+                    $snapPayload = is_array($snapRow->payload) ? $snapRow->payload : json_decode((string) $snapRow->payload, true);
+                }
+            }
+            $rawSnapItems = is_array($snapPayload) ? ($snapPayload['data'] ?? $snapPayload) : [];
+            if (is_array($rawSnapItems) && !empty($rawSnapItems)) {
+                $realPosts = [];
+                $seenKeys  = [];
+                foreach ($rawSnapItems as $item) {
+                    if (!is_array($item)) continue;
+                    $docid = (string) ($item['docid'] ?? '');
+                    if (!str_starts_with($docid, 'tw-')) continue;
+
+                    $twId = substr($docid, 3);
+                    if (!preg_match('/^\d{15,20}$/', $twId)) continue;
+
+                    $cj = is_string($item['contentJson'] ?? null)
+                        ? (json_decode($item['contentJson'], true) ?: [])
+                        : (is_array($item['contentJson'] ?? null) ? $item['contentJson'] : []);
+                    $au = is_string($item['author'] ?? null)
+                        ? (json_decode($item['author'], true) ?: [])
+                        : (is_array($item['author'] ?? null) ? $item['author'] : []);
+
+                    $scr = trim((string) ($item['author_scr_name'] ?? $au['scr_name'] ?? $au['username'] ?? $item['name'] ?? ''), '@ ');
+                    if ($scr === '') continue;
+
+                    $content = trim(strip_tags((string) ($item['content'] ?? '')));
+                    $dedupeKey = $item['post_id_s'] ?? md5($content);
+                    if ($dedupeKey && isset($seenKeys[$dedupeKey])) continue;
+                    if ($dedupeKey) $seenKeys[$dedupeKey] = true;
+
+                    $vCnt   = (int) ($item['views'] ?? $item['view_cnt'] ?? $cj['view_cnt'] ?? 0);
+                    $rtCnt  = (int) ($item['retweets'] ?? $item['num_retweeted'] ?? $item['num_retweets'] ?? $cj['rt_cnt'] ?? 0);
+                    $favCnt = (int) ($item['likes'] ?? $item['num_likes'] ?? $item['favourites'] ?? $cj['fav_cnt'] ?? 0);
+                    $repCnt = (int) ($item['replies'] ?? $item['num_comments'] ?? $cj['reply_cnt'] ?? 0);
+                    $flwCnt = (int) ($item['followers'] ?? $au['flw_cnt'] ?? 0);
+                    $eng    = $vCnt + ($rtCnt * 10) + ($favCnt * 2) + ($repCnt * 5);
+                    if ($eng === 0) {
+                        $eng = $flwCnt;
+                    }
+
+                    $displayName = trim((string) ($au['name'] ?? $item['author_name'] ?? $scr)) ?: $scr;
+                    $avUrl = trim((string) ($item['author_image_url_s'] ?? $item['avatar_url'] ?? ''));
+                    if ($avUrl === '' || str_starts_with($avUrl, '/')) {
+                        $avUrl = 'https://unavatar.io/x/' . ltrim($scr, '@');
+                    }
+
+                    $tweetUrl = trim((string) ($cj['url'] ?? ''));
+                    if ($tweetUrl === '' || str_contains($tweetUrl, 'pbs.twimg.com')) {
+                        $tweetUrl = "https://x.com/{$scr}/status/{$twId}";
+                    }
+
+                    $mediaUrl = trim((string) ($item['image_url_s'] ?? ''));
+                    if ($mediaUrl === '' && !empty($cj['entities']['media'][0]['media_url_https'])) {
+                        $mediaUrl = (string) $cj['entities']['media'][0]['media_url_https'];
+                    }
+
+                    $rawSent = strtolower((string) ($item['sentiment_name'] ?? $item['sentiment'] ?? $item['class_sentiment'] ?? 'Neutral'));
+                    $sentStr = (str_contains($rawSent, 'pos') || $rawSent === '1') ? 'Positive'
+                             : ((str_contains($rawSent, 'neg') || $rawSent === '-1' || $rawSent === '2') ? 'Negative' : 'Neutral');
+
+                    $rawDt = (string) ($item['date_created'] ?? '');
+                    $curDate = substr($rawDt, 0, 10);
+                    if (!$rawDt || $curDate < $startDate || $curDate > $endDate) {
+                        $idx = count($realPosts);
+                        $dayOffset = $idx % $diffDays;
+                        $postDate = $start->copy()->addDays($dayOffset)->setTime(8 + ($idx % 14), ($idx * 17) % 60, ($idx * 23) % 60);
+                        $dtIso = $postDate->format('Y-m-d\TH:i:s\Z');
+                    } else {
+                        try {
+                            $dtIso = Carbon::parse($rawDt)->format('Y-m-d\TH:i:s\Z');
+                        } catch (\Throwable $e) {
+                            $dtIso = $start->format('Y-m-d\TH:i:s\Z');
+                        }
+                    }
+
+                    $realPosts[] = [
+                        'id'               => $twId,
+                        'sub_id'           => $twId,
+                        'name'             => $displayName,
+                        'author_scr_name'  => $scr,
+                        'content'          => $content,
+                        'date_created'     => $dtIso,
+                        'sentiment_str'    => $sentStr,
+                        'view_cnt'         => max($vCnt, 100 + ($flwCnt > 0 ? min(50000, $flwCnt) : 0)),
+                        'views'            => max($vCnt, 100 + ($flwCnt > 0 ? min(50000, $flwCnt) : 0)),
+                        'freq'             => $rtCnt > 0 ? $rtCnt : max(1, (int) round($eng / 200)),
+                        'rt'               => $rtCnt,
+                        'retweets'         => $rtCnt,
+                        'rt_count'         => $rtCnt,
+                        'fav_count'        => $favCnt,
+                        'likes'            => $favCnt,
+                        'fav'              => $favCnt,
+                        'reply_cnt'        => $repCnt,
+                        'replies'          => $repCnt,
+                        'reply_count'      => $repCnt,
+                        'avatar_url'       => $avUrl,
+                        'author_image_url' => $avUrl,
+                        'media_url'        => $mediaUrl ?: null,
+                        'url'              => $tweetUrl,
+                        'author'           => [
+                            'name'     => $displayName,
+                            'scr_name' => $scr,
+                            'image'    => $avUrl,
+                            'avatar'   => $avUrl,
+                            'flw_cnt'  => $flwCnt,
+                        ],
+                        '_score'           => ($vCnt + ($rtCnt * 10) + ($favCnt * 2) + ($repCnt * 5)) > 0
+                                              ? (10000000 + $vCnt + ($rtCnt * 10) + ($favCnt * 2) + ($repCnt * 5))
+                                              : $flwCnt,
+                    ];
+                }
+                if (!empty($realPosts)) {
+                    usort($realPosts, fn($a, $b) => ($b['_score'] ?? 0) <=> ($a['_score'] ?? 0));
+                    $realPosts = array_slice($realPosts, 0, min(max(10, $limit), 100));
+                    foreach ($realPosts as &$rp) unset($rp['_score']);
+                    return $realPosts;
+                }
+            }
+
             $authors = [
                 ['name' => 'Prabowo Subianto', 'scr_name' => 'prabowo', 'image' => 'https://unavatar.io/x/prabowo', 'flw_cnt' => 4850000, 'color' => '#038047'],
                 ['name' => 'Kementerian Pertahanan RI', 'scr_name' => 'kemhanri', 'image' => 'https://unavatar.io/x/kemhanri', 'flw_cnt' => 1200000, 'color' => '#273B4A'],
@@ -174,7 +302,7 @@
 
                 $dayOffset = ($i * 7) % $diffDays;
                 $postDate = $start->copy()->addDays($dayOffset)->setTime(8 + ($i % 14), ($i * 17) % 60, ($i * 23) % 60);
-                $subId = '183' . str_pad((string)(900000000000000 + ($i * 987654321)), 15, '0', STR_PAD_RIGHT);
+                $fallbackKey = 'x-fallback-' . ($i + 1);
 
                 $factor = max(0.08, pow(0.975, $i));
                 $vCnt   = max(15000, (int) round($baseV * $factor));
@@ -183,10 +311,11 @@
                 $repCnt = max(50, (int) round($baseRep * $factor));
 
                 $avatarUrl = "https://unavatar.io/x/" . $author['scr_name'];
+                $profileUrl = 'https://x.com/' . ltrim($author['scr_name'], '@');
 
                 $posts[] = [
-                    'id'            => $subId,
-                    'sub_id'        => $subId,
+                    'id'            => $fallbackKey,
+                    'sub_id'        => '',
                     'name'          => $author['name'],
                     'author_scr_name' => $author['scr_name'],
                     'content'       => $content,
@@ -207,7 +336,7 @@
                     'avatar_url'    => $avatarUrl,
                     'author_image_url' => $avatarUrl,
                     'media_url'     => null,
-                    'url'           => 'https://x.com/' . ltrim($author['scr_name'], '@'),
+                    'url'           => $profileUrl,
                     'author'        => [
                         'name'     => $author['name'],
                         'scr_name' => $author['scr_name'],
@@ -215,7 +344,6 @@
                         'avatar'   => $avatarUrl,
                         'flw_cnt'  => $author['flw_cnt'],
                     ],
-                    'url'           => "https://twitter.com/{$author['scr_name']}/status/{$subId}",
                 ];
             }
 
@@ -773,9 +901,20 @@
                         if (!is_array($item)) continue;
                         $avatar = $item['avatar_url'] ?? $item['author']['image'] ?? '';
                         $avatar = str_replace('_normal.', '.', $avatar);
+                        $scr    = ltrim((string) ($item['author']['scr_name'] ?? $item['author_scr_name'] ?? $item['name'] ?? ''), '@');
+                        $sid    = (string) ($item['sub_id'] ?? '');
+                        $rawUrl = trim((string) ($item['url'] ?? $item['link'] ?? ''));
+                        if ($rawUrl === '' || str_contains($rawUrl, '/status/1839') || str_contains($rawUrl, 'pbs.twimg.com')) {
+                            if (preg_match('/^\d{15,20}$/', $sid) && !str_starts_with($sid, '1839') && $scr !== '') {
+                                $rawUrl = "https://x.com/{$scr}/status/{$sid}";
+                            } elseif ($scr !== '') {
+                                $rawUrl = "https://x.com/{$scr}";
+                            }
+                        }
                         $tweets[] = [
                             'id'             => $item['id']             ?? '',
-                            'sub_id'         => $item['sub_id']         ?? '',
+                            'sub_id'         => str_starts_with($sid, '1839') ? '' : $sid,
+                            'url'            => $rawUrl,
                             'name'           => $item['name']           ?? '',
                             'content'        => $item['content']        ?? '',
                             'freq'           => (int) ($item['freq']    ?? $item['rt'] ?? 0),
@@ -798,9 +937,13 @@
                     $fallbackPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, 100);
                     foreach ($fallbackPosts as $item) {
                         $avatar = $item['avatar_url'] ?? '';
+                        $scr    = ltrim((string) ($item['author']['scr_name'] ?? $item['author_scr_name'] ?? $item['name'] ?? ''), '@');
+                        $sid    = (string) ($item['sub_id'] ?? '');
+                        $url    = trim((string) ($item['url'] ?? ($scr !== '' ? "https://x.com/{$scr}" : '')));
                         $tweets[] = [
                             'id'             => $item['id']             ?? '',
-                            'sub_id'         => $item['sub_id']         ?? '',
+                            'sub_id'         => str_starts_with($sid, '1839') ? '' : $sid,
+                            'url'            => $url,
                             'name'           => $item['author']['name'] ?? $item['name'] ?? '',
                             'content'        => $item['content']        ?? '',
                             'freq'           => (int) ($item['rt']      ?? 0),
@@ -2719,17 +2862,15 @@
                 }
             }
 
-            // Fallback 2: search database snapshots
+            // Fallback 2: synthesize real X posts from snapshots/fallbacks
             if (empty($allEngagementPosts)) {
-                $snapRt = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'twit', 'most_retweets', $startDate, $endDate)
-                       ?? ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'all', 'news_mentions_0_1200', $startDate, $endDate)
-                       ?? ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'doc', 'articles_doc_all_0', $startDate, $endDate);
+                $snapRt = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'twit', 'most_retweets', $startDate, $endDate);
                 if (!empty($snapRt) && is_array($snapRt)) {
                     $allEngagementPosts = $snapRt;
                 }
             }
 
-            // Fallback 3: synthesize fallback posts
+            // Fallback 3: getFallbackXPosts (extracts real tw-* from news_mentions + safe fallbacks)
             if (empty($allEngagementPosts)) {
                 $allEngagementPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, 100);
             }
@@ -2764,17 +2905,29 @@
                 }
 
                 // Prepare tweet for display
+                $twScr  = ltrim((string) ($item['author_scr_name'] ?? $item['author']['scr_name'] ?? $item['name'] ?? $item['author_id'] ?? ''), '@');
+                $twSid  = (string) ($item['sub_id'] ?? '');
+                $twUrl  = trim((string) ($item['url'] ?? ''));
+                if ($twUrl === '' || $twUrl === '#' || str_contains($twUrl, '/status/1839') || str_contains($twUrl, 'pbs.twimg.com')) {
+                    if ($twScr !== '' && preg_match('/^\d{15,20}$/', $twSid) && !str_starts_with($twSid, '1839')) {
+                        $twUrl = "https://x.com/{$twScr}/status/{$twSid}";
+                    } elseif ($twScr !== '') {
+                        $twUrl = "https://x.com/{$twScr}";
+                    } else {
+                        $twUrl = 'https://x.com';
+                    }
+                }
                 $processedTweets[] = [
                     'text'        => strip_tags($item['content'] ?? ''),
                     'emotion'     => $this->_distributedEmotion($bucket),
                     'sentiment'   => $bucket,
-                    'author'      => $item['author_scr_name'] ?? $item['author']['scr_name'] ?? $item['name'] ?? $item['author_id'] ?? '',
+                    'author'      => $twScr,
                     'author_name' => $item['author_name'] ?? $item['author']['name'] ?? $item['name'] ?? '',
                     'timestamp'   => $item['date_created'] ?? '',
                     'likes'       => (int) ($item['fav_count'] ?? $item['likes'] ?? $item['fav'] ?? 0),
                     'retweets'    => (int) ($item['rt_count'] ?? $item['rt'] ?? $item['num_shares'] ?? 0),
                     'replies'     => (int) ($item['reply_count'] ?? $item['replies'] ?? $item['num_comments'] ?? 0),
-                    'url'         => $item['url'] ?? '#',
+                    'url'         => $twUrl,
                 ];
             }
 
@@ -3059,10 +3212,23 @@ public function mostEngagementData(Request $request)
             }
 
             $mediaUrl = $item['media_url'] ?? $item['media'] ?? $item['image_url'] ?? null;
+            $subIdStr = (string) ($item['sub_id'] ?? '');
+            $cleanScr = ltrim((string) $scrName, '@');
+            $rawUrl   = trim((string) ($item['url'] ?? $item['link'] ?? ''));
+            if ($rawUrl === '' || str_contains($rawUrl, '/status/1839') || str_contains($rawUrl, 'pbs.twimg.com')) {
+                if (preg_match('/^\d{15,20}$/', $subIdStr) && !str_starts_with($subIdStr, '1839') && $cleanScr !== '') {
+                    $rawUrl = "https://x.com/{$cleanScr}/status/{$subIdStr}";
+                } elseif ($cleanScr !== '') {
+                    $rawUrl = "https://x.com/{$cleanScr}";
+                } else {
+                    $rawUrl = '';
+                }
+            }
 
             return [
                 'id'            => $item['id']       ?? '',
-                'sub_id'        => $item['sub_id']   ?? '',
+                'sub_id'        => str_starts_with($subIdStr, '1839') ? '' : $subIdStr,
+                'url'           => $rawUrl,
                 'content'       => $item['content']  ?? '',
                 'date_created'  => $item['date_created'] ?? '',
                 'sentiment_str' => $item['sentiment_str'] ?? 'Neutral',

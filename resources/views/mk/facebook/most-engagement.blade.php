@@ -660,7 +660,7 @@ const FMEData={
         if (slug && !['unknown','facebookpost','facebookuser','fb'].includes(slug.toLowerCase())) {
             return `https://www.facebook.com/${slug}`;
         }
-        return `https://www.facebook.com/search/top?q=${encodeURIComponent(name)}`;
+        return `https://www.facebook.com/hashtag/${(slug || 'prabowo').toLowerCase()}/`;
     },
     _emptyHtml(msg){return`<div class="chart-empty" style="padding:40px 20px;"><i class="ph ph-folder-open"></i><span>${esc(msg)}</span></div>`;},
     _renderList(type){

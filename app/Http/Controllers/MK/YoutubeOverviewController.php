@@ -475,6 +475,37 @@ class YoutubeOverviewController extends Controller
                 }
             }
 
+            if (empty($users)) {
+                $fallbackPosts = $this->getFallbackYoutubePosts((int) $projectId, $startDate, $endDate, 60, 'postbyview');
+                $grouped = [];
+                foreach ($fallbackPosts as $post) {
+                    $username = $post['author']['name'] ?? $post['name'] ?? '';
+                    if (!$username) continue;
+                    $likes    = (int) ($post['likes'] ?? 0);
+                    $comments = (int) ($post['comments'] ?? 0);
+                    if (!isset($grouped[$username])) {
+                        $img = $post['author']['image'] ?? $post['avatar_url'] ?? '';
+                        $grouped[$username] = [
+                            'username'          => $username,
+                            'name'              => $username,
+                            'profile_url'       => $img,
+                            'profile_image_url' => $img,
+                            'likes'             => 0,
+                            'comments'          => 0,
+                            'posts'             => 0,
+                            'y'                 => 0,
+                            'id'                => (string) ($post['author_id'] ?? $username),
+                        ];
+                    }
+                    $grouped[$username]['likes']    += $likes;
+                    $grouped[$username]['comments'] += $comments;
+                    $grouped[$username]['posts']    += ($likes + $comments);
+                    $grouped[$username]['y']        += ($likes + $comments);
+                }
+                uasort($grouped, fn($a, $b) => $b['y'] <=> $a['y']);
+                $users = array_slice(array_values($grouped), 0, 20);
+            }
+
             return response()->json(['success' => true, 'data' => ['data' => $users]]);
 
         } catch (\Exception $e) {
@@ -2010,6 +2041,9 @@ public function aiAnalysisData(Request $request)
         } catch (\Exception $e) {
             Log::warning('YT aiAnalysisData: ytbTopStatus failed', ['error' => $e->getMessage()]);
         }
+        if (empty($rawPosts)) {
+            $rawPosts = $this->getFallbackYoutubePosts((int) $projectId, $startDate, $endDate, 60, 'postbyview');
+        }
 
         // ── Fetch sentiment ──
         $sentimentData = [];
@@ -2065,6 +2099,23 @@ public function aiAnalysisData(Request $request)
         // ── Extract hashtags from video content/titles ──
         $hashtagCount = [];
         $items = is_array($rawPosts) ? $rawPosts : [];
+
+        if (($positive + $negative + $neutral) === 0 && !empty($items)) {
+            foreach ($items as $post) {
+                if (!is_array($post)) continue;
+                $sStr = strtolower((string) ($post['sentiment_str'] ?? $post['class_sentiment'] ?? 'neutral'));
+                if (str_contains($sStr, 'pos') || $sStr === '1') {
+                    $positive++;
+                } elseif (str_contains($sStr, 'neg') || $sStr === '2' || $sStr === '-1') {
+                    $negative++;
+                } else {
+                    $neutral++;
+                }
+            }
+        }
+        if ($totalVolume === 0 && !empty($items)) {
+            $totalVolume = count($items);
+        }
 
         foreach ($items as $post) {
             if (!is_array($post)) continue;

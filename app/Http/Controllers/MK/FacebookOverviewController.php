@@ -658,6 +658,40 @@ class FacebookOverviewController extends Controller
                 }
             }
 
+            if (empty($users)) {
+                $fallbackPosts = $this->getFallbackFacebookPosts((int) $projectId, $startDate, $endDate, 60, 'postbylike');
+                $grouped = [];
+                foreach ($fallbackPosts as $post) {
+                    $username = $post['author']['name'] ?? $post['name'] ?? '';
+                    if (!$username) continue;
+                    $likes    = (int) ($post['likes'] ?? 0);
+                    $shares   = (int) ($post['shares'] ?? 0);
+                    $comments = (int) ($post['comments'] ?? 0);
+                    if (!isset($grouped[$username])) {
+                        $img = $post['avatar_url'] ?? ($post['author']['image'] ?? '');
+                        $grouped[$username] = [
+                            'username'          => $username,
+                            'name'              => $username,
+                            'profile_url'       => $img,
+                            'profile_image_url' => $img,
+                            'likes'             => 0,
+                            'shares'            => 0,
+                            'comments'          => 0,
+                            'posts'             => 0,
+                            'y'                 => 0,
+                            'id'                => (string) ($post['id'] ?? $username),
+                        ];
+                    }
+                    $grouped[$username]['likes']    += $likes;
+                    $grouped[$username]['shares']   += $shares;
+                    $grouped[$username]['comments'] += $comments;
+                    $grouped[$username]['posts']    += ($likes + $shares + $comments);
+                    $grouped[$username]['y']        += ($likes + $shares + $comments);
+                }
+                uasort($grouped, fn($a, $b) => $b['y'] <=> $a['y']);
+                $users = array_slice(array_values($grouped), 0, 20);
+            }
+
             return response()->json(['success' => true, 'data' => ['data' => $users]]);
 
         } catch (\Exception $e) {
@@ -2330,7 +2364,8 @@ public function aiAnalysisProxy(Request $request)
         }
 
         if (!empty($name) && !in_array(strtolower($name), ['unknown', 'facebook post', 'facebook user'])) {
-            return 'https://www.facebook.com/search/top?q=' . urlencode($name);
+            $tag = preg_replace('/[^a-zA-Z0-9]/', '', $name) ?: 'prabowo';
+            return 'https://www.facebook.com/hashtag/' . strtolower($tag) . '/';
         }
 
         return 'https://www.facebook.com';

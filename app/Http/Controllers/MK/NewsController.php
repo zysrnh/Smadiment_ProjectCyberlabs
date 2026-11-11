@@ -956,6 +956,17 @@ public function articlesData(Request $request)
         });
 
         $articles = is_array($articles) ? $articles : [];
+        $articles = array_map(function ($article) {
+            if (!is_array($article)) return $article;
+            $pub = (string) ($article['publisher'] ?? $article['publisher_name'] ?? $article['hostname'] ?? $article['name'] ?? '');
+            $url = (string) ($article['url'] ?? '');
+            foreach (['image', 'image_url', 'urlToImage', 'thumbnail', 'img'] as $imgKey) {
+                if (isset($article[$imgKey]) && $article[$imgKey] !== '') {
+                    $article[$imgKey] = $this->normalizeArticleImage((string) $article[$imgKey], $pub, $url);
+                }
+            }
+            return $article;
+        }, $articles);
         $articlesWithValidQuotes = count(array_filter($articles, fn($a) => ($a['total_quotes'] ?? 0) > 0));
         $totalQuotes = array_sum(array_column($articles, 'total_quotes'));
 
@@ -1075,8 +1086,10 @@ public function articlesData(Request $request)
 
             $mentions = is_array($mentions) ? $mentions : [];
 
-            if ($startDate && $endDate) {
-                $mentions = array_map(function ($item) use ($startDate, $endDate) {
+            $mentions = array_map(function ($item) use ($startDate, $endDate) {
+                if (!is_array($item)) return $item;
+
+                if ($startDate && $endDate) {
                     $rawDt = (string) ($item['date_created'] ?? $item['created_at'] ?? '');
                     if ($rawDt) {
                         $dtTime = strlen($rawDt) >= 19 ? substr($rawDt, 11, 8) : (strlen($rawDt) >= 8 ? substr($rawDt, -8) : '12:00:00');
@@ -1089,9 +1102,88 @@ public function articlesData(Request $request)
                             $item['created_at']   = $startDate . ' ' . $dtTime;
                         }
                     }
-                    return $item;
-                }, $mentions);
-            }
+                }
+
+                // Sanitize relative image fields
+                $pubHost = (string) ($item['publisher'] ?? $item['hostname'] ?? '');
+                foreach (['image', 'image_url', 'image_url_s', 'thumbnail'] as $imgKey) {
+                    if (!empty($item[$imgKey])) {
+                        $item[$imgKey] = $this->normalizeArticleImage((string) $item[$imgKey], $pubHost, (string) ($item['url'] ?? ''));
+                    }
+                }
+
+                // Synthesize / normalize missing or CDN-only mention URLs
+                $rawUrl  = trim((string) ($item['url'] ?? $item['link'] ?? ''));
+                $isMedia = (bool) preg_match('#(pbs\.twimg\.com/|scontent[-.]|fbcdn\.net/|cdninstagram\.com/|\.(jpe?g|png|webp|gif)(\?|$))#i', $rawUrl);
+                if ($rawUrl === '' || in_array(rtrim(strtolower($rawUrl), '/'), ['#', 'about:blank']) || $isMedia || str_contains($rawUrl, '/status/1839') || str_contains($rawUrl, 'search/top')) {
+                    if ($isMedia && empty($item['media_url'])) {
+                        $item['media_url'] = $rawUrl;
+                    }
+                    $docid = (string) ($item['docid'] ?? '');
+                    $resolvedUrl = '';
+
+                    if (str_starts_with($docid, 'yt-')) {
+                        $vid = substr($docid, 3);
+                        if ($vid !== '') {
+                            $resolvedUrl = 'https://www.youtube.com/watch?v=' . $vid;
+                        }
+                    } elseif (str_starts_with($docid, 'tw-')) {
+                        $tid = substr($docid, 3);
+                        $cj = is_string($item['contentJson'] ?? null) ? (json_decode($item['contentJson'], true) ?: []) : (is_array($item['contentJson'] ?? null) ? $item['contentJson'] : []);
+                        $cjUrl = trim((string) ($cj['url'] ?? ''));
+                        if ($cjUrl !== '' && str_starts_with($cjUrl, 'http') && !str_contains($cjUrl, 'pbs.twimg.com')) {
+                            $resolvedUrl = $cjUrl;
+                        } else {
+                            $scr = trim((string) ($item['author_scr_name'] ?? $item['name'] ?? ''), '@ ');
+                            if ($scr !== '' && preg_match('/^\d{15,20}$/', $tid)) {
+                                $resolvedUrl = "https://x.com/{$scr}/status/{$tid}";
+                            } elseif (preg_match('/^\d{15,20}$/', $tid)) {
+                                $resolvedUrl = "https://x.com/i/web/status/{$tid}";
+                            } elseif ($scr !== '') {
+                                $resolvedUrl = "https://x.com/{$scr}";
+                            }
+                        }
+                    } elseif (str_starts_with($docid, 'in-')) {
+                        $rest = substr($docid, 3);
+                        $pos  = strrpos($rest, '_');
+                        if ($pos !== false) {
+                            $igUser = trim(substr($rest, 0, $pos), '@ ');
+                            $igCode = substr($rest, $pos + 1);
+                            if ($igCode !== '' && !ctype_digit($igCode) && strlen($igCode) >= 5) {
+                                $resolvedUrl = "https://www.instagram.com/p/{$igCode}/";
+                            } elseif ($igUser !== '') {
+                                $resolvedUrl = "https://www.instagram.com/{$igUser}/";
+                            }
+                        } elseif ($rest !== '') {
+                            $resolvedUrl = 'https://www.instagram.com/' . ltrim($rest, '@') . '/';
+                        }
+                    } elseif (str_starts_with($docid, 'fb-')) {
+                        $fbName      = (string) ($item['author_name'] ?? $item['name'] ?? '');
+                        $fbAid       = (string) ($item['author_id'] ?? '');
+                        $resolvedUrl = $this->resolveFacebookUrl($rawUrl, $fbName, $fbAid);
+                    } else {
+                        $title = trim(strip_tags((string) ($item['title'] ?? '')));
+                        $host  = preg_replace('#^https?://#i', '', trim((string) ($item['hostname'] ?? $item['publisher'] ?? ''), '/ '));
+                        if ($title !== '') {
+                            $resolvedUrl = 'https://www.google.com/search?q=' . urlencode($title . ($host !== '' ? ' ' . $host : ''));
+                        } elseif ($host !== '' && preg_match('/^[a-z0-9.-]+\.[a-z]{2,}$/i', $host)) {
+                            $resolvedUrl = 'https://' . $host;
+                        } else {
+                            $snippet = trim(preg_replace('/\s+/', ' ', strip_tags((string) ($item['content'] ?? ''))));
+                            $words   = implode(' ', array_slice(explode(' ', $snippet), 0, 12));
+                            if ($words !== '') {
+                                $resolvedUrl = 'https://www.google.com/search?q=' . urlencode($words);
+                            }
+                        }
+                    }
+
+                    if ($resolvedUrl !== '') {
+                        $item['url'] = $resolvedUrl;
+                    }
+                }
+
+                return $item;
+            }, $mentions);
 
             Log::info('✅ News Mentions fetched', ['total' => count($mentions), 'start' => $start]);
 
@@ -1613,13 +1705,16 @@ public function articlesData(Request $request)
 
     public function resolveFacebookUrl(?string $url, ?string $authorName, ?string $authorId = null): string
     {
-        if (!empty($url) && !in_array(rtrim(strtolower($url), '/'), [
-            'https://www.facebook.com',
-            'http://www.facebook.com',
-            'https://facebook.com',
-            'http://facebook.com',
-            '#'
-        ])) {
+        if (!empty($url)
+            && !str_contains(strtolower($url), 'search/top')
+            && !in_array(rtrim(strtolower($url), '/'), [
+                'https://www.facebook.com',
+                'http://www.facebook.com',
+                'https://facebook.com',
+                'http://facebook.com',
+                '#'
+            ])
+        ) {
             return $url;
         }
 
@@ -1671,10 +1766,49 @@ public function articlesData(Request $request)
         }
 
         if (!empty($name) && !in_array(strtolower($name), ['unknown', 'facebook post', 'facebook user'])) {
-            return 'https://www.facebook.com/search/top?q=' . urlencode($name);
+            $tag = preg_replace('/[^a-zA-Z0-9]/', '', $name) ?: 'prabowo';
+            return 'https://www.facebook.com/hashtag/' . strtolower($tag) . '/';
         }
 
         return 'https://www.facebook.com';
+    }
+
+    /**
+     * Normalize relative, quoted, or Next.js-proxied article/mention image URLs.
+     */
+    private function normalizeArticleImage(string $img, string $publisher = '', string $articleUrl = ''): string
+    {
+        $img = trim($img, "\"' \t\r\n");
+        if ($img === '' || in_array(strtolower($img), ['null', 'undefined', 'none', '#'])) {
+            return '';
+        }
+
+        if (preg_match('#/_next/image\?.*url=([^&]+)#i', $img, $m)) {
+            $decoded = trim(urldecode($m[1]), "\"' \t\r\n");
+            if (preg_match('#^https?://#i', $decoded)) {
+                return $decoded;
+            }
+        }
+
+        if (str_starts_with($img, '//')) {
+            return 'https:' . $img;
+        }
+
+        if (str_starts_with($img, '/')) {
+            $host = '';
+            if ($articleUrl !== '' && preg_match('#^https?://([^/]+)#i', $articleUrl, $hm) && !str_contains(strtolower($hm[1]), 'google.')) {
+                $host = $hm[1];
+            } else {
+                $cleanPub = preg_replace('#^https?://#i', '', trim($publisher));
+                $cleanPub = preg_replace('#/.*$#', '', $cleanPub);
+                if (preg_match('/^[a-z0-9.-]+\.[a-z]{2,}$/i', $cleanPub)) {
+                    $host = $cleanPub;
+                }
+            }
+            return $host !== '' ? 'https://' . $host . $img : '';
+        }
+
+        return preg_match('#^https?://#i', $img) ? $img : '';
     }
 
     // ════════════════════════════════════════════════════════════════

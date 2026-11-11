@@ -857,9 +857,12 @@ const TTPostsLoader = {
         const sentimentLbl = post.sentiment_str  || 'Neutral';
         const date         = this.fmtDate(post.date_created);
         const hasContent   = rawContent.trim().length > 0;
+        const cleanHandle = String(authorHandle || '').replace(/^@+/, '');
+        const subIdStr = String(post.sub_id || '');
         let ttUrl = null;
         if (post.url && post.url.startsWith('http')) ttUrl = post.url;
-        else if (post.sub_id && post.sub_id.length > 5) ttUrl = `https://www.tiktok.com/@${authorHandle}/video/${post.sub_id}`;
+        else if (/^\d{15,}$/.test(subIdStr) && cleanHandle) ttUrl = `https://www.tiktok.com/@${cleanHandle}/video/${subIdStr}`;
+        else if (cleanHandle) ttUrl = `https://www.tiktok.com/@${cleanHandle}`;
 
         document.getElementById('modalBody').innerHTML = `
             <div class="modal-author-section">

@@ -1246,9 +1246,25 @@ const FBPostsLoader = {
         this.updatePagination();
     },
 
+    resolvePostUrl(post, authorName) {
+        const rawUrl = (post.url || post.link || '').trim();
+        if (rawUrl && /^https?:\/\//i.test(rawUrl) && !rawUrl.includes('fb-mock') && !rawUrl.includes('search/top') && !/^https?:\/\/(www\.)?facebook\.com\/?$/i.test(rawUrl)) {
+            return rawUrl;
+        }
+        const subId = String(post.sub_id || '').trim();
+        if (/^\d+(_\d+)?$/.test(subId)) {
+            return `https://www.facebook.com/${subId}`;
+        }
+        const slug = String(authorName || '').replace(/[^a-zA-Z0-9]/g, '');
+        if (slug && !['unknown', 'facebookpost', 'facebookuser', 'facebookpage', 'fb'].includes(slug.toLowerCase())) {
+            return `https://www.facebook.com/${slug}`;
+        }
+        return 'https://www.facebook.com/hashtag/prabowo/';
+    },
+
     createTableRow(post, rank, globalIdx) {
-        // FB API: author_name null, tidak ada data nama/foto user
-        const authorName     = 'Facebook User';
+        const authorName     = post.author?.name || post.author_name || post.name || post.from_name || 'Facebook Page';
+        const safeAuthorName = this.escapeHtml(authorName);
         const avatarHtml     = `<svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:white;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>`;
         const rawContent     = post.content || '';
         const content        = this.escapeHtml(rawContent);
@@ -1259,7 +1275,7 @@ const FBPostsLoader = {
         const sentimentLabel = post.sentiment_str || 'Neutral';
         const date           = this.formatDate(post.date_created);
         const hasContent     = rawContent.trim().length > 0;
-        const postUrl        = post.url || (post.sub_id ? `https://facebook.com/${post.sub_id}` : null);
+        const postUrl        = this.resolvePostUrl(post, authorName);
 
         return `<tr>
             <td class="rank-cell">${rank}</td>
@@ -1267,7 +1283,7 @@ const FBPostsLoader = {
                 <div class="author-info">
                     <div class="author-avatar" style="background: linear-gradient(135deg, #1877f2 0%, #0a5fd8 100%);">${avatarHtml}</div>
                     <div class="author-details">
-                        <div class="author-name" title="${authorName}">${authorName}</div>
+                        <div class="author-name" title="${safeAuthorName}">${safeAuthorName}</div>
                         <div class="author-handle">Facebook</div>
                     </div>
                 </div>
@@ -1307,8 +1323,8 @@ const FBPostsLoader = {
         const post = this.allPosts[globalIdx];
         if (!post) return;
 
-        // FB API: author_name null, tidak ada data nama/foto user
-        const authorName     = 'Facebook User';
+        const authorName     = post.author?.name || post.author_name || post.name || post.from_name || 'Facebook Page';
+        const safeAuthorName = this.escapeHtml(authorName);
         const avatarHtml     = `<svg viewBox="0 0 24 24" style="width:32px;height:32px;fill:white;"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>`;
         const rawContent     = post.content || '';
         const content        = this.escapeHtml(rawContent);
@@ -1319,14 +1335,14 @@ const FBPostsLoader = {
         const sentimentRaw   = (post.sentiment_str || 'neutral').toLowerCase();
         const sentimentLabel = post.sentiment_str || 'Neutral';
         const date           = this.formatDate(post.date_created);
-        const fbUrl          = post.url || (post.sub_id ? `https://facebook.com/${post.sub_id}` : null);
+        const fbUrl          = this.resolvePostUrl(post, authorName);
         const hasContent     = rawContent.trim().length > 0;
 
         document.getElementById('modalBody').innerHTML = `
             <div class="modal-author-section">
                 <div class="modal-avatar" style="background: linear-gradient(135deg, #1877f2 0%, #0a5fd8 100%);">${avatarHtml}</div>
                 <div class="modal-author-info">
-                    <h4 class="modal-author-name">${authorName}</h4>
+                    <h4 class="modal-author-name">${safeAuthorName}</h4>
                     <div class="modal-author-handle">Facebook</div>
                     <span class="sentiment-badge ${sentimentRaw}" style="margin-top:4px;">${sentimentLabel}</span>
                 </div>

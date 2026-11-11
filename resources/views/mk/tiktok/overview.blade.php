@@ -486,31 +486,42 @@ const OVDetail={
         const v=parseInt(item.view_cnt||item.views||item.freq||0),l=parseInt(item.likes||item.num_likes||0),c=parseInt(item.comments||item.num_comments||0),s=parseInt(item.shares||item.num_shares||0);
         const sn=OVData._normSent(item),sl={pos:'Positif',neg:'Negatif',neu:'Netral'}[sn];
         let dtF='';if(dt){try{dtF=new Date(dt).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})}catch(e){dtF=dt.split('T')[0]}}
-        const watchUrl = (url && url.startsWith('http')) ? url : `https://www.tiktok.com/search?q=${encodeURIComponent(handle || name || 'prabowo')}`;
-        const videoSrc = item.video_url || item.media_url || 'https://assets.mixkit.co/videos/preview/mixkit-vertical-portrait-of-a-woman-in-a-neon-tunnel-42687-large.mp4';
+        const cleanHandle = String(handle || '').replace(/^@+/, '');
+        const rawSubId = String(item.sub_id || item.video_id || item.id || '');
+        const urlVidMatch = String(url).match(/\/video\/(\d{15,})/);
+        const ttVidId = urlVidMatch ? urlVidMatch[1] : (/^\d{15,}$/.test(rawSubId) ? rawSubId : '');
+        const watchUrl = (url && url.startsWith('http'))
+            ? url
+            : (ttVidId && cleanHandle
+                ? `https://www.tiktok.com/@${cleanHandle}/video/${ttVidId}`
+                : (cleanHandle ? `https://www.tiktok.com/@${cleanHandle}` : `https://www.tiktok.com/search?q=${encodeURIComponent(name || 'prabowo')}`));
+        const rawVideoSrc = item.video_url || item.media_url || '';
+        const hasDirectVideo = Boolean(rawVideoSrc && /^https?:\/\//i.test(rawVideoSrc) && !rawVideoSrc.includes('mixkit.co'));
+        const playerInnerHtml = hasDirectVideo
+            ? `<video id="ovDrawerVid" src="${esc(rawVideoSrc)}" ${av ? `poster="${esc(av)}"` : ''} playsinline controls loop style="width:100%;max-height:360px;object-fit:cover;display:block;background:#0b0f19;"></video>`
+            : (ttVidId
+                ? `<iframe src="https://www.tiktok.com/embed/v2/${ttVidId}" style="width:100%;height:420px;border:0;display:block;background:#0b0f19;" allow="encrypted-media;" allowfullscreen></iframe>`
+                : `<div style="padding:26px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:radial-gradient(circle at top,#1e293b,#0b0f19);min-height:170px;">
+                    ${av ? `<img src="${esc(av)}" alt="${esc(name)}" style="width:58px;height:58px;border-radius:50%;object-fit:cover;border:2px solid #fe2c55;" onerror="this.style.display='none'">` : `<div style="width:54px;height:54px;border-radius:50%;background:rgba(254,44,85,0.16);display:flex;align-items:center;justify-content:center;color:#fe2c55;font-size:24px;"><i class="ph ph-tiktok-logo"></i></div>`}
+                    <div style="font-size:12px;font-weight:700;color:#f8fafc;">${esc(name)}</div>
+                    <div style="font-size:11px;color:#94a3b8;max-width:260px;line-height:1.45;">Stream video langsung tidak tersedia; klik tombol di kanan bawah untuk membuka langsung di TikTok.</div>
+                </div>`);
         const mH = `
         <div class="tt-player-card" style="margin:14px 0;background:#000;border-radius:12px;overflow:hidden;border:1px solid #1e293b;box-shadow:0 8px 24px rgba(0,0,0,0.45);position:relative;">
             <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.08);">
                 <div style="display:flex;align-items:center;gap:7px;">
                     <svg style="width:16px;height:16px;fill:#fe2c55;" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.86-4.49V8.72a8.28 8.28 0 0 0 4.84 1.54v-3.5a4.85 4.85 0 0 1-.93-.07z"/></svg>
-                    <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:0.5px;">TikTok Video Player</span>
+                    <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:0.5px;">TikTok Video Preview</span>
                 </div>
-                <span style="font-size:10px;font-weight:700;color:#cbd5e1;background:rgba(255,255,255,0.12);padding:2px 8px;border-radius:12px;">@${esc(handle || 'creator')}</span>
+                <span style="font-size:10px;font-weight:700;color:#cbd5e1;background:rgba(255,255,255,0.12);padding:2px 8px;border-radius:12px;">@${esc(cleanHandle || 'creator')}</span>
             </div>
             <div style="position:relative;background:#000;text-align:center;">
-                <video id="ovDrawerVid"
-                       src="${esc(videoSrc)}"
-                       poster="${esc(av)}"
-                       playsinline
-                       controls
-                       loop
-                       style="width:100%;max-height:360px;object-fit:cover;display:block;background:#0b0f19;">
-                </video>
+                ${playerInnerHtml}
             </div>
             <div style="padding:10px 14px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.08);">
                 <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;">
                     <i class="ph ph-music-note" style="color:#fe2c55;"></i>
-                    <span>Suara Asli - ${esc(name)}</span>
+                    <span>${esc(name)}</span>
                 </div>
                 <a href="${esc(watchUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:5px;background:#fe2c55;color:#fff;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#e02447'" onmouseout="this.style.background='#fe2c55'">
                     <span>Buka di TikTok</span>
