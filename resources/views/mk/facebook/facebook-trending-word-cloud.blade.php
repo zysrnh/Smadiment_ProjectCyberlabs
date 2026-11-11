@@ -632,11 +632,9 @@ function renderWC() {
         });
 
         wcChart.on('click', p => {
-            const name = (p.name || '').trim();
-            const url = name.startsWith('#')
-                ? `https://www.facebook.com/hashtag/${encodeURIComponent(name.slice(1))}`
-                : `https://www.facebook.com/search/top?q=${encodeURIComponent(name)}`;
-            window.open(url, '_blank', 'noopener,noreferrer');
+            const cleanTag = (p.name || '').trim().replace(/^#+/, '').replace(/\s+/g, '');
+            if (!cleanTag) return;
+            window.open(`https://www.facebook.com/hashtag/${encodeURIComponent(cleanTag)}/`, '_blank', 'noopener,noreferrer');
         });
 
         if (window._fbwcResizeObserver) window._fbwcResizeObserver.disconnect();
@@ -683,11 +681,9 @@ function renderList() {
             <div class="ht-bar-wrap"><div class="ht-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,${sentColor},${sentColor}88);"></div></div>
             <div class="ht-count">${numF(h.size)}</div>`;
         el.onclick = () => {
-            const name = (h.name || '').trim();
-            const url = name.startsWith('#')
-                ? `https://www.facebook.com/hashtag/${encodeURIComponent(name.slice(1))}`
-                : `https://www.facebook.com/search/top?q=${encodeURIComponent(name)}`;
-            window.open(url, '_blank', 'noopener,noreferrer');
+            const cleanTag = (h.name || '').trim().replace(/^#+/, '').replace(/\s+/g, '');
+            if (!cleanTag) return;
+            window.open(`https://www.facebook.com/hashtag/${encodeURIComponent(cleanTag)}/`, '_blank', 'noopener,noreferrer');
         };
         list.appendChild(el);
     });
