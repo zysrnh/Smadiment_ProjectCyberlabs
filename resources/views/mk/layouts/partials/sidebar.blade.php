@@ -39,7 +39,7 @@
     <div class="navbar-wrapper">
         <div class="m-header">
             <a href="{{ route('mk.dashboard') }}" class="b-brand text-primary">
-                <img src="{{ asset('images/20260315_171432_361 - Edited.png') }}"
+                <img src="{{ asset('images/WSma.png') }}"
                      class="sidebar-logo"
                      alt="SMADIMENT" />
             </a>

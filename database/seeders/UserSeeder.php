@@ -27,41 +27,8 @@ class UserSeeder extends Seeder
             ]
         );
 
-        // 2. Fetch available projects from MediaKernels API or fallback
-        $projectIds = [];
-
-        try {
-            /** @var MediaKernelsClient $client */
-            $client = app(MediaKernelsClient::class);
-            $rawProjects = $client->listProjects(0, 100);
-
-            if (isset($rawProjects['data']) && is_array($rawProjects['data'])) {
-                $projects = $rawProjects['data'];
-            } elseif (isset($rawProjects['projects']) && is_array($rawProjects['projects'])) {
-                $projects = $rawProjects['projects'];
-            } elseif (is_array($rawProjects)) {
-                $projects = $rawProjects;
-            } else {
-                $projects = [];
-            }
-
-            foreach ($projects as $key => $project) {
-                if (is_array($project) && (isset($project['id']) || isset($project['project_id']))) {
-                    $projectIds[] = (int) ($project['id'] ?? $project['project_id']);
-                } elseif (is_numeric($key)) {
-                    $projectIds[] = (int) $key;
-                }
-            }
-        } catch (\Throwable $e) {
-            Log::warning('UserSeeder: Failed to fetch projects from API, using fallback ID: ' . $e->getMessage());
-        }
-
-        // Fallback default project ID jika API kosong / tidak reachable
-        if (empty($projectIds)) {
-            $projectIds = [16978];
-        }
-
-        $uniqueProjectIds = array_unique($projectIds);
+        // 2. Project resmi SMADIMENT: Prabowo (16978)
+        $uniqueProjectIds = [16978];
 
         // 3. Assign projects to Unlimited account
         foreach ($uniqueProjectIds as $projectId) {
