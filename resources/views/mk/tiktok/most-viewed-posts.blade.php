@@ -858,11 +858,30 @@ const TTPostsLoader = {
         const date         = this.fmtDate(post.date_created);
         const hasContent   = rawContent.trim().length > 0;
         const cleanHandle = String(authorHandle || '').replace(/^@+/, '');
-        const subIdStr = String(post.sub_id || '');
+        const subIdStr = String(post.sub_id || post.video_id || post.id || '');
+        const rawUrl = String(post.url || '');
+        const urlVidMatch = rawUrl.match(/\/video\/(\d{15,})/);
+        const ttVidId = urlVidMatch ? urlVidMatch[1] : (/^\d{15,}$/.test(subIdStr) ? subIdStr : '');
         let ttUrl = null;
-        if (post.url && post.url.startsWith('http')) ttUrl = post.url;
-        else if (/^\d{15,}$/.test(subIdStr) && cleanHandle) ttUrl = `https://www.tiktok.com/@${cleanHandle}/video/${subIdStr}`;
+        if (rawUrl.startsWith('http')) ttUrl = rawUrl;
+        else if (ttVidId && cleanHandle) ttUrl = `https://www.tiktok.com/@${cleanHandle}/video/${ttVidId}`;
         else if (cleanHandle) ttUrl = `https://www.tiktok.com/@${cleanHandle}`;
+
+        const rawVideoSrc = post.video_url || post.media_url || '';
+        const hasDirectVideo = Boolean(rawVideoSrc && /^https?:\/\//i.test(rawVideoSrc) && !rawVideoSrc.includes('mixkit.co'));
+        const playerInnerHtml = hasDirectVideo
+            ? `<video src="${this.esc(rawVideoSrc)}" playsinline controls loop style="width:100%;max-height:360px;object-fit:cover;display:block;background:#0b0f19;"></video>`
+            : (ttVidId
+                ? `<iframe src="https://www.tiktok.com/player/v1/${ttVidId}?embed_from=oembed&music_info=1&description=1" style="width:100%;height:460px;border:0;display:block;background:#0b0f19;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
+                : '');
+        const playerCardHtml = playerInnerHtml ? `
+            <div style="margin:12px 0 16px;background:#000;border-radius:10px;overflow:hidden;border:1px solid #1e293b;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.08);">
+                    <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:0.4px;">TikTok Video Preview</span>
+                    <span style="font-size:10px;font-weight:700;color:#cbd5e1;background:rgba(255,255,255,0.12);padding:2px 8px;border-radius:10px;">@${this.esc(cleanHandle || 'creator')}</span>
+                </div>
+                <div style="position:relative;background:#000;text-align:center;">${playerInnerHtml}</div>
+            </div>` : '';
 
         document.getElementById('modalBody').innerHTML = `
             <div class="modal-author-section">
@@ -873,6 +892,7 @@ const TTPostsLoader = {
                     <span class="sentiment-badge ${sentimentRaw}" style="margin-top:4px;">${sentimentLbl}</span>
                 </div>
             </div>
+            ${playerCardHtml}
             <div class="modal-post-content">${hasContent ? content : '<span style="color:var(--text-muted);font-style:italic;">(No caption available)</span>'}</div>
             <div class="modal-post-meta">
                 <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -897,7 +917,7 @@ const TTPostsLoader = {
                 </div>
             </div>
             <div class="modal-actions">
-                ${ttUrl ? `<a href="${ttUrl}" target="_blank" rel="noopener" class="modal-btn primary">
+                ${ttUrl ? `<a href="${this.esc(ttUrl)}" target="_blank" rel="noopener" class="modal-btn primary">
                     <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                     Watch on TikTok
                 </a>` : ''}
@@ -908,7 +928,16 @@ const TTPostsLoader = {
         document.body.style.overflow = 'hidden';
     },
 
-    closeModal() { document.getElementById('postModal').classList.remove('active'); document.body.style.overflow = ''; },
+    closeModal() {
+        const mb = document.getElementById('modalBody');
+        if (mb) {
+            mb.querySelectorAll('video').forEach(v => { try { v.pause(); v.currentTime = 0; } catch (e) {} });
+            mb.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); });
+            mb.innerHTML = '';
+        }
+        document.getElementById('postModal').classList.remove('active');
+        document.body.style.overflow = '';
+    },
 
     getPageRange(cur, total) {
         if (total <= 7) return Array.from({length: total}, (_, i) => i+1);

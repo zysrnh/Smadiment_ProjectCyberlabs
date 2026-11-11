@@ -1597,172 +1597,199 @@ class TiktokOverviewController extends Controller
     {
         $templates = [
             [
-                'creator'   => 'garudatv_official',
-                'name'      => 'Garuda TV',
-                'content'   => 'Momen Presiden Prabowo Subianto menyampaikan komitmen swasembada pangan dan energi nasional di hadapan ribuan rakyat. #Prabowo #SwasembadaPangan #IndonesiaMaju',
+                'video_id'  => '7680414161892822293',
+                'creator'   => 'kompascom',
+                'name'      => 'Kompas.com',
+                'content'   => 'Presiden Prabowo Subianto menyampaikan komitmen swasembada pangan, energi nasional, dan percepatan Makan Bergizi Gratis di hadapan publik. #Prabowo #SwasembadaPangan #Kompascom',
                 'views'     => 1420500, 'likes' => 118400, 'comments' => 4520, 'shares' => 8900,
+                'sentiment' => 'Positive', 'emotion' => 'trust'
+            ],
+            [
+                'video_id'  => '7683488708045278485',
+                'creator'   => 'officialinews',
+                'name'      => 'iNews Official',
+                'content'   => 'Momen Presiden Prabowo Subianto berdialog langsung bersama masyarakat dan pelaku UMKM serta menegaskan dukungan penuh untuk ekonomi kerakyatan. #Prabowo #iNews #IndonesiaMaju',
+                'views'     => 1195000, 'likes' => 97200, 'comments' => 3810, 'shares' => 6400,
                 'sentiment' => 'Positive', 'emotion' => 'joy'
             ],
             [
-                'creator'   => 'prabowoupdates',
-                'name'      => 'Prabowo Subianto Fanbase',
-                'content'   => 'Pidato tegas Presiden Prabowo: Kita tidak akan gentar membela kedaulatan bangsa dan kesejahteraan rakyat kecil! #PrabowoSubianto #PresidenRI #IndonesiaEmas',
-                'views'     => 1195000, 'likes' => 97200, 'comments' => 3810, 'shares' => 6400,
-                'sentiment' => 'Positive', 'emotion' => 'trust'
-            ],
-            [
-                'creator'   => 'kompascom_tiktok',
-                'name'      => 'Kompas.com',
-                'content'   => 'Presiden Prabowo tinjau kesiapan program Makan Bergizi Gratis di sekolah-sekolah percontohan seluruh daerah. #MakanBergiziGratis #Prabowo #KabarTerkini',
+                'video_id'  => '7673812158496476437',
+                'creator'   => 'detikcom',
+                'name'      => 'detikcom',
+                'content'   => 'Presiden Prabowo bahas akselerasi transformasi digital, hilirisasi industri, dan investasi strategis bersama jajaran Kabinet Merah Putih. #Detikcom #Prabowo #KabinetMerahPutih',
                 'views'     => 980000, 'likes' => 74500, 'comments' => 2940, 'shares' => 5100,
-                'sentiment' => 'Positive', 'emotion' => 'trust'
-            ],
-            [
-                'creator'   => 'gerindratiktok',
-                'name'      => 'Gerindra Official',
-                'content'   => 'Bekerja nyata untuk rakyat! Program hilirisasi industri dan kemandirian ekonomi terus dipacu di bawah kepemimpinan Presiden Prabowo. #Gerindra #Prabowo #Hilirisasi',
-                'views'     => 860400, 'likes' => 69800, 'comments' => 2410, 'shares' => 4700,
                 'sentiment' => 'Positive', 'emotion' => 'anticipation'
             ],
             [
-                'creator'   => 'tribunnews_official',
-                'name'      => 'Tribunnews',
-                'content'   => 'Suasana hangat saat Presiden Prabowo menyapa masyarakat secara langsung usai pelantikan pejabat kementerian. #Tribunnews #Prabowo #PresidenRI',
-                'views'     => 754000, 'likes' => 58200, 'comments' => 1890, 'shares' => 3950,
+                'video_id'  => '7657411445738474770',
+                'creator'   => 'kumparan',
+                'name'      => 'Kumparan',
+                'content'   => 'Antusiasme warga dan petani menyambut program percepatan infrastruktur pedesaan serta distribusi pupuk bersubsidi tepat sasaran. #Kumparan #Prabowo #PetaniMaju',
+                'views'     => 860400, 'likes' => 69800, 'comments' => 2410, 'shares' => 4700,
                 'sentiment' => 'Positive', 'emotion' => 'joy'
             ],
             [
-                'creator'   => 'detikcom',
-                'name'      => 'Detikcom',
-                'content'   => 'Menko Marves & Prabowo bahas akselerasi transformasi digital dan investasi teknologi hijau di Indonesia. #TransformasiDigital #Prabowo #Detikcom',
+                'video_id'  => '7626679059824610580',
+                'creator'   => 'cnnindonesia',
+                'name'      => 'CNN Indonesia',
+                'content'   => 'Pemerintah percepat penyaluran bantuan sosial tepat sasaran lewat integrasi data kependudukan nasional dan pengawasan digital. #CNNIndonesia #Bansos #Prabowo',
+                'views'     => 754000, 'likes' => 58200, 'comments' => 1890, 'shares' => 3950,
+                'sentiment' => 'Positive', 'emotion' => 'trust'
+            ],
+            [
+                'video_id'  => '7615650907421789460',
+                'creator'   => 'partaigerindra',
+                'name'      => 'Partai Gerindra',
+                'content'   => 'Bekerja nyata untuk rakyat! Program hilirisasi industri dan kemandirian ekonomi terus dipacu di bawah kepemimpinan Presiden Prabowo Subianto. #Gerindra #Prabowo #Hilirisasi',
                 'views'     => 692000, 'likes' => 49100, 'comments' => 1620, 'shares' => 3200,
                 'sentiment' => 'Positive', 'emotion' => 'anticipation'
             ],
             [
-                'creator'   => 'narasinewsroom',
-                'name'      => 'Narasi Newsroom',
-                'content'   => 'Catatan kebijakan 100 hari Kabinet Merah Putih: Sorotan publik terhadap efisiensi anggaran dan tata kelola kementerian baru. #Narasi #KabinetMerahPutih #Politik',
+                'video_id'  => '7631203718410571015',
+                'creator'   => 'metro_tv',
+                'name'      => 'Metro TV',
+                'content'   => 'Sorotan evaluasi kebijakan Kabinet Merah Putih: Dinamika efisiensi anggaran negara dan tata kelola program prioritas nasional. #MetroTV #KabinetMerahPutih #Politik',
                 'views'     => 640000, 'likes' => 41200, 'comments' => 5400, 'shares' => 2800,
                 'sentiment' => 'Neutral', 'emotion' => 'surprise'
             ],
             [
+                'video_id'  => '7615240027294960916',
                 'creator'   => 'antaranews',
-                'name'      => 'Antara News',
-                'content'   => 'Diplomasi aktif Indonesia: Presiden Prabowo hadiri KTT internasional pertegas posisi non-blok Indonesia. #AntaraNews #Diplomasi #Prabowo',
+                'name'      => 'ANTARA News',
+                'content'   => 'Diplomasi aktif Indonesia di forum internasional: Presiden Prabowo tegaskan prinsip bebas aktif dan kerja sama ekonomi kawasan. #AntaraNews #Diplomasi #Prabowo',
                 'views'     => 580000, 'likes' => 38900, 'comments' => 1250, 'shares' => 2600,
                 'sentiment' => 'Positive', 'emotion' => 'trust'
             ],
             [
-                'creator'   => 'kumparan_com',
-                'name'      => 'Kumparan',
-                'content'   => 'Tanggapan masyarakat terkait rencana percepatan infrastruktur pedesaan dan bantuan pupuk subsidi langsung ke petani. #PetaniMaju #Prabowo #Kumparan',
+                'video_id'  => '7617019693097880852',
+                'creator'   => 'tvoneofficial',
+                'name'      => 'tvOne',
+                'content'   => 'Diskusi pengamat ekonomi mengenai peluang dan tantangan target pertumbuhan ekonomi nasional di pemerintahan Presiden Prabowo. #tvOne #EkonomiRI #Prabowo',
                 'views'     => 510000, 'likes' => 34200, 'comments' => 1430, 'shares' => 2100,
-                'sentiment' => 'Positive', 'emotion' => 'joy'
+                'sentiment' => 'Neutral', 'emotion' => 'anticipation'
             ],
             [
-                'creator'   => 'suaraburuh_indonesia',
-                'name'      => 'Suara Rakyat',
-                'content'   => 'Harapan pekerja terhadap regulasi ketenagakerjaan baru di bawah kepemimpinan Presiden Prabowo. #BuruhBersatu #TuntutanRakyat #KabinetMerahPutih',
+                'video_id'  => '7627095729261088016',
+                'creator'   => 'suaradotcom',
+                'name'      => 'Suara.com',
+                'content'   => 'Aspirasi serikat pekerja dan mahasiswa yang mendesak evaluasi menyeluruh terhadap kebijakan upah serta biaya hidup masyarakat. #Suaradotcom #Buruh #KawalKebijakan',
                 'views'     => 490000, 'likes' => 29500, 'comments' => 4200, 'shares' => 2900,
                 'sentiment' => 'Negative', 'emotion' => 'anger'
             ],
             [
-                'creator'   => 'tvonenews',
-                'name'      => 'tvOne News',
-                'content'   => 'Debat pengamat ekonomi: Peluang dan tantangan target pertumbuhan ekonomi 8% era Prabowo Subianto. #tvOne #EkonomiRI #Prabowo',
+                'video_id'  => '7615943955712281863',
+                'creator'   => 'tribunnews',
+                'name'      => 'Tribunnews',
+                'content'   => 'Suasana hangat saat Presiden Prabowo menyapa masyarakat secara langsung seusai agenda kenegaraan di ibu kota. #Tribunnews #Prabowo #PresidenRI',
                 'views'     => 470000, 'likes' => 31800, 'comments' => 2150, 'shares' => 1950,
-                'sentiment' => 'Neutral', 'emotion' => 'anticipation'
+                'sentiment' => 'Positive', 'emotion' => 'joy'
             ],
             [
-                'creator'   => 'cnnindonesia',
-                'name'      => 'CNN Indonesia',
-                'content'   => 'Pemerintah percepat penyaluran bansos tepat sasaran lewat integrasi data kependudukan digital. #CNNIndonesia #Bansos #KebijakanPemerintah',
+                'video_id'  => '7602168998146379028',
+                'creator'   => 'republikaonline',
+                'name'      => 'Republika Online',
+                'content'   => 'Penguatan peran pesantren, pendidikan karakter generasi muda, dan kolaborasi umat untuk kemandirian bangsa. #Republika #Prabowo #IndonesiaEmas',
                 'views'     => 435000, 'likes' => 28400, 'comments' => 1100, 'shares' => 1750,
                 'sentiment' => 'Positive', 'emotion' => 'trust'
             ],
             [
-                'creator'   => 'netizen_kritis',
-                'name'      => 'Suara Netizen',
-                'content'   => 'Kritik tajam kenaikan beberapa tarif layanan publik, minta pemerintah kaji ulang demi daya beli masyarakat. #KritikMembangun #RakyatMenjerit #Kebijakan',
+                'video_id'  => '7680900493039766802',
+                'creator'   => 'nusalogika',
+                'name'      => 'Nusa Logika',
+                'content'   => 'Sorotan tajam publik terhadap kenaikan biaya layanan publik yang dinilai menekan daya beli kelas menengah dan pekerja. #KritikKebijakan #DayaBeli #Ekonomi',
                 'views'     => 410000, 'likes' => 24100, 'comments' => 6100, 'shares' => 3500,
                 'sentiment' => 'Negative', 'emotion' => 'anger'
             ],
             [
-                'creator'   => 'infonusantara',
-                'name'      => 'Info Nusantara',
-                'content'   => 'Kemegahan IKN Nusantara jelang upacara kenegaraan berikutnya, pembangunan fasilitas dasar rampung 90%. #IKNNusantara #Pembangunan #Prabowo',
+                'video_id'  => '7671640402323180808',
+                'creator'   => 'official.ntv',
+                'name'      => 'Nusantara TV',
+                'content'   => 'Perkembangan pembangunan infrastruktur konektivitas dan fasilitas layanan dasar di berbagai kawasan strategis Indonesia. #NusantaraTV #Pembangunan #Prabowo',
                 'views'     => 390000, 'likes' => 26500, 'comments' => 1520, 'shares' => 1800,
                 'sentiment' => 'Positive', 'emotion' => 'joy'
             ],
             [
-                'creator'   => 'beritasatu',
-                'name'      => 'BeritaSatu',
-                'content'   => 'Kolaborasi Polri & TNI amankan stabilitas nasional di tengah dinamika geopolitik global. #TNI_Polri #KeamananNasional #PrabowoPresiden',
+                'video_id'  => '7636314858547449109',
+                'creator'   => 'setkabgoid',
+                'name'      => 'Sekretariat Kabinet',
+                'content'   => 'Arahan Presiden Prabowo dalam sidang kabinet paripurna: Sinergi TNI, Polri, dan kementerian jaga stabilitas nasional serta pelayanan publik. #SetkabRI #Prabowo #IndonesiaMaju',
                 'views'     => 365000, 'likes' => 22400, 'comments' => 890, 'shares' => 1400,
                 'sentiment' => 'Positive', 'emotion' => 'trust'
             ],
             [
-                'creator'   => 'suara_peduli',
-                'name'      => 'Suara Hati Rakyat',
-                'content'   => 'Sedih melihat kondisi sebagian saudara kita di pelosok yang masih kekurangan fasilitas dasar. Semoga komitmen pemerintah Prabowo merata sampai ke pelosok desa tertinggal. 🥺💔 #HarapanRakyat #PelosokNegeri #Pemerataan',
+                'video_id'  => '7668958908555283719',
+                'creator'   => 'pikiranrakyat',
+                'name'      => 'Pikiran Rakyat',
+                'content'   => 'Kisah pilu warga di pelosok daerah yang masih menantikan perbaikan akses jembatan dan fasilitas pendidikan dasar agar merata hingga ke desa. #PikiranRakyat #InfrastrukturDesa #Pemerataan',
                 'views'     => 342000, 'likes' => 21300, 'comments' => 1890, 'shares' => 1250,
                 'sentiment' => 'Negative', 'emotion' => 'sadness'
             ],
             [
-                'creator'   => 'keluhankita',
-                'name'      => 'Keluhan Warga',
-                'content'   => 'Hati terasa miris mendengar kisah anak-anak sekolah yang harus menyeberangi jembatan rusak. Harap segera ditindaklanjuti kementerian terkait pak presiden. 😢 #BantuWarga #InfrastrukturDesa #KawalKebijakan',
+                'video_id'  => '7623003681729809681',
+                'creator'   => 'kompastv.indonesia',
+                'name'      => 'Kompas TV',
+                'content'   => 'Laporan lapangan keluhan warga terdampak banjir dan akses jalan rusak yang berharap penanganan cepat dari pemerintah pusat maupun daerah. #KompasTV #BantuWarga #KawalKebijakan',
                 'views'     => 318000, 'likes' => 19400, 'comments' => 1640, 'shares' => 980,
                 'sentiment' => 'Negative', 'emotion' => 'sadness'
             ],
             [
-                'creator'   => 'radar_investigasi',
-                'name'      => 'Radar Investigasi',
-                'content'   => 'Muak dan geram melihat oknum birokrat yang masih coba-coba main mata dengan anggaran bansos! Jangan kasih ampun pak Prabowo, sikat habis koruptor! 🤬🤮 #LawanKorupsi #Transparansi #BersihBersih',
+                'video_id'  => '7629355117988515092',
+                'creator'   => 'inilahcom',
+                'name'      => 'Inilah.com',
+                'content'   => 'Desakan publik agar aparat menindak tegas oknum penyalahguna anggaran bantuan sosial tanpa pandang bulu demi transparansi. #Inilahcom #LawanKorupsi #Transparansi',
                 'views'     => 355000, 'likes' => 25800, 'comments' => 3120, 'shares' => 2400,
                 'sentiment' => 'Negative', 'emotion' => 'disgust'
             ],
             [
-                'creator'   => 'publikbicara',
-                'name'      => 'Publik Bicara',
-                'content'   => 'Jijik dengan drama saling lempar tanggung jawab oknum pejabat daerah. Rakyat butuh solusi nyata bukan alasan belaka! 👎 #KinerjaPejabat #TuntutanRakyat #KabinetMerahPutih',
+                'video_id'  => '7634852158529080596',
+                'creator'   => 'pojoksatu.id',
+                'name'      => 'PojokSatu.id',
+                'content'   => 'Kekecewaan warganet menyoroti perilaku birokrat yang lamban merespons aduan pelayanan masyarakat di daerah. #PojokSatu #KinerjaPejabat #KabinetMerahPutih',
                 'views'     => 298000, 'likes' => 18700, 'comments' => 2250, 'shares' => 1100,
                 'sentiment' => 'Negative', 'emotion' => 'disgust'
             ],
             [
-                'creator'   => 'waspada_id',
-                'name'      => 'Waspada Indonesia',
-                'content'   => 'Kekhawatiran meningkat terhadap tensi geopolitik kawasan dan dampaknya terhadap harga pangan impor. Pemerintah harus perkuat cadangan beras nasional segera! ⚠️🛡️ #KetahananPangan #Geopolitik #Waspada',
+                'video_id'  => '7626390172531297553',
+                'creator'   => 'officialokezone',
+                'name'      => 'Okezone',
+                'content'   => 'Kewaspadaan terhadap dampak ketegangan geopolitik kawasan pada rantai pasok pangan dan harga komoditas impor nasional. #Okezone #KetahananPangan #Geopolitik',
                 'views'     => 330000, 'likes' => 20500, 'comments' => 1430, 'shares' => 1600,
                 'sentiment' => 'Negative', 'emotion' => 'fear'
             ],
             [
-                'creator'   => 'kawalkebijakan',
-                'name'      => 'Kawal Kebijakan RI',
-                'content'   => 'Kecemasan masyarakat terhadap fluktuasi nilai tukar rupiah dan beban utang luar negeri. Semoga tim ekonomi kabinet Prabowo mampu redam gejolak pasar global. 📉💼 #EkonomiIndonesia #Rupiah #KawalKebijakan',
+                'video_id'  => '7604287886715850005',
+                'creator'   => 'tvrinasional',
+                'name'      => 'TVRI Nasional',
+                'content'   => 'Analisis kekhawatiran pelaku pasar terhadap fluktuasi nilai tukar rupiah serta langkah antisipasi tim ekonomi Kabinet Merah Putih. #TVRI #EkonomiIndonesia #KawalKebijakan',
                 'views'     => 285000, 'likes' => 16800, 'comments' => 1340, 'shares' => 890,
                 'sentiment' => 'Negative', 'emotion' => 'fear'
             ],
         ];
 
-        $posts = [];
-        $baseDate = $endDate ? strtotime($endDate) : time();
+        $posts    = [];
+        $endTs    = $endDate ? strtotime($endDate . ' 21:30:00') : time();
+        $startTs  = $startDate ? strtotime($startDate . ' 07:00:00') : ($endTs - 29 * 86400);
+        if (!$endTs) $endTs = time();
+        if (!$startTs || $startTs > $endTs) $startTs = $endTs - 29 * 86400;
+        $spanSecs = max(86400, $endTs - $startTs);
 
         for ($i = 0; $i < $limit; $i++) {
             $tpl = $templates[$i % count($templates)];
-            $offsetDays = ($i * 2) % 25;
-            $dCreated   = date('Y-m-d H:i:s', $baseDate - ($offsetDays * 86400) - ($i * 720));
+            $stepBack   = (($i * 38100) + (($i % 7) * 4120)) % $spanSecs;
+            $dCreated   = date('Y-m-d H:i:s', max($startTs, $endTs - $stepBack));
             $views      = max(15000, (int) round($tpl['views'] * (1 - ($i * 0.015)) + rand(-8000, 8000)));
             $likes      = max(1200, (int) round($views * 0.08 + rand(-500, 500)));
             $comments   = max(150, (int) round($likes * 0.04 + rand(-50, 50)));
             $shares     = max(80, (int) round($likes * 0.06 + rand(-40, 40)));
             $authorName = $tpl['name'];
             $handle     = $tpl['creator'];
+            $videoId    = $tpl['video_id'];
             $avatarUrl  = "https://ui-avatars.com/api/?name=" . urlencode($this->getInitials($authorName)) . "&background=038047&color=fff&size=80&bold=true";
 
             $posts[] = [
-                'id'              => 'tt_' . ($projectId) . '_' . ($i + 1),
-                'sub_id'          => 'tt_' . ($projectId) . '_' . ($i + 1),
+                'id'              => 'tiktok-' . $videoId,
+                'sub_id'          => $videoId,
+                'video_id'        => $videoId,
                 'name'            => $authorName,
                 'author_scr_name' => $handle,
                 'author_id'       => $handle,
@@ -1783,7 +1810,7 @@ class TiktokOverviewController extends Controller
                 'emotion'         => $tpl['emotion'],
                 'emotion_str'     => $tpl['emotion'],
                 'date_created'    => $dCreated,
-                'url'             => "https://www.tiktok.com/@{$handle}",
+                'url'             => "https://www.tiktok.com/@{$handle}/video/{$videoId}",
                 'avatar_url'      => $avatarUrl,
                 'profile_url'     => $avatarUrl,
                 'image'           => '',

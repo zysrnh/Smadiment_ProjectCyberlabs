@@ -500,7 +500,7 @@ const OVDetail={
         const playerInnerHtml = hasDirectVideo
             ? `<video id="ovDrawerVid" src="${esc(rawVideoSrc)}" ${av ? `poster="${esc(av)}"` : ''} playsinline controls loop style="width:100%;max-height:360px;object-fit:cover;display:block;background:#0b0f19;"></video>`
             : (ttVidId
-                ? `<iframe src="https://www.tiktok.com/embed/v2/${ttVidId}" style="width:100%;height:420px;border:0;display:block;background:#0b0f19;" allow="encrypted-media;" allowfullscreen></iframe>`
+                ? `<iframe src="https://www.tiktok.com/player/v1/${ttVidId}?embed_from=oembed&music_info=1&description=1" style="width:100%;height:460px;border:0;display:block;background:#0b0f19;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
                 : `<div style="padding:26px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:radial-gradient(circle at top,#1e293b,#0b0f19);min-height:170px;">
                     ${av ? `<img src="${esc(av)}" alt="${esc(name)}" style="width:58px;height:58px;border-radius:50%;object-fit:cover;border:2px solid #fe2c55;" onerror="this.style.display='none'">` : `<div style="width:54px;height:54px;border-radius:50%;background:rgba(254,44,85,0.16);display:flex;align-items:center;justify-content:center;color:#fe2c55;font-size:24px;"><i class="ph ph-tiktok-logo"></i></div>`}
                     <div style="font-size:12px;font-weight:700;color:#f8fafc;">${esc(name)}</div>
