@@ -1353,7 +1353,7 @@ const YMEDetail = {
         const rawTitle=(item.title||'').replace(/<[^>]*>/g,'').trim();
         const videoTitle=rawTitle?dec(rawTitle):'';
         const vidId=ytVideoIdFromItem(item);
-        const url=item.url||item.link||(vidId?`https://www.youtube.com/watch?v=${vidId}`:'');
+        const url=(vidId?`https://www.youtube.com/watch?v=${vidId}`:'')||item.url||item.link||'';
         const thumb=vidId?`https://img.youtube.com/vi/${vidId}/hqdefault.jpg`:(item.thumbnail||item.image_url||'').trim();
         const dt=item.date_created||'';
         const v=parseInt(item.num_views||item.view_cnt||item.views||item.freq||0);
@@ -1365,10 +1365,7 @@ const YMEDetail = {
 
         let mediaHtml='';
         if(vidId){
-            mediaHtml=`<div class="do-dp2-yt-thumb" id="ymeThumbWrap" onclick="YMEDetail._loadEmbed('${vidId}')" style="cursor:pointer;position:relative;background:#000;aspect-ratio:16/9;border-radius:var(--radius);overflow:hidden;">
-                <img src="${esc(thumb)}" style="width:100%;height:100%;object-fit:cover;opacity:0.6;" onerror="this.src='https://img.youtube.com/vi/${vidId}/hqdefault.jpg'" alt="thumbnail">
-                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><i class="ph ph-youtube-logo" style="font-size:48px;color:#ff0000;filter:drop-shadow(0 0 10px rgba(0,0,0,.5));"></i></div>
-            </div>`;
+            mediaHtml=`<div class="do-dp2-yt-embed"><iframe src="https://www.youtube.com/embed/${esc(vidId)}?rel=0&modestbranding=1" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>`;
         } else if(thumb){
             mediaHtml=`<div class="do-dp2-media"><img src="${esc(thumb)}" onerror="this.parentElement.style.display='none'"></div>`;
         }
@@ -1392,16 +1389,9 @@ const YMEDetail = {
                 <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(v)}</div><div class="do-dp2-stat-lbl">Views</div></div>
                 <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(l)}</div><div class="do-dp2-stat-lbl">Likes</div></div>
                 <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(c)}</div><div class="do-dp2-stat-lbl">Comments</div></div>
-            <div style="font-size:11px;color:var(--slate-500);background:var(--slate-100);border:1px dashed var(--slate-300);padding:7px 10px;border-radius:4px;margin-top:12px;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><i class="ph ph-info" style="font-size:14px;color:var(--primary);flex-shrink:0;"></i><span>Catatan: API tidak mengembalikan URL post spesifik.</span></div>
-            ${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-youtube-logo me-1"></i>Buka Channel di YouTube</a>`:''}`;
+            </div>
+            ${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-youtube-logo me-1"></i>Tonton Video di YouTube</a>`:''}`;
         panel.classList.add('show');
-    },
-    _loadEmbed(vidId){
-        const wrap=document.getElementById('ymeThumbWrap'); if(!wrap) return;
-        const div=document.createElement('div');
-        div.className='do-dp2-yt-embed';
-        div.innerHTML=`<iframe src="https://www.youtube.com/embed/${vidId}?autoplay=1&rel=0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>`;
-        wrap.replaceWith(div);
     },
     _killIframe(){
         const body=_$('ymeDetailBody');
