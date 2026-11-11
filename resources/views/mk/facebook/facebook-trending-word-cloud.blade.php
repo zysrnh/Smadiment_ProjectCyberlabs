@@ -632,8 +632,11 @@ function renderWC() {
         });
 
         wcChart.on('click', p => {
-            const q = encodeURIComponent(p.name);
-            window.open(`https://www.facebook.com/search/posts?q=${q}`, '_blank', 'noopener,noreferrer');
+            const name = (p.name || '').trim();
+            const url = name.startsWith('#')
+                ? `https://www.facebook.com/hashtag/${encodeURIComponent(name.slice(1))}`
+                : `https://www.facebook.com/search/top?q=${encodeURIComponent(name)}`;
+            window.open(url, '_blank', 'noopener,noreferrer');
         });
 
         if (window._fbwcResizeObserver) window._fbwcResizeObserver.disconnect();
@@ -679,7 +682,13 @@ function renderList() {
             <div class="ht-name" style="color:${sentColor};">${esc(h.name)}</div>
             <div class="ht-bar-wrap"><div class="ht-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,${sentColor},${sentColor}88);"></div></div>
             <div class="ht-count">${numF(h.size)}</div>`;
-        el.onclick = () => { const q = encodeURIComponent(h.name.replace(/^#/,'')); window.open(`https://www.facebook.com/search/posts?q=${q}`,'_blank','noopener,noreferrer'); };
+        el.onclick = () => {
+            const name = (h.name || '').trim();
+            const url = name.startsWith('#')
+                ? `https://www.facebook.com/hashtag/${encodeURIComponent(name.slice(1))}`
+                : `https://www.facebook.com/search/top?q=${encodeURIComponent(name)}`;
+            window.open(url, '_blank', 'noopener,noreferrer');
+        };
         list.appendChild(el);
     });
     if (pg) {
