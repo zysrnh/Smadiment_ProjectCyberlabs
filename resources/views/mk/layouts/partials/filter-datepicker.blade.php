@@ -165,6 +165,107 @@
     .do-filter-row { flex-direction:column; align-items:stretch; }
     .do-filter-submit { margin-left:0; justify-content:center; }
     .do-date-trigger { min-width:auto; }
+
+    /* Modal Responsive Mobile View */
+    .do-dp-modal {
+        padding: 12px;
+        align-items: center;
+        justify-content: center;
+    }
+    .do-dp-container {
+        flex-direction: column;
+        width: 100%;
+        max-width: 360px;
+        max-height: 92vh;
+        overflow-y: auto;
+        box-sizing: border-box;
+    }
+    .do-dp-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--do-slate-200);
+        padding: 8px 10px;
+        border-radius: var(--do-radius) var(--do-radius) 0 0;
+        flex-direction: row;
+        overflow-x: auto;
+        white-space: nowrap;
+        gap: 6px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .do-dp-sidebar::-webkit-scrollbar {
+        height: 3px;
+    }
+    .do-dp-sidebar::-webkit-scrollbar-thumb {
+        background: var(--do-slate-300);
+        border-radius: 3px;
+    }
+    .do-dp-preset {
+        padding: 6px 12px;
+        font-size: 11px;
+        flex-shrink: 0;
+        border-radius: var(--do-radius-sm);
+        background: var(--do-slate-100);
+    }
+    .do-dp-content {
+        padding: 12px 10px;
+        flex: none;
+        overflow: visible;
+    }
+    .do-dp-header {
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+    .do-dp-nav {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+    .do-dp-cals {
+        gap: 0;
+        min-width: 0;
+    }
+    #doCal2 {
+        display: none !important;
+    }
+    .do-cal-month {
+        font-size: 13px;
+        margin-bottom: 8px;
+    }
+    .do-cal-wdays {
+        gap: 2px;
+        margin-bottom: 4px;
+    }
+    .do-cal-wd {
+        font-size: 9.5px;
+        padding: 4px 0;
+    }
+    .do-cal-days {
+        gap: 2px;
+    }
+    .do-cal-day {
+        font-size: 12px;
+        min-height: 30px;
+    }
+    .do-dp-display {
+        padding: 8px;
+        margin-bottom: 10px;
+    }
+    .do-dp-display span {
+        font-size: 11.5px;
+        word-break: break-all;
+    }
+    .do-dp-footer {
+        display: flex;
+        gap: 8px;
+    }
+    .do-dp-cancel, .do-dp-apply {
+        flex: 1;
+        text-align: center;
+        padding: 8px 0;
+        font-size: 12px;
+    }
 }
 </style>
 
