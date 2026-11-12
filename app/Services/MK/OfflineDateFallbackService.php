@@ -275,12 +275,14 @@ class OfflineDateFallbackService
             $postTs = max($startTs, min($endTs, $postTs));
             $dCreated = date('Y-m-d H:i:s', $postTs);
 
-            // Compute scaled metrics: combine template popularity with period-specific momentum
-            // so different months highlight genuinely different top videos & creators
-            $baseViews = (int) ($tpl['views'] ?? $tpl['view_cnt'] ?? $tpl['likes'] ?? 350000);
-            $slotDecay = 1.0 - (($i / max(1, $targetCount)) * 0.58);
-            $viewVar   = 0.85 + ((abs($seed + ($i * 9973)) % 35) / 100.0);
-            $views     = max(8000, (int) round($baseViews * $periodScale * $slotDecay * $viewVar));
+            // Period viral rank: whoever is permuted into slot $i holds rank $i for this date range,
+            // guaranteeing that different date ranges/months feature completely different top viral videos & creators
+            $topViews   = 1520000;
+            $minViews   = 32000;
+            $rankFactor = pow(max(0.01, 1.0 - (($i / max(1, $targetCount)) * 0.95)), 2.15);
+            // Slight micro-jitter that preserves strict rank monotonic ordering
+            $viewJitter = 0.985 + ((abs($seed + ($i * 9973)) % 30) / 1000.0);
+            $views      = max(8000, (int) round(($minViews + (($topViews - $minViews) * $rankFactor)) * $periodScale * $viewJitter));
 
             $likesRatio   = 0.075 + ((abs($seed + ($i * 4099)) % 25) / 1000.0);
             $commRatio    = 0.035 + ((abs($seed + ($i * 6173)) % 20) / 1000.0);
