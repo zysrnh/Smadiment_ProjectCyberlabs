@@ -1518,6 +1518,7 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
             open(item) {
                 const panel=_$('feaDetailPanel'), body=_$('feaDetailBody'), title=_$('feaDetailTitle');
                 if (!panel||!body) return;
+                this.killIframe();
                 const emo=item.emotion||'trust', ec=EMO_COLORS[emo]||'#038047';
                 const name=getName(item), color2=getColor(item), av=getAvatar(item);
                 const dummy='/assets/images/user/dummy.jpg';
@@ -1538,7 +1539,8 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
                 const cleanHandle = String(handle || '').replace(/^@+/, '');
                 const rawSubId = String(item.sub_id || item.video_id || item.id || '');
                 const urlVidMatch = String(url).match(/\/video\/(\d{15,})/);
-                const ttVidId = urlVidMatch ? urlVidMatch[1] : (/^\d{15,}$/.test(rawSubId) ? rawSubId : '');
+                const idVidMatch = rawSubId.match(/(\d{15,})/);
+                const ttVidId = urlVidMatch ? urlVidMatch[1] : (idVidMatch ? idVidMatch[1] : '');
                 const watchUrl = (url && url.startsWith('http'))
                     ? url
                     : (ttVidId && cleanHandle
@@ -1547,30 +1549,40 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
                 const rawVideoSrc = item.video_url || item.media_url || '';
                 const hasDirectVideo = Boolean(rawVideoSrc && /^https?:\/\//i.test(rawVideoSrc) && !rawVideoSrc.includes('mixkit.co'));
                 const thumbSrc = [item.image, item.thumbnail, item.cover, item.video_cover].find(u => typeof u === 'string' && /^https?:\/\//i.test(u) && !u.includes('ui-avatars.com')) || '';
+                const playBtnHtml = ttVidId
+                    ? `<button type="button" data-tt-play="${esc(ttVidId)}" style="display:inline-flex;align-items:center;gap:6px;background:#fe2c55;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">
+                            <i class="ph-fill ph-play"></i>
+                            <span>Putar di Sini</span>
+                       </button>`
+                    : '';
                 const playerInnerHtml = hasDirectVideo
                     ? `<video id="feaDrawerVid" src="${esc(rawVideoSrc)}" ${thumbSrc || av ? `poster="${esc(thumbSrc || av)}"` : ''} playsinline controls loop style="width:100%;max-height:360px;object-fit:cover;display:block;background:#0f172a;"></video>`
-                    : (thumbSrc
-                        ? `<a href="${esc(watchUrl)}" target="_blank" rel="noopener noreferrer" style="display:block;position:relative;background:#0f172a;text-decoration:none;">
+                    : (thumbSrc && ttVidId
+                        ? `<div style="position:relative;background:#0f172a;">
                             <img src="${esc(thumbSrc)}" alt="${esc(name)}" style="width:100%;max-height:260px;object-fit:cover;display:block;opacity:0.85;" onerror="this.style.display='none'">
-                            <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
-                                <span style="width:48px;height:48px;border-radius:8px;background:#fe2c55;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:20px;"><i class="ph-fill ph-play"></i></span>
-                            </span>
-                        </a>`
-                        : `<div style="padding:24px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#0f172a;min-height:150px;">
-                            ${av && !av.includes('ui-avatars.com') ? `<img src="${esc(av)}" alt="${esc(name)}" style="width:52px;height:52px;border-radius:8px;object-fit:cover;border:2px solid #fe2c55;" onerror="this.style.display='none'">` : `<div style="width:48px;height:48px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:center;justify-content:center;color:#fe2c55;font-size:22px;"><i class="ph ph-tiktok-logo"></i></div>`}
+                            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.35);">
+                                ${playBtnHtml}
+                            </div>
+                        </div>`
+                        : `<div style="padding:22px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#0f172a;min-height:168px;">
+                            ${av && !av.includes('ui-avatars.com') ? `<img src="${esc(av)}" alt="${esc(name)}" style="width:52px;height:52px;border-radius:6px;object-fit:cover;border:2px solid #fe2c55;" onerror="this.style.display='none'">` : `<div style="width:48px;height:48px;border-radius:6px;background:#1e293b;border:1px solid #334155;display:flex;align-items:center;justify-content:center;color:#fe2c55;font-size:22px;"><i class="ph ph-tiktok-logo"></i></div>`}
                             <div style="font-size:12px;font-weight:700;color:#f8fafc;">${esc(name)}</div>
-                            <div style="font-size:11px;color:#94a3b8;max-width:265px;line-height:1.45;">Preview video embed dibatasi kebijakan TikTok. Klik tombol di bawah untuk menonton video asli di TikTok.</div>
+                            ${playBtnHtml}
+                            <div style="font-size:11px;color:#94a3b8;max-width:270px;line-height:1.45;">${ttVidId ? 'Klik <strong>Putar di Sini</strong> untuk memuat embed resmi TikTok. Jika muncul <em>Server error</em> / 429 di localhost, gunakan tombol <strong>Buka di TikTok</strong>.' : 'Video ID tidak tersedia untuk embed; gunakan tombol <strong>Buka di TikTok</strong> di bawah.'}</div>
                         </div>`);
                 const mediaHtml = `
-                <div class="tt-player-card" style="margin:14px 0;background:#0f172a;border-radius:8px;overflow:hidden;border:1px solid #1e293b;position:relative;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#1e293b;border-bottom:1px solid #334155;">
+                <div class="tt-player-card" data-tt-card style="margin:14px 0;background:#0f172a;border-radius:6px;overflow:hidden;border:1px solid #1e293b;position:relative;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;background:#1e293b;border-bottom:1px solid #334155;">
                         <div style="display:flex;align-items:center;gap:7px;">
                             <svg style="width:16px;height:16px;fill:#fe2c55;" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.86-4.49V8.72a8.28 8.28 0 0 0 4.84 1.54v-3.5a4.85 4.85 0 0 1-.93-.07z"/></svg>
-                            <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:0.5px;">TikTok Video Preview</span>
+                            <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:0.5px;">TikTok Video Player</span>
                         </div>
-                        <span style="font-size:10px;font-weight:700;color:#cbd5e1;background:#334155;padding:2px 8px;border-radius:6px;">@${esc(cleanHandle || 'creator')}</span>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <button type="button" data-tt-close style="display:none;align-items:center;gap:4px;background:#334155;color:#f8fafc;border:none;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;">Tutup Player</button>
+                            <span style="font-size:10px;font-weight:700;color:#cbd5e1;background:#334155;padding:2px 8px;border-radius:4px;">@${esc(cleanHandle || 'creator')}</span>
+                        </div>
                     </div>
-                    <div style="position:relative;background:#0f172a;text-align:center;">
+                    <div data-tt-stage style="position:relative;background:#0f172a;text-align:center;">
                         ${playerInnerHtml}
                     </div>
                     <div style="padding:10px 14px;background:#111827;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #1e293b;">
@@ -1620,7 +1632,49 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
                     ${emoBars}
                 </div>
                 ${watchUrl?`<a href="${esc(watchUrl)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out me-1"></i>Buka di TikTok</a>`:''}`;
+                if (!hasDirectVideo && ttVidId) this._bindTtPlayer(body, ttVidId);
                 panel.classList.add('show');
+            },
+            _bindTtPlayer(root, vidId) {
+                const card=root.querySelector('[data-tt-card]'), stage=root.querySelector('[data-tt-stage]'), btnPlay=root.querySelector('[data-tt-play]'), btnClose=root.querySelector('[data-tt-close]');
+                if (!card||!stage||!btnPlay) return;
+                const previewHtml=stage.innerHTML;
+                let mode='v1';
+                const mountIframe=() => {
+                    stage.querySelectorAll('iframe').forEach(f => { f.src=''; f.remove(); });
+                    stage.innerHTML='';
+                    const ifr=document.createElement('iframe');
+                    ifr.src=mode==='v2'
+                        ? `https://www.tiktok.com/embed/v2/${encodeURIComponent(vidId)}`
+                        : `https://www.tiktok.com/player/v1/${encodeURIComponent(vidId)}?embed_from=oembed&music_info=1&description=1&autoplay=1&muted=1`;
+                    ifr.style.cssText='width:100%;max-width:360px;height:480px;margin:0 auto;border:none;display:block;background:#0f172a;';
+                    ifr.allow='accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share';
+                    ifr.allowFullscreen=true;
+                    ifr.loading='lazy';
+                    const bar=document.createElement('div');
+                    bar.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#1e293b;border-top:1px solid #334155;font-size:10px;color:#cbd5e1;text-align:left;';
+                    const msg=document.createElement('span');
+                    msg.textContent=mode==='v1' ? 'Jika localhost memicu Server error / 429, coba Embed v2 atau Buka di TikTok.' : 'Mode Embed v2 aktif. Jika masih dibatasi, klik Buka di TikTok.';
+                    const altBtn=document.createElement('button');
+                    altBtn.type='button';
+                    altBtn.style.cssText='flex-shrink:0;background:#334155;color:#f8fafc;border:none;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;';
+                    altBtn.textContent=mode==='v1' ? 'Coba Embed v2' : 'Kembali ke Player v1';
+                    altBtn.addEventListener('click',() => { mode=mode==='v1'?'v2':'v1'; mountIframe(); });
+                    bar.appendChild(msg);
+                    bar.appendChild(altBtn);
+                    stage.appendChild(ifr);
+                    stage.appendChild(bar);
+                    if (btnClose) btnClose.style.display='inline-flex';
+                };
+                btnPlay.addEventListener('click', mountIframe);
+                if (btnClose) {
+                    btnClose.addEventListener('click',() => {
+                        stage.querySelectorAll('iframe').forEach(f => { f.src=''; f.remove(); });
+                        stage.innerHTML=previewHtml;
+                        btnClose.style.display='none';
+                        this._bindTtPlayer(root, vidId);
+                    });
+                }
             },
 
             close()      { 

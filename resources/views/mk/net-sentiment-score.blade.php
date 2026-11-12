@@ -1175,15 +1175,36 @@ const NSSDetail = {
                 mediaHtml=`<div class="nssdp-media-wrap"><img src="${esc(imgUrl)}" class="nssdp-media-img" onerror="this.parentElement.style.display='none'"></div>`;
             }
         } else if(plat==='tiktok'){
-            let videoId=''; if(url){const m=url.match(/\/video\/(\d+)/); if(m) videoId=m[1];} if(!videoId&&item.id){const m=String(item.id).match(/(\d{10,})/); if(m) videoId=m[1];}
+            let videoId='';
+            if(url){const m=url.match(/\/video\/(\d{15,})/); if(m) videoId=m[1];}
+            if(!videoId){
+                const candidate=String(item.sub_id||item.video_id||item.id||'');
+                const m=candidate.match(/(\d{15,})/);
+                if(m) videoId=m[1];
+            }
             const cleanSc = rawHandle.replace(/^@+/,'');
             if(!url){ if(videoId&&cleanSc) url=`https://www.tiktok.com/@${cleanSc}/video/${videoId}`; else if(cleanSc) url=`https://www.tiktok.com/@${cleanSc}`; }
+            const rawVideoSrc = item.video_url || item.media_url || '';
+            const hasDirectVideo = Boolean(rawVideoSrc && /^https?:\/\//i.test(rawVideoSrc) && !rawVideoSrc.includes('mixkit.co'));
             const ttThumb = [item.image_url,item.thumbnail,item.image,item.cover,item.video_cover].find(u=>typeof u==='string'&&/^https?:\/\//i.test(u)&&!u.includes('ui-avatars.com'))||'';
-            if(ttThumb){
-                mediaHtml=`<div class="nssdp-media-wrap"><img src="${esc(ttThumb)}" class="nssdp-media-img" onerror="this.parentElement.style.display='none'"></div>`;
-            } else {
-                mediaHtml=`<div style="margin:10px 0 14px;padding:14px 16px;background:#0f172a;border:1px solid #1e293b;border-radius:8px;color:#cbd5e1;font-size:12px;line-height:1.5;"><strong style="color:#fff;display:block;margin-bottom:4px;">Video TikTok${cleanSc ? ' · @'+esc(cleanSc) : ''}</strong>Preview video embed dibatasi oleh TikTok. Klik tombol <em>Lihat Sumber Asli</em> di bawah untuk menonton langsung di TikTok.</div>`;
-            }
+            const playBtnHtml = videoId
+                ? `<button type="button" data-tt-play="${esc(videoId)}" style="display:inline-flex;align-items:center;gap:6px;background:#fe2c55;color:#fff;border:none;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;"><span>Putar di Sini</span></button>`
+                : '';
+            const stageHtml = hasDirectVideo
+                ? `<video src="${esc(rawVideoSrc)}" ${ttThumb ? `poster="${esc(ttThumb)}"` : ''} playsinline controls loop style="width:100%;max-height:360px;object-fit:cover;display:block;background:#0f172a;"></video>`
+                : (ttThumb && videoId
+                    ? `<div style="position:relative;background:#0f172a;"><img src="${esc(ttThumb)}" style="width:100%;max-height:240px;object-fit:cover;display:block;opacity:0.85;" onerror="this.style.display='none'"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.35);">${playBtnHtml}</div></div>`
+                    : `<div style="padding:18px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;background:#0f172a;"><div style="font-size:12px;font-weight:700;color:#fff;">Video TikTok${cleanSc ? ' · @'+esc(cleanSc) : ''}</div>${playBtnHtml}<div style="color:#94a3b8;font-size:11px;line-height:1.45;max-width:270px;">${videoId ? 'Klik <strong>Putar di Sini</strong> untuk memuat embed resmi TikTok. Jika muncul <em>Server error</em> / 429 di localhost, klik <strong>Lihat Sumber Asli</strong> di bawah.' : 'Video ID tidak tersedia; klik <strong>Lihat Sumber Asli</strong> untuk menonton di TikTok.'}</div></div>`);
+            mediaHtml=`<div data-tt-card data-tt-vid="${esc(hasDirectVideo ? '' : videoId)}" style="margin:10px 0 14px;background:#0f172a;border:1px solid #1e293b;border-radius:6px;overflow:hidden;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;background:#1e293b;border-bottom:1px solid #334155;">
+                    <span style="font-size:11px;font-weight:700;color:#fff;">TikTok Video Player</span>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <button type="button" data-tt-close style="display:none;align-items:center;gap:4px;background:#334155;color:#f8fafc;border:none;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;">Tutup Player</button>
+                        <span style="font-size:10px;font-weight:700;color:#cbd5e1;background:#334155;padding:2px 8px;border-radius:4px;">@${esc(cleanSc || 'creator')}</span>
+                    </div>
+                </div>
+                <div data-tt-stage style="position:relative;background:#0f172a;text-align:center;">${stageHtml}</div>
+            </div>`;
         } else if(imgUrl){
             mediaHtml=`<div class="nssdp-media-wrap"><img src="${esc(imgUrl)}" class="nssdp-media-img" onerror="this.parentElement.style.display='none'"></div>`;
         }
@@ -1191,6 +1212,7 @@ const NSSDetail = {
         const statsMap={twitter:[['Views',item.view_cnt||item.num_views||0],['Retweet',item.rt||item.num_retweeted||item.retweet_count||0],['Like',item.num_likes||item.favorite_count||0]],facebook:[['Like',item.likes||item.num_likes||0],['Share',item.shares||item.share_count||0],['Comment',item.num_comments||0]],instagram:[['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||item.comment_count||0],['View',item.num_views||item.views||0]],youtube:[['View',item.num_views||item.views||0],['Like',item.num_likes||item.likes||0],['Comment',item.num_comments||0]],tiktok:[['Play',item.views||item.play_count||0],['Like',item.likes||item.digg_count||0],['Share',item.shares||item.share_count||0]],doc:[['Read',item.num_views||0],['Share',item.num_share||0],['Comment',item.num_comments||0]]};
         const stats=statsMap[plat]||[];
         const statsHtml=stats.some(s=>parseInt(s[1])>0)?`<div class="nssdp-stats-grid">${stats.map(([l,v])=>`<div class="nssdp-stat-box"><div class="nssdp-stat-val">${parseInt(v||0).toLocaleString()}</div><div class="nssdp-stat-lbl">${l}</div></div>`).join('')}</div>`:'';
+        this._killMedia(body);
         body.innerHTML=`
         <div class="nssdp-avatar-row">
           <div class="nssdp-avatar-lg" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);">${avHtml}</div>
@@ -1205,10 +1227,62 @@ const NSSDetail = {
         ${mediaHtml}
         ${content?`<div class="nssdp-content-text">${esc(content)}</div>`:''}
         ${statsHtml}
-        ${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="nssdp-link-btn"><i class="ph ph-arrow-square-out"></i>Lihat Sumber Asli</a>`:''}`;  
+        ${url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="nssdp-link-btn"><i class="ph ph-arrow-square-out"></i>Lihat Sumber Asli</a>`:''}`;
+        const ttCard = body.querySelector('[data-tt-card]');
+        const ttVid = ttCard?.dataset?.ttVid || '';
+        if (ttVid) this._bindTtPlayer(body, ttVid);
         panel.classList.add('visible');
     },
-    close() { $('nssDetailPanel')?.classList.remove('visible'); }
+    _killMedia(root) {
+        if (!root) return;
+        root.querySelectorAll('video').forEach(v => { try { v.pause(); v.currentTime = 0; } catch (e) {} });
+        root.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); });
+    },
+    _bindTtPlayer(root, vidId) {
+        const card = root.querySelector('[data-tt-card]');
+        const stage = root.querySelector('[data-tt-stage]');
+        const btnPlay = root.querySelector('[data-tt-play]');
+        const btnClose = root.querySelector('[data-tt-close]');
+        if (!card || !stage || !btnPlay) return;
+        const previewHtml = stage.innerHTML;
+        let mode = 'v1';
+        const mountIframe = () => {
+            this._killMedia(stage);
+            stage.innerHTML = '';
+            const ifr = document.createElement('iframe');
+            ifr.src = mode === 'v2'
+                ? `https://www.tiktok.com/embed/v2/${encodeURIComponent(vidId)}`
+                : `https://www.tiktok.com/player/v1/${encodeURIComponent(vidId)}?embed_from=oembed&music_info=1&description=1&autoplay=1&muted=1`;
+            ifr.style.cssText = 'width:100%;max-width:360px;height:480px;margin:0 auto;border:none;display:block;background:#0f172a;';
+            ifr.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share';
+            ifr.allowFullscreen = true;
+            ifr.loading = 'lazy';
+            const bar = document.createElement('div');
+            bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#1e293b;border-top:1px solid #334155;font-size:10px;color:#cbd5e1;text-align:left;';
+            const msg = document.createElement('span');
+            msg.textContent = mode === 'v1' ? 'Jika localhost memicu Server error / 429, coba Embed v2 atau Lihat Sumber Asli.' : 'Mode Embed v2 aktif. Jika masih dibatasi, klik Lihat Sumber Asli.';
+            const altBtn = document.createElement('button');
+            altBtn.type = 'button';
+            altBtn.style.cssText = 'flex-shrink:0;background:#334155;color:#f8fafc;border:none;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;';
+            altBtn.textContent = mode === 'v1' ? 'Coba Embed v2' : 'Kembali ke Player v1';
+            altBtn.addEventListener('click', () => { mode = mode === 'v1' ? 'v2' : 'v1'; mountIframe(); });
+            bar.appendChild(msg);
+            bar.appendChild(altBtn);
+            stage.appendChild(ifr);
+            stage.appendChild(bar);
+            if (btnClose) btnClose.style.display = 'inline-flex';
+        };
+        btnPlay.addEventListener('click', mountIframe);
+        if (btnClose) {
+            btnClose.addEventListener('click', () => {
+                this._killMedia(stage);
+                stage.innerHTML = previewHtml;
+                btnClose.style.display = 'none';
+                this._bindTtPlayer(root, vidId);
+            });
+        }
+    },
+    close() { this._killMedia($('nssDetailBody')); $('nssDetailPanel')?.classList.remove('visible'); }
 };
 
 /* ══════════════════════════════════════════════════════

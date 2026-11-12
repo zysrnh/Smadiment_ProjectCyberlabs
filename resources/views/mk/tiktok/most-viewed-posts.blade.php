@@ -861,7 +861,8 @@ const TTPostsLoader = {
         const subIdStr = String(post.sub_id || post.video_id || post.id || '');
         const rawUrl = String(post.url || '');
         const urlVidMatch = rawUrl.match(/\/video\/(\d{15,})/);
-        const ttVidId = urlVidMatch ? urlVidMatch[1] : (/^\d{15,}$/.test(subIdStr) ? subIdStr : '');
+        const idVidMatch = subIdStr.match(/(\d{15,})/);
+        const ttVidId = urlVidMatch ? urlVidMatch[1] : (idVidMatch ? idVidMatch[1] : '');
         let ttUrl = null;
         if (rawUrl.startsWith('http')) ttUrl = rawUrl;
         else if (ttVidId && cleanHandle) ttUrl = `https://www.tiktok.com/@${cleanHandle}/video/${ttVidId}`;
@@ -870,26 +871,41 @@ const TTPostsLoader = {
         const rawVideoSrc = post.video_url || post.media_url || '';
         const hasDirectVideo = Boolean(rawVideoSrc && /^https?:\/\//i.test(rawVideoSrc) && !rawVideoSrc.includes('mixkit.co'));
         const thumbSrc = [post.image, post.thumbnail, post.cover, post.video_cover].find(u => typeof u === 'string' && /^https?:\/\//i.test(u) && !u.includes('ui-avatars.com')) || '';
+        const playBtnHtml = ttVidId
+            ? `<button type="button" data-tt-play="${this.esc(ttVidId)}" style="display:inline-flex;align-items:center;gap:6px;background:#fe2c55;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">
+                    <span>Putar di Sini</span>
+               </button>`
+            : '';
         const playerInnerHtml = hasDirectVideo
             ? `<video src="${this.esc(rawVideoSrc)}" ${thumbSrc ? `poster="${this.esc(thumbSrc)}"` : ''} playsinline controls loop style="width:100%;max-height:360px;object-fit:cover;display:block;background:#0f172a;"></video>`
-            : (thumbSrc
-                ? `<a href="${this.esc(ttUrl || '#')}" target="_blank" rel="noopener noreferrer" style="display:block;position:relative;background:#0f172a;text-decoration:none;">
+            : (thumbSrc && ttVidId
+                ? `<div style="position:relative;background:#0f172a;">
                     <img src="${this.esc(thumbSrc)}" alt="${this.esc(authorName)}" style="width:100%;max-height:240px;object-fit:cover;display:block;opacity:0.85;" onerror="this.style.display='none'">
-                </a>`
-                : `<div style="padding:20px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#0f172a;">
+                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.35);">
+                        ${playBtnHtml}
+                    </div>
+                </div>`
+                : `<div style="padding:20px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#0f172a;">
                     <div style="font-size:12px;font-weight:700;color:#f8fafc;">${this.esc(authorName)} (@${this.esc(cleanHandle || 'creator')})</div>
-                    <div style="font-size:11px;color:#94a3b8;max-width:300px;line-height:1.45;">Preview video embed dibatasi kebijakan TikTok. Klik tombol <strong>Watch on TikTok</strong> di bawah untuk membuka video asli.</div>
+                    ${playBtnHtml}
+                    <div style="font-size:11px;color:#94a3b8;max-width:300px;line-height:1.45;">${ttVidId ? 'Klik <strong>Putar di Sini</strong> untuk memuat embed resmi TikTok. Jika muncul <em>Server error</em> / 429 di localhost, gunakan <strong>Watch on TikTok</strong> di bawah.' : 'Video ID tidak tersedia untuk embed; klik <strong>Watch on TikTok</strong> di bawah.'}</div>
                 </div>`);
         const playerCardHtml = `
-            <div style="margin:12px 0 16px;background:#0f172a;border-radius:8px;overflow:hidden;border:1px solid #1e293b;">
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#1e293b;border-bottom:1px solid #334155;">
-                    <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:0.4px;">TikTok Video Preview</span>
-                    <span style="font-size:10px;font-weight:700;color:#cbd5e1;background:#334155;padding:2px 8px;border-radius:6px;">@${this.esc(cleanHandle || 'creator')}</span>
+            <div data-tt-card style="margin:12px 0 16px;background:#0f172a;border-radius:6px;overflow:hidden;border:1px solid #1e293b;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;background:#1e293b;border-bottom:1px solid #334155;">
+                    <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:0.4px;">TikTok Video Player</span>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <button type="button" data-tt-close style="display:none;align-items:center;gap:4px;background:#334155;color:#f8fafc;border:none;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;">Tutup Player</button>
+                        <span style="font-size:10px;font-weight:700;color:#cbd5e1;background:#334155;padding:2px 8px;border-radius:4px;">@${this.esc(cleanHandle || 'creator')}</span>
+                    </div>
                 </div>
-                <div style="position:relative;background:#0f172a;text-align:center;">${playerInnerHtml}</div>
+                <div data-tt-stage style="position:relative;background:#0f172a;text-align:center;">${playerInnerHtml}</div>
             </div>`;
 
-        document.getElementById('modalBody').innerHTML = `
+        const mb = document.getElementById('modalBody');
+        mb.querySelectorAll('video').forEach(v => { try { v.pause(); v.currentTime = 0; } catch (e) {} });
+        mb.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); });
+        mb.innerHTML = `
             <div class="modal-author-section">
                 <div class="modal-avatar">${avatarHtml}</div>
                 <div class="modal-author-info">
@@ -930,8 +946,54 @@ const TTPostsLoader = {
                 <button onclick="TTPostsLoader.closeModal()" class="modal-btn secondary">Close</button>
             </div>`;
 
+        if (!hasDirectVideo && ttVidId) this._bindTtPlayer(mb, ttVidId);
         document.getElementById('postModal').classList.add('active');
         document.body.style.overflow = 'hidden';
+    },
+
+    _bindTtPlayer(root, vidId) {
+        const card = root.querySelector('[data-tt-card]');
+        const stage = root.querySelector('[data-tt-stage]');
+        const btnPlay = root.querySelector('[data-tt-play]');
+        const btnClose = root.querySelector('[data-tt-close]');
+        if (!card || !stage || !btnPlay) return;
+        const previewHtml = stage.innerHTML;
+        let mode = 'v1';
+        const mountIframe = () => {
+            stage.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); });
+            stage.innerHTML = '';
+            const ifr = document.createElement('iframe');
+            ifr.src = mode === 'v2'
+                ? `https://www.tiktok.com/embed/v2/${encodeURIComponent(vidId)}`
+                : `https://www.tiktok.com/player/v1/${encodeURIComponent(vidId)}?embed_from=oembed&music_info=1&description=1&autoplay=1&muted=1`;
+            ifr.style.cssText = 'width:100%;max-width:360px;height:480px;margin:0 auto;border:none;display:block;background:#0f172a;';
+            ifr.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share';
+            ifr.allowFullscreen = true;
+            ifr.loading = 'lazy';
+            const bar = document.createElement('div');
+            bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#1e293b;border-top:1px solid #334155;font-size:10px;color:#cbd5e1;text-align:left;';
+            const msg = document.createElement('span');
+            msg.textContent = mode === 'v1' ? 'Jika localhost memicu Server error / 429, coba Embed v2 atau Watch on TikTok.' : 'Mode Embed v2 aktif. Jika masih dibatasi, klik Watch on TikTok.';
+            const altBtn = document.createElement('button');
+            altBtn.type = 'button';
+            altBtn.style.cssText = 'flex-shrink:0;background:#334155;color:#f8fafc;border:none;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;';
+            altBtn.textContent = mode === 'v1' ? 'Coba Embed v2' : 'Kembali ke Player v1';
+            altBtn.addEventListener('click', () => { mode = mode === 'v1' ? 'v2' : 'v1'; mountIframe(); });
+            bar.appendChild(msg);
+            bar.appendChild(altBtn);
+            stage.appendChild(ifr);
+            stage.appendChild(bar);
+            if (btnClose) btnClose.style.display = 'inline-flex';
+        };
+        btnPlay.addEventListener('click', mountIframe);
+        if (btnClose) {
+            btnClose.addEventListener('click', () => {
+                stage.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); });
+                stage.innerHTML = previewHtml;
+                btnClose.style.display = 'none';
+                this._bindTtPlayer(root, vidId);
+            });
+        }
     },
 
     closeModal() {
