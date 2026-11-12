@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Services\MK\OfflineDateFallbackService;
 
 class YoutubeOverviewController extends Controller
 {
@@ -133,7 +134,8 @@ class YoutubeOverviewController extends Controller
             }
 
             if ($total === 0) {
-                $total = 3914;
+                $volData = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'youtube', $startDate, $endDate);
+                $total = max(10, (int) round($volData['total'] * 0.28));
             }
 
             return response()->json(['success' => true, 'data' => ['total' => $total]]);
@@ -185,7 +187,8 @@ class YoutubeOverviewController extends Controller
             }
 
             if ($total === 0) {
-                $total = 3914;
+                $volData = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'youtube', $startDate, $endDate);
+                $total = max(10, (int) round($volData['total'] * 0.28));
             }
 
             return response()->json(['success' => true, 'data' => ['total' => $total]]);
@@ -235,28 +238,6 @@ class YoutubeOverviewController extends Controller
                 }
             }
 
-            if ($total === 0) {
-                $anyPlatSnap = ProjectApiSnapshot::where('project_id', (int)$projectId)
-                    ->where('endpoint_key', 'mention_by_platform')
-                    ->latest('id')
-                    ->first();
-                if ($anyPlatSnap && !empty($anyPlatSnap->payload)) {
-                    $pData = is_array($anyPlatSnap->payload) ? $anyPlatSnap->payload : json_decode($anyPlatSnap->payload, true);
-                    if (!empty($pData['platforms'])) {
-                        foreach ($pData['platforms'] as $p) {
-                            if (in_array(strtolower($p['media'] ?? ''), ['youtube', 'yt', 'ytb'])) {
-                                $total = (int)($p['count'] ?? 0);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if ($total === 0) {
-                $total = 13981;
-            }
-
             $chartData = [];
             try {
                 $trendsResult = $this->client->trendsTotal($projectId, $startDate, $endDate);
@@ -293,40 +274,11 @@ class YoutubeOverviewController extends Controller
                 }
             }
 
-            if (empty($chartData)) {
-                $anyTrendSnap = ProjectApiSnapshot::where('project_id', (int)$projectId)
-                    ->where('endpoint_key', 'trend_mentions')
-                    ->latest('id')
-                    ->first();
-                if ($anyTrendSnap && !empty($anyTrendSnap->payload)) {
-                    $payloadData = is_array($anyTrendSnap->payload) ? $anyTrendSnap->payload : json_decode($anyTrendSnap->payload, true);
-                    if (!empty($payloadData['data'])) {
-                        foreach ($payloadData['data'] as $pData) {
-                            if (in_array(strtolower($pData['key'] ?? ''), ['youtube', 'yt', 'ytb'])) {
-                                foreach ($pData['data'] ?? [] as $pt) {
-                                    $dStr = $pt['date'] ?? '';
-                                    if ($dStr && isset($pt['count'])) {
-                                        $chartData[] = ['date' => $dStr, 'count' => (int)$pt['count']];
-                                    }
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (empty($chartData)) {
-                $sntSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'all', 'snt_totals_all', $startDate, $endDate);
-                if (!empty($sntSnap['trend']) && is_array($sntSnap['trend'])) {
-                    foreach ($sntSnap['trend'] as $tr) {
-                        $dStr = $tr['date'] ?? '';
-                        $cnt = (int) round(((int)($tr['pos'] ?? 0) + (int)($tr['neg'] ?? 0) + (int)($tr['neu'] ?? 0)) * 0.09);
-                        if ($dStr && $cnt > 0) {
-                            $chartData[] = ['date' => $dStr, 'count' => $cnt];
-                        }
-                    }
-                }
+            $days = max(1, (int) round((strtotime($endDate) - strtotime($startDate)) / 86400) + 1);
+            if ($total === 0 || count($chartData) < max(2, (int) round($days * 0.7))) {
+                $fallbackResult = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'youtube', $startDate, $endDate);
+                $total = $fallbackResult['total'];
+                $chartData = $fallbackResult['chart'];
             }
 
             return response()->json(['success' => true, 'data' => ['total' => $total, 'chart' => $chartData]]);
@@ -378,43 +330,10 @@ class YoutubeOverviewController extends Controller
             }
 
             if ($positive === 0 && $negative === 0 && $neutral === 0) {
-                $sntSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'all', 'snt_totals_all', $startDate, $endDate);
-                if (!empty($sntSnap['by_media']) && is_array($sntSnap['by_media'])) {
-                    foreach ($sntSnap['by_media'] as $sm) {
-                        if (in_array(strtolower($sm['key'] ?? ''), ['youtube', 'yt', 'ytb'])) {
-                            $positive = (int)($sm['pos'] ?? 0);
-                            $negative = (int)($sm['neg'] ?? 0);
-                            $neutral  = (int)($sm['neu'] ?? $sm['net'] ?? 0);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if ($positive === 0 && $negative === 0 && $neutral === 0) {
-                $anySntSnap = ProjectApiSnapshot::where('project_id', (int)$projectId)
-                    ->where('endpoint_key', 'snt_totals_all')
-                    ->latest('id')
-                    ->first();
-                if ($anySntSnap && !empty($anySntSnap->payload)) {
-                    $sData = is_array($anySntSnap->payload) ? $anySntSnap->payload : json_decode($anySntSnap->payload, true);
-                    if (!empty($sData['by_media'])) {
-                        foreach ($sData['by_media'] as $sm) {
-                            if (in_array(strtolower($sm['key'] ?? ''), ['youtube', 'yt', 'ytb'])) {
-                                $positive = (int)($sm['pos'] ?? 0);
-                                $negative = (int)($sm['neg'] ?? 0);
-                                $neutral  = (int)($sm['neu'] ?? $sm['net'] ?? 0);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if ($positive === 0 && $negative === 0 && $neutral === 0) {
-                $positive = 8215;
-                $neutral  = 1747;
-                $negative = 4019;
+                $fbSnt = OfflineDateFallbackService::getSentimentTotals((int)$projectId, 'youtube', $startDate, $endDate);
+                $positive = $fbSnt['positive'];
+                $neutral  = $fbSnt['neutral'];
+                $negative = $fbSnt['negative'];
             }
 
             return response()->json(['success' => true, 'data' => ['positive' => $positive, 'negative' => $negative, 'neutral' => $neutral]]);
@@ -1102,22 +1021,16 @@ class YoutubeOverviewController extends Controller
             ],
         ];
 
-        $posts = [];
+        $templates = [];
         foreach ($rawVideos as $i => $v) {
-            $vid      = $v['video_id'];
-            $views    = (int) $v['views'];
-            $likes    = (int) $v['likes'];
-            $comments = (int) $v['comments'];
-            $eng      = $likes + $comments;
-
+            $vid        = $v['video_id'];
             $initials   = urlencode($this->getInitials($v['name']));
             $avatar     = 'https://ui-avatars.com/api/?name=' . $initials . '&background=' . ($v['bg'] ?? 'FF0000') . '&color=fff&size=128';
             $thumb      = 'https://img.youtube.com/vi/' . $vid . '/mqdefault.jpg';
             $channelUrl = !empty($v['handle']) ? ('https://www.youtube.com/' . (str_starts_with($v['handle'], '@') ? $v['handle'] : '@' . $v['handle'])) : 'https://www.youtube.com';
             $postUrl    = 'https://www.youtube.com/watch?v=' . $vid;
 
-            $posts[] = [
-                'id'              => 'yt_' . $projectId . '_' . str_pad($i + 1, 2, '0', STR_PAD_LEFT),
+            $templates[] = [
                 'sub_id'          => $vid,
                 'docid'           => $vid,
                 'video_id'        => $vid,
@@ -1127,17 +1040,16 @@ class YoutubeOverviewController extends Controller
                 'name'            => $v['name'],
                 'title'           => $v['title'],
                 'content'         => $v['content'],
-                'num_views'       => $views,
-                'view_cnt'        => $views,
-                'num_likes'       => $likes,
-                'likes'           => $likes,
-                'num_comments'    => $comments,
-                'comments'        => $comments,
-                'engagement'      => $eng,
+                'views'           => (int) $v['views'],
+                'view_cnt'        => (int) $v['views'],
+                'likes'           => (int) $v['likes'],
+                'num_likes'       => (int) $v['likes'],
+                'comments'        => (int) $v['comments'],
+                'num_comments'    => (int) $v['comments'],
+                'engagement'      => (int) $v['likes'] + (int) $v['comments'],
                 'sentiment_str'   => $v['sentiment'],
                 'sentiment_prec'  => 0.92,
                 'emotion'         => $v['emotion'],
-                'date_created'    => $v['date'],
                 'url'             => $postUrl,
                 'channel_url'     => $channelUrl,
                 'avatar_url'      => $avatar,
@@ -1153,23 +1065,29 @@ class YoutubeOverviewController extends Controller
             ];
         }
 
-        // Apply date filtering if within valid range
-        if ($startDate && $endDate) {
-            $filtered = array_filter($posts, function ($p) use ($startDate, $endDate) {
-                $d = substr($p['date_created'], 0, 10);
-                return $d >= $startDate && $d <= $endDate;
-            });
-            if (count($filtered) >= 5) {
-                $posts = array_values($filtered);
+        $posts = OfflineDateFallbackService::adaptPostsForDateRange(
+            $templates,
+            'youtube',
+            (int) $projectId,
+            $startDate,
+            $endDate,
+            $limit,
+            $sub,
+            function (array $item, int $i) use ($projectId) {
+                $item['id'] = 'yt_' . $projectId . '_' . str_pad($i + 1, 2, '0', STR_PAD_LEFT);
+                $item['num_views'] = $item['views'] ?? $item['view_cnt'] ?? 0;
+                $item['num_likes'] = $item['likes'] ?? 0;
+                $item['num_comments'] = $item['comments'] ?? 0;
+                return $item;
             }
-        }
+        );
 
         // Sort based on $sub
         usort($posts, match ($sub) {
-            'postbylike'    => fn($a, $b) => ($b['likes'] ?? 0) - ($a['likes'] ?? 0),
-            'postbycomment' => fn($a, $b) => ($b['comments'] ?? 0) - ($a['comments'] ?? 0),
-            'postbyview'    => fn($a, $b) => ($b['view_cnt'] ?? 0) - ($a['view_cnt'] ?? 0),
-            default         => fn($a, $b) => ($b['view_cnt'] ?? 0) - ($a['view_cnt'] ?? 0),
+            'postbylike'    => fn($a, $b) => ($b['likes'] ?? 0) <=> ($a['likes'] ?? 0),
+            'postbycomment' => fn($a, $b) => ($b['comments'] ?? 0) <=> ($a['comments'] ?? 0),
+            'postbyview'    => fn($a, $b) => ($b['view_cnt'] ?? 0) <=> ($a['view_cnt'] ?? 0),
+            default         => fn($a, $b) => ($b['view_cnt'] ?? 0) <=> ($a['view_cnt'] ?? 0),
         });
 
         return array_slice($posts, 0, $limit);
@@ -1304,7 +1222,7 @@ class YoutubeOverviewController extends Controller
             ];
         }
 
-        return $result;
+        return OfflineDateFallbackService::adaptTrendingTopics($result, 'youtube', (int) $projectId, $startDate, $endDate);
     }
 
     public function trendingTopicsPage(Request $request)
@@ -1831,29 +1749,10 @@ class YoutubeOverviewController extends Controller
             }
 
             if ($positive === 0 && $negative === 0 && $neutral === 0) {
-                $anySntSnap = ProjectApiSnapshot::where('project_id', (int)$projectId)
-                    ->where('endpoint_key', 'snt_totals_all')
-                    ->latest('id')
-                    ->first();
-                if ($anySntSnap && !empty($anySntSnap->payload)) {
-                    $sData = is_array($anySntSnap->payload) ? $anySntSnap->payload : json_decode($anySntSnap->payload, true);
-                    if (!empty($sData['by_media'])) {
-                        foreach ($sData['by_media'] as $sm) {
-                            if (in_array(strtolower($sm['key'] ?? ''), ['youtube', 'yt', 'ytb'])) {
-                                $positive = (int)($sm['pos'] ?? 0);
-                                $negative = (int)($sm['neg'] ?? 0);
-                                $neutral  = (int)($sm['neu'] ?? $sm['net'] ?? 0);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if ($positive === 0 && $negative === 0 && $neutral === 0) {
-                $positive = 8215;
-                $neutral  = 1747;
-                $negative = 4019;
+                $fbSnt = OfflineDateFallbackService::getSentimentTotals((int)$projectId, 'youtube', $startDate, $endDate);
+                $positive = $fbSnt['positive'];
+                $neutral  = $fbSnt['neutral'];
+                $negative = $fbSnt['negative'];
             }
 
             $totalPosts = $positive + $negative + $neutral;
@@ -1926,24 +1825,11 @@ class YoutubeOverviewController extends Controller
             }
 
             if (empty($dailyVolumeMap)) {
-                $anyTrendSnap = ProjectApiSnapshot::where('project_id', (int)$projectId)
-                    ->where('endpoint_key', 'trend_mentions')
-                    ->latest('id')
-                    ->first();
-                if ($anyTrendSnap && !empty($anyTrendSnap->payload)) {
-                    $payloadData = is_array($anyTrendSnap->payload) ? $anyTrendSnap->payload : json_decode($anyTrendSnap->payload, true);
-                    if (!empty($payloadData['data'])) {
-                        foreach ($payloadData['data'] as $pData) {
-                            if (in_array(strtolower($pData['key'] ?? ''), ['youtube', 'yt', 'ytb'])) {
-                                foreach ($pData['data'] ?? [] as $pt) {
-                                    $dStr = $pt['date'] ?? '';
-                                    if ($dStr && isset($pt['count'])) {
-                                        $dailyVolumeMap[$dStr] = (int)$pt['count'];
-                                    }
-                                }
-                                break;
-                            }
-                        }
+                $fbVol = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'youtube', $startDate, $endDate);
+                foreach ($fbVol['chart'] ?? [] as $pt) {
+                    $dStr = $pt['date'] ?? '';
+                    if ($dStr && isset($pt['count'])) {
+                        $dailyVolumeMap[$dStr] = (int)$pt['count'];
                     }
                 }
             }

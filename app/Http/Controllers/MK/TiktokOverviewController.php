@@ -5,6 +5,7 @@ namespace App\Http\Controllers\MK;
 use App\Http\Controllers\Controller;
 use App\Models\ProjectApiSnapshot;
 use App\Services\MediaKernelsClient;
+use App\Services\MK\OfflineDateFallbackService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -151,76 +152,12 @@ class TiktokOverviewController extends Controller
                 Log::warning('TikTok: Failed to load trends data', ['error' => $e->getMessage()]);
             }
 
-            // Fallback 1: snapshot khusus tiktok
-            if ($total === 0 && empty($chartData)) {
-                $snap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'tiktok', 'volume_total', $startDate, $endDate);
-                if (!empty($snap) && is_array($snap)) {
-                    $total     = (int) ($snap['total'] ?? 0);
-                    $chartData = $snap['chart'] ?? [];
-                }
-            }
-
-            // Fallback 2: snapshot global 'mention_by_platform'
-            if ($total === 0) {
-                $platSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'all', 'mention_by_platform', $startDate, $endDate);
-                if (!empty($platSnap['platforms'])) {
-                    foreach ($platSnap['platforms'] as $p) {
-                        if (in_array(strtolower($p['media'] ?? ''), ['tiktok', 'tt'])) {
-                            $total = (int)($p['count'] ?? 0);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // Fallback 3: snapshot global 'snt_totals_all'
-            if ($total === 0) {
-                $sntSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'all', 'snt_totals_all', $startDate, $endDate);
-                if (!empty($sntSnap['by_media']) && is_array($sntSnap['by_media'])) {
-                    foreach ($sntSnap['by_media'] as $sm) {
-                        if (in_array(strtolower($sm['key'] ?? $sm['media'] ?? ''), ['tiktok', 'tt'])) {
-                            $total = (int)($sm['pos'] ?? 0) + (int)($sm['neu'] ?? 0) + (int)($sm['neg'] ?? 0);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // Fallback default jika masih kosong
-            if ($total === 0) {
-                $total = 32623;
-            }
-
-            // Fallback chart: ambil dari 'trend_mentions'
-            if (empty($chartData)) {
-                $trendSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'all', 'trend_mentions', $startDate, $endDate);
-                if (!empty($trendSnap['data']) && is_array($trendSnap['data'])) {
-                    foreach ($trendSnap['data'] as $pData) {
-                        if (in_array(strtolower($pData['key'] ?? ''), ['tiktok', 'tt'])) {
-                            foreach ($pData['data'] ?? [] as $pt) {
-                                $dStr = $pt['date'] ?? '';
-                                if ($dStr && isset($pt['count'])) {
-                                    $chartData[] = ['date' => $dStr, 'count' => (int)$pt['count']];
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // Fallback chart: ambil dari snt_totals_all['trend']
-            if (empty($chartData)) {
-                $sntSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'all', 'snt_totals_all', $startDate, $endDate);
-                if (!empty($sntSnap['trend']) && is_array($sntSnap['trend'])) {
-                    foreach ($sntSnap['trend'] as $tr) {
-                        $dStr = $tr['date'] ?? '';
-                        $cnt = (int) round(((int)($tr['pos'] ?? 0) + (int)($tr['neg'] ?? 0) + (int)($tr['neu'] ?? 0)) * 0.21);
-                        if ($dStr && $cnt > 0) {
-                            $chartData[] = ['date' => $dStr, 'count' => $cnt];
-                        }
-                    }
-                }
+            // Fallback: hitung secara dinamis dari ProjectDailySentiment & snapshot rentang tanggal
+            $days = max(1, (int) round((strtotime($endDate) - strtotime($startDate)) / 86400) + 1);
+            if ($total === 0 || count($chartData) < max(2, (int) round($days * 0.7))) {
+                $offlineData = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'tiktok', $startDate, $endDate);
+                $total = $offlineData['total'];
+                $chartData = $offlineData['chart'];
             }
 
             return response()->json(['success' => true, 'data' => ['total' => $total, 'chart' => $chartData]]);
@@ -266,57 +203,12 @@ class TiktokOverviewController extends Controller
                 Log::warning('TikTok sentimentTotal live API failed: ' . $e->getMessage());
             }
 
-            // Fallback 1: snapshot khusus tiktok
+            // Fallback: hitung secara dinamis dari ProjectDailySentiment & snapshot sesuai rentang tanggal
             if (($positive + $negative + $neutral) === 0) {
-                $snap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'tiktok', 'sentiment_total', $startDate, $endDate);
-                if (!empty($snap) && is_array($snap)) {
-                    $positive = (int) ($snap['positive'] ?? 0);
-                    $negative = (int) ($snap['negative'] ?? 0);
-                    $neutral  = (int) ($snap['neutral'] ?? 0);
-                }
-            }
-
-            // Fallback 2: snapshot global snt_totals_all
-            if (($positive + $negative + $neutral) === 0) {
-                $sntSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'all', 'snt_totals_all', $startDate, $endDate);
-                if (!empty($sntSnap['by_media']) && is_array($sntSnap['by_media'])) {
-                    foreach ($sntSnap['by_media'] as $sm) {
-                        if (in_array(strtolower($sm['key'] ?? $sm['media'] ?? ''), ['tiktok', 'tt'])) {
-                            $positive = (int)($sm['pos'] ?? $sm['positive'] ?? 0);
-                            $negative = (int)($sm['neg'] ?? $sm['negative'] ?? 0);
-                            $neutral  = (int)($sm['neu'] ?? $sm['net'] ?? $sm['neutral'] ?? 0);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // Fallback 3: latest snt_totals_all dari id
-            if (($positive + $negative + $neutral) === 0) {
-                $anySntSnap = ProjectApiSnapshot::where('project_id', (int)$projectId)
-                    ->where('endpoint_key', 'snt_totals_all')
-                    ->latest('id')
-                    ->first();
-                if ($anySntSnap && !empty($anySntSnap->payload)) {
-                    $sData = is_array($anySntSnap->payload) ? $anySntSnap->payload : json_decode($anySntSnap->payload, true);
-                    if (!empty($sData['by_media'])) {
-                        foreach ($sData['by_media'] as $sm) {
-                            if (in_array(strtolower($sm['key'] ?? $sm['media'] ?? ''), ['tiktok', 'tt'])) {
-                                $positive = (int)($sm['pos'] ?? $sm['positive'] ?? 0);
-                                $negative = (int)($sm['neg'] ?? $sm['negative'] ?? 0);
-                                $neutral  = (int)($sm['neu'] ?? $sm['net'] ?? $sm['neutral'] ?? 0);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Fallback default
-            if (($positive + $negative + $neutral) === 0) {
-                $positive = 19169;
-                $neutral  = 4075;
-                $negative = 9379;
+                $offlineSnt = OfflineDateFallbackService::getSentimentTotals((int)$projectId, 'tiktok', $startDate, $endDate);
+                $positive = $offlineSnt['positive'];
+                $negative = $offlineSnt['negative'];
+                $neutral  = $offlineSnt['neutral'];
             }
 
             return response()->json(['success' => true, 'data' => ['positive' => $positive, 'negative' => $negative, 'neutral' => $neutral]]);
@@ -685,9 +577,15 @@ class TiktokOverviewController extends Controller
                 }
             }
 
-            // Fallback 4: generate dari fallback posts TikTok
+            // Fallback 4: generate dari fallback posts TikTok yang disesuaikan tanggalnya
             if (empty($hashtags)) {
-                $hashtags = $this->getFallbackTiktokHashtags((int)$projectId);
+                $hashtags = OfflineDateFallbackService::adaptTrendingTopics(
+                    $this->getFallbackTiktokHashtags((int)$projectId),
+                    'tiktok',
+                    (int)$projectId,
+                    $startDate,
+                    $endDate
+                );
                 $totalMentions = array_sum(array_column($hashtags, 'size'));
             }
 
@@ -1023,59 +921,15 @@ class TiktokOverviewController extends Controller
             Log::warning('TikTok emotionAnalysis sentiment live error: ' . $e->getMessage());
         }
 
-        // Fallback sentiment from snapshot tiktok
+        // Fallback sentiment from OfflineDateFallbackService (handles sub-ranges & DB daily records)
         if ($positive === 0 && $negative === 0 && $neutral === 0) {
-            $sntSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'tiktok', 'sentiment_total', $startDate, $endDate);
-            if (!empty($sntSnap) && is_array($sntSnap)) {
-                $positive = (int) ($sntSnap['positive'] ?? 0);
-                $negative = (int) ($sntSnap['negative'] ?? 0);
-                $neutral  = (int) ($sntSnap['neutral'] ?? 0);
-            }
-        }
-
-        // Fallback from global sentiment snapshot snt_totals_all (FIXED key & fields)
-        if ($positive === 0 && $negative === 0 && $neutral === 0) {
-            $sntSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'all', 'snt_totals_all', $startDate, $endDate);
-            if (!empty($sntSnap['by_media']) && is_array($sntSnap['by_media'])) {
-                foreach ($sntSnap['by_media'] as $sm) {
-                    if (in_array(strtolower($sm['key'] ?? $sm['media'] ?? ''), ['tiktok', 'tt'])) {
-                        $positive = (int)($sm['pos'] ?? $sm['positive'] ?? 0);
-                        $negative = (int)($sm['neg'] ?? $sm['negative'] ?? 0);
-                        $neutral  = (int)($sm['neu'] ?? $sm['net'] ?? $sm['neutral'] ?? 0);
-                        break;
-                    }
-                }
-            }
-        }
-
-        // Fallback from latest snt_totals_all
-        if ($positive === 0 && $negative === 0 && $neutral === 0) {
-            $anySntSnap = ProjectApiSnapshot::where('project_id', (int)$projectId)
-                ->where('endpoint_key', 'snt_totals_all')
-                ->latest('id')
-                ->first();
-            if ($anySntSnap && !empty($anySntSnap->payload)) {
-                $sData = is_array($anySntSnap->payload) ? $anySntSnap->payload : json_decode($anySntSnap->payload, true);
-                if (!empty($sData['by_media'])) {
-                    foreach ($sData['by_media'] as $sm) {
-                        if (in_array(strtolower($sm['key'] ?? $sm['media'] ?? ''), ['tiktok', 'tt'])) {
-                            $positive = (int)($sm['pos'] ?? $sm['positive'] ?? 0);
-                            $negative = (int)($sm['neg'] ?? $sm['negative'] ?? 0);
-                            $neutral  = (int)($sm['neu'] ?? $sm['net'] ?? $sm['neutral'] ?? 0);
-                            break;
-                        }
-                    }
-                }
-            }
+            $offlineSnt = OfflineDateFallbackService::getSentimentTotals((int)$projectId, 'tiktok', $startDate, $endDate);
+            $positive   = $offlineSnt['positive'];
+            $negative   = $offlineSnt['negative'];
+            $neutral    = $offlineSnt['neutral'];
         }
 
         $totalPosts = $positive + $negative + $neutral;
-        if ($totalPosts <= 0) {
-            $positive   = 19169;
-            $neutral    = 4075;
-            $negative   = 9379;
-            $totalPosts = $positive + $negative + $neutral;
-        }
 
         // 2. Emotion proportions per sentiment bucket (Plutchik wheel)
         $emotionMap = [
@@ -1195,18 +1049,11 @@ class TiktokOverviewController extends Controller
         $daysCount = max(1, (int)(($eTime - $sTime) / 86400) + 1);
 
         $dailyVolumeMap = [];
-        $trendSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'all', 'trend_mentions', $startDate, $endDate);
-        if (!empty($trendSnap['data']) && is_array($trendSnap['data'])) {
-            foreach ($trendSnap['data'] as $pData) {
-                if (in_array(strtolower($pData['key'] ?? ''), ['tiktok', 'tt'])) {
-                    foreach ($pData['data'] ?? [] as $pt) {
-                        $dStr = $pt['date'] ?? '';
-                        if ($dStr && isset($pt['count'])) {
-                            $dailyVolumeMap[$dStr] = (int)$pt['count'];
-                        }
-                    }
-                    break;
-                }
+        $volRes = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'tiktok', $startDate, $endDate);
+        foreach ($volRes['chart'] ?? [] as $pt) {
+            $dStr = $pt['date'] ?? '';
+            if ($dStr && isset($pt['count'])) {
+                $dailyVolumeMap[$dStr] = (int)$pt['count'];
             }
         }
 
@@ -1381,7 +1228,10 @@ class TiktokOverviewController extends Controller
                 }
             }
 
-            if ($volume === 0) $volume = 32623;
+            if ($volume === 0) {
+                $volData = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'tiktok', $startDate, $endDate);
+                $volume = $volData['total'];
+            }
 
             $items = is_array($postsRaw) && !empty($postsRaw) ? $postsRaw : $this->getFallbackTiktokPosts((int)$projectId, $startDate, $endDate, 50, 'postbylike');
 
@@ -1780,77 +1630,61 @@ class TiktokOverviewController extends Controller
             ],
         ];
 
-        $posts    = [];
-        $endTs    = $endDate ? strtotime($endDate . ' 21:30:00') : time();
-        $startTs  = $startDate ? strtotime($startDate . ' 07:00:00') : ($endTs - 29 * 86400);
-        if (!$endTs) $endTs = time();
-        if (!$startTs || $startTs > $endTs) $startTs = $endTs - 29 * 86400;
-        $spanSecs = max(86400, $endTs - $startTs);
+        return OfflineDateFallbackService::adaptPostsForDateRange(
+            $templates,
+            'tiktok',
+            $projectId,
+            $startDate,
+            $endDate,
+            $limit,
+            $sub,
+            function ($tpl, $i, $seed) {
+                $authorName = $tpl['name'];
+                $handle     = $tpl['creator'];
+                $videoId    = $tpl['video_id'];
+                $postUrl    = "https://www.tiktok.com/@{$handle}/video/{$videoId}";
+                $avatarUrl  = self::mediaUrlFor('avatar', $handle, $videoId, '', $postUrl);
+                $thumbUrl   = self::mediaUrlFor('thumb', $handle, $videoId, '', $postUrl);
 
-        for ($i = 0; $i < $limit; $i++) {
-            $tpl = $templates[$i % count($templates)];
-            $stepBack   = (($i * 38100) + (($i % 7) * 4120)) % $spanSecs;
-            $dCreated   = date('Y-m-d H:i:s', max($startTs, $endTs - $stepBack));
-            $views      = max(15000, (int) round($tpl['views'] * (1 - ($i * 0.015)) + rand(-8000, 8000)));
-            $likes      = max(1200, (int) round($views * 0.08 + rand(-500, 500)));
-            $comments   = max(150, (int) round($likes * 0.04 + rand(-50, 50)));
-            $shares     = max(80, (int) round($likes * 0.06 + rand(-40, 40)));
-            $authorName = $tpl['name'];
-            $handle     = $tpl['creator'];
-            $videoId    = $tpl['video_id'];
-            $postUrl    = "https://www.tiktok.com/@{$handle}/video/{$videoId}";
-            $avatarUrl  = self::mediaUrlFor('avatar', $handle, $videoId, '', $postUrl);
-            $thumbUrl   = self::mediaUrlFor('thumb', $handle, $videoId, '', $postUrl);
-
-            $posts[] = [
-                'id'              => 'tiktok-' . $videoId,
-                'sub_id'          => $videoId,
-                'video_id'        => $videoId,
-                'name'            => $authorName,
-                'author_scr_name' => $handle,
-                'author_id'       => $handle,
-                'content'         => $tpl['content'],
-                'caption'         => $tpl['content'],
-                'views'           => $views,
-                'view_cnt'        => $views,
-                'freq'            => $views,
-                'likes'           => $likes,
-                'num_likes'       => $likes,
-                'comments'        => $comments,
-                'num_comments'    => $comments,
-                'shares'          => $shares,
-                'num_shares'      => $shares,
-                'engagement'      => $likes + $comments + $shares,
-                'sentiment_str'   => $tpl['sentiment'],
-                'sentiment'       => match($tpl['sentiment']) { 'Positive' => '1', 'Negative' => '-1', default => '0' },
-                'emotion'         => $tpl['emotion'],
-                'emotion_str'     => $tpl['emotion'],
-                'date_created'    => $dCreated,
-                'url'             => $postUrl,
-                'avatar_url'      => $avatarUrl,
-                'profile_url'     => $avatarUrl,
-                'thumbnail_url'   => $thumbUrl,
-                'image'           => $thumbUrl,
-                'tcode'           => 'tiktok',
-                'num_followers'   => rand(45000, 1850000),
-                'author'          => [
-                    'name'     => $authorName,
-                    'scr_name' => $handle,
-                    'image'    => $avatarUrl,
-                ],
-            ];
-        }
-
-        // Urutkan sesuai kriteria
-        usort($posts, match($sub) {
-            'postbyview'    => fn($a, $b) => $b['view_cnt'] <=> $a['view_cnt'],
-            'postbylike'    => fn($a, $b) => $b['likes']    <=> $a['likes'],
-            'postbycomment' => fn($a, $b) => $b['comments'] <=> $a['comments'],
-            'postbyshare'   => fn($a, $b) => $b['shares']   <=> $a['shares'],
-            default         => fn($a, $b) => $b['view_cnt'] <=> $a['view_cnt'],
-        });
-
-        return $posts;
+                return [
+                    'id'              => 'tiktok-' . $videoId,
+                    'sub_id'          => $videoId,
+                    'video_id'        => $videoId,
+                    'name'            => $authorName,
+                    'author_scr_name' => $handle,
+                    'author_id'       => $handle,
+                    'content'         => $tpl['content'],
+                    'caption'         => $tpl['content'],
+                    'views'           => $tpl['views'],
+                    'view_cnt'        => $tpl['view_cnt'],
+                    'freq'            => $tpl['freq'],
+                    'likes'           => $tpl['likes'],
+                    'num_likes'       => $tpl['num_likes'],
+                    'comments'        => $tpl['comments'],
+                    'num_comments'    => $tpl['num_comments'],
+                    'shares'          => $tpl['shares'],
+                    'num_shares'      => $tpl['num_shares'],
+                    'engagement'      => $tpl['engagement'],
+                    'sentiment_str'   => $tpl['sentiment'],
+                    'sentiment'       => match($tpl['sentiment']) { 'Positive' => '1', 'Negative' => '-1', default => '0' },
+                    'emotion'         => $tpl['emotion'],
+                    'emotion_str'     => $tpl['emotion'],
+                    'date_created'    => $tpl['date_created'],
+                    'url'             => $postUrl,
+                    'avatar_url'      => $avatarUrl,
+                    'profile_url'     => $avatarUrl,
+                    'thumbnail_url'   => $thumbUrl,
+                    'image'           => $thumbUrl,
+                    'tcode'           => 'tiktok',
+                    'num_followers'   => max(10000, abs(($seed + ($i * 12345)) % 1800000) + 45000),
+                    'author'          => [
+                        'name'     => $authorName,
+                        'scr_name' => $handle,
+                        'image'    => $avatarUrl,
+                    ],
+                ];
+            }
+        );
     }
 
     public function getFallbackTiktokHashtags(int $projectId): array

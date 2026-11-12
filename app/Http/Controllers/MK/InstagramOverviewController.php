@@ -5,6 +5,7 @@ namespace App\Http\Controllers\MK;
 use App\Http\Controllers\Controller;
 use App\Models\ProjectApiSnapshot;
 use App\Services\MediaKernelsClient;
+use App\Services\MK\OfflineDateFallbackService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -104,6 +105,7 @@ class InstagramOverviewController extends Controller
             }
 
             $total = 0;
+            $chartData = [];
             try {
                 $result = $this->client->totalAuthors($projectId, 'instagram', $startDate, $endDate);
                 if (isset($result['bymedia']['ig'])) {
@@ -133,7 +135,8 @@ class InstagramOverviewController extends Controller
             }
 
             if ($total === 0) {
-                $total = 8480;
+                $volData = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'instagram', $startDate, $endDate);
+                $total = max(10, (int) round($volData['total'] * 0.42));
             }
 
             return response()->json(['success' => true, 'data' => ['total' => $total]]);
@@ -156,6 +159,7 @@ class InstagramOverviewController extends Controller
             }
 
             $total = 0;
+            $chartData = [];
             try {
                 $result = $this->client->totalAuthors($projectId, 'instagram', $startDate, $endDate);
                 if (isset($result['bymedia']['ig'])) {
@@ -185,7 +189,8 @@ class InstagramOverviewController extends Controller
             }
 
             if ($total === 0) {
-                $total = 8480;
+                $volData = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'instagram', $startDate, $endDate);
+                $total = max(10, (int) round($volData['total'] * 0.42));
             }
 
             return response()->json(['success' => true, 'data' => ['total' => $total]]);
@@ -208,6 +213,7 @@ class InstagramOverviewController extends Controller
             }
 
             $total = 0;
+            $chartData = [];
             try {
                 $result = $this->client->volumeTotal($projectId, 'instagram', $startDate, $endDate);
                 if (isset($result['all']['total'])) {
@@ -223,87 +229,11 @@ class InstagramOverviewController extends Controller
                 Log::warning('Instagram volumeTotal live API failed: ' . $e->getMessage());
             }
 
-            if ($total === 0) {
-                $platSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'all', 'mention_by_platform', $startDate, $endDate);
-                if (!empty($platSnap['platforms'])) {
-                    foreach ($platSnap['platforms'] as $p) {
-                        if (in_array(strtolower($p['media'] ?? ''), ['ig', 'instagram'])) {
-                            $total = (int)($p['count'] ?? 0);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if ($total === 0) {
-                $anyPlatSnap = ProjectApiSnapshot::where('project_id', (int)$projectId)
-                    ->where('endpoint_key', 'mention_by_platform')
-                    ->latest('id')
-                    ->first();
-                if ($anyPlatSnap && !empty($anyPlatSnap->payload)) {
-                    $pData = is_array($anyPlatSnap->payload) ? $anyPlatSnap->payload : json_decode($anyPlatSnap->payload, true);
-                    if (!empty($pData['platforms'])) {
-                        foreach ($pData['platforms'] as $p) {
-                            if (in_array(strtolower($p['media'] ?? ''), ['ig', 'instagram'])) {
-                                $total = (int)($p['count'] ?? 0);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if ($total === 0) {
-                $total = 20195;
-            }
-
-            $chartData = [];
-            try {
-                $trendsResult = $this->client->trendsTotal($projectId, $startDate, $endDate);
-                foreach ($trendsResult as $datetime => $mediaData) {
-                    if (!is_array($mediaData)) continue;
-                    $dateKey = substr($datetime, 0, 10);
-                    $count   = (int) (
-                        $mediaData['instagram'] ??
-                        $mediaData['ig']        ??
-                        $mediaData['ig_post']   ??
-                        0
-                    );
-                    $chartData[] = ['date' => $dateKey, 'count' => $count];
-                }
-                usort($chartData, fn($a, $b) => strcmp($a['date'], $b['date']));
-            } catch (\Exception $e) {
-                Log::warning('Instagram: Failed to load trends data', ['error' => $e->getMessage()]);
-            }
-
-            if (empty($chartData)) {
-                $trendSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'all', 'trend_mentions', $startDate, $endDate);
-                if (!empty($trendSnap['data']) && is_array($trendSnap['data'])) {
-                    foreach ($trendSnap['data'] as $pData) {
-                        if (in_array(strtolower($pData['key'] ?? ''), ['ig', 'instagram'])) {
-                            foreach ($pData['data'] ?? [] as $pt) {
-                                $dStr = $pt['date'] ?? '';
-                                if ($dStr && isset($pt['count'])) {
-                                    $chartData[] = ['date' => $dStr, 'count' => (int)$pt['count']];
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (empty($chartData)) {
-                $sntSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'all', 'snt_totals_all', $startDate, $endDate);
-                if (!empty($sntSnap['trend']) && is_array($sntSnap['trend'])) {
-                    foreach ($sntSnap['trend'] as $tr) {
-                        $dStr = $tr['date'] ?? '';
-                        $cnt = (int) round(((int)($tr['pos'] ?? 0) + (int)($tr['neg'] ?? 0) + (int)($tr['neu'] ?? 0)) * 0.13);
-                        if ($dStr && $cnt > 0) {
-                            $chartData[] = ['date' => $dStr, 'count' => $cnt];
-                        }
-                    }
-                }
+            $days = max(1, (int) round((strtotime($endDate) - strtotime($startDate)) / 86400) + 1);
+            if ($total === 0 || count($chartData) < max(2, (int) round($days * 0.7))) {
+                $offlineData = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'instagram', $startDate, $endDate);
+                $total = $offlineData['total'];
+                $chartData = $offlineData['chart'];
             }
 
             return response()->json(['success' => true, 'data' => ['total' => $total, 'chart' => $chartData]]);
@@ -355,43 +285,10 @@ class InstagramOverviewController extends Controller
             }
 
             if ($positive === 0 && $negative === 0 && $neutral === 0) {
-                $sntSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'all', 'snt_totals_all', $startDate, $endDate);
-                if (!empty($sntSnap['by_media']) && is_array($sntSnap['by_media'])) {
-                    foreach ($sntSnap['by_media'] as $sm) {
-                        if (in_array(strtolower($sm['key'] ?? ''), ['ig', 'instagram'])) {
-                            $positive = (int)($sm['pos'] ?? 0);
-                            $negative = (int)($sm['neg'] ?? 0);
-                            $neutral  = (int)($sm['neu'] ?? $sm['net'] ?? 0);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if ($positive === 0 && $negative === 0 && $neutral === 0) {
-                $anySntSnap = ProjectApiSnapshot::where('project_id', (int)$projectId)
-                    ->where('endpoint_key', 'snt_totals_all')
-                    ->latest('id')
-                    ->first();
-                if ($anySntSnap && !empty($anySntSnap->payload)) {
-                    $sData = is_array($anySntSnap->payload) ? $anySntSnap->payload : json_decode($anySntSnap->payload, true);
-                    if (!empty($sData['by_media'])) {
-                        foreach ($sData['by_media'] as $sm) {
-                            if (in_array(strtolower($sm['key'] ?? ''), ['ig', 'instagram'])) {
-                                $positive = (int)($sm['pos'] ?? 0);
-                                $negative = (int)($sm['neg'] ?? 0);
-                                $neutral  = (int)($sm['neu'] ?? $sm['net'] ?? 0);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if ($positive === 0 && $negative === 0 && $neutral === 0) {
-                $positive = 11867;
-                $neutral  = 2523;
-                $negative = 5805;
+                $fbSnt = OfflineDateFallbackService::getSentimentTotals((int)$projectId, 'instagram', $startDate, $endDate);
+                $positive = $fbSnt['positive'];
+                $neutral  = $fbSnt['neutral'];
+                $negative = $fbSnt['negative'];
             }
 
             return response()->json(['success' => true, 'data' => ['positive' => $positive, 'negative' => $negative, 'neutral' => $neutral]]);
@@ -544,18 +441,24 @@ class InstagramOverviewController extends Controller
     /**
      * Generate or retrieve fallback Instagram posts when API is empty.
      */
-    private function getFallbackInstagramPosts(int $projectId, ?string $startDate, ?string $endDate, int $limit = 100, string $sub = 'postbylike'): array
+    public function getFallbackInstagramPosts(int $projectId, ?string $startDate, ?string $endDate, int $limit = 100, string $sub = 'postbylike'): array
     {
         $posts = [];
 
-        // 1. Coba snapshot DB khusus ig jika datanya memadai (>= 30 item)
+        // 1. Coba snapshot DB khusus ig jika datanya memadai dan sesuai tanggal
         $snap = ProjectApiSnapshot::findSnapshotForQuery($projectId, 'ig', 'most_engagement_' . $sub, $startDate, $endDate)
              ?? ProjectApiSnapshot::findSnapshotForQuery($projectId, 'ig', 'most_viewed_posts', $startDate, $endDate);
 
         if (!empty($snap) && is_array($snap)) {
             $snapPosts = $snap['data'] ?? $snap;
-            if (is_array($snapPosts) && count($snapPosts) >= 30) {
-                $posts = $snapPosts;
+            if (is_array($snapPosts) && count($snapPosts) >= 15) {
+                $inRange = array_filter($snapPosts, function($p) use ($startDate, $endDate) {
+                    $d = substr($p['date_created'] ?? '', 0, 10);
+                    return (!$startDate || $d >= $startDate) && (!$endDate || $d <= $endDate);
+                });
+                if (count($inRange) >= 15) {
+                    $posts = array_values($inRange);
+                }
             }
         }
 
@@ -569,6 +472,9 @@ class InstagramOverviewController extends Controller
                     if (!is_array($item)) continue;
                     $mType = strtolower($item['media_type'] ?? $item['media'] ?? $item['tcode'] ?? '');
                     if (str_contains($mType, 'ig') || str_contains($mType, 'instagram')) {
+                        $d = substr($item['date_created'] ?? $item['date'] ?? '', 0, 10);
+                        if ($startDate && $d !== '' && $d < $startDate) continue;
+                        if ($endDate && $d !== '' && $d > $endDate) continue;
                         $docid = (string) ($item['docid'] ?? '');
                         $igUserFromDoc = '';
                         $igCodeFromDoc = '';
@@ -978,18 +884,17 @@ class InstagramOverviewController extends Controller
                 ],
             ];
 
+            $templates = [];
             foreach ($curated as $idx => $c) {
-                $pidStr = 'ig-curated-' . ($idx + 1);
                 $avatar = 'https://ui-avatars.com/api/?name=' . urlencode($c['name']) . '&background=' . ($c['bg'] ?? 'E1306C') . '&color=fff&size=80&bold=true';
-                $posts[] = [
-                    'id' => $pidStr,
-                    'sub_id' => $pidStr,
+                $templates[] = [
                     'name' => $c['name'],
                     'author_name' => $c['name'],
                     'author_scr_name' => $c['handle'],
                     'author_id' => $c['handle'],
                     'content' => $c['content'],
                     'caption' => $c['content'],
+                    'views' => ((int) ($c['likes'] ?? 50000)) * 12,
                     'likes' => $c['likes'],
                     'num_likes' => $c['likes'],
                     'comments' => $c['comments'],
@@ -999,7 +904,6 @@ class InstagramOverviewController extends Controller
                     'sentiment_str' => $c['sentiment'],
                     'sentiment_prec' => 0.88,
                     'emotion' => $c['emotion'],
-                    'date_created' => $c['date'] . ' ' . sprintf('%02d:%02d:00', rand(8, 21), rand(0, 59)),
                     'url' => 'https://www.instagram.com/' . ltrim($c['handle'] ?? '', '@') . '/',
                     'avatar_url' => $avatar,
                     'image' => '',
@@ -1011,6 +915,22 @@ class InstagramOverviewController extends Controller
                     ],
                 ];
             }
+
+            $posts = OfflineDateFallbackService::adaptPostsForDateRange(
+                $templates,
+                'instagram',
+                (int) $projectId,
+                $startDate,
+                $endDate,
+                $limit,
+                $sub,
+                function (array $item, int $i) {
+                    $pidStr = 'ig-curated-' . ($i + 1);
+                    $item['id'] = $pidStr;
+                    $item['sub_id'] = $pidStr;
+                    return $item;
+                }
+            );
         }
 
         // Sorting sesuai $sub
@@ -1021,8 +941,6 @@ class InstagramOverviewController extends Controller
         }
 
         $result = array_slice($posts, 0, $limit);
-
-        ProjectApiSnapshot::storeSnapshot($projectId, 'ig', 'most_engagement_' . $sub, $startDate, $endDate, $result);
 
         return $result;
     }
@@ -1349,10 +1267,9 @@ class InstagramOverviewController extends Controller
                 ];
                 foreach ($defaultTags as $dt) {
                     $hashtags[] = ['name' => $dt['name'], 'size' => $dt['size'], 'hashtag' => $dt['name']];
-                    $totalMentions += $dt['size'];
                 }
-
-                ProjectApiSnapshot::storeSnapshot((int)$projectId, 'ig', 'top_hashtags', $startDate, $endDate, $hashtags);
+                $hashtags = OfflineDateFallbackService::adaptTrendingTopics($hashtags, 'instagram', (int)$projectId, $startDate, $endDate);
+                $totalMentions = array_sum(array_column($hashtags, 'size'));
             }
 
             usort($hashtags, fn($a, $b) => $b['size'] - $a['size']);
@@ -1775,29 +1692,10 @@ class InstagramOverviewController extends Controller
             }
 
             if ($positive === 0 && $negative === 0 && $neutral === 0) {
-                $anySntSnap = ProjectApiSnapshot::where('project_id', (int)$projectId)
-                    ->where('endpoint_key', 'snt_totals_all')
-                    ->latest('id')
-                    ->first();
-                if ($anySntSnap && !empty($anySntSnap->payload)) {
-                    $sData = is_array($anySntSnap->payload) ? $anySntSnap->payload : json_decode($anySntSnap->payload, true);
-                    if (!empty($sData['by_media'])) {
-                        foreach ($sData['by_media'] as $sm) {
-                            if (in_array(strtolower($sm['key'] ?? ''), ['ig', 'instagram'])) {
-                                $positive = (int)($sm['pos'] ?? 0);
-                                $negative = (int)($sm['neg'] ?? 0);
-                                $neutral  = (int)($sm['neu'] ?? $sm['net'] ?? 0);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if ($positive === 0 && $negative === 0 && $neutral === 0) {
-                $positive = 11867;
-                $neutral  = 2523;
-                $negative = 5805;
+                $fbSnt = OfflineDateFallbackService::getSentimentTotals((int)$projectId, 'instagram', $startDate, $endDate);
+                $positive = $fbSnt['positive'];
+                $neutral  = $fbSnt['neutral'];
+                $negative = $fbSnt['negative'];
             }
 
             $totalPosts = $positive + $negative + $neutral;
@@ -1870,24 +1768,11 @@ class InstagramOverviewController extends Controller
             }
 
             if (empty($dailyVolumeMap)) {
-                $anyTrendSnap = ProjectApiSnapshot::where('project_id', (int)$projectId)
-                    ->where('endpoint_key', 'trend_mentions')
-                    ->latest('id')
-                    ->first();
-                if ($anyTrendSnap && !empty($anyTrendSnap->payload)) {
-                    $payloadData = is_array($anyTrendSnap->payload) ? $anyTrendSnap->payload : json_decode($anyTrendSnap->payload, true);
-                    if (!empty($payloadData['data'])) {
-                        foreach ($payloadData['data'] as $pData) {
-                            if (in_array(strtolower($pData['key'] ?? ''), ['ig', 'instagram'])) {
-                                foreach ($pData['data'] ?? [] as $pt) {
-                                    $dStr = $pt['date'] ?? '';
-                                    if ($dStr && isset($pt['count'])) {
-                                        $dailyVolumeMap[$dStr] = (int)$pt['count'];
-                                    }
-                                }
-                                break;
-                            }
-                        }
+                $fbVol = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'instagram', $startDate, $endDate);
+                foreach ($fbVol['chart'] ?? [] as $pt) {
+                    $dStr = $pt['date'] ?? '';
+                    if ($dStr && isset($pt['count'])) {
+                        $dailyVolumeMap[$dStr] = (int)$pt['count'];
                     }
                 }
             }

@@ -12,6 +12,7 @@
     use Illuminate\Support\Facades\Cache;
     use Illuminate\Support\Facades\Log;
     use Carbon\Carbon;
+    use App\Services\MK\OfflineDateFallbackService;
 
     class XOverviewController extends Controller
     {
@@ -586,6 +587,13 @@
                     Log::warning('Failed to load trends data for chart', ['error' => $e->getMessage()]);
                 }
 
+                $days = max(1, (int) round((strtotime($endDate) - strtotime($startDate)) / 86400) + 1);
+                if ($total === 0 || count($chartData) < max(2, (int) round($days * 0.7))) {
+                    $fallbackResult = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'twitter', $startDate, $endDate);
+                    $total = $fallbackResult['total'];
+                    $chartData = $fallbackResult['chart'];
+                }
+
                 return response()->json([
                     'success' => true,
                     'data' => ['total' => $total, 'chart' => $chartData]
@@ -650,6 +658,13 @@
                             }
                         }
                     }
+                }
+
+                if ($positive === 0 && $negative === 0 && $neutral === 0) {
+                    $fbSnt = OfflineDateFallbackService::getSentimentTotals((int)$projectId, 'twitter', $startDate, $endDate);
+                    $positive = $fbSnt['positive'];
+                    $negative = $fbSnt['negative'];
+                    $neutral  = $fbSnt['neutral'];
                 }
 
                 return response()->json([

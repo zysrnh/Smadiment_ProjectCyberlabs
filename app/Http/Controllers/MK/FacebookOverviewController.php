@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use App\Services\MK\OfflineDateFallbackService;
 
 class FacebookOverviewController extends Controller
 {
@@ -223,10 +224,9 @@ class FacebookOverviewController extends Controller
                 ];
                 foreach ($defaultTags as $dt) {
                     $hashtags[] = ['name' => $dt['name'], 'size' => $dt['size'], 'hashtag' => $dt['name']];
-                    $totalMentions += $dt['size'];
                 }
-
-                ProjectApiSnapshot::storeSnapshot((int)$projectId, 'fb', 'top_hashtags', $startDate, $endDate, $hashtags);
+                $hashtags = OfflineDateFallbackService::adaptTrendingTopics($hashtags, 'facebook', (int)$projectId, $startDate, $endDate);
+                $totalMentions = array_sum(array_column($hashtags, 'size'));
             }
 
             usort($hashtags, fn($a, $b) => $b['size'] - $a['size']);
@@ -437,15 +437,23 @@ class FacebookOverviewController extends Controller
                 return response()->json(['success' => false, 'error' => 'Missing required parameters: project_id, start_date, end_date'], 400);
             }
 
-            $result = $this->client->totalAuthors($projectId, 'facebook', $startDate, $endDate);
-
             $total = 0;
-            if (isset($result['all'])) {
-                $total = (int) $result['all'];
-            } elseif (isset($result['bymedia']['fb'])) {
-                $total = (int) $result['bymedia']['fb'];
-            } elseif (isset($result['bymedia']['facebook'])) {
-                $total = (int) $result['bymedia']['facebook'];
+            try {
+                $result = $this->client->totalAuthors($projectId, 'facebook', $startDate, $endDate);
+                if (isset($result['all'])) {
+                    $total = (int) $result['all'];
+                } elseif (isset($result['bymedia']['fb'])) {
+                    $total = (int) $result['bymedia']['fb'];
+                } elseif (isset($result['bymedia']['facebook'])) {
+                    $total = (int) $result['bymedia']['facebook'];
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Facebook totalUsers live API error: ' . $e->getMessage());
+            }
+
+            if ($total === 0) {
+                $volData = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'facebook', $startDate, $endDate, 12450);
+                $total = max(10, (int) round($volData['total'] * 0.42));
             }
 
             return response()->json(['success' => true, 'data' => ['total' => $total]]);
@@ -467,15 +475,23 @@ class FacebookOverviewController extends Controller
                 return response()->json(['success' => false, 'error' => 'Missing required parameters: project_id, start_date, end_date'], 400);
             }
 
-            $result = $this->client->totalAuthors($projectId, 'facebook', $startDate, $endDate);
-
             $total = 0;
-            if (isset($result['all'])) {
-                $total = (int) $result['all'];
-            } elseif (isset($result['bymedia']['fb'])) {
-                $total = (int) $result['bymedia']['fb'];
-            } elseif (isset($result['bymedia']['facebook'])) {
-                $total = (int) $result['bymedia']['facebook'];
+            try {
+                $result = $this->client->totalAuthors($projectId, 'facebook', $startDate, $endDate);
+                if (isset($result['all'])) {
+                    $total = (int) $result['all'];
+                } elseif (isset($result['bymedia']['fb'])) {
+                    $total = (int) $result['bymedia']['fb'];
+                } elseif (isset($result['bymedia']['facebook'])) {
+                    $total = (int) $result['bymedia']['facebook'];
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Facebook totalAuthors live API error: ' . $e->getMessage());
+            }
+
+            if ($total === 0) {
+                $volData = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'facebook', $startDate, $endDate, 12450);
+                $total = max(10, (int) round($volData['total'] * 0.42));
             }
 
             return response()->json(['success' => true, 'data' => ['total' => $total]]);
@@ -523,10 +539,6 @@ class FacebookOverviewController extends Controller
                 }
             }
 
-            if ($total === 0) {
-                $total = 12450;
-            }
-
             $chartData = [];
             try {
                 $trendsResult = $this->client->trendsTotal($projectId, $startDate, $endDate);
@@ -541,6 +553,13 @@ class FacebookOverviewController extends Controller
                 }
             } catch (\Exception $e) {
                 Log::warning('Failed to load trends data for chart', ['error' => $e->getMessage()]);
+            }
+
+            $days = max(1, (int) round((strtotime($endDate) - strtotime($startDate)) / 86400) + 1);
+            if ($total === 0 || count($chartData) < max(2, (int) round($days * 0.7))) {
+                $fallbackResult = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'facebook', $startDate, $endDate, 12450);
+                $total = $fallbackResult['total'];
+                $chartData = $fallbackResult['chart'];
             }
 
             return response()->json(['success' => true, 'data' => ['total' => $total, 'chart' => $chartData]]);
@@ -588,23 +607,10 @@ class FacebookOverviewController extends Controller
             }
 
             if ($positive === 0 && $negative === 0 && $neutral === 0) {
-                $sntSnap = ProjectApiSnapshot::findSnapshotForQuery((int)$projectId, 'all', 'sentiment_engagement', $startDate, $endDate);
-                if (!empty($sntSnap['sentiment_media'])) {
-                    foreach ($sntSnap['sentiment_media'] as $sm) {
-                        if (in_array(strtolower($sm['media'] ?? ''), ['fb', 'facebook'])) {
-                            $positive = (int)($sm['positive'] ?? 0);
-                            $negative = (int)($sm['negative'] ?? 0);
-                            $neutral  = (int)($sm['neutral'] ?? 0);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if ($positive === 0 && $negative === 0 && $neutral === 0) {
-                $positive = 7820;
-                $negative = 1430;
-                $neutral  = 3200;
+                $fbSnt = OfflineDateFallbackService::getSentimentTotals((int)$projectId, 'facebook', $startDate, $endDate);
+                $positive = $fbSnt['positive'];
+                $neutral  = $fbSnt['neutral'];
+                $negative = $fbSnt['negative'];
             }
 
             return response()->json(['success' => true, 'data' => ['positive' => $positive, 'negative' => $negative, 'neutral' => $neutral]]);
@@ -1196,7 +1202,10 @@ public function aiAnalysisData(Request $request)
             }
         }
         if ($positive === 0 && $negative === 0 && $neutral === 0) {
-            $positive = 7820; $negative = 1430; $neutral = 3200;
+            $fbSnt = OfflineDateFallbackService::getSentimentTotals((int)$projectId, 'facebook', $startDate, $endDate);
+            $positive = $fbSnt['positive'];
+            $negative = $fbSnt['negative'];
+            $neutral  = $fbSnt['neutral'];
         }
 
         // ── Parse volume ──
@@ -1221,7 +1230,8 @@ public function aiAnalysisData(Request $request)
             }
         }
         if ($volume === 0) {
-            $volume = 12450;
+            $fbVol = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'facebook', $startDate, $endDate, 12450);
+            $volume = $fbVol['total'];
         }
 
         // ── Parse hashtags ──
@@ -1559,9 +1569,10 @@ public function aiAnalysisProxy(Request $request)
         }
 
         if ($positive === 0 && $negative === 0 && $neutral === 0) {
-            $positive = 4564;
-            $negative = 2233;
-            $neutral  = 970;
+            $fbSnt = OfflineDateFallbackService::getSentimentTotals((int)$projectId, 'facebook', $startDate, $endDate);
+            $positive = $fbSnt['positive'];
+            $neutral  = $fbSnt['neutral'];
+            $negative = $fbSnt['negative'];
         }
 
         $totalPosts = $positive + $negative + $neutral;
@@ -1636,24 +1647,11 @@ public function aiAnalysisProxy(Request $request)
         }
 
         if (empty($dailyVolumeMap)) {
-            $anyTrendSnap = ProjectApiSnapshot::where('project_id', (int)$projectId)
-                ->where('endpoint_key', 'trend_mentions')
-                ->latest('id')
-                ->first();
-            if ($anyTrendSnap && !empty($anyTrendSnap->payload)) {
-                $payloadData = is_array($anyTrendSnap->payload) ? $anyTrendSnap->payload : json_decode($anyTrendSnap->payload, true);
-                if (!empty($payloadData['data'])) {
-                    foreach ($payloadData['data'] as $pData) {
-                        if (in_array(strtolower($pData['key'] ?? ''), ['fb', 'facebook'])) {
-                            foreach ($pData['data'] ?? [] as $pt) {
-                                $dStr = $pt['date'] ?? '';
-                                if ($dStr && isset($pt['count'])) {
-                                    $dailyVolumeMap[$dStr] = (int)$pt['count'];
-                                }
-                            }
-                            break;
-                        }
-                    }
+            $fbVol = OfflineDateFallbackService::getVolumeAndChart((int)$projectId, 'facebook', $startDate, $endDate, 12450);
+            foreach ($fbVol['chart'] ?? [] as $pt) {
+                $dStr = $pt['date'] ?? '';
+                if ($dStr && isset($pt['count'])) {
+                    $dailyVolumeMap[$dStr] = (int)$pt['count'];
                 }
             }
         }
@@ -1730,21 +1728,27 @@ public function aiAnalysisProxy(Request $request)
     /**
      * Generate or retrieve fallback Facebook posts when API is empty.
      */
-    private function getFallbackFacebookPosts(int $projectId, ?string $startDate, ?string $endDate, int $limit = 100, string $sub = 'fblike'): array
+    public function getFallbackFacebookPosts(int $projectId, ?string $startDate, ?string $endDate, int $limit = 100, string $sub = 'fblike'): array
     {
         $posts = [];
 
-        // 1. Coba snapshot DB khusus fb jika datanya memadai (>= 30 item)
+        // 1. Coba snapshot DB khusus fb jika datanya memadai dan sesuai tanggal
         $snap = ProjectApiSnapshot::findSnapshotForQuery($projectId, 'fb', 'most_engagement_' . $sub, $startDate, $endDate)
              ?? ProjectApiSnapshot::findSnapshotForQuery($projectId, 'fb', 'top_posts', $startDate, $endDate);
 
         if (!empty($snap) && is_array($snap)) {
             $snapPosts = $snap['data'] ?? $snap;
-            if (is_array($snapPosts) && count($snapPosts) >= 30) {
-                $posts = array_map(function ($p) {
-                    $p['url'] = $this->resolveFacebookUrl($p['url'] ?? null, $p['author_name'] ?? $p['name'] ?? '', $p['author_id'] ?? null);
-                    return $p;
-                }, $snapPosts);
+            if (is_array($snapPosts) && count($snapPosts) >= 15) {
+                $inRange = array_filter($snapPosts, function($p) use ($startDate, $endDate) {
+                    $d = substr($p['date_created'] ?? '', 0, 10);
+                    return (!$startDate || $d >= $startDate) && (!$endDate || $d <= $endDate);
+                });
+                if (count($inRange) >= 15) {
+                    $posts = array_map(function ($p) {
+                        $p['url'] = $this->resolveFacebookUrl($p['url'] ?? null, $p['author_name'] ?? $p['name'] ?? '', $p['author_id'] ?? null);
+                        return $p;
+                    }, array_values($inRange));
+                }
             }
         }
 
@@ -1758,6 +1762,9 @@ public function aiAnalysisProxy(Request $request)
                     if (!is_array($item)) continue;
                     $mType = strtolower($item['media_type'] ?? $item['media'] ?? $item['tcode'] ?? '');
                     if (str_contains($mType, 'fb') || str_contains($mType, 'facebook')) {
+                        $d = substr($item['date_created'] ?? $item['date'] ?? '', 0, 10);
+                        if ($startDate && $d !== '' && $d < $startDate) continue;
+                        if ($endDate && $d !== '' && $d > $endDate) continue;
                         $author = $item['author_name'] ?? $item['name'] ?? $item['publisher'] ?? 'Facebook User';
                         $content = trim(strip_tags($item['content'] ?? $item['title'] ?? ''));
                         $likes = (int)($item['num_likes'] ?? $item['likes'] ?? rand(1500, 15000));
@@ -2116,77 +2123,78 @@ public function aiAnalysisProxy(Request $request)
                 ],
             ];
 
-            $sTime = $startDate ? strtotime($startDate) : strtotime('-7 days');
-            $eTime = $endDate ? strtotime($endDate) : time();
-            if ($eTime <= $sTime) $eTime = $sTime + 86400 * 7;
-            $timeSpan = max(86400, $eTime - $sTime);
+            $fbHandleMap = [
+                'Prabowo Subianto' => 'prabowosubianto',
+                'Partai Gerindra' => 'Gerindra',
+                'Kompas.com' => 'Kompascom',
+                'Kompas TV' => 'KompasTV',
+                'Detikcom' => 'detikcom',
+                'CNN Indonesia' => 'CNNIndonesia',
+                'Narasi Newsroom' => 'narasi',
+                'Mata Najwa' => 'MataNajwa',
+                'Kementerian Pertahanan RI' => 'KemhanRI',
+                'Sekretariat Kabinet RI' => 'setkabgoid',
+                'Sekretariat Presiden' => 'presidenri',
+                'Tribunnews' => 'tribunnews',
+                'Tempo.co' => 'tempodotco',
+                'Kumparan' => 'kumparan',
+                'Tirto.id' => 'TirtoID',
+                'Antara News' => 'antaranews',
+                'CNBC Indonesia' => 'CNBCIndonesia',
+                'Bisnis Indonesia' => 'bisniscom',
+                'Tribun Jabar' => 'tribunjabar',
+                'Pikiran Rakyat' => 'pikiranrakyat',
+                'Merdeka.com' => 'merdekadotcom',
+                'Suara.com' => 'suaradotcom',
+            ];
 
-            foreach ($curated as $idx => $c) {
-                $uid = 'fb-mock-' . ($idx + 1);
-                $offset = ($idx * ($timeSpan / count($curated))) % $timeSpan;
-                $timePoint = date('Y-m-d H:i:s', $eTime - (int)$offset);
-                $likes = $c['likes'];
-                $shares = $c['shares'];
-                $comments = $c['comments'];
-                $engagement = $likes + $shares + $comments;
-                $viewCnt = $likes * 3 + $shares * 7;
-
-                $fbHandleMap = [
-                    'Prabowo Subianto' => 'prabowosubianto',
-                    'Partai Gerindra' => 'Gerindra',
-                    'Kompas.com' => 'Kompascom',
-                    'Kompas TV' => 'KompasTV',
-                    'Detikcom' => 'detikcom',
-                    'CNN Indonesia' => 'CNNIndonesia',
-                    'Narasi Newsroom' => 'narasi',
-                    'Mata Najwa' => 'MataNajwa',
-                    'Kementerian Pertahanan RI' => 'KemhanRI',
-                    'Sekretariat Kabinet RI' => 'setkabgoid',
-                    'Sekretariat Presiden' => 'presidenri',
-                    'Tribunnews' => 'tribunnews',
-                    'Tempo.co' => 'tempodotco',
-                    'Kumparan' => 'kumparan',
-                    'Tirto.id' => 'TirtoID',
-                    'Antara News' => 'antaranews',
-                    'CNBC Indonesia' => 'CNBCIndonesia',
-                    'Bisnis Indonesia' => 'bisniscom',
-                    'Tribun Jabar' => 'tribunjabar',
-                    'Pikiran Rakyat' => 'pikiranrakyat',
-                    'Merdeka.com' => 'merdekadotcom',
-                    'Suara.com' => 'suaradotcom',
-                ];
+            $templates = [];
+            foreach ($curated as $c) {
                 $fbSlug = $fbHandleMap[$c['name']] ?? preg_replace('/[^a-zA-Z0-9]/', '', $c['name']);
                 $fbUrl  = 'https://www.facebook.com/' . $fbSlug;
-
-                $posts[] = [
-                    'id' => $uid,
-                    'sub_id' => $uid,
+                $avatar = 'https://ui-avatars.com/api/?name=' . urlencode($c['name']) . '&background=' . ($c['bg'] ?? '1877F2') . '&color=fff';
+                $templates[] = [
                     'name' => $c['name'],
                     'author_name' => $c['name'],
                     'content' => $c['content'],
-                    'likes' => $likes,
-                    'num_likes' => $likes,
-                    'shares' => $shares,
-                    'num_shares' => $shares,
-                    'comments' => $comments,
-                    'num_comments' => $comments,
-                    'engagement' => $engagement,
-                    'view_cnt' => $viewCnt,
-                    'freq' => $viewCnt,
+                    'likes' => $c['likes'],
+                    'num_likes' => $c['likes'],
+                    'shares' => $c['shares'],
+                    'num_shares' => $c['shares'],
+                    'comments' => $c['comments'],
+                    'num_comments' => $c['comments'],
+                    'engagement' => $c['likes'] + $c['shares'] + $c['comments'],
+                    'views' => ($c['likes'] * 3) + ($c['shares'] * 7),
+                    'view_cnt' => ($c['likes'] * 3) + ($c['shares'] * 7),
                     'sentiment_str' => $c['sentiment'],
                     'sentiment_prec' => 0.85,
                     'emotion' => $c['emotion'],
-                    'date_created' => $timePoint,
                     'url' => $fbUrl,
-                    'avatar_url' => 'https://ui-avatars.com/api/?name=' . urlencode($c['name']) . '&background=' . $c['bg'] . '&color=fff',
+                    'avatar_url' => $avatar,
                     'tcode' => 'fb-post',
                     'author' => [
                         'name' => $c['name'],
                         'scr_name' => $c['name'],
-                        'image' => 'https://ui-avatars.com/api/?name=' . urlencode($c['name']) . '&background=' . $c['bg'] . '&color=fff',
+                        'image' => $avatar,
                     ],
                 ];
             }
+
+            $posts = OfflineDateFallbackService::adaptPostsForDateRange(
+                $templates,
+                'facebook',
+                (int) $projectId,
+                $startDate,
+                $endDate,
+                $limit,
+                $sub,
+                function (array $item, int $i) {
+                    $uid = 'fb-mock-' . ($i + 1);
+                    $item['id'] = $uid;
+                    $item['sub_id'] = $uid;
+                    return $item;
+                }
+            );
         }
 
         // Sorting sesuai $sub
@@ -2199,8 +2207,6 @@ public function aiAnalysisProxy(Request $request)
         }
 
         $result = array_slice($posts, 0, $limit);
-
-        ProjectApiSnapshot::storeSnapshot($projectId, 'fb', 'most_engagement_' . $sub, $startDate, $endDate, $result);
 
         return $result;
     }
