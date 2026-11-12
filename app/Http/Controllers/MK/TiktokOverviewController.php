@@ -1628,6 +1628,310 @@ class TiktokOverviewController extends Controller
                 'views'     => 285000, 'likes' => 16800, 'comments' => 1340, 'shares' => 890,
                 'sentiment' => 'Negative', 'emotion' => 'fear'
             ],
+            [
+                'video_id'  => '7648192049182390124',
+                'creator'   => 'tempodotco',
+                'name'      => 'Tempo.co',
+                'content'   => 'Penegakan hukum tanpa kompromi! Satgas Anti-Judi Online dan Narkoba berhasil sita aset triliunan rupiah milik gembong kejahatan. #TempoCo #HukumTegas #BersihAparat',
+                'views'     => 1150000, 'likes' => 91200, 'comments' => 4120, 'shares' => 6700,
+                'sentiment' => 'Positive', 'emotion' => 'trust'
+            ],
+            [
+                'video_id'  => '7639102847291847192',
+                'creator'   => 'matanajwa',
+                'name'      => 'Mata Najwa',
+                'content'   => 'Najwa Shihab bedah efektivitas realokasi anggaran seremonial kementerian ke sektor renovasi sekolah rusak di pelosok nusantara. #MataNajwa #CatatanNajwa #Pendidikan',
+                'views'     => 1280000, 'likes' => 105400, 'comments' => 5800, 'shares' => 8100,
+                'sentiment' => 'Neutral', 'emotion' => 'surprise'
+            ],
+            [
+                'video_id'  => '7651928471029384751',
+                'creator'   => 'narasi.tv',
+                'name'      => 'Narasi',
+                'content'   => 'Turun langsung ke sawah! Petani di Indramayu ceritakan kemudahan tebus pupuk bersubsidi dengan KTP usai sistem birokrasi dipangkas. #NarasiTV #KabarPetani #SwasembadaPangan',
+                'views'     => 940000, 'likes' => 78900, 'comments' => 3120, 'shares' => 4900,
+                'sentiment' => 'Positive', 'emotion' => 'joy'
+            ],
+            [
+                'video_id'  => '7662819401827461938',
+                'creator'   => 'liputan6dotcom',
+                'name'      => 'Liputan 6',
+                'content'   => 'Presiden Prabowo pimpin langsung apel siaga bencana dan pastikan seluruh bantuan logistik tiba di lokasi bencana dalam hitungan jam. #Liputan6 #TanggapBencana #Prabowo',
+                'views'     => 820000, 'likes' => 64300, 'comments' => 2450, 'shares' => 3800,
+                'sentiment' => 'Positive', 'emotion' => 'trust'
+            ],
+            [
+                'video_id'  => '7674910284719284019',
+                'creator'   => 'cnbcindonesia',
+                'name'      => 'CNBC Indonesia',
+                'content'   => 'Kuartal ketiga ekonomi RI catat surplus perdagangan! Hilirisasi nikel dan bauksit genjot devisa negara secara signifikan. #CNBCIndonesia #EkonomiKuat #Hilirisasi',
+                'views'     => 780000, 'likes' => 61200, 'comments' => 2180, 'shares' => 3500,
+                'sentiment' => 'Positive', 'emotion' => 'joy'
+            ],
+            [
+                'video_id'  => '7685019283746192840',
+                'creator'   => 'bisniscom',
+                'name'      => 'Bisnis.com',
+                'content'   => 'Optimisme investor asing menguat pasca ratifikasi perjanjian kemitraan ekonomi strategis di kawasan Indo-Pasifik. #BisnisCom #InvestasiRI #DiplomasiEkonomi',
+                'views'     => 690000, 'likes' => 48500, 'comments' => 1750, 'shares' => 2900,
+                'sentiment' => 'Positive', 'emotion' => 'anticipation'
+            ],
+            [
+                'video_id'  => '7691827394810294817',
+                'creator'   => 'jawapos',
+                'name'      => 'Jawa Pos',
+                'content'   => 'Gebrakan Makan Bergizi Gratis di Jawa Timur: Ribuan anak sekolah dasar antusias sambut menu bernutrisi tinggi setiap pagi. #JawaPos #GiziBangsa #AnakIndonesia',
+                'views'     => 710000, 'likes' => 56700, 'comments' => 2340, 'shares' => 3400,
+                'sentiment' => 'Positive', 'emotion' => 'joy'
+            ],
+            [
+                'video_id'  => '7603918274619283741',
+                'creator'   => 'tirtoid',
+                'name'      => 'Tirto.id',
+                'content'   => 'Bedah riset data: Dampak langsung penghapusan kredit macet UMKM terhadap percepatan sirkulasi modal usaha rakyat kecil. #TirtoID #RisetEkonomi #UMKMBangkit',
+                'views'     => 590000, 'likes' => 43200, 'comments' => 1680, 'shares' => 2800,
+                'sentiment' => 'Positive', 'emotion' => 'trust'
+            ],
+            [
+                'video_id'  => '7612948102938475618',
+                'creator'   => 'merdekadotcom',
+                'name'      => 'Merdeka.com',
+                'content'   => 'Momen haru saat Presiden Prabowo memeluk veteran pejuang kemerdekaan dan menyerahkan kenaikan tunjangan kehormatan seumur hidup. #MerdekaCom #HormatiPejuang #Prabowo',
+                'views'     => 850000, 'likes' => 72100, 'comments' => 2950, 'shares' => 4200,
+                'sentiment' => 'Positive', 'emotion' => 'joy'
+            ],
+            [
+                'video_id'  => '7628193847102948172',
+                'creator'   => 'idntimes',
+                'name'      => 'IDN Times',
+                'content'   => 'Suara Gen-Z menyambut program beasiswa vokasi teknologi dan digitalisasi pertanian modern untuk pemuda desa. #IDNTimes #PemudaBerkarya #GenerasiMaju',
+                'views'     => 540000, 'likes' => 39800, 'comments' => 1490, 'shares' => 2600,
+                'sentiment' => 'Positive', 'emotion' => 'anticipation'
+            ],
+            [
+                'video_id'  => '7637192840192847193',
+                'creator'   => 'tribunjabar',
+                'name'      => 'Tribun Jabar',
+                'content'   => 'Uji coba jalur ganda kereta logistik pangan di Jawa Barat resmi beroperasi, pangkas waktu tempuh distribusi beras hingga separuh. #TribunJabar #KeretaLogistik #KetahananPangan',
+                'views'     => 495000, 'likes' => 36200, 'comments' => 1320, 'shares' => 2100,
+                'sentiment' => 'Positive', 'emotion' => 'anticipation'
+            ],
+            [
+                'video_id'  => '7646192847102938471',
+                'creator'   => 'sindoperkasa',
+                'name'      => 'SINDOnews',
+                'content'   => 'Menhan dan Panglima TNI resmikan 4 kapal patroli cepat buatan galangan kapal nasional PT PAL untuk pengamanan teritorial laut. #SINDOnews #AlutsistaRI #KedaulatanLaut',
+                'views'     => 760000, 'likes' => 59400, 'comments' => 2280, 'shares' => 3700,
+                'sentiment' => 'Positive', 'emotion' => 'trust'
+            ],
+            [
+                'video_id'  => '7655192837461928472',
+                'creator'   => 'buniversenews',
+                'name'      => 'B Universe',
+                'content'   => 'Target swasembada gula dan garam nasional: Pembangunan pabrik pengolahan tebu modern di Merauke serap puluhan ribu tenaga kerja lokal. #BUniverse #IndustriPangan #Swasembada',
+                'views'     => 620000, 'likes' => 45800, 'comments' => 1790, 'shares' => 2950,
+                'sentiment' => 'Positive', 'emotion' => 'trust'
+            ],
+            [
+                'video_id'  => '7664192847102938473',
+                'creator'   => 'kompascom',
+                'name'      => 'Kompas.com',
+                'content'   => 'Presiden Prabowo instruksikan Kementerian ESDM percepat pembangunan transmisi listrik desa di 1.200 desa terisolir. #Kompascom #ListrikDesa #PemerataanEnergi',
+                'views'     => 880000, 'likes' => 71500, 'comments' => 2840, 'shares' => 4300,
+                'sentiment' => 'Positive', 'emotion' => 'anticipation'
+            ],
+            [
+                'video_id'  => '7673192847102938474',
+                'creator'   => 'detikcom',
+                'name'      => 'detikcom',
+                'content'   => 'Kejagung sita uang tunai Rp 1,2 triliun terkait korupsi izin impor komoditas. Netizen puji konsistensi pemberantasan mafia pangan. #Detikcom #SikatKoruptor #HukumTegas',
+                'views'     => 1020000, 'likes' => 84200, 'comments' => 4890, 'shares' => 6100,
+                'sentiment' => 'Positive', 'emotion' => 'trust'
+            ],
+            [
+                'video_id'  => '7682192847102938475',
+                'creator'   => 'officialinews',
+                'name'      => 'iNews Official',
+                'content'   => 'Momen Presiden Prabowo pimpin rapat terbatas soal penurunan harga tiket pesawat domestik demi menggairahkan pariwisata nasional. #iNews #PariwisataRI #EkonomiKreatif',
+                'views'     => 730000, 'likes' => 57400, 'comments' => 2410, 'shares' => 3600,
+                'sentiment' => 'Positive', 'emotion' => 'anticipation'
+            ],
+            [
+                'video_id'  => '7691192847102938476',
+                'creator'   => 'cnnindonesia',
+                'name'      => 'CNN Indonesia',
+                'content'   => 'Indonesia dan Arab Saudi sepakati penambahan kuota haji dan kemudahan visa umrah bagi jemaah tanah air. #CNNIndonesia #KabarHaji #KerjasamaBilateral',
+                'views'     => 910000, 'likes' => 76800, 'comments' => 3190, 'shares' => 4800,
+                'sentiment' => 'Positive', 'emotion' => 'joy'
+            ],
+            [
+                'video_id'  => '7601192847102938477',
+                'creator'   => 'kumparan',
+                'name'      => 'Kumparan',
+                'content'   => 'Kisah inspiratif bu bidan di pedalaman NTT yang kini gunakan ambulans terapung baru bantuan kementerian kesehatan. #Kumparan #KesehatanRakyat #InspirasiBangsa',
+                'views'     => 670000, 'likes' => 52300, 'comments' => 1980, 'shares' => 3200,
+                'sentiment' => 'Positive', 'emotion' => 'joy'
+            ],
+            [
+                'video_id'  => '7610192847102938478',
+                'creator'   => 'tempodotco',
+                'name'      => 'Tempo.co',
+                'content'   => 'Kritik tajam aktivis lingkungan soal pengawasan amdal proyek bendungan di Sulawesi. Warga minta jaminan relokasi yang layak. #TempoCo #KawalLingkungan #AspirasiWarga',
+                'views'     => 440000, 'likes' => 26800, 'comments' => 3650, 'shares' => 2400,
+                'sentiment' => 'Negative', 'emotion' => 'anger'
+            ],
+            [
+                'video_id'  => '7619192847102938479',
+                'creator'   => 'matanajwa',
+                'name'      => 'Mata Najwa',
+                'content'   => 'Jeritan guru honorer di wilayah 3T yang masih menanti pengangkatan PPPK. Janji kesejahteraan guru harus segera direalisasikan! #MataNajwa #KawalGuruHonorer #PendidikanRI',
+                'views'     => 980000, 'likes' => 79400, 'comments' => 6400, 'shares' => 5900,
+                'sentiment' => 'Negative', 'emotion' => 'sadness'
+            ],
+            [
+                'video_id'  => '7628192847102938480',
+                'creator'   => 'suaradotcom',
+                'name'      => 'Suara.com',
+                'content'   => 'Bongkar sindikat pemalsuan label beras premium! Oknum nakal campur beras oplosan demi raup untung haram ditindak tegas polisi. #SuaraCom #SikatMafiaBeras #PanganSehat',
+                'views'     => 520000, 'likes' => 31500, 'comments' => 3890, 'shares' => 2850,
+                'sentiment' => 'Negative', 'emotion' => 'disgust'
+            ],
+            [
+                'video_id'  => '7637192847102938481',
+                'creator'   => 'tribunnews',
+                'name'      => 'Tribunnews',
+                'content'   => 'BMKG rilis peta potensi rawan gempa dan tsunami di pesisir barat Sumatera, pemerintah gelar simulasi evakuasi mandiri warga. #Tribunnews #MitigasiBencana #WaspadaGempa',
+                'views'     => 480000, 'likes' => 28400, 'comments' => 2190, 'shares' => 3200,
+                'sentiment' => 'Negative', 'emotion' => 'fear'
+            ],
+            [
+                'video_id'  => '7646192847102938482',
+                'creator'   => 'metro_tv',
+                'name'      => 'Metro TV',
+                'content'   => 'Terobosan tak terduga! Indonesia dan negara mitra dirikan konsorsium baterai kendaraan listrik raksasa senilai USD 15 miliar. #MetroTV #TerobosanEkonomi #KendaraanListrik',
+                'views'     => 890000, 'likes' => 71200, 'comments' => 3450, 'shares' => 4600,
+                'sentiment' => 'Neutral', 'emotion' => 'surprise'
+            ],
+            [
+                'video_id'  => '7655192847102938483',
+                'creator'   => 'tvoneofficial',
+                'name'      => 'tvOne',
+                'content'   => 'Debat seru pengamat tata kelola APBN: Menakar batas defisit anggaran dan optimalisasi penerimaan pajak dari korporasi multinasional. #tvOne #APBNKompak #KabarPolitik',
+                'views'     => 560000, 'likes' => 34900, 'comments' => 2750, 'shares' => 1950,
+                'sentiment' => 'Neutral', 'emotion' => 'anticipation'
+            ],
+            [
+                'video_id'  => '7664192847102938484',
+                'creator'   => 'partaigerindra',
+                'name'      => 'Partai Gerindra',
+                'content'   => 'Satu komando kawal instruksi Presiden Prabowo! Kader Gerindra di seluruh Indonesia terjun bagi-bagi bibit unggul dan pupuk gratis. #GerindraPeduli #PrabowoSubianto #PetaniBangkit',
+                'views'     => 640000, 'likes' => 47800, 'comments' => 1920, 'shares' => 3100,
+                'sentiment' => 'Positive', 'emotion' => 'joy'
+            ],
+            [
+                'video_id'  => '7673192847102938485',
+                'creator'   => 'antaranews',
+                'name'      => 'ANTARA News',
+                'content'   => 'Kemenlu RI kecam keras eskalasi serangan di Timur Tengah dan terus desak gencatan senjata di sidang umum PBB. #AntaraNews #DiplomasiDamai #SolidaritasPalestina',
+                'views'     => 770000, 'likes' => 62400, 'comments' => 3180, 'shares' => 4500,
+                'sentiment' => 'Neutral', 'emotion' => 'anger'
+            ],
+            [
+                'video_id'  => '7682192847102938486',
+                'creator'   => 'republikaonline',
+                'name'      => 'Republika Online',
+                'content'   => 'Festival Ekonomi Syariah Nasional resmi dibuka Presiden Prabowo, targetkan RI jadi pusat industri halal dunia nomor 1. #Republika #IndustriHalal #EkonomiSyariah',
+                'views'     => 580000, 'likes' => 41900, 'comments' => 1580, 'shares' => 2700,
+                'sentiment' => 'Positive', 'emotion' => 'trust'
+            ],
+            [
+                'video_id'  => '7691192847102938487',
+                'creator'   => 'pikiranrakyat',
+                'name'      => 'Pikiran Rakyat',
+                'content'   => 'Kondisi ruang kelas SDN di Sukabumi yang nyaris roboh viral di media sosial, disdik setempat janjikan rehabilitasi kilat. #PikiranRakyat #KawalSekolah #PeduliPendidikan',
+                'views'     => 430000, 'likes' => 25600, 'comments' => 3200, 'shares' => 2100,
+                'sentiment' => 'Negative', 'emotion' => 'sadness'
+            ],
+            [
+                'video_id'  => '7601192847102938488',
+                'creator'   => 'kompastv.indonesia',
+                'name'      => 'Kompas TV',
+                'content'   => 'Warga di bantaran kali Ciliwung cemas hadapi musim hujan lebat, Pemprov DKI dan Kementerian PU percepat normalisasi sodetan. #KompasTV #AntisipasiBanjir #JakartaSiaga',
+                'views'     => 460000, 'likes' => 27800, 'comments' => 1890, 'shares' => 1950,
+                'sentiment' => 'Negative', 'emotion' => 'fear'
+            ],
+            [
+                'video_id'  => '7610192847102938489',
+                'creator'   => 'inilahcom',
+                'name'      => 'Inilah.com',
+                'content'   => 'Waspada penipuan modus rekrutmen kementerian baru berbayar! BKN imbau masyarakat hanya percaya pengumuman resmi pemerintah. #InilahCom #WaspadaPenipuan #RekrutmenResmi',
+                'views'     => 390000, 'likes' => 23400, 'comments' => 1650, 'shares' => 2600,
+                'sentiment' => 'Negative', 'emotion' => 'fear'
+            ],
+            [
+                'video_id'  => '7619192847102938490',
+                'creator'   => 'setkabgoid',
+                'name'      => 'Sekretariat Kabinet',
+                'content'   => 'Presiden Prabowo pimpin ratas di Istana: Tegaskan target 100 hari kerja fokus pada ketersediaan pangan murah dan stabilitas harga pasar. #SetkabRI #Target100Hari #PrabowoBekerja',
+                'views'     => 840000, 'likes' => 69500, 'comments' => 2750, 'shares' => 3950,
+                'sentiment' => 'Positive', 'emotion' => 'anticipation'
+            ],
+            [
+                'video_id'  => '7628192847102938491',
+                'creator'   => 'tvrinasional',
+                'name'      => 'TVRI Nasional',
+                'content'   => 'Penghargaan Anugerah Kebudayaan Nasional: Pemerintah berikan apresiasi kepada pelestari seni tradisi dan maestro musik daerah. #TVRI #BudayaNusantara #BanggaIndonesia',
+                'views'     => 370000, 'likes' => 24800, 'comments' => 1120, 'shares' => 1650,
+                'sentiment' => 'Positive', 'emotion' => 'joy'
+            ],
+            [
+                'video_id'  => '7637192847102938492',
+                'creator'   => 'narasi.tv',
+                'name'      => 'Narasi',
+                'content'   => 'Investigasi Narasi: Melacak aliran dana gelap di balik penyerobotan lahan hutan adat di Kalimantan Tengah. #NarasiTV #KawalHutanAdat #HukumLingkungan',
+                'views'     => 860000, 'likes' => 72400, 'comments' => 5100, 'shares' => 5400,
+                'sentiment' => 'Negative', 'emotion' => 'disgust'
+            ],
+            [
+                'video_id'  => '7646192847102938493',
+                'creator'   => 'detikcom',
+                'name'      => 'detikcom',
+                'content'   => 'Presiden Prabowo resmikan jembatan gantung Merah Putih penghubung dua desa terisolasi di lereng Gunung Slamet. #Detikcom #JembatanMerahPutih #InfrastrukturRakyat',
+                'views'     => 910000, 'likes' => 75600, 'comments' => 2890, 'shares' => 4100,
+                'sentiment' => 'Positive', 'emotion' => 'joy'
+            ],
+            [
+                'video_id'  => '7655192847102938494',
+                'creator'   => 'liputan6dotcom',
+                'name'      => 'Liputan 6',
+                'content'   => 'Kisah pemuda difabel asal Solo raih medali emas olimpiade sains internasional: Harumkan nama Indonesia di kancah global! #Liputan6 #PrestasiAnakBangsa #IndonesiaBisa',
+                'views'     => 680000, 'likes' => 54200, 'comments' => 1950, 'shares' => 3100,
+                'sentiment' => 'Positive', 'emotion' => 'joy'
+            ],
+            [
+                'video_id'  => '7664192847102938495',
+                'creator'   => 'cnbcindonesia',
+                'name'      => 'CNBC Indonesia',
+                'content'   => 'Bank Indonesia pertahankan suku bunga acuan: Langkah hati-hati jaga stabilitas moneter dan inflasi nasional. #CNBCIndonesia #BankIndonesia #StabilitasMoneter',
+                'views'     => 490000, 'likes' => 31200, 'comments' => 1420, 'shares' => 1890,
+                'sentiment' => 'Neutral', 'emotion' => 'anticipation'
+            ],
+            [
+                'video_id'  => '7673192847102938496',
+                'creator'   => 'jawapos',
+                'name'      => 'Jawa Pos',
+                'content'   => 'Operasi pasar beras Bulog di Surabaya disambut antusias warga, harga beras medium stabil di angka Rp 11.500 per kg. #JawaPos #OperasiPasar #PanganMurah',
+                'views'     => 530000, 'likes' => 36800, 'comments' => 1640, 'shares' => 2200,
+                'sentiment' => 'Positive', 'emotion' => 'trust'
+            ],
+            [
+                'video_id'  => '7682192847102938497',
+                'creator'   => 'kumparan',
+                'name'      => 'Kumparan',
+                'content'   => 'Menteri Pertanian pantau pompanisasi di sawah tadah hujan: Target panen tiga kali setahun optimis tercapai. #Kumparan #PertanianMaju #SwasembadaPangan',
+                'views'     => 720000, 'likes' => 58900, 'comments' => 2180, 'shares' => 3450,
+                'sentiment' => 'Positive', 'emotion' => 'anticipation'
+            ],
         ];
 
         return OfflineDateFallbackService::adaptPostsForDateRange(

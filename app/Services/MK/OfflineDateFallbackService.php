@@ -259,13 +259,12 @@ class OfflineDateFallbackService
             $order[$j] = $tmp;
         }
 
-        $targetCount = min($limit, max(15, min(100, $spanDays * 4)));
+        // Guarantee 100% unique posts: never repeat a template within the same feed
+        $targetCount = min($limit, $tplCount);
         $posts = [];
 
         for ($i = 0; $i < $targetCount; $i++) {
-            $cycle  = intdiv($i, $tplCount);
-            $posInC = $i % $tplCount;
-            $tplIdx = $order[$posInC];
+            $tplIdx = $order[$i];
             $tpl    = $templates[$tplIdx];
 
             // Distribute post timestamps evenly across the window
@@ -278,11 +277,10 @@ class OfflineDateFallbackService
 
             // Compute scaled metrics: combine template popularity with period-specific momentum
             // so different months highlight genuinely different top videos & creators
-            $baseViews  = (int) ($tpl['views'] ?? $tpl['view_cnt'] ?? $tpl['likes'] ?? 350000);
-            $slotDecay  = 1.0 - (($posInC / max(1, $tplCount)) * 0.58);
-            $cycleDecay = ($cycle === 0) ? 1.0 : max(0.15, 0.42 - ($cycle * 0.08));
-            $viewVar    = 0.85 + ((abs($seed + ($i * 9973)) % 35) / 100.0);
-            $views      = max(8000, (int) round($baseViews * $periodScale * $slotDecay * $cycleDecay * $viewVar));
+            $baseViews = (int) ($tpl['views'] ?? $tpl['view_cnt'] ?? $tpl['likes'] ?? 350000);
+            $slotDecay = 1.0 - (($i / max(1, $targetCount)) * 0.58);
+            $viewVar   = 0.85 + ((abs($seed + ($i * 9973)) % 35) / 100.0);
+            $views     = max(8000, (int) round($baseViews * $periodScale * $slotDecay * $viewVar));
 
             $likesRatio   = 0.075 + ((abs($seed + ($i * 4099)) % 25) / 1000.0);
             $commRatio    = 0.035 + ((abs($seed + ($i * 6173)) % 20) / 1000.0);
