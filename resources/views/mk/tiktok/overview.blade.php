@@ -378,8 +378,8 @@ const OVData={
     _noProject(type){const el=_$('list-'+type);if(el)el.innerHTML=`<div class="chart-empty" style="padding:40px;"><i class="ph ph-folder-open"></i><span>Pilih project terlebih dahulu</span></div>`;hideLd('loadingBar-'+type);hideLd('loadingDonut-'+type)},
     _metric(item,type){const k={view:['view_cnt','views','freq'],like:['likes','num_likes'],comment:['comments','num_comments'],share:['shares','num_shares']};return(k[type]||['view_cnt']).reduce((v,f)=>v||parseInt(item[f]||0),0)},
     _getName(item){const n=(item.name||item.author_scr_name||item.author_name||'').replace(/<[^>]*>/g,'').trim();if(n&&n!=='TikTok Creator')return n;return item.author_id?'@'+item.author_id:'TikTok Creator'},
-    _getAvatar(item){return(item.avatar_url||item.author_avatar||item.profile_image||item.author_image||'').trim()},
-    _getThumb(item){return(item.avatar_url||item.profile_url||item.thumbnail_url||item.cover_url||item.video_cover||item.thumbnail||item.image||'').trim()},
+    _getAvatar(item){const av=(item.avatar_url||item.profile_url||item.author?.image||item.author_avatar||item.profile_image||item.author_image||'').trim();return av.includes('ui-avatars.com')?'':av},
+    _getThumb(item){return[item.thumbnail_url,item.cover_url,item.video_cover,item.thumbnail,item.image].map(u=>(u||'').trim()).find(u=>u&&!u.includes('ui-avatars.com'))||''},
     _getColor(item){const seed=item.author_id||item.id||this._getName(item)||'tt';const pal=['#038047','#273B4A','#F59E0B','#06B6D4','#8b5cf6','#ec4899','#f97316','#14b8a6'];let h=0;for(let i=0;i<seed.length;i++)h=(h*31+seed.charCodeAt(i))&0xffffffff;return pal[Math.abs(h)%pal.length]},
     _avHtml(item){const av=this._getAvatar(item),d='/assets/images/user/dummy.jpg';return(av&&av.startsWith('http'))?`<img src="${esc(av)}" onerror="this.src='${d}'">`:`<img src="${d}">`},
     _normSent(item){const r=String(item.sentiment_str||item.sentiment||'').toLowerCase();return r.includes('pos')?'pos':r.includes('neg')?'neg':'neu'},
@@ -500,7 +500,7 @@ const OVDetail={
                 : (cleanHandle ? `https://www.tiktok.com/@${cleanHandle}` : `https://www.tiktok.com/search?q=${encodeURIComponent(name || 'prabowo')}`));
         const rawVideoSrc = item.video_url || item.media_url || '';
         const hasDirectVideo = Boolean(rawVideoSrc && /^https?:\/\//i.test(rawVideoSrc) && !rawVideoSrc.includes('mixkit.co'));
-        const thumbSrc = [item.image, item.thumbnail, item.cover, item.video_cover].find(u => typeof u === 'string' && /^https?:\/\//i.test(u) && !u.includes('ui-avatars.com')) || '';
+        const thumbSrc = [item.thumbnail_url, item.cover_url, item.video_cover, item.thumbnail, item.image].find(u => typeof u === 'string' && /^https?:\/\//i.test(u) && !u.includes('ui-avatars.com')) || '';
         const playBtnHtml = ttVidId
             ? `<button type="button" data-tt-play="${esc(ttVidId)}" style="display:inline-flex;align-items:center;gap:6px;background:#fe2c55;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">
                     <i class="ph-fill ph-play"></i>

@@ -1011,8 +1011,8 @@ const TMEData = {
         if(n && n!=='TikTok Creator') return n;
         return item.author_id ? '@'+item.author_id : 'TikTok Creator';
     },
-    _getAvatar(item) { return (item.avatar_url||item.author_avatar||item.profile_image||item.author_image||'').trim(); },
-    _getThumb(item)  { return (item.avatar_url||item.profile_url||item.thumbnail_url||item.cover_url||item.video_cover||item.thumbnail||item.image||'').trim(); },
+    _getAvatar(item) { const av=(item.avatar_url||item.profile_url||item.author?.image||item.author_avatar||item.profile_image||item.author_image||'').trim(); return av.includes('ui-avatars.com')?'':av; },
+    _getThumb(item)  { return [item.thumbnail_url,item.cover_url,item.video_cover,item.thumbnail,item.image].map(u=>(u||'').trim()).find(u=>u&&!u.includes('ui-avatars.com'))||''; },
     _getInits(name)  {
         if(!name||name==='TikTok Creator') return 'TT';
         const w=name.replace(/[^a-zA-Z0-9\s@]/g,'').replace('@','').split(/\s+/).filter(Boolean);
@@ -1441,7 +1441,7 @@ const TMEDetail = {
                 : (cleanHandle ? `https://www.tiktok.com/@${cleanHandle}` : `https://www.tiktok.com/search?q=${encodeURIComponent(name || 'prabowo')}`));
         const rawVideoSrc = item.video_url || item.media_url || '';
         const hasDirectVideo = Boolean(rawVideoSrc && /^https?:\/\//i.test(rawVideoSrc) && !rawVideoSrc.includes('mixkit.co'));
-        const thumbSrc = [item.image, item.thumbnail, item.cover, item.video_cover].find(u => typeof u === 'string' && /^https?:\/\//i.test(u) && !u.includes('ui-avatars.com')) || '';
+        const thumbSrc = [item.thumbnail_url, item.cover_url, item.video_cover, item.thumbnail, item.image].find(u => typeof u === 'string' && /^https?:\/\//i.test(u) && !u.includes('ui-avatars.com')) || '';
         const playBtnHtml = ttVidId
             ? `<button type="button" data-tt-play="${esc(ttVidId)}" style="display:inline-flex;align-items:center;gap:6px;background:#fe2c55;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">
                     <i class="ph-fill ph-play"></i>

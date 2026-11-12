@@ -1299,16 +1299,32 @@ public function articlesData(Request $request)
 
     private function normaliseTiktok(array $item): array
     {
-        $handle = $item['author_scr_name'] ?? $item['author_id'] ?? $item['name'] ?? '';
+        $urlHint   = (string) ($item['url'] ?? $item['link'] ?? '');
+        $rawHandle = (string) ($item['author_scr_name'] ?? $item['author_id'] ?? $item['name'] ?? '');
+        $handle    = TiktokOverviewController::extractTiktokHandle($rawHandle, $urlHint) ?: $rawHandle;
+        $videoId   = TiktokOverviewController::extractTiktokVideoId($item, $urlHint);
+
+        $rawAvatar = (string) ($item['profile_url'] ?? $item['avatar_url'] ?? $item['author']['image'] ?? '');
+        $rawThumb  = (string) ($item['thumbnail_url'] ?? $item['cover_url'] ?? $item['video_cover'] ?? $item['thumbnail'] ?? $item['image'] ?? '');
+        if ($rawThumb !== '' && $rawThumb === $rawAvatar) {
+            $rawThumb = '';
+        }
+
+        $avatarUrl = TiktokOverviewController::mediaUrlFor('avatar', $handle, $videoId, $rawAvatar, $urlHint);
+        $thumbUrl  = TiktokOverviewController::mediaUrlFor('thumb', $handle, $videoId, $rawThumb, $urlHint);
+
         return [
             '_platform'       => 'tiktok',
             'media_type_id'   => '6',
             'id'              => $item['id'] ?? $item['docid'] ?? '',
-            'url'             => $item['url'] ?? '',
+            'video_id'        => $videoId,
+            'url'             => $urlHint,
             'content'         => strip_tags($item['content'] ?? $item['caption'] ?? $item['name'] ?? ''),
             'author_name'     => $item['name'] ?? $item['author_nickname'] ?? $item['nickname'] ?? $handle,
             'author_handle'   => $handle,
-            'avatar_url'      => ($item['avatar_url'] ?? $item['image'] ?? '') ?: '',
+            'avatar_url'      => $avatarUrl,
+            'thumbnail_url'   => $thumbUrl,
+            'image'           => $thumbUrl,
             'date_created'    => $item['date_created'] ?? '',
             'num_likes'       => (int) ($item['likes'] ?? $item['num_likes'] ?? $item['freq'] ?? 0),
             'num_comments'    => (int) ($item['comments'] ?? $item['num_comments'] ?? 0),

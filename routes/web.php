@@ -212,6 +212,7 @@ Route::prefix('mk')->name('mk.')->middleware(['auth', 'check.trial'])->group(fun
             Route::get('/ai-analysis-data', [TiktokOverviewController::class, 'aiAnalysisData'])->name('ai-analysis-data');
             Route::post('/ai-proxy',        [TiktokOverviewController::class, 'aiAnalysisProxy'])->name('ai-proxy');
             Route::get('/emotion-analysis', [TiktokOverviewController::class, 'emotionAnalysisData'])->name('emotion-analysis');
+            Route::get('/media',            [TiktokOverviewController::class, 'media'])->name('media');
         });
 
         // ─────────────────────────────────────────────────────

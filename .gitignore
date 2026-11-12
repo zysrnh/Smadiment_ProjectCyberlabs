@@ -16,6 +16,8 @@
 /public/build
 /public/hot
 /public/storage
+/public/assets/images/tiktok-cache/*
+!/public/assets/images/tiktok-cache/.gitkeep
 /storage/*.key
 /storage/pail
 /vendor

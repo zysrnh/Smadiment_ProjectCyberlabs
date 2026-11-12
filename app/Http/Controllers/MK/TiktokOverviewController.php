@@ -7,6 +7,8 @@ use App\Models\ProjectApiSnapshot;
 use App\Services\MediaKernelsClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class TiktokOverviewController extends Controller
@@ -363,7 +365,14 @@ class TiktokOverviewController extends Controller
                     if ($media && !in_array($media, ['tiktok', 'tt', ''])) continue;
 
                     $username   = $user['name'] ?? $user['author_name'] ?? '';
-                    $profileUrl = $user['profile_url'] ?? $user['avatar_url'] ?? '';
+                    $rawHandle  = $user['author_scr_name'] ?? $user['author_id'] ?? $username;
+                    $profileUrl = self::mediaUrlFor(
+                        'avatar',
+                        (string) $rawHandle,
+                        '',
+                        (string) ($user['profile_url'] ?? $user['avatar_url'] ?? ''),
+                        (string) ($user['url'] ?? '')
+                    );
                     $likes      = (int) ($user['num_likes']    ?? 0);
                     $comments   = (int) ($user['num_comments'] ?? 0);
                     $posts      = (int) ($user['y']            ?? ($likes + $comments));
@@ -502,11 +511,9 @@ class TiktokOverviewController extends Controller
                 }
                 if (!$authorName) $authorName = 'TikTok Creator';
 
-                $profilePic = $item['profile_url'] ?? $item['avatar_url'] ?? $item['image'] ?? '';
-                if (!$profilePic && $authorName && $authorName !== 'TikTok Creator') {
-                    $initials   = urlencode($this->getInitials($authorName));
-                    $profilePic = "https://ui-avatars.com/api/?name={$initials}&background=EE1D52&color=fff&size=80&bold=true&format=png";
-                }
+                $mediaUrls  = $this->resolvePostMedia($item, $authorName);
+                $profilePic = $mediaUrls['avatar_url'];
+                $thumbPic   = $mediaUrls['thumbnail_url'];
 
                 $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
                 $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
@@ -522,6 +529,7 @@ class TiktokOverviewController extends Controller
                 $posts[] = [
                     'id'             => $item['id']     ?? '',
                     'sub_id'         => $item['sub_id'] ?? $item['docid'] ?? $item['id'] ?? '',
+                    'video_id'       => $mediaUrls['video_id'],
                     'name'           => $authorName,
                     'content'        => $content,
                     'view_cnt'       => $views,
@@ -534,12 +542,14 @@ class TiktokOverviewController extends Controller
                     'date_created'   => $item['date_created']   ?? '',
                     'url'            => $item['url'] ?? $item['link'] ?? null,
                     'avatar_url'     => $profilePic,
-                    'image'          => $item['image'] ?? $profilePic,
+                    'profile_url'    => $profilePic,
+                    'thumbnail_url'  => $thumbPic,
+                    'image'          => $thumbPic,
                     'tcode'          => $item['tcode'] ?? 'tiktok',
                     'num_followers'  => (int) ($item['num_followers'] ?? 0),
                     'author'         => [
                         'name'     => $authorName,
-                        'scr_name' => $item['author_scr_name'] ?? $authorName,
+                        'scr_name' => $mediaUrls['handle'] ?: ($item['author_scr_name'] ?? $authorName),
                         'image'    => $profilePic,
                     ],
                 ];
@@ -879,11 +889,9 @@ class TiktokOverviewController extends Controller
                 }
                 if (!$authorName) $authorName = 'TikTok Creator';
 
-                $profilePic = $item['profile_url'] ?? $item['avatar_url'] ?? $item['image'] ?? '';
-                if (!$profilePic && $authorName && $authorName !== 'TikTok Creator') {
-                    $initials   = urlencode($this->getInitials($authorName));
-                    $profilePic = "https://ui-avatars.com/api/?name={$initials}&background=EE1D52&color=fff&size=80&bold=true&format=png";
-                }
+                $mediaUrls  = $this->resolvePostMedia($item, $authorName);
+                $profilePic = $mediaUrls['avatar_url'];
+                $thumbPic   = $mediaUrls['thumbnail_url'];
 
                 $likes    = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
                 $comments = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
@@ -899,8 +907,9 @@ class TiktokOverviewController extends Controller
                 $posts[] = [
                     'id'              => $item['id']     ?? '',
                     'sub_id'          => $item['sub_id'] ?? $item['docid'] ?? $item['id'] ?? '',
+                    'video_id'        => $mediaUrls['video_id'],
                     'name'            => $authorName,
-                    'author_scr_name' => $item['author_scr_name'] ?? $authorName,
+                    'author_scr_name' => $mediaUrls['handle'] ?: ($item['author_scr_name'] ?? $authorName),
                     'author_id'       => $item['author_id'] ?? '',
                     'content'         => $content,
                     'caption'         => $content,
@@ -920,7 +929,8 @@ class TiktokOverviewController extends Controller
                     'url'             => $item['url'] ?? $item['link'] ?? null,
                     'avatar_url'      => $profilePic,
                     'profile_url'     => $profilePic,
-                    'image'           => $item['image'] ?? $profilePic,
+                    'thumbnail_url'   => $thumbPic,
+                    'image'           => $thumbPic,
                     'tcode'           => $item['tcode'] ?? 'tiktok',
                     'num_followers'   => (int) ($item['num_followers'] ?? 0),
                 ];
@@ -1129,7 +1139,9 @@ class TiktokOverviewController extends Controller
             if (!is_array($item)) continue;
 
             $authorName = $item['author_scr_name'] ?? $item['author_id'] ?? $item['name'] ?? 'TikTok Creator';
-            $profilePic = $item['profile_url'] ?? $item['avatar_url'] ?? $item['image'] ?? "https://ui-avatars.com/api/?name=" . urlencode($this->getInitials($authorName)) . "&background=EE1D52&color=fff";
+            $mediaUrls  = $this->resolvePostMedia($item, $authorName);
+            $profilePic = $mediaUrls['avatar_url'];
+            $thumbPic   = $mediaUrls['thumbnail_url'];
             $content    = $item['content'] ?? $item['caption'] ?? '';
             $likes      = (int) ($item['num_likes']    ?? $item['likes']    ?? 0);
             $comments   = (int) ($item['num_comments'] ?? $item['comments'] ?? 0);
@@ -1147,8 +1159,9 @@ class TiktokOverviewController extends Controller
             $posts[] = [
                 'id'              => $item['id'] ?? '',
                 'sub_id'          => $item['sub_id'] ?? $item['docid'] ?? $item['id'] ?? '',
+                'video_id'        => $mediaUrls['video_id'],
                 'name'            => $authorName,
-                'author_scr_name' => $authorName,
+                'author_scr_name' => $mediaUrls['handle'] ?: $authorName,
                 'content'         => $content,
                 'caption'         => $content,
                 'view_cnt'        => $views,
@@ -1168,7 +1181,8 @@ class TiktokOverviewController extends Controller
                 'url'             => $item['url'] ?? $item['link'] ?? null,
                 'avatar_url'      => $profilePic,
                 'profile_url'     => $profilePic,
-                'image'           => $item['image'] ?? $profilePic,
+                'thumbnail_url'   => $thumbPic,
+                'image'           => $thumbPic,
                 'tcode'           => $item['tcode'] ?? 'tiktok',
                 'num_followers'   => (int) ($item['num_followers'] ?? 0),
             ];
@@ -1784,7 +1798,9 @@ class TiktokOverviewController extends Controller
             $authorName = $tpl['name'];
             $handle     = $tpl['creator'];
             $videoId    = $tpl['video_id'];
-            $avatarUrl  = "https://ui-avatars.com/api/?name=" . urlencode($this->getInitials($authorName)) . "&background=038047&color=fff&size=80&bold=true";
+            $postUrl    = "https://www.tiktok.com/@{$handle}/video/{$videoId}";
+            $avatarUrl  = self::mediaUrlFor('avatar', $handle, $videoId, '', $postUrl);
+            $thumbUrl   = self::mediaUrlFor('thumb', $handle, $videoId, '', $postUrl);
 
             $posts[] = [
                 'id'              => 'tiktok-' . $videoId,
@@ -1810,10 +1826,11 @@ class TiktokOverviewController extends Controller
                 'emotion'         => $tpl['emotion'],
                 'emotion_str'     => $tpl['emotion'],
                 'date_created'    => $dCreated,
-                'url'             => "https://www.tiktok.com/@{$handle}/video/{$videoId}",
+                'url'             => $postUrl,
                 'avatar_url'      => $avatarUrl,
                 'profile_url'     => $avatarUrl,
-                'image'           => '',
+                'thumbnail_url'   => $thumbUrl,
+                'image'           => $thumbUrl,
                 'tcode'           => 'tiktok',
                 'num_followers'   => rand(45000, 1850000),
                 'author'          => [
@@ -1865,5 +1882,217 @@ class TiktokOverviewController extends Controller
             return strtoupper(substr($parts[0], 0, 2));
         }
         return strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
+    }
+
+    /**
+     * Resolve normalised avatar & video thumbnail URLs for a TikTok post payload.
+     */
+    private function resolvePostMedia(array $item, string $fallbackName = ''): array
+    {
+        $urlHint = (string) ($item['url'] ?? $item['link'] ?? '');
+        $handle  = self::extractTiktokHandle(
+            (string) ($item['author_scr_name'] ?? $item['author_id'] ?? $fallbackName),
+            $urlHint
+        );
+        $videoId = self::extractTiktokVideoId($item, $urlHint);
+
+        $rawAvatar = (string) ($item['profile_url'] ?? $item['avatar_url'] ?? $item['author']['image'] ?? '');
+        $rawThumb  = (string) ($item['thumbnail_url'] ?? $item['cover_url'] ?? $item['video_cover'] ?? $item['thumbnail'] ?? $item['image'] ?? '');
+        if ($rawThumb !== '' && $rawThumb === $rawAvatar) {
+            $rawThumb = '';
+        }
+
+        return [
+            'handle'        => $handle,
+            'video_id'      => $videoId,
+            'avatar_url'    => self::mediaUrlFor('avatar', $handle, $videoId, $rawAvatar, $urlHint),
+            'thumbnail_url' => self::mediaUrlFor('thumb', $handle, $videoId, $rawThumb, $urlHint),
+        ];
+    }
+
+    public static function extractTiktokHandle(string $candidate = '', string $urlHint = ''): string
+    {
+        if ($urlHint !== '' && preg_match('/@([A-Za-z0-9._-]+)/', $urlHint, $m)) {
+            return strtolower($m[1]);
+        }
+        $clean = ltrim(trim($candidate), '@');
+        if ($clean === '' || str_contains($clean, ' ')) {
+            return '';
+        }
+        return strtolower(preg_replace('/[^a-zA-Z0-9._-]/', '', $clean));
+    }
+
+    public static function extractTiktokVideoId(array $item, string $urlHint = ''): string
+    {
+        foreach (['video_id', 'sub_id', 'docid', 'id'] as $key) {
+            $val = preg_replace('/\D+/', '', (string) ($item[$key] ?? ''));
+            if (strlen($val) >= 15) {
+                return $val;
+            }
+        }
+        if ($urlHint !== '' && preg_match('/\/video\/(\d{10,})/', $urlHint, $m)) {
+            return $m[1];
+        }
+        return '';
+    }
+
+    public static function mediaUrlFor(
+        string $type,
+        string $creator,
+        string $videoId = '',
+        string $rawUrl = '',
+        string $urlHint = ''
+    ): string {
+        $handle  = self::extractTiktokHandle($creator, $urlHint);
+        $videoId = preg_replace('/\D+/', '', $videoId);
+        if ($videoId === '' && $urlHint !== '' && preg_match('/\/video\/(\d{10,})/', $urlHint, $m)) {
+            $videoId = $m[1];
+        }
+
+        $cacheRel = $type === 'avatar'
+            ? ($handle !== '' ? "assets/images/tiktok-cache/av_{$handle}.jpg" : '')
+            : ($videoId !== '' ? "assets/images/tiktok-cache/thumb_{$videoId}.jpg" : '');
+
+        if ($cacheRel !== '') {
+            $diskPath = public_path($cacheRel);
+            if (is_file($diskPath) && filesize($diskPath) > 500) {
+                return asset($cacheRel);
+            }
+        }
+
+        if (self::isUsableMediaUrl($rawUrl)) {
+            return $rawUrl;
+        }
+
+        $params = ['type' => $type === 'avatar' ? 'avatar' : 'thumb'];
+        if ($handle !== '') $params['handle'] = $handle;
+        if ($videoId !== '') $params['video_id'] = $videoId;
+
+        if ($type === 'avatar' && ($handle !== '' || $videoId !== '')) {
+            return url('/mk/api/tiktok/media') . '?' . http_build_query($params);
+        }
+        if ($type === 'thumb' && $videoId !== '') {
+            return url('/mk/api/tiktok/media') . '?' . http_build_query($params);
+        }
+
+        return '';
+    }
+
+    private static function isUsableMediaUrl(string $url): bool
+    {
+        $url = trim($url);
+        if ($url === '' || !preg_match('#^https?://#i', $url)) {
+            return false;
+        }
+        if (str_contains($url, 'ui-avatars.com')) {
+            return false;
+        }
+        if (preg_match('/[?&]x-expires=(\d+)/i', $url, $m) && (int) $m[1] < (time() + 300)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Lazy local proxy & disk cache for TikTok creator avatars and video covers.
+     */
+    public function media(Request $request)
+    {
+        $type    = $request->query('type') === 'avatar' ? 'avatar' : 'thumb';
+        $handle  = strtolower(preg_replace('/[^a-zA-Z0-9._-]/', '', ltrim((string) $request->query('handle', ''), '@')));
+        $videoId = preg_replace('/\D+/', '', (string) $request->query('video_id', ''));
+
+        if (($type === 'thumb' && $videoId === '') || ($type === 'avatar' && $handle === '' && $videoId === '')) {
+            return response('', 404);
+        }
+
+        $cacheDir = public_path('assets/images/tiktok-cache');
+        if (!is_dir($cacheDir)) {
+            @mkdir($cacheDir, 0755, true);
+        }
+
+        $avFile    = $handle !== '' ? "{$cacheDir}/av_{$handle}.jpg" : '';
+        $thumbFile = $videoId !== '' ? "{$cacheDir}/thumb_{$videoId}.jpg" : '';
+        $target    = $type === 'avatar' ? $avFile : $thumbFile;
+
+        if ($target !== '' && is_file($target) && filesize($target) > 500) {
+            return response()->file($target, [
+                'Content-Type'  => 'image/jpeg',
+                'Cache-Control' => 'public, max-age=86400',
+            ]);
+        }
+
+        $missKey = "tt_media_miss_{$type}_{$handle}_{$videoId}";
+        if (Cache::has($missKey)) {
+            return response('', 404);
+        }
+
+        $lockKey = 'tt_media_fetch_' . ($videoId ?: $handle);
+        Cache::lock($lockKey, 10)->block(6, function () use ($handle, $videoId, $avFile, $thumbFile) {
+            if (($avFile === '' || (is_file($avFile) && filesize($avFile) > 500))
+                && ($thumbFile === '' || (is_file($thumbFile) && filesize($thumbFile) > 500))) {
+                return;
+            }
+
+            // NOTE: Keep Chrome/120 UA without "(KHTML, like Gecko)" to avoid TikTok bot challenge.
+            $ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36';
+            $targetUrl = $videoId !== ''
+                ? 'https://www.tiktok.com/@' . ($handle ?: 'tiktok') . "/video/{$videoId}"
+                : "https://www.tiktok.com/@{$handle}";
+
+            try {
+                $res = Http::timeout(6)->withHeaders([
+                    'User-Agent'      => $ua,
+                    'Accept'          => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language' => 'en-US,en;q=0.9,id;q=0.8',
+                ])->get($targetUrl);
+
+                if (!$res->successful()) {
+                    return;
+                }
+
+                $html = $res->body();
+                $decodeCdnUrl = static function (string $raw): string {
+                    $u = str_replace(['\\u002F', '\\u0026', '\\/'], ['/', '&', '/'], $raw);
+                    return stripcslashes($u);
+                };
+
+                $downloadJpeg = static function (string $cdnUrl, string $destPath) use ($ua): void {
+                    if ($destPath === '' || $cdnUrl === '' || (is_file($destPath) && filesize($destPath) > 500)) {
+                        return;
+                    }
+                    $imgRes = Http::timeout(6)->withHeaders([
+                        'User-Agent' => $ua,
+                        'Referer'    => 'https://www.tiktok.com/',
+                    ])->get($cdnUrl);
+
+                    if ($imgRes->successful()) {
+                        $bytes = $imgRes->body();
+                        if (strlen($bytes) > 500 && @getimagesizefromstring($bytes) !== false) {
+                            @file_put_contents($destPath, $bytes);
+                        }
+                    }
+                };
+
+                if ($avFile !== '' && preg_match('/"avatar(?:Larger|Medium)":"([^"]+)"/', $html, $am)) {
+                    $downloadJpeg($decodeCdnUrl($am[1]), $avFile);
+                }
+                if ($thumbFile !== '' && preg_match('/"(?:originCover|cover|dynamicCover)":"([^"]+)"/', $html, $tm)) {
+                    $downloadJpeg($decodeCdnUrl($tm[1]), $thumbFile);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('TikTok media lazy cache error: ' . $e->getMessage());
+            }
+        });
+
+        if ($target !== '' && is_file($target) && filesize($target) > 500) {
+            return response()->file($target, [
+                'Content-Type'  => 'image/jpeg',
+                'Cache-Control' => 'public, max-age=86400',
+            ]);
+        }
+
+        Cache::put($missKey, true, 21600);
+        return response('', 404);
     }
 }
