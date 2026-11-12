@@ -970,7 +970,8 @@ const TTPostsLoader = {
             cleanupPlayer();
             stage.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); });
             stage.innerHTML = '';
-            let retried = false;
+            let retryCount = 0;
+            const maxRetries = 2, retryDelays = [900, 1500];
             const baseSrc = mode === 'v2'
                 ? `https://www.tiktok.com/embed/v2/${encodeURIComponent(vidId)}`
                 : `https://www.tiktok.com/player/v1/${encodeURIComponent(vidId)}?embed_from=oembed&music_info=0&description=0&rel=0&autoplay=1&muted=1`;
@@ -998,24 +999,34 @@ const TTPostsLoader = {
                     msg.textContent = mode === 'v1' ? 'Player siap. Jika ada kendala, gunakan Watch on TikTok.' : 'Mode Embed v2 aktif. Jika masih dibatasi, klik Watch on TikTok.';
                 } else if (mode === 'v1' && (d.type === 'onPlayerError' || d.type === 'onError')) {
                     const code = d.value && typeof d.value === 'object' ? Number(d.value.errorCode) : NaN;
-                    if (code === 2005) {
+                    if (code === 2005 || code === 1001 || code === 1002) {
                         if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
-                        msg.textContent = 'TikTok membatasi request (429). Coba Embed v2 atau Watch on TikTok.';
+                        msg.textContent = code === 2005
+                            ? 'TikTok membatasi request (429). Coba Embed v2 atau Watch on TikTok.'
+                            : 'Video tidak tersedia atau embed dibatasi TikTok. Gunakan Watch on TikTok.';
                         return;
                     }
                     if (retryTimer) return;
-                    if (retried) {
-                        msg.textContent = 'Player dibatasi TikTok (Server error). Coba Embed v2 atau Watch on TikTok.';
+                    if (retryCount >= maxRetries) {
+                        msg.textContent = 'Player belum merespons setelah 2x percobaan otomatis. Klik Retry di player, Coba Embed v2, atau Watch on TikTok.';
                         return;
                     }
-                    retried = true;
-                    msg.textContent = 'Error awal terdeteksi, memuat ulang otomatis (1x)...';
+                    const delay = retryDelays[retryCount] || 1500;
+                    retryCount++;
+                    const attempt = retryCount;
+                    msg.textContent = `Error awal terdeteksi, memuat ulang otomatis (${attempt}/${maxRetries})...`;
                     retryTimer = setTimeout(() => {
                         retryTimer = null;
                         if (!ifr.isConnected) return;
-                        msg.textContent = 'Percobaan ulang otomatis aktif. Jika masih error / 429, coba Embed v2 atau Watch on TikTok.';
-                        ifr.src = baseSrc + (baseSrc.includes('?') ? '&' : '?') + '_retry=1';
-                    }, 600);
+                        msg.textContent = `Memuat ulang player TikTok (${attempt}/${maxRetries})...`;
+                        ifr.src = 'about:blank';
+                        retryTimer = setTimeout(() => {
+                            retryTimer = null;
+                            if (!ifr.isConnected) return;
+                            msg.textContent = `Percobaan ulang (${attempt}/${maxRetries}) aktif. Jika masih error / 429, coba Embed v2 atau Watch on TikTok.`;
+                            ifr.src = baseSrc;
+                        }, 50);
+                    }, delay);
                 }
             };
             window.addEventListener('message', onMsg);
