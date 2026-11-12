@@ -952,33 +952,74 @@ const TTPostsLoader = {
     },
 
     _bindTtPlayer(root, vidId) {
+        this._ttCleanup?.();
+        this._ttCleanup = null;
         const card = root.querySelector('[data-tt-card]');
         const stage = root.querySelector('[data-tt-stage]');
         const btnPlay = root.querySelector('[data-tt-play]');
         const btnClose = root.querySelector('[data-tt-close]');
         if (!card || !stage || !btnPlay) return;
         const previewHtml = stage.innerHTML;
-        let mode = 'v1';
+        let mode = 'v1', retryTimer = null, onMsg = null;
+        const cleanupPlayer = () => {
+            if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+            if (onMsg) { window.removeEventListener('message', onMsg); onMsg = null; }
+            if (this._ttCleanup === cleanupPlayer) this._ttCleanup = null;
+        };
         const mountIframe = () => {
+            cleanupPlayer();
             stage.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); });
             stage.innerHTML = '';
-            const ifr = document.createElement('iframe');
-            ifr.src = mode === 'v2'
+            let retried = false;
+            const baseSrc = mode === 'v2'
                 ? `https://www.tiktok.com/embed/v2/${encodeURIComponent(vidId)}`
-                : `https://www.tiktok.com/player/v1/${encodeURIComponent(vidId)}?embed_from=oembed&music_info=1&description=1&autoplay=1&muted=1`;
-            ifr.style.cssText = 'width:100%;max-width:360px;height:480px;margin:0 auto;border:none;display:block;background:#0f172a;';
+                : `https://www.tiktok.com/player/v1/${encodeURIComponent(vidId)}?embed_from=oembed&music_info=0&description=0&rel=0&autoplay=1&muted=1`;
+            const ifr = document.createElement('iframe');
+            ifr.src = baseSrc;
+            ifr.style.cssText = 'width:100%;max-width:325px;height:575px;margin:0 auto;border:none;display:block;background:#0f172a;';
             ifr.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share';
             ifr.allowFullscreen = true;
             ifr.loading = 'lazy';
             const bar = document.createElement('div');
             bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#1e293b;border-top:1px solid #334155;font-size:10px;color:#cbd5e1;text-align:left;';
             const msg = document.createElement('span');
-            msg.textContent = mode === 'v1' ? 'Jika localhost memicu Server error / 429, coba Embed v2 atau Watch on TikTok.' : 'Mode Embed v2 aktif. Jika masih dibatasi, klik Watch on TikTok.';
+            msg.textContent = mode === 'v1' ? 'Memuat player resmi TikTok... Jika ada kendala, coba Embed v2 atau Watch on TikTok.' : 'Mode Embed v2 aktif. Jika masih dibatasi, klik Watch on TikTok.';
             const altBtn = document.createElement('button');
             altBtn.type = 'button';
             altBtn.style.cssText = 'flex-shrink:0;background:#334155;color:#f8fafc;border:none;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;';
             altBtn.textContent = mode === 'v1' ? 'Coba Embed v2' : 'Kembali ke Player v1';
             altBtn.addEventListener('click', () => { mode = mode === 'v1' ? 'v2' : 'v1'; mountIframe(); });
+            onMsg = (e) => {
+                if (e.origin !== 'https://www.tiktok.com' || e.source !== ifr.contentWindow || !e.data) return;
+                const d = typeof e.data === 'string' ? (() => { try { return JSON.parse(e.data); } catch (_) { return null; } })() : e.data;
+                if (!d || !d['x-tiktok-player']) return;
+                if (d.type === 'onPlayerReady') {
+                    if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+                    msg.textContent = mode === 'v1' ? 'Player siap. Jika ada kendala, gunakan Watch on TikTok.' : 'Mode Embed v2 aktif. Jika masih dibatasi, klik Watch on TikTok.';
+                } else if (mode === 'v1' && (d.type === 'onPlayerError' || d.type === 'onError')) {
+                    const code = d.value && typeof d.value === 'object' ? Number(d.value.errorCode) : NaN;
+                    if (code === 2005) {
+                        if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+                        msg.textContent = 'TikTok membatasi request (429). Coba Embed v2 atau Watch on TikTok.';
+                        return;
+                    }
+                    if (retryTimer) return;
+                    if (retried) {
+                        msg.textContent = 'Player dibatasi TikTok (Server error). Coba Embed v2 atau Watch on TikTok.';
+                        return;
+                    }
+                    retried = true;
+                    msg.textContent = 'Error awal terdeteksi, memuat ulang otomatis (1x)...';
+                    retryTimer = setTimeout(() => {
+                        retryTimer = null;
+                        if (!ifr.isConnected) return;
+                        msg.textContent = 'Percobaan ulang otomatis aktif. Jika masih error / 429, coba Embed v2 atau Watch on TikTok.';
+                        ifr.src = baseSrc + (baseSrc.includes('?') ? '&' : '?') + '_retry=1';
+                    }, 600);
+                }
+            };
+            window.addEventListener('message', onMsg);
+            this._ttCleanup = cleanupPlayer;
             bar.appendChild(msg);
             bar.appendChild(altBtn);
             stage.appendChild(ifr);
@@ -988,6 +1029,7 @@ const TTPostsLoader = {
         btnPlay.addEventListener('click', mountIframe);
         if (btnClose) {
             btnClose.addEventListener('click', () => {
+                cleanupPlayer();
                 stage.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); });
                 stage.innerHTML = previewHtml;
                 btnClose.style.display = 'none';
@@ -997,6 +1039,8 @@ const TTPostsLoader = {
     },
 
     closeModal() {
+        this._ttCleanup?.();
+        this._ttCleanup = null;
         const mb = document.getElementById('modalBody');
         if (mb) {
             mb.querySelectorAll('video').forEach(v => { try { v.pause(); v.currentTime = 0; } catch (e) {} });
