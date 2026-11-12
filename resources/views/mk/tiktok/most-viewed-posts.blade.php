@@ -888,7 +888,7 @@ const TTPostsLoader = {
                 : `<div style="padding:20px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#0f172a;">
                     <div style="font-size:12px;font-weight:700;color:#f8fafc;">${this.esc(authorName)} (@${this.esc(cleanHandle || 'creator')})</div>
                     ${playBtnHtml}
-                    <div style="font-size:11px;color:#94a3b8;max-width:300px;line-height:1.45;">${ttVidId ? 'Klik <strong>Putar di Sini</strong> untuk memuat embed resmi TikTok. Jika muncul <em>Server error</em> / 429 di localhost, gunakan <strong>Watch on TikTok</strong> di bawah.' : 'Video ID tidak tersedia untuk embed; klik <strong>Watch on TikTok</strong> di bawah.'}</div>
+                    <div style="font-size:11px;color:#94a3b8;max-width:300px;line-height:1.45;">${ttVidId ? 'Klik <strong>Putar di Sini</strong> untuk menonton video, atau pilih <strong>Watch on TikTok</strong>.' : 'Video ID tidak tersedia; silakan klik <strong>Watch on TikTok</strong>.'}</div>
                 </div>`);
         const playerCardHtml = `
             <div data-tt-card style="margin:12px 0 16px;background:#0f172a;border-radius:6px;overflow:hidden;border:1px solid #1e293b;">
@@ -960,9 +960,10 @@ const TTPostsLoader = {
         const btnClose = root.querySelector('[data-tt-close]');
         if (!card || !stage || !btnPlay) return;
         const previewHtml = stage.innerHTML;
-        let mode = 'v1', retryTimer = null, onMsg = null;
+        let mode = 'v1', retryTimer = null, stallTimer = null, onMsg = null;
         const cleanupPlayer = () => {
             if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+            if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
             if (onMsg) { window.removeEventListener('message', onMsg); onMsg = null; }
             if (this._ttCleanup === cleanupPlayer) this._ttCleanup = null;
         };
@@ -970,8 +971,8 @@ const TTPostsLoader = {
             cleanupPlayer();
             stage.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); });
             stage.innerHTML = '';
-            let retryCount = 0;
-            const maxRetries = 2, retryDelays = [900, 1500];
+            let retryCount = 0, ready = false;
+            const maxRetries = 1;
             const baseSrc = mode === 'v2'
                 ? `https://www.tiktok.com/embed/v2/${encodeURIComponent(vidId)}`
                 : `https://www.tiktok.com/player/v1/${encodeURIComponent(vidId)}?embed_from=oembed&music_info=0&description=0&rel=0&autoplay=1&muted=1`;
@@ -984,49 +985,63 @@ const TTPostsLoader = {
             const bar = document.createElement('div');
             bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#1e293b;border-top:1px solid #334155;font-size:10px;color:#cbd5e1;text-align:left;';
             const msg = document.createElement('span');
-            msg.textContent = mode === 'v1' ? 'Memuat player resmi TikTok... Jika ada kendala, coba Embed v2 atau Watch on TikTok.' : 'Mode Embed v2 aktif. Jika masih dibatasi, klik Watch on TikTok.';
+            msg.textContent = mode === 'v1' ? 'Menyiapkan video TikTok...' : 'Mode Alternatif aktif. Jika masih terkendala, klik Watch on TikTok.';
             const altBtn = document.createElement('button');
             altBtn.type = 'button';
             altBtn.style.cssText = 'flex-shrink:0;background:#334155;color:#f8fafc;border:none;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;';
-            altBtn.textContent = mode === 'v1' ? 'Coba Embed v2' : 'Kembali ke Player v1';
+            altBtn.textContent = mode === 'v1' ? 'Mode Alternatif' : 'Mode Standar';
             altBtn.addEventListener('click', () => { mode = mode === 'v1' ? 'v2' : 'v1'; mountIframe(); });
+            const armStallTimer = () => {
+                if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
+                if (mode !== 'v1') return;
+                stallTimer = setTimeout(() => {
+                    stallTimer = null;
+                    if (!ready && !retryTimer && ifr.isConnected) {
+                        msg.textContent = 'Video sedang dibatasi sementara oleh TikTok. Coba Mode Alternatif atau Watch on TikTok.';
+                    }
+                }, 6000);
+            };
+            armStallTimer();
             onMsg = (e) => {
                 if (e.origin !== 'https://www.tiktok.com' || e.source !== ifr.contentWindow || !e.data) return;
                 const d = typeof e.data === 'string' ? (() => { try { return JSON.parse(e.data); } catch (_) { return null; } })() : e.data;
                 if (!d || !d['x-tiktok-player']) return;
                 if (d.type === 'onPlayerReady') {
+                    ready = true;
                     if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
-                    msg.textContent = mode === 'v1' ? 'Player siap. Jika ada kendala, gunakan Watch on TikTok.' : 'Mode Embed v2 aktif. Jika masih dibatasi, klik Watch on TikTok.';
+                    if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
+                    msg.textContent = mode === 'v1' ? 'Video siap diputar.' : 'Mode Alternatif aktif.';
                 } else if (mode === 'v1' && (d.type === 'onPlayerError' || d.type === 'onError')) {
                     const code = d.value && typeof d.value === 'object' ? Number(d.value.errorCode) : NaN;
                     if (code === 2005 || code === 1001 || code === 1002) {
                         if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+                        if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
                         msg.textContent = code === 2005
-                            ? 'TikTok membatasi request (429). Coba Embed v2 atau Watch on TikTok.'
-                            : 'Video tidak tersedia atau embed dibatasi TikTok. Gunakan Watch on TikTok.';
+                            ? 'TikTok membatasi sementara. Coba Mode Alternatif atau Watch on TikTok.'
+                            : 'Video tidak tersedia untuk diputar di sini. Silakan Watch on TikTok.';
                         return;
                     }
                     if (retryTimer) return;
                     if (retryCount >= maxRetries) {
-                        msg.textContent = 'Player belum merespons setelah 2x percobaan otomatis. Klik Retry di player, Coba Embed v2, atau Watch on TikTok.';
+                        if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
+                        msg.textContent = 'Video belum dapat dimuat. Coba Mode Alternatif atau Watch on TikTok.';
                         return;
                     }
-                    const delay = retryDelays[retryCount] || 1500;
                     retryCount++;
-                    const attempt = retryCount;
-                    msg.textContent = `Error awal terdeteksi, memuat ulang otomatis (${attempt}/${maxRetries})...`;
+                    if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
+                    msg.textContent = 'Menghubungkan ulang ke TikTok...';
                     retryTimer = setTimeout(() => {
                         retryTimer = null;
                         if (!ifr.isConnected) return;
-                        msg.textContent = `Memuat ulang player TikTok (${attempt}/${maxRetries})...`;
                         ifr.src = 'about:blank';
                         retryTimer = setTimeout(() => {
                             retryTimer = null;
                             if (!ifr.isConnected) return;
-                            msg.textContent = `Percobaan ulang (${attempt}/${maxRetries}) aktif. Jika masih error / 429, coba Embed v2 atau Watch on TikTok.`;
+                            msg.textContent = 'Menyiapkan video TikTok...';
                             ifr.src = baseSrc;
+                            armStallTimer();
                         }, 50);
-                    }, delay);
+                    }, 1000);
                 }
             };
             window.addEventListener('message', onMsg);

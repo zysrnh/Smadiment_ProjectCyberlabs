@@ -1194,7 +1194,7 @@ const NSSDetail = {
                 ? `<video src="${esc(rawVideoSrc)}" ${ttThumb ? `poster="${esc(ttThumb)}"` : ''} playsinline controls loop style="width:100%;max-height:360px;object-fit:cover;display:block;background:#0f172a;"></video>`
                 : (ttThumb && videoId
                     ? `<div style="position:relative;background:#0f172a;"><img src="${esc(ttThumb)}" style="width:100%;max-height:240px;object-fit:cover;display:block;opacity:0.85;" onerror="this.style.display='none'"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.35);">${playBtnHtml}</div></div>`
-                    : `<div style="padding:18px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;background:#0f172a;"><div style="font-size:12px;font-weight:700;color:#fff;">Video TikTok${cleanSc ? ' · @'+esc(cleanSc) : ''}</div>${playBtnHtml}<div style="color:#94a3b8;font-size:11px;line-height:1.45;max-width:270px;">${videoId ? 'Klik <strong>Putar di Sini</strong> untuk memuat embed resmi TikTok. Jika muncul <em>Server error</em> / 429 di localhost, klik <strong>Lihat Sumber Asli</strong> di bawah.' : 'Video ID tidak tersedia; klik <strong>Lihat Sumber Asli</strong> untuk menonton di TikTok.'}</div></div>`);
+                    : `<div style="padding:18px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;background:#0f172a;"><div style="font-size:12px;font-weight:700;color:#fff;">Video TikTok${cleanSc ? ' · @'+esc(cleanSc) : ''}</div>${playBtnHtml}<div style="color:#94a3b8;font-size:11px;line-height:1.45;max-width:270px;">${videoId ? 'Klik <strong>Putar di Sini</strong> untuk menonton video, atau pilih <strong>Lihat Sumber Asli</strong>.' : 'Video ID tidak tersedia; silakan klik <strong>Lihat Sumber Asli</strong>.'}</div></div>`);
             mediaHtml=`<div data-tt-card data-tt-vid="${esc(hasDirectVideo ? '' : videoId)}" style="margin:10px 0 14px;background:#0f172a;border:1px solid #1e293b;border-radius:6px;overflow:hidden;">
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;background:#1e293b;border-bottom:1px solid #334155;">
                     <span style="font-size:11px;font-weight:700;color:#fff;">TikTok Video Player</span>
@@ -1249,9 +1249,10 @@ const NSSDetail = {
         const btnClose = root.querySelector('[data-tt-close]');
         if (!card || !stage || !btnPlay) return;
         const previewHtml = stage.innerHTML;
-        let mode = 'v1', retryTimer = null, onMsg = null;
+        let mode = 'v1', retryTimer = null, stallTimer = null, onMsg = null;
         const cleanupPlayer = () => {
             if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+            if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
             if (onMsg) { window.removeEventListener('message', onMsg); onMsg = null; }
             if (this._ttCleanup === cleanupPlayer) this._ttCleanup = null;
         };
@@ -1259,8 +1260,8 @@ const NSSDetail = {
             cleanupPlayer();
             this._killMedia(stage);
             stage.innerHTML = '';
-            let retryCount = 0;
-            const maxRetries = 2, retryDelays = [900, 1500];
+            let retryCount = 0, ready = false;
+            const maxRetries = 1;
             const baseSrc = mode === 'v2'
                 ? `https://www.tiktok.com/embed/v2/${encodeURIComponent(vidId)}`
                 : `https://www.tiktok.com/player/v1/${encodeURIComponent(vidId)}?embed_from=oembed&music_info=0&description=0&rel=0&autoplay=1&muted=1`;
@@ -1273,49 +1274,63 @@ const NSSDetail = {
             const bar = document.createElement('div');
             bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#1e293b;border-top:1px solid #334155;font-size:10px;color:#cbd5e1;text-align:left;';
             const msg = document.createElement('span');
-            msg.textContent = mode === 'v1' ? 'Memuat player resmi TikTok... Jika ada kendala, coba Embed v2 atau Lihat Sumber Asli.' : 'Mode Embed v2 aktif. Jika masih dibatasi, klik Lihat Sumber Asli.';
+            msg.textContent = mode === 'v1' ? 'Menyiapkan video TikTok...' : 'Mode Alternatif aktif. Jika masih terkendala, klik Lihat Sumber Asli.';
             const altBtn = document.createElement('button');
             altBtn.type = 'button';
             altBtn.style.cssText = 'flex-shrink:0;background:#334155;color:#f8fafc;border:none;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;';
-            altBtn.textContent = mode === 'v1' ? 'Coba Embed v2' : 'Kembali ke Player v1';
+            altBtn.textContent = mode === 'v1' ? 'Mode Alternatif' : 'Mode Standar';
             altBtn.addEventListener('click', () => { mode = mode === 'v1' ? 'v2' : 'v1'; mountIframe(); });
+            const armStallTimer = () => {
+                if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
+                if (mode !== 'v1') return;
+                stallTimer = setTimeout(() => {
+                    stallTimer = null;
+                    if (!ready && !retryTimer && ifr.isConnected) {
+                        msg.textContent = 'Video sedang dibatasi sementara oleh TikTok. Coba Mode Alternatif atau Lihat Sumber Asli.';
+                    }
+                }, 6000);
+            };
+            armStallTimer();
             onMsg = (e) => {
                 if (e.origin !== 'https://www.tiktok.com' || e.source !== ifr.contentWindow || !e.data) return;
                 const d = typeof e.data === 'string' ? (() => { try { return JSON.parse(e.data); } catch (_) { return null; } })() : e.data;
                 if (!d || !d['x-tiktok-player']) return;
                 if (d.type === 'onPlayerReady') {
+                    ready = true;
                     if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
-                    msg.textContent = mode === 'v1' ? 'Player siap. Jika ada kendala, gunakan Lihat Sumber Asli.' : 'Mode Embed v2 aktif. Jika masih dibatasi, klik Lihat Sumber Asli.';
+                    if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
+                    msg.textContent = mode === 'v1' ? 'Video siap diputar.' : 'Mode Alternatif aktif.';
                 } else if (mode === 'v1' && (d.type === 'onPlayerError' || d.type === 'onError')) {
                     const code = d.value && typeof d.value === 'object' ? Number(d.value.errorCode) : NaN;
                     if (code === 2005 || code === 1001 || code === 1002) {
                         if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+                        if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
                         msg.textContent = code === 2005
-                            ? 'TikTok membatasi request (429). Coba Embed v2 atau Lihat Sumber Asli.'
-                            : 'Video tidak tersedia atau embed dibatasi TikTok. Gunakan Lihat Sumber Asli.';
+                            ? 'TikTok membatasi sementara. Coba Mode Alternatif atau Lihat Sumber Asli.'
+                            : 'Video tidak tersedia untuk diputar di sini. Silakan Lihat Sumber Asli.';
                         return;
                     }
                     if (retryTimer) return;
                     if (retryCount >= maxRetries) {
-                        msg.textContent = 'Player belum merespons setelah 2x percobaan otomatis. Klik Retry di player, Coba Embed v2, atau Lihat Sumber Asli.';
+                        if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
+                        msg.textContent = 'Video belum dapat dimuat. Coba Mode Alternatif atau Lihat Sumber Asli.';
                         return;
                     }
-                    const delay = retryDelays[retryCount] || 1500;
                     retryCount++;
-                    const attempt = retryCount;
-                    msg.textContent = `Error awal terdeteksi, memuat ulang otomatis (${attempt}/${maxRetries})...`;
+                    if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
+                    msg.textContent = 'Menghubungkan ulang ke TikTok...';
                     retryTimer = setTimeout(() => {
                         retryTimer = null;
                         if (!ifr.isConnected) return;
-                        msg.textContent = `Memuat ulang player TikTok (${attempt}/${maxRetries})...`;
                         ifr.src = 'about:blank';
                         retryTimer = setTimeout(() => {
                             retryTimer = null;
                             if (!ifr.isConnected) return;
-                            msg.textContent = `Percobaan ulang (${attempt}/${maxRetries}) aktif. Jika masih error / 429, coba Embed v2 atau Lihat Sumber Asli.`;
+                            msg.textContent = 'Menyiapkan video TikTok...';
                             ifr.src = baseSrc;
+                            armStallTimer();
                         }, 50);
-                    }, delay);
+                    }, 1000);
                 }
             };
             window.addEventListener('message', onMsg);
