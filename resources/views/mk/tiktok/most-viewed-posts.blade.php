@@ -869,19 +869,25 @@ const TTPostsLoader = {
 
         const rawVideoSrc = post.video_url || post.media_url || '';
         const hasDirectVideo = Boolean(rawVideoSrc && /^https?:\/\//i.test(rawVideoSrc) && !rawVideoSrc.includes('mixkit.co'));
+        const thumbSrc = [post.image, post.thumbnail, post.cover, post.video_cover].find(u => typeof u === 'string' && /^https?:\/\//i.test(u) && !u.includes('ui-avatars.com')) || '';
         const playerInnerHtml = hasDirectVideo
-            ? `<video src="${this.esc(rawVideoSrc)}" playsinline controls loop style="width:100%;max-height:360px;object-fit:cover;display:block;background:#0b0f19;"></video>`
-            : (ttVidId
-                ? `<iframe src="https://www.tiktok.com/player/v1/${ttVidId}?embed_from=oembed&music_info=1&description=1" style="width:100%;height:460px;border:0;display:block;background:#0b0f19;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
-                : '');
-        const playerCardHtml = playerInnerHtml ? `
-            <div style="margin:12px 0 16px;background:#000;border-radius:10px;overflow:hidden;border:1px solid #1e293b;">
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.08);">
+            ? `<video src="${this.esc(rawVideoSrc)}" ${thumbSrc ? `poster="${this.esc(thumbSrc)}"` : ''} playsinline controls loop style="width:100%;max-height:360px;object-fit:cover;display:block;background:#0f172a;"></video>`
+            : (thumbSrc
+                ? `<a href="${this.esc(ttUrl || '#')}" target="_blank" rel="noopener noreferrer" style="display:block;position:relative;background:#0f172a;text-decoration:none;">
+                    <img src="${this.esc(thumbSrc)}" alt="${this.esc(authorName)}" style="width:100%;max-height:240px;object-fit:cover;display:block;opacity:0.85;" onerror="this.style.display='none'">
+                </a>`
+                : `<div style="padding:20px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#0f172a;">
+                    <div style="font-size:12px;font-weight:700;color:#f8fafc;">${this.esc(authorName)} (@${this.esc(cleanHandle || 'creator')})</div>
+                    <div style="font-size:11px;color:#94a3b8;max-width:300px;line-height:1.45;">Preview video embed dibatasi kebijakan TikTok. Klik tombol <strong>Watch on TikTok</strong> di bawah untuk membuka video asli.</div>
+                </div>`);
+        const playerCardHtml = `
+            <div style="margin:12px 0 16px;background:#0f172a;border-radius:8px;overflow:hidden;border:1px solid #1e293b;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#1e293b;border-bottom:1px solid #334155;">
                     <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:0.4px;">TikTok Video Preview</span>
-                    <span style="font-size:10px;font-weight:700;color:#cbd5e1;background:rgba(255,255,255,0.12);padding:2px 8px;border-radius:10px;">@${this.esc(cleanHandle || 'creator')}</span>
+                    <span style="font-size:10px;font-weight:700;color:#cbd5e1;background:#334155;padding:2px 8px;border-radius:6px;">@${this.esc(cleanHandle || 'creator')}</span>
                 </div>
-                <div style="position:relative;background:#000;text-align:center;">${playerInnerHtml}</div>
-            </div>` : '';
+                <div style="position:relative;background:#0f172a;text-align:center;">${playerInnerHtml}</div>
+            </div>`;
 
         document.getElementById('modalBody').innerHTML = `
             <div class="modal-author-section">

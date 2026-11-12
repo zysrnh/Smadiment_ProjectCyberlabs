@@ -1176,8 +1176,14 @@ const NSSDetail = {
             }
         } else if(plat==='tiktok'){
             let videoId=''; if(url){const m=url.match(/\/video\/(\d+)/); if(m) videoId=m[1];} if(!videoId&&item.id){const m=String(item.id).match(/(\d{10,})/); if(m) videoId=m[1];}
-            if(videoId) mediaHtml=`<div class="nssdp-media-wrap"><iframe style="width:100%;height:480px;border:none;display:block;border-radius:8px;" src="https://www.tiktok.com/embed/v2/${videoId}" allow="autoplay" allowfullscreen></iframe></div>`;
-            else if(imgUrl) mediaHtml=`<div class="nssdp-media-wrap"><img src="${esc(imgUrl)}" class="nssdp-media-img" onerror="this.parentElement.style.display='none'"></div>`;
+            const cleanSc = rawHandle.replace(/^@+/,'');
+            if(!url){ if(videoId&&cleanSc) url=`https://www.tiktok.com/@${cleanSc}/video/${videoId}`; else if(cleanSc) url=`https://www.tiktok.com/@${cleanSc}`; }
+            const ttThumb = [item.image_url,item.thumbnail,item.image,item.cover,item.video_cover].find(u=>typeof u==='string'&&/^https?:\/\//i.test(u)&&!u.includes('ui-avatars.com'))||'';
+            if(ttThumb){
+                mediaHtml=`<div class="nssdp-media-wrap"><img src="${esc(ttThumb)}" class="nssdp-media-img" onerror="this.parentElement.style.display='none'"></div>`;
+            } else {
+                mediaHtml=`<div style="margin:10px 0 14px;padding:14px 16px;background:#0f172a;border:1px solid #1e293b;border-radius:8px;color:#cbd5e1;font-size:12px;line-height:1.5;"><strong style="color:#fff;display:block;margin-bottom:4px;">Video TikTok${cleanSc ? ' · @'+esc(cleanSc) : ''}</strong>Preview video embed dibatasi oleh TikTok. Klik tombol <em>Lihat Sumber Asli</em> di bawah untuk menonton langsung di TikTok.</div>`;
+            }
         } else if(imgUrl){
             mediaHtml=`<div class="nssdp-media-wrap"><img src="${esc(imgUrl)}" class="nssdp-media-img" onerror="this.parentElement.style.display='none'"></div>`;
         }

@@ -1546,33 +1546,39 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
                         : (cleanHandle ? `https://www.tiktok.com/@${cleanHandle}` : `https://www.tiktok.com/search?q=${encodeURIComponent(name || 'prabowo')}`));
                 const rawVideoSrc = item.video_url || item.media_url || '';
                 const hasDirectVideo = Boolean(rawVideoSrc && /^https?:\/\//i.test(rawVideoSrc) && !rawVideoSrc.includes('mixkit.co'));
+                const thumbSrc = [item.image, item.thumbnail, item.cover, item.video_cover].find(u => typeof u === 'string' && /^https?:\/\//i.test(u) && !u.includes('ui-avatars.com')) || '';
                 const playerInnerHtml = hasDirectVideo
-                    ? `<video id="feaDrawerVid" src="${esc(rawVideoSrc)}" ${av ? `poster="${esc(av)}"` : ''} playsinline controls loop style="width:100%;max-height:360px;object-fit:cover;display:block;background:#0b0f19;"></video>`
-                    : (ttVidId
-                        ? `<iframe src="https://www.tiktok.com/player/v1/${ttVidId}?embed_from=oembed&music_info=1&description=1" style="width:100%;height:460px;border:0;display:block;background:#0b0f19;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
-                        : `<div style="padding:26px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:radial-gradient(circle at top,#1e293b,#0b0f19);min-height:170px;">
-                            ${av ? `<img src="${esc(av)}" alt="${esc(name)}" style="width:58px;height:58px;border-radius:50%;object-fit:cover;border:2px solid #fe2c55;" onerror="this.style.display='none'">` : `<div style="width:54px;height:54px;border-radius:50%;background:rgba(254,44,85,0.16);display:flex;align-items:center;justify-content:center;color:#fe2c55;font-size:24px;"><i class="ph ph-tiktok-logo"></i></div>`}
+                    ? `<video id="feaDrawerVid" src="${esc(rawVideoSrc)}" ${thumbSrc || av ? `poster="${esc(thumbSrc || av)}"` : ''} playsinline controls loop style="width:100%;max-height:360px;object-fit:cover;display:block;background:#0f172a;"></video>`
+                    : (thumbSrc
+                        ? `<a href="${esc(watchUrl)}" target="_blank" rel="noopener noreferrer" style="display:block;position:relative;background:#0f172a;text-decoration:none;">
+                            <img src="${esc(thumbSrc)}" alt="${esc(name)}" style="width:100%;max-height:260px;object-fit:cover;display:block;opacity:0.85;" onerror="this.style.display='none'">
+                            <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+                                <span style="width:48px;height:48px;border-radius:8px;background:#fe2c55;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:20px;"><i class="ph-fill ph-play"></i></span>
+                            </span>
+                        </a>`
+                        : `<div style="padding:24px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#0f172a;min-height:150px;">
+                            ${av && !av.includes('ui-avatars.com') ? `<img src="${esc(av)}" alt="${esc(name)}" style="width:52px;height:52px;border-radius:8px;object-fit:cover;border:2px solid #fe2c55;" onerror="this.style.display='none'">` : `<div style="width:48px;height:48px;border-radius:8px;background:#1e293b;border:1px solid #334155;display:flex;align-items:center;justify-content:center;color:#fe2c55;font-size:22px;"><i class="ph ph-tiktok-logo"></i></div>`}
                             <div style="font-size:12px;font-weight:700;color:#f8fafc;">${esc(name)}</div>
-                            <div style="font-size:11px;color:#94a3b8;max-width:260px;line-height:1.45;">Stream video langsung tidak tersedia; klik tombol di kanan bawah untuk membuka langsung di TikTok.</div>
+                            <div style="font-size:11px;color:#94a3b8;max-width:265px;line-height:1.45;">Preview video embed dibatasi kebijakan TikTok. Klik tombol di bawah untuk menonton video asli di TikTok.</div>
                         </div>`);
                 const mediaHtml = `
-                <div class="tt-player-card" style="margin:14px 0;background:#000;border-radius:12px;overflow:hidden;border:1px solid #1e293b;box-shadow:0 8px 24px rgba(0,0,0,0.45);position:relative;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.08);">
+                <div class="tt-player-card" style="margin:14px 0;background:#0f172a;border-radius:8px;overflow:hidden;border:1px solid #1e293b;position:relative;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#1e293b;border-bottom:1px solid #334155;">
                         <div style="display:flex;align-items:center;gap:7px;">
                             <svg style="width:16px;height:16px;fill:#fe2c55;" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.86-4.49V8.72a8.28 8.28 0 0 0 4.84 1.54v-3.5a4.85 4.85 0 0 1-.93-.07z"/></svg>
                             <span style="font-size:11px;font-weight:700;color:#fff;letter-spacing:0.5px;">TikTok Video Preview</span>
                         </div>
-                        <span style="font-size:10px;font-weight:700;color:#cbd5e1;background:rgba(255,255,255,0.12);padding:2px 8px;border-radius:12px;">@${esc(cleanHandle || 'creator')}</span>
+                        <span style="font-size:10px;font-weight:700;color:#cbd5e1;background:#334155;padding:2px 8px;border-radius:6px;">@${esc(cleanHandle || 'creator')}</span>
                     </div>
-                    <div style="position:relative;background:#000;text-align:center;">
+                    <div style="position:relative;background:#0f172a;text-align:center;">
                         ${playerInnerHtml}
                     </div>
-                    <div style="padding:10px 14px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.08);">
+                    <div style="padding:10px 14px;background:#111827;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #1e293b;">
                         <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#cbd5e1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;">
                             <i class="ph ph-music-note" style="color:#fe2c55;"></i>
                             <span>${esc(name)}</span>
                         </div>
-                        <a href="${esc(watchUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:5px;background:#fe2c55;color:#fff;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#e02447'" onmouseout="this.style.background='#fe2c55'">
+                        <a href="${esc(watchUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:5px;background:#fe2c55;color:#fff;padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#e02447'" onmouseout="this.style.background='#fe2c55'">
                             <span>Buka di TikTok</span>
                             <i class="ph ph-arrow-square-out" style="font-size:12px;"></i>
                         </a>
