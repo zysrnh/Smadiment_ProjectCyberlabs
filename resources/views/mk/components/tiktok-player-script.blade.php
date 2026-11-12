@@ -52,9 +52,6 @@ window.SMADIMENT_bindTtPlayer = function (owner, root, vidId, opts) {
 
         const baseSrc = `https://www.tiktok.com/player/v1/${encodeURIComponent(vidId)}?referrer=${encodeURIComponent(ttRef)}&embed_from=embed_video&autoplay=1&muted=1&music_info=0&description=0&ab_version=v1`;
 
-        const wrap = document.createElement('div');
-        wrap.style.cssText = 'position:relative;width:100%;max-width:325px;height:575px;margin:0 auto;background:#0f172a;overflow:hidden;';
-
         const ifr = document.createElement('iframe');
         ifr.name = '__tt_embed__v' + Math.random().toString(36).slice(2, 12);
         ifr.sandbox = 'allow-popups allow-popups-to-escape-sandbox allow-scripts allow-top-navigation allow-same-origin';
@@ -62,22 +59,7 @@ window.SMADIMENT_bindTtPlayer = function (owner, root, vidId, opts) {
         ifr.allowFullscreen = true;
         ifr.loading = 'lazy';
         ifr.src = baseSrc;
-        ifr.style.cssText = 'width:100%;height:100%;border:none;display:block;background:#0f172a;';
-
-        const errOverlay = document.createElement('div');
-        errOverlay.style.cssText = 'display:none;position:absolute;inset:0;background:#0f172a;color:#f8fafc;padding:24px;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;z-index:2;';
-        errOverlay.innerHTML = `
-            <div style="width:44px;height:44px;border-radius:6px;background:#1e293b;border:1px solid #334155;display:flex;align-items:center;justify-content:center;color:#fe2c55;font-size:20px;">
-                <i class="ph ph-warning-circle"></i>
-            </div>
-            <div style="font-size:13px;font-weight:700;color:#f8fafc;">Video belum dapat dimuat</div>
-            <div style="font-size:11px;color:#94a3b8;max-width:240px;line-height:1.5;">Koneksi ke TikTok sedang padat atau dibatasi sementara. Coba muat ulang player ini.</div>
-            <button type="button" data-tt-retry-overlay style="display:inline-flex;align-items:center;gap:6px;background:#fe2c55;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">
-                <i class="ph ph-arrow-clockwise"></i><span>Coba Lagi</span>
-            </button>
-            <div style="font-size:10px;color:#64748b;">Atau gunakan tombol ${fallbackLabel} di bawah.</div>
-        `;
-        errOverlay.querySelector('[data-tt-retry-overlay]')?.addEventListener('click', mountIframe);
+        ifr.style.cssText = 'width:100%;max-width:325px;height:575px;margin:0 auto;border:none;display:block;background:#0f172a;';
 
         const bar = document.createElement('div');
         bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#1e293b;border-top:1px solid #334155;font-size:10px;color:#cbd5e1;text-align:left;';
@@ -90,11 +72,10 @@ window.SMADIMENT_bindTtPlayer = function (owner, root, vidId, opts) {
         retryBtn.style.cssText = 'flex-shrink:0;background:#334155;color:#f8fafc;border:1px solid #475569;padding:4px 10px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;';
         retryBtn.addEventListener('click', mountIframe);
 
-        const showRetryState = (text) => {
+        const setStatus = (text) => {
             if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
             if (loadTimer) { clearTimeout(loadTimer); loadTimer = null; }
             msg.textContent = text;
-            errOverlay.style.display = 'flex';
         };
 
         ifr.addEventListener('load', () => {
@@ -102,7 +83,7 @@ window.SMADIMENT_bindTtPlayer = function (owner, root, vidId, opts) {
             loadTimer = setTimeout(() => {
                 loadTimer = null;
                 if (!ready && ifr.isConnected) {
-                    showRetryState(`Video belum merespons. Klik Coba Lagi atau ${fallbackLabel}.`);
+                    setStatus(`Video belum merespons. Klik Retry / Coba Lagi atau ${fallbackLabel}.`);
                 }
             }, 3500);
         });
@@ -110,7 +91,7 @@ window.SMADIMENT_bindTtPlayer = function (owner, root, vidId, opts) {
         stallTimer = setTimeout(() => {
             stallTimer = null;
             if (!ready && ifr.isConnected) {
-                showRetryState(`Video sedang dibatasi sementara. Klik Coba Lagi atau ${fallbackLabel}.`);
+                setStatus(`Video sedang dibatasi sementara. Klik Retry / Coba Lagi atau ${fallbackLabel}.`);
             }
         }, 7000);
 
@@ -125,20 +106,17 @@ window.SMADIMENT_bindTtPlayer = function (owner, root, vidId, opts) {
                 ready = true;
                 if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
                 if (loadTimer) { clearTimeout(loadTimer); loadTimer = null; }
-                errOverlay.style.display = 'none';
                 msg.textContent = 'Video siap diputar.';
             } else if (d.type === 'onPlayerError' || d.type === 'onError') {
-                showRetryState(`Video tidak dapat dimuat saat ini. Klik Coba Lagi atau ${fallbackLabel}.`);
+                setStatus(`Video belum dapat dimuat. Klik Retry / Coba Lagi atau ${fallbackLabel}.`);
             }
         };
 
         window.addEventListener('message', onMsg);
         owner._ttCleanup = cleanupPlayer;
-        wrap.appendChild(ifr);
-        wrap.appendChild(errOverlay);
         bar.appendChild(msg);
         bar.appendChild(retryBtn);
-        stage.appendChild(wrap);
+        stage.appendChild(ifr);
         stage.appendChild(bar);
         if (btnClose) btnClose.style.display = 'inline-flex';
     };
