@@ -493,6 +493,7 @@
 @endsection
 
 @section('scripts')
+@include('mk.components.tiktok-player-script')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 // ========================================
@@ -952,116 +953,7 @@ const TTPostsLoader = {
     },
 
     _bindTtPlayer(root, vidId) {
-        this._ttCleanup?.();
-        this._ttCleanup = null;
-        const card = root.querySelector('[data-tt-card]');
-        const stage = root.querySelector('[data-tt-stage]');
-        const btnPlay = root.querySelector('[data-tt-play]');
-        const btnClose = root.querySelector('[data-tt-close]');
-        if (!card || !stage || !btnPlay) return;
-        const previewHtml = stage.innerHTML;
-        let mode = 'v1', retryTimer = null, stallTimer = null, onMsg = null;
-        const cleanupPlayer = () => {
-            if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
-            if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
-            if (onMsg) { window.removeEventListener('message', onMsg); onMsg = null; }
-            if (this._ttCleanup === cleanupPlayer) this._ttCleanup = null;
-        };
-        const mountIframe = () => {
-            cleanupPlayer();
-            stage.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); });
-            stage.innerHTML = '';
-            let retryCount = 0, ready = false;
-            const maxRetries = 1;
-            const baseSrc = mode === 'v2'
-                ? `https://www.tiktok.com/embed/v2/${encodeURIComponent(vidId)}`
-                : `https://www.tiktok.com/player/v1/${encodeURIComponent(vidId)}?embed_from=oembed&music_info=0&description=0&rel=0&autoplay=1&muted=1`;
-            const ifr = document.createElement('iframe');
-            ifr.src = baseSrc;
-            ifr.style.cssText = 'width:100%;max-width:325px;height:575px;margin:0 auto;border:none;display:block;background:#0f172a;';
-            ifr.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share';
-            ifr.allowFullscreen = true;
-            ifr.loading = 'lazy';
-            const bar = document.createElement('div');
-            bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#1e293b;border-top:1px solid #334155;font-size:10px;color:#cbd5e1;text-align:left;';
-            const msg = document.createElement('span');
-            msg.textContent = mode === 'v1' ? 'Menyiapkan video TikTok...' : 'Mode Alternatif aktif. Jika masih terkendala, klik Watch on TikTok.';
-            const altBtn = document.createElement('button');
-            altBtn.type = 'button';
-            altBtn.style.cssText = 'flex-shrink:0;background:#334155;color:#f8fafc;border:none;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;';
-            altBtn.textContent = mode === 'v1' ? 'Mode Alternatif' : 'Mode Standar';
-            altBtn.addEventListener('click', () => { mode = mode === 'v1' ? 'v2' : 'v1'; mountIframe(); });
-            const armStallTimer = () => {
-                if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
-                if (mode !== 'v1') return;
-                stallTimer = setTimeout(() => {
-                    stallTimer = null;
-                    if (!ready && !retryTimer && ifr.isConnected) {
-                        msg.textContent = 'Video sedang dibatasi sementara oleh TikTok. Coba Mode Alternatif atau Watch on TikTok.';
-                    }
-                }, 6000);
-            };
-            armStallTimer();
-            onMsg = (e) => {
-                if (e.origin !== 'https://www.tiktok.com' || e.source !== ifr.contentWindow || !e.data) return;
-                const d = typeof e.data === 'string' ? (() => { try { return JSON.parse(e.data); } catch (_) { return null; } })() : e.data;
-                if (!d || !d['x-tiktok-player']) return;
-                if (d.type === 'onPlayerReady') {
-                    ready = true;
-                    if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
-                    if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
-                    msg.textContent = mode === 'v1' ? 'Video siap diputar.' : 'Mode Alternatif aktif.';
-                } else if (mode === 'v1' && (d.type === 'onPlayerError' || d.type === 'onError')) {
-                    const code = d.value && typeof d.value === 'object' ? Number(d.value.errorCode) : NaN;
-                    if (code === 2005 || code === 1001 || code === 1002) {
-                        if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
-                        if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
-                        msg.textContent = code === 2005
-                            ? 'TikTok membatasi sementara. Coba Mode Alternatif atau Watch on TikTok.'
-                            : 'Video tidak tersedia untuk diputar di sini. Silakan Watch on TikTok.';
-                        return;
-                    }
-                    if (retryTimer) return;
-                    if (retryCount >= maxRetries) {
-                        if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
-                        msg.textContent = 'Video belum dapat dimuat. Coba Mode Alternatif atau Watch on TikTok.';
-                        return;
-                    }
-                    retryCount++;
-                    if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
-                    msg.textContent = 'Menghubungkan ulang ke TikTok...';
-                    retryTimer = setTimeout(() => {
-                        retryTimer = null;
-                        if (!ifr.isConnected) return;
-                        ifr.src = 'about:blank';
-                        retryTimer = setTimeout(() => {
-                            retryTimer = null;
-                            if (!ifr.isConnected) return;
-                            msg.textContent = 'Menyiapkan video TikTok...';
-                            ifr.src = baseSrc;
-                            armStallTimer();
-                        }, 50);
-                    }, 1000);
-                }
-            };
-            window.addEventListener('message', onMsg);
-            this._ttCleanup = cleanupPlayer;
-            bar.appendChild(msg);
-            bar.appendChild(altBtn);
-            stage.appendChild(ifr);
-            stage.appendChild(bar);
-            if (btnClose) btnClose.style.display = 'inline-flex';
-        };
-        btnPlay.addEventListener('click', mountIframe);
-        if (btnClose) {
-            btnClose.addEventListener('click', () => {
-                cleanupPlayer();
-                stage.querySelectorAll('iframe').forEach(f => { f.src = ''; f.remove(); });
-                stage.innerHTML = previewHtml;
-                btnClose.style.display = 'none';
-                this._bindTtPlayer(root, vidId);
-            });
-        }
+        window.SMADIMENT_bindTtPlayer?.(this, root, vidId, { fallbackLabel: 'Watch on TikTok' });
     },
 
     closeModal() {
