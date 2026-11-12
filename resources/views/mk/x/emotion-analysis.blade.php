@@ -718,9 +718,12 @@ const FEAData = {
         });
     },
     _updateChips() {
-        const c  = getEmoCounts();
-        const el = _$('chip-all'); if(el) el.textContent = numK(getTotalPosts());
-        EMOTIONS.forEach(e=>{ const chip=_$('chip-'+e); if(chip) chip.textContent=numK(c[e]||0); });
+        const listCounts = { all: allTweets.length };
+        EMOTIONS.forEach(e => {
+            listCounts[e] = allTweets.filter(t => (t.emotion || '').toLowerCase() === e).length;
+        });
+        const el = _$('chip-all'); if(el) el.textContent = numK(listCounts.all);
+        EMOTIONS.forEach(e=>{ const chip=_$('chip-'+e); if(chip) chip.textContent=numK(listCounts[e]||0); });
     },
     renderList() {
         const listEl=_$('listEl'), pagEl=_$('pagEl'); if(!listEl) return;
@@ -1124,8 +1127,16 @@ const FEAChart = {
                         const si = config.seriesIndex;
                         if(si < 0 || si >= EMOTIONS.length) return;
                         const emo  = EMOTIONS[si];
-                        const pool = allTweets.filter(t => (t.emotion||'').toLowerCase() === emo);
-                        FEAPanel.open(pool, emo);
+                        const dpi  = config.dataPointIndex;
+                        const targetDate = (dpi >= 0 && displayDates && displayDates[dpi]) ? displayDates[dpi] : null;
+                        let pool = allTweets.filter(t => (t.emotion||'').toLowerCase() === emo);
+                        if (targetDate) {
+                            pool = pool.filter(t => {
+                                const dt = (t.timestamp || t.created_at || t.date || '').slice(0, 10);
+                                return dt === targetDate;
+                            });
+                        }
+                        FEAPanel.open(pool, emo + (targetDate ? ` (${targetDate})` : ''));
                     },
                     legendClick: (chartCtx, seriesIndex) => {
                         if(seriesIndex < 0 || seriesIndex >= EMOTIONS.length) return;
@@ -1233,10 +1244,11 @@ const FEAPanel = {
     open(posts, emo) {
         this._posts = posts||[]; this._emo = emo;
         FEADetail.close();
-        const color = EMO_COLORS[emo]||'#038047';
+        const cleanEmo = (emo || '').split(' ')[0].toLowerCase();
+        const color = EMO_COLORS[cleanEmo]||'#038047';
         _$('feaPanelDot').style.background    = color;
         _$('feaPanelTitle').textContent        = emo ? 'Emotion: '+emo.charAt(0).toUpperCase()+emo.slice(1) : 'All Emotions';
-        _$('feaPanelCount').textContent        = numF(posts.length);
+        _$('feaPanelCount').textContent        = numF((posts||[]).length);
         _$('feaPanelMeta').textContent         = FEACfg.sd+' – '+FEACfg.ed;
         const ov=_$('feaPanelOverlay'), pn=_$('feaSntPanel');
         ov.classList.remove('hiding'); pn.classList.remove('hiding');
@@ -1252,8 +1264,9 @@ const FEAPanel = {
     _render() {
         const list=_$('feaPanelList'); if(!list) return;
         const tweets=this._posts;
-        if(!tweets.length){ list.innerHTML=emptyHtml('Tidak ada data'); return; }
-        const ec = EMO_COLORS[this._emo]||'#038047';
+        if(!tweets.length){ list.innerHTML=emptyHtml('Tidak ada data tweet untuk emosi dan periode/tanggal ini'); return; }
+        const cleanEmo = (this._emo || '').split(' ')[0].toLowerCase();
+        const ec = EMO_COLORS[cleanEmo]||'#038047';
         list.innerHTML = tweets.slice(0,100).map(tw=>{
             const name   = getName(tw), handle=getHandle(tw), color2=getColor(tw);
             const text   = (tw.text||'').substring(0,130);

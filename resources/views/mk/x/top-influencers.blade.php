@@ -591,7 +591,9 @@ const Panel = (() => {
         const ts=m.timestamp||m.created_at||''; let dtStr='';
         if(ts){ const d=new Date(ts); if(!isNaN(d)) dtStr=d.toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Jakarta'})+' WIB'; }
         const likes=parseInt(m.likes||m.num_likes||0), rts=parseInt(m.retweets||m.num_shares||0), reps=parseInt(m.replies||m.num_comments||0);
-        const text=_linkify(m.text||''), tUrl=(m.url&&m.url!=='#')?m.url:'';
+        const text = _linkify(m.text || '');
+        const scrU = encodeURIComponent((m.author || _u?.screen_name || '').replace(/^@+/, ''));
+        const tUrl = (m.url && m.url !== '#' && !m.url.includes('/status/inf-') && !m.url.includes('/status/x-fallback')) ? m.url : (scrU ? `https://x.com/${scrU}` : '');
         const mJson=esc(JSON.stringify(m).replace(/'/g,'&#39;'));
         const viewLink=tUrl?`<a href="${esc(tUrl)}" target="_blank" rel="noopener" class="up-tw-link" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out"></i>View</a>`:'';
         return `<div class="up-tweet" onclick="Detail.open(JSON.parse(this.dataset.m))" data-m='${mJson}'>

@@ -457,9 +457,9 @@ const _normSent = it => {
 };
 const _tweetUrl = it => {
     const direct = (it.url || it.link || '').trim();
-    if (direct && direct.startsWith('http') && !direct.includes('/status/1839')) return direct;
+    if (direct && direct.startsWith('http') && !direct.includes('/status/1839') && !direct.includes('/status/x-fallback') && !direct.includes('/status/inf-')) return direct;
     const sc = String(_getScr(it) || '').replace(/^@+/, ''), sid = String(it.sub_id || it.id || '');
-    if (sc && /^\d{15,20}$/.test(sid) && !sid.startsWith('1839')) return `https://x.com/${encodeURIComponent(sc)}/status/${encodeURIComponent(sid)}`;
+    if (sc && /^\d{15,20}$/.test(sid) && !sid.startsWith('1839') && !sid.startsWith('1840')) return `https://x.com/${encodeURIComponent(sc)}/status/${encodeURIComponent(sid)}`;
     return sc ? `https://x.com/${encodeURIComponent(sc)}` : '';
 };
 

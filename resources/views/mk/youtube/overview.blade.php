@@ -929,9 +929,29 @@ const OVDetail = {
               c=parseInt(item.num_comments||item.comments||0);
         const sn=OVData._normSent(item), sl={pos:'Positif',neg:'Negatif',neu:'Netral'}[sn];
         let dtF=''; if(dt) try{ dtF=new Date(dt).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ dtF=dt.split('T')[0]; }
-        let vid=item.video_id||item.docid||'';
-        if(!vid&&url){ const m=url.match(/(?:v=|\/embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/); if(m) vid=m[1]; }
-        const mH=vid?`<div class="do-dp2-media"><iframe src="https://www.youtube.com/embed/${esc(vid)}" allow="autoplay;encrypted-media" allowfullscreen></iframe></div>`:'';
+        let vid = (item.video_id || '').trim();
+        if (!vid && item.docid) {
+            const cleanDoc = String(item.docid).replace(/^yt-/, '').trim();
+            if (/^[a-zA-Z0-9_-]{11}$/.test(cleanDoc)) vid = cleanDoc;
+        }
+        if (!vid && url) {
+            const m = url.match(/(?:v=|\/embed\/|youtu\.be\/|\/shorts\/)([a-zA-Z0-9_-]{11})/);
+            if (m) vid = m[1];
+        }
+        const isValidVid = /^[a-zA-Z0-9_-]{11}$/.test(vid);
+        const ytThumb = isValidVid ? `https://img.youtube.com/vi/${vid}/hqdefault.jpg` : (item.thumbnail || item.thumbnail_url || item.image || item.image_url || '');
+        const targetUrl = url || (isValidVid ? `https://www.youtube.com/watch?v=${vid}` : '');
+        let mH = '';
+        if (isValidVid) {
+            mH = `<div class="do-dp2-media" style="position:relative;width:100%;padding-top:56.25%;background:#000;border-radius:8px;overflow:hidden;margin-bottom:12px;">
+                <iframe src="https://www.youtube-nocookie.com/embed/${esc(vid)}?rel=0&modestbranding=1" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen onerror="this.style.display='none'"></iframe>
+            </div>`;
+        } else if (ytThumb) {
+            mH = `<div class="do-dp2-media" style="position:relative;width:100%;border-radius:8px;overflow:hidden;margin-bottom:12px;">
+                <img src="${esc(ytThumb)}" style="width:100%;max-height:280px;object-fit:cover;display:block;">
+                ${targetUrl ? `<a href="${esc(targetUrl)}" target="_blank" rel="noopener noreferrer" style="position:absolute;bottom:10px;right:10px;background:rgba(239,68,68,0.92);color:#fff;font-size:11px;font-weight:700;padding:6px 12px;border-radius:99px;text-decoration:none;display:inline-flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(0,0,0,.3);"><i class="ph ph-play-circle" style="font-size:14px;"></i> Tonton di YouTube</a>` : ''}
+            </div>`;
+        }
         title.textContent=name;
         body.innerHTML=`<div class="do-dp2-avatar-row">
             <div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${ac},${ac}99);">${aH}</div>

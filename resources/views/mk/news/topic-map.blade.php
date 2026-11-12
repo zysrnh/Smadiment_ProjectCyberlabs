@@ -1285,12 +1285,13 @@ const TOPIC_SYNONYMS = {
     'partai amanat nasional': ['pan', 'zulkifli hasan', 'amanat nasional']
 };
 
-function matchArticlesForTopic(topicStr) {
+function matchArticlesForTopic(topicStr, headlineStr) {
     if (!D.arts || !D.arts.length) return [];
     const q = (topicStr || '').toLowerCase().trim();
+    const hl = (headlineStr || '').toLowerCase().trim();
     const unspaced = q.replace(/[\s_#\-&%]+/g, '');
-    const stopWords = new Set(['dalam', 'negeri', 'yang', 'pada', 'untuk', 'dan', 'dengan', 'dari', 'ala', 'the', 'on', 'all', 'eyes']);
-    const words = q.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !stopWords.has(w));
+    const stopWords = new Set(['dalam', 'negeri', 'yang', 'pada', 'untuk', 'dan', 'dengan', 'dari', 'ala', 'the', 'on', 'all', 'eyes', 'oleh', 'para', 'ke', 'di']);
+    const words = (q + ' ' + hl).replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !stopWords.has(w));
     const syns = TOPIC_SYNONYMS[q] || [];
 
     const scored = [];
@@ -1301,34 +1302,36 @@ function matchArticlesForTopic(topicStr) {
         const unspacedFull = full.replace(/[\s_#\-&%]+/g, '');
         let score = 0;
 
+        // 0. Headline exact match or heavy phrase match
+        if (hl) {
+            if (titleRaw.includes(hl)) score += 200;
+            else if (contentRaw.includes(hl)) score += 100;
+        }
+
         // 1. Exact phrase match
-        if (titleRaw.includes(q)) score += 120;
-        else if (contentRaw.includes(q)) score += 60;
+        if (q) {
+            if (titleRaw.includes(q)) score += 120;
+            else if (contentRaw.includes(q)) score += 60;
+        }
 
         // 2. Unspaced / hashtag match (e.g. #AllEyesOnIndonesia)
         if (unspaced.length >= 5 && unspacedFull.includes(unspaced)) {
             score += 90;
         }
 
-        // 3. All significant words match in full text
-        if (words.length > 1) {
-            const allIn = words.every(w => full.includes(w));
-            if (allIn) score += 70;
-        }
-
-        // 4. Individual word matches
+        // 3. Significant words match in title
         words.forEach(w => {
-            if (titleRaw.includes(w)) score += 30;
+            if (titleRaw.includes(w)) score += 35;
             else if (contentRaw.includes(w)) score += 12;
         });
 
-        // 5. Synonyms & aliases matches
+        // 4. Synonyms & aliases matches
         syns.forEach(syn => {
             if (titleRaw.includes(syn)) score += 35;
             else if (contentRaw.includes(syn)) score += 15;
         });
 
-        if (score >= 18) {
+        if (score >= 20) {
             scored.push({ art: a, score });
         }
     });
@@ -1336,9 +1339,14 @@ function matchArticlesForTopic(topicStr) {
     scored.sort((a, b) => b.score - a.score);
     let results = scored.map(s => s.art);
 
-    // If no specific match found, fallback gracefully to broader relevant articles
+    // If no specific match, filter D.arts by candidate or words, without picking completely unrelated articles
     if (results.length === 0 && D.arts.length > 0) {
-        results = D.arts.slice(0, 15);
+        const candidateWords = ['prabowo', 'gibran', 'anies', 'ganjar', 'presiden', 'menteri', 'pemerintah'];
+        const fallbackList = D.arts.filter(a => {
+            const t = ((a.title || '') + ' ' + (a.content || '')).toLowerCase();
+            return candidateWords.some(cw => t.includes(cw));
+        });
+        results = fallbackList.length ? fallbackList.slice(0, 15) : D.arts.slice(0, 15);
     }
 
     return results;
@@ -1350,7 +1358,7 @@ function buildDetail(d, idx) {
     DS.idx = idx;
     DS.activePub = null;
 
-    DS.arts = matchArticlesForTopic(d.topic);
+    DS.arts = matchArticlesForTopic(d.topic, d.headline);
 
     DS.pubArts = {};
     DS.arts.forEach(a => {
@@ -1368,7 +1376,7 @@ function openDetail(d, idx) {
     if(!d) return;
     buildDetail(d, idx);
     $('ntmPanelDot').style.background = PAL[idx % PAL.length];
-    $('ntmPanelTitle').textContent = d.topic;
+    $('ntmPanelTitle').textContent = d.headline || d.topic;
     $('ntmPanelMeta').textContent = `${CFG.s} – ${CFG.e}`;
     $('ntmPanelBadge').textContent = `${numF(DS.arts.length)} articles · ${numF(d.count)} mentions`;
     NTMPanel.open();
@@ -1534,11 +1542,18 @@ function renderArts(arts, pubLabel) {
     }
     let h = `<div style="padding:6px 14px;font-size:10px;color:var(--slate-400);border-bottom:1px solid var(--slate-50);">${arts.length} artikel</div>`;
     arts.forEach((a, i) => {
-        const src = a.publisher || extractHostname(a.url || '') || 'Unknown';
-        const url = a.url || a.link || '#', date = (a.date_created || '').split('T')[0];
+        let src = a.publisher || extractHostname(a.url || '') || '';
+        if (!src || src.toLowerCase() === 'unknown') {
+            src = 'Berita Nasional';
+        }
+        let url = a.url || a.link || '';
+        const cleanTitle = cleanHeadlineText(a.title || 'Untitled');
+        if (!url || url === '#' || url.startsWith('javascript:') || url.includes('localhost') || url.includes('127.0.0.1')) {
+            url = `https://www.google.com/search?q=${encodeURIComponent(cleanTitle + ' ' + (src !== 'Berita Nasional' ? src : ''))}`;
+        }
+        const date = (a.date_created || '').split('T')[0];
         const rawSnip = a.content || a.description || a.summary || '';
         const cleanSnip = cleanHeadlineText(rawSnip).slice(0, 220);
-        const cleanTitle = cleanHeadlineText(a.title || 'Untitled');
         const img = a.image || a.thumbnail || a.image_url || a.urlToImage || '';
         h += `<div class="ntm-ac ntm-fi" style="animation-delay:${Math.min(i, 25) * 12}ms;">
             <div class="ntm-ac-body">

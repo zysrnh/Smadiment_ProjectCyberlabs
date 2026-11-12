@@ -550,11 +550,16 @@ const OVDetail={
         </div>`;
         title.textContent=name;
         body.innerHTML=`<div class="do-dp2-avatar-row"><div class="do-dp2-avatar-lg" style="background:linear-gradient(135deg,${ac},${ac}99);">${aH}</div><div><div class="do-dp2-name">${esc(name)}</div>${handle?`<div class="do-dp2-handle">@${esc(handle)}</div>`:''}<span class="do-dp2-plat-badge" style="background:${color}18;color:${color};">TikTok</span></div></div>${dtF?`<div class="do-dp2-meta">${dtF}</div>`:''}<div class="do-dp2-sent do-dp2-sent--${sn}">${sl}</div>${mH}${content?`<div class="do-dp2-content">${esc(content)}</div>`:''}<div class="do-dp2-stats"><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(v)}</div><div class="do-dp2-stat-lbl">Views</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(l)}</div><div class="do-dp2-stat-lbl">Likes</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(c)}</div><div class="do-dp2-stat-lbl">Comments</div></div><div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(s)}</div><div class="do-dp2-stat-lbl">Shares</div></div></div>${watchUrl?`<a href="${esc(watchUrl)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out me-1"></i>Buka di TikTok</a>`:''}`;
-        if(!hasDirectVideo && ttVidId) this._bindTtPlayer(body, ttVidId);
+        if(!hasDirectVideo && ttVidId) this._bindTtPlayer(body, ttVidId, watchUrl, cleanHandle, name);
         panel.classList.add('show');
     },
-    _bindTtPlayer(root, vidId){
-        window.SMADIMENT_bindTtPlayer?.(this, root, vidId, { fallbackLabel: 'Buka di TikTok' });
+    _bindTtPlayer(root, vidId, directUrl, handle, name){
+        window.SMADIMENT_bindTtPlayer?.(this, root, vidId, { 
+            fallbackLabel: 'Buka di TikTok',
+            directUrl: directUrl,
+            handle: handle,
+            title: name
+        });
     },
     close(){
         this.killIframe();

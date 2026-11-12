@@ -947,13 +947,18 @@ const TTPostsLoader = {
                 <button onclick="TTPostsLoader.closeModal()" class="modal-btn secondary">Close</button>
             </div>`;
 
-        if (!hasDirectVideo && ttVidId) this._bindTtPlayer(mb, ttVidId);
+        if (!hasDirectVideo && ttVidId) this._bindTtPlayer(mb, ttVidId, ttUrl, cleanHandle, author);
         document.getElementById('postModal').classList.add('active');
         document.body.style.overflow = 'hidden';
     },
 
-    _bindTtPlayer(root, vidId) {
-        window.SMADIMENT_bindTtPlayer?.(this, root, vidId, { fallbackLabel: 'Watch on TikTok' });
+    _bindTtPlayer(root, vidId, directUrl, handle, name) {
+        window.SMADIMENT_bindTtPlayer?.(this, root, vidId, { 
+            fallbackLabel: 'Watch on TikTok',
+            directUrl: directUrl,
+            handle: handle,
+            title: name
+        });
     },
 
     closeModal() {

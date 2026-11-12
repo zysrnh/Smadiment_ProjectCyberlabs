@@ -396,10 +396,10 @@
             <div class="card-header d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
                     <div class="avtar avtar-xs bg-light-danger rounded"><i class="ph ph-chart-bar-horizontal f-18 text-danger"></i></div>
-                    <div><h6 class="mb-0">Article Volume Chart</h6><small class="text-muted">Top 20 publishers — click a bar to view articles</small></div>
+                    <div><h6 class="mb-0">Article Volume Chart</h6><small class="text-muted" id="tpBarSubHeader">Top 20 publishers — click a bar to view articles</small></div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-light-danger text-danger">Top 20</span>
+                    <span class="badge bg-light-danger text-danger" id="tpBarBadge">Top 20</span>
                     <div class="d-flex gap-1" data-html2canvas-ignore="true">
                         <button class="card-exp-btn card-exp-btn-pdf" onclick="TpExport.runCard('card-export-bar','bar','pdf',this)" title="Export PDF"><i class="ph ph-file-pdf export-icon"></i><span class="export-spinner"></span></button>
                         <button class="card-exp-btn card-exp-btn-img" onclick="TpExport.runCard('card-export-bar','bar','image',this)" title="Export PNG"><i class="ph ph-image export-icon"></i><span class="export-spinner"></span></button>
@@ -505,7 +505,14 @@
             }
         }
 
-        function renderAll(data) { _pubPage = 1; renderPubList(data); renderBarChart(data.slice(0, 20)); renderDonut(data); }
+        function renderAll(data) {
+            _pubPage = 1;
+            const rows = parseInt(_$('tpRowsSel')?.value || '20');
+            renderPubList(data.slice(0, rows));
+            renderBarChart(data.slice(0, rows));
+            renderDonut(data);
+            TpData._updateHeader(rows);
+        }
 
         /* ══════════════════════════════════════
            PUBLISHER LIST
@@ -634,12 +641,26 @@
                 _filtered = term.trim() ? _allData.filter(p => (p.domain || '').toLowerCase().includes(term.toLowerCase())) : _allData;
                 _pubPage = 1;
                 const rows = parseInt(_$('tpRowsSel')?.value || '20');
-                renderPubList(_filtered);
+                renderPubList(_filtered.slice(0, rows));
                 renderBarChart(_filtered.slice(0, rows));
                 renderDonut(_filtered);
-                const b = _$('badgePublishers'); if (b) b.textContent = `${_filtered.length} publishers`;
+                this._updateHeader(rows);
             },
-            changeRows() { const rows = parseInt(_$('tpRowsSel')?.value || '20'); renderBarChart(_filtered.slice(0, rows)); },
+            changeRows() {
+                const rows = parseInt(_$('tpRowsSel')?.value || '20');
+                _pubPage = 1;
+                renderBarChart(_filtered.slice(0, rows));
+                renderPubList(_filtered.slice(0, rows));
+                this._updateHeader(rows);
+            },
+            _updateHeader(rows) {
+                const subH = _$('tpBarSubHeader');
+                if (subH) subH.textContent = `Top ${rows} publishers — click a bar to view articles`;
+                const badge = _$('tpBarBadge');
+                if (badge) badge.textContent = `Top ${rows}`;
+                const b = _$('badgePublishers');
+                if (b) b.textContent = `${Math.min(rows, _filtered.length)} of ${_filtered.length} publishers`;
+            }
         };
 
         /* ══════════════════════════════════════

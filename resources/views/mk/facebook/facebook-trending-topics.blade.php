@@ -576,7 +576,7 @@ const FBTrendingLoader = {
         const size = h.size || 0;
         const pct  = this.maxVolume > 0 ? Math.round(size / this.maxVolume * 100) : 0;
         const fmt  = n => new Intl.NumberFormat('en-US').format(n);
-        const link = 'https://www.facebook.com/hashtag/' + encodeURIComponent(name) + '/';
+        const link = 'https://www.facebook.com/search/posts/?q=' + encodeURIComponent(name);
 
         return '<tr>' +
             '<td class="rank-cell">#' + rank + '</td>' +

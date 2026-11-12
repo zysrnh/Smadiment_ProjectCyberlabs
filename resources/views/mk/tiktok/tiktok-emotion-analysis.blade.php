@@ -1094,9 +1094,12 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
             },
 
             _updateChips() {
-                const counts = getEmoCounts();
-                const el = _$('chip-all'); if (el) el.textContent = numK(getTotalPosts());
-                EMOTIONS.forEach(e => { const chip = _$('chip-'+e); if (chip) chip.textContent = numK(counts[e]||0); });
+                const listCounts = { all: allPosts.length };
+                EMOTIONS.forEach(e => {
+                    listCounts[e] = allPosts.filter(p => (p.emotion || '').toLowerCase() === e).length;
+                });
+                const el = _$('chip-all'); if (el) el.textContent = numK(listCounts.all);
+                EMOTIONS.forEach(e => { const chip = _$('chip-'+e); if (chip) chip.textContent = numK(listCounts[e]||0); });
             },
 
             renderList() {
@@ -1437,12 +1440,12 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
                     markerClick:(e,ctx,{seriesIndex,dataPointIndex})=>{
                         const emo=EMOTIONS[seriesIndex],date=dates[dataPointIndex];if(!emo)return;
                         const pool=allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo&&(p.date_created||'').substring(0,10)===date);
-                        FEAPanel.open(pool.length?pool:allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo),emo);
+                        FEAPanel.open(pool, emo + (date ? ` (${date})` : ''));
                     },
                     dataPointSelection:(e,ctx,cfg)=>{
                         const emo=EMOTIONS[cfg.seriesIndex],date=dates[cfg.dataPointIndex];if(!emo)return;
                         const pool=allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo&&(p.date_created||'').substring(0,10)===date);
-                        FEAPanel.open(pool.length?pool:allPosts.filter(p=>(p.emotion||'').toLowerCase()===emo),emo);
+                        FEAPanel.open(pool, emo + (date ? ` (${date})` : ''));
                     },
                     mouseMove:(e,ctx,cfg)=>{const el=ctx?.el;if(el)el.style.cursor=(cfg.dataPointIndex>=0||cfg.seriesIndex>=0)?'pointer':'default';}
                 }},series:seriesData,colors:EMO_COLORS_ARR,xaxis:{categories:dates,axisBorder:{show:false},axisTicks:{show:false},labels:{show:true,style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'}}},yaxis:{labels:{formatter:v=>numK(v),style:{fontSize:'10px',fontWeight:600,colors:'#94A3B8'}},axisBorder:{show:false},axisTicks:{show:false}},stroke:{curve:'smooth',width:2},fill:type==='area'?{type:'gradient',gradient:{opacityFrom:.35,opacityTo:.05,shadeIntensity:.1}}:{type:'solid',opacity:1},markers:{size:4,strokeWidth:2,strokeColors:'#fff',hover:{size:7}},grid:{borderColor:'rgba(226,232,240,.55)',strokeDashArray:3,xaxis:{lines:{show:false}},padding:{top:10,right:8,bottom:0,left:4}},legend:{position:'bottom',horizontalAlign:'left',fontSize:'11px',fontFamily:'inherit',fontWeight:600,markers:{width:8,height:8,radius:4},itemMargin:{horizontal:12,vertical:4},offsetY:4},tooltip:{shared:false,intersect:true,style:{fontFamily:'inherit',fontSize:'12px'},x:{show:true},y:{formatter:v=>numF(v)+' posts'}}});
@@ -1456,7 +1459,8 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
             open(posts, emo) {
                 this._posts=posts||[]; this._emo=emo;
                 FEADetail.close();
-                const color=EMO_COLORS[emo]||'#038047';
+                const cleanEmo=(emo||'').split(' ')[0].toLowerCase();
+                const color=EMO_COLORS[cleanEmo]||'#038047';
                 _$('feaPanelDot').style.background=color;
                 _$('feaPanelTitle').textContent=emo?'Emotion: '+emo.charAt(0).toUpperCase()+emo.slice(1):'All Emotions';
                 _$('feaPanelMeta').textContent=FEACfg.sd+' – '+FEACfg.ed;
@@ -1476,7 +1480,7 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
             _render() {
                 const list=_$('feaPanelList'); if (!list) return;
                 const posts=this._posts, dummy='/assets/images/user/dummy.jpg';
-                if (!posts.length) { list.innerHTML=emptyHtml('Tidak ada data'); return; }
+                if (!posts.length) { list.innerHTML=emptyHtml('Tidak ada data postingan untuk emosi dan periode/tanggal ini'); return; }
                 list.innerHTML = posts.slice(0,100).map(item => {
                     const name=getName(item), color2=getColor(item);
                     const av=getAvatar(item);
@@ -1633,11 +1637,16 @@ document.addEventListener('DOMContentLoaded',start);return{goTo,start,stop};})()
                     ${emoBars}
                 </div>
                 ${watchUrl?`<a href="${esc(watchUrl)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out me-1"></i>Buka di TikTok</a>`:''}`;
-                if (!hasDirectVideo && ttVidId) this._bindTtPlayer(body, ttVidId);
+                if (!hasDirectVideo && ttVidId) this._bindTtPlayer(body, ttVidId, watchUrl, cleanHandle, name);
                 panel.classList.add('show');
             },
-            _bindTtPlayer(root, vidId) {
-                window.SMADIMENT_bindTtPlayer?.(this, root, vidId, { fallbackLabel: 'Buka di TikTok' });
+            _bindTtPlayer(root, vidId, directUrl, handle, name) {
+                window.SMADIMENT_bindTtPlayer?.(this, root, vidId, { 
+                    fallbackLabel: 'Buka di TikTok',
+                    directUrl: directUrl,
+                    handle: handle,
+                    title: name
+                });
             },
 
             close()      { 

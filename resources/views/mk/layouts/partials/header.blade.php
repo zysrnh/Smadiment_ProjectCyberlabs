@@ -357,6 +357,55 @@
 }
 .gdp-footer { display:flex; gap:10px; justify-content:flex-end; }
 
+/* Responsive Mobile GDP Modal */
+@media(max-width:768px) {
+    #gdpModal { padding: 12px; }
+    .gdp-wrap {
+        flex-direction: column;
+        width: 100%;
+        max-width: min(360px, calc(100vw - 20px));
+        max-height: 92vh;
+        overflow-y: auto;
+        box-sizing: border-box;
+    }
+    .gdp-sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        white-space: nowrap;
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 8px 10px;
+        gap: 6px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .gdp-sidebar::-webkit-scrollbar { height: 3px; }
+    .gdp-sidebar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .gdp-preset {
+        width: auto;
+        padding: 6px 12px;
+        font-size: 11px;
+        flex-shrink: 0;
+        border-radius: 6px;
+        background: #f1f5f9;
+    }
+    .gdp-body {
+        padding: 14px 12px;
+        gap: 10px;
+    }
+    .gdp-cals {
+        gap: 0;
+        min-width: 0;
+    }
+    #gdpCal2 {
+        display: none !important;
+    }
+    .gdp-display {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+}
+
 /* Avatar diatur via .circle-btn */
 .header-user-profile .profile-avatar-img { width:100%; height:100%; object-fit:cover; display:block; border-radius:50%; }
 .header-user-profile .pc-head-link:hover .profile-avatar-img,

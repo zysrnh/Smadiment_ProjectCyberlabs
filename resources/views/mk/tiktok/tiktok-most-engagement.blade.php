@@ -1510,11 +1510,16 @@ const TMEDetail = {
                 <div class="do-dp2-stat"><div class="do-dp2-stat-val">${numF(s)}</div><div class="do-dp2-stat-lbl">Shares</div></div>
             </div>
             ${watchUrl?`<a href="${esc(watchUrl)}" target="_blank" rel="noopener noreferrer" class="do-dp2-link" style="margin-top:12px;"><i class="ph ph-arrow-square-out me-1"></i>Buka di TikTok</a>`:''}`;
-        if(!hasDirectVideo && ttVidId) this._bindTtPlayer(body, ttVidId);
+        if(!hasDirectVideo && ttVidId) this._bindTtPlayer(body, ttVidId, watchUrl, cleanHandle, name);
         panel.classList.add('show');
     },
-    _bindTtPlayer(root, vidId) {
-        window.SMADIMENT_bindTtPlayer?.(this, root, vidId, { fallbackLabel: 'Buka di TikTok' });
+    _bindTtPlayer(root, vidId, watchUrl, handle, name) {
+        window.SMADIMENT_bindTtPlayer?.(this, root, vidId, { 
+            fallbackLabel: 'Buka di TikTok',
+            directUrl: watchUrl,
+            handle: handle,
+            title: name
+        });
     },
     close() { 
         this.killIframe(); 

@@ -1417,14 +1417,23 @@ const YTPostsLoader = {
         }
 
         let ytUrl = null;
-        if (videoId) {
-            ytUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        const cleanVid = String(videoId || '').replace(/^(?:yt-|youtube-)/i, '').trim();
+        const isValidVid = /^[a-zA-Z0-9_-]{11}$/.test(cleanVid);
+        if (isValidVid) {
+            ytUrl = `https://www.youtube.com/watch?v=${cleanVid}`;
         } else if (rawYtUrl && rawYtUrl.startsWith('http')) {
             ytUrl = rawYtUrl;
         }
-        const mediaHtml = videoId
-            ? `<div style="position:relative;width:100%;padding-top:56.25%;border-radius:8px;overflow:hidden;background:#0f172a;margin-bottom:14px;"><iframe src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>`
-            : '';
+        const thumbUrl = (item.thumbnail_url || item.thumbnail || item.image_url || item.image || (isValidVid ? `https://img.youtube.com/vi/${cleanVid}/hqdefault.jpg` : '')).trim();
+        let mediaHtml = '';
+        if (isValidVid) {
+            mediaHtml = `<div style="position:relative;width:100%;padding-top:56.25%;border-radius:8px;overflow:hidden;background:#0f172a;margin-bottom:14px;"><iframe src="https://www.youtube-nocookie.com/embed/${cleanVid}?rel=0&modestbranding=1" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen onerror="this.style.display='none'"></iframe></div>`;
+        } else if (thumbUrl) {
+            mediaHtml = `<div style="position:relative;width:100%;border-radius:8px;overflow:hidden;background:#0f172a;margin-bottom:14px;">
+                <img src="${thumbUrl}" style="width:100%;max-height:280px;object-fit:cover;display:block;">
+                ${ytUrl ? `<a href="${ytUrl}" target="_blank" rel="noopener noreferrer" style="position:absolute;bottom:10px;right:10px;background:rgba(239,68,68,0.92);color:#fff;font-size:11px;font-weight:700;padding:6px 12px;border-radius:99px;text-decoration:none;display:inline-flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(0,0,0,.3);"><i class="ph ph-play-circle" style="font-size:14px;"></i> Tonton di YouTube</a>` : ''}
+            </div>`;
+        }
         const hasContent   = rawContent.trim().length > 0;
 
         document.getElementById('modalBody').innerHTML = `

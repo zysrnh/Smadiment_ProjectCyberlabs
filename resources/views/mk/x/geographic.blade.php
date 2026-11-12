@@ -920,11 +920,13 @@ const XGeo = {
             try { window._leafletMaps[elementId].remove(); } catch(e) {}
             delete window._leafletMaps[elementId];
         }
-        var map = L.map(elementId, { center:[-2.5,118], zoom:5, scrollWheelZoom:false, preferCanvas:true, zoomAnimation:true, fadeAnimation:true });
+        var map = L.map(elementId, { center:[-2.5,118], zoom:5, minZoom:4, maxBounds:[[-15,90],[15,145]], maxBoundsViscosity:1.0, scrollWheelZoom:false, preferCanvas:true, zoomAnimation:true, fadeAnimation:true });
         window._leafletMaps[elementId] = map;
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 19,
+            noWrap: true,
+            bounds: [[-15, 90], [15, 145]],
             crossOrigin: true
         }).addTo(map);
 

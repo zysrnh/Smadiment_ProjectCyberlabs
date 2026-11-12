@@ -175,7 +175,7 @@
     .do-dp-container {
         flex-direction: column;
         width: 100%;
-        max-width: 360px;
+        max-width: min(360px, calc(100vw - 20px));
         max-height: 92vh;
         overflow-y: auto;
         box-sizing: border-box;

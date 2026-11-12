@@ -795,10 +795,12 @@ const FBGeoLoader = {
 
     // ── Shared renderMap ──────────────────────────────────────────────────
     renderMap(elementId, rows, getMarkerProps) {
-        const map = L.map(elementId, { center: [-2.5, 118], zoom: 5, scrollWheelZoom: false });
+        const map = L.map(elementId, { center: [-2.5, 118], zoom: 5, minZoom: 4, maxBounds: [[-15, 90], [15, 145]], maxBoundsViscosity: 1.0, scrollWheelZoom: false });
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 19,
+            noWrap: true,
+            bounds: [[-15, 90], [15, 145]],
             crossOrigin: true
         }).addTo(map);
 

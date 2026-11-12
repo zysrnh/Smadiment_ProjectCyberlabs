@@ -374,12 +374,14 @@ class CompareProjectController extends Controller
         ];
 
         $mediaRatios = [
-            'doc'    => 0.20,
-            'twit'   => 0.32,
-            'tiktok' => 0.21,
-            'ig'     => 0.13,
-            'yt'     => 0.09,
-            'fb'     => 0.05,
+            'doc'       => 0.20,
+            'twit'      => 0.32,
+            'tiktok'    => 0.21,
+            'ig'        => 0.13,
+            'instagram' => 0.13,
+            'yt'        => 0.09,
+            'youtube'   => 0.09,
+            'fb'        => 0.05,
         ];
 
         $volumeTotal = [];

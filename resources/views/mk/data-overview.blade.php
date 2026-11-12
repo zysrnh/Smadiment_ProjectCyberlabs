@@ -2277,10 +2277,12 @@
             }).catch(function(e){ console.error('[loadMap]',e); });
         },
         renderMap: function(elId,rows,primary){
-            var map=L.map(elId,{center:[-2.5,118],zoom:5,scrollWheelZoom:false});
+            var map=L.map(elId,{center:[-2.5,118],zoom:5,minZoom:4,maxBounds:[[-15,90],[15,145]],maxBoundsViscosity:1.0,scrollWheelZoom:false});
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-                maxZoom: 19
+                maxZoom: 19,
+                noWrap: true,
+                bounds: [[-15, 90], [15, 145]]
             }).addTo(map);
             if(!rows.length) return{map:map,markerRefs:[]};
             var maxCount=Math.max.apply(null,rows.map(function(p){return parseInt(p.count||0);})), markerRefs=[];

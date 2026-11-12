@@ -661,7 +661,13 @@
         }
         function _cmpByMedia(volume, pid) {
             const n = _cmpNode(volume, pid); if (!n?.volume_total?.bymedia) return {};
-            const r = {}; for (const [k, v] of Object.entries(n.volume_total.bymedia)) r[k] = _int(v); return r;
+            const r = {};
+            for (const [k, v] of Object.entries(n.volume_total.bymedia)) {
+                const normKey = k === 'ig' ? 'instagram' : (k === 'yt' ? 'youtube' : k);
+                r[normKey] = _int(v);
+                r[k] = _int(v);
+            }
+            return r;
         }
         function _cmpSent(sentiment, pid) {
             const n = _cmpNode(sentiment, pid); if (!n) return { pos: 0, neg: 0, net: 0 };

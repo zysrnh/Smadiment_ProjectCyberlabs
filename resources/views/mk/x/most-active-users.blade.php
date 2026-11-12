@@ -1155,7 +1155,7 @@ const Detail = (() => {
     if(ts){const d=new Date(ts);if(!isNaN(d))dtStr=d.toLocaleString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Jakarta'})+' WIB';}
     const likes=parseInt(m.likes||m.num_likes||0), rts=parseInt(m.retweets||m.num_shares||0), reps=parseInt(m.replies||m.num_comments||0);
     const text=_linkify(m.text||''), handle=m.author||'';
-    const tUrl=(m.url&&m.url!=='#')?m.url:`https://twitter.com/${encodeURIComponent(handle)}`;
+    const tUrl = (m.url && m.url !== '#' && !m.url.includes('/status/1840') && !m.url.includes('/status/inf-') && !m.url.includes('/status/x-fallback')) ? m.url : (handle ? `https://x.com/${encodeURIComponent(handle)}` : '');
     $('detailTitle').textContent='Tweet Detail';
     $('detailBody').innerHTML=`
       <div class="do-dp2-meta">${dtStr?`<i class="ph ph-clock me-1"></i>${dtStr}`:''}</div>
