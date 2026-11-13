@@ -1234,8 +1234,8 @@ if (projectId && startDate && endDate) {
         : [];
       const hasQuotes = quotes.length > 0;
       let artUrl = (article.url || article.link || '').trim();
-      if (!artUrl || artUrl === '#' || artUrl === 'about:blank') {
-        const t = article.title || '';
+      if (!artUrl || artUrl === '#' || artUrl === 'about:blank' || artUrl.includes('news.google.com')) {
+        const t = (article.title || '').replace(/<[^>]*>/g, '').replace(/ - [A-Za-z0-9\s\.\-]+$/, '').trim();
         const p = (article.publisher && article.publisher !== 'Unknown' && article.publisher !== 'Online News') ? article.publisher : '';
         artUrl = t ? `https://www.google.com/search?q=${encodeURIComponent(t + (p ? ' ' + p : ''))}` : (p ? `https://${p.replace(/^https?:\/\//,'')}` : 'https://news.google.com');
       }

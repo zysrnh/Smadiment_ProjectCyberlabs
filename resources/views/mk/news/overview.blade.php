@@ -454,8 +454,8 @@ const NV = (() => {
       const date=a.date_created?new Date(a.date_created).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}):'';
       const publisher=a.publisher||a.hostname||'Unknown';
       let url=(a.url||a.link||'').trim();
-      if(!url || url === '#' || url === 'about:blank'){
-        const t = a.title || '';
+      if(!url || url === '#' || url === 'about:blank' || url.includes('news.google.com')){
+        const t = (a.title || '').replace(/<[^>]*>/g, '').replace(/ - [A-Za-z0-9\s\.\-]+$/, '').trim();
         const p = (publisher !== 'Unknown' && publisher !== 'Online News') ? publisher : '';
         url = t ? `https://www.google.com/search?q=${encodeURIComponent(t + (p ? ' ' + p : ''))}` : (p ? `https://${p.replace(/^https?:\/\//,'')}` : 'https://news.google.com');
       }

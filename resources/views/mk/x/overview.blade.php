@@ -710,7 +710,7 @@ const OVData = {
         return `<img src="${esc(fallback)}" loading="lazy">`;
     },
     _normSent(item){ const r=String(item.sentiment_str||item.sentiment||'').toLowerCase(); return r.includes('pos')?'pos':r.includes('neg')?'neg':'neu'; },
-    _tweetUrl(item){ const direct=(item.url||item.link||'').trim(); if(direct&&direct.startsWith('http')&&!direct.includes('/status/1839'))return direct; const scr=String(this._getScr(item)||'').replace(/^@+/,''),sid=String(item.sub_id||item.id||''); if(scr&&/^\d{15,20}$/.test(sid)&&!sid.startsWith('1839'))return `https://x.com/${encodeURIComponent(scr)}/status/${encodeURIComponent(sid)}`; return scr?`https://x.com/${encodeURIComponent(scr)}`:''; },
+    _tweetUrl(item){ const direct=(item.url||item.link||'').trim(); if(direct&&direct.startsWith('http')&&!direct.includes('/status/1839')&&!direct.includes('tw-mock')&&!direct.includes('localhost'))return direct; const scr=String(this._getScr(item)||'').replace(/^@+/,''),sid=String(item.sub_id||item.id||''); if(scr&&/^\d{15,20}$/.test(sid)&&!sid.startsWith('1839'))return `https://x.com/${encodeURIComponent(scr)}/status/${encodeURIComponent(sid)}`; return scr?`https://x.com/${encodeURIComponent(scr)}`:'https://x.com/search?q=Prabowo'; },
 
     _renderList(type) {
         const items=Store[type], ls=_$('list-'+type), pg=_$('pag-'+type);

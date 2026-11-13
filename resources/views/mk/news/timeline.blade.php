@@ -996,8 +996,9 @@ const MTData={
         if(item.comments>0)parts.push('<span class="mt-metric"><i class="ph ph-chat-circle me-1"></i>'+numF(item.comments)+'</span>');
         if(item.shares>0)parts.push('<span class="mt-metric"><i class="ph ph-share-network me-1"></i>'+numF(item.shares)+'</span>');
         let pUrl = (item.url||'').trim();
-        if ((!pUrl || pUrl === '#' || pUrl === 'about:blank') && (item._platform === 'doc' || item._platform === 'online_news')) {
-            pUrl = item.name ? 'https://www.google.com/search?q=' + encodeURIComponent(item.name) : 'https://news.google.com';
+        if ((!pUrl || pUrl === '#' || pUrl === 'about:blank' || pUrl.includes('news.google.com')) && (item._platform === 'doc' || item._platform === 'online_news')) {
+            const artTitle = (item.content || item.name || '').slice(0, 80);
+            pUrl = artTitle ? 'https://www.google.com/search?q=' + encodeURIComponent(artTitle) : 'https://news.google.com';
         }
         return '<div class="mt-post" data-item="'+esc(enc)+'">'
             +'<div class="mt-post-rank mt-post-rank'+rkCls+'">'+rank+'</div>'

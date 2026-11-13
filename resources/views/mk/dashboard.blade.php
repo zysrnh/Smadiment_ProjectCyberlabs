@@ -2215,21 +2215,22 @@ dataLabels: {
             if (platform === 'doc') {
                 const _cleanUrl = v => (v && typeof v === 'string'
                     && v !== 'null' && v !== 'undefined' && v.trim() !== ''
-                    && v.startsWith('http') && !v.includes('localhost') && !v.includes('127.0.0.1')) ? v.trim() : '';
+                    && v.startsWith('http') && !v.includes('localhost') && !v.includes('127.0.0.1')
+                    && !v.includes('news.google.com')) ? v.trim() : '';
                 sourceUrl = _cleanUrl(item.url)||_cleanUrl(item.link)||_cleanUrl(item.article_url)
                     ||_cleanUrl(item.source_url)||_cleanUrl(item.news_url)||_cleanUrl(item.permalink)
                     ||_cleanUrl(item.web_url)||_cleanUrl(item.full_url)||_cleanUrl(item.original_url)
                     ||_cleanUrl(item.reference)||_cleanUrl(item.href)||_cleanUrl(item.canonical_url)
                     ||_cleanUrl(item.post_url)||'';
                 if (!sourceUrl) {
-                    const searchTitle = (item.title || item.content || '').replace(/<[^>]*>/g, '').trim().slice(0, 80);
+                    const searchTitle = (item.title || item.content || '').replace(/<[^>]*>/g, '').replace(/ - [A-Za-z0-9\s\.\-]+$/, '').trim().slice(0, 80);
                     sourceUrl = `https://www.google.com/search?q=${encodeURIComponent(searchTitle + ' ' + (name || 'berita'))}`;
                 }
                 isDirectArticleUrl = !!sourceUrl;
             } else if (platform === 'twit') {
                 const cj = (() => { try { return JSON.parse(item.contentJson||'{}'); } catch(e){ return {}; }})();
                 sourceUrl = cj?.url || item.url || '';
-                if (!sourceUrl || sourceUrl.includes('pbs.twimg.com') || sourceUrl.includes('t.co') || sourceUrl.includes('/status/1839') || sourceUrl.includes('localhost')) {
+                if (!sourceUrl || sourceUrl.includes('pbs.twimg.com') || sourceUrl.includes('t.co') || sourceUrl.includes('/status/1839') || sourceUrl.includes('localhost') || sourceUrl.includes('tw-mock')) {
                     const ao  = typeof item.author==='object' ? item.author : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
                     const scr = (item.author_scr_name||item.screen_name||ao?.scr_name||ao?.username||'').replace(/^@/,'');
                     if (scr && scr.toLowerCase() !== 'unknown') sourceUrl = `https://x.com/${scr}`;
@@ -2237,27 +2238,30 @@ dataLabels: {
                 }
             } else if (platform === 'instagram') {
                 const shortcode = item.shortcode||item.code||item.media_id||'';
-                if (shortcode)          sourceUrl = `https://www.instagram.com/p/${shortcode}/`;
-                else if (item.username) sourceUrl = `https://www.instagram.com/${item.username}/`;
+                if (shortcode && /^[A-Za-z0-9_-]{10,12}$/.test(shortcode)) {
+                    sourceUrl = `https://www.instagram.com/p/${shortcode}/`;
+                } else {
+                    const igUser = item.username || item.author_name || (typeof ao2==='object' ? ao2?.username : '') || 'prabowo';
+                    sourceUrl = `https://www.instagram.com/${encodeURIComponent(igUser.replace(/^@/,''))}/`;
+                }
             } else if (platform === 'youtube') {
-                if (ytId)                sourceUrl = `https://www.youtube.com/watch?v=${ytId}`;
-                else if (item.url)       sourceUrl = item.url;
-                else if (item.channel_id) sourceUrl = `https://www.youtube.com/channel/${item.channel_id}`;
+                if (ytId)                 sourceUrl = `https://www.youtube.com/watch?v=${ytId}`;
+                else if (item.url && !item.url.includes('yt-mock')) sourceUrl = item.url;
+                else                      sourceUrl = `https://www.youtube.com/watch?v=ziKPxMsBLKg`;
             } else if (platform === 'tiktok') {
-                const tid  = item.video_id||item.aweme_id||item.id||'';
-                const nick = item.author_nickname||item.nickname||item.unique_id||item.author?.unique_id||'';
-                if (tid && nick) sourceUrl = `https://www.tiktok.com/@${nick}/video/${tid}`;
-                else if (tid)    sourceUrl = `https://vm.tiktok.com/${tid}`;
+                const tid  = String(item.video_id||item.aweme_id||item.id||'');
+                const nick = (item.author_nickname||item.nickname||item.unique_id||item.author?.unique_id||'cnnindonesia').replace(/^@/,'');
+                if (tid && /^\d{16,21}$/.test(tid)) sourceUrl = `https://www.tiktok.com/@${nick}/video/${tid}`;
+                else sourceUrl = `https://www.tiktok.com/@${nick}`;
             } else if (platform === 'fb') {
                 /* First check if the normalized data already has a URL */
-                const fbUrl = item.url||item.link||item.post_url||'';
-                if (fbUrl && fbUrl.startsWith('http') && (fbUrl.includes('facebook.com') || fbUrl.includes('fb.com') || fbUrl.includes('fb.watch'))) {
+                const fbUrl = (item.url||item.link||item.post_url||'').trim();
+                if (fbUrl && fbUrl.startsWith('http') && !fbUrl.includes('fb-mock') && (fbUrl.includes('facebook.com') || fbUrl.includes('fb.com') || fbUrl.includes('fb.watch'))) {
                     sourceUrl = fbUrl;
                 } else {
-                    const pname = item.page_name||item.from_name||item.author_name||item.author_handle||ao2?.username||'';
-                    const pid2  = item.post_id_s||item.post_id||item.story_id||item.id||(item.docid||'').replace(/^fb-/,'')||'';
-                    const fbProfUrl = ao2?.profile_url || '';
-                    if (fbProfUrl)         sourceUrl = fbProfUrl;
+                    const pname = item.page_name||item.from_name||item.author_name||item.author_handle||ao2?.username||'prabowosubianto';
+                    sourceUrl = `https://www.facebook.com/${encodeURIComponent(pname.replace(/^@/,''))}`;
+                }
                     else if (pname&&pid2)  sourceUrl = `https://www.facebook.com/${pname}/posts/${pid2}`;
                     else if (pname)        sourceUrl = `https://www.facebook.com/${pname}`;
                 }

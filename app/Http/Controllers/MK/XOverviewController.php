@@ -3281,6 +3281,10 @@ public function mostEngagementData(Request $request)
                         'media' => $media, 'sub' => $sub,
                         'error' => $e->getMessage()
                     ]);
+                    $msgLower = strtolower($e->getMessage());
+                    if (str_contains($msgLower, 'token') || str_contains($msgLower, 'auth') || str_contains($msgLower, 'unauthorized')) {
+                        break 2;
+                    }
                 }
             }
 

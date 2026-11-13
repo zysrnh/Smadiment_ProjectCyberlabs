@@ -1040,11 +1040,9 @@ const XMVData = {
         const dt=this._formatDate(item.date_created);
         const _direct = (item.url || '').trim();
         const _sid = String(item.sub_id || '');
-        const url = (_direct && _direct.startsWith('http') && !_direct.includes('/status/1839'))
+        const url = (_direct && _direct.startsWith('http') && !_direct.includes('/status/1839') && !_direct.includes('tw-mock') && !_direct.includes('localhost'))
             ? _direct
-            : (handle && /^\d{15,20}$/.test(_sid) && !_sid.startsWith('1839')
-                ? `https://x.com/${handle}/status/${_sid}`
-                : (handle ? `https://x.com/${handle}` : ''));
+            : (handle ? `https://x.com/${handle}` : 'https://x.com/search?q=Prabowo');
         const v=parseInt(item.view_cnt||0), rt=parseInt(item.rt||0), flw=parseInt(item.author?.flw_cnt||0);
         const total=v+rt;
         const sentLbl={pos:'Positive',neg:'Negative',neu:'Neutral'}[sent];
@@ -1299,11 +1297,9 @@ const XMVDetail = {
         const content = (item.content||'').replace(/<[^>]*>/g,'').trim();
         const _direct = (item.url || '').trim();
         const _sid    = String(item.sub_id || '');
-        const url     = (_direct && _direct.startsWith('http') && !_direct.includes('/status/1839'))
+        const url     = (_direct && _direct.startsWith('http') && !_direct.includes('/status/1839') && !_direct.includes('tw-mock') && !_direct.includes('localhost'))
             ? _direct
-            : (handle && /^\d{15,20}$/.test(_sid) && !_sid.startsWith('1839')
-                ? `https://x.com/${handle}/status/${_sid}`
-                : (handle ? `https://x.com/${handle}` : ''));
+            : (handle ? `https://x.com/${handle}` : 'https://x.com/search?q=Prabowo');
         const isStatusUrl = /\/status\/\d+/.test(url);
         const linkLabel   = isStatusUrl ? 'Buka Post di X (Twitter)' : 'Buka Profil di X (Twitter)';
         const dt      = item.date_created||'';

@@ -197,6 +197,11 @@ Route::prefix('mk')->name('mk.')->middleware(['auth', 'check.trial'])->group(fun
             Route::get('/ai-analysis-data', [YoutubeOverviewController::class, 'aiAnalysisData'])->name('ai-analysis-data');
             Route::post('/ai-proxy',        [YoutubeOverviewController::class, 'aiAnalysisProxy'])->name('ai-proxy');
             Route::get('/top-locations',    [YoutubeOverviewController::class, 'topLocations'])->name('top-locations');
+            Route::get('/authors-age',      [YoutubeOverviewController::class, 'authorsAgeData'])->name('authors-age');
+            Route::get('/authors-gender',   [YoutubeOverviewController::class, 'authorsGenderData'])->name('authors-gender');
+            Route::get('/authors-type',     [YoutubeOverviewController::class, 'authorsTypeData'])->name('authors-type');
+            Route::get('/geo-user',         [YoutubeOverviewController::class, 'geoUser'])->name('geo-user');
+            Route::get('/geo-sentiment',    [YoutubeOverviewController::class, 'geoSentiment'])->name('geo-sentiment');
         });
 
         // ─────────────────────────────────────────────────────

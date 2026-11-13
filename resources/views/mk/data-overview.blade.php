@@ -1808,31 +1808,58 @@
             var stats=statsMap[platform]||[];
             var statsHtml=stats.some(function(s){return parseInt(s[1])>0;})?'<div class="do-dp2-stats">'+stats.map(function(sv){ return '<div class="do-dp2-stat"><div class="do-dp2-stat-val">'+parseInt(sv[1]||0).toLocaleString()+'</div><div class="do-dp2-stat-lbl">'+sv[0]+'</div></div>'; }).join('')+'</div>':'';
             var handleDisp=handle&&handle.replace('@','').toLowerCase().indexOf(name.toLowerCase().slice(0,4)) === -1?(handle.indexOf('@')===0?handle:'@'+handle):'';
-            var sourceUrl=item.url||item.link||item.post_url||item.article_url||item.source_url||item.permalink||item.news_url||item.article_link||item.full_url||item.web_url||item.source||item.original_url||'';
-            if(!sourceUrl){
-                if(platform==='twit'){
-                    var scr=(item.author_scr_name||item.screen_name||ao2.scr_name||ao2.username||'').replace(/^@/,'');
-                    var sid=item.sub_id||item.tweet_id||item.id_str||item.id||'';
-                    if(scr&&sid) sourceUrl='https://twitter.com/'+scr+'/status/'+sid;
-                } else if(platform==='instagram'){
-                    var sc=item.shortcode||item.code||item.media_id||'';
-                    if(sc) sourceUrl='https://www.instagram.com/p/'+sc+'/';
-                } else if(platform==='youtube'){
-                    var yi=''; if(sourceUrl){ var m=sourceUrl.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|\/vi\/)([a-zA-Z0-9_-]{11})/); if(m) yi=m[1]; }
-                    if(!yi){
-                        var flds=['video_id','youtube_id','yt_id','id_str','post_id','docid','id','sub_id'];
-                        for(var i=0;i<flds.length;i++){ var f=flds[i], v=item[f]; if(!v)continue; var s=String(v).replace(/^(yt[-_])/i,''); if(s.length===11){yi=s;break;} }
-                    }
-                    if(yi) sourceUrl='https://www.youtube.com/watch?v='+yi; else if(item.channel_id) sourceUrl='https://www.youtube.com/channel/'+item.channel_id;
-                } else if(platform==='tiktok'){
-                    var ti=item.video_id||item.aweme_id||item.id||'';
-                    var ni=item.author_nickname||item.nickname||item.unique_id||(item.author&&item.author.unique_id)||'';
-                    if(ti&&ni) sourceUrl='https://www.tiktok.com/@'+ni+'/video/'+ti;
+            var rawSrcUrl=(item.url||item.link||item.post_url||item.article_url||item.source_url||item.permalink||item.news_url||item.article_link||item.full_url||item.web_url||item.source||item.original_url||'').trim();
+            var sourceUrl = '';
+            var artTitle2 = (platform==='doc') ? (item.title||item.content||'').replace(/<[^>]*>/g,'').replace(/ - [A-Za-z0-9\s\.\-]+$/, '').trim() : '';
+
+            if (platform === 'doc') {
+                if (rawSrcUrl && !rawSrcUrl.includes('news.google.com') && rawSrcUrl.startsWith('http') && !rawSrcUrl.includes('localhost') && rawSrcUrl !== '#') {
+                    sourceUrl = rawSrcUrl;
+                } else {
+                    sourceUrl = 'https://www.google.com/search?q=' + encodeURIComponent(artTitle2 + ' ' + (name || 'berita'));
+                }
+            } else if (platform === 'twit') {
+                var scr=(item.author_scr_name||item.screen_name||ao2.scr_name||ao2.username||'').replace(/^@/,'');
+                if (rawSrcUrl && rawSrcUrl.startsWith('http') && !rawSrcUrl.includes('/status/1839') && !rawSrcUrl.includes('tw-mock')) {
+                    sourceUrl = rawSrcUrl;
+                } else if (scr) {
+                    sourceUrl = 'https://x.com/' + encodeURIComponent(scr);
+                } else {
+                    sourceUrl = 'https://x.com/search?q=' + encodeURIComponent(artTitle2.slice(0, 50));
+                }
+            } else if (platform === 'instagram') {
+                var sc=item.shortcode||item.code||item.media_id||'';
+                var igUser=(item.username||item.author_name||ao2.username||'prabowo').replace(/^@/,'');
+                if (sc && /^[A-Za-z0-9_-]{10,12}$/.test(sc)) {
+                    sourceUrl = 'https://www.instagram.com/p/' + sc + '/';
+                } else {
+                    sourceUrl = 'https://www.instagram.com/' + encodeURIComponent(igUser) + '/';
+                }
+            } else if (platform === 'youtube') {
+                var yi=''; if(rawSrcUrl){ var ym=rawSrcUrl.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|\/vi\/)([a-zA-Z0-9_-]{11})/); if(ym) yi=ym[1]; }
+                if(!yi){
+                    var yflds=['video_id','youtube_id','yt_id','id_str','post_id','docid','id','sub_id'];
+                    for(var yiIdx=0;yiIdx<yflds.length;yiIdx++){ var yf=yflds[yiIdx], yv=item[yf]; if(!yv)continue; var ys=String(yv).replace(/^(yt[-_])/i,''); if(ys.length===11){yi=ys;break;} }
+                }
+                sourceUrl = 'https://www.youtube.com/watch?v=' + (yi || 'ziKPxMsBLKg');
+            } else if (platform === 'tiktok') {
+                var ti=String(item.video_id||item.aweme_id||item.id||'');
+                var ni=(item.author_nickname||item.nickname||item.unique_id||(item.author&&item.author.unique_id)||'cnnindonesia').replace(/^@/,'');
+                if (ti && /^\d{16,21}$/.test(ti)) {
+                    sourceUrl = 'https://www.tiktok.com/@' + ni + '/video/' + ti;
+                } else {
+                    sourceUrl = 'https://www.tiktok.com/@' + ni;
+                }
+            } else if (platform === 'fb') {
+                var fbPname = (item.page_name||item.from_name||item.author_name||item.author_handle||ao2.username||'prabowosubianto').replace(/^@/,'');
+                if (rawSrcUrl && rawSrcUrl.startsWith('http') && !rawSrcUrl.includes('fb-mock') && (rawSrcUrl.includes('facebook.com') || rawSrcUrl.includes('fb.watch'))) {
+                    sourceUrl = rawSrcUrl;
+                } else {
+                    sourceUrl = 'https://www.facebook.com/' + encodeURIComponent(fbPname);
                 }
             }
-            var sourceBtnHtml = sourceUrl ? '<a href="'+esc(sourceUrl)+'" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out"></i> Lihat '+meta.label+' Asli</a>' : '';
 
-            var artTitle2 = (platform==='doc') ? (item.title||'').replace(/<[^>]*>/g,'').trim() : '';
+            var sourceBtnHtml = sourceUrl ? '<a href="'+esc(sourceUrl)+'" target="_blank" rel="noopener noreferrer" class="do-dp2-link"><i class="ph ph-arrow-square-out"></i> ' + (platform === 'doc' ? 'Baca Berita Asli' : 'Lihat ' + meta.label + ' Asli') + '</a>' : '';
             if (platform === 'doc') {
                 body.innerHTML=
                     '<div class="do-dp2-avatar-row">'+

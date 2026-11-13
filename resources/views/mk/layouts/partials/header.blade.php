@@ -1,6 +1,6 @@
 @php
-    $globalStartDate = request()->get('start_date', now()->startOfMonth()->format('Y-m-d'));
-    $globalEndDate   = request()->get('end_date', now()->format('Y-m-d'));
+    $globalStartDate = request()->get('start_date', '2026-06-01');
+    $globalEndDate   = request()->get('end_date', '2026-09-26');
 @endphp<style>
 .circle-btn {
     width: 56px !important; height: 56px !important; border-radius: 50% !important; padding: 0 !important; border: 2px solid #e2e8f0 !important; box-shadow: 0 4px 16px rgba(0,0,0,.14) !important; background: #f1f5f9 !important; display: flex !important; align-items: center !important; justify-content: center !important; position: relative !important; overflow: hidden !important; transition: all 0.25s cubic-bezier(.34,1.56,.64,1) !important; color: #475569 !important; text-decoration: none !important; line-height: 1 !important;
@@ -508,24 +508,27 @@ var GDPicker = (function () {
     }
 
     function clamp(d) {
-        return (d && d > today) ? new Date(today) : d;
+        var maxDate = today > new Date(2026, 8, 26) ? today : new Date(2026, 8, 26);
+        return (d && d > maxDate) ? new Date(maxDate) : d;
     }
 
     /* ── init ── */
     function initDates() {
-        if (!sessionStorage.getItem('smad_sess_v3')) {
-            sessionStorage.setItem('smad_sess_v3','1');
+        if (!sessionStorage.getItem('smad_sess_v5')) {
+            sessionStorage.setItem('smad_sess_v5','1');
             localStorage.removeItem(LS_S);
             localStorage.removeItem(LS_E);
         }
         var params = new URLSearchParams(window.location.search);
         var us = params.get('start_date'), ue = params.get('end_date');
+        var defaultStart = new Date(2026, 5, 1);
+        var defaultEnd   = new Date(2026, 8, 26);
         if (us && ue) {
-            startDate = parseLocal(us) || new Date(today.getFullYear(), today.getMonth(), 1);
-            endDate   = parseLocal(ue) || new Date(today);
+            startDate = parseLocal(us) || defaultStart;
+            endDate   = parseLocal(ue) || defaultEnd;
         } else {
-            startDate = parseLocal(localStorage.getItem(LS_S)) || new Date(today.getFullYear(), today.getMonth(), 1);
-            endDate   = parseLocal(localStorage.getItem(LS_E)) || new Date(today);
+            startDate = parseLocal(localStorage.getItem(LS_S)) || defaultStart;
+            endDate   = parseLocal(localStorage.getItem(LS_E)) || defaultEnd;
         }
         startDate = clamp(startDate);
         endDate   = clamp(endDate);

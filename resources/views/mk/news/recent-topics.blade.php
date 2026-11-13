@@ -434,7 +434,13 @@
             @if(isset($issue['urls']) && count($issue['urls']) > 1)
             <div class="issue-urls">
               @foreach($issue['urls'] as $url)
-              <a href="{{ $url }}" target="_blank" class="issue-url-item">
+              @php
+                $cleanItemUrl = trim($url);
+                if ($cleanItemUrl === '#' || !str_starts_with($cleanItemUrl, 'http') || str_contains($cleanItemUrl, 'localhost') || str_contains($cleanItemUrl, '127.0.0.1') || str_contains($cleanItemUrl, 'news.google.com')) {
+                  $cleanItemUrl = 'https://www.google.com/search?q=' . urlencode(($issue['isu'] ?? 'Berita') . ' ' . $cleanItemUrl);
+                }
+              @endphp
+              <a href="{{ $cleanItemUrl }}" target="_blank" class="issue-url-item">
                 <svg viewBox="0 0 24 24">
                   <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
@@ -509,7 +515,13 @@
             @if(isset($issue['urls']) && count($issue['urls']) > 1)
             <div class="issue-urls">
               @foreach($issue['urls'] as $url)
-              <a href="{{ $url }}" target="_blank" class="issue-url-item">
+              @php
+                $cleanItemUrl = trim($url);
+                if ($cleanItemUrl === '#' || !str_starts_with($cleanItemUrl, 'http') || str_contains($cleanItemUrl, 'localhost') || str_contains($cleanItemUrl, '127.0.0.1') || str_contains($cleanItemUrl, 'news.google.com')) {
+                  $cleanItemUrl = 'https://www.google.com/search?q=' . urlencode(($issue['isu'] ?? 'Berita') . ' ' . $cleanItemUrl);
+                }
+              @endphp
+              <a href="{{ $cleanItemUrl }}" target="_blank" class="issue-url-item">
                 <svg viewBox="0 0 24 24">
                   <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
