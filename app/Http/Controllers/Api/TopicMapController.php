@@ -474,7 +474,11 @@ class TopicMapController extends Controller
                     $content = (string) ($art['content'] ?? '');
                     $pub     = $art['publisher_name'] ?? $art['publisher'] ?? $art['media'] ?? $art['source'] ?? $art['author_name'] ?? 'Media Berita';
                     $date    = $art['date'] ?? $art['date_created'] ?? $art['created_at'] ?? now()->format('Y-m-d H:i');
-                    $url     = $art['url'] ?? $art['link'] ?? '#';
+                    $url     = trim((string) ($art['url'] ?? $art['link'] ?? ''));
+                    if (empty($url) || $url === '#' || str_starts_with($url, 'javascript:') || str_contains($url, 'localhost') || str_contains($url, '127.0.0.1')) {
+                        $searchQuery = urlencode($title . ($pub !== 'Media Berita' ? ' ' . $pub : ''));
+                        $url = "https://www.google.com/search?q={$searchQuery}";
+                    }
                     $sentiment = $art['sentiment'] ?? $art['class_sentiment'] ?? 'neutral';
                     if ($sentiment === '1' || $sentiment === 'pos') $sentiment = 'positive';
                     if ($sentiment === '-1' || $sentiment === 'neg') $sentiment = 'negative';

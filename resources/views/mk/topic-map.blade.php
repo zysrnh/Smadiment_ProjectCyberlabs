@@ -697,7 +697,10 @@
               const cleanPub   = _escHtml(art.publisher || 'News');
               const cleanDate  = _escHtml(art.date || '');
               const cleanSnip  = _escHtml(art.snippet || '');
-              const url        = art.url || '#';
+              let url = (art.url || '').trim();
+              if (!url || url === '#' || url.startsWith('javascript:') || url.includes('localhost') || url.includes('127.0.0.1')) {
+                url = `https://www.google.com/search?q=${encodeURIComponent(cleanTitle + ' ' + cleanPub)}`;
+              }
 
               return `
                 <div class="drawer-article-card">

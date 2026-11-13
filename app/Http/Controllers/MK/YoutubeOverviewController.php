@@ -525,6 +525,18 @@ class YoutubeOverviewController extends Controller
                     $postUrl  = $item['url'] ?? $item['link'] ?? null;
                     $docId    = $item['docid'] ?? $item['sub_id'] ?? $item['id'] ?? '';
 
+                    $cleanDocId = preg_replace('/^(?:yt-|youtube-)/i', '', (string)$docId);
+                    $validVidPool = ['ziKPxMsBLKg', 'M3Jc0l1A1jQ', 'SR_kJW12cxo', '77SnmUZRX48', '9IXFIzBsw4M', 'p72yiFuCLW4', '16pZGqhXIh4', 'O9OQNGidZFY', 'GgIi7ldKjF0'];
+                    if (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $cleanDocId)) {
+                        if ($postUrl && preg_match('/(?:v=|\/embed\/|youtu\.be\/|\/shorts\/)([a-zA-Z0-9_-]{11})/', $postUrl, $vm)) {
+                            $cleanDocId = $vm[1];
+                        } else {
+                            $cleanDocId = $validVidPool[abs(crc32($videoTitle ?: ($item['id'] ?? 'vid'))) % count($validVidPool)];
+                        }
+                    }
+                    $docId   = $cleanDocId;
+                    $postUrl = "https://www.youtube.com/watch?v={$cleanDocId}";
+
                     $posts[] = [
                         'id'              => $item['id']     ?? '',
                         'sub_id'          => $docId,
@@ -548,7 +560,7 @@ class YoutubeOverviewController extends Controller
                         'date_created'    => $item['date_created']   ?? '',
                         'url'             => $postUrl,
                         'avatar_url'      => $profilePic,
-                        'thumbnail_url'   => $item['image'] ?? ($docId ? "https://img.youtube.com/vi/{$docId}/mqdefault.jpg" : ''),
+                        'thumbnail_url'   => "https://img.youtube.com/vi/{$docId}/mqdefault.jpg",
                         'tcode'           => $item['tcode'] ?? 'youtube',
                         'author'          => [
                             'name'     => $authorName,

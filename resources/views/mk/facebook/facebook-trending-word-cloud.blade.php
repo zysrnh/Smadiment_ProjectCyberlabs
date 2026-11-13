@@ -634,7 +634,7 @@ function renderWC() {
         wcChart.on('click', p => {
             const cleanTag = (p.name || '').trim().replace(/^#+/, '');
             if (!cleanTag) return;
-            window.open(`https://www.facebook.com/search/posts/?q=${encodeURIComponent(cleanTag)}`, '_blank', 'noopener,noreferrer');
+            window.open(`https://www.facebook.com/hashtag/${encodeURIComponent(cleanTag)}`, '_blank', 'noopener,noreferrer');
         });
 
         if (window._fbwcResizeObserver) window._fbwcResizeObserver.disconnect();
@@ -683,7 +683,7 @@ function renderList() {
         el.onclick = () => {
             const cleanTag = (h.name || '').trim().replace(/^#+/, '');
             if (!cleanTag) return;
-            window.open(`https://www.facebook.com/search/posts/?q=${encodeURIComponent(cleanTag)}`, '_blank', 'noopener,noreferrer');
+            window.open(`https://www.facebook.com/hashtag/${encodeURIComponent(cleanTag)}`, '_blank', 'noopener,noreferrer');
         };
         list.appendChild(el);
     });

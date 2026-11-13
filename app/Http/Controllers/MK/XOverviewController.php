@@ -2354,11 +2354,20 @@
 
                 if (!$projectId || !$username) return response()->json(['success' => false, 'error' => 'Missing params'], 400);
 
-                $result       = $this->client->getUserPosts($projectId, $startDate, $endDate, $username, $perBatch, 300, 5, $apiStart);
-                $rawPosts     = $result['posts']         ?? [];
-                $hasMore      = $result['has_more']       ?? false;
-                $nextApiStart = $result['next_api_start'] ?? 0;
-                $totalScanned = $result['total_scanned']  ?? 0;
+                $rawPosts     = [];
+                $hasMore      = false;
+                $nextApiStart = 0;
+                $totalScanned = 0;
+
+                try {
+                    $result       = $this->client->getUserPosts($projectId, $startDate, $endDate, $username, $perBatch, 300, 5, $apiStart);
+                    $rawPosts     = $result['posts']         ?? [];
+                    $hasMore      = $result['has_more']       ?? false;
+                    $nextApiStart = $result['next_api_start'] ?? 0;
+                    $totalScanned = $result['total_scanned']  ?? 0;
+                } catch (\Throwable $e) {
+                    Log::warning('userDetailedMentions live API failed: ' . $e->getMessage());
+                }
 
                 // Fallback 1: search database snapshot for tweets by or mentioning this user
                 if (empty($rawPosts)) {
@@ -2393,7 +2402,7 @@
                                 'num_likes'            => $fp['fav'] ?? rand(500, 5000),
                                 'num_shares'           => $fp['rt'] ?? rand(100, 2500),
                                 'num_comments'         => $fp['reply_cnt'] ?? rand(50, 800),
-                                'url'                  => 'https://x.com/' . $cleanUname . '/status/' . ($fp['id'] ?? '1840000000000000000'),
+                                'url'                  => 'https://x.com/' . $cleanUname,
                                 'author_scr_name'      => $username,
                                 'author_name'          => $fp['author']['name'] ?? $username,
                             ];

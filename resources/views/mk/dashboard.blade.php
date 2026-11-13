@@ -1939,7 +1939,11 @@ dataLabels: {
 
                     /* For doc (Online News) items */
                     if (plat === 'doc' && artTitle) {
-                        const docUrl = (item.url||'').trim();
+                        let docUrl = (item.url||item.link||'').trim();
+                        if (!docUrl || !docUrl.startsWith('http') || docUrl.includes('localhost') || docUrl.includes('127.0.0.1')) {
+                            const sT = (item.title || item.content || '').replace(/<[^>]*>/g, '').trim().slice(0, 80);
+                            docUrl = `https://www.google.com/search?q=${encodeURIComponent(sT + ' ' + (dName || 'berita'))}`;
+                        }
                         return `<div class="do-panel-item" onclick="DashDetail.openByIndex(${globalIdx})">
                             <div class="do-panel-avatar" style="background:linear-gradient(135deg,${meta.color},${meta.color}99);"><i class="ph ph-newspaper" style="font-size:16px;color:#fff;"></i></div>
                             <div class="do-panel-item-body">
@@ -1966,6 +1970,14 @@ dataLabels: {
                         const ti = item.video_id || item.aweme_id || item.id || '';
                         const ni = item.author_nickname || item.nickname || '';
                         if (ti && ni) finalUrl = `https://www.tiktok.com/@${ni}/video/${ti}`;
+                    } else if (plat === 'twit') {
+                        const scr = (item.author_scr_name||item.screen_name||ao0?.scr_name||ao0?.username||'').replace(/^@/,'');
+                        if (scr && scr.toLowerCase() !== 'unknown') finalUrl = `https://x.com/${scr}`;
+                        else finalUrl = `https://x.com/search?q=${encodeURIComponent((item.content||item.title||'').slice(0,50))}`;
+                    }
+                    if (!finalUrl || !finalUrl.startsWith('http') || finalUrl.includes('localhost') || finalUrl.includes('127.0.0.1')) {
+                        const sT = (item.title || item.content || '').replace(/<[^>]*>/g, '').trim().slice(0, 80);
+                        finalUrl = `https://www.google.com/search?q=${encodeURIComponent(sT + ' ' + (dName || ''))}`;
                     }
 
                     return `<div class="do-panel-item" onclick="DashDetail.openByIndex(${globalIdx})">
@@ -2203,22 +2215,25 @@ dataLabels: {
             if (platform === 'doc') {
                 const _cleanUrl = v => (v && typeof v === 'string'
                     && v !== 'null' && v !== 'undefined' && v.trim() !== ''
-                    && v.startsWith('http')) ? v.trim() : '';
+                    && v.startsWith('http') && !v.includes('localhost') && !v.includes('127.0.0.1')) ? v.trim() : '';
                 sourceUrl = _cleanUrl(item.url)||_cleanUrl(item.link)||_cleanUrl(item.article_url)
                     ||_cleanUrl(item.source_url)||_cleanUrl(item.news_url)||_cleanUrl(item.permalink)
                     ||_cleanUrl(item.web_url)||_cleanUrl(item.full_url)||_cleanUrl(item.original_url)
                     ||_cleanUrl(item.reference)||_cleanUrl(item.href)||_cleanUrl(item.canonical_url)
                     ||_cleanUrl(item.post_url)||'';
+                if (!sourceUrl) {
+                    const searchTitle = (item.title || item.content || '').replace(/<[^>]*>/g, '').trim().slice(0, 80);
+                    sourceUrl = `https://www.google.com/search?q=${encodeURIComponent(searchTitle + ' ' + (name || 'berita'))}`;
+                }
                 isDirectArticleUrl = !!sourceUrl;
             } else if (platform === 'twit') {
                 const cj = (() => { try { return JSON.parse(item.contentJson||'{}'); } catch(e){ return {}; }})();
                 sourceUrl = cj?.url || item.url || '';
-                if (!sourceUrl || sourceUrl.includes('pbs.twimg.com') || sourceUrl.includes('t.co')) {
+                if (!sourceUrl || sourceUrl.includes('pbs.twimg.com') || sourceUrl.includes('t.co') || sourceUrl.includes('/status/1839') || sourceUrl.includes('localhost')) {
                     const ao  = typeof item.author==='object' ? item.author : (() => { try { return JSON.parse(item.author||'{}'); } catch(e){ return {}; }})();
                     const scr = (item.author_scr_name||item.screen_name||ao?.scr_name||ao?.username||'').replace(/^@/,'');
-                    const sid = item.post_id_s||item.sub_id||item.tweet_id||item.id_str||item.docid?.replace('tw-','')||'';
-                    if (scr && sid) sourceUrl = `https://twitter.com/${scr}/status/${sid}`;
-                    else if (scr)   sourceUrl = `https://twitter.com/${scr}`;
+                    if (scr && scr.toLowerCase() !== 'unknown') sourceUrl = `https://x.com/${scr}`;
+                    else sourceUrl = `https://x.com/search?q=${encodeURIComponent((item.content||item.title||'').slice(0,50))}`;
                 }
             } else if (platform === 'instagram') {
                 const shortcode = item.shortcode||item.code||item.media_id||'';

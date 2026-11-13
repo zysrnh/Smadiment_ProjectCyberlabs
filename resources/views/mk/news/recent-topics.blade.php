@@ -447,7 +447,13 @@
             
             {{-- Show single link if available (v1) --}}
             @elseif(!empty($issue['referensi']))
-            <a href="{{ $issue['referensi'] }}" target="_blank" class="issue-link">
+            @php
+              $rUrl = trim($issue['referensi']);
+              if ($rUrl === '#' || !str_starts_with($rUrl, 'http') || str_contains($rUrl, 'localhost') || str_contains($rUrl, '127.0.0.1')) {
+                $rUrl = 'https://www.google.com/search?q=' . urlencode(($issue['isu'] ?? 'Berita') . ' berita');
+              }
+            @endphp
+            <a href="{{ $rUrl }}" target="_blank" class="issue-link">
               Read More
               <svg viewBox="0 0 24 24">
                 <line x1="5" y1="12" x2="19" y2="12"/>
@@ -515,7 +521,13 @@
             <span class="issue-badge">{{ count($issue['urls']) }} sources</span>
             
             @elseif(!empty($issue['referensi']))
-            <a href="{{ $issue['referensi'] }}" target="_blank" class="issue-link">
+            @php
+              $rUrl = trim($issue['referensi']);
+              if ($rUrl === '#' || !str_starts_with($rUrl, 'http') || str_contains($rUrl, 'localhost') || str_contains($rUrl, '127.0.0.1')) {
+                $rUrl = 'https://www.google.com/search?q=' . urlencode(($issue['isu'] ?? 'Berita') . ' berita');
+              }
+            @endphp
+            <a href="{{ $rUrl }}" target="_blank" class="issue-link">
               Read More
               <svg viewBox="0 0 24 24">
                 <line x1="5" y1="12" x2="19" y2="12"/>
@@ -623,7 +635,11 @@
           });
           html += `</div><span class="issue-badge">${urls.length} sources</span>`;
         } else if (issue.referensi) {
-          html += `<a href="${issue.referensi}" target="_blank" class="issue-link">
+          let rUrl = String(issue.referensi || '').trim();
+          if (rUrl === '#' || !rUrl.startsWith('http') || rUrl.includes('localhost') || rUrl.includes('127.0.0.1')) {
+            rUrl = `https://www.google.com/search?q=${encodeURIComponent((issue.isu || 'Berita') + ' berita')}`;
+          }
+          html += `<a href="${rUrl}" target="_blank" class="issue-link">
             Read More
             <svg viewBox="0 0 24 24">
               <line x1="5" y1="12" x2="19" y2="12"/>

@@ -566,7 +566,12 @@
         }
 
         const TpPub = {
-            goPage(page) { _pubPage = page; renderPubList(_filtered); _$('tpPubList')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+            goPage(page) {
+                _pubPage = page;
+                const rows = parseInt(_$('tpRowsSel')?.value || '20');
+                renderPubList(_filtered.slice(0, rows));
+                _$('tpPubList')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
         };
 
         /* ══════════════════════════════════════

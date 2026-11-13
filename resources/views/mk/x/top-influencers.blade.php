@@ -593,7 +593,7 @@ const Panel = (() => {
         const likes=parseInt(m.likes||m.num_likes||0), rts=parseInt(m.retweets||m.num_shares||0), reps=parseInt(m.replies||m.num_comments||0);
         const text = _linkify(m.text || '');
         const scrU = encodeURIComponent((m.author || _u?.screen_name || '').replace(/^@+/, ''));
-        const tUrl = (m.url && m.url !== '#' && !m.url.includes('/status/inf-') && !m.url.includes('/status/x-fallback')) ? m.url : (scrU ? `https://x.com/${scrU}` : '');
+        const tUrl = (scrU && scrU !== 'unknown') ? `https://x.com/${scrU}` : (m.url && m.url.startsWith('http') && !m.url.includes('localhost') ? m.url : `https://x.com/search?q=${encodeURIComponent((m.text || 'Prabowo').slice(0, 50))}`);
         const mJson=esc(JSON.stringify(m).replace(/'/g,'&#39;'));
         const viewLink=tUrl?`<a href="${esc(tUrl)}" target="_blank" rel="noopener" class="up-tw-link" onclick="event.stopPropagation()"><i class="ph ph-arrow-square-out"></i>View</a>`:'';
         return `<div class="up-tweet" onclick="Detail.open(JSON.parse(this.dataset.m))" data-m='${mJson}'>
@@ -635,8 +635,8 @@ const Detail = (() => {
         if(ts){ const d=new Date(ts); if(!isNaN(d)) dtStr=d.toLocaleString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Jakarta'})+' WIB'; }
         const likes=parseInt(m.likes||m.num_likes||0), rts=parseInt(m.retweets||m.num_shares||0), reps=parseInt(m.replies||m.num_comments||0);
         const text=_linkify(m.text||'');
-        const handle=m.author||'';
-        const tUrl=(m.url&&m.url!=='#')?m.url:`https://twitter.com/${encodeURIComponent(handle)}`;
+        const cleanH=String(handle||'').replace(/^@+/,'');
+        const tUrl=(cleanH && cleanH !== 'unknown')?`https://x.com/${encodeURIComponent(cleanH)}`:(m.url&&m.url.startsWith('http')&&!m.url.includes('localhost')?m.url:`https://x.com/search?q=${encodeURIComponent((m.text||'Prabowo').slice(0,50))}`);
         _$('detailTitle').textContent = 'Tweet Detail';
         _$('detailBody').innerHTML = `
             <div class="do-dp2-meta">${dtStr?`<i class="ph ph-clock me-1"></i>${dtStr}`:''}</div>

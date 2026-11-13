@@ -456,11 +456,12 @@ const _normSent = it => {
     return r.includes('pos') ? 'pos' : r.includes('neg') ? 'neg' : 'neu';
 };
 const _tweetUrl = it => {
-    const direct = (it.url || it.link || '').trim();
-    if (direct && direct.startsWith('http') && !direct.includes('/status/1839') && !direct.includes('/status/x-fallback') && !direct.includes('/status/inf-')) return direct;
-    const sc = String(_getScr(it) || '').replace(/^@+/, ''), sid = String(it.sub_id || it.id || '');
-    if (sc && /^\d{15,20}$/.test(sid) && !sid.startsWith('1839') && !sid.startsWith('1840')) return `https://x.com/${encodeURIComponent(sc)}/status/${encodeURIComponent(sid)}`;
-    return sc ? `https://x.com/${encodeURIComponent(sc)}` : '';
+    const sc = String(_getScr(it) || '').replace(/^@+/, '');
+    if (sc && sc.toLowerCase() !== 'unknown' && sc.toLowerCase() !== 'twitter user') {
+        return `https://x.com/${encodeURIComponent(sc)}`;
+    }
+    const txt = (it.content || it.text || 'Prabowo').replace(/<[^>]*>/g, '').trim().slice(0, 50);
+    return `https://x.com/search?q=${encodeURIComponent(txt)}`;
 };
 
 /* ══ LOAD DATA ══ */
