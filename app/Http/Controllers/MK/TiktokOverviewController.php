@@ -1477,31 +1477,31 @@ class TiktokOverviewController extends Controller
         $cRole  = $cand['role'];
 
         $creators = [
-            'kompascom'       => ['name' => 'Kompas.com',       'scr' => 'kompascom'],
-            'officialinews'   => ['name' => 'iNews Official',   'scr' => 'officialinews'],
-            'detikcom'        => ['name' => 'detikcom',         'scr' => 'detikcom'],
-            'metrotv'         => ['name' => 'Metro TV',         'scr' => 'metro_tv'],
-            'tvone'           => ['name' => 'tvOne',            'scr' => 'tvoneofficial'],
-            'cnnindonesia'    => ['name' => 'CNN Indonesia',    'scr' => 'cnnindonesia'],
-            'kumparan'        => ['name' => 'Kumparan',         'scr' => 'kumparan'],
-            'tempodotco'      => ['name' => 'Tempo.co',         'scr' => 'tempodotco'],
-            'matanajwa'       => ['name' => 'Mata Najwa',       'scr' => 'matanajwa'],
-            'partaigerindra'  => ['name' => 'Partai Gerindra',  'scr' => 'partaigerindra'],
-            'liputan6dotcom'  => ['name' => 'Liputan 6',        'scr' => 'liputan6dotcom'],
-            'antaranews'      => ['name' => 'ANTARA News',      'scr' => 'antaranews'],
-            'suaradotcom'     => ['name' => 'Suara.com',        'scr' => 'suaradotcom'],
-            'tribunnews'      => ['name' => 'Tribunnews',       'scr' => 'tribunnews'],
-            'narasi'          => ['name' => 'Narasi',           'scr' => 'narasi.tv'],
-            'cnbcindonesia'   => ['name' => 'CNBC Indonesia',   'scr' => 'cnbcindonesia'],
-            'buniversenews'   => ['name' => 'B Universe',       'scr' => 'buniversenews'],
-            'jawapos'         => ['name' => 'Jawa Pos',         'scr' => 'jawapos'],
-            'republikaonline' => ['name' => 'Republika Online', 'scr' => 'republikaonline'],
-            'sindonews'       => ['name' => 'SINDOnews',        'scr' => 'sindoperkasa'],
-            'bisniscom'       => ['name' => 'Bisnis.com',       'scr' => 'bisniscom'],
-            'tirtoid'         => ['name' => 'Tirto.id',         'scr' => 'tirtoid'],
-            'merdekadotcom'   => ['name' => 'Merdeka.com',      'scr' => 'merdekadotcom'],
-            'idntimes'        => ['name' => 'IDN Times',        'scr' => 'idntimes'],
-            'tvrinasional'    => ['name' => 'TVRI Nasional',    'scr' => 'tvrinasional'],
+            'kompascom'       => ['name' => 'Kompas.com',       'scr' => 'kompascom',       'vid' => '7680414161892822293'],
+            'officialinews'   => ['name' => 'iNews Official',   'scr' => 'officialinews',   'vid' => '7683488708045278485'],
+            'detikcom'        => ['name' => 'detikcom',         'scr' => 'detikcom',         'vid' => '7673812158496476437'],
+            'metrotv'         => ['name' => 'Metro TV',         'scr' => 'metro_tv',         'vid' => '7631203718410571015'],
+            'tvone'           => ['name' => 'tvOne',            'scr' => 'tvoneofficial',    'vid' => '7617019693097880852'],
+            'cnnindonesia'    => ['name' => 'CNN Indonesia',    'scr' => 'cnnindonesia',    'vid' => '7626679059824610580'],
+            'kumparan'        => ['name' => 'Kumparan',         'scr' => 'kumparan',         'vid' => '7657411445738474770'],
+            'tempodotco'      => ['name' => 'Tempo.co',         'scr' => 'tempodotco',      'vid' => '7623003681729809681'],
+            'matanajwa'       => ['name' => 'Mata Najwa',       'scr' => 'matanajwa',       'vid' => '7636314858547449109'],
+            'partaigerindra'  => ['name' => 'Partai Gerindra',  'scr' => 'partaigerindra',  'vid' => '7615650907421789460'],
+            'liputan6dotcom'  => ['name' => 'Liputan 6',        'scr' => 'liputan6dotcom',  'vid' => '7680900493039766802'],
+            'antaranews'      => ['name' => 'ANTARA News',      'scr' => 'antaranews',      'vid' => '7615240027294960916'],
+            'suaradotcom'     => ['name' => 'Suara.com',        'scr' => 'suaradotcom',     'vid' => '7627095729261088016'],
+            'tribunnews'      => ['name' => 'Tribunnews',       'scr' => 'tribunnews',      'vid' => '7615943955712281863'],
+            'narasi'          => ['name' => 'Narasi',           'scr' => 'narasi.tv',       'vid' => '7671640402323180808'],
+            'cnbcindonesia'   => ['name' => 'CNBC Indonesia',   'scr' => 'cnbcindonesia',   'vid' => '7629355117988515092'],
+            'buniversenews'   => ['name' => 'B Universe',       'scr' => 'buniversenews',   'vid' => '7626390172531297553'],
+            'jawapos'         => ['name' => 'Jawa Pos',         'scr' => 'jawapos',         'vid' => '7668958908555283719'],
+            'republikaonline' => ['name' => 'Republika Online', 'scr' => 'republikaonline', 'vid' => '7602168998146379028'],
+            'sindonews'       => ['name' => 'SINDOnews',        'scr' => 'officialinews',   'vid' => '7683488708045278485'],
+            'bisniscom'       => ['name' => 'Bisnis.com',       'scr' => 'bisniscom',       'vid' => '7634852158529080596'],
+            'tirtoid'         => ['name' => 'Tirto.id',         'scr' => 'tirtoid',         'vid' => '7604287886715850005'],
+            'merdekadotcom'   => ['name' => 'Merdeka.com',      'scr' => 'merdekadotcom',   'vid' => '7629355117988515092'],
+            'idntimes'        => ['name' => 'IDN Times',        'scr' => 'idntimes',        'vid' => '7680900493039766802'],
+            'tvrinasional'    => ['name' => 'TVRI Nasional',    'scr' => 'tvrinasional',    'vid' => '7604287886715850005'],
         ];
 
         $byMonth = [
@@ -1660,7 +1660,7 @@ class TiktokOverviewController extends Controller
         $templates = [];
         foreach ($rawList as $idx => [$crKey, $text, $sent, $emo]) {
             $c   = $creators[$crKey] ?? reset($creators);
-            $vId = sprintf('76%02d%02d%06d', $month, $idx + 1, abs(crc32($text . $projectId) % 1000000));
+            $vId = $c['vid'] ?? '7680414161892822293';
             $templates[] = [
                 'video_id'  => $vId,
                 'creator'   => $c['scr'],

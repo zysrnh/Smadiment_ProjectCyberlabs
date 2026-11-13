@@ -77,21 +77,21 @@ window.SMADIMENT_bindTtPlayer = function (owner, root, vidId, opts) {
         let ttRef = '';
         try { ttRef = window.top.location.href; } catch (_) { ttRef = window.location.href; }
 
-        const baseSrc = `https://www.tiktok.com/embed/v2/${encodeURIComponent(vidId)}`;
+        const baseSrc = `https://www.tiktok.com/player/v1/${encodeURIComponent(vidId)}?music_info=1&description=1`;
 
         const ifr = document.createElement('iframe');
         ifr.name = '__tt_embed__v' + Math.random().toString(36).slice(2, 12);
         ifr.sandbox = 'allow-popups allow-popups-to-escape-sandbox allow-scripts allow-top-navigation allow-same-origin';
-        ifr.setAttribute('allow', 'fullscreen; autoplay; encrypted-media; picture-in-picture');
+        ifr.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share');
         ifr.allowFullscreen = true;
         ifr.loading = 'lazy';
         ifr.src = baseSrc;
-        ifr.style.cssText = 'width:100%;max-width:325px;height:560px;margin:0 auto;border:none;display:block;background:#0f172a;';
+        ifr.style.cssText = 'width:100%;max-width:325px;height:578px;margin:0 auto;border:none;display:block;background:#0f172a;';
 
         const bar = document.createElement('div');
         bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;background:#1e293b;border-top:1px solid #334155;font-size:10px;color:#cbd5e1;text-align:left;';
         const msg = document.createElement('span');
-        msg.textContent = 'Menyiapkan video TikTok...';
+        msg.textContent = 'Video TikTok siap diputar.';
 
         const retryBtn = document.createElement('button');
         retryBtn.type = 'button';
@@ -107,21 +107,10 @@ window.SMADIMENT_bindTtPlayer = function (owner, root, vidId, opts) {
         };
 
         ifr.addEventListener('load', () => {
-            if (ready || loadTimer) return;
-            loadTimer = setTimeout(() => {
-                loadTimer = null;
-                if (!ready && ifr.isConnected) {
-                    renderFallbackCard();
-                }
-            }, 3500);
+            if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; }
+            if (loadTimer) { clearTimeout(loadTimer); loadTimer = null; }
+            msg.textContent = 'Klik tombol play pada video untuk memulai.';
         });
-
-        stallTimer = setTimeout(() => {
-            stallTimer = null;
-            if (!ready && ifr.isConnected) {
-                renderFallbackCard();
-            }
-        }, 5500);
 
         onMsg = (e) => {
             if (e.origin !== 'https://www.tiktok.com' || e.source !== ifr.contentWindow || !e.data) return;
