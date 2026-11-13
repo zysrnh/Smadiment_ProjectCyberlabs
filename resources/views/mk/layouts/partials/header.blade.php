@@ -35,6 +35,26 @@
     color: #fff; font-size: 16px; font-weight: 800;
     font-family: inherit; letter-spacing: 0.5px; user-select: none;
 }
+@media (max-width: 576px) {
+    .circle-btn {
+        width: 44px !important;
+        height: 44px !important;
+    }
+    .circle-btn i {
+        font-size: 24px !important;
+    }
+    .pc-header .header-wrapper {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        min-height: 60px !important;
+    }
+    .notif-badge {
+        top: 8px !important;
+        right: 8px !important;
+        width: 10px !important;
+        height: 10px !important;
+    }
+}
 </style>
 
 <header class="pc-header">
@@ -61,7 +81,7 @@
             <ul class="list-unstyled d-flex align-items-center gap-2 mb-0">
 
                 {{-- Date Range Picker Trigger – circle icon, same size as avatar --}}
-                <li class="pc-h-item gdp-trigger-item d-none d-md-inline-flex" style="position:relative;z-index:50;">
+                <li class="pc-h-item gdp-trigger-item d-inline-flex" style="position:relative;z-index:50;">
                     <a href="javascript:void(0);"
                        id="gdpTrigger"
                        onclick="GDPicker.open(); return false;"
@@ -439,9 +459,7 @@
 
 /* ── Mobile ── */
 @media (max-width:640px) {
-    .gdp-wrap { flex-direction:column; max-height:95vh; }
-    .gdp-sidebar { width:100%; flex-direction:row; flex-wrap:wrap; border-right:none; border-bottom:1px solid #e2e8f0; padding:10px; }
-    .gdp-preset { width:auto; }
+    .gdp-wrap { flex-direction:column; max-height:95vh; width:95%; max-width:360px; }
     .gdp-cals { flex-direction:column; }
 }
 .bg-light-danger { background-color: rgba(234, 84, 85, 0.1) !important; color: #ea5455 !important; }
