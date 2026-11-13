@@ -371,7 +371,7 @@
 
                 $posts[] = [
                     'id'            => $fallbackKey,
-                    'sub_id'        => '',
+                    'sub_id'        => $fallbackKey,
                     'name'          => $author['name'],
                     'author_scr_name' => $author['scr_name'],
                     'content'       => $content,
@@ -3257,9 +3257,9 @@ public function mostEngagementData(Request $request)
                     if (!empty($result) && is_array($result)) {
                         foreach ($result as $item) {
                             // Buat unique ID dari post
-                            $uid = $item['sub_id']
-                                ?? $item['id']
-                                ?? md5(($item['content'] ?? '') . ($item['name'] ?? ''));
+                            $uid = !empty($item['sub_id'])
+                                ? (string) $item['sub_id']
+                                : (!empty($item['id']) ? (string) $item['id'] : md5(($item['content'] ?? '') . ($item['name'] ?? '')));
 
                             if (!isset($seenIds[$uid])) {
                                 $seenIds[$uid] = count($allPosts);
@@ -3309,7 +3309,7 @@ public function mostEngagementData(Request $request)
                     // Merge with existing, dedup by id
                     foreach ($rtResult as $item) {
                         if (!is_array($item)) continue;
-                        $uid = $item['sub_id'] ?? $item['id'] ?? md5(($item['content'] ?? '') . ($item['name'] ?? ''));
+                        $uid = !empty($item['sub_id']) ? (string) $item['sub_id'] : (!empty($item['id']) ? (string) $item['id'] : md5(($item['content'] ?? '') . ($item['name'] ?? '')));
                         if (!isset($seenIds[$uid])) {
                             $seenIds[$uid] = count($allPosts);
                             $allPosts[] = $item;
@@ -3322,10 +3322,10 @@ public function mostEngagementData(Request $request)
         }
 
         // Fallback 2: jika masih kosong atau terlalu sedikit, gunakan getFallbackXPosts
-        if (count($allPosts) < 5) {
+        if (count($allPosts) < 25) {
             $fallbackPosts = $this->getFallbackXPosts((int)$projectId, $startDate, $endDate, $rows ?: 100);
             foreach ($fallbackPosts as $item) {
-                $uid = $item['sub_id'] ?? $item['id'] ?? md5(($item['content'] ?? '') . ($item['name'] ?? ''));
+                $uid = !empty($item['sub_id']) ? (string) $item['sub_id'] : (!empty($item['id']) ? (string) $item['id'] : md5(($item['content'] ?? '') . ($item['name'] ?? '')));
                 if (!isset($seenIds[$uid])) {
                     $seenIds[$uid] = count($allPosts);
                     $allPosts[] = $item;

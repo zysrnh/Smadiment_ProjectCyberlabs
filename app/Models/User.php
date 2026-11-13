@@ -55,6 +55,10 @@ class User extends Authenticatable
      */
     public function hasAccessToProject(int $projectId): bool
     {
+        if ($this->is_admin || $this->plan === 'unlimited') {
+            return true;
+        }
+
         return $this->projectAssignments()
             ->where('project_id', $projectId)
             ->exists();

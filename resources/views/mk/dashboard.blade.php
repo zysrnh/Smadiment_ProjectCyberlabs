@@ -956,6 +956,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="{{ asset('assets/js/plugins/apexcharts.min.js') }}"></script>
+    <script>
+        if (typeof ApexCharts === 'undefined') {
+            document.write('<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.2/dist/apexcharts.min.js"><\/script>');
+        }
+    </script>
 
     <script>
     /* ════════════════════════════════════════════════════════
@@ -986,7 +991,10 @@
     /* ════════════════════════════════════════════════════════
        DOM READY
     ════════════════════════════════════════════════════════ */
-    document.addEventListener('DOMContentLoaded', function () {
+    let _dashInitDone = false;
+    function initDashboard() {
+        if (_dashInitDone) return;
+        _dashInitDone = true;
 
         // ── AUTO-SYNC WITH GLOBAL DATEPICKER ──
         const params = new URLSearchParams(window.location.search);
@@ -1034,9 +1042,11 @@
 
         // ── Scroll-to-top ──
         const scrollBtn = _$('scrollTopBtn');
-        window.addEventListener('scroll', () =>
-            scrollBtn.classList.toggle('visible', window.scrollY > 300),
-        { passive: true });
+        if (scrollBtn) {
+            window.addEventListener('scroll', () =>
+                scrollBtn.classList.toggle('visible', window.scrollY > 300),
+            { passive: true });
+        }
 
         // ── Sidebar search ──
         const searchInput = _$('sidebarSearch');
@@ -1062,11 +1072,16 @@
             });
         });
 
-        // ── Init charts ──
-
         // ── Init lazy charts ──
         initLazyCharts();
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    } else {
+        initDashboard();
+    }
+    setTimeout(initDashboard, 200);
 
     /* ════════════════════════════════════════════════════════
        LAZY CHART INIT
@@ -1130,7 +1145,11 @@
         const loadEl   = _$('chart-loading-' + projectId);
         const tl       = PROJECT_TIMELINES[String(projectId)] || null;
 
-        if (!chartEl || !wrapEl || typeof ApexCharts === 'undefined') return;
+        if (!chartEl || !wrapEl) return;
+        if (typeof ApexCharts === 'undefined') {
+            setTimeout(() => renderProjectChart(projectId), 150);
+            return;
+        }
 
         if (!tl || !tl.dates || tl.dates.length === 0) {
             if (loadEl) loadEl.remove();
@@ -1293,13 +1312,18 @@ dataLabels: {
         if (window[prevKey]) { try { window[prevKey].destroy(); } catch (e) {} }
 
         chartEl.innerHTML = '';
-        const inst = new ApexCharts(chartEl, options);
-        window[prevKey] = inst;
-        inst.render();
-
-        if (loadEl) {
-            loadEl.classList.add('hidden');
-            setTimeout(() => { try { loadEl.remove(); } catch (e) {} }, 50);
+        try {
+            const inst = new ApexCharts(chartEl, options);
+            window[prevKey] = inst;
+            inst.render();
+        } catch (e) {
+            console.error('[Chart] ApexCharts render error', e);
+        } finally {
+            if (loadEl) {
+                loadEl.classList.add('hidden');
+                loadEl.style.display = 'none';
+                try { loadEl.remove(); } catch (e) {}
+            }
         }
 
         if (totalPoints <= SCROLL_THRESHOLD) {
