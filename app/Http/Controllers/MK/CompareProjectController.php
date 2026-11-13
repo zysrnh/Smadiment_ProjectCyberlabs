@@ -365,14 +365,7 @@ class CompareProjectController extends Controller
         $baseNeu = (int) ($stats->neu ?? 19407);
         $baseNeg = (int) ($stats->neg ?? 44657);
 
-        // Project scaling profiles
-        $projectProfiles = [
-            16978 => ['mult' => 1.00, 'pos_r' => 0.587, 'neu_r' => 0.125, 'neg_r' => 0.288], // Prabowo
-            16979 => ['mult' => 0.74, 'pos_r' => 0.595, 'neu_r' => 0.142, 'neg_r' => 0.263], // Gibran
-            16980 => ['mult' => 0.65, 'pos_r' => 0.535, 'neu_r' => 0.155, 'neg_r' => 0.310], // Anies
-            16981 => ['mult' => 0.54, 'pos_r' => 0.552, 'neu_r' => 0.148, 'neg_r' => 0.300], // Ganjar
-        ];
-
+        // Project scaling profiles (hanya PID 16978 yang memiliki data riil di DB lokal)
         $mediaRatios = [
             'doc'       => 0.20,
             'twit'      => 0.32,
@@ -390,14 +383,40 @@ class CompareProjectController extends Controller
 
         foreach ($projectIds as $pid) {
             $sPid = (string) $pid;
-            $profile = $projectProfiles[(int)$pid] ?? [
-                'mult'  => 0.40 + (((int)$pid % 5) * 0.10),
-                'pos_r' => 0.55,
-                'neu_r' => 0.15,
-                'neg_r' => 0.30,
-            ];
+            $intPid = (int) $pid;
 
-            $totVol = (int) round($baseTot * $profile['mult']);
+            // Jika bukan project 16978 (Prabowo) dan tidak ada di DB, isi 0 secara riil
+            if ($intPid !== 16978) {
+                $byMediaZero = [];
+                foreach ($mediaRatios as $mk => $ratio) {
+                    $byMediaZero[$mk] = 0;
+                }
+
+                $volumeTotal[$sPid] = [
+                    'volume_total' => [
+                        'all'     => ['total' => 0],
+                        'bymedia' => $byMediaZero,
+                    ],
+                ];
+
+                $sentimentTotal[$sPid] = [
+                    'sentiment_total' => [
+                        'pos' => 0,
+                        'net' => 0,
+                        'neg' => 0,
+                    ],
+                ];
+
+                $authorsTotal[$sPid] = [
+                    'authors_total' => [
+                        'all'     => ['total' => 0],
+                        'bymedia' => $byMediaZero,
+                    ],
+                ];
+                continue;
+            }
+
+            $totVol = $baseTot;
             $byMediaVol = [];
             foreach ($mediaRatios as $mk => $ratio) {
                 $byMediaVol[$mk] = (int) round($totVol * $ratio);
@@ -410,9 +429,9 @@ class CompareProjectController extends Controller
                 ],
             ];
 
-            $pos = (int) round($totVol * $profile['pos_r']);
-            $neu = (int) round($totVol * $profile['neu_r']);
-            $neg = max(0, $totVol - $pos - $neu);
+            $pos = $basePos;
+            $neu = $baseNeu;
+            $neg = $baseNeg;
 
             $sentimentTotal[$sPid] = [
                 'sentiment_total' => [

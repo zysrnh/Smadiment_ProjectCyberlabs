@@ -1081,72 +1081,10 @@ public function articlesData(Request $request)
                     }
                 }
 
-                // If candidate project (16979, 16980, 16981) has no direct snapshot, adapt from base benchmark
-                if (empty($raw) && in_array($projectId, [16979, 16980, 16981])) {
-                    $baseSnap = ProjectApiSnapshot::findSnapshotForQuery(16978, 'all', 'news_mentions_0_1200', $startDate, $endDate)
-                             ?? ProjectApiSnapshot::findSnapshotForQuery(16978, 'all', 'news_mentions_0_500', $startDate, $endDate);
-                    if ($baseSnap) {
-                        $baseItems = is_array($baseSnap) ? ($baseSnap['data'] ?? $baseSnap) : [];
-                        $candMap = [
-                            16979 => ['name' => 'Gibran Rakabuming', 'short' => 'Gibran', 'tag' => '#Gibran', 'scr' => 'gibran_tweet'],
-                            16980 => ['name' => 'Anies Baswedan', 'short' => 'Anies', 'tag' => '#AniesBaswedan', 'scr' => 'aniesbaswedan'],
-                            16981 => ['name' => 'Ganjar Pranowo', 'short' => 'Ganjar', 'tag' => '#GanjarPranowo', 'scr' => 'ganjarpranowo'],
-                        ];
-                        $cand = $candMap[$projectId];
-                        $adapted = [];
-                        foreach ($baseItems as $idx => $it) {
-                            if (!is_array($it)) continue;
-                            $clone = $it;
-                            if (isset($clone['content'])) {
-                                $clone['content'] = str_ireplace(['Prabowo Subianto', 'Prabowo', '#Prabowo'], [$cand['name'], $cand['short'], $cand['tag']], $clone['content']);
-                            }
-                            if (isset($clone['title'])) {
-                                $clone['title'] = str_ireplace(['Prabowo Subianto', 'Prabowo', '#Prabowo'], [$cand['name'], $cand['short'], $cand['tag']], $clone['title']);
-                            }
-                            $clone['project_id'] = $projectId;
-                            $clone['id'] = $projectId . '_' . ($clone['id'] ?? $idx);
-                            $clone['docid'] = ($clone['docid'] ?? '') ? ($clone['docid'] . '_' . $projectId) : '';
-                            $adapted[] = $clone;
-                        }
-                        $raw = $adapted;
-                    }
-                }
-
                 return is_array($raw) ? $raw : [];
             });
 
             $mentions = is_array($mentions) ? $mentions : [];
-
-            if (empty($mentions) && in_array($projectId, [16979, 16980, 16981])) {
-                $baseSnap = ProjectApiSnapshot::findSnapshotForQuery(16978, 'all', 'news_mentions_0_1200', $startDate, $endDate)
-                         ?? ProjectApiSnapshot::findSnapshotForQuery(16978, 'all', 'news_mentions_0_500', $startDate, $endDate)
-                         ?? ProjectApiSnapshot::findSnapshotForQuery(16978, 'doc', 'articles_doc_all_0', $startDate, $endDate);
-                if ($baseSnap) {
-                    $baseItems = is_array($baseSnap) ? ($baseSnap['data'] ?? $baseSnap) : [];
-                    $candMap = [
-                        16979 => ['name' => 'Gibran Rakabuming', 'short' => 'Gibran', 'tag' => '#Gibran', 'scr' => 'gibran_tweet'],
-                        16980 => ['name' => 'Anies Baswedan', 'short' => 'Anies', 'tag' => '#AniesBaswedan', 'scr' => 'aniesbaswedan'],
-                        16981 => ['name' => 'Ganjar Pranowo', 'short' => 'Ganjar', 'tag' => '#GanjarPranowo', 'scr' => 'ganjarpranowo'],
-                    ];
-                    $cand = $candMap[$projectId];
-                    $adapted = [];
-                    foreach ($baseItems as $idx => $it) {
-                        if (!is_array($it)) continue;
-                        $clone = $it;
-                        if (isset($clone['content'])) {
-                            $clone['content'] = str_ireplace(['Prabowo Subianto', 'Prabowo', '#Prabowo'], [$cand['name'], $cand['short'], $cand['tag']], $clone['content']);
-                        }
-                        if (isset($clone['title'])) {
-                            $clone['title'] = str_ireplace(['Prabowo Subianto', 'Prabowo', '#Prabowo'], [$cand['name'], $cand['short'], $cand['tag']], $clone['title']);
-                        }
-                        $clone['project_id'] = $projectId;
-                        $clone['id'] = $projectId . '_' . ($clone['id'] ?? $idx);
-                        $clone['docid'] = ($clone['docid'] ?? '') ? ($clone['docid'] . '_' . $projectId) : '';
-                        $adapted[] = $clone;
-                    }
-                    $mentions = $adapted;
-                }
-            }
 
             $mentions = array_map(function ($item) use ($startDate, $endDate) {
                 if (!is_array($item)) return $item;
