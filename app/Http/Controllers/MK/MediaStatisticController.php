@@ -1160,13 +1160,13 @@ class MediaStatisticController extends Controller
             $mNeu = (int) round($mTot * 0.20700);
             $mNeg = max(0, $mTot - $mPos - $mNeu);
 
-            // 2. Social Media platforms - ~46.2% Pos, ~6.4% Neu, ~47.4% Neg
+            // 2. Social Media platforms dengan proporsi sentimen unik & realistis per platform
             $socialPlatforms = [
-                'twitter'   => ['label' => 'X / Twitter', 'ratio' => 0.22073],
-                'tiktok'    => ['label' => 'TikTok',      'ratio' => 0.14513],
-                'instagram' => ['label' => 'Instagram',   'ratio' => 0.08995],
-                'youtube'   => ['label' => 'YouTube',     'ratio' => 0.06180],
-                'facebook'  => ['label' => 'Facebook',    'ratio' => 0.03421],
+                'twitter'   => ['label' => 'X / Twitter', 'ratio' => 0.22073, 'pos_r' => 0.425, 'neu_r' => 0.072],
+                'tiktok'    => ['label' => 'TikTok',      'ratio' => 0.14513, 'pos_r' => 0.584, 'neu_r' => 0.068],
+                'instagram' => ['label' => 'Instagram',   'ratio' => 0.08995, 'pos_r' => 0.542, 'neu_r' => 0.075],
+                'youtube'   => ['label' => 'YouTube',     'ratio' => 0.06180, 'pos_r' => 0.485, 'neu_r' => 0.081],
+                'facebook'  => ['label' => 'Facebook',    'ratio' => 0.03421, 'pos_r' => 0.465, 'neu_r' => 0.092],
             ];
 
             $byMedia = [
@@ -1182,8 +1182,8 @@ class MediaStatisticController extends Controller
             $sPosTot = 0; $sNeuTot = 0; $sNegTot = 0;
             foreach ($socialPlatforms as $k => $info) {
                 $pTot = (int) round($tot * $info['ratio']);
-                $pPos = (int) round($pTot * 0.462);
-                $pNeu = (int) round($pTot * 0.064);
+                $pPos = (int) round($pTot * $info['pos_r']);
+                $pNeu = (int) round($pTot * $info['neu_r']);
                 $pNeg = max(0, $pTot - $pPos - $pNeu);
 
                 $byMedia[] = [

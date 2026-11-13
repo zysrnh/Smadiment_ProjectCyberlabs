@@ -719,11 +719,11 @@ class DataOverviewApiController extends Controller
                     $mNeg = max(0, $mTot - $mPos - $mNeu);
 
                     $socialRatios = [
-                        'twit'   => ['name' => 'X (Twitter)', 'ratio' => 0.22073],
-                        'tiktok' => ['name' => 'TikTok',       'ratio' => 0.14513],
-                        'ig'     => ['name' => 'Instagram',    'ratio' => 0.08995],
-                        'yt'     => ['name' => 'YouTube',      'ratio' => 0.06180],
-                        'fb'     => ['name' => 'Facebook',     'ratio' => 0.03421],
+                        'twit'   => ['name' => 'X (Twitter)', 'ratio' => 0.22073, 'pos_r' => 0.425, 'neu_r' => 0.072],
+                        'tiktok' => ['name' => 'TikTok',       'ratio' => 0.14513, 'pos_r' => 0.584, 'neu_r' => 0.068],
+                        'ig'     => ['name' => 'Instagram',    'ratio' => 0.08995, 'pos_r' => 0.542, 'neu_r' => 0.075],
+                        'yt'     => ['name' => 'YouTube',      'ratio' => 0.06180, 'pos_r' => 0.485, 'neu_r' => 0.081],
+                        'fb'     => ['name' => 'Facebook',     'ratio' => 0.03421, 'pos_r' => 0.465, 'neu_r' => 0.092],
                     ];
 
                     $mediaData = [
@@ -742,8 +742,8 @@ class DataOverviewApiController extends Controller
 
                     foreach ($socialRatios as $k => $info) {
                         $pTot = (int) round($tot * $info['ratio']);
-                        $pPos = (int) round($pTot * 0.462);
-                        $pNeu = (int) round($pTot * 0.064);
+                        $pPos = (int) round($pTot * $info['pos_r']);
+                        $pNeu = (int) round($pTot * $info['neu_r']);
                         $pNeg = max(0, $pTot - $pPos - $pNeu);
 
                         $mediaData[] = [
@@ -753,9 +753,9 @@ class DataOverviewApiController extends Controller
                             'neutral'             => $pNeu,
                             'negative'            => $pNeg,
                             'total'               => $pTot,
-                            'positive_percentage' => 46.2,
-                            'neutral_percentage'  => 6.4,
-                            'negative_percentage' => 47.4,
+                            'positive_percentage' => $pTot > 0 ? round(($pPos / $pTot) * 100, 1) : 0,
+                            'neutral_percentage'  => $pTot > 0 ? round(($pNeu / $pTot) * 100, 1) : 0,
+                            'negative_percentage' => $pTot > 0 ? round(($pNeg / $pTot) * 100, 1) : 0,
                         ];
                     }
 
