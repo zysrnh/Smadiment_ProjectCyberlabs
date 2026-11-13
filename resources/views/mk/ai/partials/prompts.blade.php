@@ -106,6 +106,7 @@ FORMATTING & STRUCTURE RULE (CRITICAL):
   * **Implikasi:** [Dampak atau konsekuensi strategis]
 - JANGAN PERNAH menyatukan * Tindakan: dan * Komunikasi: dalam satu baris kalimat yang sama.
 - Tabel: Gunakan format Markdown table (| Header 1 | Header 2 |) yang rapi jika menyajikan matriks/data komparatif.
+- INTEGRITAS & KELENGKAPAN OUTPUT: Tuliskan analisis secara padat, tajam, dan tuntas hingga kesimpulan/rekomendasi penutup. JANGAN PERNAH berhenti di tengah kalimat atau menyisakan bagian yang menggantung. Pastikan semua poin dan bab terselesaikan secara komprehensif.
 `;
     return {
 

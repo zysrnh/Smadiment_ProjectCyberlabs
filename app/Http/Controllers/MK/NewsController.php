@@ -2068,7 +2068,7 @@ public function aiAnalysisProxy(Request $request)
 
         $messages  = $request->input('messages', []);
         $system    = $request->input('system', '');
-        $maxTokens = (int) $request->input('max_tokens', 2000);
+        $maxTokens = (int) $request->input('max_tokens', 8192);
 
         if (empty($messages)) {
             return response()->json(['error' => 'Messages tidak boleh kosong'], 400);
@@ -2096,10 +2096,13 @@ public function aiAnalysisProxy(Request $request)
         // Model fallback chain
         $models = [
             'gemini-2.5-flash',
+            'gemini-3.5-flash',
+            'gemini-3.6-flash',
+            'gemini-3.5-flash-lite',
+            'gemini-flash-lite-latest',
+            'gemini-flash-latest',
             'gemini-2.0-flash',
             'gemini-1.5-flash',
-            'gemini-1.5-pro',
-            'gemini-2.5-pro',
         ];
 
         $text      = '';

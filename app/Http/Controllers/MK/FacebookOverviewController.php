@@ -1326,7 +1326,7 @@ public function aiAnalysisProxy(Request $request)
 
         $messages  = $request->input('messages', []);
         $system    = $request->input('system', '');
-        $maxTokens = (int) $request->input('max_tokens', 2000);
+        $maxTokens = (int) $request->input('max_tokens', 8192);
 
         if (empty($messages)) {
             return response()->json(['error' => 'Messages tidak boleh kosong'], 400);
