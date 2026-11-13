@@ -149,8 +149,8 @@ class ProjectApiSnapshot extends Model
                 ->where('media', $media)
                 ->where('endpoint_key', $endpointKey)
                 ->where(function ($q) use ($sMonth, $eMonth) {
-                    $q->whereRaw("DATE_FORMAT(start_date, '%Y-%m') <= ?", [$eMonth])
-                      ->whereRaw("DATE_FORMAT(end_date, '%Y-%m') >= ?", [$sMonth]);
+                    $q->whereRaw("SUBSTR(start_date, 1, 7) <= ?", [$eMonth])
+                      ->whereRaw("SUBSTR(end_date, 1, 7) >= ?", [$sMonth]);
                 });
 
             $record = $query->orderBy('end_date', 'desc')
@@ -174,8 +174,8 @@ class ProjectApiSnapshot extends Model
                 $record = static::where('project_id', $projectId)
                     ->where('endpoint_key', 'like', $prefix)
                     ->where(function ($q) use ($sMonth, $eMonth) {
-                        $q->whereRaw("DATE_FORMAT(start_date, '%Y-%m') <= ?", [$eMonth])
-                          ->whereRaw("DATE_FORMAT(end_date, '%Y-%m') >= ?", [$sMonth]);
+                        $q->whereRaw("SUBSTR(start_date, 1, 7) <= ?", [$eMonth])
+                          ->whereRaw("SUBSTR(end_date, 1, 7) >= ?", [$sMonth]);
                     })
                     ->orderBy('synced_at', 'desc')
                     ->first();

@@ -3237,8 +3237,8 @@ public function mostEngagementData(Request $request)
         $seenIds  = [];
 
         // Coba semua kombinasi media × sub sampai dapat data
-        $mediaOptions = ['twitter', 'twit', 'all'];
-        $subOptions   = ['postbyview', 'postbyrt', 'postbyfav', 'postbyreply'];
+        $mediaOptions = ['twit'];
+        $subOptions   = ['postbyrt', 'postbyview'];
 
         foreach ($mediaOptions as $media) {
             $gotData = false;
