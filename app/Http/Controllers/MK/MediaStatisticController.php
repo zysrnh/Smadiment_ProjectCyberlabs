@@ -1293,17 +1293,22 @@ class MediaStatisticController extends Controller
         if (empty($res['trend'])) {
             $dailyRecords = ProjectDailySentiment::where('project_id', $projectId)
                 ->whereBetween('date', [$startDate, $endDate])
-                ->orderBy('date')
-                ->get();
+                ->get()
+                ->keyBy(fn($item) => $item->date->format('Y-m-d'));
 
             $trend = [];
-            foreach ($dailyRecords as $rec) {
+            $cur = \Carbon\Carbon::parse($startDate);
+            $endDt = \Carbon\Carbon::parse($endDate);
+            while ($cur->lte($endDt)) {
+                $dStr = $cur->format('Y-m-d');
+                $rec = $dailyRecords->get($dStr);
                 $trend[] = [
-                    'date' => $rec->date->format('Y-m-d'),
-                    'pos'  => (int) $rec->positive,
-                    'neu'  => (int) $rec->neutral,
-                    'neg'  => (int) $rec->negative,
+                    'date' => $dStr,
+                    'pos'  => $rec ? (int) $rec->positive : 0,
+                    'neu'  => $rec ? (int) $rec->neutral  : 0,
+                    'neg'  => $rec ? (int) $rec->negative : 0,
                 ];
+                $cur->addDay();
             }
             $res['trend'] = $trend;
         }

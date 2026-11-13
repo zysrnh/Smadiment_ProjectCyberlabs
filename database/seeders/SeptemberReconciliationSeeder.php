@@ -20,8 +20,13 @@ class SeptemberReconciliationSeeder extends Seeder
     {
         $projectId = 16978;
 
-        // 1. Data dummy 27-30 September dinonaktifkan (hanya gunakan data crawling asli s/d 26 September)
-        $dailyAdds = [];
+        // 1. Data tanggal 27-30 September diisi 0 agar visual gap / kosong terlihat jelas di chart
+        $dailyAdds = [
+            '2026-09-27' => ['pos' => 0, 'neu' => 0, 'neg' => 0, 'tot' => 0],
+            '2026-09-28' => ['pos' => 0, 'neu' => 0, 'neg' => 0, 'tot' => 0],
+            '2026-09-29' => ['pos' => 0, 'neu' => 0, 'neg' => 0, 'tot' => 0],
+            '2026-09-30' => ['pos' => 0, 'neu' => 0, 'neg' => 0, 'tot' => 0],
+        ];
 
         foreach ($dailyAdds as $dt => $vals) {
             ProjectDailySentiment::updateOrCreate(
