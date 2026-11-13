@@ -2249,9 +2249,6 @@ dataLabels: {
                     const pname = item.page_name||item.from_name||item.author_name||item.author_handle||ao2?.username||'prabowosubianto';
                     sourceUrl = `https://www.facebook.com/${encodeURIComponent(pname.replace(/^@/,''))}`;
                 }
-                    else if (pname&&pid2)  sourceUrl = `https://www.facebook.com/${pname}/posts/${pid2}`;
-                    else if (pname)        sourceUrl = `https://www.facebook.com/${pname}`;
-                }
             }
 
             /* Action buttons */
