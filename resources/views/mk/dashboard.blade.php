@@ -1297,6 +1297,11 @@ dataLabels: {
         window[prevKey] = inst;
         inst.render();
 
+        if (loadEl) {
+            loadEl.classList.add('hidden');
+            setTimeout(() => { try { loadEl.remove(); } catch (e) {} }, 50);
+        }
+
         if (totalPoints <= SCROLL_THRESHOLD) {
             window.addEventListener('resize', () => {
                 const i = window['__apexInst_' + projectId];
