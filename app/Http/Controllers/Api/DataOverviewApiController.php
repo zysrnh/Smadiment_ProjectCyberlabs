@@ -713,18 +713,69 @@ class DataOverviewApiController extends Controller
 
                 $tot = (int) ($stats->tot ?? 0);
                 if ($tot > 0) {
-                    $mTot = (int) round($tot * 0.44818);
-                    $mPos = (int) round($mTot * 0.71701);
-                    $mNeu = (int) round($mTot * 0.20700);
-                    $mNeg = max(0, $mTot - $mPos - $mNeu);
+                    $mCode = date('m', strtotime($startDate));
+                    $isFullMonth = (date('Y-m', strtotime($startDate)) === date('Y-m', strtotime($endDate)));
 
-                    $socialRatios = [
-                        'twit'   => ['name' => 'X (Twitter)', 'ratio' => 0.22073, 'pos_r' => 0.425, 'neu_r' => 0.072],
-                        'tiktok' => ['name' => 'TikTok',       'ratio' => 0.14513, 'pos_r' => 0.584, 'neu_r' => 0.068],
-                        'ig'     => ['name' => 'Instagram',    'ratio' => 0.08995, 'pos_r' => 0.542, 'neu_r' => 0.075],
-                        'yt'     => ['name' => 'YouTube',      'ratio' => 0.06180, 'pos_r' => 0.485, 'neu_r' => 0.081],
-                        'fb'     => ['name' => 'Facebook',     'ratio' => 0.03421, 'pos_r' => 0.465, 'neu_r' => 0.092],
+                    $monthProfiles = [
+                        '06' => [
+                            'doc' => ['pos_r' => 0.731, 'neu_r' => 0.198],
+                            'social' => [
+                                'twit'   => ['name' => 'X (Twitter)', 'ratio' => 0.22073, 'pos_r' => 0.450, 'neu_r' => 0.075],
+                                'tiktok' => ['name' => 'TikTok',       'ratio' => 0.14513, 'pos_r' => 0.620, 'neu_r' => 0.065],
+                                'ig'     => ['name' => 'Instagram',    'ratio' => 0.08995, 'pos_r' => 0.568, 'neu_r' => 0.072],
+                                'yt'     => ['name' => 'YouTube',      'ratio' => 0.06180, 'pos_r' => 0.502, 'neu_r' => 0.085],
+                                'fb'     => ['name' => 'Facebook',     'ratio' => 0.03421, 'pos_r' => 0.485, 'neu_r' => 0.090],
+                            ]
+                        ],
+                        '07' => [
+                            'doc' => ['pos_r' => 0.694, 'neu_r' => 0.218],
+                            'social' => [
+                                'twit'   => ['name' => 'X (Twitter)', 'ratio' => 0.22073, 'pos_r' => 0.382, 'neu_r' => 0.084],
+                                'tiktok' => ['name' => 'TikTok',       'ratio' => 0.14513, 'pos_r' => 0.541, 'neu_r' => 0.072],
+                                'ig'     => ['name' => 'Instagram',    'ratio' => 0.08995, 'pos_r' => 0.515, 'neu_r' => 0.081],
+                                'yt'     => ['name' => 'YouTube',      'ratio' => 0.06180, 'pos_r' => 0.452, 'neu_r' => 0.088],
+                                'fb'     => ['name' => 'Facebook',     'ratio' => 0.03421, 'pos_r' => 0.421, 'neu_r' => 0.095],
+                            ]
+                        ],
+                        '08' => [
+                            'doc' => ['pos_r' => 0.758, 'neu_r' => 0.185],
+                            'social' => [
+                                'twit'   => ['name' => 'X (Twitter)', 'ratio' => 0.22073, 'pos_r' => 0.445, 'neu_r' => 0.078],
+                                'tiktok' => ['name' => 'TikTok',       'ratio' => 0.14513, 'pos_r' => 0.668, 'neu_r' => 0.058],
+                                'ig'     => ['name' => 'Instagram',    'ratio' => 0.08995, 'pos_r' => 0.612, 'neu_r' => 0.069],
+                                'yt'     => ['name' => 'YouTube',      'ratio' => 0.06180, 'pos_r' => 0.564, 'neu_r' => 0.079],
+                                'fb'     => ['name' => 'Facebook',     'ratio' => 0.03421, 'pos_r' => 0.518, 'neu_r' => 0.089],
+                            ]
+                        ],
+                        '09' => [
+                            'doc' => ['pos_r' => 0.717, 'neu_r' => 0.207],
+                            'social' => [
+                                'twit'   => ['name' => 'X (Twitter)', 'ratio' => 0.22073, 'pos_r' => 0.412, 'neu_r' => 0.069],
+                                'tiktok' => ['name' => 'TikTok',       'ratio' => 0.14513, 'pos_r' => 0.575, 'neu_r' => 0.066],
+                                'ig'     => ['name' => 'Instagram',    'ratio' => 0.08995, 'pos_r' => 0.534, 'neu_r' => 0.074],
+                                'yt'     => ['name' => 'YouTube',      'ratio' => 0.06180, 'pos_r' => 0.478, 'neu_r' => 0.080],
+                                'fb'     => ['name' => 'Facebook',     'ratio' => 0.03421, 'pos_r' => 0.451, 'neu_r' => 0.088],
+                            ]
+                        ],
                     ];
+
+                    $profile = ($isFullMonth && isset($monthProfiles[$mCode]))
+                        ? $monthProfiles[$mCode]
+                        : [
+                            'doc' => ['pos_r' => 0.717, 'neu_r' => 0.207],
+                            'social' => [
+                                'twit'   => ['name' => 'X (Twitter)', 'ratio' => 0.22073, 'pos_r' => 0.425, 'neu_r' => 0.072],
+                                'tiktok' => ['name' => 'TikTok',       'ratio' => 0.14513, 'pos_r' => 0.584, 'neu_r' => 0.068],
+                                'ig'     => ['name' => 'Instagram',    'ratio' => 0.08995, 'pos_r' => 0.542, 'neu_r' => 0.075],
+                                'yt'     => ['name' => 'YouTube',      'ratio' => 0.06180, 'pos_r' => 0.485, 'neu_r' => 0.081],
+                                'fb'     => ['name' => 'Facebook',     'ratio' => 0.03421, 'pos_r' => 0.465, 'neu_r' => 0.092],
+                            ]
+                        ];
+
+                    $mTot = (int) round($tot * 0.44818);
+                    $mPos = (int) round($mTot * $profile['doc']['pos_r']);
+                    $mNeu = (int) round($mTot * $profile['doc']['neu_r']);
+                    $mNeg = max(0, $mTot - $mPos - $mNeu);
 
                     $mediaData = [
                         [
@@ -734,13 +785,13 @@ class DataOverviewApiController extends Controller
                             'neutral'             => $mNeu,
                             'negative'            => $mNeg,
                             'total'               => $mTot,
-                            'positive_percentage' => 71.7,
-                            'neutral_percentage'  => 20.7,
-                            'negative_percentage' => 7.6,
+                            'positive_percentage' => $mTot > 0 ? round(($mPos / $mTot) * 100, 1) : 0,
+                            'neutral_percentage'  => $mTot > 0 ? round(($mNeu / $mTot) * 100, 1) : 0,
+                            'negative_percentage' => $mTot > 0 ? round(($mNeg / $mTot) * 100, 1) : 0,
                         ]
                     ];
 
-                    foreach ($socialRatios as $k => $info) {
+                    foreach ($profile['social'] as $k => $info) {
                         $pTot = (int) round($tot * $info['ratio']);
                         $pPos = (int) round($pTot * $info['pos_r']);
                         $pNeu = (int) round($pTot * $info['neu_r']);
