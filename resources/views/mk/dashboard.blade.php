@@ -94,10 +94,10 @@
 
         /* ══ Lazy Card Transitions ══ */
         .lazy-card {
-            opacity: 0; transform: translateY(14px);
-            transition: opacity .4s ease, transform .4s ease, border-color .2s, box-shadow .2s;
+            opacity: 1 !important; transform: none !important;
+            transition: border-color .2s, box-shadow .2s;
         }
-        .lazy-card.card-visible { opacity: 1; transform: translateY(0); }
+        .lazy-card.card-visible { opacity: 1 !important; transform: none !important; }
         .lazy-card.highlighted {
             border-color: var(--dash-primary) !important;
             box-shadow: 0 0 0 3px var(--dash-primary-lt), var(--shadow-md) !important;
@@ -1072,28 +1072,10 @@
        LAZY CHART INIT
     ════════════════════════════════════════════════════════ */
     function initLazyCharts() {
-        if (typeof IntersectionObserver === 'undefined') {
-            document.querySelectorAll('.lazy-card').forEach(function (c, i) {
-                c.classList.add('card-visible');
-                setTimeout(() => fetchAndRenderChart(c.dataset.projectId), i * 400);
-            });
-            return;
-        }
-
-        const obs = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-                if (!entry.isIntersecting) return;
-                const sentinel = entry.target;
-                const cardEl = document.getElementById(sentinel.dataset.target);
-                if (!cardEl || cardEl.dataset.loaded === 'true') { obs.unobserve(sentinel); return; }
-                cardEl.dataset.loaded = 'true';
-                cardEl.classList.add('card-visible');
-                obs.unobserve(sentinel);
-                setTimeout(() => fetchAndRenderChart(cardEl.dataset.projectId), 120);
-            });
-        }, { rootMargin: '150px 0px', threshold: 0.01 });
-
-        document.querySelectorAll('.lazy-sentinel').forEach(s => obs.observe(s));
+        document.querySelectorAll('.lazy-card').forEach(function (c, i) {
+            c.classList.add('card-visible');
+            setTimeout(() => fetchAndRenderChart(c.dataset.projectId), 50);
+        });
     }
 
     /* ════════════════════════════════════════════════════════
