@@ -1429,16 +1429,21 @@ const TMEDetail = {
         const sent=TMEData._normSent(item);
         const sentLbl={pos:'Positif',neg:'Negatif',neu:'Netral'}[sent];
         let dtFmt=''; if(dt){ try{ dtFmt=new Date(dt).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ dtFmt=dt.split('T')[0]; } }
-        const cleanHandle = String(handle || '').replace(/^@+/, '');
+        const cleanHandle = String(handle || item.name || item.author_scr_name || '').replace(/^@+/, '');
         const rawSubId = String(item.sub_id || item.video_id || item.id || '');
-        const urlVidMatch = String(url).match(/\/video\/(\d{15,})/);
-        const idVidMatch = rawSubId.match(/(\d{15,})/);
+        const urlVidMatch = String(url).match(/\/video\/(\d{15,20})/);
+        const idVidMatch = rawSubId.match(/(\d{15,20})/);
         const ttVidId = urlVidMatch ? urlVidMatch[1] : (idVidMatch ? idVidMatch[1] : '');
-        const watchUrl = (url && url.startsWith('http'))
-            ? url
-            : (ttVidId && cleanHandle
-                ? `https://www.tiktok.com/@${cleanHandle}/video/${ttVidId}`
-                : (cleanHandle ? `https://www.tiktok.com/@${cleanHandle}` : `https://www.tiktok.com/search?q=${encodeURIComponent(name || 'prabowo')}`));
+        let watchUrl = '';
+        if (ttVidId && cleanHandle) {
+            watchUrl = `https://www.tiktok.com/@${cleanHandle}/video/${ttVidId}`;
+        } else if (url && url.startsWith('http') && !url.match(/\/video\/\d{1,14}$/) && !url.includes('mixkit') && !url.includes('localhost')) {
+            watchUrl = url;
+        } else if (cleanHandle && cleanHandle.toLowerCase() !== 'unknown') {
+            watchUrl = `https://www.tiktok.com/@${cleanHandle}`;
+        } else {
+            watchUrl = `https://www.tiktok.com/search?q=${encodeURIComponent((item.content || item.name || 'prabowo').slice(0, 40))}`;
+        }
         const rawVideoSrc = item.video_url || item.media_url || '';
         const hasDirectVideo = Boolean(rawVideoSrc && /^https?:\/\//i.test(rawVideoSrc) && !rawVideoSrc.includes('mixkit.co'));
         const thumbSrc = [item.thumbnail_url, item.cover_url, item.video_cover, item.thumbnail, item.image].find(u => typeof u === 'string' && /^https?:\/\//i.test(u) && !u.includes('ui-avatars.com')) || '';
@@ -1461,7 +1466,7 @@ const TMEDetail = {
                     ${av && !av.includes('ui-avatars.com') ? `<img src="${esc(av)}" alt="${esc(name)}" style="width:52px;height:52px;border-radius:6px;object-fit:cover;border:2px solid #fe2c55;" onerror="this.style.display='none'">` : `<div style="width:48px;height:48px;border-radius:6px;background:#1e293b;border:1px solid #334155;display:flex;align-items:center;justify-content:center;color:#fe2c55;font-size:22px;"><i class="ph ph-tiktok-logo"></i></div>`}
                     <div style="font-size:12px;font-weight:700;color:#f8fafc;">${esc(name)}</div>
                     ${playBtnHtml}
-                    <div style="font-size:11px;color:#94a3b8;max-width:270px;line-height:1.45;">${ttVidId ? 'Klik <strong>Putar di Sini</strong> untuk menonton video, atau pilih <strong>Buka di TikTok</strong>.' : 'Video ID tidak tersedia; silakan klik <strong>Buka di TikTok</strong>.'}</div>
+                    <div style="font-size:11px;color:#94a3b8;max-width:270px;line-height:1.45;">${ttVidId ? 'Klik <strong>Putar di Sini</strong> untuk menonton video, atau pilih <strong>Buka di TikTok</strong>.' : 'Video ini bersumber dari postingan akun TikTok <strong>@' + esc(cleanHandle || 'creator') + '</strong>. Klik <strong>Buka di TikTok</strong> untuk melihat profil & video resminya.'}</div>
                 </div>`);
         const mediaHtml = `
         <div class="tt-player-card" data-tt-card style="margin:14px 0;background:#0f172a;border-radius:6px;overflow:hidden;border:1px solid #1e293b;position:relative;">

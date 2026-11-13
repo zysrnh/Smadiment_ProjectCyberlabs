@@ -861,13 +861,19 @@ const TTPostsLoader = {
         const cleanHandle = String(authorHandle || '').replace(/^@+/, '');
         const subIdStr = String(post.sub_id || post.video_id || post.id || '');
         const rawUrl = String(post.url || '');
-        const urlVidMatch = rawUrl.match(/\/video\/(\d{15,})/);
-        const idVidMatch = subIdStr.match(/(\d{15,})/);
+        const urlVidMatch = rawUrl.match(/\/video\/(\d{15,20})/);
+        const idVidMatch = subIdStr.match(/(\d{15,20})/);
         const ttVidId = urlVidMatch ? urlVidMatch[1] : (idVidMatch ? idVidMatch[1] : '');
-        let ttUrl = null;
-        if (rawUrl.startsWith('http')) ttUrl = rawUrl;
-        else if (ttVidId && cleanHandle) ttUrl = `https://www.tiktok.com/@${cleanHandle}/video/${ttVidId}`;
-        else if (cleanHandle) ttUrl = `https://www.tiktok.com/@${cleanHandle}`;
+        let ttUrl = '';
+        if (ttVidId && cleanHandle) {
+            ttUrl = `https://www.tiktok.com/@${cleanHandle}/video/${ttVidId}`;
+        } else if (rawUrl && rawUrl.startsWith('http') && !rawUrl.match(/\/video\/\d{1,14}$/) && !rawUrl.includes('mixkit') && !rawUrl.includes('localhost')) {
+            ttUrl = rawUrl;
+        } else if (cleanHandle && cleanHandle.toLowerCase() !== 'unknown') {
+            ttUrl = `https://www.tiktok.com/@${cleanHandle}`;
+        } else {
+            ttUrl = `https://www.tiktok.com/search?q=${encodeURIComponent((post.content || authorName || 'prabowo').slice(0, 40))}`;
+        }
 
         const rawVideoSrc = post.video_url || post.media_url || '';
         const hasDirectVideo = Boolean(rawVideoSrc && /^https?:\/\//i.test(rawVideoSrc) && !rawVideoSrc.includes('mixkit.co'));
@@ -889,7 +895,7 @@ const TTPostsLoader = {
                 : `<div style="padding:20px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#0f172a;">
                     <div style="font-size:12px;font-weight:700;color:#f8fafc;">${this.esc(authorName)} (@${this.esc(cleanHandle || 'creator')})</div>
                     ${playBtnHtml}
-                    <div style="font-size:11px;color:#94a3b8;max-width:300px;line-height:1.45;">${ttVidId ? 'Klik <strong>Putar di Sini</strong> untuk menonton video, atau pilih <strong>Watch on TikTok</strong>.' : 'Video ID tidak tersedia; silakan klik <strong>Watch on TikTok</strong>.'}</div>
+                    <div style="font-size:11px;color:#94a3b8;max-width:300px;line-height:1.45;">${ttVidId ? 'Klik <strong>Putar di Sini</strong> untuk menonton video, atau pilih <strong>Buka di TikTok</strong>.' : 'Video ini bersumber dari postingan akun TikTok <strong>@' + this.esc(cleanHandle || 'creator') + '</strong>. Klik <strong>Buka di TikTok</strong> untuk melihat profil & video resminya.'}</div>
                 </div>`);
         const playerCardHtml = `
             <div data-tt-card style="margin:12px 0 16px;background:#0f172a;border-radius:6px;overflow:hidden;border:1px solid #1e293b;">
