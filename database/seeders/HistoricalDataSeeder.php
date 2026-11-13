@@ -43,7 +43,21 @@ class HistoricalDataSeeder extends Seeder
         if (!empty($sentiments)) {
             $this->command->info("📊 Seeding " . count($sentiments) . " daily sentiments...");
             
-            foreach (array_chunk($sentiments, 100) as $chunk) {
+            $cleanSentiments = [];
+            foreach ($sentiments as $row) {
+                $cleanSentiments[] = [
+                    'project_id' => $row['project_id'],
+                    'date'       => $row['date'],
+                    'positive'   => (int) ($row['positive'] ?? 0),
+                    'neutral'    => (int) ($row['neutral'] ?? 0),
+                    'negative'   => (int) ($row['negative'] ?? 0),
+                    'total'      => (int) ($row['total'] ?? 0),
+                    'created_at' => !empty($row['created_at']) ? date('Y-m-d H:i:s', strtotime($row['created_at'])) : now(),
+                    'updated_at' => !empty($row['updated_at']) ? date('Y-m-d H:i:s', strtotime($row['updated_at'])) : now(),
+                ];
+            }
+
+            foreach (array_chunk($cleanSentiments, 100) as $chunk) {
                 ProjectDailySentiment::upsert(
                     $chunk,
                     ['project_id', 'date'],
@@ -60,6 +74,7 @@ class HistoricalDataSeeder extends Seeder
             
             $now = now();
             foreach ($snapshots as $snap) {
+                $syncedAt = !empty($snap['synced_at']) ? date('Y-m-d H:i:s', strtotime($snap['synced_at'])) : $now;
                 ProjectApiSnapshot::updateOrCreate(
                     [
                         'project_id'   => $snap['project_id'],
@@ -70,7 +85,7 @@ class HistoricalDataSeeder extends Seeder
                     ],
                     [
                         'payload'   => is_string($snap['payload']) ? $snap['payload'] : json_encode($snap['payload']),
-                        'synced_at' => $snap['synced_at'] ?? $now,
+                        'synced_at' => $syncedAt,
                     ]
                 );
             }
