@@ -718,23 +718,23 @@ class DataOverviewApiController extends Controller
 
                     $monthProfiles = [
                         '06' => [
-                            'doc' => ['pos_r' => 0.731, 'neu_r' => 0.198],
+                            'doc' => ['pos_r' => 0.775, 'neu_r' => 0.175],
                             'social' => [
-                                'twit'   => ['name' => 'X (Twitter)', 'ratio' => 0.22073, 'pos_r' => 0.450, 'neu_r' => 0.075],
-                                'tiktok' => ['name' => 'TikTok',       'ratio' => 0.14513, 'pos_r' => 0.620, 'neu_r' => 0.065],
-                                'ig'     => ['name' => 'Instagram',    'ratio' => 0.08995, 'pos_r' => 0.568, 'neu_r' => 0.072],
-                                'yt'     => ['name' => 'YouTube',      'ratio' => 0.06180, 'pos_r' => 0.502, 'neu_r' => 0.085],
-                                'fb'     => ['name' => 'Facebook',     'ratio' => 0.03421, 'pos_r' => 0.485, 'neu_r' => 0.090],
+                                'twit'   => ['name' => 'X (Twitter)', 'ratio' => 0.22073, 'pos_r' => 0.485, 'neu_r' => 0.080],
+                                'tiktok' => ['name' => 'TikTok',       'ratio' => 0.14513, 'pos_r' => 0.682, 'neu_r' => 0.057],
+                                'ig'     => ['name' => 'Instagram',    'ratio' => 0.08995, 'pos_r' => 0.635, 'neu_r' => 0.067],
+                                'yt'     => ['name' => 'YouTube',      'ratio' => 0.06180, 'pos_r' => 0.578, 'neu_r' => 0.080],
+                                'fb'     => ['name' => 'Facebook',     'ratio' => 0.03421, 'pos_r' => 0.542, 'neu_r' => 0.084],
                             ]
                         ],
                         '07' => [
-                            'doc' => ['pos_r' => 0.694, 'neu_r' => 0.218],
+                            'doc' => ['pos_r' => 0.642, 'neu_r' => 0.245],
                             'social' => [
-                                'twit'   => ['name' => 'X (Twitter)', 'ratio' => 0.22073, 'pos_r' => 0.382, 'neu_r' => 0.084],
-                                'tiktok' => ['name' => 'TikTok',       'ratio' => 0.14513, 'pos_r' => 0.541, 'neu_r' => 0.072],
-                                'ig'     => ['name' => 'Instagram',    'ratio' => 0.08995, 'pos_r' => 0.515, 'neu_r' => 0.081],
-                                'yt'     => ['name' => 'YouTube',      'ratio' => 0.06180, 'pos_r' => 0.452, 'neu_r' => 0.088],
-                                'fb'     => ['name' => 'Facebook',     'ratio' => 0.03421, 'pos_r' => 0.421, 'neu_r' => 0.095],
+                                'twit'   => ['name' => 'X (Twitter)', 'ratio' => 0.22073, 'pos_r' => 0.325, 'neu_r' => 0.070],
+                                'tiktok' => ['name' => 'TikTok',       'ratio' => 0.14513, 'pos_r' => 0.482, 'neu_r' => 0.062],
+                                'ig'     => ['name' => 'Instagram',    'ratio' => 0.08995, 'pos_r' => 0.448, 'neu_r' => 0.070],
+                                'yt'     => ['name' => 'YouTube',      'ratio' => 0.06180, 'pos_r' => 0.382, 'neu_r' => 0.080],
+                                'fb'     => ['name' => 'Facebook',     'ratio' => 0.03421, 'pos_r' => 0.354, 'neu_r' => 0.084],
                             ]
                         ],
                         '08' => [
