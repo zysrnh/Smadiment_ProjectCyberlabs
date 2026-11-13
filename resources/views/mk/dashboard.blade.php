@@ -555,9 +555,9 @@
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
                             <p class="mb-1 text-white text-opacity-75 f-12">Positive</p>
-                            <h3 class="mb-0 text-white f-w-300" id="kpiPositive" style="transition:opacity .3s ease;">—</h3>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiPositive">{{ number_format($totalPositive) }}</h3>
                             <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiPositiveSub">
-                                <i class="ph ph-smiley me-1"></i>0% of total
+                                <i class="ph ph-smiley me-1"></i>{{ $totalMentions > 0 ? round($totalPositive / $totalMentions * 100, 1) : 0 }}% of total
                             </p>
                         </div>
                         <div class="flex-shrink-0 ms-3">
@@ -575,9 +575,9 @@
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
                             <p class="mb-1 text-white text-opacity-75 f-12">Negative</p>
-                            <h3 class="mb-0 text-white f-w-300" id="kpiNegative" style="transition:opacity .3s ease;">—</h3>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiNegative">{{ number_format($totalNegative) }}</h3>
                             <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNegativeSub">
-                                <i class="ph ph-smiley-sad me-1"></i>0% of total
+                                <i class="ph ph-smiley-sad me-1"></i>{{ $totalMentions > 0 ? round($totalNegative / $totalMentions * 100, 1) : 0 }}% of total
                             </p>
                         </div>
                         <div class="flex-shrink-0 ms-3">
@@ -596,9 +596,9 @@
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
                             <p class="mb-1 text-white text-opacity-75 f-12">Neutral</p>
-                            <h3 class="mb-0 text-white f-w-300" id="kpiNeutral" style="transition:opacity .3s ease;">—</h3>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiNeutral">{{ number_format($totalNeutral) }}</h3>
                             <p class="mb-0 mt-2 text-white text-opacity-75 f-12" id="kpiNeutralSub">
-                                <i class="ph ph-smiley-meh me-1"></i>0% of total
+                                <i class="ph ph-smiley-meh me-1"></i>{{ $totalMentions > 0 ? round($totalNeutral / $totalMentions * 100, 1) : 0 }}% of total
                             </p>
                         </div>
                         <div class="flex-shrink-0 ms-3">
@@ -617,7 +617,7 @@
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
                             <p class="mb-1 text-white text-opacity-75 f-12">Total Mentions</p>
-                            <h3 class="mb-0 text-white f-w-300" id="kpiMentions" style="transition:opacity .3s ease;">—</h3>
+                            <h3 class="mb-0 text-white f-w-300" id="kpiMentions">{{ number_format($totalMentions) }}</h3>
                             <p class="mb-0 mt-2 text-white text-opacity-75 f-12">
                                 <i class="ph ph-activity me-1"></i>Across all projects
                             </p>
@@ -715,28 +715,8 @@
         <div class="col-xl-8 col-md-7">
             <div id="chartsArea">
 
-                {{-- Skeleton --}}
-                <div id="skeletonWrap">
-                    @for($i = 0; $i < min(2, max(1, $projectCount)); $i++)
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <div class="d-flex gap-3 align-items-center">
-                                    <div class="sk-block" style="width:8px;height:8px;border-radius:50%;flex-shrink:0;"></div>
-                                    <div class="sk-block" style="width:160px;height:13px;"></div>
-                                    <div class="ms-auto sk-block" style="width:86px;height:28px;border-radius:5px;"></div>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="sk-block mb-2" style="width:220px;height:10px;"></div>
-                                <div class="sk-block mb-4" style="width:150px;height:10px;"></div>
-                                <div class="sk-block" style="width:100%;height:200px;border-radius:5px;"></div>
-                            </div>
-                        </div>
-                    @endfor
-                </div>
-
                 {{-- Actual Cards --}}
-                <div id="actualCards" style="display:none;">
+                <div id="actualCards" style="display:block;">
                     @forelse($projects as $project)
                         @php
                             $id    = $project['id'] ?? '-';
@@ -1082,11 +1062,7 @@
             });
         });
 
-        // ── Swap skeleton → cards ──
-        const skel  = _$('skeletonWrap');
-        const cards = _$('actualCards');
-        if (skel)  skel.style.display  = 'none';
-        if (cards) cards.style.display = 'block';
+        // ── Init charts ──
 
         // ── Init lazy charts ──
         initLazyCharts();
